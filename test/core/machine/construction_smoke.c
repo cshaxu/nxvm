@@ -28,19 +28,19 @@ static lib_status configure_plan(void *context, core_machine_plan *plan)
 }
 
 static lib_status configure_firmware(void *context,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     construction_probe *probe = context;
     const lib_u8 reset_code[16] = {0xf4u};
 
     lib_test_assert(!probe->released);
     ++probe->firmware_count;
-    return core_machine_firmware_register_immutable_rom(firmware,
+    return x86_core_machine_firmware_register_immutable_rom(firmware,
         0xffff0u, reset_code, sizeof(reset_code));
 }
 
 static lib_status reset_firmware(void *context,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     construction_probe *probe = context;
 
@@ -71,7 +71,7 @@ static void release_profile(void *context)
     ++probe->release_count;
 }
 
-static const core_machine_firmware_provider firmware = {
+static const x86_core_machine_firmware_provider firmware = {
     configure_firmware, reset_firmware, LIB_NULL
 };
 
@@ -110,7 +110,7 @@ static vm_machine_construction prepare(construction_probe *probe)
 static void check_memory_replacement(vm_machine *machine)
 {
     vm_machine *identity = machine;
-    core_machine *core = machine->core_machine;
+    x86_core_machine *core = machine->x86_core_machine;
     t_fdd *floppy = machine->floppy[0u];
     t_hdd *disk = machine->fixed_disk[0u];
     t_debug *debug = &machine->debug;
@@ -118,9 +118,9 @@ static void check_memory_replacement(vm_machine *machine)
     vm_machine_information information;
     lib_size bytes = 0u;
     lib_test_assert(vm_machine_reconfigure_memory(machine, 32u * 1024u * 1024u) == LIB_STATUS_OK);
-    lib_test_assert(machine == identity && machine->core_machine == core &&
+    lib_test_assert(machine == identity && machine->x86_core_machine == core &&
         machine->floppy[0u] == floppy && machine->fixed_disk[0u] == disk && &machine->debug == debug);
-    lib_test_assert(core_machine_get_memory_bytes(core, &bytes) == LIB_STATUS_OK && bytes == 32u * 1024u * 1024u);
+    lib_test_assert(x86_core_machine_get_memory_bytes(core, &bytes) == LIB_STATUS_OK && bytes == 32u * 1024u * 1024u);
     lib_test_assert(vm_machine_get_information(machine, &information) == LIB_STATUS_OK &&
         information.memory_bytes == 32u * 1024u * 1024u);
     lib_test_assert(vm_machine_get_reset_vector(LIB_NULL, &vector) == LIB_STATUS_INVALID_ARGUMENT);

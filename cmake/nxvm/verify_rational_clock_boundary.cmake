@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" machine_lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" machine_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" machine_lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" machine_scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_source)
 set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}${board_advance_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/clock.c" clock_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/execution_provider_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/clock.c" clock_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/execution_provider_interface.h"
     provider_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
     lifecycle_source)
@@ -17,7 +17,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
     profile_header)
 
 foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"
-    "provider_clock" "core_machine_clock_domain_advance" "advance_time")
+    "provider_clock" "x86_core_machine_clock_domain_advance" "advance_time")
     string(FIND "${machine_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "core scheduler lacks required clock-domain path: ${required}")

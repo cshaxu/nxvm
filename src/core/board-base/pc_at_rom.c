@@ -2,13 +2,13 @@
 #include "lib/types/types_interface.h"
 
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/pc_at_rom_interface.h"
 #include "core/board-base/rom_validation_interface.h"
 #include "core/board-base/rom_mapping_interface.h"
 
 static lib_status vm_profile_external_pc_at_rom_configure(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     const vm_profile_external_pc_at_rom_context *context = opaque;
 
@@ -31,19 +31,19 @@ static lib_status vm_profile_external_pc_at_rom_configure(void *opaque,
 }
 
 static lib_status vm_profile_external_pc_at_rom_reset(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     (void)opaque;
     (void)firmware;
     return LIB_STATUS_OK;
 }
 
-static const core_machine_firmware_provider vm_profile_external_pc_at_rom = {
+static const x86_core_machine_firmware_provider vm_profile_external_pc_at_rom = {
     vm_profile_external_pc_at_rom_configure, vm_profile_external_pc_at_rom_reset,
     LIB_NULL
 };
 
-const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void)
+const x86_core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void)
 {
     return &vm_profile_external_pc_at_rom;
 }

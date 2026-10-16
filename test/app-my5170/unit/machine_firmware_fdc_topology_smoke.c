@@ -28,9 +28,9 @@ lib_i32 main(void)
         VM_AT_ROUTE_FDC_IRQ6_DMA2);
     if (route == LIB_NULL || route->irq != 6u ||
         route->dma_channel != 2u ||
-        !test_core_port_has_write(session->core_machine, 0x03f2u) ||
-        !test_core_port_has_read(session->core_machine, 0x03f4u) ||
-        !test_core_port_has_write(session->core_machine, 0x03f5u)) goto done;
+        !test_core_port_accepts_write(session->x86_core_machine, 0x03f2u) ||
+        !test_core_port_accepts_read(session->x86_core_machine, 0x03f4u) ||
+        !test_core_port_accepts_write(session->x86_core_machine, 0x03f5u)) goto done;
     const test_board_composition_observation composition =
         test_board_capture_composition(session->board);
     failed = composition.fdc.irq != route->irq ||

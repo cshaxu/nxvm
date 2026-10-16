@@ -7,7 +7,7 @@ static lib_i32 invalid_cecg_is_failure_atomic(void)
 {
     core_machine_config machine_config = {0};
     core_machine_display_config display_config = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 valid;
 
@@ -30,7 +30,7 @@ static lib_i32 invalid_cecg_is_failure_atomic(void)
         display_config.ega_personality = X86_VIDEO_EGA_PERSONALITY_GENERIC;
         valid = core_machine_configure_display(board, &display_config) == LIB_STATUS_OK;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return valid;
 }
 lib_i32 main(void)
@@ -71,7 +71,7 @@ lib_i32 main(void)
     lib_i32 failed = !invalid_cecg_is_failure_atomic();
 
     for (lib_u8 generic = 0u; generic < 2u; ++generic) {
-        core_machine *machine;
+        x86_core_machine *machine;
         t_vadp adapter;
         machine = test_video_create(&adapter);
         config.ega_personality = generic ? X86_VIDEO_EGA_PERSONALITY_GENERIC :
@@ -126,7 +126,7 @@ lib_i32 main(void)
             }
         }
         core_machine_vadp_finalize(&adapter);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
     }
     return failed ? 1 : 0;
 }

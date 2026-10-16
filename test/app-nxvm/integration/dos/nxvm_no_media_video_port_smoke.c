@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
@@ -53,9 +53,9 @@ lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
     vm_machine *session;
-    core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
-    core_machine_observation observation;
+    x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
+    x86_core_machine_observation observation;
     x86_video_snapshot snapshot;
     lib_u8 opcode[2];
     lib_u8 functions[256] = {0};
@@ -72,20 +72,20 @@ lib_i32 main(lib_i32 argc, char **argv)
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if (session == LIB_NULL || !session->active ||
-        session->core_machine == LIB_NULL) goto fail;
+        session->x86_core_machine == LIB_NULL) goto fail;
     if (vm_machine_reset(session) != LIB_STATUS_OK) goto fail;
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
-        if (core_machine_capture_observation(session->core_machine,
+        if (x86_core_machine_capture_observation(session->x86_core_machine,
                 &observation) != LIB_STATUS_OK ||
-            core_machine_memory_read(session->core_machine,
+            x86_core_machine_memory_read(session->x86_core_machine,
                 observation.cpu.cs_base + observation.cpu.eip, opcode,
                 sizeof(opcode)) != LIB_STATUS_OK) {
             goto fail;
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
-            if (core_machine_debug_read_register(session->core_machine,
+            if (x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK) {
                 goto fail;
             }
@@ -93,13 +93,13 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) ++f2_count;
         if (opcode[0] == 0xb4u && opcode[1] == 0x11u) key_wait_seen = 1;
-        if (core_machine_run(session->core_machine, budget, &result) !=
-            LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) !=
+            LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             goto fail;
         }
         if (key_wait_seen) break;
     }
-    if (core_machine_memory_read(session->core_machine, 0x0450u, &cursor,
+    if (x86_core_machine_memory_read(session->x86_core_machine, 0x0450u, &cursor,
             sizeof(cursor)) != LIB_STATUS_OK ||
         core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || cursor != 0x0600u || !snapshot.cursor_visible ||

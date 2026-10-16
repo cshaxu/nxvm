@@ -1,20 +1,20 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/chips/rtc146818/rtc146818_interface.h"
 
-static lib_bool initialize_pic(core_machine *port)
+static lib_bool initialize_pic(x86_core_machine *port)
 {
-    return core_machine_bus_write(port, 0x0020u, 0x11u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x0021u, 0x08u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x0021u, 0x04u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x0021u, 0x01u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x00a0u, 0x11u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x00a1u, 0x70u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x00a1u, 0x02u) == LIB_STATUS_OK &&
-        core_machine_bus_write(port, 0x00a1u, 0x01u) == LIB_STATUS_OK;
+    return x86_core_machine_bus_write(port, 0x0020u, 0x11u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x0021u, 0x08u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x0021u, 0x04u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x0021u, 0x01u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x00a0u, 0x11u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x00a1u, 0x70u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x00a1u, 0x02u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(port, 0x00a1u, 0x01u) == LIB_STATUS_OK;
 }
 
 static void rtc_output(void *context, lib_bool asserted)
@@ -26,8 +26,8 @@ static void rtc_output(void *context, lib_bool asserted)
 
 lib_i32 main(void)
 {
-    core_machine *machine = LIB_NULL;
-    core_machine *port;
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine *port;
     core_machine_pic_bus *master = LIB_NULL;
     core_machine_pic_bus *slave = LIB_NULL;
     x86_rtc *rtc = LIB_NULL;
@@ -35,19 +35,19 @@ lib_i32 main(void)
     x86_rtc_config config = {50000u, 0u, 0u};
     lib_i32 failed = 0;
 
-    const core_machine_executor_config executor_config = {
+    const x86_core_machine_executor_config executor_config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
-    if (core_machine_neutral_create(&executor_config, &machine) != LIB_STATUS_OK)
+    if (x86_core_machine_neutral_create(&executor_config, &machine) != LIB_STATUS_OK)
         return 1;
     port = machine;
     if (core_machine_pic_initialize(&master, &slave, machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK) {
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_pic_finalize(master, slave);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 1;
     }
     if (!initialize_pic(port) ||
@@ -55,7 +55,7 @@ lib_i32 main(void)
             LIB_STATUS_OK ||
         x86_rtc_create(&config, rtc_output, irq_source, &rtc) != LIB_STATUS_OK) {
         core_machine_pic_finalize(master, slave);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 1;
     }
     x86_rtc_write_register(rtc, X86_RTC_REG_B,
@@ -78,7 +78,7 @@ lib_i32 main(void)
     if (x86_rtc_read_register(rtc, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed = 1;
     x86_rtc_destroy(rtc);
     core_machine_pic_finalize(master, slave);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("%s\n", "CORE-RTC:OK");
     return 0;

@@ -1,13 +1,12 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/device_support_interface.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core/board-base/media_interface.h"
 
-static lib_i32 port_probe_prepare_real_mode(core_machine *machine)
+static lib_i32 port_probe_prepare_real_mode(x86_core_machine *machine)
 {
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -17,7 +16,7 @@ static lib_i32 port_probe_prepare_real_mode(core_machine *machine)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
-    return core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
+    return x86_core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
 }
 
 typedef struct core_machine_port_probe_state {
@@ -59,7 +58,7 @@ static lib_status core_machine_port_probe_write(void *owner, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_port_probe_prepare(core_machine **out_machine,
+static lib_i32 core_machine_port_probe_prepare(x86_core_machine **out_machine,
     core_machine_port_probe_state *port_state)
 {
     const core_machine_config config = {
@@ -68,28 +67,28 @@ static lib_i32 core_machine_port_probe_prepare(core_machine **out_machine,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_port_provider provider = {
+    const x86_core_machine_port_provider provider = {
         core_machine_port_probe_read, core_machine_port_probe_write
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = out_machine == LIB_NULL || port_state == LIB_NULL;
 
     failed |= !failed && core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_install_port_provider(machine, 0x00e0u,
+    failed |= !failed && x86_core_machine_install_port_provider(machine, 0x00e0u,
         0x00e0u, &provider, port_state) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_install_port_provider(machine, 0x00e0u,
+    failed |= !failed && x86_core_machine_install_port_provider(machine, 0x00e0u,
         0x00e0u, &provider, port_state) != LIB_STATUS_INVALID_STATE;
-    failed |= !failed && core_machine_install_port_provider(machine, 0x0020u,
+    failed |= !failed && x86_core_machine_install_port_provider(machine, 0x0020u,
         0x0020u, &provider, port_state) != LIB_STATUS_INVALID_STATE;
-    failed |= !failed && core_machine_install_port_provider(machine, 0x0040u,
+    failed |= !failed && x86_core_machine_install_port_provider(machine, 0x0040u,
         0x0043u, &provider, port_state) != LIB_STATUS_INVALID_STATE;
-    failed |= !failed && core_machine_install_port_provider(machine, 0x0060u,
+    failed |= !failed && x86_core_machine_install_port_provider(machine, 0x0060u,
         0x0064u, &provider, port_state) != LIB_STATUS_INVALID_STATE;
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (failed) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 1;
     }
     *out_machine = machine;
@@ -104,7 +103,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_port_provider read_provider = {
+    const x86_core_machine_port_provider read_provider = {
         core_machine_port_probe_read, LIB_NULL
     };
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
@@ -124,30 +123,30 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
     };
     core_machine_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_configure_dma(board, &dma_wiring, &dma_request) !=
             LIB_STATUS_OK ||
-        core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
+        x86_core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
             &read_provider, &state) != LIB_STATUS_OK;
 
     topology.media_registry = media;
     topology.dma_request = dma_request;
     failed |= !failed && core_machine_configure_fdc(board, &topology) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= !failed && (core_machine_bus_read(machine, 0x03f2u, &value) !=
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && (x86_core_machine_bus_read(machine, 0x03f2u, &value) !=
             LIB_STATUS_OK || value != 0x5au || state.reads != 1u ||
-        core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
         state.writes != 0u ||
-        core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
         value != 0x80u);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     return failed;
 }
@@ -160,7 +159,7 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_port_provider write_provider = {
+    const x86_core_machine_port_provider write_provider = {
         LIB_NULL, core_machine_port_probe_write
     };
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
@@ -180,25 +179,25 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
     };
     core_machine_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_configure_dma(board, &dma_wiring, &dma_request) !=
             LIB_STATUS_OK ||
-        core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
+        x86_core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
             &write_provider, &state) != LIB_STATUS_OK;
 
     topology.media_registry = media;
     topology.dma_request = dma_request;
     failed |= !failed && core_machine_configure_fdc(board, &topology) !=
         LIB_STATUS_INVALID_STATE;
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= !failed && (core_machine_bus_write(machine, 0x03f2u, 0x4du) !=
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && (x86_core_machine_bus_write(machine, 0x03f2u, 0x4du) !=
             LIB_STATUS_OK || state.writes != 1u || state.last_write != 0x4du);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     return failed;
 }
@@ -211,48 +210,47 @@ lib_i32 main(void)
     static const lib_u8 failing_program[] = {0xb0u, 0x6cu, 0xe6u, 0xe0u};
     core_machine_port_probe_state port_state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
-    core_machine_run_budget budget = {16u, 0u};
-    core_machine_run_result result;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine_run_budget budget = {16u, 0u};
+    x86_core_machine_run_result result;
+    x86_core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = core_machine_port_probe_prepare(&machine, &port_state);
 
     if (!failed) {
-        failed |= core_machine_bus_write(machine, 0x00e0u, 0x33u) !=
+        failed |= x86_core_machine_bus_write(machine, 0x00e0u, 0x33u) !=
                 LIB_STATUS_OK ||
-            core_machine_bus_read(machine, 0x00e0u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x00e0u, &value) != LIB_STATUS_OK ||
             value != 0xa5u ||
             !port_probe_prepare_real_mode(machine) ||
-            core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
+            x86_core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
                 LIB_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             port_state.reads != 2u || port_state.writes != 2u ||
             port_state.last_write != 0x5au;
         port_state.read_status = LIB_STATUS_INTERNAL_ERROR;
         value = 0xdeadbeefu;
-        failed |= core_machine_bus_read(machine, 0x00e0u, &value) !=
+        failed |= x86_core_machine_bus_read(machine, 0x00e0u, &value) !=
                 LIB_STATUS_INTERNAL_ERROR || value != 0xdeadbeefu;
         port_state.read_status = LIB_STATUS_OK;
-        failed |= core_machine_bus_read(machine, 0x00e0u, &value) !=
+        failed |= x86_core_machine_bus_read(machine, 0x00e0u, &value) !=
                 LIB_STATUS_OK || value != 0xa5u;
         port_state.write_status = LIB_STATUS_INTERNAL_ERROR;
-        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
+        failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK ||
             !port_probe_prepare_real_mode(machine) ||
-            core_machine_memory_write(machine, 0u, failing_program,
+            x86_core_machine_memory_write(machine, 0u, failing_program,
                 sizeof(failing_program)) != LIB_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR;
+            x86_core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR;
         if (!failed) {
             x86_core_cpu_diagnostic diagnostic;
 
-            failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+            failed |= x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                     LIB_STATUS_OK || !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_CE) || diagnostic.first_fault.exception_code !=
+                !(((diagnostic.first_fault.exception_mask) & (VCPUINS_EXCEPT_CE)) != 0u) || diagnostic.first_fault.exception_code !=
                     0x00e0u;
         }
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     failed |= core_machine_port_probe_fdc_read_is_independent();
     failed |= core_machine_port_probe_fdc_write_conflict_is_retained();
     if (failed) {

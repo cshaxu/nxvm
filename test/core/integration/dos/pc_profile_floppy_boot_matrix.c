@@ -10,8 +10,8 @@
 #undef exception_code
 
 #include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "core/x86/machine_interface.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/board-base/floppy_interface.h"
@@ -69,7 +69,7 @@ typedef struct boot_trace_probe {
 } boot_trace_probe;
 
 static void boot_retirement_observe(void *opaque,
-    const core_machine_retirement_observation *observation)
+    const x86_core_machine_retirement_observation *observation)
 {
     boot_trace_probe *probe = opaque;
 
@@ -82,20 +82,20 @@ static void boot_retirement_observe(void *opaque,
             observation->io_port, observation->io_value};
 }
 
-static void boot_trace_observe(void *opaque, const core_machine_trace_event *event)
+static void boot_trace_observe(void *opaque, const x86_core_machine_trace_event *event)
 {
     boot_trace_probe *probe = (boot_trace_probe *)opaque;
 
     if (probe == LIB_NULL || event == LIB_NULL) return;
-    if (event->type == CORE_MACHINE_TRACE_CPU_RETIRE) {
+    if (event->type == X86_CORE_MACHINE_TRACE_CPU_RETIRE) {
         ++probe->cpu_retires;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT) {
+    if (event->type == X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT) {
         ++probe->external_cycle_commits;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
         (event->address == 0x0060u || event->address == 0x0064u)) {
         probe->kbc_transactions[probe->kbc_transaction_count %
             BOOT_TRACE_KBC_TRANSACTIONS] =
@@ -103,11 +103,11 @@ static void boot_trace_observe(void *opaque, const core_machine_trace_event *eve
                 (lib_u8)event->value, (lib_u8)(event->detail >> 8u) };
         ++probe->kbc_transaction_count;
         if (event->address == 0x0060u &&
-            (event->detail >> 8u) == CORE_MACHINE_TRANSACTION_CPU_PORT_READ) {
+            (event->detail >> 8u) == X86_CORE_MACHINE_TRANSACTION_CPU_PORT_READ) {
             ++probe->kbc_data_read_values[(lib_u8)event->value];
         }
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
         (event->address == 0x03f5u || event->address == 0x03f7u)) {
         probe->fdc_transactions[probe->fdc_transaction_count %
             BOOT_TRACE_FDC_TRANSACTIONS] =
@@ -115,33 +115,33 @@ static void boot_trace_observe(void *opaque, const core_machine_trace_event *eve
                 (lib_u8)event->value, (lib_u8)(event->detail >> 8u) };
         ++probe->fdc_transaction_count;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
-        (event->detail >> 8u) == CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE) {
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+        (event->detail >> 8u) == X86_CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE) {
         ++probe->interrupt_acknowledges;
         ++probe->interrupt_vectors[(lib_u8)event->value];
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE && event->address == 0x0000046au) {
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_WRITE && event->address == 0x0000046au) {
         ++probe->post_interrupt_flag_writes;
         probe->last_post_interrupt_flag = (lib_u8)event->value;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
-        (event->detail >> 8u) == CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+        (event->detail >> 8u) == X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE &&
         event->address == 0x0000046au) {
         ++probe->post_interrupt_flag_writes;
         probe->last_post_interrupt_flag = (lib_u8)event->value;
     }
-    if (event->type == CORE_MACHINE_TRACE_PORT_READ && event->address == 0x0061u) {
+    if (event->type == X86_CORE_MACHINE_TRACE_PORT_READ && event->address == 0x0061u) {
         ++probe->port61_reads;
         if ((event->value & 0x10u) != 0u) ++probe->port61_refresh_high_reads;
         else ++probe->port61_refresh_low_reads;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0080u) {
+    if (event->type == X86_CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0080u) {
         probe->post_codes[probe->post_code_count % BOOT_TRACE_POST_CODES] =
             (lib_u8)event->value;
         ++probe->post_code_count;
     }
-    if (event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
+    if (event->type != X86_CORE_MACHINE_TRACE_PORT_WRITE) return;
     if (event->address >= 0x0040u && event->address <= 0x0043u) {
         ++probe->pit_writes;
         probe->last_pit_address = event->address;
@@ -202,8 +202,8 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
     core_machine_guest_display_frame frame;
     x86_core_cpu_state cpu;
     x86_core_cpu_diagnostic diagnostic;
-    core_machine_observation observation;
-    core_machine_time_observation time_observation;
+    x86_core_machine_observation observation;
+    x86_core_machine_time_observation time_observation;
     char line[81];
     lib_u8 equipment[2] = {0};
     lib_u8 interrupt_flag = 0u;
@@ -216,47 +216,47 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
     lib_size row;
 
     if (session == LIB_NULL || name == LIB_NULL) return;
-    if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
+    if (x86_core_machine_get_cpu_state(session->x86_core_machine, &cpu) == LIB_STATUS_OK) {
         printf("NXVM:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:FDD=%u:%ux%ux%u\n",
             name, cpu.cs, cpu.eip, cpu.cs_base, cpu.eflags, cpu.halted,
             vm_test_fdd_info(session->floppy[0u]).present,
             vm_test_fdd_info(session->floppy[0u]).geometry.cylinders, vm_test_fdd_info(session->floppy[0u]).geometry.heads, vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track);
-        if (core_machine_capture_observation(session->core_machine, &observation) ==
+        if (x86_core_machine_capture_observation(session->x86_core_machine, &observation) ==
                 LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
                 (unsigned long long)observation.elapsed_ticks, observation.lifecycle);
         }
-        if (core_machine_capture_time_observation(session->core_machine,
+        if (x86_core_machine_capture_time_observation(session->x86_core_machine,
                 &time_observation) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:TIME:deadline=%llu:valid=%u:progress=%u\n",
                 name, (unsigned long long)time_observation.next_deadline_tick,
                 time_observation.next_deadline_valid,
                 time_observation.progress_disposition);
         }
-        if (core_machine_memory_read(session->core_machine, 0x00000410u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x00000410u,
                 equipment, sizeof(equipment)) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:BDA:equipment=%02X%02X\n", name,
                 equipment[1u], equipment[0u]);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0000046au,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0000046au,
                 &interrupt_flag, 1u) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:POST-INTR-FLAG=%02X\n", name,
                 interrupt_flag);
         }
-        if (core_machine_memory_read(session->core_machine, 0x00000024u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x00000024u,
                 keyboard_vector, sizeof(keyboard_vector)) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:INT09=%02X%02X:%02X%02X\n", name,
                 keyboard_vector[1u], keyboard_vector[0u], keyboard_vector[3u],
                 keyboard_vector[2u]);
         }
-        if (core_machine_memory_read(session->core_machine, 0x000c0000u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u,
                 option_signature, sizeof(option_signature)) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:C0000=%02X%02X\n", name,
                 option_signature[0u], option_signature[1u]);
         }
-        if (core_machine_memory_read(session->core_machine, 0x00007c00u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x00007c00u,
                 boot_bytes, sizeof(boot_bytes)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x00007dfeu,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x00007dfeu,
                 boot_signature, sizeof(boot_signature)) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:BOOT=%02X/%02X/%02X/%02X:sig=%02X%02X\n",
                 name, boot_bytes[0u], boot_bytes[1u], boot_bytes[2u], boot_bytes[3u],
@@ -289,7 +289,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     value->eip, value->tick, value->source, value->eax,
                     (lib_u32)value->port, value->value);
             }
-#if CORE_MACHINE_RUNTIME_TRACE_ENABLED
+#if X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED
             printf("NXVM:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,
                 (unsigned long long)trace_probe->external_cycle_commits,
@@ -365,7 +365,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
 
             for (captured = 0u; captured < sizeof(registers) / sizeof(registers[0]);
                     ++captured) {
-                if (core_machine_debug_read_register(session->core_machine,
+                if (x86_core_machine_debug_read_register(session->x86_core_machine,
                         registers[captured], &values[captured]) != LIB_STATUS_OK) break;
             }
             if (captured == sizeof(registers) / sizeof(registers[0])) {
@@ -374,19 +374,19 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     values[4], values[5], values[6]);
             }
         }
-        if (core_machine_memory_read(session->core_machine, cpu.cs_base + cpu.eip, pc_bytes,
+        if (x86_core_machine_memory_read(session->x86_core_machine, cpu.cs_base + cpu.eip, pc_bytes,
                 sizeof(pc_bytes)) == LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
                 name, pc_bytes[0u], pc_bytes[1u], pc_bytes[2u], pc_bytes[3u],
                 pc_bytes[4u], pc_bytes[5u], pc_bytes[6u], pc_bytes[7u]);
         }
-        if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+        if (x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) ==
                 LIB_STATUS_OK && diagnostic.first_fault.valid) {
             lib_c_printf("BOOT-DIAG:%s:FIRST-FAULT:mask=%08X:code=%08X:pc=%04X:%08X\n",
                 name, diagnostic.first_fault.exception_mask, diagnostic.first_fault.exception_code,
                 diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip);
         }
-        if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+        if (x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) ==
                 LIB_STATUS_OK && diagnostic.recent_count != 0u) {
             const x86_core_cpu_execution_point *point =
                 &diagnostic.recent[diagnostic.recent_count - 1u];
@@ -411,7 +411,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         {
             lib_u8 video_bda[6];
-            if (core_machine_memory_read(session->core_machine, 0x449u,
+            if (x86_core_machine_memory_read(session->x86_core_machine, 0x449u,
                     video_bda, sizeof(video_bda)) == LIB_STATUS_OK) {
                 lib_c_printf("NXVM:INI-BOOT:%s:VIDEO-BDA:mode=%02X:columns=%u:page-size=%u\n",
                     name, (lib_u32)video_bda[0],
@@ -459,8 +459,8 @@ static lib_i32 boot_cmos_seed_matches(const vm_machine *session)
         lib_u8 expected = session->construction.cmos_seed[index];
         lib_u32 actual;
 
-        if (core_machine_bus_write(session->core_machine, 0x0070u, index) != LIB_STATUS_OK ||
-            core_machine_bus_read(session->core_machine, 0x0071u, &actual) != LIB_STATUS_OK)
+        if (x86_core_machine_bus_write(session->x86_core_machine, 0x0070u, index) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(session->x86_core_machine, 0x0071u, &actual) != LIB_STATUS_OK)
             return 0;
         if (actual != expected) {
             printf("NXVM:CMOS:index=%02X:expected=%02X:actual=%02X\n", index,
@@ -505,11 +505,11 @@ int main(int argc, char **argv)
     }
     session = ini_session.session;
     if (trace_enabled) {
-        if (core_machine_set_retirement_observation_provider(session->core_machine,
-                &(core_machine_retirement_observation_provider) {boot_retirement_observe,
+        if (x86_core_machine_set_retirement_observation_provider(session->x86_core_machine,
+                &(x86_core_machine_retirement_observation_provider) {boot_retirement_observe,
                     &trace_probe}) != LIB_STATUS_OK) goto done;
-        if (core_machine_set_trace_provider(session->core_machine,
-                &(core_machine_trace_provider) {boot_trace_observe, &trace_probe}) !=
+        if (x86_core_machine_set_trace_provider(session->x86_core_machine,
+                &(x86_core_machine_trace_provider) {boot_trace_observe, &trace_probe}) !=
                 LIB_STATUS_OK) {
             fprintf(stderr, "NXVM:INI-BOOT:%s:TRACE-SETUP-FAILED\n", argv[2]);
             goto done;

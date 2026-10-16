@@ -42,22 +42,6 @@ core_add_chip(core-chip-xtkeyboard chips/xtkeyboard/keyboard.c)
 core_add_chip(core-chip-kbc8042 chips/kbc8042/controller.c)
 target_link_libraries(core-chip-kbc8042 PRIVATE core-chip-keyboard)
 
-set(core_x86_sources
-    x86/clock.c x86/cpu_bus.c x86/debug.c x86/entry_plan_interface.c
-    x86/machine_firmware.c x86/machine.c x86/machine_scheduler.c
-    x86/memory_interface.c x86/port_interface.c x86/rom_mapping_interface.c
-    x86/trace_interface.c x86/retirement_observation_interface.c
-    x86/timeline.c x86/port.c x86/memory.c x86/transaction.c)
-add_library(core-x86 STATIC ${core_x86_sources})
-target_include_directories(core-x86 PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-x86 PUBLIC types x86-core-cpu x86-core-fpu)
-target_compile_definitions(core-x86 PUBLIC
-    CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
-
-add_library(core-x86-observable STATIC EXCLUDE_FROM_ALL ${core_x86_sources})
-target_include_directories(core-x86-observable PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-x86-observable PUBLIC types x86-core-cpu x86-core-fpu)
-target_compile_definitions(core-x86-observable PUBLIC CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 add_library(core-board-at STATIC board-at/kbc.c board-at/parity.c board-at/wiring.c)
 target_include_directories(core-board-at PUBLIC ${CORE_SOURCE_ROOT})
@@ -83,15 +67,17 @@ target_include_directories(core-board-base PUBLIC ${CORE_SOURCE_ROOT})
 target_link_libraries(core-board-base PUBLIC types core-chip-pit825x core-chip-pic8259
     core-chip-dma8237 core-chip-fdc8272 core-chip-hdc core-chip-video
     core-chip-rtc146818 core-chip-xtkeyboard core-board-at core-board-xt)
+target_link_libraries(core-board-base PUBLIC x86-core-machine)
 target_compile_definitions(core-board-base PUBLIC
-    CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
+    X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
 
 add_library(core-board-base-observable STATIC EXCLUDE_FROM_ALL ${core_board_base_sources})
 target_include_directories(core-board-base-observable PUBLIC ${CORE_SOURCE_ROOT})
 target_link_libraries(core-board-base-observable PUBLIC types core-chip-pit825x core-chip-pic8259
     core-chip-dma8237 core-chip-fdc8272 core-chip-hdc core-chip-video
     core-chip-rtc146818 core-chip-xtkeyboard core-board-at core-board-xt)
-target_compile_definitions(core-board-base-observable PUBLIC CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+target_link_libraries(core-board-base-observable PUBLIC x86-core-machine-observable)
+target_compile_definitions(core-board-base-observable PUBLIC X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 add_library(core-machine-media STATIC machine/media/fdd.c machine/media/hdd.c)
 target_include_directories(core-machine-media PUBLIC ${CORE_SOURCE_ROOT})
@@ -109,7 +95,7 @@ add_library(core-machine STATIC machine/preparation.c machine/debug.c
     machine/machine_info.c)
 target_include_directories(core-machine PUBLIC ${CORE_SOURCE_ROOT})
 target_link_libraries(core-machine PUBLIC types base storage emulator-machine
-    core-machine-media core-machine-conversion core-board-base core-x86)
+    core-machine-media core-machine-conversion core-board-base x86-core-machine)
 
 add_custom_target(core-verify
     COMMAND "${CMAKE_COMMAND}" -DCORE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}

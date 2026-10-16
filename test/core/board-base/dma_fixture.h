@@ -2,54 +2,54 @@
 #ifndef TEST_SHARED_DMA_FIXTURE_H
 #define TEST_SHARED_DMA_FIXTURE_H
 #include "core/board-base/dma_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
-static inline lib_status test_dma_core_create(core_machine **out_machine)
+static inline lib_status test_dma_core_create(x86_core_machine **out_machine)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
-    return core_machine_neutral_create(&config, out_machine);
+    return x86_core_machine_neutral_create(&config, out_machine);
 }
 
 static inline lib_status test_dma_initialize(core_machine_dma_bus **out_bus,
-    core_machine *machine, lib_u8 controllers)
+    x86_core_machine *machine, lib_u8 controllers)
 {
     lib_status status = core_machine_dma_initialize(out_bus, machine, controllers);
     if (status == LIB_STATUS_OK)
-        status = core_machine_freeze_execution_providers(machine);
-    if (status == LIB_STATUS_OK) status = core_machine_reset(machine);
+        status = x86_core_machine_freeze_execution_providers(machine);
+    if (status == LIB_STATUS_OK) status = x86_core_machine_reset(machine);
     return status;
 }
 
-static inline lib_u32 test_dma_port_read(core_machine *machine, lib_u16 port)
+static inline lib_u32 test_dma_port_read(x86_core_machine *machine, lib_u16 port)
 {
     lib_u32 value;
-    if (core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
+    if (x86_core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
         lib_test_assert(LIB_FALSE);
     return value;
 }
 
-static inline void test_dma_port_write(core_machine *machine, lib_u16 port,
+static inline void test_dma_port_write(x86_core_machine *machine, lib_u16 port,
     lib_u32 value)
 {
-    if (core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
+    if (x86_core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
         lib_test_assert(LIB_FALSE);
 }
 
-static inline lib_u16 test_dma_register_word(core_machine *machine,
+static inline lib_u16 test_dma_register_word(x86_core_machine *machine,
     lib_bool secondary, lib_u8 selector)
 {
     lib_u16 port = secondary ? (lib_u16)(0xc0u + 2u * selector) : selector;
-    if (core_machine_bus_write(machine, secondary ? 0xd8u : 0x0cu, 0u) !=
+    if (x86_core_machine_bus_write(machine, secondary ? 0xd8u : 0x0cu, 0u) !=
             LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     lib_u16 low = (lib_u16)test_dma_port_read(machine, port);
     return (lib_u16)(low | test_dma_port_read(machine, port) << 8);
 }
 
 static inline void test_dma_transfers(core_machine_dma_bus *bus,
-    core_machine *machine, core_machine *port_owner, lib_u64 transfers,
+    x86_core_machine *machine, x86_core_machine *port_owner, lib_u64 transfers,
     lib_u8 controller_count)
 {
     for (lib_u64 transfer = 0u; transfer < transfers; ++transfer) {

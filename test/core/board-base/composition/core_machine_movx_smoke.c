@@ -1,6 +1,5 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
 #include "core/board-base/machine_board_interface.h"
 #include "../core_machine_board_fixture.h"
@@ -14,7 +13,7 @@ typedef struct movx_provider {
 } movx_provider;
 
 typedef struct movx_machine {
-    core_machine *machine;
+    x86_core_machine *machine;
 } movx_machine;
 
 static lib_status movx_read(void *owner, lib_u32 physical,
@@ -43,15 +42,15 @@ static lib_status movx_write(void *owner, lib_u32 physical,
 }
 
 static lib_status movx_query(void *owner, lib_u32 physical,
-    lib_uptr bytes, core_machine_memory_access access)
+    lib_uptr bytes, x86_core_machine_memory_access access)
 {
     (void)owner;
     if (physical >= 0x18u && physical < 0x1cu &&
-        bytes <= 0x1cu - physical && access == CORE_MACHINE_MEMORY_ACCESS_READ)
+        bytes <= 0x1cu - physical && access == X86_CORE_MACHINE_MEMORY_ACCESS_READ)
         return LIB_STATUS_OK;
     return physical == MOVX_SOURCE_MEMORY && (bytes == 1u || bytes == 2u) &&
-        (access == CORE_MACHINE_MEMORY_ACCESS_READ ||
-         access == CORE_MACHINE_MEMORY_ACCESS_WRITE) ? LIB_STATUS_OK :
+        (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+         access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) ? LIB_STATUS_OK :
         LIB_STATUS_UNSUPPORTED;
 }
 
@@ -63,7 +62,7 @@ static lib_i32 movx_prepare(x86_core_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_memory_device_route routes[] = {
+    const x86_core_machine_memory_device_route routes[] = {
         {.physical_start = MOVX_SOURCE_MEMORY, .bytes = 2u,
             .callbacks = {movx_read, movx_write, movx_query}},
         {.physical_start = 0x18u, .bytes = 4u,
@@ -81,13 +80,13 @@ static lib_i32 movx_prepare(x86_core_cpu_profile profile,
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
-        (provider != LIB_NULL && core_machine_install_memory_device_routes(
+        (provider != LIB_NULL && x86_core_machine_install_memory_device_routes(
             state->machine, routes, sizeof(routes) / sizeof(routes[0]),
             LIB_NULL, LIB_NULL, provider) != LIB_STATUS_OK) ||
-        core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
-        core_machine_reset(state->machine) != LIB_STATUS_OK ||
-        core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
-        core_machine_destroy(state->machine);
+        x86_core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(state->machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
+        x86_core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
     }
@@ -98,21 +97,21 @@ static lib_i32 movx_run(movx_machine *state, const lib_u8 *code,
     lib_size code_size, x86_core_cpu_debug_cpu_snapshot *out_cpu,
     x86_core_cpu_diagnostic *out_diagnostic)
 {
-    const core_machine_run_budget budget = {1u, 0u};
-    core_machine_run_result result;
+    const x86_core_machine_run_budget budget = {1u, 0u};
+    x86_core_machine_run_result result;
     lib_status status;
 
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         out_cpu == LIB_NULL || out_diagnostic == LIB_NULL ||
-        core_machine_memory_write(state->machine, 0u, code, code_size) !=
+        x86_core_machine_memory_write(state->machine, 0u, code, code_size) !=
             LIB_STATUS_OK) return 0;
     /* REAL_UD_TERMINAL_IVT_REJECT: vector-6 bus read fails. */
-    status = core_machine_run(state->machine, budget, &result);
+    status = x86_core_machine_run(state->machine, budget, &result);
     if (status != LIB_STATUS_INTERNAL_ERROR ||
-        result.reason != CORE_MACHINE_STOP_FAULT ||
-        core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
+        result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+        x86_core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
             LIB_STATUS_OK) return 0;
-    return core_machine_debug_capture_cpu_snapshot(state->machine,
+    return x86_core_machine_debug_capture_cpu_snapshot(state->machine,
         X86_CORE_CPU_SNAPSHOT_CURRENT, out_cpu) == LIB_STATUS_OK;
 }
 
@@ -132,17 +131,17 @@ static lib_i32 movx_prepare_protected_limit(movx_machine *state)
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    const core_machine_run_budget budget = {10u, 0u};
-    core_machine_run_result result;
+    const x86_core_machine_run_budget budget = {10u, 0u};
+    x86_core_machine_run_result result;
 
     return movx_prepare(X86_CORE_CPU_PROFILE_80386, LIB_NULL, state) &&
-        core_machine_memory_write(state->machine, 0x0100u, gdt_pointer,
+        x86_core_machine_memory_write(state->machine, 0x0100u, gdt_pointer,
             sizeof(gdt_pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) ==
-            LIB_STATUS_OK && core_machine_memory_write(state->machine, 0u,
+        x86_core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) ==
+            LIB_STATUS_OK && x86_core_machine_memory_write(state->machine, 0u,
             bootstrap, sizeof(bootstrap)) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, budget, &result) == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
+        x86_core_machine_run(state->machine, budget, &result) == LIB_STATUS_OK &&
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
 }
 
 static lib_i32 movx_test_read_boundaries(void)
@@ -182,17 +181,16 @@ static lib_i32 movx_test_read_boundaries(void)
                 lib_memory_copy(form_code, code, sizeof(code));
                 form_code[changed_byte] = opcode;
                 if (!failed) {
-                    failed |= core_machine_debug_patch_registers(state.machine,
+                    failed |= x86_core_machine_debug_patch_registers(state.machine,
                         &registers) != LIB_STATUS_OK ||
                         !movx_run(&state, form_code, sizeof(form_code),
                         &after, &diagnostic) || !diagnostic.first_fault.valid ||
-                        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                            VCPUINS_EXCEPT_CE) ||
+                        !(((diagnostic.first_fault.exception_mask) & (VCPUINS_EXCEPT_CE)) != 0u) ||
                         provider.reads != 0u ||
                         after.ecx != 0xaabbccddu || after.eflags != flags ||
                         after.eip != 0u;
                 }
-                core_machine_destroy(state.machine);
+                x86_core_machine_destroy(state.machine);
                 if (failed) return 0;
             }
         }
@@ -200,25 +198,25 @@ static lib_i32 movx_test_read_boundaries(void)
 
     {
         static const lib_u8 limit_code[] = {0x0fu,0xbfu,0x0eu,0x10u,0x00u};
-        const core_machine_run_budget budget = {1u, 0u};
+        const x86_core_machine_run_budget budget = {1u, 0u};
         movx_machine state;
         x86_core_cpu_debug_cpu_snapshot after;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         lib_i32 failed = !movx_prepare_protected_limit(&state);
 
         if (!failed) {
-            failed |= core_machine_debug_patch_registers(state.machine,
+            failed |= x86_core_machine_debug_patch_registers(state.machine,
                 &registers) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x2000u,
+                x86_core_machine_memory_write(state.machine, 0x2000u,
                     limit_code, sizeof(limit_code)) != LIB_STATUS_OK ||
-                !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(state.machine,
                     budget, &result), &result) ||
-                core_machine_debug_capture_cpu_snapshot(state.machine,
+                x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 after.ecx != 0xaabbccddu || after.eflags != flags ||
                 after.eip != 0u;
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed) return 0;
     }
     return 1;

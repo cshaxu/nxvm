@@ -2,8 +2,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 #include "test/core/setup/session_ini.h"
@@ -12,9 +12,9 @@
 
 lib_i32 main(lib_i32 argc, char **argv)
 {
-    const core_machine_run_budget budget = {1u, 0u};
+    const x86_core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_state cpu_state = {0};
     vm_machine *session = LIB_NULL;
     lib_u16 int13[2] = {0};
@@ -37,9 +37,9 @@ lib_i32 main(lib_i32 argc, char **argv)
     for (instruction = 0u; instruction < VM_WINDOWS31_INT13_TRACE_BUDGET; ++instruction) {
         lib_i32 returning = 0;
 
-        if (core_machine_get_cpu_state(session->core_machine, &cpu_state) !=
+        if (x86_core_machine_get_cpu_state(session->x86_core_machine, &cpu_state) !=
                 LIB_STATUS_OK) break;
-        if (!int13_ready && core_machine_memory_read(session->core_machine,
+        if (!int13_ready && x86_core_machine_memory_read(session->x86_core_machine,
                 0x004cu, int13, sizeof(int13)) == LIB_STATUS_OK &&
             int13[0] != 0u && int13[1] != 0u) {
             int13_linear = (lib_u32)int13[1] * 16u + int13[0];
@@ -49,9 +49,9 @@ lib_i32 main(lib_i32 argc, char **argv)
             int13_linear) {
             lib_u32 eax, edx;
 
-            if (core_machine_debug_read_register(session->core_machine,
+            if (x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
-                core_machine_debug_read_register(session->core_machine,
+                x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EDX, &edx) != LIB_STATUS_OK) break;
             active_ah = (lib_u8)(eax >> 8u);
             active_dl = (lib_u8)edx;
@@ -59,18 +59,18 @@ lib_i32 main(lib_i32 argc, char **argv)
             if (active) ++hdd_calls;
         }
         if (active) {
-            if (core_machine_memory_read(session->core_machine,
+            if (x86_core_machine_memory_read(session->x86_core_machine,
                     cpu_state.cs_base + cpu_state.eip, &opcode,
                     sizeof(opcode)) != LIB_STATUS_OK) {
                 break;
             }
             returning = opcode == 0xcfu;
         }
-        if (core_machine_run(session->core_machine, budget, &result) !=
-                LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) !=
+                LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             break;
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
@@ -79,13 +79,13 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (active && returning) {
             lib_u32 eax, ecx, edx, eflags;
 
-            if (core_machine_debug_read_register(session->core_machine,
+            if (x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
-                core_machine_debug_read_register(session->core_machine,
+                x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_ECX, &ecx) != LIB_STATUS_OK ||
-                core_machine_debug_read_register(session->core_machine,
+                x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EDX, &edx) != LIB_STATUS_OK ||
-                core_machine_debug_read_register(session->core_machine,
+                x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EFLAGS, &eflags) != LIB_STATUS_OK) break;
             ++hdd_returns;
             printf("NXVM:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
@@ -110,7 +110,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (passed) {
         printf("NXVM:INT13:OK reads=%u\n", read_count);
     } else {
-        (void)core_machine_get_cpu_state(session->core_machine, &cpu_state);
+        (void)x86_core_machine_get_cpu_state(session->x86_core_machine, &cpu_state);
         fprintf(stderr,
             "NXVM:INT13:FAIL ready=%d calls=%u returns=%u geometry=%d reads=%u\n",
             int13_ready, hdd_calls, hdd_returns, geometry_ok, read_count);

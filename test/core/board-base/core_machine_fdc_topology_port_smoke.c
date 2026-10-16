@@ -48,7 +48,7 @@ static const core_machine_media_provider core_machine_fdc_topology_provider = {
     .read_bytes = core_machine_fdc_topology_read,
 };
 
-static void core_machine_fdc_topology_command(core_machine_fdc *fdc, core_machine *port,
+static void core_machine_fdc_topology_command(core_machine_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -60,7 +60,7 @@ static void core_machine_fdc_topology_command(core_machine_fdc *fdc, core_machin
     lib_test_assert(test_fdc_finish_command_wait(fdc));
 }
 
-static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, core_machine *port,
+static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, x86_core_machine *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -72,7 +72,7 @@ static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, core_mach
     return (test_fdc_port_read(port, 0x03f4u) & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
-static lib_i32 core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, core_machine *port,
+static lib_i32 core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, x86_core_machine *port,
     lib_u8 unit, lib_u8 expected, lib_u8 *result)
 {
     const lib_u8 command[] = {0x66u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
@@ -117,12 +117,12 @@ int main(void)
     core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_fdc *fdc = LIB_NULL;
     lib_u8 diagnostic_phase = 0u;
     lib_u8 reset_drive;
-    core_machine *port = LIB_NULL;
+    x86_core_machine *port = LIB_NULL;
     lib_u8 result[7] = {0};
     lib_i32 failed = 0;
 
@@ -148,8 +148,8 @@ int main(void)
             topology.dma_request = dma_request;
             topology.config = fdc_config;
             if (core_machine_configure_fdc(board, &topology) != LIB_STATUS_OK ||
-                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-                core_machine_reset(machine) != LIB_STATUS_OK) {
+                x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK) {
                 failed |= 0x04;
             } else {
                 failed |= fdc->data.ccr != VFDC_CCR_RATE_250;
@@ -232,7 +232,7 @@ int main(void)
         if (x86_fdc_capture(fdc->chip, &observation) == LIB_STATUS_OK)
             diagnostic_phase = observation.phase;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "FDC-TOPOLOGY:FAIL:%x:reads=%u,%u:phase=%u\n",

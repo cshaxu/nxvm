@@ -1,29 +1,29 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core_machine_board_fixture.h"
 
-_Static_assert(CORE_MACHINE_TRACE_DMA_ADVANCE == 8 &&
+_Static_assert(X86_CORE_MACHINE_TRACE_DMA_ADVANCE == 8 &&
     CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE == 9 &&
     CORE_MACHINE_BOARD_TRACE_PIC_REFRESH == 10 &&
     CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE == 11 &&
     CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE == 12 &&
     CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE == 13 &&
-    CORE_MACHINE_TRACE_RUN_BOUNDARY == 14 &&
+    X86_CORE_MACHINE_TRACE_RUN_BOUNDARY == 14 &&
     CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE == 17 &&
     CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE == 18 &&
-    CORE_MACHINE_TRACE_TRANSACTION_BEGIN == 19 &&
-    CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_OVERLAP_DECLARE == 28,
+    X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN == 19 &&
+    X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_OVERLAP_DECLARE == 28,
     "split trace owners must preserve diagnostic event identities");
 
 typedef struct arbitration_trace_probe {
-    core_machine_trace_event events[64];
+    x86_core_machine_trace_event events[64];
     lib_u32 count;
 } arbitration_trace_probe;
 
 static void arbitration_trace(void *opaque,
-    const core_machine_trace_event *event)
+    const x86_core_machine_trace_event *event)
 {
     arbitration_trace_probe *probe = (arbitration_trace_probe *)opaque;
 
@@ -35,7 +35,7 @@ static void arbitration_trace(void *opaque,
 static lib_i32 arbitration_expect_chain(const arbitration_trace_probe *probe)
 {
     static const lib_u32 expected[] = {
-        CORE_MACHINE_TRACE_DMA_ADVANCE,
+        X86_CORE_MACHINE_TRACE_DMA_ADVANCE,
         CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
         CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
         CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE,
@@ -48,9 +48,9 @@ static lib_i32 arbitration_expect_chain(const arbitration_trace_probe *probe)
     lib_u32 groups = 0u;
 
     for (index = 0u; index < probe->count; ++index) {
-        const core_machine_trace_event *event = &probe->events[index];
+        const x86_core_machine_trace_event *event = &probe->events[index];
 
-        if (event->type == CORE_MACHINE_TRACE_DMA_ADVANCE ||
+        if (event->type == X86_CORE_MACHINE_TRACE_DMA_ADVANCE ||
             event->type == CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE ||
             event->type == CORE_MACHINE_BOARD_TRACE_PIC_REFRESH ||
             event->type == CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE ||
@@ -74,20 +74,20 @@ static lib_i32 arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
     lib_u32 index;
 
     for (index = 0u; index < probe->count; ++index) {
-        if (probe->events[index].type == CORE_MACHINE_TRACE_CPU_RETIRE) return 1;
+        if (probe->events[index].type == X86_CORE_MACHINE_TRACE_CPU_RETIRE) return 1;
     }
     return 0;
 }
 
 lib_i32 main(void)
 {
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
-    core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
-    core_machine_timeline_observation observation;
+    x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
+    x86_core_machine_timeline_observation observation;
     arbitration_trace_probe probe = { { { 0 } }, 0u };
-    core_machine_trace_provider trace = { arbitration_trace, &probe };
+    x86_core_machine_trace_provider trace = { arbitration_trace, &probe };
     const lib_u8 nop = 0x90u;
     lib_i32 failed = 0;
 
@@ -95,28 +95,28 @@ lib_i32 main(void)
     failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed = failed || test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed = failed || core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
-    failed = failed || core_machine_reset(machine) != LIB_STATUS_OK;
-    failed = failed || core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
+    failed = failed || x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed = failed || x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed = failed || x86_core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
-    failed = failed || core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
-    failed = failed || core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
-    failed = failed || result.reason != CORE_MACHINE_STOP_BUDGET ||
+    failed = failed || x86_core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    failed = failed || x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
+    failed = failed || result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         result.elapsed_ticks != 3u;
-    failed = failed || core_machine_get_timeline_observation(machine, &observation) !=
+    failed = failed || x86_core_machine_get_timeline_observation(machine, &observation) !=
         LIB_STATUS_OK;
     failed = failed || observation.now != 3u || observation.pending_events != 0u ||
         observation.next_sequence != 0u;
     failed = failed || probe.count < 5u || !arbitration_has_cpu_retire(&probe) ||
         arbitration_expect_chain(&probe) ||
-        probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY;
-    failed = failed || core_machine_reset(machine) != LIB_STATUS_OK;
-    failed = failed || core_machine_get_timeline_observation(machine, &observation) !=
+        probe.events[probe.count - 1u].type != X86_CORE_MACHINE_TRACE_RUN_BOUNDARY;
+    failed = failed || x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed = failed || x86_core_machine_get_timeline_observation(machine, &observation) !=
         LIB_STATUS_OK;
     failed = failed || observation.now != 0u || observation.pending_events != 0u ||
         observation.next_sequence != 0u;
 
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("ARBITRATION:OK\n");
     return 0;

@@ -3,19 +3,19 @@
 #include "lib/types/types_interface.h"
 
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 typedef struct vm_machine vm_machine;
 
 typedef struct vm_machine_fault_outcome {
     lib_bool valid;
-    core_machine_run_result run;
+    x86_core_machine_run_result run;
     x86_core_cpu_diagnostic diagnostic;
 } vm_machine_fault_outcome;
 
 void vm_machine_fault_clear(vm_machine *session);
 void vm_machine_fault_capture(vm_machine *session,
-    const core_machine_run_result *run);
+    const x86_core_machine_run_result *run);
 lib_i32 vm_machine_fault_get(const vm_machine *session,
     vm_machine_fault_outcome *out_outcome);
 

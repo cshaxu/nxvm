@@ -11,7 +11,7 @@ extern "C" {
 #include "core/chips/keyboard/keyboard_interface.h"
 #include "core/chips/kbc8042/kbc8042_interface.h"
 
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 #define CORE_MACHINE_DEVICE_KBC "Intel 8042"
 
@@ -46,7 +46,7 @@ struct t_kbc {
     t_kbc_connect connect;
 };
 
-lib_status core_machine_kbc_initialize(t_kbc *controller, core_machine *machine);
+lib_status core_machine_kbc_initialize(t_kbc *controller, x86_core_machine *machine);
 void core_machine_kbc_set_input_port(t_kbc *controller, lib_u8 value);
 void core_machine_kbc_set_reset_output_port(t_kbc *controller,
     lib_u8 value);

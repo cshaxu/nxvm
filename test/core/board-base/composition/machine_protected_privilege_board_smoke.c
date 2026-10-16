@@ -1,9 +1,8 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
 #include "x86-core/cpu/cpu_interface.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
 #include "../core_machine_board_fixture.h"
@@ -18,7 +17,7 @@
 #define USER_DATA_BASE 0x5000u
 
 typedef struct privilege_machine {
-    core_machine *machine;
+    x86_core_machine *machine;
 } privilege_machine;
 
 typedef enum privilege_negative_case {
@@ -50,20 +49,20 @@ static lib_i32 privilege_prepare(privilege_machine *state,
     lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         state->machine == LIB_NULL ||
-        core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
-        core_machine_reset(state->machine) != LIB_STATUS_OK ||
-        core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
-        core_machine_destroy(state->machine);
+        x86_core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(state->machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
+        x86_core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
     }
     return 1;
 }
 
-static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
+static lib_i32 write_bytes(x86_core_machine *machine, lib_u32 address,
     const lib_u8 *bytes, lib_size count)
 {
-    return core_machine_memory_write(machine, address, bytes, count) ==
+    return x86_core_machine_memory_write(machine, address, bytes, count) ==
         LIB_STATUS_OK;
 }
 
@@ -71,17 +70,17 @@ static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
  * handler's terminal instruction.  Continue exactly once when the first run
  * stopped at that delivery, preserving the former fixture's explicit test
  * contract without restoring its private macro alias. */
-static lib_status privilege_run(core_machine *machine,
-    core_machine_run_budget budget, core_machine_run_result *out_result)
+static lib_status privilege_run(x86_core_machine *machine,
+    x86_core_machine_run_budget budget, x86_core_machine_run_result *out_result)
 {
     x86_core_cpu_diagnostic diagnostic = {0};
-    lib_status status = core_machine_run(machine, budget, out_result);
+    lib_status status = x86_core_machine_run(machine, budget, out_result);
 
     if (status == LIB_STATUS_OK && out_result != LIB_NULL &&
-        out_result->reason == CORE_MACHINE_STOP_BUDGET) {
-        status = core_machine_get_cpu_diagnostic(machine, &diagnostic);
+        out_result->reason == X86_CORE_MACHINE_STOP_BUDGET) {
+        status = x86_core_machine_get_cpu_diagnostic(machine, &diagnostic);
         if (status == LIB_STATUS_OK && diagnostic.last_delivered_exception.valid)
-            status = core_machine_run(machine, budget, out_result);
+            status = x86_core_machine_run(machine, budget, out_result);
     }
     return status;
 }
@@ -205,22 +204,21 @@ static lib_i32 privilege_test_delivery(x86_core_cpu_profile profile,
     privilege_negative_case negative_case, lib_u32 exception_mask, lib_u16 expected_code)
 {
     privilege_machine state = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 marker = 0u;
-    const core_machine_run_budget budget = { 1024u, 0u };
+    const x86_core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = 1;
 
     if (!privilege_prepare(&state, profile) || !privilege_install(&state, 1, negative_case) ||
         privilege_run(state.machine, budget, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        core_machine_memory_read(state.machine, USER_DATA_BASE + 4u,
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_memory_read(state.machine, USER_DATA_BASE + 4u,
             &marker, sizeof(marker)) != LIB_STATUS_OK || marker != 0x3333u ||
-        core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
         diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
         diagnostic.delivered_exception_count != 1u ||
-        !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
-            exception_mask) ||
+        !(((diagnostic.last_delivered_exception.exception_mask) & (exception_mask)) != 0u) ||
         diagnostic.last_delivered_exception.exception_code != expected_code) goto done;
     failed = 0;
 done:
@@ -232,24 +230,24 @@ done:
             diagnostic.last_delivered_exception.exception_code,
             diagnostic.delivered_exception_count, marker);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
 static lib_i32 privilege_test_stack_atomicity(void)
 {
     privilege_machine state = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_status run_status = LIB_STATUS_INVALID_STATE;
     x86_core_cpu_debug_cpu_snapshot cpu = {0};
-    const core_machine_run_budget budget = { 1024u, 0u };
+    const x86_core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = 1;
 
     if (!privilege_prepare(&state, X86_CORE_CPU_PROFILE_80286) ||
         !privilege_install(&state, 0, PRIVILEGE_NEGATIVE_STACK_ATOMICITY)) goto done;
     run_status = privilege_run(state.machine, budget, &result);
     if (!test_core_machine_fixture_shutdown_wait(run_status, &result) ||
-        core_machine_debug_capture_cpu_snapshot(state.machine,
+        x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
         cpu.cs.selector != 0x001bu || cpu.cs.dpl != 3u ||
         cpu.ss.selector != 0x0023u || cpu.esp != 0x0000a000u) goto done;
@@ -261,30 +259,30 @@ done:
             (unsigned)run_status, (unsigned)result.reason, cpu.cs.selector,
             cpu.cs.dpl, cpu.ss.selector, cpu.esp);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
 int main(void)
 {
     privilege_machine state = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot cpu = {0};
     lib_u16 markers[2] = {0u, 0u};
-    const core_machine_run_budget budget = { 1024u, 0u };
+    const x86_core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = 1;
 
     if (!privilege_prepare(&state, X86_CORE_CPU_PROFILE_80286) ||
         !privilege_install(&state, 0, PRIVILEGE_NEGATIVE_NONE) ||
         privilege_run(state.machine, budget, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        core_machine_memory_read(state.machine, USER_DATA_BASE, markers,
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_memory_read(state.machine, USER_DATA_BASE, markers,
             sizeof(markers)) != LIB_STATUS_OK || markers[0] != 0x1111u || markers[1] != 0x2222u ||
-        core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
         diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid ||
         diagnostic.delivered_exception_count != 0u ||
-        core_machine_debug_capture_cpu_snapshot(state.machine,
+        x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
     failed = 0;
 done:
@@ -295,7 +293,7 @@ done:
             diagnostic.first_fault.valid, diagnostic.last_delivered_exception.valid,
             diagnostic.delivered_exception_count, cpu.cs.selector, cpu.esp);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     if (failed ||
         privilege_test_delivery(X86_CORE_CPU_PROFILE_80286,
             PRIVILEGE_NEGATIVE_NONE, VCPUINS_EXCEPT_GP, 0x0192u) ||

@@ -49,7 +49,7 @@ static lib_i32 s47_outer_success(x86_core_cpu_profile profile,
 {
     static const lib_u16 parameters[] = {0x1234u,0xabcdu};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u16 frame[6u] = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile) ||
@@ -59,9 +59,9 @@ static lib_i32 s47_outer_success(x86_core_cpu_profile profile,
         failed = !s47_install_call_gate(&state, 3u, 2u) ||
             !s47_write_call(&state, S47_GATE_SELECTOR) ||
             !test_protected_16_write(&state, 0x7000u, parameters,
-                sizeof(parameters)) || core_machine_run(state.machine,
-                (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                sizeof(parameters)) || x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.cs.selector != 0x0008u || snapshot.cs.dpl != 0u ||
             snapshot.ss.selector != 0x0010u || snapshot.ss.dpl != 0u ||
@@ -82,7 +82,7 @@ static lib_i32 s47_same_cpl(void)
     const lib_u8 call[] = {0x9au,(lib_u8)S47_TARGET,
         (lib_u8)(S47_TARGET >> 8u),0x30u,0u};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u16 frame[2u] = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
@@ -91,9 +91,9 @@ static lib_i32 s47_same_cpl(void)
     if (!failed) {
         failed = !s47_install_call_gate(&state, 0u, 2u) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
-                call, sizeof(call)) || core_machine_run(state.machine,
-                (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                call, sizeof(call)) || x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.cs.selector != 0x0008u || snapshot.ss.selector != 0x0010u ||
             snapshot.eip != S47_TARGET + 1u || snapshot.esp !=
@@ -109,7 +109,7 @@ static lib_i32 s47_same_cpl(void)
 static lib_i32 s47_dpl_rejection(void)
 {
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
@@ -120,10 +120,10 @@ static lib_i32 s47_dpl_rejection(void)
         failed = !s47_install_call_gate(&state, 0u, 2u) ||
             !s47_write_call(&state, S47_GATE_SELECTOR) ||
             !s47_install_interrupt_gate(&state, 0x0du, S47_GP_HANDLER) ||
-            core_machine_run(state.machine, (core_machine_run_budget){32u,0u},
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){32u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                X86_CORE_MACHINE_STOP_BUDGET ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
             !test_protected_16_snapshot(&state, &snapshot) ||

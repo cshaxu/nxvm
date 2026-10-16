@@ -6,8 +6,8 @@
 
 #include <windows.h>
 
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "test/core/setup/session_ini.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
@@ -89,9 +89,9 @@ static lib_u32 vm_windows31_hdd_admission_probe_lba(const lib_u8 *entry)
 
 lib_i32 main(lib_i32 argc, char **argv)
 {
-    const core_machine_run_budget budget = {1u, 0u};
+    const x86_core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_state cpu = {0};
     vm_machine *session = LIB_NULL;
     lib_u8 host_mbr[512] = {0};
@@ -133,14 +133,14 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (lba == 0u || lba > (MAXDWORD / 512u) || (lib_size)lba * 512u +
             sizeof(host_vbr) > hdd_overlay_count) goto done;
     lib_memory_copy(host_vbr, hdd_overlay + (lib_size)lba * 512u, sizeof(host_vbr));
-    if (core_machine_debug_read_memory(session->core_machine, 0x004cu, int13_vector,
+    if (x86_core_machine_debug_read_memory(session->x86_core_machine, 0x004cu, int13_vector,
             sizeof(int13_vector)) != LIB_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_WINDOWS31_HDD_ADMISSION_PROBE_BUDGET; ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT || core_machine_debug_read_memory(
-                session->core_machine, VM_WINDOWS31_HDD_ADMISSION_PROBE_RESULT, values,
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT || x86_core_machine_debug_read_memory(
+                session->x86_core_machine, VM_WINDOWS31_HDD_ADMISSION_PROBE_RESULT, values,
                 sizeof(values)) != LIB_STATUS_OK) goto done;
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
@@ -155,9 +155,9 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
         if (values[8] == 0xa55au) break;
     }
-    if (values[8] != 0xa55au || core_machine_debug_read_memory(session->core_machine,
+    if (values[8] != 0xa55au || x86_core_machine_debug_read_memory(session->x86_core_machine,
             VM_WINDOWS31_HDD_ADMISSION_PROBE_MBR, guest_mbr, sizeof(guest_mbr)) != LIB_STATUS_OK ||
-        core_machine_debug_read_memory(session->core_machine, VM_WINDOWS31_HDD_ADMISSION_PROBE_VBR,
+        x86_core_machine_debug_read_memory(session->x86_core_machine, VM_WINDOWS31_HDD_ADMISSION_PROBE_VBR,
             guest_vbr, sizeof(guest_vbr)) != LIB_STATUS_OK) goto done;
     sectors_per_track = values[1] & 0x3fu;
     heads = (values[2] >> 8u) + 1u;
@@ -179,7 +179,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 sizeof(guest_vbr)) == 0;
 
 done:
-    if (session != LIB_NULL) (void)core_machine_get_cpu_state(session->core_machine,
+    if (session != LIB_NULL) (void)x86_core_machine_get_cpu_state(session->x86_core_machine,
         &cpu);
     if (passed) {
         printf("NXVM:HDD-ADMISSION:OK lba=%u chs=%u/%u/%u spt=%u heads=%u "

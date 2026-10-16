@@ -5,7 +5,7 @@
 
 #include "core/board-base/pic_bus.h"
 #include "core/board-base/pit_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 static lib_bool pic_lifecycle_fail_allocation;
 
@@ -23,26 +23,26 @@ static void *pic_lifecycle_allocate_zero(lib_size count, lib_size bytes)
 typedef struct pic_lifecycle_fixture {
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
-    core_machine *machine;
+    x86_core_machine *machine;
 } pic_lifecycle_fixture;
 
 static void pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
     lib_u8 icw1, x86_pit *pit)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
     *fixture = (pic_lifecycle_fixture){0};
-    if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
+    if (x86_core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
         core_machine_pic_initialize(&fixture->master, &fixture->slave, fixture->machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
         (pit != LIB_NULL && core_machine_pit_install_ports(fixture->machine, pit,
             0x0040u) != LIB_STATUS_OK) ||
-        core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
-        core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
+        x86_core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
         core_machine_pic_finalize(fixture->master, fixture->slave);
-        core_machine_destroy(fixture->machine);
+        x86_core_machine_destroy(fixture->machine);
         lib_test_assert(LIB_FALSE);
     }
     core_machine_pic_reset(fixture->master, fixture->slave);
@@ -59,7 +59,7 @@ static void pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
 static void pic_lifecycle_finalize(pic_lifecycle_fixture *fixture)
 {
     core_machine_pic_finalize(fixture->master, fixture->slave);
-    core_machine_destroy(fixture->machine);
+    x86_core_machine_destroy(fixture->machine);
 }
 
 static void pic_lifecycle_eoi(pic_lifecycle_fixture *fixture,
@@ -201,18 +201,18 @@ static lib_i32 pic_lifecycle_test_edge_empty_and_bind(void)
 
 static lib_i32 pic_lifecycle_test_allocation_rollback(void)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_pic_bus *master = LIB_NULL;
     core_machine_pic_bus *slave = LIB_NULL;
     core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_pic_irq_source *original;
     lib_i32 failed = 0;
 
-    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
     pic_lifecycle_fail_allocation = LIB_TRUE;
     failed |= core_machine_pic_initialize(&master, &slave, machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_NO_MEMORY;
@@ -220,7 +220,7 @@ static lib_i32 pic_lifecycle_test_allocation_rollback(void)
     pic_lifecycle_fail_allocation = LIB_FALSE;
     if (failed || core_machine_pic_initialize(&master, &slave, machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 1;
     }
     pic_lifecycle_fail_allocation = LIB_TRUE;
@@ -238,7 +238,7 @@ static lib_i32 pic_lifecycle_test_allocation_rollback(void)
     failed |= core_machine_pic_irq_source_bind(&source, master, slave, 2u) !=
         LIB_STATUS_INVALID_ARGUMENT || source != original;
     core_machine_pic_finalize(master, slave);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -253,7 +253,7 @@ static lib_status pic_lifecycle_existing_port(void *owner, lib_u16 port,
 
 static lib_i32 pic_lifecycle_test_route_rollback(void)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
@@ -262,31 +262,31 @@ static lib_i32 pic_lifecycle_test_route_rollback(void)
     };
     lib_i32 failed = 0;
     for (lib_size index = 0u; index < sizeof(topologies) / sizeof(topologies[0]); ++index) {
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         core_machine_pic_bus *master = LIB_NULL;
         core_machine_pic_bus *slave = LIB_NULL;
         lib_u8 existing_value = 0x5au;
         lib_u32 value = 0u;
         const lib_u16 collision = topologies[index] == CORE_MACHINE_PIC_TOPOLOGY_SINGLE ?
             0x21u : 0xa1u;
-        const core_machine_port_route existing = {
+        const x86_core_machine_port_route existing = {
             .address = collision, .read = pic_lifecycle_existing_port,
             .owner = &existing_value
         };
-        if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
-        failed |= core_machine_install_port_routes(machine, &existing, 1u) != LIB_STATUS_OK;
+        if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+        failed |= x86_core_machine_install_port_routes(machine, &existing, 1u) != LIB_STATUS_OK;
         failed |= core_machine_pic_initialize(&master, &slave, machine,
             topologies[index]) != LIB_STATUS_INVALID_STATE;
         failed |= master != LIB_NULL || slave != LIB_NULL;
-        failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK;
-        failed |= core_machine_bus_read(machine, collision, &value) != LIB_STATUS_OK ||
+        failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK;
+        failed |= x86_core_machine_bus_read(machine, collision, &value) != LIB_STATUS_OK ||
             value != existing_value;
-        failed |= core_machine_bus_read(machine, 0x20u, &value) != LIB_STATUS_UNSUPPORTED;
-        failed |= core_machine_bus_read(machine, 0xa0u, &value) != LIB_STATUS_UNSUPPORTED;
+        failed |= x86_core_machine_bus_read(machine, 0x20u, &value) != LIB_STATUS_UNSUPPORTED;
+        failed |= x86_core_machine_bus_read(machine, 0xa0u, &value) != LIB_STATUS_UNSUPPORTED;
         if (collision != 0x21u)
-            failed |= core_machine_bus_read(machine, 0x21u, &value) != LIB_STATUS_UNSUPPORTED;
-        core_machine_destroy(machine);
+            failed |= x86_core_machine_bus_read(machine, 0x21u, &value) != LIB_STATUS_UNSUPPORTED;
+        x86_core_machine_destroy(machine);
     }
     return failed;
 }

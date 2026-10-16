@@ -57,25 +57,25 @@ static lib_status pit_write_3(void *owner, lib_u16 address, lib_u32 value)
     return x86_pit_write_register(owner, 3u, (lib_u8)value);
 }
 
-lib_status core_machine_pit_install_ports(core_machine *machine,
+lib_status core_machine_pit_install_ports(x86_core_machine *machine,
     x86_pit *device, lib_u16 base_port)
 {
-    const core_machine_port_read_provider readers[4] = {
+    const x86_core_machine_port_read_provider readers[4] = {
         pit_read_0, pit_read_1, pit_read_2, LIB_NULL
     };
-    const core_machine_port_write_provider writers[4] = {
+    const x86_core_machine_port_write_provider writers[4] = {
         pit_write_0, pit_write_1, pit_write_2, pit_write_3
     };
-    core_machine_port_route routes[4];
+    x86_core_machine_port_route routes[4];
     lib_u8 index;
 
     if (machine == LIB_NULL || device == LIB_NULL || base_port > 0xfffcu)
         return LIB_STATUS_INVALID_ARGUMENT;
     for (index = 0u; index < 4u; ++index) {
-        routes[index] = (core_machine_port_route) {
+        routes[index] = (x86_core_machine_port_route) {
             (lib_u16)(base_port + index), readers[index], writers[index],
             device, LIB_FALSE, 0u
         };
     }
-    return core_machine_install_port_routes(machine, routes, 4u);
+    return x86_core_machine_install_port_routes(machine, routes, 4u);
 }

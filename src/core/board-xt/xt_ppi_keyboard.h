@@ -4,7 +4,7 @@
 
 
 #include "core/board-xt/xt_ppi_keyboard_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 #include "core/chips/ppi8255/ppi8255_interface.h"
 
 
@@ -38,7 +38,7 @@ lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
     const core_machine_xt_ppi_keyboard_config *config);
 lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
-    const core_machine_xt_ppi_keyboard_config *config, core_machine *machine);
+    const core_machine_xt_ppi_keyboard_config *config, x86_core_machine *machine);
 void core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_xt_ppi_nmi_request request, void *owner);
 void core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,

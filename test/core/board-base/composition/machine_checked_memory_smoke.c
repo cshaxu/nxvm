@@ -1,6 +1,6 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "../executor_fixture.h"
 #include "../core_machine_board_fixture.h"
 
@@ -38,13 +38,13 @@ static lib_status checked_memory_write(void *owner, lib_u32 physical,
 }
 
 static lib_status checked_memory_query(void *owner, lib_u32 physical,
-    lib_uptr bytes, core_machine_memory_access access)
+    lib_uptr bytes, x86_core_machine_memory_access access)
 {
     checked_memory_provider *provider = (checked_memory_provider *)owner;
 
     if (provider == LIB_NULL || physical != 0x00180000u || bytes != 1u ||
-        (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
-         access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
+        (access != X86_CORE_MACHINE_MEMORY_ACCESS_READ &&
+         access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
         return LIB_STATUS_UNSUPPORTED;
     }
     ++provider->query_count;
@@ -58,9 +58,9 @@ static lib_i32 expect_status(lib_status actual, lib_status expected)
 
 lib_i32 main(void)
 {
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     checked_memory_provider provider = { 0u, 0u, 0u, 0x5au };
-    core_machine_memory_route route;
+    x86_core_machine_memory_route route;
     lib_u8 value = 0u;
     lib_i32 failed = 0;
 
@@ -68,46 +68,46 @@ lib_i32 main(void)
         (2u * 1024u * 1024u), &machine), LIB_STATUS_OK);
     if (failed) return 1;
 
-    failed |= expect_status(core_machine_memory_query(machine, 0u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INVALID_STATE);
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INVALID_STATE);
     failed |= expect_status(test_core_machine_fixture_register_memory_device_provider(machine,
         0x00180000u, 1u, checked_memory_read, checked_memory_write,
         checked_memory_query, &provider), LIB_STATUS_OK);
-    failed |= expect_status(core_machine_freeze_execution_providers(machine),
+    failed |= expect_status(x86_core_machine_freeze_execution_providers(machine),
         LIB_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), LIB_STATUS_OK);
-    failed |= expect_status(core_machine_set_address_clear_mask(machine, 0u), LIB_STATUS_OK);
+    failed |= expect_status(x86_core_machine_reset(machine), LIB_STATUS_OK);
+    failed |= expect_status(x86_core_machine_set_address_clear_mask(machine, 0u), LIB_STATUS_OK);
 
-    failed |= expect_status(core_machine_memory_query(machine, 0x20u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_OK);
-    failed |= route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
-    failed |= expect_status(core_machine_memory_query(machine, 0x00180000u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_OK);
-    failed |= route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0x20u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_OK);
+    failed |= route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0x00180000u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_OK);
+    failed |= route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
     failed |= provider.query_count != 1u || provider.read_count != 0u ||
         provider.write_count != 0u;
-    failed |= expect_status(core_machine_memory_query(machine, 0x00180000u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_WRITE, &route), LIB_STATUS_OK);
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0x00180000u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route), LIB_STATUS_OK);
     failed |= provider.query_count != 2u || provider.read_count != 0u ||
         provider.write_count != 0u;
-    failed |= expect_status(core_machine_memory_read(machine, 0x00180000u,
+    failed |= expect_status(x86_core_machine_memory_read(machine, 0x00180000u,
         &value, 1u), LIB_STATUS_OK);
     failed |= value != 0x5au || provider.read_count != 1u;
     value = 0x3cu;
-    failed |= expect_status(core_machine_memory_write(machine, 0x00180000u,
+    failed |= expect_status(x86_core_machine_memory_write(machine, 0x00180000u,
         &value, 1u), LIB_STATUS_OK);
     failed |= provider.value != 0x3cu || provider.write_count != 1u;
 
-    failed |= expect_status(core_machine_memory_query(machine, 0u, 0u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INVALID_ARGUMENT);
-    failed |= expect_status(core_machine_memory_query(machine, 0u, 1u,
-        (core_machine_memory_access)99, &route), LIB_STATUS_INVALID_ARGUMENT);
-    failed |= expect_status(core_machine_memory_query(machine, 0xffffffffu, 2u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INTERNAL_ERROR);
-    failed |= expect_status(core_machine_memory_query(machine, 0x001fffffu, 2u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INTERNAL_ERROR);
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0u, 0u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INVALID_ARGUMENT);
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0u, 1u,
+        (x86_core_machine_memory_access)99, &route), LIB_STATUS_INVALID_ARGUMENT);
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0xffffffffu, 2u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INTERNAL_ERROR);
+    failed |= expect_status(x86_core_machine_memory_query(machine, 0x001fffffu, 2u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_INTERNAL_ERROR);
 
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("%s\n", "CHECKED-MEMORY:OK");
     return 0;

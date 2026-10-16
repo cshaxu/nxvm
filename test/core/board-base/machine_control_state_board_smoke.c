@@ -3,20 +3,19 @@
 #include "pic_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "../support/exception_fixture.h"
+#include "composition/exception_fixture.h"
 #include "x86-core/cpu/cpu_interface.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
 /* REAL_UD_TERMINAL_IVT_REJECT: vector 6 is deliberately unreadable. */
 
 typedef struct control_board_reset_context {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
 } control_board_reset_context;
 
 static lib_i32 control_board_create(x86_core_cpu_profile profile,
     lib_bool cpu_80386_cr_mov_ignores_mod, control_board_reset_context *context,
-    core_machine **out_machine)
+    x86_core_machine **out_machine)
 {
     const core_machine_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -36,29 +35,29 @@ static lib_i32 control_board_create(x86_core_cpu_profile profile,
     lib_memory_set(context, 0, sizeof(*context));
     return core_machine_create(&config, &context->machine, &context->board) ==
             LIB_STATUS_OK &&
-        test_core_exception_block_vector(context->machine, 6u, context) ==
+        test_board_exception_block_vector(context->machine, 6u, context) ==
             LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(context->machine) == LIB_STATUS_OK &&
-        core_machine_reset(context->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(context->machine, &entry) == LIB_STATUS_OK &&
+        x86_core_machine_freeze_execution_providers(context->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(context->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(context->machine, &entry) == LIB_STATUS_OK &&
         ((*out_machine = context->machine) != LIB_NULL);
 }
 
 static lib_i32 control_board_fault(x86_core_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u32 exception)
 {
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     control_board_reset_context context;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_i32 failed = !control_board_create(profile, LIB_FALSE, &context,
         &machine);
 
     if (!failed)
-        failed = core_machine_memory_write(machine, 0u, code, bytes) !=
-            LIB_STATUS_OK || core_machine_run(machine,
-            (core_machine_run_budget){1u,0u}, &result) !=
-            LIB_STATUS_INTERNAL_ERROR || core_machine_get_cpu_diagnostic(machine,
+        failed = x86_core_machine_memory_write(machine, 0u, code, bytes) !=
+            LIB_STATUS_OK || x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){1u,0u}, &result) !=
+            LIB_STATUS_INTERNAL_ERROR || x86_core_machine_get_cpu_diagnostic(machine,
             &diagnostic) != LIB_STATUS_OK;
     if (!failed)
         failed = !diagnostic.first_fault.valid ||
@@ -67,7 +66,7 @@ static lib_i32 control_board_fault(x86_core_cpu_profile profile,
                     profile >= X86_CORE_CPU_PROFILE_80186 ? VCPUINS_EXCEPT_CE : exception) ||
             (exception == VCPUINS_EXCEPT_UD && profile >= X86_CORE_CPU_PROFILE_80186 &&
                 diagnostic.first_fault.exception_code != 6u * 4u);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -156,43 +155,43 @@ static lib_i32 control_board_irq(void)
                     VCPU_CR0_TS
             }
         };
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         control_board_reset_context context;
         core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u16 frame_ip = 0u;
         lib_i32 failed = !control_board_create(X86_CORE_CPU_PROFILE_80386,
             LIB_FALSE, &context, &machine);
 
         if (!failed)
-            failed = core_machine_memory_write(machine, 0u, codes[operation],
+            failed = x86_core_machine_memory_write(machine, 0u, codes[operation],
                     code_bytes[operation]) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x80u, vector,
-                    sizeof(vector)) != LIB_STATUS_OK || core_machine_memory_write(
+                x86_core_machine_memory_write(machine, 0x80u, vector,
+                    sizeof(vector)) != LIB_STATUS_OK || x86_core_machine_memory_write(
                     machine, 0x100u, &handler, sizeof(handler)) != LIB_STATUS_OK ||
-                core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
+                x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
         if (!failed) {
             test_pic_program_vector(context.board->shared_pic_master, 0x20u);
             test_pic_bind_source(&source, context.board->shared_pic_master,
                 context.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
-            failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
-                &result) != LIB_STATUS_OK || core_machine_debug_capture_cpu_snapshot(
+            failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){2u,0u},
+                &result) != LIB_STATUS_OK || x86_core_machine_debug_capture_cpu_snapshot(
                 machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                core_machine_debug_read_memory(machine, after.ss.base +
+                x86_core_machine_debug_read_memory(machine, after.ss.base +
                 (lib_u16)after.esp, &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK;
         }
         if (!failed)
-            failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            failed = result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 after.eip != 0x0101u || (after.eflags & X86_CORE_CPU_DEBUG_EFLAGS_IF) != 0u ||
                 (test_pic_read(context.board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) == 0u || (operation == 0u &&
                 (after.cr0 & VCPU_CR0_TS) != 0u) || (operation == 1u &&
                 (after.eax & 0xffffu) != 0u) || (operation == 2u &&
                 (after.cr0 & 0x0fu) != 0x0cu) || frame_ip != return_ip[operation];
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;
@@ -220,25 +219,25 @@ static lib_i32 control_board_early_80386_mov_cr(void)
     lib_size index;
 
     for (index = 0u; index != 2u; ++index) {
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         control_board_reset_context context;
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_i32 failed = !control_board_create(X86_CORE_CPU_PROFILE_80386,
             LIB_TRUE, &context, &machine);
 
         if (!failed)
-            failed = core_machine_memory_write(machine, 0u, codes[index], 5u) !=
-                    LIB_STATUS_OK || core_machine_debug_patch_registers(machine,
-                    patches[index]) != LIB_STATUS_OK || core_machine_run(machine,
-                    (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+            failed = x86_core_machine_memory_write(machine, 0u, codes[index], 5u) !=
+                    LIB_STATUS_OK || x86_core_machine_debug_patch_registers(machine,
+                    patches[index]) != LIB_STATUS_OK || x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
-            failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            failed = result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 (index == 0u && after.eax != 0x0000000cu) ||
                 (index == 1u && after.cr0 != 0u);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

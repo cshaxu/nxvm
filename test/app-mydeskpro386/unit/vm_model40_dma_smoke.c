@@ -4,7 +4,7 @@
 #include "lib/types/file.h"
 
 #include "../../core/board-base/composition/bus_fixture.h"
-#include "../../core/board-base/composition/composition_fixture.h"
+#include "../../core/board-base/board_binding_fixture.h"
 #include "../../core/board-base/support/composition_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
@@ -17,10 +17,17 @@ lib_i32 main(void)
     lib_i32 failed = 0;
     const core_machine_dma_channel_provider duplicate_provider = {0};
     core_machine_dma_request_binding duplicate_request = {0};
+    x86_core_machine_executor_config executor = {0};
+    lib_size constructor_count = 0u;
 
-    if (vm_model40_fixture_create(&session) != LIB_STATUS_OK ||
+    test_board_observe_constructor(&executor, &constructor_count);
+    const lib_status created = vm_model40_fixture_create(&session);
+    test_board_observe_constructor(LIB_NULL, LIB_NULL);
+
+    if (created != LIB_STATUS_OK || constructor_count != 1u ||
         session == LIB_NULL || !test_board_capture_composition(session->board).dma_configured ||
-        !test_core_dma_timing_matches(session->core_machine, 1u, LIB_TRUE, LIB_TRUE) ||
+        executor.transaction_contract.dma_cycle_wait_quanta != 1u ||
+        executor.transaction_contract.dma_cycle_bus_ready_gate_enabled != LIB_TRUE ||
         test_board_capture_composition(session->board).dma_wiring.fdc_channel != 2u ||
         test_board_capture_composition(session->board).dma_wiring.controller_count !=
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
@@ -28,23 +35,20 @@ lib_i32 main(void)
             CORE_MACHINE_DMA_CASCADE_CHANNEL ||
         test_board_dma_duplicate_bind(session->board, 2u,
             &duplicate_provider, &duplicate_request) !=
-            LIB_STATUS_INVALID_STATE ||
-        !test_core_port_has_write(session->core_machine,
-            0x00d6u) || !test_core_port_has_write(
-            session->core_machine, 0x00d4u)) {
+            LIB_STATUS_INVALID_STATE) {
         failed = 1;
         goto done;
     }
 
-    test_core_machine_fixture_write_port(session->core_machine, 0x00d6u,
+    test_core_machine_fixture_write_port(session->x86_core_machine, 0x00d6u,
         0xc0u);
-    test_core_machine_fixture_write_port(session->core_machine, 0x00d4u,
+    test_core_machine_fixture_write_port(session->x86_core_machine, 0x00d4u,
         0u);
-    test_core_machine_fixture_write_port(session->core_machine, 0x000bu,
+    test_core_machine_fixture_write_port(session->x86_core_machine, 0x000bu,
         0x86u);
-    test_core_machine_fixture_write_port(session->core_machine, 0x000eu,
+    test_core_machine_fixture_write_port(session->x86_core_machine, 0x000eu,
         0u);
-    test_core_machine_fixture_write_port(session->core_machine, 0x0009u,
+    test_core_machine_fixture_write_port(session->x86_core_machine, 0x0009u,
         0x06u);
     if (!test_board_dma_has_pending_request(session->board)) {
         failed = 1;

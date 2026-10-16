@@ -14,21 +14,21 @@ if(vm_cpu_pic_wiring)
         "VM machine retains CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" core_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c" bus_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" core_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c" bus_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c"
     board_source)
 string(FIND "${core_source}"
-    "x86_core_cpu_create(&core_machine_cpu_bus," core_cpu_bus_bind)
+    "x86_core_cpu_create(&x86_core_machine_cpu_bus," core_cpu_bus_bind)
 if(core_cpu_bus_bind EQUAL -1)
     message(FATAL_ERROR "Core board does not bind the CPU bus provider")
 endif()
 foreach(token IN ITEMS
-    ".interrupt_pending = core_machine_cpu_bus_interrupt_pending"
-    ".acknowledge_interrupt = core_machine_cpu_bus_acknowledge_interrupt"
+    ".interrupt_pending = x86_core_machine_cpu_bus_interrupt_pending"
+    ".acknowledge_interrupt = x86_core_machine_cpu_bus_acknowledge_interrupt"
     "attachment.interrupt_pending(machine->attachment.context)"
     "attachment.interrupt_acknowledge(machine->attachment.context)"
-    "CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE")
+    "X86_CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE")
     string(FIND "${bus_source}" "${token}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "CPU/PIC board bus contract is missing: ${token}")
@@ -89,14 +89,14 @@ file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
     "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
-list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c")
+list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c")
 foreach(board_source IN LISTS board_sources)
     file(READ "${board_source}" contents)
     if(contents MATCHES "executor_cpu(_instructions|_execution)?[ \t\r\n]*(\\.|->)[ \t\r\n]*[a-zA-Z_]")
         message(FATAL_ERROR "Board bypasses copied CPU operations: ${board_source}")
     endif()
     # CPU storage is private to cpu.c; no board header imports its layout.
-    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" AND
+    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" AND
        contents MATCHES "#[ \t]*include[ \t]*[<\"]x86-core/cpu/cpu(_instructions)?\\.h[>\"]")
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
     endif()

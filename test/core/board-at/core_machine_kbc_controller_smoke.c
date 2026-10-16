@@ -3,7 +3,20 @@
 #include "controller_fixture.h"
 #include "../board-base/pic_fixture.h"
 #include "../board-base/kbc_irq_fixture.h"
-lib_status test_kbc_initialize(t_kbc *kbc, core_machine *machine)
+
+static lib_bool reject_kbc_routes;
+
+static lib_status kbc_route_install(x86_core_machine *machine,
+    const x86_core_machine_port_route *routes, lib_size count)
+{
+    return reject_kbc_routes ? LIB_STATUS_NO_MEMORY :
+        x86_core_machine_install_port_routes(machine, routes, count);
+}
+
+#define x86_core_machine_install_port_routes kbc_route_install
+#include "core/board-at/kbc.c"
+#undef x86_core_machine_install_port_routes
+lib_status test_kbc_initialize(t_kbc *kbc, x86_core_machine *machine)
 {
     return core_machine_kbc_initialize(kbc, machine);
 }
@@ -31,13 +44,59 @@ static lib_status admit_byte(x86_keyboard *keyboard, lib_u8 byte)
     return x86_keyboard_admit(keyboard, &byte, 1u, &output, 1u, &count);
 }
 
-static lib_bool kbc_construction_rollback(void)
+static lib_status kbc_existing_write(void *owner, lib_u16 address, lib_u32 value)
 {
-    t_kbc kbc;
-    return test_kbc_core_construction(&kbc);
+    (void)address;
+    (void)value;
+    *(lib_u8 *)owner = 0x5au;
+    return LIB_STATUS_OK;
 }
 
-static lib_u8 core_machine_kbc_read_byte(core_machine *port, lib_u16 port_id)
+static lib_bool kbc_construction_rollback(void)
+{
+    t_kbc kbc = {0};
+    x86_core_machine *machine = test_kbc_create_executor();
+    lib_bool failed;
+
+    reject_kbc_routes = LIB_TRUE;
+    failed = test_kbc_initialize(&kbc, machine) != LIB_STATUS_NO_MEMORY ||
+        !test_kbc_unpublished(&kbc);
+    reject_kbc_routes = LIB_FALSE;
+    failed |= test_kbc_initialize(&kbc, machine) != LIB_STATUS_OK;
+    if (!failed) {
+        test_kbc_port_write(machine, 0x64u, 0xaau);
+        failed |= test_kbc_port_read(machine, 0x60u) != 0x55u;
+    }
+    failed |= x86_core_machine_remove_port_routes(machine, &kbc) != LIB_STATUS_OK;
+    test_kbc_finalize(&kbc);
+    test_kbc_finalize(&kbc);
+    failed |= x86_core_machine_bus_read(machine, 0x60u, &(lib_u32){0u}) !=
+        LIB_STATUS_UNSUPPORTED;
+    x86_core_machine_destroy(machine);
+    machine = test_kbc_create_executor();
+    {
+        lib_u8 marker = 0u;
+        const x86_core_machine_port_provider provider = {LIB_NULL, kbc_existing_write};
+
+        failed |= x86_core_machine_install_port_provider(machine, 0x64u, 0x64u,
+            &provider, &marker) != LIB_STATUS_OK ||
+            test_kbc_initialize(&kbc, machine) != LIB_STATUS_INVALID_STATE ||
+            !test_kbc_unpublished(&kbc) ||
+            test_kbc_initialize(&kbc, machine) != LIB_STATUS_INVALID_STATE ||
+            !test_kbc_unpublished(&kbc) ||
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x60u, &(lib_u32){0u}) != LIB_STATUS_UNSUPPORTED ||
+            x86_core_machine_bus_write(machine, 0x60u, 0u) != LIB_STATUS_UNSUPPORTED ||
+            x86_core_machine_bus_read(machine, 0x64u, &(lib_u32){0u}) != LIB_STATUS_UNSUPPORTED ||
+            x86_core_machine_bus_write(machine, 0x64u, 0u) != LIB_STATUS_OK || marker != 0x5au;
+        test_kbc_finalize(&kbc);
+    }
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_u8 core_machine_kbc_read_byte(x86_core_machine *port, lib_u16 port_id)
 {
     return (lib_u8)test_kbc_port_read(port, port_id);
 }
@@ -79,7 +138,7 @@ static lib_bool keyboard_cadence_is(t_kbc *kbc, lib_u64 initial, lib_u64 interva
     return !failed;
 }
 
-void test_kbc_initialize_pic(core_machine *port)
+void test_kbc_initialize_pic(x86_core_machine *port)
 {
     test_kbc_port_write(port, 0x0020u, 0x11u);
     test_kbc_port_write(port, 0x0021u, 0x08u);
@@ -98,7 +157,7 @@ static lib_i32 core_machine_kbc_original_at_reply_irq(void)
     t_kbc kbc;
     test_kbc_irq_wiring irq = {0};
     core_machine_pic_bus *master = LIB_NULL, *slave = LIB_NULL;
-    core_machine *machine = test_kbc_create_executor();
+    x86_core_machine *machine = test_kbc_create_executor();
     lib_i32 failed = 0;
     core_machine_pic_initialize(&master, &slave, machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, machine);
@@ -118,7 +177,7 @@ static lib_i32 core_machine_kbc_original_at_reply_irq(void)
     }
     core_machine_kbc_finalize(&kbc);
     core_machine_pic_finalize(master, slave);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -128,8 +187,8 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     test_kbc_irq_wiring irq = {0};
     core_machine_pic_bus *pic_master = LIB_NULL;
     core_machine_pic_bus *pic_slave = LIB_NULL;
-    core_machine *machine = test_kbc_create_executor();
-    core_machine *port = machine;
+    x86_core_machine *machine = test_kbc_create_executor();
+    x86_core_machine *port = machine;
     lib_i32 failed = 0;
 
     core_machine_pic_initialize(&pic_master, &pic_slave, machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
@@ -190,7 +249,7 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     failed |= core_machine_pic_irq_source_is_asserted(irq.keyboard) || core_machine_pic_irq_source_is_asserted(irq.auxiliary);
 
     core_machine_pic_finalize(pic_master, pic_slave);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
@@ -205,7 +264,7 @@ static lib_i32 core_machine_kbc_set2_translation(void)
     static const lib_u8 pause_set1[] = { 0xe1u, 0x1du, 0x45u,
         0xe1u, 0x9du, 0xc5u };
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_u8 index;
     lib_i32 failed = 0;
 
@@ -253,7 +312,7 @@ static lib_i32 core_machine_kbc_set2_translation(void)
         failed |= core_machine_kbc_read_byte(port, 0x0060u) != pause_set1[index];
     }
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
@@ -264,7 +323,7 @@ static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
     static const lib_u8 break_b[] = { 0xf0u, 0x32u };
     static const lib_u8 break_return[] = { 0xf0u, 0x5au };
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -299,14 +358,14 @@ static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
     failed |= core_machine_kbc_submit_native_bytes(&kbc, break_b,
         sizeof(break_b)) != LIB_STATUS_OK || keyboard_has_repeat(&kbc);
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
 static lib_i32 core_machine_kbc_self_test_flushes_keyboard_output(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -316,14 +375,14 @@ static lib_i32 core_machine_kbc_self_test_flushes_keyboard_output(void)
     failed |= (core_machine_kbc_read_byte(port, 0x64u) & VKBC_STATUS_OBF) == 0u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x55u;
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
 static lib_i32 core_machine_kbc_bat_on_line_enable(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -341,14 +400,14 @@ static lib_i32 core_machine_kbc_bat_on_line_enable(void)
     failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_OBF) == 0u;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xaau;
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
 static lib_i32 core_machine_kbc_controller_enable_is_not_a_second_bat(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -362,14 +421,14 @@ static lib_i32 core_machine_kbc_controller_enable_is_not_a_second_bat(void)
     test_kbc_port_write(port, 0x0064u, 0xaeu);
     failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
 static lib_i32 core_machine_kbc_self_test_enable_releases_bat(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -378,7 +437,7 @@ static lib_i32 core_machine_kbc_self_test_enable_releases_bat(void)
     test_kbc_port_write(port, 0x0064u, 0xaeu);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xaau;
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
@@ -388,7 +447,7 @@ static lib_i32 core_machine_kbc_self_test_enable_releases_bat(void)
 static lib_i32 core_machine_kbc_reset_then_enable_has_one_bat(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -400,7 +459,7 @@ static lib_i32 core_machine_kbc_reset_then_enable_has_one_bat(void)
     test_kbc_port_write(port, 0x0064u, 0xaeu);
     failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
@@ -412,7 +471,7 @@ static lib_i32 core_machine_kbc_reset_then_enable_has_one_bat(void)
 static lib_i32 core_machine_kbc_ibm_5170_post_contract(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed = 0;
 
     port = test_kbc_create(&kbc);
@@ -451,7 +510,7 @@ static lib_i32 core_machine_kbc_ibm_5170_post_contract(void)
         core_machine_kbc_read_byte(port, 0x0060u) != 0u;
 
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
@@ -460,7 +519,7 @@ static lib_i32 core_machine_kbc_ibm_5170_post_contract(void)
 static lib_i32 core_machine_kbc_typematic_output_boundary(void)
 {
     t_kbc kbc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_i32 failed;
     lib_u8 lines, ack, interface_result;
 
@@ -495,7 +554,7 @@ static lib_i32 core_machine_kbc_typematic_output_boundary(void)
     if (failed) lib_c_fprintf(lib_c_stderr, "KBC output/inhibit replay: E0=%02X FF=%02X AB=%02X\n",
         (unsigned int)lines, (unsigned int)ack, (unsigned int)interface_result);
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     return failed;
 }
 
@@ -507,8 +566,8 @@ lib_i32 main(void)
     core_machine_pic_bus *pic_slave = LIB_NULL;
     lib_bool a20_enabled = LIB_FALSE;
     lib_u32 reset_pulses = 0u;
-    core_machine *machine = test_kbc_create_executor();
-    core_machine *port = machine;
+    x86_core_machine *machine = test_kbc_create_executor();
+    x86_core_machine *port = machine;
     lib_i32 failed = 0;
     lib_i32 mixed_failed;
     lib_i32 translation_failed;
@@ -837,7 +896,7 @@ lib_i32 main(void)
 
     core_machine_kbc_finalize(&kbc);
     core_machine_pic_finalize(pic_master, pic_slave);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
             "KBC:FAIL:mixed=%d:translation=%d:self-flush=%d:typematic=%d:line-bat=%d:enable-bat=%d:self-enable-bat=%d:reset-enable-bat=%d:ibm-post=%d:cpu-irq1=%d\n",

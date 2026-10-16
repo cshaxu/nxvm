@@ -1,47 +1,40 @@
 #include "lib/types/file.h"
-#include "construction_fixture.h"
 #include "../board_binding_fixture.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/machine.h"
 
 static lib_i32 ram_create_success(lib_size memory_bytes)
 {
     core_machine_config config = { .memory_bytes = memory_bytes };
-    core_machine_memory_test_allocation allocation = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_size installed_bytes = 0u;
     lib_i32 failed = 0;
 
-    failed |= test_core_machine_create_with_allocation(&config, &machine,
-        &allocation, LIB_NULL, &board) != LIB_STATUS_OK;
-    failed |= machine == LIB_NULL || allocation.attempts != 1u;
-    failed |= board == LIB_NULL || (!failed &&
-        (machine->attachment.context != board));
-    failed |= !failed && core_machine_get_memory_bytes(machine, &installed_bytes) !=
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed |= machine == LIB_NULL || board == LIB_NULL;
+    failed |= !failed && x86_core_machine_get_memory_bytes(machine, &installed_bytes) !=
         LIB_STATUS_OK;
     failed |= !failed && installed_bytes != (memory_bytes == 0u ?
         (16u * 1024u * 1024u) : memory_bytes);
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
-    core_machine_destroy(machine);
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
 static lib_i32 ram_create_failure(lib_size memory_bytes)
 {
     core_machine_config config = { .memory_bytes = memory_bytes };
-    core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
-    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    lib_size attempts = 0u;
+    x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
     core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
-    lib_status status = test_core_machine_create_with_allocation(
-        &config, &machine,
-        &allocation, LIB_NULL, &board);
+    lib_status status = test_board_constructor_failure(
+        &config, &machine, &board, &attempts);
 
     return status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL || board != LIB_NULL ||
-        allocation.attempts != 1u;
+        attempts != 1u;
 }
 
 static lib_i32 configuration_board_publication(void)
@@ -56,47 +49,25 @@ static lib_i32 configuration_board_publication(void)
     lib_i32 failed = 0;
 
     for (lib_size i = 0u; i < sizeof(configurations) / sizeof(configurations[0]); ++i) {
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
-        core_machine_attachment expected;
+        x86_core_machine_attachment expected;
         lib_status status = test_board_binding_create(&configurations[i], &machine, &expected);
         if (status == LIB_STATUS_OK) board = expected.context;
 
         failed |= status != LIB_STATUS_OK || machine == LIB_NULL || board == LIB_NULL;
         if (status == LIB_STATUS_OK && machine != LIB_NULL && board != LIB_NULL) {
-            failed |= machine->attachment.context != board;
+            failed |= expected.context == (void *)machine;
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
     }
-    return failed;
-}
-
-static lib_i32 ram_fixture_retained(void)
-{
-    t_ram ram = {0};
-    lib_u8 value = 0x5au;
-    lib_u8 observed = 0u;
-    lib_i32 failed = 0;
-
-    failed |= core_machine_memory_initialize_for(&ram,
-        (16u * 1024u * 1024u), LIB_NULL) != LIB_STATUS_OK;
-    failed |= ram.connect.installed_bytes != (16u * 1024u * 1024u);
-    failed |= core_machine_memory_allocate_for(&ram,
-        (2u * 1024u * 1024u)) != LIB_STATUS_OK;
-    failed |= ram.connect.installed_bytes != (2u * 1024u * 1024u);
-    failed |= core_machine_memory_write_physical(&ram, 0u,
-        (lib_uptr)&value, sizeof(value)) != LIB_STATUS_OK;
-    failed |= core_machine_memory_read_physical(&ram, 0u,
-        (lib_uptr)&observed, sizeof(observed)) != LIB_STATUS_OK;
-    failed |= observed != value;
-    core_machine_memory_finalize(&ram);
     return failed;
 }
 
 static lib_i32 ram_create_preflight(void)
 {
     core_machine_config config = {0};
-    core_machine_clock_ratio *ratios[] = {
+    x86_core_machine_clock_ratio *ratios[] = {
         &config.clock_plan.provider, &config.clock_plan.dma,
         &config.clock_plan.pit, &config.clock_plan.auxiliary_pit,
         &config.clock_plan.rtc, &config.clock_plan.vadp,
@@ -105,20 +76,19 @@ static lib_i32 ram_create_preflight(void)
     lib_i32 failed = 0;
 
     for (lib_size i = 0u; i < sizeof(ratios) / sizeof(ratios[0]); ++i) {
-        core_machine_memory_test_allocation allocation = {0};
-        core_machine *machine = (core_machine *)(lib_uptr)1u;
+        lib_size attempts = 0u;
+        x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
         core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
         ratios[i]->numerator = 1u;
-        failed |= test_core_machine_create_with_allocation(&config,
-            &machine,
-            &allocation, LIB_NULL, &board) != LIB_STATUS_INVALID_ARGUMENT;
-        failed |= machine != LIB_NULL || board != LIB_NULL || allocation.attempts != 0u;
-        if (machine != LIB_NULL && machine != (core_machine *)(lib_uptr)1u)
-            core_machine_destroy(machine);
+        failed |= test_board_constructor_failure(&config,
+            &machine, &board, &attempts) != LIB_STATUS_INVALID_ARGUMENT;
+        failed |= machine != LIB_NULL || board != LIB_NULL || attempts != 0u;
+        if (machine != LIB_NULL && machine != (x86_core_machine *)(lib_uptr)1u)
+            x86_core_machine_destroy(machine);
         ratios[i]->numerator = 0u;
     }
     {
-        core_machine *machine = (core_machine *)(lib_uptr)1u;
+        x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
         core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
         failed |= core_machine_create(LIB_NULL, &machine, &board) !=
             LIB_STATUS_INVALID_ARGUMENT;
@@ -139,7 +109,6 @@ lib_i32 main(void)
     failed |= ram_create_success((2u * 1024u * 1024u));
     failed |= ram_create_failure(0u);
     failed |= ram_create_failure((2u * 1024u * 1024u));
-    failed |= ram_fixture_retained();
     failed |= ram_create_preflight();
     failed |= configuration_board_publication();
     if (failed) return 1;

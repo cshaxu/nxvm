@@ -4,7 +4,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 
@@ -16,7 +16,7 @@ int main(void)
     };
     vm_machine_assets assets = {0};
     vm_machine *session = LIB_NULL;
-    core_machine_memory_route route;
+    x86_core_machine_memory_route route;
     lib_u8 observed[2] = {0};
     lib_u8 overwrite = 0u;
     lib_i32 failed;
@@ -30,15 +30,15 @@ int main(void)
             LIB_STATUS_OK || session == LIB_NULL ||
         vm_test_profile_construction(session)->firmware_provider == LIB_NULL;
     if (!failed) {
-        failed |= core_machine_memory_query(session->core_machine, 0x000f0000u,
-            1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
-            route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
-        failed |= core_machine_memory_read(session->core_machine, 0x000f0000u,
+        failed |= x86_core_machine_memory_query(session->x86_core_machine, 0x000f0000u,
+            1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+            route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+        failed |= x86_core_machine_memory_read(session->x86_core_machine, 0x000f0000u,
             observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x56u ||
             observed[1u] != 0x78u;
-        failed |= core_machine_memory_write(session->core_machine, 0x000f0000u,
+        failed |= x86_core_machine_memory_write(session->x86_core_machine, 0x000f0000u,
             &overwrite, sizeof(overwrite)) != LIB_STATUS_OK;
-        failed |= core_machine_memory_read(session->core_machine, 0x000f0000u,
+        failed |= x86_core_machine_memory_read(session->x86_core_machine, 0x000f0000u,
             observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x56u ||
             observed[1u] != 0x78u;
     }

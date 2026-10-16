@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c")
 set(timing "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing.c")
 set(execution "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_instructions.c")
 foreach(path IN ITEMS "${machine}" "${timing}" "${execution}")
@@ -33,7 +33,7 @@ string(FIND "${refresh_text}" "ExecInt(context)" interrupt_position)
 if(timing_position LESS 0 OR interrupt_position LESS timing_position)
     message(FATAL_ERROR "CPU timing must be selected before asynchronous interrupt entry")
 endif()
-cpu_timing_seam_require_count("${machine_text}" "core_machine_retirement_observation_publish\\(" 1
+cpu_timing_seam_require_count("${machine_text}" "x86_core_machine_retirement_observation_publish\\(" 1
     "machine.c must have one raw retirement publication")
 cpu_timing_seam_require_count("${timing_text}" "lib_i32 x86_core_cpu_timing_select\\(" 1
     "cpu_timing.c must own one selector")

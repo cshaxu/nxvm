@@ -8,7 +8,7 @@
 
 static lib_i32 verify_partial_board_cleanup(void)
 {
-    const core_machine_executor_config executor = {
+    const x86_core_machine_executor_config executor = {
         .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
@@ -16,17 +16,17 @@ static lib_i32 verify_partial_board_cleanup(void)
     const core_machine_config invalid_board = {
         .clock_plan.pit = {1u, 0u}
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
 
-    if (core_machine_neutral_create(&executor, &machine) !=
+    if (x86_core_machine_neutral_create(&executor, &machine) !=
             LIB_STATUS_OK) return 1;
     /* Board construction failure owns and destroys the unpublished Core. */
     return core_machine_board_create(machine, &invalid_board, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL;
 }
 
-static void core_machine_controller_fdc_command(core_machine_fdc *fdc, core_machine *port,
+static void core_machine_controller_fdc_command(core_machine_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -37,7 +37,7 @@ static void core_machine_controller_fdc_command(core_machine_fdc *fdc, core_mach
     test_fdc_advance(fdc);
 }
 
-static lib_i32 core_machine_controller_fdc_result(core_machine_fdc *fdc, core_machine *port,
+static lib_i32 core_machine_controller_fdc_result(core_machine_fdc *fdc, x86_core_machine *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -50,18 +50,18 @@ static lib_i32 core_machine_controller_fdc_result(core_machine_fdc *fdc, core_ma
         (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
-static lib_i32 core_machine_controller_hdc_program_chs(core_machine *machine,
+static lib_i32 core_machine_controller_hdc_program_chs(x86_core_machine *machine,
     const core_machine_hdc_config *config)
 {
-    return core_machine_bus_write(machine, config->bus.task_file.sector_count_port, 1u) ==
+    return x86_core_machine_bus_write(machine, config->bus.task_file.sector_count_port, 1u) ==
             LIB_STATUS_OK &&
-        core_machine_bus_write(machine, config->bus.task_file.sector_number_port, 1u) ==
+        x86_core_machine_bus_write(machine, config->bus.task_file.sector_number_port, 1u) ==
             LIB_STATUS_OK &&
-        core_machine_bus_write(machine, config->bus.task_file.cylinder_low_port, 0u) ==
+        x86_core_machine_bus_write(machine, config->bus.task_file.cylinder_low_port, 0u) ==
             LIB_STATUS_OK &&
-        core_machine_bus_write(machine, config->bus.task_file.cylinder_high_port, 0u) ==
+        x86_core_machine_bus_write(machine, config->bus.task_file.cylinder_high_port, 0u) ==
             LIB_STATUS_OK &&
-        core_machine_bus_write(machine, config->bus.task_file.drive_head_port, 0u) ==
+        x86_core_machine_bus_write(machine, config->bus.task_file.drive_head_port, 0u) ==
             LIB_STATUS_OK;
 }
 
@@ -124,9 +124,9 @@ lib_i32 main(void)
                 .lba28_supported = LIB_TRUE}
         }
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine *port;
+    x86_core_machine *port;
     lib_u8 result[7] = {0};
     lib_u32 status = 0u;
     lib_u32 error = 0u;
@@ -158,8 +158,8 @@ lib_i32 main(void)
             core_machine_configure_hdc(board, &hdc_topology) !=
                 LIB_STATUS_INVALID_STATE ||
             core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK) {
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK) {
             failed |= 0x04;
         } else {
             port = machine;
@@ -188,24 +188,24 @@ lib_i32 main(void)
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
             if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||
-                core_machine_bus_write(machine, hdc_config.bus.task_file.status_command_port,
+                x86_core_machine_bus_write(machine, hdc_config.bus.task_file.status_command_port,
                     0x20u) != LIB_STATUS_OK ||
-                core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
+                x86_core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                     &status) != LIB_STATUS_OK ||
                 status != X86_HDC_STATUS_BSY) {
                 failed |= 0x08;
             } else {
                 hdc_service(board->hdc);
-                if (core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
+                if (x86_core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                         &status) != LIB_STATUS_OK ||
-                core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
+                x86_core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
                     &error) != LIB_STATUS_OK ||
                 status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
                 error != X86_HDC_ERROR_ABORT) {
                     failed |= 0x08;
                 }
             }
-            if (core_machine_reset(machine) != LIB_STATUS_OK ||
+            if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
                 test_fdc_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_RQM ||
                 hdc_observe(board->hdc).status != (X86_HDC_STATUS_DRDY |
                     X86_HDC_STATUS_DSC)) {
@@ -213,7 +213,7 @@ lib_i32 main(void)
             }
         }
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
         lib_c_fprintf(lib_c_stderr,

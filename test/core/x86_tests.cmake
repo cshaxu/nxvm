@@ -46,8 +46,8 @@ endif()
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
 add_executable(machine-8086-timing-manifest-runner
-    ${CORE_TEST_ROOT}/x86/machine_8086_timing_manifest_runner.c)
-target_link_libraries(machine-8086-timing-manifest-runner PRIVATE core-x86)
+    ${CORE_TEST_ROOT}/board-base/qualification/machine_8086_timing_manifest_runner.c)
+target_link_libraries(machine-8086-timing-manifest-runner PRIVATE x86-core-machine)
 target_compile_definitions(machine-8086-timing-manifest-runner PRIVATE
     PROJECT_TEST_8086_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
     PROJECT_TEST_8086_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-decoder-inventory.json")
@@ -55,8 +55,8 @@ add_dependencies(machine-8086-timing-manifest-runner cpu-timing-manifest-catalog
 target_include_directories(machine-8086-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
 add_executable(machine-8088-timing-manifest-runner
-    ${CORE_TEST_ROOT}/x86/machine_8086_timing_manifest_runner.c)
-target_link_libraries(machine-8088-timing-manifest-runner PRIVATE core-x86)
+    ${CORE_TEST_ROOT}/board-base/qualification/machine_8086_timing_manifest_runner.c)
+target_link_libraries(machine-8088-timing-manifest-runner PRIVATE x86-core-machine)
 target_compile_definitions(machine-8088-timing-manifest-runner PRIVATE
     PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=X86_CORE_CPU_PROFILE_8088
     PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
@@ -67,25 +67,24 @@ add_dependencies(machine-8088-timing-manifest-runner cpu-timing-manifest-catalog
 target_include_directories(machine-8088-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
 add_executable(machine-80186-timing-manifest-runner
-    ${CORE_TEST_ROOT}/x86/machine_80186_timing_manifest_runner.c)
-target_link_libraries(machine-80186-timing-manifest-runner PRIVATE core-x86)
+    ${CORE_TEST_ROOT}/board-base/qualification/machine_80186_timing_manifest_runner.c)
+target_link_libraries(machine-80186-timing-manifest-runner PRIVATE x86-core-machine)
 target_compile_definitions(machine-80186-timing-manifest-runner PRIVATE
     PROJECT_TEST_80186_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-timing-results.json")
 add_dependencies(machine-80186-timing-manifest-runner cpu-timing-manifest-catalog)
 target_include_directories(machine-80186-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
 add_executable(machine-80286-timing-manifest-runner
-    ${CORE_TEST_ROOT}/x86/machine_80286_timing_manifest_runner.c)
-target_link_libraries(machine-80286-timing-manifest-runner PRIVATE core-board-base core-x86)
+    ${CORE_TEST_ROOT}/board-base/qualification/machine_80286_timing_manifest_runner.c)
+target_link_libraries(machine-80286-timing-manifest-runner PRIVATE core-board-base x86-core-machine)
 target_compile_definitions(machine-80286-timing-manifest-runner PRIVATE
     PROJECT_TEST_80286_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80286-timing-results.json")
 add_dependencies(machine-80286-timing-manifest-runner cpu-timing-manifest-catalog)
 target_include_directories(machine-80286-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
 add_executable(machine-80386-timing-manifest-runner
-    ${CORE_TEST_ROOT}/x86/machine_80386_timing_manifest_runner.c
-    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
-target_link_libraries(machine-80386-timing-manifest-runner PRIVATE core-board-base core-x86)
+    ${CORE_TEST_ROOT}/board-base/qualification/machine_80386_timing_manifest_runner.c)
+target_link_libraries(machine-80386-timing-manifest-runner PRIVATE core-board-base-observable x86-core-machine-observable)
 target_compile_definitions(machine-80386-timing-manifest-runner PRIVATE
     PROJECT_TEST_80386_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80386-timing-results.json")
 add_dependencies(machine-80386-timing-manifest-runner cpu-timing-manifest-catalog)
@@ -145,87 +144,6 @@ if(POWERSHELL_EXECUTABLE)
         WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
 endif()
 
-add_library(core-machine-prefetch-scheduler-test OBJECT
-    "${CORE_ROOT}/x86/machine_scheduler.c")
-target_link_libraries(core-machine-prefetch-scheduler-test PRIVATE core-x86)
-target_compile_definitions(core-machine-prefetch-scheduler-test PRIVATE
-    x86_core_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
-add_executable(core-machine-prefetch-locality-smoke ${CORE_TEST_ROOT}/x86/machine_prefetch_locality_smoke.c)
-target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE
-    core-machine-prefetch-scheduler-test core-x86)
-add_test(NAME unit.core-machine-prefetch-locality-smoke COMMAND core-machine-prefetch-locality-smoke)
-set_tests_properties(unit.core-machine-prefetch-locality-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS core-machine-prefetch-locality-smoke)
-
-add_executable(machine-vm86-iret-smoke ${CORE_TEST_ROOT}/x86/machine_vm86_iret_smoke.c)
-target_link_libraries(machine-vm86-iret-smoke PRIVATE core-x86)
-add_test(NAME unit.machine-vm86-iret-smoke COMMAND machine-vm86-iret-smoke)
-set_tests_properties(unit.machine-vm86-iret-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS machine-vm86-iret-smoke)
-add_executable(machine-protected-iret-smoke ${CORE_TEST_ROOT}/x86/machine_protected_iret_smoke.c)
-target_link_libraries(machine-protected-iret-smoke PRIVATE core-x86)
-add_test(NAME unit.machine-protected-iret-smoke COMMAND machine-protected-iret-smoke)
-set_tests_properties(unit.machine-protected-iret-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS machine-protected-iret-smoke)
-foreach(core_case IN ITEMS call-gate tss-iomap-port-authorization task-switch-cross-width
-        80286-instruction-timing-ledger)
-    string(REPLACE "-" "_" core_file "${core_case}")
-    set(core_target "machine-${core_case}-smoke")
-    add_executable(${core_target} "${CORE_TEST_ROOT}/x86/machine_${core_file}_smoke.c")
-    target_link_libraries(${core_target} PRIVATE core-x86)
-    add_test(NAME "unit.${core_target}" COMMAND ${core_target})
-    set_tests_properties("unit.${core_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
-    list(APPEND CORE_X86_TEST_TARGETS ${core_target})
-endforeach()
-add_executable(core-machine-neutral-link-smoke ${CORE_TEST_ROOT}/x86/neutral_link.c)
-target_link_libraries(core-machine-neutral-link-smoke PRIVATE core-x86)
-add_test(NAME unit.core-machine-neutral-link-smoke COMMAND core-machine-neutral-link-smoke)
-set_tests_properties(unit.core-machine-neutral-link-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS core-machine-neutral-link-smoke)
-
-foreach(core_case IN ITEMS
-    "core-machine-ram-port-context-smoke|ram_port_context_smoke.c|core-x86"
-    "core-machine-attachment-phases-smoke|machine_attachment_phases_smoke.c|core-x86"
-    "core-machine-real-mode-386-address-smoke|core_machine_real_mode_386_address_smoke.c|core-x86"
-    "core-machine-real-mode-386-rep-cmps-smoke|core_machine_real_mode_386_rep_cmps_smoke.c|core-x86"
-    "core-machine-real-mode-corpus-smoke|core_machine_real_mode_corpus_smoke.c|core-x86"
-    "core-machine-real-mode-tick-smoke|core_machine_real_mode_tick_smoke.c|core-x86"
-    "core-machine-int-ivt-smoke|cpu_int_ivt_smoke.c|core-x86"
-    "core-machine-configuration-smoke|machine_configuration_smoke.c|core-x86"
-    "core-machine-memory-device-registration-smoke|machine_memory_device_registration_smoke.c|core-x86"
-    "core-machine-immutable-rom-mapping-smoke|machine_immutable_rom_mapping_smoke.c|core-x86"
-    "core-machine-rational-clock-smoke|machine_rational_clock_smoke.c|core-x86"
-    "core-machine-executor-run-smoke|core_machine_executor_run_smoke.c|core-x86"
-    "core-machine-memory-inspection-smoke|core_machine_memory_inspection_smoke.c|core-x86"
-    "machine-80386-protected-io-timing-smoke|machine_80386_protected_io_timing_smoke.c|core-x86"
-    "machine-string-io-timing-smoke|machine_string_io_timing_smoke.c|core-x86"
-    "machine-80386-privileged-timing-smoke|machine_80386_privileged_timing_smoke.c|core-x86"
-    "machine-8086-instruction-timing-ledger-smoke|machine_8086_instruction_timing_ledger_smoke.c|core-x86"
-    "machine-80186-instruction-timing-ledger-smoke|machine_80186_instruction_timing_ledger_smoke.c|core-x86"
-    "machine-80386-secondary-integer-timing-smoke|machine_80386_secondary_integer_timing_smoke.c|core-x86"
-    "machine-cpu-profile-gate-smoke|machine_cpu_profile_gate_smoke.c|core-x86"
-    "machine-instruction-timing-smoke|machine_instruction_timing_smoke.c|core-x86"
-    "core-machine-descriptor-system-smoke|core_machine_descriptor_system_smoke.c|core-x86"
-    "core-machine-80386-paging-smoke|core_machine_80386_paging_smoke.c|core-x86-observable"
-    "core-machine-contract-smoke|core_contract_smoke.c|core-x86"
-    "core-machine-lifecycle-smoke|machine_lifecycle_smoke.c|core-x86"
-    "core-machine-stopped-lifecycle-smoke|machine_stopped_lifecycle_smoke.c|core-x86"
-    "core-machine-memory-reconfigure-smoke|machine_memory_reconfigure_smoke.c|core-x86"
-    "core-machine-trace-smoke|machine_trace_smoke.c|core-x86-observable"
-    "core-machine-external-time-trace-smoke|machine_external_time_trace_smoke.c|core-x86-observable"
-    "core-machine-debug-smoke|machine_debug_smoke.c|core-x86"
-)
-    string(REPLACE "|" ";" core_fields "${core_case}")
-    list(GET core_fields 0 core_target)
-    list(GET core_fields 1 core_source)
-    list(GET core_fields 2 core_library)
-    add_executable(${core_target} "${CORE_TEST_ROOT}/x86/${core_source}")
-    target_link_libraries(${core_target} PRIVATE ${core_library})
-    add_test(NAME "unit.${core_target}" COMMAND ${core_target})
-    set_tests_properties("unit.${core_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
-    list(APPEND CORE_X86_TEST_TARGETS ${core_target})
-endforeach()
-
 shared_register_test(core chips/pit825x/pit_8253 core-chip-pit825x)
 shared_register_test(core chips/pit825x/pit_readback core-chip-pit825x)
 shared_register_test(core chips/pit825x/pit_waveform core-chip-pit825x)
@@ -266,19 +184,6 @@ shared_register_test(core chips/keyboard/keyboard_contract core-chip-keyboard)
 shared_register_test(core chips/kbc8042/controller_contract "core-chip-kbc8042;core-chip-keyboard;core-chip-ps2mouse")
 shared_register_test(core chips/ppi8255/ppi_contract core-chip-ppi8255)
 shared_register_test(core chips/xtkeyboard/xt_keyboard_contract core-chip-xtkeyboard)
-shared_register_test(core x86/core_machine_system_power core-x86)
-shared_register_test(core x86/timeline core-x86)
-add_executable(machine-fpu-interface-smoke ${CORE_TEST_ROOT}/x86/machine_fpu_interface_smoke.c)
-target_link_libraries(machine-fpu-interface-smoke PRIVATE core-x86)
-add_test(NAME unit.machine-fpu-interface-smoke COMMAND machine-fpu-interface-smoke)
-set_tests_properties(unit.machine-fpu-interface-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS machine-fpu-interface-smoke)
-add_executable(core-machine-entry-plan-smoke ${CORE_TEST_ROOT}/x86/machine_entry_plan_smoke.c)
-target_link_libraries(core-machine-entry-plan-smoke PRIVATE core-x86)
-add_test(NAME unit.core-machine-entry-plan-smoke COMMAND core-machine-entry-plan-smoke)
-set_tests_properties(unit.core-machine-entry-plan-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS core-machine-entry-plan-smoke)
-
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged.
 list(APPEND CORE_X86_TEST_TARGETS ${SHARED_CORE_TEST_TARGETS})
@@ -289,4 +194,4 @@ foreach(target IN LISTS CORE_X86_TEST_TARGETS)
         target_compile_options(${target} PRIVATE -UNDEBUG)
     endif()
 endforeach()
-add_custom_target(core-x86-tests DEPENDS ${CORE_X86_TEST_TARGETS})
+add_custom_target(core-chip-tests DEPENDS ${CORE_X86_TEST_TARGETS})

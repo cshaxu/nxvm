@@ -4,9 +4,8 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-typedef struct les_lds_machine { core_machine *machine;
+typedef struct les_lds_machine { x86_core_machine *machine;
     core_machine_board_state *board; } les_lds_machine;
 
 static lib_i32 les_lds_prepare(x86_core_cpu_profile profile, les_lds_machine *state)
@@ -24,14 +23,14 @@ static lib_i32 les_lds_prepare(x86_core_cpu_profile profile, les_lds_machine *st
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
-        core_machine_reset(state->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+        x86_core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_i32 les_lds_seed(les_lds_machine *state)
 {
-    return core_machine_debug_patch_registers(state->machine,
+    return x86_core_machine_debug_patch_registers(state->machine,
                 &(x86_core_cpu_debug_register_patch){
                     .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
                         X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
@@ -80,7 +79,7 @@ static lib_i32 les_lds_irq_gprs_same_except_eax(const x86_core_cpu_debug_cpu_sna
 static lib_i32 les_lds_read(les_lds_machine *state, lib_u32 physical,
     void *data, lib_u8 bytes)
 {
-    return core_machine_memory_inspect(state->machine,
+    return x86_core_machine_memory_inspect(state->machine,
         physical, (void *)data, bytes) == LIB_STATUS_OK;
 }
 
@@ -98,13 +97,13 @@ static lib_i32 les_lds_boot_protected(les_lds_machine *state)
         0xb8u,0x10u,0,0x8eu,0xd8u, 0xb8u,0x18u,0,0x8eu,0xc0u,
         0xb8u,0x10u,0,0x8eu,0xd0u,0xbcu,0,0x80u, 0xeau,0,0,8u,0
     };
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
 
-    return core_machine_memory_write(state->machine, 0x100u, pointer, sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0u, boot, sizeof(boot)) ==
-        LIB_STATUS_OK && core_machine_run(
-        state->machine, (core_machine_run_budget){11u,0u}, &result) ==
-        LIB_STATUS_OK && result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 11u;
+    return x86_core_machine_memory_write(state->machine, 0x100u, pointer, sizeof(pointer)) == LIB_STATUS_OK && x86_core_machine_memory_write(state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
+        x86_core_machine_memory_write(state->machine, 0u, boot, sizeof(boot)) ==
+        LIB_STATUS_OK && x86_core_machine_run(
+        state->machine, (x86_core_machine_run_budget){11u,0u}, &result) ==
+        LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_BUDGET && result.executed == 11u;
 }
 
 static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector)
@@ -112,7 +111,7 @@ static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector)
     les_lds_machine state;
     x86_core_cpu_debug_cpu_snapshot before;
     x86_core_cpu_debug_cpu_snapshot after;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     lib_u8 pointer[] = {0x44u,0x33u,0,0};
     lib_u8 source[4] = {0x44u,0x33u,0,0};
     lib_u8 observed[4] = {0};
@@ -129,20 +128,20 @@ static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector)
     if (!failed) {
 
         failed |= !les_lds_seed(&state);
-        failed |= core_machine_debug_patch_registers(state.machine,
+        failed |= x86_core_machine_debug_patch_registers(state.machine,
                 &(x86_core_cpu_debug_register_patch){
                     .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES),
                     .values = { [X86_CORE_CPU_DEBUG_ES] = opcode == 0xc4u ? 0x18u : 0x10u }
                 }) != LIB_STATUS_OK;
-        failed |= core_machine_memory_write(state.machine, 0x3010u, pointer,
-            sizeof(pointer)) != LIB_STATUS_OK || core_machine_memory_write(
+        failed |= x86_core_machine_memory_write(state.machine, 0x3010u, pointer,
+            sizeof(pointer)) != LIB_STATUS_OK || x86_core_machine_memory_write(
             state.machine, 0x2000u, program, sizeof(program)) != LIB_STATUS_OK;
 
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
-            state.machine, (core_machine_run_budget){1u,0u}, &result), &result);
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(
+            state.machine, (x86_core_machine_run_budget){1u,0u}, &result), &result);
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= !les_lds_read(&state, 0x3010u, observed,
             sizeof(observed)) || lib_memory_compare(source, observed,
@@ -160,7 +159,7 @@ static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector)
             opcode == 0xc4u ? &after.ds : &after.es,
             sizeof(x86_core_cpu_debug_segment_snapshot)) != 0;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 
@@ -187,7 +186,7 @@ static lib_i32 les_lds_test_limit(void)
         les_lds_machine state;
         x86_core_cpu_debug_cpu_snapshot before;
         x86_core_cpu_debug_cpu_snapshot after;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         lib_u8 code[] = {opcodes[opcode],0x06u,0x10u,0u};
         lib_i32 failed = !les_lds_prepare(X86_CORE_CPU_PROFILE_80386,
             &state);
@@ -197,22 +196,22 @@ static lib_i32 les_lds_test_limit(void)
         if (!failed) {
             failed |= !les_lds_seed(&state);
             const lib_u8 limit[] = {0x11u,0u};
-            failed |= core_machine_memory_write(state.machine, 0x310u,
+            failed |= x86_core_machine_memory_write(state.machine, 0x310u,
                 limit, sizeof(limit)) != LIB_STATUS_OK;
-            failed |= core_machine_debug_patch_registers(state.machine,
+            failed |= x86_core_machine_debug_patch_registers(state.machine,
                 &(x86_core_cpu_debug_register_patch){
                     .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS),
                     .values = { [X86_CORE_CPU_DEBUG_DS] = 0x10u }
                 }) != LIB_STATUS_OK;
-            failed |= core_machine_memory_write(state.machine, 0x2000u, code,
+            failed |= x86_core_machine_memory_write(state.machine, 0x2000u, code,
                 sizeof(code)) != LIB_STATUS_OK;
 
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
-                state.machine, (core_machine_run_budget){1u,0u}, &result),
+            failed |= !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(
+                state.machine, (x86_core_machine_run_budget){1u,0u}, &result),
                 &result);
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed) failed |= after.eip != before.eip ||
                 after.eax != before.eax ||
@@ -222,7 +221,7 @@ static lib_i32 les_lds_test_limit(void)
                 &before.ds, opcodes[opcode] == 0xc4u ? &after.es :
                 &after.ds, sizeof(x86_core_cpu_debug_segment_snapshot)) != 0;
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed)
             return 0;
     }
@@ -239,7 +238,7 @@ static lib_i32 les_lds_test_irq(void)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         les_lds_machine state;
         core_machine_pic_irq_source *irq = LIB_NULL;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         x86_core_cpu_debug_cpu_snapshot before;
         x86_core_cpu_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
@@ -250,23 +249,23 @@ static lib_i32 les_lds_test_irq(void)
             &state);
 
         if (!failed) {
-            failed |= core_machine_memory_write(state.machine, 0x1000u, pointer,
-                sizeof(pointer)) != LIB_STATUS_OK || core_machine_memory_write(
+            failed |= x86_core_machine_memory_write(state.machine, 0x1000u, pointer,
+                sizeof(pointer)) != LIB_STATUS_OK || x86_core_machine_memory_write(
                 state.machine, 0u, code, sizeof(code)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x80u, &offset,
-                sizeof(offset)) != LIB_STATUS_OK || core_machine_memory_write(
+                x86_core_machine_memory_write(state.machine, 0x80u, &offset,
+                sizeof(offset)) != LIB_STATUS_OK || x86_core_machine_memory_write(
                 state.machine, 0x82u, &segment, sizeof(segment)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x100u, &hlt,
+                x86_core_machine_memory_write(state.machine, 0x100u, &hlt,
                 sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
             failed |= !les_lds_seed(&state);
-            failed |= core_machine_debug_patch_registers(state.machine,
+            failed |= x86_core_machine_debug_patch_registers(state.machine,
                 &(x86_core_cpu_debug_register_patch){
                     .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
                     .values = { [X86_CORE_CPU_DEBUG_EFLAGS] = 0x200u }
                 }) != LIB_STATUS_OK;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             lib_memory_set(&irq, 0, sizeof(irq));
             test_pic_program_vector(state.board->shared_pic_master, 0x20u);
@@ -274,23 +273,21 @@ static lib_i32 les_lds_test_irq(void)
                 state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(irq);
             core_machine_pic_irq_source_deassert(irq);
-            failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
-            if (!failed) failed |= core_machine_memory_read(state.machine,
+            if (!failed) failed |= x86_core_machine_memory_read(state.machine,
                 after.ss.base + (lib_u16)after.esp,
-                (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
+                (void *)lib_pointer_to_uptr(&(frame_ip)), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != 4u ||
                 after.eax != 0xaabb3344u ||
                 !les_lds_irq_gprs_same_except_eax(&before, &after) ||
-                after.eflags != 0u || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
-                VPIC_IRR_IRQ(0u));
+                after.eflags != 0u || !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
+                (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed)
             return 0;
     }

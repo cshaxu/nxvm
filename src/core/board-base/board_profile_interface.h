@@ -2,7 +2,7 @@
 #define CORE_MACHINE_BOARD_PROFILE_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/chips/pit825x/pit825x_interface.h"
 #include "core/board-at/kbc_interface.h"
 
@@ -38,7 +38,7 @@ typedef struct core_machine_board_profile_binding {
  * borrowed; a successfully bound Profile must release its routes and sinks
  * before the common board destroys these devices. */
 typedef struct core_machine_board_profile_services {
-    core_machine *core;
+    x86_core_machine *core;
     x86_pit *pit;
     x86_pit *auxiliary_pit;
     void (*speaker)(void *context, lib_u8 lines);

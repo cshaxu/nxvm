@@ -84,7 +84,7 @@ static void topology_values(void)
         topology.rtc_cmos.defaults[0].index = 0x30u;
         topology.rtc_cmos.defaults[0].value = 0x04u;
         topology.memory_alias_count = 1u;
-        topology.memory_alias[0] = (core_machine_memory_alias_config) {0xfa0000u, 0xa0000u, 0x60000u};
+        topology.memory_alias[0] = (x86_core_machine_memory_alias_config) {0xfa0000u, 0xa0000u, 0x60000u};
         lib_test_assert(vm_at_topology_materialize(vm_at_port_leaves, VM_AT_PORT_LEAF_COUNT,
             vm_at_routes_without_aux, 4u, &topology) == LIB_STATUS_OK);
         lib_test_assert(topology.display_present && topology.rtc_cmos_present && topology.dma_present);

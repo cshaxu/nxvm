@@ -7,8 +7,8 @@
 #include <windows.h>
 #undef exception_code
 
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "test/core/machine/support/nxvm_presentation_capture.h"
 #include "test/core/setup/session_ini.h"
 #include "core/machine/control.h"
@@ -177,7 +177,7 @@ static void vm_windows31_setup_report_fault(integration_ini_session *ini_session
     if (emulator_machine_state_get(ini_session->emulator_machine) == EMULATOR_MACHINE_RUNNING &&
         integration_ini_session_pause(ini_session, 5000u) != LIB_STATUS_OK) return;
     if (emulator_machine_shutdown(session->executor) != LIB_STATUS_OK) return;
-    (void)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
+    (void)x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic);
     printf("NXVM:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         was_running,
@@ -207,7 +207,7 @@ static void vm_windows31_setup_report_fault(integration_ini_session *ini_session
                 point->bytes[2]);
         }
     }
-    if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+    if (x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) ==
             LIB_STATUS_OK) {
         printf("NXVM:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "

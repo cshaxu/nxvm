@@ -20,7 +20,7 @@ static lib_i32 verify(void)
     vm_machine *session = LIB_NULL;
 
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
-        session->core_machine == LIB_NULL ||
+        session->x86_core_machine == LIB_NULL ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_machine_destroy(session);
@@ -64,7 +64,7 @@ static lib_i32 verify_selected_cpu_uses_the_resolved_topology(void)
     vm_machine *session = LIB_NULL;
 
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
-        core_machine_get_cpu_profile(session->core_machine, &profile) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_profile(session->x86_core_machine, &profile) != LIB_STATUS_OK ||
         profile != X86_CORE_CPU_PROFILE_80286) {
         vm_machine_destroy(session);
         return 1;
@@ -76,7 +76,7 @@ static lib_i32 verify_selected_cpu_uses_the_resolved_topology(void)
 static lib_i32 verify_initialize_once(void)
 {
     vm_machine *session = LIB_NULL;
-    core_machine *core_machine;
+    x86_core_machine *x86_core_machine;
     vm_machine_control_state *control;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
@@ -84,10 +84,10 @@ static lib_i32 verify_initialize_once(void)
         vm_machine_destroy(session);
         return 1;
     }
-    core_machine = session->core_machine;
+    x86_core_machine = session->x86_core_machine;
     control = &session->control;
     vm_machine_initialize(session);
-    if (!session->active || session->core_machine != core_machine ||
+    if (!session->active || session->x86_core_machine != x86_core_machine ||
         &session->control != control) {
         vm_machine_destroy(session);
         return 1;

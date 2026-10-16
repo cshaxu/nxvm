@@ -1,12 +1,11 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
-#include "core/x86/firmware_interface.h"
-#include "../../core/board-base/composition/composition_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "../../core/machine/support/emulator_machine_fixture.h"
+#include "../../core/machine/support/runner_failure_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static lib_i32 vm_runner_error_wait(const vm_machine *machine,
@@ -15,20 +14,6 @@ static lib_i32 vm_runner_error_wait(const vm_machine *machine,
     return vm_test_emulator_machine_wait_state(machine, waiter,
         EMULATOR_MACHINE_ERROR, 2000u);
 }
-
-static lib_status vm_runner_reset_failure(void *context,
-    core_machine_firmware_context *firmware)
-{
-    (void)context;
-    (void)firmware;
-    return LIB_STATUS_UNSUPPORTED;
-}
-
-static const core_machine_firmware_provider vm_runner_reset_failure_provider = {
-    LIB_NULL,
-    vm_runner_reset_failure,
-    LIB_NULL
-};
 
 static lib_i32 vm_runner_reset_failure_reports_error(void)
 {
@@ -47,20 +32,19 @@ static lib_i32 vm_runner_reset_failure_reports_error(void)
     if (vm_machine_request_pause(machine) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(machine, &waiter,
             EMULATOR_MACHINE_PAUSED, 2000u)) goto done;
-    /* Inject only while the paused boundary excludes Core execution, then
-     * exercise the active reset failure without changing frozen topology. */
-    test_core_replace_firmware_provider(machine->core_machine,
-        &vm_runner_reset_failure_provider);
-    if (vm_machine_resume(machine) != LIB_STATUS_OK ||
+    /* The adapter receives an existing reset failure, not a rewritten Core. */
+    if (vm_test_runner_reject_reset(machine) != LIB_STATUS_OK ||
+        vm_machine_resume(machine) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(machine, &waiter,
             EMULATOR_MACHINE_RUNNING, 2000u)) goto done;
     if (vm_machine_control_reset(&machine->control) != LIB_STATUS_OK ||
         !vm_runner_error_wait(machine, &waiter)) goto done;
-    succeeded = machine->runner_failed == LIB_TRUE;
+    succeeded = machine->runner_failed == LIB_TRUE && !vm_test_runner_failure_pending();
 
 done:
     if (machine != LIB_NULL) {
         vm_test_emulator_machine_unbind(machine);
+        succeeded = vm_test_runner_reject_reset(LIB_NULL) == LIB_STATUS_OK && succeeded;
         vm_machine_destroy(machine);
     }
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
@@ -84,23 +68,22 @@ lib_i32 main(void)
         vm_machine_request_pause(machine) != LIB_STATUS_OK) goto done;
     if (!vm_test_emulator_machine_wait_state(machine, &waiter,
             EMULATOR_MACHINE_PAUSED, 2000u)) goto done;
-    /* The paused Common boundary owns exclusivity.  This deliberate impossible
-     * Core lifecycle forces its non-fault INVALID_STATE result on the next
-     * bounded runner turn, proving the driver reports ERROR rather than STOPPED. */
-    test_core_set_lifecycle(machine->core_machine, CORE_MACHINE_RUNNING);
-    if (vm_machine_resume(machine) != LIB_STATUS_OK ||
+    /* Inject the non-fault result at the actual adapter dependency boundary. */
+    if (vm_test_runner_reject_run(machine) != LIB_STATUS_OK ||
+        vm_machine_resume(machine) != LIB_STATUS_OK ||
         !vm_runner_error_wait(machine, &waiter))
         goto done;
-    succeeded = machine->runner_failed == LIB_TRUE &&
+    succeeded = machine->runner_failed == LIB_TRUE && !vm_test_runner_failure_pending() &&
         vm_runner_reset_failure_reports_error();
 
 done:
     if (machine != LIB_NULL) {
         vm_test_emulator_machine_unbind(machine);
+        succeeded = vm_test_runner_reject_run(LIB_NULL) == LIB_STATUS_OK && succeeded;
         vm_machine_destroy(machine);
     }
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
     if (!succeeded) return 1;
-    printf("RUNNER-ERROR-PROPAGATION:OK\n");
+    lib_c_printf("RUNNER-ERROR-PROPAGATION:OK\n");
     return 0;
 }

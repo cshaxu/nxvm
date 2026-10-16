@@ -1,8 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
 static lib_bool diagnostic_run_case(lib_bool shutdown)
@@ -11,11 +10,11 @@ static lib_bool diagnostic_run_case(lib_bool shutdown)
         .memory_bytes = (16u * 1024u * 1024u)
     };
     lib_u8 program[X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 2u];
-    core_machine *machine = LIB_NULL;
-    core_machine_run_budget budget = {
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_budget budget = {
         X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u, 0u
     };
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     const lib_u8 load_idt[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x03u };
     const lib_u8 idtr[] = {
@@ -34,39 +33,39 @@ static lib_bool diagnostic_run_case(lib_bool shutdown)
     lib_size index;
 
     if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK) goto fail;
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK) goto fail;
     /* REAL_UD_TERMINAL_GUEST_LIDT: compare a real UD handler with
      * unavailable UD/DF entries, preserving the same source PC and budget. */
-    if (core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0200u, load_idt, sizeof(load_idt)) !=
+    if (x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x0200u, load_idt, sizeof(load_idt)) !=
             LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0300u, idtr, sizeof(idtr)) !=
+        x86_core_machine_memory_write(machine, 0x0300u, idtr, sizeof(idtr)) !=
             LIB_STATUS_OK ||
-        core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result) !=
-            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+            LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         result.executed != 1u) goto fail;
     entry.values[X86_CORE_CPU_DEBUG_EIP] = 0u;
-    if (core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK) goto fail;
+    if (x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK) goto fail;
     for (index = 0u; index < X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY; ++index) {
         program[index] = 0x90u;
     }
     program[X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xd6u;
     program[X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0x90u;
-    if (core_machine_memory_write(machine, 6u * 4u, ud_vector,
+    if (x86_core_machine_memory_write(machine, 6u * 4u, ud_vector,
             sizeof(ud_vector)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0400u, &handler,
+        x86_core_machine_memory_write(machine, 0x0400u, &handler,
             sizeof(handler)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
+        x86_core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
         LIB_STATUS_OK) goto fail;
     if (
-        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
-        core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK) goto fail;
+        x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK) goto fail;
     /* Development instruction history is compiled out of the product; fault
      * snapshots remain the stable diagnostic contract in every build. */
     if (diagnostic.recent_count != 0u ||
-        result.reason != (shutdown ? CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT :
-            CORE_MACHINE_STOP_BUDGET) ||
+        result.reason != (shutdown ? X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT :
+            X86_CORE_MACHINE_STOP_BUDGET) ||
         result.detail != (shutdown ? VCPUINS_EXCEPT_SHUTDOWN : 0u) ||
         result.executed != X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
         diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
@@ -76,11 +75,11 @@ static lib_bool diagnostic_run_case(lib_bool shutdown)
             X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
         diagnostic.last_delivered_exception.point.bytes[0] != 0xd6u ||
         diagnostic.last_delivered_exception.point.bytes[1] != 0x90u) goto fail;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return LIB_TRUE;
 
 fail:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return LIB_FALSE;
 }
 

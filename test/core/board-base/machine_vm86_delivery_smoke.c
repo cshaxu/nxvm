@@ -3,7 +3,6 @@
 #include "pic_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
 #include "x86-core/cpu/cpu_interface.h"
 #include "core/board-base/machine_board_interface.h"
@@ -20,21 +19,21 @@
 #define VM86_PAGE_TABLE 0xb000u
 #define VM86_PAGE_FLAGS 0x00000007u
 
-typedef struct vm86_delivery_state { core_machine *machine;
+typedef struct vm86_delivery_state { x86_core_machine *machine;
     core_machine_board_state *board; } vm86_delivery_state;
 
-static x86_core_cpu_debug_cpu_snapshot vm86_capture(const core_machine *machine)
+static x86_core_cpu_debug_cpu_snapshot vm86_capture(const x86_core_machine *machine)
 {
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
-    if (core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
+    if (x86_core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
             &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
-static lib_i32 vm86_delivery_write_u32(core_machine *machine,
+static lib_i32 vm86_delivery_write_u32(x86_core_machine *machine,
     lib_u32 address, lib_u32 value)
 {
-    return core_machine_memory_write(machine, address, &value, sizeof(value)) ==
+    return x86_core_machine_memory_write(machine, address, &value, sizeof(value)) ==
         LIB_STATUS_OK;
 }
 static lib_i32 vm86_delivery_prepare(vm86_delivery_state *state, lib_u8 vector)
@@ -83,24 +82,24 @@ static lib_i32 vm86_delivery_prepare(vm86_delivery_state *state, lib_u8 vector)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x700u}
     };
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_debug_cpu_snapshot snapshot;
     if (core_machine_create(&config, &state->machine, &state->board) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine, LIB_NULL, LIB_NULL) ||
-        core_machine_memory_write(state->machine, VM86_GDT_BASE, gdt, sizeof(gdt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, VM86_IDT_BASE, idt, sizeof(idt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, VM86_TSS_BASE, tss, sizeof(tss)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, VM86_HANDLER_BASE,
+        x86_core_machine_memory_write(state->machine, VM86_GDT_BASE, gdt, sizeof(gdt)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state->machine, VM86_IDT_BASE, idt, sizeof(idt)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state->machine, VM86_TSS_BASE, tss, sizeof(tss)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state->machine, VM86_HANDLER_BASE,
             (const lib_u8[]){0xf4u}, 1u) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, 0x100u, pointers, sizeof(pointers)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, 0x700u, setup, sizeof(setup)) != LIB_STATUS_OK ||
-        core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK ||
-        core_machine_run(state->machine, (core_machine_run_budget){10u,0u}, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 10u ||
-        core_machine_memory_write(state->machine, 0x2400u, transfer, sizeof(transfer)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, 0x8000u, frame, sizeof(frame)) != LIB_STATUS_OK ||
-        core_machine_run(state->machine, (core_machine_run_budget){3u,0u}, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 3u) return 0;
+        x86_core_machine_memory_write(state->machine, 0x100u, pointers, sizeof(pointers)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state->machine, 0x700u, setup, sizeof(setup)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_run(state->machine, (x86_core_machine_run_budget){10u,0u}, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 10u ||
+        x86_core_machine_memory_write(state->machine, 0x2400u, transfer, sizeof(transfer)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state->machine, 0x8000u, frame, sizeof(frame)) != LIB_STATUS_OK ||
+        x86_core_machine_run(state->machine, (x86_core_machine_run_budget){3u,0u}, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 3u) return 0;
     test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
         X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF);
     snapshot = vm86_capture(state->machine);
@@ -114,20 +113,20 @@ static lib_i32 vm86_delivery_prepare(vm86_delivery_state *state, lib_u8 vector)
 static lib_i32 vm86_delivery_fault(lib_u8 vector, const lib_u8 *code,
     lib_size bytes, lib_i32 error_frame)
 {
-    vm86_delivery_state state; core_machine_run_result result; x86_core_cpu_diagnostic diagnostic;
+    vm86_delivery_state state; x86_core_machine_run_result result; x86_core_cpu_diagnostic diagnostic;
     lib_u32 frame[10u] = {0u}; lib_i32 failed = !vm86_delivery_prepare(&state, vector);
     if (!failed && vector == 7u) test_core_machine_fixture_write_register(state.machine,
         X86_CORE_CPU_DEBUG_CR0, vm86_capture(state.machine).cr0 | 4u);
-    if (!failed) failed |= core_machine_memory_write(state.machine, 0x2000u, code, bytes) != LIB_STATUS_OK ||
-        test_core_machine_fixture_run_after_delivery(state.machine, (core_machine_run_budget){8u,0u}, &result) != LIB_STATUS_OK ||
-        core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
+    if (!failed) failed |= x86_core_machine_memory_write(state.machine, 0x2000u, code, bytes) != LIB_STATUS_OK ||
+        test_core_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){8u,0u}, &result) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
         diagnostic.last_delivered_exception.exception_mask != (1u << vector) ||
-        CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_VM) ||
-        CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
-        CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
+        (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_VM)) != 0u) ||
+        (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_IF)) != 0u) ||
+        (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_TF)) != 0u) ||
         vm86_capture(state.machine).cs.selector != 0x0008u || vm86_capture(state.machine).ss.selector != 0x0010u ||
         vm86_capture(state.machine).eip != 0x101u || vm86_capture(state.machine).esp != VM86_STACK_TOP - (error_frame ? 40u : 36u) ||
-        core_machine_memory_read(state.machine, VM86_STACK_TOP - (error_frame ? 40u : 36u),
+        x86_core_machine_memory_read(state.machine, VM86_STACK_TOP - (error_frame ? 40u : 36u),
             (void *)frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
         frame[error_frame ? 1u : 0u] != 0u || frame[error_frame ? 2u : 1u] != 0x0200u ||
         frame[error_frame ? 3u : 2u] != (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF |
@@ -135,70 +134,70 @@ static lib_i32 vm86_delivery_fault(lib_u8 vector, const lib_u8 *code,
         frame[error_frame ? 4u : 3u] != 0x1234u || frame[error_frame ? 5u : 4u] != 0x0300u ||
         frame[error_frame ? 6u : 5u] != 0x0500u || frame[error_frame ? 7u : 6u] != 0x0400u ||
         frame[error_frame ? 8u : 7u] != 0x0600u || frame[error_frame ? 9u : 8u] != 0x0700u;
-    core_machine_destroy(state.machine); return !failed;
+    x86_core_machine_destroy(state.machine); return !failed;
 }
 static lib_i32 vm86_delivery_debug_tf(void)
 {
-    vm86_delivery_state state; core_machine_run_result result; x86_core_cpu_diagnostic diagnostic;
+    vm86_delivery_state state; x86_core_machine_run_result result; x86_core_cpu_diagnostic diagnostic;
     lib_u32 frame[9u] = {0u}; lib_i32 failed = !vm86_delivery_prepare(&state, 1u);
     if (!failed) {
         test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
             vm86_capture(state.machine).eflags | X86_CORE_CPU_DEBUG_EFLAGS_TF);
-        failed |= core_machine_memory_write(state.machine, 0x2000u,
+        failed |= x86_core_machine_memory_write(state.machine, 0x2000u,
             (const lib_u8[]){0x90u}, 1u) != LIB_STATUS_OK ||
-            test_core_machine_fixture_run_after_delivery(state.machine, (core_machine_run_budget){4u,0u}, &result) != LIB_STATUS_OK ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
-            CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_VM) ||
-            CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
-            CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
+            test_core_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){4u,0u}, &result) != LIB_STATUS_OK ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
+            (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_VM)) != 0u) ||
+            (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_IF)) != 0u) ||
+            (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_TF)) != 0u) ||
             vm86_capture(state.machine).eip != 0x101u ||
-            core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
+            x86_core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
                 (void *)frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 1u ||
             frame[2u] != (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF);
     }
-    core_machine_destroy(state.machine); return !failed;
+    x86_core_machine_destroy(state.machine); return !failed;
 }
 static lib_i32 vm86_delivery_irq0(void)
 {
-    vm86_delivery_state state; core_machine_pic_irq_source *irq = LIB_NULL; core_machine_run_result result;
+    vm86_delivery_state state; core_machine_pic_irq_source *irq = LIB_NULL; x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic; lib_u32 frame[9u] = {0u}; lib_i32 failed = !vm86_delivery_prepare(&state, 0x20u);
     if (!failed) {
-        failed |= core_machine_memory_write(state.machine, 0x2000u,
+        failed |= x86_core_machine_memory_write(state.machine, 0x2000u,
             (const lib_u8[]){0x90u,0xf4u}, 2u) != LIB_STATUS_OK;
         lib_memory_set(&irq, 0, sizeof(irq)); test_pic_program_vector(state.board->shared_pic_master, 0x20u);
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u); core_machine_pic_irq_source_assert(irq);
         core_machine_pic_irq_source_deassert(irq);
-        failed |= test_core_machine_fixture_run_after_delivery(state.machine, (core_machine_run_budget){4u,0u}, &result) != LIB_STATUS_OK ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK || diagnostic.first_fault.valid ||
+        failed |= test_core_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){4u,0u}, &result) != LIB_STATUS_OK ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK || diagnostic.first_fault.valid ||
         vm86_capture(state.machine).eip != 0x101u || vm86_capture(state.machine).esp != VM86_STACK_TOP - 36u ||
-            CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_VM) ||
-            CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
-            CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
+            (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_VM)) != 0u) ||
+            (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_IF)) != 0u) ||
+            (((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_TF)) != 0u) ||
             vm86_capture(state.machine).cs.selector != 0x0008u ||
             vm86_capture(state.machine).ss.selector != 0x0010u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
-            core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
+            !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
+            (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u) ||
+            x86_core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
                 (void *)frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 1u ||
             frame[1u] != 0x0200u || frame[2u] != (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
             frame[3u] != 0x1234u || frame[4u] != 0x0300u || frame[5u] != 0x0500u ||
             frame[6u] != 0x0400u || frame[7u] != 0x0600u || frame[8u] != 0x0700u;
     }
-    core_machine_destroy(state.machine); return !failed;
+    x86_core_machine_destroy(state.machine); return !failed;
 }
 static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
 {
     vm86_delivery_state state;
     core_machine_pic_irq_source *irq = LIB_NULL;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_i32 failed = !vm86_delivery_prepare(&state, 0x20u);
 
     if (!failed) {
-        failed |= core_machine_memory_write(state.machine, 0x2000u,
+        failed |= x86_core_machine_memory_write(state.machine, 0x2000u,
             (const lib_u8[]){ 0x90u, 0x90u }, 2u) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, VM86_HANDLER_BASE,
+            x86_core_machine_memory_write(state.machine, VM86_HANDLER_BASE,
                 (const lib_u8[]){ 0xcfu }, 1u) != LIB_STATUS_OK;
         lib_memory_set(&irq, 0, sizeof(irq));
         test_pic_program_vector(state.board->shared_pic_master, 0x20u);
@@ -207,19 +206,19 @@ static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
         core_machine_pic_irq_source_assert(irq);
         core_machine_pic_irq_source_deassert(irq);
         failed |= test_core_machine_fixture_run_after_delivery(state.machine,
-            (core_machine_run_budget){ 3u, 0u }, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
+            (x86_core_machine_run_budget){ 3u, 0u }, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
-            !CORE_MACHINE_BIT_IS_SET(vm86_capture(state.machine).eflags, X86_CORE_CPU_DEBUG_EFLAGS_VM) ||
+            !(((vm86_capture(state.machine).eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_VM)) != 0u) ||
             vm86_capture(state.machine).eip != 2u ||
             vm86_capture(state.machine).cs.selector != 0x0200u ||
             vm86_capture(state.machine).ss.selector != 0x0300u ||
             vm86_capture(state.machine).esp != 0x00001234u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
+            !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
+            (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 
@@ -251,60 +250,56 @@ static lib_i32 vm86_delivery_paging_composition(void)
     static const lib_u8 ud[] = { 0x0fu, 0x0bu };
     static const lib_u8 nop[] = { 0x90u };
     vm86_delivery_state state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_u32 frame[10u] = { 0u };
     lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
 
     if (!failed) {
-        failed |= core_machine_memory_write(state.machine, 0x2000u, ud,
+        failed |= x86_core_machine_memory_write(state.machine, 0x2000u, ud,
                 sizeof(ud)) != LIB_STATUS_OK ||
             !vm86_delivery_enable_paging(&state, LIB_TRUE) ||
-            test_core_machine_fixture_run_after_delivery(state.machine, (core_machine_run_budget){ 8u, 0u },
+            test_core_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){ 8u, 0u },
                 &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_UD) || vm86_capture(state.machine).eip !=
+            !diagnostic.last_delivered_exception.valid || !(((diagnostic.last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_UD)) != 0u) || vm86_capture(state.machine).eip !=
                 0x101u || vm86_capture(state.machine).cr3 !=
                 VM86_PAGE_DIRECTORY || vm86_capture(state.machine).esp !=
-                VM86_STACK_TOP - 36u || core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
+                VM86_STACK_TOP - 36u || x86_core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
                 (void *)frame, sizeof(frame)) != LIB_STATUS_OK ||
             frame[0] != 0u || frame[1] != 0x0200u || frame[2] !=
                 (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x00010000u);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     if (failed) return 0;
 
     failed = !vm86_delivery_prepare(&state, 14u);
     if (!failed) {
         test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CS, 0x400u);
-        failed |= core_machine_memory_write(state.machine, 0x4000u, nop,
+        failed |= x86_core_machine_memory_write(state.machine, 0x4000u, nop,
                 sizeof(nop)) != LIB_STATUS_OK ||
             !vm86_delivery_enable_paging(&state, LIB_FALSE) ||
-            test_core_machine_fixture_run_after_delivery(state.machine, (core_machine_run_budget){ 8u, 0u },
+            test_core_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){ 8u, 0u },
                 &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_PF) || diagnostic.last_delivered_exception.
+            !diagnostic.last_delivered_exception.valid || !(((diagnostic.last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_PF)) != 0u) || diagnostic.last_delivered_exception.
                 exception_code != 4u || vm86_capture(state.machine).cr2 !=
                 0x4000u || vm86_capture(state.machine).eip != 0x101u ||
             vm86_capture(state.machine).esp != VM86_STACK_TOP - 40u ||
             vm86_capture(state.machine).cs.selector != 0x0008u ||
             vm86_capture(state.machine).ss.selector != 0x0010u ||
-            core_machine_memory_read(state.machine,
+            x86_core_machine_memory_read(state.machine,
                 VM86_STACK_TOP - 40u, (void *)frame,
                 sizeof(frame)) != LIB_STATUS_OK || frame[0] != 4u ||
             frame[1] != 0u || frame[2] != 0x0400u || frame[3] !=
                 (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x00010000u) || frame[4] != 0x1234u ||
             frame[5] != 0x0300u;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 lib_i32 main(void)

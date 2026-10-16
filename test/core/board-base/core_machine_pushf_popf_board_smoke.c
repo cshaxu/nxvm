@@ -71,47 +71,47 @@ static lib_i32 pushf_board_stack_limit_fault(void)
     };
     const lib_u8 limit_high = 0x7fu;
     const lib_u32 image = X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_IF;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_debug_cpu_snapshot before = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_debug_register_patch patch = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP)
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_status fault_status = LIB_STATUS_OK;
     lib_i32 failed = !test_cpu_board_limit_prepare(&machine, code,
         sizeof(code), LIB_TRUE, LIB_FALSE);
 
     if (!failed) {
         patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x7ffcu;
-        failed = core_machine_memory_write(machine, 0x0319u,
+        failed = x86_core_machine_memory_write(machine, 0x0319u,
                 &limit_high, sizeof(limit_high)) != LIB_STATUS_OK ||
-            core_machine_debug_patch_registers(machine, &patch) !=
+            x86_core_machine_debug_patch_registers(machine, &patch) !=
                 LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0xc000u,
+            x86_core_machine_memory_write(machine, 0xc000u,
                 &image, sizeof(image)) != LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){2u,0u},
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){2u,0u},
                 &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET;
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET;
         patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x8000u;
-        if (!failed) failed = core_machine_debug_patch_registers(machine,
+        if (!failed) failed = x86_core_machine_debug_patch_registers(machine,
                 &patch) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) !=
                 LIB_STATUS_OK || before.eip != 5u;
-        if (!failed) fault_status = core_machine_run(machine,
-            (core_machine_run_budget){1u,0u}, &result);
+        if (!failed) fault_status = x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){1u,0u}, &result);
         if (!failed) {
             failed = !test_core_machine_fixture_shutdown_wait(fault_status,
                     &result) ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) !=
                     LIB_STATUS_OK;
         }
         if (!failed) failed = after.eip != before.eip || after.esp != before.esp ||
             after.eflags != before.eflags;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

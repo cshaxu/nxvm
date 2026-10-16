@@ -5,7 +5,7 @@
 #include "app-mydeskpro386/d4_memory.h"
 
 struct mydeskpro386_d4_platform {
-    core_machine *core;
+    x86_core_machine *core;
     mydeskpro386_d4_memory memory;
     x86_pit *shared_pit;
     x86_pit *auxiliary_pit;

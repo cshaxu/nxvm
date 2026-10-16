@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_BOARD_TRACE_INTERFACE_H
 #define CORE_MACHINE_BOARD_TRACE_INTERFACE_H
 
-#include "core/x86/trace_interface.h"
+#include "x86-core/machine/trace_interface.h"
 
 /* Board event identities share Core's copied scalar envelope and trace owner.
  * Preserve the existing diagnostic stream values and ordering. */

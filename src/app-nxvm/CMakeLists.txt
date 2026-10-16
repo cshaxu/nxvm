@@ -4,7 +4,7 @@ set(NXVM_COMPOSITION_SOURCES
     src/app-nxvm/machine_config.c)
 add_library(nxvm-machine STATIC ${NXVM_COMPOSITION_SOURCES})
 target_include_directories(nxvm-machine PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(nxvm-machine PUBLIC core-machine core-board-base core-x86)
+target_link_libraries(nxvm-machine PUBLIC core-machine core-board-base x86-core-machine)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

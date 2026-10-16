@@ -2,10 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
-string(FIND "${core}" "static void core_machine_dma_grant_advance" advance_start)
+string(FIND "${core}" "static void x86_core_machine_dma_grant_advance" advance_start)
 if(advance_start LESS 0)
     message(FATAL_ERROR "Core scheduler observation boundary is missing")
 endif()
@@ -22,8 +22,8 @@ foreach(query "x86_pit_ticks_until_output(" "x86_rtc_ticks_until_irq("
         message(FATAL_ERROR "Board deadline query crosses Core owner: ${query}")
     endif()
 endforeach()
-foreach(required "core_machine_publish_elapsed_ticks(" "machine->attachment.deadline("
-    "core_machine_timeline_next_due(" "x86_fpu_ticks_until_completion(")
+foreach(required "x86_core_machine_publish_elapsed_ticks(" "machine->attachment.deadline("
+    "x86_core_machine_timeline_next_due(" "x86_fpu_ticks_until_completion(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Core deadline composition lacks ${required}")

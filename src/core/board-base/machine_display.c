@@ -8,13 +8,13 @@ lib_status core_machine_capture_display_snapshot(const core_machine_board_state 
     x86_video_snapshot *out_snapshot)
 {
     core_machine_board_state *mutable_board = (core_machine_board_state *)board;
-    core_machine_lifecycle lifecycle;
+    x86_core_machine_lifecycle lifecycle;
 
     if (board == LIB_NULL || out_snapshot == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
-        (lifecycle != CORE_MACHINE_STOPPED && lifecycle != CORE_MACHINE_PAUSED)) {
+    if (x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != X86_CORE_MACHINE_STOPPED && lifecycle != X86_CORE_MACHINE_PAUSED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     return core_machine_vadp_capture_snapshot(mutable_board->shared_vadp,
@@ -26,13 +26,13 @@ lib_status core_machine_observe_display_snapshot(const core_machine_board_state 
     lib_u64 acknowledged_generation,
     x86_video_snapshot_observation *out_observation)
 {
-    core_machine_lifecycle lifecycle;
+    x86_core_machine_lifecycle lifecycle;
 
     if (board == LIB_NULL || out_observation == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
-        (lifecycle != CORE_MACHINE_STOPPED && lifecycle != CORE_MACHINE_PAUSED)) {
+    if (x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != X86_CORE_MACHINE_STOPPED && lifecycle != X86_CORE_MACHINE_PAUSED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     core_machine_vadp_observe_snapshot(board->shared_vadp,
@@ -46,7 +46,7 @@ lib_status core_machine_configure_display(core_machine_board_state *board,
 {
     lib_status status;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
             board->display_configured) {
         return LIB_STATUS_INVALID_STATE;
     }

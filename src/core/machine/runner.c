@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "lib/base/sync_interface.h"
 #include "core/machine/display.h"
 #include "core/machine/fault.h"
@@ -27,11 +27,11 @@ static void vm_machine_runner_fail(vm_machine *session)
 
 void vm_machine_runner_run(vm_machine *session)
 {
-    core_machine_run_budget budget;
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget;
+    x86_core_machine_run_result result;
     vm_machine_control_state *control;
 
-    if (session == LIB_NULL || session->core_machine == LIB_NULL) return;
+    if (session == LIB_NULL || session->x86_core_machine == LIB_NULL) return;
     control = &session->control;
     while (vm_machine_executor_state_is_active(&control->state)) {
         if (session->executor_callback != LIB_NULL)
@@ -63,11 +63,11 @@ void vm_machine_runner_run(vm_machine *session)
         budget.ticks = session->speed == VM_MACHINE_SPEED_TURBO ? 0u :
             VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
         {
-            lib_status run_status = core_machine_run(session->core_machine,
+            lib_status run_status = x86_core_machine_run(session->x86_core_machine,
                 budget, &result);
 
             if (run_status == LIB_STATUS_INTERNAL_ERROR ||
-                result.reason == CORE_MACHINE_STOP_FAULT) {
+                result.reason == X86_CORE_MACHINE_STOP_FAULT) {
                 vm_machine_fault_capture(session, &result);
                 vm_machine_runner_fail(session);
                 continue;
@@ -78,7 +78,7 @@ void vm_machine_runner_run(vm_machine *session)
             }
         }
         vm_machine_control_refresh_debug(control);
-        if (result.reason == CORE_MACHINE_STOP_PAUSED &&
+        if (result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
             session->debug.observation_valid && session->debug.observation.watch_hit) {
             vm_machine_debug_complete_watchpoint(&session->debug);
             continue;
@@ -101,14 +101,14 @@ void vm_machine_runner_run(vm_machine *session)
             vm_machine_runner_fail(session);
             continue;
         }
-        if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
+        if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* Core reset the requested processor state before returning. */
             vm_machine_debug_reset(&session->debug);
         }
-        if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
+        if (result.reason == X86_CORE_MACHINE_STOP_REQUESTED) {
             vm_machine_control_stop(control);
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             /* Architectural shutdown is a resident CPU state, not a normal
              * HLT wait and not a Core fault.  End this host run without
              * requesting product stop, so only CPU reset, a qualified NMI,

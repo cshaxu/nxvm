@@ -11,13 +11,13 @@ void vm_machine_fault_clear(vm_machine *session)
 }
 
 void vm_machine_fault_capture(vm_machine *session,
-    const core_machine_run_result *run)
+    const x86_core_machine_run_result *run)
 {
     if (session == LIB_NULL || run == LIB_NULL) return;
     vm_machine_fault_clear(session);
     session->fault_outcome.valid = LIB_TRUE;
     session->fault_outcome.run = *run;
-    (void)core_machine_get_cpu_diagnostic(session->core_machine,
+    (void)x86_core_machine_get_cpu_diagnostic(session->x86_core_machine,
         &session->fault_outcome.diagnostic);
 }
 

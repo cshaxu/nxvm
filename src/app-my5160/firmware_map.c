@@ -25,7 +25,7 @@ lib_status vm_profile_xt_5160_268_external_rom_create(
 }
 
 static lib_status vm_profile_xt_5160_268_firmware_configure(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     const vm_profile_xt_5160_268_external_rom *rom = opaque;
     vm_profile_rom_region regions[3u];
@@ -48,7 +48,7 @@ static lib_status vm_profile_xt_5160_268_firmware_configure(void *opaque,
 }
 
 static lib_status vm_profile_xt_5160_268_firmware_reset(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     const vm_profile_xt_5160_268_external_rom *rom = opaque;
 
@@ -61,13 +61,13 @@ static lib_status vm_profile_xt_5160_268_firmware_reset(void *opaque,
         LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK;
 }
 
-static const core_machine_firmware_provider vm_profile_xt_5160_268_provider = {
+static const x86_core_machine_firmware_provider vm_profile_xt_5160_268_provider = {
     vm_profile_xt_5160_268_firmware_configure,
     vm_profile_xt_5160_268_firmware_reset,
     LIB_NULL
 };
 
-const core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(void)
+const x86_core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(void)
 {
     return &vm_profile_xt_5160_268_provider;
 }

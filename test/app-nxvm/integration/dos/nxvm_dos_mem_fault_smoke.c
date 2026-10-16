@@ -3,13 +3,12 @@
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
-#include "core/x86/device_support_interface.h"
 
 #include <windows.h>
 #undef exception_code
 
 #include "x86-core/cpu/cpu_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
@@ -101,12 +100,11 @@ lib_i32 main(lib_i32 argc, char **argv)
         WAIT_OBJECT_0;
     stage = "FNINIT fault classification";
     if (result == WAIT_OBJECT_0) {
-        if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
+        if (x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) !=
             LIB_STATUS_OK) goto fail;
         if (diagnostic.first_fault.valid) {
             vm_dos_mem_fault_print(&diagnostic);
-            if (CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_UD) &&
+            if ((((diagnostic.first_fault.exception_mask) & (VCPUINS_EXCEPT_UD)) != 0u) &&
                 diagnostic.first_fault.point.byte_count >= 2u &&
                 diagnostic.first_fault.point.bytes[0] == 0xdbu &&
                 diagnostic.first_fault.point.bytes[1] == 0xe3u) goto fail;
@@ -124,7 +122,7 @@ lib_i32 main(lib_i32 argc, char **argv)
 fail:
     fprintf(stderr, "NXVM:DOS-MEM:FAIL stage=%s\n", stage);
     if (session != LIB_NULL &&
-        core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+        x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         vm_dos_mem_fault_print(&diagnostic);
     }

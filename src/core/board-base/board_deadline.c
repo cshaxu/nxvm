@@ -11,13 +11,13 @@ static lib_u8 board_consider_relative(lib_u64 source_ticks, lib_u64 *io_source_t
     return LIB_FALSE;
 }
 
-static lib_u8 board_consider_clock(const core_machine_clock_domain *clock,
+static lib_u8 board_consider_clock(const x86_core_machine_clock_domain *clock,
     lib_u64 device_ticks, lib_u64 *io_source_ticks)
 {
     lib_u64 source_ticks;
 
     if (device_ticks == 0u) return LIB_TRUE;
-    if (core_machine_clock_domain_source_ticks_until(clock, device_ticks,
+    if (x86_core_machine_clock_domain_source_ticks_until(clock, device_ticks,
             &source_ticks) != LIB_STATUS_OK) return LIB_FALSE;
     return board_consider_relative(source_ticks, io_source_ticks);
 }
@@ -30,7 +30,7 @@ static lib_u8 board_consider_absolute(lib_u64 now, lib_u64 due_tick,
 }
 
 static lib_u8 board_consider_pit(const x86_pit *pit,
-    const core_machine_clock_domain *clock, lib_u64 *io_source_ticks)
+    const x86_core_machine_clock_domain *clock, lib_u64 *io_source_ticks)
 {
     lib_u8 counter;
     lib_u8 immediate_due = LIB_FALSE;
@@ -46,7 +46,7 @@ static lib_u8 board_consider_pit(const x86_pit *pit,
 }
 
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
-    core_machine_attachment_deadline_observation *out_observation)
+    x86_core_machine_attachment_deadline_observation *out_observation)
 {
     const core_machine_board_state *board = owner;
     lib_u64 device_ticks;
@@ -55,7 +55,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     lib_u8 dma_qualified;
 
     if (out_observation == LIB_NULL) return;
-    *out_observation = (core_machine_attachment_deadline_observation){0};
+    *out_observation = (x86_core_machine_attachment_deadline_observation){0};
     if (board == LIB_NULL) return;
     if (board->refresh_hold_pending &&
         (out_observation->source_ticks == 0u || out_observation->source_ticks > 1u))

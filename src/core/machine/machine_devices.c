@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/media/media_interface.h"
 #include "core/machine/machine_devices.h"
 #include "core/machine/machine_private.h"

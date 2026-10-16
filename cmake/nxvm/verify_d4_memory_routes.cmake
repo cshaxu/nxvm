@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_memory.c" d4)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
     "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
@@ -17,12 +17,12 @@ foreach(source_file IN LISTS generic_machine_sources)
     endif()
 endforeach()
 
-foreach(required "core_machine_install_memory_device_routes(core, routes, 2u"
+foreach(required "x86_core_machine_install_memory_device_routes(core, routes, 2u"
     "mydeskpro386_d4_memory_write_observer, &parity, memory"
     "memory->configured = LIB_TRUE"
-    "core_machine_memory_register_replacement_device_provider(memory"
-    "core_machine_memory_enable_parity(memory"
-    "core_machine_memory_release_parity(memory)")
+    "x86_core_machine_memory_register_replacement_device_provider(memory"
+    "x86_core_machine_memory_enable_parity(memory"
+    "x86_core_machine_memory_release_parity(memory)")
     string(FIND "${d4}${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "D4 atomic Core memory route is missing ${required}")
@@ -92,11 +92,11 @@ foreach(operation IN ITEMS
         message(FATAL_ERROR "Electrical operation retains Core board lookup: ${operation}")
     endif()
     if(NOT operation MATCHES "^(core_machine_at_parity|parity_|d4_|mydeskpro386_d4_platform_refresh_nmi)" AND
-        definition MATCHES "core_machine[ \\t]+\\*")
+        definition MATCHES "x86_core_machine[ \\t]+\\*")
         message(FATAL_ERROR "Board electrical operation retains Core receiver: ${operation}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" executor)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" executor)
 file(GLOB_RECURSE callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
@@ -111,15 +111,15 @@ file(GLOB_RECURSE callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
 foreach(caller IN LISTS callers)
     file(READ "${caller}" source)
     if(source MATCHES
-        "core_machine_(configure_planar_parity|configure_d4_platform|report_planar_parity_fault|clear_d4_iochk_fault|report_d4_iochk_fault|get_d4_platform_observation|get_speaker_observation|configure_absent_memory|get_planar_parity_observation)\\([ \t\r\n]*(machine|session->core_machine|state\\.machine|state->machine|&machine)[ \t\r\n]*[,)]")
+        "core_machine_(configure_planar_parity|configure_d4_platform|report_planar_parity_fault|clear_d4_iochk_fault|report_d4_iochk_fault|get_d4_platform_observation|get_speaker_observation|configure_absent_memory|get_planar_parity_observation)\\([ \t\r\n]*(machine|session->x86_core_machine|state\\.machine|state->machine|&machine)[ \t\r\n]*[,)]")
         message(FATAL_ERROR "Electrical caller retains Core receiver: ${caller}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" executor_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" executor_header)
 if("${executor}${executor_header}${board}" MATCHES "core_machine_reconfigure_memory_core")
     message(FATAL_ERROR "Duplicate RAM reconfiguration path remains")
 endif()
-foreach(required IN ITEMS "core_machine_reconfigure_memory(core_machine *machine"
+foreach(required IN ITEMS "x86_core_machine_reconfigure_memory(x86_core_machine *machine"
     "machine->attachment.memory_admission(machine->attachment.context")
     string(FIND "${executor}" "${required}" position)
     if(position LESS 0)

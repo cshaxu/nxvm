@@ -4,15 +4,15 @@
 #include "lib/types/file.h"
 
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 typedef struct pic_command_priority_fixture {
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
-    core_machine *machine;
+    x86_core_machine *machine;
 } pic_command_priority_fixture;
 
-static void pic_command_priority_program(core_machine *port,
+static void pic_command_priority_program(x86_core_machine *port,
     lib_u8 master_icw1, lib_u8 master_icw3,
     lib_u8 master_icw4, lib_u8 slave_icw1,
     lib_u8 slave_icw3, lib_u8 slave_icw4)
@@ -38,18 +38,18 @@ static void pic_command_priority_program(core_machine *port,
 static void pic_command_priority_initialize(pic_command_priority_fixture *fixture,
     lib_u8 master_icw4, lib_u8 slave_icw4)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
     *fixture = (pic_command_priority_fixture){0};
-    if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
+    if (x86_core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
         core_machine_pic_initialize(&fixture->master, &fixture->slave, fixture->machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
-        core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
+        x86_core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
         core_machine_pic_finalize(fixture->master, fixture->slave);
-        core_machine_destroy(fixture->machine);
+        x86_core_machine_destroy(fixture->machine);
         lib_test_assert(LIB_FALSE);
     }
     core_machine_pic_reset(fixture->master, fixture->slave);
@@ -60,7 +60,7 @@ static void pic_command_priority_initialize(pic_command_priority_fixture *fixtur
 static void pic_command_priority_finalize(pic_command_priority_fixture *fixture)
 {
     core_machine_pic_finalize(fixture->master, fixture->slave);
-    core_machine_destroy(fixture->machine);
+    x86_core_machine_destroy(fixture->machine);
 }
 
 static void pic_command_priority_raise(pic_command_priority_fixture *fixture,

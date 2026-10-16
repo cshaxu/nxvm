@@ -12,7 +12,7 @@ static lib_i32 s47_patch(test_protected_16_machine *state, lib_u32 mask,
     patch.mask = mask;
     patch.values[X86_CORE_CPU_DEBUG_ESP] = esp;
     patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = eflags;
-    return core_machine_debug_patch_registers(state->machine, &patch) ==
+    return x86_core_machine_debug_patch_registers(state->machine, &patch) ==
         LIB_STATUS_OK;
 }
 
@@ -21,7 +21,7 @@ static lib_i32 s47_run_same(x86_core_cpu_profile profile,
     lib_size frame_words, lib_u32 expected_esp, lib_u32 expected_eflags)
 {
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile);
 
@@ -32,9 +32,9 @@ static lib_i32 s47_run_same(x86_core_cpu_profile profile,
             !s47_patch(&state, X86_CORE_CPU_DEBUG_REGISTER_MASK(
                 X86_CORE_CPU_DEBUG_ESP) | X86_CORE_CPU_DEBUG_REGISTER_MASK(
                 X86_CORE_CPU_DEBUG_EFLAGS), S47_STACK_POINTER,
-                X86_CORE_CPU_DEBUG_EFLAGS_CF) || core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET ||
+                X86_CORE_CPU_DEBUG_EFLAGS_CF) || x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.eip != 0x0010u || snapshot.cs.selector != 0x0008u ||
             snapshot.cs.dpl != 0u || snapshot.ss.selector != 0x0010u ||
@@ -59,7 +59,7 @@ static lib_i32 s47_run_outer_retf(lib_u8 immediate)
         0x0010u,0x001bu,0x1357u,0x2468u,S47_USER_STACK,0x0023u
     };
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
         X86_CORE_CPU_PROFILE_80286);
@@ -73,9 +73,9 @@ static lib_i32 s47_run_outer_retf(lib_u8 immediate)
                 immediate ? sizeof(frame_immediate) : sizeof(frame)) ||
             !s47_patch(&state, X86_CORE_CPU_DEBUG_REGISTER_MASK(
                 X86_CORE_CPU_DEBUG_ESP), S47_STACK_POINTER, 0u) ||
-            core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){1u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_BUDGET || !test_protected_16_snapshot(&state,
+                X86_CORE_MACHINE_STOP_BUDGET || !test_protected_16_snapshot(&state,
                 &snapshot) || snapshot.eip != 0x0010u ||
             snapshot.cs.selector != 0x001bu || snapshot.cs.dpl != 3u ||
             snapshot.ss.selector != 0x0023u || snapshot.ss.dpl != 3u ||
@@ -99,7 +99,7 @@ static lib_i32 s47_run_outer_iret(x86_core_cpu_profile profile,
         X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF | TEST_PROTECTED_IOPL_MASK,
         S47_USER_STACK,0x0023u};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile);
 
@@ -112,9 +112,9 @@ static lib_i32 s47_run_outer_iret(x86_core_cpu_profile profile,
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
                 S47_STACK_POINTER, X86_CORE_CPU_DEBUG_EFLAGS_CF) ||
-            core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){1u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_BUDGET || !test_protected_16_snapshot(&state,
+                X86_CORE_MACHINE_STOP_BUDGET || !test_protected_16_snapshot(&state,
                 &snapshot) || snapshot.eip != 0x0010u ||
             snapshot.cs.selector != 0x001bu || snapshot.cs.dpl != 3u ||
             snapshot.ss.selector != 0x0023u || snapshot.ss.dpl != 3u ||

@@ -242,7 +242,7 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
     core_machine_plan_topology topology = {0};
     lib_status status;
 
-    if (machine == LIB_NULL || machine->core_machine != LIB_NULL) {
+    if (machine == LIB_NULL || machine->x86_core_machine != LIB_NULL) {
         return LIB_STATUS_INVALID_STATE;
     }
     status = core_machine_plan_create(&machine->construction.core_config,
@@ -288,7 +288,7 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
         return status;
     }
     status = core_machine_create_from_plan(machine->core_machine_plan,
-        &machine->core_machine, &machine->board);
+        &machine->x86_core_machine, &machine->board);
     if (status == LIB_STATUS_OK) {
         status = core_machine_get_fdc_dma_request_binding(machine->board,
             &machine->fdc_dma_request);
@@ -304,8 +304,8 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
 void vm_machine_storage_finalize(vm_machine *machine)
 {
     if (machine == LIB_NULL) return;
-    core_machine_destroy(machine->core_machine);
-    machine->core_machine = LIB_NULL;
+    x86_core_machine_destroy(machine->x86_core_machine);
+    machine->x86_core_machine = LIB_NULL;
     if (machine->core_machine_plan != LIB_NULL &&
         machine->construction.profile.notify != LIB_NULL)
         machine->construction.profile.notify(machine->construction.profile.context,
@@ -383,7 +383,7 @@ lib_status vm_machine_reconfigure_memory(vm_machine *session,
             session->executor) != EMULATOR_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
-    status = core_machine_reconfigure_memory(session->core_machine, memory_bytes);
+    status = x86_core_machine_reconfigure_memory(session->x86_core_machine, memory_bytes);
     if (status != LIB_STATUS_OK) return status;
     vm_machine_debug_reset(&session->debug);
     return vm_machine_publish_display(session, LIB_TRUE);
@@ -401,12 +401,12 @@ void vm_machine_destroy(vm_machine *session)
 lib_status vm_machine_get_reset_vector(const vm_machine *session,
     vm_machine_reset_vector *out_vector)
 {
-    core_machine_observation observation;
+    x86_core_machine_observation observation;
     lib_status status;
 
     if (session == LIB_NULL || out_vector == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (session->core_machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-    status = core_machine_capture_observation(session->core_machine, &observation);
+    if (session->x86_core_machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    status = x86_core_machine_capture_observation(session->x86_core_machine, &observation);
     if (status != LIB_STATUS_OK) return status;
     out_vector->cs = observation.cpu.cs;
     out_vector->ip = (lib_u16)observation.cpu.eip;

@@ -1,8 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "../core_machine_board_fixture.h"
 
@@ -16,11 +15,11 @@
 #define TEST_DATA_SELECTOR 0x0010u
 
 typedef struct protected_mode_machine {
-    core_machine *machine;
+    x86_core_machine *machine;
     lib_status reset_status;
 } protected_mode_machine;
 
-static lib_status protected_mode_set_entry(core_machine *machine)
+static lib_status protected_mode_set_entry(x86_core_machine *machine)
 {
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -29,7 +28,7 @@ static lib_status protected_mode_set_entry(core_machine *machine)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
-    return core_machine_debug_patch_registers(machine, &entry);
+    return x86_core_machine_debug_patch_registers(machine, &entry);
 }
 
 static lib_i32 protected_mode_prepare(protected_mode_machine *state,
@@ -47,14 +46,14 @@ static lib_i32 protected_mode_prepare(protected_mode_machine *state,
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             LIB_NULL, LIB_NULL) ||
         (state->reset_status = protected_mode_set_entry(state->machine)) != LIB_STATUS_OK) {
-        core_machine_destroy(state->machine);
+        x86_core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
     }
     return 1;
 }
 
-static lib_i32 protected_mode_install_gdt(core_machine *machine,
+static lib_i32 protected_mode_install_gdt(x86_core_machine *machine,
     lib_u8 code_access, lib_u8 data_access)
 {
     static const lib_u8 gdt_pointer[] = {
@@ -68,13 +67,13 @@ static lib_i32 protected_mode_install_gdt(core_machine *machine,
 
     if (code_access != 0u) gdt[13u] = code_access;
     if (data_access != 0u) gdt[21u] = data_access;
-    return core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
+    return x86_core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
         gdt_pointer, sizeof(gdt_pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, TEST_GDT_ADDRESS, gdt,
+        x86_core_machine_memory_write(machine, TEST_GDT_ADDRESS, gdt,
             sizeof(gdt)) == LIB_STATUS_OK;
 }
 
-static lib_i32 protected_mode_install_tss_gdt(core_machine *machine)
+static lib_i32 protected_mode_install_tss_gdt(x86_core_machine *machine)
 {
     static const lib_u8 gdt_pointer[] = {
         0x1fu, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
@@ -86,13 +85,13 @@ static lib_i32 protected_mode_install_tss_gdt(core_machine *machine)
         0x00u, 0x00u, 0x00u, 0x35u, 0x00u, 0x81u, 0x00u, 0x00u
     };
 
-    return core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
+    return x86_core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
         gdt_pointer, sizeof(gdt_pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, TEST_GDT_ADDRESS, gdt,
+        x86_core_machine_memory_write(machine, TEST_GDT_ADDRESS, gdt,
             sizeof(gdt)) == LIB_STATUS_OK;
 }
 
-static lib_i32 protected_mode_install_idt(core_machine *machine)
+static lib_i32 protected_mode_install_idt(x86_core_machine *machine)
 {
     static const lib_u8 idt_pointer[] = {
         0x67u, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u
@@ -108,21 +107,21 @@ static lib_i32 protected_mode_install_idt(core_machine *machine)
     idt[96u] = 0x20u;
     idt[98u] = 0x08u;
     idt[101u] = 0x86u;
-    return core_machine_memory_write(machine, TEST_IDT_POINTER_ADDRESS,
+    return x86_core_machine_memory_write(machine, TEST_IDT_POINTER_ADDRESS,
         idt_pointer, sizeof(idt_pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, TEST_IDT_ADDRESS, idt,
+        x86_core_machine_memory_write(machine, TEST_IDT_ADDRESS, idt,
             sizeof(idt)) == LIB_STATUS_OK;
 }
 
-static lib_i32 protected_mode_run(core_machine *machine,
+static lib_i32 protected_mode_run(x86_core_machine *machine,
     const lib_u8 *real_code, lib_size real_code_size,
     const lib_u8 *protected_code, lib_size protected_code_size,
     lib_u8 code_access, lib_u8 data_access,
     lib_i32 expect_fault,
-    core_machine_run_result *out_result,
+    x86_core_machine_run_result *out_result,
     x86_core_cpu_diagnostic *out_diagnostic)
 {
-    core_machine_run_budget budget = { 64u, 0u };
+    x86_core_machine_run_budget budget = { 64u, 0u };
     /* REAL_UD_TERMINAL_GUEST_LIDT: guest LIDT precedes measurement.
      * Rejected instructions have real handlers, not an unavailable-table oracle. */
     const lib_u8 load_idt[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x06u };
@@ -131,24 +130,24 @@ static lib_i32 protected_mode_run(core_machine *machine,
     if (machine == LIB_NULL || out_result == LIB_NULL ||
         out_diagnostic == LIB_NULL) return 0;
     if (expect_fault) {
-        if (core_machine_memory_write(machine, 0x0500u, load_idt,
+        if (x86_core_machine_memory_write(machine, 0x0500u, load_idt,
                 sizeof(load_idt)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x0600u, idtr,
+            x86_core_machine_memory_write(machine, 0x0600u, idtr,
                 sizeof(idtr)) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
+            x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
                 0x0500u) != LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
                 out_result) != LIB_STATUS_OK ||
-            out_result->reason != CORE_MACHINE_STOP_BUDGET || out_result->executed != 1u ||
-            core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
+            out_result->reason != X86_CORE_MACHINE_STOP_BUDGET || out_result->executed != 1u ||
+            x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
                 0u) != LIB_STATUS_OK) return 0;
     }
 
     if (!protected_mode_install_gdt(machine,
             code_access, data_access) ||
-        core_machine_memory_write(machine, 0u, real_code, real_code_size) !=
+        x86_core_machine_memory_write(machine, 0u, real_code, real_code_size) !=
             LIB_STATUS_OK ||
-        core_machine_memory_write(machine, TEST_CODE_ADDRESS, protected_code,
+        x86_core_machine_memory_write(machine, TEST_CODE_ADDRESS, protected_code,
             protected_code_size) != LIB_STATUS_OK) return 0;
     if (expect_fault) {
         const lib_u8 handler_descriptor[] = {0xffu,0xffu,0u,0u,0u,0x9au,0u,0u};
@@ -158,22 +157,22 @@ static lib_i32 protected_mode_run(core_machine *machine,
         const lib_u8 gate[] = {0u,7u,0x18u,0u,0u,0x86u,0u,0u};
         const lib_u16 real_ud[] = {0x0700u,0u};
 
-        if (core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
+        if (x86_core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
                 &gdt_limit, sizeof(gdt_limit)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, TEST_GDT_ADDRESS + 0x18u,
+            x86_core_machine_memory_write(machine, TEST_GDT_ADDRESS + 0x18u,
                 handler_descriptor, sizeof(handler_descriptor)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x0700u, &handler,
+            x86_core_machine_memory_write(machine, 0x0700u, &handler,
                 sizeof(handler)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, TEST_IDT_ADDRESS + 6u * 4u,
+            x86_core_machine_memory_write(machine, TEST_IDT_ADDRESS + 6u * 4u,
                 real_ud, sizeof(real_ud)) != LIB_STATUS_OK) return 0;
         for (lib_size index = 0u; index < sizeof(vectors); ++index)
-            if (core_machine_memory_write(machine, TEST_IDT_ADDRESS + vectors[index] * 8u,
+            if (x86_core_machine_memory_write(machine, TEST_IDT_ADDRESS + vectors[index] * 8u,
                     gate, sizeof(gate)) != LIB_STATUS_OK) return 0;
     }
     if (test_core_machine_fixture_run_after_delivery(machine, budget, out_result) !=
             LIB_STATUS_OK ||
-        out_result->reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        core_machine_get_cpu_diagnostic(machine, out_diagnostic) !=
+        out_result->reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_get_cpu_diagnostic(machine, out_diagnostic) !=
             LIB_STATUS_OK) return 0;
     return 1;
 }
@@ -202,7 +201,7 @@ static lib_i32 protected_mode_test_positive(void)
         0xcbu
     };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_state cpu = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
@@ -218,12 +217,12 @@ static lib_i32 protected_mode_test_positive(void)
         lib_i32 got_cpu = 0;
 
         failed |= !ran || diagnostic.first_fault.valid ||
-            core_machine_memory_read(state.machine, TEST_DATA_ADDRESS,
+            x86_core_machine_memory_read(state.machine, TEST_DATA_ADDRESS,
                 &first, sizeof(first)) != LIB_STATUS_OK || first != 0x1234u ||
-            core_machine_memory_read(state.machine, TEST_DATA_ADDRESS + 2u,
+            x86_core_machine_memory_read(state.machine, TEST_DATA_ADDRESS + 2u,
                 &second, sizeof(second)) != LIB_STATUS_OK || second != 0x5678u ||
-            !(got_cpu = core_machine_get_cpu_state(state.machine, &cpu) == LIB_STATUS_OK) ||
-            core_machine_debug_capture_cpu_snapshot(state.machine,
+            !(got_cpu = x86_core_machine_get_cpu_state(state.machine, &cpu) == LIB_STATUS_OK) ||
+            x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             cpu.cs != TEST_CODE_SELECTOR ||
             cpu.cs_base != TEST_CODE_ADDRESS;
@@ -239,7 +238,7 @@ static lib_i32 protected_mode_test_positive(void)
                 cpu.cs, cpu.cs_base);
         }
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -253,7 +252,7 @@ static lib_i32 protected_mode_test_invalid_selector(void)
     };
     static const lib_u8 protected_code[] = { 0x90u };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !protected_mode_prepare(&state,
@@ -266,13 +265,13 @@ static lib_i32 protected_mode_test_invalid_selector(void)
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask !=
                 VCPUINS_EXCEPT_GP || diagnostic.last_delivered_exception.exception_code !=
-                0x28u || core_machine_debug_capture_cpu_snapshot(state.machine,
+                0x28u || x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             after.cs.selector != 0x18u || after.cs.base != 0u || after.eip != 0x0701u ||
             diagnostic.last_delivered_exception.point.cs != 0u ||
             diagnostic.last_delivered_exception.point.eip != 0x000bu;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -286,7 +285,7 @@ static lib_i32 protected_mode_test_nonpresent_code(void)
     };
     static const lib_u8 protected_code[] = { 0x90u };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_i32 failed = !protected_mode_prepare(&state,
         X86_CORE_CPU_PROFILE_80286);
@@ -300,7 +299,7 @@ static lib_i32 protected_mode_test_nonpresent_code(void)
                 VCPUINS_EXCEPT_NP || diagnostic.last_delivered_exception.exception_code !=
                 TEST_CODE_SELECTOR;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -315,7 +314,7 @@ static lib_i32 protected_mode_test_nonpresent_stack(void)
     };
     static const lib_u8 protected_code[] = { 0x90u };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_i32 failed = !protected_mode_prepare(&state,
         X86_CORE_CPU_PROFILE_80286);
@@ -329,7 +328,7 @@ static lib_i32 protected_mode_test_nonpresent_stack(void)
                 VCPUINS_EXCEPT_SS || diagnostic.last_delivered_exception.exception_code !=
                 TEST_DATA_SELECTOR;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -347,7 +346,7 @@ static lib_i32 protected_mode_test_80286_stack_fault_delivery(void)
         [32] = 0xf4u
     };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     x86_core_cpu_state cpu;
     x86_core_cpu_debug_cpu_snapshot after = {0};
@@ -359,21 +358,20 @@ static lib_i32 protected_mode_test_80286_stack_fault_delivery(void)
         failed |= !protected_mode_install_idt(state.machine) ||
             !protected_mode_run(state.machine, real_code, sizeof(real_code),
             protected_code, sizeof(protected_code), 0u, 0x12u, 0, &result,
-            &diagnostic) || core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(state.machine,
+            &diagnostic) || x86_core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
+            x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_memory_read(state.machine, after.ss.base +
-            CORE_MACHINE_MASK_U16(after.esp), frame, sizeof(frame)) !=
+            x86_core_machine_memory_read(state.machine, after.ss.base +
+            ((lib_u16)(after.esp)), frame, sizeof(frame)) !=
                 LIB_STATUS_OK || diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_SS) ||
+            !(((diagnostic.last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_SS)) != 0u) ||
             diagnostic.last_delivered_exception.point.eip != 0x0013u ||
             cpu.cs != TEST_CODE_SELECTOR || cpu.eip != 0x00000021u ||
             frame[0] != TEST_DATA_SELECTOR || frame[1] != 0x0013u ||
             frame[2] != 0x0000u || frame[3] != 0x0002u;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -393,7 +391,7 @@ static lib_i32 protected_mode_test_80286_task_fault_delivery(void)
         [48] = 0xf4u
     };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     x86_core_cpu_state cpu;
     x86_core_cpu_debug_cpu_snapshot after = {0};
@@ -404,33 +402,32 @@ static lib_i32 protected_mode_test_80286_task_fault_delivery(void)
     if (!failed) {
         failed |= !protected_mode_install_idt(state.machine) ||
             !protected_mode_install_tss_gdt(state.machine) ||
-            core_machine_memory_write(state.machine, 0u, real_code,
+            x86_core_machine_memory_write(state.machine, 0u, real_code,
             sizeof(real_code)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, TEST_CODE_ADDRESS,
+            x86_core_machine_memory_write(state.machine, TEST_CODE_ADDRESS,
                 protected_code, sizeof(protected_code)) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(state.machine,
+            x86_core_machine_debug_write_register(state.machine,
             X86_CORE_CPU_DEBUG_EFLAGS, 0x0002u | X86_CORE_CPU_DEBUG_EFLAGS_NT) !=
                 LIB_STATUS_OK || test_core_machine_fixture_run_after_delivery(state.machine,
-            (core_machine_run_budget){64u, 0u},
+            (x86_core_machine_run_budget){64u, 0u},
             &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                LIB_STATUS_OK || core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(state.machine,
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                LIB_STATUS_OK || x86_core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
+            x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_memory_read(state.machine, after.ss.base +
-            CORE_MACHINE_MASK_U16(after.esp), frame, sizeof(frame)) !=
+            x86_core_machine_memory_read(state.machine, after.ss.base +
+            ((lib_u16)(after.esp)), frame, sizeof(frame)) !=
                 LIB_STATUS_OK || diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_TS) ||
+            !(((diagnostic.last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_TS)) != 0u) ||
             diagnostic.last_delivered_exception.point.eip != 0x0006u ||
             cpu.cs != TEST_CODE_SELECTOR || cpu.eip != 0x00000031u ||
             frame[0] != 0x0000u || frame[1] != 0x0006u ||
             frame[2] != TEST_CODE_SELECTOR ||
             frame[3] != (0x0002u | X86_CORE_CPU_DEBUG_EFLAGS_NT);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -449,7 +446,7 @@ static lib_i32 protected_mode_test_protected_lidt_admitted(void)
         0xf4u
     };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_i32 failed = !protected_mode_prepare(&state,
         X86_CORE_CPU_PROFILE_80286);
@@ -459,7 +456,7 @@ static lib_i32 protected_mode_test_protected_lidt_admitted(void)
             protected_code, sizeof(protected_code), 0u, 0u, 0, &result,
             &diagnostic) || diagnostic.first_fault.valid;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -481,7 +478,7 @@ static lib_i32 protected_mode_test_configured_idt_interrupts(void)
         0xf4u
     };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_i32 failed = !protected_mode_prepare(&state,
         X86_CORE_CPU_PROFILE_80286);
@@ -492,7 +489,7 @@ static lib_i32 protected_mode_test_configured_idt_interrupts(void)
             protected_code, sizeof(protected_code), 0u, 0u, 0, &result,
             &diagnostic) || diagnostic.first_fault.valid;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -501,7 +498,7 @@ static lib_i32 protected_mode_test_80286_rejects_386(void)
     static const lib_u8 real_code[] = { 0x0fu, 0x20u, 0xc0u };
     static const lib_u8 protected_code[] = { 0x90u };
     protected_mode_machine state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     lib_i32 failed = !protected_mode_prepare(&state,
         X86_CORE_CPU_PROFILE_80286);
@@ -513,7 +510,7 @@ static lib_i32 protected_mode_test_80286_rejects_386(void)
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_UD;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 

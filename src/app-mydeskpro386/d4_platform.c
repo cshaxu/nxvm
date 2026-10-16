@@ -14,18 +14,18 @@ static void d4_failsafe_output(void *owner, lib_u8 asserted);
 #define D4_KBC_SPECIAL_KEYBOARD_11_BIT 0x20u
 #define D4_KBC_SPECIAL_OBF_IRQ_ENABLED 0x10u
 
-lib_status mydeskpro386_d4_platform_create(core_machine *core, x86_pit *pit,
+lib_status mydeskpro386_d4_platform_create(x86_core_machine *core, x86_pit *pit,
     x86_pit *auxiliary_pit, const mydeskpro386_d4_platform_config *config,
     mydeskpro386_d4_speaker_output speaker, void *context,
     mydeskpro386_d4_platform **out_platform)
 {
     mydeskpro386_d4_platform *platform;
-    core_machine_port_route route;
+    x86_core_machine_port_route route;
     lib_status status;
 
     if (out_platform == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_platform = LIB_NULL;
-    if (core == LIB_NULL || !core_machine_configuration_is_open(core))
+    if (core == LIB_NULL || !x86_core_machine_configuration_is_open(core))
         return LIB_STATUS_INVALID_STATE;
     if (pit == LIB_NULL || auxiliary_pit == LIB_NULL || config == LIB_NULL ||
         config->port != 0x61u || config->failsafe_pit_counter >= 3u ||
@@ -42,11 +42,11 @@ lib_status mydeskpro386_d4_platform_create(core_machine *core, x86_pit *pit,
     platform->d4_platform_config = *config;
     platform->speaker = speaker;
     platform->speaker_context = context;
-    route = (core_machine_port_route) {
+    route = (x86_core_machine_port_route) {
         .address = config->port, .read = d4_port_read,
         .write = d4_port_write, .owner = platform
     };
-    status = core_machine_install_port_routes(core, &route, 1u);
+    status = x86_core_machine_install_port_routes(core, &route, 1u);
     if (status != LIB_STATUS_OK) {
         lib_release(platform);
         return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_INVALID_ARGUMENT : status;
@@ -60,13 +60,13 @@ void mydeskpro386_d4_platform_destroy(mydeskpro386_d4_platform *platform)
 {
     if (platform == LIB_NULL) return;
     if (platform->memory.configured)
-        (void)core_machine_remove_memory_device_routes(platform->core, &platform->memory);
+        (void)x86_core_machine_remove_memory_device_routes(platform->core, &platform->memory);
     if (platform->outputs_bound) {
         x86_pit_set_output(platform->shared_pit, 1u, LIB_NULL, LIB_NULL);
         x86_pit_set_output(platform->auxiliary_pit,
             platform->d4_platform_config.failsafe_pit_counter, LIB_NULL, LIB_NULL);
     }
-    (void)core_machine_remove_port_routes(platform->core, platform);
+    (void)x86_core_machine_remove_port_routes(platform->core, platform);
     lib_release(platform);
 }
 
@@ -196,7 +196,7 @@ static void d4_refresh_output(void *opaque, lib_u8 asserted)
             platform->d4_refresh_pulse_active = LIB_FALSE;
         } else if (!platform->d4_refresh_pulse_active) {
             platform->d4_refresh_pulse_active = LIB_TRUE;
-            core_machine_cpu_bus_refresh_pulse(platform->core);
+            x86_core_machine_cpu_bus_refresh_pulse(platform->core);
             if (platform->d4_speed_control_enabled &&
                 platform->d4_speed_switch_selected) {
                 x86_pit_set_gate(platform->auxiliary_pit,
@@ -280,7 +280,7 @@ void mydeskpro386_d4_platform_refresh_nmi(mydeskpro386_d4_platform *platform)
         ((platform->d4_platform_port_b & 0x04u) == 0u &&
         platform->d4_platform_failsafe_latched);
     if (pending && !platform->d4_platform_nmi_signaled &&
-        core_machine_signal_nmi(platform->core)) {
+        x86_core_machine_signal_nmi(platform->core)) {
         platform->d4_platform_nmi_signaled = LIB_TRUE;
     }
 }
@@ -338,7 +338,7 @@ static lib_status d4_port_write(void *owner,
 
 lib_status mydeskpro386_d4_platform_clear_iochk(mydeskpro386_d4_platform *platform)
 {
-    if (platform == LIB_NULL || !core_machine_mutable_operation_is_allowed(platform->core))
+    if (platform == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(platform->core))
         return LIB_STATUS_INVALID_STATE;
     platform->d4_platform_iochk_latched = LIB_FALSE;
     if (!platform->d4_platform_failsafe_latched) platform->d4_platform_nmi_signaled = LIB_FALSE;
@@ -354,7 +354,7 @@ void mydeskpro386_d4_platform_iochk_output(void *owner, lib_bool asserted)
 
 lib_status mydeskpro386_d4_platform_report_iochk(mydeskpro386_d4_platform *platform)
 {
-    if (platform == LIB_NULL || !core_machine_mutable_operation_is_allowed(platform->core))
+    if (platform == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(platform->core))
         return LIB_STATUS_INVALID_STATE;
     platform->d4_platform_iochk_latched = LIB_TRUE;
     mydeskpro386_d4_platform_refresh_nmi(platform);

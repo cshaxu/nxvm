@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/rtc146818/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
@@ -40,7 +40,7 @@ endforeach()
 
 foreach(required IN ITEMS "core_machine_pic_irq_source_assert"
     "core_machine_pic_irq_source_deassert" "rtc_selected_register"
-    "x86_rtc_create" "core_machine_install_port_routes")
+    "x86_rtc_create" "x86_core_machine_install_port_routes")
     string(FIND "${board_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "CMOS RTC board binding is incomplete: ${required}")
@@ -54,7 +54,7 @@ endif()
 math(EXPR rtc_length "${rtc_end} - ${rtc_start}")
 string(SUBSTRING "${board_source}" ${rtc_start} ${rtc_length} rtc_board)
 foreach(forbidden IN ITEMS "executor_port" "port_checkpoint"
-    "core_machine_install_port_provider" "core_machine_port_rollback_registration")
+    "x86_core_machine_install_port_provider" "x86_core_machine_port_rollback_registration")
     string(FIND "${rtc_board}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "CMOS RTC retains a raw port-registration path: ${forbidden}")

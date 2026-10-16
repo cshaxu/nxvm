@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" wiring)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
@@ -16,8 +16,8 @@ foreach(forbidden "machine->shared_pic_master" "machine->shared_pic_slave"
 endforeach()
 foreach(required "attachment.interrupt_pending(machine->attachment.context)"
     "attachment.interrupt_acknowledge(machine->attachment.context)"
-    "CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE"
-    "core_machine_transaction_commit(" "core_machine_external_cycle_invalidate(machine)")
+    "X86_CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE"
+    "x86_core_machine_transaction_commit(" "x86_core_machine_external_cycle_invalidate(machine)")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Core PIC/CPU locality lacks ${required}")
@@ -30,11 +30,11 @@ foreach(required "core_machine_board_pic_pending(" "core_machine_board_pic_ackno
         message(FATAL_ERROR "Board PIC signal lacks ${required}")
     endif()
 endforeach()
-string(FIND "${wiring}" "core_machine_external_cycle_invalidate(" position)
+string(FIND "${wiring}" "x86_core_machine_external_cycle_invalidate(" position)
 if(NOT position LESS 0)
     message(FATAL_ERROR "Board refresh output mutates CPU locality directly")
 endif()
-string(FIND "${wiring}" "core_machine_cpu_bus_refresh_pulse(platform->core)" position)
+string(FIND "${wiring}" "x86_core_machine_cpu_bus_refresh_pulse(platform->core)" position)
 if(position LESS 0)
     message(FATAL_ERROR "Board refresh pulse does not notify Core")
 endif()

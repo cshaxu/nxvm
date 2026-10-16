@@ -1,5 +1,20 @@
-#include "core/x86/machine.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/dma_bus_interface.h"
+
+static lib_bool reject_routes;
+
+static lib_status dma_route_install(x86_core_machine *machine,
+    const x86_core_machine_port_route *routes, lib_size count)
+{
+    return reject_routes ? LIB_STATUS_NO_MEMORY :
+        x86_core_machine_install_port_routes(machine, routes, count);
+}
+
+/* Same-owner failure at the declared Machine boundary. Machine's own tests
+ * retain per-allocation rollback and sticky single-entry failure assertions. */
+#define x86_core_machine_install_port_routes dma_route_install
+#include "core/board-base/dma_bus.c"
+#undef x86_core_machine_install_port_routes
 
 static lib_status conflicting_write(void *owner, lib_u16 port, lib_u32 value)
 {
@@ -13,42 +28,43 @@ static lib_status conflicting_write(void *owner, lib_u16 port, lib_u32 value)
  * caller of its atomic route batch, not a borrower of the private port table. */
 lib_i32 main(void)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
-    const core_machine_port_provider provider = {LIB_NULL, conflicting_write};
-    core_machine_port_test_allocation allocation = {3u, 0u};
-    core_machine *machine = LIB_NULL;
+    const x86_core_machine_port_provider provider = {LIB_NULL, conflicting_write};
+    x86_core_machine *machine = LIB_NULL;
     core_machine_dma_bus *bus = LIB_NULL;
     lib_u8 marker = 0u;
     lib_bool failed = LIB_FALSE;
 
-    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
-    failed |= core_machine_install_port_provider(machine, 0xd4u, 0xd4u,
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    failed |= x86_core_machine_install_port_provider(machine, 0xd4u, 0xd4u,
         &provider, &marker) != LIB_STATUS_OK;
     failed |= core_machine_dma_initialize(&bus, machine, 2u) != LIB_STATUS_INVALID_STATE;
-    failed |= bus != LIB_NULL || core_machine_port_has_read(&machine->executor_port, 0u) ||
-        core_machine_port_has_write(&machine->executor_port, 0u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0xd4u);
-    core_machine_port_write(&machine->executor_port, 0xd4u, 0u);
-    failed |= marker != 0x5au;
-    failed |= core_machine_port_add_write_provider(&machine->executor_port,
-        0xd4u, conflicting_write, &allocation) != LIB_STATUS_INVALID_STATE;
-    failed |= core_machine_dma_initialize(&bus, machine, 1u) != LIB_STATUS_INVALID_STATE;
-    failed |= bus != LIB_NULL;
-    core_machine_destroy(machine);
+    failed |= bus != LIB_NULL ||
+        core_machine_dma_initialize(&bus, machine, 2u) != LIB_STATUS_INVALID_STATE ||
+        bus != LIB_NULL ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0u, &(lib_u32){0u}) != LIB_STATUS_UNSUPPORTED ||
+        x86_core_machine_bus_write(machine, 0u, 0u) != LIB_STATUS_UNSUPPORTED ||
+        x86_core_machine_bus_write(machine, 0xd4u, 0u) != LIB_STATUS_OK ||
+        marker != 0x5au;
+    x86_core_machine_destroy(machine);
     machine = LIB_NULL;
 
-    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
-    core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    reject_routes = LIB_TRUE;
     failed |= core_machine_dma_initialize(&bus, machine, 2u) != LIB_STATUS_NO_MEMORY;
-    failed |= bus != LIB_NULL || core_machine_port_has_read(&machine->executor_port, 0u) ||
-        core_machine_port_has_write(&machine->executor_port, 0u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x81u);
-    allocation.fail_at = 0u;
+    failed |= bus != LIB_NULL;
+    reject_routes = LIB_FALSE;
     failed |= core_machine_dma_initialize(&bus, machine, 2u) != LIB_STATUS_OK;
-    core_machine_destroy(machine);
+    failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0u, &(lib_u32){0u}) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x81u, 0u) != LIB_STATUS_OK;
+    x86_core_machine_destroy(machine);
     core_machine_dma_finalize(bus);
     return failed ? 1 : 0;
 }

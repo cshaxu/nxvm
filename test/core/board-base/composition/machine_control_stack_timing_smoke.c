@@ -1,7 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "../core_machine_board_fixture.h"
 
 #define CONTROL_STACK_TIMING_RESET_LINEAR 0xfffffff0u
@@ -12,7 +12,7 @@ typedef struct control_stack_timing_timing_state {
     lib_u64 advanced_ticks;
 } control_stack_timing_timing_state;
 
-typedef lib_i32 (*control_stack_timing_setup)(core_machine *machine, void *opaque);
+typedef lib_i32 (*control_stack_timing_setup)(x86_core_machine *machine, void *opaque);
 
 typedef struct control_stack_timing_interrupt_setup {
     lib_u8 vector;
@@ -34,16 +34,16 @@ static void control_stack_timing_timing_advance(void *opaque,
     if (state != LIB_NULL) state->advanced_ticks += elapsed_ticks;
 }
 
-static const core_machine_execution_provider control_stack_timing_timing_provider = {
+static const x86_core_machine_execution_provider control_stack_timing_timing_provider = {
     control_stack_timing_timing_reset,
     control_stack_timing_timing_advance
 };
 
 static lib_i32 control_stack_timing_prepare(x86_core_cpu_profile profile,
-    core_machine **out_machine, control_stack_timing_timing_state *state)
+    x86_core_machine **out_machine, control_stack_timing_timing_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
@@ -55,20 +55,20 @@ static lib_i32 control_stack_timing_prepare(x86_core_cpu_profile profile,
             0x00001000u, CONTROL_STACK_TIMING_WINDOW_BYTES) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &control_stack_timing_timing_provider, state)) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 0;
     }
     *out_machine = machine;
     return 1;
 }
 
-static lib_i32 control_stack_timing_run(core_machine *machine,
+static lib_i32 control_stack_timing_run(x86_core_machine *machine,
     const lib_u8 *program, lib_size program_bytes,
     lib_u64 expected_ticks, control_stack_timing_timing_state *state,
     control_stack_timing_setup setup, void *opaque)
 {
-    const core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    const x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
     x86_core_cpu_profile profile;
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -78,50 +78,50 @@ static lib_i32 control_stack_timing_run(core_machine *machine,
     };
 
     return machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
-        core_machine_reset(machine) == LIB_STATUS_OK &&
-        core_machine_get_cpu_profile(machine, &profile) == LIB_STATUS_OK &&
+        x86_core_machine_reset(machine) == LIB_STATUS_OK &&
+        x86_core_machine_get_cpu_profile(machine, &profile) == LIB_STATUS_OK &&
         (profile >= X86_CORE_CPU_PROFILE_80286 ||
-            core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK) &&
+            x86_core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK) &&
         (setup == LIB_NULL || setup(machine, opaque)) &&
-        core_machine_memory_write(machine, CONTROL_STACK_TIMING_RESET_LINEAR, program,
+        x86_core_machine_memory_write(machine, CONTROL_STACK_TIMING_RESET_LINEAR, program,
             program_bytes) == LIB_STATUS_OK &&
-        core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
+        x86_core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == expected_ticks && result.elapsed_ticks == expected_ticks &&
         state->advanced_ticks == expected_ticks;
 }
 
-static lib_i32 control_stack_timing_write_word(core_machine *machine,
+static lib_i32 control_stack_timing_write_word(x86_core_machine *machine,
     x86_core_cpu_debug_register register_id, lib_u16 value)
 {
     lib_u32 previous;
 
-    return core_machine_debug_read_register(machine, register_id, &previous) == LIB_STATUS_OK &&
-        core_machine_debug_write_register(machine, register_id,
+    return x86_core_machine_debug_read_register(machine, register_id, &previous) == LIB_STATUS_OK &&
+        x86_core_machine_debug_write_register(machine, register_id,
             (previous & 0xffff0000u) | value) == LIB_STATUS_OK;
 }
 
-static lib_i32 control_stack_timing_word_matches(core_machine *machine,
+static lib_i32 control_stack_timing_word_matches(x86_core_machine *machine,
     x86_core_cpu_debug_register register_id, lib_u16 expected)
 {
     lib_u32 value;
 
-    return core_machine_debug_read_register(machine, register_id, &value) == LIB_STATUS_OK &&
+    return x86_core_machine_debug_read_register(machine, register_id, &value) == LIB_STATUS_OK &&
         (lib_u16)value == expected;
 }
 
-static lib_i32 control_stack_timing_seed_pop(core_machine *machine, void *opaque)
+static lib_i32 control_stack_timing_seed_pop(x86_core_machine *machine, void *opaque)
 {
     const lib_u16 value = 0x1234u;
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
     if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u)) return 0;
-    return core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) ==
+    return x86_core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) ==
         LIB_STATUS_OK;
 }
 
-static lib_i32 control_stack_timing_seed_loop_not_taken(core_machine *machine, void *opaque)
+static lib_i32 control_stack_timing_seed_loop_not_taken(x86_core_machine *machine, void *opaque)
 {
     (void)opaque;
     if (machine == LIB_NULL) return 0;
@@ -129,7 +129,7 @@ static lib_i32 control_stack_timing_seed_loop_not_taken(core_machine *machine, v
     return 1;
 }
 
-static lib_i32 control_stack_timing_seed_transfer(core_machine *machine, void *opaque)
+static lib_i32 control_stack_timing_seed_transfer(x86_core_machine *machine, void *opaque)
 {
     const lib_u16 target = 0xfff5u;
     const lib_u8 nop = 0x90u;
@@ -138,14 +138,14 @@ static lib_i32 control_stack_timing_seed_transfer(core_machine *machine, void *o
     if (machine == LIB_NULL) return 0;
     if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_EAX, target)) return 0;
     if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1020u)) return 0;
-    return core_machine_memory_write(machine, 0x1000u, &target,
+    return x86_core_machine_memory_write(machine, 0x1000u, &target,
         sizeof(target)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, 0x000ffff5u, &nop, sizeof(nop)) ==
-        LIB_STATUS_OK && core_machine_memory_write(machine, 0x1020u, &target,
+        x86_core_machine_memory_write(machine, 0x000ffff5u, &nop, sizeof(nop)) ==
+        LIB_STATUS_OK && x86_core_machine_memory_write(machine, 0x1020u, &target,
             sizeof(target)) == LIB_STATUS_OK;
 }
 
-static lib_i32 control_stack_timing_seed_interrupt(core_machine *machine, void *opaque)
+static lib_i32 control_stack_timing_seed_interrupt(x86_core_machine *machine, void *opaque)
 {
     const control_stack_timing_interrupt_setup *setup =
         (const control_stack_timing_interrupt_setup *)opaque;
@@ -159,21 +159,21 @@ static lib_i32 control_stack_timing_seed_interrupt(core_machine *machine, void *
     if (setup->set_overflow) {
         lib_u32 flags;
 
-        if (core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+        if (x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
                 &flags) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
                 flags | X86_CORE_CPU_DEBUG_EFLAGS_OF) != LIB_STATUS_OK) return 0;
     }
     return
-        core_machine_memory_write(machine, vector, &offset,
+        x86_core_machine_memory_write(machine, vector, &offset,
             sizeof(offset)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, vector + sizeof(offset), &segment,
+        x86_core_machine_memory_write(machine, vector + sizeof(offset), &segment,
             sizeof(segment)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, 0x000ffff5u, &nop,
+        x86_core_machine_memory_write(machine, 0x000ffff5u, &nop,
             sizeof(nop)) == LIB_STATUS_OK;
 }
 
-static lib_i32 control_stack_timing_seed_iret(core_machine *machine, void *opaque)
+static lib_i32 control_stack_timing_seed_iret(x86_core_machine *machine, void *opaque)
 {
     const lib_u16 frame[] = { 0xfff5u, 0xf000u, 0x0002u };
     const lib_u8 nop = 0x90u;
@@ -181,9 +181,9 @@ static lib_i32 control_stack_timing_seed_iret(core_machine *machine, void *opaqu
     (void)opaque;
     if (machine == LIB_NULL) return 0;
     if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1020u)) return 0;
-    return core_machine_memory_write(machine, 0x1020u, frame,
+    return x86_core_machine_memory_write(machine, 0x1020u, frame,
         sizeof(frame)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, 0x000ffff5u, &nop,
+        x86_core_machine_memory_write(machine, 0x000ffff5u, &nop,
             sizeof(nop)) == LIB_STATUS_OK;
 }
 
@@ -205,7 +205,7 @@ static lib_i32 control_stack_timing_test_profile_rows(x86_core_cpu_profile profi
     static const lib_u8 jcxz_not_taken[] = { 0xe3u, 0x00u, 0x90u };
     static const lib_u8 hlt[] = { 0xf4u };
     control_stack_timing_timing_state state = { 0u };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = !control_stack_timing_prepare(profile, &machine, &state);
 
     if (!failed) {
@@ -237,17 +237,17 @@ static lib_i32 control_stack_timing_test_profile_rows(x86_core_cpu_profile profi
             control_stack_timing_seed_loop_not_taken, LIB_NULL);
     }
     if (!failed) {
-        const core_machine_run_budget budget = { 1u, 0u };
-        core_machine_run_result result;
+        const x86_core_machine_run_budget budget = { 1u, 0u };
+        x86_core_machine_run_result result;
 
-        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, CONTROL_STACK_TIMING_RESET_LINEAR, hlt,
+        failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, CONTROL_STACK_TIMING_RESET_LINEAR, hlt,
                 sizeof(hlt)) != LIB_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             result.ticks != hlt_ticks || state.advanced_ticks != hlt_ticks;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -272,7 +272,7 @@ static lib_i32 control_stack_timing_test_80186_stack_rows(void)
 
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0u]); ++index) {
         control_stack_timing_timing_state state = { 0u };
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         lib_i32 failed = !control_stack_timing_prepare(profiles[index], &machine, &state);
 
         if (!failed) {
@@ -285,7 +285,7 @@ static lib_i32 control_stack_timing_test_80186_stack_rows(void)
                 !control_stack_timing_run(machine, leave, sizeof(leave), leave_ticks[index],
                     &state, LIB_NULL, LIB_NULL);
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 1;
     }
     return 0;
@@ -313,7 +313,7 @@ static lib_i32 control_stack_timing_test_transfer_shapes(x86_core_cpu_profile pr
         0x8fu, 0x06u, 0x00u, 0x10u
     };
     control_stack_timing_timing_state state = { 0u };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = !control_stack_timing_prepare(profile, &machine, &state);
 
     if (!failed) {
@@ -350,7 +350,7 @@ static lib_i32 control_stack_timing_test_transfer_shapes(x86_core_cpu_profile pr
             pop_memory_ticks, &state, control_stack_timing_seed_transfer, LIB_NULL) ||
             !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff4u);
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -364,7 +364,7 @@ static lib_i32 control_stack_timing_test_far_direct(x86_core_cpu_profile profile
         0xeau, 0xf5u, 0xffu, 0x00u, 0xf0u
     };
     control_stack_timing_timing_state state = { 0u };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = !control_stack_timing_prepare(profile, &machine, &state);
 
     if (!failed) {
@@ -379,7 +379,7 @@ static lib_i32 control_stack_timing_test_far_direct(x86_core_cpu_profile profile
             !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
             !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -397,7 +397,7 @@ static lib_i32 control_stack_timing_test_real_interrupt_rows(x86_core_cpu_profil
     static const control_stack_timing_interrupt_setup int3_setup = { 0x03u, 0 };
     static const control_stack_timing_interrupt_setup into_setup = { 0x04u, 1 };
     control_stack_timing_timing_state state = { 0u };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = !control_stack_timing_prepare(profile, &machine, &state);
 
     if (!failed) {
@@ -429,7 +429,7 @@ static lib_i32 control_stack_timing_test_real_interrupt_rows(x86_core_cpu_profil
             !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
             !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 

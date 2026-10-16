@@ -17,13 +17,14 @@ lib_i32 main(void)
     lib_i32 failed = vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
-    if (!failed) failed |= test_video_cga_ports(session->core_machine) |
-        (test_video_aperture_mismatch(session->board, LIB_FALSE) << 9) |
+    if (!failed) failed |= test_video_cga_ports(session->x86_core_machine);
+    if (!failed) failed |= vm_machine_reset(session) != LIB_STATUS_OK;
+    if (!failed) failed |= (test_video_aperture_mismatch(session->board, LIB_FALSE) << 9) |
         ((core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT) << 10) |
-        (core_machine_memory_write(session->core_machine, 0x000a0000u,
+        (x86_core_machine_memory_write(session->x86_core_machine, 0x000a0000u,
             &value, sizeof(value)) != LIB_STATUS_OK) << 11 |
-        (core_machine_memory_read(session->core_machine, 0x000a0000u,
+        (x86_core_machine_memory_read(session->x86_core_machine, 0x000a0000u,
             &value, sizeof(value)) != LIB_STATUS_OK || value != 0xffu) << 12;
     vm_machine_destroy(session);
     if (failed) return 1;

@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(instruction_timing_source "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_instructions.c")
-set(instruction_timing_machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
+set(instruction_timing_machine "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c")
 set(instruction_timing_timing_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
 set(instruction_timing_timing "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing.c")
 set(instruction_timing_inventory

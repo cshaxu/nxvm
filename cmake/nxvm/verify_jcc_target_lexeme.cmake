@@ -1,12 +1,12 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c")
 set(machine_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
 set(preview "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_instructions.c")
-set(bus "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c")
-set(preview_smoke "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_cpu_timing_preview_smoke.c")
-set(timing_smoke "${PROJECT_SOURCE_DIR}/test/core/x86/machine_instruction_timing_smoke.c")
+set(bus "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c")
+set(preview_smoke "${PROJECT_SOURCE_DIR}/test/x86-core/machine/machine_cpu_timing_preview_smoke.c")
+set(timing_smoke "${PROJECT_SOURCE_DIR}/test/x86-core/machine/machine_instruction_timing_smoke.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s5-jcc-target-lexeme.md")
 foreach(path IN ITEMS "${machine}" "${machine_model}" "${preview}" "${bus}" "${preview_smoke}" "${timing_smoke}" "${evidence}")
     if(NOT EXISTS "${path}")
@@ -35,11 +35,11 @@ jcc_target_require("${preview_text}" "preview_mode = LIB_TRUE")
 jcc_target_require("${preview_text}" "memory_status = context->bus->read_memory(context->bus_context, physical,")
 jcc_target_require("${preview_text}" "(void *)rdata, byte, provenance, context->preview_mode,")
 jcc_target_require("${bus_text}" "if (observe_only) {
-        return core_machine_memory_inspect_physical(&machine->executor_memory,
+        return x86_core_machine_memory_inspect_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes, reset_fetch);
     }
     if (!locked) {
-        status = core_machine_transaction_begin")
+        status = x86_core_machine_transaction_begin")
 if(preview_text MATCHES "core_machine_memory_(inspect|read)_.*physical\\(")
     message(FATAL_ERROR "CPU preview must use the bus observation contract, not board memory")
 endif()

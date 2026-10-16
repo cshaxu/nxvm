@@ -3,9 +3,8 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 static lib_i32 sign_extend_test_irq(void)
 {
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
@@ -18,17 +17,17 @@ static lib_i32 sign_extend_test_irq(void)
     lib_u8 opcode;
 
     for (opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
         core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot after = {0};
         x86_core_cpu_debug_register_patch patch = {0};
         const lib_u8 code[] = {opcodes[opcode], 0x90u};
         lib_u16 offset = 0x0100u, segment = 0u, frame = 0u;
         lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK;
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK;
 
         if (!failed) {
             patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -55,15 +54,15 @@ static lib_i32 sign_extend_test_irq(void)
             patch.values[X86_CORE_CPU_DEBUG_ESI] = 0xeeeeffffu;
             patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x10203040u;
             patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
-            failed |= core_machine_debug_patch_registers(machine, &patch) !=
+            failed |= x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0u, code, sizeof(code)) !=
+                x86_core_machine_memory_write(machine, 0u, code, sizeof(code)) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x80u, &offset,
+                x86_core_machine_memory_write(machine, 0x80u, &offset,
                     sizeof(offset)) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x82u, &segment,
+                x86_core_machine_memory_write(machine, 0x82u, &segment,
                     sizeof(segment)) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x100u, &hlt,
+                x86_core_machine_memory_write(machine, 0x100u, &hlt,
                     sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
@@ -72,12 +71,12 @@ static lib_i32 sign_extend_test_irq(void)
                 board->shared_pic_master, board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
-            failed |= core_machine_run(machine,
-                    (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+            failed |= x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                core_machine_memory_read(machine,
+                x86_core_machine_memory_read(machine,
                     after.ss.base + (lib_u16)after.esp, &frame,
                     sizeof(frame)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame != 1u ||
@@ -85,11 +84,9 @@ static lib_i32 sign_extend_test_irq(void)
                     0xaabbff80u : 0xaabb8000u) ||
                 after.edx != (opcodes[opcode] == 0x99u ?
                     0x5566ffffu : 0x55660000u) ||
-                !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(board->shared_pic_master, 0x0bu),
-                    VPIC_ISR_IRQ(0u));
+                !(((test_pic_read(board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u);
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

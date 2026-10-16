@@ -4,10 +4,9 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 typedef struct push_immediate_machine {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
 } push_immediate_machine;
 
@@ -26,9 +25,9 @@ static lib_i32 push_immediate_prepare(x86_core_cpu_profile profile, push_immedia
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
-        core_machine_reset(state->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+        x86_core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_status push_immediate_seed(push_immediate_machine *state, lib_u32 esp, lib_u32 eax)
@@ -51,7 +50,7 @@ static lib_status push_immediate_seed(push_immediate_machine *state, lib_u32 esp
             [X86_CORE_CPU_DEBUG_EFLAGS] = 0x245u
         }
     };
-    return core_machine_debug_patch_registers(state->machine, &registers);
+    return x86_core_machine_debug_patch_registers(state->machine, &registers);
 }
 
 static lib_i32 push_immediate_boot_protected(push_immediate_machine *state, lib_u8 limit_segment,
@@ -69,16 +68,16 @@ static lib_i32 push_immediate_boot_protected(push_immediate_machine *state, lib_
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
         0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
 
-    lib_i32 ready = core_machine_memory_write(state->machine, 0x100u, pointer,
-        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+    lib_i32 ready = x86_core_machine_memory_write(state->machine, 0x100u, pointer,
+        sizeof(pointer)) == LIB_STATUS_OK && x86_core_machine_memory_write(
         state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0u, bootstrap,
+        x86_core_machine_memory_write(state->machine, 0u, bootstrap,
         sizeof(bootstrap)) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){10u, 0u},
+        x86_core_machine_run(state->machine, (x86_core_machine_run_budget){10u, 0u},
         &result) == LIB_STATUS_OK && result.reason ==
-        CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
+        X86_CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
 
     const x86_core_cpu_debug_register reg = limit_segment == 0u ?
         X86_CORE_CPU_DEBUG_SS : X86_CORE_CPU_DEBUG_DS;
@@ -97,9 +96,9 @@ static lib_i32 push_immediate_boot_protected(push_immediate_machine *state, lib_
     gdt[descriptor] = (lib_u8)limit;
     gdt[descriptor + 1u] = (lib_u8)(limit >> 8);
     if (limit_segment == 0u && expdown) gdt[descriptor + 5u] = 0x96u;
-    return core_machine_memory_write(state->machine, 0x0300u, gdt,
+    return x86_core_machine_memory_write(state->machine, 0x0300u, gdt,
         sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
+        x86_core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
 }
 
 static lib_i32 push_immediate_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
@@ -122,7 +121,7 @@ static lib_i32 push_immediate_test_protected(void)
     for (form = 0u; form != 2u; ++form)
     {
         push_immediate_machine state;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         x86_core_cpu_debug_cpu_snapshot before;
         x86_core_cpu_debug_cpu_snapshot after;
         lib_u32 sentinel = 0xdeadbeefu;
@@ -138,15 +137,15 @@ static lib_i32 push_immediate_test_protected(void)
             lib_u8 width = form == 0u ? 2u : 4u;
 
             failed |= push_immediate_seed(&state, 0x12348000u, 0xa1a23344u) != LIB_STATUS_OK;
-            failed |= core_machine_memory_write(state.machine, stack, &sentinel,
-                width) != LIB_STATUS_OK || core_machine_memory_write(
+            failed |= x86_core_machine_memory_write(state.machine, stack, &sentinel,
+                width) != LIB_STATUS_OK || x86_core_machine_memory_write(
                 state.machine, 0x2000u, codes[form], bytes[form]) != LIB_STATUS_OK;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
-                state.machine, (core_machine_run_budget){1u,0u}, &result),
+            failed |= !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(
+                state.machine, (x86_core_machine_run_budget){1u,0u}, &result),
                 &result);
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed)
                 failed |= after.eip != 0u || after.eax != before.eax ||
@@ -155,11 +154,11 @@ static lib_i32 push_immediate_test_protected(void)
                 after.ebp != before.ebp || after.esi != before.esi ||
                 after.edi != before.edi || after.eflags !=
             before.eflags || !push_immediate_sregs_same(&before, &after) ||
-            core_machine_memory_inspect(state.machine,
-            stack, (void *)CORE_MACHINE_REFERENCE_OF(observed), width) != LIB_STATUS_OK ||
+            x86_core_machine_memory_inspect(state.machine,
+            stack, (void *)lib_pointer_to_uptr(&(observed)), width) != LIB_STATUS_OK ||
             observed != (width == 2u ? (sentinel & 0xffffu) : sentinel);
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed)
             return 0;
     }
@@ -178,7 +177,7 @@ static lib_i32 push_immediate_test_irq(void)
     {
         push_immediate_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         x86_core_cpu_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
         lib_u16 segment = 0u;
@@ -190,11 +189,11 @@ static lib_i32 push_immediate_test_irq(void)
         if (!failed)
         {
             failed |= push_immediate_seed(&state, 0x12348000u, 0xa1a23344u) != LIB_STATUS_OK;
-            failed |= core_machine_memory_write(state.machine, 0u, codes[form],
-                length[form] + 1u) != LIB_STATUS_OK || core_machine_memory_write(
+            failed |= x86_core_machine_memory_write(state.machine, 0u, codes[form],
+                length[form] + 1u) != LIB_STATUS_OK || x86_core_machine_memory_write(
                 state.machine, 0x80u, &offset, 2u) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x82u, &segment, 2u) !=
-                LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x100u,
+                x86_core_machine_memory_write(state.machine, 0x82u, &segment, 2u) !=
+                LIB_STATUS_OK || x86_core_machine_memory_write(state.machine, 0x100u,
                 &halt, 1u) != LIB_STATUS_OK;
         }
         if (!failed)
@@ -205,24 +204,22 @@ static lib_i32 push_immediate_test_irq(void)
                 state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
-            failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed)
-                failed |= core_machine_memory_inspect(state.machine,
+                failed |= x86_core_machine_memory_inspect(state.machine,
                 after.ss.base + (lib_u16)after.esp,
-                (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), 2u) != LIB_STATUS_OK ||
+                (void *)lib_pointer_to_uptr(&(frame_ip)), 2u) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != length[form] ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
-                VPIC_IRR_IRQ(0u)) || after.esp != 0x12347ff8u ||
-                core_machine_memory_inspect(state.machine,
-                0x7ffeu, (void *)CORE_MACHINE_REFERENCE_OF(value), 2u) != LIB_STATUS_OK ||
+                !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) || (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u) || after.esp != 0x12347ff8u ||
+                x86_core_machine_memory_inspect(state.machine,
+                0x7ffeu, (void *)lib_pointer_to_uptr(&(value)), 2u) != LIB_STATUS_OK ||
                 value != (form == 0u ? 0x1234u : 0xff80u);
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed)
             return 0;
     }

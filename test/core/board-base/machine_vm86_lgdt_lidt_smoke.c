@@ -1,8 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 #define main vm86_lgdt_lidt_vm86_delivery_main
 #include "machine_vm86_delivery_smoke.c"
@@ -11,7 +10,7 @@
 static lib_i32 vm86_lgdt_lidt_case(lib_u8 reg)
 {
     vm86_delivery_state state;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_diagnostic diagnostic;
     x86_core_cpu_debug_cpu_snapshot before;
     x86_core_cpu_debug_cpu_snapshot after;
@@ -23,19 +22,18 @@ static lib_i32 vm86_lgdt_lidt_case(lib_u8 reg)
     lib_i32 failed = !vm86_delivery_prepare(&state, 13u);
 
     if (!failed) {
-        failed |= core_machine_memory_write(state.machine, 0x2000u, code,
+        failed |= x86_core_machine_memory_write(state.machine, 0x2000u, code,
                 sizeof(code)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, 0x4400u, source,
+            x86_core_machine_memory_write(state.machine, 0x4400u, source,
                 sizeof(source)) != LIB_STATUS_OK;
         before = vm86_capture(state.machine);
-        failed |= test_core_machine_fixture_run_after_delivery(state.machine, (core_machine_run_budget){ 8u, 0u },
+        failed |= test_core_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){ 8u, 0u },
                 &result) != LIB_STATUS_OK ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         after = vm86_capture(state.machine);
-        if (!failed) failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        if (!failed) failed |= result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
-                (1u << 13u)) || diagnostic.last_delivered_exception.exception_code != 0u ||
+            !(((diagnostic.last_delivered_exception.exception_mask) & ((1u << 13u))) != 0u) || diagnostic.last_delivered_exception.exception_code != 0u ||
             diagnostic.last_delivered_exception.point.eip != 0u || after.eip != 0x101u ||
             after.esp != VM86_STACK_TOP - 40u ||
             after.eax != before.eax || after.ecx != before.ecx ||
@@ -46,10 +44,10 @@ static lib_i32 vm86_lgdt_lidt_case(lib_u8 reg)
             after.gdtr.limit != before.gdtr.limit ||
             after.idtr.base != before.idtr.base ||
             after.idtr.limit != before.idtr.limit ||
-            core_machine_memory_read(state.machine, 0x4400u,
+            x86_core_machine_memory_read(state.machine, 0x4400u,
                 (void *)observed, sizeof(observed)) != LIB_STATUS_OK ||
             lib_memory_compare(source, observed, sizeof(source)) != 0 ||
-            core_machine_memory_read(state.machine,
+            x86_core_machine_memory_read(state.machine,
                 VM86_STACK_TOP - 40u, (void *)frame,
                 sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != 0u || frame[2] != 0x0200u ||
@@ -59,7 +57,7 @@ static lib_i32 vm86_lgdt_lidt_case(lib_u8 reg)
             frame[6] != 0x0500u || frame[7] != 0x0400u ||
             frame[8] != 0x0600u || frame[9] != 0x0700u;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 

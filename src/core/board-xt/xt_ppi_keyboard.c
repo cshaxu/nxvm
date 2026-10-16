@@ -3,7 +3,7 @@
 #include "core/board-xt/xt_ppi_keyboard.h"
 
 lib_status core_machine_xt_ppi_keyboard_create(
-    const core_machine_xt_ppi_keyboard_config *config, core_machine *machine,
+    const core_machine_xt_ppi_keyboard_config *config, x86_core_machine *machine,
     core_machine_xt_ppi_keyboard **out_keyboard)
 {
     core_machine_xt_ppi_keyboard *keyboard;
@@ -187,9 +187,9 @@ lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
 
 lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
-    const core_machine_xt_ppi_keyboard_config *config, core_machine *machine)
+    const core_machine_xt_ppi_keyboard_config *config, x86_core_machine *machine)
 {
-    core_machine_port_route routes[4];
+    x86_core_machine_port_route routes[4];
     lib_size index;
     lib_status status;
 
@@ -200,12 +200,12 @@ lib_status core_machine_xt_ppi_keyboard_initialize(
     status = x86_ppi8255_create(&keyboard->ppi);
     if (status != LIB_STATUS_OK) return status;
     for (index = 0u; index < 4u; ++index) {
-        routes[index] = (core_machine_port_route) {
+        routes[index] = (x86_core_machine_port_route) {
             (lib_u16)(config->port_a + index),
             core_machine_xt_ppi_keyboard_read,
             core_machine_xt_ppi_keyboard_write, keyboard, LIB_FALSE, 0u};
     }
-    status = core_machine_install_port_routes(machine, routes, 4u);
+    status = x86_core_machine_install_port_routes(machine, routes, 4u);
     if (status != LIB_STATUS_OK) {
         x86_ppi8255_destroy(keyboard->ppi);
         keyboard->ppi = LIB_NULL;

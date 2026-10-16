@@ -1,7 +1,7 @@
 /* Copyright 2012-2026 Neko. */
 #include "core/board-at/kbc.h"
 
-lib_status core_machine_kbc_create(core_machine *machine, t_kbc **out_controller)
+lib_status core_machine_kbc_create(x86_core_machine *machine, t_kbc **out_controller)
 {
     t_kbc *controller;
     lib_status status;
@@ -184,9 +184,9 @@ static lib_status kbc_port_write(void *owner, lib_u16 address, lib_u32 value)
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
+lib_status core_machine_kbc_initialize(t_kbc *attachment, x86_core_machine *machine)
 {
-    core_machine_port_route routes[2];
+    x86_core_machine_port_route routes[2];
     lib_status status;
     const x86_kbc8042_link link = {
         .keyboard_inputs = kbc_keyboard_inputs,
@@ -214,11 +214,11 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
         core_machine_kbc_finalize(attachment);
         return status;
     }
-    routes[0] = (core_machine_port_route) {0x60u, kbc_port_read,
+    routes[0] = (x86_core_machine_port_route) {0x60u, kbc_port_read,
         kbc_port_write, attachment, LIB_FALSE, 0u};
-    routes[1] = (core_machine_port_route) {0x64u, kbc_port_read,
+    routes[1] = (x86_core_machine_port_route) {0x64u, kbc_port_read,
         kbc_port_write, attachment, LIB_FALSE, 0u};
-    status = core_machine_install_port_routes(machine, routes, 2u);
+    status = x86_core_machine_install_port_routes(machine, routes, 2u);
     if (status != LIB_STATUS_OK) core_machine_kbc_finalize(attachment);
     return status;
 }

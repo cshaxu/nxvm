@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" core_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" core_board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core_scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}${board_advance_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h" core_header)
@@ -55,7 +55,7 @@ foreach(vm_source IN ITEMS "${machine_source}" "${lifecycle_source}")
         "core_machine_dma_bind_channel" "x86_rtc_create"
         "x86_rtc_reset" "x86_rtc_advance"
         "x86_rtc_destroy" "x86_rtc_read_register" "x86_rtc_write_register"
-        "core_machine_set_nmi_mask" "core_machine_install_port_provider")
+        "x86_core_machine_set_nmi_mask" "x86_core_machine_install_port_provider")
         string(FIND "${vm_source}" "${forbidden}" position)
         if(NOT position EQUAL -1)
             message(FATAL_ERROR "VM source retains DMA/RTC authority: ${forbidden}")
@@ -67,7 +67,7 @@ foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     "core_machine_dma_bind_channel" "x86_rtc_create"
     "x86_rtc_reset" "x86_rtc_advance"
     "x86_rtc_destroy" "x86_rtc_read_register" "x86_rtc_write_register"
-    "core_machine_set_nmi_mask" "core_machine_install_port_provider")
+    "x86_core_machine_set_nmi_mask" "x86_core_machine_install_port_provider")
     string(FIND "${devices_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "device composition retains DMA/RTC authority: ${forbidden}")
@@ -99,11 +99,11 @@ foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
         message(FATAL_ERROR "Controller definition is unterminated: ${operation}")
     endif()
     string(SUBSTRING "${tail}" 0 ${last} body)
-    if(body MATCHES "->board|core_machine \\*machine")
+    if(body MATCHES "->board|x86_core_machine \\*machine")
         message(FATAL_ERROR "Controller callback/operation recovers private Core state: ${operation}")
     endif()
     if(operation MATCHES "^configure_" AND
-       NOT body MATCHES "board == LIB_NULL \\|\\| !core_machine_configuration_is_open\\(board->core\\)")
+       NOT body MATCHES "board == LIB_NULL \\|\\| !x86_core_machine_configuration_is_open\\(board->core\\)")
         message(FATAL_ERROR "Controller configuration bypasses the sole Core guard: ${operation}")
     endif()
 endforeach()
@@ -132,14 +132,14 @@ file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c" "${PROJECT_SOURCE_DIR}/test/core/x86/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c" "${PROJECT_SOURCE_DIR}/test/x86-core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c")
 foreach(caller IN LISTS controller_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES
-        "core_machine_(configure_dma|get_fdc_dma_request_binding|configure_rtc_cmos|configure_fdc|configure_hdc)\\([ \t\r\n]*(machine->core_machine|machine|first|second|\\*out_machine)[ \t\r\n]*,")
+        "core_machine_(configure_dma|get_fdc_dma_request_binding|configure_rtc_cmos|configure_fdc|configure_hdc)\\([ \t\r\n]*(machine->x86_core_machine|machine|first|second|\\*out_machine)[ \t\r\n]*,")
         message(FATAL_ERROR "Controller caller retains a Core receiver: ${caller}")
     endif()
 endforeach()

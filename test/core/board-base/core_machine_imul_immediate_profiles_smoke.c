@@ -4,7 +4,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "pic_fixture.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 static void imul_seed_patch(x86_core_cpu_debug_register_patch *patch)
 {
@@ -61,8 +61,8 @@ static lib_i32 imul_protected_source_limits(void)
     static const lib_u8 ds_code[] = {
         0x69u, 0x06u, 0x10u, 0u, 0xfeu, 0xffu
     };
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
     x86_core_cpu_debug_register_patch patch = {0};
     lib_i32 failed = !test_cpu_board_limit_prepare(&machine, ds_code,
@@ -70,14 +70,14 @@ static lib_i32 imul_protected_source_limits(void)
 
     if (!failed) {
         imul_seed_patch(&patch);
-        failed = core_machine_debug_patch_registers(machine, &patch) !=
+        failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) !=
                 LIB_STATUS_OK ||
-            !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
-                (core_machine_run_budget){1u, 0u}, &result), &result) ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){1u, 0u}, &result), &result) ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) !=
                 LIB_STATUS_OK ||
             after.eip != 0u ||
@@ -86,7 +86,7 @@ static lib_i32 imul_protected_source_limits(void)
             after.eflags != before.eflags ||
             !imul_sregs_same(&before, &after);
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -111,17 +111,17 @@ static lib_i32 imul_irq_no_shadow(void)
     for (form = 0u; form < 2u; ++form) {
         const lib_u8 *code = form ? memory_code : register_code;
         const lib_u8 instruction_bytes = form ? 6u : 4u;
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
         core_machine_pic_irq_source *source_irq = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
         x86_core_cpu_debug_register_patch patch = {0};
         lib_u16 frame_ip = 0u, frame_flags = 0u;
         lib_i32 failed = core_machine_create(&config, &machine, &board) !=
                 LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK;
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK;
 
         if (!failed) {
             imul_seed_patch(&patch);
@@ -130,22 +130,22 @@ static lib_i32 imul_irq_no_shadow(void)
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP);
-            failed |= core_machine_debug_patch_registers(machine, &patch) !=
+            failed |= x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &before) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0u, code,
+                x86_core_machine_memory_write(machine, 0u, code,
                     form ? sizeof(memory_code) : sizeof(register_code)) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x20u * 4u,
+                x86_core_machine_memory_write(machine, 0x20u * 4u,
                     &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x20u * 4u + 2u,
+                x86_core_machine_memory_write(machine, 0x20u * 4u + 2u,
                     &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x0100u, &halt,
+                x86_core_machine_memory_write(machine, 0x0100u, &halt,
                     sizeof(halt)) != LIB_STATUS_OK;
             if (!failed && form)
-                failed |= core_machine_memory_write(machine, 0x4000u,
+                failed |= x86_core_machine_memory_write(machine, 0x4000u,
                     &source, sizeof(source)) != LIB_STATUS_OK;
         }
         if (!failed) {
@@ -154,15 +154,15 @@ static lib_i32 imul_irq_no_shadow(void)
                 board->shared_pic_master, board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(source_irq);
             core_machine_pic_irq_source_deassert(source_irq);
-            failed = core_machine_run(machine,
-                    (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+            failed = x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                core_machine_memory_read(machine,
+                x86_core_machine_memory_read(machine,
                     after.ss.base + (lib_u16)after.esp,
                     &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
-                core_machine_memory_read(machine,
+                x86_core_machine_memory_read(machine,
                     after.ss.base + (lib_u16)after.esp + 4u,
                     &frame_flags, sizeof(frame_flags)) != LIB_STATUS_OK ||
                 after.eip != 0x0101u ||
@@ -178,16 +178,12 @@ static lib_i32 imul_irq_no_shadow(void)
                     ((before.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF |
                     X86_CORE_CPU_DEBUG_EFLAGS_SF | X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_AF |
                     X86_CORE_CPU_DEBUG_EFLAGS_PF | 0xfffc802au)) | 0x02u) ||
-                CORE_MACHINE_BIT_IS_SET(frame_flags, X86_CORE_CPU_DEBUG_EFLAGS_CF) ||
-                CORE_MACHINE_BIT_IS_SET(frame_flags, X86_CORE_CPU_DEBUG_EFLAGS_OF) ||
-                !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(board->shared_pic_master, 0x0bu),
-                    VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(board->shared_pic_master, 0x0au),
-                    VPIC_IRR_IRQ(0u));
+                (((frame_flags) & (X86_CORE_CPU_DEBUG_EFLAGS_CF)) != 0u) ||
+                (((frame_flags) & (X86_CORE_CPU_DEBUG_EFLAGS_OF)) != 0u) ||
+                !(((test_pic_read(board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
+                (((test_pic_read(board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

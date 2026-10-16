@@ -9,6 +9,9 @@ records Board-owned progression around the sole internal CPU/FPU readiness path.
 T561 S6: [address decode/construction boundary](evidence/t561-s6-address-decode.md)
 records explicit neutral range/mask decoding and preserved PC A20/reset policy.
 
+T561 S7: [neutral Machine extraction](evidence/t561-s7-machine-extraction.md)
+records the current file preflight, matching test owners and receiver proof.
+
 T561 S3: [CPU/FPU extraction review](evidence/t561-s3/review.md) records the
 complete path/symbol diff, independent package boundaries and receiving proof.
 

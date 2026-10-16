@@ -3,17 +3,17 @@
 #define TEST_IBMPC_EMULATOR_HDC_FIXTURE_H
 #include "core/board-base/hdc.h"
 
-static inline void test_hdc_port_write(core_machine *machine,
+static inline void test_hdc_port_write(x86_core_machine *machine,
     lib_u16 port, lib_u32 value)
 {
-    if (core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
+    if (x86_core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
         lib_test_assert(LIB_FALSE);
 }
 
-static inline lib_u32 test_hdc_port_read(core_machine *machine, lib_u16 port)
+static inline lib_u32 test_hdc_port_read(x86_core_machine *machine, lib_u16 port)
 {
     lib_u32 value;
-    if (core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
+    if (x86_core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
         lib_test_assert(LIB_FALSE);
     return value;
 }

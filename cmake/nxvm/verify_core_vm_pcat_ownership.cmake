@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE core_sources
-    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/x86/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.h"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
     "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
@@ -41,7 +41,7 @@ file(GLOB_RECURSE vm_sources
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h")
 foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
-    string(FIND "${source_text}" "core_machine_run(" run_position)
+    string(FIND "${source_text}" "x86_core_machine_run(" run_position)
     if(NOT run_position EQUAL -1 AND
         NOT source STREQUAL "${PROJECT_SOURCE_DIR}/src/core/machine/runner.c")
         message(FATAL_ERROR "VM-side CPU execution path: ${source}")

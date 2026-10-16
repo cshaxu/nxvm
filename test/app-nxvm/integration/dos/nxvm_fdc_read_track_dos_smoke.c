@@ -5,9 +5,9 @@
 
 #include <windows.h>
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/memory_interface.h"
+#include "x86-core/machine/memory_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 #include "test/core/setup/session_ini.h"
@@ -149,14 +149,14 @@ static lib_i32 vm_fdc242_has_prompt(const x86_video_snapshot *snapshot)
 static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
     lib_u32 quantum, lib_i32 require_marker)
 {
-    core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
+    x86_core_machine_run_budget budget = {quantum, 0u}; x86_core_machine_run_result result;
     x86_video_snapshot snapshot; lib_u32 used = 0u;
     while (used < limit) {
             lib_bool advanced = LIB_FALSE;
 
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT) return 0;
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) return 0;
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
             (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
             !advanced)) return 0;
         used += budget.instructions;
@@ -199,21 +199,21 @@ static lib_i32 vm_fdc242_run_case(integration_ini_session *ini_session,
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
         session->board, command[index]) != LIB_STATUS_OK) goto done;
     if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 1) ||
-        core_machine_memory_read(session->core_machine, VM_FDC242_DMA_ADDRESS,
+        x86_core_machine_memory_read(session->x86_core_machine, VM_FDC242_DMA_ADDRESS,
         out_result->bytes, sizeof(out_result->bytes)) != LIB_STATUS_OK) goto done;
-    if (core_machine_memory_read(session->core_machine, 0x003au, &program_cs,
-        sizeof(program_cs)) != LIB_STATUS_OK || core_machine_memory_read(session->core_machine,
+    if (x86_core_machine_memory_read(session->x86_core_machine, 0x003au, &program_cs,
+        sizeof(program_cs)) != LIB_STATUS_OK || x86_core_machine_memory_read(session->x86_core_machine,
         ((lib_u32)program_cs << 4u) + VM_FDC242_IRQ_COUNT_OFFSET, out_result->result,
-        sizeof(out_result->result)) != LIB_STATUS_OK || core_machine_memory_read(session->core_machine,
+        sizeof(out_result->result)) != LIB_STATUS_OK || x86_core_machine_memory_read(session->x86_core_machine,
         ((lib_u32)program_cs << 4u) + 0x02b0u, out_result->off_result,
         sizeof(out_result->off_result)) != LIB_STATUS_OK) goto done;
     ok = 1;
 done:
     if (!ok && session != LIB_NULL) {
-        core_machine_observation observation;
+        x86_core_machine_observation observation;
         lib_u8 disk_status = 0u;
-        if (core_machine_capture_observation(session->core_machine, &observation) ==
-                LIB_STATUS_OK && core_machine_memory_read(session->core_machine,
+        if (x86_core_machine_capture_observation(session->x86_core_machine, &observation) ==
+                LIB_STATUS_OK && x86_core_machine_memory_read(session->x86_core_machine,
                 0x441u, &disk_status, sizeof(disk_status)) == LIB_STATUS_OK) {
             fprintf(stderr, "FDC guest stopped at %04x:%08x BIOS status=%02x\n",
                 observation.cpu.cs, observation.cpu.eip, disk_status);

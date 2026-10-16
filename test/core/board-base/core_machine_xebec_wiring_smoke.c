@@ -4,7 +4,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include "dma_fixture.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core/board-base/media_interface.h"
 
@@ -113,7 +113,7 @@ static const core_machine_media_provider xebec_media_provider = {
     .format_track = xebec_media_format_track,
 };
 
-static lib_bool xebec_routes_match(core_machine *machine)
+static lib_bool xebec_routes_match(x86_core_machine *machine)
 {
     const struct {
         lib_u16 port;
@@ -126,27 +126,27 @@ static lib_bool xebec_routes_match(core_machine *machine)
         {0x323u, LIB_FALSE, LIB_FALSE}, {0x323u, LIB_TRUE, LIB_TRUE},
         {0x1f0u, LIB_FALSE, LIB_FALSE}, {0x1f7u, LIB_TRUE, LIB_FALSE}
     };
-    const core_machine_port_provider *provider = core_machine_hdc_port_provider();
+    const x86_core_machine_port_provider *provider = core_machine_hdc_port_provider();
 
     /* A conflicting registration proves the route exists even when the
      * device rejects that read. Successful probes are removed before freeze. */
     for (lib_size index = 0u; index < sizeof(routes) / sizeof(routes[0]); ++index) {
-        const core_machine_port_route route = {
+        const x86_core_machine_port_route route = {
             .address = routes[index].port,
             .read = routes[index].write ? LIB_NULL : provider->read,
             .write = routes[index].write ? provider->write : LIB_NULL,
             .owner = (void *)routes
         };
-        lib_status status = core_machine_install_port_routes(machine, &route, 1u);
+        lib_status status = x86_core_machine_install_port_routes(machine, &route, 1u);
         if (status == LIB_STATUS_OK &&
-            core_machine_remove_port_routes(machine, routes) != LIB_STATUS_OK) return LIB_FALSE;
+            x86_core_machine_remove_port_routes(machine, routes) != LIB_STATUS_OK) return LIB_FALSE;
         if (status != (routes[index].present ? LIB_STATUS_INVALID_STATE : LIB_STATUS_OK))
             return LIB_FALSE;
     }
     return LIB_TRUE;
 }
 
-static void xebec_configure_dma3(core_machine *port, lib_u16 address,
+static void xebec_configure_dma3(x86_core_machine *port, lib_u16 address,
     lib_u16 count, lib_u8 mode)
 {
     test_hdc_port_write(port, 0x000cu, 0u);
@@ -200,7 +200,7 @@ lib_i32 main(void)
     core_machine_media_registry *registry = LIB_NULL;
     xebec_media media = {0};
     core_machine_dma_request_binding fdc_binding = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_hdc_topology topology = hdc;
     const lib_u8 dcb[] = {0x00u, 0x20u, 0x01u, 0x23u, 0u, 0u};
@@ -232,8 +232,8 @@ lib_i32 main(void)
             core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK) {
             failed |= 0x04;
         } else if (!xebec_routes_match(machine) ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK) {
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK) {
             failed |= 0x08;
         } else if (
             board->hdc->connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
@@ -278,7 +278,7 @@ lib_i32 main(void)
                 if (failed) goto cleanup;
                 test_dma_transfers(board->shared_dma,
                     machine, machine, sizeof(dma_bytes), 1u);
-                if (!failed && (core_machine_memory_read(machine,
+                if (!failed && (x86_core_machine_memory_read(machine,
                     0x2200u, dma_bytes, sizeof(dma_bytes)) !=
                     LIB_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu ||
                     dma_bytes[512] != 0xa5u || dma_bytes[1023] != 0xa5u))
@@ -301,7 +301,7 @@ lib_i32 main(void)
                 dma_provider = core_machine_hdc_dma_provider();
                 for (index = 0u; index < sizeof(dma_bytes); ++index)
                     dma_bytes[index] = (lib_u8)(0xffu - index);
-                if (core_machine_memory_write(machine,
+                if (x86_core_machine_memory_write(machine,
                         0x2400u, dma_bytes,
                         sizeof(dma_bytes)) != LIB_STATUS_OK) failed |= 0x1000;
                 if (failed) goto cleanup;
@@ -532,7 +532,7 @@ lib_i32 main(void)
         }
     }
 cleanup:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "XEBEC-STACK:FAIL bits=%x\n", failed);

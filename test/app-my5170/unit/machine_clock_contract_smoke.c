@@ -16,7 +16,7 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         vm_profile_ibm_5170_model_339_descriptor_get();
     const vm_machine_config config = {0};
     vm_machine *session = LIB_NULL;
-    core_machine_time_observation time_observation;
+    x86_core_machine_time_observation time_observation;
     test_board_plan_observation plan;
     test_board_composition_observation board;
     lib_i32 failed = 0;
@@ -48,7 +48,7 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         model_339->kbc_command_response_ticks != 0u;
     failed = failed || plan.memory_bytes != 512u * 1024u ||
         plan.time_axis_kind !=
-            CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
+            X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         plan.controller_timing.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         board.dma_clock.numerator != 1u ||
@@ -99,24 +99,24 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         /* Exercise the selected keyboard through its real serial/controller
          * path. Native set-2 A is translated to the guest set-1 byte 1Eh. */
         failed = failed || test_board_kbc_submit_native_byte(session->board, 0x1cu) != LIB_STATUS_OK;
-        failed = failed || core_machine_bus_read(session->core_machine, 0x60u, &value) !=
+        failed = failed || x86_core_machine_bus_read(session->x86_core_machine, 0x60u, &value) !=
             LIB_STATUS_OK || value != 0x1eu;
         failed = failed || test_board_kbc_ticks_until_event(session->board, &ticks) != LIB_STATUS_OK ||
             ticks != 4000000u;
         if (!failed) test_board_kbc_advance(session->board, 3999999u);
-        failed = failed || core_machine_bus_read(session->core_machine, 0x64u, &value) !=
+        failed = failed || x86_core_machine_bus_read(session->x86_core_machine, 0x64u, &value) !=
             LIB_STATUS_OK || (value & 0x01u) != 0u;
         failed = failed || test_board_kbc_ticks_until_event(session->board, &ticks) != LIB_STATUS_OK ||
             ticks != 1u;
         if (!failed) test_board_kbc_advance(session->board, 1u);
-        failed = failed || core_machine_bus_read(session->core_machine, 0x60u, &value) !=
+        failed = failed || x86_core_machine_bus_read(session->x86_core_machine, 0x60u, &value) !=
             LIB_STATUS_OK || value != 0x1eu;
         failed = failed || test_board_kbc_ticks_until_event(session->board, &ticks) != LIB_STATUS_OK ||
             ticks != 800000u;
         failed = failed || test_board_kbc_submit_native_byte(session->board, 0xf0u) != LIB_STATUS_OK;
         failed = failed || test_board_kbc_submit_native_byte(session->board, 0x1cu) != LIB_STATUS_OK;
     }
-    failed = failed || core_machine_capture_time_observation(session->core_machine,
+    failed = failed || x86_core_machine_capture_time_observation(session->x86_core_machine,
         &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 8000000u ||
         time_observation.physical_time_available ||

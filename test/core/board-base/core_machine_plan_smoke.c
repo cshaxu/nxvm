@@ -57,7 +57,7 @@ static lib_i32 plan_handle_publication(void)
         .memory_bytes = (2u * 1024u * 1024u)
     };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -67,30 +67,29 @@ static lib_i32 plan_handle_publication(void)
         core_machine_plan_destroy(plan);
         return 1;
     }
-    failed |= test_plan_core_attachment(machine, board);
-    failed |= board != LIB_NULL && board->core != machine;
-    core_machine_destroy(machine);
+    failed |= board == LIB_NULL || board->core != machine;
+    x86_core_machine_destroy(machine);
 
-    machine = (core_machine *)(lib_uptr)1u;
+    machine = (x86_core_machine *)(lib_uptr)1u;
     board = (core_machine_board_state *)(lib_uptr)1u;
     failed |= core_machine_create_from_plan(LIB_NULL, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL || board != LIB_NULL;
     board = (core_machine_board_state *)(lib_uptr)1u;
     failed |= core_machine_create_from_plan(plan, LIB_NULL, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL;
-    machine = (core_machine *)(lib_uptr)1u;
+    machine = (x86_core_machine *)(lib_uptr)1u;
     failed |= core_machine_create_from_plan(plan, &machine, LIB_NULL) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     /* Valid plan, but topology application fails after attachment creation. */
     plan->topology.absent_memory_count = 1u;
     plan->topology.absent_memory[0].physical_start = 0x00100000u;
-    machine = (core_machine *)(lib_uptr)1u;
+    machine = (x86_core_machine *)(lib_uptr)1u;
     board = (core_machine_board_state *)(lib_uptr)1u;
     failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL || board != LIB_NULL;
     core_machine_plan_destroy(plan);
 
-    failed |= test_plan_core_allocation_failures(&configuration);
+    failed |= test_plan_board_device_failures(&configuration);
     return failed;
 }
 
@@ -100,7 +99,7 @@ static lib_i32 plan_default_and_copy(void)
         (2u * 1024u * 1024u) };
     core_machine_plan *plan = LIB_NULL;
     core_machine_board_timing_declaration temporary;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_board_timing_declaration declaration;
     core_machine_board_timing_disposition disposition;
@@ -135,7 +134,7 @@ static lib_i32 plan_default_and_copy(void)
         CORE_MACHINE_BOARD_TIMING_CAPABILITY_TIME_LIFECYCLE, &declaration) !=
         LIB_STATUS_OK;
     failed |= !failed && declaration.seam != CORE_MACHINE_BOARD_TIMING_SEAM_LIFECYCLE;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -143,7 +142,7 @@ static lib_i32 plan_default_and_copy(void)
 static lib_i32 plan_rejects_incomplete_or_unavailable(void)
 {
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
     core_machine_board_state *board = LIB_NULL;
     lib_size index;
     lib_i32 failed = 0;
@@ -181,7 +180,7 @@ static lib_i32 plan_rejects_incomplete_or_unavailable(void)
 
         core_machine_plan_destroy(plan);
         failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
-        machine = (core_machine *)(lib_uptr)1u;
+        machine = (x86_core_machine *)(lib_uptr)1u;
         plan->declarations[index].disposition =
             plan_capability_is_non_guest_time(capability) ?
             CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK :
@@ -198,7 +197,7 @@ static lib_i32 plan_rejects_topology_before_publication(void)
     core_machine_config configuration = { .memory_bytes =
         (2u * 1024u * 1024u) };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -221,7 +220,7 @@ static lib_i32 plan_rejects_invalid_transaction_contract_before_publication(void
     core_machine_config configuration = { .memory_bytes =
         (2u * 1024u * 1024u) };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -246,13 +245,13 @@ static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK
     };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_board_timing_disposition disposition;
     lib_i32 failed = 0;
 
-    configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
-    configuration.clock_plan.pit = (core_machine_clock_ratio) {1193182u, 8000000u, 0u};
+    configuration.clock_plan.dma = (x86_core_machine_clock_ratio) {3u, 8u, 0u};
+    configuration.clock_plan.pit = (x86_core_machine_clock_ratio) {1193182u, 8000000u, 0u};
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &source_rules) != LIB_STATUS_OK;
@@ -269,7 +268,7 @@ static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
     failed |= !failed && disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= !failed && board->controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -286,7 +285,7 @@ static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK
     };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    x86_core_machine *machine = (x86_core_machine *)(lib_uptr)1u;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -296,13 +295,13 @@ static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
     failed |= !failed && (core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
-    configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
-    configuration.clock_plan.pit = (core_machine_clock_ratio) {1u, 4u, 0u};
+    configuration.clock_plan.dma = (x86_core_machine_clock_ratio) {3u, 8u, 0u};
+    configuration.clock_plan.pit = (x86_core_machine_clock_ratio) {1u, 4u, 0u};
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
-    machine = (core_machine *)(lib_uptr)1u;
+    machine = (x86_core_machine *)(lib_uptr)1u;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
@@ -311,7 +310,7 @@ static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
-    machine = (core_machine *)(lib_uptr)1u;
+    machine = (x86_core_machine *)(lib_uptr)1u;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
@@ -328,7 +327,7 @@ static lib_i32 plan_selects_single_controller_xt_board(void)
     };
     core_machine_plan_topology topology = {0};
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -343,11 +342,11 @@ static lib_i32 plan_selects_single_controller_xt_board(void)
     failed |= !failed && test_plan_core_xt_routes(machine, LIB_FALSE);
     failed |= !failed && core_machine_get_fdc_dma_request_binding(board,
         &(core_machine_dma_request_binding) {0}) != LIB_STATUS_INVALID_STATE;
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && test_plan_core_xt_routes(machine, LIB_TRUE);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -359,14 +358,14 @@ static lib_i32 plan_l2_pit_deadline_remains_schedulable(void)
         .clock_plan.pit = {1u, 1u, 0u}
     };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
     failed |= !failed && test_plan_core_pit_deadline(machine, board);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -386,7 +385,7 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
         .clock_plan.dma = {3u, 8u, 0u}
     };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     lib_i32 failed = 0;
@@ -399,7 +398,7 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
         LIB_NULL, &binding) != LIB_STATUS_OK;
     failed |= !failed && test_plan_core_dma_deadline(machine,
         board->shared_dma, &binding);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }

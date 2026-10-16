@@ -3,7 +3,7 @@
 #include "../../core/board-base/composition/composition_fixture.h"
 #include "../../core/board-base/support/composition_fixture.h"
 #include "../../core/board-base/support/kbc_state_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
@@ -26,7 +26,7 @@ static lib_i32 pcat_topology_registry_matches_profile(
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || session->core_machine == LIB_NULL) {
+        session == LIB_NULL || session->x86_core_machine == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }
@@ -35,9 +35,10 @@ static lib_i32 pcat_topology_registry_matches_profile(
         const vm_at_port_leaf *leaf =
             &profile->port_leaves[index];
 
-        failed |= test_core_port_has_read(session->core_machine, leaf->port) != leaf->read ||
-            test_core_port_has_write(session->core_machine, leaf->port) != leaf->write;
+        failed |= test_core_port_accepts_read(session->x86_core_machine, leaf->port) != leaf->read ||
+            test_core_port_accepts_write(session->x86_core_machine, leaf->port) != leaf->write;
     }
+    failed |= x86_core_machine_reset(session->x86_core_machine) != LIB_STATUS_OK;
     pit_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_PIT_IRQ0);
     keyboard_route = vm_at_route_find(profile->routes, profile->route_count,
@@ -54,7 +55,7 @@ static lib_i32 pcat_topology_registry_matches_profile(
         !test_board_pic_source_matches(session->board, TEST_BOARD_KEYBOARD_IRQ1, keyboard_route->irq) ||
         !test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
-            session->core_machine, 0x20u, 0x20u, 0u) ||
+            session->x86_core_machine, 0x20u, 0x20u, 0u) ||
         !test_board_pic_source_matches(session->board, TEST_BOARD_KEYBOARD_IRQ12, aux_route->irq) ||
         board.rtc_irq != cmos_route->irq ||
         board.fdc.irq != fdc_route->irq ||
@@ -62,18 +63,18 @@ static lib_i32 pcat_topology_registry_matches_profile(
             fdc_route->dma_channel ||
         board.hdc.irq !=
             profile->hdc.irq;
-    failed |= !test_core_port_has_read(session->core_machine, 0x0061u) ||
-        !test_core_port_has_write(session->core_machine, 0x0061u) ||
-        test_core_port_has_read(session->core_machine, 0x0062u) ||
-        test_core_port_has_write(session->core_machine, 0x0062u) ||
-        test_core_port_has_read(session->core_machine, 0x0063u) ||
-        test_core_port_has_write(session->core_machine, 0x0063u) ||
-        test_core_port_has_read(session->core_machine, 0x03d6u) ||
-        test_core_port_has_write(session->core_machine, 0x03d6u) ||
-        test_core_port_has_read(session->core_machine, 0x03d7u) ||
-        test_core_port_has_write(session->core_machine, 0x03d7u) ||
-        test_core_port_has_read(session->core_machine, 0x03f3u) ||
-        test_core_port_has_write(session->core_machine, 0x03f3u);
+    failed |= !test_core_port_accepts_read(session->x86_core_machine, 0x0061u) ||
+        !test_core_port_accepts_write(session->x86_core_machine, 0x0061u) ||
+        test_core_port_accepts_read(session->x86_core_machine, 0x0062u) ||
+        test_core_port_accepts_write(session->x86_core_machine, 0x0062u) ||
+        test_core_port_accepts_read(session->x86_core_machine, 0x0063u) ||
+        test_core_port_accepts_write(session->x86_core_machine, 0x0063u) ||
+        test_core_port_accepts_read(session->x86_core_machine, 0x03d6u) ||
+        test_core_port_accepts_write(session->x86_core_machine, 0x03d6u) ||
+        test_core_port_accepts_read(session->x86_core_machine, 0x03d7u) ||
+        test_core_port_accepts_write(session->x86_core_machine, 0x03d7u) ||
+        test_core_port_accepts_read(session->x86_core_machine, 0x03f3u) ||
+        test_core_port_accepts_write(session->x86_core_machine, 0x03f3u);
     vm_machine_destroy(session);
     return failed;
 }
@@ -132,6 +133,6 @@ lib_i32 main(void)
         pcat_topology_rejects_before_registration(profile) != 0) {
         return 1;
     }
-    printf("PCAT-TOPOLOGY:OK\n");
+    lib_c_printf("PCAT-TOPOLOGY:OK\n");
     return 0;
 }

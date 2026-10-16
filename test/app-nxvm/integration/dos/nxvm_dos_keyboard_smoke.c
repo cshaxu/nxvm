@@ -7,7 +7,7 @@
 #include <windows.h>
 #undef exception_code
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/fault.h"
 #include "core/machine/display.h"
@@ -103,7 +103,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
     lib_size title_cell = TEXT_VIDEO_CELLS;
 
     if (session == LIB_NULL ||
-        core_machine_debug_read_memory(session->core_machine, TEXT_VIDEO_BASE,
+        x86_core_machine_debug_read_memory(session->x86_core_machine, TEXT_VIDEO_BASE,
             text, sizeof(text)) != LIB_STATUS_OK) {
         printf("edit display: text memory unavailable\n");
         return 0;
@@ -154,13 +154,13 @@ static void vm_dos_keyboard_report_failure(const vm_machine *session,
     lib_size index;
 
     if (session == LIB_NULL || state == LIB_NULL) return;
-    (void)core_machine_debug_read_memory(session->core_machine, 0x041au,
+    (void)x86_core_machine_debug_read_memory(session->x86_core_machine, 0x041au,
         &head, sizeof(head));
-    (void)core_machine_debug_read_memory(session->core_machine, 0x041cu,
+    (void)x86_core_machine_debug_read_memory(session->x86_core_machine, 0x041cu,
         &tail, sizeof(tail));
-    (void)core_machine_debug_read_memory(session->core_machine, 0x0449u,
+    (void)x86_core_machine_debug_read_memory(session->x86_core_machine, 0x0449u,
         &video_mode, sizeof(video_mode));
-    (void)core_machine_debug_read_memory(session->core_machine,
+    (void)x86_core_machine_debug_read_memory(session->x86_core_machine,
         state->cs_base + state->eip, instructions, sizeof(instructions));
     (void)core_machine_keyboard_get_native_scan_set(session->board,
         &scan_set);
@@ -211,7 +211,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         x86_core_cpu_state state;
 
         if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
-            core_machine_debug_read_cpu(session->core_machine, &state) ==
+            x86_core_machine_debug_read_cpu(session->x86_core_machine, &state) ==
                 LIB_STATUS_OK) {
             printf("prompt pause: %04x:%08x flags=%08x\n", state.cs,
                 state.eip, state.eflags);
@@ -236,7 +236,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             x86_core_cpu_state state;
 
             if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
-                core_machine_debug_read_cpu(session->core_machine, &state) ==
+                x86_core_machine_debug_read_cpu(session->x86_core_machine, &state) ==
                     LIB_STATUS_OK) {
                 printf("date input pause: %04x:%08x flags=%08x\n", state.cs,
                     state.eip, state.eflags);
@@ -263,7 +263,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         x86_core_cpu_state state;
 
         if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
-            core_machine_debug_read_cpu(session->core_machine, &state) ==
+            x86_core_machine_debug_read_cpu(session->x86_core_machine, &state) ==
                 LIB_STATUS_OK) {
             printf("edit pause: %04x:%08x flags=%08x\n", state.cs,
                 state.eip, state.eflags);

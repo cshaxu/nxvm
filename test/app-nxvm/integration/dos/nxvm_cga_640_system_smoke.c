@@ -44,8 +44,8 @@ static lib_status vm_cga254_boot_fixture(integration_ini_session *session,
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
-    const core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    const x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
     x86_video_snapshot snapshot;
     vm_machine *session;
     lib_u8 mode = 0u;
@@ -58,11 +58,11 @@ lib_i32 main(lib_i32 argc, char **argv)
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     for (instruction = 0u; instruction < VM_CGA254_BOOT_BUDGET; ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT ||
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) goto done;
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) !=
@@ -73,12 +73,12 @@ lib_i32 main(lib_i32 argc, char **argv)
             snapshot.pixels[2] == 1u && snapshot.pixels[640u] == 0u &&
             snapshot.pixels[641u] == 1u && snapshot.palette_rgb[0] == 0u &&
             snapshot.palette_rgb[1] == 0xffffffu &&
-            core_machine_memory_read(session->core_machine, 0x0449u, &mode,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0449u, &mode,
                 sizeof(mode)) == LIB_STATUS_OK && mode == 0x06u) {
             saw_cga = 1;
         }
         if (saw_cga && snapshot.kind == X86_VIDEO_KIND_TEXT &&
-            core_machine_memory_read(session->core_machine, 0x0449u, &mode,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0449u, &mode,
                 sizeof(mode)) == LIB_STATUS_OK && mode == 0x03u) {
             saw_text = 1;
             break;

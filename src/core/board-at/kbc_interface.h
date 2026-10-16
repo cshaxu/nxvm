@@ -3,7 +3,7 @@
 #define CORE_MACHINE_KBC_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 #include "core/chips/kbc8042/kbc8042_interface.h"
 
 typedef struct t_kbc t_kbc;
@@ -17,7 +17,7 @@ typedef x86_kbc8042_command_extension_result (*core_machine_kbc_command_extensio
  * stable opaque handle. Composition owns IRQ leases and supplies electrical
  * line/A20/reset sinks; their contexts outlive this adapter. Destroy only
  * after Core has stopped dispatching, including partial-construction teardown. */
-lib_status core_machine_kbc_create(core_machine *machine, t_kbc **out_controller);
+lib_status core_machine_kbc_create(x86_core_machine *machine, t_kbc **out_controller);
 void core_machine_kbc_destroy(t_kbc *controller);
 void core_machine_kbc_bind_core_services(t_kbc *controller,
     core_machine_kbc_irq_line irq, void *irq_context,

@@ -16,36 +16,36 @@ static lib_i32 read_first_sector(vm_machine *session, lib_u8 drive_head,
     lib_u32 value;
     lib_u16 index;
 
-    if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
-    if (core_machine_bus_write(session->core_machine, 0x01f2u, 1u) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x01f3u, 1u) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x01f4u, 0u) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x01f5u, 0u) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x01f6u, drive_head) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x01f7u, 0x20u) != LIB_STATUS_OK) return 0;
+    if (session == LIB_NULL || session->x86_core_machine == LIB_NULL) return 0;
+    if (x86_core_machine_bus_write(session->x86_core_machine, 0x01f2u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x01f3u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x01f4u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x01f5u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x01f6u, drive_head) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x01f7u, 0x20u) != LIB_STATUS_OK) return 0;
     test_board_hdc_service(session->board);
-    if (core_machine_bus_read(session->core_machine, 0x03f6u, &value) != LIB_STATUS_OK ||
+    if (x86_core_machine_bus_read(session->x86_core_machine, 0x03f6u, &value) != LIB_STATUS_OK ||
         (value & X86_HDC_STATUS_DRQ) == 0u || !test_board_hdc_irq_pending(session->board)) return 0;
-    if (core_machine_bus_read(session->core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
+    if (x86_core_machine_bus_read(session->x86_core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
         (value & X86_HDC_STATUS_DRQ) == 0u || test_board_hdc_irq_pending(session->board) ||
-        core_machine_bus_read(session->core_machine, 0x01f0u, &value) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(session->x86_core_machine, 0x01f0u, &value) != LIB_STATUS_OK ||
         value != expected_word) return 0;
     for (index = 1u; index < 256u; ++index) {
-        if (core_machine_bus_read(session->core_machine, 0x01f0u, &value) != LIB_STATUS_OK)
+        if (x86_core_machine_bus_read(session->x86_core_machine, 0x01f0u, &value) != LIB_STATUS_OK)
             return 0;
     }
     test_board_hdc_service(session->board);
     if (test_board_hdc_irq_pending(session->board)) return 0;
-    if (core_machine_bus_read(session->core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x01f7u, 0xecu) != LIB_STATUS_OK) return 0;
+    if (x86_core_machine_bus_read(session->x86_core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x01f7u, 0xecu) != LIB_STATUS_OK) return 0;
     test_board_hdc_service(session->board);
-    if (core_machine_bus_read(session->core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
+    if (x86_core_machine_bus_read(session->x86_core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
         (value & X86_HDC_STATUS_ERR) == 0u || test_board_hdc_irq_pending(session->board) ||
-        core_machine_bus_write(session->core_machine, 0x03f6u,
+        x86_core_machine_bus_write(session->x86_core_machine, 0x03f6u,
             X86_HDC_DEVICE_CONTROL_SRST) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x03f6u, 0u) != LIB_STATUS_OK) return 0;
+        x86_core_machine_bus_write(session->x86_core_machine, 0x03f6u, 0u) != LIB_STATUS_OK) return 0;
     return !test_board_hdc_irq_pending(session->board) &&
-        core_machine_bus_read(session->core_machine, 0x01f1u, &value) == LIB_STATUS_OK &&
+        x86_core_machine_bus_read(session->x86_core_machine, 0x01f1u, &value) == LIB_STATUS_OK &&
         value == X86_HDC_ERROR_DIAGNOSTIC_OK;
 }
 

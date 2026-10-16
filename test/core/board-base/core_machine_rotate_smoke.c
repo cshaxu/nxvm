@@ -1,6 +1,6 @@
 #include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 static lib_i32 rotate_access_failure(lib_bool shift)
 {
     const lib_u32 flags = shift ?
@@ -16,8 +16,8 @@ static lib_i32 rotate_access_failure(lib_bool shift)
                 0x06u) : 0x06u,
             0x10u, 0u, 1u
         };
-        core_machine *machine = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine *machine = LIB_NULL;
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot after = {0};
         x86_core_cpu_debug_register_patch patch = {0};
         lib_u16 before = 0x8123u, observed = 0u;
@@ -28,20 +28,20 @@ static lib_i32 rotate_access_failure(lib_bool shift)
             patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(
                 X86_CORE_CPU_DEBUG_EFLAGS);
             patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = flags;
-            failed = core_machine_debug_patch_registers(machine, &patch) !=
+            failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x3010u, &before,
+                x86_core_machine_memory_write(machine, 0x3010u, &before,
                     sizeof(before)) != LIB_STATUS_OK ||
-                !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
-                    (core_machine_run_budget){1u, 0u}, &result), &result) ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){1u, 0u}, &result), &result) ||
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) !=
                     LIB_STATUS_OK ||
-                core_machine_debug_read_real(machine, 0x0301u, 0u, &observed,
+                x86_core_machine_debug_read_real(machine, 0x0301u, 0u, &observed,
                     sizeof(observed)) != LIB_STATUS_OK || observed != before ||
                 after.eflags != flags || after.eip != 0u;
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

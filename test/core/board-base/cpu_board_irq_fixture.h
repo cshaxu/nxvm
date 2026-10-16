@@ -3,7 +3,7 @@
 
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "pic_fixture.h"
 
@@ -34,11 +34,11 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_u16 offset = 0x100u;
     lib_u16 segment = 0u;
     lib_i32 failed = entry == LIB_NULL || out == LIB_NULL ||
@@ -67,24 +67,24 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
         patch.values[X86_CORE_CPU_DEBUG_EBP] = 0x120u;
         patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
         patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x20u;
-        failed = core_machine_freeze_execution_providers(machine) !=
-                LIB_STATUS_OK || core_machine_reset(machine) !=
+        failed = x86_core_machine_freeze_execution_providers(machine) !=
+                LIB_STATUS_OK || x86_core_machine_reset(machine) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_patch_registers(machine, &patch) !=
+            x86_core_machine_debug_patch_registers(machine, &patch) !=
                 LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0u, entry->code,
+            x86_core_machine_memory_write(machine, 0u, entry->code,
                 sizeof(entry->code)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x80u, &offset,
+            x86_core_machine_memory_write(machine, 0x80u, &offset,
                 sizeof(offset)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x82u, &segment,
+            x86_core_machine_memory_write(machine, 0x82u, &segment,
                 sizeof(segment)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x100u, &hlt,
+            x86_core_machine_memory_write(machine, 0x100u, &hlt,
                 sizeof(hlt)) != LIB_STATUS_OK ||
             (entry->write_stack_image &&
-                core_machine_memory_write(machine, 0x8000u,
+                x86_core_machine_memory_write(machine, 0x8000u,
                     &entry->stack_image, sizeof(entry->stack_image)) !=
                     LIB_STATUS_OK) ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &out->before) !=
                 LIB_STATUS_OK;
     }
@@ -95,25 +95,25 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
                 LIB_STATUS_OK) { failed = 1; goto done; }
         core_machine_pic_irq_source_assert(irq);
         core_machine_pic_irq_source_deassert(irq);
-        failed = core_machine_run(machine,
-                (core_machine_run_budget){entry->budget,0u}, &result) !=
+        failed = x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){entry->budget,0u}, &result) !=
                 LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &out->after) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine,
+            x86_core_machine_debug_read_memory(machine,
                 out->after.ss.base + (lib_u16)out->after.esp,
                 &out->frame_ip, sizeof(out->frame_ip)) != LIB_STATUS_OK;
         if (!failed) {
             out->isr = test_pic_read(board->shared_pic_master, 0x0bu);
             out->irr = test_pic_read(board->shared_pic_master, 0x0au);
-            failed = core_machine_debug_read_memory(machine, 0x7ffeu,
+            failed = x86_core_machine_debug_read_memory(machine, 0x7ffeu,
                 &out->stack_word, sizeof(out->stack_word)) != LIB_STATUS_OK;
         }
     }
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

@@ -4,7 +4,7 @@
 #ifndef VM_PROFILE_PC_AT_ROM_INTERFACE_H
 #define VM_PROFILE_PC_AT_ROM_INTERFACE_H
 
-#include "core/x86/firmware_interface.h"
+#include "x86-core/machine/firmware_interface.h"
 #include "core/board-base/rom_validation_interface.h"
 
 #define VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES (64u * 1024u)
@@ -17,6 +17,6 @@ typedef struct vm_profile_external_pc_at_rom_context {
     lib_size video_bytes;
 } vm_profile_external_pc_at_rom_context;
 
-const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void);
+const x86_core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void);
 
 #endif

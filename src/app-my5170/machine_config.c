@@ -11,7 +11,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     X86_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
-    { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
+    { { 0u, 0u, 0u, X86_CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
         {{0}}, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 8u },
     /* IBM 6280099, System Board 1-22 and 1-57: 8254 at 1.193182 MHz,
      * RTC at 32.768 kHz. The CGA character rate is the constrained v6.0
@@ -21,7 +21,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     { { 1u, 2u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
         { 64u, 15625u, 0u }, { 315u, 1408u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u } },
-    { CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u },
+    { X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u },
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
@@ -184,7 +184,7 @@ static lib_i32 vm_profile_ibm_5170_descriptor_validate(
 {
     if (descriptor->cpu_profile != X86_CORE_CPU_PROFILE_80286 ||
         !descriptor->kbc_aux_absent) return 0;
-    return descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
+    return descriptor->time_axis.kind == X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
         descriptor->time_axis.ticks_per_second == 8000000u &&
         vm_profile_ibm_5170_memory_is_valid(descriptor->default_memory_bytes) &&
         ((descriptor->default_memory_bytes == 512u * 1024u &&

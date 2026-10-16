@@ -22,38 +22,38 @@ lib_i32 main(void)
 
         failed |= core_machine_capture_display_snapshot(session->board, &snapshot) != LIB_STATUS_OK ||
             snapshot.palette_rgb[1] != 0x0000aau;
-        test_core_machine_fixture_write_port(session->core_machine, 0x03c6u, 0x51u);
+        test_core_machine_fixture_write_port(session->x86_core_machine, 0x03c6u, 0x51u);
         failed |= core_machine_capture_display_snapshot(session->board, &snapshot) != LIB_STATUS_OK ||
             snapshot.palette_rgb[1] != 0u || snapshot.cursor_visible || !snapshot.buffer_changed;
-        test_core_machine_fixture_write_port(session->core_machine, 0x03c6u, 0x61u);
+        test_core_machine_fixture_write_port(session->x86_core_machine, 0x03c6u, 0x61u);
         failed |= core_machine_capture_display_snapshot(session->board, &snapshot) != LIB_STATUS_OK ||
             snapshot.palette_rgb[1] != 0x0000aau || !snapshot.buffer_changed;
-        test_core_machine_fixture_write_port(session->core_machine, 0x03c6u, 0x41u);
-        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+        test_core_machine_fixture_write_port(session->x86_core_machine, 0x03c6u, 0x41u);
+        failed |= test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03c6u) != 0x41u ||
-            test_video_missing_write_port(session->core_machine, 0x03dcu);
-        test_core_machine_fixture_write_port(session->core_machine,
+            test_video_missing_write_port(session->x86_core_machine, 0x03dcu);
+        test_core_machine_fixture_write_port(session->x86_core_machine,
             0x03c6u, 0x7fu);
-        test_core_machine_fixture_write_port(session->core_machine,
+        test_core_machine_fixture_write_port(session->x86_core_machine,
             0x03dcu, 0u);
-        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+        failed |= test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03c6u) != 0x7fu ||
-            (test_core_machine_fixture_read_bus(session->core_machine,
+            (test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03dau) & 0x06u) != 0x06u;
-        test_core_machine_fixture_write_port(session->core_machine,
+        test_core_machine_fixture_write_port(session->x86_core_machine,
             0x03c6u, 0x5au);
-        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+        failed |= test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03c6u) != 0x5au;
-        test_core_machine_fixture_write_port(session->core_machine,
+        test_core_machine_fixture_write_port(session->x86_core_machine,
             0x03c6u, 0xa5u);
-        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+        failed |= test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03c6u) != 0xa5u;
     }
     if (!failed) {
         vm_machine_reset(session);
-        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+        failed |= test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03c6u) != 0x41u ||
-            (test_core_machine_fixture_read_bus(session->core_machine,
+            (test_core_machine_fixture_read_bus(session->x86_core_machine,
             0x03dau) & 0x06u) != 0x04u;
     }
     vm_machine_destroy(session);

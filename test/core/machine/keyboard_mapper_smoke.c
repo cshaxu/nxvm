@@ -116,15 +116,15 @@ static void mapped_keyboard_irq(void *context, lib_bool auxiliary, lib_bool asse
     else core_machine_pic_irq_source_deassert(source);
 }
 
-static lib_bool mapped_keyboard_take(core_machine *machine,
+static lib_bool mapped_keyboard_take(x86_core_machine *machine,
     core_machine_pic_bus *master, core_machine_pic_bus *slave,
     core_machine_pic_irq_source *source, lib_u8 expected)
 {
     lib_u32 value;
     if (!core_machine_pic_irq_source_is_asserted(source) ||
         core_machine_pic_get_interrupt(master, slave) != 9u ||
-        core_machine_bus_read(machine, 0x60u, &value) != LIB_STATUS_OK || value != expected ||
-        core_machine_bus_write(machine, 0x20u, 0x20u) != LIB_STATUS_OK) return LIB_TRUE;
+        x86_core_machine_bus_read(machine, 0x60u, &value) != LIB_STATUS_OK || value != expected ||
+        x86_core_machine_bus_write(machine, 0x20u, 0x20u) != LIB_STATUS_OK) return LIB_TRUE;
     return LIB_FALSE;
 }
 
@@ -148,18 +148,18 @@ static lib_bool vm_keyboard_set3_receiving_route(void)
         {KVM_KEY_PAUSE,0u,0u,0x62,LIB_FALSE},
         {KVM_KEY_PRINT_SCREEN,0u,0u,0x57,LIB_FALSE}
     };
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_pic_bus *master = LIB_NULL;
     core_machine_pic_bus *slave = LIB_NULL;
     core_machine_pic_irq_source *source = LIB_NULL;
     t_kbc *keyboard = LIB_NULL;
     lib_bool failed = LIB_FALSE;
     lib_u32 value;
-    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_pic_initialize(&master, &slave, machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
         core_machine_kbc_create(machine, &keyboard) != LIB_STATUS_OK ||
@@ -169,8 +169,8 @@ static lib_bool vm_keyboard_set3_receiving_route(void)
     }
     core_machine_kbc_bind_core_services(keyboard, mapped_keyboard_irq, source,
         LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL, LIB_FALSE);
-    if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK) {
+    if (x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK) {
         failed = LIB_TRUE;
         goto done;
     }
@@ -180,14 +180,14 @@ static lib_bool vm_keyboard_set3_receiving_route(void)
     failed |= core_machine_pic_write_register(master, 0u, 0x13u) != LIB_STATUS_OK;
     failed |= core_machine_pic_write_register(master, 1u, 8u) != LIB_STATUS_OK;
     failed |= core_machine_pic_write_register(master, 1u, 1u) != LIB_STATUS_OK;
-    failed |= core_machine_bus_write(machine, 0x60u, 0xf0u) != LIB_STATUS_OK;
+    failed |= x86_core_machine_bus_write(machine, 0x60u, 0xf0u) != LIB_STATUS_OK;
     failed |= mapped_keyboard_take(machine, master, slave, source, 0xfau);
-    failed |= core_machine_bus_write(machine, 0x60u, 3u) != LIB_STATUS_OK;
+    failed |= x86_core_machine_bus_write(machine, 0x60u, 3u) != LIB_STATUS_OK;
     failed |= mapped_keyboard_take(machine, master, slave, source, 0xfau);
     failed |= core_machine_kbc_get_native_scan_set(keyboard) != 3u;
     for (lib_u8 all_breaks = 0u; all_breaks < 2u; ++all_breaks) {
         if (all_breaks != 0u) {
-            failed |= core_machine_bus_write(machine, 0x60u, 0xfau) != LIB_STATUS_OK;
+            failed |= x86_core_machine_bus_write(machine, 0x60u, 0xfau) != LIB_STATUS_OK;
             failed |= mapped_keyboard_take(machine, master, slave, source, 0xfau);
         }
         for (lib_size index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
@@ -207,7 +207,7 @@ static lib_bool vm_keyboard_set3_receiving_route(void)
                     failed |= mapped_keyboard_take(machine, master, slave, source, keys[index].code);
                 }
                 failed |= core_machine_pic_irq_source_is_asserted(source);
-                failed |= core_machine_bus_read(machine, 0x64u, &value) != LIB_STATUS_OK ||
+                failed |= x86_core_machine_bus_read(machine, 0x64u, &value) != LIB_STATUS_OK ||
                     (value & 1u) != 0u;
             }
         }
@@ -215,7 +215,7 @@ static lib_bool vm_keyboard_set3_receiving_route(void)
 done:
     core_machine_kbc_destroy(keyboard);
     core_machine_pic_finalize(master, slave);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 

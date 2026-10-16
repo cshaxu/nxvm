@@ -4,13 +4,13 @@
 
 #include "core/board-base/pic_bus.h"
 #include "core/board-base/pit_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 typedef struct pit_irq0_fixture {
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
     x86_pit *pit;
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_pic_irq_source *irq0;
 } pit_irq0_fixture;
 
@@ -18,9 +18,9 @@ static void pit_irq0_finalize(pit_irq0_fixture *fixture);
 
 static lib_status pit_irq0_initialize(pit_irq0_fixture *fixture)
 {
-    const core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = (2u * 1024u * 1024u) };
+    const x86_core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = (2u * 1024u * 1024u) };
     *fixture = (pit_irq0_fixture){0};
-    lib_status status = core_machine_neutral_create(&config, &fixture->machine);
+    lib_status status = x86_core_machine_neutral_create(&config, &fixture->machine);
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_pic_initialize(&fixture->master, &fixture->slave, fixture->machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
@@ -44,9 +44,9 @@ static lib_status pit_irq0_initialize(pit_irq0_fixture *fixture)
             fixture->pit, 0x0040u);
     }
     if (status != LIB_STATUS_OK) goto failed;
-    status = core_machine_freeze_execution_providers(fixture->machine);
+    status = x86_core_machine_freeze_execution_providers(fixture->machine);
     if (status != LIB_STATUS_OK) goto failed;
-    status = core_machine_reset(fixture->machine);
+    status = x86_core_machine_reset(fixture->machine);
     if (status != LIB_STATUS_OK) goto failed;
     x86_pit_reset(fixture->pit);
     x86_pit_set_output(fixture->pit, 0u,
@@ -61,10 +61,10 @@ static void pit_irq0_finalize(pit_irq0_fixture *fixture)
 {
     x86_pit_destroy(fixture->pit);
     core_machine_pic_finalize(fixture->master, fixture->slave);
-    core_machine_destroy(fixture->machine);
+    x86_core_machine_destroy(fixture->machine);
 }
 
-static void pit_irq0_program(core_machine *port, lib_u8 control,
+static void pit_irq0_program(x86_core_machine *port, lib_u8 control,
     lib_u16 count)
 {
     lib_u16 data_port = (lib_u16)(0x0040u +

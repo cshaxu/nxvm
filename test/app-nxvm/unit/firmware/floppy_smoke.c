@@ -111,12 +111,12 @@ static void request(lib_u8 *bytes, lib_size *offset, lib_u16 ax, lib_u16 cx,
     bytes[(*offset)++] = 0x06u; word(bytes, offset, output + 18u);
 }
 
-static lib_bool run_to(core_machine *machine, lib_u32 pc, lib_u32 limit)
+static lib_bool run_to(x86_core_machine *machine, lib_u32 pc, lib_u32 limit)
 {
     for (lib_u32 used = 0u; used < limit; ++used) {
-        core_machine_run_result result = {0};
-        if (core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result) !=
-                LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+        x86_core_machine_run_result result = {0};
+        if (x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+                LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             lib_c_fprintf(lib_c_stderr, "Guest run failed: reason=%u PC=%x\n",
                 result.reason, result.linear_pc);
             return LIB_FALSE;
@@ -124,7 +124,7 @@ static lib_bool run_to(core_machine *machine, lib_u32 pc, lib_u32 limit)
         if (result.linear_pc == pc) return LIB_TRUE;
     }
     x86_core_cpu_state state;
-    if (core_machine_get_cpu_state(machine, &state) == LIB_STATUS_OK)
+    if (x86_core_machine_get_cpu_state(machine, &state) == LIB_STATUS_OK)
         lib_c_fprintf(lib_c_stderr, "Guest budget: %04x:%x, wanted=%x\n", state.cs, state.eip, pc);
     return LIB_FALSE;
 }
@@ -141,7 +141,7 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     core_machine_plan *plan = LIB_NULL;
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_display_provider_slot *display = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     disk *media = lib_allocate_zero(1u, sizeof(*media));
     disk *empty = lib_allocate_zero(1u, sizeof(*empty));
@@ -196,17 +196,17 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
         profile.profile.configure(profile.profile.context, plan) != LIB_STATUS_OK ||
         core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
         machine == LIB_NULL || board == LIB_NULL ||
-        core_machine_bind_firmware_provider(machine,
+        x86_core_machine_bind_firmware_provider(machine,
             profile.firmware_provider,
             profile.firmware_context) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         !run_to(machine, 0x7c00u, 1000000u)) goto done;
     media->readonly = readonly;
     media->present = !absent;
-    if (core_machine_memory_write(machine, 0x1fff0u, payload, sizeof(payload)) != LIB_STATUS_OK ||
+    if (x86_core_machine_memory_write(machine, 0x1fff0u, payload, sizeof(payload)) != LIB_STATUS_OK ||
         !run_to(machine, 0x7c00u + (lib_u32)offset, 6000000u) ||
-        core_machine_memory_read(machine, 0x600u, result, sizeof(result)) != LIB_STATUS_OK) goto done;
+        x86_core_machine_memory_read(machine, 0x600u, result, sizeof(result)) != LIB_STATUS_OK) goto done;
     ok = (result[0] >> 8u) == expected && (result[7] & 1u) == (expected != 0u) &&
         result[1] == 0xfff0u && result[2] == cx && result[3] == dx &&
         result[4] == 0x1357u && result[5] == 0x2468u && result[6] == 0x369cu &&
@@ -214,7 +214,7 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     if (ok && expected == 0u && (ax >> 8u) == 2u) {
         lib_size lba = ((cx >> 8u) * 2u + (dx >> 8u)) * 18u + (cx & 0xffu) - 1u;
         ok = (result[0] & 0xffu) == (ax & 0xffu) &&
-            core_machine_memory_read(machine, 0x1fff0u, actual, (ax & 0xffu) * 512u) == LIB_STATUS_OK &&
+            x86_core_machine_memory_read(machine, 0x1fff0u, actual, (ax & 0xffu) * 512u) == LIB_STATUS_OK &&
             lib_memory_compare(actual, media->bytes + lba * 512u, (ax & 0xffu) * 512u) == 0;
     }
     if (ok && expected == 0u && (ax >> 8u) == 3u) {
@@ -223,28 +223,28 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     }
     if (ok && recalibrate) {
         lib_u16 prior[10], reset[10];
-        ok = core_machine_memory_read(machine, 0x620u, prior, sizeof(prior)) == LIB_STATUS_OK &&
-            core_machine_memory_read(machine, 0x640u, reset, sizeof(reset)) == LIB_STATUS_OK &&
+        ok = x86_core_machine_memory_read(machine, 0x620u, prior, sizeof(prior)) == LIB_STATUS_OK &&
+            x86_core_machine_memory_read(machine, 0x640u, reset, sizeof(reset)) == LIB_STATUS_OK &&
             prior[0] == 1u && (prior[7] & 1u) == 0u && reset[6] == 0x369cu &&
             reset[0] == 0u && (reset[7] & 1u) == 0u;
     }
     if (ok && expected != 0u) {
         lib_u16 status[10];
-        ok = core_machine_memory_read(machine, 0x660u, status, sizeof(status)) == LIB_STATUS_OK &&
+        ok = x86_core_machine_memory_read(machine, 0x660u, status, sizeof(status)) == LIB_STATUS_OK &&
             (status[0] >> 8u) == expected && (status[7] & 1u) != 0u;
     }
     if (ok && expected == 0x80u) {
         lib_u16 recovered[10];
-        ok = core_machine_memory_read(machine, 0x680u, recovered, sizeof(recovered)) == LIB_STATUS_OK &&
+        ok = x86_core_machine_memory_read(machine, 0x680u, recovered, sizeof(recovered)) == LIB_STATUS_OK &&
             recovered[0] == 1u && (recovered[7] & 1u) == 0u &&
-            core_machine_memory_read(machine, 0x1fff0u, actual, 512u) == LIB_STATUS_OK &&
+            x86_core_machine_memory_read(machine, 0x1fff0u, actual, 512u) == LIB_STATUS_OK &&
             lib_memory_compare(actual, media->bytes + 36u * 512u, 512u) == 0;
     }
 done:
     if (machine == LIB_NULL) lib_c_fprintf(lib_c_stderr, "Fixture construction failed\n");
     if (!ok) lib_c_fprintf(lib_c_stderr, "BIOS floppy AX=%04x CX=%04x DX=%04x: result=%04x flags=%04x\n",
         ax, cx, dx, result[0], result[7]);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_display_provider_slot_destroy(display);
     core_machine_media_registry_destroy(registry);
     core_machine_plan_destroy(plan);

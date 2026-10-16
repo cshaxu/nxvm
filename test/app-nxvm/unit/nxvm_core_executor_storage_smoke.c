@@ -6,7 +6,7 @@
 
 
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 
 #include "core/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
@@ -18,12 +18,12 @@ lib_i32 main(void)
     lib_u32 eax;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) != LIB_STATUS_OK ||
-        machine == LIB_NULL || machine->core_machine == LIB_NULL ||
-        core_machine_get_cpu_state(machine->core_machine, &cpu) != LIB_STATUS_OK ||
+        machine == LIB_NULL || machine->x86_core_machine == LIB_NULL ||
+        x86_core_machine_get_cpu_state(machine->x86_core_machine, &cpu) != LIB_STATUS_OK ||
         cpu.cs != 0xf000u || cpu.eip != 0xfff0u ||
-        core_machine_debug_write_register(machine->core_machine,
+        x86_core_machine_debug_write_register(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_EAX, 0x12345678u) != LIB_STATUS_OK ||
-        core_machine_debug_read_register(machine->core_machine,
+        x86_core_machine_debug_read_register(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK || eax != 0x12345678u) {
         vm_machine_destroy(machine);
         return 1;

@@ -1,7 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "cpu_board_fault_fixture.h"
 #include "cpu_board_de_fixture.h"
 

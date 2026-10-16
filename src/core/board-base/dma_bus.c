@@ -1,6 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "core/board-base/dma_bus.h"
-#include "core/x86/memory_interface.h"
+#include "x86-core/machine/memory_interface.h"
 
 /* This only issues opaque binding nonces. It never selects a DMA instance. */
 static lib_atomic_uptr core_machine_dma_next_request_token = 1u;
@@ -119,7 +119,7 @@ static lib_status dma_port_write(void *owner, lib_u16 port_id, lib_u32 value)
 typedef struct dma_cycle_context {
     t_dma *controller;
     t_latch *latch;
-    core_machine *machine;
+    x86_core_machine *machine;
     lib_bool word;
 } dma_cycle_context;
 
@@ -174,9 +174,9 @@ static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
     }
     if (word) page &= 0xfeu;
     physical = ((lib_u32)page << 16) + (word ? (lib_u32)address << 1 : address);
-    status = core_machine_dma_memory_cycle(context->machine, physical, bytes,
-        channel, write ? CORE_MACHINE_MEMORY_ACCESS_WRITE :
-            CORE_MACHINE_MEMORY_ACCESS_READ, &value,
+    status = x86_core_machine_dma_memory_cycle(context->machine, physical, bytes,
+        channel, write ? X86_CORE_MACHINE_MEMORY_ACCESS_WRITE :
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &value,
         kind == X86_DMA_DEVICE_TO_MEMORY ? dma_device_before_memory : LIB_NULL,
         kind == X86_DMA_MEMORY_TO_DEVICE ? dma_device_after_memory : LIB_NULL,
         context);
@@ -193,7 +193,7 @@ static void dma_bus_terminal(void *owner, lib_u8 channel)
 }
 
 static void dma_bus_advance(t_dma *dma, t_latch *latch,
-    core_machine *machine, lib_bool word)
+    x86_core_machine *machine, lib_bool word)
 {
     dma_cycle_context context = { dma, latch, machine, word };
     x86_dma_bus bus = { dma_bus_cycle, dma_bus_terminal, &context };
@@ -308,7 +308,7 @@ void core_machine_dma_request_terminate(core_machine_dma_bus *bus,
 
 
 lib_status core_machine_dma_initialize(core_machine_dma_bus **out_bus,
-    core_machine *machine, lib_u8 controller_count)
+    x86_core_machine *machine, lib_u8 controller_count)
 {
     static const lib_u16 primary_page_ports[] = {
         0x0081, 0x0082, 0x0083
@@ -319,7 +319,7 @@ lib_status core_machine_dma_initialize(core_machine_dma_bus **out_bus,
     static const lib_u16 spare_page_ports[] = {
         0x0080, 0x0084, 0x0085, 0x0086, 0x0088, 0x008c, 0x008d, 0x008e
     };
-    core_machine_port_route routes[48];
+    x86_core_machine_port_route routes[48];
     lib_size count = 0u;
     lib_uptr index;
     lib_status status;
@@ -352,35 +352,35 @@ lib_status core_machine_dma_initialize(core_machine_dma_bus **out_bus,
         return status;
     }
     for (index = 0; index < 0x10u; ++index) {
-        routes[count++] = (core_machine_port_route) {(lib_u16)index,
+        routes[count++] = (x86_core_machine_port_route) {(lib_u16)index,
             index <= 8u || index == 13u ? dma_port_read : LIB_NULL,
             dma_port_write, primary, LIB_FALSE, 0u};
     }
     for (index = 0; index < sizeof(primary_page_ports) /
             sizeof(primary_page_ports[0]);
          ++index) {
-        routes[count++] = (core_machine_port_route) {primary_page_ports[index],
+        routes[count++] = (x86_core_machine_port_route) {primary_page_ports[index],
             dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
     }
     if (controller_count == 2u) {
         for (index = 0; index < sizeof(spare_page_ports) /
             sizeof(spare_page_ports[0]); ++index) {
-            routes[count++] = (core_machine_port_route) {spare_page_ports[index],
+            routes[count++] = (x86_core_machine_port_route) {spare_page_ports[index],
                 dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
         }
         for (index = 0; index < sizeof(secondary_page_ports) /
                 sizeof(secondary_page_ports[0]); ++index) {
-            routes[count++] = (core_machine_port_route) {secondary_page_ports[index],
+            routes[count++] = (x86_core_machine_port_route) {secondary_page_ports[index],
                 dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
         }
         for (index = 0u; index < 0x10u; ++index) {
-            routes[count++] = (core_machine_port_route) {
+            routes[count++] = (x86_core_machine_port_route) {
                 (lib_u16)(0x00c0u + index * 2u),
                 index <= 8u || index == 13u ? dma_port_read : LIB_NULL,
                 dma_port_write, primary, LIB_FALSE, 0u};
         }
     }
-    status = core_machine_install_port_routes(machine, routes, count);
+    status = x86_core_machine_install_port_routes(machine, routes, count);
     if (status != LIB_STATUS_OK) {
         core_machine_dma_finalize(bus);
     } else {
@@ -402,7 +402,7 @@ void core_machine_dma_reset(core_machine_dma_bus *bus)
 }
 
 static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
-    t_dma *secondary, core_machine *machine)
+    t_dma *secondary, x86_core_machine *machine)
 {
     x86_dma_signals first = x86_dma_get_signals(primary->device);
     x86_dma_signals second;
@@ -462,7 +462,7 @@ lib_bool core_machine_dma_has_pending_request(const core_machine_dma_bus *bus)
 }
 
 void core_machine_dma_advance_transaction(core_machine_dma_bus *bus,
-    core_machine *machine, lib_u64 elapsed_ticks)
+    x86_core_machine *machine, lib_u64 elapsed_ticks)
 {
     lib_u64 tick;
     if (bus == LIB_NULL || bus->primary.device == LIB_NULL || machine == LIB_NULL) return;

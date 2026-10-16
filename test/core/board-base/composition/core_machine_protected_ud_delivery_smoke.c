@@ -1,8 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "../core_machine_board_fixture.h"
 
@@ -13,7 +12,7 @@
 #define UD_HANDLER_OFFSET 0x0100u
 
 typedef struct ud_machine {
-    core_machine *machine;
+    x86_core_machine *machine;
 } ud_machine;
 
 static lib_i32 ud_prepare(ud_machine *state)
@@ -35,9 +34,9 @@ static lib_i32 ud_prepare(ud_machine *state)
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
-        core_machine_reset(state->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+        x86_core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_i32 ud_gprs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
@@ -68,9 +67,7 @@ static lib_i32 ud_data_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before,
 static lib_i32 ud_delivered(const x86_core_cpu_diagnostic *diagnostic)
 {
     return !diagnostic->first_fault.valid &&
-        diagnostic->last_delivered_exception.valid && CORE_MACHINE_BIT_IS_SET(
-            diagnostic->last_delivered_exception.exception_mask,
-            VCPUINS_EXCEPT_UD) &&
+        diagnostic->last_delivered_exception.valid && (((diagnostic->last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_UD)) != 0u) &&
         diagnostic->last_delivered_exception.exception_code == 0u;
 }
 
@@ -109,7 +106,7 @@ static lib_i32 ud_boot_protected(ud_machine *state,
             [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF |
                 X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_DF }
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
 
     if (!ud_prepare(state)) {
         return 0;
@@ -120,27 +117,27 @@ static lib_i32 ud_boot_protected(ud_machine *state,
         idt[6u * 8u + 2u] = 0x08u;
         idt[6u * 8u + 5u] = 0x8eu;
     }
-    if (core_machine_memory_write(state->machine, UD_GDT_BASE, gdt,
+    if (x86_core_machine_memory_write(state->machine, UD_GDT_BASE, gdt,
             sizeof(gdt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, UD_IDT_BASE, idt,
+        x86_core_machine_memory_write(state->machine, UD_IDT_BASE, idt,
             sizeof(idt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine, UD_CODE_BASE, code,
+        x86_core_machine_memory_write(state->machine, UD_CODE_BASE, code,
             bytes) != LIB_STATUS_OK ||
-        core_machine_memory_write(state->machine,
+        x86_core_machine_memory_write(state->machine,
             UD_CODE_BASE + UD_HANDLER_OFFSET,
             (const lib_u8[]){ 0xf4u }, 1u) != LIB_STATUS_OK) {
         return 0;
     }
-    return core_machine_memory_write(state->machine, 0u, setup,
+    return x86_core_machine_memory_write(state->machine, 0u, setup,
             sizeof(setup)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x0500u, tables,
+        x86_core_machine_memory_write(state->machine, 0x0500u, tables,
             sizeof(tables)) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){2u, 0u},
+        x86_core_machine_run(state->machine, (x86_core_machine_run_budget){2u, 0u},
             &result) == LIB_STATUS_OK && result.executed == 2u &&
-        result.reason == CORE_MACHINE_STOP_BUDGET &&
-        core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_CR0,
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
+        x86_core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_CR0,
             VCPU_CR0_PE) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+        x86_core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_i32 ud_protected_delivery(const lib_u8 *code,
@@ -148,21 +145,21 @@ static lib_i32 ud_protected_delivery(const lib_u8 *code,
 {
     lib_u32 frame[3u] = { 0u, 0u, 0u };
     ud_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic;
     x86_core_cpu_debug_cpu_snapshot before = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !ud_boot_protected(&state, code, bytes, LIB_TRUE);
 
     if (!failed) {
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-            core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            x86_core_machine_run(state.machine,
+            (x86_core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(state.machine,
+            x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             !ud_delivered(&diagnostic) ||
             after.eip != UD_HANDLER_OFFSET ||
@@ -170,20 +167,20 @@ static lib_i32 ud_protected_delivery(const lib_u8 *code,
             after.eflags != (before.eflags & ~X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
             !ud_gprs_same(&before, &after) ||
             !ud_data_sregs_same(&before, &after) ||
-            core_machine_debug_read_linear(state.machine,
+            x86_core_machine_debug_read_linear(state.machine,
                 after.ss.base + after.esp, frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != before.cs.selector ||
             frame[2] != (before.eflags | 0x00010000u);
     }
     if (!failed) {
-        failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_run(state.machine,
+            (x86_core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             after.eip != UD_HANDLER_OFFSET + 1u;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 
@@ -378,24 +375,24 @@ static lib_i32 ud_protected_invalid_gate(void)
 {
     static const lib_u8 code[] = { 0x0fu, 0x01u, 0xf8u };
     ud_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot before = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !ud_boot_protected(&state, code, sizeof(code), LIB_FALSE);
 
     if (!failed) {
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-            !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result), &result) ||
-            core_machine_debug_capture_cpu_snapshot(state.machine,
+            !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(state.machine,
+            (x86_core_machine_run_budget){ 1u, 0u }, &result), &result) ||
+            x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             after.eip != before.eip || after.esp != before.esp ||
             after.eflags != before.eflags ||
             !ud_gprs_same(&before, &after) ||
             !ud_data_sregs_same(&before, &after);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 

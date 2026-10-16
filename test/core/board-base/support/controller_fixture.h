@@ -6,14 +6,14 @@
 #include "../fdc_values.h"
 
 lib_bool test_board_fdc_binding_matches(const core_machine_board_state *board,
-    const core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel);
+    const x86_core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel);
 core_machine_fdc_config test_board_fdc_connection_config(
     const core_machine_board_state *board);
 core_machine_fdc_drive_bindings test_board_fdc_drive_bindings(
     const core_machine_board_state *board);
 lib_bool test_board_fdc_advance_ticks(core_machine_board_state *board, lib_u64 ticks);
 void test_board_fdc_reset(core_machine_board_state *board);
-void test_board_dma_transfers(core_machine_board_state *board, core_machine *machine,
+void test_board_dma_transfers(core_machine_board_state *board, x86_core_machine *machine,
     lib_u64 transfers, lib_u8 controllers);
 void test_board_fdc_advance(core_machine_board_state *board);
 void test_board_fdc_refresh(core_machine_board_state *board);

@@ -1,10 +1,10 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c")
 set(machine_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
-set(interface "${PROJECT_SOURCE_DIR}/src/core/x86/machine_interface.h")
-set(smoke "${PROJECT_SOURCE_DIR}/test/core/x86/machine_instruction_timing_smoke.c")
+set(interface "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_interface.h")
+set(smoke "${PROJECT_SOURCE_DIR}/test/x86-core/machine/machine_instruction_timing_smoke.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s3-physical-eligibility-boundary.md")
 foreach(path IN ITEMS "${machine}" "${interface}" "${smoke}" "${evidence}")
     if(NOT EXISTS "${path}")
@@ -26,9 +26,9 @@ endfunction()
 foreach(symbol_pair IN ITEMS
     "x86_core_cpu_source_timing_mark_unallocated|core_machine_source_timing_mark_unallocated"
     "source_timing_unallocated|source_timing_unallocated"
-    "CORE_MACHINE_RETIREMENT_TIME_PHYSICAL|CORE_MACHINE_RETIREMENT_TIME_PHYSICAL"
-    "core_machine_publish_elapsed_ticks|core_machine_publish_elapsed_ticks"
-    "core_machine_advance_time|core_machine_advance_time")
+    "X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL|CORE_MACHINE_RETIREMENT_TIME_PHYSICAL"
+    "x86_core_machine_publish_elapsed_ticks|core_machine_publish_elapsed_ticks"
+    "x86_core_machine_advance_time|core_machine_advance_time")
     string(REPLACE "|" ";" symbol_names "${symbol_pair}")
     list(GET symbol_names 0 token)
     list(GET symbol_names 1 historical_token)
@@ -36,12 +36,12 @@ foreach(symbol_pair IN ITEMS
     physical_timing_require("${evidence_text}" "${historical_token}")
 endforeach()
 foreach(token IN ITEMS
-    "core_machine_retirement_time_contract"
-    "CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC"
-    "CORE_MACHINE_RETIREMENT_TIME_PHYSICAL")
+    "x86_core_machine_retirement_time_contract"
+    "X86_CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC"
+    "X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL")
     physical_timing_require("${interface_text}" "${token}")
 endforeach()
 physical_timing_require("${smoke_text}" "timing_test_physical_contract")
-physical_timing_require("${smoke_text}" "CORE_MACHINE_STOP_FAULT")
+physical_timing_require("${smoke_text}" "X86_CORE_MACHINE_STOP_FAULT")
 physical_timing_require("${evidence_text}" "M5:T388:S3:PHYSICAL-ELIGIBILITY-BOUNDARY:OK")
 message(STATUS "Physical-eligibility boundary passed.")

@@ -3,7 +3,6 @@
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "pic_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
 typedef struct port_strings_board_probe {
     lib_u32 input;
@@ -35,7 +34,7 @@ static lib_status port_strings_board_write(void *opaque, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_i32 port_strings_board_prepare(core_machine **out_machine,
+static lib_i32 port_strings_board_prepare(x86_core_machine **out_machine,
     port_strings_board_probe *probe,
     core_machine_board_state **out_board)
 {
@@ -44,7 +43,7 @@ static lib_i32 port_strings_board_prepare(core_machine **out_machine,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_port_provider provider = {
+    const x86_core_machine_port_provider provider = {
         port_strings_board_read, port_strings_board_write
     };
     const x86_core_cpu_debug_register_patch patch = {
@@ -70,17 +69,17 @@ static lib_i32 port_strings_board_prepare(core_machine **out_machine,
             [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF
         }
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_create(&config, &machine, out_board) != LIB_STATUS_OK;
 
     if (!failed)
-        failed = core_machine_install_port_provider(machine, 0x00e0u,
+        failed = x86_core_machine_install_port_provider(machine, 0x00e0u,
             0x00e0u, &provider, probe) != LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK ||
-            core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
     if (failed) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (out_board != LIB_NULL) *out_board = LIB_NULL;
         return 0;
     }
@@ -100,10 +99,10 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
     lib_u8 bytes = repeat ? 3u : 2u;
     const lib_u8 source[] = {0x5au,0x6bu,0x7cu};
     port_strings_board_probe probe = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 observed = 0u;
@@ -111,31 +110,31 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
 
     probe.input = source[0];
     if (!failed)
-        failed = core_machine_memory_write(machine, 0x20010u, source,
+        failed = x86_core_machine_memory_write(machine, 0x20010u, source,
             sizeof(source)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x80u, &offset,
+            x86_core_machine_memory_write(machine, 0x80u, &offset,
                 sizeof(offset)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x82u, &segment,
+            x86_core_machine_memory_write(machine, 0x82u, &segment,
                 sizeof(segment)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x100u, &hlt,
+            x86_core_machine_memory_write(machine, 0x100u, &hlt,
                 sizeof(hlt)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK;
+            x86_core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK;
     if (!failed) {
         test_pic_program_vector(board->shared_pic_master, 0x20u);
         test_pic_bind_source(&irq, board->shared_pic_master,
             board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(irq);
         core_machine_pic_irq_source_deassert(irq);
-        failed = core_machine_run(machine,
-            (core_machine_run_budget){repeat ? 4u : 2u,0u}, &result) !=
+        failed = x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){repeat ? 4u : 2u,0u}, &result) !=
             LIB_STATUS_OK || result.reason !=
-            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine,
+            x86_core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine,
+            x86_core_machine_debug_read_memory(machine,
                 input ? 0x30020u : 0x20010u, &observed,
                 sizeof(observed)) != LIB_STATUS_OK;
     }
@@ -153,7 +152,7 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
                 VPIC_ISR_IRQ(0u)) ||
             (test_pic_read(board->shared_pic_master, 0x0au) &
                 VPIC_IRR_IRQ(0u));
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -181,12 +180,12 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
     const lib_u8 source[] = {0x5au,0x6bu};
     const lib_u8 destination[] = {0xa5u,0xb6u};
     port_strings_board_probe probe = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_debug_register_patch entry = {0};
     x86_core_cpu_debug_register_patch patch = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_i32 failed = !port_strings_board_prepare(&machine, &probe, LIB_NULL);
 
     gdt[input ? 24u : 16u] = repeat ? 0x10u : 0x0fu;
@@ -197,19 +196,19 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP);
-        failed = core_machine_debug_patch_registers(machine, &entry) !=
+        failed = x86_core_machine_debug_patch_registers(machine, &entry) !=
             LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x100u, pointer,
+            x86_core_machine_memory_write(machine, 0x100u, pointer,
                 sizeof(pointer)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x300u, gdt,
+            x86_core_machine_memory_write(machine, 0x300u, gdt,
                 sizeof(gdt)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0u, bootstrap,
+            x86_core_machine_memory_write(machine, 0u, bootstrap,
                 sizeof(bootstrap)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x2000u, code,
+            x86_core_machine_memory_write(machine, 0x2000u, code,
                 bytes) != LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){11u,0u},
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){11u,0u},
                 &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 11u;
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 11u;
     }
     if (!failed) {
         patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
@@ -223,26 +222,25 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
         patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x10u;
         patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
         probe.input = source[0];
-        failed = core_machine_debug_patch_registers(machine, &patch) !=
+        failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
             LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x3010u, source,
+            x86_core_machine_memory_write(machine, 0x3010u, source,
                 sizeof(source)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x4010u, destination,
+            x86_core_machine_memory_write(machine, 0x4010u, destination,
                 sizeof(destination)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = !test_core_machine_fixture_shutdown_wait(core_machine_run(
-            machine, (core_machine_run_budget){repeat ? 2u : 1u,0u},
+        failed = !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(
+            machine, (x86_core_machine_run_budget){repeat ? 2u : 1u,0u},
             &result), &result) ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
     }
     if (!failed)
         failed = diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_SHUTDOWN) ||
+            !(((diagnostic.last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_SHUTDOWN)) != 0u) ||
             after.eip != 0u ||
             after.ecx != (repeat ? 0x11220002u : 0x11220003u) ||
             after.esi != (repeat && !input ? 0x11u : 0x10u) ||
@@ -251,7 +249,7 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
             probe.reads != (repeat && input ? 1u : 0u) ||
             probe.writes != (repeat && !input ? 1u : 0u) ||
             (repeat && !input && probe.last_write != source[0]);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

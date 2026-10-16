@@ -6,7 +6,7 @@ set(MY5160_MACHINE_SOURCES
     src/app-my5160/machine_plan.c)
 add_library(my5160-machine STATIC ${MY5160_MACHINE_SOURCES})
 target_include_directories(my5160-machine PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(my5160-machine PUBLIC core-machine core-board-base core-x86)
+target_link_libraries(my5160-machine PUBLIC core-machine core-board-base x86-core-machine)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(my5160-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

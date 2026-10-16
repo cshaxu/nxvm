@@ -12,13 +12,13 @@
 lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    core_machine *core;
+    x86_core_machine *core;
     lib_i32 failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
         LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
-        core = session->core_machine;
+        core = session->x86_core_machine;
         test_core_machine_fixture_write_port(core, 0x03d4u, 0x0eu);
         test_core_machine_fixture_write_port(core, 0x03d5u, 0x12u);
         test_core_machine_fixture_write_port(core, 0x03c2u,
@@ -35,7 +35,7 @@ lib_i32 main(void)
     }
     if (!failed) {
         vm_machine_reset(session);
-        core = session->core_machine;
+        core = session->x86_core_machine;
         test_core_machine_fixture_write_port(core, 0x03d4u, 0x0eu);
         test_core_machine_fixture_write_port(core, 0x03d5u, 0x25u);
         failed |= test_core_machine_fixture_read_bus(core, 0x03b5u) != 0x25u ||

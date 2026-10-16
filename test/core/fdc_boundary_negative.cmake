@@ -9,11 +9,11 @@ file(REMOVE_RECURSE "${WORK}")
 set(paths
     src/core/board-base/fdc.c
     src/core/board-base/fdc.h
-    src/core/x86/machine_scheduler.c
+    src/x86-core/machine/machine_scheduler.c
     src/core/board-base/board_deadline.c
     src/core/board-base/machine_board.c
     src/core/board-base/dma_bus.c
-    src/core/x86/memory_interface.c
+    src/x86-core/machine/memory_interface.c
     src/core/machine/machine_devices.c
     src/core/machine/media/fdd.c
     src/core/machine/media/fdd_interface.h
@@ -40,7 +40,7 @@ foreach(case RANGE 0 6)
     set(gate "${fdc_gate}")
     if(case EQUAL 0)
         set(path src/core/chips/fdc8272/fdc.c)
-        set(injection "#include \"core/x86/port.h\"")
+        set(injection "#include \"x86-core/machine/port.h\"")
         set(expected "Shared FDC retains board ownership")
     elseif(case EQUAL 1)
         set(path src/core/chips/fdc8272/fdc8272_interface.h)
@@ -51,7 +51,7 @@ foreach(case RANGE 0 6)
         set(injection "void obsolete(void) { core_machine_fdc_PHASE_COMMAND; }")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 3)
-        set(path src/core/x86/machine_scheduler.c)
+        set(path src/x86-core/machine/machine_scheduler.c)
         set(injection "#include \"core/chips/fdc8272/fdc.h\"")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 4)
@@ -64,7 +64,7 @@ foreach(case RANGE 0 6)
         set(injection "lib_u32 transCount;")
         set(expected "FDD retains a controller-owned transfer cursor")
     else()
-        set(path src/core/x86/machine_scheduler.c)
+        set(path src/x86-core/machine/machine_scheduler.c)
         set(injection "void bypass(void) { machine->board->fdc.data.phase; }")
         set(expected "Core scheduler directly owns board FDC")
     endif()

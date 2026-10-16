@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
 
-set(machine_source "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
-set(memory_source "${PROJECT_SOURCE_DIR}/src/core/x86/memory.c")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c")
+set(memory_source "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory.c")
 set(machine_runtime_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 
 foreach(file IN ITEMS "${machine_source}" "${memory_source}" "${machine_runtime_source}")
@@ -17,8 +17,8 @@ file(READ "${machine_source}" machine)
 file(READ "${memory_source}" memory)
 file(READ "${machine_runtime_source}" machine_runtime)
 
-foreach(required IN ITEMS "core_machine_reconfigure_memory"
-    "CORE_MACHINE_STOPPED" "core_machine_cold_reset")
+foreach(required IN ITEMS "x86_core_machine_reconfigure_memory"
+    "X86_CORE_MACHINE_STOPPED" "x86_core_machine_cold_reset")
     string(FIND "${machine}" "${required}" found)
     if(found EQUAL -1)
         message(FATAL_ERROR "missing core RAM contract: ${required}")
@@ -32,7 +32,7 @@ foreach(forbidden IN ITEMS "core_machine_memory_real_address" "pBase")
     endif()
 endforeach()
 
-string(FIND "${machine_runtime}" "core_machine_reconfigure_memory" core_route)
+string(FIND "${machine_runtime}" "x86_core_machine_reconfigure_memory" core_route)
 string(FIND "${machine_runtime}" "lib_memory_set(machine, 0, sizeof(*machine))" machine_rebuild)
 if(core_route EQUAL -1 OR NOT machine_rebuild EQUAL -1)
     message(FATAL_ERROR "VM machine RAM route is not core-owned")
@@ -42,7 +42,7 @@ file(GLOB_RECURSE source_files "${PROJECT_SOURCE_DIR}/src/*.c"
     "${PROJECT_SOURCE_DIR}/src/*.h")
 foreach(file IN LISTS source_files)
     if(file STREQUAL memory_source OR
-        file STREQUAL "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.c")
+        file STREQUAL "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory_interface.c")
         continue()
     endif()
     file(READ "${file}" source)

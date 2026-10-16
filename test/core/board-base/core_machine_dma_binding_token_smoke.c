@@ -46,9 +46,9 @@ lib_i32 main(void)
     core_machine_dma_request_binding second_request = {0};
     core_machine_fdc_topology first_topology;
     core_machine_fdc_topology second_topology;
-    core_machine *first = LIB_NULL;
+    x86_core_machine *first = LIB_NULL;
     core_machine_board_state *first_board = LIB_NULL;
-    core_machine *second = LIB_NULL;
+    x86_core_machine *second = LIB_NULL;
     core_machine_board_state *second_board = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -75,16 +75,16 @@ lib_i32 main(void)
             LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_fdc(first_board, &first_topology) != LIB_STATUS_OK ||
         core_machine_configure_fdc(second_board, &second_topology) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(first) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(second) != LIB_STATUS_OK ||
-        core_machine_reset(first) != LIB_STATUS_OK ||
-        core_machine_reset(second) != LIB_STATUS_OK) {
+        x86_core_machine_freeze_execution_providers(first) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(second) != LIB_STATUS_OK ||
+        x86_core_machine_reset(first) != LIB_STATUS_OK ||
+        x86_core_machine_reset(second) != LIB_STATUS_OK) {
         failed = 1;
     }
 
 done:
-    core_machine_destroy(second);
-    core_machine_destroy(first);
+    x86_core_machine_destroy(second);
+    x86_core_machine_destroy(first);
     core_machine_media_registry_destroy(media);
     if (failed) return 1;
     lib_c_printf("%s\n", "DMA-BINDING-TOKEN:OK");

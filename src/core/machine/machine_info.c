@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/media/fdd_interface.h"
 #include "core/machine/media/hdd_interface.h"
@@ -20,10 +20,10 @@ lib_status vm_machine_get_information(const vm_machine *session,
     if (session == LIB_NULL || out_information == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (session->core_machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-    status = core_machine_get_memory_bytes(session->core_machine, &memory_bytes);
+    if (session->x86_core_machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    status = x86_core_machine_get_memory_bytes(session->x86_core_machine, &memory_bytes);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_get_cpu_profile(session->core_machine, &cpu_profile);
+    status = x86_core_machine_get_cpu_profile(session->x86_core_machine, &cpu_profile);
     if (status != LIB_STATUS_OK) return status;
     lib_memory_set(out_information, 0, sizeof(*out_information));
     out_information->cpu_profile = cpu_profile;

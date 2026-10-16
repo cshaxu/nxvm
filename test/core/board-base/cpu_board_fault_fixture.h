@@ -2,8 +2,8 @@
 #define TEST_CPU_BOARD_FAULT_FIXTURE_H
 
 #include "lib/types/types_interface.h"
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "cpu_board_limit_fixture.h"
 
 typedef struct test_cpu_board_fault_case {
@@ -22,9 +22,9 @@ static lib_i32 test_cpu_board_faults(const test_cpu_board_fault_case *cases,
 {
     for (lib_size index = 0u; index < count; ++index) {
         const test_cpu_board_fault_case *entry = &cases[index];
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         x86_core_cpu_debug_cpu_snapshot after = {0};
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_register_patch patch = {0};
         lib_u16 observed = 0u;
         lib_i32 failed = !test_cpu_board_limit_prepare(&machine, entry->code,
@@ -37,21 +37,21 @@ static lib_i32 test_cpu_board_faults(const test_cpu_board_fault_case *cases,
             patch.values[X86_CORE_CPU_DEBUG_EAX] = entry->eax;
             patch.values[X86_CORE_CPU_DEBUG_EDX] = entry->edx;
             patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = entry->flags;
-            failed = core_machine_debug_patch_registers(machine, &patch) !=
+            failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x3010u, &entry->memory,
+                x86_core_machine_memory_write(machine, 0x3010u, &entry->memory,
                     sizeof(entry->memory)) != LIB_STATUS_OK ||
-                !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
-                    (core_machine_run_budget){1u,0u}, &result), &result) ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){1u,0u}, &result), &result) ||
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                core_machine_debug_read_real(machine, 0x0301u, 0u,
+                x86_core_machine_debug_read_real(machine, 0x0301u, 0u,
                     &observed, sizeof(observed)) != LIB_STATUS_OK ||
                 observed != entry->memory || after.eax != entry->eax ||
                 after.edx != entry->edx || after.eflags != entry->flags ||
                 after.eip != 0u;
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

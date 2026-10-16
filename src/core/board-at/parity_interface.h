@@ -1,6 +1,6 @@
 #ifndef CORE_MACHINE_AT_PARITY_INTERFACE_H
 #define CORE_MACHINE_AT_PARITY_INTERFACE_H
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/chips/pit825x/pit825x_interface.h"
 
 typedef struct core_machine_at_parity core_machine_at_parity;
@@ -33,7 +33,7 @@ typedef void (*core_machine_at_speaker_lines)(void *context, lib_u8 value);
  * sink are borrowed for this lifetime. Creation atomically admits the port
  * and parity producer; failure revokes this candidate's routes. Destroy
  * after dispatch stops, before destroying the borrowed Core/PIT. */
-lib_status core_machine_at_parity_create(core_machine *machine, x86_pit *pit,
+lib_status core_machine_at_parity_create(x86_core_machine *machine, x86_pit *pit,
     const core_machine_planar_parity_config *config,
     core_machine_at_speaker_lines speaker, void *speaker_context,
     core_machine_at_parity **out_parity);

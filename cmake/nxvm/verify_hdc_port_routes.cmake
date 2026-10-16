@@ -3,10 +3,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/port_interface.c" port_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/port_interface.c" port_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" machine_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "core_machine_hdc[ \t]+\\*?[ \t]*hdc;" OR
     NOT board_header MATCHES "core_machine_hdc[ \t]+\\*hdc;" OR
     scheduler_source MATCHES "board->hdc|core_machine_hdc_")
@@ -17,23 +17,23 @@ if(first LESS 0)
     message(FATAL_ERROR "HDC construction is missing")
 endif()
 string(SUBSTRING "${board_source}" ${first} -1 construction)
-foreach(required "core_machine_hdc_port_addresses(" "core_machine_install_port_routes("
-    ".wired_or_read = LIB_TRUE" "core_machine_remove_port_routes(")
+foreach(required "core_machine_hdc_port_addresses(" "x86_core_machine_install_port_routes("
+    ".wired_or_read = LIB_TRUE" "x86_core_machine_remove_port_routes(")
     string(FIND "${construction}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "HDC atomic route boundary is missing ${required}")
     endif()
 endforeach()
-foreach(forbidden "executor_port" "core_machine_port_registration_begin"
-    "core_machine_port_rollback_registration" "core_machine_port_add_read_provider"
-    "core_machine_port_add_write_provider" "core_machine_port_add_read_wired_or_provider"
+foreach(forbidden "executor_port" "x86_core_machine_port_registration_begin"
+    "x86_core_machine_port_rollback_registration" "x86_core_machine_port_add_read_provider"
+    "x86_core_machine_port_add_write_provider" "x86_core_machine_port_add_read_wired_or_provider"
     "core_machine_controller_ports_are_available")
     string(FIND "${construction}" "${forbidden}" position)
     if(NOT position LESS 0)
         message(FATAL_ERROR "HDC retains raw port registration: ${forbidden}")
     endif()
 endforeach()
-string(FIND "${port_source}" "core_machine_port_unregister_owner(&machine->executor_port, owner);" position)
+string(FIND "${port_source}" "x86_core_machine_port_unregister_owner(&machine->executor_port, owner);" position)
 if(position LESS 0)
     message(FATAL_ERROR "Core owner-scoped route removal is missing")
 endif()

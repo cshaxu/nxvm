@@ -4,8 +4,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "core/x86/device_support_interface.h"
-typedef struct sreg_mov_machine { core_machine *machine;
+typedef struct sreg_mov_machine { x86_core_machine *machine;
     core_machine_board_state *board; } sreg_mov_machine;
 
 static lib_i32 sreg_mov_prepare(sreg_mov_machine *state,
@@ -26,9 +25,9 @@ static lib_i32 sreg_mov_prepare(sreg_mov_machine *state,
 
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
-        core_machine_reset(state->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+        x86_core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_i32 sreg_mov_patch(sreg_mov_machine *state,
@@ -37,13 +36,13 @@ static lib_i32 sreg_mov_patch(sreg_mov_machine *state,
     x86_core_cpu_debug_register_patch patch = {0};
     patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id);
     patch.values[register_id] = value;
-    return core_machine_debug_patch_registers(state->machine, &patch) == LIB_STATUS_OK;
+    return x86_core_machine_debug_patch_registers(state->machine, &patch) == LIB_STATUS_OK;
 }
 
 static lib_i32 sreg_mov_capture(sreg_mov_machine *state,
     x86_core_cpu_debug_cpu_snapshot *snapshot)
 {
-    return core_machine_debug_capture_cpu_snapshot(state->machine,
+    return x86_core_machine_debug_capture_cpu_snapshot(state->machine,
         X86_CORE_CPU_SNAPSHOT_CURRENT, snapshot) == LIB_STATUS_OK;
 }
 
@@ -79,17 +78,17 @@ static lib_i32 sreg_mov_boot_protected(sreg_mov_machine *state)
         0x8eu, 0xd0u, 0xbcu, 0, 0x80u,
         0xeau, 0, 0, 8u, 0
     };
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
 
-    return core_machine_memory_write(state->machine, 0x100u, pointer,
+    return x86_core_machine_memory_write(state->machine, 0x100u, pointer,
             sizeof(pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x300u, gdt,
+        x86_core_machine_memory_write(state->machine, 0x300u, gdt,
             sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0, boot,
+        x86_core_machine_memory_write(state->machine, 0, boot,
             sizeof(boot)) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){9u, 0u},
+        x86_core_machine_run(state->machine, (x86_core_machine_run_budget){9u, 0u},
             &result) == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 9u;
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET && result.executed == 9u;
 }
 
 static lib_i32 sreg_mov_expect_fault(sreg_mov_machine *state,
@@ -97,14 +96,14 @@ static lib_i32 sreg_mov_expect_fault(sreg_mov_machine *state,
 {
     x86_core_cpu_debug_cpu_snapshot before = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
 
     if (!sreg_mov_capture(state, &before) ||
         !sreg_mov_patch(state, X86_CORE_CPU_DEBUG_EIP, 0u) ||
-        core_machine_memory_write(state->machine, 0x2000u, code, size) !=
+        x86_core_machine_memory_write(state->machine, 0x2000u, code, size) !=
             LIB_STATUS_OK ||
-        !test_core_machine_fixture_shutdown_wait(core_machine_run(state->machine,
-            (core_machine_run_budget){1u,0u}, &result), &result) ||
+        !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(state->machine,
+            (x86_core_machine_run_budget){1u,0u}, &result), &result) ||
         !sreg_mov_capture(state, &after)) return 0;
 
     return after.eip == 0u && before.esp == after.esp &&
@@ -126,14 +125,14 @@ static lib_i32 sreg_mov_test_protected_faults(void)
     for (form = 0u; form != 6u; ++form) {
         sreg_mov_machine state;
         lib_u16 image = 0xbe5au;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         lib_i32 passed = sreg_mov_prepare(&state, X86_CORE_CPU_PROFILE_80386) &&
             sreg_mov_boot_protected(&state);
         if (passed && form < 4u) {
             const lib_u8 code[] = {0x8eu, form == 0u ? 0xd0u : 0xd8u};
             passed = sreg_mov_patch(&state, X86_CORE_CPU_DEBUG_EAX,
                 0xaabb0000u | selectors[form]) &&
-                core_machine_memory_write(state.machine, 0x3010u, &image,
+                x86_core_machine_memory_write(state.machine, 0x3010u, &image,
                     sizeof(image)) == LIB_STATUS_OK &&
                 sreg_mov_expect_fault(&state, code, sizeof(code));
         } else if (passed) {
@@ -143,18 +142,18 @@ static lib_i32 sreg_mov_test_protected_faults(void)
                     X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
                 .values = {[X86_CORE_CPU_DEBUG_EAX] = 0xaabb0038u}
             };
-            passed = core_machine_debug_patch_registers(state.machine,
+            passed = x86_core_machine_debug_patch_registers(state.machine,
                 &registers) == LIB_STATUS_OK &&
-                core_machine_memory_write(state.machine, 0x2000u,
+                x86_core_machine_memory_write(state.machine, 0x2000u,
                     (const lib_u8[]){0x8eu,0xd8u}, 2u) == LIB_STATUS_OK &&
-                core_machine_run(state.machine,
-                    (core_machine_run_budget){1u,0u}, &result) == LIB_STATUS_OK &&
-                result.reason == CORE_MACHINE_STOP_BUDGET &&
-                core_machine_memory_write(state.machine, 0x5010u, &image,
+                x86_core_machine_run(state.machine,
+                    (x86_core_machine_run_budget){1u,0u}, &result) == LIB_STATUS_OK &&
+                result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
+                x86_core_machine_memory_write(state.machine, 0x5010u, &image,
                     sizeof(image)) == LIB_STATUS_OK &&
                 sreg_mov_expect_fault(&state, code, 4u);
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (!passed) {
             lib_c_fprintf(lib_c_stderr, "SREG-MOV protected fault form=%u\n",
                 (unsigned)form);
@@ -173,7 +172,7 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
     for (form = 0u; form != sizeof(modrms); ++form) {
         sreg_mov_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u16 offset = 0x0100u;
         lib_u16 segment = 0u;
@@ -184,13 +183,13 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
         lib_i32 failed = !sreg_mov_prepare(&state, X86_CORE_CPU_PROFILE_80386);
 
         if (!failed) {
-            failed |= core_machine_memory_write(state.machine,
+            failed |= x86_core_machine_memory_write(state.machine,
                 0u, code, sizeof(code)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x80u, &offset,
+                x86_core_machine_memory_write(state.machine, 0x80u, &offset,
                     sizeof(offset)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x82u, &segment,
+                x86_core_machine_memory_write(state.machine, 0x82u, &segment,
                     sizeof(segment)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x100u, &hlt,
+                x86_core_machine_memory_write(state.machine, 0x100u, &hlt,
                     sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
@@ -226,7 +225,7 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
                     [X86_CORE_CPU_DEBUG_GS] = 0x5555u
                 }
             };
-            failed |= core_machine_debug_patch_registers(state.machine,
+            failed |= x86_core_machine_debug_patch_registers(state.machine,
                 &registers) != LIB_STATUS_OK;
         }
         if (!failed) {
@@ -237,24 +236,20 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
                 state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
-            failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){form == 0u ? 3u : 2u, 0u},
+            failed |= x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){form == 0u ? 3u : 2u, 0u},
                 &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 !sreg_mov_capture(&state, &after) ||
-                core_machine_memory_read(state.machine,
+                x86_core_machine_memory_read(state.machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != expected_ip ||
-                !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(state.board->shared_pic_master, 0x0bu),
-                    VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(state.board->shared_pic_master, 0x0au),
-                    VPIC_IRR_IRQ(0u)) ||
+                !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
+                (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u) ||
                 sreg_mov_sreg(&after, target)->selector != 0x2000u;
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed) return 0;
     }
     return 1;

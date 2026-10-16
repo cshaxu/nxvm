@@ -1,7 +1,6 @@
 #include "lib/types/file.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "x86-core/cpu/cpu_interface.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
 static lib_u16 legacy_alu_real_flags_known_mask(
     x86_core_cpu_profile profile)
@@ -26,18 +25,18 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
             .cpu_profile = profiles[index],
             .fpu_profile = X86_FPU_PROFILE_NONE
         };
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         x86_core_cpu_debug_register_patch patch = {0};
         x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
         x86_core_cpu_diagnostic diagnostic = {0};
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         lib_u16 frame[3] = {0};
         lib_u16 known = legacy_alu_real_flags_known_mask(profiles[index]);
         lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) !=
                 LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) !=
+            x86_core_machine_freeze_execution_providers(machine) !=
                 LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK;
+            x86_core_machine_reset(machine) != LIB_STATUS_OK;
 
         if (!failed) {
             patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -56,37 +55,35 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
             patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF |
                 X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_DF;
             patch.values[X86_CORE_CPU_DEBUG_EIP] = code_offset;
-            failed = core_machine_debug_patch_registers(machine, &patch) !=
+            failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_memory_write(machine, code_offset, code,
+                x86_core_machine_memory_write(machine, code_offset, code,
                     sizeof(code)) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0u, &handler_offset,
+                x86_core_machine_memory_write(machine, 0u, &handler_offset,
                     sizeof(handler_offset)) != LIB_STATUS_OK ||
-                core_machine_memory_write(machine, handler_offset, handler,
+                x86_core_machine_memory_write(machine, handler_offset, handler,
                     sizeof(handler)) != LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &before) !=
                     LIB_STATUS_OK ||
-                core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+                x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
                     &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_BUDGET ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+                result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+                x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                     LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) !=
                     LIB_STATUS_OK ||
                 diagnostic.first_fault.valid ||
                 !diagnostic.last_delivered_exception.valid ||
-                !CORE_MACHINE_BIT_IS_SET(
-                    diagnostic.last_delivered_exception.exception_mask,
-                    VCPUINS_EXCEPT_DE) ||
+                !(((diagnostic.last_delivered_exception.exception_mask) & (VCPUINS_EXCEPT_DE)) != 0u) ||
                 after.eip != handler_offset || after.eax != before.eax ||
                 after.ecx != before.ecx || after.edx != before.edx ||
                 after.eflags !=
                     (before.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF)) ||
                 after.esp != ((before.esp & 0xffff0000u) |
                     (lib_u16)(before.esp - 6u)) ||
-                core_machine_memory_read(machine,
+                x86_core_machine_memory_read(machine,
                     after.ss.base + (lib_u16)after.esp, frame,
                     sizeof(frame)) != LIB_STATUS_OK ||
                 frame[0] != code_offset + (profiles[index] ==
@@ -96,7 +93,7 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
                     ((((lib_u16)(before.eflags & ~0xfffc802au)) |
                         0x02u) & known);
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

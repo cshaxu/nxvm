@@ -1,7 +1,7 @@
 /* Copyright 2012-2026 Neko. */
 #include "core/board-base/vadp.h"
-#include "core/x86/port_interface.h"
-#include "core/x86/memory_interface.h"
+#include "x86-core/machine/port_interface.h"
+#include "x86-core/machine/memory_interface.h"
 
 static void video_refresh_interrupt(t_vadp *adapter)
 {
@@ -13,7 +13,7 @@ static void video_refresh_interrupt(t_vadp *adapter)
     else core_machine_pic_irq_source_deassert(adapter->irq_source);
 }
 
-lib_status core_machine_vadp_create(core_machine *machine, t_vadp **out_adapter)
+lib_status core_machine_vadp_create(x86_core_machine *machine, t_vadp **out_adapter)
 {
     t_vadp *adapter;
     lib_status status;
@@ -187,11 +187,11 @@ static lib_status video_write(void *context, lib_u16 address, lib_u32 value)
     return status;
 }
 
-static lib_size append_ports(core_machine_port_route *routes, lib_size offset,
+static lib_size append_ports(x86_core_machine_port_route *routes, lib_size offset,
     const video_port_route *ports, lib_size count, t_vadp *adapter)
 {
     for (lib_size index = 0u; index < count; ++index) {
-        routes[offset + index] = (core_machine_port_route) {
+        routes[offset + index] = (x86_core_machine_port_route) {
             .address = ports[index].address,
             .read = ports[index].write ? LIB_NULL : video_read,
             .write = ports[index].write ? video_write : LIB_NULL,
@@ -216,12 +216,12 @@ static lib_status cga_write(void *context, lib_u32 address,
 }
 
 static lib_status cga_query(void *context, lib_u32 address,
-    lib_uptr bytes, core_machine_memory_access access)
+    lib_uptr bytes, x86_core_machine_memory_access access)
 {
-    if (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
-        access != CORE_MACHINE_MEMORY_ACCESS_WRITE) return LIB_STATUS_UNSUPPORTED;
+    if (access != X86_CORE_MACHINE_MEMORY_ACCESS_READ &&
+        access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) return LIB_STATUS_UNSUPPORTED;
     return x86_video_memory_query(context, X86_VIDEO_MEMORY_CGA, address,
-        bytes, access == CORE_MACHINE_MEMORY_ACCESS_WRITE);
+        bytes, access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE);
 }
 
 static lib_status planar_read(void *context, lib_u32 address,
@@ -240,12 +240,12 @@ static lib_status planar_write(void *context, lib_u32 address,
 }
 
 static lib_status planar_query(void *context, lib_u32 address,
-    lib_uptr bytes, core_machine_memory_access access)
+    lib_uptr bytes, x86_core_machine_memory_access access)
 {
-    if (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
-        access != CORE_MACHINE_MEMORY_ACCESS_WRITE) return LIB_STATUS_UNSUPPORTED;
+    if (access != X86_CORE_MACHINE_MEMORY_ACCESS_READ &&
+        access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) return LIB_STATUS_UNSUPPORTED;
     return x86_video_memory_query(context, X86_VIDEO_MEMORY_PLANAR, address,
-        bytes, access == CORE_MACHINE_MEMORY_ACCESS_WRITE);
+        bytes, access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE);
 }
 
 static void notify_write(void *context, lib_u32 address, lib_uptr bytes)
@@ -253,9 +253,9 @@ static void notify_write(void *context, lib_u32 address, lib_uptr bytes)
     x86_video_notify_memory_write(context, address, bytes);
 }
 
-lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine)
+lib_status core_machine_vadp_initialize(t_vadp *adapter, x86_core_machine *machine)
 {
-    core_machine_port_route routes[sizeof(cga_ports) / sizeof(cga_ports[0])];
+    x86_core_machine_port_route routes[sizeof(cga_ports) / sizeof(cga_ports[0])];
     lib_status status;
 
     if (adapter == LIB_NULL || machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -265,7 +265,7 @@ lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine)
     adapter->machine = machine;
     (void)append_ports(routes, 0u, cga_ports,
         sizeof(cga_ports) / sizeof(cga_ports[0]), adapter);
-    status = core_machine_install_port_routes(machine, routes,
+    status = x86_core_machine_install_port_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]));
     if (status != LIB_STATUS_OK) {
         x86_video_destroy(adapter->chip);
@@ -307,9 +307,9 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
     const core_machine_display_config *config)
 {
     x86_video *candidate = LIB_NULL;
-    core_machine_memory_device_route memory_routes[2];
+    x86_core_machine_memory_device_route memory_routes[2];
     lib_size memory_route_count = 0u;
-    core_machine_port_route routes[
+    x86_core_machine_port_route routes[
         sizeof(ega_ports) / sizeof(ega_ports[0]) +
         sizeof(compaq_ports) / sizeof(compaq_ports[0]) +
         sizeof(vga_ports) / sizeof(vga_ports[0])];
@@ -345,17 +345,17 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
         status = x86_video_configure_vga(candidate);
     /* Prepare the complete chip before publishing either memory or ports. */
     if (status == LIB_STATUS_OK && config->cga_vram_present)
-        memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
+        memory_routes[memory_route_count++] = (x86_core_machine_memory_device_route) {
             CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
             { cga_read, cga_write, cga_query },
-            CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
+            X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
     if (status == LIB_STATUS_OK && config->ega_present) {
         if (config->ega_sequencer.planar_ega)
-            memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
+            memory_routes[memory_route_count++] = (x86_core_machine_memory_device_route) {
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE,
                 CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES,
                 { planar_read, planar_write, planar_query },
-                CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
+                X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
         {
             const lib_bool compaq = config->ega_personality ==
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
@@ -371,13 +371,13 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
         route_count = append_ports(routes, route_count, vga_ports,
             sizeof(vga_ports) / sizeof(vga_ports[0]), adapter);
     if (status == LIB_STATUS_OK && (memory_route_count != 0u || config->ega_present))
-        status = core_machine_install_memory_device_routes(adapter->machine,
+        status = x86_core_machine_install_memory_device_routes(adapter->machine,
             memory_routes, memory_route_count,
             config->ega_present ? notify_write : LIB_NULL, LIB_NULL, candidate);
     if (status == LIB_STATUS_OK && route_count != 0u)
-        status = core_machine_install_port_routes(adapter->machine, routes, route_count);
+        status = x86_core_machine_install_port_routes(adapter->machine, routes, route_count);
     if (status != LIB_STATUS_OK) {
-        (void)core_machine_remove_memory_device_routes(adapter->machine, candidate);
+        (void)x86_core_machine_remove_memory_device_routes(adapter->machine, candidate);
         x86_video_destroy(candidate);
         return status;
     }
@@ -392,9 +392,9 @@ void core_machine_vadp_finalize(t_vadp *adapter)
     if (adapter == LIB_NULL) return;
     core_machine_pic_irq_source_deassert(adapter->irq_source);
     if (adapter->machine != LIB_NULL)
-        (void)core_machine_remove_port_routes(adapter->machine, adapter);
+        (void)x86_core_machine_remove_port_routes(adapter->machine, adapter);
     if (adapter->configured)
-        (void)core_machine_remove_memory_device_routes(adapter->machine, adapter->chip);
+        (void)x86_core_machine_remove_memory_device_routes(adapter->machine, adapter->chip);
     x86_video_destroy(adapter->chip);
     lib_memory_set(adapter, 0u, sizeof(*adapter));
 }
@@ -402,7 +402,7 @@ void core_machine_vadp_finalize(t_vadp *adapter)
 static lib_status read_backing(void *context, lib_u32 address,
     lib_u8 *destination, lib_size bytes)
 {
-    return core_machine_memory_inspect(context, address, destination, bytes);
+    return x86_core_machine_memory_inspect(context, address, destination, bytes);
 }
 
 lib_status core_machine_vadp_observe_bus(const t_vadp *adapter,

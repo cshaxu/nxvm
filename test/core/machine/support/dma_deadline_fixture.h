@@ -16,9 +16,9 @@ static inline lib_i32 test_core_dma_deadline_assert(const char *name,
     core_machine_config configuration = {0};
     core_machine_dma_wiring wiring = {0};
     core_machine_dma_request_binding request = {0};
-    core_machine_time_observation observation;
+    x86_core_machine_time_observation observation;
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_status status;
     lib_i32 failed = 0;
@@ -49,28 +49,28 @@ static inline lib_i32 test_core_dma_deadline_assert(const char *name,
         }
     }
     if (!failed) {
-        status = core_machine_freeze_execution_providers(machine);
+        status = x86_core_machine_freeze_execution_providers(machine);
         if (status != LIB_STATUS_OK) {
             lib_c_printf("%s: provider freeze status %d\n", name, status);
             failed = 1;
         }
     }
     if (!failed) {
-        status = core_machine_reset(machine);
+        status = x86_core_machine_reset(machine);
         if (status != LIB_STATUS_OK) {
             lib_c_printf("%s: machine reset status %d\n", name, status);
             failed = 1;
         }
     }
     if (!failed)
-        failed = core_machine_bus_write(machine, 0x000au, 0x02u) != LIB_STATUS_OK;
+        failed = x86_core_machine_bus_write(machine, 0x000au, 0x02u) != LIB_STATUS_OK;
     if (!failed && wiring.controller_count == 2u)
-        failed = core_machine_bus_write(machine, 0x00d4u, 0x00u) != LIB_STATUS_OK;
+        failed = x86_core_machine_bus_write(machine, 0x00d4u, 0x00u) != LIB_STATUS_OK;
     if (!failed) {
         test_board_dma_request_assert(board, &request);
-        status = core_machine_capture_time_observation(machine, &observation);
+        status = x86_core_machine_capture_time_observation(machine, &observation);
         if (status != LIB_STATUS_OK || !observation.next_deadline_valid ||
-            observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE) {
+            observation.progress_disposition != X86_CORE_MACHINE_TIME_PROGRESS_DEADLINE) {
             lib_c_printf("%s: observation status %d\n", name, status);
             if (status == LIB_STATUS_OK)
                 lib_c_printf("deadline %u disposition %d\n", observation.next_deadline_valid,
@@ -79,7 +79,7 @@ static inline lib_i32 test_core_dma_deadline_assert(const char *name,
         }
     }
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }

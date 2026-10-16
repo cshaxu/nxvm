@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include <windows.h>
 #ifdef exception_code
 #undef exception_code
@@ -16,14 +16,13 @@
 #include "core/board-base/machine_board_state.h"
 #include "core/board-base/vadp.h"
 #include "core/chips/video/video.h"
-#include "test/core/support/boot_fixture.h"
 #include "test/core/board-base/composition/composition_fixture.h"
-#include "core/x86/retirement_observation_interface.h"
-#include "core/x86/trace_interface.h"
+#include "x86-core/machine/retirement_observation_interface.h"
+#include "x86-core/machine/trace_interface.h"
 #include "test/core/setup/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 
@@ -57,8 +56,10 @@ typedef struct vm_byob_fdc_port_event {
 } vm_byob_fdc_port_event;
 
 typedef struct vm_byob_boot_trace {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
+    x86_core_machine_retirement_observation pending_retirement;
+    lib_bool retirement_pending;
     lib_u64 cpu_retires;
     lib_u64 rom_retires;
     lib_u64 low_memory_retires;
@@ -121,9 +122,9 @@ typedef struct vm_byob_boot_trace {
     x86_core_cpu_execution_point real_286_high_flags_point;
     lib_u32 real_286_high_flags_value;
     lib_u8 boot_loader_jz_observed;
-    core_machine_retirement_control_outcome boot_loader_jz_outcome;
+    x86_core_machine_retirement_control_outcome boot_loader_jz_outcome;
     lib_u32 boot_loader_previous_pc;
-    core_machine_retirement_control_outcome boot_loader_previous_outcome;
+    x86_core_machine_retirement_control_outcome boot_loader_previous_outcome;
     lib_u8 boot_loader_error_observed;
     lib_u16 boot_loader_ds;
     lib_u16 boot_loader_es;
@@ -221,7 +222,7 @@ typedef struct vm_byob_boot_trace {
     lib_u8 kbc_reset_xmit_path_count;
     lib_u32 kbc_reset_xmit_path[8u];
     lib_u8 kbc_reset_xmit_transaction_count;
-    core_machine_trace_event kbc_reset_xmit_transactions[4u];
+    x86_core_machine_trace_event kbc_reset_xmit_transactions[4u];
     lib_u64 a20_port_write_count;
     lib_u8 a20_port_last_value;
     lib_u32 a20_port_last_pc;
@@ -422,10 +423,10 @@ typedef struct vm_byob_boot_trace {
     lib_u32 model40_memory_pattern_write_last_address;
 } vm_byob_boot_trace;
 
-static lib_i32 vm_byob_text_memory_has(core_machine *machine, const char *text);
+static lib_i32 vm_byob_text_memory_has(x86_core_machine *machine, const char *text);
 
 static void vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
-    const core_machine_trace_event *event)
+    const x86_core_machine_trace_event *event)
 {
     vm_byob_fdc_port_event *record;
     lib_size index;
@@ -436,11 +437,11 @@ static void vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     record->linear_pc = event->linear_pc;
     record->port = (lib_u16)event->address;
     record->value = (lib_u8)event->value;
-    record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
+    record->write = event->type == X86_CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
 static void vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
-    const core_machine_trace_event *event)
+    const x86_core_machine_trace_event *event)
 {
     vm_byob_fdc_port_event *record;
     lib_size index;
@@ -451,7 +452,7 @@ static void vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
     record->linear_pc = event->linear_pc;
     record->port = (lib_u16)event->address;
     record->value = (lib_u8)event->value;
-    record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
+    record->write = event->type == X86_CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
 static void vm_byob_fdc_terminal_observe(void *context,
@@ -466,13 +467,13 @@ static void vm_byob_fdc_terminal_observe(void *context,
 }
 
 static void vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
-    const core_machine_retirement_observation *observation)
+    const x86_core_machine_retirement_observation *observation)
 {
     vm_byob_fdc_port_event *record;
     lib_size index;
 
     if (trace == LIB_NULL || observation == LIB_NULL ||
-        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE ||
+        observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_NONE ||
         observation->io_port < 0x03f0u || observation->io_port > 0x03f7u ||
         observation->io_port == 0x03f4u) return;
     index = (lib_size)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
@@ -480,12 +481,12 @@ static void vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
     record->linear_pc = observation->point.linear_pc;
     record->port = observation->io_port;
     record->value = (lib_u8)observation->io_value;
-    record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
+    record->write = observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE;
     ++trace->fdc_port_accesses;
 }
 
 static void vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
-    const core_machine_retirement_observation *observation)
+    const x86_core_machine_retirement_observation *observation)
 {
     vm_byob_fdc_port_event *record;
     lib_size index;
@@ -493,9 +494,9 @@ static void vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
     if (trace == LIB_NULL || observation == LIB_NULL ||
         observation->point.linear_pc < 0x000c0000u ||
         observation->point.linear_pc >= 0x000c4000u ||
-        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
+        observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_NONE) return;
     if (observation->io_port == 0x0084u &&
-        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+        observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE) {
         ++trace->model40_video_error_writes;
         trace->model40_video_error_last_value = (lib_u8)observation->io_value;
         trace->model40_video_error_last_pc = observation->point.linear_pc;
@@ -507,7 +508,7 @@ static void vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
     record->linear_pc = observation->point.linear_pc;
     record->port = observation->io_port;
     record->value = (lib_u8)observation->io_value;
-    record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
+    record->write = observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE;
     trace->model40_video_port_phases[index] = trace->board != LIB_NULL &&
         trace->board->shared_vadp != LIB_NULL && trace->board->shared_vadp->chip != LIB_NULL ?
         (lib_u32)trace->board->shared_vadp->chip->data.raster_phase : 0u;
@@ -535,14 +536,14 @@ static void vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
 }
 
 static void vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
-    const core_machine_retirement_observation *observation)
+    const x86_core_machine_retirement_observation *observation)
 {
     lib_u8 index;
 
     if (trace == LIB_NULL || observation == LIB_NULL ||
-        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
+        observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_NONE) return;
     if (observation->io_port == 0x0070u &&
-        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+        observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE) {
         trace->cmos_index = (lib_u8)observation->io_value & 0x7fu;
         return;
     }
@@ -550,7 +551,7 @@ static void vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
     index = trace->cmos_index;
     if (index >= VM_MACHINE_CMOS_SEED_BYTES) return;
     trace->cmos_last_values[index] = (lib_u8)observation->io_value;
-    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ)
+    if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ)
         ++trace->cmos_reads[index];
     else {
         ++trace->cmos_writes[index];
@@ -558,12 +559,19 @@ static void vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
     }
 }
 
-static void vm_byob_retirement_observe(void *context,
-    const core_machine_retirement_observation *observation)
+static void vm_byob_retirement_sample(void *context,
+    const x86_core_machine_retirement_observation *observation)
 {
     vm_byob_boot_trace *trace = context;
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
+    if (observation->sequence == 1u) {
+        printf("BOOT-PROBE=first-retirement-pc=%08X-bytes=",
+            (unsigned)observation->point.linear_pc);
+        for (lib_size byte = 0u; byte < observation->point.byte_count; ++byte)
+            printf("%02X", (unsigned)observation->point.bytes[byte]);
+        printf("\n");
+    }
     if (observation->point.linear_pc == 0xf0368u) {
         if (trace->kbc_self_test_input_count < sizeof(trace->kbc_self_test_input_values)) {
             trace->kbc_self_test_input_values[trace->kbc_self_test_input_count++] =
@@ -644,19 +652,19 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_int10_iret_ss_big = observation->current_cpu.ss.big;
         trace->model40_int10_iret_cs_default_32 =
             observation->current_cpu.cs.defsize;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             observation->current_cpu.ss.base + trace->model40_int10_iret_sp,
-            (lib_uptr)trace->model40_int10_iret_words,
+            trace->model40_int10_iret_words,
             sizeof(trace->model40_int10_iret_words));
     }
     if (observation->point.linear_pc == 0x000fd7a6u && trace->machine != LIB_NULL) {
         trace->model40_bios_iret_frame_observed = LIB_TRUE;
         trace->model40_bios_iret_ss = observation->current_cpu.ss.selector;
         trace->model40_bios_iret_sp = (lib_u16)observation->current_cpu.esp;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             observation->current_cpu.ss.base +
                 (lib_u16)(trace->model40_bios_iret_sp - 6u),
-            (lib_uptr)trace->model40_bios_iret_words,
+            trace->model40_bios_iret_words,
             sizeof(trace->model40_bios_iret_words));
     }
     if (!trace->model40_invalid_entry_observed && trace->machine != LIB_NULL &&
@@ -680,7 +688,7 @@ static void vm_byob_retirement_observe(void *context,
     vm_byob_model40_video_retirement_record(trace, observation);
     vm_byob_cmos_retirement_record(trace, observation);
     if (trace->model40_video_pit_read_pending != 0u &&
-        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+        observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
         observation->io_port == 0x0040u) {
         if (trace->model40_video_pit_read_pending == 2u) {
             trace->model40_video_pit_low = (lib_u8)observation->io_value;
@@ -700,13 +708,13 @@ static void vm_byob_retirement_observe(void *context,
         observation->point.bytes[1u] == 0x22u &&
         observation->point.bytes[2u] == 0x00u && trace->machine != LIB_NULL) {
         trace->model40_protected_transition_observed =
-            core_machine_memory_read(trace->machine, 0x0009f300u,
+            x86_core_machine_memory_read(trace->machine, 0x0009f300u,
                 trace->model40_gdt, sizeof(trace->model40_gdt)) == LIB_STATUS_OK;
-        (void)core_machine_memory_read(trace->machine, 0x000f0a13u,
+        (void)x86_core_machine_memory_read(trace->machine, 0x000f0a13u,
             trace->model40_gdtr_pointer, sizeof(trace->model40_gdtr_pointer));
     }
-    if ((observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ ||
-         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) &&
+    if ((observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ ||
+         observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE) &&
         (observation->io_port == 0x0060u || observation->io_port == 0x0064u)) {
         const lib_size index = (lib_size)(trace->kbc_port_accesses %
             VM_BYOB_KBC_WRITE_HISTORY);
@@ -714,25 +722,25 @@ static void vm_byob_retirement_observe(void *context,
         trace->kbc_port_history[index] = (vm_byob_fdc_port_event) {
             observation->point.linear_pc, observation->io_port,
             (lib_u8)observation->io_value,
-            observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE };
+            observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE };
         ++trace->kbc_port_accesses;
         trace->kbc_last_port = observation->io_port;
         trace->kbc_last_value = (lib_u8)observation->io_value;
         trace->kbc_last_pc = observation->point.linear_pc;
-        if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+        if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
             observation->point.linear_pc == 0xf1febu && observation->io_port == 0x0064u) {
             if (trace->kbc_reset_xmit_status_count < sizeof(trace->kbc_reset_xmit_status_values)) {
                 trace->kbc_reset_xmit_status_values[trace->kbc_reset_xmit_status_count++] =
                     (lib_u8)observation->io_value;
             }
         }
-        if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
+        if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE &&
             observation->point.linear_pc >= 0xf1fe0u && observation->point.linear_pc < 0xf2028u &&
             observation->io_port == 0x0060u) {
             trace->kbc_reset_xmit_output_seen = LIB_TRUE;
             trace->kbc_reset_xmit_output = (lib_u8)observation->io_value;
         }
-        if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+        if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE) {
             trace->kbc_write_history[trace->kbc_write_count %
                 VM_BYOB_KBC_WRITE_HISTORY] = trace->kbc_port_history[index];
             ++trace->kbc_write_count;
@@ -759,7 +767,7 @@ static void vm_byob_retirement_observe(void *context,
             trace->kbc_first_self_test_status = (lib_u8)observation->io_value;
         }
     }
-    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+    if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
         observation->io_port == 0x0061u) {
         ++trace->model40_port61_reads;
         if ((observation->io_value & 0x10u) == 0u) {
@@ -786,17 +794,17 @@ static void vm_byob_retirement_observe(void *context,
     if (observation->point.linear_pc == 0x000f05acu ||
         observation->point.linear_pc == 0x000f05b2u) {
         trace->ibm5170_refresh_diagnostic_loop_ticks += observation->source_ticks;
-        if (observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
+        if (observation->control_outcome == X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
             ++trace->ibm5170_refresh_diagnostic_loop_taken;
         else if (observation->control_outcome ==
-            CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH)
+            X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH)
             ++trace->ibm5170_refresh_diagnostic_loop_not_taken;
     }
     if (observation->point.linear_pc == 0x000f05aau ||
         observation->point.linear_pc == 0x000f05b0u)
         trace->ibm5170_refresh_diagnostic_test_ticks += observation->source_ticks;
     if (observation->point.linear_pc == 0x000f05c9u &&
-        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
+        observation->control_outcome == X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
         ++trace->ibm5170_refresh_diagnostic_error_branch_taken;
     if (observation->point.linear_pc == 0x000f05b8u && trace->machine != LIB_NULL) {
         trace->ibm5170_refresh_diagnostic_count =
@@ -804,11 +812,11 @@ static void vm_byob_retirement_observe(void *context,
         trace->ibm5170_refresh_diagnostic_count_valid = 1;
     }
     if (observation->point.linear_pc == 0x000fd1abu &&
-        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
+        observation->control_outcome == X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
         ++trace->model40_memory_compare_error_branches;
     }
     if (observation->point.linear_pc == 0x000fd1b7u &&
-        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
+        observation->control_outcome == X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
         ++trace->model40_memory_parity_error_branches;
     }
     if (observation->point.linear_pc == 0x000fc2d0u && trace->machine != LIB_NULL) {
@@ -845,13 +853,13 @@ static void vm_byob_retirement_observe(void *context,
             observation->current_cpu.gdtr.base;
         trace->model40_memory_status_test_gdtr_limit =
             observation->current_cpu.gdtr.limit;
-        (void)core_machine_memory_read(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             trace->model40_memory_status_test_gdtr_base + 0x48u,
             trace->model40_memory_status_test_descriptor,
             sizeof(trace->model40_memory_status_test_descriptor));
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             0x00fb0000u,
-            (lib_uptr)trace->model40_memory_status_test_high_b_page,
+            trace->model40_memory_status_test_high_b_page,
             sizeof(trace->model40_memory_status_test_high_b_page));
     }
     if (observation->point.linear_pc == 0x000fbe86u) {
@@ -927,18 +935,18 @@ static void vm_byob_retirement_observe(void *context,
     } else if (observation->point.linear_pc == 0x000fc043u && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_test_entries;
         trace->model40_memory_address_test_eflags = observation->current_cpu.eflags;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             observation->current_cpu.ds.base + 0x58u,
-            (lib_uptr)&trace->model40_memory_address_test_status,
+            &trace->model40_memory_address_test_status,
             sizeof(trace->model40_memory_address_test_status));
     } else if (observation->point.linear_pc == 0x000fc04bu && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_error_entries;
         trace->model40_memory_address_error_predecessor = trace->last_linear_pc;
         trace->model40_memory_address_error_ds = observation->current_cpu.ds.selector;
         trace->model40_memory_address_error_ds_base = observation->current_cpu.ds.base;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             trace->model40_memory_address_error_ds_base + 0x58u,
-            (lib_uptr)&trace->model40_memory_address_error_status,
+            &trace->model40_memory_address_error_status,
             sizeof(trace->model40_memory_address_error_status));
     } else if (observation->point.linear_pc == 0x000f8720u && trace->machine != LIB_NULL) {
         const lib_size history_index = (lib_size)(
@@ -964,8 +972,8 @@ static void vm_byob_retirement_observe(void *context,
                 (lib_u16)((trace->model40_memory_pattern_after_edi - 4u) & 0xffffu);
 
             if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
-                (void)test_core_read_physical(trace->machine, physical,
-                    (lib_uptr)&trace->model40_memory_pattern_after_value,
+                (void)x86_core_machine_memory_read(trace->machine, physical,
+                    &trace->model40_memory_pattern_after_value,
                     sizeof(trace->model40_memory_pattern_after_value));
             }
         }
@@ -986,13 +994,13 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_memory_compare_cr0 = observation->current_cpu.cr0;
         trace->model40_memory_compare_gdtr_base = observation->current_cpu.gdtr.base;
         trace->model40_memory_compare_gdtr_limit = observation->current_cpu.gdtr.limit;
-        (void)core_machine_memory_read(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             trace->model40_memory_compare_gdtr_base + 0x48u,
             trace->model40_memory_compare_descriptor,
             sizeof(trace->model40_memory_compare_descriptor));
         if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
-            (void)test_core_read_physical(trace->machine, physical,
-                (lib_uptr)&trace->model40_memory_compare_value,
+            (void)x86_core_machine_memory_read(trace->machine, physical,
+                &trace->model40_memory_compare_value,
                 sizeof(trace->model40_memory_compare_value));
         }
         ++trace->model40_memory_scas_entries;
@@ -1002,7 +1010,7 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_memory_scas_es_base = observation->current_cpu.es.base;
         trace->model40_memory_scas_eflags = observation->current_cpu.eflags;
     } else if (observation->point.linear_pc == 0x000fc1ccu &&
-        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
+        observation->control_outcome == X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
         trace->machine != LIB_NULL) {
         ++trace->model40_memory_compare_branch_taken;
         trace->model40_memory_compare_eax = observation->current_cpu.eax;
@@ -1015,8 +1023,8 @@ static void vm_byob_retirement_observe(void *context,
                 (lib_u16)((trace->model40_memory_compare_edi - 2u) & 0xffffu);
 
             if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
-                (void)test_core_read_physical(trace->machine, physical,
-                    (lib_uptr)&trace->model40_memory_compare_value,
+                (void)x86_core_machine_memory_read(trace->machine, physical,
+                    &trace->model40_memory_compare_value,
                     sizeof(trace->model40_memory_compare_value));
             }
         }
@@ -1034,8 +1042,8 @@ static void vm_byob_retirement_observe(void *context,
             trace->model40_memory_b_window_writes;
         trace->model40_memory_b_window_last_pc_at_mismatch =
             trace->model40_memory_b_window_last_pc;
-        (void)test_core_read_physical(trace->machine, physical,
-            (lib_uptr)&trace->model40_memory_mismatch_value,
+        (void)x86_core_machine_memory_read(trace->machine, physical,
+            &trace->model40_memory_mismatch_value,
             sizeof(trace->model40_memory_mismatch_value));
         if (trace->model40_memory_status_test_active) {
             ++trace->model40_memory_status_test_mismatches;
@@ -1049,10 +1057,10 @@ static void vm_byob_retirement_observe(void *context,
                 observation->current_cpu.es.base;
             trace->model40_memory_status_test_cr0 =
                 observation->current_cpu.cr0;
-            (void)test_core_read_physical(trace->machine,
+            (void)x86_core_machine_memory_read(trace->machine,
                 trace->model40_memory_status_test_es_base +
                     trace->model40_memory_status_test_offset,
-                (lib_uptr)&trace->model40_memory_status_test_actual,
+                &trace->model40_memory_status_test_actual,
                 sizeof(trace->model40_memory_status_test_actual));
         }
     } else if ((observation->point.linear_pc == 0x000fbe62u ||
@@ -1075,8 +1083,8 @@ static void vm_byob_retirement_observe(void *context,
         observation->point.linear_pc == 0x000fc0acu) && trace->machine != LIB_NULL) {
         ++trace->model40_post_status_58_writes;
         trace->model40_post_status_58_last_pc = observation->point.linear_pc;
-        (void)test_core_read_physical(trace->machine,
-            0x00000458u, (lib_uptr)&trace->model40_post_status_58_last_value,
+        (void)x86_core_machine_memory_read(trace->machine,
+            0x00000458u, &trace->model40_post_status_58_last_value,
             sizeof(trace->model40_post_status_58_last_value));
     } else {
         lib_size post_status_index = VM_BYOB_MODEL40_POST_STATUS_WRITERS;
@@ -1101,12 +1109,12 @@ static void vm_byob_retirement_observe(void *context,
                 trace->last_linear_pc;
         }
         if (observation->point.linear_pc == 0x000fc801u) {
-            (void)core_machine_memory_read(trace->machine, 0x00000412u,
+            (void)x86_core_machine_memory_read(trace->machine, 0x00000412u,
                 &trace->model40_post_status_value, 1u);
         }
     }
     if (!trace->real_286_high_flags_observed && trace->machine != LIB_NULL &&
-        test_core_boot_capture(trace->machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
+        observation->cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
         (observation->current_cpu.cr0 & VCPU_CR0_PE) == 0u &&
         (observation->current_cpu.eflags & 0xf000u) != 0u) {
         trace->real_286_high_flags_observed = LIB_TRUE;
@@ -1166,9 +1174,9 @@ static void vm_byob_retirement_observe(void *context,
             trace->boot_loader_cx = (lib_u16)observation->current_cpu.ecx;
             trace->boot_loader_flags =
                 (lib_u16)observation->current_cpu.eflags;
-            (void)core_machine_memory_read(trace->machine, (lib_u32)ds * 16u + si,
+            (void)x86_core_machine_memory_read(trace->machine, (lib_u32)ds * 16u + si,
                 trace->boot_loader_left, sizeof(trace->boot_loader_left));
-            (void)core_machine_memory_read(trace->machine, (lib_u32)es * 16u + di,
+            (void)x86_core_machine_memory_read(trace->machine, (lib_u32)es * 16u + di,
                 trace->boot_loader_right, sizeof(trace->boot_loader_right));
         }
         trace->boot_loader_jz_observed = LIB_TRUE;
@@ -1183,75 +1191,77 @@ static void vm_byob_retirement_observe(void *context,
         trace->boot_loader_read_return_observed = LIB_TRUE;
         trace->boot_loader_read_return_flags =
             (lib_u16)observation->current_cpu.eflags;
-        (void)core_machine_memory_read(trace->machine, 0x003eu,
+        (void)x86_core_machine_memory_read(trace->machine, 0x003eu,
             trace->boot_loader_int13_state, sizeof(trace->boot_loader_int13_state));
     }
     trace->last_linear_pc = observation->point.linear_pc;
 }
 
-static void vm_byob_trace(void *context, const core_machine_trace_event *event)
+/* Run is bounded to one instruction. The callback copies only public facts;
+ * guest memory is sampled after run returns to the paused boundary. */
+static void vm_byob_retirement_observe(void *context,
+    const x86_core_machine_retirement_observation *observation)
+{
+    vm_byob_boot_trace *trace = context;
+
+    trace->pending_retirement = *observation;
+    trace->retirement_pending = LIB_TRUE;
+}
+
+static void vm_byob_trace(void *context, const x86_core_machine_trace_event *event)
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
 
     if (trace == LIB_NULL || event == LIB_NULL) return;
-    if ((event->type == CORE_MACHINE_TRACE_PORT_WRITE ||
-         event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN ||
-         event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT ||
-         event->type == CORE_MACHINE_TRACE_TRANSACTION_CANCEL) && event->address == 0x0060u &&
+    if ((event->type == X86_CORE_MACHINE_TRACE_PORT_WRITE ||
+         event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN ||
+         event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT ||
+         event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_CANCEL) && event->address == 0x0060u &&
         event->linear_pc >= 0x000f1fe0u && event->linear_pc < 0x000f2028u &&
         trace->kbc_reset_xmit_transaction_count <
             sizeof(trace->kbc_reset_xmit_transactions) /
             sizeof(trace->kbc_reset_xmit_transactions[0u])) {
         trace->kbc_reset_xmit_transactions[trace->kbc_reset_xmit_transaction_count++] = *event;
     }
-    if (event->type == CORE_MACHINE_TRACE_RESET) {
+    if (event->type == X86_CORE_MACHINE_TRACE_RESET) {
         ++trace->reset_events;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_STOP &&
-        event->detail == CORE_MACHINE_STOP_RESET_REQUESTED && trace->machine != LIB_NULL) {
-        trace->model40_shutdown_diagnostic_valid =
-            core_machine_get_cpu_diagnostic(trace->machine,
-                &trace->model40_shutdown_diagnostic) == LIB_STATUS_OK;
-        trace->model40_protected_transition_observed =
-            core_machine_memory_read(trace->machine, 0x0009f300u,
-                trace->model40_gdt, sizeof(trace->model40_gdt)) == LIB_STATUS_OK;
-    }
-    if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0092u) {
+    if (event->type == X86_CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0092u) {
         ++trace->a20_port_write_count;
         trace->a20_port_last_value = (lib_u8)event->value;
         trace->a20_port_last_pc = event->linear_pc;
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_READ &&
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_READ &&
         event->address >= 0x000f0000u && event->address < 0x00100000u) {
         ++trace->rom_memory_reads;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x000b8000u && event->address < 0x000bc000u) {
         ++trace->cga_memory_writes;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address == 0x00000412u) {
         ++trace->model40_post_latch_writes;
         trace->model40_post_latch_last_pc = event->linear_pc;
         trace->model40_post_latch_last_value = (lib_u8)event->value;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x001e0000u && event->address < 0x001e0010u) {
         ++trace->model40_memory_1e_writes;
         trace->model40_memory_1e_last_pc = event->linear_pc;
         trace->model40_memory_1e_last_value = (lib_u8)event->value;
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x0000d8a0u && event->address < 0x0000d930u) {
         ++trace->ibm5170_gdt_writes;
         trace->ibm5170_gdt_last_address = event->address;
         trace->ibm5170_gdt_last_value = (lib_u8)event->value;
     }
-    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+    if (event->type == X86_CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x0018u && event->address < 0x001cu) {
         const lib_u8 index = (lib_u8)(event->address - 0x0018u);
 
@@ -1259,7 +1269,7 @@ static void vm_byob_trace(void *context, const core_machine_trace_event *event)
         trace->int6_vector_write_mask |= (lib_u8)(1u << index);
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_CPU_RETIRE) {
+    if (event->type == X86_CORE_MACHINE_TRACE_CPU_RETIRE) {
         if (event->linear_pc == 0x000fa5d3u) {
             ++trace->model40_reset_vector_target_entries;
             trace->model40_reset_vector_target_predecessor = trace->last_linear_pc;
@@ -1274,66 +1284,66 @@ static void vm_byob_trace(void *context, const core_machine_trace_event *event)
             ++trace->irq0_retires;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
-        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+        (event->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
-            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
+            X86_CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
         event->address >= 0x03f0u && event->address <= 0x03f7u) {
-        core_machine_trace_event write = *event;
+        x86_core_machine_trace_event write = *event;
 
-        write.type = CORE_MACHINE_TRACE_PORT_WRITE;
+        write.type = X86_CORE_MACHINE_TRACE_PORT_WRITE;
         vm_byob_fdc_port_record(trace, &write);
         ++trace->fdc_port_accesses;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
-        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+        (event->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
-            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE && event->address == 0x0092u) {
+            X86_CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE && event->address == 0x0092u) {
         ++trace->a20_port_write_count;
         trace->a20_port_last_value = (lib_u8)event->value;
         trace->a20_port_last_pc = event->linear_pc;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
-        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+        (event->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
-            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
+            X86_CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
         event->address >= 0x01f0u && event->address <= 0x01f7u) {
-        core_machine_trace_event write = *event;
+        x86_core_machine_trace_event write = *event;
 
-        write.type = CORE_MACHINE_TRACE_PORT_WRITE;
+        write.type = X86_CORE_MACHINE_TRACE_PORT_WRITE;
         vm_byob_hdc_port_record(trace, &write);
         ++trace->hdc_port_accesses;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
-        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+        (event->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
-            CORE_MACHINE_TRANSACTION_CPU_PORT_READ &&
+            X86_CORE_MACHINE_TRANSACTION_CPU_PORT_READ &&
         event->address >= 0x03f0u && event->address <= 0x03f7u) {
-        core_machine_trace_event read = *event;
+        x86_core_machine_trace_event read = *event;
 
-        read.type = CORE_MACHINE_TRACE_PORT_READ;
+        read.type = X86_CORE_MACHINE_TRACE_PORT_READ;
         vm_byob_fdc_port_record(trace, &read);
         ++trace->fdc_port_accesses;
         return;
     }
-    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
-        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+    if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+        (event->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
-            CORE_MACHINE_TRANSACTION_CPU_PORT_READ &&
+            X86_CORE_MACHINE_TRANSACTION_CPU_PORT_READ &&
         event->address >= 0x01f0u && event->address <= 0x01f7u) {
-        core_machine_trace_event read = *event;
+        x86_core_machine_trace_event read = *event;
 
-        read.type = CORE_MACHINE_TRACE_PORT_READ;
+        read.type = X86_CORE_MACHINE_TRACE_PORT_READ;
         vm_byob_hdc_port_record(trace, &read);
         ++trace->hdc_port_accesses;
         return;
     }
-    if (event->type != CORE_MACHINE_TRACE_PORT_READ &&
-        event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
-    if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0084u) {
+    if (event->type != X86_CORE_MACHINE_TRACE_PORT_READ &&
+        event->type != X86_CORE_MACHINE_TRACE_PORT_WRITE) return;
+    if (event->type == X86_CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0084u) {
         ++trace->model40_video_error_writes;
         trace->model40_video_error_last_value = (lib_u8)event->value;
         trace->model40_video_error_last_pc = event->linear_pc;
@@ -1355,18 +1365,15 @@ static void vm_byob_trace(void *context, const core_machine_trace_event *event)
     }
 }
 
-static void vm_byob_model40_memory_write_observe(void *context,
-    lib_u32 physical, lib_uptr bytes)
+static void vm_byob_model40_memory_write_sample(vm_byob_boot_trace *trace,
+    const x86_core_cpu_debug_cpu_snapshot *cpu, lib_u32 physical, lib_size bytes)
 {
-    vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
-    x86_core_cpu_state cpu;
     lib_u32 pc;
 
     if (trace == LIB_NULL || trace->machine == LIB_NULL) return;
-    /* This synchronous board callback observes the write-time PC, not the
-     * previous retirement. It cannot execute or mutate the borrowed CPU. */
-    test_core_boot_capture_write_cpu(trace->machine, &cpu);
-    pc = cpu.cs_base + cpu.eip;
+    /* The producer is instruction entry; values are read at the paused
+     * boundary and may include later writes within that instruction. */
+    pc = cpu->cs.base + cpu->eip;
     if (physical <= 0x00000042u &&
         (lib_u64)physical + bytes > 0x00000040u) {
         const lib_size index = (lib_size)(trace->model40_int10_vector_write_count %
@@ -1375,17 +1382,17 @@ static void vm_byob_model40_memory_write_observe(void *context,
         trace->model40_int10_vector_write_observed = LIB_TRUE;
         ++trace->model40_int10_vector_write_count;
         trace->model40_int10_vector_write_pc = pc;
-        trace->model40_int10_vector_write_cs = cpu.cs;
-        (void)test_core_read_physical(trace->machine,
+        trace->model40_int10_vector_write_cs = cpu->cs.selector;
+        (void)x86_core_machine_memory_read(trace->machine,
             0x00000040u,
-            (lib_uptr)&trace->model40_int10_vector_offset,
+            &trace->model40_int10_vector_offset,
             sizeof(trace->model40_int10_vector_offset));
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             0x00000042u,
-            (lib_uptr)&trace->model40_int10_vector_segment,
+            &trace->model40_int10_vector_segment,
             sizeof(trace->model40_int10_vector_segment));
         trace->model40_int10_vector_history_pc[index] = pc;
-        trace->model40_int10_vector_history_cs[index] = cpu.cs;
+        trace->model40_int10_vector_history_cs[index] = cpu->cs.selector;
         trace->model40_int10_vector_history_offset[index] =
             trace->model40_int10_vector_offset;
         trace->model40_int10_vector_history_segment[index] =
@@ -1398,11 +1405,11 @@ static void vm_byob_model40_memory_write_observe(void *context,
 
         ++trace->model40_int42_vector_write_count;
         trace->model40_int42_vector_write_pc[index] = pc;
-        (void)test_core_read_physical(trace->machine,
-            0x00000108u, (lib_uptr)&trace->model40_int42_vector_history_offset[index],
+        (void)x86_core_machine_memory_read(trace->machine,
+            0x00000108u, &trace->model40_int42_vector_history_offset[index],
             sizeof(trace->model40_int42_vector_history_offset[index]));
-        (void)test_core_read_physical(trace->machine,
-            0x0000010au, (lib_uptr)&trace->model40_int42_vector_history_segment[index],
+        (void)x86_core_machine_memory_read(trace->machine,
+            0x0000010au, &trace->model40_int42_vector_history_segment[index],
             sizeof(trace->model40_int42_vector_history_segment[index]));
     }
     if (physical <= 0x00000458u && (lib_u64)physical + bytes > 0x00000458u) {
@@ -1412,9 +1419,9 @@ static void vm_byob_model40_memory_write_observe(void *context,
 
         ++trace->model40_post_status_58_observer_writes;
         trace->model40_post_status_58_observer_last_pc = pc;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             0x00000458u,
-            (lib_uptr)&trace->model40_post_status_58_observer_last_value,
+            &trace->model40_post_status_58_observer_last_value,
             sizeof(trace->model40_post_status_58_observer_last_value));
         trace->model40_post_status_58_observer_pcs[index] = pc;
         trace->model40_post_status_58_observer_values[index] =
@@ -1428,9 +1435,9 @@ static void vm_byob_model40_memory_write_observe(void *context,
 
         ++trace->model40_post_private_status_writes;
         trace->model40_post_private_status_last_pc = pc;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL,
-            (lib_uptr)&trace->model40_post_private_status_last_value,
+            &trace->model40_post_private_status_last_value,
             sizeof(trace->model40_post_private_status_last_value));
         trace->model40_post_private_status_pcs[index] = pc;
         trace->model40_post_private_status_values[index] =
@@ -1449,8 +1456,8 @@ static void vm_byob_model40_memory_write_observe(void *context,
         ++trace->model40_memory_b_first_word_writes;
         trace->model40_memory_b_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_b_first_word_last_pc = pc;
-        (void)test_core_read_physical(trace->machine,
-            0x000b0000u, (lib_uptr)&trace->model40_memory_b_first_word_last_value,
+        (void)x86_core_machine_memory_read(trace->machine,
+            0x000b0000u, &trace->model40_memory_b_first_word_last_value,
             sizeof(trace->model40_memory_b_first_word_last_value));
         trace->model40_memory_b_first_word_graphics_6 =
             video.graphics_miscellaneous;
@@ -1478,17 +1485,17 @@ static void vm_byob_model40_memory_write_observe(void *context,
             trace->model40_memory_pattern_producer_active;
         if (trace->model40_memory_pattern_producer_active)
             ++trace->model40_memory_pattern_producer_high_b_writes;
-        (void)test_core_read_physical(trace->machine,
+        (void)x86_core_machine_memory_read(trace->machine,
             0x00fb0000u,
-            (lib_uptr)trace->model40_memory_high_b_write_pages[history],
+            trace->model40_memory_high_b_write_pages[history],
             sizeof(trace->model40_memory_high_b_write_pages[history]));
     }
     if (physical < 0x00fb0002u && (lib_u64)physical + bytes > 0x00fb0000u) {
         ++trace->model40_memory_fb_first_word_writes;
         trace->model40_memory_fb_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_fb_first_word_last_pc = pc;
-        (void)test_core_read_physical(trace->machine,
-            0x00fb0000u, (lib_uptr)&trace->model40_memory_fb_first_word_last_value,
+        (void)x86_core_machine_memory_read(trace->machine,
+            0x00fb0000u, &trace->model40_memory_fb_first_word_last_value,
             sizeof(trace->model40_memory_fb_first_word_last_value));
     }
     if (physical < 0x00fa0000u || physical >= 0x01000000u) return;
@@ -1506,6 +1513,82 @@ static void vm_byob_model40_memory_write_observe(void *context,
         ++trace->model40_memory_pattern_write_count;
         trace->model40_memory_pattern_write_last_address = physical;
     }
+}
+
+static lib_status vm_byob_paused_write_sample(vm_byob_boot_trace *trace)
+{
+    x86_core_cpu_debug_instruction_observation instruction;
+    x86_core_cpu_debug_cpu_snapshot entry;
+    lib_u32 clear_mask;
+    lib_status status = x86_core_machine_debug_capture_instruction_observation(
+        trace->machine, &instruction);
+
+    if (status == LIB_STATUS_OK) status = x86_core_machine_debug_capture_cpu_snapshot(
+        trace->machine, X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &entry);
+    if (status == LIB_STATUS_OK) status = x86_core_machine_observe_address_clear_mask(
+        trace->machine, &clear_mask);
+    if (status != LIB_STATUS_OK) return status;
+    /* Physical POST probes cannot translate paged linear records, or prove
+     * completeness when the bounded debugger record is full. */
+    if ((entry.cr0 & VCPU_CR0_PG) != 0u) return LIB_STATUS_UNSUPPORTED;
+    if (instruction.memory_access_count == X86_CORE_CPU_DEBUG_MEMORY_ACCESS_CAPACITY)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    for (lib_size access = 0u; access < instruction.memory_access_count; ++access) {
+        const x86_core_cpu_debug_memory_access *memory = &instruction.memory_accesses[access];
+
+        if (memory->write) vm_byob_model40_memory_write_sample(trace, &entry,
+            memory->linear & ~clear_mask, memory->bytes);
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_i32 vm_byob_paused_sample_smoke(void)
+{
+    /* Authored jump and two vector writes; no external firmware or media. */
+    const lib_u8 rom[32] = {
+        0xeau, 0x10u, 0x80u, 0u, 0u,
+        [16] = 0xc7u, 0x06u, 0x40u, 0u, 0x34u, 0x12u,
+        0xc7u, 0x06u, 0x42u, 0u, 0x78u, 0x56u, 0xf4u
+    };
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .ticks_per_instruction = 1u
+    };
+    vm_byob_boot_trace trace = {0};
+    x86_core_machine_run_result result;
+    lib_i32 failed = 1;
+
+    if (x86_core_machine_neutral_create(&config, &trace.machine) != LIB_STATUS_OK ||
+        x86_core_machine_register_immutable_rom_mapping(trace.machine, 0x8000u,
+            rom, sizeof(rom)) != LIB_STATUS_OK ||
+        x86_core_machine_register_immutable_rom_mapping_reset_alias(trace.machine,
+            0x8000u, 0xfffffff0u, 16u) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(trace.machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(trace.machine) != LIB_STATUS_OK ||
+        x86_core_machine_set_retirement_observation_provider(trace.machine,
+            &(x86_core_machine_retirement_observation_provider){
+                vm_byob_retirement_observe, &trace}) != LIB_STATUS_OK) goto done;
+    for (lib_size instruction = 0u; instruction < 3u; ++instruction) {
+        const lib_u64 before = trace.model40_int10_vector_write_count;
+
+        if (x86_core_machine_run(trace.machine,
+                (x86_core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+            result.executed != 1u || !trace.retirement_pending ||
+            trace.model40_int10_vector_write_count != before ||
+            vm_byob_paused_write_sample(&trace) != LIB_STATUS_OK) goto done;
+        trace.retirement_pending = LIB_FALSE;
+    }
+    if (trace.model40_int10_vector_write_count != 2u ||
+        trace.model40_int10_vector_offset != 0x1234u ||
+        trace.model40_int10_vector_segment != 0x5678u ||
+        trace.model40_int10_vector_history_pc[0u] != 0x8010u ||
+        trace.model40_int10_vector_history_pc[1u] != 0x8016u ||
+        trace.model40_int10_vector_history_segment[0u] != 0u) goto done;
+    failed = 0;
+done:
+    x86_core_machine_destroy(trace.machine);
+    printf("MODEL40:PAUSED-WRITE-SAMPLE:%s\n", failed ? "FAIL" : "OK");
+    return failed;
 }
 
 static lib_i32 vm_byob_snapshot_has(const x86_video_snapshot *snapshot,
@@ -1546,7 +1629,7 @@ static lib_i32 vm_byob_send_f1(vm_machine *session, lib_i32 pressed,
     core_machine_guest_input_event event = {0};
     lib_u8 scan_set = 0u;
 
-    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
+    if (session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
         out_scan_set == LIB_NULL || core_machine_keyboard_get_native_scan_set(
             session->board, &scan_set) !=
             LIB_STATUS_OK) return 0;
@@ -1558,14 +1641,14 @@ static lib_i32 vm_byob_send_f1(vm_machine *session, lib_i32 pressed,
     return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_byob_text_memory_has(core_machine *machine, const char *text)
+static lib_i32 vm_byob_text_memory_has(x86_core_machine *machine, const char *text)
 {
     lib_u8 bytes[0x4000];
     lib_size offset;
     lib_size length;
 
     if (machine == LIB_NULL || text == LIB_NULL ||
-        core_machine_memory_read(machine, 0x000b8000u, bytes, sizeof(bytes)) !=
+        x86_core_machine_memory_read(machine, 0x000b8000u, bytes, sizeof(bytes)) !=
             LIB_STATUS_OK) return 0;
     length = lib_text_length(text);
     for (offset = 0u; offset + length * 2u <= sizeof(bytes); offset += 2u) {
@@ -1578,12 +1661,12 @@ static lib_i32 vm_byob_text_memory_has(core_machine *machine, const char *text)
     return 0;
 }
 
-static void vm_byob_print_text_rows(core_machine *machine)
+static void vm_byob_print_text_rows(x86_core_machine *machine)
 {
     lib_u8 bytes[80u * 25u * 2u];
     lib_u32 row;
 
-    if (machine == LIB_NULL || core_machine_memory_read(machine, 0x000b8000u,
+    if (machine == LIB_NULL || x86_core_machine_memory_read(machine, 0x000b8000u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         char line[81];
@@ -1603,7 +1686,7 @@ static void vm_byob_print_text_rows(core_machine *machine)
     }
 }
 
-static lib_i32 vm_byob_memory_has(core_machine *machine, lib_u32 address,
+static lib_i32 vm_byob_memory_has(x86_core_machine *machine, lib_u32 address,
     lib_size byte_count, const char *text)
 {
     lib_u8 bytes[1024];
@@ -1611,7 +1694,7 @@ static lib_i32 vm_byob_memory_has(core_machine *machine, lib_u32 address,
     lib_size length;
 
     if (machine == LIB_NULL || text == LIB_NULL || byte_count > sizeof(bytes) ||
-        core_machine_memory_read(machine, address, bytes, byte_count) != LIB_STATUS_OK) {
+        x86_core_machine_memory_read(machine, address, bytes, byte_count) != LIB_STATUS_OK) {
         return 0;
     }
     length = lib_text_length(text);
@@ -1621,15 +1704,15 @@ static lib_i32 vm_byob_memory_has(core_machine *machine, lib_u32 address,
     return 0;
 }
 
-static lib_i32 vm_byob_memory_equal(core_machine *machine, lib_u32 left,
+static lib_i32 vm_byob_memory_equal(x86_core_machine *machine, lib_u32 left,
     lib_u32 right, lib_size byte_count)
 {
     lib_u8 left_bytes[32];
     lib_u8 right_bytes[32];
 
     return machine != LIB_NULL && byte_count <= sizeof(left_bytes) &&
-        core_machine_memory_read(machine, left, left_bytes, byte_count) == LIB_STATUS_OK &&
-        core_machine_memory_read(machine, right, right_bytes, byte_count) == LIB_STATUS_OK &&
+        x86_core_machine_memory_read(machine, left, left_bytes, byte_count) == LIB_STATUS_OK &&
+        x86_core_machine_memory_read(machine, right, right_bytes, byte_count) == LIB_STATUS_OK &&
         !lib_memory_compare(left_bytes, right_bytes, byte_count);
 }
 
@@ -1650,16 +1733,18 @@ static lib_u32 vm_byob_snapshot_checksum(
 
 int main(lib_i32 argc, char **argv)
 {
+    if (argc == 2 && !lib_text_compare(argv[1], "--self-test"))
+        return vm_byob_paused_sample_smoke();
     /* Keep the host-side diagnostic wall-clock budget observable even when a
        guest instruction is stalled behind an unbounded Core wait path. */
-    core_machine_run_budget budget = {256u, 256u};
+    x86_core_machine_run_budget budget = {256u, 256u};
     integration_ini_session ini_session = {0};
     vm_machine *session = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_video_snapshot snapshot;
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot current_cpu;
-    core_machine_trace_provider trace_provider;
+    x86_core_machine_trace_provider trace_provider;
     vm_byob_boot_trace trace = {0};
     ULONGLONG started;
     ULONGLONG progress;
@@ -1682,7 +1767,7 @@ int main(lib_i32 argc, char **argv)
     x86_dma_signals last_dma = { 0u, 4u, LIB_FALSE };
     lib_u64 executed_total = 0u;
     lib_u64 run_count = 0u;
-    lib_u32 last_reason = CORE_MACHINE_STOP_NONE;
+    lib_u32 last_reason = X86_CORE_MACHINE_STOP_NONE;
     lib_u32 last_detail = 0u;
     lib_i32 last_wait_advanced = 0;
     lib_u32 wall_limit = VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS;
@@ -1748,56 +1833,32 @@ int main(lib_i32 argc, char **argv)
         goto done;
     }
     {
-        core_machine_memory_route boundary_route = CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
-        const lib_status boundary_status = test_core_boot_query(session->core_machine, 0x00100000u, 2u,
-            CORE_MACHINE_MEMORY_ACCESS_WRITE, &boundary_route);
+        x86_core_machine_memory_route boundary_route = X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+        const lib_status boundary_status = x86_core_machine_memory_query(session->x86_core_machine, 0x00100000u, 2u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &boundary_route);
+        lib_size memory_bytes = 0u;
+
+        if (x86_core_machine_get_memory_bytes(session->x86_core_machine,
+                &memory_bytes) != LIB_STATUS_OK) goto done;
 
         printf("BOOT-PROBE=memory-installed=%llu-a20=%u-boundary-write-status=%u-route=%u\n",
-            (unsigned long long)test_core_boot_capture(session->core_machine).memory_bytes,
-            (unsigned int)((test_core_boot_capture(session->core_machine).address_clear_mask & 0x00100000u) == 0u),
+            (unsigned long long)memory_bytes,
+            (unsigned int)test_core_a20_is_enabled(session->x86_core_machine),
             (unsigned int)boundary_status, (unsigned int)boundary_route);
     }
-    if (test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
-        test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80386) {
-        lib_u8 reset_bytes[4] = {0u};
-        const lib_u32 reset_physical =
-            test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 ?
-                0x00fffff0u : 0xfffffff0u;
-        lib_size index;
-
-        (void)test_core_boot_read_reset(session->core_machine, reset_physical,
-            (lib_uptr)reset_bytes, sizeof(reset_bytes));
-        printf("BOOT-PROBE=reset-read=%02X,%02X,%02X,%02X-rom-mappings=%u\n",
-            (unsigned int)reset_bytes[0u], (unsigned int)reset_bytes[1u],
-            (unsigned int)reset_bytes[2u], (unsigned int)reset_bytes[3u],
-            (unsigned int)test_core_boot_capture(session->core_machine).rom_mapping_count);
-        for (index = 0u; index < test_core_boot_capture(session->core_machine).rom_mapping_count;
-                ++index) {
-            const test_core_boot_rom_mapping mapping =
-                test_core_boot_rom_at(session->core_machine, index);
-
-            printf("BOOT-PROBE=rom-map-%u=%08X/%u\n", (unsigned int)index,
-                (unsigned int)mapping.physical_start, (unsigned int)mapping.bytes);
-        }
-    }
-    trace.machine = session->core_machine;
+    trace.machine = session->x86_core_machine;
     trace.board = session->board;
     if (model40_profile_is_selected(&session->construction)) {
-        if (!test_core_boot_bind_write_observer(session->core_machine,
-                vm_byob_model40_memory_write_observe, &trace)) {
-            printf("BOOT-PROBE=setup-failed\n");
-            goto done;
-        }
-        (void)core_machine_debug_set_watchpoint(session->core_machine,
+        (void)x86_core_machine_debug_set_watchpoint(session->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_WRITE, 0x00fe0000u);
     }
     {
         lib_u16 offset = 0u;
         lib_u16 segment = 0u;
 
-        if (core_machine_memory_read(session->core_machine, 0x0054u, &offset,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0054u, &offset,
                 sizeof(offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x0056u, &segment,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0056u, &segment,
                 sizeof(segment)) == LIB_STATUS_OK) {
             trace.int15_linear = (lib_u32)segment * 16u + offset;
         }
@@ -1815,11 +1876,15 @@ int main(lib_i32 argc, char **argv)
         budget.ticks = 0u;
     }
     if (!no_retirement_observation &&
-        core_machine_set_retirement_observation_provider(session->core_machine,
-            &(core_machine_retirement_observation_provider) {
+        x86_core_machine_set_retirement_observation_provider(session->x86_core_machine,
+            &(x86_core_machine_retirement_observation_provider) {
                 vm_byob_retirement_observe, &trace }) != LIB_STATUS_OK) {
         printf("BOOT-PROBE=setup-failed\n");
         goto done;
+    }
+    if (!no_retirement_observation || model40_profile_is_selected(&session->construction)) {
+        budget.instructions = 1u;
+        printf("BOOT-PROBE=memory-sampling=paused-instruction-boundary-write-source=cpu-debug-record-not-bus-log\n");
     }
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
@@ -1829,7 +1894,7 @@ int main(lib_i32 argc, char **argv)
     if (trace_enabled) {
         trace_provider.callback = vm_byob_trace;
         trace_provider.context = &trace;
-        if (core_machine_set_trace_provider(session->core_machine, &trace_provider) !=
+        if (x86_core_machine_set_trace_provider(session->x86_core_machine, &trace_provider) !=
             LIB_STATUS_OK) {
             printf("BOOT-PROBE=setup-failed\n");
             goto done;
@@ -1841,16 +1906,16 @@ int main(lib_i32 argc, char **argv)
     next_display_capture = started;
     next_text_memory_scan = started;
     while (GetTickCount64() - started < wall_limit) {
-        core_machine_run_budget run_budget = budget;
+        x86_core_machine_run_budget run_budget = budget;
         lib_u32 current;
         ULONGLONG now;
 
         if (stop_at_first_exception && have_linear_pc &&
             (linear_pc == 0x0001450fu || linear_pc == 0x000145efu) &&
-            core_machine_memory_read(session->core_machine, 0x0018u,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0018u,
                 &trace.int6_pre_fault_offset,
                 sizeof(trace.int6_pre_fault_offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x001au,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x001au,
                 &trace.int6_pre_fault_segment,
                 sizeof(trace.int6_pre_fault_segment)) == LIB_STATUS_OK) {
             trace.int6_pre_fault_snapshot_valid = LIB_TRUE;
@@ -1858,25 +1923,48 @@ int main(lib_i32 argc, char **argv)
         }
         /* This probe drives Core directly; its host input is delivered by the
          * VM adapter before each Core quantum. */
-        if (core_machine_run(session->core_machine, run_budget, &result) != LIB_STATUS_OK) {
+        const lib_status run_status = x86_core_machine_run(
+            session->x86_core_machine, run_budget, &result);
+        if (trace_enabled && result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
+            trace.model40_shutdown_diagnostic_valid =
+                x86_core_machine_get_cpu_diagnostic(session->x86_core_machine,
+                    &trace.model40_shutdown_diagnostic) == LIB_STATUS_OK;
+            trace.model40_protected_transition_observed =
+                x86_core_machine_memory_read(session->x86_core_machine, 0x0009f300u,
+                    trace.model40_gdt, sizeof(trace.model40_gdt)) == LIB_STATUS_OK;
+        }
+        if (result.executed != 0u &&
+            model40_profile_is_selected(&session->construction)) {
+            const lib_status sample_status = vm_byob_paused_write_sample(&trace);
+
+            if (sample_status != LIB_STATUS_OK) {
+                printf("BOOT-PROBE=write-sample-failed-status=%u\n", (unsigned)sample_status);
+                goto done;
+            }
+        }
+        if (trace.retirement_pending) {
+            trace.retirement_pending = LIB_FALSE;
+            vm_byob_retirement_sample(&trace, &trace.pending_retirement);
+        }
+        if (run_status != LIB_STATUS_OK) {
             lib_u8 fault_bytes[4] = {0u};
             lib_u8 far_pointer[6] = {0u};
             lib_u8 descriptor[8] = {0u};
             x86_core_cpu_debug_cpu_snapshot fault_cpu;
 
-            (void)test_core_read_physical(session->core_machine,
-                result.linear_pc, (lib_uptr)fault_bytes, sizeof(fault_bytes));
-            (void)test_core_read_physical(session->core_machine,
-                0x000f8a1fu, (lib_uptr)far_pointer, sizeof(far_pointer));
-            (void)test_core_read_physical(session->core_machine,
-                0x000f0a0bu, (lib_uptr)descriptor, sizeof(descriptor));
+            (void)x86_core_machine_memory_read(session->x86_core_machine,
+                result.linear_pc, fault_bytes, sizeof(fault_bytes));
+            (void)x86_core_machine_memory_read(session->x86_core_machine,
+                0x000f8a1fu, far_pointer, sizeof(far_pointer));
+            (void)x86_core_machine_memory_read(session->x86_core_machine,
+                0x000f0a0bu, descriptor, sizeof(descriptor));
             printf("BOOT-PROBE=run-failed-reason=%u-detail=%08X-pc=%05X\n",
                 (unsigned int)result.reason, (unsigned int)result.detail,
                 (unsigned int)result.linear_pc);
             printf("BOOT-PROBE=fault-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)fault_bytes[0u], (unsigned int)fault_bytes[1u],
                 (unsigned int)fault_bytes[2u], (unsigned int)fault_bytes[3u]);
-            if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+            if (x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &fault_cpu) == LIB_STATUS_OK) {
                 printf("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
                     (unsigned int)fault_cpu.cr0, (unsigned int)fault_cpu.cs.selector,
@@ -1888,10 +1976,7 @@ int main(lib_i32 argc, char **argv)
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
                 (unsigned int)d4.memory_control,
                 (unsigned int)d4.memory_ram_setup);
-            printf("BOOT-PROBE=transaction-owner=%u-hold-owner=%u-hold-ack=%u-refresh-pending=%u\n",
-                (unsigned int)test_core_boot_capture(session->core_machine).transaction_owner,
-                (unsigned int)test_core_boot_capture(session->core_machine).hold_owner,
-                (unsigned int)test_core_boot_capture(session->core_machine).hold_acknowledged,
+            printf("BOOT-PROBE=refresh-pending=%u\n",
                 (unsigned int)test_board_boot_refresh_request(session->board,
                     &(lib_u8){0}));
             printf("BOOT-PROBE=far-pointer=%02X,%02X,%02X,%02X,%02X,%02X-gdt-entry=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
@@ -1908,8 +1993,8 @@ int main(lib_i32 argc, char **argv)
         last_reason = result.reason;
         last_detail = result.detail;
         executed_total += result.executed;
-        if (stop_at_first_exception && core_machine_get_cpu_diagnostic(
-                session->core_machine, &diagnostic) == LIB_STATUS_OK &&
+        if (stop_at_first_exception && x86_core_machine_get_cpu_diagnostic(
+                session->x86_core_machine, &diagnostic) == LIB_STATUS_OK &&
             diagnostic.first_delivered_exception.valid) {
             lib_size index;
 
@@ -1948,18 +2033,18 @@ int main(lib_i32 argc, char **argv)
             last_fdc_remaining = fdc_observation.transfer_remaining;
             last_dma = test_board_boot_dma_signals(session->board, 0u);
         }
-        if (result.reason == CORE_MACHINE_STOP_FAULT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             printf("BOOT-PROBE=guest-fault\n");
             goto done;
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             x86_core_cpu_state cpu;
-            core_machine_time_observation observation;
+            x86_core_machine_time_observation observation;
             lib_bool advanced = LIB_FALSE;
 
-            if (core_machine_capture_time_observation(session->core_machine,
+            if (x86_core_machine_capture_time_observation(session->x86_core_machine,
                     &observation) != LIB_STATUS_OK ||
-                core_machine_get_cpu_state(session->core_machine, &cpu) !=
+                x86_core_machine_get_cpu_state(session->x86_core_machine, &cpu) !=
                     LIB_STATUS_OK) {
                 printf("BOOT-PROBE=run-failed\n");
                 goto done;
@@ -1996,9 +2081,9 @@ int main(lib_i32 argc, char **argv)
             }
             if (now >= next_text_memory_scan) {
                 const lib_i32 resume_visible = vm_byob_text_memory_has(
-                    session->core_machine, "RESUME");
+                    session->x86_core_machine, "RESUME");
                 const lib_i32 installer_visible = resume_f1_sent &&
-                    vm_byob_text_memory_has(session->core_machine, "ENTER=Continue");
+                    vm_byob_text_memory_has(session->x86_core_machine, "ENTER=Continue");
 
                 next_text_memory_scan = now + 250u;
                 if (press_resume_f1 && !resume_f1_sent &&
@@ -2077,7 +2162,7 @@ int main(lib_i32 argc, char **argv)
         }
         if (GetTickCount64() - progress >= no_progress_limit) {
             if (waiting_for_interrupt) {
-                if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+                if (x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,
                         X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
                     printf("BOOT-PROBE=waiting-cpu-snapshot-unavailable\n");
                     goto done;
@@ -2093,21 +2178,21 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)waiting_linear_pc);
                 printf("BOOT-PROBE=post-message-offset=%04X\n",
                     (unsigned int)(lib_u16)current_cpu.ebp);
-                if (core_machine_memory_read(session->core_machine,
+                if (x86_core_machine_memory_read(session->x86_core_machine,
                         current_cpu.ss.base +
                         (lib_u16)current_cpu.esp + 2u,
                         &post_caller_offset, sizeof(post_caller_offset)) == LIB_STATUS_OK) {
                     printf("BOOT-PROBE=post-caller-offset=%04X\n",
                         (unsigned int)post_caller_offset);
                 }
-                if (core_machine_memory_read(session->core_machine, 0x046bu,
+                if (x86_core_machine_memory_read(session->x86_core_machine, 0x046bu,
                         &post_interrupt_flag, sizeof(post_interrupt_flag)) ==
                     LIB_STATUS_OK) {
                     printf(post_interrupt_flag == 0u ?
                         "BOOT-PROBE=post-interrupt-flag-cleared\n" :
                         "BOOT-PROBE=post-interrupt-flag-set\n");
                 }
-                if (core_machine_memory_read(session->core_machine, 0x0415u,
+                if (x86_core_machine_memory_read(session->x86_core_machine, 0x0415u,
                         &post_manufacturing_error_flag,
                         sizeof(post_manufacturing_error_flag)) == LIB_STATUS_OK) {
                     printf("BOOT-PROBE=post-manufacturing-error-flag=%02X\n",
@@ -2123,7 +2208,7 @@ int main(lib_i32 argc, char **argv)
                         (unsigned int)dma.enabled);
                 }
                 printf("BOOT-PROBE=post-elapsed-ticks=%llu\n",
-                    (unsigned long long)test_core_boot_capture(session->core_machine).elapsed_ticks);
+                    (unsigned long long)test_core_elapsed_ticks(session->x86_core_machine));
                 printf("BOOT-PROBE=pit-waits-first=%llu-second=%llu-irq0=%llu\n",
                     (unsigned long long)trace.pit_wait_first_retires,
                     (unsigned long long)trace.pit_wait_second_retires,
@@ -2189,11 +2274,11 @@ int main(lib_i32 argc, char **argv)
     }
     printf("BOOT-PROBE=wall-timeout-limit=%u\n", (unsigned int)wall_limit);
     if (trace_enabled) {
-    test_core_boot_capture_diagnostic(session->core_machine, &diagnostic);
+    (void)x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic);
     printf("BOOT-PROBE=run-count=%llu-last-reason=%u-wait-advanced=%u\n",
         (unsigned long long)run_count, (unsigned int)last_reason,
         (unsigned int)last_wait_advanced);
-    if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+    if (x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
         printf("BOOT-PROBE=last-detail=%08X-cs=%08X-ip=%08X\n",
             (unsigned int)last_detail,
@@ -2235,7 +2320,7 @@ int main(lib_i32 argc, char **argv)
     } else printf("BOOT-PROBE=wall-timeout-fdc-and-xt-ppi\n");
     }
 done:
-    if (session != LIB_NULL && session->core_machine != LIB_NULL) {
+    if (session != LIB_NULL && session->x86_core_machine != LIB_NULL) {
         lib_u16 bda_equipment = 0u;
         lib_u8 low_memory_12 = 0u;
         lib_u16 bda_keyboard_head = 0u;
@@ -2258,14 +2343,14 @@ done:
         lib_u8 int13_state[5] = {0u};
         lib_u8 next_instruction_bytes[8] = {0u};
 
-        if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+        if (x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
             printf("BOOT-PROBE=final-cpu-snapshot-unavailable\n");
             exit_code = 1;
             goto cleanup;
         }
         lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-        test_core_boot_capture_diagnostic(session->core_machine, &diagnostic);
+        (void)x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic);
         if (diagnostic.first_fault.valid) {
             const x86_core_cpu_execution_point *point =
                 &diagnostic.first_fault.point;
@@ -2283,9 +2368,9 @@ done:
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u]);
-            (void)core_machine_memory_read(session->core_machine, descriptor_linear,
+            (void)x86_core_machine_memory_read(session->x86_core_machine, descriptor_linear,
                 descriptor, sizeof(descriptor));
-            (void)core_machine_memory_read(session->core_machine, idt_linear,
+            (void)x86_core_machine_memory_read(session->x86_core_machine, idt_linear,
                 idt_descriptor, sizeof(idt_descriptor));
             printf("BOOT-PROBE=first-fault-gdtr=%05X/%04X-selector=%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)current_cpu.gdtr.base,
@@ -2302,7 +2387,7 @@ done:
                 (unsigned int)idt_descriptor[2u], (unsigned int)idt_descriptor[3u],
                 (unsigned int)idt_descriptor[4u], (unsigned int)idt_descriptor[5u],
                 (unsigned int)idt_descriptor[6u], (unsigned int)idt_descriptor[7u]);
-            (void)core_machine_memory_read(session->core_machine,
+            (void)x86_core_machine_memory_read(session->x86_core_machine,
                 current_cpu.gdtr.base + 0x30u,
                 descriptor, sizeof(descriptor));
             printf("BOOT-PROBE=debug-gdt-30=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
@@ -2371,9 +2456,9 @@ done:
             lib_u16 int42_segment = 0u;
             lib_u64 entry;
 
-            (void)core_machine_memory_read(session->core_machine, 0x0108u,
+            (void)x86_core_machine_memory_read(session->x86_core_machine, 0x0108u,
                 &int42_offset, sizeof(int42_offset));
-            (void)core_machine_memory_read(session->core_machine, 0x010au,
+            (void)x86_core_machine_memory_read(session->x86_core_machine, 0x010au,
                 &int42_segment, sizeof(int42_segment));
             printf("BOOT-PROBE=model40-int42-vector=%04X:%04X\n",
                 (unsigned int)int42_segment, (unsigned int)int42_offset);
@@ -2570,8 +2655,8 @@ done:
             (unsigned long long)run_count, (unsigned int)last_reason);
         printf("BOOT-PROBE=final-pc=%05X-elapsed=%llu\n",
             (unsigned int)linear_pc,
-            (unsigned long long)test_core_boot_capture(session->core_machine).elapsed_ticks);
-        if (core_machine_memory_read(session->core_machine, linear_pc,
+            (unsigned long long)test_core_elapsed_ticks(session->x86_core_machine));
+        if (x86_core_machine_memory_read(session->x86_core_machine, linear_pc,
                 next_instruction_bytes, sizeof(next_instruction_bytes)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=next-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)next_instruction_bytes[0u],
@@ -3062,7 +3147,7 @@ done:
             (unsigned long long)trace.a20_port_write_count,
             (unsigned int)trace.a20_port_last_pc,
             (unsigned int)trace.a20_port_last_value,
-            (unsigned int)((test_core_boot_capture(session->core_machine).address_clear_mask & 0x00100000u) == 0u));
+            (unsigned int)test_core_a20_is_enabled(session->x86_core_machine));
         {
             lib_u64 ticks = 0u;
             const lib_status status = test_board_kbc_ticks_until_event(session->board, &ticks);
@@ -3205,30 +3290,30 @@ done:
         printf("BOOT-PROBE=pic-pending=%u-fdc-irq=%u\n",
             (unsigned int)test_board_controller_scan_interrupt(session->board),
             (unsigned int)test_board_fdc_irq_source_is_asserted(session->board));
-        if (core_machine_memory_read(session->core_machine, 0x0410u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0410u,
                 &bda_equipment, sizeof(bda_equipment)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x0415u,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0415u,
                 &bda_post_status, sizeof(bda_post_status)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x041au,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x041au,
                 &bda_keyboard_head, sizeof(bda_keyboard_head)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x041cu,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x041cu,
                 &bda_keyboard_tail, sizeof(bda_keyboard_tail)) == LIB_STATUS_OK) {
-        (void)core_machine_memory_read(session->core_machine, 0x0012u,
+        (void)x86_core_machine_memory_read(session->x86_core_machine, 0x0012u,
             &low_memory_12, sizeof(low_memory_12));
         printf("BOOT-PROBE=bda-equipment=%04X-post-status=%02X-low12=%02X-kbd-head=%04X-kbd-tail=%04X\n",
             (unsigned int)bda_equipment, (unsigned int)bda_post_status,
             (unsigned int)low_memory_12,
             (unsigned int)bda_keyboard_head, (unsigned int)bda_keyboard_tail);
-        (void)core_machine_memory_read(session->core_machine, 0x0441u,
+        (void)x86_core_machine_memory_read(session->x86_core_machine, 0x0441u,
             &bda_diskette_status, sizeof(bda_diskette_status));
-        (void)core_machine_memory_read(session->core_machine, 0x043eu,
+        (void)x86_core_machine_memory_read(session->x86_core_machine, 0x043eu,
             &bda_motor_wait, sizeof(bda_motor_wait));
-        (void)core_machine_memory_read(session->core_machine, 0x043fu,
+        (void)x86_core_machine_memory_read(session->x86_core_machine, 0x043fu,
             &bda_motor_status, sizeof(bda_motor_status));
         printf("BOOT-PROBE=bda-diskette-status=%02X-motor-wait=%02X-motor-status=%02X\n",
             (unsigned int)bda_diskette_status, (unsigned int)bda_motor_wait,
             (unsigned int)bda_motor_status);
-        if (core_machine_memory_read(session->core_machine, 0x0480u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0480u,
                 bda_wait_state, sizeof(bda_wait_state)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=bda-80=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,"
                 "%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
@@ -3241,30 +3326,30 @@ done:
                 (unsigned int)bda_wait_state[12u], (unsigned int)bda_wait_state[13u],
                 (unsigned int)bda_wait_state[14u], (unsigned int)bda_wait_state[15u]);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0490u,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0490u,
                 bda_wait_state, 4u) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=bda-fdc-post=%02X,%02X,%02X,%02X\n",
                 (unsigned int)bda_wait_state[0u], (unsigned int)bda_wait_state[1u],
                 (unsigned int)bda_wait_state[2u], (unsigned int)bda_wait_state[3u]);
         }
-        if (core_machine_memory_read(session->core_machine, 0x004cu, &int13_offset,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x004cu, &int13_offset,
                 sizeof(int13_offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x004eu, &int13_segment,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x004eu, &int13_segment,
                 sizeof(int13_segment)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=int13-vector=%04X:%04X\n",
                 (unsigned int)int13_segment, (unsigned int)int13_offset);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0413u, &bda_memory_kib,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0413u, &bda_memory_kib,
                 sizeof(bda_memory_kib)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=bda-memory-kib=%u\n", (unsigned int)bda_memory_kib);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0078u, &int1e_offset,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0078u, &int1e_offset,
                 sizeof(int1e_offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x007au, &int1e_segment,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x007au, &int1e_segment,
                 sizeof(int1e_segment)) == LIB_STATUS_OK) {
             lib_u8 int1e_bytes[4] = {0u};
 
-            (void)core_machine_memory_read(session->core_machine,
+            (void)x86_core_machine_memory_read(session->x86_core_machine,
                 (lib_u32)int1e_segment * 16u + int1e_offset,
                 int1e_bytes, sizeof(int1e_bytes));
             printf("BOOT-PROBE=int1e-vector=%04X:%04X-bytes=%02X,%02X,%02X,%02X\n",
@@ -3272,28 +3357,28 @@ done:
                 (unsigned int)int1e_bytes[0u], (unsigned int)int1e_bytes[1u],
                 (unsigned int)int1e_bytes[2u], (unsigned int)int1e_bytes[3u]);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0038u, &irq6_offset,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0038u, &irq6_offset,
                 sizeof(irq6_offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x003au, &irq6_segment,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x003au, &irq6_segment,
                 sizeof(irq6_segment)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=irq6-vector=%04X:%04X\n",
                 (unsigned int)irq6_segment, (unsigned int)irq6_offset);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0054u, &int15_offset,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0054u, &int15_offset,
                 sizeof(int15_offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x0056u, &int15_segment,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0056u, &int15_segment,
                 sizeof(int15_segment)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=int15-vector=%04X:%04X\n",
                 (unsigned int)int15_segment, (unsigned int)int15_offset);
         }
-        if (core_machine_memory_read(session->core_machine, 0x0018u, &int6_offset,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x0018u, &int6_offset,
                 sizeof(int6_offset)) == LIB_STATUS_OK &&
-            core_machine_memory_read(session->core_machine, 0x001au, &int6_segment,
+            x86_core_machine_memory_read(session->x86_core_machine, 0x001au, &int6_segment,
                 sizeof(int6_segment)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=int6-vector=%04X:%04X\n",
                 (unsigned int)int6_segment, (unsigned int)int6_offset);
         }
-        if (core_machine_memory_read(session->core_machine, 0x003eu, int13_state,
+        if (x86_core_machine_memory_read(session->x86_core_machine, 0x003eu, int13_state,
                 sizeof(int13_state)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=int13-state=%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)int13_state[0u], (unsigned int)int13_state[1u],
@@ -3301,10 +3386,10 @@ done:
                 (unsigned int)int13_state[4u]);
         }
         }
-        if (test_core_read_physical(session->core_machine,
+        if (x86_core_machine_memory_read(session->x86_core_machine,
                 current_cpu.ss.base +
                     (current_cpu.esp & 0xffffu),
-                (lib_uptr)stack_words, sizeof(stack_words)) == LIB_STATUS_OK) {
+                stack_words, sizeof(stack_words)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=stack-ss=%04X-sp=%04X-words=%04X,%04X,%04X,%04X,%04X,%04X,%04X,%04X\n",
                 (unsigned int)current_cpu.ss.selector,
                 (unsigned int)(current_cpu.esp & 0xffffu),
@@ -3343,36 +3428,36 @@ done:
         if (post_memory_failure) printf("BOOT-PROBE=post-memory-failure\n");
         if (post_keyboard_failure) printf("BOOT-PROBE=post-keyboard-failure\n");
         if (post_floppy_failure) printf("BOOT-PROBE=post-floppy-failure\n");
-        if (vm_byob_text_memory_has(session->core_machine, "101"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "101"))
             printf("BOOT-PROBE=text-system-board-error\n");
-        if (vm_byob_text_memory_has(session->core_machine, "201"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "201"))
             printf("BOOT-PROBE=text-memory-error\n");
-        if (vm_byob_text_memory_has(session->core_machine, "301"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "301"))
             printf("BOOT-PROBE=text-keyboard-error\n");
-        if (vm_byob_text_memory_has(session->core_machine, "601"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "601"))
             printf("BOOT-PROBE=text-diskette-error\n");
-        vm_byob_print_text_rows(session->core_machine);
-        if (vm_byob_text_memory_has(session->core_machine, "RESUME"))
+        vm_byob_print_text_rows(session->x86_core_machine);
+        if (vm_byob_text_memory_has(session->x86_core_machine, "RESUME"))
             printf("BOOT-PROBE=text-resume-required\n");
-        if (vm_byob_text_memory_has(session->core_machine, "MS-DOS"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "MS-DOS"))
             printf("BOOT-PROBE=text-msdos\n");
-        if (vm_byob_text_memory_has(session->core_machine, "Starting MS-DOS"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "Starting MS-DOS"))
             printf("BOOT-PROBE=text-starting-msdos\n");
-        if (vm_byob_text_memory_has(session->core_machine, "Non-System disk"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "Non-System disk"))
             printf("BOOT-PROBE=text-non-system-disk\n");
-        if (vm_byob_text_memory_has(session->core_machine, "Replace and press"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "Replace and press"))
             printf("BOOT-PROBE=text-replace-media\n");
-        if (vm_byob_text_memory_has(session->core_machine, "Current date"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "Current date"))
             printf("BOOT-PROBE=text-date-input\n");
-        if (vm_byob_text_memory_has(session->core_machine, "A:\\>"))
+        if (vm_byob_text_memory_has(session->x86_core_machine, "A:\\>"))
             printf("BOOT-PROBE=text-dos-prompt\n");
-        if (vm_byob_memory_has(session->core_machine, 0x0500u, 11u, "IO      SYS"))
+        if (vm_byob_memory_has(session->x86_core_machine, 0x0500u, 11u, "IO      SYS"))
             printf("BOOT-PROBE=root-first-is-io-sys\n");
-        if (vm_byob_memory_has(session->core_machine, 0x0520u, 11u, "MSDOS   SYS"))
+        if (vm_byob_memory_has(session->x86_core_machine, 0x0520u, 11u, "MSDOS   SYS"))
             printf("BOOT-PROBE=root-second-is-msdos-sys\n");
-        if (vm_byob_memory_equal(session->core_machine, 0x0500u, 0x7de6u, 11u))
+        if (vm_byob_memory_equal(session->x86_core_machine, 0x0500u, 0x7de6u, 11u))
             printf("BOOT-PROBE=root-first-name-equals-loader\n");
-        if (vm_byob_memory_equal(session->core_machine, 0x0520u, 0x7df1u, 11u))
+        if (vm_byob_memory_equal(session->x86_core_machine, 0x0520u, 0x7df1u, 11u))
             printf("BOOT-PROBE=root-second-name-equals-loader\n");
         if (trace.boot_loader_jz_observed) {
             printf("BOOT-PROBE=boot-loader-jz-outcome=%u\n",
@@ -3422,17 +3507,17 @@ done:
         }
         printf("BOOT-PROBE=last-retired-pc=%05X\n",
             (unsigned int)trace.last_linear_pc);
-        if (core_machine_bus_read(session->core_machine, 0x0061u, &port_61) ==
+        if (x86_core_machine_bus_read(session->x86_core_machine, 0x0061u, &port_61) ==
                 LIB_STATUS_OK &&
-            core_machine_bus_read(session->core_machine, 0x0087u, &port_87) ==
+            x86_core_machine_bus_read(session->x86_core_machine, 0x0087u, &port_87) ==
                 LIB_STATUS_OK) {
             printf("BOOT-PROBE=post-port-61=%02X-87=%02X\n",
                 (unsigned int)port_61, (unsigned int)port_87);
         }
     }
 cleanup:
-    if (session != LIB_NULL && session->core_machine != LIB_NULL) {
-        (void)core_machine_set_trace_provider(session->core_machine, LIB_NULL);
+    if (session != LIB_NULL && session->x86_core_machine != LIB_NULL) {
+        (void)x86_core_machine_set_trace_provider(session->x86_core_machine, LIB_NULL);
     }
     integration_ini_session_close(&ini_session);
     return exit_code;

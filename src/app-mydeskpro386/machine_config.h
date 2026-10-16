@@ -2,7 +2,7 @@
 #define MYDESKPRO386_MACHINE_CONFIG_H
 #include "lib/types/types_interface.h"
 
-#include "core/x86/firmware_interface.h"
+#include "x86-core/machine/firmware_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "app-mydeskpro386/firmware_layout.h"
 #include "core/board-base/profile_contract_interface.h"
@@ -38,5 +38,5 @@ lib_status mydeskpro386_external_rom_create(
     mydeskpro386_external_rom *out_rom);
 void mydeskpro386_core_config_initialize(core_machine_config *out_config);
 lib_status mydeskpro386_values_create(vm_profile_contract_values *out_values);
-const core_machine_firmware_provider *mydeskpro386_firmware_provider(void);
+const x86_core_machine_firmware_provider *mydeskpro386_firmware_provider(void);
 #endif

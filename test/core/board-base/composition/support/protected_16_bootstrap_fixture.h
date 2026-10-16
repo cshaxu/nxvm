@@ -3,7 +3,7 @@
 
 #include "lib/types/types_interface.h"
 #include "x86-core/cpu/cpu_interface.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
 #define TEST_PROTECTED_16_GDT_POINTER 0x0100u
@@ -31,7 +31,7 @@ enum {
 #endif
 
 typedef struct test_protected_16_machine {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
 } test_protected_16_machine;
 
@@ -39,7 +39,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_write(test_protected_1
     lib_u32 address, const void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
-        core_machine_memory_write(state->machine, address, data, bytes) ==
+        x86_core_machine_memory_write(state->machine, address, data, bytes) ==
             LIB_STATUS_OK;
 }
 
@@ -47,7 +47,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_read(const test_protec
     lib_u32 address, void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
-        core_machine_memory_read(state->machine, address, data, bytes) ==
+        x86_core_machine_memory_read(state->machine, address, data, bytes) ==
             LIB_STATUS_OK;
 }
 
@@ -55,7 +55,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_snapshot(const test_pr
     x86_core_cpu_debug_cpu_snapshot *out_snapshot)
 {
     return state != LIB_NULL && state->machine != LIB_NULL && out_snapshot != LIB_NULL &&
-        core_machine_debug_capture_cpu_snapshot(state->machine,
+        x86_core_machine_debug_capture_cpu_snapshot(state->machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, out_snapshot) == LIB_STATUS_OK;
 }
 
@@ -110,7 +110,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
         .refresh_status_toggle_ticks = 0u
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u8 gdt[sizeof(source_gdt)];
 
@@ -131,8 +131,8 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         state->machine == LIB_NULL ||
         (planar_parity && core_machine_configure_planar_parity(state->board,
             &parity) != LIB_STATUS_OK) ||
-        core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
-        core_machine_reset(state->machine) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(state->machine) != LIB_STATUS_OK ||
         !test_protected_16_write(state, TEST_PROTECTED_16_RESET_PHYSICAL,
             reset_jump, sizeof(reset_jump)) ||
         !test_protected_16_write(state, TEST_PROTECTED_16_GDT_POINTER,
@@ -141,15 +141,15 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
             idt_pointer, sizeof(idt_pointer)) ||
         !test_protected_16_write(state, TEST_PROTECTED_16_GDT_BASE, gdt,
             sizeof(gdt)) || !test_protected_16_write(state, 0u, bootstrap,
-            sizeof(bootstrap)) || core_machine_run(state->machine,
-            (core_machine_run_budget){11u,0u}, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET ||
+            sizeof(bootstrap)) || x86_core_machine_run(state->machine,
+            (x86_core_machine_run_budget){11u,0u}, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         !test_protected_16_snapshot(state, &snapshot) ||
         (snapshot.cr0 & VCPU_CR0_PE) == 0u || snapshot.cs.selector != 0x0008u ||
         snapshot.cs.base != TEST_PROTECTED_16_CODE_BASE ||
         snapshot.ss.selector != 0x0010u || snapshot.esp != TEST_PROTECTED_16_STACK_TOP ||
         snapshot.eip != 0u) {
-        core_machine_destroy(state->machine);
+        x86_core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
     }
@@ -184,7 +184,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_enter_user_with_tss(
         0xb8u,0u,0x01u,0x50u,0xcfu
     };
     static const lib_u8 user_loop[] = {0xebu,0xfeu};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u8 tss_descriptor[] = {
         0x2bu,0u,0u,0x05u,0u,0x81u,0u,0u
@@ -204,9 +204,9 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_enter_user_with_tss(
         test_protected_16_write(state, TEST_PROTECTED_16_CODE_BASE,
             kernel_to_user, sizeof(kernel_to_user)) &&
         test_protected_16_write(state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
-            user_loop, sizeof(user_loop)) && core_machine_run(state->machine,
-            (core_machine_run_budget){13u,0u}, &result) == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET &&
+            user_loop, sizeof(user_loop)) && x86_core_machine_run(state->machine,
+            (x86_core_machine_run_budget){13u,0u}, &result) == LIB_STATUS_OK &&
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
         test_protected_16_snapshot(state, &snapshot) &&
         snapshot.cs.selector == 0x001bu && snapshot.ss.selector == 0x0023u &&
         snapshot.cs.dpl == 3u && snapshot.ss.dpl == 3u &&
@@ -232,7 +232,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_32_enter_user(
     static const lib_u8 tss_descriptor[] = {
         0x67u,0u,0u,0x05u,0u,0x89u,0u,0u
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
 
     return state != LIB_NULL && state->machine != LIB_NULL &&
@@ -243,9 +243,9 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_32_enter_user(
             TEST_PROTECTED_16_CODE_BASE, kernel_to_user,
             sizeof(kernel_to_user)) && test_protected_16_write(state,
             TEST_PROTECTED_16_CODE_BASE + 0x0100u, user_loop,
-            sizeof(user_loop)) && core_machine_run(state->machine,
-            (core_machine_run_budget){8u,0u}, &result) == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET &&
+            sizeof(user_loop)) && x86_core_machine_run(state->machine,
+            (x86_core_machine_run_budget){8u,0u}, &result) == LIB_STATUS_OK &&
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
         test_protected_16_snapshot(state, &snapshot) &&
         snapshot.cs.selector == 0x001bu && snapshot.ss.selector == 0x0023u &&
         snapshot.cs.dpl == 3u && snapshot.ss.dpl == 3u &&
@@ -260,7 +260,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_32_enter_user(
 static void TEST_PROTECTED_16_UNUSED test_protected_16_destroy(test_protected_16_machine *state)
 {
     if (state == LIB_NULL) return;
-    core_machine_destroy(state->machine);
+    x86_core_machine_destroy(state->machine);
     state->machine = LIB_NULL;
 }
 

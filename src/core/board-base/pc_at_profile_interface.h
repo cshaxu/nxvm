@@ -56,9 +56,9 @@ typedef struct vm_profile_default_pc_at_cpu_contract {
     x86_fpu_profile fpu_profile;
     lib_u32 ticks_per_instruction;
     x86_core_cpu_instruction_timing instruction_timing;
-    core_machine_transaction_contract transaction_contract;
+    x86_core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
-    core_machine_time_axis time_axis;
+    x86_core_machine_time_axis time_axis;
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_pic_irq_timing pic_irq_timing;
     lib_u32 kbc_typematic_initial_ticks;
@@ -74,9 +74,9 @@ typedef struct vm_profile_default_pc_at_descriptor {
     x86_fpu_profile fpu_profile;
     lib_u32 ticks_per_instruction;
     x86_core_cpu_instruction_timing instruction_timing;
-    core_machine_transaction_contract transaction_contract;
+    x86_core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
-    core_machine_time_axis time_axis;
+    x86_core_machine_time_axis time_axis;
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_pic_irq_timing pic_irq_timing;
     lib_u32 kbc_typematic_initial_ticks;

@@ -25,7 +25,7 @@ lib_i32 main(void)
     machine = session;
     if (machine == LIB_NULL ||
         machine->media_registry == LIB_NULL ||
-        !test_board_fdc_binding_matches(machine->board, machine->core_machine,
+        !test_board_fdc_binding_matches(machine->board, machine->x86_core_machine,
             VM_MACHINE_MEDIA_FDD_ID, 2u)) {
         vm_machine_destroy(session);
         return 1;

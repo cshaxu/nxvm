@@ -48,46 +48,46 @@ static lib_i32 floppy_channel_matrix(void)
     return 0;
 }
 
-static lib_bool model40_fdc_command(core_machine_board_state *board, core_machine *machine,
+static lib_bool model40_fdc_command(core_machine_board_state *board, x86_core_machine *machine,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
     for (index = 0u; index < count; ++index)
-        if (core_machine_bus_write(machine, 0x03f5u, bytes[index]) != LIB_STATUS_OK)
+        if (x86_core_machine_bus_write(machine, 0x03f5u, bytes[index]) != LIB_STATUS_OK)
             return LIB_FALSE;
     return test_board_fdc_advance_ticks(board, 1u) &&
         test_board_fdc_finish_command_wait(board);
 }
 
-static lib_i32 model40_fdc_result(core_machine_board_state *board, core_machine *machine,
+static lib_i32 model40_fdc_result(core_machine_board_state *board, x86_core_machine *machine,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
     lib_u32 value;
     if (!test_board_fdc_advance_ticks(board, 1u)) return LIB_FALSE;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK || (value &
+        if (x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK || (value &
             (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO)) != (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO))
             return LIB_FALSE;
-        if (core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK) return LIB_FALSE;
+        if (x86_core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK) return LIB_FALSE;
         result[index] = (lib_u8)value;
     }
-    return core_machine_bus_read(machine, 0x03f4u, &value) == LIB_STATUS_OK &&
+    return x86_core_machine_bus_read(machine, 0x03f4u, &value) == LIB_STATUS_OK &&
         (value & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
-static lib_bool model40_fdc_write_dma2(core_machine *machine, lib_u16 address,
+static lib_bool model40_fdc_write_dma2(x86_core_machine *machine, lib_u16 address,
     lib_u16 count)
 {
-    return core_machine_bus_write(machine, 0x000cu, 0u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x0004u, address & 0xffu) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x0004u, address >> 8u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x0005u, count & 0xffu) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x0005u, count >> 8u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x0081u, 0u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x000bu, 0x46u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x000au, 0x02u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x00d4u, 0x00u) == LIB_STATUS_OK;
+    return x86_core_machine_bus_write(machine, 0x000cu, 0u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x0004u, address & 0xffu) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x0004u, address >> 8u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x0005u, count & 0xffu) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x0005u, count >> 8u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x0081u, 0u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x000bu, 0x46u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x000au, 0x02u) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, 0x00d4u, 0x00u) == LIB_STATUS_OK;
 }
 lib_i32 main(void)
 {
@@ -101,7 +101,7 @@ lib_i32 main(void)
     static const lib_u8 read_oob[] = {0xe6u, 0u, 0u, 0u, 16u, 2u, 16u, 0x1bu, 0xffu};
     vm_machine *session = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_u8 result[7] = {0};
     lib_u32 index;
     lib_u32 value;
@@ -121,10 +121,10 @@ lib_i32 main(void)
             sizeof(image)) != LIB_FALSE) goto done;
     {
         board = session->board;
-        machine = session->core_machine;
-        if (core_machine_bus_write(machine, 0x0064u, 0xc0u) != LIB_STATUS_OK) goto done;
+        machine = session->x86_core_machine;
+        if (x86_core_machine_bus_write(machine, 0x0064u, 0xc0u) != LIB_STATUS_OK) goto done;
         test_board_kbc_advance(board, 1u);
-        if (core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK ||
+        if (x86_core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK ||
             value != 0xb4u) goto done;
         const core_machine_fdc_config config = test_board_fdc_connection_config(board);
         const core_machine_fdc_drive_bindings drives = test_board_fdc_drive_bindings(board);
@@ -140,11 +140,11 @@ lib_i32 main(void)
             {0x19u, 0u}, {0x17u, 0u}, {0x18u, 0x04u}
         };
         for (index = 0u; index < sizeof(cmos) / sizeof(cmos[0]); ++index) {
-            if (core_machine_bus_write(machine, 0x0070u, cmos[index].index) != LIB_STATUS_OK ||
-                core_machine_bus_read(machine, 0x0071u, &value) != LIB_STATUS_OK ||
+            if (x86_core_machine_bus_write(machine, 0x0070u, cmos[index].index) != LIB_STATUS_OK ||
+                x86_core_machine_bus_read(machine, 0x0071u, &value) != LIB_STATUS_OK ||
                 value != cmos[index].value) goto done;
         }
-        if (core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
+        if (x86_core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
             !test_board_fdc_advance_due(board) ||
             !test_board_fdc_irq_source_is_asserted(board)) goto done;
         for (index = 0u; index < 4u; ++index) {
@@ -154,16 +154,16 @@ lib_i32 main(void)
         }
         if (!model40_fdc_command(board, machine, (const lib_u8[]){0x04u, 0x00u}, 2u) ||
             !model40_fdc_result(board, machine, result, 1u) || result[0] != 0x38u ||
-            core_machine_bus_write(machine, 0x03f7u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x03f7u, 0u) != LIB_STATUS_OK ||
             !model40_fdc_command(board, machine, specify, sizeof(specify)) ||
             !model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
             vm_test_model40_observation(session).fdc_terminal_valid ||
             !test_board_fdc_irq_source_is_asserted(board) ||
-            core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK ||
             value != 0xa5u || test_board_fdc_irq_source_is_asserted(board)) goto done;
         for (index = 1u; index < 512u; ++index) {
             if (!test_board_fdc_advance_ticks(board, byte_ticks) ||
-                core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK) goto done;
+                x86_core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK) goto done;
         }
         if (!model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
@@ -179,9 +179,9 @@ lib_i32 main(void)
             test_board_dma_transfers(board, machine, 1u, 2u);
             if (index + 1u < 512u && !test_board_fdc_advance_ticks(board, byte_ticks)) goto done;
         }
-        if (core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
+        if (x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
             value != TEST_FDC_MSR_CB ||
-            core_machine_memory_read(session->core_machine, 0x0600u, &result[0],
+            x86_core_machine_memory_read(session->x86_core_machine, 0x0600u, &result[0],
                 sizeof(result[0])) != LIB_STATUS_OK || result[0] != 0xa5u ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
@@ -199,12 +199,12 @@ lib_i32 main(void)
             vm_machine_fdd_remove_for(session->floppy[0u]) != LIB_FALSE) goto done;
         test_board_fdc_refresh(board);
         if (!model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
-            core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
             value != TEST_FDC_MSR_CB ||
-            core_machine_bus_write(machine, 0x03f2u, 0u) != LIB_STATUS_OK ||
-            core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x03f2u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
             value != TEST_FDC_MSR_RQM || test_board_fdc_irq_source_is_asserted(board) ||
-            core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
             !test_board_fdc_advance_due(board) ||
             !test_board_fdc_irq_source_is_asserted(board)) goto done;
         for (index = 0u; index < 4u; ++index) {
@@ -216,7 +216,7 @@ lib_i32 main(void)
             !model40_fdc_result(board, machine, result, 1u) || result[0] != 0x80u ||
             !model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
             !test_board_fdc_advance_ticks(board, 1u) ||
-            core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK || value !=
+            x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK || value !=
             (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_CB) ||
             !test_board_fdc_irq_source_is_asserted(board) ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
@@ -243,15 +243,15 @@ lib_i32 main(void)
         for (lib_u8 rate = 1u; rate <= 3u; ++rate) {
             for (lib_size command = 0u; command < sizeof(commands) / sizeof(commands[0]); ++command) {
                 test_board_fdc_reset(board);
-                if (core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
-                    core_machine_bus_write(machine, 0x03f7u, rate) != LIB_STATUS_OK ||
+                if (x86_core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
+                    x86_core_machine_bus_write(machine, 0x03f7u, rate) != LIB_STATUS_OK ||
                     !model40_fdc_command(board, machine, specify_dma, sizeof(specify_dma)) ||
                     !model40_fdc_command(board, machine, commands[command].bytes, commands[command].count) ||
                     !model40_fdc_result(board, machine, result, sizeof(result)) ||
                     result[0] != 0x40u || result[1] != 0x04u || result[2] != 0u) goto done;
             }
         }
-        if (core_machine_bus_write(machine, 0x03f7u, 0u) != LIB_STATUS_OK ||
+        if (x86_core_machine_bus_write(machine, 0x03f7u, 0u) != LIB_STATUS_OK ||
             !model40_fdc_command(board, machine, (const lib_u8[]){0x4au, 0u}, 2u) ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != 0u || result[1] != 0u || result[2] != 0u) goto done;

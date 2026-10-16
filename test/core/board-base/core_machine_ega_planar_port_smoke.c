@@ -4,28 +4,28 @@
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
 
-static lib_i32 core_machine_ega_planar_write(core_machine *machine, lib_u32 physical,
+static lib_i32 core_machine_ega_planar_write(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
-    return core_machine_memory_write(machine, physical,
+    return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_ega_planar_read(core_machine *machine, lib_u32 physical,
+static lib_i32 core_machine_ega_planar_read(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
-    return core_machine_memory_read(machine, physical,
+    return x86_core_machine_memory_read(machine, physical,
         value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static void core_machine_ega_graphics_write(core_machine *machine, lib_u8 index,
+static void core_machine_ega_graphics_write(x86_core_machine *machine, lib_u8 index,
     lib_u8 value)
 {
     test_video_port_write(machine, 0x03ceu, index);
     test_video_port_write(machine, 0x03cfu, value);
 }
 
-static void core_machine_ega_planar_select_mode_d(core_machine *machine)
+static void core_machine_ega_planar_select_mode_d(x86_core_machine *machine)
 {
     (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
@@ -58,7 +58,7 @@ lib_i32 main(void)
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x00u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
-    core_machine *machine;
+    x86_core_machine *machine;
     t_vadp vadp;
     lib_u8 value = 0u;
     lib_u8 status_first = 0u;
@@ -68,7 +68,7 @@ lib_i32 main(void)
     lib_u8 copied_pixel_zero;
     lib_u8 copied_pixel_two;
     lib_u32 copied_palette_fifteen;
-    core_machine_memory_route route;
+    x86_core_machine_memory_route route;
     x86_video_bus_observation bus;
     lib_i32 failed = 0;
     core_machine_display_config config = {
@@ -244,9 +244,9 @@ lib_i32 main(void)
     failed |= !core_machine_ega_planar_read(machine, 0x000a0005u, &value) ||
         value != 0u;
     core_machine_ega_graphics_write(machine, 5u, 0x04u);
-    failed |= core_machine_memory_query(machine, 0x000a0005u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
-        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+    failed |= x86_core_machine_memory_query(machine, 0x000a0005u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
@@ -258,9 +258,9 @@ lib_i32 main(void)
         core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.sequencer_reset != 0x02u ||
         !core_machine_ega_planar_write(machine, 0x000a0000u, 0x00u) ||
-        core_machine_memory_query(machine, 0x000a0000u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
-        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+        x86_core_machine_memory_query(machine, 0x000a0000u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
@@ -269,9 +269,9 @@ lib_i32 main(void)
         core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.sequencer_reset != 0x01u ||
         !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
-        core_machine_memory_query(machine, 0x000a0000u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
-        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+        x86_core_machine_memory_query(machine, 0x000a0000u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
@@ -280,9 +280,9 @@ lib_i32 main(void)
         core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.sequencer_reset != 0x03u ||
         !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
-        value != 0xa5u || core_machine_memory_query(machine,
-        0x000a0000u, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
-        LIB_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+        value != 0xa5u || x86_core_machine_memory_query(machine,
+        0x000a0000u, 1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
+        LIB_STATUS_OK || route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
 
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0x02u);
@@ -404,7 +404,7 @@ lib_i32 main(void)
     failed |= (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 0x30u) != 0u;
 
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "EGA-PLANAR:PORT:FAIL\n");
         return 1;

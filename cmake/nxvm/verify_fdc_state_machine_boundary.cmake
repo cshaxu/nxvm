@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc.h" chip_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc8272_interface.h" chip_interface)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c" board_deadline_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_fdc_smoke.c"
     core_fixture)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd_interface.h" fdd_header)
@@ -53,13 +53,13 @@ foreach(required IN ITEMS "x86_fdc_create" "x86_fdc_destroy" "core_machine_media
 endforeach()
 
 foreach(forbidden IN ITEMS "t_port" "connect.port" "core_machine_port_add_"
-    "core_machine_port_registration_" "core_machine_port_rollback_registration")
+    "core_machine_port_registration_" "x86_core_machine_port_rollback_registration")
     string(FIND "${fdc_source}${fdc_header}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "FDC retains a raw port-table path: ${forbidden}")
     endif()
 endforeach()
-string(FIND "${fdc_source}" "core_machine_install_port_routes" position)
+string(FIND "${fdc_source}" "x86_core_machine_install_port_routes" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "FDC must publish one Core-owned port route batch")
 endif()
@@ -70,7 +70,7 @@ if(fdc_start LESS 0 OR fdc_end LESS fdc_start)
 endif()
 math(EXPR fdc_length "${fdc_end} - ${fdc_start}")
 string(SUBSTRING "${board_source}" ${fdc_start} ${fdc_length} fdc_board)
-if(fdc_board MATCHES "executor_port|port_checkpoint|core_machine_port_registration_|core_machine_port_rollback_registration")
+if(fdc_board MATCHES "executor_port|port_checkpoint|core_machine_port_registration_|x86_core_machine_port_rollback_registration")
     message(FATAL_ERROR "FDC board construction bypasses the Core route batch")
 endif()
 
@@ -81,7 +81,7 @@ foreach(required IN ITEMS "x86_fdc_PHASE_COMMAND" "x86_fdc_PHASE_RESULT"
         message(FATAL_ERROR "Shared FDC mechanism missing: ${required}")
     endif()
 endforeach()
-foreach(forbidden IN ITEMS "app-nxvm" "core/x86/" "core_machine_" "t_port" "media_registry"
+foreach(forbidden IN ITEMS "app-nxvm" "x86-core/machine/" "core_machine_" "t_port" "media_registry"
     "VFDC_DOR" "VFDC_CCR" "drive_cylinder")
     string(FIND "${chip_source}${chip_header}${chip_interface}" "${forbidden}" position)
     if(NOT position EQUAL -1)
@@ -99,8 +99,8 @@ file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/x86/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.h"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
     "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"

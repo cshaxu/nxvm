@@ -1,6 +1,5 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/device_support_interface.h"
 
 #include "core/board-base/machine_board_state.h"
 
@@ -14,7 +13,7 @@ static lib_status core_machine_board_memory_admission(void *owner,
 lib_status core_machine_board_bind_profile(core_machine_board_state *board,
     const core_machine_board_profile_binding *binding)
 {
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->profile_binding.context != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     if (binding == LIB_NULL || binding->context == LIB_NULL ||
         binding->reset == LIB_NULL || binding->refresh_nmi == LIB_NULL ||
@@ -61,22 +60,22 @@ static void core_machine_xt_keyboard_released(void *owner)
 
 static lib_u8 core_machine_xt_ppi_request_nmi(void *owner)
 {
-    core_machine *machine = (core_machine *)owner;
+    x86_core_machine *machine = (x86_core_machine *)owner;
 
-    return core_machine_signal_nmi(machine);
+    return x86_core_machine_signal_nmi(machine);
 }
 
 static void core_machine_kbc_request_reset(void *owner)
 {
-    core_machine *machine = owner;
+    x86_core_machine *machine = owner;
 
-    core_machine_signal_processor_reset(machine);
+    x86_core_machine_signal_processor_reset(machine);
 }
 
 static void core_machine_kbc_signal_a20(void *owner, lib_bool enabled)
 {
     const core_machine_board_state *board = owner;
-    (void)core_machine_signal_address_clear_mask(board->core,
+    (void)x86_core_machine_signal_address_clear_mask(board->core,
         enabled ? 0u : CORE_MACHINE_BOARD_A20_ADDRESS_BIT);
 }
 
@@ -124,11 +123,11 @@ lib_i32 core_machine_board_config_is_valid(
 }
 
 lib_status core_machine_board_prepare_executor(
-    const core_machine_config *config, core_machine_executor_config *out_executor)
+    const core_machine_config *config, x86_core_machine_executor_config *out_executor)
 {
     if (config == LIB_NULL || out_executor == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    const core_machine_executor_config executor = {
+    const x86_core_machine_executor_config executor = {
         .memory_bytes = config->memory_bytes == 0u ?
             CORE_MACHINE_BOARD_DEFAULT_MEMORY_BYTES : config->memory_bytes,
         .cpu_profile = config->cpu_profile == X86_CORE_CPU_PROFILE_DEFAULT ?
@@ -153,7 +152,7 @@ lib_status core_machine_board_prepare_executor(
         .retirement_time_contract = config->retirement_time_contract,
         .retirement_qualification = config->retirement_qualification
     };
-    if (!core_machine_neutral_config_is_valid(&executor) ||
+    if (!x86_core_machine_neutral_config_is_valid(&executor) ||
         !core_machine_board_config_is_valid(config))
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_executor = executor;
@@ -161,11 +160,11 @@ lib_status core_machine_board_prepare_executor(
 }
 
 lib_status core_machine_create(const core_machine_config *config,
-    core_machine **out_machine, core_machine_board_state **out_board)
+    x86_core_machine **out_machine, core_machine_board_state **out_board)
 {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
-    core_machine_executor_config executor;
+    x86_core_machine_executor_config executor;
     lib_status status;
 
     if (out_board != LIB_NULL) *out_board = LIB_NULL;
@@ -173,7 +172,7 @@ lib_status core_machine_create(const core_machine_config *config,
     *out_machine = LIB_NULL;
     status = core_machine_board_prepare_executor(config, &executor);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_neutral_create(&executor, &machine);
+    status = x86_core_machine_neutral_create(&executor, &machine);
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_board_create(machine, config, &board);
     if (status != LIB_STATUS_OK) return status;
@@ -182,7 +181,7 @@ lib_status core_machine_create(const core_machine_config *config,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_board_create(core_machine *machine,
+lib_status core_machine_board_create(x86_core_machine *machine,
     const core_machine_config *config, core_machine_board_state **out_board)
 {
     core_machine_board_state *board;
@@ -195,11 +194,11 @@ lib_status core_machine_board_create(core_machine *machine,
     board = (core_machine_board_state *)lib_allocate_zero(1u,
         sizeof(*board));
     if (board == LIB_NULL) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return LIB_STATUS_NO_MEMORY;
     }
     board->core = machine;
-    const core_machine_attachment attachment = {
+    const x86_core_machine_attachment attachment = {
         .memory_admission = core_machine_board_memory_admission,
         .deadline = core_machine_board_deadline_observe,
         .refresh_request = core_machine_board_refresh_request,
@@ -221,21 +220,21 @@ lib_status core_machine_board_create(core_machine *machine,
         .context = board
     };
 
-    status = core_machine_bind_attachment(machine, &attachment);
+    status = x86_core_machine_bind_attachment(machine, &attachment);
     if (status != LIB_STATUS_OK) {
         core_machine_board_finalize_devices(board);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return status;
     }
     if (core_machine_board_initialize_clocks(board,
             &config->clock_plan) != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_fdc_create(&board->fdc);
     if (status == LIB_STATUS_OK) status = core_machine_hdc_create(&board->hdc);
     if (status != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return status;
     }
     board->dma_clock_explicit =
@@ -258,36 +257,36 @@ lib_status core_machine_board_create(core_machine *machine,
     board->kbc_input_port = config->kbc_input_port;
     /* Firmware-less fixtures may supply reset bytes from ordinary board RAM.
      * Firmware-backed machines install the reset-only ROM overlay later. */
-    if (core_machine_get_memory_bytes(machine, &installed_bytes) != LIB_STATUS_OK ||
-        core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
+    if (x86_core_machine_get_memory_bytes(machine, &installed_bytes) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK) {
+        x86_core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (installed_bytes >= 0x00100000u &&
         (cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
          cpu_profile == X86_CORE_CPU_PROFILE_80386)) {
-        const core_machine_memory_alias_config alias = {
+        const x86_core_machine_memory_alias_config alias = {
             cpu_profile == X86_CORE_CPU_PROFILE_80286 ? 0x00ff0000u : 0xffff0000u,
             0x000f0000u, 0x00010000u
         };
-        lib_status status = core_machine_install_memory_aliases(machine,
+        lib_status status = x86_core_machine_install_memory_aliases(machine,
             &alias, 1u, LIB_FALSE);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
     }
     {
         lib_status status = core_machine_board_register_a20_port(board);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
     }
     {
         lib_status status = core_machine_vadp_create(machine, &board->shared_vadp);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
     }
@@ -295,7 +294,7 @@ lib_status core_machine_board_create(core_machine *machine,
         lib_status status = core_machine_xt_ppi_keyboard_create(
             &config->xt_ppi_keyboard, machine, &board->xt_ppi_keyboard);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
         {
@@ -313,14 +312,14 @@ lib_status core_machine_board_create(core_machine *machine,
                 core_machine_xt_keyboard_deliver, board->xt_ppi_keyboard,
                 &board->xt_keyboard);
             if (status != LIB_STATUS_OK) {
-                core_machine_destroy(machine);
+                x86_core_machine_destroy(machine);
                 return status;
             }
         }
     } else {
         lib_status status = core_machine_kbc_create(machine, &board->shared_kbc);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
     }
@@ -332,7 +331,7 @@ lib_status core_machine_board_create(core_machine *machine,
                 &board->shared_pic_slave, machine, config->pic_topology);
         }
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
     }
@@ -357,7 +356,7 @@ lib_status core_machine_board_create(core_machine *machine,
             board->auxiliary_pit_configured = status == LIB_STATUS_OK;
         }
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
     }
@@ -368,7 +367,7 @@ lib_status core_machine_board_create(core_machine *machine,
         lib_status status = core_machine_pic_irq_source_bind(&board->keyboard_irq1_source,
             board->shared_pic_master, board->shared_pic_slave, config->xt_ppi_keyboard.irq);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
         core_machine_xt_ppi_keyboard_bind_irq(board->xt_ppi_keyboard,
@@ -390,7 +389,7 @@ lib_status core_machine_board_create(core_machine *machine,
             status = core_machine_pic_irq_source_bind(&board->keyboard_irq12_source,
                 board->shared_pic_master, board->shared_pic_slave, 12u);
         if (status != LIB_STATUS_OK) {
-            core_machine_destroy(machine);
+            x86_core_machine_destroy(machine);
             return status;
         }
         core_machine_kbc_bind_core_services(board->shared_kbc,
@@ -427,12 +426,12 @@ lib_bool core_machine_board_shutdown_resets(void *owner)
 lib_status core_machine_keyboard_receive_native_byte(core_machine_board_state *board,
     lib_u8 native_byte)
 {
-    core_machine_lifecycle lifecycle;
+    x86_core_machine_lifecycle lifecycle;
 
-    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
-        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
-        lifecycle == CORE_MACHINE_INITIALIZED ||
-        lifecycle == CORE_MACHINE_FAULTED) {
+    if (board == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(board->core) ||
+        x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle == X86_CORE_MACHINE_INITIALIZED ||
+        lifecycle == X86_CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (board->keyboard_topology ==
@@ -446,11 +445,11 @@ lib_status core_machine_keyboard_receive_native_byte(core_machine_board_state *b
 lib_status core_machine_keyboard_get_native_scan_set(const core_machine_board_state *board,
     lib_u8 *out_scan_set)
 {
-    core_machine_lifecycle lifecycle;
+    x86_core_machine_lifecycle lifecycle;
 
     if (board == LIB_NULL || out_scan_set == LIB_NULL ||
-        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
-        lifecycle == CORE_MACHINE_INITIALIZED) {
+        x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle == X86_CORE_MACHINE_INITIALIZED) {
         return LIB_STATUS_INVALID_STATE;
     }
     *out_scan_set = board->keyboard_topology ==
@@ -462,12 +461,12 @@ lib_status core_machine_keyboard_get_native_scan_set(const core_machine_board_st
 lib_status core_machine_keyboard_receive_native_bytes(core_machine_board_state *board,
     const lib_u8 *native_bytes, lib_size count)
 {
-    core_machine_lifecycle lifecycle;
+    x86_core_machine_lifecycle lifecycle;
 
-    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
-        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
-        lifecycle == CORE_MACHINE_INITIALIZED ||
-        lifecycle == CORE_MACHINE_FAULTED) {
+    if (board == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(board->core) ||
+        x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle == X86_CORE_MACHINE_INITIALIZED ||
+        lifecycle == X86_CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (board->keyboard_topology ==
@@ -481,7 +480,7 @@ lib_status core_machine_keyboard_receive_native_bytes(core_machine_board_state *
 lib_status core_machine_set_xt_ppi_fault_input(core_machine_board_state *board,
     core_machine_xt_ppi_fault_input input, lib_i32 asserted)
 {
-    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(board->core) ||
         board->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return LIB_STATUS_INVALID_STATE;
     }
@@ -492,13 +491,13 @@ lib_status core_machine_set_xt_ppi_fault_input(core_machine_board_state *board,
 lib_status core_machine_mouse_receive_relative(core_machine_board_state *board,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
 {
-    core_machine_lifecycle lifecycle;
+    x86_core_machine_lifecycle lifecycle;
 
-    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
-        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
-        (lifecycle != CORE_MACHINE_RUNNING &&
-        lifecycle != CORE_MACHINE_PAUSED &&
-        lifecycle != CORE_MACHINE_STOPPED)) {
+    if (board == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(board->core) ||
+        x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != X86_CORE_MACHINE_RUNNING &&
+        lifecycle != X86_CORE_MACHINE_PAUSED &&
+        lifecycle != X86_CORE_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (board->keyboard_topology ==
@@ -527,21 +526,21 @@ static lib_u32 core_machine_board_reset_rom_alias(
 static lib_status core_machine_board_register_reset_rom_alias(void *owner)
 {
     core_machine_board_state *board = owner;
-    core_machine *machine = board->core;
+    x86_core_machine *machine = board->core;
     x86_core_cpu_profile profile;
     lib_u32 reset_alias;
-    lib_status status = core_machine_get_cpu_profile(machine, &profile);
+    lib_status status = x86_core_machine_get_cpu_profile(machine, &profile);
 
     if (status != LIB_STATUS_OK) return status;
     reset_alias = core_machine_board_reset_rom_alias(profile);
     /* Keep the established source/target presence widths and explicit high
      * ROM precedence. PC address selection belongs only to this board. */
     if (reset_alias == 0u ||
-        !core_machine_immutable_rom_mapping_contains(machine, 0x000ffff0u, 15u) ||
-        core_machine_immutable_rom_mapping_contains(machine, reset_alias + 0xfff0u, 16u)) {
+        !x86_core_machine_immutable_rom_mapping_contains(machine, 0x000ffff0u, 15u) ||
+        x86_core_machine_immutable_rom_mapping_contains(machine, reset_alias + 0xfff0u, 16u)) {
         return LIB_STATUS_OK;
     }
-    return core_machine_register_immutable_rom_mapping_reset_window(machine,
+    return x86_core_machine_register_immutable_rom_mapping_reset_window(machine,
         0x000f0000u, reset_alias, 0x00010000u);
 }
 
@@ -570,7 +569,7 @@ lib_status core_machine_board_observe_a20(const core_machine_board_state *board,
 
     if (board == LIB_NULL || out_enabled == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_observe_address_clear_mask(board->core, &clear_mask);
+    status = x86_core_machine_observe_address_clear_mask(board->core, &clear_mask);
     if (status == LIB_STATUS_OK)
         *out_enabled = (clear_mask & CORE_MACHINE_BOARD_A20_ADDRESS_BIT) == 0u;
     return status;
@@ -596,19 +595,19 @@ static lib_status core_machine_board_write_a20(void *owner, lib_u16 port_id,
 {
     const core_machine_board_state *board = owner;
     (void)port_id;
-    return core_machine_signal_address_clear_mask(board->core,
+    return x86_core_machine_signal_address_clear_mask(board->core,
         (value & CORE_MACHINE_BOARD_A20_BIT) != 0u ?
             0u : CORE_MACHINE_BOARD_A20_ADDRESS_BIT);
 }
 
 lib_status core_machine_board_register_a20_port(core_machine_board_state *board)
 {
-    core_machine_port_route route;
+    x86_core_machine_port_route route;
 
     if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    route = (core_machine_port_route) {0x0092u, core_machine_board_read_a20,
+    route = (x86_core_machine_port_route) {0x0092u, core_machine_board_read_a20,
         core_machine_board_write_a20, board, LIB_FALSE, 0u};
-    return core_machine_install_port_routes(board->core, &route, 1u);
+    return x86_core_machine_install_port_routes(board->core, &route, 1u);
 }
 
 static lib_i32 core_machine_rtc_cmos_config_is_valid(
@@ -664,7 +663,7 @@ static lib_status core_machine_rtc_cmos_port_write(void *owner,
 
     if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == board->rtc_cmos_config.index_port) {
-        (void)core_machine_set_nmi_mask(board->core,
+        (void)x86_core_machine_set_nmi_mask(board->core,
             (value & board->rtc_cmos_config.nmi_mask_bit) != 0u ?
             LIB_TRUE : LIB_FALSE);
         board->rtc_selected_register = (lib_u8)(value & 0x3fu);
@@ -738,7 +737,7 @@ lib_status core_machine_board_construct_profile(core_machine_board_state *board,
     core_machine_board_profile_binding binding = {0};
     lib_status status;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->profile_binding.context != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     if (factory == LIB_NULL || board->planar_parity != LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -934,7 +933,7 @@ static void core_machine_refresh_pit_output(void *owner, lib_u8 asserted)
          * it; a falling OUT1 edge cannot withdraw the accepted request. */
         if (asserted) {
             board->refresh_hold_pending = LIB_TRUE;
-            core_machine_cpu_bus_refresh_pulse(board->core);
+            x86_core_machine_cpu_bus_refresh_pulse(board->core);
         }
         return;
     }
@@ -968,7 +967,7 @@ lib_status core_machine_configure_dma(core_machine_board_state *board,
 {
     lib_status status;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->dma_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
@@ -1020,11 +1019,11 @@ lib_status core_machine_configure_rtc_cmos(core_machine_board_state *board,
     const core_machine_rtc_cmos_config *config)
 {
     x86_rtc_config rtc_config;
-    core_machine_port_route routes[2];
+    x86_core_machine_port_route routes[2];
     lib_status status;
     lib_size index;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->rtc_cmos_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
@@ -1040,16 +1039,16 @@ lib_status core_machine_configure_rtc_cmos(core_machine_board_state *board,
     status = x86_rtc_create(&rtc_config, core_machine_rtc_irq_output,
         board->rtc_irq_source, &board->shared_rtc);
     if (status != LIB_STATUS_OK) return status;
-    routes[0] = (core_machine_port_route) {
+    routes[0] = (x86_core_machine_port_route) {
         .address = config->index_port,
         .write = core_machine_rtc_cmos_port_write, .owner = board
     };
-    routes[1] = (core_machine_port_route) {
+    routes[1] = (x86_core_machine_port_route) {
         .address = config->data_port,
         .read = core_machine_rtc_cmos_port_read,
         .write = core_machine_rtc_cmos_port_write, .owner = board
     };
-    status = core_machine_install_port_routes(board->core, routes, 2u);
+    status = x86_core_machine_install_port_routes(board->core, routes, 2u);
     if (status != LIB_STATUS_OK) {
         x86_rtc_destroy(board->shared_rtc);
         board->shared_rtc = LIB_NULL;
@@ -1071,9 +1070,9 @@ lib_status core_machine_configure_rtc_cmos(core_machine_board_state *board,
                 x86_rtc_read_register(board->shared_rtc, (lib_u8)index));
         }
         x86_rtc_write_register(board->shared_rtc, 0x2eu,
-            CORE_MACHINE_MASK_U8(checksum >> 8u));
+            ((lib_u8)(checksum >> 8u)));
         x86_rtc_write_register(board->shared_rtc, 0x2fu,
-            CORE_MACHINE_MASK_U8(checksum));
+            ((lib_u8)(checksum)));
     }
     board->rtc_cmos_config = *config;
     board->rtc_cmos_configured = LIB_TRUE;
@@ -1085,7 +1084,7 @@ lib_status core_machine_configure_planar_parity(core_machine_board_state *board,
 {
     lib_status status;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) || board->planar_parity != LIB_NULL)
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) || board->planar_parity != LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
     if (board->profile_binding.context != LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = core_machine_at_parity_create(board->core, board->shared_pit, config,
@@ -1134,15 +1133,15 @@ static lib_status core_machine_absent_memory_write(void *owner,
 
 static lib_status core_machine_absent_memory_query(void *owner,
     lib_u32 physical, lib_uptr bytes,
-    core_machine_memory_access access)
+    x86_core_machine_memory_access access)
 {
     const core_machine_absent_memory *absent =
         (const core_machine_absent_memory *)owner;
 
     (void)physical;
     if (absent == LIB_NULL || !absent->configured || bytes == 0u ||
-        (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
-        access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) return LIB_STATUS_INTERNAL_ERROR;
+        (access != X86_CORE_MACHINE_MEMORY_ACCESS_READ &&
+        access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE)) return LIB_STATUS_INTERNAL_ERROR;
     return LIB_STATUS_OK;
 }
 
@@ -1207,11 +1206,11 @@ lib_status core_machine_configure_absent_memory(core_machine_board_state *board,
     const core_machine_absent_memory_config *config)
 {
     core_machine_absent_memory *absent;
-    core_machine_memory_device_route route;
+    x86_core_machine_memory_device_route route;
     lib_status status;
     lib_uptr index;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core)) return LIB_STATUS_INVALID_STATE;
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core)) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->bytes == 0u ||
         (lib_u64)config->physical_start + config->bytes >
             (lib_u64)LIB_UINT32_MAX + 1u) {
@@ -1230,13 +1229,13 @@ lib_status core_machine_configure_absent_memory(core_machine_board_state *board,
     /* An unpopulated board window is a fallback, not an installed device:
      * a dynamically decoded video aperture may own part of the same physical
      * range while the remaining addresses still read as open bus. */
-    route = (core_machine_memory_device_route) {
+    route = (x86_core_machine_memory_device_route) {
         config->physical_start, config->bytes,
         {core_machine_absent_memory_read, core_machine_absent_memory_write,
             core_machine_absent_memory_query},
-        CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
+        X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
     };
-    status = core_machine_install_memory_device_routes(board->core, &route, 1u,
+    status = x86_core_machine_install_memory_device_routes(board->core, &route, 1u,
         LIB_NULL, LIB_NULL, absent);
     if (status != LIB_STATUS_OK) {
         lib_memory_set(absent, 0, sizeof(*absent));
@@ -1358,7 +1357,7 @@ lib_status core_machine_configure_fdc(core_machine_board_state *board,
 {
     lib_status status;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         !board->dma_configured || board->fdc_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
@@ -1387,15 +1386,15 @@ lib_status core_machine_configure_fdc(core_machine_board_state *board,
 lib_status core_machine_configure_hdc(core_machine_board_state *board,
     const core_machine_hdc_topology *topology)
 {
-    const core_machine_port_provider *provider;
-    core_machine_port_route routes[10];
+    const x86_core_machine_port_provider *provider;
+    x86_core_machine_port_route routes[10];
     lib_u16 ports[9];
     lib_size port_count;
     lib_size index;
     lib_status status;
     lib_bool xebec;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->hdc_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
@@ -1412,12 +1411,12 @@ lib_status core_machine_configure_hdc(core_machine_board_state *board,
     if (provider == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     port_count = core_machine_hdc_port_addresses(&topology->config, ports);
     for (index = 0u; index < port_count; ++index) {
-        routes[index] = (core_machine_port_route) {ports[index],
+        routes[index] = (x86_core_machine_port_route) {ports[index],
             xebec && index == 3u ? LIB_NULL : provider->read,
             provider->write, board->hdc, LIB_FALSE, 0u};
     }
     if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
-        routes[port_count++] = (core_machine_port_route) {
+        routes[port_count++] = (x86_core_machine_port_route) {
             .address = topology->config.bus.task_file.drive_address_port,
             .read = provider->read, .owner = board->hdc,
             .wired_or_read = LIB_TRUE};
@@ -1428,13 +1427,13 @@ lib_status core_machine_configure_hdc(core_machine_board_state *board,
         board->shared_pic_master,
         board->shared_pic_slave, &board->hdc_topology.config);
     if (status == LIB_STATUS_OK)
-        status = core_machine_install_port_routes(board->core, routes, port_count);
+        status = x86_core_machine_install_port_routes(board->core, routes, port_count);
     if (status == LIB_STATUS_OK && xebec) {
         status = core_machine_dma_bind_channel(board->shared_dma,
             board->hdc_topology.config.bus.xebec.dma_channel,
             core_machine_hdc_dma_provider(), board->hdc, &board->hdc_dma_request);
         if (status != LIB_STATUS_OK) {
-            lib_status rollback = core_machine_remove_port_routes(board->core, board->hdc);
+            lib_status rollback = x86_core_machine_remove_port_routes(board->core, board->hdc);
 
             if (rollback != LIB_STATUS_OK) status = rollback;
         }

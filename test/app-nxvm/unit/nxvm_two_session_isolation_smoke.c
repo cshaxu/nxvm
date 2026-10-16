@@ -1,44 +1,42 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "core/machine/machine_private.h"
 
-#include "../../core/board-base/composition/composition_fixture.h"
 #include "../../core/board-base/support/composition_fixture.h"
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 
-#include "core/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
 
-static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,
+static lib_bool sessions_are_isolated(x86_core_machine *first, x86_core_machine *second,
     core_machine_board_state *first_board, core_machine_board_state *second_board)
 {
     const lib_u8 values[] = { 0x11u, 0x22u };
-    core_machine *machines[] = { first, second };
+    x86_core_machine *machines[] = { first, second };
     lib_u8 observed;
     lib_u8 enabled;
     lib_u32 address;
     lib_u32 eax;
     lib_u32 index;
 
-    if (!test_core_instances_are_distinct(first, second) ||
+    if (first == LIB_NULL || second == LIB_NULL || first == second ||
         !test_board_instances_are_distinct(first_board, second_board)) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
-        if (core_machine_debug_write_real(machines[index], 0u, 0u,
+        if (x86_core_machine_debug_write_real(machines[index], 0u, 0u,
                 &values[index], 1u) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(machines[index],
+            x86_core_machine_debug_write_register(machines[index],
                 X86_CORE_CPU_DEBUG_EAX, values[index] * 0x01010101u) !=
                     LIB_STATUS_OK) return LIB_FALSE;
     }
-    if (core_machine_debug_set_watchpoint(first, X86_CORE_CPU_DEBUG_WATCH_READ,
+    if (x86_core_machine_debug_set_watchpoint(first, X86_CORE_CPU_DEBUG_WATCH_READ,
             0x1234u) != LIB_STATUS_OK) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
-        if (core_machine_debug_read_real(machines[index], 0u, 0u,
+        if (x86_core_machine_debug_read_real(machines[index], 0u, 0u,
                 &observed, 1u) != LIB_STATUS_OK || observed != values[index] ||
-            core_machine_debug_read_register(machines[index],
+            x86_core_machine_debug_read_register(machines[index],
                 X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
             eax != values[index] * 0x01010101u ||
-            core_machine_debug_get_watchpoint(machines[index],
+            x86_core_machine_debug_get_watchpoint(machines[index],
                 X86_CORE_CPU_DEBUG_WATCH_READ, &enabled, &address) !=
                     LIB_STATUS_OK || enabled != (index == 0u) ||
             (enabled && address != 0x1234u)) return LIB_FALSE;
@@ -60,13 +58,13 @@ lib_i32 main(void)
     if (!failed) {
         failed = first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
         failed = failed || !sessions_are_isolated(
-            first->core_machine, second->core_machine, first->board, second->board);
+            first->x86_core_machine, second->x86_core_machine, first->board, second->board);
     }
 
     vm_machine_destroy(second);
     vm_machine_destroy(first);
 
     if (failed) return 1;
-    puts("TWO-SESSION-ISOLATION:OK");
+    lib_c_printf("TWO-SESSION-ISOLATION:OK\n");
     return 0;
 }

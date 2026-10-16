@@ -3,12 +3,11 @@
 #include "core_machine_board_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "pic_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #define CMPS_FLAGS (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_PF | X86_CORE_CPU_DEBUG_EFLAGS_AF | \
     X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_SF | X86_CORE_CPU_DEBUG_EFLAGS_OF)
 
-static lib_i32 cmps_prepare_protected(core_machine **out_machine,
+static lib_i32 cmps_prepare_protected(x86_core_machine **out_machine,
     const lib_u8 *code, lib_u8 bytes, lib_u16 ds_limit, lib_u16 es_limit)
 {
     const core_machine_config config = {
@@ -36,8 +35,8 @@ static lib_i32 cmps_prepare_protected(core_machine **out_machine,
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
 
     *out_machine = LIB_NULL;
     gdt[16u] = (lib_u8)ds_limit;
@@ -45,21 +44,21 @@ static lib_i32 cmps_prepare_protected(core_machine **out_machine,
     gdt[24u] = (lib_u8)es_limit;
     gdt[25u] = (lib_u8)(es_limit >> 8u);
     if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x100u, pointer,
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x100u, pointer,
             sizeof(pointer)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x300u, gdt,
+        x86_core_machine_memory_write(machine, 0x300u, gdt,
             sizeof(gdt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, bootstrap,
+        x86_core_machine_memory_write(machine, 0u, bootstrap,
             sizeof(bootstrap)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x2000u, code, bytes) !=
+        x86_core_machine_memory_write(machine, 0x2000u, code, bytes) !=
             LIB_STATUS_OK ||
-        core_machine_run(machine, (core_machine_run_budget){11u, 0u},
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){11u, 0u},
             &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 11u) {
-        core_machine_destroy(machine);
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 11u) {
+        x86_core_machine_destroy(machine);
         return 0;
     }
     *out_machine = machine;
@@ -73,11 +72,11 @@ static lib_i32 cmps_protected_case(lib_bool source_fault,
     static const lib_u8 rep[] = {0xf3u, 0xa6u};
     const lib_u8 *code = repeated ? rep : single;
     lib_u8 bytes = repeated ? sizeof(rep) : sizeof(single);
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_u8 left[] = {0x10u, 1u}, right[] = {0x10u, 1u};
     lib_u16 ds_limit = repeated && !source_fault ? 0xffffu :
         repeated ? 0x10u : 0x0fu;
@@ -99,21 +98,21 @@ static lib_i32 cmps_protected_case(lib_bool source_fault,
         patch.values[X86_CORE_CPU_DEBUG_EDI] =
             repeated || !source_fault ? 0x10u : 0u;
         patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
-        failed = core_machine_debug_patch_registers(machine, &patch) !=
+        failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
             LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x3010u, left,
+            x86_core_machine_memory_write(machine, 0x3010u, left,
                 sizeof(left)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x4010u, right,
+            x86_core_machine_memory_write(machine, 0x4010u, right,
                 sizeof(right)) != LIB_STATUS_OK;
     }
     if (!failed)
-        failed = core_machine_run(machine,
-            (core_machine_run_budget){repeated ? 2u : 1u, 0u},
+        failed = x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){repeated ? 2u : 1u, 0u},
             &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             result.detail != VCPUINS_EXCEPT_SHUTDOWN ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
     if (!failed)
         failed = diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
@@ -124,7 +123,7 @@ static lib_i32 cmps_protected_case(lib_bool source_fault,
             after.edi != (repeated ? 0x11u : source_fault ? 0u : 0x10u) ||
             after.eflags != (repeated ? X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_PF |
                 X86_CORE_CPU_DEBUG_EFLAGS_ZF : X86_CORE_CPU_DEBUG_EFLAGS_IF);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -140,12 +139,12 @@ static lib_i32 cmps_irq_case(lib_bool repeated)
     };
     const lib_u8 *code = repeated ? rep : single;
     lib_u8 bytes = repeated ? sizeof(rep) : sizeof(single);
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 left[] = {0x10u, 1u, 1u};
     lib_u8 right[] = {0x10u, 1u, 1u};
@@ -173,19 +172,19 @@ static lib_i32 cmps_irq_case(lib_bool repeated)
         patch.values[X86_CORE_CPU_DEBUG_ECX] = 0x11220003u;
         patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
         patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x20u;
-        failed = core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK ||
-            core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x20010u, left,
+        failed = x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x20010u, left,
                 sizeof(left)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x30020u, right,
+            x86_core_machine_memory_write(machine, 0x30020u, right,
                 sizeof(right)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x80u, &offset,
+            x86_core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x80u, &offset,
                 sizeof(offset)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x82u, &segment,
+            x86_core_machine_memory_write(machine, 0x82u, &segment,
                 sizeof(segment)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x100u, &halt,
+            x86_core_machine_memory_write(machine, 0x100u, &halt,
                 sizeof(halt)) != LIB_STATUS_OK;
     }
     if (!failed) {
@@ -194,18 +193,18 @@ static lib_i32 cmps_irq_case(lib_bool repeated)
             board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(irq);
         core_machine_pic_irq_source_deassert(irq);
-        failed = core_machine_run(machine,
-            (core_machine_run_budget){repeated ? 4u : 2u, 0u},
+        failed = x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){repeated ? 4u : 2u, 0u},
             &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine,
+            x86_core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine, 0x20010u,
+            x86_core_machine_debug_read_memory(machine, 0x20010u,
                 observed_left, sizeof(observed_left)) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine, 0x30020u,
+            x86_core_machine_debug_read_memory(machine, 0x30020u,
                 observed_right, sizeof(observed_right)) != LIB_STATUS_OK;
         if (!failed)
             failed = after.eip != 0x101u ||
@@ -221,7 +220,7 @@ static lib_i32 cmps_irq_case(lib_bool repeated)
                 (test_pic_read(board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u));
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

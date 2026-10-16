@@ -3,9 +3,8 @@
 #include "core_machine_board_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "pic_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
-static lib_i32 arpl_board_prepare(core_machine **out_machine,
+static lib_i32 arpl_board_prepare(x86_core_machine **out_machine,
     x86_core_cpu_profile profile, const lib_u8 *code, lib_size bytes,
     lib_u16 ds_limit,
     core_machine_board_state **out_board)
@@ -57,8 +56,8 @@ static lib_i32 arpl_board_prepare(core_machine **out_machine,
     const lib_size bootstrap_bytes = is386 ? sizeof(bootstrap386) :
         sizeof(bootstrap286);
     lib_u8 idt[0x108u] = {0};
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
 
     *out_machine = LIB_NULL;
     gdt[24u] = (lib_u8)ds_limit;
@@ -68,28 +67,28 @@ static lib_i32 arpl_board_prepare(core_machine **out_machine,
     idt[13u * 8u + 2u] = 0x08u;
     idt[13u * 8u + 5u] = 0x86u;
     if (core_machine_create(&config, &machine, out_board) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x0100u, gdt_pointer,
             sizeof(gdt_pointer)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0110u, idt_pointer,
+        x86_core_machine_memory_write(machine, 0x0110u, idt_pointer,
             sizeof(idt_pointer)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0300u, gdt,
+        x86_core_machine_memory_write(machine, 0x0300u, gdt,
             sizeof(gdt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0400u, idt,
+        x86_core_machine_memory_write(machine, 0x0400u, idt,
             sizeof(idt)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, bootstrap,
+        x86_core_machine_memory_write(machine, 0u, bootstrap,
             bootstrap_bytes) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x2000u, code, bytes) !=
+        x86_core_machine_memory_write(machine, 0x2000u, code, bytes) !=
             LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x2100u,
+        x86_core_machine_memory_write(machine, 0x2100u,
             (const lib_u8[]){0xf4u}, 1u) != LIB_STATUS_OK ||
-        core_machine_run(machine, (core_machine_run_budget){
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){
             is386 ? 15u : 11u, 0u}, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         result.executed != (is386 ? 15u : 11u)) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (out_board != LIB_NULL) *out_board = LIB_NULL;
         return 0;
     }
@@ -102,26 +101,26 @@ static lib_i32 arpl_board_memory_prefix(void)
     static const lib_u8 code[] = {
         0xb9u,0x03u,0x00u,0x26u,0x63u,0x0eu,0x00u,0x04u,0xf4u
     };
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 value = 1u;
     lib_i32 failed = !arpl_board_prepare(&machine,
         X86_CORE_CPU_PROFILE_80286, code, sizeof(code), 0xffffu, LIB_NULL);
 
     if (!failed)
-        failed = core_machine_memory_write(machine, 0x5400u, &value,
+        failed = x86_core_machine_memory_write(machine, 0x5400u, &value,
             sizeof(value)) != LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){64u,0u},
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){64u,0u},
                 &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine, 0x5400u, &value,
+            x86_core_machine_debug_read_memory(machine, 0x5400u, &value,
                 sizeof(value)) != LIB_STATUS_OK;
     if (!failed)
         failed = value != 3u || !(after.eflags & X86_CORE_CPU_DEBUG_EFLAGS_ZF);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -131,8 +130,8 @@ static lib_i32 arpl_board_limit(void)
         0x63u,0x0eu,0x00u,0x04u};
     const lib_u16 image = 0x5a01u;
     const lib_u16 adjacent = 0x7e7eu;
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
     lib_u16 observed = 0u, observed_adjacent = 0u;
@@ -141,24 +140,24 @@ static lib_i32 arpl_board_limit(void)
         X86_CORE_CPU_PROFILE_80386, code, sizeof(code), 0x000fu, LIB_NULL);
 
     if (!failed)
-        failed = core_machine_memory_write(machine, 0x4400u, &image,
+        failed = x86_core_machine_memory_write(machine, 0x4400u, &image,
             sizeof(image)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x4410u, &adjacent,
+            x86_core_machine_memory_write(machine, 0x4410u, &adjacent,
                 sizeof(adjacent)) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             test_core_machine_fixture_run_after_delivery(machine,
-                (core_machine_run_budget){64u,0u},
+                (x86_core_machine_run_budget){64u,0u},
                 &result) != LIB_STATUS_OK ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine, 0x4400u, &observed,
+            x86_core_machine_debug_read_memory(machine, 0x4400u, &observed,
                 sizeof(observed)) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine, 0x4410u,
+            x86_core_machine_debug_read_memory(machine, 0x4410u,
                 &observed_adjacent, sizeof(observed_adjacent)) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine,
+            x86_core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, frame,
                 sizeof(frame)) != LIB_STATUS_OK;
     if (!failed)
@@ -182,7 +181,7 @@ static lib_i32 arpl_board_limit(void)
                 sizeof(before.fs)) != 0 ||
             lib_memory_compare(&before.gs, &after.gs,
                 sizeof(before.gs)) != 0;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -192,10 +191,10 @@ static lib_i32 arpl_board_irq(void)
     lib_u8 change;
 
     for (change = 0u; change != 2u; ++change) {
-        core_machine *machine = LIB_NULL;
+        x86_core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
         core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
         x86_core_cpu_diagnostic diagnostic = {0};
         x86_core_cpu_debug_register_patch patch = {0};
@@ -216,11 +215,11 @@ static lib_i32 arpl_board_irq(void)
             (change ? 3u : 1u);
         patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
         if (!failed)
-            failed = core_machine_memory_write(machine, 0x0500u, gate,
+            failed = x86_core_machine_memory_write(machine, 0x0500u, gate,
                 sizeof(gate)) != LIB_STATUS_OK ||
-                core_machine_debug_patch_registers(machine, &patch) !=
+                x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         if (!failed) {
             test_pic_program_vector(board->shared_pic_master, 0x20u);
@@ -228,14 +227,14 @@ static lib_i32 arpl_board_irq(void)
                 board->shared_pic_master, board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
-            failed = core_machine_run(machine,
-                (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_BUDGET ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+            failed = x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+                x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                     LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                core_machine_debug_read_memory(machine,
+                x86_core_machine_debug_read_memory(machine,
                     after.ss.base + (lib_u16)after.esp, frame,
                     sizeof(frame)) != LIB_STATUS_OK;
         }
@@ -270,7 +269,7 @@ static lib_i32 arpl_board_irq(void)
                 !!(frame[2u] & X86_CORE_CPU_DEBUG_EFLAGS_ZF) != change ||
                 (frame[2u] & ~X86_CORE_CPU_DEBUG_EFLAGS_ZF) !=
                     (before.eflags & ~X86_CORE_CPU_DEBUG_EFLAGS_ZF);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

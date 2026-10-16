@@ -5,7 +5,7 @@
 #include "../../composition/composition_fixture.h"
 typedef struct task16_pic_board {
     cpu_instruction_fixture cpu;
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
 } task16_pic_board;

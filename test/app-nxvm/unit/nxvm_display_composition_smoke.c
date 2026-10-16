@@ -14,7 +14,7 @@
 static void vm_display_composition_port_write(vm_machine *session, lib_u16 port,
     lib_u8 value)
 {
-    test_core_machine_fixture_write_port(session->core_machine, port, value);
+    test_core_machine_fixture_write_port(session->x86_core_machine, port, value);
 }
 
 static lib_i32 vm_display_composition_capture(vm_machine *session,
@@ -59,7 +59,7 @@ static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
     vm_display_composition_port_write(session, 0x03ceu, 6u);
     vm_display_composition_port_write(session, 0x03cfu, 0x05u);
     vm_display_composition_port_write(session, 0x03c2u, 0x03u);
-    (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+    (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
     vm_display_composition_port_write(session, 0x03c0u, 0x30u);
     vm_display_composition_port_write(session, 0x03c0u, 0x01u);
     vm_display_composition_port_write(session, 0x03d4u, 0x01u);
@@ -116,7 +116,7 @@ lib_i32 main(void)
     static core_machine_guest_display_frame frame;
     static x86_video_snapshot snapshot;
     static x86_video_snapshot_observation observation;
-    core_machine_timeline_observation timeline;
+    x86_core_machine_timeline_observation timeline;
     lib_u8 cga_even = 0x1bu;
     lib_u8 cga_odd = 0xe4u;
     lib_u8 ega_pixel = 0xa5u;
@@ -143,12 +143,12 @@ lib_i32 main(void)
 
         vm_display_composition_port_write(session, 0x03c2u, 0x01u);
         for (lib_size color = 0u; color < sizeof(colors); ++color) {
-            (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+            (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             vm_display_composition_port_write(session, 0x03c0u, 1u);
             vm_display_composition_port_write(session, 0x03c0u, colors[color]);
-            (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+            (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             vm_display_composition_port_write(session, 0x03c0u, 0x20u);
-            (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+            (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
                 frame.palette_rgb[1] != rgb[color] || frame.generation <= text_generation ||
                 session->latest_frame.window.text.base.text_palette[1] != rgb[color];
@@ -193,9 +193,9 @@ lib_i32 main(void)
     /* Retained logical CGA compatibility uses borrowed memory, not EGA VRAM. */
     vm_display_composition_port_write(session, 0x03d8u, 0x0au);
     vm_display_composition_port_write(session, 0x03d9u, 0x00u);
-    failed |= core_machine_memory_write(session->core_machine,
+    failed |= x86_core_machine_memory_write(session->x86_core_machine,
         0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
-        core_machine_memory_write(session->core_machine,
+        x86_core_machine_memory_write(session->x86_core_machine,
             0x000b8000u + 0x2000u, &cga_odd,
             sizeof(cga_odd)) != LIB_STATUS_OK;
     failed |= !vm_display_composition_capture(session, &frame,
@@ -207,14 +207,14 @@ lib_i32 main(void)
         frame.pixels[320u] != 3u || frame.generation <= text_generation;
     cga_generation = frame.generation;
     cga_even = 0xffu;
-    failed |= core_machine_memory_write(session->core_machine,
+    failed |= x86_core_machine_memory_write(session->x86_core_machine,
         0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation != cga_generation ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;
 
     failed |= !vm_display_composition_enable_planar(session) ||
-        core_machine_memory_write(session->core_machine,
+        x86_core_machine_memory_write(session->x86_core_machine,
             CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
             sizeof(ega_pixel)) != LIB_STATUS_OK ||
         !vm_display_composition_capture(session, &frame,
@@ -257,7 +257,7 @@ lib_i32 main(void)
         frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
     ega_pixel = 0x5au;
-    failed |= core_machine_memory_write(session->core_machine,
+    failed |= x86_core_machine_memory_write(session->x86_core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
         sizeof(ega_pixel)) != LIB_STATUS_OK ||
         core_machine_observe_display_snapshot(session->board, LIB_TRUE,
@@ -274,9 +274,9 @@ lib_i32 main(void)
 
     /* A pitch-only change must traverse the real Machine publication path,
      * not merely a direct chip capture or a forced redraw. */
-    failed |= core_machine_memory_write(session->core_machine,
+    failed |= x86_core_machine_memory_write(session->x86_core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE + 2u, &(lib_u8){0x40u}, 1u) != LIB_STATUS_OK ||
-        core_machine_memory_write(session->core_machine,
+        x86_core_machine_memory_write(session->x86_core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE + 40u, &(lib_u8){0x20u}, 1u) != LIB_STATUS_OK;
     vm_display_composition_port_write(session, 0x03d4u, 0x13u);
     vm_display_composition_port_write(session, 0x03d5u, 1u);
@@ -297,7 +297,7 @@ lib_i32 main(void)
         frame.pixels[321u] != 0u || frame.pixels[322u] != 15u;
 
     vm_machine_reset(session);
-    failed |= core_machine_get_timeline_observation(session->core_machine,
+    failed |= x86_core_machine_get_timeline_observation(session->x86_core_machine,
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||

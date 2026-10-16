@@ -1,101 +1,97 @@
 #include "plan_core_fixture.h"
-#include "construction_fixture.h"
+#include "bus_fixture.h"
+#include "../board_binding_fixture.h"
 
-lib_i32 test_plan_core_attachment(core_machine *machine,
-    core_machine_board_state *board)
+lib_i32 test_plan_board_device_failures(const core_machine_config *configuration)
 {
-    return board == LIB_NULL || (void *)board != machine->attachment.context;
-}
-
-lib_i32 test_plan_core_allocation_failures(const core_machine_config *configuration)
-{
-    core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
-    for (lib_size index = 1u; index <= 3u; ++index) {
-        core_machine_port_test_allocation allocation = { index, 0u };
-        machine = (core_machine *)(lib_uptr)1u;
-        board = (core_machine_board_state *)(lib_uptr)1u;
-        failed |= test_core_machine_create_with_allocation(configuration, &machine,
-            LIB_NULL, &allocation, &board) != LIB_STATUS_NO_MEMORY ||
-            machine != LIB_NULL || board != LIB_NULL ||
-            allocation.attempts != index;
+    for (lib_u32 dependency = 1u; dependency <= 3u; ++dependency)
+        failed |= test_board_device_failure(configuration, dependency);
+    return failed;
+}
+
+lib_i32 test_plan_core_xt_routes(x86_core_machine *machine, lib_bool after_reset)
+{
+    if (after_reset) {
+        lib_u32 value = 0u;
+        return x86_core_machine_bus_read(machine, 0x20u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xa0u, &value) != LIB_STATUS_UNSUPPORTED ||
+            x86_core_machine_bus_read(machine, 0x70u, &value) != LIB_STATUS_UNSUPPORTED;
+    }
+    const struct {lib_u16 port; lib_bool write; lib_bool installed;} routes[] = {
+        {0x20u, LIB_FALSE, LIB_TRUE}, {0u, LIB_TRUE, LIB_TRUE},
+        {0x81u, LIB_FALSE, LIB_TRUE}, {0x83u, LIB_TRUE, LIB_TRUE},
+        {0x87u, LIB_FALSE, LIB_FALSE}, {0x89u, LIB_TRUE, LIB_FALSE},
+        {0x8au, LIB_FALSE, LIB_FALSE}, {0x8bu, LIB_TRUE, LIB_FALSE},
+        {0x8fu, LIB_FALSE, LIB_FALSE}, {0xa0u, LIB_FALSE, LIB_FALSE},
+        {0xd0u, LIB_TRUE, LIB_FALSE}, {0x70u, LIB_FALSE, LIB_FALSE},
+        {0x71u, LIB_TRUE, LIB_FALSE}
+    };
+    lib_i32 failed = 0;
+
+    /* Public construction conflicts prove routing before reset. A probe of an
+     * unused endpoint is revoked immediately; no existing route is removed. */
+    for (lib_size index = 0u; index < sizeof(routes) / sizeof(routes[0]); ++index) {
+        failed |= test_core_machine_fixture_expect_port(machine, routes[index].port,
+            routes[index].write, routes[index].installed);
     }
     return failed;
 }
 
-lib_i32 test_plan_core_xt_routes(core_machine *machine, lib_bool after_reset)
-{
-    if (after_reset) {
-        return (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
-            core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
-            core_machine_port_has_read(&machine->executor_port, 0x0070u));
-    }
-    return (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x0000u) ||
-        !core_machine_port_has_read(&machine->executor_port, 0x0081u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x0083u) ||
-        core_machine_port_has_read(&machine->executor_port, 0x0087u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x0089u) ||
-        core_machine_port_has_read(&machine->executor_port, 0x008au) ||
-        core_machine_port_has_write(&machine->executor_port, 0x008bu) ||
-        core_machine_port_has_read(&machine->executor_port, 0x008fu) ||
-        core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x00d0u) ||
-        core_machine_port_has_read(&machine->executor_port, 0x0070u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x0071u));
-}
-
-lib_i32 test_plan_core_pit_deadline(core_machine *machine,
+lib_i32 test_plan_core_pit_deadline(x86_core_machine *machine,
     core_machine_board_state *board)
 {
-    core_machine_time_observation observation;
+    x86_core_machine_time_observation observation;
     core_machine_board_timing_disposition disposition;
     lib_u8 advanced = LIB_FALSE;
+    lib_u64 elapsed = 0u;
     lib_i32 failed = 0;
 
-    failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_board_get_timing_disposition(board,
         CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
-    core_machine_port_write(&machine->executor_port, 0x0043u, 0x34u);
-    core_machine_port_write(&machine->executor_port, 0x0040u, 4u);
-    core_machine_port_write(&machine->executor_port, 0x0040u, 0u);
-    failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
+    failed |= !failed && (x86_core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x40u, 4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x40u, 0u) != LIB_STATUS_OK);
+    failed |= !failed && x86_core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
         observation.next_deadline_tick != 1u ||
-        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
-    failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
+        observation.progress_disposition != X86_CORE_MACHINE_TIME_PROGRESS_DEADLINE);
+    failed |= !failed && x86_core_machine_advance_to_next_deadline(machine, &advanced) !=
         LIB_STATUS_OK;
-    failed |= !failed && (!advanced || machine->elapsed_ticks != 1u);
+    failed |= !failed && (!advanced ||
+        x86_core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK || elapsed != 1u);
     return failed;
 }
 
-lib_i32 test_plan_core_dma_deadline(core_machine *machine,
+lib_i32 test_plan_core_dma_deadline(x86_core_machine *machine,
     core_machine_dma_bus *dma, const core_machine_dma_request_binding *binding)
 {
-    core_machine_time_observation observation;
+    x86_core_machine_time_observation observation;
     lib_u8 advanced = LIB_FALSE;
+    lib_u64 elapsed = 0u;
     lib_i32 failed = 0;
 
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+    failed |= !failed && x86_core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
-    core_machine_port_write(&machine->executor_port, 0x000bu, 0x46u);
-    core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-    core_machine_port_write(&machine->executor_port, 0x00d4u, 0x00u);
+    failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && (x86_core_machine_bus_write(machine, 0xbu, 0x46u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0xau, 0x02u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0xd4u, 0u) != LIB_STATUS_OK);
     core_machine_dma_request_assert(dma, binding);
-    failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
+    failed |= !failed && x86_core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
         observation.next_deadline_tick != 3u ||
-        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
-    failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
+        observation.progress_disposition != X86_CORE_MACHINE_TIME_PROGRESS_DEADLINE);
+    failed |= !failed && x86_core_machine_advance_to_next_deadline(machine, &advanced) !=
         LIB_STATUS_OK;
-    failed |= !failed && (!advanced || machine->elapsed_ticks != 3u);
+    failed |= !failed && (!advanced ||
+        x86_core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK || elapsed != 3u);
     core_machine_dma_request_deassert(dma, binding);
     return failed;
 }

@@ -48,7 +48,7 @@ static lib_i32 s48_outer_parameter_copy(lib_u8 parameter_count)
 {
     static const lib_u32 parameters[] = {0x11223344u,0x55667788u};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u32 frame[6u] = {0};
     lib_i32 failed = !s48_prepare_user32(&state);
@@ -59,9 +59,9 @@ static lib_i32 s48_outer_parameter_copy(lib_u8 parameter_count)
             !s48_write_call(&state) || (parameter_count != 0u &&
             !test_protected_16_write(&state, 0x7000u, parameters,
                 (lib_size)parameter_count * sizeof(parameters[0]))) ||
-            core_machine_run(state.machine, (core_machine_run_budget){32u,0u},
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){32u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.cs.selector != 0x0008u || snapshot.ss.selector != 0x0010u ||
             snapshot.eip != S48_TARGET + 1u || snapshot.esp !=
@@ -91,7 +91,7 @@ static lib_i32 s48_install_gp_handler(test_protected_16_machine *state)
 static lib_i32 s48_gate_rejection(lib_u8 gate_access, lib_u8 target_access)
 {
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot before = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
@@ -102,10 +102,10 @@ static lib_i32 s48_gate_rejection(lib_u8 gate_access, lib_u8 target_access)
             target_access != 0u ? 0x0028u : 0x0008u) ||
             !s48_write_call(&state) || !s48_install_gp_handler(&state) ||
             !test_protected_16_snapshot(&state, &before) ||
-            core_machine_run(state.machine, (core_machine_run_budget){32u,0u},
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){32u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                X86_CORE_MACHINE_STOP_BUDGET ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
             !test_protected_16_snapshot(&state, &after) ||

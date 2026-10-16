@@ -10,8 +10,8 @@ static lib_i32 scan_test_read_failure(void)
     lib_u8 index;
 
     for (index = 0u; index < 2u; ++index) {
-        core_machine *machine = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine *machine = LIB_NULL;
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot after = {0};
         x86_core_cpu_debug_register_patch patch = {0};
         lib_i32 failed = !test_cpu_board_limit_prepare(&machine,
@@ -22,17 +22,17 @@ static lib_i32 scan_test_read_failure(void)
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
             patch.values[X86_CORE_CPU_DEBUG_ECX] = 0xaabbccddu;
             patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = flags;
-            failed |= core_machine_debug_patch_registers(machine, &patch) !=
+            failed |= x86_core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-            !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
-                    (core_machine_run_budget){ 1u, 0u }, &result),
+            !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){ 1u, 0u }, &result),
                 &result) ||
-                core_machine_debug_capture_cpu_snapshot(machine,
+                x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 after.ecx != 0xaabbccddu || after.eflags != flags ||
                 after.eip != 0u;
         }
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;

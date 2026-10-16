@@ -8,7 +8,7 @@ set(MYDESKPRO386_MACHINE_SOURCES
     src/app-mydeskpro386/firmware_map.c)
 add_library(mydeskpro386-machine STATIC ${MYDESKPRO386_MACHINE_SOURCES})
 target_include_directories(mydeskpro386-machine PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(mydeskpro386-machine PUBLIC core-machine core-board-base core-x86)
+target_link_libraries(mydeskpro386-machine PUBLIC core-machine core-board-base x86-core-machine)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(mydeskpro386-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

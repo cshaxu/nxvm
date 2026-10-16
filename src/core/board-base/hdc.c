@@ -354,9 +354,9 @@ void core_machine_hdc_clear_configuration(core_machine_hdc *hdc)
     lib_memory_set(&hdc->connect, 0, sizeof(hdc->connect));
 }
 
-const core_machine_port_provider *core_machine_hdc_port_provider(void)
+const x86_core_machine_port_provider *core_machine_hdc_port_provider(void)
 {
-    static const core_machine_port_provider provider = {hdc_port_read, hdc_port_write};
+    static const x86_core_machine_port_provider provider = {hdc_port_read, hdc_port_write};
     return &provider;
 }
 

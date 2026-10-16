@@ -1,27 +1,27 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 #include "core/chips/rtc146818/rtc146818_interface.h"
 #include "core_machine_board_fixture.h"
 
 typedef struct rtc_cmos_fixture {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
     x86_rtc *rtc;
     core_machine_pic_irq_source *irq_source;
 } rtc_cmos_fixture;
 
-static lib_status rtc_cmos_initialize_pic(core_machine *port)
+static lib_status rtc_cmos_initialize_pic(x86_core_machine *port)
 {
     const struct { lib_u16 port; lib_u8 value; } program[] = {
         {0x0020u, 0x11u}, {0x0021u, 0x08u}, {0x0021u, 0x04u}, {0x0021u, 0x01u},
         {0x00a0u, 0x11u}, {0x00a1u, 0x70u}, {0x00a1u, 0x02u}, {0x00a1u, 0x01u}
     };
     for (lib_size i = 0u; i < sizeof(program) / sizeof(program[0]); ++i) {
-        lib_status status = core_machine_bus_write(port, program[i].port,
+        lib_status status = x86_core_machine_bus_write(port, program[i].port,
             program[i].value);
         if (status != LIB_STATUS_OK) return status;
     }
@@ -39,12 +39,12 @@ static void rtc_cmos_finalize(rtc_cmos_fixture *fixture)
 {
     x86_rtc_destroy(fixture->rtc);
     core_machine_pic_finalize(fixture->master, fixture->slave);
-    core_machine_destroy(fixture->machine);
+    x86_core_machine_destroy(fixture->machine);
 }
 
 static lib_status rtc_cmos_initialize(rtc_cmos_fixture *fixture)
 {
-    const core_machine_executor_config executor_config = {
+    const x86_core_machine_executor_config executor_config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
@@ -52,13 +52,13 @@ static lib_status rtc_cmos_initialize(rtc_cmos_fixture *fixture)
     lib_status status;
 
     lib_memory_set(fixture, 0, sizeof(*fixture));
-    status = core_machine_neutral_create(&executor_config, &fixture->machine);
+    status = x86_core_machine_neutral_create(&executor_config, &fixture->machine);
     if (status == LIB_STATUS_OK)
         status = core_machine_pic_initialize(&fixture->master, &fixture->slave,
             fixture->machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     if (status == LIB_STATUS_OK)
-        status = core_machine_freeze_execution_providers(fixture->machine);
-    if (status == LIB_STATUS_OK) status = core_machine_reset(fixture->machine);
+        status = x86_core_machine_freeze_execution_providers(fixture->machine);
+    if (status == LIB_STATUS_OK) status = x86_core_machine_reset(fixture->machine);
     if (status == LIB_STATUS_OK)
         status = rtc_cmos_initialize_pic(fixture->machine);
     if (status == LIB_STATUS_OK) {
@@ -103,8 +103,8 @@ static lib_i32 rtc_cmos_test_events_and_irq8(void)
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF |
         X86_RTC_REG_C_AF | X86_RTC_REG_C_UF) ||
         core_machine_pic_irq_source_is_asserted(fixture.irq_source);
-    failed |= core_machine_bus_write(fixture.machine, 0x00a0u, 0x20u) != LIB_STATUS_OK;
-    failed |= core_machine_bus_write(fixture.machine, 0x0020u, 0x20u) != LIB_STATUS_OK;
+    failed |= x86_core_machine_bus_write(fixture.machine, 0x00a0u, 0x20u) != LIB_STATUS_OK;
+    failed |= x86_core_machine_bus_write(fixture.machine, 0x0020u, 0x20u) != LIB_STATUS_OK;
     x86_rtc_advance(fixture.rtc, 4u);
     x86_rtc_write_register(fixture.rtc, X86_RTC_REG_B,
         X86_RTC_REG_B_24H);
@@ -127,7 +127,7 @@ static lib_i32 rtc_cmos_test_cmos_adapter(void)
 {
     core_machine_config config = { 0 };
     core_machine_rtc_cmos_config rtc_config = { 0 };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 masked = 0;
@@ -153,18 +153,18 @@ static lib_i32 rtc_cmos_test_cmos_adapter(void)
         core_machine_configure_rtc_cmos(board, &rtc_config) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0070u, 0x94u) != LIB_STATUS_OK ||
-        core_machine_bus_read(machine, 0x0071u, &value) != LIB_STATUS_OK ||
-        value != 0x5au || core_machine_get_nmi_mask(machine, &masked) !=
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x0070u, 0x94u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0x0071u, &value) != LIB_STATUS_OK ||
+        value != 0x5au || x86_core_machine_get_nmi_mask(machine, &masked) !=
             LIB_STATUS_OK || !masked ||
-        core_machine_bus_write(machine, 0x0070u, CORE_MACHINE_RTC_EQUIPMENT) !=
-            LIB_STATUS_OK || core_machine_get_nmi_mask(machine, &masked) !=
+        x86_core_machine_bus_write(machine, 0x0070u, CORE_MACHINE_RTC_EQUIPMENT) !=
+            LIB_STATUS_OK || x86_core_machine_get_nmi_mask(machine, &masked) !=
             LIB_STATUS_OK || masked) {
         failed = 1;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 

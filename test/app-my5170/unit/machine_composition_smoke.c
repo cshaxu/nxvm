@@ -5,10 +5,11 @@
 
 #include "../../core/machine/support/media.h"
 #include "../../core/board-base/composition/composition_fixture.h"
+#include "../../core/board-base/board_binding_fixture.h"
 #include "../../core/board-base/support/composition_fixture.h"
 #include "../../core/board-base/support/kbc_state_fixture.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "../../core/board-base/composition/bus_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
@@ -58,7 +59,7 @@ static lib_i32 vm_model_339_selected_contract(void)
     x86_core_cpu_profile cpu_profile;
     core_machine_planar_parity_observation parity;
     core_machine_speaker_observation speaker;
-    core_machine_memory_route memory_route;
+    x86_core_machine_memory_route memory_route;
     x86_video_snapshot snapshot;
     vm_machine *session = LIB_NULL;
     lib_size memory_bytes = 0u;
@@ -66,7 +67,10 @@ static lib_i32 vm_model_339_selected_contract(void)
     lib_u8 after = 0u;
     lib_u8 option_rom_probe = 0u;
     lib_i32 failed = 0;
+    x86_core_machine_executor_config executor = {0};
+    lib_size constructor_count = 0u;
 
+    test_board_observe_constructor(&executor, &constructor_count);
     if (profile == LIB_NULL || !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
         !profile->hdc_present || !profile->planar_parity_present ||
         !profile->monochrome_aperture_absent || profile->diskette_drive_a_field_upgrade ||
@@ -78,9 +82,12 @@ static lib_i32 vm_model_339_selected_contract(void)
         vm_profile_default_pc_at_enabled_devices(profile),
             VM_AT_DEVICE_HDC, 0x01f0u) == LIB_NULL ||
         vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL) {
+        test_board_observe_constructor(LIB_NULL, LIB_NULL);
         vm_machine_destroy(session);
         return 1;
     }
+    test_board_observe_constructor(LIB_NULL, LIB_NULL);
+    failed |= constructor_count != 1u;
     board = test_board_capture_composition(session->board);
     failed |= (core_machine_capture_display_snapshot(session->board,
         &snapshot) != LIB_STATUS_OK || !snapshot.text_glyphs_present ||
@@ -88,40 +95,48 @@ static lib_i32 vm_model_339_selected_contract(void)
         X86_VIDEO_TEXT_GLYPH_ROWS] != 0x81u ||
         snapshot.text_glyphs['A' *
         X86_VIDEO_TEXT_GLYPH_ROWS + 8u] != 0x42u) ? 0x2000 : 0;
-    failed |= !test_core_transaction_timing_is_disabled(session->core_machine) ? 0x0002 : 0;
-    failed |= (core_machine_bus_write(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
+    const x86_core_machine_transaction_contract *transaction = &executor.transaction_contract;
+    failed |= (transaction->cpu_cycle_bus_ready_gate_enabled ||
+        transaction->cpu_prefetch_reservation_enabled ||
+        transaction->external_cycle_timing.page_bytes != 0u ||
+        transaction->external_cycle_timing.page_miss_ticks != 0u ||
+        transaction->external_cycle_timing.page_hit_ticks != 0u ||
+        transaction->external_cycle_timing.overlap_policy !=
+            X86_CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED ||
+        transaction->external_access_wait_windows[0].wait_ticks != 0u) ? 0x0002 : 0;
+    failed |= (x86_core_machine_bus_write(session->x86_core_machine, CORE_MACHINE_PC_AT_PORT_B,
         0x02u) != LIB_STATUS_OK || core_machine_get_speaker_observation(
         session->board, &speaker) != LIB_STATUS_OK || !speaker.configured ||
         speaker.timer_gate || !speaker.data_enabled || speaker.output != speaker.timer_output) ? 0x0004 : 0;
-    failed |= (core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
+    failed |= (x86_core_machine_get_cpu_profile(session->x86_core_machine, &cpu_profile) !=
         LIB_STATUS_OK || cpu_profile != X86_CORE_CPU_PROFILE_80286) ? 0x0008 : 0;
     failed |= (test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
-            session->core_machine, 0x20u,
+            session->x86_core_machine, 0x20u,
             0x20u, 0u)) ? 0x0010 : 0;
     failed |= (!test_board_kbc_command_matches(session->board,
-            session->core_machine, 0xd0u, 0xffu, 0x03u) ||
-        !test_core_a20_is_enabled(session->core_machine)) ? 0x0011 : 0;
-    failed |= (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
+            session->x86_core_machine, 0xd0u, 0xffu, 0x03u) ||
+        !test_core_a20_is_enabled(session->x86_core_machine)) ? 0x0011 : 0;
+    failed |= (x86_core_machine_get_memory_bytes(session->x86_core_machine, &memory_bytes) !=
         LIB_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;
     failed |= (core_machine_get_planar_parity_observation(session->board,
         &parity) != LIB_STATUS_OK || !parity.configured) ? 0x0040 : 0;
-    failed |= core_machine_set_address_clear_mask(session->core_machine, 0u) != LIB_STATUS_OK ? 0x0080 : 0;
-    failed |= (core_machine_memory_query(session->core_machine, 0x00100003u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != LIB_STATUS_OK ||
-        memory_route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER) ? 0x0100 : 0;
-    failed |= (core_machine_memory_read(session->core_machine, 0x00100003u, &before,
+    failed |= x86_core_machine_set_address_clear_mask(session->x86_core_machine, 0u) != LIB_STATUS_OK ? 0x0080 : 0;
+    failed |= (x86_core_machine_memory_query(session->x86_core_machine, 0x00100003u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != LIB_STATUS_OK ||
+        memory_route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER) ? 0x0100 : 0;
+    failed |= (x86_core_machine_memory_read(session->x86_core_machine, 0x00100003u, &before,
         sizeof(before)) != LIB_STATUS_OK || before != 0xffu) ? 0x0200 : 0;
-    failed |= (core_machine_memory_write(session->core_machine, 0x00100003u,
+    failed |= (x86_core_machine_memory_write(session->x86_core_machine, 0x00100003u,
         &(lib_u8){0x5au}, sizeof(lib_u8)) != LIB_STATUS_OK) ? 0x0400 : 0;
-    failed |= (core_machine_memory_read(session->core_machine, 0x00100003u, &after,
+    failed |= (x86_core_machine_memory_read(session->x86_core_machine, 0x00100003u, &after,
         sizeof(after)) != LIB_STATUS_OK || after != 0xffu) ? 0x0800 : 0;
-    failed |= (core_machine_memory_read(session->core_machine, 0x000c0000u,
+    failed |= (x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u,
         &option_rom_probe, sizeof(option_rom_probe)) != LIB_STATUS_OK ||
         option_rom_probe != 0xffu) ? 0x0900 : 0;
-    failed |= (!test_core_port_has_read(session->core_machine, 0x01f0u) ||
-        !test_core_port_has_write(session->core_machine, 0x01f0u) ||
-        test_core_machine_fixture_read_bus(session->core_machine, 0x03f1u) != 0x50u ||
+    failed |= (!test_core_port_accepts_read(session->x86_core_machine, 0x01f0u) ||
+        !test_core_port_accepts_write(session->x86_core_machine, 0x01f0u) ||
+        test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03f1u) != 0x50u ||
         board.hdc.service.command_ticks != 16000u ||
         board.hdc.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     failed |= test_board_pic_unmask_delay_matches(session->board, 120u);
@@ -167,7 +182,7 @@ static lib_i32 vm_model_339_floppy_contract(void)
  * refresh counter.  Keep that board-level edge observable through the same
  * CPU retirement path which real firmware uses; a direct advance is not
  * permitted on this profile's physical Core axis. */
-static lib_status vm_model_339_prepare_refresh(core_machine *machine)
+static lib_status vm_model_339_prepare_refresh(x86_core_machine *machine)
 {
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -179,7 +194,7 @@ static lib_status vm_model_339_prepare_refresh(core_machine *machine)
         .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x0500u,
             [X86_CORE_CPU_DEBUG_ESP] = 0xfffeu }
     };
-    return core_machine_debug_patch_registers(machine, &entry);
+    return x86_core_machine_debug_patch_registers(machine, &entry);
 }
 
 static lib_i32 vm_model_339_refresh_polling_is_live(void)
@@ -191,19 +206,19 @@ static lib_i32 vm_model_339_refresh_polling_is_live(void)
     const vm_machine_config config = {
         .bios_count = 2u
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
     if (vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL ||
-        core_machine_memory_write(session->core_machine, 0x0500u, program,
+        x86_core_machine_memory_write(session->x86_core_machine, 0x0500u, program,
             sizeof(program)) != LIB_STATUS_OK) {
         vm_machine_destroy(session);
         return 1;
     }
-    failed = vm_model_339_prepare_refresh(session->core_machine) != LIB_STATUS_OK ||
-        core_machine_run(session->core_machine, (core_machine_run_budget) {1000u, 0u},
-        &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    failed = vm_model_339_prepare_refresh(session->x86_core_machine) != LIB_STATUS_OK ||
+        x86_core_machine_run(session->x86_core_machine, (x86_core_machine_run_budget) {1000u, 0u},
+        &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     vm_machine_destroy(session);
     return failed;
 }
@@ -223,22 +238,22 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
     const vm_machine_config config = {
         .bios_count = 2u
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot cpu = {0};
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
     if (vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL ||
-        core_machine_memory_write(session->core_machine, 0x0500u, program,
+        x86_core_machine_memory_write(session->x86_core_machine, 0x0500u, program,
             sizeof(program)) != LIB_STATUS_OK) {
         vm_machine_destroy(session);
         return 1;
     }
-    failed = vm_model_339_prepare_refresh(session->core_machine) != LIB_STATUS_OK ||
-        core_machine_run(session->core_machine,
-        (core_machine_run_budget) {200000u, 0u}, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        core_machine_debug_capture_cpu_snapshot(session->core_machine,
+    failed = vm_model_339_prepare_refresh(session->x86_core_machine) != LIB_STATUS_OK ||
+        x86_core_machine_run(session->x86_core_machine,
+        (x86_core_machine_run_budget) {200000u, 0u}, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
         (cpu.ecx & 0xffffu) < 0xf600u;
     if (failed) lib_c_printf("MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
@@ -259,7 +274,7 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
     const vm_machine_config config = {
         .bios_count = 2u
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
@@ -270,15 +285,15 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
     lib_i32 failed = 0;
 
     if (vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL ||
-        core_machine_memory_write(session->core_machine, 0x0500u, program,
+        x86_core_machine_memory_write(session->x86_core_machine, 0x0500u, program,
             sizeof(program)) != LIB_STATUS_OK) {
         vm_machine_destroy(session);
         return 1;
     }
-    failed = core_machine_debug_patch_registers(session->core_machine, &entry) !=
-        LIB_STATUS_OK || core_machine_run(session->core_machine, (core_machine_run_budget) {64u, 0u},
-        &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        core_machine_debug_read_register(session->core_machine,
+    failed = x86_core_machine_debug_patch_registers(session->x86_core_machine, &entry) !=
+        LIB_STATUS_OK || x86_core_machine_run(session->x86_core_machine, (x86_core_machine_run_budget) {64u, 0u},
+        &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_debug_read_register(session->x86_core_machine,
             X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK || (eax & 0xffffu) != 0x55aau;
     vm_machine_destroy(session);
     return failed;
@@ -304,10 +319,10 @@ static lib_i32 vm_model_339_external_rom_route(void)
     failed = vm_test_create_5170_from_assets(&config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL ||
         session->construction.firmware_provider == LIB_NULL ||
-        core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
+        x86_core_machine_memory_read(session->x86_core_machine, 0x000f0000u, observed,
             sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x12u ||
             observed[1u] != 0x34u ||
-        core_machine_memory_read(session->core_machine, 0x000c0000u, observed,
+        x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u, observed,
             sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x55u ||
             observed[1u] != 0xaau;
     vm_machine_destroy(session);

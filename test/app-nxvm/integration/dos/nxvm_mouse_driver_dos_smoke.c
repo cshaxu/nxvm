@@ -265,17 +265,17 @@ static lib_i32 vm_mouse_dos_has_prompt(const x86_video_snapshot *snapshot)
 static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     lib_u8 wanted)
 {
-    core_machine_run_budget budget = { 128u, 0u };
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget = { 128u, 0u };
+    x86_core_machine_run_result result;
     x86_video_snapshot snapshot;
     lib_u32 executed = 0u;
 
     while (executed < limit) {
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT ||
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
@@ -292,18 +292,18 @@ static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
 static lib_i32 vm_mouse_dos_run_until_packet(vm_machine *session,
     lib_u32 buffer_address, const lib_u8 expected[17])
 {
-    core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
     lib_u8 actual[17];
     lib_u32 executed;
 
     if (session == LIB_NULL || expected == LIB_NULL) return 0;
     for (executed = 0u; executed < VM_MOUSE_DOS_RUN_BUDGET; ++executed) {
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_memory_read(session->core_machine, buffer_address,
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
+            x86_core_machine_memory_read(session->x86_core_machine, buffer_address,
                 actual, sizeof(actual)) != LIB_STATUS_OK) return 0;
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
@@ -320,7 +320,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         0x1eu, 0x25u, 0x16u, 0x5au };
     integration_ini_session ini_session;
     vm_machine *session;
-    core_machine_observation observation;
+    x86_core_machine_observation observation;
     x86_video_snapshot snapshot;
     static const lib_u8 expected[] = {
         0xfau, 0xaau, 0x00u, 0xfau, 0x00u, 0xfau,
@@ -347,7 +347,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 command[index]) != LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'S')) goto done;
-    if (core_machine_capture_observation(session->core_machine, &observation) !=
+    if (x86_core_machine_capture_observation(session->x86_core_machine, &observation) !=
         LIB_STATUS_OK) goto done;
     bytes_address = ((lib_u32)observation.cpu.cs << 4) + bytes_offset;
     stage = 5;

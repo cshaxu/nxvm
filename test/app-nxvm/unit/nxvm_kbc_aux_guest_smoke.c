@@ -3,8 +3,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/entry_plan_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/entry_plan_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "../support/rom/session_assets.h"
@@ -40,20 +40,20 @@ static const lib_u8 vm_kbc_aux_irq12_handler[] = {
 
 static lib_i32 vm_kbc_aux_read_count(vm_machine *session, lib_u16 *out_count)
 {
-    return core_machine_memory_read(session->core_machine,
+    return x86_core_machine_memory_read(session->x86_core_machine,
         VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == LIB_STATUS_OK;
 }
 
 static lib_i32 vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
 {
-    core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
     lib_u32 instruction;
     lib_u16 count = 0u;
 
     for (instruction = 0u; instruction < VM_KBC_AUX_BOOT_BUDGET; ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT) return 0;
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) return 0;
         if (!vm_kbc_aux_read_count(session, &count)) return 0;
         if (count >= expected) return 1;
     }
@@ -66,14 +66,14 @@ lib_i32 main(void)
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_entry_plan_preload preloads[] = {
+    const x86_core_machine_entry_plan_preload preloads[] = {
         { 0x7c00u, vm_kbc_aux_boot_code, sizeof(vm_kbc_aux_boot_code) },
         { 0x7c80u, vm_kbc_aux_irq12_handler, sizeof(vm_kbc_aux_irq12_handler) }
     };
-    const core_machine_entry_plan plan = {
+    const x86_core_machine_entry_plan plan = {
         .state = {.ip = 0x7c00u, .sp = 0x7000u, .eflags = 0x0200u},
         .entry_physical = 0x7c00u,
-        .entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM,
+        .entry_route = X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM,
         .preloads = preloads,
         .preload_count = sizeof(preloads) / sizeof(preloads[0])
     };
@@ -87,12 +87,12 @@ lib_i32 main(void)
 
     create_status = vm_test_default_pc_at_session_create(&config, &session);
     if (create_status != LIB_STATUS_OK || session == LIB_NULL ||
-        session->core_machine == LIB_NULL ||
-        (plan_status = core_machine_apply_entry_plan(session->core_machine,
+        session->x86_core_machine == LIB_NULL ||
+        (plan_status = x86_core_machine_apply_entry_plan(session->x86_core_machine,
             &plan)) != LIB_STATUS_OK) { stage = 1; goto done; }
     if (!vm_kbc_aux_run_until_count(session, 1u) ||
         !vm_kbc_aux_read_count(session, &count) || count != 1u ||
-        core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
+        x86_core_machine_memory_read(session->x86_core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0xfau) { stage = 2; goto done; }
     {
         core_machine_guest_input_event event = {0};
@@ -105,7 +105,7 @@ lib_i32 main(void)
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
     if (!vm_kbc_aux_run_until_count(session, 4u) ||
-        core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
+        x86_core_machine_memory_read(session->x86_core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, sizeof(bytes)) != LIB_STATUS_OK || bytes[0] != 0xfau ||
         bytes[1] != 0x29u || bytes[2] != 0x05u || bytes[3] != 0xfdu) { stage = 4; goto done; }
     passed = 1;

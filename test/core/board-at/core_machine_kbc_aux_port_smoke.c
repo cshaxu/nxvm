@@ -5,12 +5,12 @@
 #include "kbc_fixture.h"
 #include "../board-base/kbc_irq_fixture.h"
 
-static lib_u8 read_port(core_machine *port, lib_u16 id)
+static lib_u8 read_port(x86_core_machine *port, lib_u16 id)
 {
     return (lib_u8)test_kbc_port_read(port, id);
 }
 
-static void initialize_pic(core_machine *port)
+static void initialize_pic(x86_core_machine *port)
 {
     test_kbc_port_write(port, 0x0020u, 0x11u);
     test_kbc_port_write(port, 0x0021u, 0x08u);
@@ -22,7 +22,7 @@ static void initialize_pic(core_machine *port)
     test_kbc_port_write(port, 0x00a1u, 0x01u);
 }
 
-static lib_i32 take_aux_byte(core_machine *port, core_machine_pic_bus *master, core_machine_pic_bus *slave,
+static lib_i32 take_aux_byte(x86_core_machine *port, core_machine_pic_bus *master, core_machine_pic_bus *slave,
     lib_u8 expected)
 {
     core_machine_pic_refresh(master, slave);
@@ -35,13 +35,13 @@ static lib_i32 take_aux_byte(core_machine *port, core_machine_pic_bus *master, c
     return 1;
 }
 
-static void send_aux_command(core_machine *port, lib_u8 command)
+static void send_aux_command(x86_core_machine *port, lib_u8 command)
 {
     test_kbc_port_write(port, 0x0064u, 0xd4u);
     test_kbc_port_write(port, 0x0060u, command);
 }
 
-static void send_aux_parameter(core_machine *port, lib_u8 value)
+static void send_aux_parameter(x86_core_machine *port, lib_u8 value)
 {
     test_kbc_port_write(port, 0x0064u, 0xd4u);
     test_kbc_port_write(port, 0x0060u, value);
@@ -53,8 +53,8 @@ lib_i32 main(void)
     test_kbc_irq_wiring irq = {0};
     core_machine_pic_bus *master = LIB_NULL;
     core_machine_pic_bus *slave = LIB_NULL;
-    core_machine *machine = test_kbc_create(&kbc);
-    core_machine *port = machine;
+    x86_core_machine *machine = test_kbc_create(&kbc);
+    x86_core_machine *port = machine;
     lib_i32 failed = 0;
     lib_i32 stage = 1;
     lib_u8 index;
@@ -257,7 +257,7 @@ done:
     failed |= core_machine_pic_irq_source_is_asserted(irq.auxiliary);
 
     core_machine_pic_finalize(master, slave);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "M5::AUX:PORT:FAIL:STAGE=%d\n", stage);
         return 1;

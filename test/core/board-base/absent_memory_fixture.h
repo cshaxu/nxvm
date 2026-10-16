@@ -3,4 +3,6 @@
 #include "core/board-base/machine_board_interface.h"
 
 lib_bool test_board_absent_memory_is_configured(core_machine_board_state *board);
+lib_status test_board_absent_memory_registration_failure(core_machine_board_state *board,
+    const core_machine_absent_memory_config *config, lib_size *out_attempts);
 #endif

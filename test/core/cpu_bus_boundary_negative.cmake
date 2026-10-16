@@ -9,8 +9,8 @@ set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
 set(cpu_negative_files ${cpu_files})
 list(REMOVE_ITEM cpu_negative_files cpu_trace.h)
-set(paths src/core/machine/machine.c src/core/x86/machine.c
-    src/core/x86/cpu_bus.c src/core/board-base/board_advance.c
+set(paths src/core/machine/machine.c src/x86-core/machine/machine.c
+    src/x86-core/machine/cpu_bus.c src/core/board-base/board_advance.c
     test/core/board-base/core_machine_lea_smoke.c
     test/core/board-base/core_machine_gpr_mov_smoke.c
     test/core/board-base/core_machine_moffs_smoke.c
@@ -62,7 +62,7 @@ endif()
 # a reduction in the dependencies the gate must reject.
 set(cpu_negative_tokens t_ram t_port core_machine_transaction
     firmware_interrupt software_interrupt core_machine_pic_scan_interrupt
-    "#include \"core/x86/machine.h\""
+    "#include \"x86-core/machine/machine.h\""
     "#include \"outer/cpu_bus.h\"")
 list(LENGTH cpu_negative_files cpu_negative_file_count)
 list(LENGTH cpu_negative_tokens cpu_negative_token_count)
@@ -93,7 +93,7 @@ foreach(index RANGE 0 ${cpu_negative_last})
 endforeach()
 message(STATUS "CPU bus boundary: baseline and eight orthogonal controls pass")
 
-set(path "${WORK}/src/core/x86/cpu_bus.c")
+set(path "${WORK}/src/x86-core/machine/cpu_bus.c")
 file(READ "${path}" original)
 foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
         "machine->executor_cpu_instructions.data.except = 0\;"

@@ -137,17 +137,17 @@ static lib_i32 vm_cga_dos_has_prompt(const x86_video_snapshot *snapshot)
 static lib_i32 vm_cga_dos_run_until(vm_machine *session, lib_u32 limit,
     lib_i32 want_graphics)
 {
-    core_machine_run_budget budget = { 128u, 0u };
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget = { 128u, 0u };
+    x86_core_machine_run_result result;
     x86_video_snapshot snapshot;
     lib_u32 executed = 0u;
 
     while (executed < limit) {
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT ||
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||

@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_BOARD_INTERFACE_H
 #define CORE_MACHINE_BOARD_INTERFACE_H
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/board-base/timing_interface.h"
 #include "core/board-base/trace_interface.h"
 #include "core/board-base/controller_interface.h"
@@ -39,16 +39,16 @@ lib_status core_machine_board_construct_profile(core_machine_board_state *board,
 #define CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0 0x19u
 #define CORE_MACHINE_PC_AT_PORT_B 0x0061u
 
-/* Ratios are relative to core_machine elapsed ticks, not host time. */
+/* Ratios are relative to x86_core_machine elapsed ticks, not host time. */
 typedef struct core_machine_clock_plan {
-    core_machine_clock_ratio dma;
-    core_machine_clock_ratio pit;
+    x86_core_machine_clock_ratio dma;
+    x86_core_machine_clock_ratio pit;
     /* An optional second PIT chip is a distinct board clock consumer. */
-    core_machine_clock_ratio auxiliary_pit;
-    core_machine_clock_ratio rtc;
-    core_machine_clock_ratio vadp;
-    core_machine_clock_ratio kbc;
-    core_machine_clock_ratio provider;
+    x86_core_machine_clock_ratio auxiliary_pit;
+    x86_core_machine_clock_ratio rtc;
+    x86_core_machine_clock_ratio vadp;
+    x86_core_machine_clock_ratio kbc;
+    x86_core_machine_clock_ratio provider;
 } core_machine_clock_plan;
 
 /* The product selects its keyboard controller once when it freezes the Core
@@ -77,7 +77,7 @@ typedef struct core_machine_config {
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     lib_u32 ticks_per_instruction;
     x86_core_cpu_instruction_timing instruction_timing;
-    core_machine_transaction_contract transaction_contract;
+    x86_core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     /* Frozen shared system-PIT chip selection; zero preserves 8254 users. */
     x86_pit_personality shared_pit_personality;
@@ -85,15 +85,15 @@ typedef struct core_machine_config {
     /* Product profiles select one or two controllers explicitly.  Zero is
      * retained only for direct Core fixture compatibility and resolves to two. */
     lib_u8 dma_controller_count;
-    core_machine_time_axis time_axis;
+    x86_core_machine_time_axis time_axis;
     core_machine_pic_irq_timing pic_irq_timing;
-    core_machine_l1_compatibility_policy l1_compatibility_policy;
+    x86_core_machine_l1_compatibility_policy l1_compatibility_policy;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */
-    core_machine_retirement_time_contract retirement_time_contract;
+    x86_core_machine_retirement_time_contract retirement_time_contract;
     /* Read synchronously by create and copied into Core-owned storage; the
      * caller retains no lifetime obligation after core_machine_create(). */
-    const core_machine_retirement_qualification_descriptor *retirement_qualification;
+    const x86_core_machine_retirement_qualification_descriptor *retirement_qualification;
     lib_u32 kbc_typematic_initial_ticks;
     lib_u32 kbc_typematic_repeat_ticks;
     lib_u32 kbc_command_response_ticks;
@@ -225,7 +225,7 @@ typedef struct core_machine_plan_topology {
     lib_u8 absent_memory_count;
     core_machine_absent_memory_config absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     lib_u8 memory_alias_count;
-    core_machine_memory_alias_config memory_alias[CORE_MACHINE_MEMORY_ALIAS_COUNT];
+    x86_core_machine_memory_alias_config memory_alias[CORE_MACHINE_MEMORY_ALIAS_COUNT];
     lib_u8 planar_parity_present;
     core_machine_planar_parity_config planar_parity;
     lib_u8 display_present;
@@ -245,11 +245,11 @@ typedef struct core_machine_plan_topology {
 
 typedef struct core_machine_plan core_machine_plan;
 
-/* Optional board output is borrowed until core_machine_destroy. Supplied
+/* Optional board output is borrowed until x86_core_machine_destroy. Supplied
  * outputs clear on failure; construction has one allocation/cleanup owner. */
 lib_status core_machine_create(
     const core_machine_config *config,
-    core_machine **out_machine, core_machine_board_state **out_board);
+    x86_core_machine **out_machine, core_machine_board_state **out_board);
 
 lib_status core_machine_board_observe_a20(const core_machine_board_state *board,
     lib_bool *out_enabled);
@@ -278,9 +278,9 @@ lib_status core_machine_plan_configure_hdc(core_machine_plan *plan,
 lib_status core_machine_plan_bind_profile_factory(core_machine_plan *plan,
     core_machine_board_profile_factory factory, void *context);
 /* Both outputs publish only after complete construction. Board is borrowed:
- * core_machine_destroy releases it through the installed attachment. */
+ * x86_core_machine_destroy releases it through the installed attachment. */
 lib_status core_machine_create_from_plan(const core_machine_plan *plan,
-    core_machine **out_machine, core_machine_board_state **out_board);
+    x86_core_machine **out_machine, core_machine_board_state **out_board);
 /* A serial byte received from the keyboard attached to this machine's 8042.
  * Product host adapters query the selected scan set before forming this
  * device-native stream. */

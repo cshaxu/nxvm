@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
@@ -21,33 +21,33 @@ static lib_i32 verify_ratio_compare(void)
 
 static lib_i32 verify_wait_speed(vm_machine *session, vm_machine_speed speed)
 {
-    const core_machine_run_result waiting = {
-        .reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT
+    const x86_core_machine_run_result waiting = {
+        .reason = X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT
     };
     lib_u64 before;
     lib_u64 after;
-    core_machine_time_observation observation;
+    x86_core_machine_time_observation observation;
             lib_bool advanced = LIB_FALSE;
 
     if (vm_machine_set_speed(session, speed) != LIB_STATUS_OK ||
-        core_machine_get_elapsed_ticks(session->core_machine, &before) != LIB_STATUS_OK) {
+        x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &before) != LIB_STATUS_OK) {
         return 1;
     }
-    if (core_machine_reset(session->core_machine) != LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x0043u, 0x34u) !=
+    if (x86_core_machine_reset(session->x86_core_machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(session->x86_core_machine, 0x0043u, 0x34u) !=
             LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x0040u, 4u) !=
+        x86_core_machine_bus_write(session->x86_core_machine, 0x0040u, 4u) !=
             LIB_STATUS_OK ||
-        core_machine_bus_write(session->core_machine, 0x0040u, 0u) !=
+        x86_core_machine_bus_write(session->x86_core_machine, 0x0040u, 0u) !=
             LIB_STATUS_OK ||
-        core_machine_capture_time_observation(session->core_machine, &observation) !=
+        x86_core_machine_capture_time_observation(session->x86_core_machine, &observation) !=
             LIB_STATUS_OK || !observation.next_deadline_valid) return 1;
-    if (core_machine_get_elapsed_ticks(session->core_machine, &before) != LIB_STATUS_OK) {
+    if (x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &before) != LIB_STATUS_OK) {
         return 1;
     }
     vm_machine_executor_state_start(&session->control.state);
     if (vm_machine_waiting_advance(session, &waiting, &advanced) != LIB_STATUS_OK ||
-        !advanced || core_machine_get_elapsed_ticks(session->core_machine, &after) !=
+        !advanced || x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &after) !=
             LIB_STATUS_OK || after <= before) {
         vm_machine_executor_state_stop(&session->control.state);
         return 1;
@@ -62,7 +62,7 @@ static lib_i32 verify_wait_speed(vm_machine *session, vm_machine_speed speed)
     before = after;
     advanced = 1;
     if (vm_machine_waiting_advance(session, &waiting, &advanced) != LIB_STATUS_OK ||
-        advanced || core_machine_get_elapsed_ticks(session->core_machine, &after) !=
+        advanced || x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &after) !=
             LIB_STATUS_OK || after != before) {
         puts("Stopped HLT service must succeed without advancing time");
         return 1;

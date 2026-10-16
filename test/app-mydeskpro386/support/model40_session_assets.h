@@ -3,7 +3,6 @@
 #define TEST_CORE_MACHINE_QUALIFICATION_MODEL40_SESSION_ASSETS_H
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/device_support_interface.h"
 
 #include "core/chips/rtc146818/rtc146818_interface.h"
 #include "core/machine/machine_interface.h"
@@ -42,8 +41,8 @@ static inline void vm_model40_fixture_cmos_seed(
     bytes[CORE_MACHINE_RTC_EXTMEM_MSB] = 0x04u;
     for (index = 0x10u; index < 0x2eu; ++index) checksum =
         (lib_u16)(checksum + bytes[index]);
-    bytes[0x2eu] = CORE_MACHINE_MASK_U8(checksum >> 8u);
-    bytes[0x2fu] = CORE_MACHINE_MASK_U8(checksum);
+    bytes[0x2eu] = ((lib_u8)(checksum >> 8u));
+    bytes[0x2fu] = ((lib_u8)(checksum));
 }
 
 static inline lib_status vm_model40_fixture_create_bytes_with_floppy_format(

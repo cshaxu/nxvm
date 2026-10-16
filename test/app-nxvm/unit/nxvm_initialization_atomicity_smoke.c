@@ -76,12 +76,12 @@ static lib_i32 session_core_config_is_applied(const vm_machine *session,
     x86_core_cpu_profile observed_cpu_profile;
     x86_fpu_profile observed_fpu_profile;
 
-    return session != LIB_NULL && session->core_machine != LIB_NULL &&
-        core_machine_get_memory_bytes(session->core_machine,
+    return session != LIB_NULL && session->x86_core_machine != LIB_NULL &&
+        x86_core_machine_get_memory_bytes(session->x86_core_machine,
             &observed_memory_bytes) == LIB_STATUS_OK &&
-        core_machine_get_cpu_profile(session->core_machine,
+        x86_core_machine_get_cpu_profile(session->x86_core_machine,
             &observed_cpu_profile) == LIB_STATUS_OK &&
-        core_machine_get_fpu_profile(session->core_machine,
+        x86_core_machine_get_fpu_profile(session->x86_core_machine,
             &observed_fpu_profile) == LIB_STATUS_OK &&
         observed_memory_bytes == memory_bytes &&
         observed_cpu_profile == cpu_profile && observed_fpu_profile == fpu_profile;
@@ -156,7 +156,7 @@ static lib_i32 verify_recovery(void)
     vm_machine *session = LIB_NULL;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || !session->active || session->core_machine == LIB_NULL) {
+        session == LIB_NULL || !session->active || session->x86_core_machine == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }

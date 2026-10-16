@@ -135,19 +135,19 @@ static const core_machine_media_provider core_machine_hdc_fixture_provider = {
     .write_record = core_machine_hdc_fixture_write_record,
 };
 
-static lib_i32 core_machine_hdc_write(core_machine *machine, lib_u16 port,
+static lib_i32 core_machine_hdc_write(x86_core_machine *machine, lib_u16 port,
     lib_u32 value)
 {
-    return core_machine_bus_write(machine, port, value) == LIB_STATUS_OK;
+    return x86_core_machine_bus_write(machine, port, value) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_hdc_read(core_machine *machine, lib_u16 port,
+static lib_i32 core_machine_hdc_read(x86_core_machine *machine, lib_u16 port,
     lib_u32 *out_value)
 {
-    return core_machine_bus_read(machine, port, out_value) == LIB_STATUS_OK;
+    return x86_core_machine_bus_read(machine, port, out_value) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_hdc_command(core_machine *machine, core_machine_board_state *board,
+static lib_i32 core_machine_hdc_command(x86_core_machine *machine, core_machine_board_state *board,
     const core_machine_hdc_task_file_config *config, lib_u8 command)
 {
     if (!core_machine_hdc_write(machine, config->status_command_port, command)) return 0;
@@ -155,7 +155,7 @@ static lib_i32 core_machine_hdc_command(core_machine *machine, core_machine_boar
     return 1;
 }
 
-static lib_i32 core_machine_hdc_program_chs(core_machine *machine,
+static lib_i32 core_machine_hdc_program_chs(x86_core_machine *machine,
     const core_machine_hdc_task_file_config *config)
 {
     return core_machine_hdc_write(machine, config->sector_count_port, 1u) &&
@@ -165,7 +165,7 @@ static lib_i32 core_machine_hdc_program_chs(core_machine *machine,
         core_machine_hdc_write(machine, config->drive_head_port, 0u);
 }
 
-static lib_i32 core_machine_hdc_drain(core_machine *machine, core_machine_board_state *board,
+static lib_i32 core_machine_hdc_drain(x86_core_machine *machine, core_machine_board_state *board,
     const core_machine_hdc_task_file_config *config, lib_u16 *first_word)
 {
     lib_u32 word;
@@ -178,7 +178,7 @@ static lib_i32 core_machine_hdc_drain(core_machine *machine, core_machine_board_
     return 1;
 }
 
-static lib_i32 core_machine_hdc_drain_long(core_machine *machine,
+static lib_i32 core_machine_hdc_drain_long(x86_core_machine *machine,
     core_machine_board_state *board, const core_machine_hdc_task_file_config *config,
     lib_u16 *first_word)
 {
@@ -193,7 +193,7 @@ static lib_i32 core_machine_hdc_drain_long(core_machine *machine,
     return hdc_observe(board->hdc).phase == X86_HDC_PHASE_IDLE;
 }
 
-static lib_i32 core_machine_hdc_fill(core_machine *machine, core_machine_board_state *board,
+static lib_i32 core_machine_hdc_fill(x86_core_machine *machine, core_machine_board_state *board,
     const core_machine_hdc_task_file_config *config, lib_u16 first_word)
 {
     for (lib_u32 index = 0u; index < 256u; ++index) {
@@ -231,7 +231,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
     };
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_hdc_topology topology = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_u32 status = 0u;
     lib_u16 word = 0u;
@@ -250,8 +250,8 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
         topology.media_id = 1u;
             topology.config = hdc_plan;
         if (core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
             hdc_observe(board->hdc).error != X86_HDC_ERROR_DIAGNOSTIC_OK ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_write(machine, hdc_config.drive_head_port, 0xa0u) ||
@@ -270,7 +270,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
                 hdc_config.alternate_status_device_control_port, 0x08u) ||
             hdc_observe(board->hdc).fixed_disk_register != 0x08u ||
             hdc_observe(board->hdc).drive_head != 0xa0u ||
-            core_machine_bus_read(machine, hdc_config.alternate_status_device_control_port,
+            x86_core_machine_bus_read(machine, hdc_config.alternate_status_device_control_port,
                 &status) != LIB_STATUS_UNSUPPORTED ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_command(machine, board, &hdc_config, 0x91u) ||
@@ -341,7 +341,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
         hdc_service(board->hdc);
         if (hdc_observe(board->hdc).phase != X86_HDC_PHASE_IDLE) failed = 1;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
     return failed;
 }
@@ -373,7 +373,7 @@ lib_i32 main(void)
     };
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_hdc_topology topology = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_hdc *hdc;
     lib_u32 status = 0u;
@@ -406,8 +406,8 @@ lib_i32 main(void)
             }
             topology.config = hdc_plan;
             if (!failed && (core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK ||
-                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-                core_machine_reset(machine) != LIB_STATUS_OK)) {
+                x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK)) {
                 failed |= 0x04;
             } else {
                 if (hdc_observe(hdc).error != 0x01u || hdc_observe(hdc).sector_count != 1u ||
@@ -496,7 +496,7 @@ lib_i32 main(void)
             }
         }
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
     failed |= core_machine_hdc_test_ibm_wd1003();
     if (failed) {

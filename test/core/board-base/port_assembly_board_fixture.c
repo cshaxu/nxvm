@@ -1,8 +1,49 @@
 #include "lib/types/types_interface.h"
 #include "port_assembly_board_fixture.h"
+#include "board_binding_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "core/chips/fdc8272/fdc8272_interface.h"
 #include "core/chips/hdc/hdc_interface.h"
+
+static lib_bool reject_ports;
+static lib_bool port_rejection_reached;
+static lib_size submitted_ports;
+
+void test_port_assembly_reject_ports(lib_bool reject)
+{
+    reject_ports = reject;
+    port_rejection_reached = LIB_FALSE;
+    submitted_ports = 0u;
+    test_board_reject_ports(reject);
+}
+
+lib_bool test_port_assembly_ports_rejected(lib_size count)
+{
+    return (port_rejection_reached && submitted_ports == count) ||
+        test_board_ports_rejected(count);
+}
+
+lib_size test_port_assembly_submitted_port_count(void)
+{
+    return submitted_ports + test_board_submitted_port_count();
+}
+
+static lib_status port_assembly_install_ports(x86_core_machine *machine,
+    const x86_core_machine_port_route *routes, lib_size count)
+{
+    submitted_ports = count;
+    if (reject_ports) {
+        port_rejection_reached = LIB_TRUE;
+        return LIB_STATUS_NO_MEMORY;
+    }
+    return x86_core_machine_install_port_routes(machine, routes, count);
+}
+
+/* Reject the owned adapter's public publication call, not private Core nodes. */
+#define x86_core_machine_install_port_routes port_assembly_install_ports
+#include "core/board-base/pit_bus.c"
+#include "core/board-base/pic_bus.c"
+#undef x86_core_machine_install_port_routes
 
 static lib_bool fail_fdc_create;
 static lib_status port_assembly_create_fdc(const x86_fdc_connection *connection,
@@ -17,7 +58,9 @@ static lib_status port_assembly_create_fdc(const x86_fdc_connection *connection,
 
 /* Inject a failed dependency at the adapter's existing create boundary. */
 #define x86_fdc_create port_assembly_create_fdc
+#define x86_core_machine_install_port_routes port_assembly_install_ports
 #include "core/board-base/fdc.c"
+#undef x86_core_machine_install_port_routes
 #undef x86_fdc_create
 
 static lib_bool fail_hdc_create;
@@ -32,7 +75,9 @@ static lib_status port_assembly_create_hdc(const x86_hdc_config *config,
 }
 
 #define x86_hdc_create port_assembly_create_hdc
+#define x86_core_machine_install_port_routes port_assembly_install_ports
 #include "core/board-base/hdc.c"
+#undef x86_core_machine_install_port_routes
 #undef x86_hdc_create
 
 test_port_assembly_board_observation test_port_assembly_board_capture(
@@ -159,6 +204,12 @@ lib_status test_port_assembly_hdc_address_read(core_machine_board_state *board,
     lib_u32 *out_value)
 {
     return core_machine_hdc_port_provider()->read(board->hdc, 0x03f7u, 0u, out_value);
+}
+
+lib_status test_port_assembly_fdc_address_read(core_machine_board_state *board,
+    lib_u32 *out_value)
+{
+    return core_machine_fdc_port_read(board->fdc, 0x03f7u, 0u, out_value);
 }
 
 lib_i32 test_port_assembly_refresh_count(core_machine_board_state *board)

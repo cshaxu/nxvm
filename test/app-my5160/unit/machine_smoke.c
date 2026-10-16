@@ -3,7 +3,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
-#include "../../core/board-base/composition/composition_fixture.h"
+#include "../../core/board-base/composition/bus_fixture.h"
 #include "../../core/board-base/support/composition_fixture.h"
 #include "../../core/board-base/support/controller_fixture.h"
 #include "core/board-base/machine_board_interface.h"
@@ -50,7 +50,7 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
         profile.values.core.configuration.cpu_profile !=
             X86_CORE_CPU_PROFILE_8088 ||
         profile.values.core.configuration.l1_compatibility_policy !=
-            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
+            X86_CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         profile.topology.absent_memory_count != 3u ||
         profile.topology.absent_memory[0].physical_start != 0x00040000u ||
         profile.topology.absent_memory[0].bytes != 0x00060000u ||
@@ -132,7 +132,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_media_registry *media = LIB_NULL;
@@ -158,43 +158,43 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     composition = test_board_capture_composition(board);
     if (composition.fdc.irq != 6u || composition.fdc.dma_channel != 2u ||
         composition.fdc.clock_ticks_per_second != 4772727u ||
-        !test_core_port_has_read(machine, 0x03f4u) ||
-        !test_core_port_has_read(machine, 0x03f5u) ||
-        !test_core_port_has_write(machine, 0x03f2u) ||
-        !test_core_port_has_write(machine, 0x03f5u) ||
-        test_core_port_has_read(machine, 0x03f7u) ||
-        test_core_port_has_write(machine, 0x03f7u) ||
-        !test_core_port_has_write(machine, 0x03d4u) ||
-        !test_core_port_has_read(machine, 0x03d5u) ||
-        !test_core_port_has_write(machine, 0x03d8u) ||
-        !test_core_port_has_write(machine, 0x03d9u) ||
-        !test_core_port_has_read(machine, 0x03dau) ||
-        test_core_port_has_read(machine, 0x03c0u) ||
+        test_core_machine_fixture_expect_port(machine, 0x03f4u, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03f5u, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03f2u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03f5u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03f7u, LIB_FALSE, LIB_FALSE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03f7u, LIB_TRUE, LIB_FALSE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03d4u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03d5u, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03d8u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03d9u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03dau, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x03c0u, LIB_FALSE, LIB_FALSE) ||
         !composition.hdc_configured ||
         composition.hdc.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
         composition.hdc.bus.xebec.drive_type !=
             CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
-        !test_core_port_has_read(machine, 0x0320u) ||
-        !test_core_port_has_write(machine, 0x0320u) ||
-        !test_core_port_has_read(machine, 0x0321u) ||
-        !test_core_port_has_write(machine, 0x0321u) ||
-        !test_core_port_has_read(machine, 0x0322u) ||
-        !test_core_port_has_write(machine, 0x0322u) ||
-        test_core_port_has_read(machine, 0x0323u) ||
-        !test_core_port_has_write(machine, 0x0323u) ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_memory_read(machine, 0x000c8000u,
+        test_core_machine_fixture_expect_port(machine, 0x0320u, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0320u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0321u, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0321u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0322u, LIB_FALSE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0322u, LIB_TRUE, LIB_TRUE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0323u, LIB_FALSE, LIB_FALSE) ||
+        test_core_machine_fixture_expect_port(machine, 0x0323u, LIB_TRUE, LIB_TRUE) ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x000c8000u,
         &open_bus_byte, sizeof(open_bus_byte)) != LIB_STATUS_OK ||
         open_bus_byte != 0xffu ||
-        core_machine_bus_write(machine, 0x03d8u, 0x0du) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x000b8000u, cells, sizeof(cells)) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x03d8u, 0x0du) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x000b8000u, cells, sizeof(cells)) != LIB_STATUS_OK ||
         core_machine_capture_display_snapshot(board, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu) goto done;
     failed = 0;
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     core_machine_plan_destroy(plan);
     return failed;
@@ -218,9 +218,9 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
 
     if (vm_xt_test_create(
             &config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || session->core_machine == LIB_NULL ||
+        session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
-        core_machine_memory_read(session->core_machine, 0x000c0000u,
+        x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u,
         observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x55u ||
         observed[1u] != 0xaau) goto done;
     vm_machine_destroy(session);

@@ -2,13 +2,12 @@
 #include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "core/board-base/machine_board_state.h"
-#include "core/x86/debug_interface.h"
-#include "core/x86/device_support_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 /* REAL_UD_DELIVERY_CONTRACT: this owner installs and observes vector 6. */
 
 typedef struct debug_board_context {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
 } debug_board_context;
 
@@ -19,7 +18,7 @@ typedef struct debug_board_context {
 #define DEBUG_BOARD_CODE 0x2000u
 
 static lib_i32 debug_board_create(x86_core_cpu_profile profile,
-    debug_board_context *context, core_machine **out_machine)
+    debug_board_context *context, x86_core_machine **out_machine)
 {
     const core_machine_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -38,70 +37,70 @@ static lib_i32 debug_board_create(x86_core_cpu_profile profile,
     lib_memory_set(context, 0, sizeof(*context));
     return core_machine_create(&config, &context->machine, &context->board) ==
             LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(context->machine) == LIB_STATUS_OK &&
-        core_machine_reset(context->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(context->machine, &entry) == LIB_STATUS_OK &&
+        x86_core_machine_freeze_execution_providers(context->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(context->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(context->machine, &entry) == LIB_STATUS_OK &&
         ((*out_machine = context->machine) != LIB_NULL);
 }
 
-static lib_i32 debug_board_patch(core_machine *machine, lib_u32 mask,
+static lib_i32 debug_board_patch(x86_core_machine *machine, lib_u32 mask,
     const lib_u32 *values)
 {
     x86_core_cpu_debug_register_patch patch = {.mask = mask};
 
     lib_memory_copy(patch.values, values, sizeof(patch.values));
-    return core_machine_debug_patch_registers(machine, &patch) == LIB_STATUS_OK;
+    return x86_core_machine_debug_patch_registers(machine, &patch) == LIB_STATUS_OK;
 }
 
-static lib_i32 debug_board_snapshot(core_machine *machine,
+static lib_i32 debug_board_snapshot(x86_core_machine *machine,
     x86_core_cpu_debug_cpu_snapshot *out)
 {
-    return core_machine_debug_capture_cpu_snapshot(machine,
+    return x86_core_machine_debug_capture_cpu_snapshot(machine,
         X86_CORE_CPU_SNAPSHOT_CURRENT, out) == LIB_STATUS_OK;
 }
 
-static lib_i32 debug_board_install_real_vector(core_machine *machine,
+static lib_i32 debug_board_install_real_vector(x86_core_machine *machine,
     lib_u8 vector, lib_u16 offset)
 {
     const lib_u8 handler = 0xf4u;
     const lib_u8 entry[] = {(lib_u8)offset, (lib_u8)(offset >> 8u), 0u, 0u};
 
-    return core_machine_memory_write(machine, (lib_u32)vector * 4u, entry,
-        sizeof(entry)) == LIB_STATUS_OK && core_machine_memory_write(machine,
+    return x86_core_machine_memory_write(machine, (lib_u32)vector * 4u, entry,
+        sizeof(entry)) == LIB_STATUS_OK && x86_core_machine_memory_write(machine,
         offset, &handler, sizeof(handler)) == LIB_STATUS_OK;
 }
 
-static lib_i32 debug_board_read_real_frame(core_machine *machine,
+static lib_i32 debug_board_read_real_frame(x86_core_machine *machine,
     const x86_core_cpu_debug_cpu_snapshot *after, lib_u16 *out)
 {
-    return core_machine_debug_read_memory(machine, after->ss.base +
+    return x86_core_machine_debug_read_memory(machine, after->ss.base +
         (lib_u16)after->esp, out, 3u * sizeof(*out)) == LIB_STATUS_OK;
 }
 
-static lib_i32 debug_board_run_at(core_machine *machine, lib_u32 address,
-    const lib_u8 *code, lib_size bytes, core_machine_run_budget budget,
-    core_machine_run_result *out_result,
+static lib_i32 debug_board_run_at(x86_core_machine *machine, lib_u32 address,
+    const lib_u8 *code, lib_size bytes, x86_core_machine_run_budget budget,
+    x86_core_machine_run_result *out_result,
     x86_core_cpu_debug_cpu_snapshot *out_after,
     x86_core_cpu_diagnostic *out_diagnostic)
 {
-    return core_machine_memory_write(machine, address, code, bytes) == LIB_STATUS_OK &&
-        core_machine_run(machine, budget, out_result) ==
-            LIB_STATUS_OK && core_machine_get_cpu_diagnostic(machine,
+    return x86_core_machine_memory_write(machine, address, code, bytes) == LIB_STATUS_OK &&
+        x86_core_machine_run(machine, budget, out_result) ==
+            LIB_STATUS_OK && x86_core_machine_get_cpu_diagnostic(machine,
             out_diagnostic) == LIB_STATUS_OK && debug_board_snapshot(machine,
             out_after);
 }
 
-static lib_i32 debug_board_run(core_machine *machine, const lib_u8 *code,
-    lib_size bytes, core_machine_run_result *out_result,
+static lib_i32 debug_board_run(x86_core_machine *machine, const lib_u8 *code,
+    lib_size bytes, x86_core_machine_run_result *out_result,
     x86_core_cpu_debug_cpu_snapshot *out_after,
     x86_core_cpu_diagnostic *out_diagnostic)
 {
     return debug_board_run_at(machine, 0u, code, bytes,
-        (core_machine_run_budget){32u,0u}, out_result, out_after,
+        (x86_core_machine_run_budget){32u,0u}, out_result, out_after,
         out_diagnostic);
 }
 
-static lib_i32 debug_board_boot_protected(core_machine *machine)
+static lib_i32 debug_board_boot_protected(x86_core_machine *machine)
 {
     static const lib_u8 gdt_pointer[] = {0x17u,0x00u,0x00u,0x03u,0u,0u};
     static const lib_u8 gdt[] = {
@@ -116,40 +115,40 @@ static lib_i32 debug_board_boot_protected(core_machine *machine)
         0x8eu,0xd0u,0xbcu,0x00u,0x80u,
         0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_status status;
     lib_i32 ready;
 
-    ready = core_machine_memory_write(machine, DEBUG_BOARD_GDT_POINTER,
+    ready = x86_core_machine_memory_write(machine, DEBUG_BOARD_GDT_POINTER,
         gdt_pointer, sizeof(gdt_pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, DEBUG_BOARD_GDT, gdt, sizeof(gdt)) ==
-            LIB_STATUS_OK && core_machine_memory_write(machine, 0u, code,
+        x86_core_machine_memory_write(machine, DEBUG_BOARD_GDT, gdt, sizeof(gdt)) ==
+            LIB_STATUS_OK && x86_core_machine_memory_write(machine, 0u, code,
             sizeof(code)) == LIB_STATUS_OK;
-    status = ready ? core_machine_run(machine, (core_machine_run_budget){9u,0u},
+    status = ready ? x86_core_machine_run(machine, (x86_core_machine_run_budget){9u,0u},
         &result) : LIB_STATUS_INVALID_STATE;
     return ready && status == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET;
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET;
 }
 
-static lib_i32 debug_board_install_protected_vector(core_machine *machine)
+static lib_i32 debug_board_install_protected_vector(x86_core_machine *machine)
 {
     static const lib_u8 idt_pointer[] = {0x0fu,0x00u,0x00u,0x04u,0u,0u};
     static const lib_u8 lidt[] = {0x0fu,0x01u,0x1eu,0x20u,0x01u};
     static const lib_u8 handler = 0xf4u;
     const lib_u8 gate[] = {0x00u,0x01u,0x08u,0x00u,0u,0x8eu,0u,0u};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_i32 ready;
 
-    ready = core_machine_memory_write(machine, DEBUG_BOARD_IDT_POINTER,
+    ready = x86_core_machine_memory_write(machine, DEBUG_BOARD_IDT_POINTER,
         idt_pointer, sizeof(idt_pointer)) == LIB_STATUS_OK &&
-        core_machine_memory_write(machine, DEBUG_BOARD_IDT + 8u, gate,
-            sizeof(gate)) == LIB_STATUS_OK && core_machine_memory_write(machine,
+        x86_core_machine_memory_write(machine, DEBUG_BOARD_IDT + 8u, gate,
+            sizeof(gate)) == LIB_STATUS_OK && x86_core_machine_memory_write(machine,
             DEBUG_BOARD_CODE + 0x100u, &handler, sizeof(handler)) == LIB_STATUS_OK &&
         debug_board_run_at(machine, DEBUG_BOARD_CODE, lidt, sizeof(lidt),
-            (core_machine_run_budget){1u,0u}, &result, &after, &diagnostic) &&
-        result.reason == CORE_MACHINE_STOP_BUDGET && after.eip == sizeof(lidt);
+            (x86_core_machine_run_budget){1u,0u}, &result, &after, &diagnostic) &&
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET && after.eip == sizeof(lidt);
     return ready;
 }
 
@@ -158,8 +157,8 @@ static lib_i32 debug_board_test_real_delivery(void)
     static const lib_u8 mov_dr[] = {0x0fu,0x21u,0xc0u};
     static const lib_u8 nop[] = {0x90u};
     debug_board_context context;
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 frame[3u] = {0};
@@ -177,12 +176,12 @@ static lib_i32 debug_board_test_real_delivery(void)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS), values) ||
         !debug_board_run(machine, mov_dr, sizeof(mov_dr), &result, &after,
-            &diagnostic) || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            &diagnostic) || result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         !diagnostic.last_delivered_exception.valid ||
         diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
         after.eip != 0x0100u || !debug_board_read_real_frame(machine, &after,
             frame) || frame[0] != 0u || frame[1] != 0u;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 0;
 
     failed = !debug_board_create(X86_CORE_CPU_PROFILE_80286, &context,
@@ -192,12 +191,12 @@ static lib_i32 debug_board_test_real_delivery(void)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS), values) ||
         !debug_board_run(machine, mov_dr, sizeof(mov_dr), &result, &after,
-            &diagnostic) || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            &diagnostic) || result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         !diagnostic.last_delivered_exception.valid ||
         diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
         after.eip != 0x0100u || !debug_board_read_real_frame(machine, &after,
             frame) || frame[0] != 0u || frame[1] != 0u;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 0;
 
     failed = !debug_board_create(X86_CORE_CPU_PROFILE_80386, &context,
@@ -207,12 +206,12 @@ static lib_i32 debug_board_test_real_delivery(void)
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS), values) ||
         !debug_board_run(machine, nop, sizeof(nop), &result, &after,
-            &diagnostic) || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            &diagnostic) || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         !diagnostic.last_delivered_exception.valid ||
         diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
         after.eip != 0x0101u || !debug_board_read_real_frame(machine, &after,
             frame) || frame[0] != 1u || frame[1] != 0u;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -220,9 +219,9 @@ static lib_i32 debug_board_test_pic_order(void)
 {
     static const lib_u8 mov_dr_nop[] = {0x0fu,0x23u,0xc1u,0x90u};
     debug_board_context context;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_pic_irq_source *source = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     const lib_u32 values[X86_CORE_CPU_DEBUG_REGISTER_COUNT] = {
@@ -246,11 +245,11 @@ static lib_i32 debug_board_test_pic_order(void)
         core_machine_pic_irq_source_deassert(source);
         failed = !debug_board_run(machine, mov_dr_nop, sizeof(mov_dr_nop),
             &result, &after, &diagnostic) || result.reason !=
-                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
+                X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
             after.eip != 0x0101u ||
             (test_pic_read(context.board->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) == 0u;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -267,8 +266,8 @@ static lib_i32 debug_board_test_protected_trap(void)
 
     for (index = 0u; index != sizeof(prefixes) / sizeof(prefixes[0]); ++index) {
         debug_board_context context;
-        core_machine *machine = LIB_NULL;
-        core_machine_run_result result = {0};
+        x86_core_machine *machine = LIB_NULL;
+        x86_core_machine_run_result result = {0};
         x86_core_cpu_debug_cpu_snapshot after = {0};
         x86_core_cpu_diagnostic diagnostic = {0};
         lib_u8 code[3u] = {0x90u,0u,0u};
@@ -285,12 +284,12 @@ static lib_i32 debug_board_test_protected_trap(void)
             !debug_board_patch(machine,
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS), values) ||
             !debug_board_run_at(machine, DEBUG_BOARD_CODE + 5u, code, bytes,
-                (core_machine_run_budget){32u,0u}, &result, &after, &diagnostic) ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                (x86_core_machine_run_budget){32u,0u}, &result, &after, &diagnostic) ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
             after.eip != 0x0101u;
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 0;
     }
     return 1;
@@ -300,8 +299,8 @@ static lib_i32 debug_board_expect_real_ud(x86_core_cpu_profile profile,
     const lib_u8 *code, lib_size bytes)
 {
     debug_board_context context;
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 frame[3u] = {0};
@@ -317,27 +316,27 @@ static lib_i32 debug_board_expect_real_ud(x86_core_cpu_profile profile,
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS), values);
     if (profile == X86_CORE_CPU_PROFILE_8086) {
-        const lib_status status = passed && core_machine_memory_write(machine,
-            0u, code, bytes) == LIB_STATUS_OK ? core_machine_run(machine,
-            (core_machine_run_budget){32u,0u}, &result) : LIB_STATUS_INVALID_STATE;
+        const lib_status status = passed && x86_core_machine_memory_write(machine,
+            0u, code, bytes) == LIB_STATUS_OK ? x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){32u,0u}, &result) : LIB_STATUS_INVALID_STATE;
 
         passed = status == LIB_STATUS_INTERNAL_ERROR &&
-            result.reason == CORE_MACHINE_STOP_FAULT &&
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK &&
+            result.reason == X86_CORE_MACHINE_STOP_FAULT &&
+            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK &&
             debug_board_snapshot(machine, &after) && diagnostic.first_fault.valid &&
             diagnostic.first_fault.exception_mask == VCPUINS_EXCEPT_UD &&
             !diagnostic.last_delivered_exception.valid && after.eip == 0u &&
             after.esp == 0x8000u;
     } else {
         passed = passed && debug_board_run(machine, code, bytes, &result, &after,
-            &diagnostic) && result.reason == CORE_MACHINE_STOP_BUDGET &&
+            &diagnostic) && result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
             diagnostic.last_delivered_exception.valid &&
             diagnostic.last_delivered_exception.exception_mask == VCPUINS_EXCEPT_UD &&
             after.eip == 0x0100u && debug_board_read_real_frame(machine, &after,
             frame) && frame[0] == 0u && frame[1] == 0u;
     }
 
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return passed;
 }
 
@@ -379,8 +378,8 @@ static lib_i32 debug_board_test_protected_breakpoint(void)
         [59u] = 0x90u
     };
     debug_board_context context;
-    core_machine *machine = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_i32 failed = !debug_board_create(X86_CORE_CPU_PROFILE_80386,
@@ -389,12 +388,12 @@ static lib_i32 debug_board_test_protected_breakpoint(void)
     if (!failed) failed = !debug_board_boot_protected(machine) ||
         !debug_board_install_protected_vector(machine) ||
         !debug_board_run_at(machine, DEBUG_BOARD_CODE + 5u, code, sizeof(code),
-            (core_machine_run_budget){32u,0u}, &result, &after, &diagnostic) ||
-        result.reason != CORE_MACHINE_STOP_BUDGET ||
+            (x86_core_machine_run_budget){32u,0u}, &result, &after, &diagnostic) ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         !diagnostic.last_delivered_exception.valid ||
         diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
         after.eip != 0x0100u;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -402,9 +401,9 @@ static lib_i32 debug_board_test_trap_priority(void)
 {
     static const lib_u8 nop[] = {0x90u};
     debug_board_context context;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_pic_irq_source *source = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     const lib_u32 values[X86_CORE_CPU_DEBUG_REGISTER_COUNT] = {
@@ -427,14 +426,14 @@ static lib_i32 debug_board_test_trap_priority(void)
         core_machine_pic_irq_source_deassert(source);
         failed = !debug_board_run(machine, nop, sizeof(nop), &result, &after,
             &diagnostic) || result.reason !=
-                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
             after.eip != 0x0101u ||
             (test_pic_read(context.board->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) != 0u ||
             (test_pic_read(context.board->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

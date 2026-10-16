@@ -33,7 +33,7 @@ lib_status mydeskpro386_external_rom_create(
 }
 
 static lib_status mydeskpro386_firmware_configure(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     const mydeskpro386_external_rom *rom =
         (const mydeskpro386_external_rom *)opaque;
@@ -77,7 +77,7 @@ static lib_status mydeskpro386_firmware_configure(void *opaque,
 }
 
 static lib_status mydeskpro386_firmware_reset(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     (void)firmware;
     return mydeskpro386_external_rom_is_valid(
@@ -85,13 +85,13 @@ static lib_status mydeskpro386_firmware_reset(void *opaque,
         LIB_STATUS_INVALID_ARGUMENT;
 }
 
-static const core_machine_firmware_provider mydeskpro386_provider = {
+static const x86_core_machine_firmware_provider mydeskpro386_provider = {
     mydeskpro386_firmware_configure,
     mydeskpro386_firmware_reset,
     LIB_NULL
 };
 
-const core_machine_firmware_provider *mydeskpro386_firmware_provider(void)
+const x86_core_machine_firmware_provider *mydeskpro386_firmware_provider(void)
 {
     return &mydeskpro386_provider;
 }

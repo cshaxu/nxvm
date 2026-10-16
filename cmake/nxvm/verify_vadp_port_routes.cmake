@@ -10,9 +10,9 @@ file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" app_targets)
 foreach(required "append_ports(routes, 0u, cga_ports"
     "compaq ? compaq_ports : generic_ports"
     "route_count = append_ports(routes, route_count, vga_ports"
-    "core_machine_install_port_routes(machine, routes"
-    "core_machine_install_port_routes(adapter->machine, routes, route_count)"
-    "core_machine_remove_port_routes(adapter->machine, adapter)")
+    "x86_core_machine_install_port_routes(machine, routes"
+    "x86_core_machine_install_port_routes(adapter->machine, routes, route_count)"
+    "x86_core_machine_remove_port_routes(adapter->machine, adapter)")
     string(FIND "${source}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "VADP Core-owned route boundary is missing ${required}")
@@ -20,8 +20,8 @@ foreach(required "append_ports(routes, 0u, cga_ports"
 endforeach()
 
 foreach(forbidden "t_port" "core_machine_port_add_"
-    "core_machine_port_registration_begin" "core_machine_port_rollback_registration"
-    "core_machine_port_unregister_owner" "adapter->port")
+    "x86_core_machine_port_registration_begin" "x86_core_machine_port_rollback_registration"
+    "x86_core_machine_port_unregister_owner" "adapter->port")
     string(FIND "${source}${header}" "${forbidden}" position)
     if(NOT position LESS 0)
         message(FATAL_ERROR "VADP retains raw port access: ${forbidden}")

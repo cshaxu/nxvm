@@ -5,8 +5,8 @@
 
 #include <windows.h>
 
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "test/core/machine/support/nxvm_presentation_capture.h"
 #include "test/core/setup/session_ini.h"
 #include "core/machine/control.h"
@@ -95,7 +95,7 @@ static void vm_windows31_checkpoint_report(const vm_machine *session, const char
     if (session == LIB_NULL) return;
     printf("NXVM:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d\n", stage,
         vm_machine_control_is_running(&session->control));
-    if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+    if (x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
 
@@ -197,7 +197,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (integration_ini_session_pause(&ini_session, VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
         goto fail;
     stage = "bda-hdd-count";
-    if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
+    if (x86_core_machine_debug_read_memory(session->x86_core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) != LIB_STATUS_OK) goto fail;
     hdd_count = hdd_bda[1];
     /* Stop can cold-reset Core and clear BDA; observe the paused guest first. */

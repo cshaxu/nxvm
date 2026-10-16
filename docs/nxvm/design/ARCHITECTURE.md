@@ -85,11 +85,14 @@ verification and acceptance; the task history retains the cutover sequence.
   corresponding tests, with no PC/App or execution-Machine dependency. CPU
   consumes FPU's public interface and Lib Types; FPU consumes Lib Types only.
   Existing instruction tables, supported profiles and qualification limits
-  remain unchanged. Neutral execution extraction is a later T561 batch.
+  remain unchanged. `x86-core/machine` composes those public chip contracts,
+  owning the sole guest timeline, memory/port routes, transactions, bounded
+  execution and debug observation. Its matching tests use public CPU/FPU
+  contracts; private layouts remain at the chip test owner.
 - `core/chips` owns the extracted PIC, PIT, DMA, RTC, KBC, PPI,
   keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
   independent-chip source ownership. The neutral executor,
-  guest timeline, memory/port routes and plan transaction live in `core/x86`.
+  guest timeline, memory/port routes and plan transaction live in `x86-core/machine`.
   Its production target depends only on Types and X86 Core CPU/FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
   and display-provider slot in `core/board-base`, consumed through public

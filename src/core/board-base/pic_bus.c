@@ -75,10 +75,10 @@ static lib_status pic_bus_write(void *owner, lib_u16 port_id, lib_u32 value)
 }
 
 lib_status core_machine_pic_initialize(core_machine_pic_bus **out_master,
-    core_machine_pic_bus **out_slave, core_machine *machine,
+    core_machine_pic_bus **out_slave, x86_core_machine *machine,
     core_machine_pic_topology topology)
 {
-    core_machine_port_route routes[4];
+    x86_core_machine_port_route routes[4];
     lib_status status;
     lib_u8 index;
     lib_u8 count;
@@ -105,10 +105,10 @@ lib_status core_machine_pic_initialize(core_machine_pic_bus **out_master,
     for (index = 0u; index < count; ++index) {
         core_machine_pic_bus *bus = index < 2u ? master : slave;
         lib_u16 address = (lib_u16)((index < 2u ? 0x20u : 0xa0u) + (index & 1u));
-        routes[index] = (core_machine_port_route) {address, pic_bus_read,
+        routes[index] = (x86_core_machine_port_route) {address, pic_bus_read,
             pic_bus_write, bus, LIB_FALSE, 0u};
     }
-    status = core_machine_install_port_routes(machine, routes, count);
+    status = x86_core_machine_install_port_routes(machine, routes, count);
     if (status != LIB_STATUS_OK) {
         core_machine_pic_finalize(master, slave);
         return status;

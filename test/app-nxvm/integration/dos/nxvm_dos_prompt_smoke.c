@@ -11,9 +11,9 @@
 
 
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 #include "core/machine/lifecycle.h"
 
@@ -26,13 +26,13 @@
 
 static lib_i32 has_dos_prompt(const vm_machine *session);
 
-static void dump_first_fault(core_machine *machine)
+static void dump_first_fault(x86_core_machine *machine)
 {
     x86_core_cpu_diagnostic diagnostic;
     const x86_core_cpu_fault_snapshot *fault;
     lib_size index;
 
-    if (core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+    if (x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
         LIB_STATUS_OK || !diagnostic.first_fault.valid) return;
     fault = &diagnostic.first_fault;
     fprintf(stderr,
@@ -73,7 +73,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         goto fail;
     if (!prompt_seen) prompt_seen = has_dos_prompt(session);
     if (!prompt_seen) {
-        dump_first_fault(session->core_machine);
+        dump_first_fault(session->x86_core_machine);
         fprintf(stderr, "%s", "NXVM:DOS-PROMPT:TIMEOUT\n");
         goto fail;
     }
@@ -82,7 +82,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     return 0;
 
 fail:
-    if (session != LIB_NULL) dump_first_fault(session->core_machine);
+    if (session != LIB_NULL) dump_first_fault(session->x86_core_machine);
     integration_ini_session_close(&ini_session);
     return 1;
 }

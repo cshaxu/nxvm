@@ -1,37 +1,39 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/memory.h"
-#include "core/x86/machine.h"
+#include "x86-core/machine/machine_interface.h"
 #include "../video_registration_fixture.h"
-#include "core/board-base/machine_board_interface.h"
+#include "bus_fixture.h"
 
-static void ignored_write(void *owner, lib_u32 physical,
-    lib_uptr bytes)
+static lib_status sentinel_read(void *owner, lib_u16 address, lib_u64 tick,
+    lib_u32 *out_value)
 {
     (void)owner;
-    (void)physical;
-    (void)bytes;
-}
-
-static void sentinel_read(t_port *port, lib_u16 address, void *owner)
-{
     (void)address;
-    (void)owner;
-    port->data.ioByte = 0x5au;
+    (void)tick;
+    *out_value = 0x5au;
+    return LIB_STATUS_OK;
 }
 
-static lib_status ignored_read(void *owner, lib_u32 physical,
+static lib_status sentinel_memory_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     (void)owner;
     (void)observe_only;
-    (void)physical;
-    (void)destination;
-    (void)bytes;
-    return LIB_STATUS_UNSUPPORTED;
+    if (physical != 0x1000u || bytes != 1u) return LIB_STATUS_UNSUPPORTED;
+    *(lib_u8 *)destination = 0x5au;
+    return LIB_STATUS_OK;
 }
 
-static lib_status ignored_device_write(void *owner, lib_u32 physical,
+static lib_status sentinel_memory_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)owner;
+    return physical == 0x1000u && bytes == 1u &&
+        access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status sentinel_memory_write(void *owner, lib_u32 physical,
     lib_uptr source, lib_uptr bytes)
 {
     (void)owner;
@@ -41,323 +43,167 @@ static lib_status ignored_device_write(void *owner, lib_u32 physical,
     return LIB_STATUS_UNSUPPORTED;
 }
 
-static lib_status ignored_query(void *owner, lib_u32 physical,
-    lib_uptr bytes, core_machine_memory_access access)
+static void sentinel_observer(void *owner, lib_u32 physical, lib_uptr bytes)
 {
-    (void)owner;
     (void)physical;
     (void)bytes;
-    (void)access;
-    return LIB_STATUS_UNSUPPORTED;
+    ++*(lib_u32 *)owner;
 }
 
-typedef struct priority_provider {
-    lib_u8 value;
-    lib_u8 decline;
-} priority_provider;
-
-static lib_status priority_read(void *owner, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+static lib_i32 create_machine(x86_core_machine **out_machine, lib_u32 *writes)
 {
-    priority_provider *provider = (priority_provider *)owner;
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
+    };
+    const x86_core_machine_port_route port = {
+        .address = 0x80u, .read = sentinel_read, .owner = writes
+    };
+    const x86_core_machine_memory_device_route memory = {
+        0x1000u, 1u, {sentinel_memory_read, sentinel_memory_write, sentinel_memory_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD
+    };
 
-    (void)observe_only;
-    if (provider == LIB_NULL || physical != 0x8000u || bytes != 1u) {
-        return LIB_STATUS_INTERNAL_ERROR;
-    }
-    *(lib_u8 *)destination = provider->value;
-    return LIB_STATUS_OK;
+    return x86_core_machine_neutral_create(&config, out_machine) != LIB_STATUS_OK ||
+        x86_core_machine_install_port_routes(*out_machine, &port, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_install_memory_device_routes(*out_machine, &memory, 1u,
+            sentinel_observer, LIB_NULL, writes) != LIB_STATUS_OK;
 }
 
-static lib_status priority_query(void *owner, lib_u32 physical,
-    lib_uptr bytes, core_machine_memory_access access)
+static lib_i32 expect_routes(x86_core_machine *machine, lib_bool cga,
+    lib_bool configured, lib_u32 variant)
 {
-    priority_provider *provider = (priority_provider *)owner;
+    const struct {lib_u16 address; lib_bool write; lib_bool present;} routes[] = {
+        {0x80u, LIB_FALSE, LIB_TRUE},
+        {0x3d4u, LIB_TRUE, cga},
+        {0x3c4u, LIB_TRUE, configured},
+        {0x3c9u, LIB_TRUE, configured && variant == 1u},
+        {0x7c6u, LIB_FALSE, configured && variant == 2u}
+    };
+    lib_i32 failed = 0;
 
-    if (provider == LIB_NULL || physical != 0x8000u || bytes != 1u ||
-        access != CORE_MACHINE_MEMORY_ACCESS_READ) return LIB_STATUS_INTERNAL_ERROR;
-    return provider->decline ? LIB_STATUS_UNSUPPORTED : LIB_STATUS_OK;
-}
-static lib_i32 initialize(t_vadp *adapter, t_ram *memory, core_machine *machine)
-{
-    t_port *port = &machine->executor_port;
-
-    core_machine_port_initialize(port);
-    if (core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u,
-            LIB_NULL) != LIB_STATUS_OK) return 0;
-    if (test_video_registration_initialize(adapter, machine, LIB_STATUS_OK)) {
-        core_machine_memory_finalize(memory);
-        core_machine_port_finalize(port);
-        return 0;
-    }
-    return 1;
+    for (lib_size index = 0u; index < sizeof(routes) / sizeof(routes[0]); ++index)
+        failed |= test_core_machine_fixture_expect_port(machine, routes[index].address,
+            routes[index].write, routes[index].present);
+    return failed;
 }
 
-static void finalize(t_vadp *adapter, t_ram *memory, core_machine *machine)
+static lib_i32 retained_sentinel(x86_core_machine *machine, lib_u32 *writes)
 {
-    t_port *port = &machine->executor_port;
+    lib_u32 port = 0u;
+    lib_u8 memory = 0u;
+    const lib_u8 value = 0xa5u;
 
-    test_video_registration_finalize(adapter);
-    core_machine_memory_finalize(memory);
-    core_machine_port_finalize(port);
-}
+    const lib_i32 failed = x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0x80u, &port) != LIB_STATUS_OK || port != 0x5au ||
+        x86_core_machine_memory_read(machine, 0x1000u, &memory, 1u) != LIB_STATUS_OK ||
+        memory != 0x5au ||
+        x86_core_machine_memory_write(machine, 0x2000u, &value, 1u) != LIB_STATUS_OK ||
+        *writes != 1u;
 
-static lib_i32 is_unconfigured(const t_vadp *adapter, const t_ram *memory,
-    lib_uptr observers, lib_uptr providers)
-{
-    return test_video_registration_unconfigured(adapter) &&
-        memory->connect.write_observer_count == observers &&
-        memory->connect.device_provider_count == providers;
-}
-
-static lib_i32 register_provider_fillers(t_ram *memory, void *owner,
-    lib_uptr count)
-{
-    lib_uptr index;
-
-    for (index = 0u; index < count;
-            ++index) {
-        if (core_machine_memory_register_device_provider(memory,
-                0x1000u + (lib_u32)(index * 0x100u), 1u,
-                ignored_read, ignored_device_write, ignored_query, owner) !=
-            LIB_STATUS_OK) return 0;
-    }
-    return 1;
-}
-
-static lib_i32 register_observer_fillers(t_ram *memory, void *owner)
-{
-    lib_uptr index;
-
-    for (index = 0u; index < CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY;
-            ++index) {
-        if (core_machine_memory_register_write_observer(memory, ignored_write,
-                owner) != LIB_STATUS_OK) return 0;
-    }
-    return 1;
+    if (failed) lib_c_printf("Video sentinel failed: port=%u memory=%u writes=%u\n",
+        port, memory, *writes);
+    return failed;
 }
 
 lib_i32 test_video_registration_routes(t_vadp *adapter)
 {
     const core_machine_display_config config = {
-        .text_timing = { 3u, 2u, 1u },
+        .text_timing = {3u, 2u, 1u},
         .ega_present = LIB_TRUE,
         .ega_personality = X86_VIDEO_EGA_PERSONALITY_GENERIC,
-        .ega_sequencer = { CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+        .ega_sequencer = {CORE_MACHINE_VADP_EGA_APERTURE_BASE,
             CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-            0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE }
+            0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE}
     };
     const x86_video_cecg_config compaq = {
         0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
-        0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
-    static const lib_size port_counts[] = { 15u, 27u, 22u };
-    core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
-    t_ram *memory = &machine.executor_memory;
-    t_port *port = &machine.executor_port;
-    lib_i32 filler = 0;
-    lib_i32 failed = 0;
+        0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
+    };
+    static const lib_size port_counts[] = {15u, 27u, 22u};
+    x86_core_machine *machine = LIB_NULL;
+    lib_u32 writes = 0u;
+    lib_i32 failed = create_machine(&machine, &writes);
 
-    if (!initialize(adapter, memory, &machine)) return 1;
-    {
-        core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
-
-        failed |= !register_provider_fillers(memory, &filler,
-            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY);
-        memory->connect.device_provider_test_allocation = &allocation;
-        failed |= core_machine_memory_register_device_provider(memory, 0x1c00u,
-            1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
-            LIB_STATUS_NO_MEMORY;
-        failed |= allocation.attempts != 1u ||
-            memory->connect.device_provider_count !=
-                CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY ||
-            memory->connect.device_provider_capacity !=
-                CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
-        memory->connect.device_provider_test_allocation = LIB_NULL;
-        failed |= core_machine_memory_register_device_provider(memory, 0x1c00u,
-            1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
-            LIB_STATUS_OK;
-        failed |= memory->connect.device_provider_count !=
-            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY + 1u ||
-            memory->connect.device_provider_capacity <=
-                CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
-    }
-    finalize(adapter, memory, &machine);
-    if (!initialize(adapter, memory, &machine)) return 1;
-    failed |= !register_provider_fillers(memory, &filler,
-        CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
-    failed |= core_machine_vadp_configure(adapter, &config) != LIB_STATUS_NO_MEMORY;
-    failed |= !is_unconfigured(adapter, memory, 0u,
-        CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
-    finalize(adapter, memory, &machine);
-
-    /* A second Core route can fail after the first was appended. The
-     * transaction retains only the unrelated providers and permits retry. */
-    if (!initialize(adapter, memory, &machine)) return 1;
-    {
-        lib_i32 candidate_owner = 0;
-        const core_machine_memory_device_route routes[2] = {
-            { 0x8000u, 1u, { ignored_read, ignored_device_write, ignored_query },
-                CORE_MACHINE_MEMORY_PROVIDER_STANDARD },
-            { 0x9000u, 1u, { ignored_read, ignored_device_write, ignored_query },
-                CORE_MACHINE_MEMORY_PROVIDER_STANDARD }
-        };
-
-        failed |= !register_provider_fillers(memory, &filler,
-            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u);
-        failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
-            ignored_write, LIB_NULL, &candidate_owner) !=
-            LIB_STATUS_NO_MEMORY;
-        failed |= !is_unconfigured(adapter, memory, 0u,
-            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u);
-        core_machine_memory_unregister_owner(memory, &filler);
-        failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
-            ignored_write, LIB_NULL, &candidate_owner) != LIB_STATUS_OK;
-        failed |= memory->connect.device_provider_count != 2u ||
-            memory->connect.write_observer_count != 1u;
-        failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
-            ignored_write, LIB_NULL, &candidate_owner) != LIB_STATUS_INVALID_STATE ||
-            memory->connect.device_provider_count != 2u ||
-            memory->connect.write_observer_count != 1u;
-        failed |= core_machine_remove_memory_device_routes(&machine,
-            &candidate_owner) != LIB_STATUS_OK ||
-            memory->connect.device_provider_count != 0u ||
-            memory->connect.write_observer_count != 0u;
-    }
-    finalize(adapter, memory, &machine);
-
-    if (!initialize(adapter, memory, &machine)) return 1;
-    {
-        priority_provider first = { 0x3cu, LIB_FALSE };
-        priority_provider overlay = { 0xa5u, LIB_FALSE };
-        lib_u8 value = 0u;
-
-        failed |= core_machine_memory_allocate_for(memory, 0x10000u) !=
-            LIB_STATUS_OK;
-        failed |= core_machine_memory_register_device_provider(memory, 0x8000u,
-            1u, priority_read, ignored_device_write, priority_query, &first) !=
-            LIB_STATUS_OK;
-        failed |= core_machine_memory_register_overlay_device_provider(memory,
-            0x8000u, 1u, priority_read, ignored_device_write, priority_query,
-            &overlay) != LIB_STATUS_OK;
-        core_machine_memory_freeze_mappings(memory);
-        failed |= core_machine_memory_read_physical(memory, 0x8000u, (lib_uptr)&value, 1u) !=
-            LIB_STATUS_OK || value != first.value;
-        first.decline = LIB_TRUE;
-        value = 0u;
-        failed |= core_machine_memory_read_physical(memory, 0x8000u, (lib_uptr)&value, 1u) !=
-            LIB_STATUS_OK || value != overlay.value;
-        failed |= core_machine_memory_register_device_provider(memory, 0x9000u,
-            1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
-            LIB_STATUS_INVALID_ARGUMENT;
-        failed |= memory->connect.device_provider_count != 2u;
-    }
-    finalize(adapter, memory, &machine);
-    if (!initialize(adapter, memory, &machine)) return 1;
-    failed |= !register_observer_fillers(memory, &filler);
-    failed |= core_machine_vadp_configure(adapter, &config) != LIB_STATUS_NO_MEMORY;
-    failed |= !is_unconfigured(adapter, memory,
-        CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY, 0u);
-    finalize(adapter, memory, &machine);
-
-
-    /* Initial CGA construction also preserves routes installed before it. */
-    for (lib_size fail_at = 1u; fail_at <= 8u; ++fail_at) {
-        core_machine_port_test_allocation allocation = { fail_at, 0u };
-
-        core_machine_port_initialize(port);
-        failed |= core_machine_port_add_read(port, 0x80u, sentinel_read,
-            &filler) != LIB_STATUS_OK;
-        core_machine_port_set_test_allocation(port, &allocation);
-        failed |= test_video_registration_initialize(adapter, &machine,
-            LIB_STATUS_NO_MEMORY);
-        failed |= allocation.attempts != fail_at ||
-            core_machine_port_has_write(port, 0x3d4u) ||
-            core_machine_port_read(port, 0x80u) != 0x5au;
-        allocation.fail_at = 0u;
-        failed |= test_video_registration_initialize(adapter, &machine,
-            LIB_STATUS_OK);
+    if (!failed) {
+        failed |= test_video_registration_initial_failure(adapter, machine) ||
+            expect_routes(machine, LIB_FALSE, LIB_FALSE, 0u);
+        failed |= test_video_registration_initialize(adapter, machine, LIB_STATUS_OK) ||
+            expect_routes(machine, LIB_TRUE, LIB_FALSE, 0u);
         test_video_registration_finalize(adapter);
-        failed |= core_machine_port_has_write(port, 0x3d4u) ||
-            core_machine_port_read(port, 0x80u) != 0x5au;
-        core_machine_port_finalize(port);
+        failed |= expect_routes(machine, LIB_FALSE, LIB_FALSE, 0u) ||
+            retained_sentinel(machine, &writes);
     }
+    if (failed) lib_c_printf("Video initial registration failed.\n");
+    x86_core_machine_destroy(machine);
 
-    /* Every EGA/Compaq/VGA port-allocation failure occurs after memory publication.
-     * Rollback must retain unrelated routes and permit a complete retry. */
-    for (lib_size variant = 0u; variant < 3u; ++variant) {
+    for (lib_u32 variant = 0u; variant < 3u; ++variant) {
         core_machine_display_config selected = config;
+
         selected.vga_present = variant == 1u;
         if (variant == 2u) {
-            selected.ega_personality =
-                X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
+            selected.ega_personality = X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
             selected.cecg = compaq;
         }
-        for (lib_size fail_at = 1u; fail_at <= port_counts[variant]; ++fail_at) {
-            core_machine_port_test_allocation allocation = { fail_at, 0u };
-
-            if (!initialize(adapter, memory, &machine)) return 1;
-            failed |= core_machine_port_add_read(port, 0x80u, sentinel_read,
-                &filler) != LIB_STATUS_OK;
-            failed |= !register_provider_fillers(memory, &filler, 1u);
-            failed |= core_machine_memory_register_write_observer(memory,
-                ignored_write, &filler) != LIB_STATUS_OK;
-            core_machine_port_set_test_allocation(port, &allocation);
-            failed |= test_video_registration_configure_rollback(adapter, &selected,
-                LIB_STATUS_NO_MEMORY);
-            failed |= allocation.attempts != fail_at ||
-                !is_unconfigured(adapter, memory, 1u, 1u) ||
-                core_machine_port_has_write(port, 0x3c4u) ||
-                core_machine_port_has_write(port, 0x3c9u) ||
-                core_machine_port_has_read(port, 0x7c6u) ||
-                !core_machine_port_has_write(port, 0x3d4u) ||
-                core_machine_port_read(port, 0x80u) != 0x5au;
-            allocation.fail_at = port_counts[variant] + 1u;
-            allocation.attempts = 0u;
-            failed |= core_machine_vadp_configure(adapter, &selected) !=
-                LIB_STATUS_OK;
-            failed |= allocation.attempts != port_counts[variant] ||
-                memory->connect.device_provider_count != 2u ||
-                memory->connect.write_observer_count != 2u ||
-                !core_machine_port_has_write(port, 0x3c4u) ||
-                core_machine_port_has_write(port, 0x3c9u) != selected.vga_present ||
-                core_machine_port_has_read(port, 0x7c6u) != (variant == 2u);
-            core_machine_memory_freeze_mappings(memory);
+        for (lib_u32 dependency = 0u; dependency < 2u; ++dependency) {
+            lib_i32 case_failed = 0;
+            machine = LIB_NULL;
+            writes = 0u;
+            if (create_machine(&machine, &writes)) {
+                x86_core_machine_destroy(machine);
+                return 1;
+            }
+            case_failed |= test_video_registration_initialize(adapter, machine, LIB_STATUS_OK);
+            case_failed |= test_video_registration_dependency_failure(adapter, &selected,
+                dependency == 0u, port_counts[variant]) ||
+                !test_video_registration_unconfigured(adapter) ||
+                expect_routes(machine, LIB_TRUE, LIB_FALSE, variant);
+            case_failed |= core_machine_vadp_configure(adapter, &selected) != LIB_STATUS_OK ||
+                test_video_registration_unconfigured(adapter) ||
+                expect_routes(machine, LIB_TRUE, LIB_TRUE, variant);
             test_video_registration_finalize(adapter);
-            failed |= memory->connect.device_provider_count != 1u ||
-                memory->connect.write_observer_count != 1u ||
-                core_machine_port_has_write(port, 0x3c4u) ||
-                core_machine_port_has_write(port, 0x3c9u) ||
-                core_machine_port_has_read(port, 0x7c6u) ||
-                core_machine_port_has_write(port, 0x3d4u) ||
-                core_machine_port_read(port, 0x80u) != 0x5au;
-            core_machine_memory_finalize(memory);
-            core_machine_port_finalize(port);
+            case_failed |= expect_routes(machine, LIB_FALSE, LIB_FALSE, variant) ||
+                retained_sentinel(machine, &writes);
+            if (case_failed) lib_c_printf("Video variant %u dependency %u failed.\n",
+                variant, dependency);
+            failed |= case_failed;
+            x86_core_machine_destroy(machine);
         }
     }
 
-    /* A collision on the final Compaq route cannot publish its earlier
-     * routes or replace the active CGA chip. */
+    /* The actual last Compaq endpoint collides; its preceding endpoints and
+     * memory publication must roll back without replacing the CGA chip. */
     {
         core_machine_display_config selected = config;
+        lib_u8 collision_owner = 0u;
+        const x86_core_machine_port_route collision = {
+            .address = 0xfc6u, .read = sentinel_read, .owner = &collision_owner
+        };
 
-        selected.ega_personality =
-            X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
+        selected.ega_personality = X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
         selected.cecg = compaq;
-        if (!initialize(adapter, memory, &machine)) return 1;
-        failed |= core_machine_port_add_read(port, 0xfc6u, sentinel_read,
-            &filler) != LIB_STATUS_OK;
+        machine = LIB_NULL;
+        writes = 0u;
+        if (create_machine(&machine, &writes)) {
+            x86_core_machine_destroy(machine);
+            return 1;
+        }
+        failed |= test_video_registration_initialize(adapter, machine, LIB_STATUS_OK) ||
+            x86_core_machine_install_port_routes(machine, &collision, 1u) != LIB_STATUS_OK;
         failed |= test_video_registration_configure_rollback(adapter, &selected,
-            LIB_STATUS_INVALID_STATE);
-        failed |= !is_unconfigured(adapter, memory, 0u, 0u) ||
-            core_machine_port_has_write(port, 0x3c4u) ||
-            core_machine_port_read(port, 0xfc6u) != 0x5au;
-        core_machine_port_unregister_owner(port, &filler);
-        failed |= core_machine_vadp_configure(adapter, &selected) !=
-            LIB_STATUS_OK;
-        finalize(adapter, memory, &machine);
+            LIB_STATUS_INVALID_STATE) || !test_video_registration_unconfigured(adapter) ||
+            expect_routes(machine, LIB_TRUE, LIB_FALSE, 2u);
+        failed |= x86_core_machine_remove_port_routes(machine, &collision_owner) != LIB_STATUS_OK ||
+            core_machine_vadp_configure(adapter, &selected) != LIB_STATUS_OK ||
+            expect_routes(machine, LIB_TRUE, LIB_TRUE, 2u);
+        test_video_registration_finalize(adapter);
+        failed |= expect_routes(machine, LIB_FALSE, LIB_FALSE, 2u) ||
+            retained_sentinel(machine, &writes);
+        x86_core_machine_destroy(machine);
     }
 
     if (failed) return 1;
-    lib_c_printf("%s\n", "ROUTE-REGISTRY-SCALABILITY:OK");
+    lib_c_printf("VIDEO-REGISTRATION-ROLLBACK:OK\n");
     return 0;
 }

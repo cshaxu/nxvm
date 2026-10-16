@@ -26,7 +26,7 @@ void mydeskpro386_core_config_initialize(core_machine_config *out_config)
         .transaction_contract = {
             .external_cycle_timing = {.page_bytes = 2048u, .page_miss_ticks = 2u,
                 .page_hit_ticks = 0u,
-                .overlap_policy = CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL,
+                .overlap_policy = X86_CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL,
                 .first_eligible_address = 0x00000000u,
                 .last_eligible_address = 0x0009ffffu},
             .external_access_wait_windows = {
@@ -42,15 +42,15 @@ void mydeskpro386_core_config_initialize(core_machine_config *out_config)
             .dma_cycle_bus_ready_gate_enabled = LIB_TRUE,
             .cpu_cycle_bus_ready_gate_enabled = LIB_TRUE,
             .cpu_prefetch_reservation_enabled = LIB_TRUE},
-        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
+        .retirement_time_contract = X86_CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
         /* Compaq D3PE names a 16 MHz 80386 clock; 86Box selects the same
          * rate for this DeskPro 386.  The Core elapsed axis is not proven to
          * be a processor-cycle axis, so this only enables Other-L2 macro
          * pacing and never a physical-time claim. */
-        .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 16000000u},
+        .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 16000000u},
         .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
-        .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
+        .l1_compatibility_policy = X86_CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .kbc_serial_delivery_ticks = 1u,
         /* Compaq's nominal 2 us pulse on the existing 16 MHz L2 macro axis. */
         .kbc_output_pulse_ticks = 32u,

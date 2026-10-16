@@ -119,12 +119,12 @@ lib_bool test_board_pic_source_matches(core_machine_board_state *board,
 }
 
 lib_bool test_board_kbc_command_matches(core_machine_board_state *board,
-    core_machine *machine, lib_u8 command, lib_u8 mask, lib_u8 expected)
+    x86_core_machine *machine, lib_u8 command, lib_u8 mask, lib_u8 expected)
 {
     return kbc_test_command_matches(board->shared_kbc, machine, command, mask, expected);
 }
 
-lib_i32 test_board_kbc_read_reply(core_machine_board_state *board, core_machine *machine)
+lib_i32 test_board_kbc_read_reply(core_machine_board_state *board, x86_core_machine *machine)
 {
     return kbc_test_read_reply(board->shared_kbc, machine);
 }

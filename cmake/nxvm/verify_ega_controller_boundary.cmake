@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/video/video.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory.c" memory_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory.c" memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/wiring.c" at_wiring)

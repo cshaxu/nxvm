@@ -4,33 +4,33 @@
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
 
-static lib_i32 write(core_machine *machine, lib_u8 value)
+static lib_i32 write(x86_core_machine *machine, lib_u8 value)
 {
-    return core_machine_memory_write(machine, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+    return x86_core_machine_memory_write(machine, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 read(core_machine *machine, lib_u8 *value)
+static lib_i32 read(x86_core_machine *machine, lib_u8 *value)
 {
-    return core_machine_memory_read(machine, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+    return x86_core_machine_memory_read(machine, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
         value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 write_at(core_machine *machine, lib_u32 physical,
+static lib_i32 write_at(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
-    return core_machine_memory_write(machine, physical,
+    return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 read_at(core_machine *machine, lib_u32 physical,
+static lib_i32 read_at(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
-    return core_machine_memory_read(machine, physical,
+    return x86_core_machine_memory_read(machine, physical,
         value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static void select_ega_320(core_machine *machine)
+static void select_ega_320(x86_core_machine *machine)
 {
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
@@ -48,7 +48,7 @@ static void select_ega_320(core_machine *machine)
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
 }
 
-static void select_ega_text(core_machine *machine)
+static void select_ega_text(x86_core_machine *machine)
 {
     (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
@@ -93,8 +93,8 @@ lib_i32 main(void)
           0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
           0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
-    core_machine *machine;
-    core_machine *generic_machine;
+    x86_core_machine *machine;
+    x86_core_machine *generic_machine;
     t_vadp vadp;
     t_vadp generic_vadp;
     x86_video_snapshot snapshot;
@@ -182,8 +182,8 @@ lib_i32 main(void)
 
     core_machine_vadp_finalize(&generic_vadp);
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(generic_machine);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(generic_machine);
+    x86_core_machine_destroy(machine);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "CECG-ODD-EVEN-PAGE:FAIL\n");
         return 1;

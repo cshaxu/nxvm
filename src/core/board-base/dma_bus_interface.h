@@ -2,7 +2,7 @@
 #ifndef CORE_MACHINE_DMA_BUS_INTERFACE_H
 #define CORE_MACHINE_DMA_BUS_INTERFACE_H
 #include "lib/types/types_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 #include "core/chips/dma8237/dma8237_interface.h"
 typedef struct core_machine_dma_bus core_machine_dma_bus;
 /* A copied bus-issued nonce, not a controller or guest-memory pointer. */
@@ -28,11 +28,11 @@ typedef struct core_machine_dma_channel_provider {
  * finalize, including Core attachment teardown before routes are discarded.
  * Failure publishes no bus. Reset preserves provider bindings and nonce. */
 lib_status core_machine_dma_initialize(core_machine_dma_bus **out_bus,
-    core_machine *machine, lib_u8 controller_count);
+    x86_core_machine *machine, lib_u8 controller_count);
 void core_machine_dma_finalize(core_machine_dma_bus *bus);
 void core_machine_dma_reset(core_machine_dma_bus *bus);
 void core_machine_dma_advance_transaction(core_machine_dma_bus *bus,
-    core_machine *machine, lib_u64 elapsed_ticks);
+    x86_core_machine *machine, lib_u64 elapsed_ticks);
 lib_bool core_machine_dma_has_pending_request(const core_machine_dma_bus *bus);
 lib_status core_machine_dma_bind_channel(core_machine_dma_bus *bus,
     lib_u8 channel, const core_machine_dma_channel_provider *provider,

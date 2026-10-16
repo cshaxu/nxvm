@@ -14,13 +14,14 @@ lib_i32 main(void)
     lib_i32 failed = vm_test_default_pc_at_session_create(LIB_NULL, &session) !=
         LIB_STATUS_OK || session == LIB_NULL;
 
-    if (!failed) failed |= test_video_ega_ports(session->core_machine) |
-        (test_video_aperture_mismatch(session->board, LIB_TRUE) << 5);
+    if (!failed) failed |= test_video_ega_ports(session->x86_core_machine);
+    if (!failed) failed |= vm_machine_reset(session) != LIB_STATUS_OK;
+    if (!failed) failed |= test_video_aperture_mismatch(session->board, LIB_TRUE) << 5;
     if (!failed) {
         lib_u32 value = 0xa5u;
 
-        test_core_machine_fixture_write_port(session->core_machine, 0x3ceu, 6u);
-        failed |= (core_machine_bus_read(session->core_machine, 0x3cfu, &value) !=
+        test_core_machine_fixture_write_port(session->x86_core_machine, 0x3ceu, 6u);
+        failed |= (x86_core_machine_bus_read(session->x86_core_machine, 0x3cfu, &value) !=
             LIB_STATUS_UNSUPPORTED || value != 0xa5u) << 6;
     }
     vm_machine_destroy(session);

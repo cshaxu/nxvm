@@ -7,7 +7,7 @@ lib_i32 main(void)
 {
     static const lib_u8 bytes[] = { 0x1eu, 0x30u };
     t_kbc kbc;
-    core_machine *port = test_kbc_create(&kbc);
+    x86_core_machine *port = test_kbc_create(&kbc);
     lib_i32 failed = 0;
     lib_u64 ticks = 0u;
 
@@ -37,7 +37,7 @@ lib_i32 main(void)
     core_machine_kbc_advance(&kbc, 1u);
     failed |= (lib_u8)test_kbc_port_read(port, 0x60u) != 0x3bu;
     core_machine_kbc_finalize(&kbc);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(port);
     if (failed) return 1;
     lib_c_printf("KBC-SERIAL-CADENCE:OK\n");
     return 0;

@@ -5,7 +5,7 @@
 #include "lib/storage/medium_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/floppy_interface.h"
-#include "core/x86/firmware_interface.h"
+#include "x86-core/machine/firmware_interface.h"
 
 #define VM_MACHINE_FLOPPY_SLOT_COUNT 2u
 #define VM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
@@ -46,7 +46,7 @@ typedef struct vm_machine_construction {
     lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
     lib_bool cmos_seed_present;
     x86_video_text_glyph_config text_glyphs;
-    const core_machine_firmware_provider *firmware_provider;
+    const x86_core_machine_firmware_provider *firmware_provider;
     void *firmware_context;
     vm_machine_profile_binding profile;
 } vm_machine_construction;

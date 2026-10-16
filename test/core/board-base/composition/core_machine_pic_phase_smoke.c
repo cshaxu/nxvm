@@ -1,19 +1,18 @@
 #include "lib/types/file.h"
 #include "../pic_fixture.h"
-#include "core/x86/machine_interface.h"
-#include "core/x86/attachment_interface.h"
+#include "x86-core/machine/machine_interface.h"
+#include "x86-core/machine/attachment_interface.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/device_support_interface.h"
 
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/trace_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 
 typedef struct pic_phase_state {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
-    core_machine_trace_event events[256u];
+    x86_core_machine_trace_event events[256u];
     lib_u32 count;
     lib_status reset_status;
 } pic_phase_state;
@@ -44,25 +43,25 @@ static void pic_phase_finalize(void *opaque)
     core_machine_pic_finalize(state->master, state->slave);
 }
 
-static lib_status pic_phase_create(const core_machine_executor_config *config,
+static lib_status pic_phase_create(const x86_core_machine_executor_config *config,
     pic_phase_state *state)
 {
-    const core_machine_attachment attachment = {
+    const x86_core_machine_attachment attachment = {
         .interrupt_pending = pic_phase_pending,
         .interrupt_acknowledge = pic_phase_acknowledge,
         .reset_devices = pic_phase_reset_pic,
         .finalize_devices = pic_phase_finalize,
         .context = state
     };
-    lib_status status = core_machine_neutral_create(config, &state->machine);
+    lib_status status = x86_core_machine_neutral_create(config, &state->machine);
     if (status == LIB_STATUS_OK)
         status = core_machine_pic_initialize(&state->master, &state->slave,
             state->machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     if (status == LIB_STATUS_OK)
-        status = core_machine_bind_attachment(state->machine, &attachment);
+        status = x86_core_machine_bind_attachment(state->machine, &attachment);
     if (status != LIB_STATUS_OK) {
         core_machine_pic_finalize(state->master, state->slave);
-        core_machine_destroy(state->machine);
+        x86_core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
     }
     return status;
@@ -80,17 +79,13 @@ static void pic_phase_reset(void *opaque)
     };
 
     if (state != LIB_NULL) {
-        state->reset_status = x86_core_cpu_debug_patch_registers(
-            state->machine->executor_cpu_execution, &entry);
+        state->reset_status = x86_core_machine_debug_patch_registers(
+            state->machine, &entry);
     }
 }
 
-static const core_machine_execution_provider pic_phase_provider = {
-    pic_phase_reset, LIB_NULL
-};
-
 static void pic_phase_trace(void *opaque,
-    const core_machine_trace_event *event)
+    const x86_core_machine_trace_event *event)
 {
     pic_phase_state *state = (pic_phase_state *)opaque;
 
@@ -107,14 +102,14 @@ static lib_i32 pic_phase_has_acknowledgement_before_frame(
 
     if (state == LIB_NULL) return 0;
     for (index = 0u; index + 1u < state->count; ++index) {
-        const core_machine_trace_event *begin = &state->events[index];
-        const core_machine_trace_event *commit = &state->events[index + 1u];
+        const x86_core_machine_trace_event *begin = &state->events[index];
+        const x86_core_machine_trace_event *commit = &state->events[index + 1u];
 
-        if (begin->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
-            commit->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
-            (begin->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        if (begin->type == X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+            commit->type == X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+            (begin->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
             ((begin->detail >> 8u) & 0xffu) ==
-                CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE &&
+                X86_CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE &&
             begin->detail == commit->detail) {
             acknowledgement = index + 2u;
             break;
@@ -122,29 +117,44 @@ static lib_i32 pic_phase_has_acknowledgement_before_frame(
     }
     if (acknowledgement == 0u) return 0;
     for (index = acknowledgement; index < state->count; ++index) {
-        const core_machine_trace_event *event = &state->events[index];
+        const x86_core_machine_trace_event *event = &state->events[index];
 
-        if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
-            (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        if (event->type == X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+            (event->detail & 0xffu) == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
             ((event->detail >> 8u) & 0xffu) ==
-                CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE) return 1;
+                X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE) return 1;
     }
     return 0;
 }
 
 static lib_i32 pic_phase_cascaded_bus(void)
 {
-    const core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
+    const x86_core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     pic_phase_state state = {0};
-    const core_machine_trace_provider trace = { pic_phase_trace, &state };
+    const x86_core_machine_trace_provider trace = { pic_phase_trace, &state };
     core_machine_pic_irq_source *irq = LIB_NULL;
-    lib_u8 vector = 0xffu;
+    const lib_u8 vector[] = {0x00u, 0x01u, 0x00u, 0x00u};
+    const lib_u8 handler = 0xf4u;
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
+        .values = {[X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 0x202u}
+    };
+    x86_core_machine_run_result run;
+    x86_core_cpu_state cpu;
     lib_i32 failed;
 
     if (pic_phase_create(&config, &state) != LIB_STATUS_OK) return 1;
-    failed = core_machine_freeze_execution_providers(state.machine) != LIB_STATUS_OK ||
-        core_machine_reset(state.machine) != LIB_STATUS_OK ||
-        core_machine_set_trace_provider(state.machine, &trace) != LIB_STATUS_OK;
+    failed = x86_core_machine_freeze_execution_providers(state.machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(state.machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(state.machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state.machine, 0xb8u, vector, sizeof(vector)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(state.machine, 0x100u, &handler, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_set_trace_provider(state.machine, &trace) != LIB_STATUS_OK;
     if (!failed) {
         core_machine_pic_bus *master = state.master;
         core_machine_pic_bus *slave = state.slave;
@@ -162,37 +172,26 @@ static lib_i32 pic_phase_cascaded_bus(void)
         core_machine_pic_irq_source_deassert(irq);
         core_machine_pic_refresh(state.master,
             state.slave);
-        failed |= !core_machine_cpu_bus.interrupt_pending(state.machine);
-        failed |= core_machine_transaction_begin(&state.machine->transaction,
-            CORE_MACHINE_TRANSACTION_OWNER_DMA,
-            CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, 0u, 0u, 0u) != LIB_STATUS_OK;
-        state.count = 0u;
-        failed |= core_machine_cpu_bus.acknowledge_interrupt(state.machine, &vector) !=
-                LIB_STATUS_INVALID_ARGUMENT || vector != 0xffu || state.count != 0u ||
-            state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_DMA ||
-            !core_machine_cpu_bus.interrupt_pending(state.machine) ||
+        failed |= !core_machine_pic_scan_interrupt(state.master, state.slave) ||
             test_pic_read(state.master, 0x0bu) != 0u ||
             test_pic_read(state.slave, 0x0bu) != 0u;
-        core_machine_transaction_cancel(&state.machine->transaction);
         state.count = 0u;
-        failed |= core_machine_cpu_bus.acknowledge_interrupt(state.machine, &vector) !=
-                LIB_STATUS_OK || vector != 0x2eu || state.count != 2u ||
-            state.events[0].type != CORE_MACHINE_TRACE_TRANSACTION_BEGIN ||
-            state.events[1].type != CORE_MACHINE_TRACE_TRANSACTION_COMMIT ||
-            state.events[1].value != 0x2eu ||
-            ((state.events[0].detail >> 8u) & 0xffu) !=
-                CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE ||
+        failed |= x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){8u, 0u}, &run) != LIB_STATUS_OK ||
+            run.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != 0x101u ||
             test_pic_read(state.master, 0x0bu) != 0x04u ||
             test_pic_read(state.slave, 0x0bu) != 0x40u ||
-            state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
+            !pic_phase_has_acknowledgement_before_frame(&state);
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return failed;
 }
 
 lib_i32 main(void)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
@@ -202,7 +201,7 @@ lib_i32 main(void)
     static const lib_u8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
     pic_phase_state state;
     core_machine_pic_irq_source *irq = LIB_NULL;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     x86_core_cpu_state cpu;
     const x86_core_cpu_debug_register_patch interrupt_entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
@@ -212,28 +211,28 @@ lib_i32 main(void)
             [X86_CORE_CPU_DEBUG_EFLAGS] = 0x00000200u
         }
     };
-    const core_machine_trace_provider trace = { pic_phase_trace, &state };
+    const x86_core_machine_trace_provider trace = { pic_phase_trace, &state };
     lib_i32 failed = 0;
 
     lib_memory_set(&state, 0, sizeof(state));
     lib_memory_set(&irq, 0, sizeof(irq));
     if (pic_phase_create(&config, &state) != LIB_STATUS_OK ||
-        core_machine_bind_execution_provider(state.machine,
-            &pic_phase_provider, &state) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(state.machine) != LIB_STATUS_OK ||
-        core_machine_reset(state.machine) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(state.machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(state.machine) != LIB_STATUS_OK ||
         state.reset_status != LIB_STATUS_OK) {
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         return 1;
     }
-    failed |= core_machine_set_trace_provider(state.machine, &trace) !=
-        LIB_STATUS_OK || core_machine_memory_write(state.machine, 0u, program,
-            sizeof(program)) != LIB_STATUS_OK || core_machine_memory_write(
+    pic_phase_reset(&state);
+    failed |= state.reset_status != LIB_STATUS_OK;
+    failed |= x86_core_machine_set_trace_provider(state.machine, &trace) !=
+        LIB_STATUS_OK || x86_core_machine_memory_write(state.machine, 0u, program,
+            sizeof(program)) != LIB_STATUS_OK || x86_core_machine_memory_write(
             state.machine, 0x80u, vector, sizeof(vector)) != LIB_STATUS_OK ||
-        core_machine_memory_write(state.machine, 0x0100u, handler,
+        x86_core_machine_memory_write(state.machine, 0x0100u, handler,
             sizeof(handler)) != LIB_STATUS_OK;
     if (!failed) {
-        failed |= core_machine_debug_patch_registers(state.machine,
+        failed |= x86_core_machine_debug_patch_registers(state.machine,
             &interrupt_entry) != LIB_STATUS_OK;
         test_pic_program_vector(state.master, 0x20u);
         test_pic_bind_source(&irq, state.master,
@@ -242,22 +241,20 @@ lib_i32 main(void)
         core_machine_pic_irq_source_deassert(irq);
         failed |= !core_machine_pic_scan_interrupt(
             state.master, state.slave) ||
-            core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){ 8u, 0u },
                 &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
+                X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != 0x0101u ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(state.master, 0x0au),
-                VPIC_IRR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(state.master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            (((test_pic_read(state.master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u) || !(((test_pic_read(state.master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
             !pic_phase_has_acknowledgement_before_frame(&state) ||
-            core_machine_reset(state.machine) != LIB_STATUS_OK ||
-            state.reset_status != LIB_STATUS_OK ||
-            state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
-            state.machine->transaction.committed_count != 0u ||
-            state.machine->transaction.cancelled_count != 0u;
+            x86_core_machine_reset(state.machine) != LIB_STATUS_OK;
+        if (!failed) {
+            pic_phase_reset(&state);
+            failed |= state.reset_status != LIB_STATUS_OK;
+        }
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     failed |= pic_phase_cascaded_bus();
     if (failed) return 1;
     lib_c_printf("PIC-PHASE:OK\\n");

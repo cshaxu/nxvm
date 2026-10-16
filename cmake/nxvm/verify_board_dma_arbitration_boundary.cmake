@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
 foreach(forbidden "machine->dma_clock" "machine->board->dma_clock"
@@ -19,8 +19,8 @@ endforeach()
 foreach(required "attachment.dma_ticks(machine->attachment.context, source_ticks)"
     "attachment.dma_request(machine->attachment.context)"
     "attachment.dma_advance(machine->attachment.context, dma_ticks)"
-    "core_machine_transaction_hold_request(" "core_machine_transaction_hold_acknowledge("
-    "core_machine_transaction_hold_release("
+    "x86_core_machine_transaction_hold_request(" "x86_core_machine_transaction_hold_acknowledge("
+    "x86_core_machine_transaction_hold_release("
     "x86_core_cpu_execution_advance_prefetch_reservation(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
@@ -28,7 +28,7 @@ foreach(required "attachment.dma_ticks(machine->attachment.context, source_ticks
     endif()
 endforeach()
 foreach(required "core_machine_board_dma_ticks(" "core_machine_board_dma_request("
-    "core_machine_board_dma_advance(" "core_machine_clock_domain_advance(&board->dma_clock"
+    "core_machine_board_dma_advance(" "x86_core_machine_clock_domain_advance(&board->dma_clock"
     "core_machine_dma_has_pending_request(" "core_machine_dma_advance_transaction(")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)

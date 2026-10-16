@@ -22,14 +22,14 @@ foreach(source IN LISTS debugger_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/debug_interface.h" contract)
-foreach(required "core_machine_debug_capture_instruction_observation"
-        "core_machine_debug_read_register" "core_machine_debug_patch_registers"
-        "core_machine_debug_read_linear" "core_machine_debug_write_linear"
-        "core_machine_debug_read_real" "core_machine_debug_write_real"
-        "core_machine_debug_read_port" "core_machine_debug_write_port"
-        "core_machine_debug_set_watchpoint"
-        "core_machine_debug_clear_watchpoint")
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/debug_interface.h" contract)
+foreach(required "x86_core_machine_debug_capture_instruction_observation"
+        "x86_core_machine_debug_read_register" "x86_core_machine_debug_patch_registers"
+        "x86_core_machine_debug_read_linear" "x86_core_machine_debug_write_linear"
+        "x86_core_machine_debug_read_real" "x86_core_machine_debug_write_real"
+        "x86_core_machine_debug_read_port" "x86_core_machine_debug_write_port"
+        "x86_core_machine_debug_set_watchpoint"
+        "x86_core_machine_debug_clear_watchpoint")
     string(FIND "${contract}" "${required}" found)
     if(found EQUAL -1)
         message(FATAL_ERROR "Debugger capability is missing ${required}")

@@ -23,7 +23,7 @@ static lib_status mydeskpro386_d4_apply_control(mydeskpro386_d4_memory *memory,
     if (memory == LIB_NULL || memory->core == LIB_NULL) return LIB_STATUS_INVALID_STATE;
     selected = (control & 0x01u) == 0u ? LIB_TRUE : LIB_FALSE;
     writable = (control & 0x02u) != 0u ? LIB_TRUE : LIB_FALSE;
-    status = core_machine_set_memory_alias_decode(memory->core,
+    status = x86_core_machine_set_memory_alias_decode(memory->core,
         MYDESKPRO386_D4_RELOCATED_START, MYDESKPRO386_D4_RELOCATED_BYTES,
         selected, writable);
     if (status == LIB_STATUS_OK) memory->control = control | 0xfcu;
@@ -66,7 +66,7 @@ static lib_status mydeskpro386_d4_setup_write(void *opaque, lib_u32 physical,
 }
 
 static lib_status mydeskpro386_d4_setup_query(void *opaque, lib_u32 physical,
-    lib_uptr bytes, core_machine_memory_access access)
+    lib_uptr bytes, x86_core_machine_memory_access access)
 {
     const mydeskpro386_d4_memory *memory = mydeskpro386_d4_state(opaque);
 
@@ -131,14 +131,14 @@ static lib_status mydeskpro386_d4_control_write(void *opaque, lib_u32 physical,
 }
 
 static lib_status mydeskpro386_d4_control_query(void *opaque, lib_u32 physical,
-    lib_uptr bytes, core_machine_memory_access access)
+    lib_uptr bytes, x86_core_machine_memory_access access)
 {
     (void)opaque;
     if (physical < MYDESKPRO386_D4_CONTROL_PHYSICAL ||
         (bytes != 1u && bytes != 2u) ||
         physical - MYDESKPRO386_D4_CONTROL_PHYSICAL >
             MYDESKPRO386_D4_CONTROL_WINDOW_BYTES - bytes) return LIB_STATUS_UNSUPPORTED;
-    return access == CORE_MACHINE_MEMORY_ACCESS_READ || access == CORE_MACHINE_MEMORY_ACCESS_WRITE ?
+    return access == X86_CORE_MACHINE_MEMORY_ACCESS_READ || access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ?
         LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
 
@@ -170,21 +170,21 @@ lib_bool mydeskpro386_d4_memory_config_is_valid(const mydeskpro386_d4_memory_con
     return config != LIB_NULL && config->present == LIB_TRUE;
 }
 
-lib_status mydeskpro386_d4_memory_configure(core_machine *core,
+lib_status mydeskpro386_d4_memory_configure(x86_core_machine *core,
     mydeskpro386_d4_memory *memory, const mydeskpro386_d4_memory_config *config,
     mydeskpro386_d4_iochk_output output, void *context)
 {
-    static const core_machine_memory_device_route routes[2] = {
+    static const x86_core_machine_memory_device_route routes[2] = {
         { MYDESKPRO386_D4_SETUP_BANK_START, MYDESKPRO386_D4_SETUP_BANK_BYTES,
             { mydeskpro386_d4_setup_read, mydeskpro386_d4_setup_write,
                 mydeskpro386_d4_setup_query },
-            CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT },
+            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT },
         { MYDESKPRO386_D4_CONTROL_PHYSICAL, MYDESKPRO386_D4_CONTROL_WINDOW_BYTES,
             { mydeskpro386_d4_control_read, mydeskpro386_d4_control_write,
                 mydeskpro386_d4_control_query },
-            CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT }
+            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT }
     };
-    static const core_machine_memory_parity_config parity = {
+    static const x86_core_machine_memory_parity_config parity = {
         1024u * 1024u, mydeskpro386_d4_parity_fault
     };
     lib_status status;
@@ -192,14 +192,14 @@ lib_status mydeskpro386_d4_memory_configure(core_machine *core,
     if (core == LIB_NULL || memory == LIB_NULL ||
         !mydeskpro386_d4_memory_config_is_valid(config) ||
         memory->configured) return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_install_memory_device_routes(core, routes, 2u,
+    status = x86_core_machine_install_memory_device_routes(core, routes, 2u,
         mydeskpro386_d4_memory_write_observer, &parity, memory);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_set_memory_alias_decode(core,
+    status = x86_core_machine_set_memory_alias_decode(core,
         MYDESKPRO386_D4_RELOCATED_START, MYDESKPRO386_D4_RELOCATED_BYTES,
         LIB_FALSE, LIB_TRUE);
     if (status != LIB_STATUS_OK) {
-        lib_status rollback = core_machine_remove_memory_device_routes(core, memory);
+        lib_status rollback = x86_core_machine_remove_memory_device_routes(core, memory);
 
         return rollback == LIB_STATUS_OK ? status : rollback;
     }

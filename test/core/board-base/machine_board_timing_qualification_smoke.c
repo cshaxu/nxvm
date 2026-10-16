@@ -10,7 +10,7 @@ typedef struct board_timing_reentry_probe {
 } board_timing_reentry_probe;
 
 static lib_status board_timing_reentry(void *opaque,
-    core_machine_firmware_context *firmware)
+    x86_core_machine_firmware_context *firmware)
 {
     const board_timing_reentry_probe *probe = opaque;
     (void)firmware;
@@ -36,9 +36,9 @@ static lib_i32 board_timing_declarations(void)
         {CORE_MACHINE_BOARD_TIMING_CAPABILITY_CPU_EXEC, CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK, (core_machine_board_timing_seam)-1},
         {CORE_MACHINE_BOARD_TIMING_CAPABILITY_CPU_EXEC, CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK, (core_machine_board_timing_seam)(CORE_MACHINE_BOARD_TIMING_SEAM_OBSERVATION + 1)}
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    const core_machine_firmware_provider firmware = {
+    const x86_core_machine_firmware_provider firmware = {
         board_timing_reentry, board_timing_reentry, LIB_NULL
     };
     board_timing_reentry_probe reentry = {LIB_NULL, declarations};
@@ -77,7 +77,7 @@ static lib_i32 board_timing_declarations(void)
         *invalid = saved;
     }
     reentry.board = board;
-    if (core_machine_bind_firmware_provider(machine, &firmware, &reentry) !=
+    if (x86_core_machine_bind_firmware_provider(machine, &firmware, &reentry) !=
             LIB_STATUS_OK) goto done;
     if (core_machine_board_install_timing_declarations(board, declarations,
             CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT) != LIB_STATUS_OK ||
@@ -87,31 +87,31 @@ static lib_i32 board_timing_declarations(void)
     if (core_machine_board_get_timing_declaration(board,
             CORE_MACHINE_BOARD_TIMING_CAPABILITY_PRODUCT_DEBUG, &observed) != LIB_STATUS_OK ||
         observed.disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_board_get_timing_declaration(board,
             CORE_MACHINE_BOARD_TIMING_CAPABILITY_PRODUCT_DEBUG, &observed) != LIB_STATUS_OK ||
         observed.disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK ||
         core_machine_board_install_timing_declarations(board, declarations,
             CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     machine = LIB_NULL;
     if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_board_install_timing_declarations(board, declarations,
             CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
         board->timing_declarations_copied) goto done;
     failed = 0;
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
 static lib_i32 board_default_and_memory_policy(void)
 {
     const core_machine_config config = {0};
-    core_machine_executor_config executor = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine_executor_config executor = {0};
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_size bytes = 0u;
     x86_core_cpu_profile profile = X86_CORE_CPU_PROFILE_DEFAULT;
@@ -121,21 +121,21 @@ static lib_i32 board_default_and_memory_policy(void)
         executor.memory_bytes != CORE_MACHINE_BOARD_DEFAULT_MEMORY_BYTES ||
         executor.cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
+        x86_core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
         bytes != CORE_MACHINE_BOARD_DEFAULT_MEMORY_BYTES ||
-        core_machine_get_cpu_profile(machine, &profile) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_profile(machine, &profile) != LIB_STATUS_OK ||
         profile != X86_CORE_CPU_PROFILE_80386 ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_reconfigure_memory(machine,
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reconfigure_memory(machine,
             CORE_MACHINE_BOARD_MINIMUM_MEMORY_BYTES - 1u) != LIB_STATUS_INVALID_STATE ||
-        core_machine_reconfigure_memory(machine,
+        x86_core_machine_reconfigure_memory(machine,
             CORE_MACHINE_BOARD_MAXIMUM_MEMORY_BYTES + 1u) != LIB_STATUS_INVALID_STATE ||
-        core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
+        x86_core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
         bytes != CORE_MACHINE_BOARD_DEFAULT_MEMORY_BYTES) goto done;
     failed = 0;
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -147,8 +147,8 @@ static lib_i32 board_address_decode_policy(void)
             .cpu_profile = X86_CORE_CPU_PROFILE_80386,
             .a20_wrap_policy = (core_machine_board_a20_wrap_policy)policy
         };
-        core_machine_executor_config executor;
-        core_machine *machine = LIB_NULL;
+        x86_core_machine_executor_config executor;
+        x86_core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
         const lib_u8 first = 0x11u, second = 0x22u, third = 0x33u;
         lib_u8 value = 0u;
@@ -160,22 +160,22 @@ static lib_i32 board_address_decode_policy(void)
             executor.address_decode.last != (policy ? 0x1fffffu : LIB_UINT32_MAX) ||
             executor.address_decode.reset_clear_mask != 0x100000u ||
             core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_board_observe_a20(board, &enabled) != LIB_STATUS_OK || enabled)
             goto done;
-        if (core_machine_memory_write(machine, 0x200000u, &first, 1u) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x300000u, &second, 1u) != LIB_STATUS_OK ||
-            core_machine_memory_read(machine, 0x200000u, &value, 1u) != LIB_STATUS_OK ||
+        if (x86_core_machine_memory_write(machine, 0x200000u, &first, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x300000u, &second, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x200000u, &value, 1u) != LIB_STATUS_OK ||
             value != (policy ? first : second) ||
-            core_machine_memory_write(machine, 0x100000u, &third, 1u) != LIB_STATUS_OK ||
-            core_machine_memory_read(machine, 0u, &value, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x100000u, &third, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0u, &value, 1u) != LIB_STATUS_OK ||
             value != third ||
-            core_machine_bus_write(machine, 0x92u, 2u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x92u, 2u) != LIB_STATUS_OK ||
             core_machine_board_observe_a20(board, &enabled) != LIB_STATUS_OK || !enabled ||
-            core_machine_memory_write(machine, 0x100000u, &second, 1u) != LIB_STATUS_OK ||
-            core_machine_memory_read(machine, 0u, &value, 1u) != LIB_STATUS_OK ||
-            value != third || core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x100000u, &second, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0u, &value, 1u) != LIB_STATUS_OK ||
+            value != third || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_board_observe_a20(board, &enabled) != LIB_STATUS_OK || enabled)
             goto done;
         config.a20_wrap_policy = (core_machine_board_a20_wrap_policy)2;
@@ -189,7 +189,7 @@ static lib_i32 board_address_decode_policy(void)
             goto done;
         failed = 0;
 done:
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         if (failed) return 1;
     }
     return 0;
@@ -202,22 +202,22 @@ static lib_i32 scheduler_board_timing_qualification(void)
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0x0du, 0x02u}
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_attachment_deadline_observation observation;
+    x86_core_machine_attachment_deadline_observation observation;
     lib_u64 pit_ticks;
     lib_u64 source_ticks;
     lib_i32 failed = 1;
 
     if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
-        core_machine_bus_write(machine, 0x40u, 5u) != LIB_STATUS_OK ||
-        core_machine_bus_write(machine, 0x40u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x40u, 5u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x40u, 0u) != LIB_STATUS_OK ||
         x86_pit_ticks_until_output(board->shared_pit, 0u,
             &pit_ticks) != LIB_STATUS_OK ||
-        core_machine_clock_domain_source_ticks_until(&board->pit_clock,
+        x86_core_machine_clock_domain_source_ticks_until(&board->pit_clock,
             pit_ticks, &source_ticks) != LIB_STATUS_OK) goto done;
     /* The board owns its qualification state; Core supplies no PC marker. */
     core_machine_board_deadline_observe(board, 0u, &observation);
@@ -227,7 +227,7 @@ static lib_i32 scheduler_board_timing_qualification(void)
     if (observation.source_ticks != source_ticks || observation.immediate_due) goto done;
     failed = 0;
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -237,12 +237,12 @@ static lib_i32 scheduler_kbc_deadline_routing(void)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_BOARD_MINIMUM_MEMORY_BYTES,
         .cpu_profile = X86_CORE_CPU_PROFILE_80286,
-        .time_axis = {CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u}
+        .time_axis = {X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u}
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_attachment_deadline_observation board_observation;
-    core_machine_time_observation observation;
+    x86_core_machine_attachment_deadline_observation board_observation;
+    x86_core_machine_time_observation observation;
     lib_u64 device_ticks;
     lib_u64 source_ticks;
     lib_u32 port_value;
@@ -250,31 +250,31 @@ static lib_i32 scheduler_kbc_deadline_routing(void)
     lib_i32 failed = 1;
 
     if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK) goto done;
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK) goto done;
     core_machine_kbc_set_serial_delivery_timing(board->shared_kbc, 3u);
     if (
         core_machine_kbc_submit_native_bytes(board->shared_kbc, native_bytes,
             sizeof(native_bytes)) != LIB_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0064u, 0x20u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x0064u, 0x20u) != LIB_STATUS_OK ||
         core_machine_kbc_ticks_until_event(board->shared_kbc, &device_ticks) !=
             LIB_STATUS_OK || device_ticks != 3u ||
-        core_machine_clock_domain_source_ticks_until(&board->kbc_clock,
+        x86_core_machine_clock_domain_source_ticks_until(&board->kbc_clock,
             device_ticks, &source_ticks) != LIB_STATUS_OK) goto done;
     core_machine_board_deadline_observe(board, 0u,
         &board_observation);
     if (board_observation.immediate_due ||
         board_observation.source_ticks != source_ticks ||
-        core_machine_capture_time_observation(machine, &observation) !=
+        x86_core_machine_capture_time_observation(machine, &observation) !=
             LIB_STATUS_OK || !observation.next_deadline_valid ||
         observation.next_deadline_tick != observation.elapsed_ticks + source_ticks ||
-        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE ||
-        core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
-        !advanced || core_machine_bus_read(machine, 0x0060u, &port_value) !=
+        observation.progress_disposition != X86_CORE_MACHINE_TIME_PROGRESS_DEADLINE ||
+        x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
+        !advanced || x86_core_machine_bus_read(machine, 0x0060u, &port_value) !=
             LIB_STATUS_OK || port_value != 0x1eu) goto done;
     failed = 0;
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -285,18 +285,18 @@ static lib_i32 scheduler_pic_relative_deadline(void)
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0x0du, 0x02u}
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *source = LIB_NULL;
-    core_machine_attachment_deadline_observation observation;
+    x86_core_machine_attachment_deadline_observation observation;
     core_machine_pic_irq_timing timing = {0};
     lib_u64 ticks = 0u;
     lib_i32 failed = 1;
     lib_u32 stage = 1u;
     timing.unmask_delivery_ticks[1] = 5u;
     if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_pic_irq_source_bind(&source, board->shared_pic_master,
             board->shared_pic_slave, 1u) != LIB_STATUS_OK) goto done;
     core_machine_pic_set_irq_timing(board->shared_pic_master, board->shared_pic_slave, &timing);
@@ -328,7 +328,7 @@ static lib_i32 scheduler_pic_relative_deadline(void)
 done:
     if (failed) lib_c_fprintf(lib_c_stderr, "Board PIC deadline stage=%u ticks=%u\n",
         stage, (lib_u32)ticks);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 

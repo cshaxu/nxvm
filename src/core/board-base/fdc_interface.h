@@ -5,7 +5,7 @@
 #include "core/board-base/controller_interface.h"
 #include "core/board-base/fdc_observation_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 typedef struct core_machine_fdc core_machine_fdc;
 typedef void (*core_machine_fdc_dma_request_operation)(void *owner,
@@ -24,7 +24,7 @@ lib_status core_machine_fdc_configure(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation request_assert,
     core_machine_fdc_dma_request_operation request_deassert,
     void *request_owner, core_machine_pic_bus *pic_master,
-    core_machine_pic_bus *pic_slave, core_machine *machine,
+    core_machine_pic_bus *pic_slave, x86_core_machine *machine,
     const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider);
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void);

@@ -219,3 +219,22 @@ and scope-preservation diff satisfy the packet. Documentation governance and
 whitespace checks pass. The complete S6 packet remains in P1's CURRENT
 revision; S6 is closed. I3 actual Machine extraction and non-PC proof, I4 and
 I5 remain open; CPU C16/C17/final qualification is not resumed.
+
+## S7 Neutral Machine Delivery
+
+[S7 evidence](../etc/evidence/t561-s7-machine-extraction.md) records the
+34-file neutral Machine owner and matching tests, canonical symbols, ROM-free
+non-PC consumer, private fixture retirement and public Board/App receivers.
+Shared P1 `0da6818d5` publishes the independent package. Production body
+comparison finds only four equivalent fixed-width casts after declared moves
+and substitutions; CPU/FPU implementations are unchanged. Combined production
+C/H is net -43, test C/H net +2,214, with moves counted separately from the
+substantive behavior/fixture ledger. The two diagnostics use explicitly
+approved paused-boundary samples, not instantaneous bus snapshots.
+
+Both widths pass 632 repository units, specialized gates, 48 receiving
+integration executions plus restored-default identity, and all eight published
+CLI/INI/PE/version/hash checks. All eight 0561 PC EXEs are renewed; MyNES,
+Lib/Emulator and protected inputs are unchanged. Manual RDP/full desktop and
+fresh external-ROM diagnostic runs are not claimed. NXVM P2 and coordinator
+actual-change acceptance remain pending; I4/S8 and I5/S9 remain open.

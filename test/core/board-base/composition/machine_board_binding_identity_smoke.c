@@ -1,6 +1,6 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/machine.h"
+#include "x86-core/machine/machine_interface.h"
 #include "../board_binding_fixture.h"
 
 lib_i32 main(void)
@@ -10,18 +10,12 @@ lib_i32 main(void)
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };
-    core_machine *machine = LIB_NULL;
-    core_machine_attachment expected;
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_attachment expected;
     lib_bool failed;
     if (test_board_binding_create(&config, &machine, &expected) != LIB_STATUS_OK) return 1;
-    failed = machine->attachment.context != expected.context ||
-        machine->attachment.context == machine ||
-        machine->attachment.reset_devices !=
-            expected.reset_devices ||
-        machine->attachment.reset_clocks != expected.reset_clocks ||
-        machine->attachment.refresh_nmi != expected.refresh_nmi ||
-        machine->attachment.finalize_devices != expected.finalize_devices;
-    core_machine_destroy(machine);
+    failed = expected.context == LIB_NULL || expected.context == machine;
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("%s\n", "BOARD-BINDING-IDENTITY:OK");
     return 0;

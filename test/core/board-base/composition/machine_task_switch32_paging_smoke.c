@@ -1,7 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/x86/debug_interface.h"
-#include "core/x86/entry_plan_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/entry_plan_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
 #define GDT_POINTER 0x0100u
@@ -18,19 +18,19 @@ typedef struct task_tss32_state {
 _Static_assert(sizeof(task_tss32_state) == 0x48u,
     "The 80386 TSS saved-state span is architecturally fixed.");
 
-static lib_i32 write_bytes(core_machine *machine, lib_u32 physical,
+static lib_i32 write_bytes(x86_core_machine *machine, lib_u32 physical,
     const void *bytes, lib_size byte_count)
 {
-    return core_machine_memory_write(machine, physical, bytes, byte_count) ==
+    return x86_core_machine_memory_write(machine, physical, bytes, byte_count) ==
         LIB_STATUS_OK;
 }
 
-static lib_i32 write_u32(core_machine *machine, lib_u32 physical, lib_u32 value)
+static lib_i32 write_u32(x86_core_machine *machine, lib_u32 physical, lib_u32 value)
 {
     return write_bytes(machine, physical, &value, sizeof(value));
 }
 
-static lib_i32 prepare(core_machine **out_machine,
+static lib_i32 prepare(x86_core_machine **out_machine,
     core_machine_board_state **out_board)
 {
     const core_machine_config config = {
@@ -38,22 +38,22 @@ static lib_i32 prepare(core_machine **out_machine,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_entry_plan plan = {
+    const x86_core_machine_entry_plan plan = {
         .state = { .cs = 0u, .ds = 0u, .es = 0u, .ss = 0u,
             .ip = 0u, .sp = 0u, .edx = 0x00000300u, .eflags = 0u },
         .entry_physical = 0u,
-        .entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM
+        .entry_route = X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM
     };
 
     return out_machine != LIB_NULL && out_board != LIB_NULL &&
         core_machine_create(&config, out_machine, out_board) == LIB_STATUS_OK &&
         *out_machine != LIB_NULL && *out_board != LIB_NULL &&
-        core_machine_freeze_execution_providers(*out_machine) ==
-        LIB_STATUS_OK && core_machine_reset(*out_machine) == LIB_STATUS_OK &&
-        core_machine_apply_entry_plan(*out_machine, &plan) == LIB_STATUS_OK;
+        x86_core_machine_freeze_execution_providers(*out_machine) ==
+        LIB_STATUS_OK && x86_core_machine_reset(*out_machine) == LIB_STATUS_OK &&
+        x86_core_machine_apply_entry_plan(*out_machine, &plan) == LIB_STATUS_OK;
 }
 
-static lib_i32 install_pages(core_machine *machine, lib_bool fault_case)
+static lib_i32 install_pages(x86_core_machine *machine, lib_bool fault_case)
 {
     lib_u32 page;
     for (page = 0u; page < 12u; ++page) {
@@ -64,7 +64,7 @@ static lib_i32 install_pages(core_machine *machine, lib_bool fault_case)
     return write_u32(machine, 0x1000u, 0xa003u);
 }
 
-static lib_i32 install(core_machine *machine, lib_bool fault_case,
+static lib_i32 install(x86_core_machine *machine, lib_bool fault_case,
     lib_bool pending_irq, lib_bool nested)
 {
     static const lib_u8 gdt_pointer[] = { 0x47u,0u,0u,0x03u,0u,0u };
@@ -134,26 +134,26 @@ static lib_i32 install(core_machine *machine, lib_bool fault_case,
         write_bytes(machine, 0xb100u, target_code, sizeof(target_code));
 }
 
-static lib_i32 run_until_waiting_for_interrupt(core_machine *machine,
-    core_machine_run_result *out_result)
+static lib_i32 run_until_waiting_for_interrupt(x86_core_machine *machine,
+    x86_core_machine_run_result *out_result)
 {
     lib_u32 round;
 
     for (round = 0u; round < 2u; ++round) {
-        if (core_machine_run(machine, (core_machine_run_budget){128u,0u},
+        if (x86_core_machine_run(machine, (x86_core_machine_run_budget){128u,0u},
                 out_result) != LIB_STATUS_OK) return 0;
-        if (out_result->reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
+        if (out_result->reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
             return 1;
-        if (out_result->reason != CORE_MACHINE_STOP_BUDGET) return 0;
+        if (out_result->reason != X86_CORE_MACHINE_STOP_BUDGET) return 0;
     }
     return 0;
 }
 
 static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nested)
 {
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot cpu = {0};
     lib_i32 failed = 1;
@@ -161,8 +161,8 @@ static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nest
     if (!prepare(&machine, &board) || !install(machine, fault_case, pending_irq, nested) ||
         (pending_irq && core_machine_keyboard_receive_native_byte(board, 0x1eu) !=
         LIB_STATUS_OK) || !run_until_waiting_for_interrupt(machine, &result) ||
-        core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-        core_machine_debug_capture_cpu_snapshot(machine,
+        x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+        x86_core_machine_debug_capture_cpu_snapshot(machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
     if (fault_case) failed = diagnostic.first_fault.valid ||
         !diagnostic.last_delivered_exception.valid ||
@@ -174,7 +174,7 @@ static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nest
     else failed = diagnostic.first_fault.valid || cpu.tr.selector != 0x30u ||
         cpu.eax != 0x00001234u || cpu.cr3 != 0x4000u;
 done:
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 

@@ -4,7 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "core/chips/pic8259/pic8259_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 /* Board endpoint, not chip state. Multiple source leases resolve to one input.
  * Pair links belong to this board adapter and never enter the shared chip. */

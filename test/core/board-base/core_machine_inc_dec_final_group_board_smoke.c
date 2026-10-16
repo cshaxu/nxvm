@@ -44,10 +44,10 @@ static lib_i32 inc_dec_final_group_aam_zero(void)
 static lib_i32 inc_dec_final_group_xlat_fault(void)
 {
     static const lib_u8 code[] = {0xd7u};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_i32 failed = !test_cpu_board_limit_prepare(&machine, code,
         sizeof(code), LIB_FALSE, LIB_TRUE);
 
@@ -58,16 +58,16 @@ static lib_i32 inc_dec_final_group_xlat_fault(void)
         patch.values[X86_CORE_CPU_DEBUG_EAX] = 0x11223304u;
         patch.values[X86_CORE_CPU_DEBUG_EBX] = 0x10u;
         patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF;
-        failed = core_machine_debug_patch_registers(machine, &patch) !=
+        failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
                 LIB_STATUS_OK ||
-            !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
-                (core_machine_run_budget){1u,0u}, &result), &result) ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            !test_core_machine_fixture_shutdown_wait(x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){1u,0u}, &result), &result) ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             after.eax != 0x11223304u || after.ebx != 0x10u ||
             after.eflags != X86_CORE_CPU_DEBUG_EFLAGS_CF || after.eip != 0u;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

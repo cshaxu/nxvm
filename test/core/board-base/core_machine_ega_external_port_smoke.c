@@ -4,14 +4,14 @@
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
 
-static void ega_write_crtc(core_machine *machine, lib_u16 index_port,
+static void ega_write_crtc(x86_core_machine *machine, lib_u16 index_port,
     lib_u8 index, lib_u8 value)
 {
     test_video_port_write(machine, index_port, index);
     test_video_port_write(machine, index_port + 1u, value);
 }
 
-static lib_u8 ega_read_crtc(core_machine *machine, lib_u16 index_port,
+static lib_u8 ega_read_crtc(x86_core_machine *machine, lib_u16 index_port,
     lib_u8 index)
 {
     test_video_port_write(machine, index_port, index);
@@ -30,7 +30,7 @@ lib_i32 main(void)
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
-    core_machine *machine;
+    x86_core_machine *machine;
     t_vadp vadp;
     x86_video_snapshot snapshot;
     x86_video_snapshot_observation observation;
@@ -94,7 +94,7 @@ lib_i32 main(void)
     (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
-    failed |= core_machine_memory_write(machine,
+    failed |= x86_core_machine_memory_write(machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, chain4_bytes,
         sizeof(chain4_bytes)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
@@ -120,7 +120,7 @@ lib_i32 main(void)
         0u;
 
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "EGA-EXTERNAL-PORT:FAIL\n");
         return 1;

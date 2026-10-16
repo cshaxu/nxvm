@@ -7,6 +7,7 @@
  * fixture publishes only existing opaque handles, never either private layout. */
 lib_status test_dma_competition_create(const core_machine_config *config,
     const core_machine_dma_channel_provider *provider, void *source,
-    core_machine **out_machine, core_machine_dma_bus **out_dma,
+    x86_core_machine **out_machine, core_machine_dma_bus **out_dma,
     core_machine_dma_request_binding *out_binding);
+lib_status test_dma_competition_program_channel2(x86_core_machine *machine);
 #endif

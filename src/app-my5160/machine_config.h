@@ -4,7 +4,7 @@
 #define VM_PROFILE_XT_5160_268_H
 
 #include "core/board-base/profile_contract_interface.h"
-#include "core/x86/firmware_interface.h"
+#include "x86-core/machine/firmware_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u
 #define VM_PROFILE_XT_5160_268_HDD_MEDIA_ID 2u
@@ -39,6 +39,6 @@ lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *xebec, lib_size xebec_bytes,
     const lib_u8 *video, lib_size video_bytes,
     vm_profile_xt_5160_268_external_rom *out_rom);
-const core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(void);
+const x86_core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(void);
 
 #endif

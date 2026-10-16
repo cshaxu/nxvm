@@ -1,9 +1,9 @@
 #include "core/board-at/parity_interface.h"
-#include "core/x86/memory_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/memory_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 struct core_machine_at_parity {
-    core_machine *core;
+    x86_core_machine *core;
     x86_pit *pit;
     core_machine_planar_parity_config config;
     core_machine_at_speaker_lines speaker;
@@ -17,13 +17,13 @@ void core_machine_at_parity_refresh_nmi(core_machine_at_parity *parity)
 {
     if (parity != LIB_NULL && parity->config.memory_bytes != 0u &&
         parity->latched && (parity->port_b & 0x04u) != 0u &&
-        !parity->nmi_signaled && core_machine_signal_nmi(parity->core))
+        !parity->nmi_signaled && x86_core_machine_signal_nmi(parity->core))
         parity->nmi_signaled = LIB_TRUE;
 }
 
 lib_status core_machine_at_parity_report_fault(core_machine_at_parity *parity)
 {
-    if (parity == LIB_NULL || !core_machine_mutable_operation_is_allowed(parity->core) ||
+    if (parity == LIB_NULL || !x86_core_machine_mutable_operation_is_allowed(parity->core) ||
         parity->config.memory_bytes == 0u) return LIB_STATUS_INVALID_STATE;
     parity->latched = LIB_TRUE;
     core_machine_at_parity_refresh_nmi(parity);
@@ -79,23 +79,23 @@ void core_machine_at_parity_reset(core_machine_at_parity *parity)
 void core_machine_at_parity_destroy(core_machine_at_parity *parity)
 {
     if (parity == LIB_NULL) return;
-    (void)core_machine_remove_port_routes(parity->core, parity);
+    (void)x86_core_machine_remove_port_routes(parity->core, parity);
     if (parity->config.memory_bytes != 0u)
-        (void)core_machine_remove_memory_device_routes(parity->core, parity);
+        (void)x86_core_machine_remove_memory_device_routes(parity->core, parity);
     lib_release(parity);
 }
 
-lib_status core_machine_at_parity_create(core_machine *machine, x86_pit *pit,
+lib_status core_machine_at_parity_create(x86_core_machine *machine, x86_pit *pit,
     const core_machine_planar_parity_config *config,
     core_machine_at_speaker_lines speaker, void *speaker_context,
     core_machine_at_parity **out_parity)
 {
     core_machine_at_parity *parity;
-    core_machine_port_route route;
+    x86_core_machine_port_route route;
     lib_status status;
     if (out_parity == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_parity = LIB_NULL;
-    if (machine == LIB_NULL || !core_machine_configuration_is_open(machine))
+    if (machine == LIB_NULL || !x86_core_machine_configuration_is_open(machine))
         return LIB_STATUS_INVALID_STATE;
     if (pit == LIB_NULL || config == LIB_NULL || config->port != 0x61u ||
         (config->refresh_status_source != CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
@@ -110,24 +110,24 @@ lib_status core_machine_at_parity_create(core_machine *machine, x86_pit *pit,
     parity->speaker = speaker;
     parity->speaker_context = speaker_context;
     if (config->memory_bytes != 0u) {
-        const core_machine_memory_parity_config memory = {
+        const x86_core_machine_memory_parity_config memory = {
             config->memory_bytes, parity_memory_fault
         };
-        status = core_machine_install_memory_device_routes(machine, LIB_NULL, 0u,
+        status = x86_core_machine_install_memory_device_routes(machine, LIB_NULL, 0u,
             LIB_NULL, &memory, parity);
         if (status != LIB_STATUS_OK) {
             lib_release(parity);
             return status;
         }
     }
-    route = (core_machine_port_route) {
+    route = (x86_core_machine_port_route) {
         .address = config->port, .read = parity_port_read,
         .write = parity_port_write, .owner = parity
     };
-    status = core_machine_install_port_routes(machine, &route, 1u);
+    status = x86_core_machine_install_port_routes(machine, &route, 1u);
     if (status != LIB_STATUS_OK) {
         if (config->memory_bytes != 0u) {
-            lib_status rollback = core_machine_remove_memory_device_routes(machine, parity);
+            lib_status rollback = x86_core_machine_remove_memory_device_routes(machine, parity);
             if (rollback != LIB_STATUS_OK) status = rollback;
         }
         lib_release(parity);

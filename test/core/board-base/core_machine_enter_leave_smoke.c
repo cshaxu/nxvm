@@ -4,11 +4,10 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 typedef struct enter_leave_machine
 {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
 } enter_leave_machine;
 
@@ -27,9 +26,9 @@ static lib_i32 enter_leave_prepare(x86_core_cpu_profile profile, enter_leave_mac
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
-        core_machine_reset(state->machine) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+        x86_core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_status enter_leave_seed(enter_leave_machine *state, lib_u32 esp, lib_u32 ebp)
@@ -53,7 +52,7 @@ static lib_status enter_leave_seed(enter_leave_machine *state, lib_u32 esp, lib_
             [X86_CORE_CPU_DEBUG_EFLAGS] = 0x245u
         }
     };
-    return core_machine_debug_patch_registers(state->machine, &registers);
+    return x86_core_machine_debug_patch_registers(state->machine, &registers);
 }
 
 static lib_i32 enter_leave_boot_protected(enter_leave_machine *state, lib_u16 limit, lib_bool expdown)
@@ -71,16 +70,16 @@ static lib_i32 enter_leave_boot_protected(enter_leave_machine *state, lib_u16 li
         0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
         0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
 
-    lib_i32 ready = core_machine_memory_write(state->machine, 0x0100u, pointer,
-        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+    lib_i32 ready = x86_core_machine_memory_write(state->machine, 0x0100u, pointer,
+        sizeof(pointer)) == LIB_STATUS_OK && x86_core_machine_memory_write(
         state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0u, bootstrap,
+        x86_core_machine_memory_write(state->machine, 0u, bootstrap,
         sizeof(bootstrap)) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){10u, 0u},
+        x86_core_machine_run(state->machine, (x86_core_machine_run_budget){10u, 0u},
         &result) == LIB_STATUS_OK && result.reason ==
-        CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
+        X86_CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
 
     const x86_core_cpu_debug_register_patch segment = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS),
@@ -95,9 +94,9 @@ static lib_i32 enter_leave_boot_protected(enter_leave_machine *state, lib_u16 li
     gdt[24u] = (lib_u8)limit;
     gdt[25u] = (lib_u8)(limit >> 8);
     if (expdown) gdt[29u] = 0x96u;
-    return core_machine_memory_write(state->machine, 0x0300u, gdt,
+    return x86_core_machine_memory_write(state->machine, 0x0300u, gdt,
         sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
+        x86_core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
 }
 
 static lib_i32 enter_leave_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
@@ -131,8 +130,8 @@ static lib_i32 enter_leave_read(enter_leave_machine *state, lib_u32 address,
     lib_u8 width, lib_u32 *value)
 {
     *value = 0u;
-    return core_machine_memory_inspect(state->machine,
-        address, (void *)CORE_MACHINE_REFERENCE_OF(*value), width) == LIB_STATUS_OK;
+    return x86_core_machine_memory_inspect(state->machine,
+        address, (void *)lib_pointer_to_uptr(&(*value)), width) == LIB_STATUS_OK;
 }
 
 static lib_i32 enter_leave_expect_image(enter_leave_machine *state,
@@ -151,7 +150,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
     enter_leave_machine state;
     x86_core_cpu_debug_cpu_snapshot before;
     x86_core_cpu_debug_cpu_snapshot after;
-    core_machine_run_result result;
+    x86_core_machine_run_result result;
     lib_status status;
     lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
@@ -167,27 +166,27 @@ static lib_i32 enter_leave_test_protected_faults(void)
         failed |= enter_leave_seed(&state, 0x12340020u, 0xe1e29000u) != LIB_STATUS_OK;
         stack_image[0] = 0x1111u;
         stack_image[1] = 0x2222u;
-        failed |= core_machine_memory_write(state.machine, 0xcffeu,
+        failed |= x86_core_machine_memory_write(state.machine, 0xcffeu,
             &stack_image[0], sizeof(lib_u16)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, 0xcffcu, &stack_image[1],
-            sizeof(lib_u16)) != LIB_STATUS_OK || core_machine_memory_write(
+            x86_core_machine_memory_write(state.machine, 0xcffcu, &stack_image[1],
+            sizeof(lib_u16)) != LIB_STATUS_OK || x86_core_machine_memory_write(
             state.machine, 0x4018u, stack_image, sizeof(stack_image)) !=
-            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
+            LIB_STATUS_OK || x86_core_machine_memory_write(state.machine, 0x2000u,
             enter, sizeof(enter)) != LIB_STATUS_OK;
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        status = core_machine_run(state.machine,
-            (core_machine_run_budget){1u, 0u}, &result);
+        status = x86_core_machine_run(state.machine,
+            (x86_core_machine_run_budget){1u, 0u}, &result);
         failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed |= !enter_leave_cpu_same(&before, &after) ||
-            core_machine_memory_inspect(state.machine, 0x4018u, observed_frame,
+            x86_core_machine_memory_inspect(state.machine, 0x4018u, observed_frame,
                 sizeof(observed_frame)) != LIB_STATUS_OK ||
             lib_memory_compare(observed_frame, stack_image, sizeof(stack_image)) != 0;
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
 
     if (failed)
         return 0;
@@ -197,21 +196,21 @@ static lib_i32 enter_leave_test_protected_faults(void)
     if (!failed)
     {
         failed |= enter_leave_seed(&state, 0x12348000u, 0xe1e20020u) != LIB_STATUS_OK;
-        failed |= core_machine_memory_write(state.machine, 0x4020u, stack_image,
-            sizeof(lib_u16)) != LIB_STATUS_OK || core_machine_memory_write(
+        failed |= x86_core_machine_memory_write(state.machine, 0x4020u, stack_image,
+            sizeof(lib_u16)) != LIB_STATUS_OK || x86_core_machine_memory_write(
             state.machine, 0x2000u, leave, sizeof(leave)) != LIB_STATUS_OK;
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        status = core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
+        status = x86_core_machine_run(state.machine, (x86_core_machine_run_budget){1u, 0u},
             &result);
         failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
             X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed |= !enter_leave_cpu_same(&before, &after) || !enter_leave_read(&state,
             0x4020u, 2u, &value) || value != stack_image[0];
     }
-    core_machine_destroy(state.machine);
+    x86_core_machine_destroy(state.machine);
     return !failed;
 }
 
@@ -229,7 +228,7 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
     {
         enter_leave_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         x86_core_cpu_debug_cpu_snapshot before;
         x86_core_cpu_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
@@ -245,14 +244,14 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
                 form != 0u ? 0xe1e28020u : 0xe1e29000u) != LIB_STATUS_OK;
             if (form != 0u)
             {
-                failed |= core_machine_memory_write(state.machine, 0x8020u,
+                failed |= x86_core_machine_memory_write(state.machine, 0x8020u,
                     &old_bp, sizeof(old_bp)) != LIB_STATUS_OK;
             }
-            failed |= core_machine_memory_write(state.machine, 0u, codes[form],
-                bytes[form]) != LIB_STATUS_OK || core_machine_memory_write(
+            failed |= x86_core_machine_memory_write(state.machine, 0u, codes[form],
+                bytes[form]) != LIB_STATUS_OK || x86_core_machine_memory_write(
                 state.machine, 0x80u, &offset, sizeof(offset)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x82u, &segment,
-                sizeof(segment)) != LIB_STATUS_OK || core_machine_memory_write(
+                x86_core_machine_memory_write(state.machine, 0x82u, &segment,
+                sizeof(segment)) != LIB_STATUS_OK || x86_core_machine_memory_write(
                 state.machine, 0x100u, &halt, sizeof(halt)) != LIB_STATUS_OK;
         }
         if (!failed)
@@ -264,21 +263,19 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
                 0u);
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            failed |= x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed)
-                failed |= core_machine_memory_inspect(state.machine,
+                failed |= x86_core_machine_memory_inspect(state.machine,
                 after.ss.base + (lib_u16)after.esp,
-                (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
+                (void *)lib_pointer_to_uptr(&(frame_ip)), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != (form == 0u ? 4u : 1u) ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
-                VPIC_IRR_IRQ(0u));
+                !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) || (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
             if (!failed && form == 0u)
             {
                 failed |= (lib_u16)after.ebp != 0x7ffeu || !enter_leave_expect_image(
@@ -290,7 +287,7 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
                     0x1234801cu;
             }
         }
-        core_machine_destroy(state.machine);
+        x86_core_machine_destroy(state.machine);
         if (failed)
             return 0;
     }

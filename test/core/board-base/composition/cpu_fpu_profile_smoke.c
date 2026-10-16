@@ -11,15 +11,15 @@ static lib_i32 verify_machine_profiles(x86_core_cpu_profile cpu_profile,
         .cpu_profile = cpu_profile,
         .fpu_profile = fpu_profile
     };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_profile observed_cpu;
     x86_fpu_profile observed_fpu;
     lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_get_cpu_profile(machine, &observed_cpu) != LIB_STATUS_OK ||
-        core_machine_get_fpu_profile(machine, &observed_fpu) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_profile(machine, &observed_cpu) != LIB_STATUS_OK ||
+        x86_core_machine_get_fpu_profile(machine, &observed_fpu) != LIB_STATUS_OK ||
         observed_cpu != cpu_profile || observed_fpu != fpu_profile;
 
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -29,7 +29,7 @@ lib_i32 main(void)
         .memory_bytes = (2u * 1024u * 1024u)
     };
     x86_core_cpu_instruction_metadata metadata;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_i32 failed = 0;
@@ -45,11 +45,11 @@ lib_i32 main(void)
     failed |= verify_machine_profiles(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80387);
     failed |= core_machine_create(&default_config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK ||
+    failed |= x86_core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK ||
         cpu_profile != X86_CORE_CPU_PROFILE_80386;
-    failed |= core_machine_get_fpu_profile(machine, &fpu_profile) != LIB_STATUS_OK ||
+    failed |= x86_core_machine_get_fpu_profile(machine, &fpu_profile) != LIB_STATUS_OK ||
         fpu_profile != X86_FPU_PROFILE_NONE;
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
 
     metadata = x86_core_cpu_instruction_metadata_get(
         X86_CORE_CPU_INSTRUCTION_PRIMARY, 0x60u, 0u);

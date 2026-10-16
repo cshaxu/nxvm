@@ -23,7 +23,7 @@ struct vm_machine {
     emulator_machine *executor;
     core_machine_plan *core_machine_plan;
     vm_machine_construction construction;
-    core_machine *core_machine;
+    x86_core_machine *x86_core_machine;
     /* Borrowed from the sole Core attachment lifetime. */
     core_machine_board_state *board;
     core_machine_dma_request_binding fdc_dma_request;

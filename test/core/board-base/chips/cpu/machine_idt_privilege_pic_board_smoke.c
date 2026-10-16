@@ -2,7 +2,6 @@
 #include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 #include "../../pic_fixture.h"
-#include "core/x86/device_support_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 #include "../../composition/composition_fixture.h"
 #define PIC_IDT_GDT_BASE 0x0300u
@@ -15,7 +14,7 @@
 
 typedef struct idt_pic_board {
     cpu_instruction_fixture cpu;
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
 } idt_pic_board;
@@ -154,9 +153,9 @@ int main(void)
         failed = board.cpu.execution.stop_requested || board.cpu.fault.valid ||
             after.data.cs.selector != 0x0008u || after.data.cs.dpl != 0u ||
             after.data.ss.selector != 0x0010u || after.data.esp != 0x00008fecu ||
-            CORE_MACHINE_BIT_IS_SET(after.data.eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0bu), 1u) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0au), 1u);
+            (((after.data.eflags) & (X86_CORE_CPU_DEBUG_EFLAGS_IF)) != 0u) ||
+            !(((test_pic_read(board.master, 0x0bu)) & (1u)) != 0u) ||
+            (((test_pic_read(board.master, 0x0au)) & (1u)) != 0u);
     }
     core_machine_pic_finalize(board.master, board.slave);
     test_core_port_owner_destroy(board.machine);

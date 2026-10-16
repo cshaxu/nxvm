@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "core/machine/debug_adapter.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/machine/debug.h"
 #include "core/machine/machine_private.h"
 
@@ -79,7 +79,7 @@ static lib_status vm_machine_debug_capture_cpu(vm_machine *machine,
 
     if (machine == LIB_NULL || out_snapshot == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_debug_capture_cpu_snapshot(machine->core_machine,
+    status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
         X86_CORE_CPU_SNAPSHOT_CURRENT, &state);
     if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
     lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
@@ -114,10 +114,10 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         if (request->register_id >= X86_CORE_CPU_DEBUG_REGISTER_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
         register_id = (x86_core_cpu_debug_register)request->register_id;
         if (request->operation == X86_DEBUG_READ_REGISTER) {
-            status = core_machine_debug_read_register(machine->core_machine,
+            status = x86_core_machine_debug_read_register(machine->x86_core_machine,
                 register_id, &out_result->value);
         } else {
-            status = core_machine_debug_write_register(machine->core_machine,
+            status = x86_core_machine_debug_write_register(machine->x86_core_machine,
                 register_id, request->address);
         }
         if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
@@ -126,9 +126,9 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
     if (request->operation == X86_DEBUG_READ_LINEAR || request->operation == X86_DEBUG_WRITE_LINEAR) {
         if (request->bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
         status = request->operation == X86_DEBUG_READ_LINEAR ?
-            core_machine_debug_read_linear(machine->core_machine, request->address,
+            x86_core_machine_debug_read_linear(machine->x86_core_machine, request->address,
                 out_result->data, request->bytes) :
-            core_machine_debug_write_linear(machine->core_machine, request->address,
+            x86_core_machine_debug_write_linear(machine->x86_core_machine, request->address,
                 request->data, request->bytes);
         if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
         out_result->bytes = request->bytes; return LIB_STATUS_OK;
@@ -136,32 +136,32 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
     if (request->operation == X86_DEBUG_READ_REAL || request->operation == X86_DEBUG_WRITE_REAL) {
         if (request->bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
         status = request->operation == X86_DEBUG_READ_REAL ?
-            core_machine_debug_read_real(machine->core_machine, request->segment,
+            x86_core_machine_debug_read_real(machine->x86_core_machine, request->segment,
                 request->offset, out_result->data, request->bytes) :
-            core_machine_debug_write_real(machine->core_machine, request->segment,
+            x86_core_machine_debug_write_real(machine->x86_core_machine, request->segment,
                 request->offset, request->data, request->bytes);
         if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
         out_result->bytes = request->bytes; return LIB_STATUS_OK;
     }
     if (request->operation == X86_DEBUG_READ_PORT) {
-        status = core_machine_debug_read_port(machine->core_machine, request->port, &value);
+        status = x86_core_machine_debug_read_port(machine->x86_core_machine, request->port, &value);
         if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
         out_result->value = value; return LIB_STATUS_OK;
     }
     if (request->operation == X86_DEBUG_WRITE_PORT) {
-        status = core_machine_debug_write_port(machine->core_machine, request->port,
+        status = x86_core_machine_debug_write_port(machine->x86_core_machine, request->port,
             request->address);
         return vm_machine_debug_status_from_type(status);
     }
     if (request->operation == X86_DEBUG_GET_CODE_DEFAULT_SIZE) {
         lib_i32 code_size;
-        status = core_machine_debug_get_code_default_size(machine->core_machine,
+        status = x86_core_machine_debug_get_code_default_size(machine->x86_core_machine,
             &code_size);
         if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
         out_result->value = (lib_u32)code_size; return LIB_STATUS_OK;
     }
     if (request->operation == X86_DEBUG_GET_CODE_BASE) {
-        status = core_machine_debug_get_code_base(machine->core_machine,
+        status = x86_core_machine_debug_get_code_base(machine->x86_core_machine,
             &out_result->value);
         return vm_machine_debug_status_from_type(status);
     }
@@ -170,16 +170,16 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
     if (request->operation == X86_DEBUG_SET_WATCH || request->operation == X86_DEBUG_CLEAR_WATCH) {
         if (vm_machine_debug_map_watch(request->watch_kind, &watch_kind) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
         status = request->operation == X86_DEBUG_SET_WATCH ?
-            core_machine_debug_set_watchpoint(machine->core_machine, watch_kind,
+            x86_core_machine_debug_set_watchpoint(machine->x86_core_machine, watch_kind,
                 request->address) :
-            core_machine_debug_clear_watchpoint(machine->core_machine, watch_kind);
+            x86_core_machine_debug_clear_watchpoint(machine->x86_core_machine, watch_kind);
         return vm_machine_debug_status_from_type(status);
     }
     if (request->operation == X86_DEBUG_GET_WATCH) {
         lib_u8 enabled;
 
         if (vm_machine_debug_map_watch(request->watch_kind, &watch_kind) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
-        status = core_machine_debug_get_watchpoint(machine->core_machine, watch_kind,
+        status = x86_core_machine_debug_get_watchpoint(machine->x86_core_machine, watch_kind,
             &enabled, &out_result->value);
         if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
         out_result->enabled = enabled ? LIB_TRUE : LIB_FALSE;

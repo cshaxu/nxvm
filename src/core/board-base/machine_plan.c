@@ -54,7 +54,7 @@ lib_status core_machine_board_install_timing_declarations(core_machine_board_sta
 {
     lib_size index;
 
-    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->timing_declarations_copied) return LIB_STATUS_INVALID_STATE;
     if (core_machine_board_validate_timing_declarations(declarations, count) !=
             LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
@@ -86,7 +86,7 @@ static lib_i32 core_machine_controller_timing_rule_is_valid(
 }
 
 static lib_i32 core_machine_clock_ratio_is_explicit(
-    const core_machine_clock_ratio *ratio)
+    const x86_core_machine_clock_ratio *ratio)
 {
     return ratio != LIB_NULL && ratio->numerator != 0u &&
         ratio->denominator != 0u;
@@ -271,7 +271,7 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_plan_apply_topology(core_machine *machine,
+lib_status core_machine_plan_apply_topology(x86_core_machine *machine,
     core_machine_board_state *board,
     const core_machine_plan *plan)
 {
@@ -285,7 +285,7 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
     if (machine == LIB_NULL || board == LIB_NULL || plan == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     topology = &plan->topology;
-    status = core_machine_install_memory_aliases(machine, topology->memory_alias,
+    status = x86_core_machine_install_memory_aliases(machine, topology->memory_alias,
         topology->memory_alias_count, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     for (index = 0u; index < topology->absent_memory_count; ++index) {
@@ -331,9 +331,9 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
 }
 
 lib_status core_machine_create_from_plan(const core_machine_plan *plan,
-    core_machine **out_machine, core_machine_board_state **out_board)
+    x86_core_machine **out_machine, core_machine_board_state **out_board)
 {
-    core_machine *machine;
+    x86_core_machine *machine;
     core_machine_board_state *board;
     lib_status status;
 
@@ -351,7 +351,7 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
         status = core_machine_board_install_timing_declarations(board,
             plan->declarations, plan->declaration_count);
     if (status != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return status;
     }
     board->controller_timing = plan->controller_timing;
@@ -487,11 +487,11 @@ lib_i32 core_machine_clock_plan_is_valid(
     const core_machine_clock_plan *plan)
 {
     return plan != LIB_NULL &&
-        core_machine_clock_ratio_is_valid(&plan->dma) &&
-        core_machine_clock_ratio_is_valid(&plan->pit) &&
-        core_machine_clock_ratio_is_valid(&plan->auxiliary_pit) &&
-        core_machine_clock_ratio_is_valid(&plan->rtc) &&
-        core_machine_clock_ratio_is_valid(&plan->vadp) &&
-        core_machine_clock_ratio_is_valid(&plan->kbc) &&
-        core_machine_clock_ratio_is_valid(&plan->provider);
+        x86_core_machine_clock_ratio_is_valid(&plan->dma) &&
+        x86_core_machine_clock_ratio_is_valid(&plan->pit) &&
+        x86_core_machine_clock_ratio_is_valid(&plan->auxiliary_pit) &&
+        x86_core_machine_clock_ratio_is_valid(&plan->rtc) &&
+        x86_core_machine_clock_ratio_is_valid(&plan->vadp) &&
+        x86_core_machine_clock_ratio_is_valid(&plan->kbc) &&
+        x86_core_machine_clock_ratio_is_valid(&plan->provider);
 }

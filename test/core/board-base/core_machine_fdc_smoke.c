@@ -163,7 +163,7 @@ static void core_machine_fdc_wait_payload(core_machine_fdc *fdc)
     lib_test_assert((x86_fdc_read_status(fdc->chip) & TEST_FDC_MSR_RQM) != 0u);
 }
 
-static void core_machine_fdc_submit(core_machine_fdc *fdc, core_machine *port,
+static void core_machine_fdc_submit(core_machine_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -175,7 +175,7 @@ static void core_machine_fdc_submit(core_machine_fdc *fdc, core_machine *port,
     test_fdc_advance(fdc);
 }
 
-static lib_bool core_machine_fdc_command(core_machine_fdc *fdc, core_machine *port,
+static lib_bool core_machine_fdc_command(core_machine_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     core_machine_fdc_submit(fdc, port, bytes, count);
@@ -193,7 +193,7 @@ static x86_fdc_observation observe(core_machine_fdc *fdc)
     return value;
 }
 
-static void core_machine_fdc_write_dma2(core_machine *port, lib_u16 address,
+static void core_machine_fdc_write_dma2(x86_core_machine *port, lib_u16 address,
     lib_u16 count)
 {
     test_fdc_port_write(port, 0x000cu, 0u);
@@ -207,7 +207,7 @@ static void core_machine_fdc_write_dma2(core_machine *port, lib_u16 address,
     test_fdc_port_write(port, 0x00d4u, 0x00u);
 }
 
-static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, core_machine *port,
+static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, x86_core_machine *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -222,7 +222,7 @@ static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, core_machine 
 }
 
 static lib_i32 core_machine_fdc_service_limits(core_machine_fdc *fdc,
-    core_machine *port, core_machine_board_state *board, core_machine_fdc_fixture_media *media)
+    x86_core_machine *port, core_machine_board_state *board, core_machine_fdc_fixture_media *media)
 {
     static const struct {
         lib_u8 rate;
@@ -332,11 +332,11 @@ static lib_i32 core_machine_fdc_service_limits(core_machine_fdc *fdc,
 
 /* S12 supersedes the S10 characterization: READY is a pin, whereas absent
  * media, motor and selection prevent a record from being delivered. */
-static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine, core_machine_board_state *board,
+static lib_i32 core_machine_fdc_readiness_matrix(x86_core_machine *machine, core_machine_board_state *board,
     core_machine_fdc_fixture_media *media)
 {
     core_machine_fdc *fdc = board->fdc;
-    core_machine *port = machine;
+    x86_core_machine *port = machine;
     static const struct {
         lib_u8 bytes[9];
         lib_u8 count;
@@ -449,7 +449,7 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine, core_mac
 
 
 static lib_i32 core_machine_fdc_result_identity(core_machine_fdc *fdc,
-    core_machine *port, core_machine_fdc_fixture_media *media)
+    x86_core_machine *port, core_machine_fdc_fixture_media *media)
 {
     const lib_bool saved_present = media->present;
     lib_i32 failed = 0;
@@ -474,11 +474,11 @@ static lib_i32 core_machine_fdc_result_identity(core_machine_fdc *fdc,
 }
 
 
-static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machine_board_state *board,
+static lib_i32 core_machine_fdc_write_terminal(x86_core_machine *machine, core_machine_board_state *board,
     core_machine_fdc_fixture_media *media)
 {
     core_machine_fdc *fdc = board->fdc;
-    core_machine *port = machine;
+    x86_core_machine *port = machine;
     const core_machine_fdc_config saved_config = fdc->connect.config;
     enum { FINISH, RESET, MOTOR_OFF, WRITE_FAILURE };
     static const struct { lib_u16 length; lib_u8 action; } cases[] = {
@@ -489,7 +489,7 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machi
     lib_i32 failed = 0;
 
     lib_memory_set(source, 0xa5u, sizeof(source));
-    failed |= core_machine_memory_write(machine,
+    failed |= x86_core_machine_memory_write(machine,
         0x0600u, source, sizeof(source)) != LIB_STATUS_OK;
     fdc->connect.config.ready_mask = 0x0fu;
     fdc->drive_cylinder[0] = 0u;
@@ -571,12 +571,12 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machi
     return failed;
 }
 
-static lib_i32 core_machine_fdc_terminal_id(core_machine *machine, core_machine_board_state *board,
+static lib_i32 core_machine_fdc_terminal_id(x86_core_machine *machine, core_machine_board_state *board,
     core_machine_fdc_fixture_media *media)
 {
     static const lib_u8 commands[] = {0x46u, 0x4cu, 0x45u, 0x49u};
     core_machine_fdc *fdc = board->fdc;
-    core_machine *port = machine;
+    x86_core_machine *port = machine;
     const core_machine_fdc_config saved_config = fdc->connect.config;
     lib_i32 failed = 0;
 
@@ -631,7 +631,7 @@ static lib_i32 core_machine_fdc_terminal_id(core_machine *machine, core_machine_
     return failed;
 }
 
-static lib_i32 core_machine_fdc_multi_track_dma(core_machine *machine,
+static lib_i32 core_machine_fdc_multi_track_dma(x86_core_machine *machine,
     core_machine_board_state *board, core_machine_fdc_fixture_media *media)
 {
     core_machine_fdc *fdc = board->fdc;
@@ -655,7 +655,7 @@ static lib_i32 core_machine_fdc_multi_track_dma(core_machine *machine,
         media->marks[0] = media->marks[1] = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
         lib_memory_set(bytes, writing ? 0x56u : 0u, 512u);
         lib_memory_set(bytes + 512u, writing ? 0x78u : 0u, 512u);
-        failed |= core_machine_memory_write(machine, 0x0600u, bytes, sizeof(bytes)) != LIB_STATUS_OK;
+        failed |= x86_core_machine_memory_write(machine, 0x0600u, bytes, sizeof(bytes)) != LIB_STATUS_OK;
         core_machine_fdc_write_dma2(machine, 0x0600u, sizeof(bytes) - 1u);
         if (writing) test_fdc_port_write(machine, 0x000bu, 0x4au);
         failed |= !core_machine_fdc_command(fdc, machine,
@@ -671,7 +671,7 @@ static lib_i32 core_machine_fdc_multi_track_dma(core_machine *machine,
             result[3] != 1u || result[4] != 0u || result[5] != 1u ||
             media->read_count - reads != (writing ? 0u : 1024u) ||
             media->write_count - writes != (writing ? 1024u : 0u);
-        failed |= core_machine_memory_read(machine, 0x0600u, bytes, sizeof(bytes)) != LIB_STATUS_OK;
+        failed |= x86_core_machine_memory_read(machine, 0x0600u, bytes, sizeof(bytes)) != LIB_STATUS_OK;
         for (lib_u16 byte = 0u; byte < sizeof(bytes); ++byte)
             failed |= (writing ? media->bytes[byte] : bytes[byte]) !=
                 (writing ? (byte < 512u ? 0x56u : 0x78u) : (byte < 512u ? 0x12u : 0x34u));
@@ -684,7 +684,7 @@ static lib_i32 core_machine_fdc_multi_track_dma(core_machine *machine,
 }
 
 static lib_i32 core_machine_fdc_no_implied_seek(core_machine_fdc *fdc,
-    core_machine *port, core_machine_fdc_fixture_media *media)
+    x86_core_machine *port, core_machine_fdc_fixture_media *media)
 {
     const lib_u8 commands[] = {0x46u, 0x45u, 0x4cu, 0x49u, 0x51u, 0x59u, 0x5du, 0x42u};
     const lib_u32 reads = media->read_count;
@@ -717,7 +717,7 @@ static lib_i32 core_machine_fdc_no_implied_seek(core_machine_fdc *fdc,
     return failed;
 }
 
-static lib_i32 core_machine_fdc_seek_pins(core_machine_fdc *fdc, core_machine *port)
+static lib_i32 core_machine_fdc_seek_pins(core_machine_fdc *fdc, x86_core_machine *port)
 {
     const core_machine_fdc_drive_bindings saved_drives = fdc->connect.drives;
     const core_machine_fdc_config saved_config = fdc->connect.config;
@@ -856,10 +856,10 @@ lib_i32 main(void)
     core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_fdc *fdc;
-    core_machine *port;
+    x86_core_machine *port;
     lib_u8 result[7];
     lib_u8 scan_dma[512];
     lib_u64 ndma_gate_tick;
@@ -887,8 +887,8 @@ lib_i32 main(void)
             topology.dma_request = dma_request;
             topology.config = fdc_config;
             if (core_machine_configure_fdc(board, &topology) != LIB_STATUS_OK ||
-                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-                core_machine_reset(machine) != LIB_STATUS_OK) {
+                x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK) {
                 failed |= 0x04;
             } else {
                 failed |= fdc->data.ccr != VFDC_CCR_RATE_500;
@@ -1186,7 +1186,7 @@ lib_i32 main(void)
                     (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 test_fdc_port_write(port, fdc_config.control_port, 0u);
                 lib_memory_set(scan_dma, 0xa5u, sizeof(scan_dma));
-                failed |= core_machine_memory_write(machine,
+                failed |= x86_core_machine_memory_write(machine,
                     0x0600u, scan_dma, sizeof(scan_dma)) != LIB_STATUS_OK;
                 core_machine_fdc_write_dma2(port, 0x0600u, 511u);
                 test_fdc_port_write(port, 0x000bu, 0x4au);
@@ -1349,7 +1349,7 @@ lib_i32 main(void)
     if (!failed) failed |= core_machine_fdc_seek_pins(fdc, port);
     if (!failed) failed |= core_machine_fdc_multi_track_dma(machine, board, &fixture);
     if (!failed) failed |= core_machine_fdc_service_limits(fdc, port, board, &fixture);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "8272A-SCAN:FAIL %x\n", failed);

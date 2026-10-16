@@ -97,7 +97,7 @@ lib_i32 vm_profile_default_pc_at_core_config_materialize(
         .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .time_axis = contract->time_axis,
-        .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
+        .l1_compatibility_policy = X86_CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .pic_irq_timing = contract->pic_irq_timing,
         .kbc_aux_absent = descriptor->kbc_aux_absent,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,

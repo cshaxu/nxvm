@@ -4,8 +4,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/debug_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/waiting.h"
 #include "core/machine/machine_private.h"
@@ -39,8 +39,8 @@ static lib_i32 vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
     core_machine_media_result result;
     lib_size index;
 
-    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
-        core_machine_debug_read_memory(session->core_machine,
+    if (session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
+        x86_core_machine_debug_read_memory(session->x86_core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, boot_sector, sizeof(boot_sector)) !=
             LIB_STATUS_OK) {
         return 0;
@@ -63,11 +63,11 @@ static lib_i32 vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
-    const core_machine_run_budget budget = {
+    const x86_core_machine_run_budget budget = {
         VM_HDC_HDD_BOOT_QUANTUM, 0u
     };
     vm_machine *session = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic;
     lib_status run_status;
     lib_u32 executed = 0u;
@@ -85,10 +85,10 @@ lib_i32 main(lib_i32 argc, char **argv)
             LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_OK ||
         vm_machine_reset(session) != LIB_STATUS_OK) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
-        run_status = core_machine_run(session->core_machine, budget, &result);
+        run_status = x86_core_machine_run(session->x86_core_machine, budget, &result);
         if (run_status != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT) {
-            if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) {
+            if (x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) ==
                 LIB_STATUS_OK && diagnostic.first_fault.valid) {
                 fprintf(stderr,
                     "NXVM:HDC:SYSTEM-FAULT reason=%u cs=%04X ip=%08X opcode=%02X\n",
@@ -103,7 +103,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             }
             goto fail;
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
@@ -122,7 +122,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         lib_u8 image_bytes[4] = {0};
         core_machine_media_result image_result;
 
-        (void)core_machine_debug_read_memory(session->core_machine,
+        (void)x86_core_machine_debug_read_memory(session->x86_core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, bytes, sizeof(bytes));
         (void)core_machine_media_read_bytes(session->media_registry,
             VM_MACHINE_MEDIA_HDD_ID, (lib_size)vm_hdc_hdd_boot_partition_lba(session) *

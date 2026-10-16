@@ -86,13 +86,13 @@ lib_status mydeskpro386_topology_materialize(
      * Core owns the single RAM backing; the frozen profile declares only the
      * board decode. */
     topology.memory_alias_count = 2u;
-    topology.memory_alias[0] = (core_machine_memory_alias_config) {
+    topology.memory_alias[0] = (x86_core_machine_memory_alias_config) {
         0x00fa0000u, 0x000a0000u, 0x00060000u };
     /* D4 enables this second alias at runtime when its mapping register
      * relocates FE0000h--FFFFFFh into E0000h--FFFFFh.  Aliases name backing
      * offsets, so this is the high range's already-decoded E0000h backing,
      * not a second physical hop through FE0000h. */
-    topology.memory_alias[1] = (core_machine_memory_alias_config) {
+    topology.memory_alias[1] = (x86_core_machine_memory_alias_config) {
         0x000e0000u, 0x000e0000u, 0x00020000u };
     /* D4 decodes the installed 1 MiB upgrade through 1FFFFFh; the option
      * board range and the unselected F00000h--F9FFFFh bank decode open bus. */

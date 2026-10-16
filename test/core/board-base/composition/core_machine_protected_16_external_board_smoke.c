@@ -12,7 +12,7 @@ static lib_i32 s47_patch_eflags(test_protected_16_machine *state,
 
     patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
     patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = eflags;
-    return core_machine_debug_patch_registers(state->machine, &patch) ==
+    return x86_core_machine_debug_patch_registers(state->machine, &patch) ==
         LIB_STATUS_OK;
 }
 
@@ -31,7 +31,7 @@ static lib_i32 s47_outer_software(x86_core_cpu_profile profile,
 {
     static const lib_u8 interrupt[] = {0xcdu,S47_VECTOR};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 frame[5u] = {0};
@@ -44,10 +44,10 @@ static lib_i32 s47_outer_software(x86_core_cpu_profile profile,
             S47_HANDLER) || !s47_patch_eflags(&state,
             X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
-                interrupt, sizeof(interrupt)) || (run_status = core_machine_run(state.machine,
-                (core_machine_run_budget){32u,0u}, &result)) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                interrupt, sizeof(interrupt)) || (run_status = x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){32u,0u}, &result)) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || diagnostic.first_fault.valid ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.cs.selector != 0x0008u || snapshot.cs.dpl != 0u ||
@@ -79,7 +79,7 @@ static lib_i32 s47_outer_dpl_rejection(x86_core_cpu_profile profile)
 {
     static const lib_u8 interrupt[] = {0xcdu,S47_VECTOR};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile) ||
@@ -91,10 +91,10 @@ static lib_i32 s47_outer_dpl_rejection(x86_core_cpu_profile profile)
             !s47_install_handler(&state, 0x0du,
                 TEST_PROTECTED_INTERRUPT_GATE_16, 0u, S47_HANDLER + 0x0010u) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
-                interrupt, sizeof(interrupt)) || core_machine_run(state.machine,
-                (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                interrupt, sizeof(interrupt)) || x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+            x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
             !test_protected_16_snapshot(&state, &snapshot) ||
@@ -111,7 +111,7 @@ static lib_i32 s47_outer_nmi(x86_core_cpu_profile profile, lib_u8 type)
 {
     static const lib_u8 nop[] = {0x90u};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     core_machine_planar_parity_observation parity = {0};
     lib_u16 frame[5u] = {0};
@@ -132,9 +132,9 @@ static lib_i32 s47_outer_nmi(x86_core_cpu_profile profile, lib_u8 type)
             state.board, &parity) != LIB_STATUS_OK || !parity.nmi_signaled;
     }
     if (!failed) {
-        failed = core_machine_run(state.machine, (core_machine_run_budget){32u,0u},
+        failed = x86_core_machine_run(state.machine, (x86_core_machine_run_budget){32u,0u},
             &result) != LIB_STATUS_OK || result.reason !=
-            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.cs.selector != 0x0008u || snapshot.ss.selector != 0x0010u ||
             snapshot.eip != S47_HANDLER + 1u || snapshot.esp !=

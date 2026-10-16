@@ -11,11 +11,11 @@ typedef struct test_board_composition_observation {
     lib_u16 drive_cylinders;
     lib_bool dma_configured;
     core_machine_dma_wiring dma_wiring;
-    core_machine_clock_ratio dma_clock;
-    core_machine_clock_ratio pit_clock;
-    core_machine_clock_ratio auxiliary_pit_clock;
-    core_machine_clock_ratio rtc_clock;
-    core_machine_clock_ratio vadp_clock;
+    x86_core_machine_clock_ratio dma_clock;
+    x86_core_machine_clock_ratio pit_clock;
+    x86_core_machine_clock_ratio auxiliary_pit_clock;
+    x86_core_machine_clock_ratio rtc_clock;
+    x86_core_machine_clock_ratio vadp_clock;
     lib_u32 rtc_ticks_per_second;
     core_machine_controller_timing_rules controller_timing;
     lib_u32 kbc_typematic_initial_ticks;
@@ -32,10 +32,10 @@ typedef struct test_board_plan_observation {
     lib_size memory_bytes;
     x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
-    core_machine_retirement_time_contract retirement_time_contract;
-    core_machine_l1_compatibility_policy l1_compatibility_policy;
+    x86_core_machine_retirement_time_contract retirement_time_contract;
+    x86_core_machine_l1_compatibility_policy l1_compatibility_policy;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
-    core_machine_time_axis_kind time_axis_kind;
+    x86_core_machine_time_axis_kind time_axis_kind;
     core_machine_controller_timing_rules controller_timing;
 } test_board_plan_observation;
 
@@ -57,7 +57,7 @@ test_board_composition_observation test_board_capture_composition(
 lib_bool test_board_pic_source_matches(core_machine_board_state *board,
     test_board_pic_source source, lib_u8 irq);
 lib_bool test_board_kbc_command_matches(core_machine_board_state *board,
-    core_machine *machine, lib_u8 command, lib_u8 mask, lib_u8 expected);
+    x86_core_machine *machine, lib_u8 command, lib_u8 mask, lib_u8 expected);
 lib_i32 test_board_pic_unmask_delay_matches(core_machine_board_state *board,
     lib_u64 expected_ticks);
 lib_status test_board_dma_duplicate_bind(core_machine_board_state *board, lib_u8 channel,
@@ -69,7 +69,7 @@ lib_bool test_board_dma_has_pending_request(const core_machine_board_state *boar
 void test_board_dma_request_assert(core_machine_board_state *board,
     const core_machine_dma_request_binding *request);
 void test_board_pit_advance(core_machine_board_state *board, lib_u64 ticks);
-lib_i32 test_board_kbc_read_reply(core_machine_board_state *board, core_machine *machine);
+lib_i32 test_board_kbc_read_reply(core_machine_board_state *board, x86_core_machine *machine);
 lib_status test_board_kbc_submit_native_byte(core_machine_board_state *board, lib_u8 byte);
 lib_status test_board_kbc_ticks_until_event(const core_machine_board_state *board,
     lib_u64 *ticks);

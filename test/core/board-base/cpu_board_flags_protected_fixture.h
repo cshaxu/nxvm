@@ -14,9 +14,9 @@ static lib_i32 test_cpu_board_flags_protected_run(const lib_u8 *code,
     lib_size bytes, lib_u32 eax, lib_u32 flags,
     test_cpu_board_flags_protected_result *out)
 {
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_i32 failed = out == LIB_NULL ||
         !test_cpu_board_limit_prepare(&machine, code, bytes, LIB_TRUE,
             LIB_FALSE);
@@ -41,21 +41,21 @@ static lib_i32 test_cpu_board_flags_protected_run(const lib_u8 *code,
         patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
         patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x20u;
         patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = flags;
-        failed = core_machine_debug_patch_registers(machine, &patch) !=
+        failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &out->before) !=
                 LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){1u,0u},
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
                 &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(machine, &out->diagnostic) !=
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+            x86_core_machine_get_cpu_diagnostic(machine, &out->diagnostic) !=
                 LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &out->after) !=
                 LIB_STATUS_OK;
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

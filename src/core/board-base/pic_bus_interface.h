@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_PIC_INTERFACE_H
 #define CORE_MACHINE_PIC_INTERFACE_H
 #include "lib/types/types_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 #include "core/chips/pic8259/pic8259_interface.h"
 
 typedef struct core_machine_pic_bus core_machine_pic_bus;
@@ -28,7 +28,7 @@ typedef struct core_machine_pic_irq_timing {
  * Failed construction publishes neither endpoint. Rebinding an existing source
  * reuses its lease, and requires the same pair and a quiescent/reset source. */
 lib_status core_machine_pic_initialize(core_machine_pic_bus **out_master,
-    core_machine_pic_bus **out_slave, core_machine *machine,
+    core_machine_pic_bus **out_slave, x86_core_machine *machine,
     core_machine_pic_topology topology);
 void core_machine_pic_finalize(core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_pic_reset(core_machine_pic_bus *master, core_machine_pic_bus *slave);

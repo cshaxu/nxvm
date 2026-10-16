@@ -4,9 +4,9 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" core_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_display.c" core_display_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" machine_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "t_vadp[ \t]+\\*?[ \t]*shared_vadp;" OR
     NOT board_header MATCHES "t_vadp[ \t]+\\*shared_vadp;" OR
     scheduler_source MATCHES "board->shared_vadp")
@@ -15,7 +15,7 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_interface.h" neutral_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_interface.h" neutral_header)
 foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot configure_display)
     foreach(source IN ITEMS core_display_source core_header)
         if(NOT "${${source}}" MATCHES
@@ -24,11 +24,11 @@ foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot con
         endif()
     endforeach()
 endforeach()
-if(core_display_source MATCHES "app-nxvm/devices/machine\\.h|->board|core_machine \\*machine" OR
-    NOT core_display_source MATCHES "core_machine_configuration_is_open\\(board->core\\)" OR
-    NOT core_display_source MATCHES "core_machine_get_lifecycle\\(board->core," OR
-    NOT neutral_header MATCHES "core_machine_configuration_is_open\\(const core_machine \\*machine\\)" OR
-    machine_header MATCHES "core_machine_configuration_is_open\\(")
+if(core_display_source MATCHES "app-nxvm/devices/machine\\.h|->board|x86_core_machine \\*machine" OR
+    NOT core_display_source MATCHES "x86_core_machine_configuration_is_open\\(board->core\\)" OR
+    NOT core_display_source MATCHES "x86_core_machine_get_lifecycle\\(board->core," OR
+    NOT neutral_header MATCHES "x86_core_machine_configuration_is_open\\(const x86_core_machine \\*machine\\)" OR
+    machine_header MATCHES "x86_core_machine_configuration_is_open\\(")
     message(FATAL_ERROR "Display must use sole public Core guards without private-state recovery")
 endif()
 if(NOT core_plan_source MATCHES "core_machine_configure_display\\(board," OR
@@ -43,14 +43,14 @@ file(GLOB_RECURSE display_callers
     "${PROJECT_SOURCE_DIR}/test/app-my5170/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c" "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c" "${PROJECT_SOURCE_DIR}/test/core/x86/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c" "${PROJECT_SOURCE_DIR}/test/x86-core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c")
 foreach(caller IN LISTS display_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES
-        "core_machine_(capture_display_snapshot|observe_display_snapshot|configure_display)\\([ \t\r\n]*(session->core_machine|machine->core_machine|machine),")
+        "core_machine_(capture_display_snapshot|observe_display_snapshot|configure_display)\\([ \t\r\n]*(session->x86_core_machine|machine->x86_core_machine|machine),")
         message(FATAL_ERROR "Display caller retains a Core receiver: ${caller}")
     endif()
 endforeach()
@@ -83,7 +83,7 @@ if(display_present_position EQUAL -1 OR configure_display_position EQUAL -1)
 endif()
 
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
-    "core_machine_vadp_configure_" "x86_video_configure_" "core_machine_install_port_provider")
+    "core_machine_vadp_configure_" "x86_video_configure_" "x86_core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
         "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c"
         "${PROJECT_SOURCE_DIR}/src/core/machine/display.c")

@@ -4,17 +4,17 @@
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
 
-static lib_i32 core_machine_cga_graphics_write_byte(core_machine *machine,
+static lib_i32 core_machine_cga_graphics_write_byte(x86_core_machine *machine,
     lib_u32 offset, lib_u8 value)
 {
-    return core_machine_memory_write(machine,
+    return x86_core_machine_memory_write(machine,
         CORE_MACHINE_VADP_VIDEO_BASE + offset, &value,
         sizeof(value)) == LIB_STATUS_OK;
 }
 
 lib_i32 main(void)
 {
-    core_machine *machine;
+    x86_core_machine *machine;
     t_vadp vadp;
     x86_video_snapshot snapshot;
     x86_video_snapshot_observation observation;
@@ -184,7 +184,7 @@ lib_i32 main(void)
         failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
             snapshot.characters[0] != 'B' || snapshot.attributes[0] != 0x77u ||
             !snapshot.buffer_changed;
-        failed |= core_machine_memory_inspect(machine, CORE_MACHINE_VADP_VIDEO_BASE + 1u,
+        failed |= x86_core_machine_memory_inspect(machine, CORE_MACHINE_VADP_VIDEO_BASE + 1u,
             &attribute, 1u) != LIB_STATUS_OK || attribute != 0xfeu;
         test_video_port_write(machine, 0x03d8u, 0x0du);
         failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
@@ -192,7 +192,7 @@ lib_i32 main(void)
     }
 
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("CGA:PORT:OK\n");
     return 0;

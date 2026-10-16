@@ -2,16 +2,16 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c"
     scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c"
     board_deadline_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c"
     board_advance_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/execution_provider_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/execution_provider_interface.h"
     execution_provider_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_interface.h"
     machine_interface_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/kbc.c" kbc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
@@ -31,7 +31,7 @@ foreach(forbidden IN ITEMS "core_machine_arbitration_tick"
     endif()
 endforeach()
 
-string(FIND "${machine_interface_source}" "core_machine_advance_time("
+string(FIND "${machine_interface_source}" "x86_core_machine_advance_time("
     public_advance_time_position)
 if(NOT public_advance_time_position EQUAL -1)
     message(FATAL_ERROR "exposes arbitrary source-tick advancement outside Core")
@@ -53,8 +53,8 @@ foreach(required IN ITEMS "else if (board.fast_advance_blocked)"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_publish_elapsed_ticks"
-    "core_machine_capture_time_observation_private" "core_machine_timeline_next_due"
+foreach(required IN ITEMS "x86_core_machine_publish_elapsed_ticks"
+    "x86_core_machine_capture_time_observation_private" "x86_core_machine_timeline_next_due"
     "core_machine_fdc_next_due_tick" "core_machine_kbc_ticks_until_event")
     string(FIND "${core_source}" "${required}" position)
     if(position EQUAL -1)

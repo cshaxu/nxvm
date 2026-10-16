@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
 foreach(effect "x86_xt_keyboard_advance(" "core_machine_kbc_advance("
@@ -17,7 +17,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" video)
 if(NOT video MATCHES "x86_video_advance\\(adapter->chip, ticks\\)")
     message(FATAL_ERROR "Video adapter does not forward the settled device ticks")
 endif()
-string(FIND "${core}" "core_machine_internal_advance(machine, source_ticks);"
+string(FIND "${core}" "x86_core_machine_internal_advance(machine, source_ticks);"
     readiness_position)
 string(FIND "${core}" "machine->attachment.after_internal_advance(machine->attachment.context,"
     peripheral_position)

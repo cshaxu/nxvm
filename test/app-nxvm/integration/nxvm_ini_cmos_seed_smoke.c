@@ -15,10 +15,10 @@ static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
 
     if (integration_ini_session_open(directory, file_name, &ini_session) !=
         LIB_STATUS_OK) return 0;
-    test_core_write_port_after_run(ini_session.session->core_machine,
+    test_core_write_port_after_run(ini_session.session->x86_core_machine,
         0x0070u, index);
     observed = (lib_u8)test_core_read_port_after_run(
-        ini_session.session->core_machine, 0x0071u);
+        ini_session.session->x86_core_machine, 0x0071u);
     integration_ini_session_close(&ini_session);
     return observed == expected;
 }

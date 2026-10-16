@@ -10,12 +10,12 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     X86_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
-    { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
+    { { 0u, 0u, 0u, X86_CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
         {{0}}, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 8u },
     { { 1u, 1u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u } },
-    { CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u },
+    { X86_CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u },
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
@@ -186,7 +186,7 @@ static lib_i32 vm_profile_default_descriptor_validate(
         descriptor->refresh_status_source ==
             CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
         descriptor->refresh_status_toggle_ticks == 0u &&
-        descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
+        descriptor->time_axis.kind == X86_CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         descriptor->time_axis.ticks_per_second == 0u &&
         descriptor->ega_present && !descriptor->cga_vram_present &&
         descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&

@@ -110,7 +110,7 @@ lib_i32 main(void)
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology fdc_topology = {0};
     core_machine_hdc_topology hdc_topology = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     lib_u32 drive_address;
     lib_i32 failed = 0;
@@ -134,17 +134,17 @@ lib_i32 main(void)
         hdc_topology.config = hdc_config;
         if (core_machine_configure_fdc(board, &fdc_topology) != LIB_STATUS_OK ||
             core_machine_configure_hdc(board, &hdc_topology) != LIB_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK) {
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK) {
             failed = 0x02;
         } else {
-            failed = core_machine_bus_write(machine, 0x01f6u, 0x2au) !=
+            failed = x86_core_machine_bus_write(machine, 0x01f6u, 0x2au) !=
                 LIB_STATUS_OK ||
-                core_machine_bus_read(machine, 0x03f7u, &drive_address) !=
+                x86_core_machine_bus_read(machine, 0x03f7u, &drive_address) !=
                 LIB_STATUS_OK || (drive_address & 0x7fu) != 0x76u ? 0x04 : 0;
         }
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "COMPAQ-HDC-MACHINE:FAIL:%x\n", failed);

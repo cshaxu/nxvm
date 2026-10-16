@@ -19,13 +19,13 @@ set(project_cpu_fixture_lifecycle_wrapper_sources
     "test/core/board-base/core_machine_iret_profiles_smoke.c"
     "test/core/board-base/core_machine_software_int_profiles_smoke.c")
 set(project_cpu_fixture_lifecycle_neutral_core_sources
-    "test/core/x86/machine_fpu_interface_smoke.c")
+    "test/x86-core/machine/machine_fpu_interface_smoke.c")
 set(project_cpu_fixture_lifecycle_inherited_sources
     "test/core/board-base/machine_interrupt_entry_smoke.c"
     "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
-    "test/core/x86/machine_protected_iret_smoke.c")
+    "test/x86-core/machine/machine_protected_iret_smoke.c")
 set(project_cpu_fixture_lifecycle_public_board_sources
-    "test/core/x86/machine_protected_iret_smoke.c"
+    "test/x86-core/machine/machine_protected_iret_smoke.c"
     "test/core/board-base/machine_interrupt_entry_smoke.c"
     "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
     "test/core/board-base/machine_debug_state_board_smoke.c"
@@ -98,8 +98,8 @@ set(project_cpu_fixture_lifecycle_descriptor_query_fixture_sources
 
 file(READ "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/core/board-base/cpu_board_limit_fixture.h"
     project_cpu_fixture_lifecycle_limit_helper)
-foreach(operation core_machine_create core_machine_freeze_execution_providers
-        core_machine_reset core_machine_debug_patch_registers)
+foreach(operation core_machine_create x86_core_machine_freeze_execution_providers
+        x86_core_machine_reset x86_core_machine_debug_patch_registers)
     if(NOT project_cpu_fixture_lifecycle_limit_helper MATCHES "${operation}[ \t\r\n]*\\(")
         message(FATAL_ERROR "Public board limit helper misses ${operation}.")
     endif()
@@ -125,9 +125,9 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
         project_cpu_fixture_lifecycle_cpu_source
         "${project_cpu_fixture_lifecycle_cpu_source}")
     if(source IN_LIST project_cpu_fixture_lifecycle_neutral_core_sources)
-        foreach(operation core_machine_neutral_create core_machine_bind_execution_provider
-                core_machine_freeze_execution_providers core_machine_reset
-                core_machine_debug_patch_registers)
+        foreach(operation x86_core_machine_neutral_create x86_core_machine_bind_execution_provider
+                x86_core_machine_freeze_execution_providers x86_core_machine_reset
+                x86_core_machine_debug_patch_registers)
             if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
                 message(FATAL_ERROR "Neutral Core fixture misses ${operation}: ${source}")
             endif()
@@ -147,17 +147,17 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
             endif()
         else()
             set(project_cpu_fixture_lifecycle_constructor core_machine_create)
-            if(source STREQUAL "test/core/x86/machine_protected_iret_smoke.c")
-                set(project_cpu_fixture_lifecycle_constructor core_machine_neutral_create)
+            if(source STREQUAL "test/x86-core/machine/machine_protected_iret_smoke.c")
+                set(project_cpu_fixture_lifecycle_constructor x86_core_machine_neutral_create)
             endif()
-            foreach(operation ${project_cpu_fixture_lifecycle_constructor} core_machine_freeze_execution_providers
-                    core_machine_reset core_machine_debug_patch_registers)
+            foreach(operation ${project_cpu_fixture_lifecycle_constructor} x86_core_machine_freeze_execution_providers
+                    x86_core_machine_reset x86_core_machine_debug_patch_registers)
                 if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
                     message(FATAL_ERROR "Public board fixture misses ${operation}: ${source}")
                 endif()
             endforeach()
         endif()
-        if(content MATCHES "core_machine_bind_execution_provider|executor_cpu|machine_cpu_fixture")
+        if(content MATCHES "x86_core_machine_bind_execution_provider|executor_cpu|machine_cpu_fixture")
             message(FATAL_ERROR "Public board fixture restores private CPU setup: ${source}")
         endif()
         return()
@@ -229,8 +229,8 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
         "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
         message(FATAL_ERROR "CPU fixture source omits shared setup: ${source}")
     endif()
-    if("${content}" MATCHES "core_machine_bind_execution_provider" OR
-        "${content}" MATCHES "core_machine_freeze_execution_providers")
+    if("${content}" MATCHES "x86_core_machine_bind_execution_provider" OR
+        "${content}" MATCHES "x86_core_machine_freeze_execution_providers")
         message(FATAL_ERROR "CPU fixture source restores direct bind/freeze: ${source}")
     endif()
 endfunction()
@@ -253,8 +253,8 @@ foreach(project_cpu_fixture_lifecycle_entry IN LISTS project_cpu_fixture_lifecyc
     endif()
     if(NOT project_cpu_fixture_lifecycle_source IN_LIST project_cpu_fixture_lifecycle_public_board_sources AND
        NOT project_cpu_fixture_lifecycle_source IN_LIST project_cpu_fixture_lifecycle_neutral_core_sources AND
-       ("${project_cpu_fixture_lifecycle_content}" MATCHES "core_machine_bind_execution_provider" OR
-        "${project_cpu_fixture_lifecycle_content}" MATCHES "core_machine_freeze_execution_providers"))
+       ("${project_cpu_fixture_lifecycle_content}" MATCHES "x86_core_machine_bind_execution_provider" OR
+        "${project_cpu_fixture_lifecycle_content}" MATCHES "x86_core_machine_freeze_execution_providers"))
         message(FATAL_ERROR
             "CPU fixture owner restores direct bind/freeze setup: ${project_cpu_fixture_lifecycle_source}")
     endif()
@@ -266,9 +266,9 @@ endforeach()
 
 set(project_cpu_fixture_lifecycle_positive
     "test_core_machine_fixture_bind_freeze_reset(machine, provider, owner)")
-set(project_cpu_fixture_lifecycle_negative "core_machine_freeze_execution_providers(machine)")
+set(project_cpu_fixture_lifecycle_negative "x86_core_machine_freeze_execution_providers(machine)")
 if(NOT project_cpu_fixture_lifecycle_positive MATCHES "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)" OR
-    NOT project_cpu_fixture_lifecycle_negative MATCHES "core_machine_freeze_execution_providers")
+    NOT project_cpu_fixture_lifecycle_negative MATCHES "x86_core_machine_freeze_execution_providers")
     message(FATAL_ERROR "CPU fixture lifecycle verifier self-check failed.")
 endif()
 

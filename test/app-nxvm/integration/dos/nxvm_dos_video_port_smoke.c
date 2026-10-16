@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
@@ -32,9 +32,9 @@ lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
     vm_machine *session;
-    core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result = {0};
-    core_machine_observation observation;
+    x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result = {0};
+    x86_core_machine_observation observation;
     x86_video_snapshot snapshot;
     lib_u32 eax;
     lib_u8 opcode[2];
@@ -52,8 +52,8 @@ lib_i32 main(lib_i32 argc, char **argv)
     vm_machine_reset(session);
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
-        if (core_machine_capture_observation(session->core_machine, &observation) !=
-                LIB_STATUS_OK || core_machine_memory_read(session->core_machine,
+        if (x86_core_machine_capture_observation(session->x86_core_machine, &observation) !=
+                LIB_STATUS_OK || x86_core_machine_memory_read(session->x86_core_machine,
                 observation.cpu.cs_base + observation.cpu.eip, opcode,
                 sizeof(opcode)) != LIB_STATUS_OK) {
             failed = 1;
@@ -61,7 +61,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
-            if (core_machine_debug_read_register(session->core_machine,
+            if (x86_core_machine_debug_read_register(session->x86_core_machine,
                     X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK) {
                 failed = 1;
                 break;
@@ -71,12 +71,12 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) {
             ++f2_count;
         }
-        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT) {
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             failed = 1;
             break;
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||

@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/entry_plan_interface.h"
+#include "x86-core/machine/entry_plan_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
@@ -35,16 +35,16 @@ lib_i32 main(void)
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .bios_count = 1u
     };
-    const core_machine_entry_plan_preload preload = {
+    const x86_core_machine_entry_plan_preload preload = {
         0x0200u, vm_cga_graphics_program, sizeof(vm_cga_graphics_program) };
-    const core_machine_entry_plan plan = {
+    const x86_core_machine_entry_plan plan = {
         .state = {.ip = 0x0200u, .sp = 0x7000u, .eflags = 0u},
         .entry_physical = 0x0200u,
-        .entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM,
+        .entry_route = X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM,
         .preloads = &preload,
         .preload_count = 1u};
-    core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
     x86_video_snapshot snapshot;
     vm_machine *session = LIB_NULL;
     vm_machine_construction construction;
@@ -61,12 +61,12 @@ lib_i32 main(void)
     construction.topology.display.ega_present = LIB_FALSE;
     construction.topology.display.vertical_irq = 0u;
     if (vm_machine_create(&config, &construction, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || core_machine_apply_entry_plan(session->core_machine,
+        session == LIB_NULL || x86_core_machine_apply_entry_plan(session->x86_core_machine,
             &plan) != LIB_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_CGA_GRAPHICS_BOOT_BUDGET;
          ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) !=
-                LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+        if (x86_core_machine_run(session->x86_core_machine, budget, &result) !=
+                LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             goto done;
         }
         if (core_machine_capture_display_snapshot(session->board,

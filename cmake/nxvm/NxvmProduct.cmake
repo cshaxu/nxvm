@@ -61,7 +61,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-x86-ibmpc-tests
     shared-x86-nxvm-tests
     core-product-tests
-    core-x86-tests
+    core-chip-tests
     x86-core-tests
     core-board-tests)
 
@@ -76,10 +76,10 @@ target_include_directories(mydeskpro386-d4 PUBLIC
 )
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(mydeskpro386-d4 PUBLIC
-        CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+        X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 else()
     target_compile_definitions(mydeskpro386-d4 PUBLIC
-        CORE_MACHINE_RUNTIME_TRACE_ENABLED=0)
+        X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=0)
 endif()
 
 # Release artifacts omit development trace observation. A small set of unit
@@ -91,9 +91,9 @@ target_include_directories(mydeskpro386-d4-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(mydeskpro386-d4-observable PUBLIC core-board-base-observable core-board-at core-board-xt
-    core-x86-observable)
+    x86-core-machine-observable)
 target_compile_definitions(mydeskpro386-d4-observable PUBLIC
-    CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+    X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 add_executable(vm-default-pc-at-profile-smoke
     test/app-nxvm/unit/machine_config_smoke.c)
@@ -120,14 +120,16 @@ target_link_libraries(vm-model40-machine-contract-smoke PRIVATE vm-profile-tests
 add_executable(vm-model40-cecg-smoke
     test/app-mydeskpro386/unit/vm_model40_cecg_smoke.c)
 target_link_libraries(vm-model40-cecg-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-cecg-smoke PRIVATE test/core/support/video_topology_fixture.c)
+target_sources(vm-model40-cecg-smoke PRIVATE test/core/support/video_topology_fixture.c
+    test/core/board-base/composition/composition_fixture.c)
 add_executable(vm-model40-cecg-feature-environment-smoke
     test/app-mydeskpro386/unit/vm_model40_cecg_feature_environment_smoke.c)
 target_link_libraries(vm-model40-cecg-feature-environment-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-cpu-video-gate-smoke
     test/app-mydeskpro386/unit/vm_model40_cecg_cpu_video_gate_smoke.c)
 target_link_libraries(vm-model40-cecg-cpu-video-gate-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-cecg-cpu-video-gate-smoke PRIVATE test/core/support/video_topology_fixture.c)
+target_sources(vm-model40-cecg-cpu-video-gate-smoke PRIVATE test/core/support/video_topology_fixture.c
+    test/core/board-base/composition/composition_fixture.c)
 add_executable(vm-model40-cecg-io-base-smoke
     test/app-mydeskpro386/unit/vm_model40_cecg_io_base_smoke.c)
 target_link_libraries(vm-model40-cecg-io-base-smoke PRIVATE vm-profile-tests)
@@ -208,12 +210,14 @@ add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/app-my5170/unit/machine_video_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile-tests)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
+    test/core/board-base/composition/composition_fixture.c
     test/core/support/video_topology_fixture.c
     test/core/board-base/support/video_topology_fixture.c)
 add_executable(vm-default-ega-topology-smoke
     test/app-nxvm/unit/nxvm_ega_topology_smoke.c)
 target_link_libraries(vm-default-ega-topology-smoke PRIVATE vm-profile-tests)
 target_sources(vm-default-ega-topology-smoke PRIVATE
+    test/core/board-base/composition/composition_fixture.c
     test/core/support/video_topology_fixture.c
     test/core/board-base/support/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
@@ -294,14 +298,13 @@ target_link_libraries(nxvm-default-pc-at-plan-smoke PRIVATE vm-profile-tests)
 add_executable(my5170-plan-smoke
     test/app-my5170/unit/machine_plan_smoke.c)
 target_link_libraries(my5170-plan-smoke PRIVATE
-    vm-profile-tests core-board-base core-x86)
+    vm-profile-tests core-board-base x86-core-machine)
 add_executable(mydeskpro386-plan-smoke
     test/app-mydeskpro386/unit/model40_plan_smoke.c)
 target_link_libraries(mydeskpro386-plan-smoke PRIVATE vm-profile-tests)
 add_executable(vm-xt-5160-268-profile-smoke
     test/app-my5160/unit/machine_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
-    test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/composition_fixture.c
     test/core/board-base/support/controller_fixture.c)
 target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-machine)
@@ -309,8 +312,8 @@ target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-machine)
 
 
 
-add_library(model40-d4-prefetch-scheduler-test OBJECT src/core/x86/machine_scheduler.c)
-target_link_libraries(model40-d4-prefetch-scheduler-test PRIVATE core-x86-observable)
+add_library(model40-d4-prefetch-scheduler-test OBJECT src/x86-core/machine/machine_scheduler.c)
+target_link_libraries(model40-d4-prefetch-scheduler-test PRIVATE x86-core-machine-observable)
 target_compile_definitions(model40-d4-prefetch-scheduler-test PRIVATE
     x86_core_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -326,22 +329,21 @@ add_executable(core-machine-d4-refresh-hold-smoke
     test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c
     test/app-mydeskpro386/unit/d4_refresh_fixture.c
     test/core/board-base/composition/composition_fixture.c
-    test/core/board-base/composition/time_fixture.c
     test/core/board-base/support/composition_fixture.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE mydeskpro386-d4-observable)
 
 add_executable(model40-d4-refresh-deadline-smoke
     test/app-mydeskpro386/unit/d4_refresh_deadline_smoke.c
     test/app-mydeskpro386/unit/d4_refresh_fixture.c
-    test/core/board-base/composition/composition_fixture.c
-    test/core/board-base/composition/time_fixture.c)
+    test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(model40-d4-refresh-deadline-smoke PRIVATE mydeskpro386-d4)
 
 add_executable(model40-d4-port-assembly-smoke
     test/app-mydeskpro386/unit/d4_port_b_assembly_smoke.c
     test/core/board-base/composition/port_assembly_fixture.c
     test/core/board-base/port_assembly_board_fixture.c
-    test/core/board-base/board_construction_fixture.c)
+    test/core/board-base/board_binding_fixture.c
+    test/core/board-at/support/parity_registration_fixture.c)
 target_link_libraries(model40-d4-port-assembly-smoke PRIVATE mydeskpro386-d4)
 
 
@@ -354,32 +356,32 @@ target_link_libraries(model40-d4-port-assembly-smoke PRIVATE mydeskpro386-d4)
 
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-string-io-timing-smoke PRIVATE
+    target_compile_options(x86-core-machine-string-io-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80386-secondary-integer-timing-smoke PRIVATE
+    target_compile_options(x86-core-machine-80386-secondary-integer-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80386-privileged-timing-smoke PRIVATE
+    target_compile_options(x86-core-machine-80386-privileged-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-8086-instruction-timing-ledger-smoke PRIVATE
+    target_compile_options(x86-core-machine-8086-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80186-instruction-timing-ledger-smoke PRIVATE
+    target_compile_options(x86-core-machine-80186-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80386-protected-io-timing-smoke PRIVATE
+    target_compile_options(x86-core-machine-80386-protected-io-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -477,7 +479,7 @@ add_executable(machine-task-switch32-paging-smoke
     test/core/board-base/composition/machine_task_switch32_paging_smoke.c)
 target_link_libraries(machine-task-switch32-paging-smoke PRIVATE mydeskpro386-d4)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-task-switch-cross-width-smoke PRIVATE
+    target_compile_options(x86-core-machine-task-switch-cross-width-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-task-switch32-paging-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -487,11 +489,11 @@ endif()
 # owners against the fixture adapter so their retained assertions observe the
 # latter only after the zero-retirement delivery boundary.
 foreach(target IN ITEMS
-    machine-string-io-timing-smoke
+    x86-core-machine-string-io-timing-smoke
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
-    machine-tss-iomap-port-authorization-smoke
-    machine-task-switch-cross-width-smoke)
+    x86-core-machine-tss-iomap-port-authorization-smoke
+    x86-core-machine-task-switch-cross-width-smoke)
     target_compile_definitions(${target} PRIVATE
         CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
 endforeach()
@@ -525,7 +527,7 @@ set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "x86-core-test-cpu_verr_verw|test/x86-core/cpu/cpu_verr_verw_smoke.c"
     "x86-core-test-cpu_eflags_local|test/x86-core/cpu/cpu_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/core/board-base/core_machine_enter_leave_smoke.c"
-    "machine-fpu-interface-smoke|test/core/x86/machine_fpu_interface_smoke.c"
+    "x86-core-machine-fpu-interface-smoke|test/x86-core/machine/machine_fpu_interface_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c"
     "core-machine-gpr-mov-smoke|test/core/board-base/core_machine_gpr_mov_smoke.c"
     "core-machine-gpr-push-pop-smoke|test/core/board-base/core_machine_gpr_push_pop_smoke.c"
@@ -617,7 +619,7 @@ file(GENERATE
 
 # The type-vocabulary verifier has one controlled support header.
 set(PROJECT_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
-    "test/core/x86/debug_fixture.h")
+    "test/x86-core/machine/debug_fixture.h")
 string(REPLACE ";" "\n" project_test_type_vocabulary_support_contents
     "${PROJECT_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
 file(GENERATE
@@ -660,20 +662,20 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(my5170-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-port-ownership-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-firmware-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-reset-rom-alias-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-immutable-rom-mapping-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-entry-plan-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-immutable-rom-mapping-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-entry-plan-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(POWERSHELL_EXECUTABLE)
@@ -696,7 +698,7 @@ endif()
 
 target_link_libraries(mydeskpro386-d4 PUBLIC core-chip-pit825x core-chip-rtc146818 core-chip-fdc8272 core-chip-hdc core-chip-video core-chip-ps2mouse core-chip-keyboard core-chip-kbc8042 core-chip-ppi8255 core-chip-xtkeyboard)
 target_link_libraries(mydeskpro386-d4-observable PUBLIC core-chip-pit825x core-chip-rtc146818 core-chip-fdc8272 core-chip-hdc core-chip-video core-chip-ps2mouse core-chip-keyboard core-chip-kbc8042 core-chip-ppi8255 core-chip-xtkeyboard)
-target_link_libraries(mydeskpro386-d4 PUBLIC core-board-base core-board-at core-board-xt core-x86)
+target_link_libraries(mydeskpro386-d4 PUBLIC core-board-base core-board-at core-board-xt x86-core-machine)
 
 # Explicit multi-profile fixtures never feed a production x86.
 add_library(vm-profile-tests INTERFACE)
@@ -712,10 +714,10 @@ target_link_libraries(vm-profile-tests INTERFACE
 if(CMAKE_LINK_GROUP_USING_RESCAN_SUPPORTED OR
         CMAKE_C_LINK_GROUP_USING_RESCAN_SUPPORTED)
     target_link_libraries(vm-profile-tests INTERFACE
-        "$<LINK_GROUP:RESCAN,core-board-base,core-board-at,core-board-xt,core-x86>")
+        "$<LINK_GROUP:RESCAN,core-board-base,core-board-at,core-board-xt,x86-core-machine>")
 else()
     target_link_libraries(vm-profile-tests INTERFACE
-        core-board-base core-board-at core-board-xt core-x86)
+        core-board-base core-board-at core-board-xt x86-core-machine)
 endif()
 
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
@@ -780,13 +782,10 @@ target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
 add_executable(core-machine-d4-platform-smoke
     test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c
     test/core/board-base/composition/composition_fixture.c
-    test/core/board-base/composition/time_fixture.c
 )
 target_link_libraries(core-machine-d4-platform-smoke PRIVATE mydeskpro386-d4)
 add_executable(core-machine-d4-memory-transaction-smoke
-    test/app-mydeskpro386/unit/d4_memory_transaction_smoke.c
-    test/core/board-base/composition/composition_fixture.c
-    test/core/support/memory_registration_fixture.c)
+    test/app-mydeskpro386/unit/d4_memory_transaction_smoke.c)
 target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE mydeskpro386-d4)
 add_executable(vm-kbc-aux-guest-smoke
     test/app-nxvm/unit/nxvm_kbc_aux_guest_smoke.c
@@ -809,7 +808,6 @@ add_executable(session-ini-status-smoke
 target_link_libraries(session-ini-status-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-model40-byob-dos-boot-probe
     test/app-mydeskpro386/diagnostic/model40/model40_byob_dos_boot_probe.c
-    test/core/support/boot_fixture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/boot_fixture.c
     test/core/board-base/support/controller_fixture.c
@@ -916,7 +914,6 @@ target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE integration-session-ini
 add_executable(vm-cmos-rtc-port-smoke test/app-nxvm/unit/nxvm_cmos_rtc_port_smoke.c)
 target_sources(vm-cmos-rtc-port-smoke PRIVATE test/core/board-base/support/cmos_fixture.c)
 target_sources(vm-default-pc-at-apply-smoke PRIVATE
-    test/core/board-base/composition/time_fixture.c
     test/core/board-base/support/composition_fixture.c
     test/core/board-base/support/cmos_fixture.c)
 foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-smoke
@@ -933,23 +930,26 @@ target_sources(vm-model40-fdd-smoke PRIVATE
 target_sources(vm-model40-hdc-smoke PRIVATE
     test/core/board-base/support/controller_fixture.c)
 target_sources(vm-model40-dma-smoke PRIVATE
-    test/core/board-base/composition/composition_fixture.c
+    test/core/board-base/board_binding_fixture.c
     test/core/board-base/support/composition_fixture.c)
 target_sources(vm-model40-d4-compatibility-smoke PRIVATE
     test/core/board-base/support/composition_fixture.c)
 target_sources(vm-model40-byob-smoke PRIVATE
-    test/core/board-base/composition/composition_fixture.c
-    test/core/board-base/composition/time_fixture.c
     test/core/board-base/support/composition_fixture.c)
 foreach(_model40_composition_target IN ITEMS vm-model40-composition-smoke
         vm-model40-machine-contract-smoke)
     target_sources(${_model40_composition_target} PRIVATE
-        test/core/board-base/composition/composition_fixture.c
         test/core/board-base/support/composition_fixture.c
         test/core/board-base/support/cmos_fixture.c
         test/core/board-base/support/kbc_state_fixture.c
         test/core/board-at/support/state_fixture.c)
 endforeach()
+target_sources(vm-model40-machine-contract-smoke PRIVATE
+    test/core/board-base/composition/composition_fixture.c)
+target_sources(vm-model40-composition-smoke PRIVATE
+    test/core/board-base/board_binding_fixture.c)
+target_sources(vm-ibm-5170-model-339-composition-smoke PRIVATE
+    test/core/board-base/board_binding_fixture.c)
 target_sources(vm-model40-machine-contract-smoke PRIVATE
     test/core/board-base/support/controller_fixture.c)
 target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
@@ -995,7 +995,7 @@ add_executable(vm-fault-outcome-runner-smoke
 target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-profile-tests)
 add_executable(vm-runner-error-propagation-smoke
     test/app-nxvm/unit/nxvm_runner_error_propagation_smoke.c
-    test/core/board-base/composition/composition_fixture.c)
+    test/core/machine/support/runner_failure_fixture.c)
 target_link_libraries(vm-runner-error-propagation-smoke PRIVATE vm-profile-tests)
 add_executable(core-machine-cpu-fpu-profile-smoke
     test/core/board-base/composition/cpu_fpu_profile_smoke.c)
@@ -1038,7 +1038,6 @@ add_custom_target(core-machine-lifecycle-ownership-closure
         -P ${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_lifecycle_ownership.cmake)
 add_executable(vm-two-session-isolation-smoke
     test/app-nxvm/unit/nxvm_two_session_isolation_smoke.c
-    test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
     vm-profile-tests)
@@ -1104,46 +1103,46 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-default-pc-at-rom-materialization-smoke
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke
-    core-machine-executor-run-smoke
+    x86-core-machine-executor-run-smoke
     core-machine-ram-create-smoke
     core-machine-port-rollback-smoke
     core-mantle-shape-smoke
-    core-machine-entry-plan-smoke
+    x86-core-machine-entry-plan-smoke
     core-machine-arbitration-smoke
-    core-machine-scheduler-smoke
+    x86-core-machine-scheduler-smoke
     core-machine-board-timing-qualification-smoke
     core-machine-timing-checkpoint-smoke
     core-machine-transaction-smoke
-    core-machine-prefetch-locality-smoke
+    x86-core-machine-prefetch-locality-smoke
     model40-d4-prefetch-locality-smoke
     model40-d4-refresh-deadline-smoke
     model40-d4-port-assembly-smoke
     core-machine-d4-refresh-hold-smoke
     core-machine-competition-80386-smoke
-    core-machine-transaction-lifecycle-smoke
-    core-machine-rational-clock-smoke
+    x86-core-machine-transaction-lifecycle-smoke
+    x86-core-machine-rational-clock-smoke
     core-machine-timeline-smoke
-    core-machine-retirement-observation-smoke
+    x86-core-machine-retirement-observation-smoke
     core-machine-rtc-storage-smoke
     core-machine-planar-parity-nmi-smoke
     core-machine-input-display-smoke
-    core-machine-real-mode-tick-smoke
-    machine-instruction-timing-smoke
-    core-machine-cpu-timing-preview-smoke
-    machine-instruction-timing-ledger-smoke
+    x86-core-machine-real-mode-tick-smoke
+    x86-core-machine-instruction-timing-smoke
+    x86-core-machine-cpu-timing-preview-smoke
+    x86-core-machine-instruction-timing-ledger-smoke
     machine-fpu-irq-smoke
     machine-arithmetic-data-timing-smoke
     machine-control-stack-timing-smoke
-    machine-string-io-timing-smoke
-    machine-80386-secondary-integer-timing-smoke
-    machine-80386-privileged-timing-smoke
-    machine-8086-instruction-timing-ledger-smoke
-    machine-80186-instruction-timing-ledger-smoke
+    x86-core-machine-string-io-timing-smoke
+    x86-core-machine-80386-secondary-integer-timing-smoke
+    x86-core-machine-80386-privileged-timing-smoke
+    x86-core-machine-8086-instruction-timing-ledger-smoke
+    x86-core-machine-80186-instruction-timing-ledger-smoke
     machine-legacy-timing-normalization-smoke
-    machine-80286-instruction-timing-ledger-smoke
-    machine-80386-protected-io-timing-smoke
-    core-machine-real-mode-corpus-smoke
-    core-machine-real-mode-386-address-smoke
+    x86-core-machine-80286-instruction-timing-ledger-smoke
+    x86-core-machine-80386-protected-io-timing-smoke
+    x86-core-machine-real-mode-corpus-smoke
+    x86-core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
     core-machine-prefix-attributes-smoke
     core-machine-legacy-lock-smoke
@@ -1228,11 +1227,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-protected-16-outer-smoke
     core-machine-protected-16-outer-iret-smoke
     core-machine-protected-16-call-gate-smoke
-    core-machine-descriptor-system-smoke
+    x86-core-machine-descriptor-system-smoke
     machine-vm86-delivery-smoke
-    machine-vm86-iret-smoke
+    x86-core-machine-vm86-iret-smoke
     machine-interrupt-entry-smoke
-    core-machine-real-mode-386-rep-cmps-smoke
+    x86-core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
     x86-core-test-cpu_arpl
     machine-arpl-board-smoke
@@ -1246,18 +1245,18 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-table-register-board-smoke
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
-    machine-cpu-profile-gate-smoke
+    x86-core-machine-cpu-profile-gate-smoke
     machine-protected-privilege-board-smoke
-    machine-protected-iret-smoke
-    machine-call-gate-smoke
+    x86-core-machine-protected-iret-smoke
+    x86-core-machine-call-gate-smoke
     core-machine-call-gate-privilege-entry-smoke
-    machine-tss-iomap-port-authorization-smoke
-    machine-task-switch-cross-width-smoke
+    x86-core-machine-tss-iomap-port-authorization-smoke
+    x86-core-machine-task-switch-cross-width-smoke
     machine-task-switch32-paging-smoke
-    core-machine-80386-paging-smoke
+    x86-core-machine-80386-paging-smoke
     machine-fpu-escape-smoke
-    machine-fpu-interface-smoke
-    core-machine-fpu-8087-smoke
+    x86-core-machine-fpu-interface-smoke
+    x86-core-machine-fpu-8087-smoke
     core-machine-real-exception-final-smoke
     core-machine-protected-ud-delivery-smoke
     core-machine-real-ud-delivery-smoke
@@ -1265,18 +1264,18 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-interrupt-return-composition-smoke
     machine-vm86-lgdt-lidt-smoke
     core-machine-cpu-fault-diagnostic-smoke
-    core-machine-configuration-smoke
+    x86-core-machine-configuration-smoke
     machine-port-ownership-board-smoke
     core-machine-firmware-capability-smoke
     core-machine-reset-rom-alias-smoke
-    core-machine-memory-device-registration-smoke
-    core-machine-ram-port-context-smoke
+    x86-core-machine-memory-device-registration-smoke
+    x86-core-machine-ram-port-context-smoke
     core-machine-pit-divider-smoke
     core-machine-pit-irq0-smoke
     core-machine-auxiliary-pit-smoke
     core-machine-d4-platform-smoke
     core-machine-d4-memory-transaction-smoke
-    core-machine-rom-route-transaction-smoke
+    x86-core-machine-rom-route-transaction-smoke
     core-machine-rtc-cmos-smoke
     core-machine-pic-irq-lifecycle-smoke
     core-machine-pic-command-priority-smoke
@@ -1300,7 +1299,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-compaq-hdc-machine-smoke
     core-machine-controller-authority-smoke
     core-machine-board-binding-identity-smoke
-    core-machine-attachment-phases-smoke
+    x86-core-machine-attachment-phases-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-ega-external-port-smoke
@@ -1310,7 +1309,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
     core-machine-ega-registration-transaction-smoke
-    core-machine-memory-inspection-smoke
+    x86-core-machine-memory-inspection-smoke
     core-machine-ega-controller-port-smoke
     core-machine-ega-planar-port-smoke
     core-machine-compaq-cecg-contract-smoke
@@ -1320,13 +1319,13 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-cga-graphics-system-smoke
     vm-ega-controller-system-smoke
     vm-display-composition-smoke
-    core-machine-stopped-lifecycle-smoke
+    x86-core-machine-stopped-lifecycle-smoke
     core-machine-cpu-pic-lifecycle-smoke
     core-machine-cpu-reset-identity-smoke
-    core-machine-memory-reconfigure-smoke
+    x86-core-machine-memory-reconfigure-smoke
     core-machine-checked-memory-smoke
-    core-machine-immutable-rom-mapping-smoke
-    core-machine-int-ivt-smoke
+    x86-core-machine-immutable-rom-mapping-smoke
+    x86-core-machine-int-ivt-smoke
     emulator-machine-smoke
     emulator-session-smoke
     emulator-ui-smoke
@@ -1394,17 +1393,17 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
 set(PROJECT_UNDEFINED_OPCODE_UNIT_TEST_TARGETS)
 
 list(APPEND PROJECT_UNIT_TEST_TARGETS
-    core-machine-contract-smoke
-    core-machine-lifecycle-smoke
-    core-machine-neutral-link-smoke
-    core-machine-trace-smoke
-    core-machine-external-time-trace-smoke
+    x86-core-machine-contract-smoke
+    x86-core-machine-lifecycle-smoke
+    x86-core-machine-neutral-link-smoke
+    x86-core-machine-trace-smoke
+    x86-core-machine-external-time-trace-smoke
     my5170-clock-contract-smoke
     core-machine-plan-smoke
     vm-model40-rom-layout-smoke
     core-machine-instance-smoke
     core-machine-explicit-time-smoke
-    core-machine-debug-smoke
+    x86-core-machine-debug-smoke
     x86-core-test-cpu_execution_fault_event
     vm-fdc-authority-smoke
     core-machine-cpu-fpu-profile-smoke
@@ -1418,7 +1417,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
 # inventoried owner has no one disposition.
 set(PROJECT_UNDEFINED_OPCODE_REAL_DELIVERY_TARGETS
     machine-debug-state-board-smoke
-    core-machine-real-mode-corpus-smoke
+    x86-core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-smoke
     )
 set(PROJECT_UNDEFINED_OPCODE_NO_REAL_NEGATIVE_TARGETS
@@ -1435,7 +1434,7 @@ set(PROJECT_UNDEFINED_OPCODE_NO_REAL_NEGATIVE_TARGETS
     x86-core-test-cpu_protected_data_access
     x86-core-test-cpu_protected_far
     core-machine-protected-ud-delivery-smoke
-    machine-task-switch-cross-width-smoke
+    x86-core-machine-task-switch-cross-width-smoke
     machine-vm86-delivery-smoke
     vm-dos-mem-fault-smoke)
 
@@ -2728,7 +2727,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(x86-core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-cpu-pic-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-control-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
@@ -2864,7 +2863,7 @@ set(PROJECT_DIRECT_COMPILATION_PRODUCTION_TARGETS
     core-product
     x86-ibmpc-product
     core-board-base
-    core-x86
+    x86-core-machine
     x86-core-cpu
     emulator-machine
     x86-debug-xasm32

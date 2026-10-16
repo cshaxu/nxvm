@@ -6,7 +6,7 @@
 #include "core/board-base/dma_bus_interface.h"
 #include "core/board-base/media_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 typedef struct core_machine_hdc_connection {
     const core_machine_media_registry *media_registry;

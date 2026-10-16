@@ -22,7 +22,7 @@ lib_status core_machine_fdc_configure(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation request_assert,
     core_machine_fdc_dma_request_operation request_deassert,
     void *request_owner, core_machine_pic_bus *pic_master,
-    core_machine_pic_bus *pic_slave, core_machine *machine,
+    core_machine_pic_bus *pic_slave, x86_core_machine *machine,
     const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider)
 {
@@ -445,7 +445,7 @@ lib_status core_machine_fdc_connect(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
     void *dma_request_owner, core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave,
-    core_machine *machine, const core_machine_fdc_config *config,
+    x86_core_machine *machine, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider)
 {
     lib_status status;
@@ -476,7 +476,7 @@ lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)
     lib_status status;
     x86_fdc_connection connection;
     x86_fdc_timing timing;
-    core_machine_port_route routes[7];
+    x86_core_machine_port_route routes[7];
     lib_size route_count = 0u;
     if (fdc == LIB_NULL || fdc->connect.machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (fdc->chip != LIB_NULL) return LIB_STATUS_INVALID_STATE;
@@ -498,41 +498,41 @@ lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)
     };
     status = x86_fdc_create(&connection, &timing, &fdc->chip);
     if (status != LIB_STATUS_OK) return status;
-    routes[route_count++] = (core_machine_port_route) {
+    routes[route_count++] = (x86_core_machine_port_route) {
         .address = fdc->connect.config.status_port,
         .read = core_machine_fdc_port_read, .owner = fdc
     };
-    routes[route_count++] = (core_machine_port_route) {
+    routes[route_count++] = (x86_core_machine_port_route) {
         .address = fdc->connect.config.data_port,
         .read = core_machine_fdc_port_read, .owner = fdc
     };
     if (fdc->connect.config.direction_port != 0u) {
-        routes[route_count++] = (core_machine_port_route) {
+        routes[route_count++] = (x86_core_machine_port_route) {
             .address = fdc->connect.config.direction_port,
             .read = core_machine_fdc_port_read, .owner = fdc
         };
     }
     if (fdc->connect.config.diagnostic_port != 0u) {
-        routes[route_count++] = (core_machine_port_route) {
+        routes[route_count++] = (x86_core_machine_port_route) {
             .address = fdc->connect.config.diagnostic_port,
             .read = core_machine_fdc_port_read, .owner = fdc
         };
     }
-    routes[route_count++] = (core_machine_port_route) {
+    routes[route_count++] = (x86_core_machine_port_route) {
         .address = fdc->connect.config.dor_port,
         .write = core_machine_fdc_port_write, .owner = fdc
     };
-    routes[route_count++] = (core_machine_port_route) {
+    routes[route_count++] = (x86_core_machine_port_route) {
         .address = fdc->connect.config.data_port,
         .write = core_machine_fdc_port_write, .owner = fdc
     };
     if (fdc->connect.config.control_port != 0u) {
-        routes[route_count++] = (core_machine_port_route) {
+        routes[route_count++] = (x86_core_machine_port_route) {
             .address = fdc->connect.config.control_port,
             .write = core_machine_fdc_port_write, .owner = fdc
         };
     }
-    status = core_machine_install_port_routes(fdc->connect.machine, routes, route_count);
+    status = x86_core_machine_install_port_routes(fdc->connect.machine, routes, route_count);
     if (status != LIB_STATUS_OK) {
         x86_fdc_destroy(fdc->chip);
         fdc->chip = LIB_NULL;

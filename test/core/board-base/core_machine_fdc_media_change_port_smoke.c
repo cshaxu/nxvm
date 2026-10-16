@@ -60,7 +60,7 @@ static const core_machine_media_provider core_machine_fdc_change_provider = {
     .read_bytes = core_machine_fdc_change_read,
 };
 
-static void core_machine_fdc_change_command(core_machine_fdc *fdc, core_machine *port,
+static void core_machine_fdc_change_command(core_machine_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -71,7 +71,7 @@ static void core_machine_fdc_change_command(core_machine_fdc *fdc, core_machine 
     test_fdc_advance(fdc);
 }
 
-static lib_bool core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, core_machine *port)
+static lib_bool core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, x86_core_machine *port)
 {
     if (!test_fdc_finish_seeks(fdc)) return LIB_FALSE;
     core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
@@ -80,7 +80,7 @@ static lib_bool core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, core_mach
     return LIB_TRUE;
 }
 
-static lib_bool core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, core_machine *port)
+static lib_bool core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, x86_core_machine *port)
 {
     lib_u8 drive;
 
@@ -121,11 +121,11 @@ int main(void)
     core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_fdc *fdc;
     core_machine_dma_bus *dma;
-    core_machine *port;
+    x86_core_machine *port;
     lib_u8 status;
     lib_i32 failed = 0;
     lib_i32 first_failure = 0;
@@ -151,8 +151,8 @@ int main(void)
             topology.dma_request = dma_request;
             topology.config = fdc_config;
             if (core_machine_configure_fdc(board, &topology) != LIB_STATUS_OK ||
-                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-                (drive0.present = LIB_TRUE, core_machine_reset(machine)) != LIB_STATUS_OK) {
+                x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                (drive0.present = LIB_TRUE, x86_core_machine_reset(machine)) != LIB_STATUS_OK) {
                 failed = 1;
             } else {
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
@@ -279,7 +279,7 @@ int main(void)
             }
         }
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "FDC-MEDIA-CHANGE:FAIL:step=%d\n",

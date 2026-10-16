@@ -3,19 +3,19 @@
 #include "video_fixture.h"
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
-#include "../support/memory_alias_fixture.h"
+#include "core_machine_board_fixture.h"
 
-static lib_i32 core_machine_ega_write(core_machine *machine, lib_u32 physical,
+static lib_i32 core_machine_ega_write(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
-    return core_machine_memory_write(machine, physical,
+    return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_ega_read(core_machine *machine, lib_u32 physical,
+static lib_i32 core_machine_ega_read(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
-    return core_machine_memory_read(machine, physical,
+    return x86_core_machine_memory_read(machine, physical,
         value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
@@ -35,7 +35,7 @@ lib_i32 main(void)
          * 64 KiB A0000 window as the original sequencer-only fixture. */
         .ega_controllers = { .graphics = { [6] = 0x05u } }
     };
-    core_machine *machine;
+    x86_core_machine *machine;
     t_vadp vadp;
     lib_u8 value = 0u;
     lib_u64 dirty_generation;
@@ -110,18 +110,18 @@ lib_i32 main(void)
          * uses Core's unregistered bus model, not the paused inspection API. */
         static const lib_u8 program[] = { 0xbau, 0xc5u, 0x03u, 0xecu,
             0xa2u, 0x00u, 0x05u, 0xf4u };
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
         x86_core_cpu_state cpu;
 
         value = 0xa5u;
-        failed |= core_machine_memory_write(machine, 0x000ffff0u, program,
+        failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, program,
                 sizeof(program)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){ 4u, 0u },
+            x86_core_machine_memory_write(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){ 4u, 0u },
                 &result) != LIB_STATUS_OK || result.executed != 4u ||
-            result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK || !cpu.halted ||
-            core_machine_memory_read(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK ||
+            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
+            x86_core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK || !cpu.halted ||
+            x86_core_machine_memory_read(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK ||
             value != 0u;
     }
     {
@@ -129,20 +129,20 @@ lib_i32 main(void)
          * a write-only index must not cancel the actual processor I/O cycle. */
         static const lib_u8 program[] = {0xbau, 0xd5u, 0x03u, 0xecu,
             0xa2u, 0x00u, 0x05u, 0xf4u};
-        core_machine_run_result result;
+        x86_core_machine_run_result result;
 
-        failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+        failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
         test_video_port_write(machine, 0x03c2u, 3u);
         test_video_port_write(machine, 0x03d4u, 0x13u);
         test_video_port_write(machine, 0x03d5u, 0x77u);
-        failed |= core_machine_memory_write(machine, 0x000ffff0u, program,
+        failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, program,
                 sizeof(program)) != LIB_STATUS_OK ||
-            core_machine_run(machine, (core_machine_run_budget){4u, 0u}, &result) != LIB_STATUS_OK ||
-            result.executed != 4u || result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_memory_read(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK || value != 0x77u;
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){4u, 0u}, &result) != LIB_STATUS_OK ||
+            result.executed != 4u || result.reason == X86_CORE_MACHINE_STOP_FAULT ||
+            x86_core_machine_memory_read(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK || value != 0x77u;
     }
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("EGA-SEQUENCER:PORT:OK\n");
     lib_c_printf("EGA-VGA-COMMON:OK\n");

@@ -69,7 +69,7 @@ foreach(conversion_case IN ITEMS frame keyboard_mapper)
     add_executable(${conversion_target} ${CORE_TEST_ROOT}/machine/${conversion_case}_smoke.c)
     target_link_libraries(${conversion_target} PRIVATE core-machine-conversion)
     if(conversion_case STREQUAL "keyboard_mapper")
-        target_link_libraries(${conversion_target} PRIVATE core-board-base core-x86)
+        target_link_libraries(${conversion_target} PRIVATE core-board-base x86-core-machine)
     endif()
     add_test(NAME unit.${conversion_target} COMMAND ${conversion_target})
     set_tests_properties(unit.${conversion_target} PROPERTIES LABELS "unit;core" TIMEOUT 30)
@@ -86,7 +86,7 @@ shared_register_test(core machine/construction core-machine)
 shared_register_test(core machine/preparation core-machine)
 shared_register_test(core machine/input types)
 add_executable(core-mantle-shape-smoke ${CORE_TEST_ROOT}/board-base/machine_provider_composition_smoke.c)
-target_link_libraries(core-mantle-shape-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-mantle-shape-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-mantle-shape-smoke COMMAND core-mantle-shape-smoke)
 set_tests_properties(unit.core-mantle-shape-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-mantle-shape-smoke)
@@ -94,14 +94,14 @@ list(APPEND CORE_BOARD_TEST_TARGETS core-mantle-shape-smoke)
 
 add_executable(core-machine-arbitration-smoke ${CORE_TEST_ROOT}/board-base/machine_arbitration_smoke.c)
 target_link_libraries(core-machine-arbitration-smoke PRIVATE
-    core-board-base-observable core-x86-observable)
+    core-board-base-observable x86-core-machine-observable)
 add_test(NAME unit.core-machine-arbitration-smoke COMMAND core-machine-arbitration-smoke)
 set_tests_properties(unit.core-machine-arbitration-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-arbitration-smoke)
 
 add_executable(core-machine-reset-rom-alias-smoke
     ${CORE_TEST_ROOT}/board-base/composition/machine_reset_rom_alias_smoke.c ${CORE_TEST_ROOT}/board-base/absent_memory_fixture.c)
-target_link_libraries(core-machine-reset-rom-alias-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-reset-rom-alias-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-reset-rom-alias-smoke COMMAND core-machine-reset-rom-alias-smoke)
 set_tests_properties(unit.core-machine-reset-rom-alias-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-reset-rom-alias-smoke)
@@ -117,88 +117,87 @@ foreach(board_case IN ITEMS port-ownership debug-state control-state)
     string(REPLACE "-" "_" board_file "${board_case}")
     set(board_target "machine-${board_case}-board-smoke")
     add_executable(${board_target} "${CORE_TEST_ROOT}/board-base/machine_${board_file}_board_smoke.c")
-    target_link_libraries(${board_target} PRIVATE core-board-base core-x86)
+    target_link_libraries(${board_target} PRIVATE core-board-base x86-core-machine)
     add_test(NAME "unit.${board_target}" COMMAND ${board_target})
     set_tests_properties("unit.${board_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${board_target})
 endforeach()
 add_executable(machine-cli-sti-interrupt-smoke ${CORE_TEST_ROOT}/board-base/machine_cli_sti_interrupt_smoke.c)
-target_link_libraries(machine-cli-sti-interrupt-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(machine-cli-sti-interrupt-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.machine-cli-sti-interrupt-smoke COMMAND machine-cli-sti-interrupt-smoke)
 set_tests_properties(unit.machine-cli-sti-interrupt-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS machine-cli-sti-interrupt-smoke)
 add_executable(core-machine-cli-sti-smoke ${CORE_TEST_ROOT}/board-base/core_machine_cli_sti_profiles_smoke.c)
-target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-cli-sti-smoke COMMAND core-machine-cli-sti-smoke)
 set_tests_properties(unit.core-machine-cli-sti-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-cli-sti-smoke)
 add_executable(core-machine-hlt-smoke ${CORE_TEST_ROOT}/board-base/core_machine_hlt_profiles_smoke.c)
-target_link_libraries(core-machine-hlt-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-hlt-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-hlt-smoke COMMAND core-machine-hlt-smoke)
 set_tests_properties(unit.core-machine-hlt-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-hlt-smoke)
 add_executable(machine-interrupt-entry-smoke ${CORE_TEST_ROOT}/board-base/machine_interrupt_entry_smoke.c)
-target_link_libraries(machine-interrupt-entry-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(machine-interrupt-entry-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.machine-interrupt-entry-smoke COMMAND machine-interrupt-entry-smoke)
 set_tests_properties(unit.machine-interrupt-entry-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS machine-interrupt-entry-smoke)
 add_executable(core-machine-software-int-smoke ${CORE_TEST_ROOT}/board-base/core_machine_software_int_profiles_smoke.c)
-target_link_libraries(core-machine-software-int-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-software-int-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-software-int-smoke COMMAND core-machine-software-int-smoke)
 set_tests_properties(unit.core-machine-software-int-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-software-int-smoke)
 add_executable(machine-vm86-delivery-smoke ${CORE_TEST_ROOT}/board-base/machine_vm86_delivery_smoke.c)
-target_link_libraries(machine-vm86-delivery-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(machine-vm86-delivery-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.machine-vm86-delivery-smoke COMMAND machine-vm86-delivery-smoke)
 set_tests_properties(unit.machine-vm86-delivery-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS machine-vm86-delivery-smoke)
 add_executable(machine-hardware-delivery-smoke ${CORE_TEST_ROOT}/board-base/machine_hardware_delivery_smoke.c)
-target_link_libraries(machine-hardware-delivery-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(machine-hardware-delivery-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.machine-hardware-delivery-smoke COMMAND machine-hardware-delivery-smoke)
 set_tests_properties(unit.machine-hardware-delivery-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS machine-hardware-delivery-smoke)
 add_executable(machine-vm86-lgdt-lidt-smoke ${CORE_TEST_ROOT}/board-base/machine_vm86_lgdt_lidt_smoke.c)
-target_link_libraries(machine-vm86-lgdt-lidt-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(machine-vm86-lgdt-lidt-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.machine-vm86-lgdt-lidt-smoke COMMAND machine-vm86-lgdt-lidt-smoke)
 set_tests_properties(unit.machine-vm86-lgdt-lidt-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS machine-vm86-lgdt-lidt-smoke)
 add_executable(core-machine-iret-smoke ${CORE_TEST_ROOT}/board-base/core_machine_iret_profiles_smoke.c)
-target_link_libraries(core-machine-iret-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-iret-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-iret-smoke COMMAND core-machine-iret-smoke)
 set_tests_properties(unit.core-machine-iret-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-iret-smoke)
 add_executable(core-machine-interrupt-return-composition-smoke
     ${CORE_TEST_ROOT}/board-base/core_machine_interrupt_return_composition_smoke.c)
-target_link_libraries(core-machine-interrupt-return-composition-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-interrupt-return-composition-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-interrupt-return-composition-smoke COMMAND core-machine-interrupt-return-composition-smoke)
 set_tests_properties(unit.core-machine-interrupt-return-composition-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-interrupt-return-composition-smoke)
 shared_register_test(core board-base/display_provider core-board-base)
-shared_register_test(core board-base/board core-board-base core-x86)
-shared_register_test(core board-base/pit_ports core-board-base core-x86)
-shared_register_test(core board-base/dma_ports core-board-base core-x86)
-shared_register_test(core board-at/parity core-board-at core-x86)
+shared_register_test(core board-base/board core-board-base x86-core-machine)
+shared_register_test(core board-base/pit_ports core-board-base x86-core-machine)
+shared_register_test(core board-base/dma_ports core-board-base x86-core-machine)
+shared_register_test(core board-at/parity core-board-at x86-core-machine)
 foreach(kbc_case IN ITEMS aux-port serial-cadence)
     string(REPLACE "-" "_" kbc_file "${kbc_case}")
     set(kbc_target "core-machine-kbc-${kbc_case}-smoke")
     add_executable(${kbc_target} "${CORE_TEST_ROOT}/board-at/core_machine_kbc_${kbc_file}_smoke.c")
-    target_link_libraries(${kbc_target} PRIVATE core-board-at core-board-base core-x86)
+    target_link_libraries(${kbc_target} PRIVATE core-board-at core-board-base x86-core-machine)
     add_test(NAME "unit.${kbc_target}" COMMAND ${kbc_target})
     set_tests_properties("unit.${kbc_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${kbc_target})
 endforeach()
 add_executable(core-machine-rtc-storage-smoke ${CORE_TEST_ROOT}/board-base/machine_rtc_storage_smoke.c)
 target_link_libraries(core-machine-rtc-storage-smoke PRIVATE
-    core-board-base-observable core-x86-observable)
+    core-board-base-observable x86-core-machine-observable)
 add_test(NAME unit.core-machine-rtc-storage-smoke COMMAND core-machine-rtc-storage-smoke)
 set_tests_properties(unit.core-machine-rtc-storage-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-rtc-storage-smoke)
 
 add_executable(core-machine-time-smoke
     ${CORE_TEST_ROOT}/board-base/machine_time_smoke.c
-    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c
-    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c)
-target_link_libraries(core-machine-time-smoke PRIVATE core-board-base core-x86)
+    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
+target_link_libraries(core-machine-time-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-time-smoke COMMAND core-machine-time-smoke)
 set_tests_properties(unit.core-machine-time-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-time-smoke)
@@ -206,10 +205,9 @@ list(APPEND CORE_BOARD_TEST_TARGETS core-machine-time-smoke)
 add_executable(core-machine-competition-smoke
     ${CORE_TEST_ROOT}/board-base/machine_competition_smoke.c
     ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c
-    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c
     ${CORE_TEST_ROOT}/board-base/support/composition_fixture.c)
 target_link_libraries(core-machine-competition-smoke PRIVATE
-    core-board-base-observable core-x86-observable)
+    core-board-base-observable x86-core-machine-observable)
 add_test(NAME unit.core-machine-competition-smoke COMMAND core-machine-competition-smoke)
 set_tests_properties(unit.core-machine-competition-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-competition-smoke)
@@ -220,14 +218,11 @@ foreach(board_case IN ITEMS dma-binding-token compaq-hdc-machine auxiliary-pit
     string(REPLACE "-" "_" board_file "${board_case}")
     set(board_target "core-machine-${board_case}-smoke")
     add_executable(${board_target} "${CORE_TEST_ROOT}/board-base/core_machine_${board_file}_smoke.c")
-    target_link_libraries(${board_target} PRIVATE core-board-base core-x86)
+    target_link_libraries(${board_target} PRIVATE core-board-base x86-core-machine)
     add_test(NAME "unit.${board_target}" COMMAND ${board_target})
     set_tests_properties("unit.${board_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${board_target})
 endforeach()
-
-target_sources(core-machine-dma-rtc-authority-smoke PRIVATE
-    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c)
 
 foreach(board_instruction IN ITEMS
         gpr-mov gpr-push-pop lea moffs sign-extend xchg push-immediate
@@ -236,7 +231,7 @@ foreach(board_instruction IN ITEMS
     string(REPLACE "-" "_" board_file "${board_instruction}")
     set(board_target "core-machine-${board_instruction}-smoke")
     add_executable(${board_target} "${CORE_TEST_ROOT}/board-base/core_machine_${board_file}_smoke.c")
-    target_link_libraries(${board_target} PRIVATE core-board-base core-x86)
+    target_link_libraries(${board_target} PRIVATE core-board-base x86-core-machine)
     add_test(NAME "unit.${board_target}" COMMAND ${board_target})
     set_tests_properties("unit.${board_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${board_target})
@@ -281,7 +276,7 @@ foreach(board_case IN ITEMS
     list(GET board_fields 0 board_target)
     list(GET board_fields 1 board_source)
     add_executable(${board_target} "${CORE_TEST_ROOT}/board-base/${board_source}")
-    target_link_libraries(${board_target} PRIVATE core-board-base core-x86)
+    target_link_libraries(${board_target} PRIVATE core-board-base x86-core-machine)
     add_test(NAME "unit.${board_target}" COMMAND ${board_target})
     set_tests_properties("unit.${board_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${board_target})
@@ -291,60 +286,52 @@ foreach(pic_case IN ITEMS irq-lifecycle command-priority ocw3 lifecycle)
     string(REPLACE "-" "_" pic_file "${pic_case}")
     set(pic_target "core-machine-pic-${pic_case}-smoke")
     add_executable(${pic_target} "${CORE_TEST_ROOT}/board-base/core_machine_pic_${pic_file}_smoke.c")
-    target_link_libraries(${pic_target} PRIVATE core-board-base core-x86)
+    target_link_libraries(${pic_target} PRIVATE core-board-base x86-core-machine)
     add_test(NAME "unit.${pic_target}" COMMAND ${pic_target})
     set_tests_properties("unit.${pic_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${pic_target})
 endforeach()
 
 add_executable(core-machine-pit-irq0-smoke ${CORE_TEST_ROOT}/board-base/core_machine_pit_irq0_smoke.c)
-target_link_libraries(core-machine-pit-irq0-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-pit-irq0-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-pit-irq0-smoke COMMAND core-machine-pit-irq0-smoke)
 set_tests_properties(unit.core-machine-pit-irq0-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-pit-irq0-smoke)
 
 add_executable(core-machine-dma-channel-smoke ${CORE_TEST_ROOT}/board-base/core_machine_dma_channel_smoke.c)
-target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-dma-channel-smoke COMMAND core-machine-dma-channel-smoke)
 set_tests_properties(unit.core-machine-dma-channel-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-dma-channel-smoke)
 
 add_executable(machine-fpu-irq-smoke ${CORE_TEST_ROOT}/board-base/machine_fpu_irq_smoke.c)
-target_link_libraries(machine-fpu-irq-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(machine-fpu-irq-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.machine-fpu-irq-smoke COMMAND machine-fpu-irq-smoke)
 set_tests_properties(unit.machine-fpu-irq-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS machine-fpu-irq-smoke)
-add_executable(core-machine-cpu-timing-preview-smoke
-    ${CORE_TEST_ROOT}/board-base/core_machine_cpu_timing_preview_smoke.c
-    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
-target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE core-board-base-observable core-x86-observable)
-add_test(NAME unit.core-machine-cpu-timing-preview-smoke COMMAND core-machine-cpu-timing-preview-smoke)
-set_tests_properties(unit.core-machine-cpu-timing-preview-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_BOARD_TEST_TARGETS core-machine-cpu-timing-preview-smoke)
 add_executable(core-machine-kbc-controller-smoke
     ${CORE_TEST_ROOT}/board-at/core_machine_kbc_controller_smoke.c
-    ${CORE_TEST_ROOT}/board-base/composition/kbc_controller_fixture.c
     ${CORE_TEST_ROOT}/board-base/kbc_cpu_irq_fixture.c)
-target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-kbc-controller-smoke COMMAND core-machine-kbc-controller-smoke)
 set_tests_properties(unit.core-machine-kbc-controller-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-kbc-controller-smoke)
 
 add_executable(core-machine-xt-ppi-keyboard-smoke
     ${CORE_TEST_ROOT}/board-base/core_machine_xt_ppi_keyboard_smoke.c
-    ${CORE_TEST_ROOT}/board-base/composition/xt_ppi_controller_fixture.c
-    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c
     ${CORE_TEST_ROOT}/board-xt/controller_fixture.c)
-target_link_libraries(core-machine-xt-ppi-keyboard-smoke PRIVATE core-board-base core-x86)
+target_link_libraries(core-machine-xt-ppi-keyboard-smoke PRIVATE core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-xt-ppi-keyboard-smoke COMMAND core-machine-xt-ppi-keyboard-smoke)
 set_tests_properties(unit.core-machine-xt-ppi-keyboard-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-xt-ppi-keyboard-smoke)
+shared_register_test(core board-xt/controller_registration core-board-xt x86-core-machine)
+target_sources(core-test-controller_registration PRIVATE
+    ${CORE_TEST_ROOT}/board-xt/controller_fixture.c)
 
-target_sources(core-machine-auxiliary-pit-smoke PRIVATE ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c)
 add_executable(core-machine-cpu-pic-lifecycle-smoke
     ${CORE_TEST_ROOT}/board-base/machine_cpu_pic_lifecycle_smoke.c)
 target_link_libraries(core-machine-cpu-pic-lifecycle-smoke PRIVATE
-    core-board-base core-x86)
+    core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-cpu-pic-lifecycle-smoke
     COMMAND core-machine-cpu-pic-lifecycle-smoke)
 set_tests_properties(unit.core-machine-cpu-pic-lifecycle-smoke
@@ -354,7 +341,7 @@ list(APPEND CORE_BOARD_TEST_TARGETS core-machine-cpu-pic-lifecycle-smoke)
 add_executable(core-machine-board-timing-qualification-smoke
     ${CORE_TEST_ROOT}/board-base/machine_board_timing_qualification_smoke.c)
 target_link_libraries(core-machine-board-timing-qualification-smoke PRIVATE
-    core-board-base core-x86)
+    core-board-base x86-core-machine)
 add_test(NAME unit.core-machine-board-timing-qualification-smoke
     COMMAND core-machine-board-timing-qualification-smoke)
 set_tests_properties(unit.core-machine-board-timing-qualification-smoke
@@ -362,9 +349,8 @@ set_tests_properties(unit.core-machine-board-timing-qualification-smoke
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-board-timing-qualification-smoke)
 
 # PC-composition cases formerly registered by the inner x86 suite.
-shared_register_test(core board-base/composition/dma_route_rollback core-x86 core-board-base)
+shared_register_test(core board-base/composition/dma_route_rollback x86-core-machine core-board-base)
 foreach(core_case IN ITEMS
-    "machine-instruction-timing-ledger-smoke|board-base/composition/machine_instruction_timing_ledger_smoke.c|core-board-base"
     "core-machine-input-display-smoke|board-base/machine_input_display_smoke.c|core-board-base-observable"
     "core-machine-controller-authority-smoke|board-base/core_machine_controller_authority_smoke.c|core-board-base"
     "core-machine-board-binding-identity-smoke|board-base/composition/machine_board_binding_identity_smoke.c|core-board-base"
@@ -379,17 +365,12 @@ foreach(core_case IN ITEMS
     "core-machine-competition-80386-smoke|board-base/composition/machine_80386_dma_hold_smoke.c|core-board-base-observable"
     "core-machine-pic-phase-smoke|board-base/composition/core_machine_pic_phase_smoke.c|core-board-base-observable"
     "core-machine-cpu-reset-identity-smoke|board-base/composition/machine_cpu_reset_identity_smoke.c|core-board-base"
-    "core-machine-scheduler-smoke|board-base/composition/machine_scheduler_smoke.c|core-board-base"
-    "core-machine-transaction-lifecycle-smoke|board-base/composition/machine_transaction_lifecycle_smoke.c|core-board-base-observable"
     "core-machine-transaction-smoke|board-base/composition/machine_transaction_smoke.c|core-board-base-observable"
     "core-machine-explicit-time-smoke|board-base/composition/machine_explicit_time_smoke.c|core-board-base"
-    "core-machine-rom-route-transaction-smoke|board-base/composition/core_machine_rom_route_transaction_smoke.c|core-board-base"
     "core-machine-timeline-smoke|board-base/composition/machine_timeline_smoke.c|core-board-base"
     "machine-arithmetic-data-timing-smoke|board-base/composition/machine_arithmetic_data_timing_smoke.c|core-board-base"
     "machine-control-stack-timing-smoke|board-base/composition/machine_control_stack_timing_smoke.c|core-board-base"
     "machine-legacy-timing-normalization-smoke|board-base/composition/machine_legacy_timing_normalization_smoke.c|core-board-base"
-    "core-machine-retirement-observation-smoke|board-base/composition/machine_retirement_observation_smoke.c|core-board-base"
-    "core-machine-fpu-8087-smoke|board-base/composition/core_machine_fpu_8087_smoke.c|core-board-base"
     "core-machine-firmware-capability-smoke|board-base/composition/machine_firmware_capability_smoke.c|core-board-base"
 )
     string(REPLACE "|" ";" core_fields "${core_case}")
@@ -402,86 +383,81 @@ foreach(core_case IN ITEMS
     set_tests_properties("unit.${core_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${core_target})
 endforeach()
-target_link_libraries(machine-instruction-timing-ledger-smoke PRIVATE core-x86)
-target_sources(core-machine-input-display-smoke PRIVATE ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
-target_link_libraries(core-machine-transaction-smoke PRIVATE core-x86-observable)
-target_link_libraries(core-machine-input-display-smoke PRIVATE core-x86-observable)
-target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-scheduler-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-board-binding-identity-smoke PRIVATE core-x86)
+target_link_libraries(core-machine-transaction-smoke PRIVATE x86-core-machine-observable)
+target_sources(core-machine-transaction-smoke PRIVATE
+    ${CORE_TEST_ROOT}/board-base/dma_competition_fixture.c)
+target_link_libraries(core-machine-input-display-smoke PRIVATE x86-core-machine-observable)
+target_link_libraries(core-machine-firmware-capability-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-controller-authority-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-board-binding-identity-smoke PRIVATE x86-core-machine)
 target_sources(core-machine-board-binding-identity-smoke PRIVATE
     ${CORE_TEST_ROOT}/board-base/board_binding_fixture.c)
-target_link_libraries(core-machine-ram-create-smoke PRIVATE core-x86)
+target_link_libraries(core-machine-ram-create-smoke PRIVATE x86-core-machine)
 target_sources(core-machine-ram-create-smoke PRIVATE
-    ${CORE_TEST_ROOT}/board-base/board_construction_fixture.c
     ${CORE_TEST_ROOT}/board-base/board_binding_fixture.c)
-target_link_libraries(core-machine-port-rollback-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-plan-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-instance-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-checked-memory-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-planar-parity-nmi-smoke PRIVATE core-x86)
+target_link_libraries(core-machine-port-rollback-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-plan-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-instance-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-checked-memory-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-planar-parity-nmi-smoke PRIVATE x86-core-machine)
 target_sources(core-machine-planar-parity-nmi-smoke PRIVATE
     ${CORE_TEST_ROOT}/board-base/composition/planar_parity_fixture.c)
-target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE core-x86)
+target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE x86-core-machine)
 target_sources(core-machine-ega-registration-transaction-smoke PRIVATE
     ${CORE_TEST_ROOT}/board-base/video_registration_fixture.c)
 target_sources(core-machine-plan-smoke PRIVATE
     ${CORE_TEST_ROOT}/board-base/composition/plan_core_fixture.c
-    ${CORE_TEST_ROOT}/board-base/board_construction_fixture.c)
+    ${CORE_TEST_ROOT}/board-base/board_binding_fixture.c)
 target_sources(core-machine-port-rollback-smoke PRIVATE
     ${CORE_TEST_ROOT}/board-base/composition/port_assembly_fixture.c
     ${CORE_TEST_ROOT}/board-base/port_assembly_board_fixture.c
-    ${CORE_TEST_ROOT}/board-base/board_construction_fixture.c)
-target_link_libraries(core-machine-competition-80386-smoke PRIVATE core-x86-observable)
+    ${CORE_TEST_ROOT}/board-base/board_binding_fixture.c
+    ${CORE_TEST_ROOT}/board-at/support/parity_registration_fixture.c)
+target_link_libraries(core-machine-competition-80386-smoke PRIVATE x86-core-machine-observable)
 target_sources(core-machine-competition-80386-smoke PRIVATE
     ${CORE_TEST_ROOT}/board-base/dma_competition_fixture.c)
-target_link_libraries(core-machine-pic-phase-smoke PRIVATE core-x86-observable)
-target_link_libraries(core-machine-cpu-reset-identity-smoke PRIVATE core-x86)
+target_link_libraries(core-machine-pic-phase-smoke PRIVATE x86-core-machine-observable)
+target_link_libraries(core-machine-cpu-reset-identity-smoke PRIVATE x86-core-machine)
 
-target_link_libraries(core-machine-timeline-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-transaction-lifecycle-smoke PRIVATE core-x86-observable)
-target_link_libraries(core-machine-explicit-time-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-rom-route-transaction-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-x86)
-target_link_libraries(core-machine-retirement-observation-smoke PRIVATE core-x86)
-target_link_libraries(machine-arithmetic-data-timing-smoke PRIVATE core-x86)
-target_link_libraries(machine-control-stack-timing-smoke PRIVATE core-x86)
-target_link_libraries(machine-legacy-timing-normalization-smoke PRIVATE core-x86)
+target_link_libraries(core-machine-timeline-smoke PRIVATE x86-core-machine)
+target_link_libraries(core-machine-explicit-time-smoke PRIVATE x86-core-machine)
+target_link_libraries(machine-arithmetic-data-timing-smoke PRIVATE x86-core-machine)
+target_link_libraries(machine-control-stack-timing-smoke PRIVATE x86-core-machine)
+target_link_libraries(machine-legacy-timing-normalization-smoke PRIVATE x86-core-machine)
 
 foreach(cpu_pic_case IN ITEMS idt-privilege outer-iret protected-far protected-data task-switch16)
     string(REPLACE "-" "_" cpu_pic_file "${cpu_pic_case}")
     set(cpu_pic_target "machine-${cpu_pic_case}-pic-board-smoke")
     add_executable(${cpu_pic_target}
         "${CORE_TEST_ROOT}/board-base/chips/cpu/machine_${cpu_pic_file}_pic_board_smoke.c" ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
-    target_link_libraries(${cpu_pic_target} PRIVATE x86-core-cpu core-board-base core-x86)
+    target_link_libraries(${cpu_pic_target} PRIVATE x86-core-cpu core-board-base x86-core-machine)
     add_test(NAME "unit.${cpu_pic_target}" COMMAND ${cpu_pic_target})
     set_tests_properties("unit.${cpu_pic_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${cpu_pic_target})
 endforeach()
-shared_register_test(core board-base/composition/core_machine_80286_protected_mode core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_call_gate_privilege_entry_board core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_fs_gs_stack core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_legacy_alu core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_legacy_lock core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_movx core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_operand_address core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_protected_16_call_gate_board core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_protected_16_external_board core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_protected_16_gate_board core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_protected_16_outer_board core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_protected_16_outer_iret_board core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_protected_ud_delivery core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_real_exception_final core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_real_ud_delivery core-board-base core-x86)
-shared_register_test(core board-base/composition/core_machine_segment_selector core-board-base core-x86)
-shared_register_test(core board-base/composition/cpu_fault_diagnostic core-board-base core-x86)
-shared_register_test(core board-base/composition/cpu_fpu_profile_closure core-board-base core-x86)
-shared_register_test(core board-base/composition/cpu_fpu_profile core-board-base core-x86)
-shared_register_test(core board-base/composition/machine_fpu_escape core-board-base core-x86)
-shared_register_test(core board-base/composition/machine_protected_privilege_board core-board-base core-x86)
-shared_register_test(core board-base/composition/machine_task_switch32_paging core-board-base core-x86)
+shared_register_test(core board-base/composition/core_machine_80286_protected_mode core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_call_gate_privilege_entry_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_fs_gs_stack core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_legacy_alu core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_legacy_lock core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_movx core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_operand_address core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_protected_16_call_gate_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_protected_16_external_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_protected_16_gate_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_protected_16_outer_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_protected_16_outer_iret_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_protected_ud_delivery core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_real_exception_final core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_real_ud_delivery core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/core_machine_segment_selector core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/cpu_fault_diagnostic core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/cpu_fpu_profile_closure core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/cpu_fpu_profile core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/machine_fpu_escape core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/machine_protected_privilege_board core-board-base x86-core-machine)
+shared_register_test(core board-base/composition/machine_task_switch32_paging core-board-base x86-core-machine)
 list(APPEND CORE_BOARD_TEST_TARGETS ${SHARED_CORE_TEST_TARGETS})
 foreach(target IN LISTS CORE_BOARD_TEST_TARGETS)
     if(MSVC)

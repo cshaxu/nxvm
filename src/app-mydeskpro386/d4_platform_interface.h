@@ -1,7 +1,7 @@
 #ifndef MYDESKPRO386_D4_PLATFORM_INTERFACE_H
 #define MYDESKPRO386_D4_PLATFORM_INTERFACE_H
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "core/chips/pit825x/pit825x_interface.h"
 #include "core/board-at/kbc_interface.h"
 #include "core/board-base/board_profile_interface.h"
@@ -32,7 +32,7 @@ typedef void (*mydeskpro386_d4_speaker_output)(void *context, lib_u8 lines);
 
 /* Profile-owned state, serialized with Core execution. Core, PITs and output context are borrowed until
  * destroy. Destroy before those providers, after dispatch has stopped. */
-lib_status mydeskpro386_d4_platform_create(core_machine *core, x86_pit *pit,
+lib_status mydeskpro386_d4_platform_create(x86_core_machine *core, x86_pit *pit,
     x86_pit *auxiliary_pit, const mydeskpro386_d4_platform_config *config,
     mydeskpro386_d4_speaker_output speaker, void *context,
     mydeskpro386_d4_platform **out_platform);

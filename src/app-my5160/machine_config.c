@@ -39,16 +39,16 @@ lib_status vm_profile_xt_5160_268_values_create(
     /* Manual values feed this explicit macro axis; 8088 retirement has not
      * qualified it as physical machine time. */
     values.core.configuration.time_axis =
-        (core_machine_time_axis) {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 4772727u};
+        (x86_core_machine_time_axis) {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 4772727u};
     values.core.configuration.l1_compatibility_policy =
-        CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS;
+        X86_CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS;
     /* IBM derives the 8253 input (1.193182 MHz) as one quarter of the
      * 4.772727 MHz CPU board clock. This is frozen board data, not a
      * profile scheduler or another guest clock. */
     values.core.configuration.clock_plan.pit =
-        (core_machine_clock_ratio) {1u, 4u, 0u};
+        (x86_core_machine_clock_ratio) {1u, 4u, 0u};
     values.core.configuration.clock_plan.dma =
-        (core_machine_clock_ratio) {1u, 1u, 0u};
+        (x86_core_machine_clock_ratio) {1u, 1u, 0u};
     values.core.controller_timing_rules =
         (core_machine_controller_timing_rules) {
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,

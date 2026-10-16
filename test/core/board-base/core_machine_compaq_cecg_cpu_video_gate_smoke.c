@@ -4,13 +4,13 @@
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
 
-static lib_i32 query_route(core_machine *machine, core_machine_memory_route expected)
+static lib_i32 query_route(x86_core_machine *machine, x86_core_machine_memory_route expected)
 {
-    core_machine_memory_route route;
+    x86_core_machine_memory_route route;
 
-    return core_machine_memory_query(machine,
+    return x86_core_machine_memory_query(machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) == LIB_STATUS_OK && route == expected;
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) == LIB_STATUS_OK && route == expected;
 }
 
 lib_i32 main(void)
@@ -19,8 +19,8 @@ lib_i32 main(void)
         0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
     };
-    core_machine *machine;
-    core_machine *generic_machine;
+    x86_core_machine *machine;
+    x86_core_machine *generic_machine;
     t_vadp vadp;
     t_vadp generic_vadp;
     x86_video_ega_sequencer_config sequencer = {
@@ -54,26 +54,26 @@ lib_i32 main(void)
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
     test_video_port_write(generic_machine, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     test_video_port_write(generic_machine, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    failed |= !query_route(machine, CORE_MACHINE_MEMORY_ROUTE_PROVIDER) ||
-        !query_route(generic_machine, CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+    failed |= !query_route(machine, X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER) ||
+        !query_route(generic_machine, X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
     test_video_port_write(generic_machine,
         CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 0x02u);
     test_video_port_write(machine,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x00u);
-    failed |= !query_route(machine, CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) ||
-        !query_route(generic_machine, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    failed |= !query_route(machine, X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) ||
+        !query_route(generic_machine, X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     test_video_port_write(machine,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
-    failed |= !query_route(machine, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    failed |= !query_route(machine, X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     x86_video_reset(vadp.chip);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    failed |= !query_route(machine, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    failed |= !query_route(machine, X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
 
     core_machine_vadp_finalize(&generic_vadp);
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(generic_machine);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(generic_machine);
+    x86_core_machine_destroy(machine);
     if (!failed) {
         lib_c_printf("CECG-CPU-VIDEO-GATE:OK\n");
         return 0;

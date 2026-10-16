@@ -20,8 +20,9 @@ src/
                         portable assembler/disassembler and Debug CLI
   x86-ibmpc/product/     shared PC interaction and process entry
   x86-nxvm/product/      NXVM-specific information/speed contract
-  x86-core/{cpu,fpu}/    shared CPU/FPU mechanisms and public contracts
-  core/{chips,x86,board-base,board-xt,board-at,machine,product}/
+  x86-core/{cpu,fpu,machine}/
+                        shared CPU/FPU and neutral execution mechanisms
+  core/{chips,board-base,board-xt,board-at,machine,product}/
                            NXVM-only machine stack and family product support
   app-my5160/           fixed IBM 5160 App: main, product binding,
                          machine plan/configuration/construction and firmware map
@@ -71,7 +72,11 @@ types. Their implementation remains with the cohesive plan/deadline owners.
 Matching qualification/trace tests stay under `test/core/board-base` until
 that whole owner migrates. Neutral executor fixtures supply explicit CPU and
 RAM inputs; ordinary test allocation sizes do not import PC resize policy.
-Device advancement stays cohesive in Board-Base's `board_advance.c`; the neutral
+The neutral executor and its matching fixtures/tests live in
+`src/x86-core/machine` and `test/x86-core/machine`; package-level metadata stays
+at the package root. Board qualification programs that join NXVM manual
+ledgers remain under the outer Board qualification owner, not a dependency of
+the standalone shared tests. Device advancement stays cohesive in Board-Base's `board_advance.c`; the neutral
 attachment declares only before/after-internal advancement and CPU interrupt
 signals, not PIT pairs or media/RTC/peripheral slots. Matching Board-order and
 neutral internal-readiness assertions stay with those respective test owners.

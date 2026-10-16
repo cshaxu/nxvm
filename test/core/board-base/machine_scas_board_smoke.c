@@ -9,11 +9,11 @@ static lib_i32 scas_protected_case(lib_bool repeated)
     static const lib_u8 rep[] = {0xf3u, 0xaeu};
     const lib_u8 *code = repeated ? rep : single;
     lib_u8 bytes = repeated ? sizeof(rep) : sizeof(single);
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_u8 image[] = {repeated ? 0x10u : 1u, 1u};
     lib_i32 failed = !test_cpu_board_limit_prepare_exact(&machine,
         code, bytes, LIB_TRUE, repeated ? 0x10u : 0x0fu);
@@ -27,18 +27,18 @@ static lib_i32 scas_protected_case(lib_bool repeated)
         patch.values[X86_CORE_CPU_DEBUG_ECX] = 0x11220003u;
         patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x10u;
         patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
-        failed = core_machine_debug_patch_registers(machine, &patch) !=
-            LIB_STATUS_OK || core_machine_memory_write(machine,
+        failed = x86_core_machine_debug_patch_registers(machine, &patch) !=
+            LIB_STATUS_OK || x86_core_machine_memory_write(machine,
             0x3010u, image, sizeof(image)) != LIB_STATUS_OK;
     }
     if (!failed)
-        failed = core_machine_run(machine,
-            (core_machine_run_budget){repeated ? 2u : 1u, 0u},
+        failed = x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){repeated ? 2u : 1u, 0u},
             &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             result.detail != VCPUINS_EXCEPT_SHUTDOWN ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
     if (!failed)
         failed = diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
@@ -48,7 +48,7 @@ static lib_i32 scas_protected_case(lib_bool repeated)
             after.edi != (repeated ? 0x11u : 0x10u) ||
             after.eflags != (repeated ? X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_PF |
                 X86_CORE_CPU_DEBUG_EFLAGS_ZF : X86_CORE_CPU_DEBUG_EFLAGS_IF);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 
@@ -64,12 +64,12 @@ static lib_i32 scas_irq_case(lib_bool repeated)
     };
     const lib_u8 *code = repeated ? rep : single;
     lib_u8 bytes = repeated ? sizeof(rep) : sizeof(single);
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
     x86_core_cpu_debug_register_patch patch = {0};
     x86_core_cpu_debug_cpu_snapshot after = {0};
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 image[] = {0x10u, 1u, 1u};
     lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
@@ -90,17 +90,17 @@ static lib_i32 scas_irq_case(lib_bool repeated)
         patch.values[X86_CORE_CPU_DEBUG_EAX] = 0xaabb0010u;
         patch.values[X86_CORE_CPU_DEBUG_ECX] = 0x11220003u;
         patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x20u;
-        failed = core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-            core_machine_reset(machine) != LIB_STATUS_OK ||
-            core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x20020u, image,
+        failed = x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x20020u, image,
                 sizeof(image)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x80u, &offset,
+            x86_core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x80u, &offset,
                 sizeof(offset)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x82u, &segment,
+            x86_core_machine_memory_write(machine, 0x82u, &segment,
                 sizeof(segment)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, 0x100u, &halt,
+            x86_core_machine_memory_write(machine, 0x100u, &halt,
                 sizeof(halt)) != LIB_STATUS_OK;
     }
     if (!failed) {
@@ -109,13 +109,13 @@ static lib_i32 scas_irq_case(lib_bool repeated)
             board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(irq);
         core_machine_pic_irq_source_deassert(irq);
-        failed = core_machine_run(machine,
-            (core_machine_run_budget){repeated ? 4u : 2u, 0u},
+        failed = x86_core_machine_run(machine,
+            (x86_core_machine_run_budget){repeated ? 4u : 2u, 0u},
             &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_debug_capture_cpu_snapshot(machine,
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_debug_read_memory(machine,
+            x86_core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK;
         if (!failed)
@@ -128,7 +128,7 @@ static lib_i32 scas_irq_case(lib_bool repeated)
                 (test_pic_read(board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u));
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return !failed;
 }
 

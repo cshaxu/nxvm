@@ -1,22 +1,22 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/trace_interface.h"
+#include "x86-core/machine/trace_interface.h"
 #include "core/board-base/machine_board_state.h"
 
 lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,
     const core_machine_clock_plan *plan)
 {
-    if (core_machine_clock_domain_initialize(&board->dma_clock,
+    if (x86_core_machine_clock_domain_initialize(&board->dma_clock,
             &plan->dma) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&board->pit_clock,
+        x86_core_machine_clock_domain_initialize(&board->pit_clock,
             &plan->pit) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&board->auxiliary_pit_clock,
+        x86_core_machine_clock_domain_initialize(&board->auxiliary_pit_clock,
             &plan->auxiliary_pit) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&board->rtc_clock,
+        x86_core_machine_clock_domain_initialize(&board->rtc_clock,
             &plan->rtc) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&board->vadp_clock,
+        x86_core_machine_clock_domain_initialize(&board->vadp_clock,
             &plan->vadp) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&board->kbc_clock,
+        x86_core_machine_clock_domain_initialize(&board->kbc_clock,
             &plan->kbc) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     return LIB_STATUS_OK;
 }
@@ -24,19 +24,19 @@ lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,
 void core_machine_board_reset_clocks(void *owner)
 {
     core_machine_board_state *board = owner;
-    core_machine_clock_domain_reset(&board->dma_clock);
-    core_machine_clock_domain_reset(&board->pit_clock);
-    core_machine_clock_domain_reset(&board->auxiliary_pit_clock);
-    core_machine_clock_domain_reset(&board->rtc_clock);
-    core_machine_clock_domain_reset(&board->vadp_clock);
-    core_machine_clock_domain_reset(&board->kbc_clock);
+    x86_core_machine_clock_domain_reset(&board->dma_clock);
+    x86_core_machine_clock_domain_reset(&board->pit_clock);
+    x86_core_machine_clock_domain_reset(&board->auxiliary_pit_clock);
+    x86_core_machine_clock_domain_reset(&board->rtc_clock);
+    x86_core_machine_clock_domain_reset(&board->vadp_clock);
+    x86_core_machine_clock_domain_reset(&board->kbc_clock);
 }
 
 lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks)
 {
     core_machine_board_state *board = owner;
     if (board == LIB_NULL) return 0u;
-    return core_machine_clock_domain_advance(&board->dma_clock, source_ticks);
+    return x86_core_machine_clock_domain_advance(&board->dma_clock, source_ticks);
 }
 
 lib_bool core_machine_board_dma_request(void *owner)
@@ -62,33 +62,33 @@ void core_machine_board_before_internal_advance(void *owner,
     lib_u64 auxiliary_ticks;
 
     if (board == LIB_NULL || source_ticks == 0u) return;
-    primary_ticks = core_machine_clock_domain_advance(&board->pit_clock,
+    primary_ticks = x86_core_machine_clock_domain_advance(&board->pit_clock,
         source_ticks);
-    auxiliary_ticks = core_machine_clock_domain_advance(
+    auxiliary_ticks = x86_core_machine_clock_domain_advance(
         &board->auxiliary_pit_clock, source_ticks);
     x86_pit_advance(board->shared_pit, primary_ticks);
     if (board->auxiliary_pit_configured) {
         x86_pit_advance(board->auxiliary_pit, auxiliary_ticks);
     }
     if (primary_ticks != 0u) {
-        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
+        x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
             0u, (lib_u32)primary_ticks, 0u);
     }
     core_machine_pic_refresh(board->shared_pic_master,
         board->shared_pic_slave);
-    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
+    x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
         0u, 0u, 0u);
 
     /* Newly ready media cannot enter the PIC arbitration already completed at
      * this tick; preserve the board's existing readiness boundary. */
     if (board->fdc_configured) {
         core_machine_fdc_advance_at(board->fdc, due_tick);
-        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE,
+        x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE,
             0u, 0u, 0u);
     }
     if (board->hdc_configured) {
         core_machine_hdc_advance_at(board->hdc, due_tick);
-        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
+        x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
             0u, 0u, 0u);
     }
 }
@@ -121,13 +121,13 @@ void core_machine_board_after_internal_advance(void *owner,
 
     (void)due_tick;
     if (board == LIB_NULL || source_ticks == 0u) return;
-    rtc_ticks = core_machine_clock_domain_advance(&board->rtc_clock, source_ticks);
+    rtc_ticks = x86_core_machine_clock_domain_advance(&board->rtc_clock, source_ticks);
     if (board->rtc_cmos_configured) {
         x86_rtc_advance(board->shared_rtc, rtc_ticks);
     }
-    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE,
+    x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE,
         0u, (lib_u32)rtc_ticks, 0u);
-    kbc_ticks = core_machine_clock_domain_advance(&board->kbc_clock, source_ticks);
+    kbc_ticks = x86_core_machine_clock_domain_advance(&board->kbc_clock, source_ticks);
     if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_advance(board->xt_keyboard, source_ticks);
     } else {
@@ -135,10 +135,10 @@ void core_machine_board_after_internal_advance(void *owner,
     }
     core_machine_pic_advance(board->shared_pic_master, board->shared_pic_slave,
         source_ticks);
-    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE,
+    x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE,
         0u, (lib_u32)kbc_ticks, 0u);
-    vadp_ticks = core_machine_clock_domain_advance(&board->vadp_clock, source_ticks);
+    vadp_ticks = x86_core_machine_clock_domain_advance(&board->vadp_clock, source_ticks);
     core_machine_vadp_advance(board->shared_vadp, vadp_ticks);
-    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE,
+    x86_core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE,
         0u, (lib_u32)vadp_ticks, 0u);
 }

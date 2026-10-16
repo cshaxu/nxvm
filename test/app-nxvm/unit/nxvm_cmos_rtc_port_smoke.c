@@ -4,7 +4,6 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
-#include "core/x86/device_support_interface.h"
 
 #include "core/board-base/pic_bus_interface.h"
 #include "../../core/board-base/composition/bus_fixture.h"
@@ -15,19 +14,19 @@
 #include "core/chips/rtc146818/rtc146818_interface.h"
 #include "../support/rom/session_assets.h"
 
-static void cmos_write(core_machine *core, lib_u8 reg, lib_u8 value)
+static void cmos_write(x86_core_machine *core, lib_u8 reg, lib_u8 value)
 {
     test_core_machine_fixture_write_port(core, 0x0070u, reg);
     test_core_machine_fixture_write_port(core, 0x0071u, value);
 }
 
-static lib_u8 cmos_read(core_machine *core, lib_u8 reg)
+static lib_u8 cmos_read(x86_core_machine *core, lib_u8 reg)
 {
     test_core_machine_fixture_write_port(core, 0x0070u, reg);
     return (lib_u8)test_core_machine_fixture_read_bus(core, 0x0071u);
 }
 
-static void initialize_pic(core_machine *core)
+static void initialize_pic(x86_core_machine *core)
 {
     test_core_machine_fixture_write_port(core, 0x0020u, 0x11u);
     test_core_machine_fixture_write_port(core, 0x0021u, 0x08u);
@@ -57,8 +56,8 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
     for (index = 0x10u; index < 0x2eu; ++index) {
         checksum = (lib_u16)(checksum + seed[index]);
     }
-    seed[0x2eu] = CORE_MACHINE_MASK_U8(checksum >> 8u);
-    seed[0x2fu] = CORE_MACHINE_MASK_U8(checksum);
+    seed[0x2eu] = ((lib_u8)(checksum >> 8u));
+    seed[0x2fu] = ((lib_u8)(checksum));
     vm_test_default_pc_at_assets(&assets,
         (lib_u8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
     /* The helper's ROM array must outlive composition only; session copies it. */
@@ -68,7 +67,7 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
         &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
     if (!failed) {
-        core_machine *core = session->core_machine;
+        x86_core_machine *core = session->x86_core_machine;
 
         for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
             failed |= cmos_read(core, (lib_u8)index) != seed[index];
@@ -81,12 +80,12 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
 lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    core_machine *core;
+    x86_core_machine *core;
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) return 1;
-    core = session->core_machine;
+    core = session->x86_core_machine;
     if (!session->active) failed = 1;
     initialize_pic(core);
 

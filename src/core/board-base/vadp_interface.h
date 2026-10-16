@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_VADP_INTERFACE_H
 #define CORE_MACHINE_VADP_INTERFACE_H
 #include "core/chips/video/video_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 typedef struct t_vadp t_vadp;
 /* Standard EGA planar aperture used by frozen board declarations. */
@@ -36,7 +36,7 @@ typedef struct core_machine_display_config {
  * preserves the previous chip/routes on failure. Core outlives this handle;
  * destroy only after dispatch stops. Captures return copied values, never a
  * chip or framebuffer pointer. */
-lib_status core_machine_vadp_create(core_machine *machine, t_vadp **out_adapter);
+lib_status core_machine_vadp_create(x86_core_machine *machine, t_vadp **out_adapter);
 /* Validate the complete board declaration before its routes are admitted. */
 lib_bool core_machine_vadp_config_is_valid(const core_machine_display_config *config);
 void core_machine_vadp_destroy(t_vadp *adapter);

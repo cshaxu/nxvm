@@ -4,17 +4,17 @@
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
 
-static lib_i32 core_machine_ega_controller_write(core_machine *machine, lib_u32 physical,
+static lib_i32 core_machine_ega_controller_write(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
-    return core_machine_memory_write(machine, physical,
+    return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_ega_controller_read(core_machine *machine, lib_u32 physical,
+static lib_i32 core_machine_ega_controller_read(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
-    return core_machine_memory_read(machine, physical,
+    return x86_core_machine_memory_read(machine, physical,
         value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
@@ -30,7 +30,7 @@ lib_i32 main(void)
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
-    core_machine *machine;
+    x86_core_machine *machine;
     t_vadp vadp;
     lib_u8 value = 0u;
     x86_video_bus_observation bus;
@@ -131,11 +131,11 @@ lib_i32 main(void)
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "EGA-CONTROLLER:FAIL\n");
         core_machine_vadp_finalize(&vadp);
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 1;
     }
     core_machine_vadp_finalize(&vadp);
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     lib_c_printf("EGA-CONTROLLER:PORT:OK\n");
     lib_c_printf("COMMON-OWNER:OK\n");
     return 0;

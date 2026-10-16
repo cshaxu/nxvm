@@ -16,7 +16,45 @@ The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 
 | Task | Progress |
 | --- | --- |
-| T561 S6 | Accepted P7/P8 prerequisite; actual neutral Machine extraction/non-PC proof, NXVM consolidation and final qualification remain open. No active S between acceptance and next admission. |
+| T561 S7 | Implementation and qualification complete: 632/632 units, specialized gates, 48 profile integration executions plus restored identity per width; eight PC EXEs pass published CLI/INI/PE/version/hash checks. Shared P1 `0da6818d5` is pushed. NXVM receiver/artifact P2 and coordinator acceptance remain. The retained Board CPU/PIC fixture family remains the explicitly recorded S8 receiver, not a claim of final whole-package closure. |
+
+## Active Packet — M5 T561 S7
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T561 S7 after accepted S6 `5ad9ce3dc`; one-session coordinator/executor. |
+| Admission And Approval | Owner-approved complete Core split and automatic sequential S admission, including matching source/test hierarchy. Shared target publishes neutral X86 Core Machine and its tests; NXVM target migrates Core/four-App receivers, retires the old owner and delivers eight PC artifacts. Separate complete P commits per target; no Lib/Emulator, MyNES or sibling-repository change. |
+| Objective | Consume I3 N1/T1 and remaining P2--P8 extraction: move the audited neutral execution/time/bus/memory/port/observation owner into x86-core/machine, prove it with a ROM-free non-PC public-interface consumer, and repair every affected private-header/fixture receiver without weakening existing PC assertions. |
+| Non-goals | No remaining NXVM chip/board/driver/Product directory move (S8), CPU algorithm/profile/admission/timing-grade change, C16/C17 work, BIOS interception, device rewrite, Lib/Emulator change, new host worker/time owner, compatibility alias or generic device framework. |
+| Reference Baseline | Clean accepted `5ad9ce3dc`, implementation `4bba9fc0c`, frozen S2 679-path disposition and accepted S3--S6 owner/behavior evidence. |
+| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S2 inventory](../etc/evidence/t561-s2/review.md), [S7 preflight](../etc/evidence/t561-s7-machine-extraction.md), [convergence ledger](../history/M5-T561-core-package-split.md). |
+| Files And ABI Surface | S2 N1's 35 execution files and 47 neutral test files plus T1's six support files follow machine ownership; retire the arithmetic catch-all header instead of exporting it. Canonical neutral names become x86_core_machine_*/X86_CORE_MACHINE_*, with no old aliases; Board-owned config/types are excluded. Add independent machine/observable targets and package-local registration/manifests/gates. Partition mixed timing runners/registrations by actual owner. Repair all direct Core/App/build/checker/tool references and the recorded three CPU-private tests, 25 Board/adapter execution-private files and outer fixture users. Pure relocation preserves about 7,550 source and 20,469 test baseline lines; namespace/include substitutions are counted separately. Initial non-mechanical estimate: production +0--80/-41--120, tests +500--1000/-400--900, build/gates +180--380/-180--380. Refine against actual diff, not this estimate. |
+| Applicable Rules | Task Reading Set; shared Execution/Architecture/Coding/Document; NXVM Architecture/Coding/source policy; architecture-governance then coding-governance. One timeline/transaction/state owner, public opaque cross-module contracts, Types vocabulary, source/test owner mirroring, protected inputs and target-separated P commits. |
+| Verification | Use original x64/x86 Release Ninja/ccache graphs, build -j8/test -j4. First compile independent CPU/FPU/Machine targets and focused neutral/non-PC tests; verify moved bodies after explicit name substitutions and behavior-level test ledger. Then full repository units, specialized gates, four-profile integrations/restored identity and eight published CLI/INI/PE/version/hash checks per width. Final S9 retains independent package entrypoint/final whole-T acceptance; no budget or predicate weakening. |
+| Expected Markers | No src/core/x86 implementation, core-x86 target/alias or old neutral public spelling. Neutral source/test includes only Lib Types and owned/public X86 Core capabilities; CPU/FPU algorithms unchanged. Real synthetic non-PC CPU reset fetch, immutable ROM, RAM/MMIO/alias/unmapped, IRQ, HALT/device advance, bounded execution/pause, side-effect-free observation and reset/teardown pass without PC or private fixture links. Existing PC timing/reset/failure predicates remain at their actual owner. |
+| Asset Needs | Preserve INI, external ROM/media/snapshots and MyNES pair; rebuild/deploy eight current 0561 PC EXEs through the existing embedded-ROM product recipe. No new third-party source or protected input. |
+| Reporting Requirements | State ownership/file/symbol/test partition before migration; record exact old/new paths, meaningful versus mechanical diff, removed paths and retained behaviors, complete verification/log/artifact evidence and unexecuted manual boundaries. Review every actual pushed file after executor delivery; do not imply T completion. |
+| Stop Conditions | A neutral dependency on PC/App/Emulator policy, CPU eligibility/algorithm drift, new test-only public manipulation API, copied private CPU/Machine layout, lost prior assertion, second executor/time/bus path, required Lib/Emulator edit or unrelated conflicting change. Correct ownership/design before continuing. |
+| Exit Criteria | One independent neutral Machine implementation and mirrored owned tests, genuine non-PC public consumer, affected private borrowing removed rather than relocated, all required dual-width qualification/artifacts/manifests/docs and complete target-separated P commits pushed; coordinator actual-change acceptance. I4 consolidation and I5 final audit remain open. |
+| Original Owner Request | Split Core into X86 Core/X86 NXVM, keep Product distinct from Machine and mirror all new production/test directory hierarchies. |
+| Similar-Issue Sweep | Reconcile all S2 N1/T1/T2 and direct receiver records against current files, public declarations/includes/targets; scan all source/test/build/tool owners for retired core/x86 paths/names, cross-component private headers and private fixture borrowing. Preserve CPU-local white-box tests at CPU, move neutral white-box assertions to Machine and keep Board wiring assertions public at Board. No test count or manifest-only proof substitutes for actual behavior. |
+
+S7's [progress evidence](../etc/evidence/t561-s7-machine-extraction.md) records
+the actual Machine move, complete 165-case owner suites passing on x64/x86,
+all three repaired CPU-private test borrowers, the D4 public-registration
+receiver and repaired higher private-Machine users, including the last
+diagnostic and video-topology fixtures. Final receiving qualification remains
+open. The intermediate complete-unit aggregate also
+builds and passes 632/632 on both original x64/x86 graphs; this does not close
+the remaining task-level requirements. Final receiving integration and
+eight-PC artifact renewal now pass; the evidence records exact results and
+limits. Shared P1 is pushed, while NXVM P2 and S7 acceptance remain pending.
+
+The owner explicitly approves changing the two DeskPro diagnostic memory
+readers to paused-boundary sampling. Copied event observations and sampled
+guest data must be distinguished; neither output nor evidence may claim the
+sample is an instantaneous bus-write snapshot. No public observation API or
+private-layout compatibility fixture is authorized by this adjustment.
 
 ## Accepted S6 Address Decode Boundary
 

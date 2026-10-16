@@ -2,10 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" core_state)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" core_state)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_state)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.h" profile_state)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" profile)
@@ -27,9 +27,9 @@ foreach(field "d4_refresh_hold_pending" "d4_refresh_address")
         message(FATAL_ERROR "Model40 Profile lacks its refresh state: ${field}")
     endif()
 endforeach()
-foreach(required "core_machine_transaction_hold_request("
-    "core_machine_transaction_hold_acknowledge(" "core_machine_transaction_begin("
-    "core_machine_transaction_commit(" "core_machine_transaction_hold_release("
+foreach(required "x86_core_machine_transaction_hold_request("
+    "x86_core_machine_transaction_hold_acknowledge(" "x86_core_machine_transaction_begin("
+    "x86_core_machine_transaction_commit(" "x86_core_machine_transaction_hold_release("
     "machine->attachment.refresh_request(machine->attachment.context,"
     "machine->attachment.refresh_complete(machine->attachment.context)")
     string(FIND "${core}" "${required}" position)

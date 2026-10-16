@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_BOARD_STATE_H
 #define CORE_MACHINE_BOARD_STATE_H
 
-#include "core/x86/clock_interface.h"
+#include "x86-core/machine/clock_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/pic_bus_interface.h"
 #include "core/board-base/pit_bus_interface.h"
@@ -54,7 +54,7 @@ typedef struct core_machine_absent_memory {
  * retains only the opaque attachment pointer and bounded callbacks. */
 struct core_machine_board_state {
     /* Execution is Core-owned; this handle is borrowed until finalization. */
-    core_machine *core;
+    x86_core_machine *core;
     core_machine_board_timing_declaration timing_declarations[
         CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT];
     lib_bool timing_declarations_copied;
@@ -83,13 +83,13 @@ struct core_machine_board_state {
     lib_u8 speaker_lines;
     core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     t_vadp *shared_vadp;
-    core_machine_clock_domain dma_clock;
+    x86_core_machine_clock_domain dma_clock;
     lib_u8 dma_clock_explicit;
-    core_machine_clock_domain pit_clock;
-    core_machine_clock_domain auxiliary_pit_clock;
-    core_machine_clock_domain rtc_clock;
-    core_machine_clock_domain vadp_clock;
-    core_machine_clock_domain kbc_clock;
+    x86_core_machine_clock_domain pit_clock;
+    x86_core_machine_clock_domain auxiliary_pit_clock;
+    x86_core_machine_clock_domain rtc_clock;
+    x86_core_machine_clock_domain vadp_clock;
+    x86_core_machine_clock_domain kbc_clock;
     lib_u32 kbc_typematic_initial_ticks;
     lib_u32 kbc_typematic_repeat_ticks;
     lib_u32 kbc_command_response_ticks;
@@ -122,10 +122,10 @@ lib_status core_machine_configure_hdc(core_machine_board_state *board,
 void core_machine_board_reset_devices(void *owner);
 /* Board owns projection/preflight; no candidate exists before it succeeds. */
 lib_status core_machine_board_prepare_executor(
-    const core_machine_config *config, core_machine_executor_config *out_executor);
+    const core_machine_config *config, x86_core_machine_executor_config *out_executor);
 lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
-lib_status core_machine_board_create(core_machine *machine,
+lib_status core_machine_board_create(x86_core_machine *machine,
     const core_machine_config *config, core_machine_board_state **out_board);
 void core_machine_board_finalize_devices(void *owner);
 lib_bool core_machine_board_shutdown_resets(void *owner);
@@ -133,7 +133,7 @@ lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,
     const core_machine_clock_plan *plan);
 void core_machine_board_reset_clocks(void *owner);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
-    core_machine_attachment_deadline_observation *out_observation);
+    x86_core_machine_attachment_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
 void core_machine_board_refresh_complete(void *owner);
 lib_bool core_machine_board_cpu_hold_asserted(void *owner);
@@ -153,7 +153,7 @@ void core_machine_board_configure_xt_ppi_speaker(core_machine_board_state *board
 void core_machine_board_set_xt_ppi_speaker(core_machine_board_state *board,
     lib_u8 timer_gate, lib_u8 data_enabled);
 lib_status core_machine_plan_validate(const core_machine_plan *plan);
-lib_status core_machine_plan_apply_topology(core_machine *machine,
+lib_status core_machine_plan_apply_topology(x86_core_machine *machine,
     core_machine_board_state *board,
     const core_machine_plan *plan);
 

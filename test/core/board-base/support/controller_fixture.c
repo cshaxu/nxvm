@@ -10,7 +10,7 @@ lib_bool test_board_fdc_finish_command_wait(core_machine_board_state *board)
 }
 
 lib_bool test_board_fdc_binding_matches(const core_machine_board_state *board,
-    const core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel)
+    const x86_core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel)
 {
     return !(board->fdc->connect.drives.media_id[0] != media_id ||
         board->fdc->connect.drives.media_id[1] != CORE_MACHINE_MEDIA_ID_INVALID ||
@@ -43,7 +43,7 @@ void test_board_fdc_reset(core_machine_board_state *board)
     core_machine_fdc_reset(board->fdc);
 }
 
-void test_board_dma_transfers(core_machine_board_state *board, core_machine *machine,
+void test_board_dma_transfers(core_machine_board_state *board, x86_core_machine *machine,
     lib_u64 transfers, lib_u8 controllers)
 {
     test_dma_transfers(board->shared_dma, machine, machine, transfers, controllers);

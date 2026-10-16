@@ -18,7 +18,7 @@
 
 #include "core/machine/debug.h"
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 
 #include "core/machine/display.h"
@@ -32,7 +32,7 @@ static void vm_machine_execution_provider_reset(void *context)
     vm_machine_devices_reset((vm_machine *)context);
 }
 
-static const core_machine_execution_provider vm_machine_execution_provider = {
+static const x86_core_machine_execution_provider vm_machine_execution_provider = {
     vm_machine_execution_provider_reset,
     LIB_NULL
 };
@@ -40,10 +40,10 @@ static const core_machine_execution_provider vm_machine_execution_provider = {
 lib_status vm_machine_bind_execution_provider(vm_machine *machine)
 {
     lib_status status;
-    const core_machine_firmware_provider *firmware_provider;
+    const x86_core_machine_firmware_provider *firmware_provider;
     void *firmware_context;
 
-    if (machine == LIB_NULL || machine->core_machine == LIB_NULL) {
+    if (machine == LIB_NULL || machine->x86_core_machine == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     firmware_provider = machine->construction.firmware_provider;
@@ -51,13 +51,13 @@ lib_status vm_machine_bind_execution_provider(vm_machine *machine)
     if (firmware_provider == LIB_NULL || firmware_context == LIB_NULL) {
         return LIB_STATUS_INVALID_STATE;
     }
-    status = core_machine_bind_firmware_provider(machine->core_machine,
+    status = x86_core_machine_bind_firmware_provider(machine->x86_core_machine,
         firmware_provider, firmware_context);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_bind_execution_provider(machine->core_machine,
+    status = x86_core_machine_bind_execution_provider(machine->x86_core_machine,
         &vm_machine_execution_provider, machine);
     if (status != LIB_STATUS_OK) return status;
-    return core_machine_freeze_execution_providers(machine->core_machine);
+    return x86_core_machine_freeze_execution_providers(machine->x86_core_machine);
 }
 
 /* Common owns the sole host worker and lifecycle queue.  NXVM only adapts its

@@ -12,7 +12,7 @@ static lib_i32 s47_patch_register(test_protected_16_machine *state,
 
     patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id);
     patch.values[register_id] = value;
-    return core_machine_debug_patch_registers(state->machine, &patch) ==
+    return x86_core_machine_debug_patch_registers(state->machine, &patch) ==
         LIB_STATUS_OK;
 }
 
@@ -31,7 +31,7 @@ static lib_i32 s47_gate_entry(x86_core_cpu_profile profile, lib_u8 type)
 {
     static const lib_u8 interrupt[] = {0xcdu,S47_VECTOR};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u16 frame[3u] = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile);
@@ -41,9 +41,9 @@ static lib_i32 s47_gate_entry(x86_core_cpu_profile profile, lib_u8 type)
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
                 interrupt, sizeof(interrupt)) || !s47_patch_register(&state,
                 X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF |
-                X86_CORE_CPU_DEBUG_EFLAGS_TF) || core_machine_run(state.machine,
-                (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                X86_CORE_CPU_DEBUG_EFLAGS_TF) || x86_core_machine_run(state.machine,
+                (x86_core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.eip != S47_HANDLER + 1u ||
             snapshot.esp != TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
@@ -65,13 +65,13 @@ static lib_i32 s47_rejected_encoding(x86_core_cpu_profile profile,
     const lib_u8 *code, lib_size code_bytes)
 {
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile);
 
     if (!failed) {
         failed = !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
             code, code_bytes) || !test_core_machine_fixture_shutdown_wait(
-            core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
+            x86_core_machine_run(state.machine, (x86_core_machine_run_budget){8u,0u},
                 &result), &result);
     }
     test_protected_16_destroy(&state);
@@ -82,7 +82,7 @@ static lib_i32 s47_not_present_gate(void)
 {
     static const lib_u8 interrupt[] = {0xcdu,S47_VECTOR};
     test_protected_16_machine state;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
         X86_CORE_CPU_PROFILE_80386);
 
@@ -91,7 +91,7 @@ static lib_i32 s47_not_present_gate(void)
             TEST_PROTECTED_INTERRUPT_GATE_16, LIB_FALSE) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
                 interrupt, sizeof(interrupt)) || !test_core_machine_fixture_shutdown_wait(
-                core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
+                x86_core_machine_run(state.machine, (x86_core_machine_run_budget){8u,0u},
                     &result), &result);
     }
     test_protected_16_destroy(&state);

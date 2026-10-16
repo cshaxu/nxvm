@@ -4,29 +4,29 @@
 #include "lib/types/file.h"
 
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 typedef struct pic_ocw3_fixture {
     core_machine_pic_bus *master;
     core_machine_pic_bus *slave;
-    core_machine *machine;
+    x86_core_machine *machine;
 } pic_ocw3_fixture;
 
 static void pic_ocw3_initialize(pic_ocw3_fixture *fixture,
     lib_u8 master_icw4)
 {
-    const core_machine_executor_config config = {
+    const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
     *fixture = (pic_ocw3_fixture){0};
-    if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
+    if (x86_core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
         core_machine_pic_initialize(&fixture->master, &fixture->slave, fixture->machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
-        core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
+        x86_core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
         core_machine_pic_finalize(fixture->master, fixture->slave);
-        core_machine_destroy(fixture->machine);
+        x86_core_machine_destroy(fixture->machine);
         lib_test_assert(LIB_FALSE);
     }
     core_machine_pic_reset(fixture->master, fixture->slave);
@@ -43,7 +43,7 @@ static void pic_ocw3_initialize(pic_ocw3_fixture *fixture,
 static void pic_ocw3_finalize(pic_ocw3_fixture *fixture)
 {
     core_machine_pic_finalize(fixture->master, fixture->slave);
-    core_machine_destroy(fixture->machine);
+    x86_core_machine_destroy(fixture->machine);
 }
 
 static void pic_ocw3_raise(pic_ocw3_fixture *fixture,

@@ -3,7 +3,7 @@
 
 #include "core/board-base/controller_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 typedef struct core_machine_hdc core_machine_hdc;
 
@@ -29,7 +29,7 @@ void core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
         const core_machine_dma_request_binding *binding),
     void (*request_deassert)(void *owner,
         const core_machine_dma_request_binding *binding), void *owner);
-const core_machine_port_provider *core_machine_hdc_port_provider(void);
+const x86_core_machine_port_provider *core_machine_hdc_port_provider(void);
 const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(void);
 void core_machine_hdc_reset(core_machine_hdc *hdc);
 void core_machine_hdc_advance_at(core_machine_hdc *hdc, lib_u64 tick);

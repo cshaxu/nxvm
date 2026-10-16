@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_XT_PPI_KEYBOARD_INTERFACE_H
 #define CORE_MACHINE_XT_PPI_KEYBOARD_INTERFACE_H
 #include "lib/types/types_interface.h"
-#include "core/x86/port_interface.h"
+#include "x86-core/machine/port_interface.h"
 
 typedef struct core_machine_xt_ppi_keyboard core_machine_xt_ppi_keyboard;
 typedef enum core_machine_xt_ppi_fault_input {
@@ -35,7 +35,7 @@ typedef void (*core_machine_xt_ppi_byte_released)(void *owner);
 lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
     const core_machine_xt_ppi_keyboard_config *config);
 lib_status core_machine_xt_ppi_keyboard_create(
-    const core_machine_xt_ppi_keyboard_config *config, core_machine *machine,
+    const core_machine_xt_ppi_keyboard_config *config, x86_core_machine *machine,
     core_machine_xt_ppi_keyboard **out_keyboard);
 void core_machine_xt_ppi_keyboard_destroy(core_machine_xt_ppi_keyboard *keyboard);
 void core_machine_xt_ppi_keyboard_bind_irq(core_machine_xt_ppi_keyboard *keyboard,

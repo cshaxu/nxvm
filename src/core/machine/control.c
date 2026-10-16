@@ -12,7 +12,7 @@
 
 #include "core/machine/fault.h"
 
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 #include "core/machine/control.h"
 
@@ -29,7 +29,7 @@ static lib_status vm_machine_control_reset_machine(vm_machine *machine)
 
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     vm_machine_debug_reset(&machine->debug);
-    status = core_machine_reset(machine->core_machine);
+    status = x86_core_machine_reset(machine->x86_core_machine);
     if (status != LIB_STATUS_OK) {
         vm_machine_control_stop(&machine->control);
     } else {
@@ -43,8 +43,8 @@ static void vm_machine_control_refresh_machine_debug(
 {
     x86_core_cpu_debug_instruction_observation observation;
 
-    if (machine == LIB_NULL || core_machine_debug_capture_instruction_observation(
-            machine->core_machine, &observation) != LIB_STATUS_OK) return;
+    if (machine == LIB_NULL || x86_core_machine_debug_capture_instruction_observation(
+            machine->x86_core_machine, &observation) != LIB_STATUS_OK) return;
     vm_machine_debug_refresh(&machine->debug, &observation);
 }
 
@@ -53,7 +53,7 @@ void vm_machine_control_start(vm_machine_control_state *control) {
 
     if (control == LIB_NULL) return;
     machine = control->machine;
-    if (machine == LIB_NULL || machine->core_machine == LIB_NULL) return;
+    if (machine == LIB_NULL || machine->x86_core_machine == LIB_NULL) return;
     vm_machine_executor_state_start(&control->state);
     vm_machine_runner_run(machine);
 }
@@ -78,8 +78,8 @@ void vm_machine_control_stop(vm_machine_control_state *control)  {
 
     if (control == LIB_NULL) return;
     machine = control->machine;
-    if (machine != LIB_NULL && machine->core_machine != LIB_NULL) {
-        core_machine_request_stop(machine->core_machine);
+    if (machine != LIB_NULL && machine->x86_core_machine != LIB_NULL) {
+        x86_core_machine_request_stop(machine->x86_core_machine);
     }
     vm_machine_executor_state_stop(&control->state);
 }

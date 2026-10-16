@@ -1,7 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 #include "../core_machine_board_fixture.h"
 
 #define LEGACY_TIMING_NORMALIZATION_RESET_LINEAR 0xfffffff0u
@@ -34,15 +34,15 @@ static void legacy_timing_normalization_advance(void *opaque, lib_u64 ticks)
     if (state != LIB_NULL) state->advanced_ticks += ticks;
 }
 
-static const core_machine_execution_provider legacy_timing_normalization_provider = {
+static const x86_core_machine_execution_provider legacy_timing_normalization_provider = {
     legacy_timing_normalization_reset, legacy_timing_normalization_advance
 };
 
 static lib_i32 legacy_timing_normalization_prepare(x86_core_cpu_profile profile,
-    core_machine **out_machine, legacy_timing_normalization_state *state)
+    x86_core_machine **out_machine, legacy_timing_normalization_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
@@ -54,7 +54,7 @@ static lib_i32 legacy_timing_normalization_prepare(x86_core_cpu_profile profile,
             LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &legacy_timing_normalization_provider, state)) {
-        core_machine_destroy(machine);
+        x86_core_machine_destroy(machine);
         return 0;
     }
     *out_machine = machine;
@@ -63,29 +63,29 @@ static lib_i32 legacy_timing_normalization_prepare(x86_core_cpu_profile profile,
 
 static lib_i32 legacy_timing_normalization_run_case(const legacy_timing_normalization_case *test_case)
 {
-    const core_machine_run_budget budget = { 1u, 0u };
+    const x86_core_machine_run_budget budget = { 1u, 0u };
     const lib_u16 operand = 2u;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     legacy_timing_normalization_state state = { 0u };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = test_case == LIB_NULL || !legacy_timing_normalization_prepare(test_case->profile,
-        &machine, &state) || core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, LEGACY_TIMING_NORMALIZATION_RESET_LINEAR,
+        &machine, &state) || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, LEGACY_TIMING_NORMALIZATION_RESET_LINEAR,
             test_case->program, test_case->program_bytes) != LIB_STATUS_OK;
 
     if (!failed) {
         test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 2u);
         test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 2u);
         test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDX, 0u);
-        failed |= test_case->memory && core_machine_memory_write(machine,
+        failed |= test_case->memory && x86_core_machine_memory_write(machine,
             LEGACY_TIMING_NORMALIZATION_OPERAND_LINEAR, &operand, sizeof(operand)) != LIB_STATUS_OK;
-        failed |= test_case->memory && core_machine_memory_write(machine,
+        failed |= test_case->memory && x86_core_machine_memory_write(machine,
             LEGACY_TIMING_NORMALIZATION_OPERAND_LINEAR + 1u, &operand, sizeof(operand)) !=
             LIB_STATUS_OK;
     }
     if (!failed) {
-        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+        failed |= x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != test_case->ticks ||
             result.elapsed_ticks != test_case->ticks ||
             state.advanced_ticks != test_case->ticks;
@@ -97,7 +97,7 @@ static lib_i32 legacy_timing_normalization_run_case(const legacy_timing_normaliz
             (lib_i32)result.reason, (unsigned long long)state.advanced_ticks,
             test_case->program[0]);
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 
@@ -231,16 +231,16 @@ static lib_i32 legacy_timing_normalization_test_fault_nonpublication(void)
     static const lib_u8 divide_by_zero[] = { 0xf7u, 0xf1u };
     static const lib_u8 handler[] = { 0xf4u };
     static const lib_u16 vector[] = { 0x0100u, 0x0000u };
-    const core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    const x86_core_machine_run_budget budget = { 1u, 0u };
+    x86_core_machine_run_result result;
     legacy_timing_normalization_state state = { 0u };
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = !legacy_timing_normalization_prepare(X86_CORE_CPU_PROFILE_80186,
-        &machine, &state) || core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, LEGACY_TIMING_NORMALIZATION_RESET_LINEAR,
+        &machine, &state) || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, LEGACY_TIMING_NORMALIZATION_RESET_LINEAR,
             divide_by_zero, sizeof(divide_by_zero)) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, vector, sizeof(vector)) !=
-            LIB_STATUS_OK || core_machine_memory_write(machine, 0x0100u,
+        x86_core_machine_memory_write(machine, 0u, vector, sizeof(vector)) !=
+            LIB_STATUS_OK || x86_core_machine_memory_write(machine, 0x0100u,
             handler, sizeof(handler)) != LIB_STATUS_OK;
 
     if (!failed) {
@@ -248,22 +248,22 @@ static lib_i32 legacy_timing_normalization_test_fault_nonpublication(void)
         test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDX, 0u);
         test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 0u);
         {
-            lib_status status = core_machine_run(machine, budget, &result);
+            lib_status status = x86_core_machine_run(machine, budget, &result);
 
             failed |= status != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_BUDGET ||
+                result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
                 result.executed != 0u || result.ticks != 0u ||
                 result.elapsed_ticks != 0u || state.advanced_ticks != 0u ||
                 test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EIP) != 0x0100u;
-            status = core_machine_run(machine, budget, &result);
+            status = x86_core_machine_run(machine, budget, &result);
             failed |= status != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 result.executed != 1u || result.ticks != 2u ||
                 result.elapsed_ticks != 2u || state.advanced_ticks != 2u ||
                 test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EIP) != 0x0101u;
         }
     }
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     return failed;
 }
 

@@ -4,7 +4,7 @@
 #include "core/board-base/hdc.h"
 #include "core/board-base/media_interface.h"
 #include "core/board-base/pic_bus_interface.h"
-#include "core/x86/machine_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 static lib_u32 native_create_attempts, native_fail_at, native_live;
 
@@ -137,24 +137,24 @@ static lib_status core_machine_compaq_hdc_fdc_direction(void *opaque,
     return LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_compaq_hdc_install(core_machine *machine, core_machine_hdc *hdc)
+static lib_i32 core_machine_compaq_hdc_install(x86_core_machine *machine, core_machine_hdc *hdc)
 {
-    const core_machine_port_provider *provider = core_machine_hdc_port_provider();
-    core_machine_port_route routes[11] = {0};
+    const x86_core_machine_port_provider *provider = core_machine_hdc_port_provider();
+    x86_core_machine_port_route routes[11] = {0};
 
     if (machine == LIB_NULL || hdc == LIB_NULL || provider == LIB_NULL) return 0;
     for (lib_u16 index = 0u; index < 8u; ++index) {
-        routes[index] = (core_machine_port_route) {
+        routes[index] = (x86_core_machine_port_route) {
             .address = (lib_u16)(0x01f0u + index), .read = provider->read,
             .write = provider->write, .owner = hdc};
     }
-    routes[8] = (core_machine_port_route) {.address = 0x03f6u,
+    routes[8] = (x86_core_machine_port_route) {.address = 0x03f6u,
         .read = provider->read, .write = provider->write, .owner = hdc};
-    routes[9] = (core_machine_port_route) {.address = 0x03f7u,
+    routes[9] = (x86_core_machine_port_route) {.address = 0x03f7u,
         .read = core_machine_compaq_hdc_fdc_direction};
-    routes[10] = (core_machine_port_route) {.address = 0x03f7u,
+    routes[10] = (x86_core_machine_port_route) {.address = 0x03f7u,
         .read = provider->read, .owner = hdc, .wired_or_read = LIB_TRUE};
-    return core_machine_install_port_routes(machine, routes, 11u) == LIB_STATUS_OK;
+    return x86_core_machine_install_port_routes(machine, routes, 11u) == LIB_STATUS_OK;
 }
 
 lib_i32 main(void)
@@ -182,13 +182,13 @@ lib_i32 main(void)
     core_machine_compaq_hdc_media media = {0};
     core_machine_compaq_hdc_media slave_media = {0};
     core_machine_media_registry *registry = LIB_NULL;
-    const core_machine_executor_config executor = {
+    const x86_core_machine_executor_config executor = {
         .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086};
     core_machine_hdc *hdc = LIB_NULL;
     core_machine_hdc *empty_hdc = LIB_NULL;
-    core_machine *port = LIB_NULL;
-    core_machine *empty_port = LIB_NULL;
+    x86_core_machine *port = LIB_NULL;
+    x86_core_machine *empty_port = LIB_NULL;
     core_machine_pic_bus *master = LIB_NULL;
     core_machine_pic_bus *slave = LIB_NULL;
     core_machine_pic_bus *empty_master = LIB_NULL;
@@ -200,8 +200,8 @@ lib_i32 main(void)
     media.sector[1] = 0x12u;
     slave_media.sector[0] = 0x78u;
     slave_media.sector[1] = 0x56u;
-    if (core_machine_neutral_create(&executor, &port) != LIB_STATUS_OK ||
-        core_machine_neutral_create(&executor, &empty_port) != LIB_STATUS_OK ||
+    if (x86_core_machine_neutral_create(&executor, &port) != LIB_STATUS_OK ||
+        x86_core_machine_neutral_create(&executor, &empty_port) != LIB_STATUS_OK ||
         core_machine_pic_initialize(&master, &slave, port,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
         core_machine_pic_initialize(&empty_master, &empty_slave, empty_port,
@@ -234,8 +234,8 @@ lib_i32 main(void)
         if (core_machine_hdc_configure(hdc, registry, 1u, 2u,
                 master, slave, &config) != LIB_STATUS_OK ||
             !core_machine_compaq_hdc_install(port, hdc) ||
-            core_machine_freeze_execution_providers(port) != LIB_STATUS_OK ||
-            core_machine_reset(port) != LIB_STATUS_OK) {
+            x86_core_machine_freeze_execution_providers(port) != LIB_STATUS_OK ||
+            x86_core_machine_reset(port) != LIB_STATUS_OK) {
             failed |= 0x02;
         } else {
             failed |= hdc->chips[0] == LIB_NULL || hdc->chips[1] == LIB_NULL ||
@@ -437,8 +437,8 @@ lib_i32 main(void)
                     CORE_MACHINE_MEDIA_ID_INVALID, empty_master, empty_slave,
                     &config) != LIB_STATUS_OK ||
                 !core_machine_compaq_hdc_install(empty_port, empty_hdc) ||
-                core_machine_freeze_execution_providers(empty_port) != LIB_STATUS_OK ||
-                core_machine_reset(empty_port) != LIB_STATUS_OK) {
+                x86_core_machine_freeze_execution_providers(empty_port) != LIB_STATUS_OK ||
+                x86_core_machine_reset(empty_port) != LIB_STATUS_OK) {
                 failed |= 0x04;
             } else {
                 test_hdc_port_write(empty_port, 0x01f6u, 0xa0u);
@@ -457,8 +457,8 @@ done:
     core_machine_media_registry_destroy(registry);
     core_machine_pic_finalize(empty_master, empty_slave);
     core_machine_pic_finalize(master, slave);
-    core_machine_destroy(empty_port);
-    core_machine_destroy(port);
+    x86_core_machine_destroy(empty_port);
+    x86_core_machine_destroy(port);
     if (failed) return 1;
     lib_c_printf("%s\n", "COMPAQ-HDC-ROUTE:OK");
     lib_c_printf("%s\n", "PORT-WIRED-OR:OK");

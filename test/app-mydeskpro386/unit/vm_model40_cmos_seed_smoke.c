@@ -3,7 +3,6 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "lib/types/file.h"
-#include "core/x86/device_support_interface.h"
 
 #include "../../core/board-base/composition/composition_fixture.h"
 #include "core/chips/rtc146818/rtc146818_interface.h"
@@ -14,15 +13,15 @@
 static lib_u8 vm_model40_cmos_read(vm_machine *session,
     lib_u8 index)
 {
-    test_core_write_port_after_run(session->core_machine, 0x0070u, index);
-    return (lib_u8)test_core_read_port_after_run(session->core_machine, 0x0071u);
+    test_core_write_port_after_run(session->x86_core_machine, 0x0070u, index);
+    return (lib_u8)test_core_read_port_after_run(session->x86_core_machine, 0x0071u);
 }
 
 static void vm_model40_cmos_write(vm_machine *session, lib_u8 index,
     lib_u8 value)
 {
-    test_core_write_port_after_run(session->core_machine, 0x0070u, index);
-    test_core_write_port_after_run(session->core_machine, 0x0071u, value);
+    test_core_write_port_after_run(session->x86_core_machine, 0x0070u, index);
+    test_core_write_port_after_run(session->x86_core_machine, 0x0071u, value);
 }
 
 static lib_i32 vm_model40_cmos_checksum_is_valid(vm_machine *session)
@@ -34,8 +33,8 @@ static lib_i32 vm_model40_cmos_checksum_is_valid(vm_machine *session)
         checksum = (lib_u16)(checksum + vm_model40_cmos_read(session, index));
     }
     return vm_model40_cmos_read(session, 0x2eu) ==
-        CORE_MACHINE_MASK_U8(checksum >> 8u) &&
-        vm_model40_cmos_read(session, 0x2fu) == CORE_MACHINE_MASK_U8(checksum);
+        ((lib_u8)(checksum >> 8u)) &&
+        vm_model40_cmos_read(session, 0x2fu) == ((lib_u8)(checksum));
 }
 
 static lib_i32 vm_model40_cmos_seed_matches(vm_machine *session)
@@ -70,8 +69,8 @@ static void vm_model40_cmos_seed_bytes(
         for (index = 0x10u; index < 0x2eu; ++index) {
             checksum = (lib_u16)(checksum + bytes[index]);
         }
-        bytes[0x2eu] = CORE_MACHINE_MASK_U8(checksum >> 8u);
-        bytes[0x2fu] = CORE_MACHINE_MASK_U8(checksum);
+        bytes[0x2eu] = ((lib_u8)(checksum >> 8u));
+        bytes[0x2fu] = ((lib_u8)(checksum));
     }
 }
 

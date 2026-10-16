@@ -1,13 +1,12 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/dma_bus_interface.h"
-#include "core/x86/machine.h"
-#include "core/x86/transaction.h"
+#include "x86-core/machine/machine_interface.h"
+#include "core/board-base/trace_interface.h"
 #include "../dma_competition_fixture.h"
-#include "../../support/memory_alias_fixture.h"
 
 typedef struct competition_probe {
-    core_machine_trace_event events[256];
+    x86_core_machine_trace_event events[256];
     lib_u32 count;
 } competition_probe;
 
@@ -16,7 +15,7 @@ typedef struct competition_dma_source {
 } competition_dma_source;
 
 static void competition_trace(void *opaque,
-    const core_machine_trace_event *event)
+    const x86_core_machine_trace_event *event)
 {
     competition_probe *probe = (competition_probe *)opaque;
 
@@ -64,14 +63,14 @@ static lib_i32 competition_find_event_after(const competition_probe *probe,
 }
 
 static lib_i32 competition_find_transaction(const competition_probe *probe,
-    lib_u32 phase, core_machine_transaction_owner owner,
-    core_machine_transaction_kind kind, lib_u32 *out_index)
+    lib_u32 phase, x86_core_machine_transaction_owner owner,
+    x86_core_machine_transaction_kind kind, lib_u32 *out_index)
 {
     lib_u32 index;
 
     if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
-        const core_machine_trace_event *event = &probe->events[index];
+        const x86_core_machine_trace_event *event = &probe->events[index];
 
         if (event->type == phase && (event->detail & 0xffu) == owner &&
             ((event->detail >> 8u) & 0xffu) == kind) {
@@ -82,32 +81,25 @@ static lib_i32 competition_find_transaction(const competition_probe *probe,
     return 0;
 }
 
-static void competition_program_dma_channel2(t_port *port)
-{
-    core_machine_port_write(port, 0x000cu, 0u);
-    core_machine_port_write(port, 0x0004u, 0x34u);
-    core_machine_port_write(port, 0x0004u, 0x12u);
-    core_machine_port_write(port, 0x0005u, 0u);
-    core_machine_port_write(port, 0x0005u, 0u);
-    core_machine_port_write(port, 0x0081u, 1u);
-    core_machine_port_write(port, 0x000bu, 0x46u);
-    core_machine_port_write(port, 0x000au, 0x02u);
-    core_machine_port_write(port, 0x00d4u, 0u);
-}
-
 lib_i32 main(void)
 {
     static const core_machine_dma_channel_provider dma_provider = {
         competition_dma_read, LIB_NULL, LIB_NULL
     };
     const lib_u8 nop = 0x90u;
-    core_machine *machine = LIB_NULL;
+    x86_core_machine *machine = LIB_NULL;
     core_machine_dma_bus *dma = LIB_NULL;
-    core_machine_config config = {0};
-    core_machine_trace_provider trace;
+    core_machine_config config = {
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .l1_compatibility_policy = X86_CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS
+    };
+    const x86_core_machine_memory_alias_config reset_alias = {
+        0xfffffff0u, 0x000ffff0u, 16u
+    };
+    x86_core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
-    core_machine_run_budget budget = {1u, 0u};
-    core_machine_run_result result;
+    x86_core_machine_run_budget budget = {1u, 0u};
+    x86_core_machine_run_result result;
     competition_probe probe = {{{0}}, 0u};
     competition_dma_source source = {0xa5u};
     lib_u8 byte = 0u;
@@ -124,63 +116,50 @@ lib_i32 main(void)
     lib_u32 hold_request = 0u;
     lib_u32 hold_acknowledge = 0u;
     lib_u32 hold_release = 0u;
-    lib_u32 reset_hold_start;
-    lib_u32 reset_hold_request = 0u;
-    lib_u32 reset_hold_acknowledge = 0u;
-    lib_u32 reset_hold_release = 0u;
+    lib_u8 advanced = LIB_FALSE;
     lib_i32 failed = 0;
 
-    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     trace.callback = competition_trace;
     trace.context = &probe;
     failed |= test_dma_competition_create(&config, &dma_provider, &source,
         &machine, &dma, &binding) != LIB_STATUS_OK;
-    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_transaction_hold_request(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
-    failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA) != LIB_STATUS_OK;
-    failed |= core_machine_transaction_begin(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_CPU,
-        CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, 0u, 0u, 0u) !=
-        LIB_STATUS_INVALID_ARGUMENT;
-    core_machine_transaction_hold_release(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA);
-    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
-    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
+    failed |= x86_core_machine_install_memory_aliases(machine, &reset_alias, 1u,
+        LIB_FALSE) != LIB_STATUS_OK;
+    failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
-    competition_program_dma_channel2(&machine->executor_port);
+    failed |= test_dma_competition_program_channel2(machine) != LIB_STATUS_OK;
     core_machine_dma_request_assert(dma, &binding);
-    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
-    failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+    failed |= x86_core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    failed |= x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
+    failed |= result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
         result.executed != 1u || result.elapsed_ticks != 3u;
     /* A normal 8237A service selects a channel before S1..S4 commits the
      * byte.  CPU retirement has already occurred; advance only device time. */
-    failed |= core_machine_advance_time(machine, 8u) != LIB_STATUS_OK;
-    failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
+    failed |= x86_core_machine_advance_l1_compatibility(machine, &advanced) !=
+        LIB_STATUS_OK || !advanced;
+    failed |= x86_core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         LIB_STATUS_OK || byte != 0xa5u;
     failed |= !competition_find_transaction(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
-        CORE_MACHINE_TRANSACTION_OWNER_CPU,
-        CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, &cpu_begin);
+        X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+        X86_CORE_MACHINE_TRANSACTION_OWNER_CPU,
+        X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, &cpu_begin);
     failed |= !competition_find_transaction(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
-        CORE_MACHINE_TRANSACTION_OWNER_CPU,
-        CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, &cpu_commit);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_CPU_RETIRE,
+        X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
+        X86_CORE_MACHINE_TRANSACTION_OWNER_CPU,
+        X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, &cpu_commit);
+    failed |= !competition_find_event(&probe, X86_CORE_MACHINE_TRACE_CPU_RETIRE,
         &cpu_retire);
     failed |= !competition_find_transaction(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA,
-        CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_begin);
+        X86_CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+        X86_CORE_MACHINE_TRANSACTION_OWNER_DMA,
+        X86_CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_begin);
     failed |= !competition_find_transaction(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA,
-        CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_commit);
-    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_DMA_ADVANCE,
+        X86_CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
+        X86_CORE_MACHINE_TRANSACTION_OWNER_DMA,
+        X86_CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_commit);
+    failed |= !competition_find_event_after(&probe, X86_CORE_MACHINE_TRACE_DMA_ADVANCE,
         dma_commit, &dma_advance);
     failed |= !competition_find_event_after(&probe, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
         dma_advance, &pit_advance);
@@ -191,34 +170,20 @@ lib_i32 main(void)
     failed |= competition_find_event(&probe, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
         &hdc_advance);
     failed |= !competition_find_event(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);
+        X86_CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);
     failed |= !competition_find_event(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE, &hold_acknowledge);
+        X86_CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE, &hold_acknowledge);
     failed |= !competition_find_event(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, &hold_release);
+        X86_CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, &hold_release);
     failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
         cpu_retire >= dma_begin || dma_begin >= dma_commit ||
         dma_commit >= dma_advance || dma_advance >= pit_advance ||
-        pit_advance >= pic_refresh;
-    reset_hold_start = probe.count;
-    failed |= core_machine_transaction_hold_request(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
-    failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA) != LIB_STATUS_OK;
-    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= !competition_find_event_after(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, reset_hold_start,
-        &reset_hold_request);
-    failed |= !competition_find_event_after(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE, reset_hold_start,
-        &reset_hold_acknowledge);
-    failed |= !competition_find_event_after(&probe,
-        CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, reset_hold_start,
-        &reset_hold_release);
-    failed |= reset_hold_request >= reset_hold_acknowledge ||
-        reset_hold_acknowledge >= reset_hold_release;
+        pit_advance >= pic_refresh || hold_request >= hold_acknowledge ||
+        hold_acknowledge >= hold_release;
+    failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= core_machine_dma_has_pending_request(dma);
 
-    core_machine_destroy(machine);
+    x86_core_machine_destroy(machine);
     if (failed) return 1;
     lib_c_printf("COMPETITION:OK\n");
     lib_c_printf("PCAT-HOLD:OK\n");

@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "x86-debug/product/protocol_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/debug_adapter.h"
@@ -42,7 +42,7 @@ lib_i32 main(void)
     vm_machine_debug_stop_reason stop_reason;
     lib_u64 executed;
     lib_size response_size;
-    core_machine *saved_core_machine;
+    x86_core_machine *saved_core_machine;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) !=
             LIB_STATUS_OK || machine == LIB_NULL ||
@@ -55,11 +55,11 @@ lib_i32 main(void)
     /* Force a Core-originated classification through the adapter.  The
      * paused Common lease prevents concurrent Core use; restore before any
      * normal request or teardown. */
-    saved_core_machine = machine->core_machine;
-    machine->core_machine = LIB_NULL;
-    if (core_machine_debug_read_register(machine->core_machine,
+    saved_core_machine = machine->x86_core_machine;
+    machine->x86_core_machine = LIB_NULL;
+    if (x86_core_machine_debug_read_register(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_EAX, &register_id) != LIB_STATUS_INVALID_ARGUMENT) {
-        machine->core_machine = saved_core_machine;
+        machine->x86_core_machine = saved_core_machine;
         goto failed;
     }
     response_size = sizeof(result);
@@ -68,10 +68,10 @@ lib_i32 main(void)
             .register_id = X86_CORE_CPU_DEBUG_EAX
         }, sizeof(x86_debug_request), &result, sizeof(result), &response_size) !=
             LIB_STATUS_INVALID_ARGUMENT || response_size != 0u) {
-        machine->core_machine = saved_core_machine;
+        machine->x86_core_machine = saved_core_machine;
         goto failed;
     }
-    machine->core_machine = saved_core_machine;
+    machine->x86_core_machine = saved_core_machine;
     if (emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
         goto failed;
     for (register_id = X86_CORE_CPU_DEBUG_EAX;
@@ -106,14 +106,14 @@ lib_i32 main(void)
             .operation = X86_DEBUG_SET_WATCH,
             .watch_kind = X86_DEBUG_WATCH_READ,
             .address = 0x600u
-        }, &result) || core_machine_debug_get_watchpoint(machine->core_machine,
+        }, &result) || x86_core_machine_debug_get_watchpoint(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
             LIB_STATUS_OK || !watch_enabled || watch_address != 0x600u)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_CLEAR_WATCH,
             .watch_kind = X86_DEBUG_WATCH_READ
-        }, &result) || core_machine_debug_get_watchpoint(machine->core_machine,
+        }, &result) || x86_core_machine_debug_get_watchpoint(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
             LIB_STATUS_OK || watch_enabled)
         goto failed;

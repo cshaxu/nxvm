@@ -4,13 +4,12 @@
 #include "lib/types/types_interface.h"
 #include "../../core/board-base/support/composition_fixture.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
-#include "core/x86/debug_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "../../core/board-base/composition/time_fixture.h"
 #include "../../core/board-base/support/cmos_fixture.h"
 #include "../support/rom/session_assets.h"
 
@@ -23,6 +22,7 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     lib_u32 port_b;
     lib_u32 next_port_b;
     lib_u32 tick;
+    lib_u64 first_tick = 0u;
     lib_u16 checksum = 0u;
     lib_u8 index;
     lib_u8 observed_type;
@@ -36,9 +36,8 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     if (vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != cylinders || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
         vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != sectors || vm_test_fdd_info(session->floppy[0u]).geometry.bytes_per_sector != 512u ||
         observed_type != cmos_type) {
-        printf("FDD setup format=%u cmos=%02x expected=%02x\n",
-            (unsigned int)format, (unsigned int)observed_type,
-            (unsigned int)cmos_type);
+        lib_c_printf("FDD setup format=%u cmos=%02x expected=%02x\n",
+            (lib_u32)format, (lib_u32)observed_type, (lib_u32)cmos_type);
         goto done;
     }
     for (index = 0x10u; index < 0x2eu; ++index) {
@@ -51,13 +50,20 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
             (lib_u8)checksum) {
         goto done;
     }
-    if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
+    if (x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &first_tick) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(session->x86_core_machine, 0x0061u, &port_b) !=
         LIB_STATUS_OK) {
         goto done;
     }
     for (tick = 0u; tick < 200u; ++tick) {
-        if (test_core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
-            core_machine_bus_read(session->core_machine, 0x0061u, &next_port_b) !=
+        lib_u8 advanced = LIB_FALSE;
+        lib_u64 elapsed = 0u;
+
+        if (x86_core_machine_advance_to_next_deadline(session->x86_core_machine,
+                &advanced) != LIB_STATUS_OK || !advanced ||
+            x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &elapsed) != LIB_STATUS_OK ||
+            elapsed - first_tick > 200u ||
+            x86_core_machine_bus_read(session->x86_core_machine, 0x0061u, &next_port_b) !=
                 LIB_STATUS_OK) {
             goto done;
         }
@@ -80,7 +86,7 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
         .cpu_profile = X86_CORE_CPU_PROFILE_80186
     };
     vm_machine *session = LIB_NULL;
-    core_machine_run_result result = {0};
+    x86_core_machine_run_result result = {0};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
@@ -93,6 +99,7 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
     };
     lib_u32 port_b;
     lib_u32 tick;
+    lib_u64 first_tick = 0u;
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
@@ -100,27 +107,36 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
         vm_machine_destroy(session);
         return 0;
     }
+    if (x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &first_tick) != LIB_STATUS_OK) {
+        vm_machine_destroy(session);
+        return 0;
+    }
     for (tick = 0u; tick < 200u; ++tick) {
-        if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
+        lib_u8 advanced = LIB_FALSE;
+        lib_u64 elapsed = 0u;
+        if (x86_core_machine_bus_read(session->x86_core_machine, 0x0061u, &port_b) !=
                 LIB_STATUS_OK) {
             failed = 1;
             break;
         }
         if ((port_b & 0x10u) == 0u) break;
-        if (test_core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK) {
+        if (x86_core_machine_advance_to_next_deadline(session->x86_core_machine,
+                &advanced) != LIB_STATUS_OK || !advanced ||
+            x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &elapsed) != LIB_STATUS_OK ||
+            elapsed - first_tick > 200u) {
             failed = 1;
             break;
         }
     }
-    if (!failed && (tick == 200u || core_machine_memory_write(session->core_machine,
+    if (!failed && (tick == 200u || x86_core_machine_memory_write(session->x86_core_machine,
             0x0500u, program, sizeof(program)) != LIB_STATUS_OK)) {
         failed = 1;
     }
     if (!failed) {
-        failed = core_machine_debug_patch_registers(session->core_machine,
-            &entry) != LIB_STATUS_OK || core_machine_run(session->core_machine,
-            (core_machine_run_budget) {1000u, 0u}, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        failed = x86_core_machine_debug_patch_registers(session->x86_core_machine,
+            &entry) != LIB_STATUS_OK || x86_core_machine_run(session->x86_core_machine,
+            (x86_core_machine_run_budget) {1000u, 0u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     }
     vm_machine_destroy(session);
     return !failed;
@@ -165,6 +181,6 @@ lib_i32 main(void)
         return 1;
     }
     if (!vm_default_pc_at_80186_refresh_polling_is_live()) return 1;
-    puts("DEFAULT-PC-AT-APPLY:OK");
+    lib_c_printf("DEFAULT-PC-AT-APPLY:OK\n");
     return 0;
 }

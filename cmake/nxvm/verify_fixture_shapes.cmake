@@ -33,22 +33,22 @@ set(project_fixture_shapes_retained_sources
     "test/core/board-base/core_machine_compaq_hdc_machine_smoke.c"
     "test/core/board-base/core_machine_compaq_cecg_contract_smoke.c"
     "test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c"
-    "test/core/board-base/core_machine_cpu_timing_preview_smoke.c"
-    "test/core/x86/core_machine_memory_inspection_smoke.c"
+    "test/x86-core/machine/machine_cpu_timing_preview_smoke.c"
+    "test/x86-core/machine/core_machine_memory_inspection_smoke.c"
     "test/core/board-base/core_machine_display_authority_smoke.c"
     "test/core/board-base/core_machine_dma_binding_token_smoke.c"
     "test/core/board-base/core_machine_dma_rtc_authority_smoke.c"
-    "test/core/x86/core_machine_executor_run_smoke.c"
+    "test/x86-core/machine/core_machine_executor_run_smoke.c"
     "test/core/board-base/core_machine_fdc_media_change_port_smoke.c"
     "test/core/board-base/core_machine_fdc_smoke.c"
     "test/core/board-base/core_machine_fdc_topology_port_smoke.c"
     "test/core/board-base/core_machine_hdc_smoke.c"
     "test/core/board-base/core_machine_imul_immediate_profiles_smoke.c"
-    "test/core/board-base/composition/machine_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_8086_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_80186_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_80286_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_80386_protected_io_timing_smoke.c"
+    "test/x86-core/machine/machine_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_8086_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_80186_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_80286_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_80386_protected_io_timing_smoke.c"
     "test/core/board-base/composition/core_machine_legacy_lock_smoke.c"
     "test/core/board-base/composition/port_assembly_fixture.c"
     "test/core/board-base/machine_port_io_board_smoke.c"
@@ -57,56 +57,56 @@ set(project_fixture_shapes_retained_sources
     "test/core/board-base/core_machine_planar_parity_nmi_smoke.c"
     # The final timing receiver executes the public descriptor bootstrap.
     "test/core/board-base/composition/support/protected_16_bootstrap_fixture.h"
-    "test/core/x86/core_machine_real_mode_386_address_smoke.c"
-    "test/core/x86/core_machine_real_mode_386_rep_cmps_smoke.c"
-    "test/core/x86/core_machine_real_mode_corpus_smoke.c"
-    "test/core/x86/core_machine_real_mode_tick_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_386_address_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_386_rep_cmps_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_corpus_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_tick_smoke.c"
     "test/core/board-base/core_machine_rtc_cmos_smoke.c"
     "test/core/board-base/composition/machine_control_stack_timing_smoke.c"
     "test/core/board-base/composition/machine_arithmetic_data_timing_smoke.c"
-    "test/core/x86/machine_80386_privileged_timing_smoke.c"
-    "test/core/x86/machine_string_io_timing_smoke.c"
+    "test/x86-core/machine/machine_80386_privileged_timing_smoke.c"
+    "test/x86-core/machine/machine_string_io_timing_smoke.c"
     "test/core/board-base/composition/machine_legacy_timing_normalization_smoke.c"
     "test/core/board-base/core_machine_xebec_wiring_smoke.c"
     "test/core/board-base/core_machine_xt_ppi_keyboard_smoke.c"
     "test/core/board-base/machine_provider_composition_smoke.c"
     "test/core/board-base/composition/cpu_fault_diagnostic_smoke.c"
     "test/core/board-base/composition/cpu_fpu_profile_smoke.c"
-    "test/core/x86/cpu_int_ivt_smoke.c"
+    "test/x86-core/machine/cpu_int_ivt_smoke.c"
     "test/core/board-base/machine_arbitration_smoke.c"
     "test/core/board-base/dma_competition_fixture.c"
     "test/core/board-base/machine_competition_smoke.c"
-    "test/core/x86/machine_configuration_smoke.c"
+    "test/x86-core/machine/machine_configuration_smoke.c"
     "test/core/board-base/machine_cpu_pic_lifecycle_smoke.c"
     "test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c"
-    "test/core/x86/machine_entry_plan_smoke.c"
+    "test/x86-core/machine/machine_entry_plan_smoke.c"
     "test/core/board-base/composition/machine_explicit_time_smoke.c"
-    "test/core/x86/machine_immutable_rom_mapping_smoke.c"
+    "test/x86-core/machine/machine_immutable_rom_mapping_smoke.c"
     "test/core/board-base/machine_input_display_smoke.c"
-    "test/core/x86/machine_memory_device_registration_smoke.c"
+    "test/x86-core/machine/machine_memory_device_registration_smoke.c"
     "test/core/board-base/core_machine_pit_divider_smoke.c"
-    "test/core/x86/machine_rational_clock_smoke.c"
+    "test/x86-core/machine/machine_rational_clock_smoke.c"
     "test/core/board-base/composition/machine_reset_rom_alias_smoke.c"
-    "test/core/board-base/composition/machine_retirement_observation_smoke.c"
+    "test/x86-core/machine/machine_retirement_observation_smoke.c"
     "test/core/board-base/machine_rtc_storage_smoke.c"
-    "test/core/board-base/composition/machine_scheduler_smoke.c"
+    "test/x86-core/machine/machine_scheduler_smoke.c"
     "test/core/board-base/machine_time_smoke.c"
     "test/core/board-base/composition/machine_timeline_smoke.c"
     "test/core/board-base/machine_timing_checkpoint_smoke.c"
-    "test/core/board-base/composition/machine_transaction_lifecycle_smoke.c"
-    "test/core/board-base/composition/machine_transaction_smoke.c")
+    "test/x86-core/machine/machine_transaction_lifecycle_smoke.c"
+    "test/x86-core/machine/machine_transaction_smoke.c")
 set(project_fixture_shapes_core_owner_sources
-    "test/core/x86/machine_prefetch_locality_smoke.c"
-    "test/core/x86/machine_task_switch_cross_width_smoke.c"
-    "test/core/x86/machine_call_gate_smoke.c"
-    "test/core/x86/machine_tss_iomap_port_authorization_smoke.c"
-    "test/core/x86/machine_vm86_iret_smoke.c"
-    "test/core/x86/machine_80386_secondary_integer_timing_smoke.c"
-    "test/core/x86/machine_cpu_profile_gate_smoke.c"
-    "test/core/x86/machine_instruction_timing_smoke.c"
-    "test/core/x86/core_machine_descriptor_system_smoke.c"
-    "test/core/x86/core_machine_80386_paging_smoke.c"
-    "test/core/board-base/composition/core_machine_fpu_8087_smoke.c")
+    "test/x86-core/machine/machine_prefetch_locality_smoke.c"
+    "test/x86-core/machine/machine_task_switch_cross_width_smoke.c"
+    "test/x86-core/machine/machine_call_gate_smoke.c"
+    "test/x86-core/machine/machine_tss_iomap_port_authorization_smoke.c"
+    "test/x86-core/machine/machine_vm86_iret_smoke.c"
+    "test/x86-core/machine/machine_80386_secondary_integer_timing_smoke.c"
+    "test/x86-core/machine/machine_cpu_profile_gate_smoke.c"
+    "test/x86-core/machine/machine_instruction_timing_smoke.c"
+    "test/x86-core/machine/core_machine_descriptor_system_smoke.c"
+    "test/x86-core/machine/core_machine_80386_paging_smoke.c"
+    "test/x86-core/machine/machine_fpu_8087_smoke.c")
 set(project_fixture_shapes_inventory ${project_fixture_shapes_migrated_sources}
     ${project_fixture_shapes_core_owner_sources}
     ${project_fixture_shapes_retained_sources})
@@ -125,20 +125,33 @@ endif()
 # historical fixture shapes.  Name them here so a new direct constructor
 # cannot hide behind the historical count.
 set(project_fixture_shapes_timing_manifest_sources
-    "test/core/x86/machine_8086_timing_manifest_runner.c"
-    "test/core/x86/machine_80186_timing_manifest_runner.c"
-    "test/core/x86/machine_80286_timing_manifest_runner.c"
-    "test/core/x86/machine_80386_timing_manifest_runner.c")
+    "test/core/board-base/qualification/machine_8086_timing_manifest_runner.c"
+    "test/core/board-base/qualification/machine_80186_timing_manifest_runner.c"
+    "test/core/board-base/qualification/machine_80286_timing_manifest_runner.c"
+    "test/core/board-base/qualification/machine_80386_timing_manifest_runner.c")
 set(project_fixture_shapes_constructor_sources ${project_fixture_shapes_inventory}
+    # Independent manual-ledger recipes use public neutral construction,
+    # rather than including another package's complete unit programs.
+    "test/core/board-base/qualification/protected_task_recipe.h"
+    "test/core/board-base/qualification/call_gate_recipe.h"
+    # Range/batch allocation and read-time contracts now have their own neutral
+    # Machine constructor; PC adapter wiring remains in the Board fixture.
+    "test/x86-core/machine/machine_port_registration_smoke.c"
+    # Video rollback now constructs an opaque Machine and tests Board-owned
+    # publication failures instead of assembling a partial private layout.
+    "test/core/board-base/composition/core_machine_ega_registration_transaction_smoke.c"
+    # Port-only consumers now receive a real public Machine instead of a
+    # manually allocated partial private layout.
+    "test/core/board-base/composition/composition_fixture.c"
     # S93 separates attachment phases from controller wiring; the original
     # joint binding-identity constructor remains classified in the inventory.
-    "test/core/x86/machine_attachment_phases_smoke.c"
+    "test/x86-core/machine/machine_attachment_phases_smoke.c"
     "test/core/board-base/core_machine_controller_authority_smoke.c"
     # S93 video tests share one opaque neutral Core construction.
     "test/core/board-base/video_fixture.h"
     "test/core/board-at/kbc_fixture.h"
     "test/core/board-base/core_machine_rtc_smoke.c"
-    "test/core/x86/machine_fpu_interface_smoke.c"
+    "test/x86-core/machine/machine_fpu_interface_smoke.c"
     ${project_fixture_shapes_timing_manifest_sources}
     # Model40 owns the real refresh/preload latch; neutral Core keeps bus internals.
     "test/app-mydeskpro386/unit/d4_prefetch_locality_smoke.c"
@@ -164,7 +177,7 @@ set(project_fixture_shapes_constructor_sources ${project_fixture_shapes_inventor
     # S59 owns public Core paging and page-fault delivery.
     "test/core/board-base/composition/machine_task_switch32_paging_smoke.c"
     # S18 exercises firmware ROM rollback against a real Core instance.
-    "test/core/board-base/composition/core_machine_rom_route_transaction_smoke.c"
+    "test/x86-core/machine/machine_rom_route_transaction_smoke.c"
     "test/core/board-base/machine_board_timing_qualification_smoke.c"
     "test/core/board-base/composition/machine_cpu_reset_identity_smoke.c"
     # S65 adds public null-input checks beside retained allocation failure tests.
@@ -175,16 +188,16 @@ set(project_fixture_shapes_constructor_sources ${project_fixture_shapes_inventor
     "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
     "test/core/board-base/machine_interrupt_entry_smoke.c"
     # Protected IRET now owns public neutral construction, not a peer CPU seed.
-    "test/core/x86/machine_protected_iret_smoke.c"
+    "test/x86-core/machine/machine_protected_iret_smoke.c"
     "test/core/board-base/composition/dma_route_rollback_smoke.c"
     "test/core/board-base/composition/machine_firmware_capability_smoke.c")
 list(LENGTH project_fixture_shapes_constructor_sources project_fixture_shapes_constructor_count)
-if(NOT project_fixture_shapes_constructor_count EQUAL 135)
-    message(FATAL_ERROR "Fixture-shape constructor-source classification must contain 135 entries.")
+if(NOT project_fixture_shapes_constructor_count EQUAL 140)
+    message(FATAL_ERROR "Fixture-shape constructor-source classification must contain 140 entries.")
 endif()
 list(REMOVE_DUPLICATES project_fixture_shapes_constructor_sources)
 list(LENGTH project_fixture_shapes_constructor_sources project_fixture_shapes_constructor_unique_count)
-if(NOT project_fixture_shapes_constructor_unique_count EQUAL 135)
+if(NOT project_fixture_shapes_constructor_unique_count EQUAL 140)
     message(FATAL_ERROR "Fixture-shape constructor-source classification contains a duplicate source.")
 endif()
 
@@ -194,10 +207,10 @@ file(GLOB project_fixture_shapes_machine_sources
 list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/machine_competition_smoke.c"
     "test/core/board-base/machine_time_smoke.c"
-    "test/core/x86/machine_8086_timing_manifest_runner.c"
-    "test/core/x86/machine_80186_timing_manifest_runner.c"
-    "test/core/x86/machine_80286_timing_manifest_runner.c"
-    "test/core/x86/machine_80386_timing_manifest_runner.c")
+    "test/core/board-base/qualification/machine_8086_timing_manifest_runner.c"
+    "test/core/board-base/qualification/machine_80186_timing_manifest_runner.c"
+    "test/core/board-base/qualification/machine_80286_timing_manifest_runner.c"
+    "test/core/board-base/qualification/machine_80386_timing_manifest_runner.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c"
     "test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c")
@@ -207,36 +220,36 @@ list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/composition/planar_parity_fixture.c"
     "test/core/board-base/core_machine_planar_parity_nmi_smoke.c"
     "test/core/board-base/composition/support/protected_16_bootstrap_fixture.h"
-    "test/core/x86/machine_fpu_interface_smoke.c"
-    "test/core/board-base/composition/machine_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_prefetch_locality_smoke.c"
+    "test/x86-core/machine/machine_fpu_interface_smoke.c"
+    "test/x86-core/machine/machine_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_prefetch_locality_smoke.c"
     "test/app-mydeskpro386/unit/d4_prefetch_locality_smoke.c"
-    "test/core/x86/machine_80286_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_task_switch_cross_width_smoke.c"
-    "test/core/x86/machine_call_gate_smoke.c"
-    "test/core/x86/machine_tss_iomap_port_authorization_smoke.c"
-    "test/core/x86/machine_protected_iret_smoke.c"
-    "test/core/x86/machine_vm86_iret_smoke.c"
+    "test/x86-core/machine/machine_80286_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_task_switch_cross_width_smoke.c"
+    "test/x86-core/machine/machine_call_gate_smoke.c"
+    "test/x86-core/machine/machine_tss_iomap_port_authorization_smoke.c"
+    "test/x86-core/machine/machine_protected_iret_smoke.c"
+    "test/x86-core/machine/machine_vm86_iret_smoke.c"
     "test/core/board-base/machine_vm86_delivery_smoke.c"
     "test/core/board-base/machine_interrupt_entry_smoke.c"
     "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
     "test/core/board-base/machine_control_state_board_smoke.c"
-    "test/core/x86/machine_80386_protected_io_timing_smoke.c"
-    "test/core/x86/machine_80386_privileged_timing_smoke.c"
-    "test/core/x86/machine_string_io_timing_smoke.c"
-    "test/core/x86/machine_8086_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_80186_instruction_timing_ledger_smoke.c"
-    "test/core/x86/machine_80386_secondary_integer_timing_smoke.c"
-    "test/core/x86/machine_cpu_profile_gate_smoke.c"
-    "test/core/x86/machine_instruction_timing_smoke.c"
-    "test/core/x86/core_machine_descriptor_system_smoke.c"
+    "test/x86-core/machine/machine_80386_protected_io_timing_smoke.c"
+    "test/x86-core/machine/machine_80386_privileged_timing_smoke.c"
+    "test/x86-core/machine/machine_string_io_timing_smoke.c"
+    "test/x86-core/machine/machine_8086_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_80186_instruction_timing_ledger_smoke.c"
+    "test/x86-core/machine/machine_80386_secondary_integer_timing_smoke.c"
+    "test/x86-core/machine/machine_cpu_profile_gate_smoke.c"
+    "test/x86-core/machine/machine_instruction_timing_smoke.c"
+    "test/x86-core/machine/core_machine_descriptor_system_smoke.c"
     "test/core/board-base/composition/machine_control_stack_timing_smoke.c"
     "test/core/board-base/composition/machine_arithmetic_data_timing_smoke.c"
     "test/core/board-base/composition/machine_legacy_timing_normalization_smoke.c"
     "test/core/board-base/machine_port_ownership_board_smoke.c"
-    "test/core/board-base/composition/machine_retirement_observation_smoke.c"
-    "test/core/board-base/composition/core_machine_fpu_8087_smoke.c"
-    "test/core/x86/core_machine_80386_paging_smoke.c"
+    "test/x86-core/machine/machine_retirement_observation_smoke.c"
+    "test/x86-core/machine/machine_fpu_8087_smoke.c"
+    "test/x86-core/machine/core_machine_80386_paging_smoke.c"
     "test/core/board-base/core_machine_pit_divider_smoke.c"
     "test/core/board-base/core_machine_xebec_wiring_smoke.c"
     "test/core/board-base/core_machine_hdc_smoke.c"
@@ -248,7 +261,7 @@ list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/core_machine_dma_binding_token_smoke.c"
     "test/core/board-base/machine_provider_composition_smoke.c"
     "test/core/board-base/machine_arbitration_smoke.c"
-    "test/core/x86/machine_entry_plan_smoke.c")
+    "test/x86-core/machine/machine_entry_plan_smoke.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/core_machine_xt_ppi_keyboard_smoke.c"
     "test/core/board-base/core_machine_gpr_mov_smoke.c"
@@ -296,32 +309,37 @@ list(APPEND project_fixture_shapes_machine_sources
 )
 list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/machine_input_display_smoke.c"
+    "test/core/board-base/qualification/protected_task_recipe.h"
+    "test/core/board-base/qualification/call_gate_recipe.h"
+    "test/x86-core/machine/machine_port_registration_smoke.c"
+    "test/core/board-base/composition/core_machine_ega_registration_transaction_smoke.c"
     "test/core/board-base/composition/machine_transaction_smoke.c"
-    "test/core/board-base/core_machine_cpu_timing_preview_smoke.c"
-    "test/core/x86/core_machine_memory_inspection_smoke.c"
-    "test/core/x86/machine_attachment_phases_smoke.c"
+    "test/x86-core/machine/machine_transaction_smoke.c"
+    "test/x86-core/machine/machine_cpu_timing_preview_smoke.c"
+    "test/x86-core/machine/core_machine_memory_inspection_smoke.c"
+    "test/x86-core/machine/machine_attachment_phases_smoke.c"
     "test/core/board-base/composition/core_machine_ram_create_smoke.c"
     "test/core/board-base/dma_competition_fixture.c"
     "test/core/board-base/board_binding_fixture.c"
     "test/core/board-base/core_machine_controller_authority_smoke.c"
     "test/core/board-base/composition/core_machine_pic_phase_smoke.c"
-    "test/core/x86/core_machine_real_mode_386_address_smoke.c"
-    "test/core/x86/core_machine_real_mode_386_rep_cmps_smoke.c"
-    "test/core/x86/core_machine_real_mode_corpus_smoke.c"
-    "test/core/x86/core_machine_real_mode_tick_smoke.c"
-    "test/core/x86/cpu_int_ivt_smoke.c"
-    "test/core/x86/machine_configuration_smoke.c"
-    "test/core/x86/core_machine_executor_run_smoke.c"
-    "test/core/x86/machine_immutable_rom_mapping_smoke.c"
-    "test/core/x86/machine_memory_device_registration_smoke.c"
-    "test/core/x86/machine_rational_clock_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_386_address_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_386_rep_cmps_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_corpus_smoke.c"
+    "test/x86-core/machine/core_machine_real_mode_tick_smoke.c"
+    "test/x86-core/machine/cpu_int_ivt_smoke.c"
+    "test/x86-core/machine/machine_configuration_smoke.c"
+    "test/x86-core/machine/core_machine_executor_run_smoke.c"
+    "test/x86-core/machine/machine_immutable_rom_mapping_smoke.c"
+    "test/x86-core/machine/machine_memory_device_registration_smoke.c"
+    "test/x86-core/machine/machine_rational_clock_smoke.c"
     "test/core/board-base/composition/machine_cpu_reset_identity_smoke.c"
     "test/core/board-base/machine_cpu_pic_lifecycle_smoke.c"
-    "test/core/board-base/composition/machine_scheduler_smoke.c"
+    "test/x86-core/machine/machine_scheduler_smoke.c"
     "test/core/board-base/machine_board_timing_qualification_smoke.c"
-    "test/core/board-base/composition/machine_transaction_lifecycle_smoke.c"
+    "test/x86-core/machine/machine_transaction_lifecycle_smoke.c"
     "test/core/board-base/composition/machine_explicit_time_smoke.c"
-    "test/core/board-base/composition/core_machine_rom_route_transaction_smoke.c"
+    "test/x86-core/machine/machine_rom_route_transaction_smoke.c"
     "test/core/board-base/composition/machine_timeline_smoke.c"
     "test/core/board-base/video_fixture.h"
     "test/core/board-base/machine_timing_checkpoint_smoke.c"
@@ -354,15 +372,15 @@ foreach(project_fixture_shapes_source IN LISTS project_fixture_shapes_machine_so
 endforeach()
 list(SORT project_fixture_shapes_direct_sources)
 list(LENGTH project_fixture_shapes_direct_sources project_fixture_shapes_direct_count)
-if(NOT project_fixture_shapes_direct_count EQUAL 135)
-    message(FATAL_ERROR "Fixture-shape expected 135 classified direct machine constructors, found ${project_fixture_shapes_direct_count}.")
-endif()
 foreach(project_fixture_shapes_source IN LISTS project_fixture_shapes_direct_sources)
     list(FIND project_fixture_shapes_constructor_sources "${project_fixture_shapes_source}" project_fixture_shapes_index)
     if(project_fixture_shapes_index EQUAL -1)
         message(FATAL_ERROR "Fixture-shape direct constructor is unclassified: ${project_fixture_shapes_source}")
     endif()
 endforeach()
+if(NOT project_fixture_shapes_direct_count EQUAL 140)
+    message(FATAL_ERROR "Fixture-shape expected 140 classified direct machine constructors, found ${project_fixture_shapes_direct_count}.")
+endif()
 
 # These six tests share one public board setup rather than copying a
 # constructor and descriptor bootstrap into each source.
@@ -377,8 +395,8 @@ set(project_fixture_shapes_limit_helper
     "test/core/board-base/cpu_board_limit_fixture.h")
 file(READ "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/${project_fixture_shapes_limit_helper}"
     project_fixture_shapes_limit_helper_content)
-foreach(operation core_machine_create core_machine_freeze_execution_providers
-        core_machine_reset core_machine_debug_patch_registers)
+foreach(operation core_machine_create x86_core_machine_freeze_execution_providers
+        x86_core_machine_reset x86_core_machine_debug_patch_registers)
     if(NOT project_fixture_shapes_limit_helper_content MATCHES "${operation}[ \t\r\n]*\\(")
         message(FATAL_ERROR "Fixture-shape public limit helper omits ${operation}.")
     endif()
@@ -415,8 +433,8 @@ foreach(project_fixture_shapes_source IN LISTS project_fixture_shapes_migrated_s
     file(READ "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/${project_fixture_shapes_source}"
         project_fixture_shapes_content)
     if(NOT project_fixture_shapes_content MATCHES "test_core_machine_fixture_bind_freeze_reset" OR
-        project_fixture_shapes_content MATCHES "core_machine_bind_execution_provider" OR
-        project_fixture_shapes_content MATCHES "core_machine_freeze_execution_providers")
+        project_fixture_shapes_content MATCHES "x86_core_machine_bind_execution_provider" OR
+        project_fixture_shapes_content MATCHES "x86_core_machine_freeze_execution_providers")
         message(FATAL_ERROR "Fixture-shape migrated fixture restores a direct lifecycle tail: ${project_fixture_shapes_source}")
     endif()
 endforeach()
@@ -425,10 +443,10 @@ foreach(project_fixture_shapes_source IN LISTS project_fixture_shapes_core_owner
     file(READ "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/${project_fixture_shapes_source}"
         project_fixture_shapes_content)
     if(project_fixture_shapes_content MATCHES "app-nxvm|support/core_machine_board_fixture" OR
-        NOT project_fixture_shapes_content MATCHES "core_machine_freeze_execution_providers" OR
-        NOT project_fixture_shapes_content MATCHES "core_machine_reset")
+        NOT project_fixture_shapes_content MATCHES "x86_core_machine_freeze_execution_providers" OR
+        NOT project_fixture_shapes_content MATCHES "x86_core_machine_reset")
         message(FATAL_ERROR "Fixture-shape Core mechanism receiver borrows an App fixture or omits lifecycle: ${project_fixture_shapes_source}")
     endif()
 endforeach()
 
-message(STATUS "Fixture-shape contracts passed: 135 classified direct constructors, including the retained 101 historical identities and the separate Model40 prefetch/refresh, neutral FPU, shared video, KBC, RTC, board timing, attachment phases, controller authority, DMA competition, Core port rollback, parity and CPU identity receivers.")
+message(STATUS "Fixture-shape contracts passed: 140 classified direct constructors, including the retained 101 historical identities and the separate Model40 prefetch/refresh, neutral FPU, shared video, KBC, RTC, board timing, attachment phases, controller authority, DMA competition, Core port rollback, parity, CPU identity, public port-owner, neutral port-registration, public video-rollback and independent qualification recipe receivers.")
