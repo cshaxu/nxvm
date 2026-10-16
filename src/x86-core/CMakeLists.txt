@@ -25,6 +25,24 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set_source_files_properties(cpu/cpu_instructions.c PROPERTIES
         COMPILE_OPTIONS "-Wno-unused-parameter;-Wno-unused-variable;-Wno-unused-but-set-variable;-Wno-unused-function;-Wno-empty-body")
 endif()
+set(x86_core_machine_sources
+    machine/clock.c machine/cpu_bus.c machine/debug.c machine/entry_plan_interface.c
+    machine/machine_firmware.c machine/machine.c machine/machine_scheduler.c
+    machine/memory_interface.c machine/port_interface.c machine/rom_mapping_interface.c
+    machine/trace_interface.c machine/retirement_observation_interface.c
+    machine/timeline.c machine/port.c machine/memory.c machine/transaction.c)
+add_library(x86-core-machine STATIC ${x86_core_machine_sources})
+target_include_directories(x86-core-machine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_link_libraries(x86-core-machine PUBLIC types x86-core-cpu x86-core-fpu)
+target_compile_definitions(x86-core-machine PUBLIC
+    X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
+
+add_library(x86-core-machine-observable STATIC EXCLUDE_FROM_ALL ${x86_core_machine_sources})
+target_include_directories(x86-core-machine-observable PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_link_libraries(x86-core-machine-observable PUBLIC types x86-core-cpu x86-core-fpu)
+target_compile_definitions(x86-core-machine-observable PUBLIC
+    X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+
 add_custom_target(x86-core-verify
     COMMAND "${CMAKE_COMMAND}" -DCORPUS_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
         -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_manifest.cmake"

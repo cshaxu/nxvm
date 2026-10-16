@@ -1,0 +1,99 @@
+/* Copyright 2012-2014 Neko. */
+
+#ifndef X86_CORE_MACHINE_PORT_H
+#define X86_CORE_MACHINE_PORT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "lib/types/types_interface.h"
+
+#include "x86-core/machine/port_interface.h"
+
+#define X86_CORE_MACHINE_DEVICE_PORT "Unknown I/O Port"
+
+#define VPORT_MAX_PORT_COUNT 0x10000
+
+typedef struct t_port t_port;
+typedef void (*x86_core_machine_port_handler)(t_port *port, lib_u16 port_id,
+    void *owner);
+
+typedef struct x86_core_machine_port_provider_entry
+    x86_core_machine_port_provider_entry;
+
+typedef struct x86_core_machine_port_test_allocation {
+    lib_size fail_at;
+    lib_size attempts;
+} x86_core_machine_port_test_allocation;
+
+typedef struct {
+    x86_core_machine_port_provider_entry *providers;
+    x86_core_machine_port_test_allocation *test_allocation;
+    lib_status registration_status;
+} t_port_connect;
+
+typedef struct {
+    union {
+        lib_u8  ioByte;
+        lib_u16 ioWord;
+        lib_u32 ioDWord;
+    };
+    /* Width of the CPU transfer currently delivered to the registered
+     * endpoint.  Ordinary debugger/bus access is one byte. */
+    lib_u8 access_bytes;
+} t_port_data;
+
+struct t_port {
+    t_port_data data;
+    t_port_connect connect;
+};
+
+lib_status x86_core_machine_port_execute_read(t_port *port, lib_u16 port_id,
+    lib_u64 tick);
+lib_status x86_core_machine_port_execute_write(t_port *port, lib_u16 port_id);
+/* CPU IN/OUT widths are one bus transaction at the addressed port.  The
+ * provider remains the sole owner of the register value and receives one
+ * read/write callback regardless of the CPU transfer width. */
+lib_status x86_core_machine_port_execute_read_width(t_port *port,
+    lib_u16 port_id, lib_u8 bytes, lib_u64 tick);
+lib_status x86_core_machine_port_execute_write_width(t_port *port,
+    lib_u16 port_id, lib_u8 bytes);
+lib_status x86_core_machine_port_add_read(t_port *port, lib_u16 port_id,
+    x86_core_machine_port_handler handler, void *owner);
+lib_status x86_core_machine_port_add_write(t_port *port, lib_u16 port_id,
+    x86_core_machine_port_handler handler, void *owner);
+lib_status x86_core_machine_port_add_read_provider(t_port *port,
+    lib_u16 port_id, x86_core_machine_port_read_provider provider,
+    void *owner);
+lib_status x86_core_machine_port_add_read_wired_or_provider(t_port *port,
+    lib_u16 port_id, x86_core_machine_port_read_provider provider,
+    void *owner);
+lib_status x86_core_machine_port_add_write_provider(t_port *port,
+    lib_u16 port_id, x86_core_machine_port_write_provider provider,
+    void *owner);
+lib_status x86_core_machine_port_add_route(t_port *port,
+    const x86_core_machine_port_route *route);
+lib_i32 x86_core_machine_port_has_read(const t_port *port, lib_u16 port_id);
+lib_i32 x86_core_machine_port_has_write(const t_port *port, lib_u16 port_id);
+/* Legacy fixture convenience: a synthetic zero-time read, never a live Core
+ * clock observation. Production entries use explicit-time execution above. */
+lib_u32 x86_core_machine_port_read(t_port *port, lib_u16 port_id);
+void x86_core_machine_port_write(t_port *port, lib_u16 port_id, lib_u32 value);
+void x86_core_machine_port_initialize(t_port *port);
+void x86_core_machine_port_reset(t_port *port);
+void x86_core_machine_port_finalize(t_port *port);
+/* Exclusive construction/teardown; preserves routes belonging to other owners. */
+void x86_core_machine_port_unregister_owner(t_port *port, const void *owner);
+x86_core_machine_port_provider_entry *x86_core_machine_port_registration_begin(t_port *port);
+lib_status x86_core_machine_port_registration_status(const t_port *port);
+void x86_core_machine_port_rollback_registration(t_port *port,
+    x86_core_machine_port_provider_entry *checkpoint);
+void x86_core_machine_port_set_test_allocation(t_port *port,
+    x86_core_machine_port_test_allocation *test_allocation);
+
+
+#ifdef __cplusplus
+}/*_EOCD_*/
+#endif
+
+#endif

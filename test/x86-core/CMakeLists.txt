@@ -175,5 +175,6 @@ add_test(NAME x86-core.verifier-negative COMMAND "${CMAKE_COMMAND}"
 set_tests_properties(x86-core.corpus x86-core.test-types-boundary x86-core.test-ownership
     x86-core.verifier-negative
     PROPERTIES LABELS "unit;x86-core" TIMEOUT 30)
+include("${CMAKE_CURRENT_LIST_DIR}/machine/tests.cmake")
 shared_verify_test_registration(x86-core)
 add_custom_target(x86-core-tests DEPENDS ${SHARED_X86_CORE_TEST_TARGETS})
