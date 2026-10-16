@@ -4564,30 +4564,128 @@ lib_bool x86_core_cpu_80486_decode_penalty(
     return LIB_TRUE;
 }
 
-/* E-3--E-9: one integer operand's actual cache miss, not a per-bus-read
- * surcharge. Stack, string, descriptor and split-miss rows have separate
- * contracts and cannot inherit an ordinary operand's coefficient. */
+/* E-3--E-9 allocate actual access groups. Split and partial-residency models
+ * keep their qualification beside the corresponding source coefficient. */
 static lib_bool x86_core_cpu_80486_operand_cache_penalty(
-    const t_cpuins_data *data, lib_u32 prefixes, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u32 prefixes,
+    lib_u64 *out_ticks, lib_bool *out_modeled)
 {
+    const t_cpuins_data *data = &context->instructions->data;
     const lib_u8 opcode = data->opcodes[prefixes];
     const lib_u8 extension = prefixes + 1u < data->oplen ?
         (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
     lib_bool read = LIB_FALSE, lockable = LIB_FALSE, implicit_lock = LIB_FALSE;
     lib_u8 miss = 0u, locked = 2u;
+    const lib_bool operand32 = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize;
+    const lib_u32 misses = data->timing_data_misses - data->timing_descriptor_misses;
+    const lib_u32 reads = data->timing_missed_reads - data->timing_missed_descriptors;
+    const lib_bool inner_gate = (data->timing_transfer_type == VCPU_DESC_SYS_TYPE_CALLGATE_16 ||
+        data->timing_transfer_type == VCPU_DESC_SYS_TYPE_CALLGATE_32) &&
+        data->oldcpu.data.cs.dpl > context->cpu->data.cs.dpl;
 
+    *out_modeled = opcode == 0x0fu && prefixes + 1u < data->oplen &&
+        data->opcodes[prefixes + 1u] >= 0x10u && data->opcodes[prefixes + 1u] <= 0x13u;
+    if (context->instruction_task_switched) {
+        const lib_bool task32 = context->instruction_task_checkpoint.data.tr.sys.type !=
+            VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
+        const lib_u8 lines = task32 ? 6u : 3u;
+        const lib_u8 cold = task32 ? 34u : 16u;
+        const lib_u64 pointer = data->timing_pair_misses;
+        const lib_u64 backlink = data->timing_tss_field_misses;
+        const lib_u64 state = misses - pointer - backlink;
+
+        if (data->timing_locked_reads != 0u) return LIB_FALSE;
+        /* E-13 TS minus its observed descriptor roles. The partial-state
+         * distribution is a qualified L2 model, including the cold match. */
+        *out_ticks = (state >= lines ? cold + 5u * (state - lines) :
+            ((lib_u64)cold * state + lines - 1u) / lines) +
+            (pointer ? 7u + 5u * (pointer - 1u) : 0u) +
+            (backlink ? 1u + 5u * (backlink - 1u) : 0u);
+        *out_modeled = data->timing_data_misses != 0u;
+        return LIB_TRUE;
+    }
+    if (inner_gate && (opcode == 0x9au || (opcode == 0xffu && extension == 3u))) {
+        const lib_u64 pointer = data->timing_pair_misses;
+        const lib_u64 tss = data->timing_tss_field_misses;
+        const lib_u64 parameters = misses - pointer - tss;
+        const lib_u8 width = data->timing_transfer_type == VCPU_DESC_SYS_TYPE_CALLGATE_32 ? 4u : 2u;
+        const lib_u8 lines = (width * data->timing_transfer_parameters + 15u) / 16u;
+
+        if (data->timing_locked_reads != 0u) return LIB_FALSE;
+        *out_ticks = (pointer ? 7u + 5u * (pointer - 1u) : 0u) +
+            (tss ? 8u + 5u * (tss - 1u) : 0u) + 4u * parameters;
+        *out_modeled = pointer > 1u || tss > 1u ||
+            (parameters != 0u && ((data->oldcpu.data.esp & 15u) != 0u || parameters != lines));
+        return LIB_TRUE;
+    }
+    if (misses == 0u && data->timing_locked_reads == 0u) {
+        *out_ticks = 0u;
+        return LIB_TRUE;
+    }
     if (opcode <= 0x3du && (opcode & 7u) <= 5u) {
         const lib_bool compare = (opcode & 0x38u) == 0x38u;
 
         read = data->flagMem && (opcode & 7u) < 4u;
         lockable = !compare && (opcode & 2u) == 0u;
         miss = compare || (opcode & 2u) != 0u ? 2u : 6u;
-    } else if ((opcode >= 0x40u && opcode <= 0x4fu) ||
-        (opcode >= 0xb0u && opcode <= 0xbfu)) {
-        /* Register-only forms have no data operand access. */
+    } else if (opcode >= 0x58u && opcode <= 0x5fu) {
+        read = LIB_TRUE;
+        miss = 2u;
     } else switch (opcode) {
+    case 0x61u: {
+        const lib_u8 lines = operand32 ? 2u : 1u;
+        const lib_u8 cold = operand32 ? 15u : 7u;
+
+        if (data->timing_locked_reads != 0u) return LIB_FALSE;
+        *out_ticks = misses >= lines ? cold + 5u * (lib_u64)(misses - lines) :
+            ((lib_u64)cold * misses + lines - 1u) / lines;
+        *out_modeled = (data->oldcpu.data.esp & 15u) != 0u ||
+            misses != lines;
+        return LIB_TRUE;
+    }
+    case 0xc8u: {
+        const lib_u8 level = prefixes + 3u < data->oplen ?
+            data->opcodes[prefixes + 3u] & 31u : 0u;
+        const lib_u8 lines = ((level == 0u ? 0u : level - 1u) * (operand32 ? 4u : 2u) + 15u) / 16u;
+
+        if (data->timing_locked_reads != 0u || lines == 0u) return LIB_FALSE;
+        *out_ticks = 6u * (lib_u64)misses;
+        *out_modeled = (data->oldcpu.data.ebp & 15u) != 0u ||
+            misses != lines;
+        return LIB_TRUE;
+    }
+    case 0x62u: case 0xc4u: case 0xc5u:
+        if (data->timing_locked_reads != 0u) return LIB_FALSE;
+        *out_ticks = 7u + 5u * (lib_u64)(misses - 1u);
+        *out_modeled = misses != 1u;
+        return LIB_TRUE;
+    case 0x07u: case 0x17u: case 0x1fu: case 0x8eu:
+        read = LIB_TRUE;
+        miss = 2u;
+        break;
+    case 0x63u:
+        read = data->flagMem;
+        break;
     case 0x69u: case 0x6bu:
         read = data->flagMem;
+        miss = 2u;
+        break;
+    case 0x6cu: case 0x6du: case 0x6eu: case 0x6fu:
+    case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
+    case 0xecu: case 0xedu: case 0xeeu: case 0xefu:
+        if (data->prefix_rep != PREFIX_REP_NONE || data->timing_locked_reads != 0u ||
+            reads == 0u || misses < reads) return LIB_FALSE;
+        if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u &&
+            ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+             data->oldcpu.data.cs.dpl > ((data->oldcpu.data.eflags & VCPU_EFLAGS_IOPL) >> 12u))) {
+            /* E-15 has no separate permission-cache column. Keep this
+             * completed-transfer differential explicitly modeled. */
+            *out_ticks = 2u * (lib_u64)reads + 5u * (lib_u64)(misses - reads);
+            *out_modeled = LIB_TRUE;
+            return LIB_TRUE;
+        }
+        if (opcode != 0x6eu && opcode != 0x6fu) return LIB_FALSE;
+        read = LIB_TRUE;
         miss = 2u;
         break;
     case 0x80u: case 0x81u: case 0x82u: case 0x83u:
@@ -4608,12 +4706,64 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
         read = data->flagMem && (opcode & 2u) != 0u;
         miss = 2u;
         break;
+    case 0x8fu:
+        read = LIB_TRUE;
+        miss = data->flagMem ? 2u : 1u;
+        break;
+    case 0x9du:
+        read = LIB_TRUE;
+        break;
     case 0xa0u: case 0xa1u:
         read = LIB_TRUE;
         miss = 2u;
         break;
-    case 0x8du: case 0x90u: case 0xa2u: case 0xa3u:
-    case 0xa8u: case 0xa9u: case 0xc6u: case 0xc7u:
+    case 0xa4u: case 0xa5u: case 0xaau: case 0xabu:
+    case 0xacu: case 0xadu: case 0xaeu: case 0xafu:
+        /* E-10 REP has its own line/iteration distribution, not E-9's
+         * non-repeated read coefficient. */
+        if (data->prefix_rep != PREFIX_REP_NONE) return LIB_FALSE;
+        read = opcode != 0xaau && opcode != 0xabu;
+        miss = 2u;
+        break;
+    case 0xa6u: case 0xa7u:
+        if (data->prefix_rep != PREFIX_REP_NONE || data->timing_locked_reads != 0u ||
+            reads == 0u || reads > 2u || misses < reads || misses > 2u * reads)
+            return LIB_FALSE;
+        /* E-9 gives six clocks for the pair. A partial hit uses the L2
+         * symmetric share; extra physical fragments use E.2's fill bound. */
+        *out_ticks = 3u * (lib_u64)reads + 5u * (lib_u64)(misses - reads);
+        *out_modeled = reads == 1u || misses > reads;
+        return LIB_TRUE;
+    case 0xc2u: case 0xc3u:
+        read = LIB_TRUE;
+        miss = 5u;
+        break;
+    case 0xcau: case 0xcbu: case 0xcfu: {
+        const lib_bool protected_mode = x86_core_cpu_control_stack_is_protected(data);
+        const lib_bool outer = protected_mode &&
+            data->oldcpu.data.cs.dpl != context->cpu->data.cs.dpl;
+        const lib_bool virtual_return = protected_mode &&
+            (context->cpu->data.eflags & VCPU_EFLAGS_VM) != 0u;
+        const lib_u8 items = virtual_return ? 9u : opcode == 0xcfu ?
+            (outer ? 5u : 3u) : outer ? 4u : 2u;
+        const lib_u8 lines = (items * (operand32 ? 4u : 2u) + 15u) / 16u;
+        const lib_u8 cold = virtual_return ? 19u : opcode == 0xcfu ?
+            (outer ? 13u : 8u) : protected_mode ? 6u : 8u;
+
+        if (data->timing_locked_reads != 0u) return LIB_FALSE;
+        *out_ticks = misses >= lines ? cold + 5u * (lib_u64)(misses - lines) :
+            ((lib_u64)cold * misses + lines - 1u) / lines;
+        *out_modeled = (data->oldcpu.data.esp & 15u) != 0u || misses != lines ||
+            virtual_return || (opcode == 0xcau && data->cimm != 0u);
+        return LIB_TRUE;
+    }
+    case 0xc9u:
+        read = LIB_TRUE;
+        miss = 1u;
+        break;
+    case 0xd7u:
+        read = LIB_TRUE;
+        miss = 2u;
         break;
     case 0xc0u: case 0xc1u: case 0xd0u: case 0xd1u:
     case 0xd2u: case 0xd3u:
@@ -4629,6 +4779,19 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
         miss = extension < 2u ? 2u : extension < 4u ? 6u : extension == 4u ? 1u : 0u;
         break;
     case 0xfeu: case 0xffu:
+        if (opcode == 0xffu && (extension == 3u || extension == 5u)) {
+            if (data->timing_locked_reads != 0u) return LIB_FALSE;
+            *out_ticks = (x86_core_cpu_control_stack_is_protected(data) ? 7u :
+                extension == 3u ? 8u : 9u) + 5u * (lib_u64)(misses - 1u);
+            *out_modeled = misses != 1u;
+            return LIB_TRUE;
+        }
+        if (opcode == 0xffu &&
+            (extension == 2u || extension == 4u || extension == 6u)) {
+            read = data->flagMem;
+            miss = extension == 6u ? 1u : 5u;
+            break;
+        }
         if (extension > 1u) return LIB_FALSE;
         read = data->flagMem;
         lockable = LIB_TRUE;
@@ -4641,6 +4804,39 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
         secondary = data->opcodes[prefixes + 1u];
         read = data->flagMem;
         switch (secondary) {
+        /* Selected UMOV aliases use the same L2 MOV model as their nominal
+         * owner; stores do not acquire a read-miss surcharge. */
+        case 0x10u: case 0x11u: read = LIB_FALSE; break;
+        case 0x12u: case 0x13u: miss = 2u; break;
+        case 0x00u: {
+            const lib_u8 operation = (data->opcodes[prefixes + 2u] >> 3u) & 7u;
+
+            if (operation == 2u) miss = 3u;
+            else if (operation == 4u || operation == 5u) miss = 4u;
+            else if (operation != 3u) return LIB_FALSE;
+            break;
+        }
+        case 0x01u: {
+            const lib_u8 operation = (data->opcodes[prefixes + 2u] >> 3u) & 7u;
+
+            if (operation == 2u || operation == 3u) {
+                if (data->timing_locked_reads != 0u) return LIB_FALSE;
+                *out_ticks = 5u * (lib_u64)misses;
+                *out_modeled = misses != 1u;
+                return LIB_TRUE;
+            }
+            if (operation != 6u) return LIB_FALSE;
+            miss = 1u;
+            break;
+        }
+        case 0x02u: miss = 2u; break;
+        case 0x03u: miss = 3u; break;
+        case 0xa1u: case 0xa9u: read = LIB_TRUE; miss = 2u; break;
+        case 0xb2u: case 0xb4u: case 0xb5u:
+            if (data->timing_locked_reads != 0u) return LIB_FALSE;
+            *out_ticks = 7u + 5u * (lib_u64)(misses - 1u);
+            *out_modeled = misses != 1u;
+            return LIB_TRUE;
         case 0xafu: miss = 1u; break;
         case 0xb6u: case 0xb7u: case 0xbeu: case 0xbfu: miss = 2u; break;
         case 0xa4u: case 0xacu: miss = 6u; break;
@@ -4670,29 +4866,32 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
     default:
         return LIB_FALSE;
     }
-    if (!read) {
-        if (data->timing_data_misses != 0u || data->timing_locked_reads != 0u)
+    if (!read) return LIB_FALSE;
+    if (implicit_lock || data->flagLock) {
+        if (!lockable || misses != 0u ||
+            data->timing_locked_reads == 0u || data->timing_locked_reads > 2u)
             return LIB_FALSE;
-        *out_ticks = 0u;
-    } else if (implicit_lock || data->flagLock) {
-        if (!lockable || data->timing_data_misses != 0u || data->timing_locked_reads != 1u)
-            return LIB_FALSE;
-        *out_ticks = locked;
+        *out_ticks = locked + 2u * (lib_u64)(data->timing_locked_reads - 1u);
+        *out_modeled |= data->timing_locked_reads > 1u;
     } else {
-        if (data->timing_locked_reads != 0u || data->timing_data_misses > 1u)
+        if (data->timing_locked_reads != 0u || reads != 1u || misses > 2u)
             return LIB_FALSE;
-        *out_ticks = (lib_u64)miss * data->timing_data_misses;
+        /* E.2's extra line-fill upper bound, not a second whole-instruction
+         * penalty. Split fragments carry an explicit L2 origin below. */
+        *out_ticks = miss + 5u * (lib_u64)(misses - 1u);
+        *out_modeled |= misses > 1u;
     }
     return LIB_TRUE;
 }
 
-/* Intel 1992 PRM Appendix E.2 and E-3--E-9: completed access facts. */
+/* Intel 1992 PRM Appendix E.2--E-15: source rows and qualified access models. */
 lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
 {
     const t_cpuins_data *data;
     lib_u32 prefixes;
-    lib_u64 walks, updates, ticks, operand;
+    lib_u64 walks, attempts, saved_transfers, ticks, operand;
+    lib_bool operand_modeled;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
         context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
@@ -4703,22 +4902,45 @@ lib_bool x86_core_cpu_80486_memory_penalty(
     if (data->except != 0u) return LIB_FALSE;
     prefixes = x86_core_cpu_instruction_prefix_count(data);
     if (prefixes >= data->oplen) return LIB_FALSE;
-    if (!x86_core_cpu_80486_operand_cache_penalty(data, prefixes, &operand))
+    if (data->timing_missed_reads > data->timing_data_misses ||
+        data->timing_descriptor_misses > data->timing_data_misses ||
+        data->timing_missed_descriptors > data->timing_missed_reads ||
+        data->timing_missed_descriptors > data->timing_descriptor_misses ||
+        (lib_u64)data->timing_pair_misses + data->timing_tss_field_misses +
+            data->timing_descriptor_misses > data->timing_data_misses)
+        return LIB_FALSE;
+    if (!x86_core_cpu_80486_operand_cache_penalty(context, prefixes, &operand, &operand_modeled))
         return LIB_FALSE;
     walks = (lib_u64)data->timing_tlb_walks[0] + data->timing_tlb_walks[1] +
         data->timing_tlb_walks[2];
-    updates = (lib_u64)data->timing_tlb_walks[1] + 2u * (lib_u64)data->timing_tlb_walks[2];
-    /* E.2's 13/21/28 clocks assume neither paging entry is cached. A raced
-     * locked reread without an update is not the documented zero-update case. */
-    if (data->timing_table_misses != 2u * walks ||
-        data->timing_tlb_update_attempts != updates)
+    attempts = (lib_u64)data->timing_tlb_walks[1] + 2u * (lib_u64)data->timing_tlb_walks[2];
+    if (data->timing_table_misses > 2u * walks || data->timing_tlb_updates > attempts)
         return LIB_FALSE;
+    /* Cold 13/21/28 remains source-backed. Cached reads and raced updates
+     * use an explicit L2 differential model: save two fastest-bus clocks
+     * per avoided read miss or write, not a second complete bus subtotal. */
+    saved_transfers = 2u * walks - data->timing_table_misses +
+        attempts - data->timing_tlb_updates;
     ticks = 13u * (lib_u64)data->timing_tlb_walks[0] +
         21u * (lib_u64)data->timing_tlb_walks[1] +
-        28u * (lib_u64)data->timing_tlb_walks[2] +
+        28u * (lib_u64)data->timing_tlb_walks[2] - 2u * saved_transfers +
         3u * (lib_u64)data->timing_unaligned_accesses +
+        11u * (lib_u64)data->timing_unaccessed_descriptors +
         operand;
+    /* E-12 deliberately leaves LTR's miss column blank. */
+    if (!(data->opcodes[prefixes] == 0x0fu && prefixes + 2u < data->oplen &&
+            data->opcodes[prefixes + 1u] == 0x00u &&
+            ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 3u))
+        ticks += 3u * (lib_u64)data->timing_missed_descriptors +
+            5u * (lib_u64)(data->timing_descriptor_misses - data->timing_missed_descriptors);
+    /* E-8/E-9 give one three-clock transfer term for both direct TSS and
+     * Task Gate forms. Coalesce their two cold descriptor roles once. */
+    if (context->instruction_task_switched && data->timing_task_gate_miss_mask == 3u)
+        ticks -= 3u;
     *out_ticks = ticks;
+    if (out_modeled != LIB_NULL)
+        *out_modeled = saved_transfers != 0u || operand_modeled ||
+            data->timing_descriptor_misses > data->timing_missed_descriptors;
     return LIB_TRUE;
 }
 

@@ -86,6 +86,12 @@ static lib_i32 task_switch_run(task_switch_fixture *fixture,
                     ticks);
                 return 0;
             }
+            if (!fixture->execution.instruction_fault_delivered && fixture->instructions.data.except == 0u) {
+                lib_bool modeled = LIB_FALSE;
+
+                if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                    ticks == 0u || !modeled) return 0;
+            }
             ++task_index;
         }
     }

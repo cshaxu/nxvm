@@ -740,7 +740,6 @@ typedef struct t_kma_linear_translation {
     lib_u8 vpl;
     lib_bool tlb_hit;
     lib_u8 timing_update_attempts;
-    lib_u8 timing_updates;
 } t_kma_linear_translation;
 
 /* The locked second read, not a cached first value, owns the A/D update. */
@@ -783,7 +782,7 @@ static void _kma_update_page_entry(x86_core_cpu_execution_context *context,
         entry |= required;
         _kma_write_bus(context, memory.address, X86_CPU_REFERENCE_OF(entry), 4u,
             X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, attributes);
-        if (!instruction_state.data.except) ++translation->timing_updates;
+        if (!instruction_state.data.except) ++instruction_state.data.timing_tlb_updates;
         if (way != X86_CPU_CACHE_WAYS) {
             cpu_cache_line *line = &context->cache[set][way];
             if (instruction_state.data.except) line->valid = LIB_FALSE;
@@ -984,8 +983,7 @@ static void _kma_commit_physical_linear(x86_core_cpu_execution_context *context,
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         _kma_tlb_fill(context, translation->linear, translation->physical,
             translation->attributes | (write ? 0x40u : 0u));
-        ++instruction_state.data.timing_tlb_walks[translation->timing_updates];
-        instruction_state.data.timing_tlb_update_attempts += translation->timing_update_attempts;
+        ++instruction_state.data.timing_tlb_walks[translation->timing_update_attempts];
     }
     CPU_TRACE_CALL_END;
 }
@@ -1207,6 +1205,7 @@ static lib_u32 _kma_linear_logical(x86_core_cpu_execution_context *context, t_cp
 /* read content from logical */
 static void _kma_read_linear(x86_core_cpu_execution_context *context, lib_u32 linear, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
+    const lib_u32 misses = instruction_state.data.timing_data_misses;
     lib_u32 phy1, phy2;
     lib_u32 attributes1, attributes2;
     lib_u8 byte1, byte2;
@@ -1245,9 +1244,12 @@ static void _kma_read_linear(x86_core_cpu_execution_context *context, lib_u32 li
         CPU_TRACE_BLOCK_END;
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
-        !context->preview_mode && context->memory_access_provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA &&
-        (byte == 2u || byte == 4u) && (linear & (byte - 1u)) != 0u)
-        ++instruction_state.data.timing_unaligned_accesses;
+        !context->preview_mode && context->memory_access_provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) {
+        if (instruction_state.data.timing_data_misses != misses)
+            ++instruction_state.data.timing_missed_reads;
+        if ((byte == 2u || byte == 4u) && (linear & (byte - 1u)) != 0u)
+            ++instruction_state.data.timing_unaligned_accesses;
+    }
     CPU_TRACE_CALL_END;
 }
 /* write content to logical */
@@ -1556,6 +1558,7 @@ static void _m_read_rmw(x86_core_cpu_execution_context *context, lib_u8 byte,
 static void _m_read_pair(x86_core_cpu_execution_context *context,
     lib_u8 first, lib_u8 second)
 {
+    const lib_u32 misses = instruction_state.data.timing_data_misses;
     lib_u64 low;
     const lib_bool wraps = _kma_real_legacy_segment_wrap(context,
         instruction_state.data.mrm.offset, first + second);
@@ -1581,6 +1584,8 @@ static void _m_read_pair(x86_core_cpu_execution_context *context,
             X86_CPU_MASK_U16(instruction_state.data.mrm.offset);
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, second));
     instruction_state.data.crm = low | (instruction_state.data.crm << (first * 8u));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !context->preview_mode)
+        instruction_state.data.timing_pair_misses += instruction_state.data.timing_data_misses - misses;
     CPU_TRACE_CALL_END;
 }
 static void _m_write_rm(x86_core_cpu_execution_context *context, lib_u8 byte)
@@ -1660,6 +1665,30 @@ static void _ksa_read_idt(x86_core_cpu_execution_context *context, lib_u8 intid,
     }
     CPU_TRACE_CALL_END;
 }
+/* Called after the owning GDT/LDT route has checked its selector and limit. */
+static void _ksa_read_descriptor(x86_core_cpu_execution_context *context,
+    t_cpu_data_sreg *table, lib_u32 offset, lib_uptr rdata)
+{
+    const lib_u32 misses = instruction_state.data.timing_data_misses;
+    const lib_u32 reads = instruction_state.data.timing_missed_reads;
+
+    if (table->sregtype == SREG_LDTR)
+        _kma_read_logical(context, table, offset, rdata, 8u, 0u, 1u);
+    else
+        _ksa_read_table(context, table, offset, rdata, 8u);
+    if (!context->preview_mode) {
+        instruction_state.data.timing_descriptor_misses += instruction_state.data.timing_data_misses - misses;
+        instruction_state.data.timing_missed_descriptors += instruction_state.data.timing_missed_reads - reads;
+        if (instruction_state.data.timing_missed_reads != reads) {
+            lib_u64 descriptor;
+
+            lib_memory_copy(&descriptor, (const void *)rdata, sizeof(descriptor));
+            if (_IsDescTaskGate(descriptor))
+                instruction_state.data.timing_task_gate_miss_mask |= 1u;
+        }
+    }
+}
+
 static void _ksa_read_ldt(x86_core_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
 {
     CPU_TRACE_CALL_BEGIN("_ksa_read_ldt");
@@ -1674,7 +1703,11 @@ static void _ksa_read_ldt(x86_core_cpu_execution_context *context, lib_u16 selec
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
-    CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+        CPU_TRACE_CHECK_RETURN(_ksa_read_descriptor(context,
+            &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata));
+    else
+        CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_read_gdt(x86_core_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
@@ -1690,8 +1723,12 @@ static void _ksa_read_gdt(x86_core_cpu_execution_context *context, lib_u16 selec
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
-    CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
-        &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+        CPU_TRACE_CHECK_RETURN(_ksa_read_descriptor(context,
+            &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata));
+    else
+        CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
+            &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_read_xdt(x86_core_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
@@ -2197,8 +2234,11 @@ static void _s_read_xdt(x86_core_cpu_execution_context *context, lib_u16 selecto
 }
 static void _s_read_tss(x86_core_cpu_execution_context *context, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
 {
+    const lib_u32 misses = instruction_state.data.timing_data_misses;
     CPU_TRACE_CALL_BEGIN("_s_read_tss");
-    CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1));
+    _kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1);
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !context->preview_mode)
+        instruction_state.data.timing_tss_field_misses += instruction_state.data.timing_data_misses - misses;
     CPU_TRACE_CALL_END;
 }
 static void _s_read_es(x86_core_cpu_execution_context *context, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
@@ -5259,8 +5299,12 @@ static void _s_task_read_selector(x86_core_cpu_execution_context *context,
     if (!ldtr->flagValid || X86_CPU_MASK_U16(_GetSelector_Offset(selector) +
         7u) > X86_CPU_MASK_U16(ldtr->limit))
         CPU_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
-    CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, ldtr,
-        _GetSelector_Offset(selector), rdata, 8u, 0u, LIB_TRUE));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+        CPU_TRACE_CHECK_RETURN(_ksa_read_descriptor(context,
+            ldtr, _GetSelector_Offset(selector), rdata));
+    else
+        CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, ldtr,
+            _GetSelector_Offset(selector), rdata, 8u, 0u, LIB_TRUE));
     CPU_TRACE_CALL_END;
 }
 
@@ -5774,8 +5818,12 @@ static void _ser_task_transition_tss(x86_core_cpu_execution_context *context,
         VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386 &&
         !_GetSelector_TI(newcs)) {
+        const lib_u32 misses = instruction_state.data.timing_missed_descriptors;
+
         CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
             X86_CPU_REFERENCE_OF(cross_descriptor)));
+        if (!context->preview_mode && instruction_state.data.timing_missed_descriptors != misses)
+            instruction_state.data.timing_task_gate_miss_mask |= 2u;
         new_is_32 = _IsDescTSS32Avl(cross_descriptor) ||
             _IsDescTSS32Busy(cross_descriptor);
     } else new_is_32 = LIB_FALSE;
@@ -19175,12 +19223,18 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
     instruction_state.data.timing_invlpg_hit = LIB_FALSE;
     instruction_state.data.timing_fetch_bus_ticks = 0u;
     instruction_state.data.timing_data_misses = 0u;
+    instruction_state.data.timing_missed_reads = 0u;
+    instruction_state.data.timing_descriptor_misses = 0u;
+    instruction_state.data.timing_missed_descriptors = 0u;
+    instruction_state.data.timing_task_gate_miss_mask = 0u;
+    instruction_state.data.timing_pair_misses = 0u;
+    instruction_state.data.timing_tss_field_misses = 0u;
     instruction_state.data.timing_locked_reads = 0u;
     instruction_state.data.timing_table_misses = 0u;
     instruction_state.data.timing_unaligned_accesses = 0u;
     lib_memory_set(instruction_state.data.timing_tlb_walks, 0,
         sizeof(instruction_state.data.timing_tlb_walks));
-    instruction_state.data.timing_tlb_update_attempts = 0u;
+    instruction_state.data.timing_tlb_updates = 0u;
     instruction_state.data.source_lsl_granularity_valid = LIB_FALSE;
     instruction_state.data.source_lsl_page_granular = LIB_FALSE;
     instruction_state.data.flagInsLoop = LIB_FALSE;

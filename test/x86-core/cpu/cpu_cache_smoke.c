@@ -223,6 +223,7 @@ typedef struct cache_memory_probe {
     lib_bool lock_protocol_error;
     lib_bool fail_lock_begin;
     lib_bool fail_second_read;
+    lib_bool fail_table_read;
     lib_bool replace_directory;
     lib_bool replace_table;
     lib_bool replace_split_page;
@@ -235,6 +236,7 @@ typedef struct cache_memory_probe {
     lib_u32 lock_completions;
     lib_u32 lock_cancellations;
     lib_bool fail_read;
+    lib_u32 fail_read_at;
     lib_bool fail_write;
     lib_bool fail_fetch;
     lib_bool cache_code;
@@ -262,9 +264,13 @@ static lib_status cache_memory_read(void *opaque, lib_u32 address,
         if (address >= 0x2000u && address < 0x6000u) ++probe->target_data_reads;
         if (probe->lock_active) ++probe->locked_data_reads;
         probe->read_bytes += bytes;
-        if (probe->fail_read) return LIB_STATUS_IO_ERROR;
+        if (probe->fail_read && (probe->fail_read_at == 0u ||
+                (address <= probe->fail_read_at &&
+                 (lib_u64)address + bytes > probe->fail_read_at)))
+            return LIB_STATUS_IO_ERROR;
     }
     if (!observe_only && provenance == X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ) {
+        if (address == 0x11010u && probe->fail_table_read) return LIB_STATUS_IO_ERROR;
         if (probe->lock_active) {
             probe->lock_address = address;
             probe->lock_control = cache_control;
@@ -1290,7 +1296,7 @@ static lib_bool cache_fetch_timing(void)
         if (!cache_run(fixture, (const lib_u8[]){0x66u, 0xa1u, 0u, 0x20u}, 4u) ||
             fixture->instructions.data.timing_fetch_bus_ticks != 5u ||
             fixture->instructions.data.timing_data_misses != 1u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &operand) || operand != 2u)
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &operand, LIB_NULL) || operand != 2u)
             return LIB_FALSE;
         x86_core_cpu_state_reset(&fixture->execution);
         if (fixture->instructions.data.timing_fetch_bus_ticks != 0u) return LIB_FALSE;
@@ -1308,7 +1314,7 @@ static lib_bool cache_access_timing(void)
     static const lib_u16 addresses[] = {0x2000u, 0x2001u, 0x200fu};
 
     for (lib_u8 store = 0u; store < 2u; ++store)
-    for (lib_u8 form = 0u; form < 3u; ++form)
+    for (lib_u8 form = 0u; form < 4u; ++form)
     for (lib_u8 size = 0u; size < 3u; ++size)
     for (lib_u8 address = 0u; address < 3u; ++address) {
         cache_memory_probe probe = {0};
@@ -1322,7 +1328,11 @@ static lib_bool cache_access_timing(void)
             &cache_memory_bus, &probe);
         fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
         if (size == 2u) code[bytes++] = 0x66u;
-        code[bytes++] = form == 2u ? (size ? 0xc7u : 0xc6u) :
+        if (form == 3u) {
+            /* UMOV is the selected-SX MOV alias model, not a new bus path. */
+            code[bytes++] = 0x0fu;
+            code[bytes++] = (store ? 0x10u : 0x12u) + (size != 0u);
+        } else code[bytes++] = form == 2u ? (size ? 0xc7u : 0xc6u) :
             form == 1u ? (store ? (size ? 0x89u : 0x88u) : (size ? 0x8bu : 0x8au)) :
             store ? (size ? 0xa3u : 0xa2u) : (size ? 0xa1u : 0xa0u);
         if (form != 0u) code[bytes++] = 0x06u;
@@ -1333,15 +1343,17 @@ static lib_bool cache_access_timing(void)
                 code[bytes++] = 0x5au;
         for (lib_u8 warm = 0u; warm < 2u; ++warm) {
             const lib_u32 misses = store || warm ? 0u : split ? 2u : 1u;
-            const lib_bool allocated = !split || store || warm;
             lib_u64 ticks = 999u;
+            lib_bool modeled = LIB_FALSE;
 
             if (!cache_run(fixture, code, bytes) ||
                 fixture->instructions.data.timing_data_misses != misses ||
+                fixture->instructions.data.timing_missed_reads != (lib_u32)(misses != 0u) ||
                 fixture->instructions.data.timing_unaligned_accesses != (lib_u32)unaligned ||
                 fixture->instructions.data.timing_locked_reads != 0u ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) != allocated ||
-                ticks != (allocated ? 2u * misses + 3u * unaligned : 999u)) {
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                modeled != (form == 3u || misses > 1u) ||
+                ticks != (misses ? 2u + 5u * (misses - 1u) : 0u) + 3u * unaligned) {
                 lib_c_printf("Access timing %u/%u/%u/%u/%u: miss=%u align=%u ticks=%llu\n",
                     (lib_u32)store, (lib_u32)form, (lib_u32)widths[size], (lib_u32)address,
                     (lib_u32)warm, fixture->instructions.data.timing_data_misses,
@@ -1372,7 +1384,7 @@ static lib_bool cache_access_timing(void)
             lib_u64 ticks = 999u;
 
             if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
-                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) || ticks != 0u)
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 0u)
                 return LIB_FALSE;
         }
     }
@@ -1387,7 +1399,7 @@ static lib_bool cache_access_timing(void)
         if (!cache_run(fixture, (const lib_u8[]){0x87u, 0x06u, 0u, 0x20u}, 4u) ||
             fixture->instructions.data.timing_locked_reads != 1u ||
             fixture->instructions.data.timing_data_misses != 0u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) || ticks != 0u)
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 0u)
             return LIB_FALSE;
     }
     {
@@ -1395,13 +1407,13 @@ static lib_bool cache_access_timing(void)
         lib_u64 ticks = 999u;
 
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-        if (x86_core_cpu_80486_memory_penalty(LIB_NULL, &ticks) ||
-            x86_core_cpu_80486_memory_penalty(&fixture.execution, LIB_NULL) ||
-            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks) || ticks != 999u)
+        if (x86_core_cpu_80486_memory_penalty(LIB_NULL, &ticks, LIB_NULL) ||
+            x86_core_cpu_80486_memory_penalty(&fixture.execution, LIB_NULL, LIB_NULL) ||
+            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 999u)
             return LIB_FALSE;
         fixture.execution.cpu_profile = X86_CORE_CPU_PROFILE_80386;
         if (!cache_run(&fixture, (const lib_u8[]){0x90u}, 1u) ||
-            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks) || ticks != 999u)
+            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 999u)
             return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -1560,7 +1572,7 @@ static lib_bool cache_integer_timing(void)
         if (!cache_run(fixture, code, bytes) ||
             fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_locked_reads != (lib_u32)locked ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) || ticks != expected ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != expected ||
             probe.lock_protocol_error || probe.lock_active ||
             (cases[row].secondary == 0xb0u &&
              ((fixture->cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u) != equal)) {
@@ -1577,7 +1589,7 @@ static lib_bool cache_integer_timing(void)
             const t_cpu before_cpu = fixture->cpu;
             const lib_u32 reads = probe.data_reads, writes = fixture->writes;
 
-            if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) || ticks != expected ||
+            if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != expected ||
                 lib_memory_compare(&before, &fixture->execution, sizeof(before)) ||
                 lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
                 lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
@@ -1602,7 +1614,7 @@ static lib_bool cache_integer_timing(void)
         code[bytes++] = 0u;
         code[bytes++] = 0x20u;
         if (cache_run(fixture, code, bytes) || !fixture->fault.valid ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) || ticks != 999u ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 999u ||
             fixture->instructions.data.timing_data_misses != (lib_u32)(!lock && write) ||
             fixture->instructions.data.timing_locked_reads != (lib_u32)(lock && write))
             return LIB_FALSE;
@@ -1638,10 +1650,11 @@ static lib_bool cache_integer_alignment_timing(void)
         const lib_bool locked = lock || cases[row].implicit_lock;
         const lib_u32 misses = locked || warm ? 0u : split ? 2u : 1u;
         const lib_u32 locked_reads = !locked ? 0u : split ? 2u : 1u;
-        const lib_bool allocated = locked_reads <= 1u && misses <= 1u;
         const lib_u64 expected = 3u * (lib_u64)cases[row].accesses +
-            (locked ? (cases[row].implicit_lock ? 0u : 2u) : cases[row].miss * misses);
+            (locked ? (cases[row].implicit_lock ? 0u : 2u) + 2u * (locked_reads - 1u) :
+                misses ? cases[row].miss + 5u * (misses - 1u) : 0u);
         lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_FALSE;
 
         cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
             &cache_memory_bus, &probe);
@@ -1667,15 +1680,979 @@ static lib_bool cache_integer_alignment_timing(void)
             fixture->instructions.data.timing_unaligned_accesses != cases[row].accesses ||
             fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_locked_reads != locked_reads ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) != allocated ||
-            ticks != (allocated ? expected : 999u)) {
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            modeled != (misses > 1u || locked_reads > 1u) || ticks != expected) {
             lib_c_printf("Integer alignment row=%u dword=%u split=%u warm=%u lock=%u: align=%u miss=%u locked=%u ticks=%llu/%llu\n",
                 (lib_u32)row, (lib_u32)dword, (lib_u32)split, (lib_u32)warm, (lib_u32)lock,
                 fixture->instructions.data.timing_unaligned_accesses,
                 fixture->instructions.data.timing_data_misses,
-                fixture->instructions.data.timing_locked_reads, ticks, allocated ? expected : 999u);
+                fixture->instructions.data.timing_locked_reads, ticks, expected);
             return LIB_FALSE;
         }
+    }
+    return LIB_TRUE;
+}
+
+/* Both cache-line and page splits use the actual memory/lock path. */
+static lib_bool cache_split_timing(void)
+{
+    static const lib_u16 addresses[] = {0x200fu, 0x2fffu};
+
+    for (lib_u8 page = 0u; page < 2u; ++page)
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 locked = 0u; locked < 2u; ++locked)
+    for (lib_u8 residency = 0u; residency < 6u; ++residency) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u16 address = addresses[page];
+        const lib_bool fail = residency == 5u;
+        const lib_u32 misses = locked ? 0u : residency == 3u ? 0u :
+            residency == 1u || residency == 2u || fail ? 1u : 2u;
+        lib_u8 code[6], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        if (residency != 4u) fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        for (lib_u8 line = 0u; line < 2u; ++line) {
+            const lib_u16 warm_address = address + line;
+            const lib_u8 load[] = {0xa0u, (lib_u8)warm_address, (lib_u8)(warm_address >> 8u)};
+
+            if ((residency == line + 1u || residency == 3u) &&
+                !cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+        }
+        if (dword) code[bytes++] = 0x66u;
+        code[bytes++] = locked ? 0x87u : 0xa1u;
+        if (locked) code[bytes++] = 0x06u;
+        code[bytes++] = (lib_u8)address;
+        code[bytes++] = (lib_u8)(address >> 8u);
+        probe.fail_read = fail;
+        probe.fail_read_at = address + 1u;
+        if (cache_run(fixture, code, bytes) == fail ||
+            fixture->instructions.data.timing_data_misses != misses ||
+            fixture->instructions.data.timing_locked_reads != (locked ? (fail ? 1u : 2u) : 0u) ||
+            probe.lock_active || probe.lock_protocol_error) return LIB_FALSE;
+        if (fail) {
+            if (!fixture->fault.valid || fixture->instructions.data.timing_unaligned_accesses != 0u ||
+                fixture->instructions.data.timing_missed_reads != 0u ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled) return LIB_FALSE;
+            continue;
+        }
+        const lib_u64 expected = locked ? 8u :
+            3u + (misses == 0u ? 0u : misses == 1u ? 2u : 7u);
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (locked || misses == 2u)) return LIB_FALSE;
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+/* Source coefficients for single-read stack/control and primitive strings.
+ * The data, stack and destination occupy distinct cache sets (E-3/E-7/E-9). */
+static lib_bool cache_stack_string_timing(void)
+{
+    static const struct {
+        lib_u8 code[5], length, reads, miss;
+        lib_bool transfer;
+    } cases[] = {
+        {{0x50u}, 1u, 0u, 0u, LIB_FALSE},
+        {{0x68u, 2u, 0u}, 3u, 0u, 0u, LIB_FALSE},
+        {{0x6au, 2u}, 2u, 0u, 0u, LIB_FALSE},
+        {{0xffu, 0xf0u}, 2u, 0u, 0u, LIB_FALSE},
+        {{0xffu, 0x36u, 0u, 0x20u}, 4u, 1u, 1u, LIB_FALSE},
+        {{0x58u}, 1u, 1u, 2u, LIB_FALSE},
+        {{0x8fu, 0xc0u}, 2u, 1u, 1u, LIB_FALSE},
+        {{0x8fu, 0x06u, 0u, 0x20u}, 4u, 1u, 2u, LIB_FALSE},
+        {{0xc9u}, 1u, 1u, 1u, LIB_FALSE},
+        {{0xe8u, 0u, 0u}, 3u, 0u, 0u, LIB_FALSE},
+        {{0xffu, 0xd0u}, 2u, 0u, 0u, LIB_TRUE},
+        {{0xffu, 0xe0u}, 2u, 0u, 0u, LIB_TRUE},
+        {{0xffu, 0x16u, 0u, 0x20u}, 4u, 1u, 5u, LIB_TRUE},
+        {{0xffu, 0x26u, 0u, 0x20u}, 4u, 1u, 5u, LIB_TRUE},
+        {{0xc3u}, 1u, 1u, 5u, LIB_TRUE},
+        {{0xc2u, 4u, 0u}, 3u, 1u, 5u, LIB_TRUE},
+        {{0xa4u}, 1u, 1u, 2u, LIB_FALSE},
+        {{0xa5u}, 1u, 1u, 2u, LIB_FALSE},
+        {{0xacu}, 1u, 1u, 2u, LIB_FALSE},
+        {{0xadu}, 1u, 1u, 2u, LIB_FALSE},
+        {{0xaeu}, 1u, 1u, 2u, LIB_FALSE},
+        {{0xafu}, 1u, 1u, 2u, LIB_FALSE},
+        {{0xaau}, 1u, 0u, 0u, LIB_FALSE},
+        {{0xabu}, 1u, 0u, 0u, LIB_FALSE},
+        {{0xd7u}, 1u, 1u, 2u, LIB_FALSE},
+        {{0x9cu}, 1u, 0u, 0u, LIB_FALSE},
+        {{0x9du}, 1u, 1u, 0u, LIB_FALSE},
+        {{0x60u}, 1u, 0u, 0u, LIB_FALSE},
+        {{0x07u}, 1u, 1u, 2u, LIB_FALSE},
+        {{0x17u}, 1u, 1u, 2u, LIB_FALSE},
+        {{0x1fu}, 1u, 1u, 2u, LIB_FALSE},
+        {{0x0fu, 0xa1u}, 2u, 1u, 2u, LIB_FALSE},
+        {{0x0fu, 0xa9u}, 2u, 1u, 2u, LIB_FALSE},
+        {{0x8eu, 0x1eu, 0u, 0x20u}, 4u, 1u, 2u, LIB_FALSE},
+        {{0xc4u, 0x06u, 0u, 0x20u}, 4u, 1u, 7u, LIB_FALSE},
+        {{0xc5u, 0x06u, 0u, 0x20u}, 4u, 1u, 7u, LIB_FALSE},
+        {{0x0fu, 0xb2u, 0x06u, 0u, 0x20u}, 5u, 1u, 7u, LIB_FALSE},
+        {{0x0fu, 0xb4u, 0x06u, 0u, 0x20u}, 5u, 1u, 7u, LIB_FALSE},
+        {{0x0fu, 0xb5u, 0x06u, 0u, 0x20u}, 5u, 1u, 7u, LIB_FALSE},
+        {{0x0fu, 0x01u, 0x16u, 0u, 0x20u}, 5u, 1u, 5u, LIB_FALSE},
+        {{0x0fu, 0x01u, 0x1eu, 0u, 0x20u}, 5u, 1u, 5u, LIB_FALSE},
+        {{0x0fu, 0x01u, 0x36u, 0u, 0x20u}, 5u, 1u, 1u, LIB_FALSE},
+        {{0x0fu, 0x01u, 0x16u, 2u, 0x20u}, 5u, 1u, 5u, LIB_FALSE},
+        {{0x0fu, 0x01u, 0x1eu, 2u, 0x20u}, 5u, 1u, 5u, LIB_FALSE}
+    };
+
+    for (lib_size row = 0u; row < sizeof(cases) / sizeof(cases[0]); ++row)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 operand32 = 0u; operand32 < 2u; ++operand32)
+    for (lib_u8 phase = 0u; phase < 3u; ++phase) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_bool warm = phase == 1u, fail = phase == 2u;
+        const lib_u32 value = cases[row].code[0] == 0x9du ? 2u :
+            cases[row].code[0] == 0x07u || cases[row].code[0] == 0x17u ||
+            cases[row].code[0] == 0x1fu || cases[row].code[0] == 0x8eu ||
+            (cases[row].code[0] == 0x0fu && (cases[row].code[1] == 0xa1u ||
+                cases[row].code[1] == 0xa9u)) ? 0u : 0x100u;
+        lib_u8 code[10], bytes = 0u;
+        lib_u64 ticks = 999u;
+        t_cpu after;
+
+        if (fail && cases[row].reads == 0u) continue;
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        for (lib_u32 address = 0x2000u; address <= 0x2200u; address += 0x100u) {
+            lib_memory_copy(fixture->memory + address, &value, sizeof(value));
+            if (warm && !cache_run(fixture,
+                    (const lib_u8[]){0xa0u, (lib_u8)address, (lib_u8)(address >> 8u)}, 3u))
+                return LIB_FALSE;
+        }
+        fixture->cpu.data.cs.seg.exec.defsize = code32;
+        fixture->cpu.data.eax = 0x100u;
+        fixture->cpu.data.ebx = fixture->cpu.data.esi = 0x2000u;
+        fixture->cpu.data.esp = fixture->cpu.data.ebp = 0x2100u;
+        fixture->cpu.data.edi = 0x2200u;
+        fixture->cpu.data.eflags = 2u;
+        if (code32) code[bytes++] = 0x67u;
+        if (code32 != operand32) code[bytes++] = 0x66u;
+        lib_memory_copy(code + bytes, cases[row].code, cases[row].length);
+        bytes += cases[row].length;
+        if (operand32 && (cases[row].code[0] == 0x68u || cases[row].code[0] == 0xe8u)) {
+            code[bytes++] = 0u;
+            code[bytes++] = 0u;
+        }
+        fixture->cpu.data.eip = 0u;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        probe.fail_read = fail;
+        const lib_u32 misses = warm ? 0u : cases[row].reads;
+        const lib_u32 unaligned = cases[row].code[0] == 0x0fu &&
+            cases[row].code[1] == 0x01u &&
+            (cases[row].code[2] == 0x16u || cases[row].code[2] == 0x1eu) &&
+            cases[row].code[3] == 0u;
+        const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
+        if (fail) {
+            if ((status == LIB_STATUS_OK && !fixture->fault.valid &&
+                    !fixture->delivered_exception.valid) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 999u)
+                return LIB_FALSE;
+            continue;
+        }
+        if (status != LIB_STATUS_OK ||
+            fixture->fault.valid || fixture->delivered_exception.valid ||
+            after.data.eip != (cases[row].transfer ? 0x100u : bytes) ||
+            fixture->instructions.data.timing_data_misses != misses ||
+            fixture->instructions.data.timing_locked_reads != 0u ||
+            fixture->instructions.data.timing_unaligned_accesses != unaligned ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) ||
+            ticks != (warm ? 0u : cases[row].miss) + 3u * unaligned) {
+            lib_c_printf("Stack/string timing row=%u code32=%u operand32=%u warm=%u: miss=%u ticks=%llu eip=%x fault=%x\n",
+                (lib_u32)row, (lib_u32)code32, (lib_u32)operand32, (lib_u32)warm,
+                fixture->instructions.data.timing_data_misses, ticks, after.data.eip,
+                fixture->fault.exception_mask);
+            return LIB_FALSE;
+        }
+        const t_cpu before_cpu = fixture->cpu;
+        const t_cpuins before_instructions = fixture->instructions;
+        const x86_core_cpu_execution_context before_execution = fixture->execution;
+        const lib_u32 reads = probe.data_reads, writes = fixture->writes;
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) ||
+            lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
+            lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
+            lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
+            probe.data_reads != reads || fixture->writes != writes)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_compare_timing(void)
+{
+    static const lib_u8 offsets[] = {0u, 1u, 15u};
+
+    for (lib_u8 size = 0u; size < 3u; ++size)
+    for (lib_u8 position = 0u; position < 3u; ++position)
+    for (lib_u8 same = 0u; same < 2u; ++same)
+    for (lib_u8 warm = 0u; warm < 4u; ++warm)
+    for (lib_u8 disabled = 0u; disabled < 2u; ++disabled) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u16 source = 0x2100u + offsets[position];
+        const lib_u16 destination = (same ? 0x2100u : 0x2200u) + offsets[position];
+        const lib_u32 reads = disabled ? 2u : same ? (warm == 0u) :
+            2u - (warm & 1u) - (warm >> 1u);
+        const lib_u32 misses = reads * (size != 0u && position == 2u ? 2u : 1u);
+        const lib_u32 unaligned = size != 0u && position != 0u ? 2u : 0u;
+        lib_u8 code[2], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        if (!disabled) fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        for (lib_u8 operand = 0u; operand < 2u; ++operand) {
+            const lib_u16 address = operand ? destination : source;
+            lib_u8 load[4], length = 0u;
+
+            if ((warm & (1u << operand)) == 0u) continue;
+            if (size == 2u) load[length++] = 0x66u;
+            load[length++] = size == 0u ? 0xa0u : 0xa1u;
+            load[length++] = (lib_u8)address;
+            load[length++] = (lib_u8)(address >> 8u);
+            if (!cache_run(fixture, load, length)) return LIB_FALSE;
+        }
+        fixture->cpu.data.esi = source;
+        fixture->cpu.data.edi = destination;
+        if (size == 2u) code[bytes++] = 0x66u;
+        code[bytes++] = size == 0u ? 0xa6u : 0xa7u;
+        if (!cache_run(fixture, code, bytes) ||
+            fixture->instructions.data.timing_missed_reads != reads ||
+            fixture->instructions.data.timing_data_misses != misses ||
+            fixture->instructions.data.timing_unaligned_accesses != unaligned ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 3u * reads + 5u * (misses - reads) + 3u * unaligned ||
+            modeled != (reads == 1u || misses > reads)) {
+            lib_c_printf("Compare timing size=%u position=%u same=%u warm=%u disabled=%u: reads=%u misses=%u ticks=%llu\n",
+                (lib_u32)size, (lib_u32)position, (lib_u32)same, (lib_u32)warm, (lib_u32)disabled,
+                fixture->instructions.data.timing_missed_reads,
+                fixture->instructions.data.timing_data_misses, ticks);
+            return LIB_FALSE;
+        }
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
+            fixture->instructions.data.timing_missed_reads != 0u ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
+    }
+    {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        fixture->cpu.data.esi = 0x2100u;
+        fixture->cpu.data.edi = 0x2200u;
+        probe.fail_read = LIB_TRUE;
+        probe.fail_read_at = 0x2200u;
+        if (cache_run(fixture, (const lib_u8[]){0xa6u}, 1u) || !fixture->fault.valid ||
+            fixture->instructions.data.timing_missed_reads != 1u ||
+            fixture->instructions.data.timing_data_misses != 1u ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 999u || !modeled) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_stack_group_timing(void)
+{
+    static const lib_u8 levels[] = {0u, 1u, 2u, 3u, 8u, 9u, 16u, 31u, 255u};
+
+    for (lib_u8 enter = 0u; enter < 2u; ++enter)
+    for (lib_u8 index = 0u; index < (enter ? sizeof(levels) : 1u); ++index)
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 offset = 0u; offset < 2u; ++offset)
+    for (lib_u8 phase = 0u; phase < 5u; ++phase) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 level = levels[index] & 31u;
+        const lib_u8 width = dword ? 4u : 2u;
+        const lib_u8 count = enter ? (level == 0u ? 0u : level - 1u) : 8u;
+        const lib_u16 start = enter ? 0x2400u + offset : 0x2200u + offset;
+        const lib_u16 first = enter ? start - width * count : start;
+        const lib_u16 last = enter ? start - 1u : start + width * count - 1u;
+        const lib_u8 lines = count == 0u ? 0u : (last >> 4u) - (first >> 4u) + 1u;
+        const lib_u8 nominal_lines = (count * width + 15u) / 16u;
+        const lib_bool fail = phase == 4u;
+        lib_u32 misses = 0u, unaligned = offset ? count : 0u;
+        lib_u8 code[5], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        if (fail && count < 2u) continue;
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        if (phase < 3u) fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        for (lib_u8 line = 0u; line < lines; ++line) {
+            const lib_u16 address = (first & ~15u) + 16u * line;
+            const lib_u8 load[] = {0xa0u, (lib_u8)address, (lib_u8)(address >> 8u)};
+
+            if (phase == 1u || (phase == 2u && line == 0u)) {
+                if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+            } else ++misses;
+        }
+        if (phase >= 3u) {
+            misses = count;
+            if (offset)
+                for (lib_u8 item = 0u; item < count; ++item) {
+                    const lib_u16 address = enter ? start - width * (item + 1u) :
+                        start + (lib_u32)width * item;
+
+                    if ((address & 15u) + width > 16u) ++misses;
+                }
+        }
+        fixture->cpu.data.esp = enter ? 0x2800u : start;
+        fixture->cpu.data.ebp = start;
+        if (dword) code[bytes++] = 0x66u;
+        code[bytes++] = enter ? 0xc8u : 0x61u;
+        if (enter) {
+            code[bytes++] = 0u;
+            code[bytes++] = 0u;
+            code[bytes++] = levels[index];
+        }
+        probe.fail_read = fail;
+        probe.fail_read_at = enter ? start - 2u * width : start + width;
+        if (cache_run(fixture, code, bytes) == fail) return LIB_FALSE;
+        if (fail) {
+            if (!fixture->fault.valid || fixture->instructions.data.timing_missed_reads != 1u ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled) return LIB_FALSE;
+            continue;
+        }
+        const lib_u64 cold = dword ? 15u : 7u;
+        const lib_u64 expected = misses == 0u ? 0u : enter ? 6u * misses :
+            misses >= nominal_lines ? cold + 5u * (misses - nominal_lines) :
+                (cold * misses + nominal_lines - 1u) / nominal_lines;
+        const lib_bool expected_model = misses != 0u && (offset || misses != nominal_lines);
+        if (fixture->instructions.data.timing_data_misses != misses ||
+            fixture->instructions.data.timing_unaligned_accesses != unaligned ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected + 3u * unaligned || modeled != expected_model) {
+            lib_c_printf("Stack group enter=%u level=%u dword=%u offset=%u phase=%u: misses=%u/%u align=%u/%u ticks=%llu expected=%llu model=%u/%u\n",
+                (lib_u32)enter, (lib_u32)levels[index], (lib_u32)dword, (lib_u32)offset, (lib_u32)phase,
+                fixture->instructions.data.timing_data_misses, misses,
+                fixture->instructions.data.timing_unaligned_accesses, unaligned,
+                ticks, expected + 3u * unaligned, (lib_u32)modeled, (lib_u32)expected_model);
+            return LIB_FALSE;
+        }
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_descriptor_timing(void)
+{
+    static const struct {
+        lib_u8 code[5], length, operand_miss, kind;
+        lib_bool memory, stack, pair, loads;
+    } cases[] = {
+        {{0x8eu, 0xd8u}, 2u, 0u, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_TRUE},
+        {{0x8eu, 0x1eu, 0u, 0x20u}, 4u, 2u, 0u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_TRUE},
+        {{0x07u}, 1u, 2u, 0u, LIB_FALSE, LIB_TRUE, LIB_FALSE, LIB_TRUE},
+        {{0x17u}, 1u, 2u, 0u, LIB_FALSE, LIB_TRUE, LIB_FALSE, LIB_TRUE},
+        {{0x1fu}, 1u, 2u, 0u, LIB_FALSE, LIB_TRUE, LIB_FALSE, LIB_TRUE},
+        {{0x0fu, 0xa1u}, 2u, 2u, 0u, LIB_FALSE, LIB_TRUE, LIB_FALSE, LIB_TRUE},
+        {{0x0fu, 0xa9u}, 2u, 2u, 0u, LIB_FALSE, LIB_TRUE, LIB_FALSE, LIB_TRUE},
+        {{0xc4u, 0x06u, 0u, 0x20u}, 4u, 7u, 0u, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_TRUE},
+        {{0xc5u, 0x06u, 0u, 0x20u}, 4u, 7u, 0u, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_TRUE},
+        {{0x0fu, 0xb2u, 0x06u, 0u, 0x20u}, 5u, 7u, 0u, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_TRUE},
+        {{0x0fu, 0xb4u, 0x06u, 0u, 0x20u}, 5u, 7u, 0u, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_TRUE},
+        {{0x0fu, 0xb5u, 0x06u, 0u, 0x20u}, 5u, 7u, 0u, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_TRUE},
+        {{0x0fu, 0x02u, 0xc0u}, 3u, 0u, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x02u, 0x06u, 0u, 0x20u}, 5u, 2u, 0u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x03u, 0xc0u}, 3u, 0u, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x03u, 0x06u, 0u, 0x20u}, 5u, 3u, 0u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0xd0u}, 3u, 0u, 1u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0x16u, 0u, 0x20u}, 5u, 3u, 1u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0xe0u}, 3u, 0u, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0x26u, 0u, 0x20u}, 5u, 4u, 0u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0xe8u}, 3u, 0u, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0x2eu, 0u, 0x20u}, 5u, 4u, 0u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0xd8u}, 3u, 0u, 2u, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE},
+        {{0x0fu, 0x00u, 0x1eu, 0u, 0x20u}, 5u, 0u, 2u, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE}
+    };
+
+    for (lib_size row = 0u; row < sizeof(cases) / sizeof(cases[0]); ++row)
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 split = 0u; split < 2u; ++split)
+    for (lib_u8 unaccessed = 0u; unaccessed < (cases[row].loads ? 2u : 1u); ++unaccessed)
+    for (lib_u8 phase = 0u; phase < 6u; ++phase) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 width = dword ? 4u : 2u;
+        const lib_u16 selector = cases[row].kind ? 0x18u : 0x10u;
+        const lib_u16 operand = cases[row].stack ? 0x2300u : 0x2000u;
+        const lib_u16 directory = split ? 0x300fu - (selector & 15u) : 0x3000u;
+        const lib_u16 descriptor = directory + selector;
+        const lib_u32 reads = (phase & 2u) && phase != 4u ? 0u : 1u;
+        const lib_u32 descriptor_misses = reads * (split ? 2u : 1u);
+        const lib_u32 operand_misses = (cases[row].memory || cases[row].stack) && (phase & 1u) == 0u;
+        const lib_bool fail = phase >= 4u;
+        lib_u8 code[6], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        if (phase == 5u && !split) continue;
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        cpu_instruction_prepare_protected_exception(fixture, 0u);
+        fixture->cpu.data.ds = fixture->cpu.data.ss;
+        fixture->cpu.data.ds.sregtype = SREG_DATA;
+        fixture->cpu.data.gdtr.base = directory;
+        fixture->cpu.data.gdtr.limit = 31u;
+        lib_memory_copy(fixture->memory + descriptor, (const lib_u8[]){0xffu, 0xffu, 0u, 0u, 0u,
+            cases[row].kind == 1u ? 0x82u : cases[row].kind == 2u ? 0x89u :
+                unaccessed ? 0x92u : 0x93u, 0u, 0u}, 8u);
+        lib_memory_copy(fixture->memory + operand + (cases[row].pair ? width : 0u),
+            &selector, sizeof(selector));
+        for (lib_u8 part = 0u; part < 2u; ++part) {
+            const lib_u16 address = part ? descriptor : operand;
+            const lib_u8 load[] = {0x66u, 0xa1u, (lib_u8)address, (lib_u8)(address >> 8u)};
+
+            if (!fail && (phase & (1u << part)) &&
+                !cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+        }
+        fixture->cpu.data.eax = selector;
+        fixture->cpu.data.esp = 0x2300u;
+        if (dword) code[bytes++] = 0x66u;
+        lib_memory_copy(code + bytes, cases[row].code, cases[row].length);
+        bytes += cases[row].length;
+        probe.fail_read = fail;
+        probe.fail_read_at = descriptor + (phase == 5u ? 1u : 0u);
+        if (cache_run(fixture, code, bytes) == fail) {
+            lib_c_printf("Descriptor execution row=%u dword=%u split=%u phase=%u fault=%x\n",
+                (lib_u32)row, (lib_u32)dword, (lib_u32)split, (lib_u32)phase,
+                fixture->fault.exception_mask);
+            return LIB_FALSE;
+        }
+        if (fail) {
+            if (!fixture->fault.valid || fixture->instructions.data.timing_missed_descriptors != 0u ||
+                fixture->instructions.data.timing_descriptor_misses != (lib_u32)(phase == 5u) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled) return LIB_FALSE;
+            x86_core_cpu_state_reset(&fixture->execution);
+            if (fixture->instructions.data.timing_descriptor_misses != 0u ||
+                fixture->instructions.data.timing_missed_descriptors != 0u ||
+                fixture->instructions.data.timing_missed_reads != 0u) return LIB_FALSE;
+            continue;
+        }
+        const lib_u64 expected = cases[row].operand_miss * (lib_u64)operand_misses +
+            (cases[row].kind == 2u ? 0u : 3u * reads + 5u * (descriptor_misses - reads)) +
+            11u * unaccessed;
+        if (fixture->instructions.data.timing_descriptor_misses != descriptor_misses ||
+            fixture->instructions.data.timing_missed_descriptors != reads ||
+            fixture->instructions.data.timing_data_misses != descriptor_misses + operand_misses ||
+            fixture->instructions.data.timing_unaccessed_descriptors != unaccessed ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (split && reads != 0u)) {
+            lib_c_printf("Descriptor timing row=%u dword=%u split=%u phase=%u: desc=%u/%u data=%u/%u ticks=%llu/%llu model=%u\n",
+                (lib_u32)row, (lib_u32)dword, (lib_u32)split, (lib_u32)phase,
+                fixture->instructions.data.timing_descriptor_misses, descriptor_misses,
+                fixture->instructions.data.timing_data_misses, descriptor_misses + operand_misses,
+                ticks, expected, (lib_u32)modeled);
+            return LIB_FALSE;
+        }
+        const t_cpu before_cpu = fixture->cpu;
+        const t_cpuins before_instructions = fixture->instructions;
+        const x86_core_cpu_execution_context before_execution = fixture->execution;
+        const lib_u32 data_reads = probe.data_reads, writes = fixture->writes;
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
+            lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
+            lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
+            probe.data_reads != data_reads || fixture->writes != writes) return LIB_FALSE;
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
+            fixture->instructions.data.timing_descriptor_misses != 0u ||
+            fixture->instructions.data.timing_missed_descriptors != 0u ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_pair_timing(void)
+{
+    static const struct {
+        lib_u8 opcode, secondary, extension, miss;
+    } cases[] = {
+        {0x62u, 0u, 0u, 7u}, {0xc4u, 0u, 0u, 7u}, {0xc5u, 0u, 0u, 7u},
+        {0x0fu, 0xb2u, 0u, 7u}, {0x0fu, 0xb4u, 0u, 7u}, {0x0fu, 0xb5u, 0u, 7u},
+        {0x0fu, 0x01u, 2u, 5u}, {0x0fu, 0x01u, 3u, 5u}
+    };
+    static const lib_u16 addresses[] = {0x2000u, 0x2002u, 0x200fu, 0x2fffu};
+
+    for (lib_size row = 0u; row < sizeof(cases) / sizeof(cases[0]); ++row)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 position = 0u; position < sizeof(addresses) / sizeof(addresses[0]); ++position)
+    for (lib_u8 phase = 0u; phase < 6u; ++phase) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_bool table = cases[row].secondary == 0x01u, fail = phase == 5u;
+        const lib_u8 first = table ? 2u : dword ? 4u : 2u;
+        const lib_u8 second = table ? 4u : cases[row].opcode == 0x62u ? first : 2u;
+        const lib_u16 address = addresses[position], end = address + first + second - 1u;
+        const lib_bool split = (address >> 4u) != (end >> 4u);
+        const lib_u32 unaligned = ((address & (first - 1u)) != 0u) +
+            (lib_u32)(((address + first) & (second - 1u)) != 0u);
+        const lib_u32 upper = cases[row].opcode == 0x62u ?
+            (dword ? (lib_u32)LIB_INT32_MAX : (lib_u32)LIB_INT16_MAX) : 0u;
+        lib_u32 misses = phase == 0u ? (split ? 2u : 1u) :
+            phase == 1u || phase == 2u ? (lib_u32)split : 0u;
+        lib_u8 code[9], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        if (phase != 4u) fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        lib_memory_copy(fixture->memory + address + first, &upper, second);
+        for (lib_u8 part = 0u; part < 2u; ++part) {
+            const lib_u16 warm_address = part ? end : address;
+            const lib_u8 load[] = {0xa0u, (lib_u8)warm_address, (lib_u8)(warm_address >> 8u)};
+
+            if (phase < 4u && (phase & (1u << part)) &&
+                !cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+        }
+        if (phase == 4u) misses = 2u + ((address & 15u) + first > 16u) +
+            (lib_u32)(((address + first) & 15u) + second > 16u);
+        fixture->cpu.data.eax = 0u;
+        fixture->cpu.data.cs.seg.exec.defsize = code32;
+        if (code32) code[bytes++] = 0x67u;
+        if (code32 != dword) code[bytes++] = 0x66u;
+        code[bytes++] = cases[row].opcode;
+        if (cases[row].secondary) code[bytes++] = cases[row].secondary;
+        code[bytes++] = 0x06u | (cases[row].extension << 3u);
+        code[bytes++] = (lib_u8)address;
+        code[bytes++] = (lib_u8)(address >> 8u);
+        probe.fail_read = fail;
+        probe.fail_read_at = address + first;
+        if (cache_run(fixture, code, bytes) == fail) return LIB_FALSE;
+        if (fail) {
+            if (!fixture->fault.valid ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled) return LIB_FALSE;
+            continue;
+        }
+        const lib_u64 expected = (misses ? cases[row].miss + 5u * (misses - 1u) : 0u) +
+            3u * (lib_u64)unaligned;
+        if (fixture->instructions.data.timing_data_misses != misses ||
+            fixture->instructions.data.timing_unaligned_accesses != unaligned ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (misses > 1u)) {
+            lib_c_printf("Pair timing row=%u code32=%u dword=%u position=%u phase=%u: misses=%u/%u align=%u/%u ticks=%llu/%llu\n",
+                (lib_u32)row, (lib_u32)code32, (lib_u32)dword, (lib_u32)position, (lib_u32)phase,
+                fixture->instructions.data.timing_data_misses, misses,
+                fixture->instructions.data.timing_unaligned_accesses, unaligned, ticks, expected);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_far_timing(void)
+{
+    for (lib_u8 mode = 0u; mode < 4u; ++mode)
+    for (lib_u8 form = 0u; form < 7u; ++form)
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 unaccessed = 0u; unaccessed < (mode == 1u || mode == 2u ? 2u : 1u); ++unaccessed)
+    for (lib_u8 phase = 0u; phase < 6u; ++phase) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_bool returning = form >= 4u, outer = mode == 2u, virtual_return = mode == 3u;
+        const lib_bool protected_mode = mode != 0u;
+        const lib_bool operand = returning || form == 2u || form == 3u;
+        const lib_u8 width = dword ? 4u : 2u;
+        const lib_u8 items = virtual_return ? 9u : form == 6u ? (outer ? 5u : 3u) : outer ? 4u : 2u;
+        const lib_u8 lines = (items * width + 15u) / 16u;
+        const lib_u8 descriptors = !protected_mode || virtual_return ? 0u : outer ? 2u : 1u;
+        const lib_u16 selector = !protected_mode || virtual_return ? 0u : outer ? 0x0bu : 8u;
+        const lib_u32 target = 0x100u;
+        const lib_u16 address = returning ? 0x2300u : 0x2000u;
+        const lib_u32 misses = operand && (phase & 1u) == 0u ? (returning ? lines : 1u) : 0u;
+        const lib_u32 descriptor_misses = (phase & 2u) == 0u ? descriptors : 0u;
+        const lib_bool fail = phase >= 4u;
+        lib_u8 code[10], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+        t_cpu after;
+
+        if ((outer && !returning) || (virtual_return && (form != 6u || !dword)) ||
+            (phase == 4u && !operand) || (phase == 5u && descriptors == 0u)) continue;
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        if (protected_mode) {
+            cpu_instruction_prepare_protected_exception(fixture, 0u);
+            fixture->cpu.data.ds = fixture->cpu.data.ss;
+            fixture->cpu.data.ds.sregtype = SREG_DATA;
+            fixture->cpu.data.gdtr.base = 0x3000u;
+            lib_memory_copy(fixture->memory + 0x3008u, (const lib_u8[]){0xffu, 0xffu, 0u, 0u, 0u,
+                (lib_u8)((outer ? 0xfau : 0x9au) | !unaccessed), 0u, 0u}, 8u);
+            lib_memory_copy(fixture->memory + 0x3010u, (const lib_u8[]){0xffu, 0xffu, 0u, 0u, 0u,
+                (lib_u8)(0xf2u | !unaccessed), 0u, 0u}, 8u);
+        }
+        lib_memory_copy(fixture->memory + address, &target, width);
+        lib_memory_copy(fixture->memory + address + width, &selector, sizeof(selector));
+        if (returning) {
+            lib_u8 slot = 2u;
+            const lib_u32 flags = virtual_return ? 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 2u;
+            const lib_u16 stack_selector = virtual_return ? 0u : 0x13u;
+
+            if (form == 6u) {
+                lib_memory_copy(fixture->memory + address + width * slot++, &flags, width);
+            }
+            if (outer || virtual_return) {
+                lib_memory_copy(fixture->memory + address + width * slot++, &(lib_u32){0x2500u}, width);
+                lib_memory_copy(fixture->memory + address + width * slot, &stack_selector, sizeof(stack_selector));
+            }
+        }
+        if (!fail && (phase & 1u) && operand)
+            for (lib_u8 line = 0u; line < (returning ? lines : 1u); ++line) {
+                const lib_u16 warm_address = address + 16u * line;
+                const lib_u8 load[] = {0xa0u, (lib_u8)warm_address, (lib_u8)(warm_address >> 8u)};
+
+                if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+            }
+        if (!fail && (phase & 2u))
+            for (lib_u8 part = 0u; part < descriptors; ++part) {
+                const lib_u16 warm_address = 0x3008u + 8u * part;
+                const lib_u8 load[] = {0xa0u, (lib_u8)warm_address, (lib_u8)(warm_address >> 8u)};
+
+                if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+            }
+        fixture->cpu.data.esp = 0x2300u;
+        if (dword) code[bytes++] = 0x66u;
+        if (form < 2u) {
+            code[bytes++] = form == 0u ? 0x9au : 0xeau;
+            lib_memory_copy(code + bytes, &target, width);
+            bytes += width;
+            lib_memory_copy(code + bytes, &selector, sizeof(selector));
+            bytes += sizeof(selector);
+        } else if (!returning) {
+            code[bytes++] = 0xffu;
+            code[bytes++] = form == 2u ? 0x1eu : 0x2eu;
+            code[bytes++] = 0u;
+            code[bytes++] = 0x20u;
+        } else {
+            code[bytes++] = form == 4u ? 0xcbu : form == 5u ? 0xcau : 0xcfu;
+            if (form == 5u) { code[bytes++] = 0u; code[bytes++] = 0u; }
+        }
+        probe.fail_read = fail;
+        probe.fail_read_at = phase == 5u ? 0x3008u : address;
+        fixture->cpu.data.eip = 0u;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
+        if (fail) {
+            if (!fixture->fault.valid ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled) return LIB_FALSE;
+            continue;
+        }
+        const lib_u64 operand_ticks = !misses ? 0u : returning ?
+            (virtual_return ? 19u : form == 6u ? (outer ? 13u : 8u) : protected_mode ? 6u : 8u) :
+            protected_mode ? 7u : form == 2u ? 8u : 9u;
+        const lib_u64 expected = operand_ticks + 3u * descriptor_misses + 11u * unaccessed * descriptors;
+        if (status != LIB_STATUS_OK || fixture->fault.valid || fixture->delivered_exception.valid ||
+            after.data.eip != target ||
+            fixture->instructions.data.timing_data_misses != misses + descriptor_misses ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (virtual_return && misses != 0u)) {
+            lib_c_printf("Far timing mode=%u form=%u dword=%u phase=%u: miss=%u/%u desc=%u ticks=%llu/%llu model=%u fault=%x\n",
+                (lib_u32)mode, (lib_u32)form, (lib_u32)dword, (lib_u32)phase,
+                fixture->instructions.data.timing_data_misses, misses + descriptor_misses,
+                fixture->instructions.data.timing_descriptor_misses, ticks, expected,
+                (lib_u32)modeled, fixture->fault.exception_mask);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_call_gate_timing(void)
+{
+    static const lib_u8 counts[] = {0u, 1u, 4u, 5u, 8u, 9u, 31u};
+
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 inner = 0u; inner < 2u; ++inner)
+    for (lib_u8 indirect = 0u; indirect < 2u; ++indirect)
+    for (lib_u8 row = 0u; row < sizeof(counts); ++row)
+    for (lib_u8 offset = 0u; offset < 2u; ++offset)
+    for (lib_u8 warm = 0u; warm < 16u; ++warm)
+    for (lib_u8 failure = 0u; failure < (inner && warm == 0u && offset == 0u ? 4u : 1u); ++failure) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 width = dword ? 4u : 2u;
+        const lib_u8 count = inner ? counts[row] : 0u;
+        const lib_u8 lines = count == 0u ? 0u : (offset + count * width + 15u) / 16u;
+        const lib_u32 pointer = indirect && (warm & 1u) == 0u;
+        const lib_u32 descriptors = (warm & 2u) ? 0u : inner ? 3u : 2u;
+        const lib_u32 tss = inner && (warm & 4u) == 0u;
+        const lib_u32 parameters = (warm & 8u) ? 0u : lines;
+        const lib_u64 expected = 7u * pointer + 3u * descriptors + 8u * tss + 4u * parameters +
+            (offset ? 3u * (inner ? count : 2u) : 0u);
+        lib_u8 code[8], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+        t_cpu after;
+
+        if (failure == 2u && count == 0u) continue;
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        cpu_instruction_prepare_protected_exception(fixture, 3u);
+        fixture->cpu.data.ds = fixture->cpu.data.ss;
+        fixture->cpu.data.ds.sregtype = SREG_DATA;
+        fixture->cpu.data.gdtr.base = 0x3000u;
+        fixture->cpu.data.gdtr.limit = 0x37u;
+        lib_memory_copy(fixture->memory + 0x3010u, (const lib_u8[]){0xffu, 0xffu, 0u, 0u, 0u,
+            inner ? 0x9bu : 0xfbu, 0u, 0u}, 8u);
+        lib_memory_copy(fixture->memory + 0x3020u,
+            (const lib_u8[]){0xffu, 0xffu, 0u, 0u, 0u, 0x93u, 0u, 0u}, 8u);
+        lib_memory_copy(fixture->memory + 0x3030u, (const lib_u8[]){0u, 1u, 0x10u, 0u,
+            counts[row], dword ? 0xecu : 0xe4u, 0u, 0u}, 8u);
+        fixture->cpu.data.tr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+            .sregtype = SREG_TR, .selector = 0x38u, .base = 0x2500u, .limit = 0x67u,
+            .sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY};
+        lib_memory_copy(fixture->memory + 0x2504u, &(lib_u32){0x2800u}, sizeof(lib_u32));
+        lib_memory_copy(fixture->memory + 0x2508u, &(lib_u16){0x20u}, sizeof(lib_u16));
+        lib_memory_copy(fixture->memory + 0x2000u + width, &(lib_u16){0x33u}, sizeof(lib_u16));
+        for (lib_u8 parameter = 0u; parameter < count; ++parameter)
+            lib_memory_copy(fixture->memory + 0x2300u + offset + width * parameter,
+                &(lib_u32){parameter + 1u}, width);
+        for (lib_u8 part = 0u; part < 4u; ++part) {
+            const lib_u16 starts[] = {0x2000u, 0x3010u, 0x2500u, 0x2300u};
+            const lib_u8 length = part == 1u ? 3u : part == 3u ? lines : 1u;
+
+            if ((warm & (1u << part)) == 0u) continue;
+            for (lib_u8 line = 0u; line < length; ++line) {
+                const lib_u16 address = starts[part] + 16u * line;
+                const lib_u8 load[] = {0xa0u, (lib_u8)address, (lib_u8)(address >> 8u)};
+
+                if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+            }
+        }
+        fixture->cpu.data.esp = 0x2300u + offset;
+        if (dword) code[bytes++] = 0x66u;
+        if (indirect) {
+            code[bytes++] = 0xffu;
+            code[bytes++] = 0x1eu;
+            code[bytes++] = 0u;
+            code[bytes++] = 0x20u;
+        } else {
+            code[bytes++] = 0x9au;
+            for (lib_u8 byte = 0u; byte < width; ++byte) code[bytes++] = 0u;
+            code[bytes++] = 0x33u;
+            code[bytes++] = 0u;
+        }
+        fixture->cpu.data.eip = 0u;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        probe.fail_read = failure == 1u || failure == 2u;
+        probe.fail_read_at = failure == 1u ? 0x2504u : 0x2300u;
+        probe.fail_write = failure == 3u;
+        const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
+        if (failure) {
+            if (!fixture->fault.valid ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled || probe.lock_active || probe.lock_protocol_error)
+                return LIB_FALSE;
+            continue;
+        }
+        if (status != LIB_STATUS_OK || fixture->fault.valid || fixture->delivered_exception.valid ||
+            after.data.eip != 0x100u || after.data.cs.dpl != (inner ? 0u : 3u) ||
+            after.data.esp != (inner ? 0x2800u : 0x2300u + offset) - width * (inner ? 4u + count : 2u) ||
+            fixture->instructions.data.timing_data_misses != pointer + descriptors + tss + parameters ||
+            fixture->instructions.data.timing_pair_misses != pointer ||
+            fixture->instructions.data.timing_tss_field_misses != tss ||
+            fixture->instructions.data.timing_descriptor_misses != descriptors ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (offset && parameters != 0u)) {
+            lib_c_printf("Call gate dword=%u inner=%u indirect=%u count=%u warm=%u: miss=%u/%u pair=%u tss=%u desc=%u ticks=%llu/%llu fault=%x eip=%x\n",
+                (lib_u32)dword, (lib_u32)inner, (lib_u32)indirect, (lib_u32)count, (lib_u32)warm,
+                fixture->instructions.data.timing_data_misses, pointer + descriptors + tss + parameters,
+                fixture->instructions.data.timing_pair_misses, fixture->instructions.data.timing_tss_field_misses,
+                fixture->instructions.data.timing_descriptor_misses, ticks, expected,
+                fixture->fault.exception_mask, after.data.eip);
+            return LIB_FALSE;
+        }
+        if (count) {
+            lib_u32 value = 0u;
+
+            lib_memory_copy(&value, fixture->memory + after.data.esp + 2u * width, width);
+            if (value != 1u) return LIB_FALSE;
+        }
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
+            fixture->instructions.data.timing_pair_misses != 0u ||
+            fixture->instructions.data.timing_tss_field_misses != 0u ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_task_timing(void)
+{
+    static const lib_u8 descriptor_counts[] = {6u, 8u, 2u, 9u};
+    static const lib_u8 cold_state[] = {16u, 34u, 34u, 34u};
+    static const lib_u8 partial_state[] = {11u, 29u, 29u, 29u};
+
+    for (lib_u8 mode = 0u; mode < 4u; ++mode)
+    for (lib_u8 form = 0u; form < 9u; ++form)
+    for (lib_u8 warm = 0u; warm < (form >= 5u ? 32u : 16u); ++warm)
+    for (lib_u8 failure = 0u; failure < (warm == 0u ? 6u : 1u); ++failure) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_bool task32 = mode != 0u, vm86 = mode == 2u, ldt = mode == 3u;
+        const lib_bool gated = form >= 5u;
+        const lib_bool indirect = form == 1u || form == 3u || form >= 7u, returning = form == 4u;
+        const lib_u8 lines = task32 ? 6u : 3u;
+        const lib_u32 pointer = indirect && (warm & 1u) == 0u;
+        const lib_u32 gate = gated && (warm & 16u) == 0u;
+        const lib_u32 descriptors = ((warm & 2u) ? 0u : descriptor_counts[mode]) + gate;
+        const lib_u8 residency = (warm >> 2u) & 3u;
+        const lib_u32 state = residency == 1u ? 0u : residency == 0u ? lines : lines - 1u;
+        const lib_u32 backlink = returning && residency != 1u;
+        const lib_u64 expected = 7u * pointer + 3u * (descriptors - (gate && (warm & 2u) == 0u)) +
+            (state == 0u ? 0u : state == lines ? cold_state[mode] : partial_state[mode]) + backlink;
+        lib_u8 code[5], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+        t_cpu after;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        cpu_instruction_prepare_protected_exception(fixture, 0u);
+        fixture->cpu.data.ds = fixture->cpu.data.ss;
+        fixture->cpu.data.ds.sregtype = SREG_DATA;
+        fixture->cpu.data.gdtr.base = 0x3000u;
+        fixture->cpu.data.gdtr.limit = gated ? 0xa7u : ldt ? 0x97u : 0x87u;
+        if (gated)
+            lib_memory_copy(fixture->memory + 0x30a0u,
+                (const lib_u8[]){0u, 0u, 0x80u, 0u, 0u, 0x85u, 0u, 0u}, 8u);
+        for (lib_u8 descriptor = 1u; descriptor <= 6u; ++descriptor)
+            lib_memory_copy(fixture->memory + (ldt ? 0x3200u : 0x3000u) + 16u * descriptor,
+                (const lib_u8[]){0xffu, 0xffu, 0u, 0u, 0u, descriptor == 1u ? 0x9bu : 0x93u, 0u, 0u}, 8u);
+        if (ldt)
+            lib_memory_copy(fixture->memory + 0x3090u,
+                (const lib_u8[]){0x67u, 0u, 0u, 0x32u, 0u, 0x82u, 0u, 0u}, 8u);
+        lib_memory_copy(fixture->memory + 0x3070u,
+            (const lib_u8[]){0x67u, 0u, 0u, 0x24u, 0u, 0x8bu, 0u, 0u}, 8u);
+        lib_memory_copy(fixture->memory + 0x3080u, (const lib_u8[]){task32 ? 0x67u : 0x2bu,
+            0u, 0u, 0x26u, 0u, (lib_u8)((task32 ? 0x89u : 0x81u) | (returning ? 2u : 0u)), 0u, 0u}, 8u);
+        fixture->cpu.data.tr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+            .sregtype = SREG_TR, .selector = 0x70u, .base = 0x2400u, .limit = 0x67u,
+            .sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY};
+        lib_memory_copy(fixture->memory + 0x2400u, &(lib_u16){0x80u}, sizeof(lib_u16));
+        lib_memory_copy(fixture->memory + 0x2002u, &(lib_u16){gated ? 0xa0u : 0x80u}, sizeof(lib_u16));
+        if (task32) {
+            const lib_u32 image[] = {0u, 0x100u, vm86 ? 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 2u,
+                0u, 0u, 0u, 0u, 0x2800u, 0u, 0u, 0u,
+                vm86 ? 0u : 0x40u | (ldt ? 4u : 0u), vm86 ? 0u : 0x10u | (ldt ? 4u : 0u),
+                vm86 ? 0u : 0x20u | (ldt ? 4u : 0u), vm86 ? 0u : 0x30u | (ldt ? 4u : 0u),
+                vm86 ? 0u : 0x50u | (ldt ? 4u : 0u), vm86 ? 0u : 0x60u | (ldt ? 4u : 0u),
+                ldt ? 0x90u : 0u};
+
+            lib_memory_copy(fixture->memory + 0x261cu, image, sizeof(image));
+        } else {
+            const lib_u16 image[] = {0x100u, 2u, 0u, 0u, 0u, 0u, 0x2800u,
+                0u, 0u, 0u, 0x40u, 0x10u, 0x20u, 0x30u, 0u};
+
+            lib_memory_copy(fixture->memory + 0x260eu, image, sizeof(image));
+        }
+        for (lib_u8 part = 0u; part < 3u; ++part) {
+            const lib_u16 starts[] = {0x2000u, 0x3010u, task32 ? 0x2610u : 0x2600u};
+            const lib_u8 count = part == 0u ? 1u : part == 1u ? (ldt ? 9u : 8u) :
+                residency == 1u ? lines : 1u;
+
+            if (part == 2u ? residency == 0u : (warm & (1u << part)) == 0u) continue;
+            for (lib_u8 line = 0u; line < count + (part == 2u && returning && residency == 1u); ++line) {
+                const lib_u16 address = line == count ? 0x2400u : part == 1u && ldt ?
+                    (line < 3u ? 0x3070u + 16u * line : 0x3210u + 16u * (line - 3u)) :
+                    part == 2u && residency == 3u ? starts[part] + 16u * (lines - 1u) :
+                    starts[part] + 16u * line;
+                const lib_u8 load[] = {0xa0u, (lib_u8)address, (lib_u8)(address >> 8u)};
+
+                if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+            }
+        }
+        if (gated && (warm & 16u) != 0u &&
+            !cache_run(fixture, (const lib_u8[]){0xa0u, 0xa0u, 0x30u}, 3u)) return LIB_FALSE;
+        fixture->cpu.data.esp = 0x2300u;
+        if (returning) {
+            fixture->cpu.data.eflags |= VCPU_EFLAGS_NT;
+            code[bytes++] = 0xcfu;
+        } else if (indirect) {
+            code[bytes++] = 0xffu;
+            code[bytes++] = form == 1u || form == 7u ? 0x2eu : 0x1eu;
+            code[bytes++] = 0u;
+            code[bytes++] = 0x20u;
+        } else {
+            code[bytes++] = form == 0u || form == 5u ? 0xeau : 0x9au;
+            code[bytes++] = 0u;
+            code[bytes++] = 0u;
+            code[bytes++] = gated ? 0xa0u : 0x80u;
+            code[bytes++] = 0u;
+        }
+        fixture->cpu.data.eip = 0u;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        probe.fail_read = failure != 0u && failure != 5u;
+        probe.fail_read_at = failure == 1u ? 0x3080u : failure == 2u ? 0x3070u :
+            failure == 3u ? (task32 ? 0x261cu : 0x260eu) : task32 ? 0x2660u : 0x2620u;
+        probe.fail_write = failure == 5u;
+        const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
+        if (failure) {
+            const lib_u32 accepted_state = failure <= 3u ? 0u : failure == 4u ? lines - 1u : lines;
+            const lib_u32 accepted_descriptors = (failure == 1u ? 0u : failure == 2u ? 1u : 2u) + gate;
+
+            if (!fixture->fault.valid ||
+                fixture->instructions.data.timing_data_misses != pointer + backlink +
+                    accepted_descriptors + accepted_state ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled || probe.lock_active || probe.lock_protocol_error)
+                return LIB_FALSE;
+            continue;
+        }
+        if (status != LIB_STATUS_OK || fixture->fault.valid || fixture->delivered_exception.valid ||
+            !fixture->execution.instruction_task_switched || after.data.eip != 0x100u ||
+            after.data.tr.selector != 0x80u || ((after.data.eflags & VCPU_EFLAGS_VM) != 0u) != vm86 ||
+            fixture->instructions.data.timing_data_misses != pointer + descriptors + state + backlink ||
+            fixture->instructions.data.timing_descriptor_misses != descriptors ||
+            fixture->instructions.data.timing_pair_misses != pointer ||
+            fixture->instructions.data.timing_tss_field_misses != backlink ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (pointer + descriptors + state + backlink != 0u)) {
+            lib_c_printf("Task memory mode=%u form=%u warm=%u: miss=%u/%u desc=%u pair=%u field=%u ticks=%llu/%llu model=%u fault=%x eip=%x\n",
+                (lib_u32)mode, (lib_u32)form, (lib_u32)warm,
+                fixture->instructions.data.timing_data_misses, pointer + descriptors + state + backlink,
+                fixture->instructions.data.timing_descriptor_misses, fixture->instructions.data.timing_pair_misses,
+                fixture->instructions.data.timing_tss_field_misses, ticks, expected,
+                (lib_u32)modeled, fixture->fault.exception_mask, after.data.eip);
+            return LIB_FALSE;
+        }
+        const t_cpu before_cpu = fixture->cpu;
+        const t_cpuins before_instructions = fixture->instructions;
+        const x86_core_cpu_execution_context before_execution = fixture->execution;
+        const lib_u32 data_reads = probe.data_reads, writes = fixture->writes;
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
+            lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
+            lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
+            data_reads != probe.data_reads || writes != fixture->writes) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -1696,8 +2673,7 @@ static lib_bool cache_translation_timing(void)
         lib_u32 entry = 0x11023u;
         lib_u64 ticks = 999u;
 
-        /* Cached and raced cases deliberately have no allocated numerical
-         * row; they must not silently inherit the cold 13-clock assumption. */
+        /* Cached/raced differential costs are L2, not cold E.2 source rows. */
         if ((cached && updates != 0u) || (raced && (updates != 2u || store))) continue;
         cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
             &cache_memory_bus, &probe);
@@ -1723,26 +2699,141 @@ static lib_bool cache_translation_timing(void)
             return LIB_FALSE;
         const t_cpuins_data *data = &fixture->instructions.data;
         const lib_u8 actual_updates = raced ? 1u : updates;
-        const lib_bool allocated = !cached && !raced;
-        if (data->timing_tlb_walks[actual_updates] != 1u ||
-            data->timing_tlb_walks[(actual_updates + 1u) % 3u] != 0u ||
-            data->timing_tlb_walks[(actual_updates + 2u) % 3u] != 0u ||
+        lib_bool modeled = LIB_FALSE;
+        if (data->timing_tlb_walks[updates] != 1u ||
+            data->timing_tlb_walks[(updates + 1u) % 3u] != 0u ||
+            data->timing_tlb_walks[(updates + 2u) % 3u] != 0u ||
             data->timing_table_misses != (cached ? 0u : 2u) ||
-            data->timing_tlb_update_attempts != (raced ? 2u : updates) ||
+            data->timing_tlb_updates != actual_updates ||
             data->timing_data_misses != (lib_u32)!store ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) != allocated ||
-            ticks != (allocated ? walk_ticks[updates] + (store ? 0u : 2u) : 999u)) {
-            lib_c_printf("Translation timing %u/%u/%u: walks=%u,%u,%u tables=%u attempts=%u data=%u ticks=%llu\n",
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            modeled != (cached || raced) ||
+            ticks != walk_ticks[updates] + (store ? 0u : 2u) - (cached ? 4u : raced ? 2u : 0u)) {
+            lib_c_printf("Translation timing %u/%u/%u: walks=%u,%u,%u tables=%u updates=%u data=%u ticks=%llu\n",
                 (lib_u32)store, (lib_u32)updates, (lib_u32)variant,
                 data->timing_tlb_walks[0], data->timing_tlb_walks[1], data->timing_tlb_walks[2],
-                data->timing_table_misses, data->timing_tlb_update_attempts,
+                data->timing_table_misses, data->timing_tlb_updates,
                 data->timing_data_misses, ticks);
             return LIB_FALSE;
         }
         ticks = 999u;
         if (!cache_run(fixture, store ? write : read, store ? sizeof(write) : sizeof(read)) ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks) || ticks != 0u)
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 0u)
             return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_translation_failure_timing(void)
+{
+    for (lib_u8 failure = 0u; failure < 4u; ++failure) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        lib_u32 entry = 0x11023u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG;
+        fixture->cpu.data.cr3 = 0x10000u;
+        fixture->cpu.data.ds.selector = 0x10u;
+        lib_memory_copy(fixture->memory + 0x10000u, &entry, sizeof(entry));
+        entry = 0x23u;
+        lib_memory_copy(fixture->memory + 0x11000u, &entry, sizeof(entry));
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u)) return LIB_FALSE;
+        entry = 0x11003u;
+        lib_memory_copy(fixture->memory + 0x10000u, &entry, sizeof(entry));
+        entry = 0x2003u;
+        lib_memory_copy(fixture->memory + 0x11010u, &entry, sizeof(entry));
+        probe.fail_table_read = failure == 0u;
+        probe.fail_second_read = failure == 1u;
+        probe.fail_page_write = failure == 2u;
+        probe.fail_read = failure == 3u;
+        if (cache_run(fixture, (const lib_u8[]){0xa1u, 0u, 0x40u}, 3u) ||
+            !fixture->fault.valid ||
+            fixture->instructions.data.timing_tlb_updates !=
+                (failure == 0u ? 1u : failure == 3u ? 2u : 0u) ||
+            fixture->instructions.data.timing_tlb_walks[0] != 0u ||
+            fixture->instructions.data.timing_tlb_walks[1] != 0u ||
+            fixture->instructions.data.timing_tlb_walks[2] != (lib_u32)(failure == 3u) ||
+            probe.lock_active || probe.lock_protocol_error ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 999u || !modeled)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_translation_residency_timing(void)
+{
+    static const lib_u64 cold_ticks[] = {13u, 21u, 28u};
+    static const lib_u8 warm_mask[] = {0u, 3u, 1u, 2u, 0u};
+
+    for (lib_u8 store = 0u; store < 2u; ++store)
+    for (lib_u8 updates = 0u; updates < 3u; ++updates)
+    for (lib_u8 residency = 0u; residency < 5u; ++residency) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 mask = warm_mask[residency];
+        const lib_u8 hits = (mask & 1u) + ((mask >> 1u) & 1u);
+        lib_u32 entry = 0x11023u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_FALSE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 = 0u;
+        fixture->cpu.data.ds.limit = LIB_UINT32_MAX;
+        probe.cache_page_tables = residency != 0u;
+        lib_memory_copy(fixture->memory + 0x10000u, &entry, sizeof(entry));
+        entry = 0x23u;
+        lib_memory_copy(fixture->memory + 0x11000u, &entry, sizeof(entry));
+        entry = updates == 2u ? 0x11003u : 0x11023u;
+        lib_memory_copy(fixture->memory + 0x10010u, &entry, sizeof(entry));
+        entry = store ? (updates ? 0x2023u : 0x2063u) : (updates ? 0x2003u : 0x2023u);
+        lib_memory_copy(fixture->memory + 0x11010u, &entry, sizeof(entry));
+        /* Prime through actual guest loads before enabling paging. Code and
+         * data use different directory/PTE lines, so code warmup cannot
+         * accidentally turn either intended cold entry into a hit. */
+        if ((mask & 1u) && !cache_run(fixture,
+                (const lib_u8[]){0x67u, 0xa1u, 0x10u, 0u, 1u, 0u}, 6u)) return LIB_FALSE;
+        if ((mask & 2u) && !cache_run(fixture,
+                (const lib_u8[]){0x67u, 0xa1u, 0x10u, 0x10u, 1u, 0u}, 6u)) return LIB_FALSE;
+        fixture->cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG;
+        fixture->cpu.data.cr3 = 0x10000u;
+        fixture->cpu.data.ds.selector = 0x10u;
+        fixture->cpu.data.ds.base = 0x01000000u;
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u)) return LIB_FALSE;
+        const lib_u8 read[] = {0xa1u, 0u, 0x40u};
+        const lib_u8 write[] = {0xc6u, 0x06u, 0u, 0x40u, 0x5au};
+        if (!cache_run(fixture, store ? write : read, store ? sizeof(write) : sizeof(read)))
+            return LIB_FALSE;
+        const t_cpuins_data *data = &fixture->instructions.data;
+        if (data->timing_table_misses != (lib_u32)(2u - hits) ||
+            data->timing_tlb_walks[updates] != 1u || data->timing_tlb_updates != updates ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != cold_ticks[updates] - 2u * hits + (store ? 0u : 2u) ||
+            modeled != (hits != 0u) || probe.lock_active || probe.lock_protocol_error) {
+            lib_c_printf("Translation residency store=%u updates=%u residency=%u: misses=%u ticks=%llu modeled=%u\n",
+                (lib_u32)store, (lib_u32)updates, (lib_u32)residency,
+                data->timing_table_misses, ticks, (lib_u32)modeled);
+            return LIB_FALSE;
+        }
+        const t_cpu before_cpu = fixture->cpu;
+        const t_cpuins before_instructions = fixture->instructions;
+        const x86_core_cpu_execution_context before_execution = fixture->execution;
+        const lib_u32 reads = probe.data_reads, writes = fixture->writes;
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
+            lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
+            lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
+            probe.data_reads != reads || fixture->writes != writes)
+            return LIB_FALSE;
+        modeled = LIB_TRUE;
+        if (!cache_run(fixture, store ? write : read, store ? sizeof(write) : sizeof(read)) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -1770,7 +2861,18 @@ int main(void)
     if (!cache_access_timing()) { lib_c_printf("Cache access timing failed\n"); return 1; }
     if (!cache_integer_timing()) { lib_c_printf("Cache integer timing failed\n"); return 1; }
     if (!cache_integer_alignment_timing()) { lib_c_printf("Cache integer alignment failed\n"); return 1; }
+    if (!cache_split_timing()) { lib_c_printf("Cache split timing failed\n"); return 1; }
+    if (!cache_stack_string_timing()) { lib_c_printf("Cache stack/string timing failed\n"); return 1; }
+    if (!cache_compare_timing()) { lib_c_printf("Cache compare timing failed\n"); return 1; }
+    if (!cache_stack_group_timing()) { lib_c_printf("Cache stack group timing failed\n"); return 1; }
+    if (!cache_descriptor_timing()) { lib_c_printf("Cache descriptor timing failed\n"); return 1; }
+    if (!cache_pair_timing()) { lib_c_printf("Cache pair timing failed\n"); return 1; }
+    if (!cache_far_timing()) { lib_c_printf("Cache far timing failed\n"); return 1; }
+    if (!cache_call_gate_timing()) { lib_c_printf("Cache call gate timing failed\n"); return 1; }
+    if (!cache_task_timing()) { lib_c_printf("Cache task timing failed\n"); return 1; }
     if (!cache_translation_timing()) { lib_c_printf("Cache translation timing failed\n"); return 1; }
+    if (!cache_translation_failure_timing()) { lib_c_printf("Cache translation failure timing failed\n"); return 1; }
+    if (!cache_translation_residency_timing()) { lib_c_printf("Cache translation residency timing failed\n"); return 1; }
     lib_c_printf("CPU cache state and access: OK\n");
     return 0;
 }

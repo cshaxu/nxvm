@@ -189,6 +189,16 @@ static lib_bool nominal_execution(void)
                 test->name, test->ticks, ticks);
             return LIB_FALSE;
         }
+        if (fixture.instructions.data.timing_data_misses == 0u &&
+            fixture.instructions.data.timing_locked_reads == 0u) {
+            lib_bool modeled = LIB_TRUE;
+
+            if (!x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled) ||
+                ticks != 3u * (lib_u64)fixture.instructions.data.timing_unaligned_accesses || modeled) {
+                lib_c_fprintf(lib_c_stderr, "Zero data surcharge: %s\n", test->name);
+                return LIB_FALSE;
+            }
+        }
         after = x86_core_cpu_capture_timing(&fixture.execution);
         if (before.ticks != after.ticks || before.key_id != after.key_id ||
             before.formula_inputs != after.formula_inputs ||
@@ -371,6 +381,16 @@ static lib_bool nominal_protection_queries(void)
                 (lib_u32)cpl, (lib_u32)code32, (lib_u32)memory,
                 (lib_u32)valid, (lib_u32)form, ticks);
             return LIB_FALSE;
+        }
+        {
+            static const lib_u8 operand_penalty[] = {0u, 2u, 3u, 4u, 4u};
+            const lib_u64 expected_penalty = (memory ? operand_penalty[form] : 0u) +
+                (form != 0u && valid ? 3u : 0u);
+            lib_bool modeled = LIB_TRUE;
+
+            if (fixture.instructions.data.timing_missed_descriptors != (lib_u32)(form != 0u && valid) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled) ||
+                ticks != expected_penalty || modeled) return LIB_FALSE;
         }
     }
     return LIB_TRUE;
@@ -863,8 +883,119 @@ static lib_bool nominal_ports(void)
                             fixture.instruction.delivered_exception.exception_mask, fixture.transfer_count);
                         return LIB_FALSE;
                     }
+                    if (!repeat) {
+                        const lib_u8 width = (opcode & 1u) == 0u ? 1u : dword ? 4u : 2u;
+                        const lib_u32 misses = (mode >= 2u ? 1u + width : 0u) +
+                            (lib_u32)(opcode == 0x6eu || opcode == 0x6fu);
+                        lib_bool modeled = LIB_TRUE;
+
+                        if (fixture.instruction.instructions.data.timing_data_misses != misses ||
+                            !x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled) ||
+                            ticks != 2u * (lib_u64)misses || modeled != (mode >= 2u))
+                            return LIB_FALSE;
+                    }
                 }
             }
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_status port_timing_query(void *opaque, lib_u32 address,
+    x86_core_cpu_cache_query query, x86_core_cpu_cache_memory *out_memory)
+{
+    (void)opaque;
+    *out_memory = (x86_core_cpu_cache_memory){.address = address,
+        .fill_enabled = query == X86_CORE_CPU_CACHE_FILL_PROBE && address >= 0x600u};
+    return LIB_STATUS_OK;
+}
+
+static lib_bool port_memory_timing(void)
+{
+    static const lib_u8 opcodes[] = {0xe4u, 0xe5u, 0xe6u, 0xe7u, 0xecu, 0xedu,
+        0xeeu, 0xefu, 0x6cu, 0x6du, 0x6eu, 0x6fu};
+
+    for (lib_u8 mode = 0u; mode < 4u; ++mode)
+    for (lib_size row = 0u; row < sizeof(opcodes); ++row)
+    for (lib_u8 dword = 0u; dword < 2u; ++dword)
+    for (lib_u8 warm = 0u; warm < 8u; ++warm)
+    for (lib_u8 failure = 0u; failure < (warm == 0u ? 2u : 1u); ++failure) {
+        cpu_port_instruction_fixture fixture;
+        const lib_u8 opcode = opcodes[row];
+        const lib_u8 width = (opcode & 1u) == 0u ? 1u : dword ? 4u : 2u;
+        const lib_u16 addresses[] = {0x666u, 0x68fu, 0x200fu};
+        const lib_bool permission = mode >= 2u, output = opcode == 0x6eu || opcode == 0x6fu;
+        const lib_u32 permission_misses = permission ? ((warm & 1u) ? 0u : 1u) +
+            ((warm & 2u) ? 0u : width == 1u ? 1u : 2u) : 0u;
+        const lib_u32 data_misses = output && (warm & 4u) == 0u ? (width == 1u ? 1u : 2u) : 0u;
+        const lib_u32 misses = permission_misses + data_misses;
+        const lib_u32 reads = permission_misses + (lib_u32)(data_misses != 0u);
+        lib_u8 code[3], bytes = 0u;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+        t_cpu after;
+        x86_core_cpu_bus_provider bus = cpu_port_bus;
+
+        cpu_port_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        bus.query_cache_memory = port_timing_query;
+        fixture.instruction.execution.bus = &bus;
+        fixture.instruction.cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        lib_memory_copy(fixture.instruction.memory + 0x666u, &(lib_u16){0x80u}, sizeof(lib_u16));
+        for (lib_u8 part = 0u; part < 3u; ++part) {
+            const lib_u8 load[] = {0x66u, 0xa1u, (lib_u8)addresses[part], (lib_u8)(addresses[part] >> 8u)};
+
+            if ((warm & (1u << part)) == 0u) continue;
+            fixture.instruction.cpu.data.eip = 0u;
+            x86_core_cpu_execution_invalidate_prefetch(&fixture.instruction.execution);
+            if (cpu_instruction_run(&fixture.instruction, load, sizeof(load), &after) != LIB_STATUS_OK ||
+                fixture.instruction.fault.valid || fixture.instruction.delivered_exception.valid)
+                return LIB_FALSE;
+        }
+        fixture.instruction.cpu.data.esp = 0x8000u;
+        fixture.instruction.cpu.data.edx = 0x7fu;
+        fixture.instruction.cpu.data.esi = 0x200fu;
+        fixture.instruction.cpu.data.edi = 0x3000u;
+        if (mode) {
+            fixture.instruction.cpu.data.cr0 |= VCPU_CR0_PE;
+            fixture.instruction.cpu.data.cs.dpl = mode == 1u ? 0u : 3u;
+            fixture.instruction.cpu.data.ss.dpl = fixture.instruction.cpu.data.cs.dpl;
+            fixture.instruction.cpu.data.ds.selector = fixture.instruction.cpu.data.es.selector =
+                (lib_u16)(0x10u | fixture.instruction.cpu.data.cs.dpl);
+            fixture.instruction.cpu.data.ds.dpl = fixture.instruction.cpu.data.es.dpl =
+                fixture.instruction.cpu.data.cs.dpl;
+            if (mode == 3u) fixture.instruction.cpu.data.eflags |= VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL;
+            fixture.instruction.cpu.data.tr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+                .selector = 0x28u, .base = 0x600u, .limit = 0xffu, .sregtype = SREG_TR,
+                .sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY};
+        }
+        if (dword) code[bytes++] = 0x66u;
+        code[bytes++] = opcode;
+        if (opcode >= 0xe4u && opcode <= 0xe7u) code[bytes++] = 0x7fu;
+        fixture.instruction.cpu.data.eip = 0u;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture.instruction.execution);
+        fixture.fail_status = failure ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+        const lib_u64 expected = 2u * (lib_u64)reads + 5u * (lib_u64)(misses - reads) +
+            (output && width != 1u ? 3u : 0u);
+        const lib_status status = cpu_instruction_run(&fixture.instruction, code, bytes, &after);
+        if (failure) {
+            if (!fixture.instruction.fault.valid || fixture.transfer_count != 0u || fixture.complete_count != 0u ||
+                fixture.instruction.instructions.data.timing_data_misses != misses ||
+                x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled) ||
+                ticks != 999u || !modeled) return LIB_FALSE;
+            continue;
+        }
+        if (status != LIB_STATUS_OK ||
+            fixture.instruction.fault.valid || fixture.instruction.delivered_exception.valid ||
+            fixture.transfer_count != 1u || fixture.complete_count != 1u ||
+            fixture.instruction.instructions.data.timing_data_misses != misses ||
+            fixture.instruction.instructions.data.timing_missed_reads != reads ||
+            !x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled) ||
+            ticks != expected || modeled != (misses != 0u && (permission || data_misses > 1u))) {
+            lib_c_printf("Port memory mode=%u opcode=%x dword=%u warm=%u: misses=%u/%u reads=%u/%u ticks=%llu/%llu\n",
+                (lib_u32)mode, (lib_u32)opcode, (lib_u32)dword, (lib_u32)warm,
+                fixture.instruction.instructions.data.timing_data_misses, misses,
+                fixture.instruction.instructions.data.timing_missed_reads, reads, ticks, expected);
+            return LIB_FALSE;
         }
     }
     return LIB_TRUE;
@@ -1644,7 +1775,7 @@ int main(void)
         !nominal_protection_queries() || !nominal_exchange_memory() || !nominal_system_forms() ||
         !nominal_rejects_unowned() || !nominal_modes() ||
         !nominal_cpuid() || !nominal_bit_scan() || !nominal_unsigned_multiply() ||
-        !nominal_ports() || !nominal_repeat_first() || !timing_decode_facts() ||
+        !nominal_ports() || !port_memory_timing() || !nominal_repeat_first() || !timing_decode_facts() ||
         !nominal_protected_transfers() || !timing_prefix_penalties() ||
         !timing_decode_penalties() || !timing_dependency_writers() ||
         !timing_dependency_adjacency() || !arithmetic_model_multiply() ||

@@ -65,9 +65,10 @@ lib_u64 x86_core_cpu_80486_exception_setup_cost(
     const x86_core_cpu_execution_context *context, lib_u8 vector);
 
 /* Memory subtotal only; fetch-cache, prefixes, EA and event setup have separate
- * source terms. Unallocated access combinations leave the output unchanged. */
+ * source terms. Optional modeled identifies L2 operand/translation estimates.
+ * Unallocated/failed accesses leave both outputs unchanged. */
 lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled);
 
 /* Per decoded instruction, not per REP continuation. E-11 prefixes and the
  * E.2 index/displacement assumptions; nominal LEA already includes its index.

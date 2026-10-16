@@ -117,14 +117,21 @@ typedef struct {
     lib_u16 timing_previous_opcode;
     lib_bool timing_stack_access;
     /* Actual completed access facts, not a second cache/TLB state. The walk
-     * histogram is indexed by zero, one or two published A/D updates. */
+     * histogram is indexed by zero, one or two attempted A/D updates in a
+     * completed walk. Writes also retain the accepted prefix of failed walks. */
     lib_u32 timing_fetch_bus_ticks; /* L2 serialized 2-1 burst baseline; waits are external. */
     lib_u32 timing_data_misses;
+    lib_u32 timing_missed_reads; /* Completed logical DATA reads with a physical miss. */
+    lib_u32 timing_descriptor_misses;
+    lib_u32 timing_missed_descriptors;
+    lib_u8 timing_task_gate_miss_mask;
+    lib_u32 timing_pair_misses;
+    lib_u32 timing_tss_field_misses;
     lib_u32 timing_locked_reads;
     lib_u32 timing_table_misses;
     lib_u32 timing_unaligned_accesses;
     lib_u32 timing_tlb_walks[3];
-    lib_u32 timing_tlb_update_attempts;
+    lib_u32 timing_tlb_updates;
     lib_bool memory_lock_active; /* Actual LOCK signal, not lexical prefix. */
     lib_u8 source_lsl_granularity_valid;
     lib_u8 source_lsl_page_granular;
