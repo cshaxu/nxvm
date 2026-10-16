@@ -131,7 +131,7 @@ lib_i32 main(void)
 
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)
         return 1;
-    failed |= test_core_machine_fixture_register_reset_mapping(machine,
+    failed |= test_x86_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK ||
         x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
         x86_core_machine_bind_execution_provider(machine, &scheduler_provider,

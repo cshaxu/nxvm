@@ -6,7 +6,7 @@
 
 /* Privilege state comes from guest LGDT/LMSW/LTR/IRETD, not borrowed caches.
  * Setup time remains on the one timeline; the row measures only its own cost. */
-static inline lib_i32 test_core_80386_enter_port_mode(x86_core_machine *machine,
+static inline lib_i32 test_x86_core_80386_enter_port_mode(x86_core_machine *machine,
     lib_i32 mode, const lib_u8 *program, lib_size bytes, lib_u8 bitmap,
     lib_u64 *out_setup_ticks)
 {

@@ -4,26 +4,26 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "x86-nxvm/board-base/media_interface.h"
 
-static const x86_nxvm_board_config core_machine_dma_binding_token_config = {
+static const x86_nxvm_board_config x86_nxvm_test_dma_binding_token_config = {
     .memory_bytes = (2u * 1024u * 1024u),
     .cpu_profile = X86_CORE_CPU_PROFILE_8086,
     .fpu_profile = X86_FPU_PROFILE_NONE,
     .ticks_per_instruction = 1u
 };
 
-static const x86_nxvm_board_dma_wiring core_machine_dma_binding_token_wiring = {
+static const x86_nxvm_board_dma_wiring x86_nxvm_test_dma_binding_token_wiring = {
     .fdc_channel = 2u,
     .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
     .cascade_channel = X86_NXVM_BOARD_DMA_CASCADE_CHANNEL
 };
 
-static const x86_nxvm_board_fdc_config core_machine_dma_binding_token_fdc_config = {
+static const x86_nxvm_board_fdc_config x86_nxvm_test_dma_binding_token_fdc_config = {
     .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
     .direction_port = 0x03f7u, .control_port = 0x03f7u,
     .irq = 6u, .dma_channel = 2u
 };
 
-static x86_nxvm_board_fdc_topology core_machine_dma_binding_token_topology(
+static x86_nxvm_board_fdc_topology x86_nxvm_test_dma_binding_token_topology(
     x86_nxvm_board_media_registry *media,
     x86_nxvm_board_dma_request_binding request)
 {
@@ -35,7 +35,7 @@ static x86_nxvm_board_fdc_topology core_machine_dma_binding_token_topology(
     topology.drives.media_id[2] = X86_NXVM_BOARD_MEDIA_ID_INVALID;
     topology.drives.media_id[3] = X86_NXVM_BOARD_MEDIA_ID_INVALID;
     topology.dma_request = request;
-    topology.config = core_machine_dma_binding_token_fdc_config;
+    topology.config = x86_nxvm_test_dma_binding_token_fdc_config;
     return topology;
 }
 
@@ -53,13 +53,13 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (x86_nxvm_board_media_registry_create(&media) != LIB_STATUS_OK ||
-        x86_nxvm_board_create(&core_machine_dma_binding_token_config, &first, &first_board) !=
+        x86_nxvm_board_create(&x86_nxvm_test_dma_binding_token_config, &first, &first_board) !=
             LIB_STATUS_OK ||
-        x86_nxvm_board_create(&core_machine_dma_binding_token_config, &second, &second_board) !=
+        x86_nxvm_board_create(&x86_nxvm_test_dma_binding_token_config, &second, &second_board) !=
             LIB_STATUS_OK ||
-        x86_nxvm_board_configure_dma(first_board, &core_machine_dma_binding_token_wiring,
+        x86_nxvm_board_configure_dma(first_board, &x86_nxvm_test_dma_binding_token_wiring,
             &first_request) != LIB_STATUS_OK ||
-        x86_nxvm_board_configure_dma(second_board, &core_machine_dma_binding_token_wiring,
+        x86_nxvm_board_configure_dma(second_board, &x86_nxvm_test_dma_binding_token_wiring,
             &second_request) != LIB_STATUS_OK ||
         first_request.core_token == 0u || second_request.core_token == 0u ||
         first_request.core_token == second_request.core_token) {
@@ -67,8 +67,8 @@ lib_i32 main(void)
         goto done;
     }
 
-    first_topology = core_machine_dma_binding_token_topology(media, first_request);
-    second_topology = core_machine_dma_binding_token_topology(media, second_request);
+    first_topology = x86_nxvm_test_dma_binding_token_topology(media, first_request);
+    second_topology = x86_nxvm_test_dma_binding_token_topology(media, second_request);
     if (x86_nxvm_board_configure_fdc(first_board, &second_topology) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         x86_nxvm_board_configure_fdc(second_board, &first_topology) !=

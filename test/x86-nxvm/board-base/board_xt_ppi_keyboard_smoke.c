@@ -6,7 +6,7 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "x86-core/machine/debug_interface.h"
 
-static lib_i32 core_machine_xt_ppi_keyboard_path(void)
+static lib_i32 x86_nxvm_test_xt_ppi_keyboard_path(void)
 {
     const x86_nxvm_board_config configuration = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -137,7 +137,7 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     return failed;
 }
 
-static lib_i32 core_machine_xt_ppi_does_not_change_at_8042(void)
+static lib_i32 x86_nxvm_test_xt_ppi_does_not_change_at_8042(void)
 {
     const x86_nxvm_board_config configuration = {
         .memory_bytes = (2u * 1024u * 1024u)
@@ -161,7 +161,7 @@ static lib_i32 core_machine_xt_ppi_does_not_change_at_8042(void)
     return failed;
 }
 
-static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
+static lib_i32 x86_nxvm_test_xt_ppi_parity_nmi_path(void)
 {
     const x86_nxvm_board_config configuration = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -223,7 +223,7 @@ static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
 
 /* Exact BAT/repeat/serial boundaries drive the real keyboard input. The
  * separate deadline case below verifies Machine-to-Board clock delivery. */
-static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
+static lib_i32 x86_nxvm_test_xt_keyboard_reset_bat_path(void)
 {
     const x86_nxvm_board_config configuration = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -302,7 +302,7 @@ static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
     return failed;
 }
 
-static lib_i32 core_machine_xt_keyboard_repeat_path(void)
+static lib_i32 x86_nxvm_test_xt_keyboard_repeat_path(void)
 {
     const x86_nxvm_board_config configuration = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -356,7 +356,7 @@ static lib_i32 core_machine_xt_keyboard_repeat_path(void)
     return failed;
 }
 
-static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
+static lib_i32 x86_nxvm_test_xt_keyboard_refused_completion(lib_bool bat,
     lib_bool reset_pending, lib_bool mode_release)
 {
     const x86_nxvm_board_config configuration = {
@@ -446,7 +446,7 @@ static void xt_teardown_speaker(void *owner, lib_u8 gate, lib_u8 data)
     if (observation->pit_stopped) observation->speaker_after_pit = LIB_TRUE;
 }
 
-static lib_i32 core_machine_xt_teardown_order(void)
+static lib_i32 x86_nxvm_test_xt_teardown_order(void)
 {
     const x86_nxvm_board_config configuration = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -475,7 +475,7 @@ static lib_i32 core_machine_xt_teardown_order(void)
     return failed;
 }
 
-static lib_i32 core_machine_xt_keyboard_deadline_path(void)
+static lib_i32 x86_nxvm_test_xt_keyboard_deadline_path(void)
 {
     const x86_nxvm_board_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -515,18 +515,18 @@ static lib_i32 core_machine_xt_keyboard_deadline_path(void)
 
 int main(void)
 {
-    if (core_machine_xt_teardown_order() || core_machine_xt_ppi_keyboard_path() ||
-        core_machine_xt_ppi_does_not_change_at_8042() ||
-        core_machine_xt_ppi_parity_nmi_path() ||
-        core_machine_xt_keyboard_deadline_path() ||
-        core_machine_xt_keyboard_reset_bat_path() ||
-        core_machine_xt_keyboard_repeat_path() ||
-        core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_FALSE) ||
-        core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_FALSE) ||
-        core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_TRUE, LIB_FALSE) ||
-        core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_TRUE, LIB_FALSE) ||
-        core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_TRUE) ||
-        core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_TRUE)) return 1;
+    if (x86_nxvm_test_xt_teardown_order() || x86_nxvm_test_xt_ppi_keyboard_path() ||
+        x86_nxvm_test_xt_ppi_does_not_change_at_8042() ||
+        x86_nxvm_test_xt_ppi_parity_nmi_path() ||
+        x86_nxvm_test_xt_keyboard_deadline_path() ||
+        x86_nxvm_test_xt_keyboard_reset_bat_path() ||
+        x86_nxvm_test_xt_keyboard_repeat_path() ||
+        x86_nxvm_test_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_FALSE) ||
+        x86_nxvm_test_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_FALSE) ||
+        x86_nxvm_test_xt_keyboard_refused_completion(LIB_FALSE, LIB_TRUE, LIB_FALSE) ||
+        x86_nxvm_test_xt_keyboard_refused_completion(LIB_TRUE, LIB_TRUE, LIB_FALSE) ||
+        x86_nxvm_test_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_TRUE) ||
+        x86_nxvm_test_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_TRUE)) return 1;
     lib_c_printf("XT-PPI-KEYBOARD:OK\n");
     lib_c_printf("XT-IRQ1-RESET:OK\n");
     lib_c_printf("NO-8042-ALIAS:OK\n");

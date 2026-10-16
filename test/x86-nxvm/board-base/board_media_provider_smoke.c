@@ -3,7 +3,7 @@
 
 #include "x86-nxvm/board-base/media_interface.h"
 
-typedef struct core_machine_media_fixture {
+typedef struct x86_nxvm_test_media_fixture {
     lib_u8 bytes[2048];
     x86_nxvm_board_media_address_mark marks[4];
     lib_u64 generation;
@@ -14,12 +14,12 @@ typedef struct core_machine_media_fixture {
     lib_u32 bytes_per_sector;
     lib_u32 reads;
     lib_u32 writes;
-} core_machine_media_fixture;
+} x86_nxvm_test_media_fixture;
 
-static x86_nxvm_board_media_result core_machine_media_fixture_query(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_query(void *context,
     x86_nxvm_board_media_info *out_info)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
 
     if (fixture == LIB_NULL || out_info == LIB_NULL) return X86_NXVM_BOARD_MEDIA_RESULT_PERMANENT;
     out_info->generation = fixture->generation;
@@ -40,10 +40,10 @@ static x86_nxvm_board_media_result core_machine_media_fixture_query(void *contex
     return fixture->present ? X86_NXVM_BOARD_MEDIA_RESULT_OK : X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_read(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_read(void *context,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
 
     if (fixture == LIB_NULL || !fixture->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     ++fixture->reads;
@@ -57,10 +57,10 @@ static x86_nxvm_board_media_result core_machine_media_fixture_read(void *context
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_write(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_write(void *context,
     lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
 
     if (fixture == LIB_NULL || !fixture->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (fixture->read_only) return X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY;
@@ -71,10 +71,10 @@ static x86_nxvm_board_media_result core_machine_media_fixture_write(void *contex
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_format(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_format(void *context,
     lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
     lib_u64 offset = logical_sector * 4u;
     lib_u32 bytes = sector_count * 4u;
 
@@ -87,20 +87,20 @@ static x86_nxvm_board_media_result core_machine_media_fixture_format(void *conte
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_flush(void *context)
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_flush(void *context)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
 
     if (fixture == LIB_NULL || !fixture->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     ++fixture->flush_count;
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_get_address_mark(
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_get_address_mark(
     void *context, lib_u64 logical_sector,
     x86_nxvm_board_media_address_mark *out_mark)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
 
     if (fixture == LIB_NULL || !fixture->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (out_mark == LIB_NULL || logical_sector >= 4u)
@@ -109,11 +109,11 @@ static x86_nxvm_board_media_result core_machine_media_fixture_get_address_mark(
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_set_address_mark(
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_set_address_mark(
     void *context, lib_u64 logical_sector,
     x86_nxvm_board_media_address_mark mark)
 {
-    core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
+    x86_nxvm_test_media_fixture *fixture = (x86_nxvm_test_media_fixture *)context;
 
     if (fixture == LIB_NULL || !fixture->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (fixture->read_only) return X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY;
@@ -125,11 +125,11 @@ static x86_nxvm_board_media_result core_machine_media_fixture_set_address_mark(
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_media_fixture_get_invalid_address_mark(
+static x86_nxvm_board_media_result x86_nxvm_test_media_fixture_get_invalid_address_mark(
     void *context, lib_u64 logical_sector,
     x86_nxvm_board_media_address_mark *out_mark)
 {
-    x86_nxvm_board_media_result result = core_machine_media_fixture_get_address_mark(
+    x86_nxvm_board_media_result result = x86_nxvm_test_media_fixture_get_address_mark(
         context, logical_sector, out_mark);
 
     if (result == X86_NXVM_BOARD_MEDIA_RESULT_OK) {
@@ -138,14 +138,14 @@ static x86_nxvm_board_media_result core_machine_media_fixture_get_invalid_addres
     return result;
 }
 
-static lib_i32 core_machine_media_record_fallback(void)
+static lib_i32 x86_nxvm_test_media_record_fallback(void)
 {
     static const x86_nxvm_board_media_provider provider = {
-        .query = core_machine_media_fixture_query,
-        .read_bytes = core_machine_media_fixture_read,
-        .write_bytes = core_machine_media_fixture_write,
+        .query = x86_nxvm_test_media_fixture_query,
+        .read_bytes = x86_nxvm_test_media_fixture_read,
+        .write_bytes = x86_nxvm_test_media_fixture_write,
     };
-    core_machine_media_fixture fixture = {.present = LIB_TRUE, .bytes_per_sector = 512u};
+    x86_nxvm_test_media_fixture fixture = {.present = LIB_TRUE, .bytes_per_sector = 512u};
     x86_nxvm_board_media_registry *registry = LIB_NULL;
     x86_nxvm_board_media_record record = {.data = {0xabu}, .ecc = {1u, 2u, 3u, 4u},
         .ecc_present = LIB_TRUE};
@@ -204,35 +204,35 @@ static lib_i32 core_machine_media_record_fallback(void)
 lib_i32 main(void)
 {
     static const x86_nxvm_board_media_provider provider = {
-        .query = core_machine_media_fixture_query,
-        .read_bytes = core_machine_media_fixture_read,
-        .write_bytes = core_machine_media_fixture_write,
-        .format_sectors = core_machine_media_fixture_format,
-        .flush = core_machine_media_fixture_flush,
-        .get_address_mark = core_machine_media_fixture_get_address_mark,
-        .set_address_mark = core_machine_media_fixture_set_address_mark,
+        .query = x86_nxvm_test_media_fixture_query,
+        .read_bytes = x86_nxvm_test_media_fixture_read,
+        .write_bytes = x86_nxvm_test_media_fixture_write,
+        .format_sectors = x86_nxvm_test_media_fixture_format,
+        .flush = x86_nxvm_test_media_fixture_flush,
+        .get_address_mark = x86_nxvm_test_media_fixture_get_address_mark,
+        .set_address_mark = x86_nxvm_test_media_fixture_set_address_mark,
     };
     static const x86_nxvm_board_media_provider unsupported_provider = {
-        .query = core_machine_media_fixture_query,
-        .read_bytes = core_machine_media_fixture_read,
-        .write_bytes = core_machine_media_fixture_write,
-        .format_sectors = core_machine_media_fixture_format,
-        .flush = core_machine_media_fixture_flush,
+        .query = x86_nxvm_test_media_fixture_query,
+        .read_bytes = x86_nxvm_test_media_fixture_read,
+        .write_bytes = x86_nxvm_test_media_fixture_write,
+        .format_sectors = x86_nxvm_test_media_fixture_format,
+        .flush = x86_nxvm_test_media_fixture_flush,
     };
     static const x86_nxvm_board_media_provider invalid_provider = {
-        .query = core_machine_media_fixture_query,
-        .read_bytes = core_machine_media_fixture_read,
-        .write_bytes = core_machine_media_fixture_write,
-        .format_sectors = core_machine_media_fixture_format,
-        .flush = core_machine_media_fixture_flush,
-        .get_address_mark = core_machine_media_fixture_get_invalid_address_mark,
-        .set_address_mark = core_machine_media_fixture_set_address_mark,
+        .query = x86_nxvm_test_media_fixture_query,
+        .read_bytes = x86_nxvm_test_media_fixture_read,
+        .write_bytes = x86_nxvm_test_media_fixture_write,
+        .format_sectors = x86_nxvm_test_media_fixture_format,
+        .flush = x86_nxvm_test_media_fixture_flush,
+        .get_address_mark = x86_nxvm_test_media_fixture_get_invalid_address_mark,
+        .set_address_mark = x86_nxvm_test_media_fixture_set_address_mark,
     };
     x86_nxvm_board_media_registry *registry = LIB_NULL;
-    core_machine_media_fixture first = {.generation = 7u, .present = LIB_TRUE};
-    core_machine_media_fixture second = {.generation = 3u};
-    core_machine_media_fixture unsupported = {.generation = 4u, .present = LIB_TRUE};
-    core_machine_media_fixture invalid = {.generation = 5u, .present = LIB_TRUE};
+    x86_nxvm_test_media_fixture first = {.generation = 7u, .present = LIB_TRUE};
+    x86_nxvm_test_media_fixture second = {.generation = 3u};
+    x86_nxvm_test_media_fixture unsupported = {.generation = 4u, .present = LIB_TRUE};
+    x86_nxvm_test_media_fixture invalid = {.generation = 5u, .present = LIB_TRUE};
     x86_nxvm_board_media_info info;
     x86_nxvm_board_media_result result = X86_NXVM_BOARD_MEDIA_RESULT_PERMANENT;
     x86_nxvm_board_media_address_mark mark = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
@@ -314,7 +314,7 @@ lib_i32 main(void)
             sizeof(readback), &result) != LIB_STATUS_OK ||
         result != X86_NXVM_BOARD_MEDIA_RESULT_PERMANENT)) failed = 1;
     x86_nxvm_board_media_registry_destroy(registry);
-    failed |= core_machine_media_record_fallback();
+    failed |= x86_nxvm_test_media_record_fallback();
     if (failed) return 1;
     lib_c_printf("MEDIA-PROVIDER:OK\n");
     lib_c_printf("MEDIA-ADDRESS-MARK:OK\n");

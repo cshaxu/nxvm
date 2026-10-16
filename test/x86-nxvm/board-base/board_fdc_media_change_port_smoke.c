@@ -7,12 +7,12 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "x86-nxvm/board-base/media_interface.h"
 
-typedef struct core_machine_fdc_change_media {
+typedef struct x86_nxvm_test_fdc_change_media {
     lib_u64 generation;
     lib_u8 present;
-} core_machine_fdc_change_media;
+} x86_nxvm_test_fdc_change_media;
 
-static void core_machine_fdc_change_require(lib_i32 *failed,
+static void x86_nxvm_test_fdc_change_require(lib_i32 *failed,
     lib_i32 *first_failure, lib_i32 step, lib_i32 condition)
 {
     if (!condition) return;
@@ -20,10 +20,10 @@ static void core_machine_fdc_change_require(lib_i32 *failed,
     if (*first_failure == 0) *first_failure = step;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_change_query(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_change_query(void *context,
     x86_nxvm_board_media_info *out_info)
 {
-    core_machine_fdc_change_media *media = context;
+    x86_nxvm_test_fdc_change_media *media = context;
 
     if (media == LIB_NULL || out_info == LIB_NULL) {
         return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
@@ -42,10 +42,10 @@ static x86_nxvm_board_media_result core_machine_fdc_change_query(void *context,
     return media->present ? X86_NXVM_BOARD_MEDIA_RESULT_OK : X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_change_read(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_change_read(void *context,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
-    core_machine_fdc_change_media *media = context;
+    x86_nxvm_test_fdc_change_media *media = context;
 
     if (media == LIB_NULL || buffer == LIB_NULL || !media->present) {
         return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -55,12 +55,12 @@ static x86_nxvm_board_media_result core_machine_fdc_change_read(void *context,
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static const x86_nxvm_board_media_provider core_machine_fdc_change_provider = {
-    .query = core_machine_fdc_change_query,
-    .read_bytes = core_machine_fdc_change_read,
+static const x86_nxvm_board_media_provider x86_nxvm_test_fdc_change_provider = {
+    .query = x86_nxvm_test_fdc_change_query,
+    .read_bytes = x86_nxvm_test_fdc_change_read,
 };
 
-static void core_machine_fdc_change_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static void x86_nxvm_test_fdc_change_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -71,21 +71,21 @@ static void core_machine_fdc_change_command(x86_nxvm_board_fdc *fdc, x86_core_ma
     test_fdc_advance(fdc);
 }
 
-static lib_bool core_machine_fdc_change_ack_irq(x86_nxvm_board_fdc *fdc, x86_core_machine *port)
+static lib_bool x86_nxvm_test_fdc_change_ack_irq(x86_nxvm_board_fdc *fdc, x86_core_machine *port)
 {
     if (!test_fdc_finish_seeks(fdc)) return LIB_FALSE;
-    core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    x86_nxvm_test_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)test_fdc_port_read(port, 0x03f5u);
     (void)test_fdc_port_read(port, 0x03f5u);
     return LIB_TRUE;
 }
 
-static lib_bool core_machine_fdc_change_drain_reset(x86_nxvm_board_fdc *fdc, x86_core_machine *port)
+static lib_bool x86_nxvm_test_fdc_change_drain_reset(x86_nxvm_board_fdc *fdc, x86_core_machine *port)
 {
     lib_u8 drive;
 
     for (drive = 0u; drive < X86_NXVM_BOARD_FDC_DRIVE_COUNT; ++drive) {
-        if (!core_machine_fdc_change_ack_irq(fdc, port)) return LIB_FALSE;
+        if (!x86_nxvm_test_fdc_change_ack_irq(fdc, port)) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -116,8 +116,8 @@ int main(void)
     const x86_nxvm_board_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
         .cascade_channel = X86_NXVM_BOARD_DMA_CASCADE_CHANNEL };
-    core_machine_fdc_change_media drive0 = {.generation = 10u, .present = LIB_FALSE};
-    core_machine_fdc_change_media drive1 = {.generation = 30u, .present = LIB_TRUE};
+    x86_nxvm_test_fdc_change_media drive0 = {.generation = 10u, .present = LIB_FALSE};
+    x86_nxvm_test_fdc_change_media drive1 = {.generation = 30u, .present = LIB_TRUE};
     x86_nxvm_board_media_registry *media = LIB_NULL;
     x86_nxvm_board_dma_request_binding dma_request = {0};
     x86_nxvm_board_fdc_topology topology = {0};
@@ -138,9 +138,9 @@ int main(void)
         port = machine;
         if (fdc == LIB_NULL || dma == LIB_NULL || port == LIB_NULL ||
             x86_nxvm_board_media_registry_bind(media, 21u, &drive0,
-                &core_machine_fdc_change_provider) != LIB_STATUS_OK ||
+                &x86_nxvm_test_fdc_change_provider) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_bind(media, 22u, &drive1,
-                &core_machine_fdc_change_provider) != LIB_STATUS_OK ||
+                &x86_nxvm_test_fdc_change_provider) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_freeze(media) != LIB_STATUS_OK ||
             x86_nxvm_board_configure_dma(board, &dma_wiring, &dma_request) !=
                 LIB_STATUS_OK) {
@@ -156,125 +156,125 @@ int main(void)
                 failed = 1;
             } else {
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_change_require(&failed, &first_failure, 1,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 1,
                     (test_fdc_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u);
-                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
-                core_machine_fdc_change_command(fdc, port, recalibrate_0,
+                failed |= !x86_nxvm_test_fdc_change_drain_reset(fdc, port);
+                x86_nxvm_test_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !x86_nxvm_test_fdc_change_ack_irq(fdc, port);
                 test_fdc_port_write(port, 0x03f2u, 0x2du);
-                core_machine_fdc_change_command(fdc, port, recalibrate_1,
+                x86_nxvm_test_fdc_change_command(fdc, port, recalibrate_1,
                     sizeof(recalibrate_1));
-                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !x86_nxvm_test_fdc_change_ack_irq(fdc, port);
 
-                core_machine_fdc_change_command(fdc, port, specify_dma,
+                x86_nxvm_test_fdc_change_command(fdc, port, specify_dma,
                     sizeof(specify_dma));
                 /* These boards tie READY high: media changes affect DIR,
                  * not the controller's independent READY-change interrupt. */
                 drive1.present = LIB_FALSE;
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 2,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 2,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE) ||
                     (test_fdc_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
-                core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                x86_nxvm_test_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
                 status = (lib_u8)test_fdc_port_read(port, 0x03f5u);
-                core_machine_fdc_change_require(&failed, &first_failure, 3,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 3,
                     status != 0x80u ||
                     (test_fdc_port_read(port, 0x03f4u) &
                         (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) != 0u ||
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE));
                 drive1.present = LIB_TRUE;
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 4,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 4,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE));
-                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !x86_nxvm_test_fdc_change_ack_irq(fdc, port);
 
                 ++drive0.generation;
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 5,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 5,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE));
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 6,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 6,
                     (test_fdc_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 /* A real step clears the drive change latch; a no-motion
                  * recalibration at Track0 cannot do so. */
-                core_machine_fdc_change_command(fdc, port,
+                x86_nxvm_test_fdc_change_command(fdc, port,
                     (const lib_u8[]){0x0fu, 0u, 1u}, 3u);
-                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
-                core_machine_fdc_change_command(fdc, port, recalibrate_0,
+                failed |= !x86_nxvm_test_fdc_change_ack_irq(fdc, port);
+                x86_nxvm_test_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !x86_nxvm_test_fdc_change_ack_irq(fdc, port);
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 7,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 7,
                     (test_fdc_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u);
 
                 ++drive1.generation;
                 (void)test_fdc_port_read(port, 0x03f7u);
                 test_fdc_port_write(port, 0x03f2u, 0x2du);
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 8,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 8,
                     (test_fdc_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 drive1.present = LIB_FALSE;
                 ++drive1.generation;
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 9,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 9,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE));
-                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !x86_nxvm_test_fdc_change_ack_irq(fdc, port);
                 status = 0u;
-                core_machine_fdc_change_command(fdc, port, sense_1, sizeof(sense_1));
+                x86_nxvm_test_fdc_change_command(fdc, port, sense_1, sizeof(sense_1));
                 status = (lib_u8)test_fdc_port_read(port, 0x03f5u);
-                core_machine_fdc_change_require(&failed, &first_failure, 10,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 10,
                     (test_fdc_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u ||
                     status != 0x39u);
 
                 drive1.present = LIB_TRUE;
                 (void)test_fdc_port_read(port, 0x03f7u);
-                core_machine_fdc_change_require(&failed, &first_failure, 11,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 11,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE));
                 test_fdc_port_write(port, 0x03f2u, 0x00u);
-                core_machine_fdc_change_require(&failed, &first_failure, 12,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 12,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE) ||
                     test_fdc_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM);
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
-                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
-                core_machine_fdc_change_command(fdc, port, specify_dma, sizeof(specify_dma));
-                core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
-                core_machine_fdc_change_require(&failed, &first_failure, 13,
+                failed |= !x86_nxvm_test_fdc_change_drain_reset(fdc, port);
+                x86_nxvm_test_fdc_change_command(fdc, port, specify_dma, sizeof(specify_dma));
+                x86_nxvm_test_fdc_change_command(fdc, port, read_0, sizeof(read_0));
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 13,
                     (test_fdc_port_read(port, 8u) & 0x40u) == 0u);
                 test_fdc_port_write(port, 0x03f2u, 0x0cu);
-                core_machine_fdc_change_require(&failed, &first_failure, 14,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 14,
                     (test_fdc_port_read(port, 8u) & 0x40u) != 0u ||
                     test_fdc_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB);
                 test_fdc_advance(fdc);
                 for (lib_u8 index = 0u; index < 7u; ++index) {
                     const lib_u8 value = (lib_u8)test_fdc_port_read(port, 0x03f5u);
-                    core_machine_fdc_change_require(&failed, &first_failure, 14,
+                    x86_nxvm_test_fdc_change_require(&failed, &first_failure, 14,
                         (index == 0u && value != 0x40u) ||
                         (index == 1u && value != 0x04u));
                 }
-                core_machine_fdc_change_require(&failed, &first_failure, 14,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 14,
                     test_fdc_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM ||
                     x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source));
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
-                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
-                core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
-                core_machine_fdc_change_require(&failed, &first_failure, 15,
+                failed |= !x86_nxvm_test_fdc_change_drain_reset(fdc, port);
+                x86_nxvm_test_fdc_change_command(fdc, port, read_0, sizeof(read_0));
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 15,
                     (test_fdc_port_read(port, 8u) & 0x40u) == 0u);
                 test_fdc_port_write(port, 0x03f2u, 0x00u);
-                core_machine_fdc_change_require(&failed, &first_failure, 16,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 16,
                     (test_fdc_port_read(port, 8u) & 0x40u) != 0u ||
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE) ||
                     test_fdc_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM);
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
-                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
-                core_machine_fdc_change_command(fdc, port, recalibrate_0,
+                failed |= !x86_nxvm_test_fdc_change_drain_reset(fdc, port);
+                x86_nxvm_test_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
                 failed |= !test_fdc_finish_seeks(fdc);
-                core_machine_fdc_change_require(&failed, &first_failure, 17,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 17,
                     !test_fdc_interrupt_matches(fdc, LIB_TRUE));
                 test_fdc_port_write(port, 0x03f2u, 0x00u);
-                core_machine_fdc_change_require(&failed, &first_failure, 17,
+                x86_nxvm_test_fdc_change_require(&failed, &first_failure, 17,
                     !test_fdc_interrupt_matches(fdc, LIB_FALSE));
             }
         }

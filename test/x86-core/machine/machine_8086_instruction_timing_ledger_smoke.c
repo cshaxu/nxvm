@@ -106,7 +106,7 @@ static lib_i32 timing_8086_prepare(x86_core_machine **out_machine,
         machine == LIB_NULL ||
         x86_core_machine_install_memory_aliases(machine, &alias, 1u, LIB_FALSE) !=
             LIB_STATUS_OK ||
-        test_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
+        test_x86_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
         x86_core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_8086_port_provider, state) != LIB_STATUS_OK ||
         x86_core_machine_bind_execution_provider(machine, &timing_8086_execution_provider,

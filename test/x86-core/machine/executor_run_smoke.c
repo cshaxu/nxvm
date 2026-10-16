@@ -665,7 +665,7 @@ lib_i32 main(void)
         x86_core_machine_destroy(machine);
         return 1;
     }
-    if (test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    if (test_x86_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||

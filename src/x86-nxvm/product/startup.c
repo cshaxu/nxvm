@@ -21,10 +21,10 @@ static lib_status x86_nxvm_product_destroy_composed(void *opaque)
     return machine->composition.destroy(machine->composition.machine);
 }
 
-static lib_status x86_nxvm_product_configure_extensions(app_composed_machine *machine,
+static lib_status x86_nxvm_product_configure_extensions(emulator_product_machine *machine,
     x86_ibmpc_product_command_extensions *extensions)
 {
-    return x86_nxvm_product_configure_standard_extensions(machine->composition.machine,
+    return x86_nxvm_product_configure_standard_extensions(machine->machine,
         extensions);
 }
 
@@ -85,10 +85,10 @@ lib_i32 x86_nxvm_product_run(const char *name, const char *ini_name,
         (void)machine.composition.destroy(machine.composition.machine);
         return 1;
     }
-    definition.machine.composition = machine.composition;
-    definition.machine.composition.machine = &machine;
-    definition.machine.composition.bind = x86_nxvm_product_bind_composed;
-    definition.machine.composition.destroy = x86_nxvm_product_destroy_composed;
+    definition.machine = machine.composition;
+    definition.machine.machine = &machine;
+    definition.machine.bind = x86_nxvm_product_bind_composed;
+    definition.machine.destroy = x86_nxvm_product_destroy_composed;
     definition.name = name;
     definition.banner = banner;
     definition.configure_extensions = x86_nxvm_product_configure_extensions;

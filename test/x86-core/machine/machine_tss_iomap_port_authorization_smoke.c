@@ -232,7 +232,7 @@ static lib_i32 iomap_run_case(x86_core_cpu_profile profile, iomap_case test_case
 
     if (!failed) {
         failed |= !iomap_install(&state, profile, test_case) ||
-            test_core_machine_fixture_run_after_delivery(state.machine, budget, &result) != LIB_STATUS_OK ||
+            test_x86_core_machine_fixture_run_after_delivery(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             x86_core_machine_memory_read(state.machine, USER_DATA_BASE, marker,
                 sizeof(marker)) != LIB_STATUS_OK ||

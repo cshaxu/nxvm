@@ -37,10 +37,10 @@ lib_status x86_nxvm_product_ini_load(const lib_u8 *path, x86_nxvm_product_reques
 }
 
 lib_status x86_nxvm_product_configure_ui(const x86_nxvm_product_request *request,
-    app_composed_ui *ui)
+    x86_ibmpc_product_ui_options *ui)
 {
     valid = valid && lib_text_compare((const char *)request->display, "window") == 0;
-    *ui = (app_composed_ui){.display = EMULATOR_SESSION_DISPLAY_WINDOW};
+    *ui = (x86_ibmpc_product_ui_options){.display = EMULATOR_SESSION_DISPLAY_WINDOW};
     return LIB_STATUS_OK;
 }
 
@@ -69,8 +69,8 @@ lib_status x86_nxvm_product_configure_standard_extensions(x86_nxvm_product_machi
 lib_i32 x86_ibmpc_product_run(const x86_ibmpc_product_definition *definition)
 {
     x86_ibmpc_product_command_extensions extensions = {0};
-    app_composed_machine composed = definition->machine;
-    emulator_product_machine machine = definition->machine.composition;
+    emulator_product_machine composed = definition->machine;
+    emulator_product_machine machine = definition->machine;
     lib_status status;
 
     ++runs;

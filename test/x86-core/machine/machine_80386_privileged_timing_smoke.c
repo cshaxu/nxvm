@@ -107,7 +107,7 @@ static lib_i32 secondary_privileged_timing_prepare(x86_core_machine **out_machin
         x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         x86_core_machine_install_memory_aliases(machine, aliases,
             sizeof(aliases) / sizeof(aliases[0]), LIB_FALSE) != LIB_STATUS_OK ||
-        test_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
+        test_x86_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
         x86_core_machine_bind_execution_provider(machine, &secondary_privileged_timing_execution, state) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK) {

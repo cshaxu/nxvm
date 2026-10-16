@@ -5,7 +5,7 @@
 #include "lib/types/test.h"
 #include "x86-core/machine/debug_interface.h"
 
-static inline lib_u32 test_core_machine_fixture_read_register(
+static inline lib_u32 test_x86_core_machine_fixture_read_register(
     const x86_core_machine *machine, x86_core_cpu_debug_register register_id)
 {
     lib_u32 value;
@@ -14,7 +14,7 @@ static inline lib_u32 test_core_machine_fixture_read_register(
     return value;
 }
 
-static inline void test_core_machine_fixture_write_register(
+static inline void test_x86_core_machine_fixture_write_register(
     x86_core_machine *machine, x86_core_cpu_debug_register register_id, lib_u32 value)
 {
     if (x86_core_machine_debug_write_register(machine, register_id, value) != LIB_STATUS_OK)
@@ -22,17 +22,17 @@ static inline void test_core_machine_fixture_write_register(
 }
 
 /* Historical word seeds change the low half, not the whole 32-bit register. */
-static inline void test_core_machine_fixture_write_word(
+static inline void test_x86_core_machine_fixture_write_word(
     x86_core_machine *machine, x86_core_cpu_debug_register register_id, lib_u16 value)
 {
-    const lib_u32 previous = test_core_machine_fixture_read_register(machine, register_id);
-    test_core_machine_fixture_write_register(machine, register_id,
+    const lib_u32 previous = test_x86_core_machine_fixture_read_register(machine, register_id);
+    test_x86_core_machine_fixture_write_register(machine, register_id,
         (previous & 0xffff0000u) | value);
 }
 
 /* Preserve the production delivery/handler rounds for corpus tests whose
  * assertions observe the executed exception handler. */
-static inline lib_status test_core_machine_fixture_run_after_delivery(
+static inline lib_status test_x86_core_machine_fixture_run_after_delivery(
     x86_core_machine *machine, x86_core_machine_run_budget budget,
     x86_core_machine_run_result *out_result)
 {

@@ -32,4 +32,31 @@ expect_source_rejected("chip-machine"
     "#include \"x86-nxvm/machine/machine_interface.h\"\n" "Forbidden x86-nxvm edge")
 expect_source_rejected("outer-source"
     "#include \"outer/product/main.c\"\n" "Noncanonical")
+
+# Test ownership includes nested registration files and component fixtures.
+set(probe "${PROBE_ROOT}/test-ownership")
+file(MAKE_DIRECTORY "${probe}/board-at" "${probe}/nested")
+file(WRITE "${probe}/CMakeLists.txt" "include(\"\${CMAKE_CURRENT_LIST_DIR}/nested/tests.cmake\")\n")
+foreach(build IN ITEMS
+        "TARGET_LINK_LIBRARIES(probe PRIVATE app-probe)"
+        "shared_register_test(x86-nxvm probe app-probe)")
+    file(WRITE "${probe}/nested/tests.cmake" "${build}\n")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-DTEST_ROOT=${probe}" -DTEST_LAYER=x86-nxvm
+        -P "${CMAKE_CURRENT_LIST_DIR}/../verify_test_boundaries.cmake"
+        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+    if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "Outward test link")
+        message(FATAL_ERROR "Nested test link not rejected: ${output}${error}")
+    endif()
+endforeach()
+file(WRITE "${probe}/nested/tests.cmake" "")
+foreach(header IN ITEMS x86-nxvm/board-base/pic_bus_interface.h ../board-base/pic_fixture.h)
+    file(WRITE "${probe}/board-at/probe.c" "#include \"${header}\"\n")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-DTEST_ROOT=${probe}" -DTEST_LAYER=x86-nxvm
+        -P "${CMAKE_CURRENT_LIST_DIR}/../verify_test_boundaries.cmake"
+        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+    if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "Outward test component include")
+        message(FATAL_ERROR "Outward fixture not rejected: ${output}${error}")
+    endif()
+endforeach()
+file(REMOVE "${probe}/board-at/probe.c")
 message(STATUS "x86-nxvm dependency negative coverage: OK")

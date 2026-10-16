@@ -15,8 +15,6 @@ extern "C" {
 #define VPORT_MAX_PORT_COUNT 0x10000
 
 typedef struct t_port t_port;
-typedef void (*x86_core_machine_port_handler)(t_port *port, lib_u16 port_id,
-    void *owner);
 
 typedef struct x86_core_machine_port_provider_entry
     x86_core_machine_port_provider_entry;
@@ -58,19 +56,6 @@ lib_status x86_core_machine_port_execute_read_width(t_port *port,
     lib_u16 port_id, lib_u8 bytes, lib_u64 tick);
 lib_status x86_core_machine_port_execute_write_width(t_port *port,
     lib_u16 port_id, lib_u8 bytes);
-lib_status x86_core_machine_port_add_read(t_port *port, lib_u16 port_id,
-    x86_core_machine_port_handler handler, void *owner);
-lib_status x86_core_machine_port_add_write(t_port *port, lib_u16 port_id,
-    x86_core_machine_port_handler handler, void *owner);
-lib_status x86_core_machine_port_add_read_provider(t_port *port,
-    lib_u16 port_id, x86_core_machine_port_read_provider provider,
-    void *owner);
-lib_status x86_core_machine_port_add_read_wired_or_provider(t_port *port,
-    lib_u16 port_id, x86_core_machine_port_read_provider provider,
-    void *owner);
-lib_status x86_core_machine_port_add_write_provider(t_port *port,
-    lib_u16 port_id, x86_core_machine_port_write_provider provider,
-    void *owner);
 lib_status x86_core_machine_port_add_route(t_port *port,
     const x86_core_machine_port_route *route);
 lib_i32 x86_core_machine_port_has_read(const t_port *port, lib_u16 port_id);

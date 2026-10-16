@@ -37,7 +37,7 @@ static lib_i32 corpus_prepare_machine(x86_core_machine **out_machine,
 
     if (out_machine == LIB_NULL || x86_core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK ||
-        test_core_machine_fixture_register_reset_mapping(machine,
+        test_x86_core_machine_fixture_register_reset_mapping(machine,
             CORPUS_RESET_LINEAR, CORPUS_RESET_PHYSICAL,
             CORPUS_RESET_WINDOW) != LIB_STATUS_OK ||
         (port_provider != LIB_NULL && x86_core_machine_install_port_provider(

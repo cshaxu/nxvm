@@ -61,7 +61,7 @@ lib_i32 main(void)
 
     sink.callback = trace_callback;
     sink.context = &fixture;
-    failed |= expect_status(test_core_machine_create_executor(16u * 1024u * 1024u, &machine),
+    failed |= expect_status(test_x86_core_machine_create_executor(16u * 1024u * 1024u, &machine),
                             LIB_STATUS_OK);
     failed |= expect_status(x86_core_machine_set_trace_provider(machine, &sink),
                             LIB_STATUS_OK);

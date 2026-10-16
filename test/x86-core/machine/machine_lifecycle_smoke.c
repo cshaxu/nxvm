@@ -122,7 +122,7 @@ lib_i32 main(void)
     lib_i32 result = instance_owners_are_distinct() || firmware_reset_failure() ||
         port_latch_reset();
 
-    result |= expect_status(test_core_machine_create_executor(16u * 1024u * 1024u, &machine),
+    result |= expect_status(test_x86_core_machine_create_executor(16u * 1024u * 1024u, &machine),
                             LIB_STATUS_OK);
     if (machine == LIB_NULL) return 1;
     cpu_identity = machine->executor_cpu_execution;

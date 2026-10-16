@@ -1,6 +1,6 @@
 #include "lib/types/test.h"
-#ifndef TEST_IBMPC_EMULATOR_VIDEO_FIXTURE_H
-#define TEST_IBMPC_EMULATOR_VIDEO_FIXTURE_H
+#ifndef TEST_X86_NXVM_EMULATOR_VIDEO_FIXTURE_H
+#define TEST_X86_NXVM_EMULATOR_VIDEO_FIXTURE_H
 #include "lib/types/types_interface.h"
 #include "x86-core/machine/machine_interface.h"
 #include "x86-nxvm/board-base/vadp.h"

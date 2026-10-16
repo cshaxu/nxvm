@@ -7,7 +7,7 @@
 
 /* REAL_UD_RECEIVERLESS_LIDT: preparation is outside measured ticks. */
 
-static lib_i32 core_machine_real_mode_tick_case(
+static lib_i32 x86_core_test_real_mode_tick_case(
     const char *name,
     const lib_u8 *program, lib_size program_bytes,
     x86_core_cpu_profile profile, lib_status expected_status,
@@ -29,7 +29,7 @@ static lib_i32 core_machine_real_mode_tick_case(
     lib_i32 failed = 0;
 
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
-    failed |= test_core_machine_fixture_register_reset_mapping(machine,
+    failed |= test_x86_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
@@ -86,23 +86,23 @@ lib_i32 main(void)
     static const lib_u8 operand_size_prefix[] = { 0x66u, 0x90u };
     lib_i32 failed = 0;
 
-    failed |= core_machine_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),
+    failed |= x86_core_test_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),
         X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, X86_CORE_MACHINE_STOP_BUDGET,
         1u, 2u);
-    failed |= core_machine_real_mode_tick_case("out", out_80, sizeof(out_80),
+    failed |= x86_core_test_real_mode_tick_case("out", out_80, sizeof(out_80),
         X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, X86_CORE_MACHINE_STOP_BUDGET,
         1u, 3u);
-    failed |= core_machine_real_mode_tick_case("int", int_20, sizeof(int_20),
+    failed |= x86_core_test_real_mode_tick_case("int", int_20, sizeof(int_20),
         X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, X86_CORE_MACHINE_STOP_BUDGET,
         1u, 25u);
-    failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
+    failed |= x86_core_test_real_mode_tick_case("segment-prefix", prefixed_nop,
         sizeof(prefixed_nop),
         X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, X86_CORE_MACHINE_STOP_BUDGET,
         1u, 3u);
-    failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
+    failed |= x86_core_test_real_mode_tick_case("hlt", halt, sizeof(halt),
         X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK,
         X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);
-    failed |= core_machine_real_mode_tick_case("operand-size-prefix",
+    failed |= x86_core_test_real_mode_tick_case("operand-size-prefix",
         operand_size_prefix,
         sizeof(operand_size_prefix), X86_CORE_CPU_PROFILE_80286,
         LIB_STATUS_OK, X86_CORE_MACHINE_STOP_BUDGET, 0u, 0u);

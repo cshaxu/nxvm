@@ -29,7 +29,7 @@ static lib_i32 prepare_machine(x86_core_cpu_profile profile,
     if (state == LIB_NULL) return 1;
     lib_memory_set(state, 0, sizeof(*state));
     if (x86_core_machine_neutral_create(&config, &state->machine) != LIB_STATUS_OK) return 1;
-    if ((terminal_ud && test_core_exception_block_vector(state->machine, 6u, state) != LIB_STATUS_OK) ||
+    if ((terminal_ud && test_x86_core_exception_block_vector(state->machine, 6u, state) != LIB_STATUS_OK) ||
         x86_core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(state->machine) != LIB_STATUS_OK ||
         x86_core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {

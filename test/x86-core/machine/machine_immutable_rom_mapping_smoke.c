@@ -144,7 +144,7 @@ lib_i32 main(void)
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= machine == LIB_NULL;
     if (!failed) {
-        failed |= test_core_machine_fixture_register_reset_mapping(machine, RESET_LINEAR,
+        failed |= test_x86_core_machine_fixture_register_reset_mapping(machine, RESET_LINEAR,
             RESET_PHYSICAL, 16u) != LIB_STATUS_OK;
         failed |= x86_core_machine_register_immutable_rom_mapping(machine, 0x1000u,
             image, sizeof(image)) != LIB_STATUS_OK;

@@ -4,7 +4,7 @@
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/memory_interface.h"
 
-static inline lib_status test_core_machine_fixture_register_reset_mapping(
+static inline lib_status test_x86_core_machine_fixture_register_reset_mapping(
     x86_core_machine *machine, lib_u32 linear, lib_u32 physical,
     lib_size bytes)
 {

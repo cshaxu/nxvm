@@ -211,7 +211,7 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(x86_core_machine_install_port_provider(
         machine, 0x300u, 0x300u, &port_provider, LIB_NULL), LIB_STATUS_OK);
-    failed |= machine_configuration_expect(test_core_machine_fixture_register_reset_mapping(
+    failed |= machine_configuration_expect(test_x86_core_machine_fixture_register_reset_mapping(
         machine, 0xfffffff0u, 0x000ffff0u, 16u), LIB_STATUS_OK);
     failed |= machine_configuration_expect(x86_core_machine_freeze_execution_providers(
         machine), LIB_STATUS_OK);

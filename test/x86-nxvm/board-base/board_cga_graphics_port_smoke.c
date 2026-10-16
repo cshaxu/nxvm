@@ -4,7 +4,7 @@
 #include "x86-nxvm/board-base/vadp.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 
-static lib_i32 core_machine_cga_graphics_write_byte(x86_core_machine *machine,
+static lib_i32 x86_nxvm_test_cga_graphics_write_byte(x86_core_machine *machine,
     lib_u32 offset, lib_u8 value)
 {
     return x86_core_machine_memory_write(machine,
@@ -54,8 +54,8 @@ lib_i32 main(void)
 
     test_video_port_write(machine, 0x03d8u, 0x0au);
     test_video_port_write(machine, 0x03d9u, 0x00u);
-    failed |= !core_machine_cga_graphics_write_byte(machine, 0u, 0x1bu);
-    failed |= !core_machine_cga_graphics_write_byte(machine, 0x2000u, 0xe4u);
+    failed |= !x86_nxvm_test_cga_graphics_write_byte(machine, 0u, 0x1bu);
+    failed |= !x86_nxvm_test_cga_graphics_write_byte(machine, 0x2000u, 0xe4u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK;
     failed |= snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4 ||
@@ -72,7 +72,7 @@ lib_i32 main(void)
     generation = observation.generation;
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
-    failed |= !core_machine_cga_graphics_write_byte(machine, 0u, 0xe4u);
+    failed |= !x86_nxvm_test_cga_graphics_write_byte(machine, 0u, 0xe4u);
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || !observation.capture_required ||
         observation.generation == generation;
@@ -92,8 +92,8 @@ lib_i32 main(void)
     {
         static const lib_u8 modes[] = {0x0au, 0x1au};
 
-        failed |= !core_machine_cga_graphics_write_byte(machine, 0x1ffeu, 0x90u) ||
-            !core_machine_cga_graphics_write_byte(machine, 0x3ffeu, 0x60u);
+        failed |= !x86_nxvm_test_cga_graphics_write_byte(machine, 0x1ffeu, 0x90u) ||
+            !x86_nxvm_test_cga_graphics_write_byte(machine, 0x3ffeu, 0x60u);
         for (lib_size mode = 0u; mode < sizeof(modes); ++mode) {
             const lib_u32 width = mode == 0u ? 320u : 640u;
 
@@ -172,8 +172,8 @@ lib_i32 main(void)
         test_video_port_write(machine, 0x03d8u, 0x2du);
         test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_CRTC_INDEX, 0x0au);
         test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_CRTC_DATA, 0x26u);
-        failed |= !core_machine_cga_graphics_write_byte(machine, 0u, 'B') ||
-            !core_machine_cga_graphics_write_byte(machine, 1u, 0xfeu);
+        failed |= !x86_nxvm_test_cga_graphics_write_byte(machine, 0u, 'B') ||
+            !x86_nxvm_test_cga_graphics_write_byte(machine, 1u, 0xfeu);
         failed |= x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
             snapshot.characters[0] != 'B' || snapshot.attributes[0] != 0x7eu;
         x86_nxvm_board_vadp_observe_snapshot(&vadp, LIB_FALSE, 0u, &observation);

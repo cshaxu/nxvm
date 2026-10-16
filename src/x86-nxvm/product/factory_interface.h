@@ -26,7 +26,7 @@ lib_status x86_nxvm_product_configure_machine(const x86_nxvm_product_machine_bin
 lib_status x86_nxvm_product_compose_machine(const x86_nxvm_product_machine_binding *binding,
     const x86_nxvm_product_request *request, x86_nxvm_product_machine *out_machine);
 lib_status x86_nxvm_product_configure_ui(const x86_nxvm_product_request *request,
-    app_composed_ui *out_ui);
+    x86_ibmpc_product_ui_options *out_ui);
 
 /* NXVM-family commands are registered by each App; shared Product dispatch
  * has no INFO, SPEED or floppy cases. */

@@ -1,17 +1,18 @@
 #include "../board-at/controller_fixture.h"
+#include "kbc_controller_fixture.h"
 #include "composition/bus_fixture.h"
 #include "pic_fixture.h"
 #include "x86-nxvm/board-base/machine_board_state.h"
 
-typedef struct core_machine_kbc_cpu_fixture {
+typedef struct x86_nxvm_test_kbc_cpu_fixture {
     x86_core_machine *machine;
     x86_nxvm_board_state *board;
     lib_status reset_status;
-} core_machine_kbc_cpu_fixture;
+} x86_nxvm_test_kbc_cpu_fixture;
 
-static void core_machine_kbc_cpu_reset(void *opaque)
+static void x86_nxvm_test_kbc_cpu_reset(void *opaque)
 {
-    core_machine_kbc_cpu_fixture *fixture = opaque;
+    x86_nxvm_test_kbc_cpu_fixture *fixture = opaque;
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
@@ -40,7 +41,7 @@ lib_i32 test_kbc_board_cpu_reset_irq1(void)
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .shared_pit_personality = X86_PIT_PERSONALITY_8253
     };
-    core_machine_kbc_cpu_fixture fixture = {0};
+    x86_nxvm_test_kbc_cpu_fixture fixture = {0};
     x86_core_machine_run_result result;
     x86_core_cpu_state cpu;
     lib_u16 offset = 0x0100u;
@@ -51,7 +52,7 @@ lib_i32 test_kbc_board_cpu_reset_irq1(void)
         x86_core_machine_reset(fixture.machine) != LIB_STATUS_OK;
 
     if (!failed) {
-        core_machine_kbc_cpu_reset(&fixture);
+        x86_nxvm_test_kbc_cpu_reset(&fixture);
         failed |= fixture.reset_status != LIB_STATUS_OK;
     }
 

@@ -12,7 +12,6 @@ struct x86_core_machine_port_provider_entry {
     lib_u8 write;
     lib_u8 wired_or;
     lib_u16 byte_lane_end;
-    x86_core_machine_port_handler legacy_handler;
     x86_core_machine_port_read_provider read_provider;
     x86_core_machine_port_write_provider write_provider;
     void *owner;
@@ -32,14 +31,14 @@ static x86_core_machine_port_provider_entry *x86_core_machine_port_find_provider
 }
 
 static lib_status x86_core_machine_port_add_provider(t_port *port,
-    lib_u16 port_id, lib_u8 write, x86_core_machine_port_handler handler,
+    lib_u16 port_id, lib_u8 write,
     x86_core_machine_port_read_provider read_provider,
     x86_core_machine_port_write_provider write_provider, void *owner,
     lib_u8 wired_or, lib_u16 byte_lane_end)
 {
     x86_core_machine_port_provider_entry *entry;
 
-    if (port == LIB_NULL || (handler == LIB_NULL && read_provider == LIB_NULL &&
+    if (port == LIB_NULL || (read_provider == LIB_NULL &&
         write_provider == LIB_NULL)) return LIB_STATUS_INVALID_ARGUMENT;
     if (port->connect.registration_status != LIB_STATUS_OK) {
         return port->connect.registration_status;
@@ -68,7 +67,6 @@ static lib_status x86_core_machine_port_add_provider(t_port *port,
     entry->write = write;
     entry->wired_or = wired_or;
     entry->byte_lane_end = byte_lane_end;
-    entry->legacy_handler = handler;
     entry->read_provider = read_provider;
     entry->write_provider = write_provider;
     entry->owner = owner;
@@ -88,10 +86,7 @@ static lib_status x86_core_machine_port_execute_read_current(t_port *port,
     provider = x86_core_machine_port_find_provider(port, port_id, LIB_FALSE);
     if (provider != LIB_NULL) {
         value = port->data.ioDWord;
-        if (provider->legacy_handler != LIB_NULL) {
-            provider->legacy_handler(port, port_id, provider->owner);
-            value = port->data.ioDWord;
-        } else if (provider->read_provider != LIB_NULL) {
+        if (provider->read_provider != LIB_NULL) {
             if (port->data.access_bytes > 1u && provider->byte_lane_end != 0u &&
                 (lib_u32)port_id + port->data.access_bytes <=
                     provider->byte_lane_end) {
@@ -132,9 +127,7 @@ static lib_status x86_core_machine_port_execute_write_current(t_port *port,
     if (port == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     provider = x86_core_machine_port_find_provider(port, port_id, LIB_TRUE);
     if (provider != LIB_NULL) {
-        if (provider->legacy_handler != LIB_NULL) {
-            provider->legacy_handler(port, port_id, provider->owner);
-        } else if (provider->write_provider != LIB_NULL) {
+        if (provider->write_provider != LIB_NULL) {
             if (port->data.access_bytes > 1u && provider->byte_lane_end != 0u &&
                 (lib_u32)port_id + port->data.access_bytes <=
                     provider->byte_lane_end) {
@@ -191,43 +184,6 @@ lib_status x86_core_machine_port_execute_write(t_port *port, lib_u16 port_id)
     return x86_core_machine_port_execute_write_current(port, port_id);
 }
 
-lib_status x86_core_machine_port_add_read(t_port *port, lib_u16 port_id,
-    x86_core_machine_port_handler handler, void *owner)
-{
-    return x86_core_machine_port_add_provider(port, port_id, LIB_FALSE, handler,
-        LIB_NULL, LIB_NULL, owner, LIB_FALSE, 0u);
-}
-
-lib_status x86_core_machine_port_add_write(t_port *port, lib_u16 port_id,
-    x86_core_machine_port_handler handler, void *owner)
-{
-    return x86_core_machine_port_add_provider(port, port_id, LIB_TRUE, handler,
-        LIB_NULL, LIB_NULL, owner, LIB_FALSE, 0u);
-}
-
-lib_status x86_core_machine_port_add_read_provider(t_port *port,
-    lib_u16 port_id, x86_core_machine_port_read_provider provider,
-    void *owner)
-{
-    return x86_core_machine_port_add_provider(port, port_id, LIB_FALSE, LIB_NULL,
-        provider, LIB_NULL, owner, LIB_FALSE, 0u);
-}
-
-lib_status x86_core_machine_port_add_read_wired_or_provider(t_port *port,
-    lib_u16 port_id, x86_core_machine_port_read_provider provider,
-    void *owner)
-{
-    return x86_core_machine_port_add_provider(port, port_id, LIB_FALSE, LIB_NULL,
-        provider, LIB_NULL, owner, LIB_TRUE, 0u);
-}
-lib_status x86_core_machine_port_add_write_provider(t_port *port,
-    lib_u16 port_id, x86_core_machine_port_write_provider provider,
-    void *owner)
-{
-    return x86_core_machine_port_add_provider(port, port_id, LIB_TRUE, LIB_NULL,
-        LIB_NULL, provider, owner, LIB_FALSE, 0u);
-}
-
 lib_status x86_core_machine_port_add_route(t_port *port,
     const x86_core_machine_port_route *route)
 {
@@ -236,12 +192,12 @@ lib_status x86_core_machine_port_add_route(t_port *port,
     if (route == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (route->read != LIB_NULL) {
         status = x86_core_machine_port_add_provider(port, route->address, LIB_FALSE,
-            LIB_NULL, route->read, LIB_NULL, route->owner,
+            route->read, LIB_NULL, route->owner,
             route->wired_or_read, route->byte_lane_end);
     }
     if (status == LIB_STATUS_OK && route->write != LIB_NULL) {
         status = x86_core_machine_port_add_provider(port, route->address, LIB_TRUE,
-            LIB_NULL, LIB_NULL, route->write, route->owner, LIB_FALSE,
+            LIB_NULL, route->write, route->owner, LIB_FALSE,
             route->byte_lane_end);
     }
     return status;

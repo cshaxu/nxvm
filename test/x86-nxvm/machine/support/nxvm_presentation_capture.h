@@ -11,7 +11,7 @@
 /* Unbound owner tests refresh/inspect the sole cache without consuming driver
  * delivery. Bound observers read only the executor's published frame. */
 static inline lib_status test_nxvm_machine_capture_presentation(const x86_nxvm_machine *machine,
-    core_machine_guest_display_frame *out_frame)
+    x86_nxvm_test_guest_display_frame *out_frame)
 {
     static emulator_machine_frame frame;
     lib_size cell;
@@ -29,7 +29,7 @@ static inline lib_status test_nxvm_machine_capture_presentation(const x86_nxvm_m
     lib_memory_set(out_frame, 0, sizeof(*out_frame));
     out_frame->generation = frame.sequence;
     if (frame.window.graphics) {
-        out_frame->kind = CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
+        out_frame->kind = X86_NXVM_TEST_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
         out_frame->pixel_width = (lib_u16)frame.window.image.width;
         out_frame->pixel_height = (lib_u16)frame.window.image.height;
         lib_memory_copy(out_frame->pixels, frame.window.image.pixels,
@@ -38,7 +38,7 @@ static inline lib_status test_nxvm_machine_capture_presentation(const x86_nxvm_m
             sizeof(out_frame->palette_rgb));
         return LIB_STATUS_OK;
     }
-    out_frame->kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
+    out_frame->kind = X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT;
     out_frame->columns = (lib_u16)frame.window.text.base.text_columns;
     out_frame->rows = (lib_u16)frame.window.text.base.text_rows;
     out_frame->text_cell_height = (lib_u8)frame.window.text.base.font_height;
@@ -49,8 +49,8 @@ static inline lib_status test_nxvm_machine_capture_presentation(const x86_nxvm_m
     out_frame->cursor_visible = frame.window.text.base.cursor_mode != KVM_CURSOR_DISABLED &&
         frame.window.text.base.cursor_phase;
     out_frame->text_glyphs_present = LIB_TRUE;
-    for (cell = 0u; cell < CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS *
-            CORE_MACHINE_GUEST_DISPLAY_MAX_ROWS; ++cell) {
+    for (cell = 0u; cell < X86_NXVM_TEST_GUEST_DISPLAY_MAX_COLUMNS *
+            X86_NXVM_TEST_GUEST_DISPLAY_MAX_ROWS; ++cell) {
         out_frame->characters[cell] = (lib_u8)frame.window.text.base.cells[cell].glyph_index;
         out_frame->attributes[cell] = (lib_u8)(
             frame.window.text.base.cells[cell].foreground |

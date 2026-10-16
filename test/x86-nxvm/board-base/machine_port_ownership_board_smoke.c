@@ -19,20 +19,20 @@ static lib_i32 port_probe_prepare_real_mode(x86_core_machine *machine)
     return x86_core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
 }
 
-typedef struct core_machine_port_probe_state {
+typedef struct x86_nxvm_test_port_probe_state {
     lib_u32 reads;
     lib_u32 writes;
     lib_u32 last_write;
     lib_status read_status;
     lib_status write_status;
-} core_machine_port_probe_state;
+} x86_nxvm_test_port_probe_state;
 
-static lib_status core_machine_port_probe_read(void *owner, lib_u16 port, lib_u64 tick,
+static lib_status x86_nxvm_test_port_probe_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
     (void)tick;
-    core_machine_port_probe_state *state =
-        (core_machine_port_probe_state *)owner;
+    x86_nxvm_test_port_probe_state *state =
+        (x86_nxvm_test_port_probe_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -43,11 +43,11 @@ static lib_status core_machine_port_probe_read(void *owner, lib_u16 port, lib_u6
     return LIB_STATUS_OK;
 }
 
-static lib_status core_machine_port_probe_write(void *owner, lib_u16 port,
+static lib_status x86_nxvm_test_port_probe_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
-    core_machine_port_probe_state *state =
-        (core_machine_port_probe_state *)owner;
+    x86_nxvm_test_port_probe_state *state =
+        (x86_nxvm_test_port_probe_state *)owner;
 
     if (state == LIB_NULL || (port != 0x00e0u && port != 0x03f2u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -58,8 +58,8 @@ static lib_status core_machine_port_probe_write(void *owner, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_port_probe_prepare(x86_core_machine **out_machine,
-    core_machine_port_probe_state *port_state)
+static lib_i32 x86_nxvm_test_port_probe_prepare(x86_core_machine **out_machine,
+    x86_nxvm_test_port_probe_state *port_state)
 {
     const x86_nxvm_board_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -68,7 +68,7 @@ static lib_i32 core_machine_port_probe_prepare(x86_core_machine **out_machine,
         .ticks_per_instruction = 1u
     };
     const x86_core_machine_port_provider provider = {
-        core_machine_port_probe_read, core_machine_port_probe_write
+        x86_nxvm_test_port_probe_read, x86_nxvm_test_port_probe_write
     };
     x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = out_machine == LIB_NULL || port_state == LIB_NULL;
@@ -95,7 +95,7 @@ static lib_i32 core_machine_port_probe_prepare(x86_core_machine **out_machine,
     return 0;
 }
 
-static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
+static lib_i32 x86_nxvm_test_port_probe_fdc_read_is_independent(void)
 {
     const x86_nxvm_board_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -104,7 +104,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
         .ticks_per_instruction = 1u
     };
     const x86_core_machine_port_provider read_provider = {
-        core_machine_port_probe_read, LIB_NULL
+        x86_nxvm_test_port_probe_read, LIB_NULL
     };
     const x86_nxvm_board_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
@@ -121,7 +121,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
             .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u
         }
     };
-    core_machine_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
+    x86_nxvm_test_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
     x86_core_machine *machine = LIB_NULL;
     x86_nxvm_board_state *board = LIB_NULL;
@@ -151,7 +151,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
     return failed;
 }
 
-static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
+static lib_i32 x86_nxvm_test_port_probe_fdc_write_conflict_is_retained(void)
 {
     const x86_nxvm_board_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -160,7 +160,7 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
         .ticks_per_instruction = 1u
     };
     const x86_core_machine_port_provider write_provider = {
-        LIB_NULL, core_machine_port_probe_write
+        LIB_NULL, x86_nxvm_test_port_probe_write
     };
     const x86_nxvm_board_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
@@ -177,7 +177,7 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
             .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u
         }
     };
-    core_machine_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
+    x86_nxvm_test_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
     x86_core_machine *machine = LIB_NULL;
     x86_nxvm_board_state *board = LIB_NULL;
@@ -208,13 +208,13 @@ lib_i32 main(void)
         0xb0u, 0x5au, 0xe6u, 0xe0u, 0xe4u, 0xe0u, 0xf4u
     };
     static const lib_u8 failing_program[] = {0xb0u, 0x6cu, 0xe6u, 0xe0u};
-    core_machine_port_probe_state port_state = {0u, 0u, 0u, LIB_STATUS_OK,
+    x86_nxvm_test_port_probe_state port_state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
     x86_core_machine_run_budget budget = {16u, 0u};
     x86_core_machine_run_result result;
     x86_core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
-    lib_i32 failed = core_machine_port_probe_prepare(&machine, &port_state);
+    lib_i32 failed = x86_nxvm_test_port_probe_prepare(&machine, &port_state);
 
     if (!failed) {
         failed |= x86_core_machine_bus_write(machine, 0x00e0u, 0x33u) !=
@@ -251,8 +251,8 @@ lib_i32 main(void)
         }
     }
     x86_core_machine_destroy(machine);
-    failed |= core_machine_port_probe_fdc_read_is_independent();
-    failed |= core_machine_port_probe_fdc_write_conflict_is_retained();
+    failed |= x86_nxvm_test_port_probe_fdc_read_is_independent();
+    failed |= x86_nxvm_test_port_probe_fdc_write_conflict_is_retained();
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
             "PORT-OWNERSHIP:FAIL reads=%u writes=%u\n",

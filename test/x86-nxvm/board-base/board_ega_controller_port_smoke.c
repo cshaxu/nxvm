@@ -4,14 +4,14 @@
 #include "x86-nxvm/board-base/vadp.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 
-static lib_i32 core_machine_ega_controller_write(x86_core_machine *machine, lib_u32 physical,
+static lib_i32 x86_nxvm_test_ega_controller_write(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
     return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_ega_controller_read(x86_core_machine *machine, lib_u32 physical,
+static lib_i32 x86_nxvm_test_ega_controller_read(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
     return x86_core_machine_memory_read(machine, physical,
@@ -74,8 +74,8 @@ lib_i32 main(void)
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000b0000u,
         0x00008000u) || x86_video_ega_aperture_contains(vadp.chip,
         0x000a0000u, 1u);
-    failed |= !core_machine_ega_controller_write(machine, 0x000b0000u, 0x5au);
-    failed |= !core_machine_ega_controller_write(machine, 0x000a0000u, 0xa5u);
+    failed |= !x86_nxvm_test_ega_controller_write(machine, 0x000b0000u, 0x5au);
+    failed |= !x86_nxvm_test_ega_controller_write(machine, 0x000a0000u, 0xa5u);
     test_video_port_write(machine, 0x03cfu, 0x0du);
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000b8000u,
         0x00008000u) || x86_video_ega_aperture_contains(vadp.chip,
@@ -116,8 +116,8 @@ lib_i32 main(void)
     test_video_port_write(machine, 0x03c5u, 0x05u);
     test_video_port_write(machine, 0x03ceu, 5u);
     test_video_port_write(machine, 0x03cfu, 0x03u);
-    failed |= !core_machine_ega_controller_write(machine, 0x000b8000u, 0xa6u);
-    failed |= !core_machine_ega_controller_read(machine, 0x000b8000u, &value) ||
+    failed |= !x86_nxvm_test_ega_controller_write(machine, 0x000b8000u, 0xa6u);
+    failed |= !x86_nxvm_test_ega_controller_read(machine, 0x000b8000u, &value) ||
         value != 0xa6u;
 
     x86_video_reset(vadp.chip);

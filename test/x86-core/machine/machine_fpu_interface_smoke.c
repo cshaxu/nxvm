@@ -84,7 +84,7 @@ static lib_i32 fpu_interface_prepare(x86_core_cpu_profile profile,
         x86_core_machine_get_fpu_state(state->machine, &observed) == LIB_STATUS_OK &&
         x86_core_machine_get_fpu_profile(state->machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
         x86_core_machine_get_fpu_state(state->machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
-        test_core_exception_block_vector(state->machine, 6u, state) == LIB_STATUS_OK &&
+        test_x86_core_exception_block_vector(state->machine, 6u, state) == LIB_STATUS_OK &&
         x86_core_machine_bind_execution_provider(state->machine, LIB_NULL, LIB_NULL) == LIB_STATUS_OK &&
         x86_core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         x86_core_machine_reset(state->machine) == LIB_STATUS_OK &&
@@ -134,7 +134,7 @@ static lib_i32 fpu_interface_success(const lib_u8 *code, lib_size size,
     lib_i32 failed = !fpu_interface_prepare(profile, fpu_profile, &state);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
         before = fpu_interface_capture(state.machine);
         failed |= !fpu_interface_run(&state, code, size, &after,
             &diagnostic, &status) || status != LIB_STATUS_OK ||
@@ -181,7 +181,7 @@ static lib_i32 fpu_interface_mf(void)
         X86_FPU_PROFILE_80387, &state);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_ESP, 0x00008000u);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_ESP, 0x00008000u);
         failed |= x86_core_machine_memory_write(state.machine, 0x0040u,
             &handler_offset, sizeof(handler_offset)) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(state.machine, 0x0042u, &handler_segment,
@@ -631,7 +631,7 @@ static lib_i32 fpu_interface_nm_delivery(const lib_u8 *code,
             sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
         failed |= x86_core_machine_run(state.machine,
             (x86_core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
@@ -667,8 +667,8 @@ static lib_i32 fpu_interface_vm86(void)
         X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, VCPU_CR0_PE);
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, VCPU_CR0_PE);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
             X86_CORE_CPU_DEBUG_EFLAGS_VM | 0x00003000u |
             X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_CF);
         const x86_core_cpu_debug_register_patch segments = {
@@ -745,15 +745,15 @@ static lib_i32 fpu_interface_protected_nm(void)
             &hlt, sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EIP, 0x0200u);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EIP, 0x0200u);
         lib_status boot_status = x86_core_machine_run(state.machine,
             (x86_core_machine_run_budget){9u,0u}, &result);
         failed |= boot_status != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 9u;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0,
-            test_core_machine_fixture_read_register(state.machine, X86_CORE_CPU_DEBUG_CR0) | VCPU_CR0_EM);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0,
+            test_x86_core_machine_fixture_read_register(state.machine, X86_CORE_CPU_DEBUG_CR0) | VCPU_CR0_EM);
         before = fpu_interface_capture(state.machine);
         failed |= x86_core_machine_memory_write(state.machine, FPU_CODE_BASE, esc,
             sizeof(esc)) != LIB_STATUS_OK || x86_core_machine_run(state.machine,

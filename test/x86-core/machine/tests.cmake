@@ -45,10 +45,10 @@ foreach(core_case IN ITEMS
     "x86-core-machine-ram-port-context-smoke|ram_port_context_smoke.c|x86-core-machine"
     "x86-core-machine-port-registration-smoke|machine_port_registration_smoke.c|x86-core-machine"
     "x86-core-machine-attachment-phases-smoke|machine_attachment_phases_smoke.c|x86-core-machine"
-    "x86-core-machine-real-mode-386-address-smoke|core_machine_real_mode_386_address_smoke.c|x86-core-machine"
-    "x86-core-machine-real-mode-386-rep-cmps-smoke|core_machine_real_mode_386_rep_cmps_smoke.c|x86-core-machine"
-    "x86-core-machine-real-mode-corpus-smoke|core_machine_real_mode_corpus_smoke.c|x86-core-machine"
-    "x86-core-machine-real-mode-tick-smoke|core_machine_real_mode_tick_smoke.c|x86-core-machine"
+    "x86-core-machine-real-mode-386-address-smoke|real_mode_386_address_smoke.c|x86-core-machine"
+    "x86-core-machine-real-mode-386-rep-cmps-smoke|real_mode_386_rep_cmps_smoke.c|x86-core-machine"
+    "x86-core-machine-real-mode-corpus-smoke|real_mode_corpus_smoke.c|x86-core-machine"
+    "x86-core-machine-real-mode-tick-smoke|real_mode_tick_smoke.c|x86-core-machine"
     "x86-core-machine-int-ivt-smoke|cpu_int_ivt_smoke.c|x86-core-machine"
     "x86-core-machine-configuration-smoke|machine_configuration_smoke.c|x86-core-machine"
     "x86-core-machine-memory-device-registration-smoke|machine_memory_device_registration_smoke.c|x86-core-machine"
@@ -62,8 +62,8 @@ foreach(core_case IN ITEMS
     "x86-core-machine-rom-route-transaction-smoke|machine_rom_route_transaction_smoke.c|x86-core-machine"
     "x86-core-machine-immutable-rom-mapping-smoke|machine_immutable_rom_mapping_smoke.c|x86-core-machine"
     "x86-core-machine-rational-clock-smoke|machine_rational_clock_smoke.c|x86-core-machine"
-    "x86-core-machine-executor-run-smoke|core_machine_executor_run_smoke.c|x86-core-machine"
-    "x86-core-machine-memory-inspection-smoke|core_machine_memory_inspection_smoke.c|x86-core-machine"
+    "x86-core-machine-executor-run-smoke|executor_run_smoke.c|x86-core-machine"
+    "x86-core-machine-memory-inspection-smoke|memory_inspection_smoke.c|x86-core-machine"
     "x86-core-machine-80386-protected-io-timing-smoke|machine_80386_protected_io_timing_smoke.c|x86-core-machine"
     "x86-core-machine-string-io-timing-smoke|machine_string_io_timing_smoke.c|x86-core-machine"
     "x86-core-machine-80386-privileged-timing-smoke|machine_80386_privileged_timing_smoke.c|x86-core-machine"
@@ -72,8 +72,8 @@ foreach(core_case IN ITEMS
     "x86-core-machine-80386-secondary-integer-timing-smoke|machine_80386_secondary_integer_timing_smoke.c|x86-core-machine"
     "x86-core-machine-cpu-profile-gate-smoke|machine_cpu_profile_gate_smoke.c|x86-core-machine"
     "x86-core-machine-instruction-timing-smoke|machine_instruction_timing_smoke.c|x86-core-machine"
-    "x86-core-machine-descriptor-system-smoke|core_machine_descriptor_system_smoke.c|x86-core-machine"
-    "x86-core-machine-80386-paging-smoke|core_machine_80386_paging_smoke.c|x86-core-machine-observable"
+    "x86-core-machine-descriptor-system-smoke|descriptor_system_smoke.c|x86-core-machine"
+    "x86-core-machine-80386-paging-smoke|80386_paging_smoke.c|x86-core-machine-observable"
     "x86-core-machine-contract-smoke|core_contract_smoke.c|x86-core-machine"
     "x86-core-machine-lifecycle-smoke|machine_lifecycle_smoke.c|x86-core-machine"
     "x86-core-machine-stopped-lifecycle-smoke|machine_stopped_lifecycle_smoke.c|x86-core-machine"
@@ -95,7 +95,7 @@ foreach(core_case IN ITEMS
     list(APPEND SHARED_X86_CORE_TEST_TARGETS ${core_target})
 endforeach()
 
-shared_register_test(x86-core machine/core_machine_system_power x86-core-machine)
+shared_register_test(x86-core machine/system_power x86-core-machine)
 shared_register_test(x86-core machine/timeline x86-core-machine)
 add_executable(x86-core-machine-fpu-interface-smoke ${CMAKE_CURRENT_LIST_DIR}/machine_fpu_interface_smoke.c)
 target_link_libraries(x86-core-machine-fpu-interface-smoke PRIVATE x86-core-machine)

@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#ifndef TEST_CORE_MACHINE_EXECUTOR_FIXTURE_H
-#define TEST_CORE_MACHINE_EXECUTOR_FIXTURE_H
+#ifndef TEST_X86_CORE_MACHINE_EXECUTOR_FIXTURE_H
+#define TEST_X86_CORE_MACHINE_EXECUTOR_FIXTURE_H
 
 #include "x86-core/machine/machine_interface.h"
 
-static lib_status test_core_machine_create_executor(
+static lib_status test_x86_core_machine_create_executor(
     lib_size memory_bytes,
     x86_core_machine **out_machine)
 {

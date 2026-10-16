@@ -78,8 +78,8 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
             (const lib_u8[]){0x90u,0xf4u}, 2u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(state->machine, VM86_IRET_STACK, frame, sizeof(frame)) != LIB_STATUS_OK)
         return 0;
-    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0u);
-    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
+    test_x86_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0u);
+    test_x86_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
         X86_CORE_CPU_DEBUG_EFLAGS_IF);
     const x86_core_cpu_debug_cpu_snapshot snapshot = vm86_iret_capture(state->machine);
     return snapshot.cs.selector == 8u && snapshot.cs.base == VM86_IRET_CODE &&
@@ -162,8 +162,8 @@ static lib_i32 vm86_iret_paging_success(void)
                 0x2000u | VM86_IRET_PAGE_FLAGS) ||
             !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_TABLE + 8u * 4u,
                 0x8000u | VM86_IRET_PAGE_FLAGS);
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR3, VM86_IRET_PAGE_DIRECTORY);
-        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0,
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR3, VM86_IRET_PAGE_DIRECTORY);
+        test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0,
             vm86_iret_capture(state.machine).cr0 | 0x80000000u);
         failed |= x86_core_machine_run(state.machine,
                 (x86_core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||

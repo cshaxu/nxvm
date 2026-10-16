@@ -117,7 +117,7 @@ static lib_i32 timing_load(x86_core_machine *machine, timing_state *state,
     return x86_core_machine_reset(machine) == LIB_STATUS_OK &&
         x86_core_machine_memory_write(machine, TIMING_RESET_LINEAR, code, bytes) ==
             LIB_STATUS_OK &&
-        test_core_80386_enter_port_mode(machine, mode, code, bytes, bitmap,
+        test_x86_core_80386_enter_port_mode(machine, mode, code, bytes, bitmap,
             &state->setup_ticks) && state->advanced_ticks == state->setup_ticks;
 }
 
@@ -133,8 +133,8 @@ static lib_i32 timing_run_form(const timing_form *form, lib_i32 mode)
         !timing_load(machine, &state, form->opcode, mode, 0u);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EAX, 0x11223344u);
-        test_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x000000e0u);
+        test_x86_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EAX, 0x11223344u);
+        test_x86_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x000000e0u);
         failed |= x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != ticks || result.elapsed_ticks != state.setup_ticks + ticks ||
@@ -226,9 +226,9 @@ static lib_i32 timing_test_permission_strings(void)
                         vm86 ? 2 : 1, bitmap);
 
                 if (!failed) {
-                    test_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x000000e0u);
-                    test_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x00000200u);
-                    test_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDI, 0x00000100u);
+                    test_x86_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x000000e0u);
+                    test_x86_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x00000200u);
+                    test_x86_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDI, 0x00000100u);
                     failed |= x86_core_machine_memory_write(machine, 0x0200u, &source,
                         sizeof(source)) != LIB_STATUS_OK;
                 }
@@ -237,19 +237,19 @@ static lib_i32 timing_test_permission_strings(void)
                         result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
                         result.executed != 1u ||
                         (forms[index].input ? state.reads != 1u || state.writes != 0u ||
-                            test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EDI) != 0x00000101u ||
+                            test_x86_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EDI) != 0x00000101u ||
                             x86_core_machine_memory_read(machine, 0x0100u, &destination,
                                 sizeof(destination)) != LIB_STATUS_OK || destination != 0x5au :
                             state.reads != 0u || state.writes != 1u ||
-                            test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_ESI) != 0x00000201u);
+                            test_x86_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_ESI) != 0x00000201u);
                 }
                 if (!failed && bitmap != 0u) {
                     failed |= x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
                         !timing_is_shutdown(&result) || result.executed != 0u ||
                         result.ticks != 0u || result.elapsed_ticks != state.setup_ticks ||
                         state.reads != 0u || state.writes != 0u ||
-                        test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_ESI) != 0x00000200u ||
-                        test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EDI) != 0x00000100u;
+                        test_x86_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_ESI) != 0x00000200u ||
+                        test_x86_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EDI) != 0x00000100u;
                 }
                 x86_core_machine_destroy(machine);
                 if (failed) return 0;
@@ -269,7 +269,7 @@ static lib_i32 timing_test_permission_budget(void)
     lib_i32 failed = !timing_prepare(&machine, &state, LIB_NULL) ||
         !timing_load(machine, &state, 0xecu, 1, 0u);
 
-    if (!failed) test_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x000000e0u);
+    if (!failed) test_x86_core_machine_fixture_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x000000e0u);
     if (!failed) {
         failed |= x86_core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||

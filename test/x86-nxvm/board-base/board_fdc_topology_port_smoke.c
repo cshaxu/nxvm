@@ -7,12 +7,12 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "x86-nxvm/board-base/media_interface.h"
 
-typedef struct core_machine_fdc_topology_media {
+typedef struct x86_nxvm_test_fdc_topology_media {
     lib_u8 byte;
     lib_u32 read_count;
-} core_machine_fdc_topology_media;
+} x86_nxvm_test_fdc_topology_media;
 
-static x86_nxvm_board_media_result core_machine_fdc_topology_query(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_topology_query(void *context,
     x86_nxvm_board_media_info *out_info)
 {
     if (context == LIB_NULL || out_info == LIB_NULL) {
@@ -30,10 +30,10 @@ static x86_nxvm_board_media_result core_machine_fdc_topology_query(void *context
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_topology_read(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_topology_read(void *context,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
-    core_machine_fdc_topology_media *media = context;
+    x86_nxvm_test_fdc_topology_media *media = context;
 
     if (media == LIB_NULL || buffer == LIB_NULL || offset >= 512u || byte_count != 1u) {
         return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
@@ -43,12 +43,12 @@ static x86_nxvm_board_media_result core_machine_fdc_topology_read(void *context,
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static const x86_nxvm_board_media_provider core_machine_fdc_topology_provider = {
-    .query = core_machine_fdc_topology_query,
-    .read_bytes = core_machine_fdc_topology_read,
+static const x86_nxvm_board_media_provider x86_nxvm_test_fdc_topology_provider = {
+    .query = x86_nxvm_test_fdc_topology_query,
+    .read_bytes = x86_nxvm_test_fdc_topology_read,
 };
 
-static void core_machine_fdc_topology_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static void x86_nxvm_test_fdc_topology_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -60,7 +60,7 @@ static void core_machine_fdc_topology_command(x86_nxvm_board_fdc *fdc, x86_core_
     lib_test_assert(test_fdc_finish_command_wait(fdc));
 }
 
-static lib_i32 core_machine_fdc_topology_result(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static lib_i32 x86_nxvm_test_fdc_topology_result(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -72,19 +72,19 @@ static lib_i32 core_machine_fdc_topology_result(x86_nxvm_board_fdc *fdc, x86_cor
     return (test_fdc_port_read(port, 0x03f4u) & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
-static lib_i32 core_machine_fdc_topology_read_sector(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static lib_i32 x86_nxvm_test_fdc_topology_read_sector(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     lib_u8 unit, lib_u8 expected, lib_u8 *result)
 {
     const lib_u8 command[] = {0x66u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
     lib_u32 index;
 
-    core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
+    x86_nxvm_test_fdc_topology_command(fdc, port, command, sizeof(command));
     if (test_fdc_port_read(port, 0x03f5u) != expected) return 0;
     for (index = 1u; index < 512u; ++index) {
         if (!test_fdc_advance_ticks(fdc, 256u)) return 0;
         (void)test_fdc_port_read(port, 0x03f5u);
     }
-    return core_machine_fdc_topology_result(fdc, port, result, 7u) &&
+    return x86_nxvm_test_fdc_topology_result(fdc, port, result, 7u) &&
         result[0] == unit && result[1] == 0u;
 }
 
@@ -112,8 +112,8 @@ int main(void)
     const x86_nxvm_board_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
         .cascade_channel = X86_NXVM_BOARD_DMA_CASCADE_CHANNEL };
-    core_machine_fdc_topology_media drive0 = {.byte = 0xa1u};
-    core_machine_fdc_topology_media drive1 = {.byte = 0xb2u};
+    x86_nxvm_test_fdc_topology_media drive0 = {.byte = 0xa1u};
+    x86_nxvm_test_fdc_topology_media drive1 = {.byte = 0xb2u};
     x86_nxvm_board_media_registry *media = LIB_NULL;
     x86_nxvm_board_dma_request_binding dma_request = {0};
     x86_nxvm_board_fdc_topology topology = {0};
@@ -133,12 +133,12 @@ int main(void)
         port = machine;
         if (fdc == LIB_NULL || port == LIB_NULL ||
             x86_nxvm_board_media_registry_bind(media, 11u, &drive0,
-                &core_machine_fdc_topology_provider) != LIB_STATUS_OK ||
+                &x86_nxvm_test_fdc_topology_provider) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_bind(media, 12u, &drive1,
-                &core_machine_fdc_topology_provider) != LIB_STATUS_OK ||
+                &x86_nxvm_test_fdc_topology_provider) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_freeze(media) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_bind(media, 13u, &drive0,
-                &core_machine_fdc_topology_provider) != LIB_STATUS_INVALID_STATE ||
+                &x86_nxvm_test_fdc_topology_provider) != LIB_STATUS_INVALID_STATE ||
             x86_nxvm_board_configure_dma(board, &dma_wiring, &dma_request) !=
                 LIB_STATUS_OK) {
             failed |= 0x02;
@@ -159,69 +159,69 @@ int main(void)
                 failed |= !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ? 0x08 : 0;
                 for (reset_drive = 0u; reset_drive < X86_NXVM_BOARD_FDC_DRIVE_COUNT;
                     ++reset_drive) {
-                    core_machine_fdc_topology_command(fdc, port,
+                    x86_nxvm_test_fdc_topology_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
-                    failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                    failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source)) ? 0x08 : 0;
                 }
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_topology_command(fdc, port,
+                x86_nxvm_test_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u ||
                     x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source)) ? 0x08 : 0;
-                core_machine_fdc_topology_command(fdc, port, specify_non_dma,
+                x86_nxvm_test_fdc_topology_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
-                core_machine_fdc_topology_command(fdc, port, sense_drive,
+                x86_nxvm_test_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x38u ||
-                    !core_machine_fdc_topology_read_sector(fdc, port, 0u, 0xa1u, result) ||
+                    !x86_nxvm_test_fdc_topology_read_sector(fdc, port, 0u, 0xa1u, result) ||
                     drive0.read_count != 512u || drive1.read_count != 0u) ? 0x10 : 0;
 
                 test_fdc_port_write(port, 0x03f2u, 0x2du);
                 sense_drive[1] = 1u;
-                core_machine_fdc_topology_command(fdc, port, sense_drive,
+                x86_nxvm_test_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x39u ||
-                    !core_machine_fdc_topology_read_sector(fdc, port, 1u, 0xb2u, result) ||
+                    !x86_nxvm_test_fdc_topology_read_sector(fdc, port, 1u, 0xb2u, result) ||
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x20 : 0;
 
-                core_machine_fdc_topology_command(fdc, port,
+                x86_nxvm_test_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0xe6u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u ||
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x40 : 0;
 
                 test_fdc_port_write(port, 0x03f2u, 0x4eu);
                 sense_drive[1] = 2u;
-                core_machine_fdc_topology_command(fdc, port, sense_drive,
+                x86_nxvm_test_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x22u) ? 0x80 : 0;
-                core_machine_fdc_topology_command(fdc, port,
+                x86_nxvm_test_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x07u, 2u}, 2u);
                 for (lib_u8 step = 0u; step < 77u &&
                         (test_fdc_port_read(port, 0x03f4u) & 0x04u) != 0u; ++step)
                     failed |= !test_fdc_advance_due(fdc) ? 0x100 : 0;
-                core_machine_fdc_topology_command(fdc, port,
+                x86_nxvm_test_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 2u) ||
                     result[0] != (TEST_FDC_ST0_ABNORMAL |
                         TEST_FDC_ST0_SEEK_END | TEST_FDC_ST0_EQUIPMENT_CHECK | 2u) ||
                     result[1] != 0u) ? 0x100 : 0;
-                core_machine_fdc_topology_command(fdc, port,
+                x86_nxvm_test_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x0fu, 2u, 1u}, 3u);
                 failed |= !test_fdc_advance_due(fdc) ? 0x200 : 0;
-                core_machine_fdc_topology_command(fdc, port,
+                x86_nxvm_test_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 2u) ||
                     result[0] != (TEST_FDC_ST0_SEEK_END | 2u) ||
                     result[1] != 1u) ? 0x200 : 0;
-                core_machine_fdc_topology_command(fdc, port, read_absent, sizeof(read_absent));
-                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
+                x86_nxvm_test_fdc_topology_command(fdc, port, read_absent, sizeof(read_absent));
+                failed |= (!x86_nxvm_test_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != 0x42u || result[1] != 0x04u ||
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x400 : 0;
             }

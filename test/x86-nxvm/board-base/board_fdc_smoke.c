@@ -9,7 +9,7 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "x86-nxvm/board-base/media_interface.h"
 
-typedef struct core_machine_fdc_fixture_media {
+typedef struct x86_nxvm_test_fdc_fixture_media {
     lib_u8 bytes[1536];
     lib_u8 sector_count;
     lib_u8 cylinder_count;
@@ -25,12 +25,12 @@ typedef struct core_machine_fdc_fixture_media {
     x86_nxvm_board_media_result forced_read_result;
     x86_nxvm_board_media_result forced_write_result;
     x86_nxvm_board_media_result forced_format_result;
-} core_machine_fdc_fixture_media;
+} x86_nxvm_test_fdc_fixture_media;
 
-static x86_nxvm_board_media_result core_machine_fdc_fixture_query(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_fixture_query(void *context,
     x86_nxvm_board_media_info *out_info)
 {
-    core_machine_fdc_fixture_media *media = context;
+    x86_nxvm_test_fdc_fixture_media *media = context;
 
     if (media == LIB_NULL || out_info == LIB_NULL) {
         return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
@@ -53,10 +53,10 @@ static x86_nxvm_board_media_result core_machine_fdc_fixture_query(void *context,
     return media->present ? X86_NXVM_BOARD_MEDIA_RESULT_OK : X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_fixture_read(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_fixture_read(void *context,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
-    core_machine_fdc_fixture_media *media = context;
+    x86_nxvm_test_fdc_fixture_media *media = context;
 
     if (media == LIB_NULL || buffer == LIB_NULL || !media->present) {
         return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -73,10 +73,10 @@ static x86_nxvm_board_media_result core_machine_fdc_fixture_read(void *context,
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_fixture_write(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_fixture_write(void *context,
     lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
-    core_machine_fdc_fixture_media *media = context;
+    x86_nxvm_test_fdc_fixture_media *media = context;
 
     if (media == LIB_NULL || buffer == LIB_NULL || !media->present) {
         return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -94,10 +94,10 @@ static x86_nxvm_board_media_result core_machine_fdc_fixture_write(void *context,
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_fixture_format(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_fixture_format(void *context,
     lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
-    core_machine_fdc_fixture_media *media = context;
+    x86_nxvm_test_fdc_fixture_media *media = context;
 
     if (media == LIB_NULL || !media->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (media->read_only) return X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY;
@@ -114,10 +114,10 @@ static x86_nxvm_board_media_result core_machine_fdc_fixture_format(void *context
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_fixture_get_mark(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_fixture_get_mark(void *context,
     lib_u64 logical_sector, x86_nxvm_board_media_address_mark *out_mark)
 {
-    core_machine_fdc_fixture_media *media = context;
+    x86_nxvm_test_fdc_fixture_media *media = context;
 
     if (media == LIB_NULL || out_mark == LIB_NULL || !media->present)
         return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -127,10 +127,10 @@ static x86_nxvm_board_media_result core_machine_fdc_fixture_get_mark(void *conte
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_fdc_fixture_set_mark(void *context,
+static x86_nxvm_board_media_result x86_nxvm_test_fdc_fixture_set_mark(void *context,
     lib_u64 logical_sector, x86_nxvm_board_media_address_mark mark)
 {
-    core_machine_fdc_fixture_media *media = context;
+    x86_nxvm_test_fdc_fixture_media *media = context;
 
     if (media == LIB_NULL || !media->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (media->read_only) return X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY;
@@ -142,16 +142,16 @@ static x86_nxvm_board_media_result core_machine_fdc_fixture_set_mark(void *conte
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static const x86_nxvm_board_media_provider core_machine_fdc_fixture_provider = {
-    .query = core_machine_fdc_fixture_query,
-    .read_bytes = core_machine_fdc_fixture_read,
-    .write_bytes = core_machine_fdc_fixture_write,
-    .format_sectors = core_machine_fdc_fixture_format,
-    .get_address_mark = core_machine_fdc_fixture_get_mark,
-    .set_address_mark = core_machine_fdc_fixture_set_mark,
+static const x86_nxvm_board_media_provider x86_nxvm_test_fdc_fixture_provider = {
+    .query = x86_nxvm_test_fdc_fixture_query,
+    .read_bytes = x86_nxvm_test_fdc_fixture_read,
+    .write_bytes = x86_nxvm_test_fdc_fixture_write,
+    .format_sectors = x86_nxvm_test_fdc_fixture_format,
+    .get_address_mark = x86_nxvm_test_fdc_fixture_get_mark,
+    .set_address_mark = x86_nxvm_test_fdc_fixture_set_mark,
 };
 
-static void core_machine_fdc_wait_payload(x86_nxvm_board_fdc *fdc)
+static void x86_nxvm_test_fdc_wait_payload(x86_nxvm_board_fdc *fdc)
 {
     /* Direct payload consumers must wait for RQM, just as the guest does.
      * A byte gate can precede at most four unrelated head-unload deadlines. */
@@ -163,22 +163,22 @@ static void core_machine_fdc_wait_payload(x86_nxvm_board_fdc *fdc)
     lib_test_assert((x86_fdc_read_status(fdc->chip) & TEST_FDC_MSR_RQM) != 0u);
 }
 
-static void core_machine_fdc_submit(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static void x86_nxvm_test_fdc_submit(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
 
     for (index = 0u; index < count; ++index) {
-        core_machine_fdc_wait_payload(fdc);
+        x86_nxvm_test_fdc_wait_payload(fdc);
         test_fdc_port_write(port, 0x03f5u, bytes[index]);
     }
     test_fdc_advance(fdc);
 }
 
-static lib_bool core_machine_fdc_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static lib_bool x86_nxvm_test_fdc_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
-    core_machine_fdc_submit(fdc, port, bytes, count);
+    x86_nxvm_test_fdc_submit(fdc, port, bytes, count);
     return test_fdc_finish_seeks(fdc) && test_fdc_finish_command_wait(fdc);
 }
 
@@ -193,7 +193,7 @@ static x86_fdc_observation observe(x86_nxvm_board_fdc *fdc)
     return value;
 }
 
-static void core_machine_fdc_write_dma2(x86_core_machine *port, lib_u16 address,
+static void x86_nxvm_test_fdc_write_dma2(x86_core_machine *port, lib_u16 address,
     lib_u16 count)
 {
     test_fdc_port_write(port, 0x000cu, 0u);
@@ -207,7 +207,7 @@ static void core_machine_fdc_write_dma2(x86_core_machine *port, lib_u16 address,
     test_fdc_port_write(port, 0x00d4u, 0x00u);
 }
 
-static lib_i32 core_machine_fdc_read_result(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static lib_i32 x86_nxvm_test_fdc_read_result(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -221,8 +221,8 @@ static lib_i32 core_machine_fdc_read_result(x86_nxvm_board_fdc *fdc, x86_core_ma
     return (test_fdc_port_read(port, 0x03f4u) & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
-static lib_i32 core_machine_fdc_service_limits(x86_nxvm_board_fdc *fdc,
-    x86_core_machine *port, x86_nxvm_board_state *board, core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_service_limits(x86_nxvm_board_fdc *fdc,
+    x86_core_machine *port, x86_nxvm_board_state *board, x86_nxvm_test_fdc_fixture_media *media)
 {
     static const struct {
         lib_u8 rate;
@@ -253,14 +253,14 @@ static lib_i32 core_machine_fdc_service_limits(x86_nxvm_board_fdc *fdc,
                 test_fdc_port_write(port, fdc->connect.config.dor_port, 0x1cu);
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).reset_due_tick);
                 for (lib_u8 drive = 0u; drive < 4u; ++drive) {
-                    failed |= !core_machine_fdc_command(fdc, port,
+                    failed |= !x86_nxvm_test_fdc_command(fdc, port,
                         (const lib_u8[]){8u}, 1u) ||
-                        !core_machine_fdc_read_result(fdc, port, result, 2u);
+                        !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u);
                 }
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){3u, 0xf0u, ndma}, 3u);
-                if (!ndma) core_machine_fdc_write_dma2(port, 0x0600u, 511u);
-                failed |= !core_machine_fdc_command(fdc, port,
+                if (!ndma) x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 511u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){commands[command] | (encoding ? 0x40u : 0u),
                     0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u);
                 const lib_u64 origin = observe(fdc).elapsed_ticks;
@@ -291,15 +291,15 @@ static lib_i32 core_machine_fdc_service_limits(x86_nxvm_board_fdc *fdc,
                 test_fdc_port_write(port, fdc->connect.config.dor_port, 0x1cu);
                 failed |= !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 failed |= observe(fdc).drq ||
-                    !core_machine_fdc_read_result(fdc, port, result, 7u) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, 7u) ||
                     result[0] != 0x40u || result[1] != 0x10u ||
                     result[3] != 0u || result[4] != 0u || result[5] != 1u ||
                     x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     media->read_count != expected_reads || media->write_count != saved_writes;
                 /* A serviced read instead exposes the independent byte gate. */
                 if (command == 0u) {
-                    if (!ndma) core_machine_fdc_write_dma2(port, 0x0600u, 511u);
-                    failed |= !core_machine_fdc_command(fdc, port,
+                    if (!ndma) x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 511u);
+                    failed |= !x86_nxvm_test_fdc_command(fdc, port,
                         (const lib_u8[]){6u | (encoding ? 0x40u : 0u),
                         0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u);
                     if (ndma) (void)test_fdc_port_read(port, fdc->connect.config.data_port);
@@ -332,8 +332,8 @@ static lib_i32 core_machine_fdc_service_limits(x86_nxvm_board_fdc *fdc,
 
 /* S12 supersedes the S10 characterization: READY is a pin, whereas absent
  * media, motor and selection prevent a record from being delivered. */
-static lib_i32 core_machine_fdc_readiness_matrix(x86_core_machine *machine, x86_nxvm_board_state *board,
-    core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_readiness_matrix(x86_core_machine *machine, x86_nxvm_board_state *board,
+    x86_nxvm_test_fdc_fixture_media *media)
 {
     x86_nxvm_board_fdc *fdc = board->fdc;
     x86_core_machine *port = machine;
@@ -400,10 +400,10 @@ static lib_i32 core_machine_fdc_readiness_matrix(x86_core_machine *machine, x86_
                 X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DELETED_DATA :
                 X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
             test_fdc_port_write(port, 0x03f2u, inputs[initial].dor);
-            failed |= !core_machine_fdc_command(fdc, port,
+            failed |= !x86_nxvm_test_fdc_command(fdc, port,
                 (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
-            core_machine_fdc_write_dma2(port, 0x0600u, 511u);
-            failed |= !core_machine_fdc_command(fdc, port, commands[command].bytes,
+            x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 511u);
+            failed |= !x86_nxvm_test_fdc_command(fdc, port, commands[command].bytes,
                 commands[command].count);
             if (during_transfer) {
                 failed |= test_fdc_port_read(port, 0x03f4u) != commands[command].msr;
@@ -417,7 +417,7 @@ static lib_i32 core_machine_fdc_readiness_matrix(x86_core_machine *machine, x86_
                 const lib_bool not_ready = inputs[input].ready == 0u;
                 test_fdc_advance(fdc);
                 mismatch = !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
-                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != (not_ready ? 0x48u : 0x40u) ||
                     result[1] != (not_ready ? 0u : 0x04u) ||
                     result[2] != 0u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
@@ -448,8 +448,8 @@ static lib_i32 core_machine_fdc_readiness_matrix(x86_core_machine *machine, x86_
 }
 
 
-static lib_i32 core_machine_fdc_result_identity(x86_nxvm_board_fdc *fdc,
-    x86_core_machine *port, core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_result_identity(x86_nxvm_board_fdc *fdc,
+    x86_core_machine *port, x86_nxvm_test_fdc_fixture_media *media)
 {
     const lib_bool saved_present = media->present;
     lib_i32 failed = 0;
@@ -460,9 +460,9 @@ static lib_i32 core_machine_fdc_result_identity(x86_nxvm_board_fdc *fdc,
         const lib_u8 drive = identity & 3u;
         x86_nxvm_board_fdc_reset(fdc);
         test_fdc_port_write(port, 0x03f2u, 0x0cu | drive | (0x10u << drive));
-        failed |= !core_machine_fdc_command(fdc, port,
+        failed |= !x86_nxvm_test_fdc_command(fdc, port,
             (const lib_u8[]){0x4au, identity}, 2u);
-        if (!core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+        if (!x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
             result[0] != (0x40u | identity) || result[1] != 0x04u) {
             lib_c_fprintf(lib_c_stderr, "FDC ST0 identity=%u failed\n", identity);
             failed = 1;
@@ -474,8 +474,8 @@ static lib_i32 core_machine_fdc_result_identity(x86_nxvm_board_fdc *fdc,
 }
 
 
-static lib_i32 core_machine_fdc_write_terminal(x86_core_machine *machine, x86_nxvm_board_state *board,
-    core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_write_terminal(x86_core_machine *machine, x86_nxvm_board_state *board,
+    x86_nxvm_test_fdc_fixture_media *media)
 {
     x86_nxvm_board_fdc *fdc = board->fdc;
     x86_core_machine *port = machine;
@@ -504,11 +504,11 @@ static lib_i32 core_machine_fdc_write_terminal(x86_core_machine *machine, x86_nx
                 lib_memory_set(media->bytes, 0x5au, sizeof(media->bytes));
                 x86_nxvm_board_fdc_reset(fdc);
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x03u, 0xdfu, 2u}, 3u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x03u, 0xdfu, 2u}, 3u);
                 test_fdc_port_write(port, 0x03f7u, VFDC_CCR_RATE_500);
-                core_machine_fdc_write_dma2(port, 0x0600u, length - 1u);
+                x86_nxvm_test_fdc_write_dma2(port, 0x0600u, length - 1u);
                 test_fdc_port_write(port, 0x000bu, 0x4au);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){
                     deleted ? 0x49u : 0x45u, 0u, 0u, 0u, 1u, 2u, 3u, 0x1bu, 0xffu}, 9u);
                 for (lib_u16 byte = 0u; byte < length; ++byte) {
                     test_dma_transfers(board->shared_dma,
@@ -528,7 +528,7 @@ static lib_i32 core_machine_fdc_write_terminal(x86_core_machine *machine, x86_nx
                     if (cases[index].action == RESET)
                         failed |= (test_fdc_port_read(port, 0x03f4u) & TEST_FDC_MSR_CB) != 0u ||
                             x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
-                    else failed |= !core_machine_fdc_read_result(fdc, port, result, 7u) ||
+                    else failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 7u) ||
                         result[0] != 0x40u || result[1] !=
                             (cases[index].action == MOTOR_OFF ? 0x04u : 0x02u);
                     failed |= media->write_count - writes != length ||
@@ -551,7 +551,7 @@ static lib_i32 core_machine_fdc_write_terminal(x86_core_machine *machine, x86_nx
                     x86_nxvm_board_fdc_advance_at(fdc, due);
                     failed |= media->write_count != before + 1u;
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, 7u) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 7u) ||
                     result[0] != 0u || result[1] != 0u || result[2] != 0u ||
                     media->write_count - writes != 512u || observe(fdc).dma_byte_gate_pending ||
                     media->marks[0] != (deleted ? X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DELETED_DATA :
@@ -571,8 +571,8 @@ static lib_i32 core_machine_fdc_write_terminal(x86_core_machine *machine, x86_nx
     return failed;
 }
 
-static lib_i32 core_machine_fdc_terminal_id(x86_core_machine *machine, x86_nxvm_board_state *board,
-    core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_terminal_id(x86_core_machine *machine, x86_nxvm_board_state *board,
+    x86_nxvm_test_fdc_fixture_media *media)
 {
     static const lib_u8 commands[] = {0x46u, 0x4cu, 0x45u, 0x49u};
     x86_nxvm_board_fdc *fdc = board->fdc;
@@ -597,10 +597,10 @@ static lib_i32 core_machine_fdc_terminal_id(x86_core_machine *machine, x86_nxvm_
             media->marks[head] = commands[command] == 0x4cu ?
                 X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DELETED_DATA : X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
             test_fdc_port_write(port, 0x03f2u, 0x1cu);
-            failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x03u, 0xdfu, 2u}, 3u);
-            core_machine_fdc_write_dma2(port, 0x0600u, length - 1u);
+            failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x03u, 0xdfu, 2u}, 3u);
+            x86_nxvm_test_fdc_write_dma2(port, 0x0600u, length - 1u);
             if (command >= 2u) test_fdc_port_write(port, 0x000bu, 0x4au);
-            failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){
+            failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){
                 commands[command] | (multi_track ? 0x80u : 0u), head << 2u,
                 0u, head, 1u, 2u, at_eot ? 1u : 2u, 0x1bu, 0xffu}, 9u);
             for (lib_u16 byte = 0u; byte < length; ++byte) {
@@ -612,7 +612,7 @@ static lib_i32 core_machine_fdc_terminal_id(x86_core_machine *machine, x86_nxvm_
             for (lib_u16 byte = length; byte < 512u &&
                 command >= 2u; ++byte)
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).next_dma_byte_tick);
-            if (!core_machine_fdc_read_result(fdc, port, result, 7u) ||
+            if (!x86_nxvm_test_fdc_read_result(fdc, port, result, 7u) ||
                 result[0] != (head << 2u) || result[1] != 0u || result[2] != 0u ||
                 result[3] != (at_eot && (!multi_track || head != 0u) ? 1u : 0u) ||
                 result[4] != (at_eot && multi_track ? head ^ 1u : head) ||
@@ -631,8 +631,8 @@ static lib_i32 core_machine_fdc_terminal_id(x86_core_machine *machine, x86_nxvm_
     return failed;
 }
 
-static lib_i32 core_machine_fdc_multi_track_dma(x86_core_machine *machine,
-    x86_nxvm_board_state *board, core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_multi_track_dma(x86_core_machine *machine,
+    x86_nxvm_board_state *board, x86_nxvm_test_fdc_fixture_media *media)
 {
     x86_nxvm_board_fdc *fdc = board->fdc;
     const x86_nxvm_board_fdc_config saved_config = fdc->connect.config;
@@ -648,7 +648,7 @@ static lib_i32 core_machine_fdc_multi_track_dma(x86_core_machine *machine,
         x86_nxvm_board_fdc_reset(fdc);
         test_fdc_port_write(machine, 0x03f2u, 0x1cu);
         test_fdc_port_write(machine, 0x03f7u, VFDC_CCR_RATE_500);
-        failed |= !core_machine_fdc_command(fdc, machine,
+        failed |= !x86_nxvm_test_fdc_command(fdc, machine,
             (const lib_u8[]){3u, 0xdfu, 2u}, 3u);
         lib_memory_set(media->bytes, 0x12u, 512u);
         lib_memory_set(media->bytes + 512u, 0x34u, 512u);
@@ -656,9 +656,9 @@ static lib_i32 core_machine_fdc_multi_track_dma(x86_core_machine *machine,
         lib_memory_set(bytes, writing ? 0x56u : 0u, 512u);
         lib_memory_set(bytes + 512u, writing ? 0x78u : 0u, 512u);
         failed |= x86_core_machine_memory_write(machine, 0x0600u, bytes, sizeof(bytes)) != LIB_STATUS_OK;
-        core_machine_fdc_write_dma2(machine, 0x0600u, sizeof(bytes) - 1u);
+        x86_nxvm_test_fdc_write_dma2(machine, 0x0600u, sizeof(bytes) - 1u);
         if (writing) test_fdc_port_write(machine, 0x000bu, 0x4au);
-        failed |= !core_machine_fdc_command(fdc, machine,
+        failed |= !x86_nxvm_test_fdc_command(fdc, machine,
             (const lib_u8[]){writing ? 0xc5u : 0xc6u, 0u, 0u, 0u,
                 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
         for (lib_u16 byte = 0u; byte < sizeof(bytes); ++byte) {
@@ -666,7 +666,7 @@ static lib_i32 core_machine_fdc_multi_track_dma(x86_core_machine *machine,
             if (byte + 1u < sizeof(bytes))
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).next_dma_byte_tick);
         }
-        failed |= !core_machine_fdc_read_result(fdc, machine, result, 7u) ||
+        failed |= !x86_nxvm_test_fdc_read_result(fdc, machine, result, 7u) ||
             result[0] != 4u || result[1] != 0u || result[2] != 0u ||
             result[3] != 1u || result[4] != 0u || result[5] != 1u ||
             media->read_count - reads != (writing ? 0u : 1024u) ||
@@ -683,8 +683,8 @@ static lib_i32 core_machine_fdc_multi_track_dma(x86_core_machine *machine,
     return failed;
 }
 
-static lib_i32 core_machine_fdc_no_implied_seek(x86_nxvm_board_fdc *fdc,
-    x86_core_machine *port, core_machine_fdc_fixture_media *media)
+static lib_i32 x86_nxvm_test_fdc_no_implied_seek(x86_nxvm_board_fdc *fdc,
+    x86_core_machine *port, x86_nxvm_test_fdc_fixture_media *media)
 {
     const lib_u8 commands[] = {0x46u, 0x45u, 0x4cu, 0x49u, 0x51u, 0x59u, 0x5du, 0x42u};
     const lib_u32 reads = media->read_count;
@@ -697,9 +697,9 @@ static lib_i32 core_machine_fdc_no_implied_seek(x86_nxvm_board_fdc *fdc,
     for (lib_size index = 0u; index < sizeof(commands); ++index) {
         x86_nxvm_board_fdc_reset(fdc);
         test_fdc_port_write(port, 0x03f2u, 0x1cu);
-        failed |= !core_machine_fdc_command(fdc, port,
+        failed |= !x86_nxvm_test_fdc_command(fdc, port,
             (const lib_u8[]){commands[index], 0u, 1u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u);
-        failed |= !core_machine_fdc_read_result(fdc, port, result, 7u) ||
+        failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 7u) ||
             result[0] != 0x40u || result[1] != 0x04u ||
             result[2] != (commands[index] == 0x42u ? 0u : 0x10u) ||
             result[3] != (commands[index] == 0x42u ? 1u : 0u) ||
@@ -708,8 +708,8 @@ static lib_i32 core_machine_fdc_no_implied_seek(x86_nxvm_board_fdc *fdc,
     failed |= media->read_count != reads || media->write_count != writes;
     /* READ ID must ignore the previous command's requested cylinder. */
     failed |= observe(fdc).cylinder != 1u;
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x4au, 0u}, 2u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 7u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x4au, 0u}, 2u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 7u) ||
         result[0] != 0u || result[3] != 0u;
     media->cylinder_count = 1u;
     x86_nxvm_board_fdc_reset(fdc);
@@ -717,7 +717,7 @@ static lib_i32 core_machine_fdc_no_implied_seek(x86_nxvm_board_fdc *fdc,
     return failed;
 }
 
-static lib_i32 core_machine_fdc_seek_pins(x86_nxvm_board_fdc *fdc, x86_core_machine *port)
+static lib_i32 x86_nxvm_test_fdc_seek_pins(x86_nxvm_board_fdc *fdc, x86_core_machine *port)
 {
     const x86_nxvm_board_fdc_drive_bindings saved_drives = fdc->connect.drives;
     const x86_nxvm_board_fdc_config saved_config = fdc->connect.config;
@@ -733,56 +733,56 @@ static lib_i32 core_machine_fdc_seek_pins(x86_nxvm_board_fdc *fdc, x86_core_mach
     fdc->drive_cylinder[0] = 0u;
     x86_nxvm_board_fdc_reset(fdc);
     test_fdc_port_write(port, 0x03f2u, 0x1cu);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x0fu, 0u, 100u}, 3u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x0fu, 0u, 100u}, 3u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x20u || result[1] != 100u || fdc->drive_cylinder[0] != 39u;
 
     /* Reset changes PCN, not the drive's physical position or Track0. */
     x86_nxvm_board_fdc_reset(fdc);
     failed |= observe(fdc).pcn[0] != 0u || fdc->drive_cylinder[0] != 39u;
     test_fdc_port_write(port, 0x03f2u, 0x1cu);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x04u, 0u}, 2u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 1u) || (result[0] & 0x10u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x07u, 0u}, 2u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x04u, 0u}, 2u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 1u) || (result[0] & 0x10u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x07u, 0u}, 2u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x20u || result[1] != 0u ||
         fdc->drive_cylinder[0] != 0u;
 
     /* No Track0 within 77 pulses is EC; a second command can finish. */
     fdc->connect.drives.cylinder_count[0] = 80u;
     fdc->drive_cylinder[0] = 79u;
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x07u, 0u}, 2u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x07u, 0u}, 2u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x70u || result[1] != 0u ||
         fdc->drive_cylinder[0] != 2u;
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x07u, 0u}, 2u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x07u, 0u}, 2u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x20u || fdc->drive_cylinder[0] != 0u;
 
     /* READY loss aborts at the current PCN, not at the requested target. */
-    core_machine_fdc_submit(fdc, port, (const lib_u8[]){0x0fu, 0u, 5u}, 3u);
+    x86_nxvm_test_fdc_submit(fdc, port, (const lib_u8[]){0x0fu, 0u, 5u}, 3u);
     failed |= !test_fdc_advance_due(fdc);
     failed |= !test_fdc_advance_due(fdc);
     fdc->connect.config.ready_mask = 0x0eu;
     test_fdc_advance(fdc);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x68u || result[1] != 2u || fdc->drive_cylinder[0] != 2u;
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x0fu, 4u, 9u}, 3u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x0fu, 4u, 9u}, 3u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x6cu || result[1] != 2u || fdc->drive_cylinder[0] != 2u;
 
     /* DOR routes STEP to mechanism zero even when the chip counts unit one. */
     fdc->connect.config.ready_mask = 0x0fu;
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x0fu, 5u, 1u}, 3u);
-    failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x0fu, 5u, 1u}, 3u);
+    failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
         result[0] != 0x25u || result[1] != 1u || fdc->drive_cylinder[0] != 3u;
     fdc->connect.drives = saved_drives;
     fdc->connect.config = saved_config;
@@ -847,7 +847,7 @@ lib_i32 main(void)
     const x86_nxvm_board_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
         .cascade_channel = X86_NXVM_BOARD_DMA_CASCADE_CHANNEL };
-    core_machine_fdc_fixture_media fixture = {
+    x86_nxvm_test_fdc_fixture_media fixture = {
         .generation = 1u, .present = LIB_TRUE, .sector_count = 1u, .cylinder_count = 1u, .head_count = 1u,
         .forced_read_result = X86_NXVM_BOARD_MEDIA_RESULT_OK,
         .forced_write_result = X86_NXVM_BOARD_MEDIA_RESULT_OK,
@@ -874,10 +874,10 @@ lib_i32 main(void)
         port = machine;
         if (fdc == LIB_NULL || port == LIB_NULL ||
             x86_nxvm_board_media_registry_bind(media, 1u, &fixture,
-                &core_machine_fdc_fixture_provider) != LIB_STATUS_OK ||
+                &x86_nxvm_test_fdc_fixture_provider) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_freeze(media) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_bind(media, 2u, &fixture,
-                &core_machine_fdc_fixture_provider) != LIB_STATUS_INVALID_STATE ||
+                &x86_nxvm_test_fdc_fixture_provider) != LIB_STATUS_INVALID_STATE ||
             x86_nxvm_board_configure_dma(board, &dma_wiring, &dma_request) !=
                 LIB_STATUS_OK) {
             failed |= 0x02;
@@ -902,35 +902,35 @@ lib_i32 main(void)
                 failed |= !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 for (lib_u8 reset_drive = 0u;
                     reset_drive < X86_NXVM_BOARD_FDC_DRIVE_COUNT; ++reset_drive) {
-                    failed |= !core_machine_fdc_command(fdc, port,
+                    failed |= !x86_nxvm_test_fdc_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
-                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, 1u) ||
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 /* A new Recalibrate supersedes an undrained reset notice;
                    Sense Interrupt must report the completed operation. */
                 test_fdc_port_write(port, fdc_config.dor_port, 0u);
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).reset_due_tick);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x07u, 0u}, 2u);
                 test_fdc_advance(fdc);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
                 failed |= observe(fdc).reset_sense_mask != 0u ||
-                    !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
                     result[0] != TEST_FDC_ST0_SEEK_END || result[1] != 0u;
-                failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 test_fdc_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_250);
 
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x10u}, 1u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x10u}, 1u);
                 failed |= x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
-                    !core_machine_fdc_read_result(fdc, port, result, 1u) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u || (test_fdc_port_read(port, 0x03f4u) & TEST_FDC_MSR_CB) != 0u;
 
                 /* Chip-local tests own SPECIFY retention; this checks DOR
@@ -940,13 +940,13 @@ lib_i32 main(void)
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).reset_due_tick);
                 for (lib_u8 reset_drive = 0u;
                     reset_drive < X86_NXVM_BOARD_FDC_DRIVE_COUNT; ++reset_drive) {
-                    failed |= !core_machine_fdc_command(fdc, port,
+                    failed |= !x86_nxvm_test_fdc_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
-                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
-                failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
 
 
@@ -954,27 +954,27 @@ lib_i32 main(void)
                    controls sector transfer, not the mechanical completion. */
                 fdc->connect.drives.installed_mask |= 0x02u;
                 test_fdc_port_write(port, fdc_config.dor_port, 0x2du);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x07u, 1u}, 2u);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, 2u);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x07u, 1u}, 2u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x0fu, 0x01u, 0x01u}, 3u);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-                if (!core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                if (!x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
                     result[0] != (TEST_FDC_ST0_NORMAL |
                     TEST_FDC_ST0_SEEK_END | 1u) || result[1] != 1u) failed |= 0x100;
                 /* ST3 observes the selected drive's Track-0 input, not the
                    controller's most recently completed seek. */
                 fdc->drive_cylinder[0u] = 0u;
                 test_fdc_port_write(port, fdc_config.dor_port, 0x2du);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x04u, 0x01u}, 2u);
-                if (!core_machine_fdc_read_result(fdc, port, result, 1u) ||
+                if (!x86_nxvm_test_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x21u) failed |= 0x200;
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
 
                 for (lib_u32 index = 0u; index < sizeof(read_sector); ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port, read_sector[index]);
                 }
                 failed |= test_fdc_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_CB ||
@@ -984,7 +984,7 @@ lib_i32 main(void)
                 failed |= (test_fdc_port_read(port, 0x03f4u) & TEST_FDC_MSR_PROCESS_READ) != TEST_FDC_MSR_PROCESS_READ;
                 failed |= test_fdc_port_read(port, fdc_config.data_port) != 0x4au;
                 for (lib_u32 index = 1u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     (void)test_fdc_port_read(port, fdc_config.data_port);
                 }
                 failed |= test_fdc_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_CB ||
@@ -992,61 +992,61 @@ lib_i32 main(void)
                 test_fdc_advance(fdc);
                 failed |= test_fdc_port_read(port, 0x03f4u) != TEST_FDC_MSR_RESULT ||
                     !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
-                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL ||
                     x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 fixture.read_count = 0u;
 
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 failed |= test_fdc_port_read(port, fdc_config.data_port) != 0x4au;
                 for (lib_u32 index = 1u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     (void)test_fdc_port_read(port, fdc_config.data_port);
                 }
                 test_fdc_advance(fdc);
                 failed |= !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
-                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL || fixture.read_count != 512u ||
                     x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
 
                 fixture.marks[0] = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DELETED_DATA;
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     (void)test_fdc_port_read(port, fdc_config.data_port);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & TEST_FDC_ST2_CONTROL_MARK) == 0u;
-                failed |= !core_machine_fdc_command(fdc, port, read_deleted_sector,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_deleted_sector,
                     sizeof(read_deleted_sector));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     (void)test_fdc_port_read(port, fdc_config.data_port);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & TEST_FDC_ST2_CONTROL_MARK) != 0u;
 
                 fixture.marks[0] = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
-                failed |= !core_machine_fdc_command(fdc, port, write_deleted_sector,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, write_deleted_sector,
                     sizeof(write_deleted_sector));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x6bu : 0u);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL ||
                     fixture.marks[0] != X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DELETED_DATA ||
                     fixture.bytes[0] != 0x6bu;
 
                 fixture.write_count = 0u;
-                failed |= !core_machine_fdc_command(fdc, port, write_sector, sizeof(write_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, write_sector, sizeof(write_sector));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0u);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL || fixture.write_count != 512u ||
                     fixture.bytes[0] != 0x5au;
 
@@ -1054,85 +1054,85 @@ lib_i32 main(void)
                    host-to-controller path as a write, but never mutate media.
                    Intel 6-233 defines FFh as the largest comparison value. */
                 fixture.marks[0] = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0u);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         TEST_FDC_ST2_SCAN_MATCH || fixture.bytes[0] != 0x5au;
-                failed |= !core_machine_fdc_command(fdc, port, scan_low_or_equal,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_low_or_equal,
                     sizeof(scan_low_or_equal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x60u : 0xffu);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         0u;
-                failed |= !core_machine_fdc_command(fdc, port, scan_high_or_equal,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_high_or_equal,
                     sizeof(scan_high_or_equal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x50u : 0u);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         0u;
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x50u : 0u);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         TEST_FDC_ST2_SCAN_MISMATCH;
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port, 0xffu);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         TEST_FDC_ST2_SCAN_MISMATCH;
                 fixture.marks[0] = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DELETED_DATA;
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_fdc_wait_payload(fdc);
+                    x86_nxvm_test_fdc_wait_payload(fdc);
                     test_fdc_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0u);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_CONTROL_MARK)) !=
                         (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_CONTROL_MARK);
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal_skip,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal_skip,
                     sizeof(scan_equal_skip));
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH |
                     TEST_FDC_ST2_CONTROL_MARK)) != (TEST_FDC_ST2_SCAN_MISMATCH | TEST_FDC_ST2_CONTROL_MARK);
                 fixture.marks[0] = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
 
-                failed |= !core_machine_fdc_command(fdc, port, format_track, sizeof(format_track));
-                failed |= !core_machine_fdc_command(fdc, port, format_id, sizeof(format_id));
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, format_track, sizeof(format_track));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, format_id, sizeof(format_id));
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL || fixture.format_count != 1u ||
                     fixture.generation != 2u || fixture.bytes[511] != 0xa5u;
 
                 /* A real STEP acknowledges media change; SEEK to the existing
                    PCN produces no pulse and cannot clear the drive's latch. */
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x0fu, 0x00u, 0x01u}, 3u);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, 2u);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x0fu, 0x00u, 0x00u}, 3u);
-                failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, 2u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u);
                 x86_nxvm_board_fdc_refresh(fdc);
                 failed |= (test_fdc_port_read(port, fdc_config.direction_port) & VFDC_DIR_DC) != 0u;
                 ++fixture.generation;
@@ -1143,10 +1143,10 @@ lib_i32 main(void)
                    expose the next byte before the 16-us (128-tick) gate. */
                 fixture.read_count = 0u;
                 test_fdc_port_write(port, fdc_config.control_port, 0u);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
-                core_machine_fdc_write_dma2(port, 0x0600u, 1u);
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 1u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 const lib_u64 byte_origin = observe(fdc).elapsed_ticks;
                 x86_nxvm_board_fdc_advance_at(fdc, byte_origin + 100u);
                 failed |= !x86_nxvm_board_dma_has_pending_request(board->shared_dma);
@@ -1182,15 +1182,15 @@ lib_i32 main(void)
                    memory-to-device direction, then reports through the same
                    seven-byte IRQ result phase. */
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 test_fdc_port_write(port, fdc_config.control_port, 0u);
                 lib_memory_set(scan_dma, 0xa5u, sizeof(scan_dma));
                 failed |= x86_core_machine_memory_write(machine,
                     0x0600u, scan_dma, sizeof(scan_dma)) != LIB_STATUS_OK;
-                core_machine_fdc_write_dma2(port, 0x0600u, 511u);
+                x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 511u);
                 test_fdc_port_write(port, 0x000bu, 0x4au);
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < sizeof(scan_dma); ++index) {
                     test_dma_transfers(board->shared_dma,
                         machine, machine, 1u, 2u);
@@ -1202,7 +1202,7 @@ lib_i32 main(void)
                 failed |= observe(fdc).dma_byte_gate_pending;
                 test_fdc_advance(fdc);
                 failed |= !x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
-                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         TEST_FDC_ST2_SCAN_MATCH;
 
@@ -1213,12 +1213,12 @@ lib_i32 main(void)
                    the inserted medium's last sector. */
                 fixture.read_count = 0u;
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 test_fdc_port_write(port, fdc_config.control_port,
                     VFDC_CCR_RATE_300);
-                core_machine_fdc_write_dma2(port, 0x0600u, 511u);
-                failed |= !core_machine_fdc_command(fdc, port, read_sector_dma_terminal,
+                x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 511u);
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector_dma_terminal,
                     sizeof(read_sector_dma_terminal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
                     test_dma_transfers(board->shared_dma,
@@ -1228,38 +1228,38 @@ lib_i32 main(void)
                 }
                 test_fdc_advance(fdc);
                 failed |= fixture.read_count != 512u ||
-                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL;
                 test_fdc_port_write(port, fdc_config.dor_port, 0u);
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).reset_due_tick);
                 for (lib_u8 reset_drive = 0u;
                     reset_drive < X86_NXVM_BOARD_FDC_DRIVE_COUNT; ++reset_drive) {
-                    failed |= !core_machine_fdc_command(fdc, port,
+                    failed |= !x86_nxvm_test_fdc_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
-                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
-                failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 test_fdc_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_250);
 
                 fixture.forced_read_result = X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 (void)test_fdc_port_read(port, fdc_config.data_port);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
                 fixture.forced_read_result = X86_NXVM_BOARD_MEDIA_RESULT_OK;
                 fixture.read_only = LIB_TRUE;
-                failed |= !core_machine_fdc_command(fdc, port, write_sector, sizeof(write_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, write_sector, sizeof(write_sector));
                 test_fdc_port_write(port, fdc_config.data_port, 0x33u);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x02u) == 0u;
                 fixture.read_only = LIB_FALSE;
                 fixture.present = LIB_FALSE;
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
 
                 /* The same MFM byte-service interval applies when the host
@@ -1267,9 +1267,9 @@ lib_i32 main(void)
                 fixture.present = LIB_TRUE;
                 fixture.read_count = 0u;
                 test_fdc_port_write(port, fdc_config.control_port, 0u);
-                failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 const lib_u64 ndma_byte_origin = observe(fdc).elapsed_ticks;
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).elapsed_ticks + 1u);
                 failed |= test_fdc_port_read(port, fdc_config.data_port) != 0xa5u ||
@@ -1294,16 +1294,16 @@ lib_i32 main(void)
                 x86_nxvm_board_fdc_advance_at(fdc, observe(fdc).reset_due_tick);
                 for (lib_u8 reset_drive = 0u;
                     reset_drive < X86_NXVM_BOARD_FDC_DRIVE_COUNT; ++reset_drive) {
-                    failed |= !core_machine_fdc_command(fdc, port,
+                    failed |= !x86_nxvm_test_fdc_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
-                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || x86_nxvm_board_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
-                failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 test_fdc_port_write(port, fdc_config.control_port, 0u);
-                failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 test_fdc_port_write(port, fdc_config.data_port, 0x5au);
                 failed |= x86_nxvm_board_fdc_next_due_tick(fdc, &ndma_gate_tick) != LIB_STATUS_OK;
                 failed |= (test_fdc_port_read(port, 0x03f4u) & TEST_FDC_MSR_RQM) != 0u ||
@@ -1319,11 +1319,11 @@ lib_i32 main(void)
                 fdc->connect.config.clock_ticks_per_second = 0u;
                 test_fdc_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_500);
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
-                failed |= !core_machine_fdc_command(fdc, port,
+                failed |= !x86_nxvm_test_fdc_command(fdc, port,
                     (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
-                core_machine_fdc_write_dma2(port, 0x0600u, 1u);
+                x86_nxvm_test_fdc_write_dma2(port, 0x0600u, 1u);
                 fallback_read_count = fixture.read_count;
-                failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                failed |= !x86_nxvm_test_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 test_dma_transfers(board->shared_dma,
                     machine, machine, 1u, 2u);
                 failed |= fixture.read_count != fallback_read_count + 1u ||
@@ -1335,20 +1335,20 @@ lib_i32 main(void)
                     machine, machine, 1u, 2u);
                 failed |= fixture.read_count != fallback_read_count + 2u || test_fdc_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB;
                 test_fdc_advance(fdc);
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                failed |= !x86_nxvm_test_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
                     result[2] != 0u;
             }
         }
     }
-    if (!failed) failed |= core_machine_fdc_readiness_matrix(machine, board, &fixture);
-    if (!failed) failed |= core_machine_fdc_result_identity(fdc, port, &fixture);
-    if (!failed) failed |= core_machine_fdc_write_terminal(machine, board, &fixture);
-    if (!failed) failed |= core_machine_fdc_terminal_id(machine, board, &fixture);
-    if (!failed) failed |= core_machine_fdc_no_implied_seek(fdc, port, &fixture);
-    if (!failed) failed |= core_machine_fdc_seek_pins(fdc, port);
-    if (!failed) failed |= core_machine_fdc_multi_track_dma(machine, board, &fixture);
-    if (!failed) failed |= core_machine_fdc_service_limits(fdc, port, board, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_readiness_matrix(machine, board, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_result_identity(fdc, port, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_write_terminal(machine, board, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_terminal_id(machine, board, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_no_implied_seek(fdc, port, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_seek_pins(fdc, port);
+    if (!failed) failed |= x86_nxvm_test_fdc_multi_track_dma(machine, board, &fixture);
+    if (!failed) failed |= x86_nxvm_test_fdc_service_limits(fdc, port, board, &fixture);
     x86_core_machine_destroy(machine);
     x86_nxvm_board_media_registry_destroy(media);
     if (failed) {

@@ -19,12 +19,13 @@ static lib_status parity_test_ports(x86_core_machine *machine,
 #include "x86-nxvm/board-at/parity.c"
 #undef x86_core_machine_install_port_routes
 
-lib_status test_at_parity_try(x86_nxvm_board_state *board,
-    const x86_nxvm_board_planar_parity_config *config, lib_bool reject)
+void test_at_parity_reject_ports(lib_bool reject)
 {
     reject_ports = reject;
     rejection_reached = LIB_FALSE;
-    const lib_status status = x86_nxvm_board_configure_planar_parity(board, config);
-    reject_ports = LIB_FALSE;
-    return reject && !rejection_reached ? LIB_STATUS_INTERNAL_ERROR : status;
+}
+
+lib_bool test_at_parity_rejection_reached(void)
+{
+    return rejection_reached;
 }

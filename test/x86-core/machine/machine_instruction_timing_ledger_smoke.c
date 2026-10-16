@@ -105,12 +105,12 @@ static lib_i32 timing_ledger_prepare(x86_core_machine **out_machine,
     if (out_machine == LIB_NULL || state == LIB_NULL ||
         x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL ||
-        test_core_machine_fixture_register_reset_mapping(machine,
+        test_x86_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
             TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         x86_core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_ledger_port_provider, state) != LIB_STATUS_OK ||
-        test_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
+        test_x86_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
         !timing_ledger_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, state)) {
         x86_core_machine_destroy(machine);
@@ -273,7 +273,7 @@ static lib_i32 timing_ledger_physical_case(const lib_u8 *program,
     if (failed) return 1;
     failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL ||
-        test_core_machine_fixture_register_reset_mapping(machine,
+        test_x86_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
             TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         !timing_ledger_bind_freeze_reset(machine,
@@ -377,7 +377,7 @@ static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
     x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL ||
-        test_core_machine_fixture_register_reset_mapping(machine,
+        test_x86_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
             TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         !timing_ledger_bind_freeze_reset(machine,
@@ -711,7 +711,7 @@ static lib_i32 timing_ledger_test_compatibility_is_not_source_truth(void)
     x86_core_machine *machine = LIB_NULL;
     lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL ||
-        test_core_machine_fixture_register_reset_mapping(machine,
+        test_x86_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
             TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

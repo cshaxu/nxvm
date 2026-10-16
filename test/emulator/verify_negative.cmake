@@ -51,6 +51,12 @@ reject("" "target_link_libraries(emulator-machine PRIVATE user32)\n" "Forbidden 
 reject("" "target_link_libraries(emulator-machine PRIVATE emulator-ui)\n" "Forbidden Emulator edge")
 reject("" "TARGET_LINK_LIBRARIES(emulator-machine PRIVATE emulator-ui)\n" "Forbidden Emulator edge")
 reject("" "if(WIN32)\nendif()\n" "must not select platform")
+foreach(path IN ITEMS probe.c machine/nested/probe.c)
+    file(MAKE_DIRECTORY "${PROBE_ROOT}/machine/nested")
+    file(WRITE "${PROBE_ROOT}/${path}" "/* Unowned source must not be skipped. */\n")
+    reject("" "" "Noncanonical Emulator source")
+    file(REMOVE "${PROBE_ROOT}/${path}")
+endforeach()
 file(WRITE "${PROBE_ROOT}/machine/probe.c"
     "#include \"lib/types/types_interface.h\"\nlib_u32 limit = LIB_UINT32_MAX;\n"
     "lib_size size = LIB_SIZE_MAX;\n/* UINT_MAX */\nconst char *name = \"UINT32_MAX\";\n")

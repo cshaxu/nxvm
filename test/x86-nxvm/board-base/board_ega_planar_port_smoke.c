@@ -4,28 +4,28 @@
 #include "x86-nxvm/board-base/vadp.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 
-static lib_i32 core_machine_ega_planar_write(x86_core_machine *machine, lib_u32 physical,
+static lib_i32 x86_nxvm_test_ega_planar_write(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
     return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_ega_planar_read(x86_core_machine *machine, lib_u32 physical,
+static lib_i32 x86_nxvm_test_ega_planar_read(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
     return x86_core_machine_memory_read(machine, physical,
         value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static void core_machine_ega_graphics_write(x86_core_machine *machine, lib_u8 index,
+static void x86_nxvm_test_ega_graphics_write(x86_core_machine *machine, lib_u8 index,
     lib_u8 value)
 {
     test_video_port_write(machine, 0x03ceu, index);
     test_video_port_write(machine, 0x03cfu, value);
 }
 
-static void core_machine_ega_planar_select_mode_d(x86_core_machine *machine)
+static void x86_nxvm_test_ega_planar_select_mode_d(x86_core_machine *machine)
 {
     (void)test_video_port_read(machine, X86_NXVM_BOARD_VADP_PORT_STATUS);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_ATTRIBUTE, 0x30u);
@@ -81,23 +81,23 @@ lib_i32 main(void)
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 3u);
     /* Disabling EGA RAM declines its decode; it must not modify that VRAM. */
     value = 0x5au;
-    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, value);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0000u, value);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 1u);
     failed |= x86_nxvm_board_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         !bus.cpu_memory_disabled;
     value = 0x96u;
-    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, value);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0000u, value);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 3u);
     value = 0u;
     failed |= x86_nxvm_board_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.cpu_memory_disabled ||
-        !core_machine_ega_planar_read(machine, 0xa0000u, &value) || value != 0x5au;
+        !x86_nxvm_test_ega_planar_read(machine, 0xa0000u, &value) || value != 0x5au;
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 1u);
     value = 0u;
-    failed |= !core_machine_ega_planar_read(machine, 0xa0000u, &value) || value != 0x96u;
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0xa0000u, &value) || value != 0x96u;
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 3u);
     value = 0u;
-    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, value);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0000u, value);
 
     /* EGA text and planar graphics share the Attribute Controller's
        display-enable state; it is not a renderer-local visibility flag. */
@@ -119,19 +119,19 @@ lib_i32 main(void)
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_SEQUENCER_DATA, 3u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_SEQUENCER_INDEX, 2u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_SEQUENCER_DATA, 3u);
-    core_machine_ega_graphics_write(machine, 5u, 0x10u);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0x10u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_MODE, 0x09u);
     value = 'T';
-    failed |= !core_machine_ega_planar_write(machine, X86_NXVM_BOARD_VADP_TEXT_BASE,
+    failed |= !x86_nxvm_test_ega_planar_write(machine, X86_NXVM_BOARD_VADP_TEXT_BASE,
         value);
     value = 0x1fu;
-    failed |= !core_machine_ega_planar_write(machine,
+    failed |= !x86_nxvm_test_ega_planar_write(machine,
         X86_NXVM_BOARD_VADP_TEXT_BASE + 1u, value);
     value = 'Z';
-    failed |= !core_machine_ega_planar_write(machine,
+    failed |= !x86_nxvm_test_ega_planar_write(machine,
         X86_NXVM_BOARD_VADP_TEXT_BASE + 3920u, value);
     value = 0x2eu;
-    failed |= !core_machine_ega_planar_write(machine,
+    failed |= !x86_nxvm_test_ega_planar_write(machine,
         X86_NXVM_BOARD_VADP_TEXT_BASE + 3921u, value);
     failed |= x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.characters[0] != 'T' ||
@@ -148,10 +148,10 @@ lib_i32 main(void)
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_ATTRIBUTE, 0x20u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_SEQUENCER_INDEX, 4u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_SEQUENCER_DATA, 6u);
-    core_machine_ega_graphics_write(machine, 5u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_GRAPHICS_INDEX, 6u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    core_machine_ega_planar_select_mode_d(machine);
+    x86_nxvm_test_ega_planar_select_mode_d(machine);
 
     status_first = test_video_port_read(machine, 0x03dau);
     status_second = test_video_port_read(machine, 0x03dau);
@@ -177,8 +177,8 @@ lib_i32 main(void)
     test_video_port_write(machine, 0x03c0u, 0x01u);
     failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
 
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0000u, 0xa5u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0000u, 0xa5u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0xa5u;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
@@ -193,71 +193,71 @@ lib_i32 main(void)
 
     /* Read mode 1 compares the four latches; mode 1 copies them and mode 2
      * expands the four low processor-data bits into the selected planes. */
-    core_machine_ega_graphics_write(machine, 1u, 0u);
-    core_machine_ega_graphics_write(machine, 3u, 0u);
-    core_machine_ega_graphics_write(machine, 8u, 0xffu);
-    core_machine_ega_graphics_write(machine, 5u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 1u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 3u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 8u, 0xffu);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0u);
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0x01u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0003u, 0xaau);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0003u, 0xaau);
     test_video_port_write(machine, 0x03c5u, 0x02u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0003u, 0x55u);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0003u, 0x55u);
     test_video_port_write(machine, 0x03c5u, 0x04u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0003u, 0xf0u);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0003u, 0xf0u);
     test_video_port_write(machine, 0x03c5u, 0x08u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0003u, 0x0fu);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0003u, 0x0fu);
     test_video_port_write(machine, 0x03c5u, 0x0fu);
-    core_machine_ega_graphics_write(machine, 4u, 0u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0003u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0003u, &value) ||
         value != 0xaau;
-    core_machine_ega_graphics_write(machine, 2u, 0x01u);
-    core_machine_ega_graphics_write(machine, 7u, 0x0eu);
-    core_machine_ega_graphics_write(machine, 5u, 0x08u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0003u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 2u, 0x01u);
+    x86_nxvm_test_ega_graphics_write(machine, 7u, 0x0eu);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0x08u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0003u, &value) ||
         value != 0xaau;
-    core_machine_ega_graphics_write(machine, 5u, 0u);
-    core_machine_ega_graphics_write(machine, 4u, 0x02u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0003u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x02u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0003u, &value) ||
         value != 0xf0u;
-    core_machine_ega_graphics_write(machine, 4u, 0x04u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0003u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x04u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0003u, &value) ||
         value != 0u;
-    core_machine_ega_graphics_write(machine, 5u, 0x01u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0004u, 0u);
-    core_machine_ega_graphics_write(machine, 5u, 0u);
-    core_machine_ega_graphics_write(machine, 4u, 0x03u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0004u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0x01u);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0004u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x03u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0004u, &value) ||
         value != 0x0fu;
-    core_machine_ega_graphics_write(machine, 5u, 0x02u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0005u, 0x05u);
-    core_machine_ega_graphics_write(machine, 5u, 0u);
-    core_machine_ega_graphics_write(machine, 4u, 0x00u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0005u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0x02u);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0005u, 0x05u);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x00u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0005u, &value) ||
         value != 0xffu;
-    core_machine_ega_graphics_write(machine, 4u, 0x01u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0005u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x01u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0005u, &value) ||
         value != 0u;
-    core_machine_ega_graphics_write(machine, 4u, 0x02u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0005u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x02u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0005u, &value) ||
         value != 0xffu;
-    core_machine_ega_graphics_write(machine, 4u, 0x03u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0005u, &value) ||
+    x86_nxvm_test_ega_graphics_write(machine, 4u, 0x03u);
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0005u, &value) ||
         value != 0u;
-    core_machine_ega_graphics_write(machine, 5u, 0x04u);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0x04u);
     failed |= x86_core_machine_memory_query(machine, 0x000a0005u, 1u,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
-    core_machine_ega_graphics_write(machine, 5u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 5u, 0u);
 
     test_video_port_write(machine, 0x03c4u, 0u);
     test_video_port_write(machine, 0x03c5u, 0x02u);
     failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u) ||
         x86_nxvm_board_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.sequencer_reset != 0x02u ||
-        !core_machine_ega_planar_write(machine, 0x000a0000u, 0x00u) ||
+        !x86_nxvm_test_ega_planar_write(machine, 0x000a0000u, 0x00u) ||
         x86_core_machine_memory_query(machine, 0x000a0000u, 1u,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
@@ -268,7 +268,7 @@ lib_i32 main(void)
     failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u) ||
         x86_nxvm_board_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.sequencer_reset != 0x01u ||
-        !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
+        !x86_nxvm_test_ega_planar_read(machine, 0x000a0000u, &value) ||
         x86_core_machine_memory_query(machine, 0x000a0000u, 1u,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
@@ -279,17 +279,17 @@ lib_i32 main(void)
     failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u) ||
         x86_nxvm_board_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
         bus.sequencer_reset != 0x03u ||
-        !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
+        !x86_nxvm_test_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0xa5u || x86_core_machine_memory_query(machine,
         0x000a0000u, 1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
         LIB_STATUS_OK || route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
 
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0x02u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0001u, 0x80u);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0001u, 0x80u);
     test_video_port_write(machine, 0x03ceu, 4u);
     test_video_port_write(machine, 0x03cfu, 0x01u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0001u, &value) ||
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0001u, &value) ||
         value != 0x80u;
     test_video_port_write(machine, 0x03ceu, 0u);
     test_video_port_write(machine, 0x03cfu, 0x01u);
@@ -301,23 +301,23 @@ lib_i32 main(void)
     test_video_port_write(machine, 0x03cfu, 0xffu);
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0x01u);
-    failed |= !core_machine_ega_planar_write(machine, 0x000a0002u, 0x00u);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0x000a0002u, 0x00u);
     test_video_port_write(machine, 0x03ceu, 4u);
     test_video_port_write(machine, 0x03cfu, 0x00u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0002u, &value) ||
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0002u, &value) ||
         value != 0xffu;
 
     test_video_port_write(machine, 0x03ceu, 6u);
     test_video_port_write(machine, 0x03cfu, 0x09u);
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000b0000u,
         0x00008000u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0u;
 
     /* Reset clears the transient planar store; a guest mode write re-arms it. */
     x86_video_reset(vadp.chip);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 3u);
-    core_machine_ega_planar_select_mode_d(machine);
+    x86_nxvm_test_ega_planar_select_mode_d(machine);
     test_video_port_write(machine, 0x03ceu, 6u);
     test_video_port_write(machine, 0x03cfu, 0x05u);
     status_first = test_video_port_read(machine, 0x03dau);
@@ -326,7 +326,7 @@ lib_i32 main(void)
 
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000a0000u,
         0x00010000u);
-    failed |= !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0u;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
@@ -342,27 +342,27 @@ lib_i32 main(void)
     test_video_port_write(machine, 0x03cfu, 0x10u);
     test_video_port_write(machine, 0x03ceu, 4u);
     test_video_port_write(machine, 0x03cfu, 0u);
-    failed |= !core_machine_ega_planar_write(machine, 0xa0002u, 0x43u) ||
-        !core_machine_ega_planar_write(machine, 0xa0003u, 0x1fu) ||
-        !core_machine_ega_planar_read(machine, 0xa0002u, &value) || value != 0x43u ||
-        !core_machine_ega_planar_read(machine, 0xa0003u, &value) || value != 0x1fu;
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0002u, 0x43u) ||
+        !x86_nxvm_test_ega_planar_write(machine, 0xa0003u, 0x1fu) ||
+        !x86_nxvm_test_ega_planar_read(machine, 0xa0002u, &value) || value != 0x43u ||
+        !x86_nxvm_test_ega_planar_read(machine, 0xa0003u, &value) || value != 0x1fu;
     /* Changing only write addressing cannot change the read-plane selector. */
     test_video_port_write(machine, 0x03c4u, 4u);
     test_video_port_write(machine, 0x03c5u, 6u);
-    failed |= !core_machine_ega_planar_read(machine, 0xa0003u, &value) || value != 0x1fu;
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0xa0003u, &value) || value != 0x1fu;
     test_video_port_write(machine, 0x03ceu, 5u);
     test_video_port_write(machine, 0x03cfu, 0u);
-    failed |= !core_machine_ega_planar_read(machine, 0xa0003u, &value) || value != 0u;
+    failed |= !x86_nxvm_test_ega_planar_read(machine, 0xa0003u, &value) || value != 0u;
 
     /* The selected Board ports must feed the same display-address owner as
      * direct chip capture; processor aperture addressing remains separate. */
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 15u);
-    core_machine_ega_graphics_write(machine, 1u, 0u);
-    core_machine_ega_graphics_write(machine, 8u, 0xffu);
-    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, 0x80u) ||
-        !core_machine_ega_planar_write(machine, 0xa0002u, 0x40u) ||
-        !core_machine_ega_planar_write(machine, 0xa0028u, 0x20u);
+    x86_nxvm_test_ega_graphics_write(machine, 1u, 0u);
+    x86_nxvm_test_ega_graphics_write(machine, 8u, 0xffu);
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0000u, 0x80u) ||
+        !x86_nxvm_test_ega_planar_write(machine, 0xa0002u, 0x40u) ||
+        !x86_nxvm_test_ega_planar_write(machine, 0xa0028u, 0x20u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_CRTC_INDEX, 0x13u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_CRTC_DATA, 1u);
     failed |= x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
@@ -373,7 +373,7 @@ lib_i32 main(void)
     (void)test_video_port_read(machine, X86_NXVM_BOARD_VADP_PORT_STATUS);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_ATTRIBUTE, 0x33u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_ATTRIBUTE, 3u);
-    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, 0x10u) ||
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0000u, 0x10u) ||
         x86_nxvm_board_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 15u;
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_CRTC_INDEX, 0x07u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_CRTC_DATA, 0u);
@@ -397,7 +397,7 @@ lib_i32 main(void)
     (void)test_video_port_read(machine, X86_NXVM_BOARD_VADP_PORT_STATUS);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_ATTRIBUTE, 0x33u);
     test_video_port_write(machine, X86_NXVM_BOARD_VADP_PORT_ATTRIBUTE, 0u);
-    failed |= !core_machine_ega_planar_write(machine, 0xa0008u, 0x80u) ||
+    failed |= !x86_nxvm_test_ega_planar_write(machine, 0xa0008u, 0x80u) ||
         (test_video_port_read(machine, X86_NXVM_BOARD_VADP_PORT_STATUS) & 0x30u) != 0x30u ||
         (test_video_port_read(machine, X86_NXVM_BOARD_VADP_PORT_STATUS) & 0x30u) != 0x30u;
     x86_nxvm_board_vadp_advance(&vadp, 1u);

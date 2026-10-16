@@ -54,7 +54,7 @@ foreach(source IN LISTS library_component_sources)
         message(FATAL_ERROR "Retired Host naming; use console-broker: ${relative_source}")
     endif()
     if(NOT owner IN_LIST library_components)
-        continue()
+        message(FATAL_ERROR "Unknown Library source component: ${relative_source}")
     endif()
     if(owner STREQUAL "kvm-base" AND
        source_text MATCHES "KVM_(COMPONENT_)?CONTROL_(SET_WINDOW|RELEASE_WINDOW)|KVM_WINDOW_CONTROL_|KVM_COMPONENT_WINDOW_TITLE_CAPACITY")

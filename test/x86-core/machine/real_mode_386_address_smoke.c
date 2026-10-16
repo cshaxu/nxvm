@@ -24,7 +24,7 @@ static lib_i32 real_mode_386_prepare(x86_core_machine **out_machine)
     x86_core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || x86_core_machine_neutral_create(&config, &machine) !=
-            LIB_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
+            LIB_STATUS_OK || test_x86_core_machine_fixture_register_reset_mapping(
             machine, TEST_RESET_LINEAR,
             TEST_RESET_PHYSICAL, TEST_RESET_WINDOW) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

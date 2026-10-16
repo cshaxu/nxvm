@@ -5,7 +5,7 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "board_board_fixture.h"
 
-static void core_machine_dma_rtc_initialize_pic(x86_core_machine *machine)
+static void x86_nxvm_test_dma_rtc_initialize_pic(x86_core_machine *machine)
 {
     test_pic_port_write(machine, 0x0020u, 0x11u);
     test_pic_port_write(machine, 0x0021u, 0x08u);
@@ -17,21 +17,21 @@ static void core_machine_dma_rtc_initialize_pic(x86_core_machine *machine)
     test_pic_port_write(machine, 0x00a1u, 0x01u);
 }
 
-static void core_machine_dma_rtc_cmos_write(x86_core_machine *machine,
+static void x86_nxvm_test_dma_rtc_cmos_write(x86_core_machine *machine,
     lib_u8 index, lib_u8 value)
 {
     test_pic_port_write(machine, 0x0070u, index);
     test_pic_port_write(machine, 0x0071u, value);
 }
 
-static lib_u8 core_machine_dma_rtc_cmos_read(x86_core_machine *machine,
+static lib_u8 x86_nxvm_test_dma_rtc_cmos_read(x86_core_machine *machine,
     lib_u8 index)
 {
     test_pic_port_write(machine, 0x0070u, index);
     return (lib_u8)test_pic_port_read(machine, 0x0071u);
 }
 
-static lib_i32 core_machine_at_refresh_leaves_dma0_available(void)
+static lib_i32 x86_nxvm_test_at_refresh_leaves_dma0_available(void)
 {
     const x86_nxvm_board_planar_parity_config port_b = {
         .port = 0x0061u,
@@ -121,7 +121,7 @@ static lib_i32 core_machine_at_refresh_leaves_dma0_available(void)
     return failed;
 }
 
-static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
+static lib_i32 x86_nxvm_test_dma_refresh_follows_pit_channel_1(void)
 {
     const lib_u8 program[] = {0xdbu, 0xe3u, 0xdbu, 0xe3u,
         0xdbu, 0xe3u, 0xdbu, 0xe3u};
@@ -164,7 +164,7 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
     return failed;
 }
 
-static lib_i32 core_machine_dma_wiring_matches_constructed_controllers(void)
+static lib_i32 x86_nxvm_test_dma_wiring_matches_constructed_controllers(void)
 {
     lib_i32 failed = 0;
     for (lib_u8 count = 1u; count <= 2u; ++count) {
@@ -194,7 +194,7 @@ static lib_i32 core_machine_dma_wiring_matches_constructed_controllers(void)
     return failed;
 }
 
-static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate,
+static lib_i32 x86_nxvm_test_rtc_clock_deadline_route(lib_u32 source_rate,
     lib_bool probe_before_deadline)
 {
     const x86_nxvm_board_config configuration = {
@@ -221,13 +221,13 @@ static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate,
     failed |= !failed && x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= !failed && x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (failed) goto done;
-    core_machine_dma_rtc_initialize_pic(machine);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_A, 0x20u);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_SECOND_ALARM, 1u);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_MINUTE_ALARM, 0xc0u);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_HOUR_ALARM, 0xc0u);
-    core_machine_dma_rtc_cmos_write(machine, X86_NXVM_BOARD_RTC_EQUIPMENT, 0x5au);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
+    x86_nxvm_test_dma_rtc_initialize_pic(machine);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_REG_A, 0x20u);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_SECOND_ALARM, 1u);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_MINUTE_ALARM, 0xc0u);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_HOUR_ALARM, 0xc0u);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_NXVM_BOARD_RTC_EQUIPMENT, 0x5au);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
         X86_RTC_REG_B_24H | X86_RTC_REG_B_AIE);
     failed |= x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK;
     failed |= !time.next_deadline_valid || time.next_deadline_tick != source_rate;
@@ -235,7 +235,7 @@ static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate,
         /* The Board owns clock conversion and the pre-expiry edge. The
          * companion pass leaves all advancement to the public scheduler. */
         x86_nxvm_board_after_internal_advance(board, source_rate - 1u, source_rate - 1u);
-        failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 0u ||
+        failed |= x86_nxvm_test_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 0u ||
             x86_nxvm_board_pic_irq_source_is_asserted(board->rtc_irq_source);
         failed |= x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK;
         failed |= !time.next_deadline_valid || time.next_deadline_tick != time.elapsed_ticks + 1u;
@@ -244,10 +244,10 @@ static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate,
         !advanced || x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
         time.elapsed_ticks != (probe_before_deadline ? 1u : source_rate);
     x86_nxvm_board_pic_refresh(board->shared_pic_master, board->shared_pic_slave);
-    failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 1u ||
+    failed |= x86_nxvm_test_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 1u ||
         !x86_nxvm_board_pic_irq_source_is_asserted(board->rtc_irq_source) ||
         x86_nxvm_board_pic_get_interrupt(board->shared_pic_master, board->shared_pic_slave) != 0x70u;
-    failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_REG_C) !=
+    failed |= x86_nxvm_test_dma_rtc_cmos_read(machine, X86_RTC_REG_C) !=
         (X86_RTC_REG_C_AF | X86_RTC_REG_C_UF | X86_RTC_REG_C_IRQF) ||
         x86_nxvm_board_pic_irq_source_is_asserted(board->rtc_irq_source);
     failed |= x86_core_machine_bus_write(machine, 0xa0u, 0x20u) != LIB_STATUS_OK;
@@ -255,12 +255,12 @@ static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate,
     x86_nxvm_board_pic_refresh(board->shared_pic_master, board->shared_pic_slave);
     failed |= x86_nxvm_board_pic_scan_interrupt(board->shared_pic_master, board->shared_pic_slave);
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= core_machine_dma_rtc_cmos_read(machine, X86_NXVM_BOARD_RTC_EQUIPMENT) != 0x5au ||
-        core_machine_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 1u ||
-        core_machine_dma_rtc_cmos_read(machine, X86_RTC_REG_C) != 0u;
-    core_machine_dma_rtc_initialize_pic(machine);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_A, 0x26u);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
+    failed |= x86_nxvm_test_dma_rtc_cmos_read(machine, X86_NXVM_BOARD_RTC_EQUIPMENT) != 0x5au ||
+        x86_nxvm_test_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 1u ||
+        x86_nxvm_test_dma_rtc_cmos_read(machine, X86_RTC_REG_C) != 0u;
+    x86_nxvm_test_dma_rtc_initialize_pic(machine);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_REG_A, 0x26u);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
         X86_RTC_REG_B_24H | X86_RTC_REG_B_PIE);
     failed |= x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK;
     {
@@ -279,7 +279,7 @@ static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate,
         x86_nxvm_board_pic_refresh(board->shared_pic_master, board->shared_pic_slave);
         failed |= !x86_nxvm_board_pic_irq_source_is_asserted(board->rtc_irq_source) ||
             x86_nxvm_board_pic_get_interrupt(board->shared_pic_master, board->shared_pic_slave) != 0x70u;
-        failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_REG_C) !=
+        failed |= x86_nxvm_test_dma_rtc_cmos_read(machine, X86_RTC_REG_C) !=
             (X86_RTC_REG_C_PF | X86_RTC_REG_C_IRQF) ||
             x86_nxvm_board_pic_irq_source_is_asserted(board->rtc_irq_source);
     }
@@ -313,12 +313,12 @@ int main(void)
     lib_i32 failed = 0;
     lib_i32 stage = 1;
 
-    failed |= core_machine_at_refresh_leaves_dma0_available();
-    failed |= core_machine_dma_refresh_follows_pit_channel_1();
-    failed |= core_machine_dma_wiring_matches_constructed_controllers();
+    failed |= x86_nxvm_test_at_refresh_leaves_dma0_available();
+    failed |= x86_nxvm_test_dma_refresh_follows_pit_channel_1();
+    failed |= x86_nxvm_test_dma_wiring_matches_constructed_controllers();
     for (lib_size index = 0u; index < sizeof(rtc_source_rates) / sizeof(rtc_source_rates[0]); ++index) {
-        failed |= core_machine_rtc_clock_deadline_route(rtc_source_rates[index], LIB_FALSE);
-        failed |= core_machine_rtc_clock_deadline_route(rtc_source_rates[index], LIB_TRUE);
+        failed |= x86_nxvm_test_rtc_clock_deadline_route(rtc_source_rates[index], LIB_FALSE);
+        failed |= x86_nxvm_test_rtc_clock_deadline_route(rtc_source_rates[index], LIB_TRUE);
     }
     failed |= x86_nxvm_board_configure_dma(LIB_NULL, &dma_wiring, &fdc_request) !=
         LIB_STATUS_INVALID_STATE ||
@@ -365,7 +365,7 @@ int main(void)
         board->refresh_dma_request.core_token == 0u ||
         board->refresh_dma_request.channel != 0u ||
         x86_nxvm_board_dma_has_pending_request(board->shared_dma) ||
-        core_machine_dma_rtc_cmos_read(machine, X86_NXVM_BOARD_RTC_EQUIPMENT) !=
+        x86_nxvm_test_dma_rtc_cmos_read(machine, X86_NXVM_BOARD_RTC_EQUIPMENT) !=
             0x5au) {
         failed = 1;
         goto done;
@@ -386,8 +386,8 @@ int main(void)
     }
 
     stage = 3;
-    core_machine_dma_rtc_initialize_pic(machine);
-    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
+    x86_nxvm_test_dma_rtc_initialize_pic(machine);
+    x86_nxvm_test_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
         X86_RTC_REG_B_24H | X86_RTC_REG_B_UIE);
     if (x86_core_machine_memory_write(machine, 0x00fffff0u, program, sizeof(program)) !=
             LIB_STATUS_OK || x86_core_machine_run(machine, budget, &result) !=
@@ -395,7 +395,7 @@ int main(void)
         result.executed != 2u) {
         failed = 1;
         stage = 3;
-    } else if (core_machine_dma_rtc_cmos_read(machine,
+    } else if (x86_nxvm_test_dma_rtc_cmos_read(machine,
             X86_RTC_SECOND) != 0x05u) {
         failed = 1;
         stage = 4;
@@ -406,8 +406,8 @@ int main(void)
         failed = 1;
         stage = 5;
     } else if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_dma_rtc_cmos_read(machine, X86_NXVM_BOARD_RTC_EQUIPMENT) !=
-        0x5au || core_machine_dma_rtc_cmos_read(machine,
+        x86_nxvm_test_dma_rtc_cmos_read(machine, X86_NXVM_BOARD_RTC_EQUIPMENT) !=
+        0x5au || x86_nxvm_test_dma_rtc_cmos_read(machine,
             X86_RTC_SECOND) != 0x05u) {
         failed = 1;
         stage = 6;

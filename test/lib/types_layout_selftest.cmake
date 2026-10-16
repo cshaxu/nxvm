@@ -11,7 +11,7 @@ endforeach()
 file(COPY "${LIBRARY_ROOT}/types" DESTINATION "${fixture}")
 # A failed/aborted negative probe must not poison the next positive control.
 # These are the only scratch files owned by this self-test.
-file(REMOVE "${fixture}/consumer.c" "${fixture}/types/probe.h"
+file(REMOVE "${fixture}/consumer.c" "${fixture}/base/consumer.c" "${fixture}/types/probe.h"
     "${fixture}/types/win32/probe.h" "${fixture}/kvm-base/probe_interface.h"
     "${fixture}/kvm-window/win32/probe.c"
     "${fixture}/kvm-base/win32/probe_interface.h"
@@ -53,6 +53,10 @@ foreach(retired IN ITEMS kvm-base/mailbox_wake_interface.h
     file(REMOVE "${fixture}/${retired}")
 endforeach()
 check_layout(pass)
+
+file(WRITE "${fixture}/consumer.c" "/* Unowned source is not a component. */\n")
+check_layout(fail)
+file(REMOVE "${fixture}/consumer.c")
 
 foreach(retired IN ITEMS host_sync_mutex host_clock_milliseconds console_mutex
         host_console_broker HOST_CONSOLE_RAW_EVENTS LIB_BASE_CONSOLE_INTERFACE_H
@@ -145,23 +149,23 @@ file(WRITE "${probe}" "#include <stdint.h>\n")
 file(WRITE "${fixture}/types/win32/probe.h" "static inline int f(int x) { if (x) return 1; return 0; }\n")
 check_layout(fail)
 file(REMOVE "${fixture}/types/win32/probe.h")
-file(WRITE "${fixture}/consumer.c" "#include \"lib/types/linux/file.h\"\n")
+file(WRITE "${fixture}/base/consumer.c" "#include \"lib/types/linux/file.h\"\n")
 check_layout(fail)
-file(WRITE "${fixture}/consumer.c" "#include <stdio.h>\n")
+file(WRITE "${fixture}/base/consumer.c" "#include <stdio.h>\n")
 check_layout(fail)
 foreach(token IN ITEMS HANDLE CreateEventA FILE fread pthread_mutex_t pthread_create VK_CONTROL KVM_WIN32_KEY_CONTROL UINT64_MAX UINT_FAST16_MAX int_fast16_t pthread_condattr_t VK_UNKNOWN_UNWRAPPED)
-    file(WRITE "${fixture}/consumer.c" "void probe(void) { ${token}; }\n")
+    file(WRITE "${fixture}/base/consumer.c" "void probe(void) { ${token}; }\n")
     check_layout(fail)
 endforeach()
 foreach(call IN ITEMS realloc memmove GetUnwrappedOperation pthread_cond_timedwait)
-    file(WRITE "${fixture}/consumer.c" "void probe(void) { ${call}(0); }\n")
+    file(WRITE "${fixture}/base/consumer.c" "void probe(void) { ${call}(0); }\n")
     check_layout(fail)
 endforeach()
-file(WRITE "${fixture}/consumer.c" "#include \"lib/console/console.h\"\n")
+file(WRITE "${fixture}/base/consumer.c" "#include \"lib/console/console.h\"\n")
 check_layout(fail)
-file(WRITE "${fixture}/consumer.c" "void probe(void) { lib_win32_handle h; }\n")
+file(WRITE "${fixture}/base/consumer.c" "void probe(void) { lib_win32_handle h; }\n")
 check_layout(pass)
-file(REMOVE "${fixture}/consumer.c" "${probe}")
+file(REMOVE "${fixture}/base/consumer.c" "${probe}")
 check_layout(pass)
 
 # Root support contracts are public to allowed leaves. A public-looking suffix

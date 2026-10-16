@@ -136,8 +136,8 @@ lib_i32 main(void)
     const x86_ibmpc_product_definition definition = {
         .name = "PC",
         .banner = "PC",
-        .machine = {.composition = {.machine = &fixture, .bind = fixture_bind,
-            .destroy = fixture_destroy}},
+        .machine = {.machine = &fixture, .bind = fixture_bind,
+            .destroy = fixture_destroy},
         .ui = {.display = EMULATOR_SESSION_DISPLAY_CONSOLE}
     };
     x86_ibmpc_product_definition invalid_ui = definition;

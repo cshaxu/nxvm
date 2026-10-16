@@ -30,7 +30,7 @@ lib_i32 main(void)
     lib_size memory_bytes = 0u;
     lib_i32 failed = 0;
 
-    failed |= test_core_machine_create_executor(2u * 1024u * 1024u, &machine) !=
+    failed |= test_x86_core_machine_create_executor(2u * 1024u * 1024u, &machine) !=
         LIB_STATUS_OK;
     if (failed) return 1;
     failed |= x86_core_machine_bind_execution_provider(machine, &reset_probe_provider,

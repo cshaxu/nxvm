@@ -37,7 +37,7 @@ static void test_native_destroy(x86_hdc *chip)
 #undef x86_hdc_create
 #undef x86_hdc_destroy
 
-typedef struct core_machine_compaq_hdc_media {
+typedef struct x86_nxvm_test_compaq_hdc_media {
     lib_u8 sector[512];
     lib_u8 ecc[4];
     lib_bool ecc_present;
@@ -45,9 +45,9 @@ typedef struct core_machine_compaq_hdc_media {
     lib_u64 last_read_offset;
     lib_u32 formats;
     x86_nxvm_board_media_track formatted;
-} core_machine_compaq_hdc_media;
+} x86_nxvm_test_compaq_hdc_media;
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_query(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_query(void *opaque,
     x86_nxvm_board_media_info *out_info)
 {
     if (opaque == LIB_NULL || out_info == LIB_NULL) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -63,10 +63,10 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_query(void *opaque,
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_read(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_read(void *opaque,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
-    core_machine_compaq_hdc_media *media = opaque;
+    x86_nxvm_test_compaq_hdc_media *media = opaque;
 
     if (media == LIB_NULL || buffer == LIB_NULL || byte_count != 512u ||
         offset % 512u != 0u || offset / 512u >= 272u) {
@@ -78,10 +78,10 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_read(void *opaque,
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_write(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_write(void *opaque,
     lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
-    core_machine_compaq_hdc_media *media = opaque;
+    x86_nxvm_test_compaq_hdc_media *media = opaque;
 
     if (media == LIB_NULL || buffer == LIB_NULL || byte_count != 512u ||
         offset % 512u != 0u || offset / 512u >= 272u) {
@@ -90,11 +90,11 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_write(void *opaque,
     lib_memory_copy(media->sector, buffer, sizeof(media->sector));
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
-static x86_nxvm_board_media_result core_machine_compaq_hdc_read_record(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_read_record(void *opaque,
     lib_u64 sector, x86_nxvm_board_media_record *record)
 {
-    core_machine_compaq_hdc_media *media = opaque;
-    x86_nxvm_board_media_result result = core_machine_compaq_hdc_read(opaque,
+    x86_nxvm_test_compaq_hdc_media *media = opaque;
+    x86_nxvm_board_media_result result = x86_nxvm_test_compaq_hdc_read(opaque,
         sector * 512u, record->data, 512u);
     if (result == X86_NXVM_BOARD_MEDIA_RESULT_OK) {
         lib_memory_copy(record->ecc, media->ecc, sizeof(record->ecc));
@@ -103,11 +103,11 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_read_record(void *opa
     return result;
 }
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_write_record(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_write_record(void *opaque,
     lib_u64 sector, const x86_nxvm_board_media_record *record)
 {
-    core_machine_compaq_hdc_media *media = opaque;
-    x86_nxvm_board_media_result result = core_machine_compaq_hdc_write(opaque,
+    x86_nxvm_test_compaq_hdc_media *media = opaque;
+    x86_nxvm_board_media_result result = x86_nxvm_test_compaq_hdc_write(opaque,
         sector * 512u, record->data, 512u);
     if (result == X86_NXVM_BOARD_MEDIA_RESULT_OK) {
         lib_memory_copy(media->ecc, record->ecc, sizeof(media->ecc));
@@ -116,17 +116,17 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_write_record(void *op
     return result;
 }
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_format(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_format(void *opaque,
     const x86_nxvm_board_media_track *track)
 {
-    core_machine_compaq_hdc_media *media = opaque;
+    x86_nxvm_test_compaq_hdc_media *media = opaque;
     ++media->formats;
     media->formatted = *track;
     media->ecc_present = LIB_FALSE;
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static lib_status core_machine_compaq_hdc_fdc_direction(void *opaque,
+static lib_status x86_nxvm_test_compaq_hdc_fdc_direction(void *opaque,
     lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
@@ -137,7 +137,7 @@ static lib_status core_machine_compaq_hdc_fdc_direction(void *opaque,
     return LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_compaq_hdc_install(x86_core_machine *machine, x86_nxvm_board_hdc *hdc)
+static lib_i32 x86_nxvm_test_compaq_hdc_install(x86_core_machine *machine, x86_nxvm_board_hdc *hdc)
 {
     const x86_core_machine_port_provider *provider = x86_nxvm_board_hdc_port_provider();
     x86_core_machine_port_route routes[11] = {0};
@@ -151,7 +151,7 @@ static lib_i32 core_machine_compaq_hdc_install(x86_core_machine *machine, x86_nx
     routes[8] = (x86_core_machine_port_route) {.address = 0x03f6u,
         .read = provider->read, .write = provider->write, .owner = hdc};
     routes[9] = (x86_core_machine_port_route) {.address = 0x03f7u,
-        .read = core_machine_compaq_hdc_fdc_direction};
+        .read = x86_nxvm_test_compaq_hdc_fdc_direction};
     routes[10] = (x86_core_machine_port_route) {.address = 0x03f7u,
         .read = provider->read, .owner = hdc, .wired_or_read = LIB_TRUE};
     return x86_core_machine_install_port_routes(machine, routes, 11u) == LIB_STATUS_OK;
@@ -172,15 +172,15 @@ lib_i32 main(void)
             .clock_ticks_per_second = 8000000u}
     };
     const x86_nxvm_board_media_provider media_provider = {
-        .query = core_machine_compaq_hdc_query,
-        .read_bytes = core_machine_compaq_hdc_read,
-        .write_bytes = core_machine_compaq_hdc_write,
-        .format_track = core_machine_compaq_hdc_format,
-        .read_record = core_machine_compaq_hdc_read_record,
-        .write_record = core_machine_compaq_hdc_write_record,
+        .query = x86_nxvm_test_compaq_hdc_query,
+        .read_bytes = x86_nxvm_test_compaq_hdc_read,
+        .write_bytes = x86_nxvm_test_compaq_hdc_write,
+        .format_track = x86_nxvm_test_compaq_hdc_format,
+        .read_record = x86_nxvm_test_compaq_hdc_read_record,
+        .write_record = x86_nxvm_test_compaq_hdc_write_record,
     };
-    core_machine_compaq_hdc_media media = {0};
-    core_machine_compaq_hdc_media slave_media = {0};
+    x86_nxvm_test_compaq_hdc_media media = {0};
+    x86_nxvm_test_compaq_hdc_media slave_media = {0};
     x86_nxvm_board_media_registry *registry = LIB_NULL;
     const x86_core_machine_executor_config executor = {
         .memory_bytes = (2u * 1024u * 1024u),
@@ -233,7 +233,7 @@ lib_i32 main(void)
     } else {
         if (x86_nxvm_board_hdc_configure(hdc, registry, 1u, 2u,
                 master, slave, &config) != LIB_STATUS_OK ||
-            !core_machine_compaq_hdc_install(port, hdc) ||
+            !x86_nxvm_test_compaq_hdc_install(port, hdc) ||
             x86_core_machine_freeze_execution_providers(port) != LIB_STATUS_OK ||
             x86_core_machine_reset(port) != LIB_STATUS_OK) {
             failed |= 0x02;
@@ -436,7 +436,7 @@ lib_i32 main(void)
             if (x86_nxvm_board_hdc_configure(empty_hdc, registry, 3u,
                     X86_NXVM_BOARD_MEDIA_ID_INVALID, empty_master, empty_slave,
                     &config) != LIB_STATUS_OK ||
-                !core_machine_compaq_hdc_install(empty_port, empty_hdc) ||
+                !x86_nxvm_test_compaq_hdc_install(empty_port, empty_hdc) ||
                 x86_core_machine_freeze_execution_providers(empty_port) != LIB_STATUS_OK ||
                 x86_core_machine_reset(empty_port) != LIB_STATUS_OK) {
                 failed |= 0x04;

@@ -157,7 +157,7 @@ static lib_status x86_nxvm_product_write_speed(void *machine, x86_nxvm_machine_s
 }
 
 lib_status x86_nxvm_product_configure_ui(const x86_nxvm_product_request *request,
-    app_composed_ui *out_ui)
+    x86_ibmpc_product_ui_options *out_ui)
 {
     if (request == LIB_NULL || out_ui == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;

@@ -8,6 +8,17 @@
 #include "../port_assembly_board_fixture.h"
 #include "../board_binding_fixture.h"
 #include "../../board-at/support/parity_registration_fixture.h"
+
+static lib_status test_at_parity_try(x86_nxvm_board_state *board,
+    const x86_nxvm_board_planar_parity_config *config, lib_bool reject)
+{
+    test_at_parity_reject_ports(reject);
+    const lib_status status = x86_nxvm_board_configure_planar_parity(board, config);
+    const lib_bool reached = test_at_parity_rejection_reached();
+    test_at_parity_reject_ports(LIB_FALSE);
+    return reject && !reached ? LIB_STATUS_INTERNAL_ERROR : status;
+}
+
 lib_status port_assembly_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {

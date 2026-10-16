@@ -154,7 +154,7 @@ static void boot_trace_observe(void *opaque, const x86_core_machine_trace_event 
     }
 }
 
-static lib_i32 boot_text_has(const core_machine_guest_display_frame *frame, const char *text)
+static lib_i32 boot_text_has(const x86_nxvm_test_guest_display_frame *frame, const char *text)
 {
     lib_size cell;
     const lib_size length = text == LIB_NULL ? 0u : lib_text_length(text);
@@ -166,13 +166,13 @@ static lib_i32 boot_text_has(const core_machine_guest_display_frame *frame, cons
     return 0;
 }
 
-static lib_i32 boot_terminal(const core_machine_guest_display_frame *frame,
+static lib_i32 boot_terminal(const x86_nxvm_test_guest_display_frame *frame,
     const char **out_name)
 {
     lib_size cell;
 
     if (frame == LIB_NULL || out_name == LIB_NULL ||
-        frame->kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
+        frame->kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < TEXT_CELLS; ++cell) {
         if (isalpha((lib_u8)frame->characters[cell]) && frame->characters[cell + 1u] == ':' &&
             frame->characters[cell + 2u] == '\\' && frame->characters[cell + 3u] == '>') {
@@ -190,16 +190,16 @@ static lib_i32 boot_terminal(const core_machine_guest_display_frame *frame,
 }
 
 static lib_i32 boot_post_reports_keyboard_failure(
-    const core_machine_guest_display_frame *frame)
+    const x86_nxvm_test_guest_display_frame *frame)
 {
-    return frame != LIB_NULL && frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
+    return frame != LIB_NULL && frame->kind == X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT &&
         (boot_text_has(frame, "301-Keyboard") || boot_text_has(frame, "303-Keyboard"));
 }
 
 static void boot_timeout_report(const x86_nxvm_machine *session, const char *name,
     const boot_trace_probe *trace_probe)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     x86_core_cpu_state cpu;
     x86_core_cpu_diagnostic diagnostic;
     x86_core_machine_observation observation;
@@ -419,7 +419,7 @@ static void boot_timeout_report(const x86_nxvm_machine *session, const char *nam
                     (lib_u32)video_bda[3] | ((lib_u32)video_bda[4] << 8u));
             }
         }
-        if (status != LIB_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT)
+        if (status != LIB_STATUS_OK || frame.kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT)
             return;
     }
     for (row = 0u; row < 25u; ++row) {
@@ -524,7 +524,7 @@ int main(int argc, char **argv)
         integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto done;
     started = GetTickCount64();
     while (GetTickCount64() - started < timeout) {
-        core_machine_guest_display_frame frame;
+        x86_nxvm_test_guest_display_frame frame;
         if (test_nxvm_machine_capture_presentation(session, &frame) == LIB_STATUS_OK) {
             if (boot_post_reports_keyboard_failure(&frame)) keyboard_post_failure_seen = 1;
             if (boot_terminal(&frame, &terminal)) break;

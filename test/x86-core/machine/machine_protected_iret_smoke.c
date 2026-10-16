@@ -87,7 +87,7 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
     if (negative == IRET_NEGATIVE_LIMIT) { gdt[8u] = 0u; gdt[9u] = 0u; }
     if (user_cpl) { gdt[13u] = 0xfau; gdt[21u] = 0xf2u; }
     if (!iret_write(state, IRET_GDT_BASE, gdt, sizeof(gdt))) return 0;
-    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_ESP,
+    test_x86_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_ESP,
         user_cpl ? 0x9000u : small_stack ? 0x18000u : IRET_STACK);
     if (user_cpl) {
         static const lib_u8 transfer = 0xcfu;
@@ -97,9 +97,9 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
             x86_core_machine_run(state->machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u) return 0;
     } else {
-        test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0u);
+        test_x86_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0u);
     }
-    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
+    test_x86_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
         user_cpl ? 2u : 0x202u);
     const x86_core_cpu_debug_cpu_snapshot snapshot = iret_capture(state->machine);
     return snapshot.cs.selector == (user_cpl ? 0x0bu : 8u) &&

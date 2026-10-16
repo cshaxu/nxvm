@@ -4,13 +4,13 @@
 #include "x86-nxvm/machine/machine_private.h"
 
 
-typedef enum core_machine_guest_input_kind {
-    CORE_MACHINE_GUEST_INPUT_KEY,
-    CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE
-} core_machine_guest_input_kind;
+typedef enum x86_nxvm_test_guest_input_kind {
+    X86_NXVM_TEST_GUEST_INPUT_KEY,
+    X86_NXVM_TEST_GUEST_INPUT_RELATIVE_MOUSE
+} x86_nxvm_test_guest_input_kind;
 
-typedef struct core_machine_guest_input_event {
-    core_machine_guest_input_kind kind;
+typedef struct x86_nxvm_test_guest_input_event {
+    x86_nxvm_test_guest_input_kind kind;
     union {
         struct {
             lib_u16 scan_code;
@@ -23,20 +23,20 @@ typedef struct core_machine_guest_input_event {
             lib_u8 buttons;
         } relative_mouse;
     } data;
-} core_machine_guest_input_event;
+} x86_nxvm_test_guest_input_event;
 
 /* Legacy fixture records only. Production receives KVM events through the
  * Common driver; uncomposed synchronous tests use that same delivery body. */
 static inline lib_status vm_test_submit_host_input(x86_nxvm_machine *session,
-    const core_machine_guest_input_event *event)
+    const x86_nxvm_test_guest_input_event *event)
 {
     kvm_input_event input = {0};
 
     if (session == LIB_NULL || !session->active) return LIB_STATUS_INVALID_STATE;
-    if (event == LIB_NULL || (event->kind != CORE_MACHINE_GUEST_INPUT_KEY &&
-        event->kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE))
+    if (event == LIB_NULL || (event->kind != X86_NXVM_TEST_GUEST_INPUT_KEY &&
+        event->kind != X86_NXVM_TEST_GUEST_INPUT_RELATIVE_MOUSE))
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (event->kind == CORE_MACHINE_GUEST_INPUT_KEY) {
+    if (event->kind == X86_NXVM_TEST_GUEST_INPUT_KEY) {
         input.type = KVM_EVENT_KEY;
         input.data.key.scan_code = event->data.key.scan_code;
         input.data.key.key = event->data.key.virtual_key;

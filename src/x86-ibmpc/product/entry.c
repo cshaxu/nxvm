@@ -11,7 +11,7 @@
 
 typedef struct x86_ibmpc_product_run_context {
     const x86_ibmpc_product_definition *definition;
-    app_composed_machine machine;
+    emulator_product_machine machine;
     x86_ibmpc_product_command_context command;
     x86_ibmpc_product_command_extensions extensions;
     kvm_hotkey_registry hotkeys;
@@ -77,7 +77,7 @@ lib_i32 x86_ibmpc_product_run(const x86_ibmpc_product_definition *definition)
     context.machine = definition->machine;
     result = emulator_product_run(&(emulator_product_definition){
         .banner = definition->banner,
-        .machine = definition->machine.composition,
+        .machine = definition->machine,
         .context = &context,
         .configure_control = x86_ibmpc_product_configure_control,
         .configure_ui = x86_ibmpc_product_configure_ui});

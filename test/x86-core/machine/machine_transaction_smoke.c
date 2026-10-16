@@ -246,7 +246,7 @@ lib_i32 main(void)
     trace.callback = transaction_trace;
     trace.context = &probe;
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
-    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    failed |= test_x86_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= x86_core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
         &port_provider, &probe) != LIB_STATUS_OK;

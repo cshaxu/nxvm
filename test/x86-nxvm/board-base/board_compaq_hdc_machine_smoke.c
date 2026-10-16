@@ -5,11 +5,11 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "x86-nxvm/board-base/media_interface.h"
 
-typedef struct core_machine_compaq_hdc_machine_fdc_media {
+typedef struct x86_nxvm_test_compaq_hdc_machine_fdc_media {
     lib_u8 byte;
-} core_machine_compaq_hdc_machine_fdc_media;
+} x86_nxvm_test_compaq_hdc_machine_fdc_media;
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_fdc_query(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_machine_fdc_query(void *opaque,
     x86_nxvm_board_media_info *out_info)
 {
     if (opaque == LIB_NULL || out_info == LIB_NULL) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -25,10 +25,10 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_fdc_query(voi
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_fdc_read(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_machine_fdc_read(void *opaque,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
-    core_machine_compaq_hdc_machine_fdc_media *media = opaque;
+    x86_nxvm_test_compaq_hdc_machine_fdc_media *media = opaque;
 
     if (media == LIB_NULL || buffer == LIB_NULL || offset >= 512u || byte_count != 1u) {
         return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
@@ -37,12 +37,12 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_fdc_read(void
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static const x86_nxvm_board_media_provider core_machine_compaq_hdc_machine_fdc_provider = {
-    .query = core_machine_compaq_hdc_machine_fdc_query,
-    .read_bytes = core_machine_compaq_hdc_machine_fdc_read,
+static const x86_nxvm_board_media_provider x86_nxvm_test_compaq_hdc_machine_fdc_provider = {
+    .query = x86_nxvm_test_compaq_hdc_machine_fdc_query,
+    .read_bytes = x86_nxvm_test_compaq_hdc_machine_fdc_read,
 };
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_hdc_query(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_machine_hdc_query(void *opaque,
     x86_nxvm_board_media_info *out_info)
 {
     if (opaque == LIB_NULL || out_info == LIB_NULL) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
@@ -57,7 +57,7 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_hdc_query(voi
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_hdc_read(void *opaque,
+static x86_nxvm_board_media_result x86_nxvm_test_compaq_hdc_machine_hdc_read(void *opaque,
     lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     lib_u8 *sector = opaque;
@@ -69,9 +69,9 @@ static x86_nxvm_board_media_result core_machine_compaq_hdc_machine_hdc_read(void
     return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static const x86_nxvm_board_media_provider core_machine_compaq_hdc_machine_hdc_provider = {
-    .query = core_machine_compaq_hdc_machine_hdc_query,
-    .read_bytes = core_machine_compaq_hdc_machine_hdc_read,
+static const x86_nxvm_board_media_provider x86_nxvm_test_compaq_hdc_machine_hdc_provider = {
+    .query = x86_nxvm_test_compaq_hdc_machine_hdc_query,
+    .read_bytes = x86_nxvm_test_compaq_hdc_machine_hdc_read,
 };
 
 lib_i32 main(void)
@@ -104,7 +104,7 @@ lib_i32 main(void)
             .alternate_status_device_control_port = 0x03f6u,
             .drive_address_port = 0x03f7u, .lba28_supported = LIB_FALSE}
     };
-    core_machine_compaq_hdc_machine_fdc_media fdc_media = {.byte = 0x5au};
+    x86_nxvm_test_compaq_hdc_machine_fdc_media fdc_media = {.byte = 0x5au};
     lib_u8 hdc_sector[512] = {0};
     x86_nxvm_board_media_registry *media = LIB_NULL;
     x86_nxvm_board_dma_request_binding dma_request = {0};
@@ -118,9 +118,9 @@ lib_i32 main(void)
     if (x86_nxvm_board_media_registry_create(&media) != LIB_STATUS_OK ||
         x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK ||
         x86_nxvm_board_media_registry_bind(media, 11u, &fdc_media,
-            &core_machine_compaq_hdc_machine_fdc_provider) != LIB_STATUS_OK ||
+            &x86_nxvm_test_compaq_hdc_machine_fdc_provider) != LIB_STATUS_OK ||
         x86_nxvm_board_media_registry_bind(media, 12u, hdc_sector,
-            &core_machine_compaq_hdc_machine_hdc_provider) != LIB_STATUS_OK ||
+            &x86_nxvm_test_compaq_hdc_machine_hdc_provider) != LIB_STATUS_OK ||
         x86_nxvm_board_media_registry_freeze(media) != LIB_STATUS_OK ||
         x86_nxvm_board_configure_dma(board, &dma_wiring, &dma_request) != LIB_STATUS_OK) {
         failed = 0x01;

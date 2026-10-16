@@ -22,7 +22,7 @@ static lib_i32 run_case(x86_core_cpu_profile profile)
         failed = 1;
         goto fail;
     }
-    if (test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    if (test_x86_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, sizeof(program)) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||

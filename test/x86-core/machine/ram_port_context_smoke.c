@@ -61,8 +61,9 @@ static lib_i32 port_registration_atomicity(void)
                 x86_core_machine_port_has_write(port, routes[index].address);
         /* Sticky failure belongs to the private single-entry mechanism, not
          * to a DMA consumer of the all-or-none public batch. */
-        failed |= x86_core_machine_port_add_write_provider(port, 0x80u,
-                registration_write, &owner) != LIB_STATUS_INVALID_STATE ||
+        failed |= x86_core_machine_port_add_route(port,
+                &(x86_core_machine_port_route){.address = 0x80u,
+                    .write = registration_write, .owner = &owner}) != LIB_STATUS_INVALID_STATE ||
             x86_core_machine_install_port_routes(&machine, routes, 4u) != LIB_STATUS_INVALID_STATE ||
             x86_core_machine_port_registration_status(port) != LIB_STATUS_INVALID_STATE ||
             x86_core_machine_port_read(port, 0x80u) != sentinel;

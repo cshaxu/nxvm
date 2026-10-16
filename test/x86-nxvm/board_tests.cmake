@@ -8,8 +8,8 @@ add_test(NAME unit.vm-profile-contract-smoke COMMAND vm-profile-contract-smoke)
 set_tests_properties(unit.vm-profile-contract-smoke PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
 list(APPEND X86_NXVM_BOARD_TEST_TARGETS vm-profile-contract-smoke)
 shared_register_test(x86-nxvm board-base/construction_helpers x86-nxvm-board-base)
-shared_register_test(x86-nxvm board-at/contract x86-nxvm-board-base)
-shared_register_test(x86-nxvm board-at/assembly x86-nxvm-board-base)
+shared_register_test(x86-nxvm board-base/at_contract x86-nxvm-board-base)
+shared_register_test(x86-nxvm board-base/at_assembly x86-nxvm-board-base)
 add_executable(x86-nxvm-board-rom-mapping-test ${X86_NXVM_TEST_ROOT}/board-base/rom_mapping_smoke.c
     "${X86_NXVM_ROOT}/board-base/rom_mapping.c")
 target_link_libraries(x86-nxvm-board-rom-mapping-test PRIVATE types)
@@ -163,15 +163,15 @@ shared_register_test(x86-nxvm board-base/board x86-nxvm-board-base x86-core-mach
 shared_register_test(x86-nxvm board-base/pit_ports x86-nxvm-board-base x86-core-machine)
 shared_register_test(x86-nxvm board-base/dma_ports x86-nxvm-board-base x86-core-machine)
 shared_register_test(x86-nxvm board-at/parity x86-nxvm-board-at x86-core-machine)
-foreach(kbc_case IN ITEMS aux-port serial-cadence)
-    string(REPLACE "-" "_" kbc_file "${kbc_case}")
-    set(kbc_target "x86-nxvm-board-kbc-${kbc_case}-smoke")
-    add_executable(${kbc_target} "${X86_NXVM_TEST_ROOT}/board-at/board_kbc_${kbc_file}_smoke.c")
-    target_link_libraries(${kbc_target} PRIVATE x86-nxvm-board-at x86-nxvm-board-base x86-core-machine)
-    add_test(NAME "unit.${kbc_target}" COMMAND ${kbc_target})
-    set_tests_properties("unit.${kbc_target}" PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
-    list(APPEND X86_NXVM_BOARD_TEST_TARGETS ${kbc_target})
-endforeach()
+shared_register_test(x86-nxvm board-base/board_kbc_aux_port x86-nxvm-board-base x86-core-machine)
+target_sources(x86-nxvm-test-board_kbc_aux_port PRIVATE
+    "${X86_NXVM_TEST_ROOT}/board-at/controller_fixture.c")
+add_executable(x86-nxvm-board-kbc-serial-cadence-smoke
+    "${X86_NXVM_TEST_ROOT}/board-at/board_kbc_serial_cadence_smoke.c")
+target_link_libraries(x86-nxvm-board-kbc-serial-cadence-smoke PRIVATE x86-nxvm-board-at x86-core-machine)
+add_test(NAME unit.x86-nxvm-board-kbc-serial-cadence-smoke COMMAND x86-nxvm-board-kbc-serial-cadence-smoke)
+set_tests_properties(unit.x86-nxvm-board-kbc-serial-cadence-smoke PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
+list(APPEND X86_NXVM_BOARD_TEST_TARGETS x86-nxvm-board-kbc-serial-cadence-smoke)
 add_executable(x86-nxvm-board-rtc-storage-smoke ${X86_NXVM_TEST_ROOT}/board-base/machine_rtc_storage_smoke.c)
 target_link_libraries(x86-nxvm-board-rtc-storage-smoke PRIVATE
     x86-nxvm-board-base-observable x86-core-machine-observable)
@@ -295,7 +295,8 @@ add_test(NAME unit.machine-fpu-irq-smoke COMMAND machine-fpu-irq-smoke)
 set_tests_properties(unit.machine-fpu-irq-smoke PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
 list(APPEND X86_NXVM_BOARD_TEST_TARGETS machine-fpu-irq-smoke)
 add_executable(x86-nxvm-board-kbc-controller-smoke
-    ${X86_NXVM_TEST_ROOT}/board-at/board_kbc_controller_smoke.c
+    ${X86_NXVM_TEST_ROOT}/board-base/board_kbc_controller_smoke.c
+    ${X86_NXVM_TEST_ROOT}/board-at/controller_fixture.c
     ${X86_NXVM_TEST_ROOT}/board-base/kbc_cpu_irq_fixture.c)
 target_link_libraries(x86-nxvm-board-kbc-controller-smoke PRIVATE x86-nxvm-board-base x86-core-machine)
 add_test(NAME unit.x86-nxvm-board-kbc-controller-smoke COMMAND x86-nxvm-board-kbc-controller-smoke)

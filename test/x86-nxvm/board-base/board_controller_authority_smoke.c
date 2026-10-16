@@ -26,7 +26,7 @@ static lib_i32 verify_partial_board_cleanup(void)
         LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL;
 }
 
-static void core_machine_controller_fdc_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static void x86_nxvm_test_controller_fdc_command(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -37,7 +37,7 @@ static void core_machine_controller_fdc_command(x86_nxvm_board_fdc *fdc, x86_cor
     test_fdc_advance(fdc);
 }
 
-static lib_i32 core_machine_controller_fdc_result(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
+static lib_i32 x86_nxvm_test_controller_fdc_result(x86_nxvm_board_fdc *fdc, x86_core_machine *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -50,7 +50,7 @@ static lib_i32 core_machine_controller_fdc_result(x86_nxvm_board_fdc *fdc, x86_c
         (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
-static lib_i32 core_machine_controller_hdc_program_chs(x86_core_machine *machine,
+static lib_i32 x86_nxvm_test_controller_hdc_program_chs(x86_core_machine *machine,
     const x86_nxvm_board_hdc_config *config)
 {
     return x86_core_machine_bus_write(machine, config->bus.task_file.sector_count_port, 1u) ==
@@ -174,20 +174,20 @@ lib_i32 main(void)
                 board->hdc->connect.media_id != hdc_topology.media_id;
 
             test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
-            core_machine_controller_fdc_command(board->fdc, port, specify_non_dma,
+            x86_nxvm_test_controller_fdc_command(board->fdc, port, specify_non_dma,
                 sizeof(specify_non_dma));
-            core_machine_controller_fdc_command(board->fdc, port, read_absent,
+            x86_nxvm_test_controller_fdc_command(board->fdc, port, read_absent,
                 sizeof(read_absent));
-            failed |= !core_machine_controller_fdc_result(board->fdc, port, result,
+            failed |= !x86_nxvm_test_controller_fdc_result(board->fdc, port, result,
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
-            core_machine_controller_fdc_command(board->fdc, port, write_absent,
+            x86_nxvm_test_controller_fdc_command(board->fdc, port, write_absent,
                 sizeof(write_absent));
             test_fdc_port_write(port, fdc_config.data_port, 0x5au);
-            failed |= !core_machine_controller_fdc_result(board->fdc, port, result,
+            failed |= !x86_nxvm_test_controller_fdc_result(board->fdc, port, result,
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
-            if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||
+            if (!x86_nxvm_test_controller_hdc_program_chs(machine, &hdc_config) ||
                 x86_core_machine_bus_write(machine, hdc_config.bus.task_file.status_command_port,
                     0x20u) != LIB_STATUS_OK ||
                 x86_core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,

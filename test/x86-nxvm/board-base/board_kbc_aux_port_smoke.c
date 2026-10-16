@@ -1,9 +1,9 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "x86-nxvm/board-at/kbc.h"
+#include "../board-at/controller_fixture.h"
 #include "x86-nxvm/board-base/pic_bus_interface.h"
-#include "kbc_fixture.h"
-#include "../board-base/kbc_irq_fixture.h"
+#include "../board-at/kbc_fixture.h"
+#include "kbc_irq_fixture.h"
 
 static lib_u8 read_port(x86_core_machine *port, lib_u16 id)
 {
@@ -26,8 +26,8 @@ static lib_i32 take_aux_byte(x86_core_machine *port, x86_nxvm_board_pic_bus *mas
     lib_u8 expected)
 {
     x86_nxvm_board_pic_refresh(master, slave);
-    if ((read_port(port, 0x0064u) & (VKBC_STATUS_OBF | VKBC_STATUS_AUX)) !=
-        (VKBC_STATUS_OBF | VKBC_STATUS_AUX) ||
+    if ((read_port(port, 0x0064u) & (TEST_KBC_STATUS_OBF | TEST_KBC_STATUS_AUX)) !=
+        (TEST_KBC_STATUS_OBF | TEST_KBC_STATUS_AUX) ||
         x86_nxvm_board_pic_get_interrupt(master, slave) != 0x74u ||
         read_port(port, 0x0060u) != expected) return 0;
     test_kbc_port_write(port, 0x00a0u, 0x20u);
@@ -49,7 +49,7 @@ static void send_aux_parameter(x86_core_machine *port, lib_u8 value)
 
 lib_i32 main(void)
 {
-    t_kbc kbc;
+    t_kbc *kbc = LIB_NULL;
     test_kbc_irq_wiring irq = {0};
     x86_nxvm_board_pic_bus *master = LIB_NULL;
     x86_nxvm_board_pic_bus *slave = LIB_NULL;
@@ -65,15 +65,15 @@ lib_i32 main(void)
         failed = 1;
         goto done;
     }
-    x86_nxvm_board_kbc_bind_core_services(&kbc, test_kbc_irq_output, &irq,
+    x86_nxvm_board_kbc_bind_core_services(kbc, test_kbc_irq_output, &irq,
         LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL, LIB_TRUE);
     initialize_pic(port);
 
     test_kbc_port_write(port, 0x0064u, 0x20u);
-    failed |= (read_port(port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
+    failed |= (read_port(port, 0x0064u) & TEST_KBC_STATUS_AUX) != 0u;
     failed |= read_port(port, 0x0060u) != 0x43u;
     test_kbc_port_write(port, 0x0064u, 0xa9u);
-    failed |= (read_port(port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
+    failed |= (read_port(port, 0x0064u) & TEST_KBC_STATUS_AUX) != 0u;
     failed |= x86_nxvm_board_pic_scan_interrupt(master, slave);
     failed |= read_port(port, 0x0060u) != 0x00u;
 
@@ -83,19 +83,19 @@ lib_i32 main(void)
     stage = 2;
     send_aux_command(port, 0xf4u);
     failed |= !take_aux_byte(port, master, slave, 0xfau);
-    failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc, 5, -3, 0x01u) !=
+    failed |= x86_nxvm_board_kbc_submit_aux_report(kbc, 5, -3, 0x01u) !=
         LIB_STATUS_OK;
     failed |= !take_aux_byte(port, master, slave, 0x29u);
     failed |= !take_aux_byte(port, master, slave, 0x05u);
     failed |= !take_aux_byte(port, master, slave, 0xfdu);
 
     test_kbc_port_write(port, 0x0064u, 0xa7u);
-    failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) !=
+    failed |= x86_nxvm_board_kbc_submit_aux_report(kbc, 1, 1, 0x01u) !=
         LIB_STATUS_INVALID_STATE;
     x86_nxvm_board_pic_refresh(master, slave);
     failed |= x86_nxvm_board_pic_scan_interrupt(master, slave);
     test_kbc_port_write(port, 0x0064u, 0xa8u);
-    failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) !=
+    failed |= x86_nxvm_board_kbc_submit_aux_report(kbc, 1, 1, 0x01u) !=
         LIB_STATUS_OK;
     failed |= !take_aux_byte(port, master, slave, 0x09u);
     failed |= !take_aux_byte(port, master, slave, 0x01u);
@@ -103,10 +103,10 @@ lib_i32 main(void)
 
     send_aux_command(port, 0xf5u);
     failed |= !take_aux_byte(port, master, slave, 0xfau);
-    failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc, 1, 1, 0u) !=
+    failed |= x86_nxvm_board_kbc_submit_aux_report(kbc, 1, 1, 0u) !=
         LIB_STATUS_INVALID_STATE;
-    failed |= x86_nxvm_board_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
-    failed |= (read_port(port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
+    failed |= x86_nxvm_board_kbc_submit_native_byte(kbc, 0x1eu) != LIB_STATUS_OK;
+    failed |= (read_port(port, 0x0064u) & TEST_KBC_STATUS_AUX) != 0u;
     x86_nxvm_board_pic_refresh(master, slave);
     failed |= x86_nxvm_board_pic_get_interrupt(master, slave) != 0x09u;
     failed |= read_port(port, 0x0060u) != 0x03u;
@@ -137,7 +137,7 @@ lib_i32 main(void)
     }
     stage = 3;
     send_aux_command(port, 0xe9u);
-    failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) !=
+    failed |= x86_nxvm_board_kbc_submit_aux_report(kbc, 1, 1, 0x01u) !=
         LIB_STATUS_OK;
     failed |= !take_aux_byte(port, master, slave, 0xfau);
     failed |= !take_aux_byte(port, master, slave, 0x21u);
@@ -149,7 +149,7 @@ lib_i32 main(void)
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "M5::AUX:PORT:FAIL:E9-ORDER:status=%02X:bat=%u\n",
             (unsigned int)read_port(port, 0x64u),
-            (unsigned int)x86_keyboard_get_signals(kbc.connect.keyboard).bat_ready);
+            (unsigned int)test_kbc_signals(kbc).bat_ready);
         goto done;
     }
     stage = 4;
@@ -189,29 +189,29 @@ lib_i32 main(void)
     test_kbc_port_write(port, 0x0064u, 0x60u);
     test_kbc_port_write(port, 0x0060u, 0x05u);
     send_aux_command(port, 0xf2u);
-    failed |= (read_port(port, 0x0064u) & (VKBC_STATUS_OBF | VKBC_STATUS_AUX)) !=
-        (VKBC_STATUS_OBF | VKBC_STATUS_AUX) ||
+    failed |= (read_port(port, 0x0064u) & (TEST_KBC_STATUS_OBF | TEST_KBC_STATUS_AUX)) !=
+        (TEST_KBC_STATUS_OBF | TEST_KBC_STATUS_AUX) ||
         x86_nxvm_board_pic_scan_interrupt(master, slave) ||
         read_port(port, 0x0060u) != 0xfau ||
         read_port(port, 0x0060u) != 0x00u;
     test_kbc_port_write(port, 0x0064u, 0x60u);
     test_kbc_port_write(port, 0x0060u, 0x07u);
 
-    x86_nxvm_board_kbc_set_command_response_timing(&kbc, 2u);
+    x86_nxvm_board_kbc_set_command_response_timing(kbc, 2u);
     send_aux_command(port, 0xf2u);
-    failed |= (read_port(port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
-    x86_nxvm_board_kbc_advance(&kbc, 1u);
-    failed |= (read_port(port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
-    x86_nxvm_board_kbc_advance(&kbc, 1u);
+    failed |= (read_port(port, 0x0064u) & TEST_KBC_STATUS_OBF) != 0u;
+    x86_nxvm_board_kbc_advance(kbc, 1u);
+    failed |= (read_port(port, 0x0064u) & TEST_KBC_STATUS_OBF) != 0u;
+    x86_nxvm_board_kbc_advance(kbc, 1u);
     failed |= !take_aux_byte(port, master, slave, 0xfau) ||
         !take_aux_byte(port, master, slave, 0x00u);
-    x86_nxvm_board_kbc_set_command_response_timing(&kbc, 0u);
+    x86_nxvm_board_kbc_set_command_response_timing(kbc, 0u);
 
     send_aux_command(port, 0xf4u);
     failed |= !take_aux_byte(port, master, slave, 0xfau) ||
-        x86_nxvm_board_kbc_submit_aux_report(&kbc, 0, 0, 0u) != LIB_STATUS_OK ||
-        (read_port(port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
-        x86_nxvm_board_kbc_submit_aux_report(&kbc, 300, -300, 0u) != LIB_STATUS_OK ||
+        x86_nxvm_board_kbc_submit_aux_report(kbc, 0, 0, 0u) != LIB_STATUS_OK ||
+        (read_port(port, 0x0064u) & TEST_KBC_STATUS_OBF) != 0u ||
+        x86_nxvm_board_kbc_submit_aux_report(kbc, 300, -300, 0u) != LIB_STATUS_OK ||
         !take_aux_byte(port, master, slave, 0xe8u) ||
         !take_aux_byte(port, master, slave, 0xffu) ||
         !take_aux_byte(port, master, slave, 0x00u);
@@ -227,33 +227,33 @@ lib_i32 main(void)
         !take_aux_byte(port, master, slave, 0x00u) ||
         !take_aux_byte(port, master, slave, 0x02u) ||
         !take_aux_byte(port, master, slave, 100u) ||
-        x86_nxvm_board_kbc_submit_aux_report(&kbc, 1, 1, 0u) !=
+        x86_nxvm_board_kbc_submit_aux_report(kbc, 1, 1, 0u) !=
             LIB_STATUS_INVALID_STATE;
 
     send_aux_command(port, 0xf4u);
     failed |= !take_aux_byte(port, master, slave, 0xfau) ||
-        x86_nxvm_board_kbc_submit_aux_report(&kbc, 1, 1, 0u) != LIB_STATUS_OK ||
+        x86_nxvm_board_kbc_submit_aux_report(kbc, 1, 1, 0u) != LIB_STATUS_OK ||
         !x86_nxvm_board_pic_irq_source_is_asserted(irq.auxiliary);
     /* Keyboard scan bytes and AUX packets now have distinct device-side
      * admission queues.  Fill the KBC-visible AUX FIFO independently: 3
      * initial packet bytes plus these packets leave one byte, so the next
      * complete packet must be rejected atomically. */
     for (index = 0u; index < 20u; ++index) {
-        failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc,
+        failed |= x86_nxvm_board_kbc_submit_aux_report(kbc,
             (lib_i16)(index + 1u), 0, 0u) != LIB_STATUS_OK;
     }
-    failed |= x86_nxvm_board_kbc_submit_aux_report(&kbc, 2, 2, 1u) !=
+    failed |= x86_nxvm_board_kbc_submit_aux_report(kbc, 2, 2, 1u) !=
         LIB_STATUS_INVALID_STATE ||
-        x86_nxvm_board_kbc_submit_aux_report(&kbc, 0, 0, 0u) != LIB_STATUS_OK;
+        x86_nxvm_board_kbc_submit_aux_report(kbc, 0, 0, 0u) != LIB_STATUS_OK;
 
     /* A saturated KBC output FIFO must not make keyboard serial input look
      * like AUX state.  Its private queue has its own bounded admission. */
     for (index = 0u; index < 64u; ++index) {
-        failed |= x86_nxvm_board_kbc_submit_native_byte(&kbc, index) != LIB_STATUS_OK;
+        failed |= x86_nxvm_board_kbc_submit_native_byte(kbc, index) != LIB_STATUS_OK;
     }
-    failed |= x86_nxvm_board_kbc_submit_native_byte(&kbc, 0u) != LIB_STATUS_NO_MEMORY;
+    failed |= x86_nxvm_board_kbc_submit_native_byte(kbc, 0u) != LIB_STATUS_NO_MEMORY;
 done:
-    x86_nxvm_board_kbc_finalize(&kbc);
+    x86_nxvm_board_kbc_destroy(kbc);
     failed |= x86_nxvm_board_pic_irq_source_is_asserted(irq.auxiliary);
 
     x86_nxvm_board_pic_finalize(master, slave);

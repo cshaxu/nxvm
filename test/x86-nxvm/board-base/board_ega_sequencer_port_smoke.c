@@ -5,14 +5,14 @@
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "board_board_fixture.h"
 
-static lib_i32 core_machine_ega_write(x86_core_machine *machine, lib_u32 physical,
+static lib_i32 x86_nxvm_test_ega_write(x86_core_machine *machine, lib_u32 physical,
     lib_u8 value)
 {
     return x86_core_machine_memory_write(machine, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_ega_read(x86_core_machine *machine, lib_u32 physical,
+static lib_i32 x86_nxvm_test_ega_read(x86_core_machine *machine, lib_u32 physical,
     lib_u8 *value)
 {
     return x86_core_machine_memory_read(machine, physical,
@@ -85,9 +85,9 @@ lib_i32 main(void)
 
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     dirty_generation = observation.generation;
-    failed |= !core_machine_ega_write(machine, X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE,
+    failed |= !x86_nxvm_test_ega_write(machine, X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE,
         0x5au);
-    failed |= !core_machine_ega_read(machine, X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE,
+    failed |= !x86_nxvm_test_ega_read(machine, X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE,
         &value) || value != 0x5au;
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     failed |= observation.generation != dirty_generation + 1u;
@@ -97,12 +97,12 @@ lib_i32 main(void)
         X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE + X86_NXVM_BOARD_VADP_EGA_APERTURE_BYTES,
         1u);
     dirty_generation = observation.generation;
-    failed |= !core_machine_ega_write(machine,
+    failed |= !x86_nxvm_test_ega_write(machine,
         X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE + X86_NXVM_BOARD_VADP_EGA_APERTURE_BYTES,
         0xa5u);
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     failed |= observation.generation != dirty_generation;
-    failed |= !core_machine_ega_read(machine, X86_NXVM_BOARD_VADP_VIDEO_BASE, &value) ||
+    failed |= !x86_nxvm_test_ega_read(machine, X86_NXVM_BOARD_VADP_VIDEO_BASE, &value) ||
         value != 0u;
 
     {
