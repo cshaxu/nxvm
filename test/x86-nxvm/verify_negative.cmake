@@ -62,3 +62,36 @@ foreach(header IN ITEMS x86-nxvm/board-base/pic_bus_interface.h ../board-base/pi
 endforeach()
 file(REMOVE "${probe}/board-at/probe.c")
 message(STATUS "x86-nxvm dependency negative coverage: OK")
+
+# Included and nested build descriptions obey the same package boundaries.
+set(probe "${PROBE_ROOT}/build-bypass")
+file(REMOVE_RECURSE "${probe}")
+file(COPY "${CORPUS_ROOT}/" DESTINATION "${probe}")
+file(MAKE_DIRECTORY "${probe}/nested")
+foreach(build_file IN ITEMS nested/CMakeLists.txt nested/links.cmake)
+    foreach(statement IN ITEMS
+            "TaRgEt_LiNk_LiBrArIeS(x86-nxvm-chip-video PRIVATE x86-nxvm-product)"
+            "LINK_LIBRARIES(x86-nxvm-product)"
+            "set_property(TARGET x86-nxvm-chip-video APPEND PROPERTY LINK_LIBRARIES\n x86-nxvm-product)"
+            "set_target_properties(x86-nxvm-chip-video PROPERTIES INTERFACE_LINK_LIBRARIES\n x86-nxvm-product)")
+        file(APPEND "${probe}/CMakeLists.txt" "\ninclude(${build_file})\n")
+        file(WRITE "${probe}/${build_file}" "${statement}\n")
+        execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${probe}"
+            -P "${probe}/verify_corpus.cmake" RESULT_VARIABLE result
+            OUTPUT_VARIABLE output ERROR_VARIABLE error)
+        if(result EQUAL 0 OR NOT "${output}${error}" MATCHES
+                "Forbidden x86-nxvm edge|Use explicit x86-nxvm target_link_libraries")
+            message(FATAL_ERROR "Build bypass not rejected: ${statement}: ${output}${error}")
+        endif()
+    endforeach()
+    file(REMOVE "${probe}/${build_file}")
+endforeach()
+set(probe "${PROBE_ROOT}/raw-null")
+file(MAKE_DIRECTORY "${probe}/chips/video")
+file(WRITE "${probe}/chips/video/probe.c" "void *pointer = NULL;\n")
+execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${probe}"
+    -P "${CORPUS_ROOT}/verify_corpus.cmake" RESULT_VARIABLE result
+    OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "Raw CRT vocabulary")
+    message(FATAL_ERROR "Raw NULL not rejected: ${output}${error}")
+endif()

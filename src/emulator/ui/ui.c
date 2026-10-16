@@ -27,7 +27,7 @@ struct emulator_ui {
 
 static lib_bool emulator_ui_emit(emulator_ui *ui, const emulator_ui_event *event)
 {
-    return ui != NULL && ui->options.event_sink != NULL &&
+    return ui != LIB_NULL && ui->options.event_sink != LIB_NULL &&
         ui->options.event_sink(ui->options.event_context, event);
 }
 
@@ -37,7 +37,7 @@ static void emulator_ui_delivery_failed(void *opaque, lib_u64 source_identity,
     emulator_ui *ui = (emulator_ui *)opaque;
     emulator_ui_event event = { 0 };
     event.kind = EMULATOR_UI_EVENT_KVM_DELIVERY_FAILED;
-    event.run_generation = ui == NULL ? 0u : lib_atomic_u32_load_explicit(
+    event.run_generation = ui == LIB_NULL ? 0u : lib_atomic_u32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);
     event.value.delivery_failure.source_identity = source_identity;
     event.value.delivery_failure.status = status;
@@ -47,9 +47,9 @@ static void emulator_ui_delivery_failed(void *opaque, lib_u64 source_identity,
 static lib_bool emulator_ui_input(void *opaque, const kvm_input_event *input)
 {
     emulator_ui_input_context *context = (emulator_ui_input_context *)opaque;
-    emulator_ui *ui = context == NULL ? NULL : context->ui;
+    emulator_ui *ui = context == LIB_NULL ? LIB_NULL : context->ui;
     emulator_ui_event event = { 0 };
-    if (ui == NULL || input == NULL) return LIB_FALSE;
+    if (ui == LIB_NULL || input == LIB_NULL) return LIB_FALSE;
     /* A graphical Window is the sole guest-mouse surface. The concurrent raw
        Console remains a keyboard/hotkey surface in Console display mode. */
     if (context->vm_console && input->type == KVM_EVENT_MOUSE &&
@@ -66,7 +66,7 @@ static void emulator_ui_monitor_receive(void *opaque, const lib_console_event *s
 {
     emulator_ui *ui = (emulator_ui *)opaque;
     emulator_ui_event event = { 0 };
-    if (ui == NULL || source == NULL) return;
+    if (ui == LIB_NULL || source == LIB_NULL) return;
     if (source->kind == LIB_CONSOLE_EVENT_IO_FAILURE) {
         event.kind = EMULATOR_UI_EVENT_CONSOLE_FAILED;
         (void)emulator_ui_emit(ui, &event);
@@ -112,8 +112,8 @@ static lib_status emulator_ui_create_window(emulator_ui *ui, emulator_ui_state s
 {
     kvm_window_options options = { 0 };
     lib_status status;
-    if (ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (ui->window != NULL) return LIB_STATUS_OK;
+    if (ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (ui->window != LIB_NULL) return LIB_STATUS_OK;
     options.component.input_context = &ui->window_input;
     options.component.input_sink = emulator_ui_input;
     options.component.failure_context = ui;
@@ -133,8 +133,8 @@ static lib_status emulator_ui_create_console(emulator_ui *ui)
 {
     kvm_console_options options = { 0 };
     lib_status status;
-    if (ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (ui->console != NULL) return LIB_STATUS_OK;
+    if (ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (ui->console != LIB_NULL) return LIB_STATUS_OK;
     options.input_context = &ui->console_input;
     options.input_sink = emulator_ui_input;
     options.failure_context = ui;
@@ -152,13 +152,13 @@ lib_status emulator_ui_create(emulator_ui **out_ui, const emulator_ui_options *o
 {
     emulator_ui *ui;
     lib_status status;
-    if (out_ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_ui = NULL;
-    if (options == NULL || options->event_sink == NULL ||
-        options->running_window_title == NULL || options->paused_window_title == NULL)
+    if (out_ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_ui = LIB_NULL;
+    if (options == LIB_NULL || options->event_sink == LIB_NULL ||
+        options->running_window_title == LIB_NULL || options->paused_window_title == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     ui = lib_allocate_zero(1u, sizeof(*ui));
-    if (ui == NULL) return LIB_STATUS_NO_MEMORY;
+    if (ui == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     lib_atomic_u32_initialize(&ui->run_generation, 0u);
     lib_atomic_i32_initialize(&ui->window_live, 0);
     ui->window_input.ui = ui;
@@ -172,8 +172,8 @@ lib_status emulator_ui_create(emulator_ui **out_ui, const emulator_ui_options *o
         status = console_broker_create(&ui->broker, ui->monitor,
             CONSOLE_BROKER_COOKED_LINES);
     if (status != LIB_STATUS_OK) {
-        if (ui->monitor != NULL) {
-            (void)lib_console_set_event_sink(ui->monitor, NULL, NULL);
+        if (ui->monitor != LIB_NULL) {
+            (void)lib_console_set_event_sink(ui->monitor, LIB_NULL, LIB_NULL);
             lib_console_release(ui->monitor);
         }
         lib_release(ui);
@@ -186,27 +186,27 @@ lib_status emulator_ui_create(emulator_ui **out_ui, const emulator_ui_options *o
 lib_status emulator_ui_destroy(emulator_ui *ui)
 {
     lib_status status;
-    if (ui == NULL) return LIB_STATUS_OK;
+    if (ui == LIB_NULL) return LIB_STATUS_OK;
     /* Stop native input and detach output before releasing its consumers. */
-    if (ui->broker != NULL) {
+    if (ui->broker != LIB_NULL) {
         status = console_broker_destroy(ui->broker);
         if (status != LIB_STATUS_OK) return status;
-        ui->broker = NULL;
+        ui->broker = LIB_NULL;
     }
-    if (ui->window != NULL) {
+    if (ui->window != LIB_NULL) {
         status = kvm_window_destroy(ui->window);
         if (status != LIB_STATUS_OK) return status;
-        ui->window = NULL;
+        ui->window = LIB_NULL;
         lib_atomic_i32_store_explicit(
             &ui->window_live, 0, LIB_MEMORY_ORDER_SEQ_CST);
     }
-    if (ui->console != NULL) {
+    if (ui->console != LIB_NULL) {
         status = kvm_console_destroy(ui->console);
         if (status != LIB_STATUS_OK) return status;
-        ui->console = NULL;
+        ui->console = LIB_NULL;
     }
-    if (ui->monitor != NULL) {
-        (void)lib_console_set_event_sink(ui->monitor, NULL, NULL);
+    if (ui->monitor != LIB_NULL) {
+        (void)lib_console_set_event_sink(ui->monitor, LIB_NULL, LIB_NULL);
         lib_console_release(ui->monitor);
     }
     lib_release(ui);
@@ -215,7 +215,7 @@ lib_status emulator_ui_destroy(emulator_ui *ui)
 
 void emulator_ui_set_run_generation(emulator_ui *ui, lib_u32 run_generation)
 {
-    if (ui != NULL) lib_atomic_u32_store_explicit(&ui->run_generation,
+    if (ui != LIB_NULL) lib_atomic_u32_store_explicit(&ui->run_generation,
         run_generation, LIB_MEMORY_ORDER_SEQ_CST);
 }
 
@@ -223,7 +223,7 @@ lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,
     emulator_ui_state state)
 {
     lib_status status = LIB_STATUS_OK;
-    if (ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     switch (action) {
     case EMULATOR_UI_ACTION_NONE: return LIB_STATUS_OK;
     case EMULATOR_UI_ACTION_CREATE_WINDOW:
@@ -235,29 +235,29 @@ lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,
         return status == LIB_STATUS_OK ? emulator_ui_emit_component(ui,
             EMULATOR_UI_COMPONENT_VM_CONSOLE, LIB_TRUE) : status;
     case EMULATOR_UI_ACTION_BIND_VM_CONSOLE:
-        if (ui->console == NULL) return LIB_STATUS_INVALID_STATE;
+        if (ui->console == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = console_broker_replace(ui->broker, ui->monitor,
             kvm_console_get_console(ui->console), CONSOLE_BROKER_RAW_EVENTS);
         return status == LIB_STATUS_OK ? emulator_ui_emit_broker(ui, LIB_TRUE) : status;
     case EMULATOR_UI_ACTION_BIND_MONITOR:
-        if (ui->console == NULL) return LIB_STATUS_INVALID_STATE;
+        if (ui->console == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = console_broker_replace(ui->broker, kvm_console_get_console(ui->console),
             ui->monitor, CONSOLE_BROKER_COOKED_LINES);
         return status == LIB_STATUS_OK ? emulator_ui_emit_broker(ui, LIB_FALSE) : status;
     case EMULATOR_UI_ACTION_DESTROY_VM_CONSOLE:
-        if (ui->console == NULL) return LIB_STATUS_INVALID_STATE;
+        if (ui->console == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = kvm_console_destroy(ui->console);
         if (status != LIB_STATUS_OK) return status;
-        ui->console = NULL;
+        ui->console = LIB_NULL;
         ui->console_delivered_frame_sequence = 0u;
         return emulator_ui_emit_component(ui, EMULATOR_UI_COMPONENT_VM_CONSOLE, LIB_FALSE);
     case EMULATOR_UI_ACTION_DESTROY_WINDOW:
-        if (ui->window == NULL) return LIB_STATUS_INVALID_STATE;
+        if (ui->window == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = kvm_window_destroy(ui->window);
         if (status != LIB_STATUS_OK) return status;
         lib_atomic_i32_store_explicit(&ui->window_live, 0,
             LIB_MEMORY_ORDER_SEQ_CST);
-        ui->window = NULL;
+        ui->window = LIB_NULL;
         ui->window_delivered_frame_sequence = 0u;
         return emulator_ui_emit_component(ui, EMULATOR_UI_COMPONENT_WINDOW, LIB_FALSE);
     }
@@ -267,7 +267,7 @@ lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,
 lib_status emulator_ui_set_state(emulator_ui *ui, emulator_ui_state state)
 {
     lib_status status;
-    if (ui == NULL || ui->window == NULL) return LIB_STATUS_OK;
+    if (ui == LIB_NULL || ui->window == LIB_NULL) return LIB_STATUS_OK;
     status = kvm_window_set_title(ui->window, emulator_ui_title(ui, state));
     if (status != LIB_STATUS_OK) return status;
     if (state == EMULATOR_UI_STATE_RUNNING)
@@ -295,7 +295,7 @@ static void emulator_ui_status_frame(kvm_console_text_frame *frame,
         frame->characters.primary[index] = character;
         frame->characters.secondary[index] = character;
     }
-    for (index = 0u; text != NULL && text[index] != '\0'; ++index) {
+    for (index = 0u; text != LIB_NULL && text[index] != '\0'; ++index) {
         if (text[index] == '\r') continue;
         if (text[index] == '\n') { ++row; column = 0u; continue; }
         if (row < frame->base.text_rows && column < frame->base.text_columns)
@@ -312,16 +312,16 @@ lib_status emulator_ui_publish_frame(emulator_ui *ui, const kvm_window_frame *fr
     kvm_console_text_frame console_frame;
     lib_status status;
     lib_bool show_status;
-    if (ui == NULL || frame == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (ui == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     show_status = frame->graphics != 0u && console_status_surface;
-    if (vm_console_current && ui->console != NULL &&
+    if (vm_console_current && ui->console != LIB_NULL &&
         (show_status != ui->console_status_delivered ||
          (!show_status && ui->console_delivered_frame_sequence != sequence))) {
         if (show_status) {
             emulator_ui_status_frame(&console_frame, ui->options.graphics_console_status_text);
         } else {
             if (frame->graphics != 0u) return LIB_STATUS_UNSUPPORTED;
-            if (characters == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+            if (characters == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
             console_frame.base = frame->text.base;
             console_frame.characters = *characters;
         }
@@ -330,7 +330,7 @@ lib_status emulator_ui_publish_frame(emulator_ui *ui, const kvm_window_frame *fr
         ui->console_delivered_frame_sequence = sequence;
         ui->console_status_delivered = show_status;
     }
-    if (window_actual && ui->window != NULL &&
+    if (window_actual && ui->window != LIB_NULL &&
         ui->window_delivered_frame_sequence != sequence) {
         status = kvm_window_publish_frame(ui->window, frame);
         if (status != LIB_STATUS_OK) return status;
@@ -341,24 +341,24 @@ lib_status emulator_ui_publish_frame(emulator_ui *ui, const kvm_window_frame *fr
 
 lib_status emulator_ui_release_window_mouse(emulator_ui *ui)
 {
-    return ui == NULL || ui->window == NULL ? LIB_STATUS_OK :
+    return ui == LIB_NULL || ui->window == LIB_NULL ? LIB_STATUS_OK :
         kvm_window_release_mouse(ui->window);
 }
 
 lib_status emulator_ui_write_monitor(emulator_ui *ui, const char *text)
 {
-    return ui == NULL || text == NULL ? LIB_STATUS_INVALID_ARGUMENT :
+    return ui == LIB_NULL || text == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         lib_console_write_text(ui->monitor, text, lib_text_length(text));
 }
 
 lib_status emulator_ui_request_monitor_line(emulator_ui *ui)
 {
-    return ui == NULL ? LIB_STATUS_INVALID_ARGUMENT :
+    return ui == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         console_broker_request_cooked_line(ui->broker, ui->monitor);
 }
 
 lib_status emulator_ui_cancel_monitor_line(emulator_ui *ui, lib_bool *out_completed)
 {
-    return ui == NULL ? LIB_STATUS_INVALID_ARGUMENT :
+    return ui == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         console_broker_cancel_cooked_line(ui->broker, ui->monitor, out_completed);
 }

@@ -10,7 +10,7 @@ static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
 static void emulator_session_queue_latch_failure(emulator_session_queue *queue,
     lib_size slot, const emulator_session_event *event)
 {
-    if (queue == NULL) return;
+    if (queue == LIB_NULL) return;
     base_sync_mutex_lock(queue->lock);
     if (!queue->fault_pending[slot]) {
         queue->faults[slot] = *event;
@@ -26,7 +26,7 @@ static lib_bool emulator_session_queue_push_required(emulator_session_queue *que
     emulator_session_event fault = { 0 };
     if (emulator_session_queue_push(queue, event)) return LIB_TRUE;
     fault.kind = EMULATOR_SESSION_EVENT_QUEUE_DELIVERY_FAILED;
-    fault.run_generation = event == NULL ? 0u : event->run_generation;
+    fault.run_generation = event == LIB_NULL ? 0u : event->run_generation;
     fault.value.queue_delivery_status = LIB_STATUS_NO_MEMORY;
     emulator_session_queue_latch_failure(queue, 1u, &fault);
     return LIB_FALSE;
@@ -37,7 +37,7 @@ static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
 {
     emulator_session_event *expanded;
     lib_size index;
-    if (queue == NULL || event == NULL) return LIB_FALSE;
+    if (queue == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
     base_sync_mutex_lock(queue->lock);
     if (queue->count == queue->capacity) {
         lib_size next_capacity = queue->capacity * 2u;
@@ -47,7 +47,7 @@ static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
             return LIB_FALSE;
         }
         expanded = lib_allocate_zero(next_capacity, sizeof(*expanded));
-        if (expanded == NULL) {
+        if (expanded == LIB_NULL) {
             base_sync_mutex_unlock(queue->lock);
             return LIB_FALSE;
         }
@@ -68,12 +68,12 @@ static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
 
 lib_bool emulator_session_queue_initialize(emulator_session_queue *queue)
 {
-    if (queue == NULL) return LIB_FALSE;
+    if (queue == LIB_NULL) return LIB_FALSE;
     *queue = (emulator_session_queue) { 0 };
     if (base_sync_mutex_create(&queue->lock) != LIB_STATUS_OK) return LIB_FALSE;
     queue->capacity = EMULATOR_SESSION_EVENT_QUEUE_INITIAL_CAPACITY;
     queue->events = lib_allocate_zero(queue->capacity, sizeof(*queue->events));
-    if (queue->events == NULL ||
+    if (queue->events == LIB_NULL ||
         base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &queue->available) != LIB_STATUS_OK) {
         emulator_session_queue_dispose(queue);
         return LIB_FALSE;
@@ -83,7 +83,7 @@ lib_bool emulator_session_queue_initialize(emulator_session_queue *queue)
 
 void emulator_session_queue_dispose(emulator_session_queue *queue)
 {
-    if (queue == NULL) return;
+    if (queue == LIB_NULL) return;
     base_sync_event_destroy(queue->available);
     lib_release(queue->events);
     base_sync_mutex_destroy(queue->lock);
@@ -94,7 +94,7 @@ lib_bool emulator_session_queue_push_kvm_for_run(emulator_session_queue *queue,
     const kvm_input_event *event, lib_u32 run_generation)
 {
     emulator_session_event copied = { 0 };
-    if (event == NULL) return LIB_FALSE;
+    if (event == LIB_NULL) return LIB_FALSE;
     copied.kind = EMULATOR_SESSION_EVENT_KVM_INPUT;
     copied.run_generation = run_generation;
     copied.value.kvm = *event;
@@ -110,7 +110,7 @@ lib_bool emulator_session_queue_push_monitor_line(emulator_session_queue *queue,
     const lib_console_line *line, lib_bool rejected)
 {
     emulator_session_event copied = { 0 };
-    if (line == NULL) return LIB_FALSE;
+    if (line == LIB_NULL) return LIB_FALSE;
     copied.kind = EMULATOR_SESSION_EVENT_MONITOR_LINE;
     copied.value.line = *line;
     copied.monitor_line_rejected = rejected;
@@ -172,7 +172,7 @@ lib_bool emulator_session_queue_take(emulator_session_queue *queue,
 {
     lib_bool taken = LIB_FALSE;
     lib_size slot;
-    if (queue == NULL || out_event == NULL ||
+    if (queue == LIB_NULL || out_event == LIB_NULL ||
         base_sync_event_wait(queue->available, timeout_ms) != BASE_SYNC_WAIT_SIGNALED)
         return LIB_FALSE;
     base_sync_mutex_lock(queue->lock);
@@ -201,7 +201,7 @@ lib_bool emulator_session_accept_kvm_event(const emulator_session_event *event,
 {
     const kvm_input_event *input;
 
-    if (event == NULL || event->kind != EMULATOR_SESSION_EVENT_KVM_INPUT) return LIB_FALSE;
+    if (event == LIB_NULL || event->kind != EMULATOR_SESSION_EVENT_KVM_INPUT) return LIB_FALSE;
     input = &event->value.kvm;
     /* Source identity is globally monotonic.  Retirement is not guest input:
        it must always reach the ledger, even when the component belonged to a
@@ -272,7 +272,7 @@ lib_bool emulator_session_dispatch_input(emulator_session_queue *queue, const kv
     emulator_session_machine_state runtime_state, emulator_session_input_sink sink,
     void *sink_context)
 {
-    if (queue == NULL || event == NULL || sink == NULL) return LIB_FALSE;
+    if (queue == LIB_NULL || event == LIB_NULL || sink == LIB_NULL) return LIB_FALSE;
     if (event->type == KVM_EVENT_KEY) {
         if (event->data.key.pressed != 0u) {
             if (!emulator_session_remember_pressed(queue, event)) return LIB_FALSE;

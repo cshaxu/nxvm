@@ -16,6 +16,7 @@ function(expect_rejected source marker)
 endfunction()
 expect_rejected("#include \"outer/probe_interface.h\"\n" "Forbidden x86-core include")
 expect_rejected("void *p = malloc(1);\n" "Raw CRT/platform")
+expect_rejected("void *p = NULL;\n" "Raw CRT/platform")
 expect_rejected("#include \"x86-core/machine/machine_interface.h\"\n"
     "CPU/FPU cannot depend on Machine")
 expect_rejected("#include \"x86-core/fpu/fpu.h\"\n" "Private chip header")
@@ -41,6 +42,13 @@ endforeach()
 file(WRITE "${PROBE_ROOT}/CMakeLists.txt" "include(nested.cmake)\n")
 file(WRITE "${PROBE_ROOT}/nested.cmake" "target_link_libraries(x86-core-cpu PRIVATE storage)\n")
 expect_rejected("" "Forbidden x86-core build dependency")
+foreach(build IN ITEMS
+        "LINK_LIBRARIES(storage)"
+        "set_property(TARGET x86-core-cpu APPEND PROPERTY LINK_LIBRARIES\n storage)"
+        "set_target_properties(x86-core-cpu PROPERTIES INTERFACE_LINK_LIBRARIES\n storage)")
+    file(WRITE "${PROBE_ROOT}/nested.cmake" "${build}\n")
+    expect_rejected("" "Use explicit x86-core target_link_libraries")
+endforeach()
 file(REMOVE "${PROBE_ROOT}/nested.cmake")
 file(WRITE "${PROBE_ROOT}/CMakeLists.txt" "")
 file(WRITE "${PROBE_ROOT}/MANIFEST.sha256" "# sha256-manifest-v1\n")

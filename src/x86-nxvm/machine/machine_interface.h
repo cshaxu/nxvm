@@ -39,9 +39,9 @@ typedef struct x86_nxvm_machine_information {
     lib_u32 fault_exception_eip;
 } x86_nxvm_machine_information;
 
-/* With three non-NULL arguments, construction.profile ownership transfers
+/* With three non-LIB_NULL arguments, construction.profile ownership transfers
  * on entry, including failure. Missing arguments do not transfer ownership.
- * The output stays NULL until the full creation/reset transaction succeeds. */
+ * The output stays LIB_NULL until the full creation/reset transaction succeeds. */
 lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
     const x86_nxvm_machine_construction *construction, x86_nxvm_machine **out_session);
 void x86_nxvm_machine_destroy(x86_nxvm_machine *session);
@@ -49,7 +49,7 @@ void x86_nxvm_machine_destroy(x86_nxvm_machine *session);
  * machine it constructs from it. */
 lib_status x86_nxvm_machine_describe_emulator_driver(x86_nxvm_machine *session,
     emulator_machine_driver *out_driver);
-/* App binds its Common owner before lifecycle requests.  Passing NULL revokes
+/* App binds its Common owner before lifecycle requests.  Passing LIB_NULL revokes
  * that non-owning link during ordered teardown. */
 lib_status x86_nxvm_machine_bind_emulator_machine(x86_nxvm_machine *session,
     emulator_machine *emulator_machine);

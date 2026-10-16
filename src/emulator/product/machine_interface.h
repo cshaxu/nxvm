@@ -16,7 +16,7 @@ typedef struct emulator_product_machine {
     lib_status (*destroy)(void *machine);
     /* A product may translate a completed machine fact only at this one
      * composition boundary. It receives no Session/UI pointer and cannot
-     * dispatch lifecycle work. NULL uses the direct neutral mapping. */
+     * dispatch lifecycle work. LIB_NULL uses the direct neutral mapping. */
     void *state_context;
     emulator_session_machine_state (*map_state)(void *context,
         emulator_machine_state state);

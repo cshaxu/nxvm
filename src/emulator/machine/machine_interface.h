@@ -65,6 +65,9 @@ typedef struct emulator_machine_driver {
     lib_bool (*run)(void *context);
     void (*request_stop)(void *context);
     void (*request_wake)(void *context);
+    /* Executor-only gate: disable before parking/cleanup; enable before run or
+     * continuation, including state capture without a public RUNNING notice.
+     * Repeated disable must be harmless. */
     void (*set_heartbeat)(void *context, lib_bool enabled);
     void (*set_executor_callback)(void *context,
         emulator_machine_executor_callback callback, void *callback_context);
@@ -131,7 +134,7 @@ lib_u32 emulator_machine_run_generation(const emulator_machine *machine);
 lib_status emulator_machine_debug_acquire(emulator_machine *machine,
     emulator_machine_debug_lease *out_lease);
 /* Opaque, pointer-free in-process values; the driver owns their protocol.
- * Request bytes are copied before dispatch. NULL is valid only for zero size
+ * Request bytes are copied before dispatch. LIB_NULL is valid only for zero size
  * or capacity; response_size is required and is zero on failure. Output bytes
  * are unchanged on failure. No caller buffer is retained by the executor.
  * The driver receives at most the caller's capacity and must report the bytes
@@ -145,7 +148,7 @@ lib_status emulator_machine_debug_execute_with_lease(emulator_machine *machine,
 /* Asynchronous cancellation, allowed in every state; uses the existing queue. */
 void emulator_machine_debug_cancel(emulator_machine *machine);
 /* Permanently stop/join the worker, including all in-flight callbacks, but
- * retain the object. NULL/repeated calls are harmless. The owner serializes
+ * retain the object. LIB_NULL/repeated calls are harmless. The owner serializes
  * this with other API calls; never call from a worker callback. Callback
  * contexts and the driver must remain alive until this succeeds. Failure
  * retains the machine and worker; destroy also retains them on failure. It uses

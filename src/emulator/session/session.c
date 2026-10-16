@@ -32,7 +32,7 @@ static emulator_ui_state emulator_session_ui_state(emulator_session_machine_stat
 
 static void emulator_session_clear_result(emulator_session_command_result *result)
 {
-    if (result != NULL) *result = (emulator_session_command_result) { 0 };
+    if (result != LIB_NULL) *result = (emulator_session_command_result) { 0 };
 }
 
 static lib_bool emulator_session_deliver_machine_input(void *context,
@@ -45,7 +45,7 @@ static lib_bool emulator_session_dispatch_request(emulator_session *session,
     emulator_session_request request)
 {
     if (request == EMULATOR_SESSION_REQUEST_NONE) return LIB_TRUE;
-    if (session == NULL || session->machine == NULL) return LIB_FALSE;
+    if (session == LIB_NULL || session->machine == LIB_NULL) return LIB_FALSE;
     switch (request) {
     case EMULATOR_SESSION_REQUEST_START: return emulator_machine_start(session->machine);
     case EMULATOR_SESSION_REQUEST_RESUME: return emulator_machine_resume(session->machine);
@@ -75,7 +75,7 @@ static lib_bool emulator_session_write_text(emulator_session *session, const cha
     char chunk[1024];
     lib_size used = 0u;
     char previous = '\0';
-    if (text == NULL) return LIB_TRUE;
+    if (text == LIB_NULL) return LIB_TRUE;
     for (; *text != '\0'; ++text) {
         if (used + 2u >= sizeof(chunk)) {
             chunk[used] = '\0';
@@ -95,7 +95,7 @@ static lib_bool emulator_session_append_pending_text(emulator_session *session, 
     lib_size used;
     lib_size available;
     lib_size length;
-    if (session == NULL || text == NULL || text[0] == '\0') return LIB_TRUE;
+    if (session == LIB_NULL || text == LIB_NULL || text[0] == '\0') return LIB_TRUE;
     used = lib_text_length(session->pending_monitor_text);
     available = sizeof(session->pending_monitor_text) - used;
     length = lib_text_length(text);
@@ -106,8 +106,8 @@ static lib_bool emulator_session_append_pending_text(emulator_session *session, 
 
 static const char *emulator_session_result_gap(const emulator_session_command_result *result)
 {
-    if (result == NULL || !result->arm_prompt || (result->text[0] == '\0' &&
-        (result->detail == NULL || result->detail[0] == '\0'))) return "";
+    if (result == LIB_NULL || !result->arm_prompt || (result->text[0] == '\0' &&
+        (result->detail == LIB_NULL || result->detail[0] == '\0'))) return "";
     return "\r\n";
 }
 
@@ -115,7 +115,7 @@ static void emulator_session_note_prompt(emulator_session *session,
     const emulator_session_command_result *result)
 {
     const char *prompt;
-    if (session == NULL || result == NULL || !result->arm_prompt) return;
+    if (session == LIB_NULL || result == LIB_NULL || !result->arm_prompt) return;
     prompt = result->prompt[0] != '\0' ? result->prompt : EMULATOR_SESSION_MONITOR_PROMPT;
     (void)lib_c_snprintf(session->pending_prompt, sizeof(session->pending_prompt), "%s", prompt);
     session->prompt_due = LIB_TRUE;
@@ -123,7 +123,7 @@ static void emulator_session_note_prompt(emulator_session *session,
 
 static lib_bool emulator_session_arm_if_ready(emulator_session *session)
 {
-    if (session == NULL || !emulator_session_state_monitor_is_current(&session->state)) return LIB_TRUE;
+    if (session == LIB_NULL || !emulator_session_state_monitor_is_current(&session->state)) return LIB_TRUE;
     if (session->pending_monitor_text[0] != '\0') {
         if (session->pending_line) {
             lib_bool completed;
@@ -151,7 +151,7 @@ static lib_bool emulator_session_apply_result(emulator_session *session,
 {
     if (result->release_window_mouse &&
         emulator_ui_release_window_mouse(session->ui) != LIB_STATUS_OK) return LIB_FALSE;
-    if ((result->text[0] != '\0' || (result->detail != NULL && result->detail[0] != '\0')) &&
+    if ((result->text[0] != '\0' || (result->detail != LIB_NULL && result->detail[0] != '\0')) &&
         emulator_session_state_monitor_is_current(&session->state)) {
         if (session->pending_line) {
             lib_bool completed;
@@ -186,7 +186,7 @@ static lib_bool emulator_session_drive(emulator_session *session)
 {
     emulator_ui_action action;
     lib_bool console_status_surface;
-    if (session == NULL || session->ui == NULL || session->machine == NULL)
+    if (session == LIB_NULL || session->ui == LIB_NULL || session->machine == LIB_NULL)
         return LIB_FALSE;
     emulator_ui_set_run_generation(session->ui,
         emulator_machine_run_generation(session->machine));
@@ -213,7 +213,7 @@ static lib_bool emulator_session_handle_kvm_input(emulator_session *session,
 {
     emulator_session_command_result result;
     emulator_session_machine_state state;
-    if (session == NULL || event == NULL) return LIB_FALSE;
+    if (session == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
     state = session->state.monitor_actual;
     if (event->type == KVM_EVENT_WINDOW_CLOSE) {
         emulator_session_state_note_window_close(&session->state);
@@ -224,7 +224,7 @@ static lib_bool emulator_session_handle_kvm_input(emulator_session *session,
         return emulator_session_apply_result(session, &result);
     }
     if (event->type == KVM_EVENT_HOTKEY) {
-        if (session->command.handle_hotkey == NULL) return LIB_FALSE;
+        if (session->command.handle_hotkey == LIB_NULL) return LIB_FALSE;
         emulator_session_clear_result(&result);
         if (!session->command.handle_hotkey(session->command.context, state,
                 event->data.hotkey.identifier, &result)) return LIB_FALSE;
@@ -240,7 +240,7 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
     emulator_session_command_result result;
     lib_bool broker_monitor_completed = LIB_FALSE;
     lib_bool initial_stopped;
-    if (session == NULL || event == NULL) return LIB_FALSE;
+    if (session == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
     if (event->run_generation != 0u &&
         event->run_generation != emulator_machine_run_generation(session->machine))
         return LIB_TRUE;
@@ -249,7 +249,7 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
         session->state.monitor_actual == EMULATOR_SESSION_MACHINE_INIT &&
         event->value.runtime_state == EMULATOR_SESSION_MACHINE_STOPPED;
     if (event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED) {
-        if (session->command.note_runtime == NULL) return LIB_FALSE;
+        if (session->command.note_runtime == LIB_NULL) return LIB_FALSE;
         if (!initial_stopped)
             session->command.note_runtime(session->command.context,
                 session->state.monitor_actual, event->value.runtime_state, &result);
@@ -304,14 +304,14 @@ lib_status emulator_session_create(emulator_session **out_session,
     const emulator_session_options *options)
 {
     emulator_session *session;
-    if (out_session == NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_session = NULL;
-    if (options == NULL || options->machine == NULL ||
-        options->command.open == NULL ||
-        options->command.submit_line == NULL || options->command.note_runtime == NULL)
+    if (out_session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_session = LIB_NULL;
+    if (options == LIB_NULL || options->machine == LIB_NULL ||
+        options->command.open == LIB_NULL ||
+        options->command.submit_line == LIB_NULL || options->command.note_runtime == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     session = lib_allocate_zero(1u, sizeof(*session));
-    if (session == NULL) return LIB_STATUS_NO_MEMORY;
+    if (session == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     if (!emulator_session_queue_initialize(&session->queue)) {
         lib_release(session);
         return LIB_STATUS_NO_MEMORY;
@@ -326,14 +326,14 @@ lib_status emulator_session_create(emulator_session **out_session,
 
 lib_status emulator_session_bind_ui(emulator_session *session, emulator_ui *ui)
 {
-    if (session == NULL || ui == NULL || session->ui != NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || ui == LIB_NULL || session->ui != LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     session->ui = ui;
     return LIB_STATUS_OK;
 }
 
 lib_status emulator_session_destroy(emulator_session *session)
 {
-    if (session == NULL) return LIB_STATUS_OK;
+    if (session == LIB_NULL) return LIB_STATUS_OK;
     emulator_session_queue_dispose(&session->queue);
     lib_release(session);
     return LIB_STATUS_OK;
@@ -342,7 +342,7 @@ lib_status emulator_session_destroy(emulator_session *session)
 lib_bool emulator_session_enqueue_ui_event(void *context, const emulator_ui_event *event)
 {
     emulator_session *session = (emulator_session *)context;
-    if (session == NULL || event == NULL) return LIB_FALSE;
+    if (session == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
     switch (event->kind) {
     case EMULATOR_UI_EVENT_KVM_INPUT:
         return emulator_session_queue_push_kvm_for_run(&session->queue, &event->value.kvm,
@@ -372,14 +372,14 @@ lib_bool emulator_session_enqueue_ui_event(void *context, const emulator_ui_even
 lib_bool emulator_session_enqueue_runtime_completed(emulator_session *session,
     emulator_session_machine_state state, lib_u32 run_generation)
 {
-    return session != NULL && emulator_session_queue_push_runtime_completed(&session->queue,
+    return session != LIB_NULL && emulator_session_queue_push_runtime_completed(&session->queue,
         state, run_generation);
 }
 
 lib_bool emulator_session_enqueue_frame_completed(emulator_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
 {
-    return session != NULL && emulator_session_queue_push_frame_completed(&session->queue,
+    return session != LIB_NULL && emulator_session_queue_push_frame_completed(&session->queue,
         sequence, graphics, run_generation);
 }
 
@@ -387,7 +387,7 @@ lib_bool emulator_session_run(emulator_session *session)
 {
     emulator_session_command_result result;
     char line[EMULATOR_SESSION_TEXT_CAPACITY];
-    if (session == NULL || session->ui == NULL) return LIB_FALSE;
+    if (session == LIB_NULL || session->ui == LIB_NULL) return LIB_FALSE;
     emulator_session_clear_result(&result);
     session->command.open(session->command.context, &result);
     if (!emulator_session_apply_result(session, &result) || !emulator_session_arm_if_ready(session))
@@ -408,7 +408,7 @@ lib_bool emulator_session_run(emulator_session *session)
             session->pending_line = LIB_FALSE;
             emulator_session_clear_result(&result);
             if (event.monitor_line_rejected) {
-                if (session->command.reject_line == NULL) return LIB_FALSE;
+                if (session->command.reject_line == LIB_NULL) return LIB_FALSE;
                 session->command.reject_line(session->command.context, &result);
             } else {
                 if (event.value.line.length >= sizeof(line)) return LIB_FALSE;

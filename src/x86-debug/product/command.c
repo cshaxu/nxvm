@@ -133,7 +133,7 @@ static lib_i32 command_printf(command_context *command, const char *format, ...)
     if (command->output_status != LIB_STATUS_OK) return -1;
     lib_c_va_start(args, format);
     lib_c_va_copy(measure, args);
-    count = lib_c_vsnprintf(NULL, 0u, format, measure);
+    count = lib_c_vsnprintf(LIB_NULL, 0u, format, measure);
     lib_c_va_end(measure);
     if (count < 0 || (lib_size)count >= LIB_SIZE_MAX - command->output_length) {
         command->output_status = LIB_STATUS_IO_ERROR;
@@ -145,7 +145,7 @@ static lib_i32 command_printf(command_context *command, const char *format, ...)
             if (capacity < needed) capacity = needed;
             if (capacity < 1024u) capacity = 1024u;
             expanded = lib_reallocate(command->output, capacity);
-            if (expanded == NULL) command->output_status = LIB_STATUS_NO_MEMORY;
+            if (expanded == LIB_NULL) command->output_status = LIB_STATUS_NO_MEMORY;
             else { command->output = expanded; command->output_capacity = capacity; }
         }
         if (command->output_status == LIB_STATUS_OK) {
@@ -165,7 +165,7 @@ static void command_begin_output(command_context *command, x86_debug_result *res
     command->result = result;
     command->output_length = 0u;
     command->output_status = LIB_STATUS_OK;
-    if (command->output != NULL) command->output[0] = '\0';
+    if (command->output != LIB_NULL) command->output[0] = '\0';
 }
 
 static lib_status command_end_output(command_context *command)
@@ -188,7 +188,7 @@ static lib_status command_end_output(command_context *command)
     if (command->output != LIB_NULL)
         command->output[command->output_length] = '\0';
     command->result->text = command->output_length != 0u ? command->output : "";
-    command->result = NULL;
+    command->result = LIB_NULL;
     return command->output_status;
 }
 
@@ -3115,7 +3115,7 @@ static lib_bool command_needs_machine(x86_debug *command)
         return command->continuation != COMMAND_CONTINUATION_VERBAL;
     if (command->argument_count == 0u) return LIB_FALSE;
     name = command->arguments[0];
-    if (lib_text_find_character("acdefgilmorstuwx", name[0]) == NULL) return LIB_FALSE;
+    if (lib_text_find_character("acdefgilmorstuwx", name[0]) == LIB_NULL) return LIB_FALSE;
     return lib_text_compare(name, "?") != 0 && lib_text_compare(name, "h") != 0 &&
         lib_text_compare(name, "n") != 0 && lib_text_compare(name, "q") != 0 &&
         !(name[0] == 'x' && command->argument_count == 2u &&

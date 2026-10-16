@@ -45,6 +45,11 @@ int main(void)
         fixture_status = LIB_STATUS_OK;
         lib_test_assert(process_test_directory(directory, sizeof(directory)) == LIB_STATUS_OK);
         lib_test_assert(lib_text_compare(directory, cases[index].directory) == 0);
+        lib_test_assert(process_test_directory(directory, lib_text_length(fixture_path) + 1u) == LIB_STATUS_OK);
+        lib_test_assert(lib_text_compare(directory, cases[index].directory) == 0);
+        lib_memory_copy(directory, "unchanged", sizeof("unchanged"));
+        lib_test_assert(process_test_directory(directory, lib_text_length(fixture_path)) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(lib_text_compare(directory, "unchanged") == 0);
     }
     fixture_path = "C:\\apps\\demo.exe";
     lib_test_assert(process_test_directory(unchanged, sizeof(unchanged)) == LIB_STATUS_IO_ERROR);

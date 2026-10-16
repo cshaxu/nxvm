@@ -3,7 +3,7 @@
 void emulator_session_state_initialize(emulator_session_state *state,
     emulator_session_display display, lib_bool console_control)
 {
-    if (state == NULL) return;
+    if (state == LIB_NULL) return;
     *state = (emulator_session_state) { 0 };
     state->monitor_actual = EMULATOR_SESSION_MACHINE_INIT;
     state->display = display;
@@ -14,7 +14,7 @@ void emulator_session_state_initialize(emulator_session_state *state,
 
 void emulator_session_state_note_window_close(emulator_session_state *state)
 {
-    if (state != NULL) state->window_suppressed = LIB_TRUE;
+    if (state != LIB_NULL) state->window_suppressed = LIB_TRUE;
 }
 
 void emulator_session_state_note_runtime(emulator_session_state *state,
@@ -22,7 +22,7 @@ void emulator_session_state_note_runtime(emulator_session_state *state,
 {
     emulator_session_machine_state presentation_state = completed;
     lib_bool was_stopped;
-    if (state == NULL) return;
+    if (state == LIB_NULL) return;
     was_stopped = state->runtime_actual == EMULATOR_SESSION_MACHINE_STOPPED;
     if (completed == EMULATOR_SESSION_MACHINE_RESET_COMPLETED ||
         completed == EMULATOR_SESSION_MACHINE_PAUSED)
@@ -53,7 +53,7 @@ void emulator_session_state_note_runtime(emulator_session_state *state,
 lib_bool emulator_session_state_note_frame(emulator_session_state *state, lib_u32 sequence,
     lib_bool graphics)
 {
-    if (state == NULL || !emulator_session_frame_is_newer(sequence,
+    if (state == LIB_NULL || !emulator_session_frame_is_newer(sequence,
             state->observed_frame_sequence)) return LIB_FALSE;
     state->observed_frame_sequence = sequence;
     state->frame_actual = LIB_TRUE;
@@ -63,7 +63,7 @@ lib_bool emulator_session_state_note_frame(emulator_session_state *state, lib_u3
 
 void emulator_session_state_note_window(emulator_session_state *state, lib_bool exists)
 {
-    if (state == NULL) return;
+    if (state == LIB_NULL) return;
     state->window_actual = exists != 0;
     if ((exists && state->in_flight == EMULATOR_UI_ACTION_CREATE_WINDOW) ||
         (!exists && state->in_flight == EMULATOR_UI_ACTION_DESTROY_WINDOW))
@@ -73,7 +73,7 @@ void emulator_session_state_note_window(emulator_session_state *state, lib_bool 
 void emulator_session_state_note_vm_console(emulator_session_state *state,
     lib_bool exists)
 {
-    if (state == NULL) return;
+    if (state == LIB_NULL) return;
     state->vm_console_actual = exists != 0;
     if ((exists && state->in_flight == EMULATOR_UI_ACTION_CREATE_VM_CONSOLE) ||
         (!exists && state->in_flight == EMULATOR_UI_ACTION_DESTROY_VM_CONSOLE))
@@ -85,7 +85,7 @@ void emulator_session_state_note_current_console(emulator_session_state *state,
 {
     emulator_session_console_actual current = vm_console_current ?
         EMULATOR_SESSION_CONSOLE_VM : EMULATOR_SESSION_CONSOLE_MONITOR;
-    if (state == NULL) return;
+    if (state == LIB_NULL) return;
     state->current_console_actual = current;
     if ((current == EMULATOR_SESSION_CONSOLE_VM &&
          state->in_flight == EMULATOR_UI_ACTION_BIND_VM_CONSOLE) ||
@@ -97,7 +97,7 @@ void emulator_session_state_note_current_console(emulator_session_state *state,
 emulator_ui_action emulator_session_state_take_action(emulator_session_state *state)
 {
     emulator_ui_action action;
-    if (state == NULL) return EMULATOR_UI_ACTION_NONE;
+    if (state == LIB_NULL) return EMULATOR_UI_ACTION_NONE;
     action = emulator_session_state_next_action(state);
     if (action != EMULATOR_UI_ACTION_NONE)
         state->in_flight = action;
@@ -107,7 +107,7 @@ emulator_ui_action emulator_session_state_take_action(emulator_session_state *st
 lib_bool emulator_session_state_monitor_is_current(const emulator_session_state *state)
 {
     emulator_session_presentation_plan desired;
-    if (state == NULL) return LIB_FALSE;
+    if (state == LIB_NULL) return LIB_FALSE;
     desired = emulator_session_state_desired(state);
     return desired.monitor_console_enabled &&
         state->current_console_actual ==
@@ -118,7 +118,7 @@ lib_bool emulator_session_state_monitor_is_current(const emulator_session_state 
 lib_bool emulator_session_state_monitor_is_running_graphics_surface(
     const emulator_session_state *state)
 {
-    return state != NULL &&
+    return state != LIB_NULL &&
         state->display == EMULATOR_SESSION_DISPLAY_CONSOLE &&
         state->runtime_actual == EMULATOR_SESSION_MACHINE_RUNNING &&
         state->frame_actual && state->graphics_actual &&
@@ -128,7 +128,7 @@ lib_bool emulator_session_state_monitor_is_running_graphics_surface(
 lib_bool emulator_session_state_frame_targets_ready(const emulator_session_state *state)
 {
     emulator_session_presentation_plan desired;
-    if (state == NULL) return LIB_FALSE;
+    if (state == LIB_NULL) return LIB_FALSE;
     desired = emulator_session_state_desired(state);
     if (!desired.window_enabled && !desired.vm_console_enabled) return LIB_FALSE;
     if (desired.window_enabled && !state->window_actual) return LIB_FALSE;
@@ -140,7 +140,7 @@ lib_bool emulator_session_state_frame_targets_ready(const emulator_session_state
 emulator_session_presentation_plan emulator_session_state_desired(const emulator_session_state *state)
 {
     emulator_session_presentation_plan plan = { LIB_FALSE, LIB_FALSE, LIB_TRUE };
-    if (state == NULL) return plan;
+    if (state == LIB_NULL) return plan;
     plan = emulator_session_derive_presentation(state->display,
         state->console_control, state->runtime_actual,
         state->frame_actual,
@@ -154,7 +154,7 @@ emulator_session_presentation_plan emulator_session_state_desired(const emulator
 emulator_ui_action emulator_session_state_next_action(const emulator_session_state *state)
 {
     emulator_session_presentation_plan desired;
-    if (state == NULL) return EMULATOR_UI_ACTION_NONE;
+    if (state == LIB_NULL) return EMULATOR_UI_ACTION_NONE;
     if (state->in_flight != EMULATOR_UI_ACTION_NONE)
         return EMULATOR_UI_ACTION_NONE;
 

@@ -21,9 +21,6 @@ target_link_libraries(x86-debug-xasm32 PUBLIC types)
 add_library(x86-debug-product STATIC product/command.c)
 target_include_directories(x86-debug-product PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-debug-product PUBLIC emulator-machine x86-debug-xasm32 storage)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(x86-debug-product PRIVATE -Wno-error=format-truncation)
-endif()
 
 add_custom_target(x86-debug-verify
     COMMAND "${CMAKE_COMMAND}" -DCORPUS_ROOT=${CMAKE_CURRENT_SOURCE_DIR}

@@ -2,23 +2,23 @@
 
 lib_status emulator_machine_input_queue_initialize(emulator_machine_input_queue *queue)
 {
-    if (queue == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (queue == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *queue = (emulator_machine_input_queue) { 0 };
     return base_sync_mutex_create(&queue->lock);
 }
 
 void emulator_machine_input_queue_dispose(emulator_machine_input_queue *queue)
 {
-    if (queue == NULL) return;
+    if (queue == LIB_NULL) return;
     base_sync_mutex_destroy(queue->lock);
-    queue->lock = NULL;
+    queue->lock = LIB_NULL;
 }
 
 lib_bool emulator_machine_input_queue_push(emulator_machine_input_queue *queue,
     const kvm_input_event *event)
 {
     lib_size next;
-    if (queue == NULL || event == NULL) return LIB_FALSE;
+    if (queue == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
     base_sync_mutex_lock(queue->lock);
     next = (queue->head + 1u) % EMULATOR_MACHINE_INPUT_QUEUE_CAPACITY;
     if (next == queue->tail) {
@@ -34,7 +34,7 @@ lib_bool emulator_machine_input_queue_push(emulator_machine_input_queue *queue,
 lib_bool emulator_machine_input_queue_pop(emulator_machine_input_queue *queue,
     kvm_input_event *event)
 {
-    if (queue == NULL || event == NULL) return LIB_FALSE;
+    if (queue == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
     base_sync_mutex_lock(queue->lock);
     if (queue->tail == queue->head) {
         base_sync_mutex_unlock(queue->lock);
@@ -49,7 +49,7 @@ lib_bool emulator_machine_input_queue_pop(emulator_machine_input_queue *queue,
 lib_bool emulator_machine_input_queue_pending(emulator_machine_input_queue *queue)
 {
     lib_bool pending;
-    if (queue == NULL) return LIB_FALSE;
+    if (queue == LIB_NULL) return LIB_FALSE;
     base_sync_mutex_lock(queue->lock);
     pending = queue->tail != queue->head;
     base_sync_mutex_unlock(queue->lock);
@@ -58,7 +58,7 @@ lib_bool emulator_machine_input_queue_pending(emulator_machine_input_queue *queu
 
 void emulator_machine_input_queue_clear(emulator_machine_input_queue *queue)
 {
-    if (queue == NULL) return;
+    if (queue == LIB_NULL) return;
     base_sync_mutex_lock(queue->lock);
     queue->head = 0u;
     queue->tail = 0u;

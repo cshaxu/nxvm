@@ -19,7 +19,7 @@ emulator_product_help_map x86_ibmpc_product_keyboard_hotkey_help(void)
 
 lib_bool x86_ibmpc_product_keyboard_deliver_input(void *context, const kvm_input_event *event)
 {
-    return context != NULL && event != NULL && emulator_machine_enqueue_input(
+    return context != LIB_NULL && event != LIB_NULL && emulator_machine_enqueue_input(
         (emulator_machine *)context, event) != 0;
 }
 
@@ -37,7 +37,7 @@ lib_bool x86_ibmpc_product_keyboard_hotkeys(kvm_hotkey_registry *registry)
           { 'M', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
               "release-window-mouse" } }, 5u };
 
-    if (registry == NULL) return LIB_FALSE;
+    if (registry == LIB_NULL) return LIB_FALSE;
     *registry = hotkeys;
     return LIB_TRUE;
 }
@@ -46,7 +46,7 @@ static lib_bool x86_ibmpc_product_keyboard_emit(void *context, kvm_input_sink si
     lib_u32 key, lib_bool pressed)
 {
     kvm_input_event event = { 0 };
-    if (sink == NULL) return LIB_FALSE;
+    if (sink == LIB_NULL) return LIB_FALSE;
     event.type = KVM_EVENT_KEY;
     event.data.key.scan_code = scan;
     event.data.key.key = key;
@@ -87,7 +87,7 @@ lib_bool x86_ibmpc_product_keyboard_handle_hotkey(emulator_machine *machine,
 {
     const char *name;
     *out = (emulator_session_command_result) { 0 };
-    if (identifier == NULL) return LIB_FALSE;
+    if (identifier == LIB_NULL) return LIB_FALSE;
     name = (const char *)identifier;
     if (lib_text_compare(name, "pause-toggle") == 0) return LIB_FALSE;
     if (lib_text_compare(name, "release-window-mouse") == 0) {

@@ -135,7 +135,23 @@ static base_sync_wait_result paused_wait(base_sync_event *const *events,
     }
     lib_test_assert(count == 3u && events[0] == active->resume_event);
     lib_test_assert(timeout == LIB_UINT32_MAX);
+    lib_test_assert(!heartbeat);
     ++paused_waits;
+    if (action == 6u) {
+        lib_test_assert(paused_waits <= 2u);
+        if (paused_waits == 1u) {
+            lib_atomic_i32_store_explicit(&active->state_read_requested, 1,
+                LIB_MEMORY_ORDER_SEQ_CST);
+            *index = 1u;
+        } else {
+            lib_test_assert(active->state_status == LIB_STATUS_OK);
+            lib_test_assert(!active->state_read_continuing);
+            lib_test_assert(base_sync_event_wait(active->state_event, 0u) == BASE_SYNC_WAIT_SIGNALED);
+            lib_test_assert(emulator_machine_stop(active));
+            *index = 0u;
+        }
+        return BASE_SYNC_WAIT_SIGNALED;
+    }
     if (action == 5u) {
         /* Debug woke the inner wait; shutdown then signals before its reset. */
         emulator_machine_debug_cancel(active);
@@ -150,7 +166,7 @@ static base_sync_wait_result paused_wait(base_sync_event *const *events,
     lib_test_assert(paused_waits <= (action == 2u ? 2u : 1u));
     if (action == 3u) lib_test_assert(emulator_machine_reset(active));
     if (wait_result != BASE_SYNC_WAIT_SIGNALED) return wait_result;
-    if (action == 0u) lib_test_assert(emulator_machine_resume(active));
+    if (action == 0u || action == 7u) lib_test_assert(emulator_machine_resume(active));
     else if (action == 2u && resets == 1u) {
         lib_test_assert(emulator_machine_reset(active));
         lib_atomic_i32_store_explicit(&active->state_read_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
@@ -163,6 +179,7 @@ static base_sync_wait_result paused_wait(base_sync_event *const *events,
 static lib_bool reset(void *context)
 {
     (void)context;
+    lib_test_assert(!heartbeat);
     if (++resets == 2u) {
         lib_test_assert(active->state_status == LIB_STATUS_IO_ERROR);
         lib_test_assert(!lib_atomic_i32_load_explicit(&active->state_read_requested, LIB_MEMORY_ORDER_SEQ_CST));
@@ -181,15 +198,43 @@ static void callback(void *context, emulator_machine_executor_callback entry, vo
     (void)context; executor = entry; executor_context = opaque;
     if (entry == LIB_NULL) ++cleanups;
 }
+static lib_bool take_debug_stop(void *context)
+{ (void)context; return action == 7u; }
+static lib_status begin_state_read(void *context,
+    const emulator_machine_state_writer *writer)
+{
+    (void)context; (void)writer;
+    lib_test_assert(!heartbeat);
+    return LIB_STATUS_OK;
+}
+static lib_bool take_state_read_result(void *context, lib_status *status)
+{
+    (void)context;
+    if (!active->state_read_continuing) return LIB_FALSE;
+    lib_test_assert(heartbeat);
+    *status = LIB_STATUS_OK;
+    return LIB_TRUE;
+}
 static lib_bool run(void *context)
 {
     (void)context;
     lib_test_assert(heartbeat && executor != LIB_NULL);
     if (frame_status != LIB_STATUS_OK) register_pending();
-    lib_test_assert(emulator_machine_pause(active));
+    if (action != 7u) lib_test_assert(emulator_machine_pause(active));
     executor(executor_context);
-    if (frame_status == LIB_STATUS_OK && wait_result == BASE_SYNC_WAIT_SIGNALED && action == 0u)
+    if (action == 1u || action == 2u || action == 5u)
+        lib_test_assert(!heartbeat); /* Stop from parking never re-enables it. */
+    if (action == 6u) {
+        lib_test_assert(heartbeat && active->state_read_continuing);
+        lib_test_assert(facts == 2u); /* Private continuation emits no RUNNING. */
+        executor(executor_context);
+        lib_test_assert(!heartbeat && facts == 2u); /* No duplicate PAUSED. */
+    }
+    if (frame_status == LIB_STATUS_OK && wait_result == BASE_SYNC_WAIT_SIGNALED &&
+        (action == 0u || action == 7u)) {
+        lib_test_assert(heartbeat);
         lib_test_assert(emulator_machine_stop(active));
+    }
     lib_test_assert(stops != 0u);
     return LIB_TRUE; /* Unwinding the driver itself succeeds, even after fault. */
 }
@@ -201,6 +246,9 @@ static void state(void *context, emulator_machine_state value, lib_u32 generatio
 {
     (void)context;
     lib_test_assert(generation == (action == 4u ? 1u : resets) && facts < 8u);
+    if (value == EMULATOR_MACHINE_PAUSED || value == EMULATOR_MACHINE_RESET_COMPLETED)
+        lib_test_assert(!heartbeat);
+    if (value == EMULATOR_MACHINE_RUNNING) lib_test_assert(heartbeat);
     if (value == EMULATOR_MACHINE_STOPPED || value == EMULATOR_MACHINE_ERROR) {
         lib_test_assert(!heartbeat && executor == LIB_NULL && cleanups == resets);
         if (pending_kind != 0u) {
@@ -310,6 +358,11 @@ static void check(base_sync_wait_result result, lib_u32 requested_action)
     driver.request_wake = stop; driver.set_heartbeat = set_heartbeat;
     driver.set_executor_callback = callback; driver.deliver_input = input;
     driver.copy_frame = frame;
+    driver.take_debug_stop = take_debug_stop;
+    if (action == 6u) {
+        driver.begin_state_read = begin_state_read;
+        driver.take_state_read_result = take_state_read_result;
+    }
     lib_test_assert(emulator_machine_create(&active, &driver) == LIB_STATUS_OK);
     if (action == 5u)
         lib_test_assert(base_sync_task_create(completed_task, LIB_NULL, &active->worker) == LIB_STATUS_OK);
@@ -337,7 +390,7 @@ static void check(base_sync_wait_result result, lib_u32 requested_action)
         lib_test_assert(paused_waits == 1u && resets == 1u && cleanups == 1u);
         lib_test_assert(facts == 3u && observed[2] == terminal);
         lib_test_assert(emulator_machine_state_get(active) == terminal);
-    } else if (action == 0u) {
+    } else if (action == 0u || action == 7u) {
         lib_test_assert(facts == 4u && observed[2] == EMULATOR_MACHINE_RUNNING);
         lib_test_assert(observed[3] == EMULATOR_MACHINE_STOPPED);
     } else if (action == 2u) {
@@ -357,7 +410,7 @@ static void check(base_sync_wait_result result, lib_u32 requested_action)
         lib_test_assert(!lib_atomic_i32_load_explicit(&active->debug_requested, LIB_MEMORY_ORDER_SEQ_CST));
         lib_test_assert(!lib_atomic_i32_load_explicit(&active->media_requested, LIB_MEMORY_ORDER_SEQ_CST));
     } else {
-        lib_test_assert(active->state_status == LIB_STATUS_UNSUPPORTED);
+        lib_test_assert(active->state_status == (action == 6u ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED));
         lib_test_assert(active->debug_status == LIB_STATUS_UNSUPPORTED && active->media_succeeded);
     }
     /* A dead worker rejects all registrations, even with an allowed state. */
@@ -618,6 +671,8 @@ int main(void)
     check(BASE_SYNC_WAIT_SIGNALED, 1u); /* Stop. */
     check(BASE_SYNC_WAIT_SIGNALED, 2u); /* Reset, then stop. */
     check(BASE_SYNC_WAIT_SIGNALED, 5u); /* Debug-close/shutdown loses command wake. */
+    check(BASE_SYNC_WAIT_SIGNALED, 6u); /* Paused capture continues to a safe point. */
+    check(BASE_SYNC_WAIT_SIGNALED, 7u); /* Driver debug stop, then resume. */
     frame_status = LIB_STATUS_UNSUPPORTED;
     check(BASE_SYNC_WAIT_SIGNALED, 0u);
     frame_status = LIB_STATUS_INVALID_ARGUMENT;
