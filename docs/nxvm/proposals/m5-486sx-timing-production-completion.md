@@ -2,10 +2,11 @@
 
 ## Admission And Priority
 
-Unnumbered M5 candidate, originally queued second by explicit owner approval on
-2026-10-15 and now first after accepted T561. The Core package refactor is
-complete; execute only after the owner admits this candidate. Do not allocate a T identifier
-early. The owner authorized T560 staged closure, not complete 486SX delivery.
+Owner-admitted M5 T563, after closed T562 at 606ee84f4. Originally queued
+second on 2026-10-15, this successor now resumes after the accepted Core
+refactor and Shared import/quality work. S1 rebases the full transferred
+ledger before implementation. T560 staged closure did not qualify complete
+486SX delivery.
 
 ## Preserved Baseline And Coverage Authority
 
@@ -55,18 +56,25 @@ public API or a permanent alternative timing service.
 
 ## Planned Bounded S Batches
 
-Numbers are not allocated S identifiers. Freeze refined estimates and the
-complete cohort before each admission; group simple related forms together.
+The following sequential S plan follows the current owner audit in
+[S1 evidence](../etc/evidence/t563-s1-rebase.md). Only S1 is admitted by this
+packet. Each later admission freezes numerical sources, files and diff estimates;
+simple related forms are implemented and tested as a cohort, not one opcode per S.
 
-1. Rebase the original ledger after Core refactoring; audit all staged mechanisms,
-   unresolved source choices and the complete source-to-runtime allocation.
-2. Complete remaining nominal, access/translation/fetch/bus and REP/decode
-   cohorts at their actual owners, with direct and failure-path proof. Split
-   by independently reviewable state responsibility if necessary, not per opcode.
-3. Complete event/SMM/power timing and the sole selected runtime/preview
-   aggregation, grades, maximum bounds and actual Core budget/time transport.
-4. Open C17 only after whole C16 proof; complete production construction,
-   final C01--C17 audit, dual-width full qualification and release.
+| S | Cohort and owner | Required exit |
+| --- | --- | --- |
+| S1 | Rebase C01--C17, source/test ownership and remaining receivers | Current-path ledger, unchanged baseline units and reviewed plan; no CPU-complete claim. |
+| S2 | CPU nominal/form allocation | Every C15 encoding family has an explicit nominal/model/fault disposition, including WAIT, aliases and special forms; direct source-derived vectors, unchanged original grades. No selector publication yet. |
+| S3 | CPU memory/translation costs | Ordinary, stack, string, descriptor/control, locked/split and failed accesses; cached/mixed/cold walks and A/D attempts accounted from actual transfers, without duplicate bus cost. |
+| S4 | CPU fetch/bus, decode and REP | Fetch/refill/branch assumptions, actual waits and HOLD interaction, EA/prefix/AGI, REP setup/continuation/termination and lifetime; same single guest timeline. |
+| S5 | CPU/Core event and system elapsed time | Entry/nesting/failure, SMM/RSM and power assumptions resolved at their real owners; event-only time never retires an instruction. |
+| S6 | CPU selector/preview and Core budget transport | All prior cohorts connected through the sole selected-SX path; origins/source keys, safe maximum bounds, overflow and nonmutating preview proven; no unallocated applicable form. |
+| S7 | Core/Board C17 production admission | Construction and real reset/run/debug/wait/clock/DMA predicates qualified after C16; no accidental 386 fallback, unchanged four App CPU choices. |
+| S8 | Whole C01--C17 qualification | Original ledger fully reconciled, full dual-width units and required integrations/gates, eight current PC artifacts, actual-diff review and owner acceptance. |
+
+Do not combine C17 with an incomplete C16 implementation merely to get a boot.
+If a cohort cannot meet its stated exit, retain its unresolved members explicitly
+and refine the plan before closing that S; do not silently narrow the T universe.
 
 ## Non-goals, Stops And Exit
 

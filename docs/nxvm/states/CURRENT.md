@@ -2,8 +2,40 @@
 
 ## Current Work
 
+## M5 T563 S1 — Rebase 486SX Completion Ledger
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T563, S1, after closed T562; owner admits queue entry 1. |
+| Admission And Approval | Owner requests admission and execution of remaining 486SX CPU work. S1 target NXVM documentation/qualification; later implementation targets Shared X86 Core and necessary X86 NXVM receivers under existing CPU authorization. |
+| Objective | Reconcile every transferred C01--C17 obligation with the post-T561 source/test layout, freeze residual cohorts and subsequent implementation exits. |
+| Non-goals | No timing publication, C17 widening, numerical model change, Lib/Emulator/MyNES changes or PC110 board admission in this audit S. |
+| Reference Baseline | Clean 606ee84f4; T560 staged CPU evidence, T561 package split and accepted T562 qualification. |
+| Candidate Proposal | ../proposals/m5-486sx-timing-production-completion.md. |
+| Files And ABI Surface | NXVM Current/Queue/proposal/history and source-to-owner audit evidence only. No production/test/API change in S1. |
+| Applicable Rules | Execution coverage-bearing ledger and complete unit gate; architecture single state/time owner; coding original style/Types; source policy preserves primary-source grades and external originals; documentation authority. |
+| Verification | Inspect current selector, calculators, observation producers, preview, Machine transport/construction and Board predicates; reconcile old evidence/source ownership; fresh x64/x86 full repository units, documentation and diff checks. |
+| Expected Markers | Every transfer row has a current owner, evidence and bounded receiving batch; no source/test change; 631 units pass per width. |
+| Asset Needs | Existing 0562 PC and 0044 MyNES artifacts remain current because S1 changes no executable inputs; manuals remain external. |
+| Reporting Requirements | Confirm remaining actual gaps, source/grade decisions and planned S exits; distinguish stage calculators from connected runtime; report source/test delta zero and unperformed CPU qualification. |
+| Stop Conditions | Missing transferred evidence, unapproved semantic downgrade or new shared boundary; no CPU-complete claim from staging or older-family guest passes. |
+| Exit Criteria | Complete residual owner/receiver ledger and implementation plan, verified baseline, actual-change review, pushed clean documentation delivery. T563 remains open. |
+| Original Owner Request | Admit and execute the first queued remaining 486SX timing/production task. |
+| Similar-Issue Sweep | Inspect all selected-SX predicates across X86 Core and X86 NXVM, not only the nominal calculator; record production gating and old-family branches without broad mechanical widening. |
+
+| Task | Progress |
+| --- | --- |
+| T563 S1 | Audit complete: current owners and ten residual receiver gaps mapped to S2--S8; fresh 631/631 units pass per width. Documentation delivery/review in progress. |
+
+[S1 evidence](../etc/evidence/t563-s1-rebase.md) distinguishes staged CPU
+calculators from the unallocated runtime selector and still-closed production
+gate. No executable input changed; no artifact refresh or fresh integration
+qualification is claimed in this documentation batch.
+
+## Previous Task
+
 M5 T562 is closed after S4 coordinator review of pushed delivery `131e7d65c`.
-No S is active. The complete final packet is retained in that commit;
+Its complete final packet is retained in that commit;
 [archived proposal](../history/M5-T562-shared-audio-import-quality-proposal.md)
 and [task history](../history/M5-T562-shared-audio-import-quality.md) retain scope.
 
@@ -16,8 +48,8 @@ and [task history](../history/M5-T562-shared-audio-import-quality.md) retain sco
 [ten artifact hashes](../etc/evidence/t562-s4-artifacts.json) record results.
 S4 changes no source/test code. Earlier native-console intermittency remains
 in MyNES TODO; manual RDP, physical MIDI/audio and complete guest GUI proof are
-not claimed. Queue entry 1 is remaining 486SX C16/C17/final qualification;
-it is not admitted by this closure.
+not claimed. Remaining 486SX C16/C17/final qualification is now admitted
+separately as T563 above; it was not completed by T562 closure.
 
 ## T562 S2 — Accepted Shared Quality Cleanup
 

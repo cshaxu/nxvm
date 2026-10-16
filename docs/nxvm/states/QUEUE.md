@@ -56,20 +56,23 @@ closure places its CPU successor second; remaining candidates keep their order.
 The owner admitted the former first candidate,
 [Core split](../history/M5-T561-core-package-split-proposal.md), as T561, with S1
 importing SoftPC's five source/test pairs. T561 is now closed after S9's full
-package/receiver acceptance. The CPU successor below awaits owner admission.
+package/receiver acceptance. The CPU successor is now admitted as T563 below.
 
-1. [Complete remaining 486SX timing and production qualification](../proposals/m5-486sx-timing-production-completion.md)
-2. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
-3. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)
-4. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
-5. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
-6. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
-7. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
-8. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
-9. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-10. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-11. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
-12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+The owner admits the former first candidate as
+[T563](../proposals/m5-486sx-timing-production-completion.md); Current owns
+its active S1. No PC110 receiver is admitted by that CPU work.
+
+1. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
+2. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)
+3. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
+4. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
+5. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
+6. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
+7. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
+8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+10. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
+11. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
