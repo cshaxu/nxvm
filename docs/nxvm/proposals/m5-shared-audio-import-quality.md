@@ -80,3 +80,24 @@ executions and four final published CLI checks, plus specialized gates.
 Eight PC artifacts are published; MyNES and owner inputs are unchanged.
 The [S2 evidence](../etc/evidence/t562-s2-shared-boundary-cleanup.md) records
 actual deltas and verification limits. S2 is closed; T562 remains open.
+
+## S3 Equivalent-Path Consolidation
+
+Owner approved five bounded rows: FDD tests use the production provider and
+retire CHS-only access; Debug owns output-failure cleanup/results while PC
+only adapts them; PC reuses Emulator's unsupported-command fallback; one
+static fixed-command descriptor owns help/lookup/parameter classification;
+KVM Base owns pure cursor shape resolution with unchanged leaf rendering.
+Each row needs direct regression and a caller/duplicate-path sweep. No new
+manager, state machine, runtime registry or compatibility layer is admitted.
+Both-width complete units and affected ten artifacts are required. X86 Core,
+owner inputs and sibling repositories remain unchanged; T stays open.
+
+### S3 Disposition
+
+All five rows are implemented with the retained owner and direct proof mapped
+in [S3 evidence](../etc/evidence/t562-s3-equivalent-paths.md). Both widths pass
+631 repository units, 15 profile/restored-identity integration executions,
+12 MyNES integrations and four published PC CLI checks. Ten EXEs are rebuilt.
+The per-package estimated/actual diff and retained platform responsibilities
+are recorded there. S3 is delivered for owner acceptance, not T closure.

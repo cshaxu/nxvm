@@ -96,9 +96,8 @@ lib_i32 main(void)
     if (x86_core_machine_bus_write(machine, 0x03f7u, 0x00u) != LIB_STATUS_OK) goto done;
     for (index = 0u; index < sizeof(expected); ++index) {
         expected[index] = (lib_u8)((index * 17u) ^ (index >> 4u));
-        if (x86_nxvm_machine_fdd_write_byte(session->floppy[0u], 0u, 0u,
-                (lib_u16)(index / 512u + 1u),
-                (lib_u16)(index % 512u), expected[index])) {
+        if (x86_nxvm_machine_fdd_media_provider()->write_bytes(session->floppy[0u],
+                index, &expected[index], 1u) != X86_NXVM_BOARD_MEDIA_RESULT_OK) {
             goto done;
         }
     }

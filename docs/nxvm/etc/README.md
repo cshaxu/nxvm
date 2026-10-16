@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T562 S3: [Equivalent-path consolidation](evidence/t562-s3-equivalent-paths.md)
+records five retained owners, per-package estimated/actual deltas and receiver proof.
+
 T562 S1: [Shared import and quality](evidence/t562-s1-shared-import-quality.md)
 records the committed baseline, derived repairs and receiving qualification.
 

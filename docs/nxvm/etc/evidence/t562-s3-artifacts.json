@@ -1,0 +1,72 @@
+[
+  {
+    "path": "assets/nxvm/nxvm_0_5_0562_x64.exe",
+    "version": "0.5.0562",
+    "machine": "0x8664",
+    "bytes": 1511185,
+    "sha256": "7813A87BB789FD60760A1F7D51E5A060FE5053058BFE2ED9C0D59D499969ABA2"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0562_x86.exe",
+    "version": "0.5.0562",
+    "machine": "0x014C",
+    "bytes": 1657147,
+    "sha256": "3DE9D37E92488039000AC6D47CD9BC809D5DD576CDA5B21F3CE762A0050610B0"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0562_x64.exe",
+    "version": "0.5.0562",
+    "machine": "0x8664",
+    "bytes": 1498953,
+    "sha256": "1F0A29A919F9FB35DE59B05AB61810BAA9BAA35E32164AE14E612F5F13A523C5"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0562_x86.exe",
+    "version": "0.5.0562",
+    "machine": "0x014C",
+    "bytes": 1644992,
+    "sha256": "2E81098BAD4CE6C5DF83627A2DA1C7C7B4658DA5CB610446F7DEFD6A7EF26B06"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0562_x64.exe",
+    "version": "0.5.0562",
+    "machine": "0x8664",
+    "bytes": 1512039,
+    "sha256": "729BF152C94B4E150FAE7E7E197DE3334499ACD044DC070961EB2CD64B8214B9"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0562_x86.exe",
+    "version": "0.5.0562",
+    "machine": "0x014C",
+    "bytes": 1658361,
+    "sha256": "82D08A29C9DACC914DD7F584F5C1FA689C8E6451152DFE659F982B8FAEC114C7"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0562_x64.exe",
+    "version": "0.5.0562",
+    "machine": "0x8664",
+    "bytes": 1498701,
+    "sha256": "96D56F0948BB2103856F9D5435463B6893F68C6C96106878626837EA558ECD8B"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0562_x86.exe",
+    "version": "0.5.0562",
+    "machine": "0x014C",
+    "bytes": 1645078,
+    "sha256": "4FEC637967003FE00F49464F10C451DE76AFA924E0B1EF4EB7FD35717416401F"
+  },
+  {
+    "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+    "version": "0.0.0044",
+    "machine": "0x8664",
+    "bytes": 265230,
+    "sha256": "A67823D71FAC82DE0449EEDDC7E406BBD591900696EC992C12BD292F8D79964F"
+  },
+  {
+    "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+    "version": "0.0.0044",
+    "machine": "0x014C",
+    "bytes": 259598,
+    "sha256": "D720A97DC988B0018C7F924D65BF76DF5A6DAE7A83CD8D0AF5F54C22301C5D3D"
+  }
+]

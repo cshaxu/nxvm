@@ -2,18 +2,40 @@
 
 ## Current Work
 
+## T562 S3 — Consolidate Equivalent Shared Paths
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: T562 S3 follows accepted S2 at 59aea8649. |
+| Admission And Approval | Owner approved all five audited consolidations and requested per-package estimated and actual deltas on 2026-10-16. Targets: Shared, NXVM and MyNES receiving artifacts. |
+| Objective | Retire test-only FDD access; complete Debug-owned failure finalization and PC result adaptation; reuse Emulator unsupported fallback; unify fixed command descriptions; share pure KVM cursor shape resolution. |
+| Non-goals | No CPU changes, new execution framework, rendering/blink policy change, sibling edits, INI/media/ROM/snapshot change or T closure. |
+| Reference Baseline | Clean 59aea8649; prior read-only audit and owner clarification are the design baseline. |
+| Candidate Proposal | ../proposals/m5-shared-audio-import-quality.md, S3 finite batch. |
+| Files And ABI Surface | Lib kvm-base frame helper and leaf consumers; Emulator monitor; X86 Debug command/result contract; IBM PC command adapter; NXVM FDD interface and tests. Remove obsolete FDD API; add only approved pure cursor calculation; X86 Core unchanged. |
+| Applicable Rules | Execution packet/P/actual-diff review; architecture single owner and inward dependencies; coding Types/table style/no duplicate routes; documentation authority; existing source-policy embedded artifact approval. |
+| Verification | Original x64/x86 release-ccache Ninja graphs, build-unit-tests and complete CTest unit label, specialized gates/manifests, ten product builds/deployments and affected CLI integration; documentation and diff checks. |
+| Expected Markers | Zero failed unit tests per width; Debug injected failure results/cancellation and adapter prompt; absent legacy FDD symbols; unchanged fixed help/argument behavior; cursor fallback/clipping regressions. |
+| Asset Needs | Existing external PC build inputs only; rebuild eight PC 0562 and MyNES 0044 pair; preserve all owner inputs. |
+| Reporting Requirements | Per-package source/test estimated and actual added/deleted/net lines; retained/deleted paths; artifact hashes; automated desktop versus manual/external limits. |
+| Stop Conditions | Unapproved semantic/API expansion, unrelated changes, failed required tests or publication, missing assets; no partial-success closure. |
+| Exit Criteria | All five rows implemented, reviewed and verified; affected binaries published; target-separated complete commits pushed; S delivery for owner acceptance, T open. |
+| Original Owner Request | Complete these five consolidations in a new S, estimate each shared package before repair and report actual changes afterward. |
+| Similar-Issue Sweep | Search all source/test callers of FDD legacy operations, Debug error/continuation paths, unsupported fallback, fixed command metadata and KVM cursor clipping; preserve distinct hardware/platform behavior. |
+
 ## M5 T562 — Shared Import And Quality
 
 | Task | Progress |
 | --- | --- |
 | T562 S1 | Closed after actual-change review of Shared 0d12458ae, MyNES 765acc462 and NXVM 3f31b832d. Both widths pass 630 repository units, 48 profile integration executions and final specialized gates. Ten rebuilt EXEs are published; T562 remains open for owner acceptance. |
 | T562 S2 | Closed after actual-commit review of Shared e5b346309 and NXVM 8f3280726: five quality findings repaired, 630 units per width, selected integrations and eight PC artifacts verified. T562 remains open. |
+| T562 S3 | Five equivalent-path consolidations implemented; 631 units per width, receiving integrations and ten EXEs verified. [Evidence](../etc/evidence/t562-s3-equivalent-paths.md) and [hashes](../etc/evidence/t562-s3-artifacts.json) record scope and limits. Delivered for owner acceptance; T562 remains open. |
 
 ## T562 S2 — Accepted Shared Quality Cleanup
 
 S2 is closed after one-session coordinator actual-commit review of Shared
-`e5b346309` and NXVM `8f3280726`. No S is active; T562 remains open for
-owner feedback. The complete implementation packet is retained in P2.
+`e5b346309` and NXVM `8f3280726`. S3 now continues T562 under the packet
+above. The complete S2 implementation packet is retained in P2.
 
 The five admitted findings are repaired: obsolete port dispatch, empty
 composition wrapper, test ownership, stale names and checker blind spots.

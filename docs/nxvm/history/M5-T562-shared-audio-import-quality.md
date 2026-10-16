@@ -36,3 +36,22 @@ The receiving commit is `8f3280726`. One-session coordinator review inspected
 both actual commits, all five dispositions and the final artifact hashes;
 S2 is accepted and closed. This is not independent reviewer evidence. T562
 remains open and no next S is admitted.
+
+## S3 Equivalent-Path Consolidation
+
+Owner approved the five follow-up consolidations and required pre-change
+estimates and actual per-package deltas. Baseline is `59aea8649`.
+[Evidence](../etc/evidence/t562-s3-equivalent-paths.md) records the real FDD
+provider, Debug-owned failure result, Emulator fallback and command metadata,
+and KVM Base cursor shape with leaf-specific rendering retained.
+
+Both widths pass 631 units, 15 profile/restored-identity integration executions,
+12 MyNES integrations and four published PC CLI checks. Ten rebuilt EXEs keep
+their 0562/0044 identities and have [recorded hashes](../etc/evidence/t562-s3-artifacts.json).
+Production C/H is net -81 lines; additional tests are deliberate fault and
+shared-contract proof. X86 Core, App production code, siblings and owner inputs
+remain unchanged. S3 awaits owner acceptance and T562 remains open.
+
+Shared implementation is `c81762c5f`; MyNES receiver is `96b066002`.
+NXVM P3 contains the direct provider test caller, eight artifacts and the
+complete evidence/packet. Each target is pushed separately after verification.
