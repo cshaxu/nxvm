@@ -43,3 +43,11 @@ Unexpected independent licensing or a required new public mechanism stops
 that boundary for review. No physical MIDI/audio or mobile RDP qualification
 is implied by injected backend tests. T closure additionally requires the
 full admitted external integration suite and actual-diff coordinator review.
+
+## S1 Disposition
+
+All six ledger rows are accepted after review of P1 0d12458ae, P2 765acc462
+and P3 3f31b832d. The indexed evidence maps each row to direct tests and
+published hashes. S1 is closed; T562 remains open for the owner's acceptance.
+SoftPC can adopt the derived shared repairs and separately fix its root-path
+App join; no sibling worktree was changed here.
