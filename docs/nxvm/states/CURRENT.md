@@ -2,6 +2,19 @@
 
 ## Current Work
 
+## Completed M5 Td S180 Shared Eight-Tree Audit
+
+Owner-requested audit is complete; no source/test/build/artifact was changed.
+[Report](../etc/evidence/td-s180-softpc-eight-tree-audit.md) and
+[hash inventory](../etc/evidence/td-s180-eight-tree-hashes.tsv) pin NXVM
+12e79911b versus SoftPC 44cad548: only committed Lib source/test differ;
+the remaining six roots match. Upstream's subsequently edited Emulator
+heartbeat work is explicitly separate, not a fixed import baseline.
+Manifest and static boundary/Types checks pass for the frozen pair;
+no fresh dynamic or desktop qualification is claimed.
+Confirmed shared findings and receiver implications await repair admission.
+Standalone governance actual-change review and documentation checks pass.
+
 M5 T561 is closed after S9 coordinator actual-change review of pushed Shared
 `ee7fe06ab` and NXVM `034f3eb77`. No S is active. The
 [archived proposal](../history/M5-T561-core-package-split-proposal.md) and
