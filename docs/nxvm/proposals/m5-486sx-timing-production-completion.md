@@ -3,8 +3,8 @@
 ## Admission And Priority
 
 Unnumbered M5 candidate, originally queued second by explicit owner approval on
-2026-10-15 and now first waiting behind active T561. Execute only after that Core package refactor is
-accepted and the owner admits this candidate. Do not allocate a T identifier
+2026-10-15 and now first after accepted T561. The Core package refactor is
+complete; execute only after the owner admits this candidate. Do not allocate a T identifier
 early. The owner authorized T560 staged closure, not complete 486SX delivery.
 
 ## Preserved Baseline And Coverage Authority

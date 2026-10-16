@@ -162,7 +162,8 @@ real CLI/INI identity, PE width, version and release-count checks; the
 [artifact ledger](t561-s9-artifacts.json) records their final hashes.
 The final artifact ledger is produced only after all script phases succeed.
 No failed or skipped integration is counted as passed. Delivery is ready for
-coordinator actual-change review; acceptance is recorded separately.
+coordinator actual-change review. That review accepts Shared `ee7fe06ab` and
+NXVM `034f3eb77`; the task history records final I0--I5 acceptance separately.
 
 Physical desktop/RDP and fresh external diagnostic-ROM executions are not
 claimed by package unit results. Owner INIs, ROM originals, media, snapshots

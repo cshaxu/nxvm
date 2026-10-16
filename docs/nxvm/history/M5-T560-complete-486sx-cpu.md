@@ -962,7 +962,7 @@ nominal/dynamic facts and pure calculators are not falsely described as a
 complete selected runtime/preview. The sole SX instruction recipe remains
 explicitly compatibility/unallocated and production construction stays closed.
 
-The [Core refactor](../proposals/m5-core-x86-core-nxvm-split.md) is first in
+The [Core refactor](M5-T561-core-package-split-proposal.md) is first in
 Queue; the [complete CPU residual receiver](../proposals/m5-486sx-timing-production-completion.md)
 is second. Original C01--C17 ledger and evidence remain intact, and the original
 proposal is archived without changing its historical full-CPU requirement.

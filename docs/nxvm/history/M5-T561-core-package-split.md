@@ -2,7 +2,7 @@
 
 ## Admission And Frozen Universe
 
-Owner admission on 2026-10-15 consumes the first queued [Core split proposal](../proposals/m5-core-x86-core-nxvm-split.md).
+Owner admission on 2026-10-15 consumes the first queued [Core split proposal](M5-T561-core-package-split-proposal.md).
 Baseline is clean `453455e59`; frozen CPU implementation `b906c7138` is retained.
 S1 is the owner's inserted exact import of SoftPC's five source/test pairs,
 not extraction or CPU timing completion. The CPU residual candidate remains
@@ -277,4 +277,25 @@ All eight PC EXEs are rebuilt; MyNES and protected inputs are unchanged.
 Existing App tests' NXVM adapter-private coupling is recorded separately in
 TODO, not confused with the removed neutral Core private-layout borrowing.
 Physical RDP/fresh diagnostic-ROM checks and remaining CPU C16/C17 qualification
-are not claimed. Pushed delivery still requires coordinator acceptance.
+are not claimed. Coordinator actual-change review accepts pushed Shared
+`ee7fe06ab` and NXVM `034f3eb77`: checker bodies, six assertions, destination
+hashes for all 679 inventory rows, eight artifacts, current-owner documents,
+independent graphs and preserved qualification boundaries satisfy the packet.
+Documentation governance and whitespace checks pass. The complete S9 packet
+is retained in P2; no active implementation packet remains.
+
+## Final T Acceptance
+
+| Frozen unit | Final disposition |
+| --- | --- |
+| I0 | Accepted S1 exact prerequisite import; unchanged Lib/Emulator/Debug/IBM PC trees verified against S1. |
+| I1 | Accepted complete 679-path original inventory and final hashed dispositions. |
+| I2 | Accepted CPU/FPU independent owners/targets/tests, unchanged algorithms and grades. |
+| I3 | Accepted neutral Machine and public-only non-PC real execution proof; no PC link or copied constructor. |
+| I4 | Accepted unique NXVM chip/board/adapter/product ownership and four App receivers; old Core roots retired. |
+| I5 | Accepted both standalone suites, complete dual-width root units/integrations/gates and eight published artifacts. |
+
+T561 and S9 are closed. Remaining CPU C16/C17/final qualification stays in its
+original successor, not marked complete by this refactor. Existing App
+adapter-private test coupling stays in the named TODO. Neither transfer
+weakens the required neutral Core boundary or standalone-package proof.

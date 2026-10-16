@@ -2,209 +2,34 @@
 
 ## Current Work
 
-M5 T561 remains open. S1 is accepted after coordinator actual-change review of
-pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. S2 is accepted after coordinator
-actual-change review of pushed `82e3257cc`. S3 CPU/FPU extraction is accepted
-after actual-change review of pushed Shared `8bb5bcaa5` and NXVM `039d946ab`.
-S4 PC metadata/default/trace separation is accepted after actual-change review
-of pushed `f136911be`. CPU qualification does not resume.
-S5 neutral advancement and interrupt wiring is accepted after
-actual-change review of pushed `d72a0165d`. S6 P7/P8 decode/construction is accepted
-after actual-change review of pushed `4bba9fc0c`.
-S7 neutral Machine extraction is accepted after actual-change review of pushed
-Shared `0da6818d5` and NXVM `b77d1f482`. S8 NXVM consolidation is accepted
-after coordinator actual-change review of pushed Shared `2fce75e62` and
-NXVM `b7c6b9bbb`. S9 independent-package/final qualification is active.
-The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
-[convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
+M5 T561 is closed after S9 coordinator actual-change review of pushed Shared
+`ee7fe06ab` and NXVM `034f3eb77`. No S is active. The
+[archived proposal](../history/M5-T561-core-package-split-proposal.md) and
+[convergence ledger](../history/M5-T561-core-package-split.md) retain the
+complete I0--I5 scope and acceptance.
 
-| Task | Progress |
+| Task | Closure |
 | --- | --- |
-| T561 S9 | Delivery ready: independent Core 165 and NXVM 215 tests, root 626 units and 48 integration executions pass per width; eight PC EXEs published. Awaiting pushed actual-change review; T561 stays open until acceptance. |
+| T561 S1--S9 | Accepted: Core split into X86 Core and X86 NXVM, mirrored source/test owners, real non-PC consumer and all four PC receivers. Both widths pass independent Core 165/NXVM 215 tests, root 626 units and 48 profile integration executions, specialized gates and eight published artifact checks. |
 
-## Accepted S8 NXVM Consolidation
+[Final evidence](../etc/evidence/t561-s9-final-qualification.md),
+[679-path disposition](../etc/evidence/t561-s9-disposition.tsv) and
+[eight artifact hashes](../etc/evidence/t561-s9-artifacts.json) record the
+qualified 0561 releases. All eight PC EXEs were rebuilt and published.
+INI/media/ROM/snapshots and MyNES artifacts are unchanged.
 
-The [delivery evidence](../etc/evidence/t561-s8-nxvm-consolidation.md),
-[file ledger](../etc/evidence/t561-s8-file-review.tsv) and
-[artifact hashes](../etc/evidence/t561-s8-artifacts.json) qualify pushed
-Shared `2fce75e62` and NXVM `b7c6b9bbb`. The file ledger freezes P2's reviewed
-contents; this subsequent governance acceptance updates Current/history/proposal
-only. All 796 recorded files and eight artifact hashes were checked before
-acceptance. Production C/H is net -5 and test C/H net -771, including mechanical
-renames; no CPU/FPU algorithm, Lib/Emulator or MyNES change occurred.
+The final review verifies actual checker changes, all disposition destination
+hashes, eight artifact hashes, preserved source owners and independent link
+graphs. S9 production delta is zero; root test enforcement is +10/-4.
+Its complete execution packet remains in delivery `034f3eb77`.
+Existing App tests' NXVM adapter-private coupling is explicitly retained in
+TODO; it is not neutral X86 Core private-layout borrowing.
 
-Both original cached graphs pass 626 units, 48 integrations and specialized
-checks per width. The eight PC releases pass real CLI/INI/PE/version/hash checks.
-Manual RDP and fresh diagnostic-ROM qualification are not claimed. I4/S8 is
-closed; I5/S9 final independent-package acceptance and the separate CPU
-C16/C17/final-qualification successor remain open. The S9 packet below
-admits final independent-package qualification.
+Manual physical/RDP and fresh diagnostic-ROM qualification are not claimed.
+The next queued 486SX successor retains C16/C17/final qualification and awaits
+owner admission; this structural completion does not claim those CPU goals.
 
-## Active S9 Independent Package And Final Qualification
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T561 S9 after accepted S8 P3 `0349e2f5c`; coordinator and executor roles run sequentially in this session. |
-| Admission And Approval | Owner-approved Core split and automatic sequential S execution cover proposal S9 and I5. Targets NXVM and Shared only for necessary package verification/build-boundary repairs; all four PC Apps are receivers. No Lib/Emulator, MyNES or sibling edit. |
-| Objective | Prove independent X86 Core and X86 NXVM source/test packages, reconcile the complete S2 inventory and I0--I5, and qualify the final four-App implementation without retired Core paths. |
-| Non-goals | No CPU semantics/timing upgrade, C16/C17 completion, new hardware, compatibility alias, public test facade, second scheduler or unrelated product change. |
-| Reference Baseline | Clean pushed `0349e2f5c`; S8 implementations `2fce75e62` and `b7c6b9bbb`; S2 frozen 679-path inventory and preserved CPU successor ledger. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), S9; [convergence ledger](../history/M5-T561-core-package-split.md), I5 and final I0--I4 reconciliation. |
-| Files And ABI Surface | Package CMake/gates/tests and shared test/verify_test_boundaries.cmake with its self-test where final verification proves a gap; NXVM task evidence/current/proposal/history. Confirmed root gate omission: X86 Debug/IBM PC must reject X86 Core links, and foreign test-package paths must include X86 Core. No ABI or production change planned. Estimate: production +0/-0; build/tests +0--100/-0--60; documentation/evidence separately. Any discovered behavior defect requires a packet revision before implementation. |
-| Applicable Rules | NXVM guide, architecture/layout, source policy; shared Execution, Architecture, Coding and Document; architecture-governance followed by coding-governance skills. Single owner, inward public contracts, mirrored test ownership, unchanged qualification grades and scoped commits. |
-| Verification | Independent source/test entry builds for both packages on x64/x86, selectable CPU/FPU targets and real neutral consumer assertions; package manifests/DAG/negative gates; original root Ninja graphs complete units, specialized gates and four-profile integrations on both widths; eight PC release identity/PE/hash checks; documentation governance and actual-change review. |
-| Expected Markers | No retired src/core or test/core production/test dependency; no PC package link in neutral consumer; all 679 inventory paths reconciled; independent package suites and full receiving suites pass without reduced assertions or budgets. |
-| Asset Needs | Preserve current eight 0561 artifacts if executable inputs remain unchanged; rebuild/deploy if inputs change. All INI, ROM, media, snapshots and MyNES artifacts preserved. Root qualification uses original two graphs; dedicated standalone package graphs prove independent entry points and share build/.ccache, not replacement product graphs. |
-| Reporting Requirements | Record requirement-to-proof matrix, actual diff and retained paths, source/test counts, package/full-suite results and artifact hashes; distinguish automated integrations from unperformed physical desktop/RDP and fresh diagnostic-ROM checks. |
-| Stop Conditions | New public capability, timing/behavior change, protected input mutation, unrelated work conflict or a required Lib/Emulator edit. Report and revise scope rather than weakening qualification. |
-| Exit Criteria | I5 plus final I0--I4 audit proven, required dual-width suites and artifacts valid, actual changes reviewed, complete target-scoped P commits pushed and worktree clean. T closure requires the explicit whole-proposal audit, not a subset pass. |
-| Original Owner Request | Split Core into independently composable x86-core and x86-nxvm, mirror source/test owners, preserve four PC Apps and enable a real non-PC public consumer. |
-| Similar-Issue Sweep | Audit all current package/source/test/build receivers for retired includes/targets, private layout borrowing, outer dependencies, missing independent registration and duplicate owners; historical records retain historical terminology. |
-
-## Accepted S7 Neutral Machine Extraction
-
-Pushed Shared `0da6818d5` and NXVM `b77d1f482` deliver the independent
-`x86-core/machine` owner, matching tests and all PC receivers. The
-[actual-change evidence](../etc/evidence/t561-s7-machine-extraction.md),
-[616-file review](../etc/evidence/t561-s7-file-review.tsv) and
-[eight artifact hashes](../etc/evidence/t561-s7-artifacts.json) record the
-mechanical move separately from fixture/diagnostic behavior changes.
-The owner approved paused-boundary diagnostic sampling without a new API;
-instantaneous bus snapshots and fresh external-ROM diagnostic runs are not
-claimed.
-
-Both original graphs pass 632/632 repository units, specialized gates,
-48 receiving integration executions plus restored-default identity per width.
-Eight renewed 0561 PC EXEs pass actual published CLI/INI/PE/version/hash checks.
-Lib/Emulator, CPU/FPU implementations, MyNES and protected inputs are unchanged.
-Manual RDP and full physical desktop acceptance are not claimed.
-
-Coordinator actual-change review accepts both pushed commits against the
-packet, moved production bodies, receiver/fixture ledger, current frozen
-hashes, artifact identities and verification. The full S7 packet remains in
-P2's CURRENT revision. S7 closes I3 extraction; S8 retains NXVM consolidation
-and its Board CPU/PIC private fixture family, while S9 retains I5 independent
-package/final qualification. T561 remains open; CPU C16/C17 work does not resume.
-
-## Accepted S6 Address Decode Boundary
-
-[Actual-change evidence](../etc/evidence/t561-s6-address-decode.md) and the
-[36-file review](../etc/evidence/t561-s6-file-review.tsv) cover pushed
-`4bba9fc0c`: PC A20 policy/pins are Board-owned and neutral memory consumes
-one explicit range/reset-clear-mask. ROM, aliases, cache, DMA and firmware/
-entry guards retain their prior path and failure semantics. Production C/H
-is +110/-89 (net +21); tests +174/-43 (net +131); family CMake +19/-4.
-
-Both original graphs pass 627/627 repository units, specialized gates and
-48 receiving integrations plus restored identity per width. Eight rebuilt
-0561 PC EXEs pass actual published CLI/INI/PE/version/hash checks. Imported
-packages, CPU/FPU, MyNES and owner inputs are unchanged; manual RDP/physical/
-full interactive GUI qualification is not claimed. Coordinator actual-change
-review verifies the pushed bodies, all review/artifact hashes and requirement
-mapping. The complete admission packet remains in P1's CURRENT revision.
-S6 closes P7/P8 only; I3 physical extraction/non-PC proof, I4 and I5 remain
-open. S7 is next, with no implementation before its admission packet.
-
-## Accepted S5 Advancement Boundary
-
-[Frozen S5 proof](../etc/evidence/t561-s5-neutral-advance.md) and its
-[21-file review hashes](../etc/evidence/t561-s5-file-review.tsv) record the
-two neutral advancement callbacks, Board-owned device order and neutral IRQ
-sampling/acknowledgement. Production C/H is +64/-111 (net -47); no new state,
-thread, scheduler, CPU algorithm or timing grade is introduced.
-
-Both original graphs pass 627/627 repository units, specialized gates and
-48 receiving integrations per width plus restored-default identity. All eight
-rebuilt/deployed 0561 PC EXEs pass actual CLI/INI/PE/version/hash checks.
-Lib/Emulator, imported packages, CPU/FPU, MyNES and owner inputs are unchanged.
-Manual RDP/physical/full Windows GUI qualification is not claimed. Coordinator
-actual-change review accepts pushed `d72a0165d` against the packet, ownership,
-preserved effect bodies, all 21 file hashes, receiving tests and eight assets.
-The full S5 packet remains in that implementation revision. S5 is closed;
-T561 and I3 extraction/I4/I5 stay open, with no work before the next packet.
-
-## Accepted S4 PC Policy Separation
-
-[Frozen S4 evidence](../etc/evidence/t561-s4-pc-policy-separation.md) and
-[170-file hash review](../etc/evidence/t561-s4-file-review.tsv) record the moved
-30-row Board timing contract, seven producer-owned trace IDs and PC CPU/RAM
-defaults. One Board table replaces the executor table; no duplicate state,
-thread, scheduler, import or CPU algorithm change is introduced. Original
-table values, plan rules, deadline calculations and emission order are checked
-against accepted S3 after the declared owner substitutions.
-
-Both original Ninja/ccache graphs pass 627/627 repository units, all specialized
-gates, 48 receiving integration executions per width plus restored-default
-identity, and all eight published CLI/INI/PE/version/hash checks. The eight
-0561 PC EXEs are rebuilt and deployed; both graphs return to default. Imported
-packages, X86 Core CPU/FPU, Lib/Emulator, MyNES and owner inputs are unchanged.
-Manual RDP/physical/full Windows GUI qualification is not claimed. Coordinator
-actual-change review accepts pushed `f136911be` against the packet, original
-request, moved policy bodies, tests, frozen hashes and published assets. The
-full S4 packet remains in that implementation revision. I3 extraction, I4 and
-I5 remain open; T561 stays open and no implementation runs without the next packet.
-
-## Accepted S3 CPU/FPU Extraction
-
-[Actual-change review](../etc/evidence/t561-s3/review.md) verifies 12 moved
-implementation/header files and 106 test files, six CPU-local checkers, all
-438 changed source/test/build/tool hashes and the 511-name ownership map.
-Production C/H is mechanically equivalent, net zero lines; two test-only
-utility dependency removals yield net -3 test C/H lines. No CPU algorithm,
-table, layout, grade, new profile, worker or scheduler changes. The original
-CPU/FPU paths and targets are retired; new src/test hierarchies match.
-
-Both original graphs pass 627/627 complete repository units, including all
-112 X86 Core owner cases, and all specialized gates. Four-profile integrations
-pass 48 executions per width plus restored-default identity. All eight
-optimized/stripped 0561 PC Assets EXEs pass PE/version/hash and published
-INFO/SPEED/HELP/EXIT/INI checks. Both graphs return to default; persistent
-ccache is preserved. Imported ten trees, Lib/Emulator, MyNES and owner inputs
-are unchanged. Manual RDP/physical/full Windows GUI qualification is not claimed.
-
-The coordinator reviewed both pushed implementation commits and actual frozen
-bytes, not only the test report. I2 is discharged as CPU/FPU extraction. The
-recorded execution/board white-box test receivers remain explicit S5/S6 work;
-they are not a claim of final package-boundary completion. I3--I5, planned
-S4--S7 and T560 C16/C17/final qualification remain open. T561 remains open.
-The complete S3 admission packet is retained in `039d946ab`'s CURRENT revision.
-
-## Accepted S2 Inventory
-
-[Disposition evidence](../etc/evidence/t561-s2/review.md) covers all 679 tracked
-Core source/test paths, declaration/include records, affected registrations and
-both original configured graph witnesses. Reproduction, Core source/test
-manifest, corpus and documentation checks pass. The actual P1 review confirms
-14 NXVM documentation files only (+25,912/-9 lines, chiefly generated records);
-source/test/build/artifact delta is zero. No dynamic tests or rebuild are
-claimed for this design prerequisite; S1 remains the runnable baseline.
-
-The two governance skills made ownership and real dependency evidence precede
-renaming. PC qualification/default/trace and device progression remain explicit
-separation work, with no new public API implemented. Proposed S3--S7 retain
-five bounded extraction/qualification batches. I1 planning is discharged;
-I2--I5 and CPU C16/C17/final qualification are not. Full S2 admission is retained
-in `82e3257cc`'s CURRENT revision. T561 remains open.
-
-## Accepted S1 Import And Runnable Baseline
-
-[S1 evidence](../etc/evidence/t561-s1-softpc-ten-tree-import.md): all 264 files
-in the five source/test pairs match pinned SoftPC `3af1955932fcb9e61ceec3456493580e316a12c9`.
-Old src/test/x86 is retired and Core uses the split contracts, with no alias
-or parallel runtime. Lib, Emulator and CPU implementations remain unchanged.
-
-Both widths pass 621/621 complete repository units and all specialized gates,
-48 profile integration executions plus restored-default identity, and the
-strengthened INFO/SPEED/INI checks against every published PC EXE. Final Core
-manifest/corpus/factory/startup checks pass 5/5 per width. Automated desktop
-cases pass; manual RDP, full Windows GUI and PC110 acceptance are not claimed.
-
-Eight optimized, stripped, PE/hash-verified 0.5.0561 PC EXEs are deployed in
-the four existing Assets roots. Source/artifact commit is `6c95c2da3`; current
-target is `vm-0-5-0561`. Both original Release Ninja/ccache graphs are restored
-to default and the persistent cache is retained. MyNES 0044, INI, ROM, media
-and snapshot inputs are unchanged. The full admission packet remains in the
-P2 revision of this file. T560's CPU residual successor remains paused.
+## Previous Staged CPU Closure
 
 | Task | Closure |
 | --- | --- |
@@ -229,7 +54,7 @@ The sole selected-SX instruction recipe remains explicitly compatibility/
 unallocated, and production 486SX construction remains closed.
 
 The former [Queue](QUEUE.md) placed
-[Core refactoring](../proposals/m5-core-x86-core-nxvm-split.md) first and
+[Core refactoring](../history/M5-T561-core-package-split-proposal.md) first and
 [complete remaining 486SX qualification](../proposals/m5-486sx-timing-production-completion.md)
 second. Core refactoring is now admitted as T561; CPU work
 stays paused until the refactor is accepted and its successor is admitted.

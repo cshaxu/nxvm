@@ -1,5 +1,9 @@
 # Split Core Into X86 Core And X86 NXVM
 
+Archived after T561 S9 acceptance of Shared `ee7fe06ab` and NXVM
+`034f3eb77`. The linked final evidence and task history record I0--I5 closure;
+the planned-batch descriptions below retain their original staging context.
+
 ## Admission And Objective
 
 Admitted as M5 T561 on 2026-10-15 after owner-approved T560 staged closure
@@ -226,7 +230,7 @@ them; do not claim sibling SoftPC runtime qualification without executing it.
 No new V30/Z80/68000, sound chip, arcade video/protection, game ROM loader or
 game compatibility is delivered here. No universal multi-CPU framework or
 plugin architecture is justified by this extraction. The separate
-[Raiden II candidate](myarcade-raiden2.md) consumes the accepted boundary;
+[Raiden II candidate](../proposals/myarcade-raiden2.md) consumes the accepted boundary;
 its older MyArcade naming and product admission remain its own receiver work.
 
 Stop and re-scope if a public contract requires product/game identifiers,

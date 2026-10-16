@@ -49,8 +49,9 @@ the earlier PC110-first ordering. The subsequent owner-approved T560 staged
 closure places its CPU successor second; remaining candidates keep their order.
 
 The owner admitted the former first candidate,
-[Core split](../proposals/m5-core-x86-core-nxvm-split.md), as T561, with S1
-importing SoftPC's five source/test pairs. CURRENT owns that active packet.
+[Core split](../history/M5-T561-core-package-split-proposal.md), as T561, with S1
+importing SoftPC's five source/test pairs. T561 is now closed after S9's full
+package/receiver acceptance. The CPU successor below awaits owner admission.
 
 1. [Complete remaining 486SX timing and production qualification](../proposals/m5-486sx-timing-production-completion.md)
 2. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
