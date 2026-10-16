@@ -125,7 +125,7 @@ static lib_i32 timing_8086_load(core_machine *machine,
 {
     return machine != LIB_NULL && program != LIB_NULL &&
         core_machine_reset(machine) == LIB_STATUS_OK &&
-        core_machine_set_a20(machine, 1) == LIB_STATUS_OK &&
+        core_machine_set_address_clear_mask(machine, 0u) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_8086_RESET_LINEAR, program,
             program_bytes) == LIB_STATUS_OK;
 }

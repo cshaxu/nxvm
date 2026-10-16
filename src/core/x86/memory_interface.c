@@ -99,7 +99,7 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
                 route->callbacks.write, route->callbacks.query, owner);
             break;
         case CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY:
-            status = core_machine_memory_register_pre_a20_overlay_device_provider(
+            status = core_machine_memory_register_raw_overlay_device_provider(
                 memory, route->physical_start, route->bytes,
                 route->callbacks.read, route->callbacks.write,
                 route->callbacks.query, owner);
@@ -240,9 +240,9 @@ lib_status core_machine_memory_query(
         size, access, out_route);
 }
 
-lib_status core_machine_set_a20(
+lib_status core_machine_set_address_clear_mask(
     core_machine *machine,
-    lib_i32 enabled)
+    lib_u32 clear_mask)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -253,26 +253,27 @@ lib_status core_machine_set_a20(
         return LIB_STATUS_INVALID_STATE;
     }
 
-    return core_machine_signal_a20(machine, enabled != 0);
+    return core_machine_signal_address_clear_mask(machine, clear_mask);
 }
 
-lib_status core_machine_signal_a20(core_machine *machine, lib_bool enabled)
+lib_status core_machine_signal_address_clear_mask(core_machine *machine,
+    lib_u32 clear_mask)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (machine->executor_memory.connect.backing == 0u)
         return LIB_STATUS_INVALID_STATE;
-    machine->executor_memory.data.flagA20 = enabled ? LIB_TRUE : LIB_FALSE;
+    machine->executor_memory.data.address_clear_mask = clear_mask;
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_observe_a20(const core_machine *machine,
-    lib_bool *out_enabled)
+lib_status core_machine_observe_address_clear_mask(const core_machine *machine,
+    lib_u32 *out_clear_mask)
 {
-    if (machine == LIB_NULL || out_enabled == LIB_NULL)
+    if (machine == LIB_NULL || out_clear_mask == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (machine->executor_memory.connect.backing == 0u)
         return LIB_STATUS_INVALID_STATE;
-    *out_enabled = machine->executor_memory.data.flagA20 ? LIB_TRUE : LIB_FALSE;
+    *out_clear_mask = machine->executor_memory.data.address_clear_mask;
     return LIB_STATUS_OK;
 }
 

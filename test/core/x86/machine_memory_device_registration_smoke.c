@@ -132,13 +132,13 @@ lib_i32 main(void)
         core_machine_remove_memory_device_routes(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_remove_memory_device_routes(machine, &overlay) != LIB_STATUS_OK ||
         core_machine_memory_read(machine, 0x000f0000u, &observed, 1u) != LIB_STATUS_OK || observed != rom;
-    lib_bool a20 = LIB_TRUE;
-    if (!failed) failed |= core_machine_signal_a20(LIB_NULL, LIB_TRUE) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_observe_a20(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_signal_a20(machine, LIB_FALSE) != LIB_STATUS_OK ||
-        core_machine_observe_a20(machine, &a20) != LIB_STATUS_OK || a20 ||
-        core_machine_signal_a20(machine, LIB_TRUE) != LIB_STATUS_OK ||
-        core_machine_observe_a20(machine, &a20) != LIB_STATUS_OK || !a20;
+    lib_u32 clear_mask = 0u;
+    if (!failed) failed |= core_machine_signal_address_clear_mask(LIB_NULL, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_observe_address_clear_mask(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_signal_address_clear_mask(machine, 0x00100000u) != LIB_STATUS_OK ||
+        core_machine_observe_address_clear_mask(machine, &clear_mask) != LIB_STATUS_OK || clear_mask != 0x00100000u ||
+        core_machine_signal_address_clear_mask(machine, 0u) != LIB_STATUS_OK ||
+        core_machine_observe_address_clear_mask(machine, &clear_mask) != LIB_STATUS_OK || clear_mask != 0u;
     if (!failed) lib_c_printf("CORE-MEMORY-DEVICE:OK\n");
     core_machine_destroy(machine);
     return failed ? 1 : 0;

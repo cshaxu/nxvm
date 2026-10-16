@@ -139,6 +139,62 @@ done:
     return failed;
 }
 
+static lib_i32 board_address_decode_policy(void)
+{
+    for (lib_u32 policy = 0u; policy < 2u; ++policy) {
+        core_machine_config config = {
+            .memory_bytes = 4u * 1024u * 1024u,
+            .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+            .a20_wrap_policy = (core_machine_board_a20_wrap_policy)policy
+        };
+        core_machine_executor_config executor;
+        core_machine *machine = LIB_NULL;
+        core_machine_board_state *board = LIB_NULL;
+        const lib_u8 first = 0x11u, second = 0x22u, third = 0x33u;
+        lib_u8 value = 0u;
+        lib_bool enabled = LIB_TRUE;
+        lib_i32 failed = 1;
+
+        if (core_machine_board_prepare_executor(&config, &executor) != LIB_STATUS_OK ||
+            executor.address_decode.first != (policy ? 0x100000u : 0u) ||
+            executor.address_decode.last != (policy ? 0x1fffffu : LIB_UINT32_MAX) ||
+            executor.address_decode.reset_clear_mask != 0x100000u ||
+            core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
+            core_machine_board_observe_a20(board, &enabled) != LIB_STATUS_OK || enabled)
+            goto done;
+        if (core_machine_memory_write(machine, 0x200000u, &first, 1u) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x300000u, &second, 1u) != LIB_STATUS_OK ||
+            core_machine_memory_read(machine, 0x200000u, &value, 1u) != LIB_STATUS_OK ||
+            value != (policy ? first : second) ||
+            core_machine_memory_write(machine, 0x100000u, &third, 1u) != LIB_STATUS_OK ||
+            core_machine_memory_read(machine, 0u, &value, 1u) != LIB_STATUS_OK ||
+            value != third ||
+            core_machine_bus_write(machine, 0x92u, 2u) != LIB_STATUS_OK ||
+            core_machine_board_observe_a20(board, &enabled) != LIB_STATUS_OK || !enabled ||
+            core_machine_memory_write(machine, 0x100000u, &second, 1u) != LIB_STATUS_OK ||
+            core_machine_memory_read(machine, 0u, &value, 1u) != LIB_STATUS_OK ||
+            value != third || core_machine_reset(machine) != LIB_STATUS_OK ||
+            core_machine_board_observe_a20(board, &enabled) != LIB_STATUS_OK || enabled)
+            goto done;
+        config.a20_wrap_policy = (core_machine_board_a20_wrap_policy)2;
+        if (core_machine_board_prepare_executor(&config, &executor) !=
+                LIB_STATUS_INVALID_ARGUMENT ||
+            executor.address_decode.first != (policy ? 0x100000u : 0u) ||
+            executor.address_decode.last != (policy ? 0x1fffffu : LIB_UINT32_MAX) ||
+            executor.address_decode.reset_clear_mask != 0x100000u ||
+            core_machine_board_observe_a20(LIB_NULL, &enabled) != LIB_STATUS_INVALID_ARGUMENT ||
+            core_machine_board_observe_a20(board, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT)
+            goto done;
+        failed = 0;
+done:
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
 static lib_i32 scheduler_board_timing_qualification(void)
 {
     const core_machine_config config = {
@@ -278,6 +334,6 @@ done:
 
 lib_i32 main(void)
 {
-    return board_timing_declarations() || board_default_and_memory_policy() || scheduler_board_timing_qualification() || scheduler_kbc_deadline_routing() ||
+    return board_timing_declarations() || board_default_and_memory_policy() || board_address_decode_policy() || scheduler_board_timing_qualification() || scheduler_kbc_deadline_routing() ||
         scheduler_pic_relative_deadline();
 }

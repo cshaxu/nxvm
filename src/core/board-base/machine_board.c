@@ -5,6 +5,7 @@
 #include "core/board-base/machine_board_state.h"
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
+#define CORE_MACHINE_BOARD_A20_ADDRESS_BIT 0x00100000u
 
 static lib_status core_machine_board_register_reset_rom_alias(void *owner);
 static lib_status core_machine_board_memory_admission(void *owner,
@@ -74,7 +75,9 @@ static void core_machine_kbc_request_reset(void *owner)
 
 static void core_machine_kbc_signal_a20(void *owner, lib_bool enabled)
 {
-    (void)core_machine_signal_a20(owner, enabled);
+    const core_machine_board_state *board = owner;
+    (void)core_machine_signal_address_clear_mask(board->core,
+        enabled ? 0u : CORE_MACHINE_BOARD_A20_ADDRESS_BIT);
 }
 
 static void core_machine_kbc_irq_output(void *owner, lib_bool auxiliary,
@@ -104,6 +107,8 @@ lib_i32 core_machine_board_config_is_valid(
     const core_machine_config *config)
 {
     return core_machine_clock_plan_is_valid(&config->clock_plan) &&
+        (config->a20_wrap_policy == CORE_MACHINE_BOARD_A20_WRAP_GLOBAL_MASK ||
+         config->a20_wrap_policy == CORE_MACHINE_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB) &&
         (config->shared_pit_personality == X86_PIT_PERSONALITY_8254 ||
             config->shared_pit_personality == X86_PIT_PERSONALITY_8253) &&
         (config->auxiliary_pit_present == LIB_FALSE ||
@@ -130,7 +135,15 @@ lib_status core_machine_board_prepare_executor(
             X86_CORE_CPU_PROFILE_80386 : config->cpu_profile,
         .fpu_profile = config->fpu_profile,
         .cpu_80386_cr_mov_ignores_mod = config->cpu_80386_cr_mov_ignores_mod,
-        .a20_wrap_policy = config->a20_wrap_policy,
+        .address_decode = {
+            .first = config->a20_wrap_policy ==
+                CORE_MACHINE_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB ?
+                    CORE_MACHINE_BOARD_A20_ADDRESS_BIT : 0u,
+            .last = config->a20_wrap_policy ==
+                CORE_MACHINE_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB ?
+                    2u * CORE_MACHINE_BOARD_A20_ADDRESS_BIT - 1u : LIB_UINT32_MAX,
+            .reset_clear_mask = CORE_MACHINE_BOARD_A20_ADDRESS_BIT
+        },
         .ticks_per_instruction = config->ticks_per_instruction,
         .instruction_timing = config->instruction_timing,
         .transaction_contract = config->transaction_contract,
@@ -265,7 +278,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     {
-        lib_status status = core_machine_board_register_a20_port(machine);
+        lib_status status = core_machine_board_register_a20_port(board);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;
@@ -382,7 +395,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
         core_machine_kbc_bind_core_services(board->shared_kbc,
             core_machine_kbc_irq_output, board, core_machine_kbc_signal_a20,
-            machine, core_machine_kbc_request_reset, machine,
+            board, core_machine_kbc_request_reset, machine,
             !config->kbc_aux_absent);
         if (config->kbc_reset_output_port_configured) {
             core_machine_kbc_set_reset_output_port(board->shared_kbc,
@@ -549,6 +562,20 @@ static lib_status core_machine_board_memory_admission(void *owner,
     return LIB_STATUS_OK;
 }
 
+lib_status core_machine_board_observe_a20(const core_machine_board_state *board,
+    lib_bool *out_enabled)
+{
+    lib_u32 clear_mask;
+    lib_status status;
+
+    if (board == LIB_NULL || out_enabled == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_observe_address_clear_mask(board->core, &clear_mask);
+    if (status == LIB_STATUS_OK)
+        *out_enabled = (clear_mask & CORE_MACHINE_BOARD_A20_ADDRESS_BIT) == 0u;
+    return status;
+}
+
 static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id, lib_u64 tick,
     lib_u32 *out_value)
 {
@@ -558,7 +585,7 @@ static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id, lib_
 
     (void)port_id;
     if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_observe_a20(owner, &enabled);
+    status = core_machine_board_observe_a20(owner, &enabled);
     if (status != LIB_STATUS_OK) return status;
     *out_value = enabled ? CORE_MACHINE_BOARD_A20_BIT : 0u;
     return LIB_STATUS_OK;
@@ -567,19 +594,21 @@ static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id, lib_
 static lib_status core_machine_board_write_a20(void *owner, lib_u16 port_id,
     lib_u32 value)
 {
+    const core_machine_board_state *board = owner;
     (void)port_id;
-    return core_machine_signal_a20(owner,
-        CORE_MACHINE_BIT_IS_SET(value, CORE_MACHINE_BOARD_A20_BIT));
+    return core_machine_signal_address_clear_mask(board->core,
+        (value & CORE_MACHINE_BOARD_A20_BIT) != 0u ?
+            0u : CORE_MACHINE_BOARD_A20_ADDRESS_BIT);
 }
 
-lib_status core_machine_board_register_a20_port(core_machine *machine)
+lib_status core_machine_board_register_a20_port(core_machine_board_state *board)
 {
     core_machine_port_route route;
 
-    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     route = (core_machine_port_route) {0x0092u, core_machine_board_read_a20,
-        core_machine_board_write_a20, machine, LIB_FALSE, 0u};
-    return core_machine_install_port_routes(machine, &route, 1u);
+        core_machine_board_write_a20, board, LIB_FALSE, 0u};
+    return core_machine_install_port_routes(board->core, &route, 1u);
 }
 
 static lib_i32 core_machine_rtc_cmos_config_is_valid(

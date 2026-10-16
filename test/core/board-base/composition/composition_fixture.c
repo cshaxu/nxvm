@@ -154,7 +154,9 @@ lib_bool test_core_transaction_timing_is_disabled(const core_machine *machine)
 
 lib_bool test_core_a20_is_enabled(const core_machine *machine)
 {
-    return machine->executor_memory.data.flagA20;
+    lib_u32 clear_mask;
+    return core_machine_observe_address_clear_mask(machine, &clear_mask) ==
+        LIB_STATUS_OK && clear_mask == 0u;
 }
 
 lib_u64 test_core_elapsed_ticks(const core_machine *machine)

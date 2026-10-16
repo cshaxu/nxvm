@@ -25,7 +25,7 @@ endforeach()
 foreach(forbidden "connect.device_providers" "connect.device_provider_count"
     "core_machine_memory_register_device_provider("
     "core_machine_memory_register_overlay_device_provider("
-    "core_machine_memory_register_pre_a20_overlay_device_provider(")
+    "core_machine_memory_register_raw_overlay_device_provider(")
     string(FIND "${rom}" "${forbidden}" position)
     if(NOT position LESS 0)
         message(FATAL_ERROR "ROM retains a direct provider-table path: ${forbidden}")

@@ -106,7 +106,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         LIB_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;
     failed |= (core_machine_get_planar_parity_observation(session->board,
         &parity) != LIB_STATUS_OK || !parity.configured) ? 0x0040 : 0;
-    failed |= core_machine_set_a20(session->core_machine, 1) != LIB_STATUS_OK ? 0x0080 : 0;
+    failed |= core_machine_set_address_clear_mask(session->core_machine, 0u) != LIB_STATUS_OK ? 0x0080 : 0;
     failed |= (core_machine_memory_query(session->core_machine, 0x00100003u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != LIB_STATUS_OK ||
         memory_route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER) ? 0x0100 : 0;

@@ -51,7 +51,7 @@ static lib_i32 retirement_prepare(core_machine **out_machine,
                 LIB_FALSE) == LIB_STATUS_OK) &&
         core_machine_freeze_execution_providers(*out_machine) == LIB_STATUS_OK &&
         core_machine_reset(*out_machine) == LIB_STATUS_OK &&
-        core_machine_set_a20(*out_machine, 1) == LIB_STATUS_OK &&
+        core_machine_set_address_clear_mask(*out_machine, 0u) == LIB_STATUS_OK &&
         core_machine_memory_write(*out_machine, 0xfffffff0u, code, bytes) ==
             LIB_STATUS_OK;
 }
@@ -234,7 +234,7 @@ static lib_i32 retirement_8086_context_formula_case(void)
     }
     if (!failed) {
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-            core_machine_set_a20(machine, 1) != LIB_STATUS_OK ||
+            core_machine_set_address_clear_mask(machine, 0u) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, lock_add,
                 sizeof(lock_add)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x1000u, &value,
@@ -260,7 +260,7 @@ static lib_i32 retirement_8086_context_formula_case(void)
     }
     if (!failed) {
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-            core_machine_set_a20(machine, 1) != LIB_STATUS_OK ||
+            core_machine_set_address_clear_mask(machine, 0u) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, wait,
                 sizeof(wait)) != LIB_STATUS_OK ||
             (x86_fpu_begin_command(machine->fpu, 0xdbu, 0xe3u), 0) ||
@@ -549,7 +549,7 @@ lib_i32 main(void)
     failed |= core_machine_set_retirement_observation_provider(machine,
         &provider) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= core_machine_set_a20(machine, 1) != LIB_STATUS_OK;
+    failed |= core_machine_set_address_clear_mask(machine, 0u) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
@@ -715,7 +715,7 @@ lib_i32 main(void)
     failed |= core_machine_set_retirement_observation_provider(machine, LIB_NULL) !=
         LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= core_machine_set_a20(machine, 1) != LIB_STATUS_OK;
+    failed |= core_machine_set_address_clear_mask(machine, 0u) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||

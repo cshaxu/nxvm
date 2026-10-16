@@ -76,7 +76,7 @@ lib_i32 main(void)
     failed |= expect_status(core_machine_freeze_execution_providers(machine),
         LIB_STATUS_OK);
     failed |= expect_status(core_machine_reset(machine), LIB_STATUS_OK);
-    failed |= expect_status(core_machine_set_a20(machine, 1), LIB_STATUS_OK);
+    failed |= expect_status(core_machine_set_address_clear_mask(machine, 0u), LIB_STATUS_OK);
 
     failed |= expect_status(core_machine_memory_query(machine, 0x20u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &route), LIB_STATUS_OK);

@@ -5,7 +5,7 @@
 
 typedef struct test_core_boot_observation {
     lib_size memory_bytes;
-    lib_bool a20;
+    lib_u32 address_clear_mask;
     x86_core_cpu_profile cpu_profile;
     lib_u64 elapsed_ticks;
     lib_size rom_mapping_count;

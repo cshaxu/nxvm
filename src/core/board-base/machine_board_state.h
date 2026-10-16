@@ -146,7 +146,7 @@ lib_bool core_machine_board_pic_pending(void *owner);
 lib_u8 core_machine_board_pic_acknowledge(void *owner);
 void core_machine_board_after_internal_advance(void *owner,
     lib_u64 source_ticks, lib_u64 due_tick);
-lib_status core_machine_board_register_a20_port(core_machine *machine);
+lib_status core_machine_board_register_a20_port(core_machine_board_state *board);
 void core_machine_board_after_pit_reset(core_machine_board_state *board);
 void core_machine_board_refresh_nmi(void *owner);
 void core_machine_board_configure_xt_ppi_speaker(core_machine_board_state *board);

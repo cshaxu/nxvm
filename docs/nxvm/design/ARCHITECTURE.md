@@ -109,6 +109,11 @@ verification and acceptance; the task history retains the cutover sequence.
   80386/16 MiB choices. Neutral construction consumes an explicit admitted CPU
   and nonzero RAM. The existing 2--64 MiB stopped-PC resize bounds are board
   policy, not an allocator minimum or a new PC construction restriction.
+  Board also owns the global/second-MiB A20 policy and pin interpretation.
+  Neutral memory consumes an explicit inclusive address window and reset
+  clear-mask; its default is identity. It retains one live mask, not a PC gate
+  flag beside a second decoder. Raw reset overlays still precede that decode,
+  and cache, observation and ordinary access share the same route mechanism.
   Trace retains one Core-owned buffer, sequence and time stamp. Its copied
   scalar ID accepts producer-owned events: CPU/bus identities, including DMA,
   remain neutral; PIT/PIC/RTC/KBC/video/FDC/HDC identities belong to the board.

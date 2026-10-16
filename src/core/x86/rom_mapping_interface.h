@@ -23,7 +23,7 @@ lib_status core_machine_register_immutable_rom_mapping(
 lib_status core_machine_register_immutable_rom_mapping_alias(
     core_machine *machine, lib_u32 source_start,
     lib_u32 physical_start, lib_size bytes);
-/* CPU reset aliases alone decode before ordinary board A20 routing. */
+/* CPU reset aliases alone decode before ordinary address-line decoding. */
 lib_status core_machine_register_immutable_rom_mapping_reset_alias(
     core_machine *machine, lib_u32 source_start,
     lib_u32 physical_start, lib_size bytes);

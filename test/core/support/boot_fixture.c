@@ -5,7 +5,7 @@ test_core_boot_observation test_core_boot_capture(const core_machine *machine)
 {
     return (test_core_boot_observation){
         .memory_bytes = machine->executor_memory.connect.installed_bytes,
-        .a20 = machine->executor_memory.data.flagA20,
+        .address_clear_mask = machine->executor_memory.data.address_clear_mask,
         .cpu_profile = machine->cpu_profile,
         .elapsed_ticks = machine->elapsed_ticks,
         .rom_mapping_count = machine->immutable_rom_mapping_count,

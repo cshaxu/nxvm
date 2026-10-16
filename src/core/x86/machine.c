@@ -359,8 +359,7 @@ lib_i32 core_machine_neutral_config_is_valid(
     return config != LIB_NULL && config->memory_bytes != 0u &&
         core_machine_valid_cpu_profile(config->cpu_profile) &&
         core_machine_valid_fpu_profile(config->fpu_profile) &&
-        (config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_GLOBAL_MASK ||
-         config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) &&
+        config->address_decode.first <= config->address_decode.last &&
         core_machine_clock_ratio_is_valid(&config->provider_clock) &&
         core_machine_retirement_time_contract_is_valid(
             config->retirement_time_contract) &&
@@ -492,11 +491,9 @@ lib_status core_machine_neutral_create_with_test_allocation(
         core_machine_destroy(machine);
         return LIB_STATUS_NO_MEMORY;
     }
-    if (core_machine_memory_set_a20_wrap_policy(&machine->executor_memory,
-            config->a20_wrap_policy) != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
+    machine->executor_memory.connect.address_decode = config->address_decode;
+    machine->executor_memory.data.address_clear_mask =
+        config->address_decode.reset_clear_mask;
     machine->executor_memory.connect.cpu_snoop = core_machine_cpu_bus_snoop_write;
     machine->executor_memory.connect.cpu_snoop_context = machine;
     *out_machine = machine;

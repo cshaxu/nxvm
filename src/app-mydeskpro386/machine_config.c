@@ -20,7 +20,7 @@ void mydeskpro386_core_config_initialize(core_machine_config *out_config)
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .cpu_80386_cr_mov_ignores_mod = LIB_TRUE,
-        .a20_wrap_policy = CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB,
+        .a20_wrap_policy = CORE_MACHINE_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB,
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         .transaction_contract = {

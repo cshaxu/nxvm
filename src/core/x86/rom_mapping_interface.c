@@ -118,11 +118,11 @@ lib_status core_machine_register_immutable_rom_mapping(
 static lib_status core_machine_register_immutable_rom_mapping_alias_internal(
     core_machine *machine, lib_u32 source_start,
     lib_u32 physical_start, lib_size bytes, lib_i32 firmware_call,
-    lib_u8 pre_a20)
+    lib_u8 raw_decode)
 {
     const core_machine_memory_device_route route = {
         physical_start, bytes, rom_callbacks,
-        pre_a20 ? CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY :
+        raw_decode ? CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY :
             CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
     };
     core_machine_immutable_rom_mapping *source = LIB_NULL;

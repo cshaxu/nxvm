@@ -2393,7 +2393,7 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
     add_custom_target(verify-a20-fallback-routes
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_a20_fallback_routes.cmake"
-        COMMENT "Verifying Core-owned A20 signal and absent-memory fallback"
+        COMMENT "Verifying Board A20 adaptation and neutral absent-memory routes"
         VERBATIM)
 
     add_custom_target(verify-dma-core-cycle-boundary

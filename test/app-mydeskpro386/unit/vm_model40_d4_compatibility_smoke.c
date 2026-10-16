@@ -56,7 +56,7 @@ lib_i32 main(void)
         /* Immutable firmware accepts the bus write but retains its sole ROM
          * byte; the companion mapping test covers the same property. */
         !vm_model40_d4_read(session->core_machine, 0x000f0000u, 0x11u) ||
-        core_machine_set_a20(session->core_machine, LIB_TRUE) != LIB_STATUS_OK ||
+        core_machine_set_address_clear_mask(session->core_machine, 0u) != LIB_STATUS_OK ||
         core_machine_reset(session->core_machine) != LIB_STATUS_OK ||
         core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK || (port_b & 0x10u) == 0u;

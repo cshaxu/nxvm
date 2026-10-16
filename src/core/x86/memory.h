@@ -17,7 +17,7 @@ typedef struct core_machine_memory_test_allocation
 #define CORE_MACHINE_DEVICE_RAM "Unknown Random-access Memory"
 
 typedef struct {
-    lib_u8 flagA20; /* 0 = disable, 1 = enable */
+    lib_u32 address_clear_mask;
 } t_ram_data;
 
 typedef struct {
@@ -47,8 +47,8 @@ typedef struct {
     void *owner;
     lib_u8 overlay;
     /* Immutable reset-ROM alias decoded at its raw physical address before
-     * ordinary board A20 routing. */
-    lib_u8 pre_a20;
+     * ordinary address-line decoding. */
+    lib_u8 raw_decode;
     /* A selected board decode that replaces an otherwise valid lower route. */
     lib_u8 replacement;
     /* An open-bus board window used only when no installed device decodes the
@@ -76,7 +76,7 @@ typedef struct {
     lib_uptr device_provider_capacity;
     core_machine_memory_test_allocation *device_provider_test_allocation;
     lib_u8 mappings_frozen;
-    core_machine_a20_wrap_policy a20_wrap_policy;
+    core_machine_address_decode address_decode;
 } t_ram_connect;
 
 typedef struct t_ram {
@@ -90,7 +90,6 @@ struct core_machine_memory_test_allocation {
     lib_size attempts;
 };
 
-#define VRAM_BIT_A20  0x00100000
 
 
 lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
@@ -100,7 +99,7 @@ lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
 lib_status core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical,
     lib_uptr destination, lib_uptr size, lib_bool reset_fetch);
 /* CPU reset-cache fetches are the one architectural access which precedes
- * board-controlled A20 routing.  This route accepts only an already-registered
+ * configured address-line decoding.  This route accepts only an already-registered
  * immutable/device provider at the raw physical address; it never falls back
  * to RAM or changes ordinary memory-access semantics. */
 lib_status core_machine_memory_read_reset_physical(t_ram *ram,
@@ -118,8 +117,6 @@ lib_status core_machine_memory_initialize_for(t_ram *ram, lib_size bytes,
     core_machine_memory_test_allocation *test_allocation);
 void core_machine_memory_reset(t_ram *ram);
 void core_machine_memory_finalize(t_ram *ram);
-lib_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
-    core_machine_a20_wrap_policy policy);
 
 
 lib_status core_machine_memory_allocate_for(t_ram *ram, lib_size bytes);
@@ -139,7 +136,7 @@ lib_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, void *owner);
-lib_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *ram,
+lib_status core_machine_memory_register_raw_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, void *owner);

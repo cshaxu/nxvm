@@ -22,7 +22,9 @@ foreach(forbidden "flagA20" "core_machine_memory_register_fallback_device_provid
     endif()
 endforeach()
 
-foreach(required "core_machine_signal_a20(owner" "core_machine_observe_a20(owner"
+foreach(required "core_machine_signal_address_clear_mask(board->core"
+    "core_machine_observe_address_clear_mask(board->core"
+    "core_machine_board_observe_a20(owner"
     "core_machine_kbc_signal_a20"
     "CORE_MACHINE_MEMORY_PROVIDER_FALLBACK"
     "core_machine_install_memory_device_routes(board->core, &route, 1u")
@@ -33,7 +35,7 @@ foreach(required "core_machine_signal_a20(owner" "core_machine_observe_a20(owner
 endforeach()
 
 foreach(required "attachment->connect.set_a20"
-    "core_machine_signal_a20(machine, enabled != 0)"
+    "core_machine_signal_address_clear_mask(machine, clear_mask)"
     "case CORE_MACHINE_MEMORY_PROVIDER_FALLBACK:")
     string(FIND "${kbc}${machine}${core}" "${required}" position)
     if(position LESS 0)
@@ -41,4 +43,17 @@ foreach(required "attachment->connect.set_a20"
     endif()
 endforeach()
 
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory.c" memory)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.h" memory_contract)
+if("${memory}${memory_contract}${machine}${core}" MATCHES
+   "flagA20|a20_wrap_policy|CORE_MACHINE_(BOARD_)?A20_WRAP_|VRAM_BIT_A20")
+    message(FATAL_ERROR "Neutral address decoder retains PC A20 policy")
+endif()
+foreach(required "config->address_decode.first <= config->address_decode.last"
+    "config->address_decode.reset_clear_mask")
+    string(FIND "${machine}" "${required}" position)
+    if(position LESS 0)
+        message(FATAL_ERROR "Neutral address decoder lacks validation/publication: ${required}")
+    endif()
+endforeach()
 message("A20-FALLBACK-ROUTES:OK")

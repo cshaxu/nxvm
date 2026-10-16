@@ -75,6 +75,9 @@ Device advancement stays cohesive in Board-Base's `board_advance.c`; the neutral
 attachment declares only before/after-internal advancement and CPU interrupt
 signals, not PIT pairs or media/RTC/peripheral slots. Matching Board-order and
 neutral internal-readiness assertions stay with those respective test owners.
+PC A20 policy and Boolean pin adaptation stay in Board-Base. Execution config
+contains only a copied address window/reset-clear-mask; neutral memory's raw
+overlay and cache/inspection paths do not import a Board policy enum.
 
 ROM mapping declarations and asset roles remain with the core product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the

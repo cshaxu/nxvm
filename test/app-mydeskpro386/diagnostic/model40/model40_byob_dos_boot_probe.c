@@ -1754,7 +1754,7 @@ int main(lib_i32 argc, char **argv)
 
         printf("BOOT-PROBE=memory-installed=%llu-a20=%u-boundary-write-status=%u-route=%u\n",
             (unsigned long long)test_core_boot_capture(session->core_machine).memory_bytes,
-            (unsigned int)test_core_boot_capture(session->core_machine).a20,
+            (unsigned int)((test_core_boot_capture(session->core_machine).address_clear_mask & 0x00100000u) == 0u),
             (unsigned int)boundary_status, (unsigned int)boundary_route);
     }
     if (test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
@@ -3062,7 +3062,7 @@ done:
             (unsigned long long)trace.a20_port_write_count,
             (unsigned int)trace.a20_port_last_pc,
             (unsigned int)trace.a20_port_last_value,
-            (unsigned int)test_core_boot_capture(session->core_machine).a20);
+            (unsigned int)((test_core_boot_capture(session->core_machine).address_clear_mask & 0x00100000u) == 0u));
         {
             lib_u64 ticks = 0u;
             const lib_status status = test_board_kbc_ticks_until_event(session->board, &ticks);

@@ -324,7 +324,7 @@ static lib_i32 timing_80186_manifest_prepare(core_machine **out_machine,
         machine, &timing_80186_manifest_execution, LIB_NULL);
     if (status == LIB_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == LIB_STATUS_OK) status = core_machine_reset(machine);
-    if (status == LIB_STATUS_OK) status = core_machine_set_a20(machine, 1);
+    if (status == LIB_STATUS_OK) status = core_machine_set_address_clear_mask(machine, 0u);
     if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80186_MANIFEST_RESET_LINEAR, program, bytes);
     /* Keep arithmetic recipes on their successful-retirement path: a nonzero

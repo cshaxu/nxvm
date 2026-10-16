@@ -61,6 +61,11 @@ typedef enum core_machine_keyboard_topology {
 
 #include "core/board-xt/xt_ppi_keyboard_interface.h"
 
+typedef enum core_machine_board_a20_wrap_policy {
+    CORE_MACHINE_BOARD_A20_WRAP_GLOBAL_MASK = 0,
+    CORE_MACHINE_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB = 1
+} core_machine_board_a20_wrap_policy;
+
 typedef struct core_machine_config {
     lib_size memory_bytes;
     x86_core_cpu_profile cpu_profile;
@@ -68,7 +73,7 @@ typedef struct core_machine_config {
     /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
      * than 11b, using the r/m field as the general-register selector. */
     lib_u8 cpu_80386_cr_mov_ignores_mod;
-    core_machine_a20_wrap_policy a20_wrap_policy;
+    core_machine_board_a20_wrap_policy a20_wrap_policy;
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     lib_u32 ticks_per_instruction;
     x86_core_cpu_instruction_timing instruction_timing;
@@ -245,6 +250,9 @@ typedef struct core_machine_plan core_machine_plan;
 lib_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine, core_machine_board_state **out_board);
+
+lib_status core_machine_board_observe_a20(const core_machine_board_state *board,
+    lib_bool *out_enabled);
 
 lib_status core_machine_plan_create(const core_machine_config *configuration,
     core_machine_plan **out_plan);

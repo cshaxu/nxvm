@@ -1,6 +1,5 @@
 /* Copyright 2012-2014 Neko. */
 
-/* VRAM is the random accessing memory module.  */
 #include "lib/types/types_interface.h"
 #include "core/x86/device_support_interface.h"
 
@@ -8,18 +7,13 @@
 
 #include "core/x86/memory.h"
 
-/* Allocates memory for virtual machine ram */
-static lib_u32 core_machine_memory_wrap_a20(const t_ram *ram,
+static lib_u32 core_machine_memory_decode_address(const t_ram *ram,
     lib_u32 offset)
 {
-    if (ram->data.flagA20) return offset;
-    if (ram->connect.a20_wrap_policy == CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) {
-        if (offset >= VRAM_BIT_A20 && offset < 2u * VRAM_BIT_A20) {
-            return offset - VRAM_BIT_A20;
-        }
-        return offset;
-    }
-    return offset & ~VRAM_BIT_A20;
+    if (ram->data.address_clear_mask == 0u ||
+        offset < ram->connect.address_decode.first ||
+        offset > ram->connect.address_decode.last) return offset;
+    return offset & ~ram->data.address_clear_mask;
 }
 
 static lib_status core_machine_memory_offset(const t_ram *ram,
@@ -31,7 +25,7 @@ static lib_status core_machine_memory_offset(const t_ram *ram,
     if (ram == LIB_NULL || out_offset == LIB_NULL || ram->connect.backing == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    offset = (lib_size)core_machine_memory_wrap_a20(ram, physical);
+    offset = (lib_size)core_machine_memory_decode_address(ram, physical);
     for (index = 0u; index < ram->connect.mapping_count; ++index) {
         const core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
         if (physical >= mapping->physical_start &&
@@ -78,7 +72,7 @@ static lib_status core_machine_memory_route_resolve(const t_ram *ram,
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
-        if (!provider->pre_a20 || physical < provider->physical_start ||
+        if (!provider->raw_decode || physical < provider->physical_start ||
             (lib_u64)physical - provider->physical_start + bytes >
                 provider->bytes) continue;
         status = provider->query(provider->owner, physical, bytes, access);
@@ -89,10 +83,10 @@ static lib_status core_machine_memory_route_resolve(const t_ram *ram,
         }
         if (status != LIB_STATUS_UNSUPPORTED) return status;
     }
-    wrapped = core_machine_memory_wrap_a20(ram, physical);
+    wrapped = core_machine_memory_decode_address(ram, physical);
     /* A frozen board RAM alias is a selected physical decode, not an ordinary
      * backing fallback.  It therefore wins over any lower ordinary device
-     * route while preserving the raw pre-A20 reset route above. */
+     * route while preserving the raw reset route above. */
     for (index = 0u; index < ram->connect.mapping_count; ++index) {
         const core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
 
@@ -162,7 +156,7 @@ static lib_status core_machine_memory_route_resolve(const t_ram *ram,
 }
 
 /* Reset-cache fetches use the CPU's architected high reset address before the
- * board has an opportunity to apply A20 routing.  A present provider is the
+ * board has an opportunity to apply address-line decoding.  A present provider is the
  * sole ROM owner; no provider disposition leaves the caller free to use its
  * ordinary explicit backing-memory reset route. */
 static lib_status core_machine_memory_reset_provider_resolve(const t_ram *ram,
@@ -395,7 +389,7 @@ static void core_machine_memory_append_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, void *owner, lib_u8 overlay,
-    lib_u8 pre_a20, lib_u8 replacement, lib_u8 fallback)
+    lib_u8 raw_decode, lib_u8 replacement, lib_u8 fallback)
 {
     core_machine_memory_device_provider *provider =
         &ram->connect.device_providers[ram->connect.device_provider_count++];
@@ -407,7 +401,7 @@ static void core_machine_memory_append_device_provider(t_ram *ram,
     provider->query = query;
     provider->owner = owner;
     provider->overlay = overlay;
-    provider->pre_a20 = pre_a20;
+    provider->raw_decode = raw_decode;
     provider->replacement = replacement;
     provider->fallback = fallback;
 }
@@ -455,7 +449,7 @@ lib_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *ram,
+lib_status core_machine_memory_register_raw_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, void *owner)
@@ -741,7 +735,7 @@ lib_status core_machine_memory_query_cpu_cache(const t_ram *ram,
 
     if (ram == LIB_NULL || out_address == LIB_NULL || out_fill_enabled == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_address = reset_fetch ? physical : core_machine_memory_wrap_a20(ram, physical);
+    *out_address = reset_fetch ? physical : core_machine_memory_decode_address(ram, physical);
     *out_fill_enabled = LIB_FALSE;
     if (reset_fetch || !check_fill) return LIB_STATUS_OK;
     first = *out_address & ~15u;
@@ -765,7 +759,7 @@ lib_status core_machine_memory_query_cpu_cache(const t_ram *ram,
         if (provider != LIB_NULL) return LIB_STATUS_OK;
         if (byte == 0u) first_offset = offset;
         if (offset != first_offset + byte || offset !=
-                core_machine_memory_wrap_a20(ram, first + byte))
+                core_machine_memory_decode_address(ram, first + byte))
             return LIB_STATUS_OK;
     }
     *out_fill_enabled = LIB_TRUE;
@@ -785,6 +779,7 @@ void core_machine_memory_reset(t_ram *ram)
 {
     if (ram == LIB_NULL || ram->connect.backing == 0u) return;
     lib_memory_set((void *)&ram->data, 0u, sizeof(ram->data));
+    ram->data.address_clear_mask = ram->connect.address_decode.reset_clear_mask;
     lib_memory_set((void *)ram->connect.backing, 0u,
         ram->connect.backing_capacity);
     if (ram->connect.parity != 0u) lib_memory_set((void *)ram->connect.parity,
@@ -807,24 +802,13 @@ void core_machine_memory_finalize(t_ram *ram)
     ram->connect.backing_capacity = 0u;
 }
 
-lib_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
-    core_machine_a20_wrap_policy policy)
-{
-    if (ram == LIB_NULL || ram->connect.mappings_frozen ||
-        (policy != CORE_MACHINE_A20_WRAP_GLOBAL_MASK &&
-        policy != CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    ram->connect.a20_wrap_policy = policy;
-    return LIB_STATUS_OK;
-}
 lib_status core_machine_memory_read_real_from(t_ram *ram, lib_u16 segment,
     lib_u16 offset, void *out_data, lib_size size)
 {
     lib_u32 physical;
 
     if (ram == LIB_NULL || out_data == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    physical = core_machine_memory_wrap_a20(ram,
+    physical = core_machine_memory_decode_address(ram,
         (CORE_MACHINE_MASK_U16(segment) << 4) + CORE_MACHINE_MASK_U16(offset));
     return core_machine_memory_read_physical(ram, physical,
         (lib_uptr)out_data, size);
@@ -836,7 +820,7 @@ lib_status core_machine_memory_write_real_to(t_ram *ram, lib_u16 segment,
     lib_u32 physical;
 
     if (ram == LIB_NULL || in_data == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    physical = core_machine_memory_wrap_a20(ram,
+    physical = core_machine_memory_decode_address(ram,
         (CORE_MACHINE_MASK_U16(segment) << 4) + CORE_MACHINE_MASK_U16(offset));
     return core_machine_memory_write_physical(ram, physical,
         (lib_uptr)in_data, size);

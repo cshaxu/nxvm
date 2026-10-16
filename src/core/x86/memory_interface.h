@@ -35,10 +35,14 @@ typedef void (*core_machine_memory_parity_fault_observer)(void *owner,
 typedef void (*core_machine_memory_write_observer)(void *owner,
     lib_u32 physical, lib_uptr bytes);
 
-typedef enum core_machine_a20_wrap_policy {
-    CORE_MACHINE_A20_WRAP_GLOBAL_MASK = 0,
-    CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB = 1
-} core_machine_a20_wrap_policy;
+/* Inclusive physical window and its reset-selected suppressed address lines.
+ * Zero clear bits give identity decoding. Board composition supplies any
+ * hardware-specific window; raw reset overlays are resolved before this. */
+typedef struct core_machine_address_decode {
+    lib_u32 first;
+    lib_u32 last;
+    lib_u32 reset_clear_mask;
+} core_machine_address_decode;
 typedef enum core_machine_memory_access {
     CORE_MACHINE_MEMORY_ACCESS_READ = 0,
     CORE_MACHINE_MEMORY_ACCESS_WRITE
@@ -97,7 +101,7 @@ typedef void (*core_machine_dma_device_effect)(void *owner,
 
 /* Publish routes, optional parity and optional write observer as one owner
  * transaction. Replacement routes override lower ROM/RAM only when queried
- * as present; reset overlays decode before ordinary A20 routing. An
+ * as present; reset overlays decode before ordinary address-line decoding. An
  * observer-only registration has zero routes. */
 lib_status core_machine_install_memory_device_routes(core_machine *machine,
     const core_machine_memory_device_route *routes, lib_size count,
@@ -129,15 +133,16 @@ lib_status core_machine_memory_query(
     core_machine_memory_access access,
     core_machine_memory_route *out_route);
 
-lib_status core_machine_set_a20(
+lib_status core_machine_set_address_clear_mask(
     core_machine *machine,
-    lib_i32 enabled);
+    lib_u32 clear_mask);
 
-/* Board signals may change A20 while the guest runs. The paused-debug setter
+/* Board signals may change address lines while the guest runs. The paused setter
  * above keeps its separate lifecycle restriction. */
-lib_status core_machine_signal_a20(core_machine *machine, lib_bool enabled);
-lib_status core_machine_observe_a20(const core_machine *machine,
-    lib_bool *out_enabled);
+lib_status core_machine_signal_address_clear_mask(core_machine *machine,
+    lib_u32 clear_mask);
+lib_status core_machine_observe_address_clear_mask(const core_machine *machine,
+    lib_u32 *out_clear_mask);
 
 /* One Core-owned DMA memory transaction. Device effects occur only between
  * begin and memory, or between memory and commit, respectively. */

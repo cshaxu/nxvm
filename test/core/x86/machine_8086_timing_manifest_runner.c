@@ -256,7 +256,7 @@ static lib_i32 timing_manifest_prepare(core_machine **out_machine,
         status = core_machine_debug_patch_registers(machine, &entry);
     }
     if (status == LIB_STATUS_OK) {
-        status = core_machine_set_a20(machine, 1);
+        status = core_machine_set_address_clear_mask(machine, 0u);
     }
     if (status == LIB_STATUS_OK) {
         status = core_machine_memory_write(machine, TIMING_MANIFEST_RESET_LINEAR,

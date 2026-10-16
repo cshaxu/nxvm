@@ -49,7 +49,7 @@ lib_i32 main(void)
     port_fixture second_port = { 0u, 0u };
     lib_u8 value;
     lib_u32 port_value;
-    lib_bool a20_enabled;
+    lib_u32 clear_mask;
     lib_i32 result = 0;
 
     result |= expect_status(test_board_create_executor(
@@ -78,7 +78,7 @@ lib_i32 main(void)
     value = 0x11u;
     result |= expect_status(core_machine_memory_write(first, 0u, &value, 1u),
                             LIB_STATUS_OK);
-    result |= expect_status(core_machine_set_a20(first, 1), LIB_STATUS_OK);
+    result |= expect_status(core_machine_set_address_clear_mask(first, 0u), LIB_STATUS_OK);
     value = 0x22u;
     result |= expect_status(core_machine_memory_write(first, 0x100000u, &value, 1u),
                             LIB_STATUS_OK);
@@ -86,7 +86,7 @@ lib_i32 main(void)
     result |= expect_status(core_machine_memory_read(first, 0x100000u, &value, 1u),
                             LIB_STATUS_OK);
     result |= value != 0x22u;
-    result |= expect_status(core_machine_set_a20(first, 0), LIB_STATUS_OK);
+    result |= expect_status(core_machine_set_address_clear_mask(first, 0x00100000u), LIB_STATUS_OK);
     value = 0u;
     result |= expect_status(core_machine_memory_read(first, 0x100000u, &value, 1u),
                             LIB_STATUS_OK);
@@ -114,15 +114,15 @@ lib_i32 main(void)
     result |= value != 0x11u;
 
     first->lifecycle = CORE_MACHINE_RUNNING;
-    result |= expect_status(core_machine_set_a20(first, 1), LIB_STATUS_INVALID_STATE);
+    result |= expect_status(core_machine_set_address_clear_mask(first, 0u), LIB_STATUS_INVALID_STATE);
     core_machine_port_write(&first->executor_port, 0x64u, 0xd1u);
     core_machine_port_write(&first->executor_port, 0x60u, 0x03u);
-    result |= expect_status(core_machine_observe_a20(first, &a20_enabled), LIB_STATUS_OK);
-    result |= !a20_enabled ||
+    result |= expect_status(core_machine_observe_address_clear_mask(first, &clear_mask), LIB_STATUS_OK);
+    result |= clear_mask != 0u ||
         core_machine_port_read(&first->executor_port, 0x92u) != 0x02u;
     core_machine_port_write(&first->executor_port, 0x92u, 0u);
-    result |= expect_status(core_machine_observe_a20(first, &a20_enabled), LIB_STATUS_OK);
-    result |= a20_enabled;
+    result |= expect_status(core_machine_observe_address_clear_mask(first, &clear_mask), LIB_STATUS_OK);
+    result |= clear_mask != 0x00100000u;
     first->lifecycle = CORE_MACHINE_STOPPED;
 
     value = 0xffu;

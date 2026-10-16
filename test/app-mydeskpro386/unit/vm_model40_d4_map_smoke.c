@@ -143,15 +143,15 @@ lib_i32 main(void)
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine,
             MYDESKPRO386_ROM_COMPATIBILITY_ALIAS_START, 0x11u));
-        CHECK(core_machine_set_a20(session->core_machine, LIB_FALSE) == LIB_STATUS_OK);
+        CHECK(core_machine_set_address_clear_mask(session->core_machine, 0x00100000u) == LIB_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00000020u, 0xa5u,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0xa5u));
-        CHECK(core_machine_set_a20(session->core_machine, LIB_TRUE) == LIB_STATUS_OK);
+        CHECK(core_machine_set_address_clear_mask(session->core_machine, 0u) == LIB_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00100020u, 0x5au,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0x5au));
-        CHECK(core_machine_set_a20(session->core_machine, LIB_FALSE) == LIB_STATUS_OK);
+        CHECK(core_machine_set_address_clear_mask(session->core_machine, 0x00100000u) == LIB_STATUS_OK);
 
         /* AT spare DMA page latches are board-visible state, not unknown
          * ports.  DeskPro firmware uses 86h during POST. */
@@ -180,7 +180,7 @@ lib_i32 main(void)
             0x4au, LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, MYDESKPRO386_D4_CONTROL_PHYSICAL + 2u,
             0x4au));
-        CHECK(core_machine_set_a20(session->core_machine, LIB_TRUE) == LIB_STATUS_OK);
+        CHECK(core_machine_set_address_clear_mask(session->core_machine, 0u) == LIB_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00100020u, 0x96u,
             LIB_STATUS_OK));
         CHECK(write_byte(session->core_machine, MYDESKPRO386_D4_CONTROL_PHYSICAL + 2u,
@@ -216,7 +216,7 @@ lib_i32 main(void)
             0x4au, LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, MYDESKPRO386_D4_CONTROL_PHYSICAL + 2u,
             0x4au));
-        CHECK(core_machine_set_a20(session->core_machine, LIB_TRUE) == LIB_STATUS_OK);
+        CHECK(core_machine_set_address_clear_mask(session->core_machine, 0u) == LIB_STATUS_OK);
     }
 done:
 #undef CHECK

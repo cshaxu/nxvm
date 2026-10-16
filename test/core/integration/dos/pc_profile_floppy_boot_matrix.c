@@ -264,7 +264,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         {
             lib_bool a20;
-            if (core_machine_observe_a20(session->core_machine, &a20) == LIB_STATUS_OK)
+            if (core_machine_board_observe_a20(session->board, &a20) == LIB_STATUS_OK)
                 printf("NXVM:INI-BOOT:%s:A20=%u\n", name, (unsigned int)a20);
         }
         {

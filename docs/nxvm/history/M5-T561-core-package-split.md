@@ -193,3 +193,24 @@ CURRENT revision. S5 is closed, not T561; I3 P4/P6 prerequisites are accepted.
 The 25 existing higher Board/adapter test files that
 directly include execution private headers join S2 T1's explicit S7/S8 receiver
 cleanup obligation; final I5 rejects all unresolved cross-package borrowing.
+
+## S6 Address Decode And Construction Delivery
+
+[S6 evidence](../etc/evidence/t561-s6-address-decode.md) and its
+[36-file hash review](../etc/evidence/t561-s6-file-review.tsv) record I3 P7/P8:
+Board owns PC A20 policy and Boolean pin interpretation; the neutral route
+owner consumes an explicit inclusive window/reset-clear-mask, with identity
+as its zero configuration. The same live state becomes a clear mask, with no
+second decoder, per-byte callback or mirrored Board flag. Actual ROM/cache/
+alias/provider/DMA and firmware/entry bodies retain their prior semantics.
+Production C/H is +110/-89 (net +21); tests +174/-43 (net +131); family CMake
+is +19/-4. Complete scope and retained/private-test receivers are in evidence.
+
+Both original graphs pass 627/627 repository units, all specialized gates,
+48 receiving integration executions and restored-default identity per width.
+Eight rebuilt/deployed 0561 PC EXEs pass actual published CLI/INI/PE/version/
+release-count/hash checks. Three automated desktop unit cases per width pass;
+manual RDP/physical/full interactive Windows GUI is not claimed. Lib/Emulator,
+imported packages, CPU/FPU, MyNES and owner inputs remain unchanged. Delivery
+awaits coordinator actual-change acceptance. I3 actual Machine extraction and
+non-PC proof, I4 and I5 remain open; CPU C16/C17/final qualification is not resumed.

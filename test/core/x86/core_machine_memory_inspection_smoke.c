@@ -341,7 +341,11 @@ static lib_bool inspection_cache_execution(void)
 
 lib_i32 main(void)
 {
-    const core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
+    const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .address_decode = {0u, LIB_UINT32_MAX, 0x00100000u}
+    };
     core_machine *machine = LIB_NULL;
     x86_core_cpu_instruction_lexeme lexeme;
     inspection_probe probe = {0};
@@ -457,10 +461,10 @@ lib_i32 main(void)
         failed |= core_machine_memory_read_physical(memory, 0x1001u,
             (lib_uptr)bytes, 1u) != LIB_STATUS_IO_ERROR || probe.reads != 0u;
         probe.query_status = LIB_STATUS_OK;
-        failed |= core_machine_signal_a20(machine, LIB_TRUE) != LIB_STATUS_OK;
+        failed |= core_machine_signal_address_clear_mask(machine, 0u) != LIB_STATUS_OK;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x103010u,
             X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x103010u;
-        failed |= core_machine_signal_a20(machine, LIB_FALSE) != LIB_STATUS_OK;
+        failed |= core_machine_signal_address_clear_mask(machine, 0x00100000u) != LIB_STATUS_OK;
     }
 
     /* The real Core transaction owns the entire page-table read/write pair. */

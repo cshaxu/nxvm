@@ -24,6 +24,9 @@ lib_i32 main(void)
         16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     result |= core_machine_memory_initialize_for(&second_memory,
         16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
+    first_memory.connect.address_decode = (core_machine_address_decode){
+        0u, LIB_UINT32_MAX, 0x00100000u};
+    first_memory.data.address_clear_mask = 0x00100000u;
     core_machine_port_initialize(first_port);
     core_machine_port_initialize(second_port);
 
@@ -44,7 +47,7 @@ lib_i32 main(void)
     result |= core_machine_memory_read_physical(&first_memory, 0u,
         (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
     result |= observed != value;
-    first_memory.data.flagA20 = LIB_TRUE;
+    first_memory.data.address_clear_mask = 0u;
     value = 0xa5u;
     result |= core_machine_memory_write_physical(&first_memory, 0x00100000u,
         (lib_uptr)&value, 1u) != LIB_STATUS_OK;
