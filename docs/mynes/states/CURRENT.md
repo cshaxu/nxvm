@@ -2,6 +2,15 @@
 
 ## Current Work
 
+NXVM-hosted [T562 S1](../../nxvm/states/CURRENT.md) explicitly admits the
+MyNES receiver of the committed Shared PCM import: direct audio-pcm APIs,
+root-safe executable-directory joining, matching tests and rebuilt 0044
+x64/x86 artifacts. No NES Core, snapshot or user configuration change is
+admitted. Receiver qualification is complete: both widths pass all 630
+repository units and all 12 MyNES integrations; both 0044 EXEs are rebuilt
+and recorded in the [delivery inventory](../../nxvm/etc/evidence/t562-s1-artifacts.json).
+Earlier hashes below remain historical. Mobile RDP input is not requalified.
+
 No active MyNES S. On 2026-10-13 the owner requested T556 S10 closure.
 S10 is closed as a bounded diagnostic delivery with the unresolved repair
 transferred to [TODO](TODO.md#rdp-short-input-repair), not as a production fix.

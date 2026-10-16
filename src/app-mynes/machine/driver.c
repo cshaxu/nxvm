@@ -24,7 +24,7 @@ static void machine_driver_clear_submitted_audio(machine_driver *driver)
     if (driver == LIB_NULL) return;
     machine_driver_clear_staged_audio(driver);
     if (driver->audio != LIB_NULL && driver->audio_needs_clear != LIB_FALSE &&
-        lib_audio_stream_clear(driver->audio) == LIB_STATUS_OK)
+        lib_audio_pcm_stream_clear(driver->audio) == LIB_STATUS_OK)
         driver->audio_needs_clear = LIB_FALSE;
 }
 
@@ -115,7 +115,7 @@ static void machine_driver_drain_audio(machine_driver *driver)
 {
     lib_u32 queued;
     lib_u32 writable;
-    lib_i16 pcm[LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION];
+    lib_i16 pcm[LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION];
     lib_u32 accepted;
     lib_u32 index;
 
@@ -124,7 +124,7 @@ static void machine_driver_drain_audio(machine_driver *driver)
     if (driver->audio_staging_count < MACHINE_DRIVER_AUDIO_PLAY_BLOCK)
         return;
     while (driver->audio_staging_count >= MACHINE_DRIVER_AUDIO_PLAY_BLOCK) {
-        if (lib_audio_stream_query(driver->audio, &queued, &writable) != LIB_STATUS_OK ||
+        if (lib_audio_pcm_stream_query(driver->audio, &queued, &writable) != LIB_STATUS_OK ||
             writable < MACHINE_DRIVER_AUDIO_PLAY_BLOCK) return;
         for (index = 0u; index < MACHINE_DRIVER_AUDIO_PLAY_BLOCK; ++index) {
             lib_i32 mixed = driver->audio_staging[(driver->audio_staging_read + index) %
@@ -133,7 +133,7 @@ static void machine_driver_drain_audio(machine_driver *driver)
             else if (mixed < -32768) pcm[index] = -32768;
             else pcm[index] = (lib_i16)mixed;
         }
-        if (lib_audio_stream_enqueue(driver->audio, pcm, MACHINE_DRIVER_AUDIO_PLAY_BLOCK,
+        if (lib_audio_pcm_stream_enqueue(driver->audio, pcm, MACHINE_DRIVER_AUDIO_PLAY_BLOCK,
                 &accepted) != LIB_STATUS_OK || accepted > MACHINE_DRIVER_AUDIO_PLAY_BLOCK)
             return;
         if (accepted != 0u) driver->audio_needs_clear = LIB_TRUE;
@@ -357,7 +357,7 @@ lib_status machine_driver_create(machine_driver **out_driver,
     driver->options = *options;
     driver->text_output = options->text_output;
     if (options->audio_enabled != LIB_FALSE) {
-        lib_status audio_status = lib_audio_stream_create(&(lib_audio_stream_options) {
+        lib_status audio_status = lib_audio_pcm_stream_create(&(lib_audio_pcm_stream_options) {
             .sample_rate = 48000u, .channel_count = 1u
         }, &driver->audio);
         /* Input, video and CPU execution remain useful in an RDP session or
@@ -380,7 +380,7 @@ lib_status machine_driver_create(machine_driver **out_driver,
 lib_status machine_driver_destroy(machine_driver *driver)
 {
     if (driver == LIB_NULL) return LIB_STATUS_OK;
-    if (lib_audio_stream_destroy(&driver->audio) != LIB_STATUS_OK) return LIB_STATUS_IO_ERROR;
+    if (lib_audio_pcm_stream_destroy(&driver->audio) != LIB_STATUS_OK) return LIB_STATUS_IO_ERROR;
     core_machine_destroy(driver->machine);
     lib_release(driver);
     return LIB_STATUS_OK;
@@ -526,7 +526,7 @@ void machine_driver_set_heartbeat(void *context, lib_bool enabled)
     if (driver == LIB_NULL) return;
     if (driver->audio != LIB_NULL && (enabled != LIB_FALSE ||
         driver->audio_needs_clear != LIB_FALSE)) {
-        if (lib_audio_stream_set_active(driver->audio, enabled) == LIB_STATUS_OK &&
+        if (lib_audio_pcm_stream_set_active(driver->audio, enabled) == LIB_STATUS_OK &&
             enabled == LIB_FALSE)
             driver->audio_needs_clear = LIB_FALSE;
     }

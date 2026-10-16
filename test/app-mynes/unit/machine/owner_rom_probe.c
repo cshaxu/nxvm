@@ -12,7 +12,7 @@ static lib_u32 probe_audio_queued(const machine_driver *driver)
 
     assert(driver != LIB_NULL);
     if (driver->audio == LIB_NULL) return 0u;
-    assert(lib_audio_stream_query(driver->audio, &queued, &writable) == LIB_STATUS_OK);
+    assert(lib_audio_pcm_stream_query(driver->audio, &queued, &writable) == LIB_STATUS_OK);
     return queued;
 }
 

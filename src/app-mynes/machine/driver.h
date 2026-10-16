@@ -3,16 +3,16 @@
 
 #include "machine/driver_interface.h"
 #include "core/machine_interface.h"
-#include "lib/audio/stream_interface.h"
+#include "lib/audio/pcm/stream_interface.h"
 
 #define MACHINE_DRIVER_INPUT_SOURCE_CAPACITY 2u
 #define MACHINE_DRIVER_INPUT_BINDING_CAPACITY 16u
 #define MACHINE_DRIVER_AUDIO_STAGING_CAPACITY 4096u
-#define MACHINE_DRIVER_AUDIO_PLAY_BLOCK LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION
+#define MACHINE_DRIVER_AUDIO_PLAY_BLOCK LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION
 
 struct machine_driver {
     core_machine *machine;
-    lib_audio_stream *audio;
+    lib_audio_pcm_stream *audio;
     lib_i32 audio_staging[MACHINE_DRIVER_AUDIO_STAGING_CAPACITY];
     lib_u16 audio_staging_read;
     lib_u16 audio_staging_write;

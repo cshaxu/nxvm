@@ -116,9 +116,12 @@ static lib_bool app_config_path(lib_u8 *path)
     if (base_process_executable_directory((char *)path, APP_CONFIG_PATH_CAPACITY) != LIB_STATUS_OK)
         return LIB_FALSE;
     for (length = 0u; path[length] != 0u; ++length) { }
-    if (length + 1u + sizeof("mynes.ini") > APP_CONFIG_PATH_CAPACITY) return LIB_FALSE;
-    path[length] = '\\';
-    lib_memory_copy(path + length + 1u, "mynes.ini", sizeof("mynes.ini"));
+    if (length != 0u && path[length - 1u] != '/' && path[length - 1u] != '\\') {
+        if (length + 1u + sizeof("mynes.ini") > APP_CONFIG_PATH_CAPACITY) return LIB_FALSE;
+        path[length++] = '\\';
+    }
+    if (length + sizeof("mynes.ini") > APP_CONFIG_PATH_CAPACITY) return LIB_FALSE;
+    lib_memory_copy(path + length, "mynes.ini", sizeof("mynes.ini"));
     return LIB_TRUE;
 }
 
