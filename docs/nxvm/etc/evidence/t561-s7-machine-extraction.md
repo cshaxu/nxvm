@@ -1078,6 +1078,9 @@ The owner-approved diagnostic adjustment is implemented and both diagnostics
 build and self-test on both widths. Automated registered desktop cases run as
 part of the recorded suites; manual RDP, physical desktop interaction and a
 fresh external-ROM run of the two diagnostic executables are not claimed.
-Shared P1 is pushed; NXVM receiver/artifact P2 and coordinator acceptance are
-the remaining delivery steps. I3 is ready for acceptance, not final I4/I5 or
-CPU C16/C17 qualification.
+Shared P1 `0da6818d5` and NXVM receiver/artifact P2 `b77d1f482` are pushed.
+Coordinator actual-change review verifies their committed scope, the declared
+production-body substitutions, behavior ledger, all 616 review entries and
+eight artifact hashes against the original packet. I3/S7 is accepted, not
+final I4/I5 or CPU C16/C17 qualification. The remaining Board CPU/PIC fixture
+family stays explicitly assigned to S8; no final clean-package claim is made.

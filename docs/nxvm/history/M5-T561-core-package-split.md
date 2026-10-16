@@ -236,5 +236,8 @@ Both widths pass 632 repository units, specialized gates, 48 receiving
 integration executions plus restored-default identity, and all eight published
 CLI/INI/PE/version/hash checks. All eight 0561 PC EXEs are renewed; MyNES,
 Lib/Emulator and protected inputs are unchanged. Manual RDP/full desktop and
-fresh external-ROM diagnostic runs are not claimed. NXVM P2 and coordinator
-actual-change acceptance remain pending; I4/S8 and I5/S9 remain open.
+fresh external-ROM diagnostic runs are not claimed. NXVM P2 `b77d1f482` is
+pushed. Coordinator actual-change review accepts the pushed bodies, preserved
+behavior/ownership ledger, all 616 file records and eight artifact hashes
+against the complete packet retained in P2's CURRENT. Documentation governance
+and whitespace checks pass. I3/S7 closes; I4/S8 and I5/S9 remain open.
