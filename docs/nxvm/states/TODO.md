@@ -63,6 +63,14 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 ## Architecture And Portability Debt
 
+- [ ] **X86 NXVM verifier-negative runtime margin (`TODO(Low)`).** T563 S2's
+  frozen x64 full unit run timed out this unchanged test at 30 seconds;
+  isolated repetition passed in 29.09 seconds without changing its budget.
+  Admit a bounded test-efficiency investigation of repeated corpus copies
+  and checker invocations, retaining every negative assertion and the same
+  dependency rules. This is a test-runtime reliability risk, not evidence of
+  a CPU timing regression or permission to weaken checks or tune the host.
+
 - [ ] **PC App test adapter encapsulation (`TODO(Medium)`).** T561 S9's final
   sweep distinguishes the repaired X86 Core private CPU/Machine borrowing
   from existing App tests that still include

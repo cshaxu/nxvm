@@ -41,7 +41,7 @@ and firmware qualification remain in their separate candidates.
 
 ## Retained Staging And Removal Conditions
 
-The chip owns nominal/access/decode/L2 arithmetic queries and actual fetch,
+The chip owns nominal/access/decode/L2 instruction queries and actual fetch,
 cache/TLB, GPR dependency and REP facts. The existing Core pending-completion
 owner consumes the public timing result's event subtotal. No new executor,
 hardware-state mirror, cache, worker or guest-time publisher is authorized.
@@ -57,15 +57,15 @@ public API or a permanent alternative timing service.
 ## Planned Bounded S Batches
 
 The following sequential S plan follows the current owner audit in
-[S1 evidence](../etc/evidence/t563-s1-rebase.md). Only S1 is admitted by this
-packet. Each later admission freezes numerical sources, files and diff estimates;
+[S1 evidence](../etc/evidence/t563-s1-rebase.md). Current records S1 acceptance
+and S2 admission. Each later admission freezes numerical sources, files and diff estimates;
 simple related forms are implemented and tested as a cohort, not one opcode per S.
 
 | S | Cohort and owner | Required exit |
 | --- | --- | --- |
 | S1 | Rebase C01--C17, source/test ownership and remaining receivers | Current-path ledger, unchanged baseline units and reviewed plan; no CPU-complete claim. |
 | S2 | CPU nominal/form allocation | Every C15 encoding family has an explicit nominal/model/fault disposition, including WAIT, aliases and special forms; direct source-derived vectors, unchanged original grades. No selector publication yet. |
-| S3 | CPU memory/translation costs | Ordinary, stack, string, descriptor/control, locked/split and failed accesses; cached/mixed/cold walks and A/D attempts accounted from actual transfers, without duplicate bus cost. |
+| S3 | CPU memory/translation costs | Ordinary and selected UMOV alias forms, stack, string, descriptor/control, locked/split and failed accesses; cached/mixed/cold walks and A/D attempts accounted from actual transfers, without duplicate bus cost. |
 | S4 | CPU fetch/bus, decode and REP | Fetch/refill/branch assumptions, actual waits and HOLD interaction, EA/prefix/AGI, REP setup/continuation/termination and lifetime; same single guest timeline. |
 | S5 | CPU/Core event and system elapsed time | Entry/nesting/failure, SMM/RSM and power assumptions resolved at their real owners; event-only time never retires an instruction. |
 | S6 | CPU selector/preview and Core budget transport | All prior cohorts connected through the sole selected-SX path; origins/source keys, safe maximum bounds, overflow and nonmutating preview proven; no unallocated applicable form. |

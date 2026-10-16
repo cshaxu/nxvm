@@ -2,39 +2,44 @@
 
 ## Current Work
 
-## M5 T563 S1 — Rebase 486SX Completion Ledger
+## M5 T563 S2 — Complete Nominal Form Allocation
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T563, S1, after closed T562; owner admits queue entry 1. |
-| Admission And Approval | Owner requests admission and execution of remaining 486SX CPU work. S1 target NXVM documentation/qualification; later implementation targets Shared X86 Core and necessary X86 NXVM receivers under existing CPU authorization. |
-| Objective | Reconcile every transferred C01--C17 obligation with the post-T561 source/test layout, freeze residual cohorts and subsequent implementation exits. |
-| Non-goals | No timing publication, C17 widening, numerical model change, Lib/Emulator/MyNES changes or PC110 board admission in this audit S. |
-| Reference Baseline | Clean 606ee84f4; T560 staged CPU evidence, T561 package split and accepted T562 qualification. |
+| Identifier Mode | Continuation T563 S2 after closed S1; single-session coordinator/executor roles. |
+| Admission And Approval | Owner admits remaining 486SX implementation and automatically admits sequential S work; existing CPU accuracy-upgrade authority applies. Shared X86 Core and NXVM delivery only; four PC consumers, no MyNES changes. |
+| Objective | Consume R2 and C16 nominal/form allocation against the complete C15 F01--F20 universe, retaining numerical sources and explicit model/fault/system dispositions. |
+| Non-goals | No complete selected runtime publication, C17 widening, new public API, Lib/Emulator/MyNES changes, PC110 board admission or invented exact timing for undocumented forms. |
+| Reference Baseline | Clean a6ac6377e; S1 owner/receiver audit and T560 S8/S9 original source and timing evidence. |
 | Candidate Proposal | ../proposals/m5-486sx-timing-production-completion.md. |
-| Files And ABI Surface | NXVM Current/Queue/proposal/history and source-to-owner audit evidence only. No production/test/API change in S1. |
+| Files And ABI Surface | Existing x86-core/cpu timing implementation/private declarations and matching CPU tests/manifests; NXVM evidence, version/preset/artifact updates if production changes. Estimate source +80--220/-10--70, tests +200--450/-0--30; refine from complete form census, no new public ABI. |
 | Applicable Rules | Execution coverage-bearing ledger and complete unit gate; architecture single state/time owner; coding original style/Types; source policy preserves primary-source grades and external originals; documentation authority. |
-| Verification | Inspect current selector, calculators, observation producers, preview, Machine transport/construction and Board predicates; reconcile old evidence/source ownership; fresh x64/x86 full repository units, documentation and diff checks. |
-| Expected Markers | Every transfer row has a current owner, evidence and bounded receiving batch; no source/test change; 631 units pass per width. |
-| Asset Needs | Existing 0562 PC and 0044 MyNES artifacts remain current because S1 changes no executable inputs; manuals remain external. |
-| Reporting Requirements | Confirm remaining actual gaps, source/grade decisions and planned S exits; distinguish stage calculators from connected runtime; report source/test delta zero and unperformed CPU qualification. |
-| Stop Conditions | Missing transferred evidence, unapproved semantic downgrade or new shared boundary; no CPU-complete claim from staging or older-family guest passes. |
-| Exit Criteria | Complete residual owner/receiver ledger and implementation plan, verified baseline, actual-change review, pushed clean documentation delivery. T563 remains open. |
+| Verification | Visually verify original numerical source pages; real CPU execution supplies calculator inputs; cover nominal/model rejection and unchanged outputs, aliases, modes and widths. Focused CPU tests during work, then both full unit graphs, specialized/manifest/doc gates and affected production integrations/artifact verification. |
+| Expected Markers | Every F01--F20 family and exceptional form has an explicit disposition and direct nominal proof or named event receiver; no silently inherited 386 value; current full units pass both widths. |
+| Asset Needs | Original manuals stay external. Production changes require eight 0563 PC EXEs built/deployed via reusable graphs, correct PE/version/hashes, untouched INI/media/ROM and unchanged MyNES. |
+| Reporting Requirements | Before code, give cohort/files/diff estimates; report actual diff and model grades, retained selector and S3--S8 obligations, exact tested/unperformed scope. |
+| Stop Conditions | Unresolved source conflict prevents its qualification; accuracy downgrade/new shared public boundary requires owner review. Never call staging CPU-complete. |
+| Exit Criteria | Whole nominal cohort allocated with direct source/form proof, required regression/publication, actual-change review and pushed delivery; complete dynamic timing and production admission remain later S gates. |
 | Original Owner Request | Admit and execute the first queued remaining 486SX timing/production task. |
-| Similar-Issue Sweep | Inspect all selected-SX predicates across X86 Core and X86 NXVM, not only the nominal calculator; record production gating and old-family branches without broad mechanical widening. |
+| Similar-Issue Sweep | Reconcile all primary/escaped/group aliases, legal and illegal forms, WAIT/absent FPU, SALC, INT1, UMOV and RSM; preserve the complete form universe rather than patching one missing switch arm. |
 
 | Task | Progress |
 | --- | --- |
 | T563 S1 | Closed after coordinator review of pushed 895c1e360: current owners and ten residual receiver gaps mapped to S2--S8; fresh 631/631 units pass per width. |
+| T563 S2 | Implementation qualified for coordinator review: nominal/model allocation, real numerical/mode/failure witnesses and source grades reconciled. Both 631-unit inventories have passing results (x64 one verifier timeout passed isolated repeat); 16 selected integrations per width, specialized gates and eight published CLI checks pass. Eight 0563 PC EXEs deployed; no complete C16/C17 claim. |
 
 [S1 evidence](../etc/evidence/t563-s1-rebase.md) distinguishes staged CPU
 calculators from the unallocated runtime selector and still-closed production
-gate. No executable input changed; no artifact refresh or fresh integration
-qualification is claimed in this documentation batch.
+gate. S1 changed no executable input; S2's code and publication are recorded
+separately below.
 
-T563 remains open. Next is S2, the complete nominal/form-allocation cohort;
-its implementation packet and source-derived estimates must be frozen before
-code changes. No complete 486SX qualification or C17 admission is claimed.
+T563 remains open. S2 consumes the nominal/form-allocation cohort; the
+remaining S3--S8 exits are unchanged. No complete 486SX qualification or C17
+admission is claimed.
+
+[S2 delivery evidence](../etc/evidence/t563-s2-nominal-allocation.md)
+records the finite family census, actual diff, final verification and
+[eight artifact hashes](../etc/evidence/t563-s2-artifacts.json).
 
 ## Previous Task
 
