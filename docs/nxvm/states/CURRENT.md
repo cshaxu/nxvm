@@ -7,43 +7,25 @@
 | Task | Progress |
 | --- | --- |
 | T562 S1 | Closed after actual-change review of Shared 0d12458ae, MyNES 765acc462 and NXVM 3f31b832d. Both widths pass 630 repository units, 48 profile integration executions and final specialized gates. Ten rebuilt EXEs are published; T562 remains open for owner acceptance. |
+| T562 S2 | Closed after actual-commit review of Shared e5b346309 and NXVM 8f3280726: five quality findings repaired, 630 units per width, selected integrations and eight PC artifacts verified. T562 remains open. |
 
-## T562 S2 — Shared Boundary And Redundant-Path Cleanup
+## T562 S2 — Accepted Shared Quality Cleanup
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T562 S2 after accepted S1; baseline 7309e3cfd. |
-| Admission And Approval | Owner approved all five findings from the read-only six-package audit on 2026-10-16. Shared source/test/build and NXVM evidence/artifacts are admitted; sibling repositories remain read-only. |
-| Objective | Correct test ownership, close checker blind spots, remove unused port compatibility dispatch, eliminate the empty PC machine wrapper and retire stale test names. |
-| Non-goals | No guest behavior, CPU timing, Lib/Emulator runtime, MyNES implementation, INI/media/ROM/snapshot or new compatibility layer. |
-| Reference Baseline | Clean 7309e3cfd; read-only audit of twelve shared trees and 36 passing static checks. |
-| Candidate Proposal | [T562 proposal](../proposals/m5-shared-audio-import-quality.md), S2 finite ledger. |
-| Files And ABI Surface | Shared X86 Core port internals; IBM PC composition declarations and NXVM consumers; corresponding tests and component checkers/manifests. Remove app_composed_machine wrapper and rename UI options without aliases. Estimated production +20--60/-100--180 and tests/checkers +150--300/-30--100, excluding mechanical renames/moves. |
-| Applicable Rules | NXVM guide, Execution, Document, Architecture/Coding and their skills, NXVM architecture/layout and source policy. Ownership, sole route, minimal interfaces and no lost assertions are mandatory. |
-| Verification | Existing Ninja/ccache x64/x86 builds; focused owned regressions then complete repository units, specialized gates, manifests, documentation, eight rebuilt PC 0562 artifact PE/hash/INI checks. MyNES remains a full-unit consumer but its unchanged executable inputs need no rebuild. |
-| Expected Markers | No legacy port handler or old composition wrapper; Board-Base tests under their source owner; negative probes reject noncanonical source and hidden build dependencies; old test-owner names absent. |
-| Asset Needs | Existing approved BYOB build inputs only; eight PC artifacts retain 0562; preserve all owner inputs and MyNES artifacts. |
-| Reporting Requirements | Record actual changes and counts, retained routes, all five findings' proof, failures and unperformed desktop/external checks. |
-| Stop Conditions | New product behavior or additional public mechanism required; unrelated changes discovered. Do not bypass gates or overwrite unrelated work. |
-| Exit Criteria | Five ledger rows proven, full dual-width units and affected artifacts pass, actual-diff review, target-separated complete P commits pushed; T remains open. |
-| Original Owner Request | Admit S2 to repair every finding in the shared-package audit. |
-| Similar-Issue Sweep | Search all shared src/test callers, names, source layout checks and included test registration files; preserve hardware variants, real range/route semantics and observable builds. |
+S2 is closed after one-session coordinator actual-commit review of Shared
+`e5b346309` and NXVM `8f3280726`. No S is active; T562 remains open for
+owner feedback. The complete implementation packet is retained in P2.
 
-S2 implementation qualification is complete: Shared P1 `e5b346309` is pushed;
-the receiving P records eight rebuilt PC artifacts, 630 units and 15 selected
-integration executions per width, four final published CLI checks per width,
-specialized gates and unchanged MyNES/owner inputs. See the
-[S2 evidence](../etc/evidence/t562-s2-shared-boundary-cleanup.md) and
-[inventory](../etc/evidence/t562-s2-artifacts.json). Coordinator actual-commit
-review is still required before S2 closure; T562 remains open.
+The five admitted findings are repaired: obsolete port dispatch, empty
+composition wrapper, test ownership, stale names and checker blind spots.
+[Evidence](../etc/evidence/t562-s2-shared-boundary-cleanup.md) and
+[eight artifact hashes](../etc/evidence/t562-s2-artifacts.json) record 630/630
+units per width, 15 selected integration executions per width, eight final
+published CLI checks, all specialized gates and the reviewed actual diff.
 
-The [proposal](../proposals/m5-shared-audio-import-quality.md)
-and [evidence](../etc/evidence/t562-s1-shared-import-quality.md) retain the
-complete scope/proof mapping; the full execution packet is retained in P3.
-Eight PC 0562 and two MyNES 0044 artifacts have verified hashes in the
-[inventory](../etc/evidence/t562-s1-artifacts.json). Owner INI/media/ROM/
-snapshots are unchanged; manual physical audio/MIDI and mobile RDP are not
-claimed. Queue order and unresolved 486SX C16/C17 qualification are unchanged.
+Eight PC 0562 EXEs are rebuilt and published. MyNES, owner INI/media/ROM/
+snapshots and sibling repositories are unchanged. Automated desktop-labelled
+tests pass; manual RDP/physical audio and fresh full external qualification
+are not claimed. Queue order and the unresolved 486SX successor are unchanged.
 
 ## Completed M5 Td S180 Shared Eight-Tree Audit
 

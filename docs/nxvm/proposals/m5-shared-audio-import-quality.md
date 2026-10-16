@@ -71,3 +71,12 @@ commits after complete dual-width repository-unit qualification. The eight
 affected PC EXEs retain 0562. MyNES does not link changed X86 production code;
 its executable inputs remain unchanged. Existing external integration and
 manual-device limitations are not reclassified as passes by this cleanup.
+
+### S2 Disposition
+
+All five rows are accepted after actual-commit review of Shared `e5b346309`
+and NXVM `8f3280726`. Both widths pass 630 units, 15 selected integration
+executions and four final published CLI checks, plus specialized gates.
+Eight PC artifacts are published; MyNES and owner inputs are unchanged.
+The [S2 evidence](../etc/evidence/t562-s2-shared-boundary-cleanup.md) records
+actual deltas and verification limits. S2 is closed; T562 remains open.

@@ -129,8 +129,11 @@ or full external diagnostic-ROM qualification is claimed by this S.
 ## Delivery
 
 Shared P1 `e5b346309` contains the reviewed package source/test changes.
-The NXVM receiving P contains the direct test/build references, this evidence
+NXVM P2 `8f3280726` contains the direct test/build references, this evidence
 and eight verified PC artifacts. The inventory pins the combined source and
-receiver delivery rather than relying on version text alone. Implementation
-qualification is complete; coordinator review must inspect both actual commits
-before accepting S2. T562 remains open.
+receiver delivery rather than relying on version text alone. One-session
+coordinator review inspected both actual commits, their source/test/build
+diffs, ownership moves, preserved assertions, verification records and final
+eight artifact hashes. This is role-switched review, not an independent
+reviewer. All five finite rows are accepted and S2 is closed. T562 remains
+open; this acceptance does not assert that all shared code is defect-free.
