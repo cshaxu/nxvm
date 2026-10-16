@@ -1,0 +1,54 @@
+#ifndef X86_NXVM_MACHINE_CONSTRUCTION_INTERFACE_H
+#define X86_NXVM_MACHINE_CONSTRUCTION_INTERFACE_H
+
+#include "lib/types/types_interface.h"
+#include "lib/storage/medium_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/floppy_interface.h"
+#include "x86-core/machine/firmware_interface.h"
+
+#define X86_NXVM_MACHINE_FLOPPY_SLOT_COUNT 2u
+#define X86_NXVM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
+#define X86_NXVM_MACHINE_CMOS_SEED_BYTES 64u
+
+typedef enum x86_nxvm_machine_profile_event {
+    X86_NXVM_MACHINE_PROFILE_RESET_COMPLETED,
+    X86_NXVM_MACHINE_PROFILE_BOARD_DETACHED
+} x86_nxvm_machine_profile_event;
+
+/* Frozen integration operations, not per-field configuration callbacks.
+ * configure runs once before Core publication. notify runs only after a
+ * successful full reset or after Core teardown. release runs last, after
+ * Core routes, registries and media have ceased using the context. */
+typedef struct x86_nxvm_machine_profile_binding {
+    void *context;
+    lib_status (*configure)(void *context, x86_nxvm_board_plan *plan);
+    void (*notify)(void *context, x86_nxvm_machine_profile_event event);
+    void (*release)(void *context);
+} x86_nxvm_machine_profile_binding;
+
+/* Prepared values are copied into the sole Machine owner. Firmware/context
+ * pointers refer to the transferred Profile lifetime; there is no model ID.
+ * CMOS supplies only 0Eh-3Fh configuration; Core owns live RTC registers. */
+typedef struct x86_nxvm_machine_construction {
+    x86_nxvm_board_config core_config;
+    x86_nxvm_board_controller_timing_rules timing_rules;
+    x86_nxvm_board_plan_topology topology;
+    x86_nxvm_board_floppy_kind floppy_kind;
+    x86_nxvm_board_floppy_kind media_kind;
+    lib_u8 floppy_slot_count;
+    lib_bool hdc_present;
+    lib_bool memory_reconfigurable;
+    lib_bool fixed_geometry;
+    lib_u16 cylinders;
+    lib_u8 heads;
+    lib_u8 sectors;
+    lib_u8 cmos_seed[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    lib_bool cmos_seed_present;
+    x86_video_text_glyph_config text_glyphs;
+    const x86_core_machine_firmware_provider *firmware_provider;
+    void *firmware_context;
+    x86_nxvm_machine_profile_binding profile;
+} x86_nxvm_machine_construction;
+
+#endif

@@ -1,24 +1,24 @@
 #include "app-mydeskpro386/machine_observation_interface.h"
-#include "../../core/machine/support/guest_input.h"
+#include "../../x86-nxvm/machine/support/guest_input.h"
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40.h"
-#include "../../core/board-base/composition/composition_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "../../core/board-base/support/cmos_fixture.h"
-#include "../../core/board-base/support/kbc_state_fixture.h"
-#include "../../core/board-base/support/controller_fixture.h"
-#include "core/board-base/machine_board_interface.h"
+#include "../../x86-nxvm/board-base/composition/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/cmos_fixture.h"
+#include "../../x86-nxvm/board-base/support/kbc_state_fixture.h"
+#include "../../x86-nxvm/board-base/support/controller_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/display.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/display.h"
 #include "../support/model40_session_assets.h"
 
-static lib_i32 model40_kbc_extension_contract(vm_machine *session)
+static lib_i32 model40_kbc_extension_contract(x86_nxvm_machine *session)
 {
     lib_u32 status = 0u;
     lib_u32 value = 0u;
@@ -55,9 +55,9 @@ lib_i32 main(void)
 {
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
-    vm_machine_config invalid_config = {0};
-    vm_machine_assets missing_assets = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine_config invalid_config = {0};
+    x86_nxvm_machine_assets missing_assets = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_cpu_profile cpu_profile;
     lib_size memory_bytes;
     mydeskpro386_d4_platform_observation d4;
@@ -65,7 +65,7 @@ lib_i32 main(void)
     lib_u8 rom_byte = 0u;
     lib_u8 sense_status = 0u;
     lib_u8 sense_cylinder = 0u;
-    lib_u8 reset_status[CORE_MACHINE_FDC_DRIVE_COUNT] = {0};
+    lib_u8 reset_status[X86_NXVM_BOARD_FDC_DRIVE_COUNT] = {0};
     test_board_composition_observation composition = {0};
     lib_u8 floppy_type = 0u;
     lib_i32 failed = 1;
@@ -125,7 +125,7 @@ lib_i32 main(void)
             composition.drives.cylinder_count[0u] != 80u ||
             composition.drives.cylinder_count[1u] != 80u ||
             composition.drives.track_zero_active_low_mask != 0u) goto done;
-        floppy_type = test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY);
+        floppy_type = test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_TYPE_DISK_FLOPPY);
         if (floppy_type != 0x22u ||
             x86_core_machine_bus_write(session->x86_core_machine, 0x0060u, 0xf5u) != LIB_STATUS_OK ||
             test_board_kbc_read_reply(session->board, session->x86_core_machine) != 0xfau ||
@@ -138,16 +138,16 @@ lib_i32 main(void)
             test_board_kbc_read_reply(session->board, session->x86_core_machine) != 0xeeu) goto done;
     }
     stage = 3;
-    if (vm_machine_reset(session) != LIB_STATUS_OK) goto done;
+    if (x86_nxvm_machine_reset(session) != LIB_STATUS_OK) goto done;
     composition = test_board_capture_composition(session->board);
     if (!composition.auxiliary_pit_configured || !composition.fdc_configured ||
             composition.fdc.irq != 6u || composition.fdc.dma_channel != 2u ||
             !composition.hdc_configured || composition.hdc.irq != 14u ||
             composition.hdc.protocol !=
-                CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB ||
+                X86_NXVM_BOARD_HDC_PROTOCOL_COMPAQ_WD_40MB ||
             !composition.rtc_cmos_configured || composition.rtc_irq != 8u ||
-            !test_core_port_accepts_read(session->x86_core_machine,
-                0x03f7u) || !test_core_port_accepts_write(
+            !test_x86_nxvm_port_accepts_read(session->x86_core_machine,
+                0x03f7u) || !test_x86_nxvm_port_accepts_write(
                 session->x86_core_machine, 0x004bu)) goto done;
     stage = 4;
     {
@@ -155,7 +155,7 @@ lib_i32 main(void)
             x86_core_machine_bus_write(session->x86_core_machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
             !test_board_fdc_advance_due(session->board) ||
             !test_board_fdc_irq_source_is_asserted(session->board)) goto done;
-        for (sense_status = 0u; sense_status < CORE_MACHINE_FDC_DRIVE_COUNT;
+        for (sense_status = 0u; sense_status < X86_NXVM_BOARD_FDC_DRIVE_COUNT;
             ++sense_status) {
             if (x86_core_machine_bus_write(session->x86_core_machine, 0x03f5u, 0x08u) != LIB_STATUS_OK ||
                 !test_board_fdc_advance_ticks(session->board, 1u) ||
@@ -219,7 +219,7 @@ lib_i32 main(void)
             x86_core_machine_bus_write(session->x86_core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(session->x86_core_machine, 0x03d4u, 0x0fu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(session->x86_core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
-            vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
+            x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
             !session->latest_frame.window.valid || session->latest_frame.window.graphics ||
             !session->latest_frame.window.text.base.cursor_mode ||
             session->latest_frame.window.text.base.font_height != 14u ||
@@ -241,6 +241,6 @@ done:
     }
     if (!failed) lib_c_printf("MODEL40-MACHINE-CONTRACT:OK\n");
     if (!failed) lib_c_printf("MODEL40-CONTROLS:OK\n");
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed ? 1 : 0;
 }

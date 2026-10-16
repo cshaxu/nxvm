@@ -1,10 +1,10 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "../support/model40_session_assets.h"
 
 static lib_i32 read_byte(x86_core_machine *machine, lib_u32 physical,
@@ -42,7 +42,7 @@ lib_i32 main(void)
 {
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     mydeskpro386_d4_platform_observation d4;
     lib_u32 port_value = 0u;
     lib_u8 relocated_window_before = 0u;
@@ -224,6 +224,6 @@ done:
     if (!failed) lib_c_printf("D4-SOLE-ROM-OWNER:OK\n");
     if (!failed) lib_c_printf("D4-RESET-ALIAS:OK\n");
     if (!failed) lib_c_printf("MODEL40-ROM-DECODE:OK\n");
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed ? 1 : 0;
 }

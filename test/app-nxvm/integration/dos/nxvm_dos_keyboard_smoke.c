@@ -1,5 +1,5 @@
-#include "../../../core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
+#include "../../../x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -8,18 +8,18 @@
 #undef exception_code
 
 #include "x86-core/machine/debug_interface.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/fault.h"
-#include "core/machine/display.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
-#include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/fault.h"
+#include "x86-nxvm/machine/display.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "test/x86-nxvm/machine/support/nxvm_presentation_capture.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
 
-static lib_i32 vm_dos_keyboard_submit_key(vm_machine *session,
+static lib_i32 vm_dos_keyboard_submit_key(x86_nxvm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -38,14 +38,14 @@ static lib_i32 vm_dos_keyboard_submit_key(vm_machine *session,
     return status == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_dos_keyboard_submit_return(vm_machine *session)
+static lib_i32 vm_dos_keyboard_submit_return(x86_nxvm_machine *session)
 {
     if (!vm_dos_keyboard_submit_key(session, 0x1cu, VK_RETURN, 1)) return 0;
     Sleep(25u);
     return vm_dos_keyboard_submit_key(session, 0x1cu, VK_RETURN, 0);
 }
 
-static lib_i32 vm_dos_keyboard_has_text(const vm_machine *session,
+static lib_i32 vm_dos_keyboard_has_text(const x86_nxvm_machine *session,
     const char *text)
 {
     core_machine_guest_display_frame frame;
@@ -63,7 +63,7 @@ static lib_i32 vm_dos_keyboard_has_text(const vm_machine *session,
     return 0;
 }
 
-static lib_i32 vm_dos_keyboard_has_prompt(const vm_machine *session)
+static lib_i32 vm_dos_keyboard_has_prompt(const x86_nxvm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -78,24 +78,24 @@ static lib_i32 vm_dos_keyboard_has_prompt(const vm_machine *session)
     return 0;
 }
 
-static lib_i32 vm_dos_keyboard_has_date_prompt(const vm_machine *session)
+static lib_i32 vm_dos_keyboard_has_date_prompt(const x86_nxvm_machine *session)
 {
     return vm_dos_keyboard_has_text(session, "Enter new date (mm-dd-yy):");
 }
 
-static lib_i32 vm_dos_keyboard_has_time_prompt(const vm_machine *session)
+static lib_i32 vm_dos_keyboard_has_time_prompt(const x86_nxvm_machine *session)
 {
     return vm_dos_keyboard_has_text(session, "Enter new time:");
 }
 
-static lib_i32 vm_dos_keyboard_has_edit_menu(const vm_machine *session)
+static lib_i32 vm_dos_keyboard_has_edit_menu(const x86_nxvm_machine *session)
 {
     return vm_dos_keyboard_has_text(session, "File  Edit  Search") &&
         vm_dos_keyboard_has_text(session, "Options") &&
         vm_dos_keyboard_has_text(session, "Help");
 }
 
-static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
+static lib_i32 vm_dos_keyboard_verify_text_frame(x86_nxvm_machine *session)
 {
     x86_video_snapshot frame;
     lib_u8 text[TEXT_VIDEO_CELLS * 2u];
@@ -110,7 +110,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
     }
     /* Paused inspection compares frozen Core values. The published UI frame
      * may precede pause by one cadence; observers cannot enter its producer. */
-    if (core_machine_capture_display_snapshot(session->board, &frame) != LIB_STATUS_OK) {
+    if (x86_nxvm_board_capture_display_snapshot(session->board, &frame) != LIB_STATUS_OK) {
         printf("edit display: paused frame unavailable\n");
         return 0;
     }
@@ -141,7 +141,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
     return 1;
 }
 
-static void vm_dos_keyboard_report_failure(const vm_machine *session,
+static void vm_dos_keyboard_report_failure(const x86_nxvm_machine *session,
     const x86_core_cpu_state *state)
 {
     core_machine_guest_display_frame frame;
@@ -162,7 +162,7 @@ static void vm_dos_keyboard_report_failure(const vm_machine *session,
         &video_mode, sizeof(video_mode));
     (void)x86_core_machine_debug_read_memory(session->x86_core_machine,
         state->cs_base + state->eip, instructions, sizeof(instructions));
-    (void)core_machine_keyboard_get_native_scan_set(session->board,
+    (void)x86_nxvm_board_keyboard_get_native_scan_set(session->board,
         &scan_set);
     printf("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
     if (test_nxvm_machine_capture_presentation(session, &frame) == LIB_STATUS_OK) {
@@ -187,7 +187,7 @@ static void vm_dos_keyboard_report_failure(const vm_machine *session,
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     DWORD elapsed;
     const lib_u8 scan_codes[] = { 0x12u, 0x20u, 0x17u, 0x14u, 0x1cu };
     const lib_u8 virtual_keys[] = { 'E', 'D', 'I', 'T', VK_RETURN };
@@ -259,7 +259,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         Sleep(10u);
     }
     if (elapsed == edit_timeout) {
-        vm_machine_fault_outcome outcome;
+        x86_nxvm_machine_fault_outcome outcome;
         x86_core_cpu_state state;
 
         if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
@@ -270,7 +270,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             vm_dos_keyboard_report_failure(session, &state);
         }
 
-        if (vm_machine_fault_get(session, &outcome) == 0 && outcome.valid) {
+        if (x86_nxvm_machine_fault_get(session, &outcome) == 0 && outcome.valid) {
             printf("edit fault: detail=%08x pc=%08x mask=%08x code=%08x\n",
                 outcome.run.detail, outcome.run.linear_pc,
                 outcome.diagnostic.first_fault.exception_mask,
@@ -288,7 +288,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             printf("edit display: pause unavailable\n");
         }
     }
-    vm_machine_stop(session);
+    x86_nxvm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     if (elapsed == edit_timeout || !display_ok) return 1;
     printf("NXVM:EDIT:DOS:OK\n");
@@ -299,7 +299,7 @@ fail:
         session == LIB_NULL ? 0u : (unsigned)session->active,
         ini_session.emulator_machine == LIB_NULL ? 0u :
         (unsigned)emulator_machine_state_get(ini_session.emulator_machine));
-    if (session != LIB_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) x86_nxvm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;
 }

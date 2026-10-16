@@ -1,15 +1,15 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 
-#include "../../core/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
 #include "x86-core/machine/debug_interface.h"
 
 #include "../support/rom/session_assets.h"
 
 static lib_bool sessions_are_isolated(x86_core_machine *first, x86_core_machine *second,
-    core_machine_board_state *first_board, core_machine_board_state *second_board)
+    x86_nxvm_board_state *first_board, x86_nxvm_board_state *second_board)
 {
     const lib_u8 values[] = { 0x11u, 0x22u };
     x86_core_machine *machines[] = { first, second };
@@ -46,8 +46,8 @@ static lib_bool sessions_are_isolated(x86_core_machine *first, x86_core_machine 
 
 lib_i32 main(void)
 {
-    vm_machine *first = LIB_NULL;
-    vm_machine *second = LIB_NULL;
+    x86_nxvm_machine *first = LIB_NULL;
+    x86_nxvm_machine *second = LIB_NULL;
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &first) != LIB_STATUS_OK ||
@@ -61,8 +61,8 @@ lib_i32 main(void)
             first->x86_core_machine, second->x86_core_machine, first->board, second->board);
     }
 
-    vm_machine_destroy(second);
-    vm_machine_destroy(first);
+    x86_nxvm_machine_destroy(second);
+    x86_nxvm_machine_destroy(first);
 
     if (failed) return 1;
     lib_c_printf("TWO-SESSION-ISOLATION:OK\n");

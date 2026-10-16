@@ -1,0 +1,41 @@
+/* Copyright 2012-2014 Neko. */
+
+#ifndef X86_NXVM_MACHINE_HDD_H
+#define X86_NXVM_MACHINE_HDD_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "lib/types/types_interface.h"
+
+#include "x86-nxvm/board-base/media_interface.h"
+#include "lib/storage/medium_interface.h"
+
+typedef struct t_hdd t_hdd;
+
+#define X86_NXVM_MACHINE_DEVICE_HDD "Unknown Hard Disk Drive"
+#define VHDD_BYTE_PER_MB (1 << 20)
+
+lib_size x86_nxvm_machine_hdd_image_size(const t_hdd *hdd);
+lib_size x86_nxvm_machine_hdd_raw_byte_count(const t_hdd *hdd);
+lib_u32 x86_nxvm_machine_hdd_cylinders(const t_hdd *hdd);
+lib_bool x86_nxvm_machine_hdd_has_media(const t_hdd *hdd);
+/* Same ownership, failure and serialization contract as the FDD object. */
+lib_status x86_nxvm_machine_hdd_allocate(t_hdd **out_hdd);
+void x86_nxvm_machine_hdd_destroy(t_hdd **hdd);
+void x86_nxvm_machine_hdd_reset(t_hdd *hdd);
+lib_status x86_nxvm_machine_hdd_create(t_hdd *hdd, lib_u16 cylinders);
+lib_status x86_nxvm_machine_hdd_replace_bytes(t_hdd *hdd, const void *bytes,
+    lib_size raw_byte_count);
+lib_status x86_nxvm_machine_hdd_insert(t_hdd *hdd, const char *file_name,
+    lib_storage_medium_mode mode);
+lib_status x86_nxvm_machine_hdd_set_geometry(t_hdd *hdd, lib_u32 cylinders,
+    lib_u16 heads, lib_u16 sectors_per_track);
+lib_status x86_nxvm_machine_hdd_remove(t_hdd *hdd);
+const x86_nxvm_board_media_provider *x86_nxvm_machine_hdd_media_provider(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

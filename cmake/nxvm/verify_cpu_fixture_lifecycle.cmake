@@ -14,57 +14,57 @@ if(NOT project_cpu_fixture_lifecycle_count EQUAL 44)
 endif()
 
 set(project_cpu_fixture_lifecycle_wrapper_sources
-    "test/core/board-base/core_machine_cli_sti_profiles_smoke.c"
-    "test/core/board-base/core_machine_hlt_profiles_smoke.c"
-    "test/core/board-base/core_machine_iret_profiles_smoke.c"
-    "test/core/board-base/core_machine_software_int_profiles_smoke.c")
+    "test/x86-nxvm/board-base/board_cli_sti_profiles_smoke.c"
+    "test/x86-nxvm/board-base/board_hlt_profiles_smoke.c"
+    "test/x86-nxvm/board-base/board_iret_profiles_smoke.c"
+    "test/x86-nxvm/board-base/board_software_int_profiles_smoke.c")
 set(project_cpu_fixture_lifecycle_neutral_core_sources
     "test/x86-core/machine/machine_fpu_interface_smoke.c")
 set(project_cpu_fixture_lifecycle_inherited_sources
-    "test/core/board-base/machine_interrupt_entry_smoke.c"
-    "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
+    "test/x86-nxvm/board-base/machine_interrupt_entry_smoke.c"
+    "test/x86-nxvm/board-base/machine_cli_sti_interrupt_smoke.c"
     "test/x86-core/machine/machine_protected_iret_smoke.c")
 set(project_cpu_fixture_lifecycle_public_board_sources
     "test/x86-core/machine/machine_protected_iret_smoke.c"
-    "test/core/board-base/machine_interrupt_entry_smoke.c"
-    "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
-    "test/core/board-base/machine_debug_state_board_smoke.c"
-    "test/core/board-base/composition/core_machine_legacy_alu_smoke.c"
-    "test/core/board-base/composition/core_machine_legacy_lock_smoke.c"
-    "test/core/board-base/core_machine_bit_scan_smoke.c"
-    "test/core/board-base/core_machine_bit_test_smoke.c"
-    "test/core/board-base/core_machine_double_shift_smoke.c"
-    "test/core/board-base/core_machine_imul2_smoke.c"
-    "test/core/board-base/core_machine_imul_immediate_profiles_smoke.c"
-    "test/core/board-base/core_machine_rotate_smoke.c"
-    "test/core/board-base/core_machine_setcc_smoke.c"
-    "test/core/board-base/core_machine_sign_extend_smoke.c"
-    "test/core/board-base/core_machine_les_lds_board_smoke.c"
-    "test/core/board-base/core_machine_les_lds_smoke.c"
-    "test/core/board-base/core_machine_lss_lfs_lgs_smoke.c"
-    "test/core/board-base/core_machine_legacy_sreg_stack_smoke.c"
-    "test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c"
-    "test/core/board-base/core_machine_enter_leave_smoke.c"
-    "test/core/board-base/core_machine_xchg_smoke.c"
-    "test/core/board-base/core_machine_gpr_push_pop_smoke.c"
-    "test/core/board-base/core_machine_push_immediate_smoke.c"
-    "test/core/board-base/core_machine_pusha_popa_smoke.c"
-    "test/core/board-base/core_machine_gpr_mov_smoke.c"
-    "test/core/board-base/core_machine_moffs_smoke.c"
-    "test/core/board-base/core_machine_lea_smoke.c"
-    "test/core/board-base/composition/core_machine_movx_smoke.c"
-    "test/core/board-base/composition/core_machine_segment_selector_smoke.c"
-    "test/core/board-base/core_machine_sreg_mov_smoke.c"
-    "test/core/board-base/composition/core_machine_operand_address_smoke.c"
-    "test/core/board-base/core_machine_prefix_attributes_smoke.c")
+    "test/x86-nxvm/board-base/machine_interrupt_entry_smoke.c"
+    "test/x86-nxvm/board-base/machine_cli_sti_interrupt_smoke.c"
+    "test/x86-nxvm/board-base/machine_debug_state_board_smoke.c"
+    "test/x86-nxvm/board-base/composition/board_legacy_alu_smoke.c"
+    "test/x86-nxvm/board-base/composition/board_legacy_lock_smoke.c"
+    "test/x86-nxvm/board-base/board_bit_scan_smoke.c"
+    "test/x86-nxvm/board-base/board_bit_test_smoke.c"
+    "test/x86-nxvm/board-base/board_double_shift_smoke.c"
+    "test/x86-nxvm/board-base/board_imul2_smoke.c"
+    "test/x86-nxvm/board-base/board_imul_immediate_profiles_smoke.c"
+    "test/x86-nxvm/board-base/board_rotate_smoke.c"
+    "test/x86-nxvm/board-base/board_setcc_smoke.c"
+    "test/x86-nxvm/board-base/board_sign_extend_smoke.c"
+    "test/x86-nxvm/board-base/board_les_lds_board_smoke.c"
+    "test/x86-nxvm/board-base/board_les_lds_smoke.c"
+    "test/x86-nxvm/board-base/board_lss_lfs_lgs_smoke.c"
+    "test/x86-nxvm/board-base/board_legacy_sreg_stack_smoke.c"
+    "test/x86-nxvm/board-base/composition/board_fs_gs_stack_smoke.c"
+    "test/x86-nxvm/board-base/board_enter_leave_smoke.c"
+    "test/x86-nxvm/board-base/board_xchg_smoke.c"
+    "test/x86-nxvm/board-base/board_gpr_push_pop_smoke.c"
+    "test/x86-nxvm/board-base/board_push_immediate_smoke.c"
+    "test/x86-nxvm/board-base/board_pusha_popa_smoke.c"
+    "test/x86-nxvm/board-base/board_gpr_mov_smoke.c"
+    "test/x86-nxvm/board-base/board_moffs_smoke.c"
+    "test/x86-nxvm/board-base/board_lea_smoke.c"
+    "test/x86-nxvm/board-base/composition/board_movx_smoke.c"
+    "test/x86-nxvm/board-base/composition/board_segment_selector_smoke.c"
+    "test/x86-nxvm/board-base/board_sreg_mov_smoke.c"
+    "test/x86-nxvm/board-base/composition/board_operand_address_smoke.c"
+    "test/x86-nxvm/board-base/board_prefix_attributes_smoke.c")
 set(project_cpu_fixture_lifecycle_public_limit_sources
-    "test/core/board-base/core_machine_bit_scan_smoke.c"
-    "test/core/board-base/core_machine_bit_test_smoke.c"
-    "test/core/board-base/core_machine_double_shift_smoke.c"
-    "test/core/board-base/core_machine_imul2_smoke.c"
-    "test/core/board-base/core_machine_imul_immediate_profiles_smoke.c"
-    "test/core/board-base/core_machine_rotate_smoke.c"
-    "test/core/board-base/core_machine_setcc_smoke.c")
+    "test/x86-nxvm/board-base/board_bit_scan_smoke.c"
+    "test/x86-nxvm/board-base/board_bit_test_smoke.c"
+    "test/x86-nxvm/board-base/board_double_shift_smoke.c"
+    "test/x86-nxvm/board-base/board_imul2_smoke.c"
+    "test/x86-nxvm/board-base/board_imul_immediate_profiles_smoke.c"
+    "test/x86-nxvm/board-base/board_rotate_smoke.c"
+    "test/x86-nxvm/board-base/board_setcc_smoke.c")
 set(project_cpu_fixture_lifecycle_cpu_instruction_fixture_sources
     "cpu/cpu_debug_state_smoke.c"
     "cpu/cpu_control_state_smoke.c"
@@ -96,9 +96,9 @@ set(project_cpu_fixture_lifecycle_descriptor_query_fixture_sources
     "cpu/cpu_lar_lsl_smoke.c"
     "cpu/cpu_verr_verw_smoke.c")
 
-file(READ "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/core/board-base/cpu_board_limit_fixture.h"
+file(READ "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/x86-nxvm/board-base/cpu_board_limit_fixture.h"
     project_cpu_fixture_lifecycle_limit_helper)
-foreach(operation core_machine_create x86_core_machine_freeze_execution_providers
+foreach(operation x86_nxvm_board_create x86_core_machine_freeze_execution_providers
         x86_core_machine_reset x86_core_machine_debug_patch_registers)
     if(NOT project_cpu_fixture_lifecycle_limit_helper MATCHES "${operation}[ \t\r\n]*\\(")
         message(FATAL_ERROR "Public board limit helper misses ${operation}.")
@@ -146,7 +146,7 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
                 message(FATAL_ERROR "Public board fixture misses shared limit setup: ${source}")
             endif()
         else()
-            set(project_cpu_fixture_lifecycle_constructor core_machine_create)
+            set(project_cpu_fixture_lifecycle_constructor x86_nxvm_board_create)
             if(source STREQUAL "test/x86-core/machine/machine_protected_iret_smoke.c")
                 set(project_cpu_fixture_lifecycle_constructor x86_core_machine_neutral_create)
             endif()
@@ -226,7 +226,7 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
     endif()
     if(NOT "${content}" MATCHES "(machine_cpu|core_machine_board)_fixture[.]h" OR
         NOT "${content}" MATCHES
-        "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
+        "test_x86_nxvm_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
         message(FATAL_ERROR "CPU fixture source omits shared setup: ${source}")
     endif()
     if("${content}" MATCHES "x86_core_machine_bind_execution_provider" OR
@@ -265,9 +265,9 @@ foreach(project_cpu_fixture_lifecycle_source IN LISTS project_cpu_fixture_lifecy
 endforeach()
 
 set(project_cpu_fixture_lifecycle_positive
-    "test_core_machine_fixture_bind_freeze_reset(machine, provider, owner)")
+    "test_x86_nxvm_machine_fixture_bind_freeze_reset(machine, provider, owner)")
 set(project_cpu_fixture_lifecycle_negative "x86_core_machine_freeze_execution_providers(machine)")
-if(NOT project_cpu_fixture_lifecycle_positive MATCHES "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)" OR
+if(NOT project_cpu_fixture_lifecycle_positive MATCHES "test_x86_nxvm_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)" OR
     NOT project_cpu_fixture_lifecycle_negative MATCHES "x86_core_machine_freeze_execution_providers")
     message(FATAL_ERROR "CPU fixture lifecycle verifier self-check failed.")
 endif()

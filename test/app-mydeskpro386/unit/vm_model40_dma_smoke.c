@@ -1,22 +1,22 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "lib/types/file.h"
 
-#include "../../core/board-base/composition/bus_fixture.h"
-#include "../../core/board-base/board_binding_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
+#include "../../x86-nxvm/board-base/composition/bus_fixture.h"
+#include "../../x86-nxvm/board-base/board_binding_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40_session_assets.h"
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
-    const core_machine_dma_channel_provider duplicate_provider = {0};
-    core_machine_dma_request_binding duplicate_request = {0};
+    const x86_nxvm_board_dma_channel_provider duplicate_provider = {0};
+    x86_nxvm_board_dma_request_binding duplicate_request = {0};
     x86_core_machine_executor_config executor = {0};
     lib_size constructor_count = 0u;
 
@@ -30,9 +30,9 @@ lib_i32 main(void)
         executor.transaction_contract.dma_cycle_bus_ready_gate_enabled != LIB_TRUE ||
         test_board_capture_composition(session->board).dma_wiring.fdc_channel != 2u ||
         test_board_capture_composition(session->board).dma_wiring.controller_count !=
-            CORE_MACHINE_DMA_CONTROLLER_COUNT ||
+            X86_NXVM_BOARD_DMA_CONTROLLER_COUNT ||
         test_board_capture_composition(session->board).dma_wiring.cascade_channel !=
-            CORE_MACHINE_DMA_CASCADE_CHANNEL ||
+            X86_NXVM_BOARD_DMA_CASCADE_CHANNEL ||
         test_board_dma_duplicate_bind(session->board, 2u,
             &duplicate_provider, &duplicate_request) !=
             LIB_STATUS_INVALID_STATE) {
@@ -40,29 +40,29 @@ lib_i32 main(void)
         goto done;
     }
 
-    test_core_machine_fixture_write_port(session->x86_core_machine, 0x00d6u,
+    test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x00d6u,
         0xc0u);
-    test_core_machine_fixture_write_port(session->x86_core_machine, 0x00d4u,
+    test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x00d4u,
         0u);
-    test_core_machine_fixture_write_port(session->x86_core_machine, 0x000bu,
+    test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x000bu,
         0x86u);
-    test_core_machine_fixture_write_port(session->x86_core_machine, 0x000eu,
+    test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x000eu,
         0u);
-    test_core_machine_fixture_write_port(session->x86_core_machine, 0x0009u,
+    test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x0009u,
         0x06u);
     if (!test_board_dma_has_pending_request(session->board)) {
         failed = 1;
         goto done;
     }
 
-    vm_machine_reset(session);
+    x86_nxvm_machine_reset(session);
     if (test_board_dma_has_pending_request(session->board)) {
         failed = 1;
         goto done;
     }
 
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     lib_c_printf("DUAL-DMA-TOPOLOGY:OK\n");
     lib_c_printf("DMA-WORD-CASCADE:OK\n");

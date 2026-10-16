@@ -1,11 +1,11 @@
 #include "app-my5160/product_binding_interface.h"
 #include "app-my5160/machine_construction_interface.h"
 
-const vm_app_machine_binding vm_app_machine = {
+const x86_nxvm_product_machine_binding vm_app_machine = {
     .name = "ibm-5160-model-268",
     .cpu = X86_CORE_CPU_PROFILE_DEFAULT,
     .fpu = X86_FPU_PROFILE_NONE,
-    .floppy_format = VM_MACHINE_FLOPPY_FORMAT_360K,
+    .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_360K,
     .bios_count = 1u,
     .firmware = &vm_app_firmware,
     .prepare = vm_profile_machine_plan_create_xt

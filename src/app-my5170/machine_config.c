@@ -2,9 +2,9 @@
 
 static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
 static lib_i32 vm_profile_ibm_5170_descriptor_validate(
-    const vm_profile_default_pc_at_descriptor *descriptor);
+    const x86_nxvm_board_pc_at_descriptor *descriptor);
 
-static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor = {
+static const x86_nxvm_board_pc_at_descriptor ibm_5170_model_339_descriptor = {
     "ibm-5170-model-339",
     1u,
     X86_CORE_CPU_PROFILE_80286,
@@ -22,11 +22,11 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
         { 64u, 15625u, 0u }, { 315u, 1408u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u } },
     { X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u },
-    { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK },
+    { X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK },
     /* PCjs's Rev-3 model retains a 120-instruction keyboard IRQ phase for
      * this ROM.  The Board PIC owns the delayed IMR-release eligibility; this
      * immutable board value is Other-L2, never a BIOS-side exception. */
@@ -50,7 +50,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     0xb0u,
     32768u,
     { 48u, 8u, 8u },
-    { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
+    { X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE, X86_NXVM_BOARD_VADP_EGA_APERTURE_BYTES,
         0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE },
     { { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
@@ -67,20 +67,20 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * to the 8 MHz cycle axis and documents a 64-cycle half period required
      * by this ROM's two refresh POST checks. The independent PIT1 refresh
      * request remains Board-owned; this Other-L2 observation owns only bit 4. */
-    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
+    X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
     64u,
     LIB_FALSE,
     LIB_TRUE,
     LIB_TRUE,
-    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
+    X86_NXVM_BOARD_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
     LIB_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x0200u, 0x20u, 0x30u, 0x00u, 0u, 0x80u },
-    vm_at_port_leaves,
-    sizeof(vm_at_port_leaves) / sizeof(vm_at_port_leaves[0]),
-    vm_at_routes_without_aux,
-    sizeof(vm_at_routes_without_aux) / sizeof(vm_at_routes_without_aux[0]),
-    { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506, .irq = 14u,
+    x86_nxvm_board_at_port_leaves,
+    sizeof(x86_nxvm_board_at_port_leaves) / sizeof(x86_nxvm_board_at_port_leaves[0]),
+    x86_nxvm_board_at_routes_without_aux,
+    sizeof(x86_nxvm_board_at_routes_without_aux) / sizeof(x86_nxvm_board_at_routes_without_aux[0]),
+    { .protocol = X86_NXVM_BOARD_HDC_PROTOCOL_IBM_WD1003_ST506, .irq = 14u,
         .service = {16000u, 7840u},
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
@@ -89,9 +89,9 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
             .lba28_supported = LIB_FALSE, .clock_ticks_per_second = 8000000u }},
-    vm_pc_at_firmware_services,
-    sizeof(vm_pc_at_firmware_services) /
-        sizeof(vm_pc_at_firmware_services[0]),
+    x86_nxvm_board_pc_at_firmware_services,
+    sizeof(x86_nxvm_board_pc_at_firmware_services) /
+        sizeof(x86_nxvm_board_pc_at_firmware_services[0]),
     /* IBM 5170 Technical Reference: A: is a 96-TPI, 80-cylinder 1.2 MB
      * physical unit. A 360 KB disk changes only the mounted medium. */
     /* PCjs corroborates that the Rev-3 ROM reads this D/S/P-board endpoint
@@ -104,23 +104,23 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
 
 static const lib_u32 ibm_5170_contract_ids[] = {1u};
 
-const vm_profile_default_pc_at_descriptor *
+const x86_nxvm_board_pc_at_descriptor *
 vm_profile_ibm_5170_model_339_descriptor_get(void)
 {
     return &ibm_5170_model_339_descriptor;
 }
 
 lib_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
-    vm_profile_contract_values *out_values)
+    x86_nxvm_board_contract_values *out_values)
 {
-    const vm_profile_default_pc_at_descriptor *descriptor =
+    const x86_nxvm_board_pc_at_descriptor *descriptor =
         vm_profile_ibm_5170_model_339_descriptor_get();
-    vm_profile_contract_values values = {0};
-    const vm_profile_contract_catalog catalog = { ibm_5170_contract_ids,
+    x86_nxvm_board_contract_values values = {0};
+    const x86_nxvm_board_contract_catalog catalog = { ibm_5170_contract_ids,
         sizeof(ibm_5170_contract_ids) / sizeof(ibm_5170_contract_ids[0]) };
 
     if (out_values == LIB_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes) ||
-        vm_profile_default_pc_at_values_create(descriptor, descriptor->cpu_profile,
+        x86_nxvm_board_pc_at_values_create(descriptor, descriptor->cpu_profile,
             descriptor->fpu_profile, &values) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -128,9 +128,9 @@ lib_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
         values.core.configuration.memory_bytes = memory_bytes;
         values.allowed_session_options = VM_PROFILE_5170_SESSION_OPTION_MEMORY;
     }
-    values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BUILTIN;
-    values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
-    if (vm_profile_contract_validate(&values, &catalog, memory_bytes != 0u ?
+    values.firmware_policy = X86_NXVM_BOARD_CONTRACT_FIRMWARE_POLICY_BUILTIN;
+    values.media_policy = X86_NXVM_BOARD_CONTRACT_MEDIA_POLICY_SESSION;
+    if (x86_nxvm_board_contract_validate(&values, &catalog, memory_bytes != 0u ?
             VM_PROFILE_5170_SESSION_OPTION_MEMORY : 0u) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -147,11 +147,11 @@ static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
 }
 
 lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
-    vm_profile_default_pc_at_plan_snapshot *out_profile)
+    x86_nxvm_board_pc_at_plan_snapshot *out_profile)
 {
-    const vm_profile_default_pc_at_descriptor *source =
+    const x86_nxvm_board_pc_at_descriptor *source =
         vm_profile_ibm_5170_model_339_descriptor_get();
-    vm_profile_default_pc_at_descriptor descriptor;
+    x86_nxvm_board_pc_at_descriptor descriptor;
 
     if (out_profile == LIB_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes)) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -169,18 +169,18 @@ lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
         LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return vm_profile_default_pc_at_snapshot_copy(out_profile, &descriptor, "pc-at-5170",
+    return x86_nxvm_board_pc_at_snapshot_copy(out_profile, &descriptor, "pc-at-5170",
         descriptor.cmos.floppy_type);
 }
 
 lib_status vm_profile_ibm_5170_plan_create(
-    vm_profile_default_pc_at_plan_snapshot *out_profile)
+    x86_nxvm_board_pc_at_plan_snapshot *out_profile)
 {
     return vm_profile_ibm_5170_plan_create_memory(0u, out_profile);
 }
 
 static lib_i32 vm_profile_ibm_5170_descriptor_validate(
-    const vm_profile_default_pc_at_descriptor *descriptor)
+    const x86_nxvm_board_pc_at_descriptor *descriptor)
 {
     if (descriptor->cpu_profile != X86_CORE_CPU_PROFILE_80286 ||
         !descriptor->kbc_aux_absent) return 0;
@@ -203,17 +203,17 @@ static lib_i32 vm_profile_ibm_5170_descriptor_validate(
         descriptor->hdc_present && descriptor->planar_parity_present &&
         descriptor->kbc_input_port_configured && descriptor->kbc_input_port == 0xb0u &&
         descriptor->refresh_status_source ==
-            CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE &&
+            X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE &&
         descriptor->refresh_status_toggle_ticks == 64u &&
         !descriptor->ega_present && descriptor->cga_vram_present &&
         descriptor->monochrome_aperture_absent &&
         descriptor->firmware_slot ==
-            VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
+            X86_NXVM_BOARD_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
         !descriptor->diskette_drive_a_field_upgrade &&
         descriptor->cmos.floppy_type == 0x20u &&
         descriptor->cmos.fixed_disk_type == 0x30u &&
         descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
-        descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506 &&
+        descriptor->hdc.protocol == X86_NXVM_BOARD_HDC_PROTOCOL_IBM_WD1003_ST506 &&
         descriptor->hdc.bus.task_file.data_port == 0x01f0u &&
         descriptor->hdc.bus.task_file.error_features_port == 0x01f1u &&
         descriptor->hdc.bus.task_file.sector_count_port == 0x01f2u &&
@@ -227,9 +227,9 @@ static lib_i32 vm_profile_ibm_5170_descriptor_validate(
         descriptor->hdc.bus.task_file.clock_ticks_per_second == 8000000u &&
         descriptor->firmware_services != LIB_NULL &&
         descriptor->firmware_service_count ==
-            sizeof(vm_pc_at_firmware_services) /
-                sizeof(vm_pc_at_firmware_services[0]) &&
+            sizeof(x86_nxvm_board_pc_at_firmware_services) /
+                sizeof(x86_nxvm_board_pc_at_firmware_services[0]) &&
         lib_memory_compare(descriptor->firmware_services,
-            vm_pc_at_firmware_services,
-            sizeof(vm_pc_at_firmware_services)) == 0;
+            x86_nxvm_board_pc_at_firmware_services,
+            sizeof(x86_nxvm_board_pc_at_firmware_services)) == 0;
 }

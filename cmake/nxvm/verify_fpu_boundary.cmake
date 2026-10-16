@@ -35,20 +35,20 @@ file(GLOB_RECURSE consumers
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.h"
     "${PROJECT_SOURCE_DIR}/test/x86-core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/test/x86-core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/board-base/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-xt/*.h")
 foreach(path IN LISTS consumers)
     file(READ "${path}" consumer)
     if(consumer MATCHES "x86-core/fpu/fpu\\.h" OR

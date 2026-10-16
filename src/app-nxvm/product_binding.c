@@ -1,11 +1,11 @@
 #include "app-nxvm/product_binding_interface.h"
 #include "app-nxvm/machine_construction_interface.h"
 
-const vm_app_machine_binding vm_app_machine = {
+const x86_nxvm_product_machine_binding vm_app_machine = {
     .name = "default-pc-at",
     .cpu = X86_CORE_CPU_PROFILE_80386,
     .fpu = X86_FPU_PROFILE_NONE,
-    .floppy_format = VM_MACHINE_FLOPPY_FORMAT_1440K,
+    .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_1440K,
     .bios_count = 1u,
     .firmware = &vm_app_firmware,
     .prepare = vm_profile_machine_plan_create_default

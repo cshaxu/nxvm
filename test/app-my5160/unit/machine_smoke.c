@@ -1,42 +1,42 @@
 #include "app-my5160/machine_construction_interface.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
-#include "../../core/board-base/composition/bus_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "../../core/board-base/support/controller_fixture.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
+#include "../../x86-nxvm/board-base/composition/bus_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/controller_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "app-my5160/machine_config.h"
 
-static lib_status vm_xt_test_create(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_machine **out_machine)
+static lib_status vm_xt_test_create(const x86_nxvm_machine_config *config,
+    const x86_nxvm_machine_assets *assets, x86_nxvm_machine **out_machine)
 {
-    vm_machine_construction construction;
+    x86_nxvm_machine_construction construction;
     lib_status status = vm_profile_machine_plan_create_xt(config, assets, &construction);
 
     *out_machine = LIB_NULL;
     return status == LIB_STATUS_OK ?
-        vm_machine_create(config, &construction, out_machine) : status;
+        x86_nxvm_machine_create(config, &construction, out_machine) : status;
 }
 
-static core_machine_media_result vm_xt_5160_268_fdd_query(void *context,
-    core_machine_media_info *out_info)
+static x86_nxvm_board_media_result vm_xt_5160_268_fdd_query(void *context,
+    x86_nxvm_board_media_info *out_info)
 {
     (void)context;
-    if (out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    if (out_info == LIB_NULL) return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
     lib_memory_set(out_info, 0u, sizeof(*out_info));
     out_info->generation = 1u;
-    out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
-        CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
+    out_info->capabilities = X86_NXVM_BOARD_MEDIA_CAPABILITY_REMOVABLE |
+        X86_NXVM_BOARD_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
     out_info->present = LIB_TRUE;
-    out_info->geometry = (core_machine_media_geometry) {
+    out_info->geometry = (x86_nxvm_board_media_geometry) {
         720u, 512u, 40u, 2u, 9u};
-    return CORE_MACHINE_MEDIA_RESULT_OK;
+    return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static const core_machine_media_provider vm_xt_5160_268_fdd_provider = {
+static const x86_nxvm_board_media_provider vm_xt_5160_268_fdd_provider = {
     .query = vm_xt_5160_268_fdd_query,
 };
 
@@ -66,10 +66,10 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
         profile.values.core.configuration.shared_pit_personality !=
             X86_PIT_PERSONALITY_8253 ||
         profile.values.core.configuration.pic_topology !=
-            CORE_MACHINE_PIC_TOPOLOGY_SINGLE ||
+            X86_NXVM_BOARD_PIC_TOPOLOGY_SINGLE ||
         profile.values.core.configuration.dma_controller_count != 1u ||
         profile.values.core.configuration.keyboard_topology !=
-            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ||
+            X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI ||
         profile.values.core.configuration.xt_ppi_keyboard.port_a != 0x0060u ||
         profile.values.core.configuration.xt_ppi_keyboard.control_port != 0x0063u ||
         profile.values.core.configuration.xt_ppi_keyboard.irq != 1u ||
@@ -93,8 +93,8 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
         profile.topology.dma.fdc_channel != 2u ||
         profile.topology.rtc_cmos_present || !profile.topology.hdc_present ||
         profile.topology.hdc_media_id != VM_PROFILE_XT_5160_268_HDD_MEDIA_ID ||
-        profile.topology.hdc_slave_media_id != CORE_MACHINE_MEDIA_ID_INVALID ||
-        profile.topology.hdc.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
+        profile.topology.hdc_slave_media_id != X86_NXVM_BOARD_MEDIA_ID_INVALID ||
+        profile.topology.hdc.protocol != X86_NXVM_BOARD_HDC_PROTOCOL_XEBEC_XT ||
         profile.topology.hdc.irq != 5u ||
         profile.topology.hdc.service.command_ticks != 250u ||
         profile.topology.hdc.service.next_sector_ticks != 0u ||
@@ -104,20 +104,20 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
         profile.topology.hdc.bus.xebec.dma_irq_mask_port != 0x0323u ||
         profile.topology.hdc.bus.xebec.dma_channel != 3u ||
         profile.topology.hdc.bus.xebec.drive_type !=
-            CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
+            X86_NXVM_BOARD_XEBEC_DRIVE_TYPE_2 ||
         profile.topology.hdc.bus.xebec.expected_media_geometry.logical_sector_count !=
-            CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT ||
+            X86_NXVM_BOARD_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT ||
         profile.topology.hdc.bus.xebec.expected_media_geometry.bytes_per_sector !=
-            CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
+            X86_NXVM_BOARD_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
         profile.topology.hdc.bus.xebec.expected_media_geometry.cylinders !=
-            CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS ||
+            X86_NXVM_BOARD_XEBEC_TYPE_2_CYLINDERS ||
         profile.topology.hdc.bus.xebec.expected_media_geometry.heads !=
-            CORE_MACHINE_XEBEC_TYPE_2_HEADS ||
+            X86_NXVM_BOARD_XEBEC_TYPE_2_HEADS ||
         profile.topology.hdc.bus.xebec.expected_media_geometry.sectors_per_track !=
-            CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK) return 1;
+            X86_NXVM_BOARD_XEBEC_TYPE_2_SECTORS_PER_TRACK) return 1;
     if (profile.topology.fdc_drives.media_id[0] !=
             VM_PROFILE_XT_5160_268_FDD_MEDIA_ID ||
-        profile.topology.fdc_drives.media_id[1] != CORE_MACHINE_MEDIA_ID_INVALID ||
+        profile.topology.fdc_drives.media_id[1] != X86_NXVM_BOARD_MEDIA_ID_INVALID ||
         profile.topology.fdc.dor_port != 0x03f2u ||
         profile.topology.fdc.status_port != 0x03f4u ||
         profile.topology.fdc.data_port != 0x03f5u ||
@@ -131,11 +131,11 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
 static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
-    core_machine_plan *plan = LIB_NULL;
+    x86_nxvm_board_plan *plan = LIB_NULL;
     x86_core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
-    core_machine_dma_request_binding binding = {0};
-    core_machine_media_registry *media = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
+    x86_nxvm_board_dma_request_binding binding = {0};
+    x86_nxvm_board_media_registry *media = LIB_NULL;
     x86_video_snapshot snapshot = {0};
     test_board_composition_observation composition;
     const lib_u8 cells[] = { 'X', 0x1fu };
@@ -143,45 +143,45 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     lib_i32 failed = 1;
 
     if (vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != LIB_STATUS_OK ||
-        core_machine_plan_create(&profile.values.core.configuration, &plan) != LIB_STATUS_OK ||
-        plan == LIB_NULL || core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        media == LIB_NULL || core_machine_media_registry_bind(media,
+        x86_nxvm_board_plan_create(&profile.values.core.configuration, &plan) != LIB_STATUS_OK ||
+        plan == LIB_NULL || x86_nxvm_board_media_registry_create(&media) != LIB_STATUS_OK ||
+        media == LIB_NULL || x86_nxvm_board_media_registry_bind(media,
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, LIB_NULL,
         &vm_xt_5160_268_fdd_provider) != LIB_STATUS_OK ||
-        core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
-        core_machine_plan_bind_media_registry(plan, media) != LIB_STATUS_OK ||
-        core_machine_plan_set_topology(plan, &profile.topology) != LIB_STATUS_OK ||
-        core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
+        x86_nxvm_board_media_registry_freeze(media) != LIB_STATUS_OK ||
+        x86_nxvm_board_plan_bind_media_registry(plan, media) != LIB_STATUS_OK ||
+        x86_nxvm_board_plan_set_topology(plan, &profile.topology) != LIB_STATUS_OK ||
+        x86_nxvm_board_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
         machine == LIB_NULL || board == LIB_NULL ||
-        core_machine_get_fdc_dma_request_binding(board, &binding) != LIB_STATUS_OK ||
+        x86_nxvm_board_get_fdc_dma_request_binding(board, &binding) != LIB_STATUS_OK ||
         binding.core_token == 0u || binding.channel != 2u) goto done;
     composition = test_board_capture_composition(board);
     if (composition.fdc.irq != 6u || composition.fdc.dma_channel != 2u ||
         composition.fdc.clock_ticks_per_second != 4772727u ||
-        test_core_machine_fixture_expect_port(machine, 0x03f4u, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03f5u, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03f2u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03f5u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03f7u, LIB_FALSE, LIB_FALSE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03f7u, LIB_TRUE, LIB_FALSE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03d4u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03d5u, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03d8u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03d9u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03dau, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x03c0u, LIB_FALSE, LIB_FALSE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03f4u, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03f5u, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03f2u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03f5u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03f7u, LIB_FALSE, LIB_FALSE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03f7u, LIB_TRUE, LIB_FALSE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03d4u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03d5u, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03d8u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03d9u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03dau, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x03c0u, LIB_FALSE, LIB_FALSE) ||
         !composition.hdc_configured ||
-        composition.hdc.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
+        composition.hdc.protocol != X86_NXVM_BOARD_HDC_PROTOCOL_XEBEC_XT ||
         composition.hdc.bus.xebec.drive_type !=
-            CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
-        test_core_machine_fixture_expect_port(machine, 0x0320u, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0320u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0321u, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0321u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0322u, LIB_FALSE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0322u, LIB_TRUE, LIB_TRUE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0323u, LIB_FALSE, LIB_FALSE) ||
-        test_core_machine_fixture_expect_port(machine, 0x0323u, LIB_TRUE, LIB_TRUE) ||
+            X86_NXVM_BOARD_XEBEC_DRIVE_TYPE_2 ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0320u, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0320u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0321u, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0321u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0322u, LIB_FALSE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0322u, LIB_TRUE, LIB_TRUE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0323u, LIB_FALSE, LIB_FALSE) ||
+        test_x86_nxvm_machine_fixture_expect_port(machine, 0x0323u, LIB_TRUE, LIB_TRUE) ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x000c8000u,
@@ -189,14 +189,14 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
         open_bus_byte != 0xffu ||
         x86_core_machine_bus_write(machine, 0x03d8u, 0x0du) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x000b8000u, cells, sizeof(cells)) != LIB_STATUS_OK ||
-        core_machine_capture_display_snapshot(board, &snapshot) != LIB_STATUS_OK ||
+        x86_nxvm_board_capture_display_snapshot(board, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu) goto done;
     failed = 0;
 done:
     x86_core_machine_destroy(machine);
-    core_machine_media_registry_destroy(media);
-    core_machine_plan_destroy(plan);
+    x86_nxvm_board_media_registry_destroy(media);
+    x86_nxvm_board_plan_destroy(plan);
     return failed;
 }
 
@@ -205,38 +205,38 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     static lib_u8 system[VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES];
     static lib_u8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
     static lib_u8 video[512] = {0x55u, 0xaau, 1u};
-    vm_machine_config config = {
+    x86_nxvm_machine_config config = {
         .bios_count = 1u
     };
-    vm_machine_assets assets = { .bios = {
+    x86_nxvm_machine_assets assets = { .bios = {
         { system, sizeof(system) }, { xebec, sizeof(xebec) }
     }, .video = { video, sizeof(video) } };
-    vm_machine *session = LIB_NULL;
-    vm_machine_reset_vector vector;
+    x86_nxvm_machine *session = LIB_NULL;
+    x86_nxvm_machine_reset_vector vector;
     lib_u8 observed[2] = {0};
     lib_i32 failed = 1;
 
     if (vm_xt_test_create(
             &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
-        vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
+        x86_nxvm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u,
         observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x55u ||
         observed[1u] != 0xaau) goto done;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     session = LIB_NULL;
     config.bios_count = 2u;
     if (vm_xt_test_create(
         &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     session = LIB_NULL;
     config.cpu_profile = X86_CORE_CPU_PROFILE_8086;
     failed = vm_xt_test_create(
         &config, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 

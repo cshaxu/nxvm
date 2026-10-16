@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine.c"
     machine_source)
 
 set(forbidden_vm_cpu_pic_wiring
@@ -16,7 +16,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" core_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c" bus_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c"
     board_source)
 string(FIND "${core_source}"
     "x86_core_cpu_create(&x86_core_machine_cpu_bus," core_cpu_bus_bind)
@@ -35,8 +35,8 @@ foreach(token IN ITEMS
     endif()
 endforeach()
 foreach(token IN ITEMS
-    "core_machine_pic_scan_interrupt(board->shared_pic_master,"
-    "core_machine_pic_get_interrupt(board->shared_pic_master,"
+    "x86_nxvm_board_pic_scan_interrupt(board->shared_pic_master,"
+    "x86_nxvm_board_pic_get_interrupt(board->shared_pic_master,"
     "board->shared_pic_slave)")
     string(FIND "${board_source}" "${token}" position)
     if(position EQUAL -1)
@@ -46,7 +46,7 @@ endforeach()
 foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
         cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
     file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/${cpu_file}" contents)
-    if(contents MATCHES "core_machine_pic_|shared_pic_|bind_pic|pic8259/")
+    if(contents MATCHES "core_machine_pic_|x86_nxvm_board_pic_|shared_pic_|bind_pic|pic8259/")
         message(FATAL_ERROR "CPU retains a concrete PIC dependency: ${cpu_file}")
     endif()
     foreach(forbidden_dependency IN ITEMS t_ram t_port core_machine_transaction
@@ -83,12 +83,12 @@ file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.h")
 list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c")
 foreach(board_source IN LISTS board_sources)
     file(READ "${board_source}" contents)
@@ -101,23 +101,23 @@ foreach(board_source IN LISTS board_sources)
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
     endif()
 endforeach()
-foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
-        core_machine_bit_scan_smoke.c
-        core_machine_bit_test_smoke.c
-        core_machine_double_shift_smoke.c core_machine_imul2_smoke.c
-        core_machine_setcc_smoke.c
-        core_machine_sign_extend_smoke.c
-        core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c core_machine_xchg_smoke.c
-        core_machine_gpr_push_pop_smoke.c core_machine_push_immediate_smoke.c core_machine_pusha_popa_smoke.c
-        core_machine_enter_leave_smoke.c core_machine_fs_gs_stack_smoke.c
-        core_machine_legacy_sreg_stack_smoke.c
-        core_machine_les_lds_board_smoke.c core_machine_les_lds_smoke.c
-        core_machine_lss_lfs_lgs_smoke.c core_machine_segment_selector_smoke.c
-        core_machine_sreg_mov_smoke.c
-        core_machine_operand_address_smoke.c core_machine_prefix_attributes_smoke.c)
-    set(board_test_path "${PROJECT_SOURCE_DIR}/test/core/board-base/${board_test}")
+foreach(board_test board_lea_smoke.c board_movx_smoke.c
+        board_bit_scan_smoke.c
+        board_bit_test_smoke.c
+        board_double_shift_smoke.c board_imul2_smoke.c
+        board_setcc_smoke.c
+        board_sign_extend_smoke.c
+        board_gpr_mov_smoke.c board_moffs_smoke.c board_xchg_smoke.c
+        board_gpr_push_pop_smoke.c board_push_immediate_smoke.c board_pusha_popa_smoke.c
+        board_enter_leave_smoke.c board_fs_gs_stack_smoke.c
+        board_legacy_sreg_stack_smoke.c
+        board_les_lds_board_smoke.c board_les_lds_smoke.c
+        board_lss_lfs_lgs_smoke.c board_segment_selector_smoke.c
+        board_sreg_mov_smoke.c
+        board_operand_address_smoke.c board_prefix_attributes_smoke.c)
+    set(board_test_path "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/${board_test}")
     if(NOT EXISTS "${board_test_path}")
-        set(board_test_path "${PROJECT_SOURCE_DIR}/test/core/board-base/composition/${board_test}")
+        set(board_test_path "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/composition/${board_test}")
     endif()
     file(READ "${board_test_path}" contents)
     if(contents MATCHES "executor_cpu|machine_cpu_fixture|x86-core/cpu/cpu(_instructions)?\\.h")
@@ -139,19 +139,19 @@ file(GLOB_RECURSE pic_consumers
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5170/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.h")
 foreach(consumer IN LISTS pic_consumers)
-    if(consumer MATCHES "/src/core/board-base/pic_bus\\.(c|h)$")
+    if(consumer MATCHES "/src/x86-nxvm/board-base/pic_bus\\.(c|h)$")
         continue()
     endif()
     file(READ "${consumer}" contents)
-    if(contents MATCHES "core/chips/pic8259/pic\\.h" OR
-       contents MATCHES "core/board-base/pic_bus\\.h" OR
+    if(contents MATCHES "x86-nxvm/chips/pic8259/pic\\.h" OR
+       contents MATCHES "x86-nxvm/board-base/pic_bus\\.h" OR
        contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)device" OR
        contents MATCHES "irq[0-9]*_source[ \\t]*(\\.|->)(master|slave|irq|asserted)" OR
        contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)data" OR

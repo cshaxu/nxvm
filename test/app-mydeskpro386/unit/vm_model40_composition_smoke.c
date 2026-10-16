@@ -1,25 +1,25 @@
 #include "app-mydeskpro386/machine_observation_interface.h"
-#include "../../core/machine/support/guest_input.h"
+#include "../../x86-nxvm/machine/support/guest_input.h"
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40.h"
-#include "../../core/board-base/board_binding_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "../../core/board-base/support/cmos_fixture.h"
-#include "../../core/board-base/support/kbc_state_fixture.h"
+#include "../../x86-nxvm/board-base/board_binding_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/cmos_fixture.h"
+#include "../../x86-nxvm/board-base/support/kbc_state_fixture.h"
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "lib/types/file.h"
 
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
-#include "core/board-at/kbc_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/board-at/kbc_interface.h"
 #include "../support/model40_session_assets.h"
 #include "x86-core/machine/clock_interface.h"
 
 static lib_bool model40_clock_inputs_match(void)
 {
-    core_machine_config config;
+    x86_nxvm_board_config config;
     x86_core_machine_clock_domain clock;
     x86_pit *pit = LIB_NULL;
     lib_bool saw_low = LIB_FALSE;
@@ -58,13 +58,13 @@ lib_i32 main(void)
 {
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
-    vm_machine_config invalid_config = {0};
-    vm_machine_assets missing_assets = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine_config invalid_config = {0};
+    x86_nxvm_machine_assets missing_assets = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_cpu_profile cpu_profile;
     lib_size memory_bytes;
     mydeskpro386_d4_platform_observation d4;
-    core_machine_speaker_observation speaker;
+    x86_nxvm_board_speaker_observation speaker;
     lib_u32 value = 0u;
     lib_u8 rom_byte = 0u;
     const x86_core_machine_run_budget budget = { 1u, 0u };
@@ -90,7 +90,7 @@ lib_i32 main(void)
         const test_board_composition_observation composition =
             test_board_capture_composition(session->board);
         const test_board_plan_observation plan =
-            test_board_capture_plan(session->core_machine_plan);
+            test_board_capture_plan(session->x86_nxvm_board_plan);
 
         failed = !vm_test_profile_is_model40(vm_test_profile_construction(session)) ||
         executor.retirement_time_contract !=
@@ -125,10 +125,10 @@ lib_i32 main(void)
             LIB_STATUS_OK || cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         x86_core_machine_get_memory_bytes(session->x86_core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
-        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
-        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
-        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
+        test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_BASEMEM_LSB) != 0x80u ||
+        test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_BASEMEM_MSB) != 0x02u ||
+        test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_EXTMEM_LSB) != 0u ||
+        test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_EXTMEM_MSB) != 0x04u ||
         vm_test_model40_d4_observe(session, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
@@ -144,7 +144,7 @@ lib_i32 main(void)
             sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0x26u ||
         test_board_kbc_aux_enabled(session->board) ||
         x86_core_machine_bus_write(session->x86_core_machine, 0x0061u, 0x02u) !=
-            LIB_STATUS_OK || core_machine_get_speaker_observation(
+            LIB_STATUS_OK || x86_nxvm_board_get_speaker_observation(
             session->board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         speaker.output != speaker.timer_output || x86_core_machine_bus_write(session->x86_core_machine, 0x0061u,
@@ -198,6 +198,6 @@ lib_i32 main(void)
     if (!failed) lib_c_printf("EXTERNAL-ROM-GUARD:OK\n");
     if (!failed) lib_c_printf("MODEL40-DETERMINISTIC-CONTRACT:OK\n");
     if (!failed) lib_c_printf("DESKPRO-SESSION-CUTOVER:OK\n");
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed ? 1 : 0;
 }

@@ -4,16 +4,16 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" machine_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" machine_scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c" board_advance_source)
 set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}${board_advance_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/clock.c" clock_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/execution_provider_interface.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile_interface.h"
     profile_header)
 
 foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"
@@ -40,7 +40,7 @@ string(FIND "${lifecycle_source}" "vm_machine_execution_provider_advance_time"
 string(FIND "${devices_source}" "x86_rtc_advance" cmos_position)
 string(FIND "${machine_source}" "x86_rtc_advance" rtc_position)
 string(FIND "${machine_source}" "rtc_cmos_configured" rtc_configured_position)
-string(FIND "${profile_header}" "core_machine_clock_plan" profile_position)
+string(FIND "${profile_header}" "x86_nxvm_board_clock_plan" profile_position)
 if(provider_position EQUAL -1 OR NOT lifecycle_position EQUAL -1 OR
     NOT cmos_position EQUAL -1 OR
     rtc_position EQUAL -1 OR rtc_configured_position EQUAL -1 OR

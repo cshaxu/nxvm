@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.h" header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/CMakeLists.txt" targets)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/vadp.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/vadp.h" header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/CMakeLists.txt" targets)
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" app_targets)
 
 foreach(required "append_ports(routes, 0u, cga_ports"
@@ -29,7 +29,7 @@ foreach(forbidden "t_port" "core_machine_port_add_"
 endforeach()
 
 if(NOT targets MATCHES "board-base/fdc\\.c board-base/hdc\\.c board-base/vadp\\.c" OR
-    NOT targets MATCHES "add_library\\(core-board-base STATIC" OR
+    NOT targets MATCHES "add_library\\(x86-nxvm-board-base STATIC" OR
     app_targets MATCHES "src/app-[^/]+/.*/vadp\\.c")
     message(FATAL_ERROR "VADP must be built once by the Shared board source list, not App")
 endif()

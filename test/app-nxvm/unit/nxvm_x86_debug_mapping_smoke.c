@@ -1,16 +1,16 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/debug_interface.h"
 #include "x86-debug/product/protocol_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/debug_adapter.h"
-#include "core/machine/machine_private.h"
-#include "../../core/machine/support/emulator_machine_fixture.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/debug_adapter.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "../../x86-nxvm/machine/support/emulator_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
-static lib_i32 vm_debug_execute(vm_machine *machine,
+static lib_i32 vm_debug_execute(x86_nxvm_machine *machine,
     const emulator_machine_debug_lease *lease,
     const x86_debug_request *request,
     x86_debug_response *result)
@@ -22,7 +22,7 @@ static lib_i32 vm_debug_execute(vm_machine *machine,
             LIB_STATUS_OK && response_size == sizeof(*result);
 }
 
-static lib_i32 vm_debug_wait_paused(const vm_machine *machine,
+static lib_i32 vm_debug_wait_paused(const x86_nxvm_machine *machine,
     const vm_test_emulator_machine_state_waiter *waiter)
 {
     return vm_test_emulator_machine_wait_state(machine, waiter,
@@ -31,7 +31,7 @@ static lib_i32 vm_debug_wait_paused(const vm_machine *machine,
 
 lib_i32 main(void)
 {
-    vm_machine *machine = LIB_NULL;
+    x86_nxvm_machine *machine = LIB_NULL;
     vm_test_emulator_machine_state_waiter waiter = {0};
     emulator_machine_debug_lease lease;
     x86_debug_response result;
@@ -39,7 +39,7 @@ lib_i32 main(void)
     lib_u32 watch_address;
     lib_u8 watch_enabled;
     lib_u8 byte = 0x5au;
-    vm_machine_debug_stop_reason stop_reason;
+    x86_nxvm_machine_debug_stop_reason stop_reason;
     lib_u64 executed;
     lib_size response_size;
     x86_core_machine *saved_core_machine;
@@ -63,7 +63,7 @@ lib_i32 main(void)
         goto failed;
     }
     response_size = sizeof(result);
-    if (vm_machine_debug_execute(machine, &(x86_debug_request) {
+    if (x86_nxvm_machine_debug_execute(machine, &(x86_debug_request) {
             .operation = X86_DEBUG_READ_REGISTER,
             .register_id = X86_CORE_CPU_DEBUG_EAX
         }, sizeof(x86_debug_request), &result, sizeof(result), &response_size) !=
@@ -134,17 +134,17 @@ lib_i32 main(void)
         }, &result) || machine->debug.plan.kind !=
             X86_DEBUG_EXECUTION_TRACE ||
         machine->debug.plan.remaining != 5u ||
-        vm_machine_debug_limit_instruction_budget(&machine->debug, 256u) != 5u)
+        x86_nxvm_machine_debug_limit_instruction_budget(&machine->debug, 256u) != 5u)
         goto failed;
-    vm_machine_debug_complete_run(&machine->debug, 2u);
+    x86_nxvm_machine_debug_complete_run(&machine->debug, 2u);
     if (machine->debug.plan.remaining != 3u ||
-        vm_machine_debug_completion_pending(&machine->debug, &stop_reason))
+        x86_nxvm_machine_debug_completion_pending(&machine->debug, &stop_reason))
         goto failed;
-    vm_machine_debug_complete_run(&machine->debug, 3u);
-    if (!vm_machine_debug_completion_pending(&machine->debug, &stop_reason) ||
-        stop_reason != VM_MACHINE_DEBUG_STOP_TRACE ||
-        !vm_machine_debug_take_completion(&machine->debug, &stop_reason,
-            &executed) || stop_reason != VM_MACHINE_DEBUG_STOP_TRACE || executed != 5u)
+    x86_nxvm_machine_debug_complete_run(&machine->debug, 3u);
+    if (!x86_nxvm_machine_debug_completion_pending(&machine->debug, &stop_reason) ||
+        stop_reason != X86_NXVM_MACHINE_DEBUG_STOP_TRACE ||
+        !x86_nxvm_machine_debug_take_completion(&machine->debug, &stop_reason,
+            &executed) || stop_reason != X86_NXVM_MACHINE_DEBUG_STOP_TRACE || executed != 5u)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_SET_EXECUTION_PLAN,
@@ -154,11 +154,11 @@ lib_i32 main(void)
     machine->debug.observation_valid = LIB_TRUE;
     machine->debug.observation.cs_base = 0x1000u;
     machine->debug.observation.eip = 0x234u;
-    vm_machine_debug_complete_run(&machine->debug, 7u);
-    if (!vm_machine_debug_breakpoint_due(&machine->debug)) goto failed;
-    vm_machine_debug_complete_breakpoint(&machine->debug);
-    if (!vm_machine_debug_take_completion(&machine->debug, &stop_reason,
-            &executed) || stop_reason != VM_MACHINE_DEBUG_STOP_BREAKPOINT ||
+    x86_nxvm_machine_debug_complete_run(&machine->debug, 7u);
+    if (!x86_nxvm_machine_debug_breakpoint_due(&machine->debug)) goto failed;
+    x86_nxvm_machine_debug_complete_breakpoint(&machine->debug);
+    if (!x86_nxvm_machine_debug_take_completion(&machine->debug, &stop_reason,
+            &executed) || stop_reason != X86_NXVM_MACHINE_DEBUG_STOP_BREAKPOINT ||
         executed != 7u) goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_CLEAR_EXECUTION_PLAN
@@ -176,7 +176,7 @@ lib_i32 main(void)
     machine->debug.observation.watch_hit = LIB_TRUE;
     machine->debug.observation.watch_kind = X86_CORE_CPU_DEBUG_WATCH_WRITE;
     machine->debug.observation.watch_address = 0x4567u;
-    vm_machine_debug_complete_watchpoint(&machine->debug);
+    x86_nxvm_machine_debug_complete_watchpoint(&machine->debug);
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_GET_EXECUTION_RESULT
         }, &result) || !result.enabled || !result.observation.watch_hit ||
@@ -194,13 +194,13 @@ lib_i32 main(void)
             &(lib_size){0u}) != LIB_STATUS_INVALID_STATE) goto failed;
     vm_test_emulator_machine_unbind(machine);
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
-    vm_machine_destroy(machine);
+    x86_nxvm_machine_destroy(machine);
     puts("VM-X86-DEBUG-MAPPING:OK");
     return 0;
 
 failed:
     vm_test_emulator_machine_unbind(machine);
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
-    vm_machine_destroy(machine);
+    x86_nxvm_machine_destroy(machine);
     return 1;
 }

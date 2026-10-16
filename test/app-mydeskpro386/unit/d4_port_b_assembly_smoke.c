@@ -1,5 +1,5 @@
 #include "app-mydeskpro386/d4_platform_interface.h"
-#include "../../core/board-base/composition/port_assembly_fixture.h"
+#include "../../x86-nxvm/board-base/composition/port_assembly_fixture.h"
 #include "lib/types/file.h"
 
 static lib_bool reject_ports;
@@ -19,9 +19,9 @@ static lib_status d4_test_ports(x86_core_machine *machine,
 #include "app-mydeskpro386/d4_platform.c"
 #undef x86_core_machine_install_port_routes
 
-static lib_status port_assembly_attach_d4(core_machine_board_state *board, lib_bool reject)
+static lib_status port_assembly_attach_d4(x86_nxvm_board_state *board, lib_bool reject)
 {
-    const mydeskpro386_d4_platform_config config = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
+    const mydeskpro386_d4_platform_config config = {X86_NXVM_BOARD_PC_AT_PORT_B, 0u, 2u, 18u};
     mydeskpro386_d4_platform *platform = LIB_NULL;
     reject_ports = reject;
     rejection_reached = LIB_FALSE;

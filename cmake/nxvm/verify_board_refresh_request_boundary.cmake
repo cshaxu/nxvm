@@ -3,10 +3,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" creation)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" core_state)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_state)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_state.h" board_state)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.h" profile_state)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" profile)
 foreach(field "d4_refresh_hold_pending" "d4_refresh_address")
@@ -37,7 +37,7 @@ foreach(required "x86_core_machine_transaction_hold_request("
         message(FATAL_ERROR "Core refresh transaction lacks ${required}")
     endif()
 endforeach()
-foreach(required "core_machine_board_refresh_request(" "core_machine_board_refresh_complete("
+foreach(required "x86_nxvm_board_refresh_request(" "x86_nxvm_board_refresh_complete("
     "board->profile_binding.refresh_request(board->profile_binding.context, out_address)"
     "board->profile_binding.refresh_complete(board->profile_binding.context)")
     string(FIND "${board}" "${required}" position)
@@ -55,7 +55,7 @@ foreach(required "mydeskpro386_d4_platform_refresh_request("
         message(FATAL_ERROR "Profile refresh completion/binding lacks ${required}")
     endif()
 endforeach()
-foreach(binding "core_machine_board_refresh_request" "core_machine_board_refresh_complete")
+foreach(binding "x86_nxvm_board_refresh_request" "x86_nxvm_board_refresh_complete")
     string(FIND "${creation}" "${binding}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board refresh provider not bound: ${binding}")

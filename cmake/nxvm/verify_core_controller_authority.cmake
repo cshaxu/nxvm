@@ -12,12 +12,12 @@ if(product_build MATCHES "src/app-nxvm/devices/")
     message(FATAL_ERROR "App build restores a Shared provider implementation")
 endif()
 
-set(machine_source "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c")
 set(machine_lifecycle_source "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c")
-set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c")
-set(profile_plan_source "${PROJECT_SOURCE_DIR}/src/core/machine/pc_at_preparation.c")
-set(composition_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
-set(fixture "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_controller_authority_smoke.c")
+set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_plan.c")
+set(profile_plan_source "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/pc_at_preparation.c")
+set(composition_source "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine.c")
+set(fixture "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/board_controller_authority_smoke.c")
 foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${machine_plan_source}" "${profile_plan_source}" "${composition_source}" "${fixture}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "authority source missing: ${source}")
@@ -26,12 +26,12 @@ endforeach()
 
 file(READ "${machine_source}" machine_board_text)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_interface.h" neutral_contract)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h" board_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_interface.h" board_contract)
 foreach(forbidden IN ITEMS "machine_board_interface.h" "controller_interface.h"
     "display_interface.h" "pic_bus_interface.h" "fdc_observation_interface.h"
-    "core_machine_config" "core_machine_clock_plan" "core_machine_plan_topology"
-    "core_machine_keyboard_topology" "core_machine_display_config")
-    if(forbidden MATCHES "^core_machine_")
+    "x86_nxvm_board_config" "x86_nxvm_board_clock_plan" "x86_nxvm_board_plan_topology"
+    "x86_nxvm_board_keyboard_topology" "x86_nxvm_board_display_config")
+    if(forbidden MATCHES "^x86_nxvm_board_")
         string(REGEX MATCH "(^|[^A-Za-z0-9_])${forbidden}([^A-Za-z0-9_]|$)"
             forbidden_match "${neutral_contract}")
     else()
@@ -45,10 +45,10 @@ foreach(forbidden IN ITEMS "machine_board_interface.h" "controller_interface.h"
         message(FATAL_ERROR "Neutral public contract retains board dependency: ${forbidden}")
     endif()
 endforeach()
-foreach(required IN ITEMS "machine_interface.h" "core_machine_config"
-    "core_machine_clock_plan" "core_machine_plan_topology"
-    "core_machine_create(" "core_machine_plan_create("
-    "core_machine_configure_display(" "core_machine_configure_dma(")
+foreach(required IN ITEMS "machine_interface.h" "x86_nxvm_board_config"
+    "x86_nxvm_board_clock_plan" "x86_nxvm_board_plan_topology"
+    "x86_nxvm_board_create(" "x86_nxvm_board_plan_create("
+    "x86_nxvm_board_configure_display(" "x86_nxvm_board_configure_dma(")
     string(FIND "${board_contract}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Board public contract lacks migrated declaration: ${required}")
@@ -59,13 +59,13 @@ foreach(operation IN ITEMS keyboard_get_native_scan_set keyboard_receive_native_
     keyboard_receive_native_bytes set_xt_ppi_fault_input mouse_receive_relative)
     foreach(contract IN ITEMS board_contract machine_board_text)
         if(NOT "${${contract}}" MATCHES
-            "core_machine_${operation}\\((const )?core_machine_board_state \\*board,")
+            "x86_nxvm_board_${operation}\\((const )?x86_nxvm_board_state \\*board,")
             message(FATAL_ERROR "Board input operation lacks its actual board receiver: ${operation}")
         endif()
     endforeach()
 endforeach()
-string(FIND "${machine_board_text}" "lib_status core_machine_keyboard_receive_native_byte(" input_begin)
-string(FIND "${machine_board_text}" "static lib_u32 core_machine_board_reset_rom_alias(" input_end)
+string(FIND "${machine_board_text}" "lib_status x86_nxvm_board_keyboard_receive_native_byte(" input_begin)
+string(FIND "${machine_board_text}" "static lib_u32 x86_nxvm_board_reset_rom_alias(" input_end)
 math(EXPR input_length "${input_end} - ${input_begin}")
 string(SUBSTRING "${machine_board_text}" ${input_begin} ${input_length} input_operations)
 if(input_operations MATCHES "->board" OR input_operations MATCHES "x86_core_machine \\*machine")
@@ -113,12 +113,12 @@ file(GLOB_RECURSE nxvm_signal_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c")
 foreach(source IN LISTS nxvm_signal_sources)
     file(READ "${source}" source_text)
-    if(source MATCHES "/src/(app-(nxvm|my5160|my5170|mydeskpro386)|core/board-(base|at|xt))/" AND
+    if(source MATCHES "/src/(app-(nxvm|my5160|my5170|mydeskpro386)|x86-nxvm/board-(base|at|xt))/" AND
        source_text MATCHES "#[ \t]*include[ \t]*[<\"]x86-core/machine/(machine|memory|port|transaction|timeline)\\.h[>\"]")
         message(FATAL_ERROR "Board source imports private Core layout: ${source}")
     endif()
@@ -137,7 +137,7 @@ foreach(source IN LISTS nxvm_signal_sources)
        source_text MATCHES "(machine|mutable_machine)->(lifecycle|transaction_contract|cpu_cycle_bus_ready|dma_cycle_bus_ready)")
         message(FATAL_ERROR "Board borrows private Core lifecycle or READY state: ${source}")
     endif()
-    if(NOT source MATCHES "/core/board-base/(machine_plan|board_deadline)\\.c$" AND
+    if(NOT source MATCHES "/x86-nxvm/board-base/(machine_plan|board_deadline)\\.c$" AND
        source_text MATCHES "->[ \t]*(timing_declarations|timing_declarations_copied)")
         message(FATAL_ERROR "PC qualification state outside Board-Base ownership: ${source}")
     endif()
@@ -163,11 +163,11 @@ foreach(source IN LISTS nxvm_signal_sources)
         message(FATAL_ERROR "RAM construction must stay in its Core owner: ${source}")
     endif()
 endforeach()
-foreach(forbidden IN ITEMS "const core_machine_config *"
+foreach(forbidden IN ITEMS "const x86_nxvm_board_config *"
     "config->clock_plan" "core_machine_create_internal("
-    "core_machine_board_create(machine, config)" "machine_board_state.h"
-    "core_machine_board_reset_devices(" "core_machine_board_reset_clocks("
-    "core_machine_board_refresh_nmi(" "core_machine_board_finalize_devices(")
+    "x86_nxvm_board_attach_machine(machine, config)" "machine_board_state.h"
+    "x86_nxvm_board_reset_devices(" "x86_nxvm_board_reset_clocks("
+    "x86_nxvm_board_refresh_nmi(" "x86_nxvm_board_finalize_devices(")
     string(FIND "${machine_lifecycle_text}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "Neutral constructor retains board input: ${forbidden}")
@@ -178,7 +178,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/attachment_interface.h" at
 file(GLOB neutral_policy_sources "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.[ch]")
 foreach(source IN LISTS neutral_policy_sources)
     file(READ "${source}" neutral_policy_text)
-    if(neutral_policy_text MATCHES "timing_declarations|timing_qualified|core_machine_board_timing_|CORE_MACHINE_(BOARD_)?TIMING_CAPABILITY|CORE_MACHINE_(BOARD_)?(DEFAULT|MINIMUM|MAXIMUM)_MEMORY_BYTES|CORE_MACHINE_(BOARD_)?TRACE_(PIT|PIC|RTC|KBC|VADP|FDC|HDC)_")
+    if(neutral_policy_text MATCHES "timing_declarations|timing_qualified|x86_nxvm_board_timing_|X86_NXVM_BOARD_(TIMING_CAPABILITY|(DEFAULT|MINIMUM|MAXIMUM)_MEMORY_BYTES|TRACE_(PIT|PIC|RTC|KBC|VADP|FDC|HDC)_)|core_machine_board_timing_|CORE_MACHINE_(BOARD_)?TIMING_CAPABILITY|CORE_MACHINE_(BOARD_)?(DEFAULT|MINIMUM|MAXIMUM)_MEMORY_BYTES|CORE_MACHINE_(BOARD_)?TRACE_(PIT|PIC|RTC|KBC|VADP|FDC|HDC)_")
         message(FATAL_ERROR "Neutral executor retains PC qualification/default/trace policy: ${source}")
     endif()
 endforeach()
@@ -186,7 +186,7 @@ string(FIND "${private_header}" "x86_core_machine_attachment attachment;" attach
 if(attachment_state EQUAL -1)
     message(FATAL_ERROR "Core must own one copied attachment binding")
 endif()
-foreach(forbidden IN ITEMS "machine.h" "machine_board" "core_machine_board_state")
+foreach(forbidden IN ITEMS "machine.h" "machine_board" "x86_nxvm_board_state")
     string(FIND "${attachment_contract}" "${forbidden}" private_dependency)
     if(NOT private_dependency EQUAL -1)
         message(FATAL_ERROR "Attachment public contract borrows private board/Core layout: ${forbidden}")
@@ -197,7 +197,7 @@ foreach(callback IN ITEMS deadline refresh_request refresh_complete dma_ticks
     shutdown_reset before_internal_advance after_internal_advance reset_devices reset_clocks refresh_nmi
     finalize_devices firmware)
     string(FIND "${attachment_contract}" " ${callback};" declaration)
-    string(FIND "${machine_board_text}" ".${callback} = core_machine_board_" publication)
+    string(FIND "${machine_board_text}" ".${callback} = x86_nxvm_board_" publication)
     if(declaration EQUAL -1 OR publication EQUAL -1)
         message(FATAL_ERROR "Attachment callback class is incomplete: ${callback}")
     endif()
@@ -217,20 +217,20 @@ foreach(required IN ITEMS ".context = board" "board->core = machine;")
     endif()
 endforeach()
 foreach(source IN ITEMS board_advance board_deadline)
-    file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/${source}.c" callback_text)
+    file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/${source}.c" callback_text)
     if(callback_text MATCHES "machine->|board->core->|x86_core_machine \\*machine = owner")
         message(FATAL_ERROR "Board callbacks borrow the Core layout: ${source}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_text)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c" board_deadline_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c" board_advance_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_deadline.c" board_deadline_text)
 set(board_callbacks "${machine_board_text}${board_advance_text}${board_deadline_text}")
 foreach(callback IN ITEMS deadline_observe refresh_request refresh_complete dma_ticks
     dma_request dma_advance before_internal_advance after_internal_advance pic_pending pic_acknowledge
     shutdown_resets reset_devices reset_clocks
     refresh_nmi finalize_devices register_reset_rom_alias)
     if(NOT board_callbacks MATCHES
-       "core_machine_board_${callback}\\(void \\*owner[^;{]*\\{[ \t\r\n]*(const )?core_machine_board_state \\*board = owner;")
+       "x86_nxvm_board_${callback}\\(void \\*owner[^;{]*\\{[ \t\r\n]*(const )?x86_nxvm_board_state \\*board = owner;")
         message(FATAL_ERROR "Attachment callback does not receive board state: ${callback}")
     endif()
 endforeach()
@@ -253,7 +253,7 @@ foreach(phase IN ITEMS reset_devices reset_clocks refresh_nmi finalize_devices)
     string(FIND "${machine_lifecycle_text}"
         "machine->attachment.${phase}(machine->attachment.context)" call_position)
     string(FIND "${machine_board_text}"
-        ".${phase} = core_machine_board_${phase}," bind_position)
+        ".${phase} = x86_nxvm_board_${phase}," bind_position)
     if(call_position EQUAL -1 OR bind_position EQUAL -1)
         message(FATAL_ERROR "Core board phase lacks its sole binding/call: ${phase}")
     endif()
@@ -261,7 +261,7 @@ endforeach()
 string(FIND "${machine_board_text}"
     "x86_core_machine_bind_attachment(machine, &attachment)" finalize_binding)
 string(FIND "${machine_board_text}"
-    "core_machine_board_initialize_clocks(" clock_initialization)
+    "x86_nxvm_board_initialize_clocks(" clock_initialization)
 if(clock_initialization EQUAL -1 OR finalize_binding GREATER clock_initialization)
     message(FATAL_ERROR "Board cleanup must bind before fallible clock initialization")
 endif()
@@ -277,23 +277,23 @@ foreach(forbidden IN ITEMS "clock_plan" "pic_" "pit_" "dma_" "kbc_" "xt_")
     endif()
 endforeach()
 file(READ "${machine_plan_source}" machine_plan_text)
-foreach(required IN ITEMS "core_machine_board_prepare_executor(config, &executor)"
+foreach(required IN ITEMS "x86_nxvm_board_prepare_executor(config, &executor)"
     "x86_core_machine_neutral_create(&executor, &machine)"
-    "core_machine_board_create(machine, config, &board)"
+    "x86_nxvm_board_attach_machine(machine, config, &board)"
     "*out_machine = machine;" "*out_board = board;")
     string(FIND "${machine_board_text}" "${required}" publication)
     if(publication EQUAL -1)
         message(FATAL_ERROR "Configuration factory lacks sole construction/publication: ${required}")
     endif()
 endforeach()
-foreach(forbidden IN ITEMS "core_machine_board_state" "->board")
+foreach(forbidden IN ITEMS "x86_nxvm_board_state" "->board")
     string(FIND "${private_header}" "${forbidden}" private_board)
     if(NOT private_board EQUAL -1)
         message(FATAL_ERROR "Neutral Core retains a private board association: ${forbidden}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_state)
-set(board_headers "src/core/board-base/machine_board_state.h")
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_state.h" board_state)
+set(board_headers "src/x86-nxvm/board-base/machine_board_state.h")
 set(visited_headers)
 while(board_headers)
     list(POP_FRONT board_headers header)
@@ -317,13 +317,13 @@ if(neutral_contract MATCHES "test_allocation|create_with_test_|machine_board_sta
     message(FATAL_ERROR "Neutral production contract exposes test or board layout")
 endif()
 foreach(board_source IN ITEMS "${machine_board_text}" "${board_state}")
-    if(board_source MATCHES "#include[ \t]+\"(app-nxvm/devices|core/x86)/(machine|memory|port)\\.h\"" OR
+    if(board_source MATCHES "#include[ \t]+\"(app-nxvm/devices|x86-nxvm/x86|x86-core/machine)/(machine|memory|port)\\.h\"" OR
        board_source MATCHES "core_machine_(neutral_create_with_test_allocation|create_internal|create_with_test_[a-z_]+)\\(")
         message(FATAL_ERROR "Production board construction borrows private Core/test layout")
     endif()
 endforeach()
-foreach(required IN ITEMS "core_machine_board_state **out_board"
-    "core_machine_create(&plan->configuration, &machine, &board)"
+foreach(required IN ITEMS "x86_nxvm_board_state **out_board"
+    "x86_nxvm_board_create(&plan->configuration, &machine, &board)"
     "x86_core_machine_destroy(machine);" "*out_machine = machine;"
     "*out_board = board;")
     string(FIND "${machine_plan_text}" "${required}" publication)
@@ -348,18 +348,18 @@ foreach(validator IN ITEMS retirement_time_contract_is_valid
         message(FATAL_ERROR "Neutral validator must belong to Core: ${validator}")
     endif()
 endforeach()
-string(FIND "${machine_plan_text}" "static lib_i32 core_machine_board_timing_capability_is_valid(" board_qualification)
+string(FIND "${machine_plan_text}" "static lib_i32 x86_nxvm_board_timing_capability_is_valid(" board_qualification)
 string(FIND "${machine_lifecycle_text}" "timing_capability_is_valid(" neutral_qualification)
 if(board_qualification EQUAL -1 OR NOT neutral_qualification EQUAL -1)
     message(FATAL_ERROR "PC qualification validator must belong to Board-Base")
 endif()
 set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_text}")
-foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"
-    "core_machine_fdc_create" "core_machine_fdc_configure"
-    "core_machine_hdc_create" "core_machine_hdc_configure"
-    "x86_core_machine_install_port_routes" "core_machine_fdc_reset"
-    "core_machine_hdc_reset" "core_machine_fdc_destroy"
-    "core_machine_hdc_destroy")
+foreach(required IN ITEMS "x86_nxvm_board_configure_fdc" "x86_nxvm_board_configure_hdc"
+    "x86_nxvm_board_fdc_create" "x86_nxvm_board_fdc_configure"
+    "x86_nxvm_board_hdc_create" "x86_nxvm_board_hdc_configure"
+    "x86_core_machine_install_port_routes" "x86_nxvm_board_fdc_reset"
+    "x86_nxvm_board_hdc_reset" "x86_nxvm_board_fdc_destroy"
+    "x86_nxvm_board_hdc_destroy")
     string(FIND "${machine_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "core lifecycle route is incomplete: ${required}")
@@ -367,8 +367,8 @@ foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_h
 endforeach()
 
 file(GLOB_RECURSE vm_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.h")
 foreach(source IN LISTS vm_machine_sources)
     file(READ "${source}" source_text)
     foreach(forbidden IN ITEMS "core_machine_configuration_fdc_borrow"
@@ -379,12 +379,12 @@ foreach(source IN LISTS vm_machine_sources)
         "core_machine_configuration_shared_dma_primary_borrow"
         "core_machine_configuration_shared_dma_secondary_borrow"
         "core_machine_configuration_port_borrow"
-        "core_machine_fdc_connect" "core_machine_fdc_initialize"
-        "core_machine_fdc_reset" "core_machine_fdc_refresh"
-        "core_machine_fdc_finalize" "core_machine_hdc_connect"
-        "core_machine_hdc_initialize" "core_machine_hdc_reset"
+        "x86_nxvm_board_fdc_connect" "x86_nxvm_board_fdc_initialize"
+        "x86_nxvm_board_fdc_reset" "x86_nxvm_board_fdc_refresh"
+        "x86_nxvm_board_fdc_finalize" "x86_nxvm_board_hdc_connect"
+        "x86_nxvm_board_hdc_initialize" "x86_nxvm_board_hdc_reset"
         "core_machine_hdc_refresh" "core_machine_hdc_finalize"
-        "core_machine_hdc_port_provider" "x86_core_machine_install_port_provider"
+        "x86_nxvm_board_hdc_port_provider" "x86_core_machine_install_port_provider"
         "x86_core_machine_install_port_routes")
         string(FIND "${source_text}" "${forbidden}" position)
         if(NOT position EQUAL -1)
@@ -394,14 +394,14 @@ foreach(source IN LISTS vm_machine_sources)
 endforeach()
 
 file(READ "${profile_plan_source}" profile_plan_text)
-foreach(required IN ITEMS "core_machine_plan_configure_fdc"
-    "core_machine_plan_configure_hdc" "vm_at_fdc_materialize")
+foreach(required IN ITEMS "x86_nxvm_board_plan_configure_fdc"
+    "x86_nxvm_board_plan_configure_hdc" "x86_nxvm_board_at_fdc_materialize")
     string(FIND "${profile_plan_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "typed controller submission is incomplete: ${required}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/at_assembly.c" assembly_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/at_assembly.c" assembly_text)
 foreach(required IN ITEMS "result.dor_port" "result.status_port" "result.data_port"
     "result.direction_port" "result.control_port" "result.irq" "result.dma_channel")
     string(FIND "${assembly_text}" "${required}" position)
@@ -410,8 +410,8 @@ foreach(required IN ITEMS "result.dor_port" "result.status_port" "result.data_po
     endif()
 endforeach()
 file(READ "${composition_source}" composition_text)
-foreach(required IN ITEMS "core_machine_media_registry_create"
-    "core_machine_plan_bind_media_registry"
+foreach(required IN ITEMS "x86_nxvm_board_media_registry_create"
+    "x86_nxvm_board_plan_bind_media_registry"
     "&machine->x86_core_machine, &machine->board)" "machine->board = LIB_NULL;")
     string(FIND "${composition_text}" "${required}" position)
     if(position EQUAL -1)
@@ -419,8 +419,8 @@ foreach(required IN ITEMS "core_machine_media_registry_create"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "topology->fdc_present" "core_machine_configure_fdc"
-    "topology->hdc_present" "core_machine_configure_hdc")
+foreach(required IN ITEMS "topology->fdc_present" "x86_nxvm_board_configure_fdc"
+    "topology->hdc_present" "x86_nxvm_board_configure_hdc")
     string(FIND "${machine_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Core plan materialization is incomplete: ${required}")
@@ -429,7 +429,7 @@ endforeach()
 
 file(READ "${fixture}" fixture_text)
 foreach(required IN ITEMS "CONTROLLER-AUTHORITY:OK"
-    "core_machine_configure_fdc" "core_machine_configure_hdc"
+    "x86_nxvm_board_configure_fdc" "x86_nxvm_board_configure_hdc"
     "x86_core_machine_bus_write" "x86_core_machine_reset")
     string(FIND "${fixture_text}" "${required}" position)
     if(position EQUAL -1)
@@ -438,9 +438,9 @@ foreach(required IN ITEMS "CONTROLLER-AUTHORITY:OK"
 endforeach()
 
 # Pending operations must not borrow the next command's input buffer.
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/fdc.c" fdc_source)
-string(FIND "${fdc_source}" "void core_machine_fdc_advance_at(" fdc_advance_start)
-string(FIND "${fdc_source}" "lib_status core_machine_fdc_next_due_tick(" fdc_advance_end)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/fdc.c" fdc_source)
+string(FIND "${fdc_source}" "void x86_nxvm_board_fdc_advance_at(" fdc_advance_start)
+string(FIND "${fdc_source}" "lib_status x86_nxvm_board_fdc_next_due_tick(" fdc_advance_end)
 if(fdc_advance_start LESS 0 OR fdc_advance_end LESS fdc_advance_start)
     message(FATAL_ERROR "FDC advance ownership inspection range is missing")
 endif()

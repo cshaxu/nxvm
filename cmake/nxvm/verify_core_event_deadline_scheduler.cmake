@@ -5,21 +5,21 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c"
     scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_deadline.c"
     board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c"
     board_advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/execution_provider_interface.h"
     execution_provider_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_interface.h"
     machine_interface_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/kbc.c" kbc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/kbc.c" kbc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine_devices.c"
     machine_devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd.c" fdd_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/hdd.c" hdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/media/hdd.c" hdd_source)
 set(core_source "${machine_source}${scheduler_source}${board_deadline_source}${board_advance_source}${kbc_source}")
 
 foreach(forbidden IN ITEMS "core_machine_arbitration_tick"
@@ -55,7 +55,7 @@ endforeach()
 
 foreach(required IN ITEMS "x86_core_machine_publish_elapsed_ticks"
     "x86_core_machine_capture_time_observation_private" "x86_core_machine_timeline_next_due"
-    "core_machine_fdc_next_due_tick" "core_machine_kbc_ticks_until_event")
+    "x86_nxvm_board_fdc_next_due_tick" "x86_nxvm_board_kbc_ticks_until_event")
     string(FIND "${core_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "lacks Core deadline scheduler seam: ${required}")
@@ -65,11 +65,11 @@ endforeach()
 # Every migrated controller is advanced only by the one Core settlement owner.
 # The individual calls remain deliberately visible: this is a bounded
 # ownership check, not a generic scheduler framework.
-foreach(required IN ITEMS "core_machine_dma_advance_transaction"
-    "x86_pit_advance" "core_machine_pic_refresh"
-    "core_machine_fdc_advance_at" "core_machine_hdc_advance"
-    "x86_rtc_advance" "core_machine_kbc_advance"
-    "x86_xt_keyboard_advance" "core_machine_vadp_advance")
+foreach(required IN ITEMS "x86_nxvm_board_dma_advance_transaction"
+    "x86_pit_advance" "x86_nxvm_board_pic_refresh"
+    "x86_nxvm_board_fdc_advance_at" "x86_nxvm_board_hdc_advance_at"
+    "x86_rtc_advance" "x86_nxvm_board_kbc_advance"
+    "x86_xt_keyboard_advance" "x86_nxvm_board_vadp_advance")
     string(FIND "${scheduler_source}${board_advance_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "lacks scheduler-owned controller migration: ${required}")

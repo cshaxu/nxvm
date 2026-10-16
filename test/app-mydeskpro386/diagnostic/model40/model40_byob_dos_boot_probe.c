@@ -1,7 +1,7 @@
-#include "test/core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
+#include "test/x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "test/app-mydeskpro386/diagnostic/model40/model40_profile.h"
-#include "test/core/board-base/support/boot_fixture.h"
+#include "test/x86-nxvm/board-base/support/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -12,19 +12,19 @@
 #undef exception_code
 #endif
 
-#include "core/board-base/machine_board_interface.h"
-#include "core/board-base/machine_board_state.h"
-#include "core/board-base/vadp.h"
-#include "core/chips/video/video.h"
-#include "test/core/board-base/composition/composition_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_state.h"
+#include "x86-nxvm/board-base/vadp.h"
+#include "x86-nxvm/chips/video/video.h"
+#include "test/x86-nxvm/board-base/composition/composition_fixture.h"
 #include "x86-core/machine/retirement_observation_interface.h"
 #include "x86-core/machine/trace_interface.h"
-#include "test/core/setup/session_ini.h"
-#include "core/machine/control.h"
-#include "core/machine/lifecycle.h"
+#include "test/x86-nxvm/setup/session_ini.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/lifecycle.h"
 #include "x86-core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
 
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 300000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u
@@ -57,7 +57,7 @@ typedef struct vm_byob_fdc_port_event {
 
 typedef struct vm_byob_boot_trace {
     x86_core_machine *machine;
-    core_machine_board_state *board;
+    x86_nxvm_board_state *board;
     x86_core_machine_retirement_observation pending_retirement;
     lib_bool retirement_pending;
     lib_u64 cpu_retires;
@@ -87,10 +87,10 @@ typedef struct vm_byob_boot_trace {
         model40_video_special_history[VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY];
     lib_u64 model40_video_special_history_count;
     lib_u8 cmos_index;
-    lib_u64 cmos_reads[VM_MACHINE_CMOS_SEED_BYTES];
-    lib_u64 cmos_writes[VM_MACHINE_CMOS_SEED_BYTES];
-    lib_u8 cmos_last_values[VM_MACHINE_CMOS_SEED_BYTES];
-    lib_u32 cmos_last_write_pc[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u64 cmos_reads[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    lib_u64 cmos_writes[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    lib_u8 cmos_last_values[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    lib_u32 cmos_last_write_pc[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
     lib_u64 xt_ppi_port_accesses;
     lib_u64 pic_port_accesses;
     lib_u64 pit_port_accesses;
@@ -139,7 +139,7 @@ typedef struct vm_byob_boot_trace {
     lib_u8 boot_loader_int13_state[5];
     lib_u64 fdc_terminal_count;
     lib_u64 fdc_failed_terminal_count;
-    core_machine_fdc_terminal_observation last_fdc_terminal;
+    x86_nxvm_board_fdc_terminal_observation last_fdc_terminal;
     lib_u64 ibm5170_gdt_writes;
     lib_u32 ibm5170_gdt_last_address;
     lib_u8 ibm5170_gdt_last_value;
@@ -456,7 +456,7 @@ static void vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
 }
 
 static void vm_byob_fdc_terminal_observe(void *context,
-    const core_machine_fdc_terminal_observation *observation)
+    const x86_nxvm_board_fdc_terminal_observation *observation)
 {
     vm_byob_boot_trace *trace = context;
 
@@ -549,7 +549,7 @@ static void vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
     }
     if (observation->io_port != 0x0071u) return;
     index = trace->cmos_index;
-    if (index >= VM_MACHINE_CMOS_SEED_BYTES) return;
+    if (index >= X86_NXVM_MACHINE_CMOS_SEED_BYTES) return;
     trace->cmos_last_values[index] = (lib_u8)observation->io_value;
     if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ)
         ++trace->cmos_reads[index];
@@ -1623,14 +1623,14 @@ static lib_i32 vm_byob_snapshot_has_prompt(const x86_video_snapshot *snapshot)
     return 0;
 }
 
-static lib_i32 vm_byob_send_f1(vm_machine *session, lib_i32 pressed,
+static lib_i32 vm_byob_send_f1(x86_nxvm_machine *session, lib_i32 pressed,
     lib_u8 *out_scan_set)
 {
     core_machine_guest_input_event event = {0};
     lib_u8 scan_set = 0u;
 
     if (session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
-        out_scan_set == LIB_NULL || core_machine_keyboard_get_native_scan_set(
+        out_scan_set == LIB_NULL || x86_nxvm_board_keyboard_get_native_scan_set(
             session->board, &scan_set) !=
             LIB_STATUS_OK) return 0;
     *out_scan_set = scan_set;
@@ -1739,7 +1739,7 @@ int main(lib_i32 argc, char **argv)
        guest instruction is stalled behind an unbounded Core wait path. */
     x86_core_machine_run_budget budget = {256u, 256u};
     integration_ini_session ini_session = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine_run_result result = {0};
     x86_video_snapshot snapshot;
     x86_core_cpu_diagnostic diagnostic = {0};
@@ -1828,7 +1828,7 @@ int main(lib_i32 argc, char **argv)
     if (session == LIB_NULL) goto done;
     /* A diagnostic begins at the same explicit reset boundary as the delivery
        runner, rather than inheriting construction's initial Core reset. */
-    if (vm_machine_reset(session) != LIB_STATUS_OK) {
+    if (x86_nxvm_machine_reset(session) != LIB_STATUS_OK) {
         printf("BOOT-PROBE=reset-failed\n");
         goto done;
     }
@@ -1843,7 +1843,7 @@ int main(lib_i32 argc, char **argv)
 
         printf("BOOT-PROBE=memory-installed=%llu-a20=%u-boundary-write-status=%u-route=%u\n",
             (unsigned long long)memory_bytes,
-            (unsigned int)test_core_a20_is_enabled(session->x86_core_machine),
+            (unsigned int)test_x86_nxvm_a20_is_enabled(session->x86_core_machine),
             (unsigned int)boundary_status, (unsigned int)boundary_route);
     }
     trace.machine = session->x86_core_machine;
@@ -1863,7 +1863,7 @@ int main(lib_i32 argc, char **argv)
             trace.int15_linear = (lib_u32)segment * 16u + offset;
         }
     }
-    if (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK) {
+    if (turbo && x86_nxvm_machine_set_speed(session, X86_NXVM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK) {
         printf("BOOT-PROBE=setup-failed\n");
         goto done;
     }
@@ -1889,7 +1889,7 @@ int main(lib_i32 argc, char **argv)
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
     test_board_boot_bind_fdc_observer(session->board,
-        &(core_machine_fdc_terminal_observation_provider) {
+        &(x86_nxvm_board_fdc_terminal_observation_provider) {
             vm_byob_fdc_terminal_observe, &trace });
     if (trace_enabled) {
         trace_provider.callback = vm_byob_trace;
@@ -1900,7 +1900,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
     }
-    vm_machine_executor_state_start(&session->control.state);
+    x86_nxvm_machine_executor_state_start(&session->control.state);
     started = GetTickCount64();
     progress = started;
     next_display_capture = started;
@@ -2056,7 +2056,7 @@ int main(lib_i32 argc, char **argv)
                 cpu.cs_base + cpu.eip < 0x00100000u;
             waiting_in_low_memory = cpu.cs_base + cpu.eip < 0x00040000u;
             waiting_linear_pc = cpu.cs_base + cpu.eip;
-            if (vm_machine_waiting_advance(session, &result, &advanced) !=
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) !=
                 LIB_STATUS_OK) {
                 printf("BOOT-PROBE=run-failed\n");
                 goto done;
@@ -2070,7 +2070,7 @@ int main(lib_i32 argc, char **argv)
          * diagnostic context, but it is not the definition of guest progress. */
         if (result.executed != 0u || result.ticks != 0u) progress = now;
         if (now >= next_display_capture) {
-            lib_status display_status = core_machine_capture_display_snapshot(
+            lib_status display_status = x86_nxvm_board_capture_display_snapshot(
                 session->board, &snapshot);
 
             next_display_capture = now + VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS;
@@ -2208,7 +2208,7 @@ int main(lib_i32 argc, char **argv)
                         (unsigned int)dma.enabled);
                 }
                 printf("BOOT-PROBE=post-elapsed-ticks=%llu\n",
-                    (unsigned long long)test_core_elapsed_ticks(session->x86_core_machine));
+                    (unsigned long long)test_x86_nxvm_elapsed_ticks(session->x86_core_machine));
                 printf("BOOT-PROBE=pit-waits-first=%llu-second=%llu-irq0=%llu\n",
                     (unsigned long long)trace.pit_wait_first_retires,
                     (unsigned long long)trace.pit_wait_second_retires,
@@ -2655,7 +2655,7 @@ done:
             (unsigned long long)run_count, (unsigned int)last_reason);
         printf("BOOT-PROBE=final-pc=%05X-elapsed=%llu\n",
             (unsigned int)linear_pc,
-            (unsigned long long)test_core_elapsed_ticks(session->x86_core_machine));
+            (unsigned long long)test_x86_nxvm_elapsed_ticks(session->x86_core_machine));
         if (x86_core_machine_memory_read(session->x86_core_machine, linear_pc,
                 next_instruction_bytes, sizeof(next_instruction_bytes)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=next-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
@@ -3147,7 +3147,7 @@ done:
             (unsigned long long)trace.a20_port_write_count,
             (unsigned int)trace.a20_port_last_pc,
             (unsigned int)trace.a20_port_last_value,
-            (unsigned int)test_core_a20_is_enabled(session->x86_core_machine));
+            (unsigned int)test_x86_nxvm_a20_is_enabled(session->x86_core_machine));
         {
             lib_u64 ticks = 0u;
             const lib_status status = test_board_kbc_ticks_until_event(session->board, &ticks);
@@ -3276,7 +3276,7 @@ done:
         {
             lib_u8 index;
 
-            for (index = 0u; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
+            for (index = 0u; index < X86_NXVM_MACHINE_CMOS_SEED_BYTES; ++index) {
                 if (trace.cmos_reads[index] != 0u || trace.cmos_writes[index] != 0u) {
                     printf("BOOT-PROBE=cmos-%02X-r=%llu-w=%llu-last=%02X-write-pc=%05X\n",
                         (unsigned int)index,

@@ -3,12 +3,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/cpu_bus.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" wiring)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" creation)
 foreach(forbidden "machine->shared_pic_master" "machine->shared_pic_slave"
     "machine->board->shared_pic_master" "machine->board->shared_pic_slave"
-    "core_machine_pic_scan_interrupt(" "core_machine_pic_get_interrupt(")
+    "x86_nxvm_board_pic_scan_interrupt(" "x86_nxvm_board_pic_get_interrupt(")
     string(FIND "${core}" "${forbidden}" position)
     if(NOT position LESS 0)
         message(FATAL_ERROR "CPU bus directly owns board PIC: ${forbidden}")
@@ -23,8 +23,8 @@ foreach(required "attachment.interrupt_pending(machine->attachment.context)"
         message(FATAL_ERROR "Core PIC/CPU locality lacks ${required}")
     endif()
 endforeach()
-foreach(required "core_machine_board_pic_pending(" "core_machine_board_pic_acknowledge("
-    "core_machine_pic_scan_interrupt(" "core_machine_pic_get_interrupt(")
+foreach(required "x86_nxvm_board_pic_pending(" "x86_nxvm_board_pic_acknowledge("
+    "x86_nxvm_board_pic_scan_interrupt(" "x86_nxvm_board_pic_get_interrupt(")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIC signal lacks ${required}")
@@ -38,8 +38,8 @@ string(FIND "${wiring}" "x86_core_machine_cpu_bus_refresh_pulse(platform->core)"
 if(position LESS 0)
     message(FATAL_ERROR "Board refresh pulse does not notify Core")
 endif()
-foreach(required ".interrupt_pending = core_machine_board_pic_pending"
-    ".interrupt_acknowledge = core_machine_board_pic_acknowledge")
+foreach(required ".interrupt_pending = x86_nxvm_board_pic_pending"
+    ".interrupt_acknowledge = x86_nxvm_board_pic_acknowledge")
     string(FIND "${creation}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIC provider not bound: ${required}")

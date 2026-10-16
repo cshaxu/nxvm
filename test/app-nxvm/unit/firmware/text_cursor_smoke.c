@@ -1,13 +1,13 @@
 #include "../../support/profile.h"
 #include "lib/types/file.h"
 
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/frame_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/frame_interface.h"
 #include "x86-core/machine/debug_interface.h"
 
-extern const vm_machine_assets vm_app_firmware;
+extern const x86_nxvm_machine_assets vm_app_firmware;
 
 static lib_bool default_firmware_text_geometry(const x86_video_snapshot *snapshot)
 {
@@ -19,7 +19,7 @@ static lib_bool default_firmware_text_geometry(const x86_video_snapshot *snapsho
         snapshot->rows == 25u && snapshot->text_cell_height == 16u &&
         snapshot->text_glyph_height == 16u && snapshot->cursor_top == 14u &&
         snapshot->cursor_bottom == 15u && snapshot->text_glyphs_present &&
-        vm_machine_frame_from_display(snapshot, 1u, frame) == LIB_STATUS_OK &&
+        x86_nxvm_machine_frame_from_display(snapshot, 1u, frame) == LIB_STATUS_OK &&
         !frame->window.graphics && frame->window.text.base.font_height == 16u &&
         frame->window.text.base.text_columns * 8u == 640u &&
         frame->window.text.base.text_rows * frame->window.text.base.font_height == 400u;
@@ -42,7 +42,7 @@ static lib_bool default_firmware_text_bda(x86_core_machine *core)
         bda[0] == 24u && bda[1] == 16u && bda[2] == 0u;
 }
 
-static lib_bool default_firmware_initializes_text_cursor(vm_machine *machine)
+static lib_bool default_firmware_initializes_text_cursor(x86_nxvm_machine *machine)
 {
     for (lib_u32 instruction = 0u; instruction < 100000u; ++instruction) {
         x86_core_machine_run_result run = {0};
@@ -54,7 +54,7 @@ static lib_bool default_firmware_initializes_text_cursor(vm_machine *machine)
                 LIB_STATUS_OK || run.reason == X86_CORE_MACHINE_STOP_FAULT) {
             return LIB_FALSE;
         }
-        captured = core_machine_capture_display_snapshot(machine->board, &snapshot);
+        captured = x86_nxvm_board_capture_display_snapshot(machine->board, &snapshot);
         /* A mode setter programs multiple registers before its frame is ready. */
         if (captured == LIB_STATUS_UNSUPPORTED) continue;
         if (captured != LIB_STATUS_OK) return LIB_FALSE;
@@ -99,7 +99,7 @@ static lib_bool default_firmware_raster_runs(x86_core_machine *core, lib_u8 mode
     return active && retrace && outside_retrace;
 }
 
-static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
+static lib_bool default_firmware_initializes_video_modes(x86_nxvm_machine *machine)
 {
     static const struct {
         lib_u8 mode;
@@ -177,7 +177,7 @@ static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
                     LIB_STATUS_OK ||
                 x86_core_machine_memory_write(core, 0xb8000u + 24u * 160u, first, sizeof(first)) !=
                     LIB_STATUS_OK || !default_firmware_text_bda(core) ||
-                core_machine_capture_display_snapshot(machine->board, &snapshot) != LIB_STATUS_OK ||
+                x86_nxvm_board_capture_display_snapshot(machine->board, &snapshot) != LIB_STATUS_OK ||
                 snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.columns != 80u ||
                 snapshot.rows != 25u || !default_firmware_text_geometry(&snapshot) ||
                 snapshot.characters[0] != 'A' ||
@@ -202,7 +202,7 @@ static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
         if (x86_core_machine_memory_write(core, 0xa0000u, &(lib_u8){0x80u}, 1u) !=
                 LIB_STATUS_OK || x86_core_machine_memory_write(core,
                 0xa0000u + modes[index].width / 8u, &(lib_u8){0x40u}, 1u) != LIB_STATUS_OK ||
-            core_machine_capture_display_snapshot(machine->board, &snapshot) != LIB_STATUS_OK ||
+            x86_nxvm_board_capture_display_snapshot(machine->board, &snapshot) != LIB_STATUS_OK ||
             snapshot.kind != modes[index].kind || snapshot.pixel_width != modes[index].width ||
             snapshot.pixel_height != modes[index].height || snapshot.pixels[0] != 15u ||
             snapshot.pixels[modes[index].width + 1u] != 15u ||
@@ -216,18 +216,18 @@ static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
 
 lib_i32 main(void)
 {
-    vm_machine_config config = {.bios_count = 1u};
-    vm_machine *machine = LIB_NULL;
+    x86_nxvm_machine_config config = {.bios_count = 1u};
+    x86_nxvm_machine *machine = LIB_NULL;
     lib_bool passed;
 
     if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
             &config, &vm_app_firmware, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL) {
-        vm_machine_destroy(machine);
+        x86_nxvm_machine_destroy(machine);
         return 1;
     }
     passed = default_firmware_initializes_text_cursor(machine) &&
         default_firmware_initializes_video_modes(machine);
-    vm_machine_destroy(machine);
+    x86_nxvm_machine_destroy(machine);
     return passed ? 0 : 1;
 }

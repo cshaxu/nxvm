@@ -9,7 +9,7 @@ lib_i32 main(void)
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY,
         X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE,
         32u * 1024u * 1024u, 0x40u};
-    vm_profile_default_pc_at_plan_snapshot profile;
+    x86_nxvm_board_pc_at_plan_snapshot profile;
 
     return vm_profile_default_at_plan_create(&request, &profile) != LIB_STATUS_OK ||
         profile.values.core.configuration.cpu_profile != X86_CORE_CPU_PROFILE_80386 ||

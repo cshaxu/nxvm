@@ -1,11 +1,11 @@
 #include "../../support/profile.h"
 /* Repository guest firmware and synthetic media only; no external asset files. */
-#include "core/machine/input_interface.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/board-base/media_interface.h"
+#include "x86-nxvm/machine/input_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/media_interface.h"
 #include "lib/types/file.h"
 
-extern const vm_machine_assets vm_app_firmware;
+extern const x86_nxvm_machine_assets vm_app_firmware;
 
 typedef struct disk {
     lib_u8 bytes[80u * 2u * 18u * 512u];
@@ -13,40 +13,40 @@ typedef struct disk {
     lib_bool readonly;
 } disk;
 
-static core_machine_media_result query(void *context, core_machine_media_info *info)
+static x86_nxvm_board_media_result query(void *context, x86_nxvm_board_media_info *info)
 {
     disk *media = context;
-    *info = (core_machine_media_info) {
+    *info = (x86_nxvm_board_media_info) {
         .present = media->present, .generation = 1u,
-        .capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
-            CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS |
-            (media->readonly ? CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY : 0u),
+        .capabilities = X86_NXVM_BOARD_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
+            X86_NXVM_BOARD_MEDIA_CAPABILITY_ADDRESS_MARKS |
+            (media->readonly ? X86_NXVM_BOARD_MEDIA_CAPABILITY_READ_ONLY : 0u),
         .geometry = {2880u, 512u, 80u, 2u, 18u}
     };
-    return CORE_MACHINE_MEDIA_RESULT_OK;
+    return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result read_bytes(void *context, lib_u64 offset,
+static x86_nxvm_board_media_result read_bytes(void *context, lib_u64 offset,
     void *buffer, lib_u32 count)
 {
     disk *media = context;
-    if (!media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (!media->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (offset > sizeof(media->bytes) || count > sizeof(media->bytes) - offset)
-        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+        return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
     lib_memory_copy(buffer, media->bytes + (lib_size)offset, count);
-    return CORE_MACHINE_MEDIA_RESULT_OK;
+    return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result write_bytes(void *context, lib_u64 offset,
+static x86_nxvm_board_media_result write_bytes(void *context, lib_u64 offset,
     const void *buffer, lib_u32 count)
 {
     disk *media = context;
-    if (media->readonly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
-    if (!media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (media->readonly) return X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY;
+    if (!media->present) return X86_NXVM_BOARD_MEDIA_RESULT_ABSENT;
     if (offset > sizeof(media->bytes) || count > sizeof(media->bytes) - offset)
-        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+        return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
     lib_memory_copy(media->bytes + (lib_size)offset, buffer, count);
-    return CORE_MACHINE_MEDIA_RESULT_OK;
+    return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
 static void word(lib_u8 *bytes, lib_size *offset, lib_u16 value)
@@ -55,23 +55,23 @@ static void word(lib_u8 *bytes, lib_size *offset, lib_u16 value)
     bytes[(*offset)++] = (lib_u8)(value >> 8u);
 }
 
-static core_machine_media_result set_mark(void *context, lib_u64 sector,
-    core_machine_media_address_mark mark)
+static x86_nxvm_board_media_result set_mark(void *context, lib_u64 sector,
+    x86_nxvm_board_media_address_mark mark)
 {
     disk *media = context;
-    if (media->readonly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
-    if (sector >= 2880u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    return mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA ?
-        CORE_MACHINE_MEDIA_RESULT_OK : CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED;
+    if (media->readonly) return X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY;
+    if (sector >= 2880u) return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
+    return mark == X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA ?
+        X86_NXVM_BOARD_MEDIA_RESULT_OK : X86_NXVM_BOARD_MEDIA_RESULT_UNSUPPORTED;
 }
 
-static core_machine_media_result get_mark(void *context, lib_u64 sector,
-    core_machine_media_address_mark *mark)
+static x86_nxvm_board_media_result get_mark(void *context, lib_u64 sector,
+    x86_nxvm_board_media_address_mark *mark)
 {
     (void)context;
-    if (sector >= 2880u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    *mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
-    return CORE_MACHINE_MEDIA_RESULT_OK;
+    if (sector >= 2880u) return X86_NXVM_BOARD_MEDIA_RESULT_INVALID_RANGE;
+    *mark = X86_NXVM_BOARD_MEDIA_ADDRESS_MARK_DATA;
+    return X86_NXVM_BOARD_MEDIA_RESULT_OK;
 }
 
 static void instruction(lib_u8 *bytes, lib_size *offset, lib_u8 opcode, lib_u16 value)
@@ -132,17 +132,17 @@ static lib_bool run_to(x86_core_machine *machine, lib_u32 pc, lib_u32 limit)
 static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     lib_bool readonly, lib_bool absent, lib_bool recalibrate)
 {
-    const core_machine_media_provider provider = {
+    const x86_nxvm_board_media_provider provider = {
         .query = query, .read_bytes = read_bytes, .write_bytes = write_bytes,
         .set_address_mark = set_mark, .get_address_mark = get_mark
     };
-    vm_machine_config config = {.bios_count = 1u};
-    vm_machine_construction profile = {0};
-    core_machine_plan *plan = LIB_NULL;
-    core_machine_media_registry *registry = LIB_NULL;
-    core_machine_display_provider_slot *display = LIB_NULL;
+    x86_nxvm_machine_config config = {.bios_count = 1u};
+    x86_nxvm_machine_construction profile = {0};
+    x86_nxvm_board_plan *plan = LIB_NULL;
+    x86_nxvm_board_media_registry *registry = LIB_NULL;
+    x86_nxvm_board_display_provider_slot *display = LIB_NULL;
     x86_core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
     disk *media = lib_allocate_zero(1u, sizeof(*media));
     disk *empty = lib_allocate_zero(1u, sizeof(*empty));
     lib_u8 payload[1024], actual[1024];
@@ -179,22 +179,22 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     media->bytes[510u] = 0x55u; media->bytes[511u] = 0xaau;
     if (vm_test_profile_construction_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &vm_app_firmware, &profile) != LIB_STATUS_OK ||
-        core_machine_plan_create(&profile.core_config, &plan) != LIB_STATUS_OK ||
+        x86_nxvm_board_plan_create(&profile.core_config, &plan) != LIB_STATUS_OK ||
         plan == LIB_NULL ||
-        core_machine_plan_set_controller_timing_rules(plan,
+        x86_nxvm_board_plan_set_controller_timing_rules(plan,
             &profile.timing_rules) != LIB_STATUS_OK ||
-        core_machine_plan_set_topology(plan, &profile.topology) != LIB_STATUS_OK ||
-        core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
+        x86_nxvm_board_plan_set_topology(plan, &profile.topology) != LIB_STATUS_OK ||
+        x86_nxvm_board_media_registry_create(&registry) != LIB_STATUS_OK ||
         registry == LIB_NULL ||
-        core_machine_media_registry_bind(registry, 1u, media, &provider) != LIB_STATUS_OK ||
-        core_machine_media_registry_bind(registry, 2u, empty, &provider) != LIB_STATUS_OK ||
-        core_machine_media_registry_freeze(registry) != LIB_STATUS_OK ||
-        core_machine_display_provider_slot_create(&display) != LIB_STATUS_OK ||
+        x86_nxvm_board_media_registry_bind(registry, 1u, media, &provider) != LIB_STATUS_OK ||
+        x86_nxvm_board_media_registry_bind(registry, 2u, empty, &provider) != LIB_STATUS_OK ||
+        x86_nxvm_board_media_registry_freeze(registry) != LIB_STATUS_OK ||
+        x86_nxvm_board_display_provider_slot_create(&display) != LIB_STATUS_OK ||
         display == LIB_NULL ||
-        core_machine_plan_bind_display_provider(plan, display) != LIB_STATUS_OK ||
-        core_machine_plan_bind_media_registry(plan, registry) != LIB_STATUS_OK ||
+        x86_nxvm_board_plan_bind_display_provider(plan, display) != LIB_STATUS_OK ||
+        x86_nxvm_board_plan_bind_media_registry(plan, registry) != LIB_STATUS_OK ||
         profile.profile.configure(profile.profile.context, plan) != LIB_STATUS_OK ||
-        core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
+        x86_nxvm_board_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
         machine == LIB_NULL || board == LIB_NULL ||
         x86_core_machine_bind_firmware_provider(machine,
             profile.firmware_provider,
@@ -245,9 +245,9 @@ done:
     if (!ok) lib_c_fprintf(lib_c_stderr, "BIOS floppy AX=%04x CX=%04x DX=%04x: result=%04x flags=%04x\n",
         ax, cx, dx, result[0], result[7]);
     x86_core_machine_destroy(machine);
-    core_machine_display_provider_slot_destroy(display);
-    core_machine_media_registry_destroy(registry);
-    core_machine_plan_destroy(plan);
+    x86_nxvm_board_display_provider_slot_destroy(display);
+    x86_nxvm_board_media_registry_destroy(registry);
+    x86_nxvm_board_plan_destroy(plan);
     if (profile.profile.release != LIB_NULL) profile.profile.release(profile.profile.context);
     lib_release(empty); lib_release(media);
     return ok;

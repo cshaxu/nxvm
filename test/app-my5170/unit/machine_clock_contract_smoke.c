@@ -1,21 +1,21 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "../../core/board-base/support/composition_fixture.h"
-#include "../../core/board-base/support/kbc_state_fixture.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/kbc_state_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "app-my5170/machine_config_interface.h"
 #include "../support/session_assets.h"
 
 static lib_i32 vm_model_339_clock_contract_is_selected(void)
 {
-    const vm_profile_default_pc_at_descriptor *model_339 =
+    const x86_nxvm_board_pc_at_descriptor *model_339 =
         vm_profile_ibm_5170_model_339_descriptor_get();
-    const vm_machine_config config = {0};
-    vm_machine *session = LIB_NULL;
+    const x86_nxvm_machine_config config = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine_time_observation time_observation;
     test_board_plan_observation plan;
     test_board_composition_observation board;
@@ -24,11 +24,11 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
     if (model_339 == LIB_NULL ||
         vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
 
-    plan = test_board_capture_plan(session->core_machine_plan);
+    plan = test_board_capture_plan(session->x86_nxvm_board_plan);
     board = test_board_capture_composition(session->board);
     failed = failed || model_339->clock_plan.dma.numerator != 1u ||
         model_339->clock_plan.dma.denominator != 2u ||
@@ -50,7 +50,7 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         plan.time_axis_kind !=
             X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         plan.controller_timing.dma_service !=
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         board.dma_clock.numerator != 1u ||
         board.dma_clock.denominator != 2u ||
         board.pit_clock.numerator != 596591u ||
@@ -64,30 +64,30 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         board.vadp_clock.reset_phase != 0u ||
         board.rtc_ticks_per_second != 32768u ||
         board.rtc_provenance !=
-            CORE_MACHINE_RTC_TIMING_L3_SOURCE;
+            X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE;
     failed = failed || board.controller_timing.dma_clock !=
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         board.controller_timing.dma_service !=
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         board.controller_timing.pit_clock !=
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         board.controller_timing.rtc_clock !=
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
+        X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     {
-        core_machine_board_timing_disposition disposition;
+        x86_nxvm_board_timing_disposition disposition;
 
-        failed = failed || core_machine_board_get_timing_disposition(session->board,
-            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK ||
-            disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
-        failed = failed || core_machine_board_get_timing_disposition(session->board,
-            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
-            LIB_STATUS_OK || disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
-        failed = failed || core_machine_board_get_timing_disposition(session->board,
-            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK ||
-            disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
-        failed = failed || core_machine_board_get_timing_disposition(session->board,
-            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
-            disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
+        failed = failed || x86_nxvm_board_get_timing_disposition(session->board,
+            X86_NXVM_BOARD_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK ||
+            disposition != X86_NXVM_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
+        failed = failed || x86_nxvm_board_get_timing_disposition(session->board,
+            X86_NXVM_BOARD_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
+            LIB_STATUS_OK || disposition != X86_NXVM_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
+        failed = failed || x86_nxvm_board_get_timing_disposition(session->board,
+            X86_NXVM_BOARD_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK ||
+            disposition != X86_NXVM_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
+        failed = failed || x86_nxvm_board_get_timing_disposition(session->board,
+            X86_NXVM_BOARD_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
+            disposition != X86_NXVM_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
     }
     failed = failed || board.kbc_typematic_initial_ticks != 4000000u ||
         board.kbc_typematic_repeat_ticks != 800000u ||
@@ -121,7 +121,7 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         time_observation.pacing_ticks_per_second != 8000000u ||
         time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 

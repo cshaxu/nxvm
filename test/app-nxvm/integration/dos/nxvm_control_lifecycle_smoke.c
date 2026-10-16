@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "test/core/setup/session_ini.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 int main(lib_i32 argc, char **argv)
 {

@@ -1,0 +1,66 @@
+#include "lib/types/types_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+
+#include "x86-nxvm/board-base/machine_board_state.h"
+#include "x86-nxvm/board-base/vadp.h"
+
+lib_status x86_nxvm_board_capture_display_snapshot(const x86_nxvm_board_state *board,
+    x86_video_snapshot *out_snapshot)
+{
+    x86_nxvm_board_state *mutable_board = (x86_nxvm_board_state *)board;
+    x86_core_machine_lifecycle lifecycle;
+
+    if (board == LIB_NULL || out_snapshot == LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != X86_CORE_MACHINE_STOPPED && lifecycle != X86_CORE_MACHINE_PAUSED)) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    return x86_nxvm_board_vadp_capture_snapshot(mutable_board->shared_vadp,
+        out_snapshot);
+}
+
+lib_status x86_nxvm_board_observe_display_snapshot(const x86_nxvm_board_state *board,
+    lib_u8 acknowledged_generation_valid,
+    lib_u64 acknowledged_generation,
+    x86_video_snapshot_observation *out_observation)
+{
+    x86_core_machine_lifecycle lifecycle;
+
+    if (board == LIB_NULL || out_observation == LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (x86_core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != X86_CORE_MACHINE_STOPPED && lifecycle != X86_CORE_MACHINE_PAUSED)) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    x86_nxvm_board_vadp_observe_snapshot(board->shared_vadp,
+        acknowledged_generation_valid, acknowledged_generation, out_observation);
+    return LIB_STATUS_OK;
+}
+
+
+lib_status x86_nxvm_board_configure_display(x86_nxvm_board_state *board,
+    const x86_nxvm_board_display_config *config)
+{
+    lib_status status;
+
+    if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
+            board->display_configured) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+
+    if (!x86_nxvm_board_vadp_config_is_valid(config)) return LIB_STATUS_INVALID_ARGUMENT;
+    if (config->vertical_irq != 0u) {
+        status = x86_nxvm_board_pic_irq_source_bind(&board->shared_vadp->irq_source,
+            board->shared_pic_master, board->shared_pic_slave, config->vertical_irq);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    status = x86_nxvm_board_vadp_configure(board->shared_vadp, config);
+    if (status != LIB_STATUS_OK) return status;
+    if (config->vertical_irq == 0u) board->shared_vadp->irq_source = LIB_NULL;
+    board->display_ports = config->ports;
+    board->display_configured = LIB_TRUE;
+    return LIB_STATUS_OK;
+}

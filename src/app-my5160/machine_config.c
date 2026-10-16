@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 
 #include "app-my5160/machine_config.h"
-#include "core/board-base/floppy_interface.h"
+#include "x86-nxvm/board-base/floppy_interface.h"
 
 /* This bit represents only the B1 CPU/Core input. It is not a claim that a
  * 5160 board device has been bound. */
@@ -14,10 +14,10 @@ static const lib_u32 vm_profile_xt_5160_268_contract_ids[] = {
 };
 
 lib_status vm_profile_xt_5160_268_values_create(
-    vm_profile_contract_values *out_values)
+    x86_nxvm_board_contract_values *out_values)
 {
-    vm_profile_contract_values values = {0};
-    const vm_profile_contract_catalog catalog = { vm_profile_xt_5160_268_contract_ids,
+    x86_nxvm_board_contract_values values = {0};
+    const x86_nxvm_board_contract_catalog catalog = { vm_profile_xt_5160_268_contract_ids,
         sizeof(vm_profile_xt_5160_268_contract_ids) /
             sizeof(vm_profile_xt_5160_268_contract_ids[0]) };
 
@@ -29,12 +29,12 @@ lib_status vm_profile_xt_5160_268_values_create(
     values.core.configuration.shared_pit_personality =
         X86_PIT_PERSONALITY_8253;
     values.core.configuration.pic_topology =
-        CORE_MACHINE_PIC_TOPOLOGY_SINGLE;
+        X86_NXVM_BOARD_PIC_TOPOLOGY_SINGLE;
     values.core.configuration.dma_controller_count = 1u;
     values.core.configuration.keyboard_topology =
-        CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI;
+        X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI;
     values.core.configuration.xt_ppi_keyboard =
-        (core_machine_xt_ppi_keyboard_config) {0x0060u, 0x0061u, 0x0062u,
+        (x86_nxvm_board_xt_ppi_keyboard_config) {0x0060u, 0x0061u, 0x0062u,
             0x0063u, 1u, 0x0du, 0x02u};
     /* Manual values feed this explicit macro axis; 8088 retirement has not
      * qualified it as physical machine time. */
@@ -50,18 +50,18 @@ lib_status vm_profile_xt_5160_268_values_create(
     values.core.configuration.clock_plan.dma =
         (x86_core_machine_clock_ratio) {1u, 1u, 0u};
     values.core.controller_timing_rules =
-        (core_machine_controller_timing_rules) {
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK};
+        (x86_nxvm_board_controller_timing_rules) {
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK};
     values.core.configuration.ticks_per_instruction = 1u;
     values.enabled_devices = VM_PROFILE_XT_5160_268_CORE_DEVICE;
-    values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB;
-    values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_NONE;
+    values.firmware_policy = X86_NXVM_BOARD_CONTRACT_FIRMWARE_POLICY_BYOB;
+    values.media_policy = X86_NXVM_BOARD_CONTRACT_MEDIA_POLICY_NONE;
     values.allowed_session_options = 0u;
-    if (vm_profile_contract_validate(&values, &catalog, 0u) != LIB_STATUS_OK) {
+    if (x86_nxvm_board_contract_validate(&values, &catalog, 0u) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_values = values;
@@ -78,55 +78,55 @@ lib_status vm_profile_xt_5160_268_plan_create(
     if (vm_profile_xt_5160_268_values_create(&out_profile->values) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    out_profile->topology = (core_machine_plan_topology) {0};
+    out_profile->topology = (x86_nxvm_board_plan_topology) {0};
     /* The fixed 256 KiB board leaves these windows unpopulated and POST probes
      * them as open bus.  A selected Xebec ROM is a frozen construction input:
      * only that configuration gives C8000h--C9FFFh to immutable firmware. */
     out_profile->topology.absent_memory_count = xebec_rom_present ? 4u : 3u;
     out_profile->topology.absent_memory[0] =
-        (core_machine_absent_memory_config) {0x00040000u, 0x00060000u, 0xffu};
+        (x86_nxvm_board_absent_memory_config) {0x00040000u, 0x00060000u, 0xffu};
     out_profile->topology.absent_memory[1] =
-        (core_machine_absent_memory_config) {0x000a0000u, 0x00018000u, 0xffu};
+        (x86_nxvm_board_absent_memory_config) {0x000a0000u, 0x00018000u, 0xffu};
     out_profile->topology.absent_memory[2] =
-        (core_machine_absent_memory_config) {0x000c0000u,
+        (x86_nxvm_board_absent_memory_config) {0x000c0000u,
             xebec_rom_present ? 0x00008000u : 0x00030000u, 0xffu};
     if (xebec_rom_present) {
         out_profile->topology.absent_memory[3] =
-            (core_machine_absent_memory_config) {0x000d0000u, 0x00020000u, 0xffu};
+            (x86_nxvm_board_absent_memory_config) {0x000d0000u, 0x00020000u, 0xffu};
     }
     /* The selected IBM CGA is one VADP-owned aperture and port grammar.
      * These scheduling quanta are the existing non-physical VADP contract;
      * selected-adapter physical timing remains a later receiver. */
     out_profile->topology.display_present = LIB_TRUE;
-    out_profile->topology.display = (core_machine_display_config) {
+    out_profile->topology.display = (x86_nxvm_board_display_config) {
         .text_timing = {48u, 8u, 8u},
         .cga_vram_present = LIB_TRUE,
         .ports = {0u, 0u, 0u, 0u, 0u, 0u, 0x03d4u, 0x03dau}
     };
     out_profile->topology.dma_present = LIB_TRUE;
-    out_profile->topology.dma = (core_machine_dma_wiring) {2u, 1u, 0u};
+    out_profile->topology.dma = (x86_nxvm_board_dma_wiring) {2u, 1u, 0u};
     out_profile->topology.fdc_present = LIB_TRUE;
-    out_profile->topology.fdc_drives = (core_machine_fdc_drive_bindings) {{
-        VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
-        CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
+    out_profile->topology.fdc_drives = (x86_nxvm_board_fdc_drive_bindings) {{
+        VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, X86_NXVM_BOARD_MEDIA_ID_INVALID,
+        X86_NXVM_BOARD_MEDIA_ID_INVALID, X86_NXVM_BOARD_MEDIA_ID_INVALID}, 0x01u, 0x01u,
         {40u, 0u, 0u, 0u}, 0u, {0}};
     out_profile->topology.fdc_drives.channel =
-        vm_profile_floppy_channel_get(VM_PROFILE_FLOPPY_525_360K);
-    out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
+        x86_nxvm_board_floppy_channel_get(X86_NXVM_BOARD_FLOPPY_525_360K);
+    out_profile->topology.fdc = (x86_nxvm_board_fdc_config) {0x03f2u, 0x03f4u,
         0x03f5u, 0u, 0u, 6u, 2u, 0x0fu,
         4772727u, 0u, 0u, LIB_FALSE, 0u};
     out_profile->topology.hdc_present = LIB_TRUE;
     out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;
-    out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;
-    out_profile->topology.hdc = (core_machine_hdc_config) {
-        .protocol = CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT, .irq = 5u,
+    out_profile->topology.hdc_slave_media_id = X86_NXVM_BOARD_MEDIA_ID_INVALID;
+    out_profile->topology.hdc = (x86_nxvm_board_hdc_config) {
+        .protocol = X86_NXVM_BOARD_HDC_PROTOCOL_XEBEC_XT, .irq = 5u,
         .service = {250u, 0u},
         .bus.xebec = {0x0320u, 0x0321u, 0x0322u, 0x0323u, 3u,
-            CORE_MACHINE_XEBEC_DRIVE_TYPE_2,
-            {CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
-             CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR,
-             CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
-             CORE_MACHINE_XEBEC_TYPE_2_HEADS,
-             CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}}};
+            X86_NXVM_BOARD_XEBEC_DRIVE_TYPE_2,
+            {X86_NXVM_BOARD_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
+             X86_NXVM_BOARD_XEBEC_TYPE_2_BYTES_PER_SECTOR,
+             X86_NXVM_BOARD_XEBEC_TYPE_2_CYLINDERS,
+             X86_NXVM_BOARD_XEBEC_TYPE_2_HEADS,
+             X86_NXVM_BOARD_XEBEC_TYPE_2_SECTORS_PER_TRACK}}};
     return LIB_STATUS_OK;
 }

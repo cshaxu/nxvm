@@ -1,12 +1,12 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/port_interface.h"
 #include "x86-core/machine/debug_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "../support/rom/session_assets.h"
 
 static lib_bool fdc_result_is_local(x86_core_machine *machine, x86_core_machine *other)
@@ -43,8 +43,8 @@ static lib_bool fdc_result_is_local(x86_core_machine *machine, x86_core_machine 
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
-    vm_machine *other = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
+    x86_nxvm_machine *other = LIB_NULL;
     lib_i32 masked = LIB_FALSE;
     lib_i32 failed = 1;
 
@@ -60,13 +60,13 @@ lib_i32 main(void)
         x86_core_machine_get_nmi_mask(session->x86_core_machine, &masked) != LIB_STATUS_OK || !masked;
     failed = failed || x86_core_machine_bus_write(session->x86_core_machine, 0x0070u, 0u) != LIB_STATUS_OK ||
         x86_core_machine_get_nmi_mask(session->x86_core_machine, &masked) != LIB_STATUS_OK || masked;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     session = LIB_NULL;
     /* Destroying one composition must not revoke the other Core's routes. */
     failed = failed || !fdc_result_is_local(other->x86_core_machine, LIB_NULL);
 done:
-    vm_machine_destroy(session);
-    vm_machine_destroy(other);
+    x86_nxvm_machine_destroy(session);
+    x86_nxvm_machine_destroy(other);
     if (failed) return 1;
     puts("PCAT-OWNERSHIP:OK");
     return 0;

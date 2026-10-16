@@ -1,13 +1,13 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "../../core/board-base/support/controller_fixture.h"
+#include "../../x86-nxvm/board-base/support/controller_fixture.h"
 #include <stdio.h>
 
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/memory_interface.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/media/fdd_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/media/fdd_interface.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_FDC_READ_TRACK_IMAGE_BYTES (1440u * 1024u)
@@ -36,7 +36,7 @@ static lib_bool vm_fdc_read_track_write_dma2(x86_core_machine *machine)
         x86_core_machine_bus_write(machine, 0x00d4u, 0x00u) == LIB_STATUS_OK;
 }
 
-static lib_bool vm_fdc_read_track_command(core_machine_board_state *board, x86_core_machine *machine,
+static lib_bool vm_fdc_read_track_command(x86_nxvm_board_state *board, x86_core_machine *machine,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -65,11 +65,11 @@ lib_i32 main(void)
     static const lib_u8 read_track[] = {
         0x42u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x12u, 0x1bu, 0xffu
     };
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine *machine;
     lib_u32 value;
     lib_u8 expected[512u * 18u] = {0};
@@ -84,10 +84,10 @@ lib_i32 main(void)
     stage = '1';
     vm_fdc_read_track_boot_loop();
     {
-        vm_machine_config fixture_config = config;
+        x86_nxvm_machine_config fixture_config = config;
         if (vm_test_default_pc_at_session_create(&fixture_config, &session) != LIB_STATUS_OK ||
             session == LIB_NULL || session->x86_core_machine == LIB_NULL) goto done;
-        if (vm_machine_fdd_replace_bytes(session->floppy[0u], vm_fdc_read_track_image,
+        if (x86_nxvm_machine_fdd_replace_bytes(session->floppy[0u], vm_fdc_read_track_image,
                 sizeof(vm_fdc_read_track_image)) != 0) goto done;
     }
     machine = session->x86_core_machine;
@@ -96,7 +96,7 @@ lib_i32 main(void)
     if (x86_core_machine_bus_write(machine, 0x03f7u, 0x00u) != LIB_STATUS_OK) goto done;
     for (index = 0u; index < sizeof(expected); ++index) {
         expected[index] = (lib_u8)((index * 17u) ^ (index >> 4u));
-        if (vm_machine_fdd_write_byte(session->floppy[0u], 0u, 0u,
+        if (x86_nxvm_machine_fdd_write_byte(session->floppy[0u], 0u, 0u,
                 (lib_u16)(index / 512u + 1u),
                 (lib_u16)(index % 512u), expected[index])) {
             goto done;
@@ -173,7 +173,7 @@ lib_i32 main(void)
     stage = '8';
     failed = 0;
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) {
         fprintf(stderr,
             "FDC read-track failed at %c, data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x\n",

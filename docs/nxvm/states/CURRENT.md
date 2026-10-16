@@ -18,7 +18,28 @@ The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 
 | Task | Progress |
 | --- | --- |
-| T561 S7 | Accepted: neutral Machine and receiving qualification complete; 632/632 units and 48 profile integration executions plus restored identity per width, specialized gates and eight published PC artifacts. S8 NXVM consolidation (including the retained Board CPU/PIC fixture family) and S9 final qualification remain. No S is active between this acceptance and the next admission. |
+| T561 S8 | Implementation and automatic qualification complete: 626/626 units and 48 profile integration executions per width, specialized gates and eight rebuilt/published 0561 PC EXEs. Actual-change review precedes scoped P commits and coordinator acceptance; S9 final qualification remains. |
+
+## Active S8 NXVM Consolidation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T561 S8 after accepted S7 P3 `123440835`; one session performs coordinator and executor roles sequentially. |
+| Admission And Approval | Owner-approved Core split and automatic sequential S execution; the approved S2 ownership map and T561 S8 proposal cover NXVM-family source, tests and receiving Apps. No new Shared capability or Lib/Emulator edit is admitted. |
+| Objective | Consume I4: move remaining Core owners into the sole full x86-nxvm package, mirror source/test hierarchy, absorb information/speed contracts and remove Board tests' borrowing of private CPU layouts. |
+| Non-goals | No CPU/FPU algorithm or timing-grade change, C16/C17 qualification, new hardware, public test facade, parallel implementation, Lib/Emulator/MyNES change or sibling import. |
+| Reference Baseline | Clean accepted `123440835`, S7 implementation `0da6818d5` and `b77d1f482`; S2 frozen ownership inventory remains the disposition reference, not a current-tree hash check. |
+| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), S8; [convergence ledger](../history/M5-T561-core-package-split.md), I4. |
+| Files And ABI Surface | Remaining 152 src/core and 313 test/core tracked paths; existing src/test/x86-nxvm, four App receivers, family CMake/tools/gates and current documents. Canonical board/adapter/product names replace retired Core names without aliases; chip prefixes stay stable. No new public CPU observation interface. Initial non-mechanical estimate: production +120--250/-180--350; tests +300--600/-250--500; build/gates +200--400/-200--400, excluding mechanical moves/substitutions. Refine against actual changes before delivery. |
+| Applicable Rules | NXVM guide, architecture, source layout, source policy; shared Execution, Architecture, Coding and Document rules; architecture-governance then coding-governance skills. One owner per lifetime, inward public dependencies, mirrored tests, preserved semantics and scoped commits. |
+| Verification | Both original Release Ninja/ccache graphs: complete repository units, specialized dependency/manifest/naming gates, four-profile integrations and published CLI/INI/PE/version/hash checks. Review moved bodies against baseline after declared substitutions; map every moved test predicate. Public Machine/PIC regression replaces private CPU fixture access. |
+| Expected Markers | No live src/core or test/core owner, retired target or include alias; one x86-nxvm-product implementation, independent chip leaves, board tests use public inward contracts; no lower dependency on NXVM or App. |
+| Asset Needs | Rebuild/deploy eight current 0561 PC EXEs in existing directories; preserve INI/media/snapshot/ROM inputs and MyNES artifacts. Reuse original graphs and persistent cache; no new qualification directory. |
+| Reporting Requirements | Record exact path/symbol disposition, actual added/deleted/net lines, retained production owners, tests and artifact hashes. Distinguish automated integration from unperformed manual desktop/RDP and final S9 qualification. |
+| Stop Conditions | Needed new public CPU contract, product behavior/timing change, private-layout copying, unrelated ownership conflict or protected-input mutation; report before expanding scope. |
+| Exit Criteria | Complete I4 implementation and required verification, eight qualified artifacts, actual-change coordinator review, complete target-scoped P commits pushed and clean worktree. T561 remains open for S9. |
+| Original Owner Request | Split core into x86-core and x86-nxvm; keep Machine separate from Product, and make test directory/file hierarchy follow the new source component owners. |
+| Similar-Issue Sweep | All tracked source/test/build/tool receivers: retired Core paths/targets/symbols, private CPU/Machine headers, outer App dependencies in package gates, duplicate speed/info types and cross-owner fixture use. Historical evidence remains historical. |
 
 ## Accepted S7 Neutral Machine Extraction
 

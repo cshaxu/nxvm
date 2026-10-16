@@ -1,5 +1,5 @@
-#include "../../../core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
+#include "../../../x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -9,18 +9,18 @@
 
 #include "x86-core/cpu/cpu_interface.h"
 #include "x86-core/machine/machine_interface.h"
-#include "core/machine/control.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
-#include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "test/x86-nxvm/machine/support/nxvm_presentation_capture.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
 #define DOS_PROMPT_TIMEOUT_MILLISECONDS 20000u
 #define MEM_FAULT_TIMEOUT_MILLISECONDS 2000u
 
-static lib_i32 vm_dos_mem_fault_submit_key(vm_machine *session,
+static lib_i32 vm_dos_mem_fault_submit_key(x86_nxvm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key)
 {
     core_machine_guest_input_event event = { 0 };
@@ -33,7 +33,7 @@ static lib_i32 vm_dos_mem_fault_submit_key(vm_machine *session,
     return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_dos_mem_fault_has_prompt(const vm_machine *session)
+static lib_i32 vm_dos_mem_fault_has_prompt(const x86_nxvm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -67,7 +67,7 @@ static void vm_dos_mem_fault_print(const x86_core_cpu_diagnostic *diagnostic)
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     DWORD elapsed;
     DWORD result;
     const lib_u8 scan_codes[] = { 0x32u, 0x12u, 0x32u, 0x1cu };
@@ -96,7 +96,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 virtual_keys[index])) goto fail;
     }
     Sleep(MEM_FAULT_TIMEOUT_MILLISECONDS);
-    result = vm_machine_control_is_running(&session->control) ? WAIT_TIMEOUT :
+    result = x86_nxvm_machine_control_is_running(&session->control) ? WAIT_TIMEOUT :
         WAIT_OBJECT_0;
     stage = "FNINIT fault classification";
     if (result == WAIT_OBJECT_0) {
@@ -114,7 +114,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     } else {
         printf("NXVM:DOS-MEM-NEXT:RUNNING\n");
     }
-    vm_machine_stop(session);
+    x86_nxvm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     printf("NXVM:DOS-MEM-FNINIT-PASSED:OK\n");
     return 0;
@@ -126,7 +126,7 @@ fail:
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         vm_dos_mem_fault_print(&diagnostic);
     }
-    if (session != LIB_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) x86_nxvm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;
 }

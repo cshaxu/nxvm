@@ -2,24 +2,24 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_display.c" core_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_display.c" core_display_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.h" machine_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_state.h" board_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "t_vadp[ \t]+\\*?[ \t]*shared_vadp;" OR
     NOT board_header MATCHES "t_vadp[ \t]+\\*shared_vadp;" OR
     scheduler_source MATCHES "board->shared_vadp")
     message(FATAL_ERROR "VADP instance must have one board owner")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" board_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_interface.h" neutral_header)
 foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot configure_display)
     foreach(source IN ITEMS core_display_source core_header)
         if(NOT "${${source}}" MATCHES
-            "core_machine_${operation}\\(const core_machine_board_state \\*board,|core_machine_${operation}\\(core_machine_board_state \\*board,")
+            "x86_nxvm_board_${operation}\\(const x86_nxvm_board_state \\*board,|x86_nxvm_board_${operation}\\(x86_nxvm_board_state \\*board,")
             message(FATAL_ERROR "Display operation must receive the actual board: ${operation}")
         endif()
     endforeach()
@@ -31,8 +31,8 @@ if(core_display_source MATCHES "app-nxvm/devices/machine\\.h|->board|x86_core_ma
     machine_header MATCHES "x86_core_machine_configuration_is_open\\(")
     message(FATAL_ERROR "Display must use sole public Core guards without private-state recovery")
 endif()
-if(NOT core_plan_source MATCHES "core_machine_configure_display\\(board," OR
-    NOT core_plan_source MATCHES "core_machine_plan_apply_topology\\(machine, board, plan\\)" OR
+if(NOT core_plan_source MATCHES "x86_nxvm_board_configure_display\\(board," OR
+    NOT core_plan_source MATCHES "x86_nxvm_board_plan_apply_topology\\(machine, board, plan\\)" OR
     core_plan_source MATCHES "->board")
     message(FATAL_ERROR "Topology must consume the constructed board rather than recover private state")
 endif()
@@ -44,9 +44,9 @@ file(GLOB_RECURSE display_callers
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c" "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c" "${PROJECT_SOURCE_DIR}/test/x86-core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-xt/*.c")
 foreach(caller IN LISTS display_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES
@@ -54,14 +54,14 @@ foreach(caller IN LISTS display_callers)
         message(FATAL_ERROR "Display caller retains a Core receiver: ${caller}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/display.c" display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/display.c" display_source)
 
-foreach(required IN ITEMS "core_machine_display_config"
-    "core_machine_configure_display" "core_machine_display_ports_are_vadp"
+foreach(required IN ITEMS "x86_nxvm_board_display_config"
+    "x86_nxvm_board_configure_display" "x86_nxvm_board_display_ports_are_vadp"
     "x86_video_configure_text_timing"
     "x86_video_configure_ega_sequencer"
     "x86_video_configure_ega_controllers")
@@ -72,12 +72,12 @@ foreach(required IN ITEMS "core_machine_display_config"
     endif()
 endforeach()
 
-string(FIND "${profile_source}" "topology.display = (core_machine_display_config)" position)
+string(FIND "${profile_source}" "topology.display = (x86_nxvm_board_display_config)" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "profile resolver does not publish display configuration in the Core plan")
 endif()
 string(FIND "${core_source}" "topology->display_present" display_present_position)
-string(FIND "${core_source}" "core_machine_configure_display(" configure_display_position)
+string(FIND "${core_source}" "x86_nxvm_board_configure_display(" configure_display_position)
 if(display_present_position EQUAL -1 OR configure_display_position EQUAL -1)
     message(FATAL_ERROR "Core does not materialize the display plan")
 endif()
@@ -85,9 +85,9 @@ endif()
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
     "core_machine_vadp_configure_" "x86_video_configure_" "x86_core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
-        "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c"
-        "${PROJECT_SOURCE_DIR}/src/core/machine/display.c")
-        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+        "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine.c"
+        "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/display.c")
+        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine.c")
             set(vm_source_text "${machine_source}")
         else()
             set(vm_source_text "${display_source}")
@@ -99,7 +99,7 @@ foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
     endforeach()
 endforeach()
 
-string(FIND "${lifecycle_source}" "vm_machine_bind_display(machine)" position)
+string(FIND "${lifecycle_source}" "x86_nxvm_machine_bind_display(machine)" position)
 if(NOT position EQUAL -1)
     message(FATAL_ERROR "display provider is bound after core configuration")
 endif()

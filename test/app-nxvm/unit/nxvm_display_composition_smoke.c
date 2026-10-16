@@ -1,31 +1,31 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "lib/types/file.h"
 
-#include "core/board-base/vadp_interface.h"
-#include "../../core/board-base/composition/bus_fixture.h"
-#include "core/machine/display.h"
-#include "core/machine/lifecycle.h"
-#include "../../core/machine/support/nxvm_presentation_capture.h"
+#include "x86-nxvm/board-base/vadp_interface.h"
+#include "../../x86-nxvm/board-base/composition/bus_fixture.h"
+#include "x86-nxvm/machine/display.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "../../x86-nxvm/machine/support/nxvm_presentation_capture.h"
 #include "../support/rom/session_assets.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 
-static void vm_display_composition_port_write(vm_machine *session, lib_u16 port,
+static void vm_display_composition_port_write(x86_nxvm_machine *session, lib_u16 port,
     lib_u8 value)
 {
-    test_core_machine_fixture_write_port(session->x86_core_machine, port, value);
+    test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, port, value);
 }
 
-static lib_i32 vm_display_composition_capture(vm_machine *session,
+static lib_i32 vm_display_composition_capture(x86_nxvm_machine *session,
     core_machine_guest_display_frame *frame, x86_video_kind expected_kind)
 {
-    return vm_machine_publish_display(session, LIB_TRUE) == LIB_STATUS_OK &&
+    return x86_nxvm_machine_publish_display(session, LIB_TRUE) == LIB_STATUS_OK &&
         session->display_kind == expected_kind &&
         test_nxvm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
 }
 
-static void vm_display_composition_enable_text(vm_machine *session, lib_u8 rows)
+static void vm_display_composition_enable_text(x86_nxvm_machine *session, lib_u8 rows)
 {
     const lib_u16 scans = (lib_u16)rows * 8u - 1u;
     const lib_u8 registers[][2] = {
@@ -48,7 +48,7 @@ static void vm_display_composition_enable_text(vm_machine *session, lib_u8 rows)
     }
 }
 
-static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
+static lib_i32 vm_display_composition_enable_planar(x86_nxvm_machine *session)
 {
     vm_display_composition_port_write(session, 0x03c4u, 4u);
     vm_display_composition_port_write(session, 0x03c5u, 6u);
@@ -59,7 +59,7 @@ static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
     vm_display_composition_port_write(session, 0x03ceu, 6u);
     vm_display_composition_port_write(session, 0x03cfu, 0x05u);
     vm_display_composition_port_write(session, 0x03c2u, 0x03u);
-    (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
+    (void)test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
     vm_display_composition_port_write(session, 0x03c0u, 0x30u);
     vm_display_composition_port_write(session, 0x03c0u, 0x01u);
     vm_display_composition_port_write(session, 0x03d4u, 0x01u);
@@ -79,7 +79,7 @@ static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
     return 1;
 }
 
-static lib_i32 vm_display_composition_delivery(vm_machine *session)
+static lib_i32 vm_display_composition_delivery(x86_nxvm_machine *session)
 {
     emulator_machine_driver driver;
     static emulator_machine_frame delivered;
@@ -87,7 +87,7 @@ static lib_i32 vm_display_composition_delivery(vm_machine *session)
     lib_u32 width;
     lib_i32 failed = 0;
 
-    if (vm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK)
+    if (x86_nxvm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK)
         return 0;
     delivered.window.valid = LIB_FALSE;
     failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
@@ -96,7 +96,7 @@ static lib_i32 vm_display_composition_delivery(vm_machine *session)
     delivered.window.valid = LIB_FALSE;
     failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
         delivered.window.valid || delivered.sequence != sequence;
-    if (vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK) return 0;
+    if (x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK) return 0;
     width = session->latest_frame.window.image.width;
     session->latest_frame.window.image.width = 0u;
     failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_IO_ERROR ||
@@ -112,7 +112,7 @@ static lib_i32 vm_display_composition_delivery(vm_machine *session)
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     static core_machine_guest_display_frame frame;
     static x86_video_snapshot snapshot;
     static x86_video_snapshot_observation observation;
@@ -143,18 +143,18 @@ lib_i32 main(void)
 
         vm_display_composition_port_write(session, 0x03c2u, 0x01u);
         for (lib_size color = 0u; color < sizeof(colors); ++color) {
-            (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
+            (void)test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             vm_display_composition_port_write(session, 0x03c0u, 1u);
             vm_display_composition_port_write(session, 0x03c0u, colors[color]);
-            (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
+            (void)test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             vm_display_composition_port_write(session, 0x03c0u, 0x20u);
-            (void)test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
+            (void)test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
                 frame.palette_rgb[1] != rgb[color] || frame.generation <= text_generation ||
                 session->latest_frame.window.text.base.text_palette[1] != rgb[color];
             text_generation = frame.generation;
             session->last_display_publish_milliseconds = 0u;
-            failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+            failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
                 session->display_generation != text_generation;
         }
     }
@@ -164,17 +164,17 @@ lib_i32 main(void)
         emulator_machine *executor = LIB_NULL;
         const lib_u64 publish_time = session->last_display_publish_milliseconds;
 
-        if (vm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK ||
+        if (x86_nxvm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK ||
             emulator_machine_create(&executor, &driver) != LIB_STATUS_OK) failed = 1;
         else {
-            failed |= vm_machine_bind_emulator_machine(session, executor) != LIB_STATUS_OK;
+            failed |= x86_nxvm_machine_bind_emulator_machine(session, executor) != LIB_STATUS_OK;
             /* A ready local frame is not a frame published by this executor.
              * The test reader must neither enter the driver nor force a publish. */
             failed |= test_nxvm_machine_capture_presentation(session, &frame) !=
                 LIB_STATUS_INVALID_STATE || frame.generation != text_generation ||
                 session->display_generation != text_generation ||
                 session->last_display_publish_milliseconds != publish_time;
-            failed |= vm_machine_bind_emulator_machine(session, LIB_NULL) != LIB_STATUS_OK;
+            failed |= x86_nxvm_machine_bind_emulator_machine(session, LIB_NULL) != LIB_STATUS_OK;
             failed |= emulator_machine_destroy(executor) != LIB_STATUS_OK;
         }
     }
@@ -186,7 +186,7 @@ lib_i32 main(void)
     vm_display_composition_port_write(session, 0x03d5u, 0u);
     vm_display_composition_port_write(session, 0x03d4u, 0x12u);
     vm_display_composition_port_write(session, 0x03d5u, 199u);
-    failed |= core_machine_observe_display_snapshot(session->board, LIB_TRUE,
+    failed |= x86_nxvm_board_observe_display_snapshot(session->board, LIB_TRUE,
         0u, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || !observation.capture_required;
 
@@ -215,7 +215,7 @@ lib_i32 main(void)
 
     failed |= !vm_display_composition_enable_planar(session) ||
         x86_core_machine_memory_write(session->x86_core_machine,
-            CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
+            X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE, &ega_pixel,
             sizeof(ega_pixel)) != LIB_STATUS_OK ||
         !vm_display_composition_capture(session, &frame,
             X86_VIDEO_KIND_EGA_320X200X16) ||
@@ -234,38 +234,38 @@ lib_i32 main(void)
         lib_memory_copy(&saved, &session->latest_frame, sizeof(saved));
         vm_display_composition_port_write(session, 0x03d4u, 1u);
         vm_display_composition_port_write(session, 0x03d5u, 0u);
-        failed |= vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
+        failed |= x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
             session->display_generation != generation ||
             session->display_snapshot_generation != acknowledged ||
             session->display_snapshot_generation_valid != valid ||
             session->display_frame_pending != pending ||
             lib_memory_compare(&saved, &session->latest_frame, sizeof(saved)) != 0;
         vm_display_composition_port_write(session, 0x03d5u, 0x27u);
-        failed |= vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK;
+        failed |= x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK;
     }
     failed |= !vm_display_composition_delivery(session);
     ega_snapshot_generation = session->display_snapshot_generation;
     failed |= !session->display_snapshot_generation_valid ||
-        core_machine_observe_display_snapshot(session->board, LIB_TRUE,
+        x86_nxvm_board_observe_display_snapshot(session->board, LIB_TRUE,
             ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || observation.capture_required ||
         observation.generation != ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
         session->display_kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
     ega_pixel = 0x5au;
     failed |= x86_core_machine_memory_write(session->x86_core_machine,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
+        X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE, &ega_pixel,
         sizeof(ega_pixel)) != LIB_STATUS_OK ||
-        core_machine_observe_display_snapshot(session->board, LIB_TRUE,
+        x86_nxvm_board_observe_display_snapshot(session->board, LIB_TRUE,
             ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || !observation.capture_required ||
         observation.generation == ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
         session->display_kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
@@ -275,28 +275,28 @@ lib_i32 main(void)
     /* A pitch-only change must traverse the real Machine publication path,
      * not merely a direct chip capture or a forced redraw. */
     failed |= x86_core_machine_memory_write(session->x86_core_machine,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE + 2u, &(lib_u8){0x40u}, 1u) != LIB_STATUS_OK ||
+        X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE + 2u, &(lib_u8){0x40u}, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(session->x86_core_machine,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE + 40u, &(lib_u8){0x20u}, 1u) != LIB_STATUS_OK;
+        X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE + 40u, &(lib_u8){0x20u}, 1u) != LIB_STATUS_OK;
     vm_display_composition_port_write(session, 0x03d4u, 0x13u);
     vm_display_composition_port_write(session, 0x03d5u, 1u);
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.pixels[321u] != 15u || frame.pixels[322u] != 0u;
     ega_snapshot_generation = frame.generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation != ega_snapshot_generation;
     vm_display_composition_port_write(session, 0x03d5u, 20u);
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= ega_snapshot_generation ||
         frame.pixels[321u] != 0u || frame.pixels[322u] != 15u;
 
-    vm_machine_reset(session);
+    x86_nxvm_machine_reset(session);
     failed |= x86_core_machine_get_timeline_observation(session->x86_core_machine,
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
@@ -304,7 +304,7 @@ lib_i32 main(void)
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 1u ||
         frame.rows != 1u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xaaaaffu ||
-        core_machine_capture_display_snapshot(session->board, &snapshot) !=
+        x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
     /* Reset discards programmed geometry; a fresh port program restores text. */
     vm_display_composition_enable_text(session, 25u);
@@ -317,7 +317,7 @@ lib_i32 main(void)
         frame.pixels[0] != 0u || frame.pixel_width != 320u ||
         frame.pixel_height != 200u;
 
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     lib_c_printf("DISPLAY-COMPOSITION:OK\n");
     return 0;

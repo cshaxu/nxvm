@@ -14,8 +14,8 @@ foreach(project_artifact_root IN LISTS project_artifact_roots)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/product/version.h" product_version_header)
-if(NOT product_version_header MATCHES "CORE_PRODUCT_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])\"")
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/product/version.h" product_version_header)
+if(NOT product_version_header MATCHES "X86_NXVM_PRODUCT_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])\"")
     message(FATAL_ERROR "Core Product release version is missing")
 endif()
 set(product_version "${CMAKE_MATCH_1}_${CMAKE_MATCH_2}_${CMAKE_MATCH_3}")
@@ -40,8 +40,8 @@ endforeach()
 set(project_live_path_authorities
     ".gitignore"
     "cmake/nxvm/NxvmProduct.cmake"
-    "src/core/product/deploy_artifact.cmake"
-    "src/core/product/verify_artifact_optimized.cmake"
+    "src/x86-nxvm/product/deploy_artifact.cmake"
+    "src/x86-nxvm/product/verify_artifact_optimized.cmake"
     "cmake/nxvm/verify_integration_ini_boundary.cmake"
     "src/app-mynes/product/CMakeLists.txt"
     "tools/nxvm/README.md"
@@ -56,7 +56,7 @@ foreach(project_live_path_authority IN LISTS project_live_path_authorities)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/product/deploy_artifact.cmake" project_deployment)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/product/deploy_artifact.cmake" project_deployment)
 if(project_deployment MATCHES "file\\([ \t\r\n]*(WRITE|APPEND)[ \t\r\n]")
     message(FATAL_ERROR "EXE deployment must not write owner configuration files")
 endif()

@@ -1,18 +1,18 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/memory_interface.h"
-#include "core/machine/control.h"
-#include "core/machine/fault.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/fault.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 
-static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
+static lib_i32 vm_fault_outcome_prepare(x86_nxvm_machine *session)
 {
     /* REAL_UD_TERMINAL_GUEST_LIDT: LIDT [0100h] makes vector 6
        unavailable before the invalid opcode, without private CPU mutation. */
@@ -36,8 +36,8 @@ static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
-    vm_machine_fault_outcome outcome;
+    x86_nxvm_machine *session = LIB_NULL;
+    x86_nxvm_machine_fault_outcome outcome;
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result run;
     x86_core_cpu_diagnostic diagnostic;
@@ -45,25 +45,25 @@ lib_i32 main(void)
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         !vm_fault_outcome_prepare(session)) goto fail;
-    vm_machine_control_start(&session->control);
-    if (vm_machine_control_is_running(&session->control) ||
-        vm_machine_fault_get(session, &outcome) != 0 || outcome.valid ||
+    x86_nxvm_machine_control_start(&session->control);
+    if (x86_nxvm_machine_control_is_running(&session->control) ||
+        x86_nxvm_machine_fault_get(session, &outcome) != 0 || outcome.valid ||
         x86_core_machine_get_lifecycle(session->x86_core_machine, &lifecycle) !=
         LIB_STATUS_OK || lifecycle != X86_CORE_MACHINE_PAUSED ||
         x86_core_machine_run(session->x86_core_machine, budget, &run) != LIB_STATUS_OK ||
         run.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         run.detail != VCPUINS_EXCEPT_SHUTDOWN) goto fail;
-    if (vm_machine_reset(session) != LIB_STATUS_OK ||
-        vm_machine_fault_get(session, &outcome) != 0 || outcome.valid ||
+    if (x86_nxvm_machine_reset(session) != LIB_STATUS_OK ||
+        x86_nxvm_machine_fault_get(session, &outcome) != 0 || outcome.valid ||
         x86_core_machine_get_lifecycle(session->x86_core_machine, &lifecycle) !=
         LIB_STATUS_OK || lifecycle != X86_CORE_MACHINE_STOPPED ||
         x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) !=
         LIB_STATUS_OK || diagnostic.first_fault.valid) goto fail;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     printf("FAULT-OUTCOME:OK\n");
     return 0;
 
 fail:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return 1;
 }

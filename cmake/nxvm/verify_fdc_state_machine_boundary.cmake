@@ -2,18 +2,18 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc.c" chip_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc.h" chip_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc8272_interface.h" chip_interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c" board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/fdc8272/fdc.c" chip_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/fdc8272/fdc.h" chip_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/fdc8272/fdc8272_interface.h" chip_interface)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_deadline.c" board_deadline_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_fdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/board_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd_interface.h" fdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/media/fdd_interface.h" fdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/media/fdd.c" fdd_source)
 
 if(scheduler_source MATCHES "board->fdc|core_machine_fdc_")
     message(FATAL_ERROR "Core scheduler directly owns board FDC")
@@ -34,18 +34,18 @@ foreach(source_text IN ITEMS "${fdc_source}" "${fdc_header}" "${core_fixture}")
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_configure_fdc"
-    "core_machine_configure_dma" "CORE-FDC-MEDIA:OK")
+foreach(required IN ITEMS "x86_nxvm_board_configure_fdc"
+    "x86_nxvm_board_configure_dma" "CORE-FDC-MEDIA:OK")
     string(FIND "${core_fixture}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Core FDC fixture is incomplete: ${required}")
     endif()
 endforeach()
 
-foreach(required IN ITEMS "x86_fdc_create" "x86_fdc_destroy" "core_machine_media_query"
-    "core_machine_media_read_bytes" "core_machine_media_write_bytes"
-    "core_machine_media_format_sectors" "fdc->connect.dma_request_assert"
-    "core_machine_pic_irq_source_assert")
+foreach(required IN ITEMS "x86_fdc_create" "x86_fdc_destroy" "x86_nxvm_board_media_query"
+    "x86_nxvm_board_media_read_bytes" "x86_nxvm_board_media_write_bytes"
+    "x86_nxvm_board_media_format_sectors" "fdc->connect.dma_request_assert"
+    "x86_nxvm_board_pic_irq_source_assert")
     string(FIND "${fdc_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "FDC state-machine contract is incomplete: ${required}")
@@ -63,8 +63,8 @@ string(FIND "${fdc_source}" "x86_core_machine_install_port_routes" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "FDC must publish one Core-owned port route batch")
 endif()
-string(FIND "${board_source}" "lib_status core_machine_configure_fdc(" fdc_start)
-string(FIND "${board_source}" "lib_status core_machine_configure_hdc(" fdc_end)
+string(FIND "${board_source}" "lib_status x86_nxvm_board_configure_fdc(" fdc_start)
+string(FIND "${board_source}" "lib_status x86_nxvm_board_configure_hdc(" fdc_end)
 if(fdc_start LESS 0 OR fdc_end LESS fdc_start)
     message(FATAL_ERROR "FDC board construction range is missing")
 endif()
@@ -101,22 +101,22 @@ file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.h")
 foreach(path IN LISTS app_sources)
     file(READ "${path}" source)
-    if(source MATCHES "core/chips/fdc8272/fdc\\.[ch]" OR
+    if(source MATCHES "x86-nxvm/chips/fdc8272/fdc\\.[ch]" OR
         source MATCHES "core_machine_fdc_PHASE_" OR
         source MATCHES "fdc\\.data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)" OR
         source MATCHES "fdc->data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)")
         message(FATAL_ERROR "NXVM crosses the opaque FDC boundary: ${path}")
     endif()
 endforeach()
-string(FIND "${board_deadline_source}" "core_machine_fdc_next_due_tick" position)
+string(FIND "${board_deadline_source}" "x86_nxvm_board_fdc_next_due_tick" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "Board deadline observation must consume the FDC chip contract")
 endif()

@@ -1,12 +1,12 @@
-#include "../../core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
+#include "../../x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/entry_plan_interface.h"
 #include "x86-core/machine/machine_interface.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_KBC_AUX_BOOT_BUDGET 500000u
@@ -38,13 +38,13 @@ static const lib_u8 vm_kbc_aux_irq12_handler[] = {
     0xb0u, 0x20u, 0xe6u, 0xa0u, 0xe6u, 0x20u, 0x5bu, 0x58u, 0xcfu
 };
 
-static lib_i32 vm_kbc_aux_read_count(vm_machine *session, lib_u16 *out_count)
+static lib_i32 vm_kbc_aux_read_count(x86_nxvm_machine *session, lib_u16 *out_count)
 {
     return x86_core_machine_memory_read(session->x86_core_machine,
         VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
+static lib_i32 vm_kbc_aux_run_until_count(x86_nxvm_machine *session, lib_u16 expected)
 {
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
@@ -62,7 +62,7 @@ static lib_i32 vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
 
 lib_i32 main(void)
 {
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -77,7 +77,7 @@ lib_i32 main(void)
         .preloads = preloads,
         .preload_count = sizeof(preloads) / sizeof(preloads[0])
     };
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u8 bytes[4] = {0};
     lib_u16 count = 0u;
     lib_i32 passed = 0;
@@ -110,7 +110,7 @@ lib_i32 main(void)
         bytes[1] != 0x29u || bytes[2] != 0x05u || bytes[3] != 0xfdu) { stage = 4; goto done; }
     passed = 1;
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (!passed) {
         fprintf(stderr, "KBC-AUX-UNIT:stage=%d create=%d plan=%d count=%u bytes=%02X/%02X/%02X/%02X\n",
             stage, create_status, plan_status, count, bytes[0], bytes[1], bytes[2], bytes[3]);

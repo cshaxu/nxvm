@@ -1,6 +1,6 @@
 #include "../../support/profile.h"
-#include "core/machine/machine_interface.h"
-#include "../../../core/board-base/support/controller_fixture.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "../../../x86-nxvm/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -8,9 +8,9 @@
 
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
-#include "test/core/setup/session_ini.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
 
 #define VM_WINDOWS31_HDD_ADMISSION_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_WINDOWS31_HDD_ADMISSION_PROBE_BUDGET 500000u
@@ -77,7 +77,7 @@ static lib_status vm_windows31_hdd_admission_probe_install_boot_overlay(
 
     (void)opaque;
     return ini_session != LIB_NULL && vm_windows31_hdd_admission_probe_build_fdd(&bytes, &count) &&
-        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, X86_NXVM_MACHINE_MEDIA_FDD_ID,
             bytes, count) == LIB_STATUS_OK ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
@@ -93,7 +93,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     integration_ini_session ini_session = {0};
     x86_core_machine_run_result result = {0};
     x86_core_cpu_state cpu = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u8 host_mbr[512] = {0};
     lib_u8 host_vbr[512] = {0};
     lib_u8 guest_mbr[512] = {0};
@@ -125,7 +125,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
     session = ini_session.session;
     if (session == LIB_NULL || integration_ini_session_overlay_read(&ini_session,
-            VM_MACHINE_MEDIA_HDD_ID, (void **)&hdd_overlay, &hdd_overlay_count) !=
+            X86_NXVM_MACHINE_MEDIA_HDD_ID, (void **)&hdd_overlay, &hdd_overlay_count) !=
             LIB_STATUS_OK || hdd_overlay_count < 1024u * 1024u) goto done;
     lib_memory_copy(host_mbr, hdd_overlay, sizeof(host_mbr));
     entry = host_mbr + 446u;
@@ -143,7 +143,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) goto done;
         }
         if (values[10] != 0u && first_command_count == 0u) {

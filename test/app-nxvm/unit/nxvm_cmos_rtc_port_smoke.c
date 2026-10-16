@@ -1,54 +1,54 @@
 #include "../support/profile.h"
-#include "core/board-base/pc_at_rom_interface.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/board-base/pc_at_rom_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include <stdio.h>
 
-#include "core/board-base/pic_bus_interface.h"
-#include "../../core/board-base/composition/bus_fixture.h"
-#include "../../core/board-base/support/cmos_fixture.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/chips/rtc146818/rtc146818_interface.h"
+#include "x86-nxvm/board-base/pic_bus_interface.h"
+#include "../../x86-nxvm/board-base/composition/bus_fixture.h"
+#include "../../x86-nxvm/board-base/support/cmos_fixture.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/chips/rtc146818/rtc146818_interface.h"
 #include "../support/rom/session_assets.h"
 
 static void cmos_write(x86_core_machine *core, lib_u8 reg, lib_u8 value)
 {
-    test_core_machine_fixture_write_port(core, 0x0070u, reg);
-    test_core_machine_fixture_write_port(core, 0x0071u, value);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0070u, reg);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0071u, value);
 }
 
 static lib_u8 cmos_read(x86_core_machine *core, lib_u8 reg)
 {
-    test_core_machine_fixture_write_port(core, 0x0070u, reg);
-    return (lib_u8)test_core_machine_fixture_read_bus(core, 0x0071u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0070u, reg);
+    return (lib_u8)test_x86_nxvm_machine_fixture_read_bus(core, 0x0071u);
 }
 
 static void initialize_pic(x86_core_machine *core)
 {
-    test_core_machine_fixture_write_port(core, 0x0020u, 0x11u);
-    test_core_machine_fixture_write_port(core, 0x0021u, 0x08u);
-    test_core_machine_fixture_write_port(core, 0x0021u, 0x04u);
-    test_core_machine_fixture_write_port(core, 0x0021u, 0x01u);
-    test_core_machine_fixture_write_port(core, 0x00a0u, 0x11u);
-    test_core_machine_fixture_write_port(core, 0x00a1u, 0x70u);
-    test_core_machine_fixture_write_port(core, 0x00a1u, 0x02u);
-    test_core_machine_fixture_write_port(core, 0x00a1u, 0x01u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0020u, 0x11u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0021u, 0x08u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0021u, 0x04u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0021u, 0x01u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a0u, 0x11u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a1u, 0x70u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a1u, 0x02u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a1u, 0x01u);
 }
 
 static lib_i32 default_at_cmos_seed_is_loaded(void)
 {
-    lib_u8 seed[VM_MACHINE_CMOS_SEED_BYTES] = {0};
-    vm_machine_config config = {0};
-    vm_machine_assets assets;
-    vm_machine *session = LIB_NULL;
+    lib_u8 seed[X86_NXVM_MACHINE_CMOS_SEED_BYTES] = {0};
+    x86_nxvm_machine_config config = {0};
+    x86_nxvm_machine_assets assets;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u16 checksum = 0u;
     lib_size index;
     lib_i32 failed = 0;
 
-    for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
+    for (index = 0x0eu; index < X86_NXVM_MACHINE_CMOS_SEED_BYTES; ++index) {
         seed[index] = (lib_u8)(0xa5u ^ index);
     }
     /* A session seed owns the whole board-NVRAM image, not just vendor bytes.
@@ -59,9 +59,9 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
     seed[0x2eu] = ((lib_u8)(checksum >> 8u));
     seed[0x2fu] = ((lib_u8)(checksum));
     vm_test_default_pc_at_assets(&assets,
-        (lib_u8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
+        (lib_u8[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES]) {0});
     /* The helper's ROM array must outlive composition only; session copies it. */
-    assets.cmos_seed = (vm_machine_asset_bytes) { seed, sizeof(seed) };
+    assets.cmos_seed = (x86_nxvm_machine_asset_bytes) { seed, sizeof(seed) };
     config.bios_count = 1u;
     failed |= vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &assets, &session) != LIB_STATUS_OK ||
@@ -69,17 +69,17 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
     if (!failed) {
         x86_core_machine *core = session->x86_core_machine;
 
-        for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
+        for (index = 0x0eu; index < X86_NXVM_MACHINE_CMOS_SEED_BYTES; ++index) {
             failed |= cmos_read(core, (lib_u8)index) != seed[index];
         }
     }
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine *core;
     lib_i32 failed = 0;
 
@@ -101,8 +101,8 @@ lib_i32 main(void)
     if ((cmos_read(core, X86_RTC_REG_C) &
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_UF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_UF)) failed |= 0x0020;
-    test_core_machine_fixture_write_port(core, 0x00a0u, 0x20u);
-    test_core_machine_fixture_write_port(core, 0x0020u, 0x20u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a0u, 0x20u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0020u, 0x20u);
     if (test_board_cmos_scan_interrupt(session->board)) failed |= 0x0040;
 
     cmos_write(core, X86_RTC_REG_B, X86_RTC_REG_B_24H | X86_RTC_REG_B_PIE);
@@ -112,8 +112,8 @@ lib_i32 main(void)
     if ((cmos_read(core, X86_RTC_REG_C) &
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF)) failed |= 0x0100;
-    test_core_machine_fixture_write_port(core, 0x00a0u, 0x20u);
-    test_core_machine_fixture_write_port(core, 0x0020u, 0x20u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a0u, 0x20u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0020u, 0x20u);
 
     cmos_write(core, X86_RTC_REG_B, X86_RTC_REG_B_24H | X86_RTC_REG_B_SET);
     cmos_write(core, X86_RTC_SECOND, 0x11u);
@@ -139,19 +139,19 @@ lib_i32 main(void)
     if ((cmos_read(core, X86_RTC_REG_C) &
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_AF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_AF)) failed |= 0x1000;
-    test_core_machine_fixture_write_port(core, 0x00a0u, 0x20u);
-    test_core_machine_fixture_write_port(core, 0x0020u, 0x20u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x00a0u, 0x20u);
+    test_x86_nxvm_machine_fixture_write_port(core, 0x0020u, 0x20u);
 
-    cmos_write(core, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
+    cmos_write(core, X86_NXVM_BOARD_RTC_EQUIPMENT, 0x5au);
     test_board_cmos_reset(session->board);
-    if (cmos_read(core, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
+    if (cmos_read(core, X86_NXVM_BOARD_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
     if (cmos_read(core, X86_RTC_SECOND) != 0x59u) failed |= 0x4000;
 
     failed |= default_at_cmos_seed_is_loaded();
     if (failed) {
         test_board_cmos_report_failure(session->board, failed);
     }
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     puts("CMOS-RTC-PORT:OK");
     return 0;

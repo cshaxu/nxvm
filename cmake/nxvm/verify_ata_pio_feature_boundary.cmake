@@ -2,15 +2,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/hdc/hdc.c" hdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/hdc.c" hdc_adapter)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/hdc/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/hdc.c" hdc_adapter)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile_interface.h"
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_config.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/pc_at_preparation.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/pc_at_preparation.c"
     plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_hdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/board_hdc_smoke.c"
     core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"(vm|app-nxvm)/")
@@ -20,8 +20,8 @@ endif()
 if(core_fixture MATCHES "#include[ \t]+\"vm/")
     message(FATAL_ERROR "Core ATA fixture retains VM vocabulary")
 endif()
-foreach(required IN ITEMS "core_machine_configure_hdc"
-    "core_machine_hdc_topology" "CORE-HDC-MEDIA:OK")
+foreach(required IN ITEMS "x86_nxvm_board_configure_hdc"
+    "x86_nxvm_board_hdc_topology" "CORE-HDC-MEDIA:OK")
     string(FIND "${core_fixture}" "${required}" fixture_position)
     if(fixture_position EQUAL -1)
         message(FATAL_ERROR "Core ATA fixture is incomplete: ${required}")
@@ -49,8 +49,8 @@ foreach(required IN ITEMS "x86_hdc_resolve_sector"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_pic_irq_source_assert" "core_machine_media_query"
-    "core_machine_media_read_record" "core_machine_media_write_record" "x86_hdc_create"
+foreach(required IN ITEMS "x86_nxvm_board_pic_irq_source_assert" "x86_nxvm_board_media_query"
+    "x86_nxvm_board_media_read_record" "x86_nxvm_board_media_write_record" "x86_hdc_create"
     "x86_hdc_destroy" "x86_hdc_read" "x86_hdc_write")
     string(FIND "${hdc_adapter}" "${required}" position)
     if(position EQUAL -1)
@@ -66,15 +66,15 @@ foreach(forbidden IN ITEMS "x86_hdc_load_lba_sector"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_hdc_config hdc"
-    "CORE_MACHINE_HDC_PROTOCOL_ATA_PIO" "lba28_supported")
+foreach(required IN ITEMS "x86_nxvm_board_hdc_config hdc"
+    "X86_NXVM_BOARD_HDC_PROTOCOL_ATA_PIO" "lba28_supported")
     string(FIND "${profile_header}${profile_source}" "${required}" profile_position)
     if(profile_position EQUAL -1)
         message(FATAL_ERROR "ATA PIO personality declaration is incomplete: ${required}")
     endif()
 endforeach()
 
-string(FIND "${plan_source}" "core_machine_plan_configure_hdc" lba_mapping_position)
+string(FIND "${plan_source}" "x86_nxvm_board_plan_configure_hdc" lba_mapping_position)
 if(lba_mapping_position EQUAL -1)
     message(FATAL_ERROR "ATA PIO composition omits the Core plan personality")
 endif()
@@ -83,7 +83,7 @@ if(lba_mapping_position EQUAL -1)
     message(FATAL_ERROR "ATA PIO plan omits the copied profile personality")
 endif()
 
-foreach(required IN ITEMS "descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO"
+foreach(required IN ITEMS "descriptor->hdc.protocol == X86_NXVM_BOARD_HDC_PROTOCOL_ATA_PIO"
     "descriptor->hdc.bus.task_file.lba28_supported")
     string(FIND "${profile_source}" "${required}" profile_policy_position)
     if(profile_policy_position EQUAL -1)

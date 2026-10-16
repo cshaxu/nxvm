@@ -2,13 +2,13 @@
 #define MYDESKPRO386_D4_PLATFORM_INTERFACE_H
 
 #include "x86-core/machine/machine_interface.h"
-#include "core/chips/pit825x/pit825x_interface.h"
-#include "core/board-at/kbc_interface.h"
-#include "core/board-base/board_profile_interface.h"
+#include "x86-nxvm/chips/pit825x/pit825x_interface.h"
+#include "x86-nxvm/board-at/kbc_interface.h"
+#include "x86-nxvm/board-base/board_profile_interface.h"
 #include "app-mydeskpro386/d4_memory_interface.h"
 
 typedef struct mydeskpro386_d4_platform mydeskpro386_d4_platform;
-typedef struct core_machine_board_state core_machine_board_state;
+typedef struct x86_nxvm_board_state x86_nxvm_board_state;
 typedef struct mydeskpro386_d4_platform_config {
     lib_u16 port;
     lib_u8 failsafe_pit_counter;
@@ -37,13 +37,13 @@ lib_status mydeskpro386_d4_platform_create(x86_core_machine *core, x86_pit *pit,
     mydeskpro386_d4_speaker_output speaker, void *context,
     mydeskpro386_d4_platform **out_platform);
 /* Construction transfers ownership to the board only on success. */
-lib_status mydeskpro386_d4_platform_attach(core_machine_board_state *board,
+lib_status mydeskpro386_d4_platform_attach(x86_nxvm_board_state *board,
     const mydeskpro386_d4_platform_config *config,
     mydeskpro386_d4_platform **out_platform);
 void mydeskpro386_d4_platform_destroy(mydeskpro386_d4_platform *platform);
 lib_status mydeskpro386_d4_platform_configure_memory(mydeskpro386_d4_platform *platform,
     const mydeskpro386_d4_memory_config *config);
-core_machine_board_profile_binding mydeskpro386_d4_platform_binding(
+x86_nxvm_board_profile_binding mydeskpro386_d4_platform_binding(
     mydeskpro386_d4_platform *platform);
 void mydeskpro386_d4_platform_reset_latches(mydeskpro386_d4_platform *platform);
 void mydeskpro386_d4_platform_after_pit_reset(mydeskpro386_d4_platform *platform);

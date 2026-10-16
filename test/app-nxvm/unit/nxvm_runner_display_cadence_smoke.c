@@ -1,13 +1,13 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/machine/control.h"
-#include "core/machine/display.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/display.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "x86-debug/product/protocol_interface.h"
-#include "../../core/machine/support/emulator_machine_fixture.h"
+#include "../../x86-nxvm/machine/support/emulator_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static void vm_runner_completed_state(void *context,
@@ -17,7 +17,7 @@ static void vm_runner_completed_state(void *context,
         vm_test_emulator_machine_state_changed(context, state, run_generation);
 }
 
-static lib_bool vm_runner_debug_execute(vm_machine *machine,
+static lib_bool vm_runner_debug_execute(x86_nxvm_machine *machine,
     const emulator_machine_debug_lease *lease, const x86_debug_request *request,
     x86_debug_response *response)
 {
@@ -33,7 +33,7 @@ typedef struct vm_runner_port_write {
     lib_u8 value;
 } vm_runner_port_write;
 
-static lib_bool vm_runner_program_ports(vm_machine *machine,
+static lib_bool vm_runner_program_ports(x86_nxvm_machine *machine,
     const emulator_machine_debug_lease *lease,
     const vm_runner_port_write *ports, lib_size count)
 {
@@ -47,7 +47,7 @@ static lib_bool vm_runner_program_ports(vm_machine *machine,
     return LIB_TRUE;
 }
 
-static lib_bool vm_runner_step_and_pause(vm_machine *machine,
+static lib_bool vm_runner_step_and_pause(x86_nxvm_machine *machine,
     const vm_test_emulator_machine_state_waiter *waiter, lib_u32 instructions)
 {
     emulator_machine_debug_lease lease;
@@ -62,7 +62,7 @@ static lib_bool vm_runner_step_and_pause(vm_machine *machine,
     /* Expire only host presentation eligibility while the executor is paused;
      * the real runner must still decide whether any guest content changed. */
     machine->last_display_publish_milliseconds = 0u;
-    if (vm_machine_resume(machine) != LIB_STATUS_OK ||
+    if (x86_nxvm_machine_resume(machine) != LIB_STATUS_OK ||
         base_sync_event_wait(waiter->event, 2000u) != BASE_SYNC_WAIT_SIGNALED ||
         emulator_machine_state_get(machine->executor) != EMULATOR_MACHINE_PAUSED ||
         emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
@@ -72,7 +72,7 @@ static lib_bool vm_runner_step_and_pause(vm_machine *machine,
     }, &response) && response.enabled && response.value == instructions;
 }
 
-static lib_bool vm_runner_blink_cycle(vm_machine *machine,
+static lib_bool vm_runner_blink_cycle(x86_nxvm_machine *machine,
     const vm_test_emulator_machine_state_waiter *waiter,
     emulator_machine_frame *frame, lib_u32 run_generation, lib_bool character)
 {
@@ -143,7 +143,7 @@ static lib_bool vm_runner_blink_cycle(vm_machine *machine,
     return hidden && visible_again;
 }
 
-static lib_bool vm_runner_bound_delivery(vm_machine *machine,
+static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
     vm_test_emulator_machine_state_waiter *waiter)
 {
     static const vm_runner_port_write graphics[] = {
@@ -352,33 +352,33 @@ static lib_bool vm_runner_bound_delivery(vm_machine *machine,
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     vm_test_emulator_machine_state_waiter waiter = {0};
     static emulator_machine_frame frame;
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
-        vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK) {
+        x86_nxvm_machine_set_speed(session, X86_NXVM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK) {
         failed = 1;
         goto done;
     }
-    if (vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
-        vm_machine_copy_emulator_frame(session, &frame) != LIB_STATUS_OK ||
+    if (x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
+        x86_nxvm_machine_copy_emulator_frame(session, &frame) != LIB_STATUS_OK ||
         frame.window.text.base.text_columns != 1u ||
         frame.window.text.base.text_rows != 1u ||
         vm_test_emulator_machine_bind(session) != LIB_STATUS_OK ||
         vm_test_emulator_machine_state_waiter_initialize(session, &waiter) !=
             LIB_STATUS_OK ||
-        vm_machine_resume(session) != LIB_STATUS_OK ||
+        x86_nxvm_machine_resume(session) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(session, &waiter,
             EMULATOR_MACHINE_RUNNING, 2000u) ||
-        vm_machine_request_pause(session) != LIB_STATUS_OK ||
+        x86_nxvm_machine_request_pause(session) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(session, &waiter,
             EMULATOR_MACHINE_PAUSED, 2000u) ||
-        vm_machine_resume(session) != LIB_STATUS_OK ||
+        x86_nxvm_machine_resume(session) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(session, &waiter,
             EMULATOR_MACHINE_RUNNING, 2000u) ||
-        vm_machine_request_pause(session) != LIB_STATUS_OK ||
+        x86_nxvm_machine_request_pause(session) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(session, &waiter,
             EMULATOR_MACHINE_PAUSED, 2000u)) {
         failed = 1;
@@ -386,12 +386,12 @@ lib_i32 main(void)
     }
     failed |= !vm_runner_bound_delivery(session, &waiter);
 done:
-    vm_machine_stop(session);
+    x86_nxvm_machine_stop(session);
     failed |= !vm_test_emulator_machine_wait_state(session, &waiter,
         EMULATOR_MACHINE_STOPPED, 2000u);
     vm_test_emulator_machine_unbind(session);
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     lib_c_printf("RUNNER-CADENCE:OK\nCOMPOSITION-RUNNER-CADENCE:OK\n");
     return 0;

@@ -1,5 +1,5 @@
-#include "../../../core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
+#include "../../../x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -7,18 +7,18 @@
 
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
-#include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "test/core/setup/session_ini.h"
-#include "core/machine/control.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
+#include "test/x86-nxvm/machine/support/nxvm_presentation_capture.h"
+#include "test/x86-nxvm/setup/session_ini.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
 
 #define VM_WINDOWS31_CHECKPOINT_TEXT_CELLS (80u * 25u)
 #define VM_WINDOWS31_CHECKPOINT_BOOT_TIMEOUT_MILLISECONDS 60000u
 #define VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS 5000u
 #define VM_WINDOWS31_CHECKPOINT_DIRECTORY_TIMEOUT_MILLISECONDS 60000u
 
-static lib_i32 vm_windows31_checkpoint_submit_input(vm_machine *session,
+static lib_i32 vm_windows31_checkpoint_submit_input(x86_nxvm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -31,7 +31,7 @@ static lib_i32 vm_windows31_checkpoint_submit_input(vm_machine *session,
     return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_windows31_checkpoint_has_text(const vm_machine *session, const char *text)
+static lib_i32 vm_windows31_checkpoint_has_text(const x86_nxvm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -49,7 +49,7 @@ static lib_i32 vm_windows31_checkpoint_has_text(const vm_machine *session, const
     return 0;
 }
 
-static const char *vm_windows31_checkpoint_wait_for_text(const vm_machine *session,
+static const char *vm_windows31_checkpoint_wait_for_text(const x86_nxvm_machine *session,
     const char *first, const char *second, DWORD timeout)
 {
     DWORD elapsed;
@@ -57,7 +57,7 @@ static const char *vm_windows31_checkpoint_wait_for_text(const vm_machine *sessi
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (vm_windows31_checkpoint_has_text(session, first)) return first;
         if (second != LIB_NULL && vm_windows31_checkpoint_has_text(session, second)) return second;
-        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !x86_nxvm_machine_control_is_running(&session->control)) {
             return LIB_NULL;
         }
         Sleep(10u);
@@ -65,27 +65,27 @@ static const char *vm_windows31_checkpoint_wait_for_text(const vm_machine *sessi
     return LIB_NULL;
 }
 
-static void vm_windows31_checkpoint_submit_key(const vm_machine *session, lib_u16 scan_code,
+static void vm_windows31_checkpoint_submit_key(const x86_nxvm_machine *session, lib_u16 scan_code,
     lib_u16 virtual_key)
 {
     if (session == LIB_NULL) return;
-    if (!vm_windows31_checkpoint_submit_input((vm_machine *)session, scan_code, virtual_key, 1)) return;
+    if (!vm_windows31_checkpoint_submit_input((x86_nxvm_machine *)session, scan_code, virtual_key, 1)) return;
     Sleep(25u);
-    (void)vm_windows31_checkpoint_submit_input((vm_machine *)session, scan_code, virtual_key, 0);
+    (void)vm_windows31_checkpoint_submit_input((x86_nxvm_machine *)session, scan_code, virtual_key, 0);
     Sleep(25u);
 }
 
-static void vm_windows31_checkpoint_submit_colon(const vm_machine *session)
+static void vm_windows31_checkpoint_submit_colon(const x86_nxvm_machine *session)
 {
     if (session == LIB_NULL) return;
-    if (!vm_windows31_checkpoint_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 1)) return;
+    if (!vm_windows31_checkpoint_submit_input((x86_nxvm_machine *)session, 0x2au, VK_SHIFT, 1)) return;
     Sleep(25u);
     vm_windows31_checkpoint_submit_key(session, 0x27u, VK_OEM_1);
-    (void)vm_windows31_checkpoint_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 0);
+    (void)vm_windows31_checkpoint_submit_input((x86_nxvm_machine *)session, 0x2au, VK_SHIFT, 0);
     Sleep(25u);
 }
 
-static void vm_windows31_checkpoint_report(const vm_machine *session, const char *stage)
+static void vm_windows31_checkpoint_report(const x86_nxvm_machine *session, const char *stage)
 {
     core_machine_guest_display_frame frame;
     x86_core_cpu_diagnostic diagnostic = {0};
@@ -94,7 +94,7 @@ static void vm_windows31_checkpoint_report(const vm_machine *session, const char
 
     if (session == LIB_NULL) return;
     printf("NXVM:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d\n", stage,
-        vm_machine_control_is_running(&session->control));
+        x86_nxvm_machine_control_is_running(&session->control));
     if (x86_core_machine_get_cpu_diagnostic(session->x86_core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
@@ -124,7 +124,7 @@ static void vm_windows31_checkpoint_report(const vm_machine *session, const char
     }
 }
 
-static void vm_windows31_checkpoint_report_frame(const vm_machine *session)
+static void vm_windows31_checkpoint_report_frame(const x86_nxvm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size row;
@@ -144,7 +144,7 @@ static void vm_windows31_checkpoint_report_frame(const vm_machine *session)
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u8 hdd_count = 0u;
     lib_u8 hdd_bda[4] = {0};
     lib_i32 c_present;
@@ -202,7 +202,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     hdd_count = hdd_bda[1];
     /* Stop can cold-reset Core and clear BDA; observe the paused guest first. */
     if (emulator_machine_shutdown(ini_session.emulator_machine) != LIB_STATUS_OK) goto fail;
-    vm_machine_stop(session);
+    x86_nxvm_machine_stop(session);
     vm_windows31_checkpoint_report_frame(session);
     if (c_present && hdd_count != 0u) {
         printf("NXVM:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
@@ -215,7 +215,7 @@ fail:
     if (emulator_machine_state_get(ini_session.emulator_machine) == EMULATOR_MACHINE_RUNNING)
         (void)integration_ini_session_pause(&ini_session, VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS);
     vm_windows31_checkpoint_report(session, stage);
-    if (session != LIB_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) x86_nxvm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;
 }

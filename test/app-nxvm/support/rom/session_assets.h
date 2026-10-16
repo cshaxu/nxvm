@@ -2,23 +2,23 @@
 #define TEST_APP_NXVM_ROM_SESSION_ASSETS_H
 
 #include "../profile.h"
-#include "core/board-base/pc_at_rom_interface.h"
+#include "x86-nxvm/board-base/pc_at_rom_interface.h"
 
-static inline void vm_test_default_pc_at_assets(vm_machine_assets *assets,
-    lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])
+static inline void vm_test_default_pc_at_assets(x86_nxvm_machine_assets *assets,
+    lib_u8 rom[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES])
 {
     if (assets == LIB_NULL || rom == LIB_NULL) return;
-    lib_memory_set(rom, 0, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES);
-    rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
-    *assets = (vm_machine_assets) { .bios = { { rom, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES } } };
+    lib_memory_set(rom, 0, X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES);
+    rom[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
+    *assets = (x86_nxvm_machine_assets) { .bios = { { rom, X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES } } };
 }
 
 static inline lib_status vm_test_default_pc_at_session_create(
-    const vm_machine_config *requested, vm_machine **out_session)
+    const x86_nxvm_machine_config *requested, x86_nxvm_machine **out_session)
 {
-    lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
-    vm_machine_assets assets;
-    vm_machine_config config = requested == LIB_NULL ? (vm_machine_config) {0} :
+    lib_u8 rom[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES];
+    x86_nxvm_machine_assets assets;
+    x86_nxvm_machine_config config = requested == LIB_NULL ? (x86_nxvm_machine_config) {0} :
         *requested;
 
     config.bios_count = 1u;

@@ -1,24 +1,24 @@
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
-#include "../../core/machine/support/media.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "../../x86-nxvm/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "core/board-base/machine_board_interface.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "lib/types/file.h"
 
 #include "x86-core/machine/debug_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "../../core/board-base/support/cmos_fixture.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "../../x86-nxvm/board-base/support/cmos_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static lib_i32 vm_default_pc_at_fdd_format_is_valid(
-    vm_machine_floppy_format format, lib_u16 cylinders,
+    x86_nxvm_machine_floppy_format format, lib_u16 cylinders,
     lib_u16 sectors, lib_u8 cmos_type)
 {
-    vm_machine_config config = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine_config config = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u32 port_b;
     lib_u32 next_port_b;
     lib_u32 tick;
@@ -32,7 +32,7 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
     observed_type = test_board_cmos_read_register(session->board,
-        CORE_MACHINE_RTC_TYPE_DISK_FLOPPY);
+        X86_NXVM_BOARD_RTC_TYPE_DISK_FLOPPY);
     if (vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != cylinders || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
         vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != sectors || vm_test_fdd_info(session->floppy[0u]).geometry.bytes_per_sector != 512u ||
         observed_type != cmos_type) {
@@ -72,7 +72,7 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     if (tick == 200u) goto done;
     valid = 1;
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return valid;
 }
 
@@ -82,10 +82,10 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
         0xb4u, 0x10u, 0xe4u, 0x61u, 0x24u, 0x10u,
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
-    vm_machine_config config = {
+    x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80186
     };
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine_run_result result = {0};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -104,11 +104,11 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
 
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 0;
     }
     if (x86_core_machine_get_elapsed_ticks(session->x86_core_machine, &first_tick) != LIB_STATUS_OK) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 0;
     }
     for (tick = 0u; tick < 200u; ++tick) {
@@ -138,17 +138,17 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
             (x86_core_machine_run_budget) {1000u, 0u}, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     }
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return !failed;
 }
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     test_board_composition_observation board;
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
     board = test_board_capture_composition(session->board);
@@ -160,23 +160,23 @@ lib_i32 main(void)
         board.fdc.irq != 6u ||
         board.fdc.dma_channel != 2u ||
         board.fdc.ready_mask != 0x0fu) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
-    if (test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EQUIPMENT) !=
-            0x21u || test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
-        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
-        vm_machine_destroy(session);
+    if (test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_EQUIPMENT) !=
+            0x21u || test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_BASEMEM_LSB) != 0x7fu ||
+        test_board_cmos_read_register(session->board, X86_NXVM_BOARD_RTC_BASEMEM_MSB) != 0x02u) {
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
-    vm_machine_destroy(session);
-    if (!vm_default_pc_at_fdd_format_is_valid(VM_MACHINE_FLOPPY_FORMAT_360K,
+    x86_nxvm_machine_destroy(session);
+    if (!vm_default_pc_at_fdd_format_is_valid(X86_NXVM_MACHINE_FLOPPY_FORMAT_360K,
             40u, 9u, 0x10u) ||
-        !vm_default_pc_at_fdd_format_is_valid(VM_MACHINE_FLOPPY_FORMAT_720K,
+        !vm_default_pc_at_fdd_format_is_valid(X86_NXVM_MACHINE_FLOPPY_FORMAT_720K,
             80u, 9u, 0x30u) ||
-        !vm_default_pc_at_fdd_format_is_valid(VM_MACHINE_FLOPPY_FORMAT_1200K,
+        !vm_default_pc_at_fdd_format_is_valid(X86_NXVM_MACHINE_FLOPPY_FORMAT_1200K,
             80u, 15u, 0x20u) ||
-        !vm_default_pc_at_fdd_format_is_valid(VM_MACHINE_FLOPPY_FORMAT_1440K,
+        !vm_default_pc_at_fdd_format_is_valid(X86_NXVM_MACHINE_FLOPPY_FORMAT_1440K,
             80u, 18u, 0x40u)) {
         return 1;
     }

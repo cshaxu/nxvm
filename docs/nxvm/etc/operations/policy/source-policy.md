@@ -104,7 +104,7 @@ single Core ROM mapping path.
 
 For XT, `src/app-my5160` owns board C and ROM slot/mapping declarations.
 The IBM AT owner is `src/app-my5170`; common PC/AT ROM
-mapping lives once in core/board-base/pc_at_rom. DeskPro declarations
+mapping lives once in x86-nxvm/board-base/pc_at_rom. DeskPro declarations
 belong to `src/app-mydeskpro386`; default belongs to
 `src/app-nxvm`. Current alone records delivery
 acceptance; a working source relocation does not certify runnable artifacts.

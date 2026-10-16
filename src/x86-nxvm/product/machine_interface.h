@@ -2,13 +2,9 @@
 #define X86_NXVM_PRODUCT_MACHINE_INTERFACE_H
 
 #include "emulator/product/machine_interface.h"
+#include "x86-nxvm/machine/speed_interface.h"
 
-/* NXVM-specific information and speed contracts; no runtime implementation. */
-typedef enum x86_nxvm_product_speed {
-    X86_NXVM_PRODUCT_SPEED_STANDARD,
-    X86_NXVM_PRODUCT_SPEED_TURBO
-} x86_nxvm_product_speed;
-
+/* Product formats copied Machine facts and uses Machine's speed contract. */
 typedef struct x86_nxvm_product_information {
     const char *machine_name;
     const char *cpu_name;
@@ -27,8 +23,8 @@ typedef struct x86_nxvm_product_machine {
     const void *context;
     lib_status (*information)(const void *context, const void *machine,
         x86_nxvm_product_information *out_info);
-    lib_status (*get_speed)(const void *machine, x86_nxvm_product_speed *out_speed);
-    lib_status (*set_speed)(void *machine, x86_nxvm_product_speed speed);
+    lib_status (*get_speed)(const void *machine, x86_nxvm_machine_speed *out_speed);
+    lib_status (*set_speed)(void *machine, x86_nxvm_machine_speed speed);
 } x86_nxvm_product_machine;
 
 #endif

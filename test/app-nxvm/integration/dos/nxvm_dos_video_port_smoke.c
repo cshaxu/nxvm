@@ -1,14 +1,14 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
 #include "x86-core/machine/debug_interface.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
 #define VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM 256u
@@ -31,7 +31,7 @@ static lib_i32 vm_dos_video_has_prompt(const x86_video_snapshot *snapshot)
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
-    vm_machine *session;
+    x86_nxvm_machine *session;
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result = {0};
     x86_core_machine_observation observation;
@@ -49,7 +49,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if (!session->active) goto fail;
-    vm_machine_reset(session);
+    x86_nxvm_machine_reset(session);
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (x86_core_machine_capture_observation(session->x86_core_machine, &observation) !=
@@ -79,7 +79,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) {
                 failed = 1;
                 break;
@@ -89,7 +89,7 @@ lib_i32 main(lib_i32 argc, char **argv)
          * but avoid copying a complete display frame after every instruction. */
         if ((instruction % VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM == 0u ||
              instruction + 1u == VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET) &&
-            core_machine_capture_display_snapshot(session->board, &snapshot) ==
+            x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) ==
                 LIB_STATUS_OK && vm_dos_video_has_prompt(&snapshot)) {
             prompt_seen = 1;
             break;

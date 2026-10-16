@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #ifndef VM_PROFILE_XT_5160_268_H
 #define VM_PROFILE_XT_5160_268_H
 
-#include "core/board-base/profile_contract_interface.h"
+#include "x86-nxvm/board-base/profile_contract_interface.h"
 #include "x86-core/machine/firmware_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u
@@ -25,12 +25,12 @@ typedef struct vm_profile_xt_5160_268_external_rom {
  * only B2-selected shared board facts; later device batches own their own
  * source-qualified additions. */
 typedef struct vm_profile_xt_5160_268_plan_snapshot {
-    vm_profile_contract_values values;
-    core_machine_plan_topology topology;
+    x86_nxvm_board_contract_values values;
+    x86_nxvm_board_plan_topology topology;
 } vm_profile_xt_5160_268_plan_snapshot;
 
 lib_status vm_profile_xt_5160_268_values_create(
-    vm_profile_contract_values *out_values);
+    x86_nxvm_board_contract_values *out_values);
 lib_status vm_profile_xt_5160_268_plan_create(
     vm_profile_xt_5160_268_plan_snapshot *out_profile,
     lib_u8 xebec_rom_present);

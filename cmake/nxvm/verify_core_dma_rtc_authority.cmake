@@ -2,24 +2,24 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" core_board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" core_board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core_scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c" board_advance_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}${board_advance_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/at_assembly.c" assembly_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/at_assembly.c" assembly_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine_devices.c"
     devices_source)
 
-foreach(required IN ITEMS "core_machine_configure_dma"
-    "core_machine_configure_rtc_cmos" "core_machine_rtc_cmos_port_read"
-    "x86_rtc_advance" "core_machine_dma_bind_channel")
+foreach(required IN ITEMS "x86_nxvm_board_configure_dma"
+    "x86_nxvm_board_configure_rtc_cmos" "x86_nxvm_board_rtc_cmos_port_read"
+    "x86_rtc_advance" "x86_nxvm_board_dma_bind_channel")
     string(FIND "${core_source}" "${required}" source_position)
     string(FIND "${core_header}" "${required}" header_position)
     if(source_position EQUAL -1 AND header_position EQUAL -1)
@@ -27,23 +27,23 @@ foreach(required IN ITEMS "core_machine_configure_dma"
     endif()
 endforeach()
 
-string(FIND "${profile_source}" "vm_at_topology_materialize" position)
+string(FIND "${profile_source}" "x86_nxvm_board_at_topology_materialize" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "profile resolver bypasses shared AT materialization")
 endif()
-foreach(required IN ITEMS "result.dma = (core_machine_dma_wiring)"
+foreach(required IN ITEMS "result.dma = (x86_nxvm_board_dma_wiring)"
     "result.dma_present = LIB_TRUE" "result.rtc_cmos_present = LIB_TRUE")
     string(FIND "${assembly_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "shared AT materialization is incomplete: ${required}")
     endif()
 endforeach()
-string(FIND "${profile_source}" "topology.rtc_cmos = (core_machine_rtc_cmos_config)" position)
+string(FIND "${profile_source}" "topology.rtc_cmos = (x86_nxvm_board_rtc_cmos_config)" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "profile resolver does not publish RTC/CMOS wiring in the Core plan")
 endif()
-foreach(required IN ITEMS "topology->dma_present && (status = core_machine_configure_dma("
-    "topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(")
+foreach(required IN ITEMS "topology->dma_present && (status = x86_nxvm_board_configure_dma("
+    "topology->rtc_cmos_present && (status = x86_nxvm_board_configure_rtc_cmos(")
     string(FIND "${core_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Core plan materialization is incomplete: ${required}")
@@ -52,7 +52,7 @@ endforeach()
 
 foreach(vm_source IN ITEMS "${machine_source}" "${lifecycle_source}")
     foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
-        "core_machine_dma_bind_channel" "x86_rtc_create"
+        "x86_nxvm_board_dma_bind_channel" "x86_rtc_create"
         "x86_rtc_reset" "x86_rtc_advance"
         "x86_rtc_destroy" "x86_rtc_read_register" "x86_rtc_write_register"
         "x86_core_machine_set_nmi_mask" "x86_core_machine_install_port_provider")
@@ -64,7 +64,7 @@ foreach(vm_source IN ITEMS "${machine_source}" "${lifecycle_source}")
 endforeach()
 
 foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
-    "core_machine_dma_bind_channel" "x86_rtc_create"
+    "x86_nxvm_board_dma_bind_channel" "x86_rtc_create"
     "x86_rtc_reset" "x86_rtc_advance"
     "x86_rtc_destroy" "x86_rtc_read_register" "x86_rtc_write_register"
     "x86_core_machine_set_nmi_mask" "x86_core_machine_install_port_provider")
@@ -74,13 +74,13 @@ foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_state.h" board_header)
 foreach(operation IN ITEMS configure_dma get_fdc_dma_request_binding
     configure_rtc_cmos configure_fdc configure_hdc)
     if(NOT core_board_source MATCHES
-            "core_machine_${operation}\\(const core_machine_board_state \\*board,|core_machine_${operation}\\(core_machine_board_state \\*board," OR
+            "x86_nxvm_board_${operation}\\(const x86_nxvm_board_state \\*board,|x86_nxvm_board_${operation}\\(x86_nxvm_board_state \\*board," OR
        NOT "${core_header}${board_header}" MATCHES
-            "core_machine_${operation}\\(const core_machine_board_state \\*board,|core_machine_${operation}\\(core_machine_board_state \\*board,")
+            "x86_nxvm_board_${operation}\\(const x86_nxvm_board_state \\*board,|x86_nxvm_board_${operation}\\(x86_nxvm_board_state \\*board,")
         message(FATAL_ERROR "Controller operation must receive the actual board: ${operation}")
     endif()
 endforeach()
@@ -88,7 +88,7 @@ foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
     fdc_dma_request_assert fdc_dma_request_deassert
     hdc_dma_request_assert hdc_dma_request_deassert refresh_pit_output
     configure_dma get_fdc_dma_request_binding configure_rtc_cmos configure_fdc configure_hdc)
-    string(REGEX MATCH "(static )?(lib_status|void) core_machine_${operation}\\([^;]*\\)[ \t\r\n]*\\{" declaration "${core_board_source}")
+    string(REGEX MATCH "(static )?(lib_status|void) x86_nxvm_board_${operation}\\([^;]*\\)[ \t\r\n]*\\{" declaration "${core_board_source}")
     if(declaration STREQUAL "")
         message(FATAL_ERROR "Controller definition is missing: ${operation}")
     endif()
@@ -108,17 +108,17 @@ foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
     endif()
 endforeach()
 foreach(required IN ITEMS
-    "core_machine_refresh_pit_output, board);"
-    "core_machine_fdc_dma_request_deassert, board,"
+    "x86_nxvm_board_refresh_pit_output, board);"
+    "x86_nxvm_board_fdc_dma_request_deassert, board,"
     "board->core, &board->fdc_topology.config,"
-    "core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,\n            board);"
-    ".write = core_machine_rtc_cmos_port_write, .owner = board")
+    "x86_nxvm_board_hdc_dma_request_assert, x86_nxvm_board_hdc_dma_request_deassert,\n            board);"
+    ".write = x86_nxvm_board_rtc_cmos_port_write, .owner = board")
     string(FIND "${core_board_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Controller registration has the wrong owner: ${required}")
     endif()
 endforeach()
-string(REGEX MATCHALL "core_machine_refresh_pit_output, board\\)" refresh_bindings
+string(REGEX MATCHALL "x86_nxvm_board_refresh_pit_output, board\\)" refresh_bindings
     "${core_board_source}")
 list(LENGTH refresh_bindings refresh_binding_count)
 if(NOT refresh_binding_count EQUAL 2)
@@ -133,9 +133,9 @@ file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86-core/machine/*.c" "${PROJECT_SOURCE_DIR}/test/x86-core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-xt/*.c")
 foreach(caller IN LISTS controller_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES

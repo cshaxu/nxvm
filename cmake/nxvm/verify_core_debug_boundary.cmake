@@ -4,14 +4,14 @@ endif()
 
 file(GLOB core_debug_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/debug/*")
 if(core_debug_sources)
-    message(FATAL_ERROR "Debug implementation remains below core/debug")
+    message(FATAL_ERROR "Debug implementation remains below x86-nxvm/debug")
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-debug/product/command.c" command_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-debug/product/debug_interface.h" interface)
 set(command_interface "")
 foreach(forbidden IN ITEMS
-    "#include \"core/"
+    "#include \"x86-nxvm/"
     "#include \"vm/"
     "#include \"lib/host/"
     "core_debug_target")

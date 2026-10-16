@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "app-mydeskpro386/machine_config.h"
 
-#include "core/board-base/at_contract_interface.h"
+#include "x86-nxvm/board-base/at_contract_interface.h"
 
 static const lib_u32 mydeskpro386_contract_ids[] = {1u};
 
@@ -12,15 +12,15 @@ static const lib_u32 mydeskpro386_contract_ids[] = {1u};
  * of Compaq built-in memory is intentionally not reported through standard
  * CMOS size bytes.
  * Core owns each session's writable copy and derives its checksum. */
-void mydeskpro386_core_config_initialize(core_machine_config *out_config)
+void mydeskpro386_core_config_initialize(x86_nxvm_board_config *out_config)
 {
     if (out_config == LIB_NULL) return;
-    *out_config = (core_machine_config) {
+    *out_config = (x86_nxvm_board_config) {
         .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .cpu_80386_cr_mov_ignores_mod = LIB_TRUE,
-        .a20_wrap_policy = CORE_MACHINE_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB,
+        .a20_wrap_policy = X86_NXVM_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB,
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         .transaction_contract = {
@@ -48,8 +48,8 @@ void mydeskpro386_core_config_initialize(core_machine_config *out_config)
          * be a processor-cycle axis, so this only enables Other-L2 macro
          * pacing and never a physical-time claim. */
         .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 16000000u},
-        .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
-        .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
+        .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
         .l1_compatibility_policy = X86_CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .kbc_serial_delivery_ticks = 1u,
         /* Compaq's nominal 2 us pulse on the existing 16 MHz L2 macro axis. */
@@ -80,34 +80,34 @@ void mydeskpro386_core_config_initialize(core_machine_config *out_config)
     };
 }
 
-lib_status mydeskpro386_values_create(vm_profile_contract_values *out_values)
+lib_status mydeskpro386_values_create(x86_nxvm_board_contract_values *out_values)
 {
-    vm_profile_contract_values values = {0};
-    const vm_profile_contract_catalog catalog = { mydeskpro386_contract_ids,
+    x86_nxvm_board_contract_values values = {0};
+    const x86_nxvm_board_contract_catalog catalog = { mydeskpro386_contract_ids,
         sizeof(mydeskpro386_contract_ids) /
             sizeof(mydeskpro386_contract_ids[0]) };
 
-    vm_profile_contract_core_input core = {.id = mydeskpro386_contract_ids[0],
+    x86_nxvm_board_contract_core_input core = {.id = mydeskpro386_contract_ids[0],
         .controller_timing_rules = {
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK}};
-    const lib_u32 enabled = ((1u << (VM_AT_DEVICE_BOARD + 1u)) - 1u) &
-        ~((1u << VM_AT_DEVICE_VADP_ATTRIBUTE) | (1u << VM_AT_DEVICE_VADP_SEQUENCER) |
-            (1u << VM_AT_DEVICE_VADP_GRAPHICS));
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK}};
+    const lib_u32 enabled = ((1u << (X86_NXVM_BOARD_AT_DEVICE_BOARD + 1u)) - 1u) &
+        ~((1u << X86_NXVM_BOARD_AT_DEVICE_VADP_ATTRIBUTE) | (1u << X86_NXVM_BOARD_AT_DEVICE_VADP_SEQUENCER) |
+            (1u << X86_NXVM_BOARD_AT_DEVICE_VADP_GRAPHICS));
 
     mydeskpro386_core_config_initialize(&core.configuration);
-    if (out_values == LIB_NULL || vm_at_contract_materialize(&core, vm_at_port_leaves,
-        VM_AT_PORT_LEAF_COUNT, vm_at_routes_without_aux, 4u, enabled,
+    if (out_values == LIB_NULL || x86_nxvm_board_at_contract_materialize(&core, x86_nxvm_board_at_port_leaves,
+        X86_NXVM_BOARD_AT_PORT_LEAF_COUNT, x86_nxvm_board_at_routes_without_aux, 4u, enabled,
         LIB_TRUE, &values) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB;
-    values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
+    values.firmware_policy = X86_NXVM_BOARD_CONTRACT_FIRMWARE_POLICY_BYOB;
+    values.media_policy = X86_NXVM_BOARD_CONTRACT_MEDIA_POLICY_SESSION;
     values.allowed_session_options = 0u;
-    if (vm_profile_contract_validate(&values, &catalog, 0u) != LIB_STATUS_OK) {
+    if (x86_nxvm_board_contract_validate(&values, &catalog, 0u) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_values = values;

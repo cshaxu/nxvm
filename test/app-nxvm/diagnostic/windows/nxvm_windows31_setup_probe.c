@@ -1,6 +1,6 @@
-#include "../../../core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
-#include "../../../core/board-base/support/controller_fixture.h"
+#include "../../../x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "../../../x86-nxvm/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -9,12 +9,12 @@
 
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
-#include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "test/core/setup/session_ini.h"
-#include "core/machine/control.h"
-#include "core/machine/fault.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
+#include "test/x86-nxvm/machine/support/nxvm_presentation_capture.h"
+#include "test/x86-nxvm/setup/session_ini.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/fault.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
 
 #define VM_WINDOWS31_SETUP_TEXT_CELLS (80u * 25u)
 #define VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS 60000u
@@ -22,7 +22,7 @@
 #define VM_WINDOWS31_SETUP_FAULT_OBSERVATION_MILLISECONDS 60000u
 #define VM_WINDOWS31_SETUP_POST_COPY_TIMEOUT_MILLISECONDS 720000u
 
-static lib_i32 vm_windows31_setup_submit_input(vm_machine *session,
+static lib_i32 vm_windows31_setup_submit_input(x86_nxvm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -35,7 +35,7 @@ static lib_i32 vm_windows31_setup_submit_input(vm_machine *session,
     return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_windows31_setup_has_text(const vm_machine *session, const char *text)
+static lib_i32 vm_windows31_setup_has_text(const x86_nxvm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -53,7 +53,7 @@ static lib_i32 vm_windows31_setup_has_text(const vm_machine *session, const char
     return 0;
 }
 
-static lib_i32 vm_windows31_setup_has_prompt(const vm_machine *session)
+static lib_i32 vm_windows31_setup_has_prompt(const x86_nxvm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -73,7 +73,7 @@ static lib_i32 vm_windows31_setup_has_prompt(const vm_machine *session)
     return 0;
 }
 
-static lib_i32 vm_windows31_setup_wait_for(const vm_machine *session, const char *text,
+static lib_i32 vm_windows31_setup_wait_for(const x86_nxvm_machine *session, const char *text,
     DWORD timeout)
 {
     DWORD elapsed;
@@ -81,7 +81,7 @@ static lib_i32 vm_windows31_setup_wait_for(const vm_machine *session, const char
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if ((text == LIB_NULL && vm_windows31_setup_has_prompt(session)) ||
             (text != LIB_NULL && vm_windows31_setup_has_text(session, text))) return 1;
-        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !x86_nxvm_machine_control_is_running(&session->control)) {
             return 0;
         }
         Sleep(10u);
@@ -89,14 +89,14 @@ static lib_i32 vm_windows31_setup_wait_for(const vm_machine *session, const char
     return 0;
 }
 
-static lib_i32 vm_windows31_setup_submit_return(vm_machine *session)
+static lib_i32 vm_windows31_setup_submit_return(x86_nxvm_machine *session)
 {
     if (!vm_windows31_setup_submit_input(session, 0x1cu, VK_RETURN, 1)) return 0;
     Sleep(25u);
     return vm_windows31_setup_submit_input(session, 0x1cu, VK_RETURN, 0);
 }
 
-static lib_i32 vm_windows31_setup_type_setup(vm_machine *session)
+static lib_i32 vm_windows31_setup_type_setup(x86_nxvm_machine *session)
 {
     static const lib_u8 scan_codes[] = {
         0x2bu, 0x12u, 0x11u, 0x17u, 0x31u, 0x04u, 0x02u, 0x2bu, 0x1fu,
@@ -122,7 +122,7 @@ static lib_i32 vm_windows31_setup_type_setup(vm_machine *session)
     return 1;
 }
 
-static lib_i32 vm_windows31_setup_type_windows(vm_machine *session)
+static lib_i32 vm_windows31_setup_type_windows(x86_nxvm_machine *session)
 {
     static const lib_u8 scan_codes[] = {
         0x11u, 0x17u, 0x31u, 0x20u, 0x18u, 0x11u, 0x1fu, 0x1cu
@@ -146,7 +146,7 @@ static lib_i32 vm_windows31_setup_type_windows(vm_machine *session)
     return 1;
 }
 
-static void vm_windows31_setup_print_frame(const vm_machine *session)
+static void vm_windows31_setup_print_frame(const x86_nxvm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size row;
@@ -166,14 +166,14 @@ static void vm_windows31_setup_print_frame(const vm_machine *session)
 
 static void vm_windows31_setup_report_fault(integration_ini_session *ini_session, const char *stage)
 {
-    vm_machine *session = ini_session->session;
+    x86_nxvm_machine *session = ini_session->session;
     x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot cpu;
     lib_size index;
     lib_bool was_running;
 
     if (session == LIB_NULL) return;
-    was_running = vm_machine_control_is_running(&session->control);
+    was_running = x86_nxvm_machine_control_is_running(&session->control);
     if (emulator_machine_state_get(ini_session->emulator_machine) == EMULATOR_MACHINE_RUNNING &&
         integration_ini_session_pause(ini_session, 5000u) != LIB_STATUS_OK) return;
     if (emulator_machine_shutdown(session->executor) != LIB_STATUS_OK) return;
@@ -225,7 +225,7 @@ static void vm_windows31_setup_report_fault(integration_ini_session *ini_session
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     const char *stage = "create";
     lib_i32 observed_setup_inf = 0;
     lib_i32 passed = 0;
@@ -242,7 +242,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     for (elapsed = 0u; elapsed < VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         date_prompt = vm_windows31_setup_has_text(session, "Enter new date");
         if (date_prompt || vm_windows31_setup_has_prompt(session)) break;
-        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !x86_nxvm_machine_control_is_running(&session->control)) {
             goto fail;
         }
         Sleep(10u);
@@ -264,7 +264,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         VM_WINDOWS31_SETUP_SETUP_TIMEOUT_MILLISECONDS);
     if (observed_setup_inf) {
         Sleep(VM_WINDOWS31_SETUP_FAULT_OBSERVATION_MILLISECONDS);
-        if (!vm_machine_control_is_running(&session->control)) {
+        if (!x86_nxvm_machine_control_is_running(&session->control)) {
             vm_windows31_setup_report_fault(&ini_session, "setup-inf-fault");
             goto done;
         }
@@ -285,7 +285,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                         for (elapsed = 0u;
                                 elapsed < VM_WINDOWS31_SETUP_POST_COPY_TIMEOUT_MILLISECONDS;
                                 elapsed += 100u) {
-                            if (!vm_machine_control_is_running(&session->control)) break;
+                            if (!x86_nxvm_machine_control_is_running(&session->control)) break;
                             Sleep(100u);
                         }
                     }
@@ -304,7 +304,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
 
 done:
-    if (session != LIB_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) x86_nxvm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 

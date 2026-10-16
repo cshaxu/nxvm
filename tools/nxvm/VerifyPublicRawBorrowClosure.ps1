@@ -25,16 +25,16 @@ foreach ($file in $sourceFiles) {
 foreach ($file in $publicHeaders) {
     $relative = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
     $text = Get-Content -LiteralPath $file.FullName -Raw
-    if ($text -match '#\s*include\s*[<"](?:app-nxvm/devices|core/x86|core/(?:board-base|board-at|board-xt))/(?:cpu|cpu_instructions|dma|fdc|hdc|kbc|machine|machine_board_state|memory|pic|pit|port|rtc|vadp)\.h[>"]') {
-        $failures += "$relative includes a private core-machine header"
+    if ($text -match '#\s*include\s*[<"](?:app-nxvm/devices|x86-nxvm/x86|x86-core/(?:cpu|machine)|x86-nxvm/(?:board-base|board-at|board-xt))/(?:cpu|cpu_instructions|dma|fdc|hdc|kbc|machine|machine_board_state|memory|pic|pit|port|rtc|vadp)\.h[>"]') {
+        $failures += "$relative includes a private x86-nxvm-machine header"
     }
     # Opaque declarations and pointer parameters do not publish the layout.
     # Reject definitions and by-value use after removing only those forms.
-    $opaqueTypes = '(?:t_vadp|core_machine_fdc|core_machine_hdc|core_machine_rtc)'
+    $opaqueTypes = '(?:t_vadp|x86_nxvm_board_fdc|x86_nxvm_board_hdc|core_machine_rtc)'
     $layoutText = $text -replace "\btypedef\s+struct\s+($opaqueTypes)\s+\1\s*;", ''
     $layoutText = $layoutText -replace "\b$opaqueTypes\s*\*", ''
-    if ($layoutText -match '\b(?:t_cpu|t_cpuins|t_ram|t_port|t_pic|t_pit|t_dma|t_vadp|core_machine_fdc|core_machine_hdc|core_machine_rtc)\b') {
-        $failures += "$relative exposes a complete private core-machine layout"
+    if ($layoutText -match '\b(?:t_cpu|t_cpuins|t_ram|t_port|t_pic|t_pit|t_dma|t_vadp|x86_nxvm_board_fdc|x86_nxvm_board_hdc|core_machine_rtc)\b') {
+        $failures += "$relative exposes a complete private x86-nxvm-machine layout"
     }
 }
 

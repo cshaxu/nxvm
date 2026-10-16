@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/kbc.c" kbc)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/kbc.h" kbc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/kbc.c" kbc)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/kbc.h" kbc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine.c" machine)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory_interface.c" core)
 
@@ -24,8 +24,8 @@ endforeach()
 
 foreach(required "x86_core_machine_signal_address_clear_mask(board->core"
     "x86_core_machine_observe_address_clear_mask(board->core"
-    "core_machine_board_observe_a20(owner"
-    "core_machine_kbc_signal_a20"
+    "x86_nxvm_board_observe_a20(owner"
+    "x86_nxvm_board_kbc_signal_a20"
     "X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK"
     "x86_core_machine_install_memory_device_routes(board->core, &route, 1u")
     string(FIND "${board}" "${required}" position)

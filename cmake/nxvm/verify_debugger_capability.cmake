@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE debugger_sources
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.[ch]"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/debug.[ch]")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.[ch]"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/debug.[ch]")
 foreach(source IN LISTS debugger_sources)
     file(READ "${source}" contents)
     foreach(forbidden "core_machine_debug_cpu_borrow"

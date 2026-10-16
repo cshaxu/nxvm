@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #include "x86-debug/product/protocol_interface.h"
-#include "test/core/setup/session_ini.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_TIMER_BDA_TICKS 0x046cu
 #define VM_TIMER_BDA_ROLLOVER 0x0470u

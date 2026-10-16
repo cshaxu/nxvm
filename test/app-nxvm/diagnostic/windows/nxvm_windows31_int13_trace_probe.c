@@ -1,12 +1,12 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_WINDOWS31_INT13_TRACE_BUDGET 2000000u
 
@@ -16,7 +16,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     integration_ini_session ini_session;
     x86_core_machine_run_result result;
     x86_core_cpu_state cpu_state = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u16 int13[2] = {0};
     lib_u32 int13_linear = 0u;
     lib_u32 instruction;
@@ -73,7 +73,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) break;
         }
         if (active && returning) {

@@ -3,9 +3,9 @@
 #include "lib/types/types_interface.h"
 
 #include "x86-core/machine/firmware_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "app-mydeskpro386/firmware_layout.h"
-#include "core/board-base/profile_contract_interface.h"
+#include "x86-nxvm/board-base/profile_contract_interface.h"
 
 #define MYDESKPRO386_ROM_LOGICAL_BYTES (2u * MYDESKPRO386_ROM_CHIP_BYTES)
 #define MYDESKPRO386_ROM_WINDOW_BYTES MYDESKPRO386_ROM_LOGICAL_BYTES
@@ -36,7 +36,7 @@ lib_status mydeskpro386_external_rom_create(
     const lib_u8 *odd, lib_size odd_bytes,
     const lib_u8 *video, lib_size video_bytes,
     mydeskpro386_external_rom *out_rom);
-void mydeskpro386_core_config_initialize(core_machine_config *out_config);
-lib_status mydeskpro386_values_create(vm_profile_contract_values *out_values);
+void mydeskpro386_core_config_initialize(x86_nxvm_board_config *out_config);
+lib_status mydeskpro386_values_create(x86_nxvm_board_contract_values *out_values);
 const x86_core_machine_firmware_provider *mydeskpro386_firmware_provider(void);
 #endif

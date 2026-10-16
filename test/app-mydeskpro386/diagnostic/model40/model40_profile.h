@@ -1,18 +1,18 @@
 #ifndef TEST_APP_MYDESKPRO386_DIAGNOSTIC_MODEL40_PROFILE_H
 #define TEST_APP_MYDESKPRO386_DIAGNOSTIC_MODEL40_PROFILE_H
 
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "app-mydeskpro386/machine_observation_interface.h"
 #include "app-mydeskpro386/machine_config.h"
 
 static inline lib_bool model40_profile_is_selected(
-    const vm_machine_construction *construction)
+    const x86_nxvm_machine_construction *construction)
 {
     return construction != LIB_NULL &&
         construction->firmware_provider == mydeskpro386_firmware_provider();
 }
 
-static inline lib_status model40_profile_d4_observe(const vm_machine *machine,
+static inline lib_status model40_profile_d4_observe(const x86_nxvm_machine *machine,
     mydeskpro386_d4_platform_observation *out_observation)
 {
     mydeskpro386_observation observation;

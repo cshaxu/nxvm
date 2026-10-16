@@ -1,15 +1,15 @@
-#include "../../../core/machine/support/guest_input.h"
-#include "core/machine/machine_interface.h"
+#include "../../../x86-nxvm/machine/support/guest_input.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
 #include <windows.h>
 
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 6000000u
 #define VM_MOUSE_DOS_RUN_BUDGET 400000u
@@ -237,12 +237,12 @@ static lib_status vm_mouse_dos_install_on_overlay(
     lib_i32 installed;
 
     if (ini_session == LIB_NULL || bytes_offset == LIB_NULL ||
-        integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_read(ini_session, X86_NXVM_MACHINE_MEDIA_FDD_ID,
             (void **)&image, &image_size) != LIB_STATUS_OK || image_size > MAXDWORD) {
         return LIB_STATUS_INTERNAL_ERROR;
     }
     installed = vm_mouse_dos_install_program(image, (DWORD)image_size, bytes_offset) &&
-        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, X86_NXVM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == LIB_STATUS_OK;
     lib_release(image);
     return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
@@ -262,7 +262,7 @@ static lib_i32 vm_mouse_dos_has_prompt(const x86_video_snapshot *snapshot)
     return 0;
 }
 
-static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
+static lib_i32 vm_mouse_dos_run_until(x86_nxvm_machine *session, lib_u32 limit,
     lib_u8 wanted)
 {
     x86_core_machine_run_budget budget = { 128u, 0u };
@@ -273,12 +273,12 @@ static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     while (executed < limit) {
         if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == X86_CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->board,
+            x86_nxvm_board_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
         if (wanted == 0u ? vm_mouse_dos_has_prompt(&snapshot) :
@@ -289,7 +289,7 @@ static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     return 0;
 }
 
-static lib_i32 vm_mouse_dos_run_until_packet(vm_machine *session,
+static lib_i32 vm_mouse_dos_run_until_packet(x86_nxvm_machine *session,
     lib_u32 buffer_address, const lib_u8 expected[17])
 {
     x86_core_machine_run_budget budget = { 1u, 0u };
@@ -306,7 +306,7 @@ static lib_i32 vm_mouse_dos_run_until_packet(vm_machine *session,
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
         if (lib_memory_compare(actual, expected, sizeof(actual)) == 0) return 1;
@@ -319,7 +319,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     static const lib_u8 command[] = { 0x3au, 0x44u, 0x3cu, 0x1bu, 0x24u,
         0x1eu, 0x25u, 0x16u, 0x5au };
     integration_ini_session ini_session;
-    vm_machine *session;
+    x86_nxvm_machine *session;
     x86_core_machine_observation observation;
     x86_video_snapshot snapshot;
     static const lib_u8 expected[] = {
@@ -343,7 +343,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_BOOT_BUDGET, 0u)) goto done;
     stage = 4;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_receive_native_byte(session->board,
+        if (x86_nxvm_board_keyboard_receive_native_byte(session->board,
                 command[index]) != LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'S')) goto done;
@@ -361,7 +361,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
-        core_machine_capture_display_snapshot(session->board, &snapshot) !=
+        x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == 'O') goto done;
     stage = 6;
@@ -369,7 +369,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (!passed && session != LIB_NULL) {
         x86_video_snapshot snapshot;
 
-        if (core_machine_capture_display_snapshot(session->board,
+        if (x86_nxvm_board_capture_display_snapshot(session->board,
                 &snapshot) == LIB_STATUS_OK &&
             snapshot.kind == X86_VIDEO_KIND_TEXT) {
             fprintf(stderr, "NXVM:MOUSE-DRIVER:MARKER=%02X\n",

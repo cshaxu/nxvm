@@ -4,12 +4,12 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_config.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_rom.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_rom.c"
     firmware_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/rtc146818/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/rtc146818/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/fdc.c" fdc_source)
 
 foreach(required IN ITEMS
     "default-pc-at"
@@ -21,14 +21,14 @@ foreach(required IN ITEMS
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/wiring.c" at_wiring)
-foreach(required IN ITEMS "VM_AT_DEVICE_CMOS" "VM_AT_DEVICE_FDC" "0x0070u" "0x0071u" "0x03f2u" "0x03f4u" "0x03f5u" "0x03f7u")
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/wiring.c" at_wiring)
+foreach(required IN ITEMS "X86_NXVM_BOARD_AT_DEVICE_CMOS" "X86_NXVM_BOARD_AT_DEVICE_FDC" "0x0070u" "0x0071u" "0x03f2u" "0x03f4u" "0x03f5u" "0x03f7u")
     string(FIND "${at_wiring}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Shared AT electrical grammar is missing ${required}")
     endif()
 endforeach()
-string(FIND "${profile_source}" "vm_at_port_leaves" position)
+string(FIND "${profile_source}" "x86_nxvm_board_at_port_leaves" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "Default profile no longer consumes shared AT grammar")
 endif()

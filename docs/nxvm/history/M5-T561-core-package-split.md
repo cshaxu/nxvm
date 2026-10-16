@@ -241,3 +241,15 @@ pushed. Coordinator actual-change review accepts the pushed bodies, preserved
 behavior/ownership ledger, all 616 file records and eight artifact hashes
 against the complete packet retained in P2's CURRENT. Documentation governance
 and whitespace checks pass. I3/S7 closes; I4/S8 and I5/S9 remain open.
+
+## S8 NXVM Consolidation In Progress
+
+S8 consumes I4 against accepted `123440835`. The [working evidence](../etc/evidence/t561-s8-nxvm-consolidation.md)
+records the unique Machine speed contract, physical owner consolidation,
+Board/PIC public-Machine fixture repair, canonical names and repository/component
+test registration split. Both original graphs pass all 626 repository units;
+six duplicate package gates are consolidated rather than behavioral cases
+removed. Both widths also pass 48 profile integration executions, specialized
+gates and all eight published artifact checks. The actual-change ledger and
+artifact hashes retain the delivery evidence; scoped implementation P commits
+and coordinator acceptance follow. Current owns the full active packet.

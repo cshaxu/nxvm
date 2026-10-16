@@ -8,8 +8,8 @@ if(old_machine_sources)
     message(FATAL_ERROR "obsolete App Machine implementation remains")
 endif()
 file(GLOB_RECURSE shared_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.h")
 foreach(source IN LISTS shared_machine_sources)
     file(READ "${source}" shared_source)
     if(shared_source MATCHES "#[ \t]*include[ \t]*[\"]app-")
@@ -20,12 +20,12 @@ if(cmake_text MATCHES "vm-composition" OR
         cmake_text MATCHES "src/(vm|app-nxvm/machine)/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor route remains in CMake")
 endif()
-if(EXISTS "${PROJECT_SOURCE_DIR}/src/core/machine/composition/session")
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor source root remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" event_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine_interface.h" event_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/emulator/product/composition.c" composition_source)
 
 # Common owns the sole lifecycle queue and worker. Product composition constructs
@@ -53,7 +53,7 @@ endforeach()
 
 string(FIND "${lifecycle_source}" "emulator_machine_create" position)
 if(NOT position EQUAL -1)
-    message(FATAL_ERROR "core/core still constructs Common")
+    message(FATAL_ERROR "x86-nxvm/core still constructs Common")
 endif()
 
 foreach(required IN ITEMS
@@ -95,7 +95,7 @@ foreach(source IN LISTS app_sources)
     file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/app-nxvm" "${source}")
     file(READ "${source}" source_text)
     if(source_text MATCHES "core_machine_(create|destroy|reset|run|request_stop|capture_display_snapshot)")
-        message(FATAL_ERROR "direct Core runtime access outside core/machine: ${relative}")
+        message(FATAL_ERROR "direct Core runtime access outside x86-nxvm/machine: ${relative}")
     endif()
 endforeach()
 
@@ -139,7 +139,7 @@ foreach(source IN LISTS model40_sources)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/input_interface.h" input_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/input_interface.h" input_contract)
 if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|app-nxvm/")
     message(FATAL_ERROR "Machine value contract retains identity or model-specific observations")
 endif()
@@ -170,7 +170,7 @@ endforeach()
 if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/config.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory_interface.h" OR
-        factory_text MATCHES "vm_machine_create|vm_machine_runtime_config|vm_app_read_(information|speed)")
+        factory_text MATCHES "x86_nxvm_machine_create|vm_machine_runtime_config|vm_app_read_(information|speed)")
     message(FATAL_ERROR "App retains shared factory/Product adaptation")
 endif()
 

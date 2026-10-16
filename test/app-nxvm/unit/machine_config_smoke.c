@@ -1,22 +1,22 @@
 #include "lib/types/types_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/machine_config_interface.h"
 
 lib_i32 main(void)
 {
-    const vm_profile_default_pc_at_descriptor *profile =
+    const x86_nxvm_board_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    const vm_at_port_leaf *cmos_index;
-    const vm_at_port_leaf *cmos_data;
-    const vm_at_port_leaf *fdc_data;
-    const vm_at_port_leaf *memory_control;
-    const vm_at_route *fdc_route;
-    const vm_at_route *aux_route;
-    vm_profile_default_pc_at_cpu_contract contract;
-    core_machine_config configuration;
-    core_machine_controller_timing_rules timing_rules;
+    const x86_nxvm_board_at_port_leaf *cmos_index;
+    const x86_nxvm_board_at_port_leaf *cmos_data;
+    const x86_nxvm_board_at_port_leaf *fdc_data;
+    const x86_nxvm_board_at_port_leaf *memory_control;
+    const x86_nxvm_board_at_route *fdc_route;
+    const x86_nxvm_board_at_route *aux_route;
+    x86_nxvm_board_pc_at_cpu_contract contract;
+    x86_nxvm_board_config configuration;
+    x86_nxvm_board_controller_timing_rules timing_rules;
 
     if (profile == LIB_NULL ||
         lib_text_compare(profile->identity, "default-pc-at") != 0 ||
@@ -40,15 +40,15 @@ lib_i32 main(void)
         profile->clock_plan.provider.numerator != 1u ||
         profile->clock_plan.provider.denominator != 1u ||
         profile->controller_timing_rules.pic_visibility !=
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->controller_timing_rules.dma_clock !=
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->controller_timing_rules.dma_service !=
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->controller_timing_rules.pit_clock !=
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->controller_timing_rules.rtc_clock !=
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+            X86_NXVM_BOARD_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->kbc_typematic_initial_ticks != 0u ||
         profile->kbc_typematic_repeat_ticks != 0u ||
         profile->kbc_command_response_ticks != 0u ||
@@ -60,9 +60,9 @@ lib_i32 main(void)
         profile->cmos.fixed_disk_type != 0xf0u ||
         profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
         profile->route_count != 5u || profile->firmware_service_count != 13u ||
-        !vm_profile_default_pc_at_descriptor_is_valid(profile)) return 1;
+        !x86_nxvm_board_pc_at_descriptor_is_valid(profile)) return 1;
 
-    if (!vm_profile_default_pc_at_cpu_contract_select(profile,
+    if (!x86_nxvm_board_pc_at_cpu_contract_select(profile,
             X86_CORE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE,
             &contract) || contract.cpu_profile != profile->cpu_profile ||
         contract.fpu_profile != profile->fpu_profile ||
@@ -76,32 +76,32 @@ lib_i32 main(void)
         lib_memory_compare(&contract.controller_timing_rules,
             &profile->controller_timing_rules,
             sizeof(contract.controller_timing_rules)) != 0 ||
-        !vm_profile_default_pc_at_cpu_contract_select(profile,
+        !x86_nxvm_board_pc_at_cpu_contract_select(profile,
             X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087,
             &contract) || contract.cpu_profile != X86_CORE_CPU_PROFILE_8086 ||
         contract.fpu_profile != X86_FPU_PROFILE_8087 ||
-        vm_profile_default_pc_at_cpu_contract_select(profile,
+        x86_nxvm_board_pc_at_cpu_contract_select(profile,
             (x86_core_cpu_profile)0xffu, X86_FPU_PROFILE_NONE,
-            &contract) || vm_profile_default_pc_at_cpu_contract_select(profile,
+            &contract) || x86_nxvm_board_pc_at_cpu_contract_select(profile,
             X86_CORE_CPU_PROFILE_80386, (x86_fpu_profile)0xffu,
             &contract)) return 1;
 
-    cmos_index = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
-        vm_profile_default_pc_at_enabled_devices(profile),
-        VM_AT_DEVICE_CMOS, 0x0070u);
-    cmos_data = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
-        vm_profile_default_pc_at_enabled_devices(profile),
-        VM_AT_DEVICE_CMOS, 0x0071u);
-    fdc_data = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
-        vm_profile_default_pc_at_enabled_devices(profile),
-        VM_AT_DEVICE_FDC, 0x03f5u);
-    memory_control = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
-        vm_profile_default_pc_at_enabled_devices(profile),
-        VM_AT_DEVICE_MEMORY_CONTROL, 0x0092u);
-    fdc_route = vm_at_route_find(profile->routes, profile->route_count,
-        VM_AT_ROUTE_FDC_IRQ6_DMA2);
-    aux_route = vm_at_route_find(profile->routes, profile->route_count,
-        VM_AT_ROUTE_KBC_AUX_IRQ12);
+    cmos_index = x86_nxvm_board_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        x86_nxvm_board_pc_at_enabled_devices(profile),
+        X86_NXVM_BOARD_AT_DEVICE_CMOS, 0x0070u);
+    cmos_data = x86_nxvm_board_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        x86_nxvm_board_pc_at_enabled_devices(profile),
+        X86_NXVM_BOARD_AT_DEVICE_CMOS, 0x0071u);
+    fdc_data = x86_nxvm_board_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        x86_nxvm_board_pc_at_enabled_devices(profile),
+        X86_NXVM_BOARD_AT_DEVICE_FDC, 0x03f5u);
+    memory_control = x86_nxvm_board_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        x86_nxvm_board_pc_at_enabled_devices(profile),
+        X86_NXVM_BOARD_AT_DEVICE_MEMORY_CONTROL, 0x0092u);
+    fdc_route = x86_nxvm_board_at_route_find(profile->routes, profile->route_count,
+        X86_NXVM_BOARD_AT_ROUTE_FDC_IRQ6_DMA2);
+    aux_route = x86_nxvm_board_at_route_find(profile->routes, profile->route_count,
+        X86_NXVM_BOARD_AT_ROUTE_KBC_AUX_IRQ12);
     if (cmos_index == LIB_NULL || cmos_index->read || !cmos_index->write ||
         cmos_data == LIB_NULL || !cmos_data->read || !cmos_data->write ||
         fdc_data == LIB_NULL || !fdc_data->read || !fdc_data->write ||
@@ -110,8 +110,8 @@ lib_i32 main(void)
         fdc_route == LIB_NULL || fdc_route->irq != 6u ||
         fdc_route->dma_channel != 2u || aux_route == LIB_NULL ||
         aux_route->irq != 12u || aux_route->dma_channel !=
-        VM_AT_NO_DMA_CHANNEL ||
-        !vm_profile_default_pc_at_core_config_materialize(profile, &contract,
+        X86_NXVM_BOARD_AT_NO_DMA_CHANNEL ||
+        !x86_nxvm_board_pc_at_core_config_materialize(profile, &contract,
             &configuration, &timing_rules) || configuration.kbc_aux_absent) return 1;
 
     puts("DEFAULT-PC-AT-PROFILE:OK");

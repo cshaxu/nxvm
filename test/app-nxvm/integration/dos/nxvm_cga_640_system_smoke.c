@@ -1,11 +1,11 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_CGA254_BOOT_BUDGET 500000u
 
@@ -25,7 +25,7 @@ static lib_status vm_cga254_boot_fixture(integration_ini_session *session,
     lib_status status;
 
     (void)opaque;
-    status = integration_ini_session_overlay_read(session, VM_MACHINE_MEDIA_FDD_ID,
+    status = integration_ini_session_overlay_read(session, X86_NXVM_MACHINE_MEDIA_FDD_ID,
         (void **)&image, &image_size);
     if (status == LIB_STATUS_OK && image_size >= 512u) {
         lib_memory_set(image, 0, 512u);
@@ -33,7 +33,7 @@ static lib_status vm_cga254_boot_fixture(integration_ini_session *session,
         image[510u] = 0x55u;
         image[511u] = 0xaau;
         status = integration_ini_session_overlay_write(session,
-            VM_MACHINE_MEDIA_FDD_ID, image, image_size);
+            X86_NXVM_MACHINE_MEDIA_FDD_ID, image, image_size);
     } else if (status == LIB_STATUS_OK) {
         status = LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -47,7 +47,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     const x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
     x86_video_snapshot snapshot;
-    vm_machine *session;
+    x86_nxvm_machine *session;
     lib_u8 mode = 0u;
     lib_u32 instruction;
     lib_i32 saw_cga = 0;
@@ -60,12 +60,12 @@ lib_i32 main(lib_i32 argc, char **argv)
     for (instruction = 0u; instruction < VM_CGA254_BOOT_BUDGET; ++instruction) {
         if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == X86_CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->board,
+            x86_nxvm_board_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) goto done;
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) !=
+            if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) !=
                     LIB_STATUS_OK || !advanced) goto done;
         }
         if (snapshot.kind == X86_VIDEO_KIND_CGA_640X200X2 &&

@@ -1,13 +1,13 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/debug_interface.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)
@@ -35,16 +35,16 @@ static lib_status vm_no_media_fixture(integration_ini_session *ini_session,
     void *opaque)
 {
     lib_size slot;
-    vm_machine *session = ini_session->session;
+    x86_nxvm_machine *session = ini_session->session;
 
     (void)opaque;
-    for (slot = 0u; slot < VM_MACHINE_FLOPPY_SLOT_COUNT; ++slot)
+    for (slot = 0u; slot < X86_NXVM_MACHINE_FLOPPY_SLOT_COUNT; ++slot)
         if (session->floppy[slot] != LIB_NULL &&
-            vm_machine_fdd_remove_for(session->floppy[slot]))
+            x86_nxvm_machine_fdd_remove_for(session->floppy[slot]))
             return LIB_STATUS_IO_ERROR;
-    for (slot = 0u; slot < VM_MACHINE_FIXED_DISK_SLOT_COUNT; ++slot)
+    for (slot = 0u; slot < X86_NXVM_MACHINE_FIXED_DISK_SLOT_COUNT; ++slot)
         if (session->fixed_disk[slot] != LIB_NULL &&
-            vm_machine_hdd_remove(session->fixed_disk[slot]))
+            x86_nxvm_machine_hdd_remove(session->fixed_disk[slot]))
             return LIB_STATUS_IO_ERROR;
     return LIB_STATUS_OK;
 }
@@ -52,7 +52,7 @@ static lib_status vm_no_media_fixture(integration_ini_session *ini_session,
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
-    vm_machine *session;
+    x86_nxvm_machine *session;
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
     x86_core_machine_observation observation;
@@ -73,7 +73,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     session = ini_session.session;
     if (session == LIB_NULL || !session->active ||
         session->x86_core_machine == LIB_NULL) goto fail;
-    if (vm_machine_reset(session) != LIB_STATUS_OK) goto fail;
+    if (x86_nxvm_machine_reset(session) != LIB_STATUS_OK) goto fail;
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (x86_core_machine_capture_observation(session->x86_core_machine,
@@ -101,7 +101,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
     if (x86_core_machine_memory_read(session->x86_core_machine, 0x0450u, &cursor,
             sizeof(cursor)) != LIB_STATUS_OK ||
-        core_machine_capture_display_snapshot(session->board, &snapshot) !=
+        x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || cursor != 0x0600u || !snapshot.cursor_visible ||
         snapshot.cursor_x != 0u || snapshot.cursor_y != 6u ||
         int10_count == 0u || f2_count != 0u ||

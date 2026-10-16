@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.h" header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/vadp.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/vadp.h" header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory_interface.c" core)
 
 foreach(required "x86_core_machine_install_memory_device_routes(adapter->machine"

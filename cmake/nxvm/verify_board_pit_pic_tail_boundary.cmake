@@ -3,15 +3,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" creation)
 foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
     "machine->board->pit_clock" "machine->board->auxiliary_pit_clock"
     "machine->shared_pit" "machine->auxiliary_pit"
     "machine->board->shared_pit" "machine->board->auxiliary_pit"
     "machine->shared_pic_master" "machine->shared_pic_slave"
     "machine->board->shared_pic_master" "machine->board->shared_pic_slave"
-    "x86_pit_advance(" "core_machine_pic_refresh(")
+    "x86_pit_advance(" "x86_nxvm_board_pic_refresh(")
     string(FIND "${core}" "${forbidden}" position)
     if(NOT position LESS 0)
         message(FATAL_ERROR "Core scheduler directly owns board PIT/PIC: ${forbidden}")
@@ -25,18 +25,18 @@ foreach(required "attachment.before_internal_advance(machine->attachment.context
         message(FATAL_ERROR "Core PIT/PIC phase lacks ${required}")
     endif()
 endforeach()
-foreach(required "core_machine_board_before_internal_advance("
+foreach(required "x86_nxvm_board_before_internal_advance("
     "x86_core_machine_clock_domain_advance(&board->pit_clock"
     "&board->auxiliary_pit_clock" "x86_pit_advance("
-    "CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE" "core_machine_pic_refresh("
-    "CORE_MACHINE_BOARD_TRACE_PIC_REFRESH")
+    "X86_NXVM_BOARD_TRACE_PIT_ADVANCE" "x86_nxvm_board_pic_refresh("
+    "X86_NXVM_BOARD_TRACE_PIC_REFRESH")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIT/PIC tail lacks ${required}")
     endif()
 endforeach()
-foreach(required ".before_internal_advance = core_machine_board_before_internal_advance"
-    ".after_internal_advance = core_machine_board_after_internal_advance")
+foreach(required ".before_internal_advance = x86_nxvm_board_before_internal_advance"
+    ".after_internal_advance = x86_nxvm_board_after_internal_advance")
     string(FIND "${creation}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIT/PIC provider not bound: ${required}")

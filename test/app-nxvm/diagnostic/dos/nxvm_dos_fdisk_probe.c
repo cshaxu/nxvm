@@ -1,25 +1,25 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include <windows.h>
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include <stdio.h>
 #include "lib/types/types_interface.h"
 
 
-#include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "core/machine/control.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
-#include "test/core/setup/session_ini.h"
+#include "test/x86-nxvm/machine/support/nxvm_presentation_capture.h"
+#include "x86-nxvm/machine/control.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_DOS_FDISK_FDISK_CELLS (80u * 25u)
 
 static DWORD WINAPI vm_dos_fdisk_fdisk_run(void *opaque)
 {
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
+    x86_nxvm_machine_control_start(&((x86_nxvm_machine *)opaque)->control);
     return 0u;
 }
 
-static lib_i32 vm_dos_fdisk_fdisk_has_text(const vm_machine *session, const char *text)
+static lib_i32 vm_dos_fdisk_fdisk_has_text(const x86_nxvm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -37,14 +37,14 @@ static lib_i32 vm_dos_fdisk_fdisk_has_text(const vm_machine *session, const char
     return 0;
 }
 
-static lib_i32 vm_dos_fdisk_fdisk_wait(const vm_machine *session, const char *text,
+static lib_i32 vm_dos_fdisk_fdisk_wait(const x86_nxvm_machine *session, const char *text,
     DWORD timeout)
 {
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (vm_dos_fdisk_fdisk_has_text(session, text)) return 1;
-        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !x86_nxvm_machine_control_is_running(&session->control)) {
             return 0;
         }
         Sleep(10u);
@@ -52,14 +52,14 @@ static lib_i32 vm_dos_fdisk_fdisk_wait(const vm_machine *session, const char *te
     return 0;
 }
 
-static lib_i32 vm_dos_fdisk_fdisk_submit(const vm_machine *session, const lib_u8 *codes,
+static lib_i32 vm_dos_fdisk_fdisk_submit(const x86_nxvm_machine *session, const lib_u8 *codes,
     lib_size count)
 {
     lib_size index;
 
     if (session == LIB_NULL || codes == LIB_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_receive_native_byte(session->board,
+        if (x86_nxvm_board_keyboard_receive_native_byte(session->board,
                 codes[index]) != LIB_STATUS_OK) return 0;
     }
     return 1;
@@ -74,7 +74,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     const lib_u8 fdisk[] = {0x2bu, 0xf0u, 0x2bu, 0x23u, 0xf0u, 0x23u,
         0x43u, 0xf0u, 0x43u, 0x1bu, 0xf0u, 0x1bu, 0x42u, 0xf0u, 0x42u, 0x5au};
     HANDLE thread = LIB_NULL;
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 passed = 0;
 
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
@@ -102,7 +102,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     passed = 1;
 
 done:
-    if (session != LIB_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) x86_nxvm_machine_stop(session);
     if (thread != LIB_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

@@ -56,9 +56,9 @@ verification and acceptance; the task history retains the cutover sequence.
   path construction, identity, board, CPU, firmware or App extension.
 - `x86-ibmpc/product` owns only the shared x86/IBM-PC Console/Debug/hotkey
   implementation that supplies Emulator Product capabilities.  It is a SoftPC
-  and NXVM shared component, not a `core/product` member and not a dependency
-  of MyNES.  The shared PC Machine adapter lives in `core/machine`.
-- `core/product` owns the four NXVM Apps' common INI grammar, path construction,
+  and NXVM shared component, not a `x86-nxvm/product` member and not a dependency
+  of MyNES.  The shared PC Machine adapter lives in `x86-nxvm/machine`.
+- `x86-nxvm/product` owns the four NXVM Apps' common INI grammar, path construction,
   fixed-factory adaptation, shared `INFO`/`SPEED`/floppy extensions and NXVM
   identity. It is a private NXVM-family component, not an IBM PC or SoftPC
   dependency.
@@ -66,9 +66,9 @@ verification and acceptance; the task history retains the cutover sequence.
   fixed binding to the sole `x86-ibmpc/product`
   process entry, banner and cleanup body. Its fixed composition binding selects
   one Profile's frozen values/assets and preparation for Product's shared factory.
-  Core Product consumes Machine's public creation/INFO/speed API; Machine has no
+  X86 NXVM Product consumes Machine's public creation/INFO/speed API; Machine has no
   Product dependency or duplicate runtime input type.
-- `core/machine` is that driver: asset/media lifetime, bounded execution,
+- `x86-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
   App prepares copied construction values and transfers its genuine Profile
@@ -89,13 +89,13 @@ verification and acceptance; the task history retains the cutover sequence.
   owning the sole guest timeline, memory/port routes, transactions, bounded
   execution and debug observation. Its matching tests use public CPU/FPU
   contracts; private layouts remain at the chip test owner.
-- `core/chips` owns the extracted PIC, PIT, DMA, RTC, KBC, PPI,
+- `x86-nxvm/chips` owns the extracted PIC, PIT, DMA, RTC, KBC, PPI,
   keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
   independent-chip source ownership. The neutral executor,
   guest timeline, memory/port routes and plan transaction live in `x86-core/machine`.
   Its production target depends only on Types and X86 Core CPU/FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
-  and display-provider slot in `core/board-base`, consumed through public
+  and display-provider slot in `x86-nxvm/board-base`, consumed through public
   contracts. The common PIT adapter installs four copied routes against a
   board-owned opaque chip; composition alone selects the Core implementation.
   The common PIC aggregation owns opaque controller endpoints and IRQ source
@@ -103,7 +103,7 @@ verification and acceptance; the task history retains the cutover sequence.
   producers borrow sources for that aggregation's lifetime; copied register
   diagnostics do not expose a chip or mutable layout. Current records its
   verification and acceptance status.
-  `core/board-base` also owns the complete board construction, reset,
+  `x86-nxvm/board-base` also owns the complete board construction, reset,
   clock/deadline reduction and teardown, plus opaque FDC/HDC/video adapters.
   Its timing contract owns the complete 30-item PC qualification table,
   copied once at construction and retained over reset; the neutral executor
@@ -128,12 +128,12 @@ verification and acceptance; the task history retains the cutover sequence.
   arbitration. PIT tick pairs and named device progression slots do not cross
   the execution boundary. CPU samples neutral interrupt pending/acknowledgement
   signals; PIC state and cascade behavior remain Board-owned.
-  `core/board-at` owns KBC and planar parity; `core/board-xt` owns PPI keyboard
+  `x86-nxvm/board-at` owns KBC and planar parity; `x86-nxvm/board-xt` owns PPI keyboard
   wiring. Emulator Product composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,
   Port B and refresh state through one frozen board-profile binding.
   The former `app-nxvm/devices` implementation is removed. PC chip state stays
-  in `core/chips`, CPU/FPU state in X86 Core, guest time in Core, and profile/firmware/media choices in
+  in `x86-nxvm/chips`, CPU/FPU state and guest time in X86 Core, and profile/firmware/media choices in
   App composition. Current records T540 acceptance and the next App cutover.
 - `emulator/machine` owns the shared execution/control protocol and paused-debug
   lease; `emulator/session` is the sole product-control reducer;
@@ -141,12 +141,13 @@ verification and acceptance; the task history retains the cutover sequence.
 - `x86-debug/product` owns Debug CLI continuations; `x86-debug/xasm32` owns assembly and
   disassembly. Paused Debug operations go through Emulator Machine and the NXVM
   driver to Core, not a second machine path.
-- `x86-nxvm/product` owns the NXVM-specific information/speed contract. Core
-  implements it; the PC shell accepts only an already composed machine
-  lifetime and never requires those extension capabilities. Core startup keeps
+- `x86-nxvm/product` adapts NXVM-specific information/speed commands to the
+  single public contract owned by `x86-nxvm/machine`; the PC shell accepts only
+  an already composed machine lifetime and never requires those extension
+  capabilities. X86 NXVM Product startup keeps
   the descriptor alive throughout the synchronous shared process body.
 - `lib` owns platform/C-runtime services. Lib, Emulator and the split x86 tools retain their existing
-  neutral boundaries. Core contains NXVM-private PC integration, never App-private
+  neutral boundaries. X86 NXVM contains NXVM-family PC integration, never App-private
   definitions from another product.
 - `app-nxvm/firmware` owns project-authored guest BIOS source and offline ROM
   construction. Its build tool may consume x86 assembly and Lib file services,
@@ -184,7 +185,7 @@ build-selected profile + compiled immutable firmware + App INI options
            one Core + Board instance -> Machine adapter -> Emulator Machine
 ```
 
-Profile owns hardware constraints and firmware asset resolution; Core Product
+Profile owns hardware constraints and firmware asset resolution; X86 NXVM Product
 owns the one INI grammar and INI-directory-relative runtime-media path
 resolution before it supplies one copied request to shared Product; Core owns
 generic structural/state invariants. These are distinct checks, not copies of
@@ -295,8 +296,11 @@ maps this design to observed code and bounded migration evidence.
 
 ## Shared-Hardware And App Ownership
 
-The dependency direction is App composition -> Core PC integration -> Core
-chips and neutral Lib/Emulator capabilities. No App production graph links a peer
+The dependency direction is App composition -> X86 NXVM Product/Machine/boards
+-> X86 NXVM peripheral chips and X86 Core neutral Machine/CPU/FPU, with inward
+Lib/Emulator capabilities. Product and the Machine adapter remain separate
+owners; the neutral execution package has no NXVM board or App dependency.
+No App production graph links a peer
 App. Each App supplies a fixed
 binding, not another parser, executor, lifecycle queue, presenter or debugger.
 The App-local build entry selects firmware inputs and a flat assets/<app>

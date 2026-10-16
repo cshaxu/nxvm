@@ -1,9 +1,9 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 
-#include "test/core/setup/session_ini.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 #include "x86-debug/product/protocol_interface.h"
 
 static lib_i32 debug_trace_one(integration_ini_session *session)

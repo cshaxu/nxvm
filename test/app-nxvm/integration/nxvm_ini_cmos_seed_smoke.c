@@ -1,11 +1,11 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "test/core/board-base/composition/composition_fixture.h"
-#include "test/core/setup/session_ini.h"
+#include "test/x86-nxvm/board-base/composition/composition_fixture.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 #include VM_PRODUCT_BINDING_HEADER
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 
 static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
     const char *file_name, lib_u8 index, lib_u8 expected)
@@ -15,9 +15,9 @@ static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
 
     if (integration_ini_session_open(directory, file_name, &ini_session) !=
         LIB_STATUS_OK) return 0;
-    test_core_write_port_after_run(ini_session.session->x86_core_machine,
+    test_x86_nxvm_write_port_after_run(ini_session.session->x86_core_machine,
         0x0070u, index);
-    observed = (lib_u8)test_core_read_port_after_run(
+    observed = (lib_u8)test_x86_nxvm_read_port_after_run(
         ini_session.session->x86_core_machine, 0x0071u);
     integration_ini_session_close(&ini_session);
     return observed == expected;

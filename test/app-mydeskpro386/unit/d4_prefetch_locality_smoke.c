@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "app-mydeskpro386/d4_platform.h"
 #include "app-mydeskpro386/d4_platform_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-core/machine/debug_interface.h"
 #include "lib/types/file.h"
 
@@ -55,10 +55,10 @@ static void d4_trace(void *owner, const x86_core_machine_trace_event *event)
 
 lib_i32 main(void)
 {
-    const mydeskpro386_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
-    core_machine_config config = {0};
+    const mydeskpro386_d4_platform_config d4 = {X86_NXVM_BOARD_PC_AT_PORT_B, 0u, 2u, 18u};
+    x86_nxvm_board_config config = {0};
     x86_core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
     mydeskpro386_d4_platform *platform = LIB_NULL;
     d4_refresh_trace trace = {0};
     const x86_core_machine_trace_provider provider = {d4_trace, &trace};
@@ -70,7 +70,7 @@ lib_i32 main(void)
     config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x48u;
-    failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+    failed = x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK ||
         mydeskpro386_d4_platform_attach(board, &d4, &platform) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||

@@ -1,12 +1,12 @@
-#include "core/machine/preparation_interface.h"
+#include "x86-nxvm/machine/preparation_interface.h"
 #include "app-mydeskpro386/machine_plan_interface.h"
 #include "app-mydeskpro386/machine_construction_interface.h"
 #include "app-mydeskpro386/machine_config.h"
 #include "app-mydeskpro386/machine_observation_interface.h"
 
 typedef struct mydeskpro386_machine_plan {
-    vm_machine_construction construction;
-    vm_profile_contract_values profile;
+    x86_nxvm_machine_construction construction;
+    x86_nxvm_board_contract_values profile;
     struct {
         lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
         lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
@@ -14,32 +14,32 @@ typedef struct mydeskpro386_machine_plan {
         mydeskpro386_external_rom context;
         /* Borrowed only while Core's sole board attachment is alive. */
         mydeskpro386_d4_platform *board;
-        core_machine_fdc_terminal_observation fdc_terminal;
+        x86_nxvm_board_fdc_terminal_observation fdc_terminal;
         lib_bool fdc_terminal_valid;
     } firmware;
 } mydeskpro386_machine_plan;
 
 static lib_status vm_profile_machine_plan_model40(mydeskpro386_machine_plan *plan,
-    const vm_machine_config *config, const vm_machine_assets *assets)
+    const x86_nxvm_machine_config *config, const x86_nxvm_machine_assets *assets)
 {
     mydeskpro386_external_rom source;
 
     if (config->bios_count != 2u ||
         (config->memory_bytes != 0u && config->memory_bytes != 1024u * 1024u) ||
-        vm_machine_floppy_select(config, VM_PROFILE_FLOPPY_525_1200K,
-            (1u << VM_PROFILE_FLOPPY_525_1200K) | (1u << VM_PROFILE_FLOPPY_525_360K),
+        x86_nxvm_machine_floppy_select(config, X86_NXVM_BOARD_FLOPPY_525_1200K,
+            (1u << X86_NXVM_BOARD_FLOPPY_525_1200K) | (1u << X86_NXVM_BOARD_FLOPPY_525_360K),
             &plan->construction.media_kind) != LIB_STATUS_OK ||
         mydeskpro386_values_create(&plan->profile) != LIB_STATUS_OK ||
         mydeskpro386_external_rom_create(assets->bios[0u].data, assets->bios[0u].bytes,
             assets->bios[1u].data, assets->bios[1u].bytes, assets->video.data,
             assets->video.bytes, &source) != LIB_STATUS_OK ||
-        vm_machine_asset_copy(plan->firmware.even,
+        x86_nxvm_machine_asset_copy(plan->firmware.even,
             MYDESKPRO386_ROM_CHIP_BYTES, assets->bios[0u]) != LIB_STATUS_OK ||
-        vm_machine_asset_copy(plan->firmware.odd,
+        x86_nxvm_machine_asset_copy(plan->firmware.odd,
             MYDESKPRO386_ROM_CHIP_BYTES, assets->bios[1u]) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (assets->video.data != LIB_NULL && vm_machine_asset_copy(plan->firmware.video,
+    if (assets->video.data != LIB_NULL && x86_nxvm_machine_asset_copy(plan->firmware.video,
         source.video_byte_count, assets->video) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     plan->firmware.context = source;
     plan->firmware.context.even_bytes = plan->firmware.even;
@@ -53,14 +53,14 @@ static lib_status vm_profile_machine_plan_model40(mydeskpro386_machine_plan *pla
     if (mydeskpro386_topology_materialize(&plan->construction.topology) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    plan->construction.floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
+    plan->construction.floppy_kind = X86_NXVM_BOARD_FLOPPY_525_1200K;
     plan->construction.floppy_slot_count = 2u;
     plan->construction.hdc_present = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
 static void vm_profile_machine_plan_capture_fdc_terminal(void *context,
-    const core_machine_fdc_terminal_observation *observation)
+    const x86_nxvm_board_fdc_terminal_observation *observation)
 {
     mydeskpro386_machine_plan *plan = context;
 
@@ -69,20 +69,20 @@ static void vm_profile_machine_plan_capture_fdc_terminal(void *context,
     plan->firmware.fdc_terminal_valid = LIB_TRUE;
 }
 
-static lib_status mydeskpro386_configure(void *context, core_machine_plan *core_plan)
+static lib_status mydeskpro386_configure(void *context, x86_nxvm_board_plan *core_plan)
 {
     mydeskpro386_machine_plan *plan = context;
 
     return mydeskpro386_materialize_plan(core_plan,
-        (core_machine_fdc_terminal_observation_provider) {
+        (x86_nxvm_board_fdc_terminal_observation_provider) {
             vm_profile_machine_plan_capture_fdc_terminal, plan }, &plan->firmware.board);
 }
 
-static void mydeskpro386_notify(void *context, vm_machine_profile_event event)
+static void mydeskpro386_notify(void *context, x86_nxvm_machine_profile_event event)
 {
     mydeskpro386_machine_plan *plan = context;
 
-    if (event == VM_MACHINE_PROFILE_BOARD_DETACHED) plan->firmware.board = LIB_NULL;
+    if (event == X86_NXVM_MACHINE_PROFILE_BOARD_DETACHED) plan->firmware.board = LIB_NULL;
     plan->firmware.fdc_terminal_valid = LIB_FALSE;
 }
 
@@ -91,27 +91,27 @@ static void mydeskpro386_release(void *context)
     lib_release(context);
 }
 
-lib_status mydeskpro386_machine_plan_create(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_machine_construction *out_construction)
+lib_status mydeskpro386_machine_plan_create(const x86_nxvm_machine_config *config,
+    const x86_nxvm_machine_assets *assets, x86_nxvm_machine_construction *out_construction)
 {
     mydeskpro386_machine_plan *plan;
-    lib_status status = vm_machine_construction_begin(config, assets, out_construction);
+    lib_status status = x86_nxvm_machine_construction_begin(config, assets, out_construction);
 
     if (status != LIB_STATUS_OK) return status;
     plan = (mydeskpro386_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    plan->construction.profile = (vm_machine_profile_binding) {
+    plan->construction.profile = (x86_nxvm_machine_profile_binding) {
         plan, mydeskpro386_configure, mydeskpro386_notify, mydeskpro386_release };
     plan->construction.fixed_geometry = LIB_TRUE;
     plan->construction.cylinders = 925u;
     plan->construction.heads = 5u;
     plan->construction.sectors = 17u;
     status = vm_profile_machine_plan_model40(plan, config, assets);
-    return vm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
+    return x86_nxvm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
 }
 
 lib_status mydeskpro386_observe(
-    const vm_machine_construction *construction, mydeskpro386_observation *out_observation)
+    const x86_nxvm_machine_construction *construction, mydeskpro386_observation *out_observation)
 {
     const mydeskpro386_machine_plan *model40;
     mydeskpro386_observation observation = {0};

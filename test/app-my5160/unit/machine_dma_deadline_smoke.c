@@ -1,7 +1,7 @@
 #include "app-my5160/machine_config.h"
-#include "../../core/machine/support/dma_deadline_fixture.h"
+#include "../../x86-nxvm/machine/support/dma_deadline_fixture.h"
 
-static lib_i32 configure(core_machine_config *out_configuration)
+static lib_i32 configure(x86_nxvm_board_config *out_configuration)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
 
@@ -13,7 +13,7 @@ static lib_i32 configure(core_machine_config *out_configuration)
 
 lib_i32 main(void)
 {
-    if (test_core_dma_deadline_assert("ibm-5160-model-268", configure)) return 1;
+    if (test_x86_nxvm_dma_deadline_assert("ibm-5160-model-268", configure)) return 1;
     lib_c_printf("IBM-5160-DMA-DEADLINE:OK\n");
     return 0;
 }

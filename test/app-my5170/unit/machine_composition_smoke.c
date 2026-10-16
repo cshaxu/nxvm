@@ -1,27 +1,27 @@
-#include "core/board-base/pc_at_rom_interface.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/board-base/pc_at_rom_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "../../core/machine/support/media.h"
-#include "../../core/board-base/composition/composition_fixture.h"
-#include "../../core/board-base/board_binding_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "../../core/board-base/support/kbc_state_fixture.h"
+#include "../../x86-nxvm/machine/support/media.h"
+#include "../../x86-nxvm/board-base/composition/composition_fixture.h"
+#include "../../x86-nxvm/board-base/board_binding_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/kbc_state_fixture.h"
 
 #include "x86-core/machine/debug_interface.h"
-#include "../../core/board-base/composition/bus_fixture.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
+#include "../../x86-nxvm/board-base/composition/bus_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "app-my5170/machine_config_interface.h"
 
 #include "../support/session_assets.h"
 
-static lib_status vm_test_create_5170_from_assets(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_machine **out_session)
+static lib_status vm_test_create_5170_from_assets(const x86_nxvm_machine_config *config,
+    const x86_nxvm_machine_assets *assets, x86_nxvm_machine **out_session)
 {
-    vm_machine_construction construction;
+    x86_nxvm_machine_construction construction;
     lib_status status;
 
     if (config == LIB_NULL || assets == LIB_NULL || out_session == LIB_NULL) {
@@ -30,38 +30,38 @@ static lib_status vm_test_create_5170_from_assets(const vm_machine_config *confi
     *out_session = LIB_NULL;
     status = vm_profile_machine_plan_create_5170(config, assets, &construction);
     if (status != LIB_STATUS_OK) return status;
-    return vm_machine_create(config, &construction, out_session);
+    return x86_nxvm_machine_create(config, &construction, out_session);
 }
 
-static lib_status vm_test_create_5170(const vm_machine_config *config,
-    vm_machine **out_session)
+static lib_status vm_test_create_5170(const x86_nxvm_machine_config *config,
+    x86_nxvm_machine **out_session)
 {
-    lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    lib_u8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    lib_u8 font[VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
-    vm_machine_assets assets;
+    lib_u8 even[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 odd[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 font[X86_NXVM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
+    x86_nxvm_machine_assets assets;
 
     vm_test_ibm_5170_assets(&assets, even, odd);
     font['A' * 8u] = 0x81u;
     font[2048u + 'A' * 8u] = 0x42u;
-    assets.font = (vm_machine_asset_bytes) { font, sizeof(font) };
+    assets.font = (x86_nxvm_machine_asset_bytes) { font, sizeof(font) };
     return vm_test_create_5170_from_assets(config, &assets, out_session);
 }
 
 static lib_i32 vm_model_339_selected_contract(void)
 {
-    const vm_profile_default_pc_at_descriptor *profile =
+    const x86_nxvm_board_pc_at_descriptor *profile =
         vm_profile_ibm_5170_model_339_descriptor_get();
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .bios_count = 2u
     };
     test_board_composition_observation board;
     x86_core_cpu_profile cpu_profile;
-    core_machine_planar_parity_observation parity;
-    core_machine_speaker_observation speaker;
+    x86_nxvm_board_planar_parity_observation parity;
+    x86_nxvm_board_speaker_observation speaker;
     x86_core_machine_memory_route memory_route;
     x86_video_snapshot snapshot;
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_size memory_bytes = 0u;
     lib_u8 before = 0u;
     lib_u8 after = 0u;
@@ -71,25 +71,25 @@ static lib_i32 vm_model_339_selected_contract(void)
     lib_size constructor_count = 0u;
 
     test_board_observe_constructor(&executor, &constructor_count);
-    if (profile == LIB_NULL || !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
+    if (profile == LIB_NULL || !x86_nxvm_board_pc_at_descriptor_is_valid(profile) ||
         !profile->hdc_present || !profile->planar_parity_present ||
         !profile->monochrome_aperture_absent || profile->diskette_drive_a_field_upgrade ||
         profile->clock_plan.pit.numerator != 596591u ||
         profile->clock_plan.pit.denominator != 4000000u ||
         profile->pic_irq_timing.unmask_delivery_ticks[1u] != 120u ||
         profile->cmos.floppy_type != 0x20u || profile->cmos.fixed_disk_type != 0x30u ||
-        vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
-        vm_profile_default_pc_at_enabled_devices(profile),
-            VM_AT_DEVICE_HDC, 0x01f0u) == LIB_NULL ||
+        x86_nxvm_board_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        x86_nxvm_board_pc_at_enabled_devices(profile),
+            X86_NXVM_BOARD_AT_DEVICE_HDC, 0x01f0u) == LIB_NULL ||
         vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL) {
         test_board_observe_constructor(LIB_NULL, LIB_NULL);
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
     test_board_observe_constructor(LIB_NULL, LIB_NULL);
     failed |= constructor_count != 1u;
     board = test_board_capture_composition(session->board);
-    failed |= (core_machine_capture_display_snapshot(session->board,
+    failed |= (x86_nxvm_board_capture_display_snapshot(session->board,
         &snapshot) != LIB_STATUS_OK || !snapshot.text_glyphs_present ||
         snapshot.text_glyphs['A' *
         X86_VIDEO_TEXT_GLYPH_ROWS] != 0x81u ||
@@ -104,8 +104,8 @@ static lib_i32 vm_model_339_selected_contract(void)
         transaction->external_cycle_timing.overlap_policy !=
             X86_CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED ||
         transaction->external_access_wait_windows[0].wait_ticks != 0u) ? 0x0002 : 0;
-    failed |= (x86_core_machine_bus_write(session->x86_core_machine, CORE_MACHINE_PC_AT_PORT_B,
-        0x02u) != LIB_STATUS_OK || core_machine_get_speaker_observation(
+    failed |= (x86_core_machine_bus_write(session->x86_core_machine, X86_NXVM_BOARD_PC_AT_PORT_B,
+        0x02u) != LIB_STATUS_OK || x86_nxvm_board_get_speaker_observation(
         session->board, &speaker) != LIB_STATUS_OK || !speaker.configured ||
         speaker.timer_gate || !speaker.data_enabled || speaker.output != speaker.timer_output) ? 0x0004 : 0;
     failed |= (x86_core_machine_get_cpu_profile(session->x86_core_machine, &cpu_profile) !=
@@ -116,10 +116,10 @@ static lib_i32 vm_model_339_selected_contract(void)
             0x20u, 0u)) ? 0x0010 : 0;
     failed |= (!test_board_kbc_command_matches(session->board,
             session->x86_core_machine, 0xd0u, 0xffu, 0x03u) ||
-        !test_core_a20_is_enabled(session->x86_core_machine)) ? 0x0011 : 0;
+        !test_x86_nxvm_a20_is_enabled(session->x86_core_machine)) ? 0x0011 : 0;
     failed |= (x86_core_machine_get_memory_bytes(session->x86_core_machine, &memory_bytes) !=
         LIB_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;
-    failed |= (core_machine_get_planar_parity_observation(session->board,
+    failed |= (x86_nxvm_board_get_planar_parity_observation(session->board,
         &parity) != LIB_STATUS_OK || !parity.configured) ? 0x0040 : 0;
     failed |= x86_core_machine_set_address_clear_mask(session->x86_core_machine, 0u) != LIB_STATUS_OK ? 0x0080 : 0;
     failed |= (x86_core_machine_memory_query(session->x86_core_machine, 0x00100003u, 1u,
@@ -134,47 +134,47 @@ static lib_i32 vm_model_339_selected_contract(void)
     failed |= (x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u,
         &option_rom_probe, sizeof(option_rom_probe)) != LIB_STATUS_OK ||
         option_rom_probe != 0xffu) ? 0x0900 : 0;
-    failed |= (!test_core_port_accepts_read(session->x86_core_machine, 0x01f0u) ||
-        !test_core_port_accepts_write(session->x86_core_machine, 0x01f0u) ||
-        test_core_machine_fixture_read_bus(session->x86_core_machine, 0x03f1u) != 0x50u ||
+    failed |= (!test_x86_nxvm_port_accepts_read(session->x86_core_machine, 0x01f0u) ||
+        !test_x86_nxvm_port_accepts_write(session->x86_core_machine, 0x01f0u) ||
+        test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine, 0x03f1u) != 0x50u ||
         board.hdc.service.command_ticks != 16000u ||
         board.hdc.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     failed |= test_board_pic_unmask_delay_matches(session->board, 120u);
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 
 static lib_i32 vm_model_339_floppy_contract(void)
 {
-    const vm_machine_config native = {
+    const x86_nxvm_machine_config native = {
         .bios_count = 2u
     };
-    const vm_machine_config compatible = {
+    const x86_nxvm_machine_config compatible = {
         .bios_count = 2u,
-        .floppy_format = VM_MACHINE_FLOPPY_FORMAT_360K
+        .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_360K
     };
-    const vm_machine_config rejected = {
+    const x86_nxvm_machine_config rejected = {
         .bios_count = 2u,
-        .floppy_format = VM_MACHINE_FLOPPY_FORMAT_720K
+        .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_720K
     };
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 failed = vm_test_create_5170(&native, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session == LIB_NULL || session->construction.floppy_kind != X86_NXVM_BOARD_FLOPPY_525_1200K ||
         vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != 80u || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
         vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != 15u;
 
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&compatible, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
-        session->construction.media_kind != VM_PROFILE_FLOPPY_525_360K ||
+        session == LIB_NULL || session->construction.floppy_kind != X86_NXVM_BOARD_FLOPPY_525_1200K ||
+        session->construction.media_kind != X86_NXVM_BOARD_FLOPPY_525_360K ||
         vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != 40u || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
         vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != 9u ||
         test_board_capture_composition(session->board).drive_cylinders != 80u;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&rejected, &session) == LIB_STATUS_OK || session != LIB_NULL;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 
@@ -203,23 +203,23 @@ static lib_i32 vm_model_339_refresh_polling_is_live(void)
         0xb4u, 0x10u, 0xe4u, 0x61u, 0x24u, 0x10u,
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .bios_count = 2u
     };
     x86_core_machine_run_result result = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
     if (vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL ||
         x86_core_machine_memory_write(session->x86_core_machine, 0x0500u, program,
             sizeof(program)) != LIB_STATUS_OK) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
     failed = vm_model_339_prepare_refresh(session->x86_core_machine) != LIB_STATUS_OK ||
         x86_core_machine_run(session->x86_core_machine, (x86_core_machine_run_budget) {1000u, 0u},
         &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 
@@ -235,18 +235,18 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         0xe4u, 0x61u, 0xa8u, 0x10u, 0xe0u, 0xfau,
         0xfeu, 0xcbu, 0x75u, 0xf0u, 0xf4u
     };
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .bios_count = 2u
     };
     x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot cpu = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
     if (vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL ||
         x86_core_machine_memory_write(session->x86_core_machine, 0x0500u, program,
             sizeof(program)) != LIB_STATUS_OK) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
     failed = vm_model_339_prepare_refresh(session->x86_core_machine) != LIB_STATUS_OK ||
@@ -258,7 +258,7 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         (cpu.ecx & 0xffffu) < 0xf600u;
     if (failed) lib_c_printf("MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
         (unsigned int)(cpu.ecx & 0xffffu), (unsigned int)cpu.eip, result.reason);
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 
@@ -271,7 +271,7 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         0xb8u, 0x55u, 0xaau, 0xe7u, 0x82u,
         0xe4u, 0x82u, 0x86u, 0xc4u, 0xe4u, 0x83u, 0xf4u
     };
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .bios_count = 2u
     };
     x86_core_machine_run_result result = {0};
@@ -281,13 +281,13 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x0500u }
     };
     lib_u32 eax = 0u;
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
     if (vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL ||
         x86_core_machine_memory_write(session->x86_core_machine, 0x0500u, program,
             sizeof(program)) != LIB_STATUS_OK) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
     failed = x86_core_machine_debug_patch_registers(session->x86_core_machine, &entry) !=
@@ -295,27 +295,27 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         x86_core_machine_debug_read_register(session->x86_core_machine,
             X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK || (eax & 0xffffu) != 0x55aau;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 
 static lib_i32 vm_model_339_external_rom_route(void)
 {
-    lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    lib_u8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 even[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 odd[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
     lib_u8 video[512] = {0x55u, 0xaau, 1u};
-    vm_machine_assets assets;
-    const vm_machine_config config = {
+    x86_nxvm_machine_assets assets;
+    const x86_nxvm_machine_config config = {
         .bios_count = 2u
     };
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u8 observed[2] = {0};
     lib_i32 failed;
 
     vm_test_ibm_5170_assets(&assets, even, odd);
     even[0u] = 0x12u;
     odd[0u] = 0x34u;
-    assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
+    assets.video = (x86_nxvm_machine_asset_bytes) { video, sizeof(video) };
     failed = vm_test_create_5170_from_assets(&config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL ||
         session->construction.firmware_provider == LIB_NULL ||
@@ -325,7 +325,7 @@ static lib_i32 vm_model_339_external_rom_route(void)
         x86_core_machine_memory_read(session->x86_core_machine, 0x000c0000u, observed,
             sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x55u ||
             observed[1u] != 0xaau;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed;
 }
 

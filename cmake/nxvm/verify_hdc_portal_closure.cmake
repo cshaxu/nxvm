@@ -15,17 +15,17 @@ foreach(source IN LISTS vm_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/pc_at_preparation.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/pc_at_preparation.c"
     profile_plan)
-foreach(required "core_machine_plan_configure_hdc")
+foreach(required "x86_nxvm_board_plan_configure_hdc")
     string(FIND "${profile_plan}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "HDC plan submission missing: ${required}")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" machine_plan)
-foreach(required "core_machine_configure_hdc")
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_plan.c" machine_plan)
+foreach(required "x86_nxvm_board_configure_hdc")
     string(FIND "${machine_plan}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "HDC Core plan application missing: ${required}")

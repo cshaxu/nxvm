@@ -1,15 +1,15 @@
 #include "app-mydeskpro386/machine_observation_interface.h"
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
-#include "../../core/machine/support/media.h"
-#include "../../core/board-base/support/composition_fixture.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "../../x86-nxvm/machine/support/media.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "app-mydeskpro386/machine_config.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40_session_assets.h"
 
 static lib_bool refresh_count_matches(x86_core_machine *machine, lib_u16 expected)
@@ -45,10 +45,10 @@ static lib_bool short_video_copy_is_bounded(void)
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
     lib_u8 video[MYDESKPRO386_VIDEO_ROM_BYTES];
-    const vm_machine_config config = {.bios_count = 2u};
-    vm_machine_assets assets = {.bios = {{even, sizeof(even)}, {odd, sizeof(odd)}},
+    const x86_nxvm_machine_config config = {.bios_count = 2u};
+    x86_nxvm_machine_assets assets = {.bios = {{even, sizeof(even)}, {odd, sizeof(odd)}},
         .video = {video, 512u}};
-    vm_machine_construction construction = {0};
+    x86_nxvm_machine_construction construction = {0};
     lib_bool valid;
 
     lib_memory_set(video, 0xcc, sizeof(video));
@@ -69,9 +69,9 @@ static lib_bool short_video_copy_is_bounded(void)
     return valid;
 }
 
-static lib_bool observation_argument_contract(const vm_machine *machine)
+static lib_bool observation_argument_contract(const x86_nxvm_machine *machine)
 {
-    vm_machine_construction unrelated = {0};
+    x86_nxvm_machine_construction unrelated = {0};
     mydeskpro386_observation observation = { .fdc_terminal_valid = LIB_TRUE };
 
     return machine != LIB_NULL &&
@@ -87,11 +87,11 @@ lib_i32 main(void)
     lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES] = {0};
     lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
     lib_u8 video[MYDESKPRO386_VIDEO_ROM_BYTES] = {0};
-    lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
-    vm_machine_config config = {0};
-    vm_machine_assets assets = {0};
-    vm_machine *session = LIB_NULL;
-    vm_machine_reset_vector reset_vector = {0};
+    lib_u8 cmos_seed[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    x86_nxvm_machine_config config = {0};
+    x86_nxvm_machine_assets assets = {0};
+    x86_nxvm_machine *session = LIB_NULL;
+    x86_nxvm_machine_reset_vector reset_vector = {0};
     x86_core_machine_run_result result = {0};
     x86_core_machine_time_observation time_observation = {0};
     lib_size memory_bytes = 0u;
@@ -109,15 +109,15 @@ lib_i32 main(void)
     video[sizeof(video) - 1u] = 0x87u;
     config.bios_count = 2u;
     vm_model40_fixture_cmos_seed(cmos_seed);
-    assets.bios[0u] = (vm_machine_asset_bytes) { even, sizeof(even) };
-    assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
-    assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
-    assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
+    assets.bios[0u] = (x86_nxvm_machine_asset_bytes) { even, sizeof(even) };
+    assets.bios[1u] = (x86_nxvm_machine_asset_bytes) { odd, sizeof(odd) };
+    assets.video = (x86_nxvm_machine_asset_bytes) { video, sizeof(video) };
+    assets.cmos_seed = (x86_nxvm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !vm_test_profile_is_model40(vm_test_profile_construction(session))) goto done;
     if (!observation_argument_contract(session)) goto done;
-    const test_board_plan_observation plan = test_board_capture_plan(session->core_machine_plan);
+    const test_board_plan_observation plan = test_board_capture_plan(session->x86_nxvm_board_plan);
     if (plan.memory_bytes != 2u * 1024u * 1024u ||
         plan.retirement_time_contract !=
             X86_CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
@@ -155,7 +155,7 @@ lib_i32 main(void)
             MYDESKPRO386_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
                 MYDESKPRO386_VIDEO_ROM_ALIAS_SKIP_BYTES,
             &observed_memory, 1u) != LIB_STATUS_OK || observed_memory != 0x5au ||
-        vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
+        x86_nxvm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u) goto done;
     retained_memory_bytes = session->construction.core_config.memory_bytes;
     const x86_core_machine_clock_ratio refresh_clock =
@@ -163,7 +163,7 @@ lib_i32 main(void)
     const lib_u64 first_pit_tick =
         ((lib_u64)refresh_clock.denominator + refresh_clock.numerator - 1u) /
             refresh_clock.numerator;
-    if (vm_machine_reconfigure_memory(session, 2u * 1024u * 1024u) !=
+    if (x86_nxvm_machine_reconfigure_memory(session, 2u * 1024u * 1024u) !=
         LIB_STATUS_INVALID_STATE || x86_core_machine_get_memory_bytes(session->x86_core_machine,
         &memory_bytes) != LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
         session->construction.core_config.memory_bytes != retained_memory_bytes ||
@@ -173,11 +173,11 @@ lib_i32 main(void)
         x86_core_machine_reset(session->x86_core_machine) != LIB_STATUS_OK ||
         !advance_to_first_pit_edge(session->x86_core_machine, first_pit_tick) ||
         !refresh_count_matches(session->x86_core_machine, 18u) ||
-        vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
+        x86_nxvm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u) goto done;
     even[0u] = 2u;
     if (rom->even_bytes[0] != 0u || rom->odd_bytes[0] != 1u) goto done;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     session = LIB_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;
     if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
@@ -186,7 +186,7 @@ lib_i32 main(void)
     config.memory_bytes = 0u;
     failed = !short_video_copy_is_bounded();
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (!failed) lib_c_printf("MODEL40-BYOB-MANIFEST:OK\nMODEL40-BYOB-VALIDATION:OK\nMODEL40-PUBLIC-COMPOSITION:OK\nMODEL40-BYOB-RESET-LIFECYCLE:OK\nMODEL40-IMMUTABLE-CONFIGURATION:OK\n");
     return failed;
 }

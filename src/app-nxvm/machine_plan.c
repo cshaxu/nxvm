@@ -1,17 +1,17 @@
 #include "app-nxvm/machine_construction_interface.h"
 #include "app-nxvm/machine_config_interface.h"
-#include "core/machine/pc_at_preparation_interface.h"
-#include "core/machine/preparation_interface.h"
+#include "x86-nxvm/machine/pc_at_preparation_interface.h"
+#include "x86-nxvm/machine/preparation_interface.h"
 
-static lib_status vm_profile_prepare_default(const vm_machine_config *config,
-    vm_profile_default_pc_at_plan_snapshot *profile,
-    vm_machine_construction *construction)
+static lib_status vm_profile_prepare_default(const x86_nxvm_machine_config *config,
+    x86_nxvm_board_pc_at_plan_snapshot *profile,
+    x86_nxvm_machine_construction *construction)
 {
     vm_profile_default_at_request request = {0};
 
-    if (vm_machine_floppy_select(config, VM_PROFILE_FLOPPY_35_1440K,
-            (1u << VM_PROFILE_FLOPPY_35_1440K) | (1u << VM_PROFILE_FLOPPY_35_720K) |
-            (1u << VM_PROFILE_FLOPPY_525_1200K) | (1u << VM_PROFILE_FLOPPY_525_360K),
+    if (x86_nxvm_machine_floppy_select(config, X86_NXVM_BOARD_FLOPPY_35_1440K,
+            (1u << X86_NXVM_BOARD_FLOPPY_35_1440K) | (1u << X86_NXVM_BOARD_FLOPPY_35_720K) |
+            (1u << X86_NXVM_BOARD_FLOPPY_525_1200K) | (1u << X86_NXVM_BOARD_FLOPPY_525_360K),
             &construction->media_kind) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     if (config->cpu_profile != X86_CORE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != X86_FPU_PROFILE_NONE) {
@@ -23,9 +23,9 @@ static lib_status vm_profile_prepare_default(const vm_machine_config *config,
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
         request.memory_bytes = config->memory_bytes;
     }
-    if (construction->media_kind != VM_PROFILE_FLOPPY_35_1440K) {
+    if (construction->media_kind != X86_NXVM_BOARD_FLOPPY_35_1440K) {
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
-        request.floppy_cmos_type = vm_profile_floppy_cmos_type_get(construction->media_kind);
+        request.floppy_cmos_type = x86_nxvm_board_floppy_cmos_type_get(construction->media_kind);
     }
     if (vm_profile_default_at_plan_create(&request, profile) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -40,9 +40,9 @@ static lib_status vm_profile_prepare_default(const vm_machine_config *config,
     return LIB_STATUS_OK;
 }
 
-lib_status vm_profile_machine_plan_create_default(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_machine_construction *out_construction)
+lib_status vm_profile_machine_plan_create_default(const x86_nxvm_machine_config *config,
+    const x86_nxvm_machine_assets *assets, x86_nxvm_machine_construction *out_construction)
 {
-    return vm_pc_at_construction_create(config, assets, vm_profile_prepare_default,
+    return x86_nxvm_machine_pc_at_construction_create(config, assets, vm_profile_prepare_default,
         out_construction);
 }

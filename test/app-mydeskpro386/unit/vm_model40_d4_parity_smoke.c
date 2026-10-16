@@ -1,11 +1,11 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
 #include "x86-core/machine/memory_interface.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "../support/model40_session_assets.h"
 
 static x86_core_machine_memory_parity_config registered_parity;
@@ -52,7 +52,7 @@ lib_i32 main(void)
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
     mydeskpro386_d4_platform_observation observation;
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u8 value = 0u;
     lib_u32 port_value = 0u;
     const lib_u32 parity_physical = 0x00012345u;
@@ -111,7 +111,7 @@ lib_i32 main(void)
     }
 done:
 #undef CHECK
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) {
         lib_c_printf("D4-PARITY-DIAGNOSTIC:STEP-%u\n", (unsigned int)failed);
         return 1;

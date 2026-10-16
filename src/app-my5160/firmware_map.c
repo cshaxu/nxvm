@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 
 #include "app-my5160/machine_config.h"
-#include "core/board-base/rom_validation_interface.h"
-#include "core/board-base/rom_mapping_interface.h"
+#include "x86-nxvm/board-base/rom_validation_interface.h"
+#include "x86-nxvm/board-base/rom_mapping_interface.h"
 
 lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *system, lib_size system_bytes,
@@ -15,8 +15,8 @@ lib_status vm_profile_xt_5160_268_external_rom_create(
         (xebec == LIB_NULL && xebec_bytes != 0u) ||
         (xebec != LIB_NULL && xebec_bytes != VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES) ||
         (video == LIB_NULL && video_bytes != 0u) ||
-        (video != LIB_NULL && !vm_profile_byob_option_rom_is_valid(video,
-            video_bytes, VM_PROFILE_BYOB_OPTION_ROM_MAX_BYTES))) {
+        (video != LIB_NULL && !x86_nxvm_board_byob_option_rom_is_valid(video,
+            video_bytes, X86_NXVM_BOARD_BYOB_OPTION_ROM_MAX_BYTES))) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_rom = (vm_profile_xt_5160_268_external_rom) { system, xebec, video,
@@ -28,23 +28,23 @@ static lib_status vm_profile_xt_5160_268_firmware_configure(void *opaque,
     x86_core_machine_firmware_context *firmware)
 {
     const vm_profile_xt_5160_268_external_rom *rom = opaque;
-    vm_profile_rom_region regions[3u];
+    x86_nxvm_board_rom_region regions[3u];
     lib_size count = 1u;
 
     if (rom == LIB_NULL || rom->system_bytes == LIB_NULL ||
         (rom->xebec_present && rom->xebec_bytes == LIB_NULL))
         return LIB_STATUS_INVALID_ARGUMENT;
-    regions[0] = (vm_profile_rom_region) {
+    regions[0] = (x86_nxvm_board_rom_region) {
         VM_PROFILE_XT_5160_268_SYSTEM_ROM_PHYSICAL_START, rom->system_bytes,
         VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES };
     if (rom->video_bytes != LIB_NULL)
-        regions[count++] = (vm_profile_rom_region) {0x000c0000u,
+        regions[count++] = (x86_nxvm_board_rom_region) {0x000c0000u,
             rom->video_bytes, rom->video_byte_count};
     if (rom->xebec_present)
-        regions[count++] = (vm_profile_rom_region) {
+        regions[count++] = (x86_nxvm_board_rom_region) {
             VM_PROFILE_XT_5160_268_XEBEC_ROM_PHYSICAL_START, rom->xebec_bytes,
             VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES };
-    return vm_profile_rom_register(firmware, regions, count, LIB_NULL, 0u);
+    return x86_nxvm_board_rom_register(firmware, regions, count, LIB_NULL, 0u);
 }
 
 static lib_status vm_profile_xt_5160_268_firmware_reset(void *opaque,
@@ -55,9 +55,9 @@ static lib_status vm_profile_xt_5160_268_firmware_reset(void *opaque,
     (void)firmware;
     return rom == LIB_NULL || rom->system_bytes == LIB_NULL ||
         (rom->xebec_present && rom->xebec_bytes == LIB_NULL) ||
-        (rom->video_bytes != LIB_NULL && !vm_profile_byob_option_rom_is_valid(
+        (rom->video_bytes != LIB_NULL && !x86_nxvm_board_byob_option_rom_is_valid(
             rom->video_bytes, rom->video_byte_count,
-            VM_PROFILE_BYOB_OPTION_ROM_MAX_BYTES)) ?
+            X86_NXVM_BOARD_BYOB_OPTION_ROM_MAX_BYTES)) ?
         LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK;
 }
 

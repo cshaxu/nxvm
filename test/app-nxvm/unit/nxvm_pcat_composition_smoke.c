@@ -1,25 +1,25 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "../../core/board-base/composition/composition_fixture.h"
+#include "../../x86-nxvm/board-base/composition/composition_fixture.h"
 #include <stdio.h>
 
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine_config_interface.h"
 
 #include "x86-core/machine/debug_interface.h"
 #include "../support/rom/session_assets.h"
 
-static lib_i32 vm_pcat_composition_reset_state_matches(vm_machine *session)
+static lib_i32 vm_pcat_composition_reset_state_matches(x86_nxvm_machine *session)
 {
     x86_core_machine_timeline_observation timeline;
-    vm_machine_reset_vector vector;
+    x86_nxvm_machine_reset_vector vector;
     lib_i32 nmi_masked = LIB_TRUE;
 
     return session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
         !session->active ||
-        vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
+        x86_nxvm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u ||
         x86_core_machine_get_timeline_observation(session->x86_core_machine,
             &timeline) != LIB_STATUS_OK ||
@@ -30,7 +30,7 @@ static lib_i32 vm_pcat_composition_reset_state_matches(vm_machine *session)
 }
 
 static lib_i32 vm_pcat_composition_reset_rearms_selected_machine(
-    vm_machine *session)
+    x86_nxvm_machine *session)
 {
     static const lib_u8 nop = 0x90u;
     const x86_core_cpu_debug_register_patch entry = {
@@ -57,30 +57,30 @@ static lib_i32 vm_pcat_composition_reset_rearms_selected_machine(
             &timeline) != LIB_STATUS_OK || timeline.now == 0u) {
         return 1;
     }
-    test_core_write_port_after_run(session->x86_core_machine, 0x0070u, 0x80u);
+    test_x86_nxvm_write_port_after_run(session->x86_core_machine, 0x0070u, 0x80u);
     if (x86_core_machine_get_nmi_mask(session->x86_core_machine, &nmi_masked) !=
             LIB_STATUS_OK || !nmi_masked) return 1;
-    vm_machine_reset(session);
+    x86_nxvm_machine_reset(session);
     return vm_pcat_composition_reset_state_matches(session);
 }
 
 lib_i32 main(void)
 {
-    const vm_profile_default_pc_at_descriptor *profile =
+    const x86_nxvm_board_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_i32 failed;
 
     if (profile == LIB_NULL ||
-        !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
+        !x86_nxvm_board_pc_at_descriptor_is_valid(profile) ||
         vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
-        vm_machine_destroy(session);
+        x86_nxvm_machine_destroy(session);
         return 1;
     }
     failed = vm_pcat_composition_reset_state_matches(session) != 0 ||
         vm_pcat_composition_reset_rearms_selected_machine(session) != 0;
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     printf("PCAT-COMPOSITION:OK\n");
     return 0;

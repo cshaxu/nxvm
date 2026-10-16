@@ -1,19 +1,19 @@
-#include "core/machine/machine_interface.h"
-#include "../../core/machine/support/media.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "../../x86-nxvm/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-#include "../../core/board-base/support/controller_fixture.h"
+#include "../../x86-nxvm/board-base/support/controller_fixture.h"
 #include <stdio.h>
 
-#include "core/board-base/pic_bus_interface.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/media/fdd_interface.h"
+#include "x86-nxvm/board-base/pic_bus_interface.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/media/fdd_interface.h"
 #include "../support/rom/session_assets.h"
 #include "lib/storage/file_interface.h"
 
-static lib_bool fdc_command(core_machine_board_state *board, x86_core_machine *machine,
+static lib_bool fdc_command(x86_nxvm_board_state *board, x86_core_machine *machine,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -24,7 +24,7 @@ static lib_bool fdc_command(core_machine_board_state *board, x86_core_machine *m
         test_board_fdc_advance_ticks(board, 1u);
 }
 
-static lib_bool fdc_read_result(core_machine_board_state *board, x86_core_machine *machine, lib_u8 *result,
+static lib_bool fdc_read_result(x86_nxvm_board_state *board, x86_core_machine *machine, lib_u8 *result,
     lib_size count)
 {
     lib_size index;
@@ -43,7 +43,7 @@ static lib_bool fdc_read_result(core_machine_board_state *board, x86_core_machin
 
 lib_i32 main(void)
 {
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine *machine;
     lib_u32 value;
     lib_u8 result[7];
@@ -85,7 +85,7 @@ lib_i32 main(void)
         !fdc_read_result(session->board, machine, result, sizeof(result)) ||
         (result[0] & TEST_FDC_ST0_ABNORMAL) == 0u) goto done;
 
-    vm_machine_fdd_create_for(session->floppy[0u]);
+    x86_nxvm_machine_fdd_create_for(session->floppy[0u]);
     stage = 3u;
     test_board_fdc_refresh(session->board);
     if (x86_core_machine_bus_read(machine, 0x03f7u, &value) != LIB_STATUS_OK ||
@@ -125,14 +125,14 @@ lib_i32 main(void)
         goto done;
     }
     writer = LIB_NULL;
-    if (vm_machine_fdd_insert_for(session->floppy[0u], protected_path,
+    if (x86_nxvm_machine_fdd_insert_for(session->floppy[0u], protected_path,
             LIB_STORAGE_MEDIUM_READONLY)) goto done;
     if (!fdc_command(session->board, machine, write_sector, sizeof(write_sector)) ||
         x86_core_machine_bus_write(machine, 0x03f5u, 0x5au) != LIB_STATUS_OK ||
         !fdc_read_result(session->board, machine, result, sizeof(result)) ||
         (result[1] & 0x02u) == 0u) goto done;
-    if (vm_machine_fdd_remove_for(session->floppy[0u]) ||
-        vm_machine_fdd_insert_for(session->floppy[0u], protected_path,
+    if (x86_nxvm_machine_fdd_remove_for(session->floppy[0u]) ||
+        x86_nxvm_machine_fdd_insert_for(session->floppy[0u], protected_path,
             LIB_STORAGE_MEDIUM_OVERLAY)) goto done;
 
     /* Reserved rate is rejected; restore this medium's 500-kbps rate. */
@@ -156,7 +156,7 @@ lib_i32 main(void)
     failed = 0;
 done:
     if (writer != LIB_NULL) (void)lib_storage_file_writer_close(writer);
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     (void)remove(protected_path);
     if (failed) {
         lib_c_printf("FDC-PORT:FAIL:%u\n", stage);

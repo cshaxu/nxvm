@@ -6,10 +6,10 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_memory.c" d4)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/*.h")
 foreach(source_file IN LISTS generic_machine_sources)
     file(READ "${source_file}" source_text)
     if(source_text MATCHES "model40_board|model40_fdc_terminal_observation|mydeskpro386_d4_platform[ \t]*\\*")
@@ -33,7 +33,7 @@ foreach(forbidden "core_machine_register_memory_replacement_device("
     "core_machine_register_memory_write_observer("
     "core_machine_enable_memory_parity("
     "machine->d4_memory" "->board" "devices/machine.h"
-    "machine_board_state.h" "core_machine_board_state"
+    "machine_board_state.h" "x86_nxvm_board_state"
     "&machine->executor_memory")
     string(FIND "${d4}" "${forbidden}" position)
     if(NOT position LESS 0)
@@ -42,40 +42,40 @@ foreach(forbidden "core_machine_register_memory_replacement_device("
 endforeach()
 
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/parity.c" parity)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/parity.c" parity)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
     message(FATAL_ERROR "D4 platform retains private emulator-board dependency")
 endif()
 foreach(operation IN ITEMS
-    "core_machine_at_parity_refresh_nmi"
+    "x86_nxvm_board_at_parity_refresh_nmi"
     "d4_timer_status"
     "d4_refresh_output"
-    "core_machine_pc_at_refresh_timer_program"
-    "core_machine_speaker_source_value"
-    "core_machine_speaker_refresh"
-    "core_machine_speaker_timer_output"
-    "core_machine_speaker_set_gate"
+    "x86_nxvm_board_pc_at_refresh_timer_program"
+    "x86_nxvm_board_speaker_source_value"
+    "x86_nxvm_board_speaker_refresh"
+    "x86_nxvm_board_speaker_timer_output"
+    "x86_nxvm_board_speaker_set_gate"
     "parity_memory_fault"
     "parity_port_read"
     "parity_port_write"
     "mydeskpro386_d4_platform_refresh_nmi"
-    "core_machine_board_configure_xt_ppi_speaker"
-    "core_machine_board_set_xt_ppi_speaker"
-    "core_machine_board_after_pit_reset"
+    "x86_nxvm_board_configure_xt_ppi_speaker"
+    "x86_nxvm_board_set_xt_ppi_speaker"
+    "x86_nxvm_board_after_pit_reset"
     "d4_failsafe_output"
     "d4_port_read"
     "d4_port_write"
-    "core_machine_configure_planar_parity"
+    "x86_nxvm_board_configure_planar_parity"
     "mydeskpro386_d4_platform_attach"
-    "core_machine_report_planar_parity_fault"
+    "x86_nxvm_board_report_planar_parity_fault"
     "mydeskpro386_d4_platform_clear_iochk"
     "mydeskpro386_d4_platform_report_iochk"
     "mydeskpro386_d4_platform_observe"
-    "core_machine_get_speaker_observation"
-    "core_machine_configure_absent_memory"
-    "core_machine_get_planar_parity_observation")
+    "x86_nxvm_board_get_speaker_observation"
+    "x86_nxvm_board_configure_absent_memory"
+    "x86_nxvm_board_get_planar_parity_observation")
     set(electrical "${board}\n${parity}\n${d4_platform}")
     string(REGEX MATCH "${operation}\\([^;]*\\{" signature "${electrical}")
     if(signature STREQUAL "")
@@ -91,7 +91,7 @@ foreach(operation IN ITEMS
     if(definition MATCHES "->board")
         message(FATAL_ERROR "Electrical operation retains Core board lookup: ${operation}")
     endif()
-    if(NOT operation MATCHES "^(core_machine_at_parity|parity_|d4_|mydeskpro386_d4_platform_refresh_nmi)" AND
+    if(NOT operation MATCHES "^(x86_nxvm_board_at_parity|parity_|d4_|mydeskpro386_d4_platform_refresh_nmi)" AND
         definition MATCHES "x86_core_machine[ \\t]+\\*")
         message(FATAL_ERROR "Board electrical operation retains Core receiver: ${operation}")
     endif()

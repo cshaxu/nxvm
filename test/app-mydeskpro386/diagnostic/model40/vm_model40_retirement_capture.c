@@ -1,16 +1,16 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/debug_interface.h"
-#include "test/core/board-base/composition/composition_fixture.h"
-#include "test/core/board-base/support/cmos_fixture.h"
+#include "test/x86-nxvm/board-base/composition/composition_fixture.h"
+#include "test/x86-nxvm/board-base/support/cmos_fixture.h"
 #include "x86-core/machine/retirement_observation_interface.h"
-#include "test/core/setup/session_ini.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
 /* DeskPro firmware performs a complete multi-pass RAM verification before its
@@ -72,7 +72,7 @@ typedef struct model40_capture_port_event {
 
 typedef struct model40_retirement_capture {
     x86_core_machine *machine;
-    core_machine_board_state *board;
+    x86_nxvm_board_state *board;
     model40_retirement_capture_form forms[MODEL40_CAPTURE_FORM_LIMIT];
     model40_retirement_capture_key keys[MODEL40_CAPTURE_FORM_LIMIT];
     lib_u32 count;
@@ -565,7 +565,7 @@ static lib_u8 model40_capture_has_fdc_read_data(
     const model40_retirement_capture *capture,
     const mydeskpro386_observation *profile)
 {
-    const core_machine_fdc_terminal_observation *observation;
+    const x86_nxvm_board_fdc_terminal_observation *observation;
 
     if (capture == LIB_NULL || profile == LIB_NULL ||
         !capture->fdc_read_data_baseline_valid ||
@@ -776,7 +776,7 @@ static void model40_capture_observe(void *opaque,
             capture->reset_vector_shutdown_status[reset_sample] =
                 test_board_cmos_read_register(capture->board, 0x0fu);
             capture->reset_vector_a20[reset_sample] =
-                test_core_a20_is_enabled(capture->machine);
+                test_x86_nxvm_a20_is_enabled(capture->machine);
         }
     }
     if (capture->machine != LIB_NULL && !capture->reset_instruction_seen &&
@@ -788,7 +788,7 @@ static void model40_capture_observe(void *opaque,
         capture->reset_instruction_state_seen = LIB_TRUE;
         capture->reset_instruction_shutdown_status = test_board_cmos_read_register(capture->board, 0x0fu);
         capture->reset_instruction_a20 =
-            test_core_a20_is_enabled(capture->machine);
+            test_x86_nxvm_a20_is_enabled(capture->machine);
     }
     if (capture->machine != LIB_NULL && capture->low_stack_transition_seen &&
         (!capture->minimum_stack_seen ||
@@ -1238,7 +1238,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     x86_core_cpu_debug_cpu_snapshot entry_cpu;
     model40_retirement_capture capture = { 0 };
     integration_ini_session ini_session = {0};
-    vm_machine *session;
+    x86_nxvm_machine *session;
     lib_status status = LIB_STATUS_OK;
     lib_u32 index;
     lib_u64 elapsed_before_terminal = 0u;
@@ -1308,7 +1308,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
-            status = vm_machine_waiting_advance(session, &result, &advanced);
+            status = x86_nxvm_machine_waiting_advance(session, &result, &advanced);
             if (status != LIB_STATUS_OK || !advanced) break;
         }
         status = x86_core_machine_debug_capture_cpu_snapshot(session->x86_core_machine,

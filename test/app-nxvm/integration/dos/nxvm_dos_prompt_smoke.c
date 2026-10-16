@@ -1,4 +1,4 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -12,19 +12,19 @@
 
 
 #include "x86-core/machine/debug_interface.h"
-#include "test/core/machine/support/nxvm_presentation_capture.h"
+#include "test/x86-nxvm/machine/support/nxvm_presentation_capture.h"
 #include "x86-core/machine/machine_interface.h"
 
-#include "core/machine/lifecycle.h"
+#include "x86-nxvm/machine/lifecycle.h"
 
-#include "core/machine/machine_private.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
 #define DOS_PROMPT_TIMEOUT_MILLISECONDS 5000u
 
-static lib_i32 has_dos_prompt(const vm_machine *session);
+static lib_i32 has_dos_prompt(const x86_nxvm_machine *session);
 
 static void dump_first_fault(x86_core_machine *machine)
 {
@@ -49,7 +49,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     DWORD elapsed;
     lib_i32 prompt_seen = 0;
     integration_ini_session ini_session;
-    vm_machine *session;
+    x86_nxvm_machine *session;
     lib_i32 turbo = 0;
 
     if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
@@ -57,7 +57,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     session = ini_session.session;
     turbo = argc == 4;
     if ((turbo && lib_text_compare(argv[3], "turbo")) ||
-        (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK)) {
+        (turbo && x86_nxvm_machine_set_speed(session, X86_NXVM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK)) {
         goto fail;
     }
     if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto fail;
@@ -86,7 +86,7 @@ fail:
     integration_ini_session_close(&ini_session);
     return 1;
 }
-static lib_i32 has_dos_prompt(const vm_machine *session)
+static lib_i32 has_dos_prompt(const x86_nxvm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;

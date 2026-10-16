@@ -1,13 +1,13 @@
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
 #include "x86-core/machine/machine_interface.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/machine_interface.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40_session_assets.h"
 
 static lib_i32 vm_model40_d4_read(x86_core_machine *machine,
@@ -23,9 +23,9 @@ lib_i32 main(void)
 {
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
-    vm_machine_config invalid_config = {0};
-    vm_machine_assets missing_assets = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine_config invalid_config = {0};
+    x86_nxvm_machine_assets missing_assets = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine_run_result result;
     lib_u8 write = 0u;
     lib_u32 port_b = 0u;
@@ -40,10 +40,10 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
         LIB_STATUS_OK || session == LIB_NULL ||
-        x86_core_machine_bus_read(session->x86_core_machine, CORE_MACHINE_PC_AT_PORT_B,
+        x86_core_machine_bus_read(session->x86_core_machine, X86_NXVM_BOARD_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK || (port_b & 0x10u) == 0u ||
         (test_board_pit_advance(session->board, 18u),
-         x86_core_machine_bus_read(session->x86_core_machine, CORE_MACHINE_PC_AT_PORT_B,
+         x86_core_machine_bus_read(session->x86_core_machine, X86_NXVM_BOARD_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK) || (port_b & 0x10u) != 0u ||
         !vm_model40_d4_read(session->x86_core_machine,
             MYDESKPRO386_ROM_LOW_PHYSICAL_START, 0x11u) ||
@@ -58,7 +58,7 @@ lib_i32 main(void)
         !vm_model40_d4_read(session->x86_core_machine, 0x000f0000u, 0x11u) ||
         x86_core_machine_set_address_clear_mask(session->x86_core_machine, 0u) != LIB_STATUS_OK ||
         x86_core_machine_reset(session->x86_core_machine) != LIB_STATUS_OK ||
-        x86_core_machine_bus_read(session->x86_core_machine, CORE_MACHINE_PC_AT_PORT_B,
+        x86_core_machine_bus_read(session->x86_core_machine, X86_NXVM_BOARD_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK || (port_b & 0x10u) == 0u;
     if (!failed) failed |= x86_core_machine_run(session->x86_core_machine,
         (x86_core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
@@ -67,6 +67,6 @@ lib_i32 main(void)
     if (!failed) lib_c_printf("D4-SOLE-ROM-MAP:OK\n");
     if (!failed) lib_c_printf("D4-COMPATIBILITY-RESET:OK\n");
     if (!failed) lib_c_printf("AT-REFRESH-CLOCK:OK\n");
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed ? 1 : 0;
 }

@@ -1,5 +1,5 @@
 #include "app-mydeskpro386/d4_platform.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 
 static lib_status d4_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value);
@@ -78,21 +78,21 @@ lib_status mydeskpro386_d4_platform_configure_memory(mydeskpro386_d4_platform *p
         config, mydeskpro386_d4_platform_iochk_output, platform);
 }
 
-static void d4_board_reset(void *owner, core_machine_board_reset_phase phase)
+static void d4_board_reset(void *owner, x86_nxvm_board_reset_phase phase)
 {
     mydeskpro386_d4_platform *platform = owner;
 
     switch (phase) {
-    case CORE_MACHINE_BOARD_RESET_BEFORE_DEVICES:
+    case X86_NXVM_BOARD_RESET_BEFORE_DEVICES:
         mydeskpro386_d4_memory_reset(&platform->memory);
         break;
-    case CORE_MACHINE_BOARD_RESET_PORT_LATCHES:
+    case X86_NXVM_BOARD_RESET_PORT_LATCHES:
         mydeskpro386_d4_platform_reset_latches(platform);
         break;
-    case CORE_MACHINE_BOARD_RESET_AFTER_PIT:
+    case X86_NXVM_BOARD_RESET_AFTER_PIT:
         mydeskpro386_d4_platform_after_pit_reset(platform);
         break;
-    case CORE_MACHINE_BOARD_RESET_FINAL_REFRESH:
+    case X86_NXVM_BOARD_RESET_FINAL_REFRESH:
         mydeskpro386_d4_platform_reset_refresh(platform);
         break;
     }
@@ -118,10 +118,10 @@ static void d4_board_finalize(void *owner)
     mydeskpro386_d4_platform_destroy(owner);
 }
 
-core_machine_board_profile_binding mydeskpro386_d4_platform_binding(
+x86_nxvm_board_profile_binding mydeskpro386_d4_platform_binding(
     mydeskpro386_d4_platform *platform)
 {
-    return (core_machine_board_profile_binding) {
+    return (x86_nxvm_board_profile_binding) {
         .context = platform, .reset = d4_board_reset,
         .refresh_nmi = d4_board_refresh_nmi,
         .refresh_request = mydeskpro386_d4_platform_refresh_request,
@@ -391,8 +391,8 @@ typedef struct model40_d4_construction {
     mydeskpro386_d4_platform *candidate;
 } model40_d4_construction;
 
-static lib_status model40_d4_factory(const core_machine_board_profile_services *services,
-    void *context, core_machine_board_profile_binding *out_binding)
+static lib_status model40_d4_factory(const x86_nxvm_board_profile_services *services,
+    void *context, x86_nxvm_board_profile_binding *out_binding)
 {
     model40_d4_construction *construction = context;
     lib_status status = mydeskpro386_d4_platform_create(services->core, services->pit,
@@ -404,7 +404,7 @@ static lib_status model40_d4_factory(const core_machine_board_profile_services *
     return status;
 }
 
-lib_status mydeskpro386_d4_platform_attach(core_machine_board_state *board,
+lib_status mydeskpro386_d4_platform_attach(x86_nxvm_board_state *board,
     const mydeskpro386_d4_platform_config *config,
     mydeskpro386_d4_platform **out_platform)
 {
@@ -413,7 +413,7 @@ lib_status mydeskpro386_d4_platform_attach(core_machine_board_state *board,
 
     if (out_platform == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_platform = LIB_NULL;
-    status = core_machine_board_construct_profile(board, model40_d4_factory, &construction);
+    status = x86_nxvm_board_construct_profile(board, model40_d4_factory, &construction);
     if (status == LIB_STATUS_OK) *out_platform = construction.candidate;
     return status;
 }

@@ -1,4 +1,4 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -6,11 +6,11 @@
 #include <windows.h>
 
 #include "x86-core/machine/machine_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-core/machine/memory_interface.h"
-#include "core/machine/machine_private.h"
-#include "core/machine/waiting.h"
-#include "test/core/setup/session_ini.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/waiting.h"
+#include "test/x86-nxvm/setup/session_ini.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u
 #define VM_FDC242_RUN_BUDGET 6000000u
@@ -125,10 +125,10 @@ static lib_status vm_fdc242_install_on_overlay(
     lib_i32 installed;
 
     if (ini_session == LIB_NULL || expected == LIB_NULL ||
-        integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_read(ini_session, X86_NXVM_MACHINE_MEDIA_FDD_ID,
             (void **)&image, &size) != LIB_STATUS_OK || size > MAXDWORD) return LIB_STATUS_INTERNAL_ERROR;
     installed = vm_fdc242_install(image, (DWORD)size) &&
-        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, X86_NXVM_MACHINE_MEDIA_FDD_ID,
             image, size) == LIB_STATUS_OK;
     if (installed) lib_memory_copy(expected, image, VM_FDC242_TRACK_BYTES);
     lib_release(image);
@@ -146,7 +146,7 @@ static lib_i32 vm_fdc242_has_prompt(const x86_video_snapshot *snapshot)
     return 0;
 }
 
-static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
+static lib_i32 vm_fdc242_run_until(x86_nxvm_machine *session, lib_u32 limit,
     lib_u32 quantum, lib_i32 require_marker)
 {
     x86_core_machine_run_budget budget = {quantum, 0u}; x86_core_machine_run_result result;
@@ -157,7 +157,7 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
         if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == X86_CORE_MACHINE_STOP_FAULT) return 0;
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
-            (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
+            (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
             !advanced)) return 0;
         used += budget.instructions;
         /* Both the prompt and the test program's marker persist.  Sampling
@@ -165,7 +165,7 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
          * instruction-level FDC/DMA execution being compared. */
         if (used < limit && used % VM_FDC242_DISPLAY_OBSERVATION_QUANTUM != 0u)
             continue;
-        if (core_machine_capture_display_snapshot(session->board,
+        if (x86_nxvm_board_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
         if (require_marker ? snapshot.kind == X86_VIDEO_KIND_TEXT &&
                 snapshot.characters[VM_FDC242_MARKER_CELL] == 'F' &&
@@ -186,7 +186,7 @@ static lib_i32 vm_fdc242_run_case(integration_ini_session *ini_session,
     lib_u32 quantum, vm_fdc242_result *out_result)
 {
     static const lib_u8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
     lib_u16 program_cs = 0u;
     lib_size index;
     lib_i32 ok = 0;
@@ -194,9 +194,9 @@ static lib_i32 vm_fdc242_run_case(integration_ini_session *ini_session,
     if (ini_session == LIB_NULL || out_result == LIB_NULL || quantum == 0u ||
         integration_ini_session_restart(ini_session) != LIB_STATUS_OK) goto done;
     session = ini_session->session;
-    vm_machine_executor_state_start(&session->control.state);
+    x86_nxvm_machine_executor_state_start(&session->control.state);
     if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
-    for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
+    for (index = 0u; index < sizeof(command); ++index) if (x86_nxvm_board_keyboard_receive_native_byte(
         session->board, command[index]) != LIB_STATUS_OK) goto done;
     if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 1) ||
         x86_core_machine_memory_read(session->x86_core_machine, VM_FDC242_DMA_ADDRESS,
@@ -219,7 +219,7 @@ done:
                 observation.cpu.cs, observation.cpu.eip, disk_status);
         }
     }
-    if (session != LIB_NULL) vm_machine_executor_state_stop(&session->control.state);
+    if (session != LIB_NULL) x86_nxvm_machine_executor_state_stop(&session->control.state);
     return ok;
 }
 

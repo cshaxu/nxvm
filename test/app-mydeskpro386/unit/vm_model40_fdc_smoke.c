@@ -1,15 +1,15 @@
 #include "app-mydeskpro386/machine_observation_interface.h"
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "../support/model40.h"
-#include "../../core/board-base/support/controller_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/controller_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/machine/machine_private.h"
-#include "core/machine/lifecycle.h"
-#include "core/machine/media/fdd_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/lifecycle.h"
+#include "x86-nxvm/machine/media/fdd_interface.h"
 #include "../support/model40_session_assets.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
@@ -19,16 +19,16 @@ static lib_i32 floppy_channel_matrix(void)
     static const lib_u32 rates[] = {500000u, 300000u, 250000u};
     static const lib_u16 positions[] = {0u, 1u, 2u, 39u, 40u, 78u, 79u, 80u};
 
-    for (vm_profile_floppy_kind drive = VM_PROFILE_FLOPPY_35_1440K;
-            drive <= VM_PROFILE_FLOPPY_35_720K; ++drive) {
-        const core_machine_fdc_channel_provider channel = vm_profile_floppy_channel_get(drive);
-        for (vm_profile_floppy_kind media = VM_PROFILE_FLOPPY_35_1440K;
-                media <= VM_PROFILE_FLOPPY_35_720K; ++media) {
-            const core_machine_media_geometry *geometry = vm_profile_floppy_geometry_get(media);
-            const lib_u16 step = drive == VM_PROFILE_FLOPPY_525_1200K &&
-                media == VM_PROFILE_FLOPPY_525_360K ? 2u : 1u;
+    for (x86_nxvm_board_floppy_kind drive = X86_NXVM_BOARD_FLOPPY_35_1440K;
+            drive <= X86_NXVM_BOARD_FLOPPY_35_720K; ++drive) {
+        const x86_nxvm_board_fdc_channel_provider channel = x86_nxvm_board_floppy_channel_get(drive);
+        for (x86_nxvm_board_floppy_kind media = X86_NXVM_BOARD_FLOPPY_35_1440K;
+                media <= X86_NXVM_BOARD_FLOPPY_35_720K; ++media) {
+            const x86_nxvm_board_media_geometry *geometry = x86_nxvm_board_floppy_geometry_get(media);
+            const lib_u16 step = drive == X86_NXVM_BOARD_FLOPPY_525_1200K &&
+                media == X86_NXVM_BOARD_FLOPPY_525_360K ? 2u : 1u;
             const lib_u32 expected_rate = step == 2u ? 300000u :
-                (media <= VM_PROFILE_FLOPPY_525_1200K ? 500000u : 250000u);
+                (media <= X86_NXVM_BOARD_FLOPPY_525_1200K ? 500000u : 250000u);
             for (lib_size rate = 0u; rate < sizeof(rates) / sizeof(rates[0]); ++rate) {
                 for (lib_size position = 0u; position < sizeof(positions) / sizeof(positions[0]); ++position) {
                     lib_u16 cylinder = 0xffffu;
@@ -48,7 +48,7 @@ static lib_i32 floppy_channel_matrix(void)
     return 0;
 }
 
-static lib_bool model40_fdc_command(core_machine_board_state *board, x86_core_machine *machine,
+static lib_bool model40_fdc_command(x86_nxvm_board_state *board, x86_core_machine *machine,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -59,7 +59,7 @@ static lib_bool model40_fdc_command(core_machine_board_state *board, x86_core_ma
         test_board_fdc_finish_command_wait(board);
 }
 
-static lib_i32 model40_fdc_result(core_machine_board_state *board, x86_core_machine *machine,
+static lib_i32 model40_fdc_result(x86_nxvm_board_state *board, x86_core_machine *machine,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -99,8 +99,8 @@ lib_i32 main(void)
     static const lib_u8 read_last[] = {0x66u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
     static const lib_u8 read_last_dma[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
     static const lib_u8 read_oob[] = {0xe6u, 0u, 0u, 0u, 16u, 2u, 16u, 0x1bu, 0xffu};
-    vm_machine *session = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
+    x86_nxvm_machine *session = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
     x86_core_machine *machine = LIB_NULL;
     lib_u8 result[7] = {0};
     lib_u32 index;
@@ -117,7 +117,7 @@ lib_i32 main(void)
     image[511u] = 0xaau;
     image[(15u - 1u) * 512u] = 0xa5u;
     if (vm_model40_fixture_create_bytes(even, odd, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->floppy[0u], image,
+        session == LIB_NULL || x86_nxvm_machine_fdd_replace_bytes(session->floppy[0u], image,
             sizeof(image)) != LIB_FALSE) goto done;
     {
         board = session->board;
@@ -126,15 +126,15 @@ lib_i32 main(void)
         test_board_kbc_advance(board, 1u);
         if (x86_core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK ||
             value != 0xb4u) goto done;
-        const core_machine_fdc_config config = test_board_fdc_connection_config(board);
-        const core_machine_fdc_drive_bindings drives = test_board_fdc_drive_bindings(board);
+        const x86_nxvm_board_fdc_config config = test_board_fdc_connection_config(board);
+        const x86_nxvm_board_fdc_drive_bindings drives = test_board_fdc_drive_bindings(board);
         const lib_u64 byte_ticks = config.clock_ticks_per_second / 1000000u * 16u;
         if (config.irq != 6u || config.dma_channel != 2u ||
             config.ready_mask != 0x0fu ||
             config.clock_ticks_per_second != 16000000u ||
             drives.installed_mask != 0x03u ||
             drives.track_zero_active_low_mask != 0u ||
-            session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K) goto done;
+            session->construction.floppy_kind != X86_NXVM_BOARD_FLOPPY_525_1200K) goto done;
         static const struct { lib_u8 index; lib_u8 value; } cmos[] = {
             {0x14u, 0x41u}, {0x10u, 0x22u}, {0x12u, 0x80u},
             {0x19u, 0u}, {0x17u, 0u}, {0x18u, 0x04u}
@@ -187,7 +187,7 @@ lib_i32 main(void)
             result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             !vm_test_model40_observation(session).fdc_terminal_valid ||
             !vm_test_model40_observation(session).fdc_terminal.successful ||
-            vm_machine_reset(session) != LIB_STATUS_OK ||
+            x86_nxvm_machine_reset(session) != LIB_STATUS_OK ||
             vm_test_model40_observation(session).fdc_terminal_valid ||
             !model40_fdc_command(board, machine, read_oob, sizeof(read_oob)) ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
@@ -196,7 +196,7 @@ lib_i32 main(void)
             vm_test_model40_observation(session).fdc_terminal.successful ||
             vm_test_model40_observation(session).fdc_terminal.result[0] != result[0] ||
             vm_test_model40_observation(session).fdc_terminal.result[1] != result[1] ||
-            vm_machine_fdd_remove_for(session->floppy[0u]) != LIB_FALSE) goto done;
+            x86_nxvm_machine_fdd_remove_for(session->floppy[0u]) != LIB_FALSE) goto done;
         test_board_fdc_refresh(board);
         if (!model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
             x86_core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
@@ -239,7 +239,7 @@ lib_i32 main(void)
             {{0x4au, 0u}, 2u},
             {{0x4du, 0u, 2u, 15u, 0x54u, 0xf6u}, 6u}
         };
-        if (vm_machine_fdd_replace_bytes(session->floppy[0u], image, sizeof(image))) goto done;
+        if (x86_nxvm_machine_fdd_replace_bytes(session->floppy[0u], image, sizeof(image))) goto done;
         for (lib_u8 rate = 1u; rate <= 3u; ++rate) {
             for (lib_size command = 0u; command < sizeof(commands) / sizeof(commands[0]); ++command) {
                 test_board_fdc_reset(board);
@@ -261,16 +261,16 @@ lib_i32 main(void)
         mydeskpro386_observation detached = {0};
 
         if (!captured.d4.configured || !captured.fdc_terminal_valid ||
-            vm_machine_finish_reset(session, LIB_STATUS_INTERNAL_ERROR) != LIB_STATUS_INTERNAL_ERROR ||
+            x86_nxvm_machine_finish_reset(session, LIB_STATUS_INTERNAL_ERROR) != LIB_STATUS_INTERNAL_ERROR ||
             !vm_test_model40_observation(session).fdc_terminal_valid) goto done;
-        vm_machine_finalize(session);
+        x86_nxvm_machine_finalize(session);
         if (mydeskpro386_observe(vm_test_profile_construction(session), &detached) !=
                 LIB_STATUS_OK || detached.d4.configured || detached.fdc_terminal_valid ||
             !captured.d4.configured || !captured.fdc_terminal_valid) goto done;
     }
     failed = 0;
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     lib_c_printf("FDC-12MB-LOGICAL:OK\n");
     lib_c_printf("FDC-DMA2-IRQ6:OK\n");

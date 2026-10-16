@@ -24,10 +24,10 @@ foreach(source IN LISTS integration_sources)
        source MATCHES "\\\\support\\\\session_ini\\.c$")
         continue()
     endif()
-    if(text MATCHES "vm_machine_create[ \t\r\n]*\\(")
+    if(text MATCHES "x86_nxvm_machine_create[ \t\r\n]*\\(")
         message(FATAL_ERROR "integration must open only through the INI session owner: ${source}")
     endif()
-    if(text MATCHES "vm_machine_config[ \t\r\n]")
+    if(text MATCHES "x86_nxvm_machine_config[ \t\r\n]")
         message(FATAL_ERROR "integration must not construct a session config: ${source}")
     endif()
     if(source MATCHES "/support/.*\\.c$" OR source MATCHES "\\\\support\\\\.*\\.c$")
@@ -38,23 +38,23 @@ foreach(source IN LISTS integration_sources)
     if(source MATCHES "/product/nxvm_deployed_boot_probe\\.c$")
         if(NOT text MATCHES "CreateProcessA\\(argv\\[1\\]" OR
            NOT text MATCHES "NULL, argv\\[2\\], &startup, &process" OR
-           text MATCHES "core_machine_create[ \t\r\n]*\\(")
+           text MATCHES "x86_nxvm_board_create[ \t\r\n]*\\(")
             message(FATAL_ERROR "Deployed probe must launch the real product: ${source}")
         endif()
         continue()
     endif()
     if(source MATCHES "\\.c$" AND NOT text MATCHES
-        "integration_ini_session_|vm_app_ini_load|pc_console_process_run")
+        "integration_ini_session_|x86_nxvm_product_ini_load|pc_console_process_run")
         message(FATAL_ERROR "integration lacks an INI session consumer: ${source}")
     endif()
 endforeach()
 file(GLOB_RECURSE unit_sources
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86-nxvm/board-base/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5170/unit/*.c"
@@ -87,7 +87,7 @@ foreach(app IN ITEMS my5160 my5170 mydeskpro386 nxvm)
     file(READ "${PROJECT_SOURCE_DIR}/src/app-${app}/main.c" app_entry)
     if(NOT app_build MATCHES "set\\(NXVM_PRODUCT_ARTIFACT_NAME ${app}\\)" OR
        NOT app_build MATCHES "set\\(NXVM_PRODUCT_INI_NAME ${app}\\.ini\\)" OR
-       NOT app_entry MATCHES "vm_app_run\\(APP_PRODUCT_NAME, APP_PRODUCT_INI_NAME,")
+       NOT app_entry MATCHES "x86_nxvm_product_run\\(APP_PRODUCT_NAME, APP_PRODUCT_INI_NAME,")
         message(FATAL_ERROR "App must explicitly provide its publication/INI identity: ${app}")
     endif()
     file(GLOB app_ini_names RELATIVE "${PROJECT_SOURCE_DIR}/assets/${app}"

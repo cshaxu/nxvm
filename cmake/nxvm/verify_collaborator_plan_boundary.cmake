@@ -3,9 +3,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(project_collaborator_plan_contracts
-    "src/core/board-base/media_interface.h|core_machine_media_registry"
-    "src/core/board-base/display_interface.h|core_machine_display_provider_slot"
-    "src/core/board-base/machine_board_interface.h|core_machine_plan")
+    "src/x86-nxvm/board-base/media_interface.h|x86_nxvm_board_media_registry"
+    "src/x86-nxvm/board-base/display_interface.h|x86_nxvm_board_display_provider_slot"
+    "src/x86-nxvm/board-base/machine_board_interface.h|x86_nxvm_board_plan")
 
 foreach(project_collaborator_plan_contract IN LISTS project_collaborator_plan_contracts)
     string(REPLACE "|" ";" project_collaborator_plan_parts "${project_collaborator_plan_contract}")
@@ -22,12 +22,12 @@ foreach(project_collaborator_plan_contract IN LISTS project_collaborator_plan_co
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board_interface.h"
     project_collaborator_plan_machine_contract)
 foreach(project_collaborator_plan_retired
         "core_machine_plan_memory_device"
-        "core_machine_fdc_topology"
-        "core_machine_hdc_topology"
+        "x86_nxvm_board_fdc_topology"
+        "x86_nxvm_board_hdc_topology"
         "d4_memory_parity_mask")
     if(project_collaborator_plan_machine_contract MATCHES "${project_collaborator_plan_retired}")
         message(FATAL_ERROR "public plan retains ${project_collaborator_plan_retired}")

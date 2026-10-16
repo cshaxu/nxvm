@@ -15,7 +15,7 @@ $renamedHeaders = @{
     'device_support_interface.h' = 'device_support.h'
     'execution_provider_interface.h' = 'execution_provider.h'
 }
-foreach ($coreFile in Get-ChildItem (Join-Path $root 'src/core/x86') -File) {
+foreach ($coreFile in Get-ChildItem (Join-Path $root 'src/x86-core/machine') -File) {
     $oldName = $coreFile.Name
     if ($renamedHeaders.ContainsKey($oldName)) { $oldName = $renamedHeaders[$oldName] }
     $oldPath = Join-Path $root ('src/app-nxvm/devices/' + $oldName)

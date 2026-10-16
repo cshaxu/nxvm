@@ -2,17 +2,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/rtc146818/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/rtc146818/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" advance_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/board_advance.c" advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile_interface.h"
     profile_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/at_assembly.c" assembly_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/at_assembly.c" assembly_source)
 
 foreach(forbidden IN ITEMS "machine->board->shared_rtc"
     "machine->board->rtc_selected_register" "x86_rtc_advance(")
@@ -38,16 +38,16 @@ foreach(required IN ITEMS "x86_rtc_advance" "rtc->output("
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_pic_irq_source_assert"
-    "core_machine_pic_irq_source_deassert" "rtc_selected_register"
+foreach(required IN ITEMS "x86_nxvm_board_pic_irq_source_assert"
+    "x86_nxvm_board_pic_irq_source_deassert" "rtc_selected_register"
     "x86_rtc_create" "x86_core_machine_install_port_routes")
     string(FIND "${board_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "CMOS RTC board binding is incomplete: ${required}")
     endif()
 endforeach()
-string(FIND "${board_source}" "lib_status core_machine_configure_rtc_cmos(" rtc_start)
-string(FIND "${board_source}" "lib_status core_machine_configure_planar_parity(" rtc_end)
+string(FIND "${board_source}" "lib_status x86_nxvm_board_configure_rtc_cmos(" rtc_start)
+string(FIND "${board_source}" "lib_status x86_nxvm_board_configure_planar_parity(" rtc_end)
 if(rtc_start LESS 0 OR rtc_end LESS rtc_start)
     message(FATAL_ERROR "CMOS RTC construction range is missing")
 endif()
@@ -73,11 +73,11 @@ foreach(forbidden IN ITEMS "app-nxvm/" "core_machine_pic" "selected_register"
 endforeach()
 
 string(FIND "${advance_source}" "x86_rtc_advance" machine_advance_position)
-string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
+string(FIND "${board_source}" "x86_nxvm_board_configure_rtc_cmos"
     machine_binding_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)
-string(FIND "${profile_source}" "vm_at_topology_materialize" profile_position)
-string(FIND "${assembly_source}" "VM_AT_DEVICE_CMOS" endpoint_position)
+string(FIND "${profile_source}" "x86_nxvm_board_at_topology_materialize" profile_position)
+string(FIND "${assembly_source}" "X86_NXVM_BOARD_AT_DEVICE_CMOS" endpoint_position)
 string(FIND "${assembly_source}" "result.rtc_cmos.index_port" index_position)
 string(FIND "${assembly_source}" "result.rtc_cmos.data_port" data_position)
 string(FIND "${assembly_source}" "result.rtc_cmos.irq" irq_position)

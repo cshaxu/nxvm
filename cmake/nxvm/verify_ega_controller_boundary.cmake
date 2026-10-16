@@ -2,15 +2,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/video/video.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/chips/video/video.c" vadp_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-core/machine/memory.c" memory_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/wiring.c" at_wiring)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" machine_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_display.c" machine_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-at/wiring.c" at_wiring)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_plan.c" machine_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/board-base/machine_display.c" machine_display_source)
 
-if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|core/platform/|core/product/)")
+if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|x86-nxvm/platform/|x86-nxvm/product/)")
     message(FATAL_ERROR "VADP imports a product or platform owner")
 endif()
 if(memory_source MATCHES "GRAPHICS_REGISTER|ATTRIBUTE_REGISTER|VADP_PORT")
@@ -18,8 +18,8 @@ if(memory_source MATCHES "GRAPHICS_REGISTER|ATTRIBUTE_REGISTER|VADP_PORT")
 endif()
 
 foreach(required IN ITEMS
-    "VM_AT_DEVICE_VADP_GRAPHICS"
-    "VM_AT_DEVICE_VADP_ATTRIBUTE"
+    "X86_NXVM_BOARD_AT_DEVICE_VADP_GRAPHICS"
+    "X86_NXVM_BOARD_AT_DEVICE_VADP_ATTRIBUTE"
     "0x03ceu"
     "0x03cfu"
     "0x03c0u")
@@ -33,19 +33,19 @@ endforeach()
 # EGA indexed controls are write-only on this board.  Attribute-data reads
 # remain a chip capability for VGA, but the EGA board intentionally does not
 # register a 03C1 read direction.
-string(FIND "${at_wiring}" "{ VM_AT_DEVICE_VADP_ATTRIBUTE, 0x03c1u" attribute_read_position)
+string(FIND "${at_wiring}" "{ X86_NXVM_BOARD_AT_DEVICE_VADP_ATTRIBUTE, 0x03c1u" attribute_read_position)
 if(NOT attribute_read_position EQUAL -1)
     message(FATAL_ERROR "EGA board must not register an attribute-data read route")
 endif()
 
-string(FIND "${profile_source}" "topology.display = (core_machine_display_config)" position)
+string(FIND "${profile_source}" "topology.display = (x86_nxvm_board_display_config)" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "profile resolver does not publish its display plan")
 endif()
 string(FIND "${machine_plan_source}" "topology->display_present" display_present_position)
-string(FIND "${machine_display_source}" "core_machine_configure_display(" configure_display_position)
+string(FIND "${machine_display_source}" "x86_nxvm_board_configure_display(" configure_display_position)
 if(display_present_position EQUAL -1 OR configure_display_position EQUAL -1)
-    message(FATAL_ERROR "Core plan materialization is missing core_machine_configure_display")
+    message(FATAL_ERROR "Core plan materialization is missing x86_nxvm_board_configure_display")
 endif()
 
 message("EGA-CONTROLLER:BOUNDARY:OK")

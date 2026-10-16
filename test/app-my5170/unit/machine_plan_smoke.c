@@ -1,20 +1,20 @@
 #include "app-my5170/machine_config_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "lib/types/types_interface.h"
 
 static lib_i32 ibm_5170_plan_is_complete(void)
 {
-    vm_profile_default_pc_at_plan_snapshot profile;
-    core_machine_plan *plan = LIB_NULL;
+    x86_nxvm_board_pc_at_plan_snapshot profile;
+    x86_nxvm_board_plan *plan = LIB_NULL;
     lib_status status;
 
     if (vm_profile_ibm_5170_plan_create(&profile) != LIB_STATUS_OK ||
-        !vm_profile_default_pc_at_descriptor_is_valid(&profile.descriptor) ||
+        !x86_nxvm_board_pc_at_descriptor_is_valid(&profile.descriptor) ||
         profile.values.core.configuration.cpu_profile != X86_CORE_CPU_PROFILE_80286 ||
         profile.values.core.configuration.memory_bytes != 512u * 1024u ||
-        profile.values.core.configuration.pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
+        profile.values.core.configuration.pic_topology != X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED ||
         profile.values.core.configuration.dma_controller_count !=
-            CORE_MACHINE_DMA_CONTROLLER_COUNT ||
+            X86_NXVM_BOARD_DMA_CONTROLLER_COUNT ||
         profile.values.core.configuration.time_axis.kind !=
             X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         profile.values.core.configuration.time_axis.ticks_per_second != 8000000u ||
@@ -22,20 +22,20 @@ static lib_i32 ibm_5170_plan_is_complete(void)
         profile.values.port_leaf_count == 0u || profile.values.irq_route_count != 4u ||
         profile.values.drq_route_count != 1u || !profile.topology.display_present ||
         !profile.topology.dma_present || !profile.topology.rtc_cmos_present ||
-        profile.values.firmware_policy != VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BUILTIN ||
-        profile.values.media_policy != VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION) return 1;
-    status = core_machine_plan_create(&profile.values.core.configuration, &plan);
-    if (status == LIB_STATUS_OK) status = core_machine_plan_set_controller_timing_rules(plan,
+        profile.values.firmware_policy != X86_NXVM_BOARD_CONTRACT_FIRMWARE_POLICY_BUILTIN ||
+        profile.values.media_policy != X86_NXVM_BOARD_CONTRACT_MEDIA_POLICY_SESSION) return 1;
+    status = x86_nxvm_board_plan_create(&profile.values.core.configuration, &plan);
+    if (status == LIB_STATUS_OK) status = x86_nxvm_board_plan_set_controller_timing_rules(plan,
         &profile.values.core.controller_timing_rules);
-    if (status == LIB_STATUS_OK) status = core_machine_plan_set_topology(plan, &profile.topology);
-    core_machine_plan_destroy(plan);
+    if (status == LIB_STATUS_OK) status = x86_nxvm_board_plan_set_topology(plan, &profile.topology);
+    x86_nxvm_board_plan_destroy(plan);
     return status != LIB_STATUS_OK;
 }
 
 static lib_i32 ibm_5170_memory_options_stay_bounded(void)
 {
-    vm_profile_default_pc_at_plan_snapshot expanded;
-    vm_profile_default_pc_at_plan_snapshot rejected;
+    x86_nxvm_board_pc_at_plan_snapshot expanded;
+    x86_nxvm_board_pc_at_plan_snapshot rejected;
 
     if (vm_profile_ibm_5170_plan_create_memory(1536u * 1024u, &expanded) !=
         LIB_STATUS_OK || expanded.values.core.configuration.memory_bytes !=

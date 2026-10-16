@@ -1,11 +1,11 @@
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/entry_plan_interface.h"
-#include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_CGA_GRAPHICS_BOOT_BUDGET 500000u
@@ -30,7 +30,7 @@ static const lib_u8 vm_cga_graphics_program[] = {
 
 lib_i32 main(void)
 {
-    const vm_machine_config config = {
+    const x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .bios_count = 1u
@@ -46,10 +46,10 @@ lib_i32 main(void)
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
     x86_video_snapshot snapshot;
-    vm_machine *session = LIB_NULL;
-    vm_machine_construction construction;
-    vm_machine_assets assets;
-    lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
+    x86_nxvm_machine *session = LIB_NULL;
+    x86_nxvm_machine_construction construction;
+    x86_nxvm_machine_assets assets;
+    lib_u8 rom[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES];
     lib_u32 instruction;
     lib_i32 passed = 0;
 
@@ -60,7 +60,7 @@ lib_i32 main(void)
     construction.topology.display.cga_vram_present = LIB_TRUE;
     construction.topology.display.ega_present = LIB_FALSE;
     construction.topology.display.vertical_irq = 0u;
-    if (vm_machine_create(&config, &construction, &session) != LIB_STATUS_OK ||
+    if (x86_nxvm_machine_create(&config, &construction, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || x86_core_machine_apply_entry_plan(session->x86_core_machine,
             &plan) != LIB_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_CGA_GRAPHICS_BOOT_BUDGET;
@@ -69,7 +69,7 @@ lib_i32 main(void)
                 LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) {
             goto done;
         }
-        if (core_machine_capture_display_snapshot(session->board,
+        if (x86_nxvm_board_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) goto done;
         if (snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4) {
             continue;
@@ -85,7 +85,7 @@ lib_i32 main(void)
     }
 
 done:
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (!passed) return 1;
     printf("CGA:SYSTEM:OK\n");
     return 0;

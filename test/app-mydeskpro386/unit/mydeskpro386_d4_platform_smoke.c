@@ -3,24 +3,24 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "../../core/board-base/composition/composition_fixture.h"
+#include "../../x86-nxvm/board-base/composition/composition_fixture.h"
 #include "x86-core/machine/debug_interface.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 
-#include "../../core/board-base/core_machine_board_fixture.h"
+#include "../../x86-nxvm/board-base/board_board_fixture.h"
 
 static lib_i32 core_machine_port_b_exclusivity(void)
 {
-    core_machine_config config = {0};
-    core_machine_planar_parity_config planar = {
-        .port = CORE_MACHINE_PC_AT_PORT_B,
+    x86_nxvm_board_config config = {0};
+    x86_nxvm_board_planar_parity_config planar = {
+        .port = X86_NXVM_BOARD_PC_AT_PORT_B,
         .memory_bytes = 512u * 1024u,
-        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
+        .refresh_status_source = X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
         .refresh_status_toggle_ticks = 0u
     };
-    mydeskpro386_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
+    mydeskpro386_d4_platform_config d4 = {X86_NXVM_BOARD_PC_AT_PORT_B, 0u, 2u, 18u};
     x86_core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
     mydeskpro386_d4_platform *d4_board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = 0;
@@ -28,24 +28,24 @@ static lib_i32 core_machine_port_b_exclusivity(void)
     config.memory_bytes = 2u * 1024u * 1024u;
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_configure_planar_parity(board, &planar) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        x86_nxvm_board_configure_planar_parity(board, &planar) != LIB_STATUS_OK ||
         mydeskpro386_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_INVALID_ARGUMENT ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        x86_core_machine_bus_read(machine, CORE_MACHINE_PC_AT_PORT_B, &value) !=
+        x86_core_machine_bus_read(machine, X86_NXVM_BOARD_PC_AT_PORT_B, &value) !=
             LIB_STATUS_OK || (value & 0x0fu) != 0x04u;
     x86_core_machine_destroy(machine);
 
     machine = LIB_NULL;
     value = 0u;
-    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK ||
         mydeskpro386_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_OK ||
         mydeskpro386_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_INVALID_STATE ||
-        core_machine_configure_planar_parity(board, &planar) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_nxvm_board_configure_planar_parity(board, &planar) != LIB_STATUS_INVALID_ARGUMENT ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        x86_core_machine_bus_read(machine, CORE_MACHINE_PC_AT_PORT_B, &value) !=
+        x86_core_machine_bus_read(machine, X86_NXVM_BOARD_PC_AT_PORT_B, &value) !=
             LIB_STATUS_OK || (value & 0x0fu) != 0x0fu;
     x86_core_machine_destroy(machine);
     return failed;
@@ -53,9 +53,9 @@ static lib_i32 core_machine_port_b_exclusivity(void)
 static lib_u16 read_refresh_count(x86_core_machine *machine)
 {
     lib_u16 low;
-    test_core_write_port_after_run(machine, 0x0043u, 0x40u);
-    low = test_core_read_port_after_run(machine, 0x0041u);
-    return (lib_u16)(low | (test_core_read_port_after_run(machine, 0x0041u) << 8u));
+    test_x86_nxvm_write_port_after_run(machine, 0x0043u, 0x40u);
+    low = test_x86_nxvm_read_port_after_run(machine, 0x0041u);
+    return (lib_u16)(low | (test_x86_nxvm_read_port_after_run(machine, 0x0041u) << 8u));
 }
 
 static lib_i32 mydeskpro386_d4_speed_command_contract(
@@ -87,13 +87,13 @@ static lib_i32 mydeskpro386_d4_speed_command_contract(
 
 lib_i32 main(void)
 {
-    core_machine_config config = {0};
-    mydeskpro386_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
-    core_machine_rtc_cmos_config cmos = {0};
+    x86_nxvm_board_config config = {0};
+    mydeskpro386_d4_platform_config d4 = {X86_NXVM_BOARD_PC_AT_PORT_B, 0u, 2u, 18u};
+    x86_nxvm_board_rtc_cmos_config cmos = {0};
     mydeskpro386_d4_platform_observation observation;
-    core_machine_speaker_observation speaker;
+    x86_nxvm_board_speaker_observation speaker;
     x86_core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
     mydeskpro386_d4_platform *d4_board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = 0;
@@ -106,10 +106,10 @@ lib_i32 main(void)
     cmos.irq = 8u;
     cmos.nmi_mask_bit = 0x80u;
     cmos.ticks_per_second = 1u;
-    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+    failed |= x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK ||
         mydeskpro386_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_OK ||
-        core_machine_configure_rtc_cmos(board, &cmos) != LIB_STATUS_OK ||
-        test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+        x86_nxvm_board_configure_rtc_cmos(board, &cmos) != LIB_STATUS_OK ||
+        test_x86_nxvm_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
@@ -145,31 +145,31 @@ lib_i32 main(void)
     if (!failed) lib_c_printf("D4-PORT-B-SYSTEM-PIT:OK\n");
 
     if (!failed) failed |= x86_core_machine_bus_write(machine, 0x0061u, 0x02u) !=
-        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
+        LIB_STATUS_OK || x86_nxvm_board_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.configured || speaker.timer_gate ||
         !speaker.data_enabled || speaker.output != speaker.timer_output ||
         x86_core_machine_bus_write(machine, 0x0061u, 0x00u) != LIB_STATUS_OK ||
-        core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
+        x86_nxvm_board_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         speaker.output || x86_core_machine_bus_write(machine, 0x0043u, 0xb4u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(machine, 0x0042u, 2u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(machine, 0x0042u, 0u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(machine, 0x0061u, 0x03u) !=
-        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
+        LIB_STATUS_OK || x86_nxvm_board_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled ||
         !speaker.timer_output || !speaker.output;
     if (!failed) x86_pit_advance(d4_board->shared_pit, 2u);
-    if (!failed) failed |= core_machine_get_speaker_observation(board,
+    if (!failed) failed |= x86_nxvm_board_get_speaker_observation(board,
         &speaker) != LIB_STATUS_OK || speaker.timer_output || speaker.output;
     if (!failed) x86_pit_advance(d4_board->shared_pit, 1u);
-    if (!failed) failed |= core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
+    if (!failed) failed |= x86_nxvm_board_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.timer_output || !speaker.output;
     if (!failed) lib_c_printf("D4-SPEAKER-LINE:OK\n");
     if (!failed) failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
+        x86_nxvm_board_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || !speaker.timer_gate || !speaker.data_enabled ||
         speaker.output != speaker.timer_output;
 
-    if (!failed) failed |= test_core_machine_fixture_nmi_prepare(machine);
+    if (!failed) failed |= test_x86_nxvm_machine_fixture_nmi_prepare(machine);
     if (!failed) failed |= x86_core_machine_bus_write(machine, 0x0061u, 0x03u) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(machine, 0x0070u, 0x80u) !=
             LIB_STATUS_OK || mydeskpro386_d4_platform_report_iochk(d4_board) !=
@@ -177,15 +177,15 @@ lib_i32 main(void)
             &observation) != LIB_STATUS_OK || !observation.iochk_latched ||
         observation.nmi_signaled ||
         x86_core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
-        value != 0x53u || test_core_machine_fixture_nmi_execute(machine, LIB_FALSE) ||
+        value != 0x53u || test_x86_nxvm_machine_fixture_nmi_execute(machine, LIB_FALSE) ||
         x86_core_machine_bus_write(machine, 0x0070u, 0u) !=
             LIB_STATUS_OK || mydeskpro386_d4_platform_observe(d4_board,
             &observation) != LIB_STATUS_OK || !observation.nmi_signaled ||
-        test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
+        test_x86_nxvm_machine_fixture_nmi_execute(machine, LIB_TRUE);
     if (!failed) lib_c_printf("D4-NMI-MASK:OK\n");
 
     if (!failed) failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        test_core_machine_fixture_nmi_prepare(machine) ||
+        test_x86_nxvm_machine_fixture_nmi_prepare(machine) ||
         x86_core_machine_bus_write(machine, 0x0061u, 0u) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(machine, 0x0064u, 0xd0u) != LIB_STATUS_OK ||
         x86_core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 1u ||
@@ -197,7 +197,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || !observation.failsafe_enabled ||
         !observation.failsafe_latched || !observation.nmi_signaled ||
         x86_core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
-        value != 0x90u || test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
+        value != 0x90u || test_x86_nxvm_machine_fixture_nmi_execute(machine, LIB_TRUE);
     if (!failed) lib_c_printf("D4-FAILSAFE-ROUTE:OK\n");
 
     if (!failed) {
@@ -225,13 +225,13 @@ lib_i32 main(void)
             x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
                 &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
             result.executed != 1u;
-        elapsed_before_shutdown = test_core_elapsed_ticks(machine);
+        elapsed_before_shutdown = test_x86_nxvm_elapsed_ticks(machine);
         failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
             &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
             x86_core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != 0x0000fff0u ||
-            test_core_elapsed_ticks(machine) != elapsed_before_shutdown ||
+            test_x86_nxvm_elapsed_ticks(machine) != elapsed_before_shutdown ||
             mydeskpro386_d4_platform_observe(d4_board, &observation) !=
                 LIB_STATUS_OK || !observation.failsafe_enabled ||
             !observation.failsafe_latched;
@@ -242,8 +242,8 @@ lib_i32 main(void)
         observation.iochk_latched || observation.failsafe_latched ||
         observation.nmi_signaled ||
         x86_core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
-        value != 0x1fu || test_core_machine_fixture_nmi_prepare(machine) ||
-        test_core_machine_fixture_nmi_execute(machine, LIB_FALSE);
+        value != 0x1fu || test_x86_nxvm_machine_fixture_nmi_prepare(machine) ||
+        test_x86_nxvm_machine_fixture_nmi_execute(machine, LIB_FALSE);
     if (!failed) failed |= core_machine_port_b_exclusivity();
     x86_core_machine_destroy(machine);
     if (failed) return 1;

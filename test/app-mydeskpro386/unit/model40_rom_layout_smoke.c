@@ -1,12 +1,12 @@
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
 #include "x86-core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 #include "../support/model40_session_assets.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 
 static lib_i32 vm_model40_rom_read(x86_core_machine *machine,
     lib_u32 physical, lib_u8 expected)
@@ -21,9 +21,9 @@ lib_i32 main(void)
 {
     static lib_u8 even[MYDESKPRO386_ROM_CHIP_BYTES];
     static lib_u8 odd[MYDESKPRO386_ROM_CHIP_BYTES];
-    vm_machine_config invalid_config = {0};
-    vm_machine_assets missing_assets = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine_config invalid_config = {0};
+    x86_nxvm_machine_assets missing_assets = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine_run_result result;
     lib_u8 write = 0u;
     lib_i32 failed = 0;
@@ -57,6 +57,6 @@ lib_i32 main(void)
         result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     if (!failed) lib_c_printf("MODEL40-ROM-LAYOUT:OK\n");
     if (!failed) lib_c_printf("MODEL40-ROM-RESET:OK\n");
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     return failed ? 1 : 0;
 }

@@ -1,14 +1,14 @@
 #include "profile.h"
 #include "app-mydeskpro386/machine_observation_interface.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #ifndef NXVM_TEST_MODEL40_H
 #define NXVM_TEST_MODEL40_H
 
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_private.h"
 
 /* Test views capture the actual Profile owner; they maintain no live state. */
 static inline mydeskpro386_observation vm_test_model40_observation(
-    const vm_machine *machine)
+    const x86_nxvm_machine *machine)
 {
     mydeskpro386_observation observation = {0};
 
@@ -17,7 +17,7 @@ static inline mydeskpro386_observation vm_test_model40_observation(
     return observation;
 }
 
-static inline lib_status vm_test_model40_d4_observe(const vm_machine *machine,
+static inline lib_status vm_test_model40_d4_observe(const x86_nxvm_machine *machine,
     mydeskpro386_d4_platform_observation *out_observation)
 {
     mydeskpro386_observation observation;

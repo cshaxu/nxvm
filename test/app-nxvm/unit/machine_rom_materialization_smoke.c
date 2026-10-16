@@ -1,21 +1,21 @@
-#include "core/board-base/pc_at_rom_interface.h"
+#include "x86-nxvm/board-base/pc_at_rom_interface.h"
 #include "../support/profile.h"
-#include "core/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86-core/machine/machine_interface.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine_private.h"
+#include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/machine/machine_private.h"
 
 int main(void)
 {
-    lib_u8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES] = {0};
-    const vm_machine_config config = {
+    lib_u8 image[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES] = {0};
+    const x86_nxvm_machine_config config = {
         .bios_count = 1u
     };
-    vm_machine_assets assets = {0};
-    vm_machine *session = LIB_NULL;
+    x86_nxvm_machine_assets assets = {0};
+    x86_nxvm_machine *session = LIB_NULL;
     x86_core_machine_memory_route route;
     lib_u8 observed[2] = {0};
     lib_u8 overwrite = 0u;
@@ -23,8 +23,8 @@ int main(void)
 
     image[0u] = 0x56u;
     image[1u] = 0x78u;
-    image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
-    assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
+    image[X86_NXVM_BOARD_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
+    assets.bios[0u] = (x86_nxvm_machine_asset_bytes) { image, sizeof(image) };
     failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL ||
@@ -42,7 +42,7 @@ int main(void)
             observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x56u ||
             observed[1u] != 0x78u;
     }
-    vm_machine_destroy(session);
+    x86_nxvm_machine_destroy(session);
     if (failed) return 1;
     printf("NXVM:DEFAULT-PC-AT-ROM-ASSET-MAPPING:OK\n");
     return 0;

@@ -4,12 +4,12 @@
 #include "lib/types/file.h"
 #include "d4_refresh_fixture.h"
 
-#include "core/board-base/dma_bus_interface.h"
-#include "../../core/board-base/composition/composition_fixture.h"
-#include "../../core/board-base/support/composition_fixture.h"
-#include "core/board-base/machine_board_interface.h"
+#include "x86-nxvm/board-base/dma_bus_interface.h"
+#include "../../x86-nxvm/board-base/composition/composition_fixture.h"
+#include "../../x86-nxvm/board-base/support/composition_fixture.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-core/machine/trace_interface.h"
-#include "../../core/board-base/core_machine_board_fixture.h"
+#include "../../x86-nxvm/board-base/board_board_fixture.h"
 
 #define REFRESH_PROBE_EVENT_CAPACITY 1024u
 
@@ -43,15 +43,15 @@ static void refresh_dma_read(void *opaque, t_latch *latch)
 
 static void refresh_program_dma_channel2(x86_core_machine *machine)
 {
-    test_core_machine_fixture_write_port(machine, 0x000cu, 0u);
-    test_core_machine_fixture_write_port(machine, 0x0004u, 0x34u);
-    test_core_machine_fixture_write_port(machine, 0x0004u, 0x12u);
-    test_core_machine_fixture_write_port(machine, 0x0005u, 0u);
-    test_core_machine_fixture_write_port(machine, 0x0005u, 0u);
-    test_core_machine_fixture_write_port(machine, 0x0081u, 1u);
-    test_core_machine_fixture_write_port(machine, 0x000bu, 0x46u);
-    test_core_machine_fixture_write_port(machine, 0x000au, 0x02u);
-    test_core_machine_fixture_write_port(machine, 0x00d4u, 0x00u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x000cu, 0u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x0004u, 0x34u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x0004u, 0x12u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x0005u, 0u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x0005u, 0u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x0081u, 1u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x000bu, 0x46u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x000au, 0x02u);
+    test_x86_nxvm_machine_fixture_write_port(machine, 0x00d4u, 0x00u);
 }
 
 static lib_i32 refresh_find_transaction_after(const refresh_probe *probe,
@@ -114,7 +114,7 @@ static lib_i32 refresh_non_d4_contract(void)
 {
     const lib_u8 program[] = {0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u};
     x86_core_machine_run_result result = {0};
-    core_machine_config config = {0};
+    x86_nxvm_board_config config = {0};
     x86_core_machine_trace_provider trace;
     refresh_probe probe = {{{0}}, 0u};
     x86_core_machine *machine = LIB_NULL;
@@ -124,8 +124,8 @@ static lib_i32 refresh_non_d4_contract(void)
     config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed = failed || core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed = failed || test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    failed = failed || x86_nxvm_board_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed = failed || test_x86_nxvm_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed = failed || x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed = failed || x86_core_machine_reset(machine) != LIB_STATUS_OK;
@@ -144,17 +144,17 @@ static lib_i32 refresh_non_d4_contract(void)
 }
 lib_i32 main(void)
 {
-    static const core_machine_dma_channel_provider dma_provider = {
+    static const x86_nxvm_board_dma_channel_provider dma_provider = {
         refresh_dma_read, LIB_NULL, LIB_NULL
     };
-    core_machine_config config = {0};
-    mydeskpro386_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
+    x86_nxvm_board_config config = {0};
+    mydeskpro386_d4_platform_config d4 = {X86_NXVM_BOARD_PC_AT_PORT_B, 0u, 2u, 18u};
     x86_core_machine_trace_provider trace;
-    core_machine_dma_request_binding binding = {0};
+    x86_nxvm_board_dma_request_binding binding = {0};
     refresh_probe probe = {{{0}}, 0u};
     refresh_dma_source source = {0xa5u};
     x86_core_machine *machine = LIB_NULL;
-    core_machine_board_state *board = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
     mydeskpro386_d4_platform *d4_board = LIB_NULL;
     lib_u8 byte = 0u;
     lib_u8 refresh_address = 0xffu;
@@ -177,9 +177,9 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed = failed || core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed = failed || x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK;
     failed = failed || mydeskpro386_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_OK;
-    failed = failed || test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    failed = failed || test_x86_nxvm_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed = failed || test_board_dma_bind_channel(board, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
@@ -189,9 +189,9 @@ lib_i32 main(void)
     if (!failed) refresh_program_dma_channel2(machine);
     if (!failed) test_board_dma_request_assert(board, &binding);
     failed = failed || x86_core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
-    if (!failed) test_core_machine_fixture_write_port(machine, 0x0064u, 0xd1u);
-    if (!failed) test_core_machine_fixture_write_port(machine, 0x0060u, 0x01u);
-    failed = failed || test_core_a20_is_enabled(machine);
+    if (!failed) test_x86_nxvm_machine_fixture_write_port(machine, 0x0064u, 0xd1u);
+    if (!failed) test_x86_nxvm_machine_fixture_write_port(machine, 0x0060u, 0x01u);
+    failed = failed || test_x86_nxvm_a20_is_enabled(machine);
     failed = failed || x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) refresh_program_dma_channel2(machine);
     if (!failed) test_board_dma_request_assert(board, &binding);

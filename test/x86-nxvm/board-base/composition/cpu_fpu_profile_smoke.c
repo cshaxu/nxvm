@@ -1,0 +1,74 @@
+#include "lib/types/file.h"
+#include "lib/types/types_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
+
+static lib_i32 verify_machine_profiles(x86_core_cpu_profile cpu_profile,
+    x86_fpu_profile fpu_profile)
+{
+    x86_nxvm_board_config config = {
+        .memory_bytes = (2u * 1024u * 1024u),
+        .cpu_profile = cpu_profile,
+        .fpu_profile = fpu_profile
+    };
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_cpu_profile observed_cpu;
+    x86_fpu_profile observed_fpu;
+    lib_i32 failed = x86_nxvm_board_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+        x86_core_machine_get_cpu_profile(machine, &observed_cpu) != LIB_STATUS_OK ||
+        x86_core_machine_get_fpu_profile(machine, &observed_fpu) != LIB_STATUS_OK ||
+        observed_cpu != cpu_profile || observed_fpu != fpu_profile;
+
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+lib_i32 main(void)
+{
+    x86_nxvm_board_config default_config = {
+        .memory_bytes = (2u * 1024u * 1024u)
+    };
+    x86_core_cpu_instruction_metadata metadata;
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_cpu_profile cpu_profile;
+    x86_fpu_profile fpu_profile;
+    lib_i32 failed = 0;
+
+    failed |= verify_machine_profiles(X86_CORE_CPU_PROFILE_8086,
+        X86_FPU_PROFILE_NONE);
+    failed |= verify_machine_profiles(X86_CORE_CPU_PROFILE_8088,
+        X86_FPU_PROFILE_NONE);
+    failed |= verify_machine_profiles(X86_CORE_CPU_PROFILE_80186,
+        X86_FPU_PROFILE_8087);
+    failed |= verify_machine_profiles(X86_CORE_CPU_PROFILE_80286,
+        X86_FPU_PROFILE_80287);
+    failed |= verify_machine_profiles(X86_CORE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_80387);
+    failed |= x86_nxvm_board_create(&default_config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= x86_core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK ||
+        cpu_profile != X86_CORE_CPU_PROFILE_80386;
+    failed |= x86_core_machine_get_fpu_profile(machine, &fpu_profile) != LIB_STATUS_OK ||
+        fpu_profile != X86_FPU_PROFILE_NONE;
+    x86_core_machine_destroy(machine);
+
+    metadata = x86_core_cpu_instruction_metadata_get(
+        X86_CORE_CPU_INSTRUCTION_PRIMARY, 0x60u, 0u);
+    failed |= !metadata.valid || metadata.minimum_cpu != X86_CORE_CPU_PROFILE_80186;
+    metadata = x86_core_cpu_instruction_metadata_get(
+        X86_CORE_CPU_INSTRUCTION_0F, 0x80u, 0u);
+    failed |= !metadata.valid || metadata.minimum_cpu != X86_CORE_CPU_PROFILE_80386;
+    metadata = x86_core_cpu_instruction_metadata_get(
+        X86_CORE_CPU_INSTRUCTION_FPU_ESCAPE, 0xdbu, 0xe3u);
+    failed |= !metadata.valid || metadata.minimum_fpu != X86_FPU_PROFILE_8087;
+    metadata = x86_core_cpu_instruction_metadata_get(
+        X86_CORE_CPU_INSTRUCTION_PRIMARY, 0xa4u, 0u);
+    failed |= !metadata.valid || metadata.minimum_cpu != X86_CORE_CPU_PROFILE_8086;
+    metadata = x86_core_cpu_instruction_metadata_get(
+        X86_CORE_CPU_INSTRUCTION_0F, 0xa2u, 0u);
+    failed |= !metadata.valid ||
+        metadata.minimum_cpu != X86_CORE_CPU_PROFILE_80486SX;
+
+    if (failed) return 1;
+    lib_c_printf("CPU-FPU-PROFILES:OK\n");
+    return 0;
+}

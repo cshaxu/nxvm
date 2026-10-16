@@ -15,7 +15,7 @@ function Require-Pattern {
 $root = (Resolve-Path $RepositoryRoot).Path
 $machine = Join-Path $root 'src/x86-core/machine/machine.c'
 $scheduler = Join-Path $root 'src/x86-core/machine/machine_scheduler.c'
-$board = Join-Path $root 'src/core/board-base/board_advance.c'
+$board = Join-Path $root 'src/x86-nxvm/board-base/board_advance.c'
 $profile = Join-Path $root 'src/app-my5170/machine_config.c'
 
 Require-Pattern $profile '596591u, 4000000u' 'Model-339 PIT rational clock'
@@ -29,8 +29,8 @@ Require-Pattern $board 'x86_core_machine_clock_domain_advance\(&board->pit_clock
 Require-Pattern $board 'x86_core_machine_clock_domain_advance\(&board->rtc_clock, source_ticks\)' 'RTC callback cadence'
 Require-Pattern $board 'x86_core_machine_clock_domain_advance\(&board->kbc_clock, source_ticks\)' 'KBC callback cadence'
 Require-Pattern $board 'x86_core_machine_clock_domain_advance\(&board->vadp_clock, source_ticks\)' 'VADP callback cadence'
-Require-Pattern $board 'core_machine_fdc_advance_at\(board->fdc, due_tick\)' 'FDC readiness call'
-Require-Pattern $board 'core_machine_hdc_advance_at\(board->hdc, due_tick\)' 'HDC readiness call'
+Require-Pattern $board 'x86_nxvm_board_fdc_advance_at\(board->fdc, due_tick\)' 'FDC readiness call'
+Require-Pattern $board 'x86_nxvm_board_hdc_advance_at\(board->hdc, due_tick\)' 'HDC readiness call'
 Require-Pattern $scheduler 'x86_core_machine_clock_domain_advance\(&machine->provider_clock,' 'provider clock route'
 Require-Pattern $board 'x86_core_machine_clock_domain_reset\(&board->dma_clock\)' 'DMA reset phase'
 Require-Pattern $machine 'x86_core_machine_clock_domain_reset\(&machine->provider_clock\)' 'provider reset phase'
