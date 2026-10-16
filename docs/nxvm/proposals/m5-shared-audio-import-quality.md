@@ -95,6 +95,14 @@ owner inputs and sibling repositories remain unchanged; T stays open.
 
 ### S3 Disposition
 
+The owner rejected acceptance after finding missing heartbeat transitions,
+Types/warning/gate omissions and weak PC entry failure coverage. The approved
+consolidated corrective batch is recorded in Current; prior pass counts below
+are historical delivery evidence, not acceptance of the correction. It also
+covers the same CMake bypass class in Emulator, X86 Core and X86 NXVM and the
+real MyNES heartbeat receiver. SoftPC remains read-only and only reviewed
+changes are imported, preserving NXVM's stronger PCM and Debug fixes.
+
 All five rows are implemented with the retained owner and direct proof mapped
 in [S3 evidence](../etc/evidence/t562-s3-equivalent-paths.md). Both widths pass
 631 repository units, 15 profile/restored-identity integration executions,

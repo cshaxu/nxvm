@@ -119,3 +119,8 @@ source, tests, manifests, receiver artifacts and documentation, including
 the new failure-adapter test. It is not independent reviewer evidence.
 S3 awaits owner acceptance; T562 stays open. This bounded repair is not a
 declaration that all shared code is defect-free.
+
+Owner acceptance was subsequently rejected. The approved
+[consolidated correction](t562-s3-correction.md) supersedes the delivery
+qualification above for current source/artifacts; it preserves these five
+implemented consolidations and does not close T562.

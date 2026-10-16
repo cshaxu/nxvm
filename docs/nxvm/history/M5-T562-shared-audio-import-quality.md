@@ -55,3 +55,22 @@ remain unchanged. S3 awaits owner acceptance and T562 remains open.
 Shared implementation is `c81762c5f`; MyNES receiver is `96b066002`.
 NXVM P3 contains the direct provider test caller, eight artifacts and the
 complete evidence/packet. Each target is pushed separately after verification.
+
+### S3 Acceptance Correction
+
+The owner rejected the initial delivery and approved a consolidated correction
+against 376a960f0: import the committed SoftPC heartbeat parking/continuation
+contract and tests, restore outer Types/warning consistency, cover recursive
+CMake link bypasses, and strengthen PC Entry and directory failure tests.
+MyNES's real pacing/PCM receiver is covered without changing its production
+code. The [correction evidence](../etc/evidence/t562-s3-correction.md) records
+the reviewed scope and final verification. Earlier S3 counts above describe
+that earlier delivery, not acceptance of this correction. S3 and T562 remain
+open pending owner acceptance.
+
+Corrective delivery: Shared P4 `86175d302`, MyNES P5 `66d02ba64`, and NXVM
+P6 carrying eight PC EXEs and current evidence. Each width passes 631 units,
+selected PC integrations, MyNES integrations and final specialized gates.
+An initial x86 native-console Escape/pause failure passed unchanged isolated
+and complete-suite reruns; its unproven cause remains explicitly recorded in
+the MyNES ledger. No full-tree or physical-input correctness claim is made.

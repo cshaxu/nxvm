@@ -4,22 +4,38 @@
 
 ## T562 S3 — Consolidate Equivalent Shared Paths
 
+Owner rejected the initial delivery and approved a consolidated correction on
+2026-10-16. S3 remains active, not accepted. Baseline: NXVM 376a960f0;
+selective upstream reference: committed SoftPC 7a523a42 (read-only).
+The corrective batch adds executor heartbeat parking/continuation and its
+pause/state-read/debug-stop regressions; outer Shared LIB_NULL consistency;
+removal of the Debug target-wide format-warning downgrade; recursive CMake
+dependency bypass negatives; PC entry failure-order/dispose assertions; and
+directory capacity boundaries. Preserve the previous S3 consolidations, PCM
+cancellation tests, standalone shared-* names and all owner inputs. X86 Core
+and X86 NXVM changes are limited to static gates/tests and vocabulary, not
+execution algorithms. MyNES is an affected audio/pacing receiver and may add
+owned driver regression assertions; rebuild its 0044 pair and eight PC 0562
+EXEs. Use the original dual-width graphs, complete units, affected receiving
+integrations and manifests; deliver target-separated P4 onward and await
+owner acceptance. No new public API, thread, state or compatibility route.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation: T562 S3 follows accepted S2 at 59aea8649. |
 | Admission And Approval | Owner approved all five audited consolidations and requested per-package estimated and actual deltas on 2026-10-16. Targets: Shared, NXVM and MyNES receiving artifacts. |
-| Objective | Retire test-only FDD access; complete Debug-owned failure finalization and PC result adaptation; reuse Emulator unsupported fallback; unify fixed command descriptions; share pure KVM cursor shape resolution. |
+| Objective | Retain the five S3 consolidations and complete the approved correction: heartbeat transitions, vocabulary/warnings, dependency bypass gates and failure-path regressions. |
 | Non-goals | No CPU changes, new execution framework, rendering/blink policy change, sibling edits, INI/media/ROM/snapshot change or T closure. |
 | Reference Baseline | Clean 59aea8649; prior read-only audit and owner clarification are the design baseline. |
 | Candidate Proposal | ../proposals/m5-shared-audio-import-quality.md, S3 finite batch. |
-| Files And ABI Surface | Lib kvm-base frame helper and leaf consumers; Emulator monitor; X86 Debug command/result contract; IBM PC command adapter; NXVM FDD interface and tests. Remove obsolete FDD API; add only approved pure cursor calculation; X86 Core unchanged. |
+| Files And ABI Surface | Retain initial Lib cursor/Emulator monitor/Debug/PC/FDD changes. Correction: Emulator machine gate; outer Shared LIB_NULL; Debug warning policy; five package-local gates/negative tests; Lib directory and PC entry tests; MyNES pacing test. No corrective API/ABI addition; X86 Core changes only gates/tests. |
 | Applicable Rules | Execution packet/P/actual-diff review; architecture single owner and inward dependencies; coding Types/table style/no duplicate routes; documentation authority; existing source-policy embedded artifact approval. |
 | Verification | Original x64/x86 release-ccache Ninja graphs, build-unit-tests and complete CTest unit label, specialized gates/manifests, ten product builds/deployments and affected CLI integration; documentation and diff checks. |
 | Expected Markers | Zero failed unit tests per width; Debug injected failure results/cancellation and adapter prompt; absent legacy FDD symbols; unchanged fixed help/argument behavior; cursor fallback/clipping regressions. |
 | Asset Needs | Existing external PC build inputs only; rebuild eight PC 0562 and MyNES 0044 pair; preserve all owner inputs. |
 | Reporting Requirements | Per-package source/test estimated and actual added/deleted/net lines; retained/deleted paths; artifact hashes; automated desktop versus manual/external limits. |
 | Stop Conditions | Unapproved semantic/API expansion, unrelated changes, failed required tests or publication, missing assets; no partial-success closure. |
-| Exit Criteria | All five rows implemented, reviewed and verified; affected binaries published; target-separated complete commits pushed; S delivery for owner acceptance, T open. |
+| Exit Criteria | Initial five rows and all correction findings reviewed and verified; ten affected binaries published; target-separated complete commits pushed; S awaits owner acceptance, T open. |
 | Original Owner Request | Complete these five consolidations in a new S, estimate each shared package before repair and report actual changes afterward. |
 | Similar-Issue Sweep | Search all source/test callers of FDD legacy operations, Debug error/continuation paths, unsupported fallback, fixed command metadata and KVM cursor clipping; preserve distinct hardware/platform behavior. |
 
@@ -29,7 +45,7 @@
 | --- | --- |
 | T562 S1 | Closed after actual-change review of Shared 0d12458ae, MyNES 765acc462 and NXVM 3f31b832d. Both widths pass 630 repository units, 48 profile integration executions and final specialized gates. Ten rebuilt EXEs are published; T562 remains open for owner acceptance. |
 | T562 S2 | Closed after actual-commit review of Shared e5b346309 and NXVM 8f3280726: five quality findings repaired, 630 units per width, selected integrations and eight PC artifacts verified. T562 remains open. |
-| T562 S3 | Five equivalent-path consolidations implemented; 631 units per width, receiving integrations and ten EXEs verified. [Evidence](../etc/evidence/t562-s3-equivalent-paths.md) and [hashes](../etc/evidence/t562-s3-artifacts.json) record scope and limits. Delivered for owner acceptance; T562 remains open. |
+| T562 S3 | Initial delivery rejected; approved correction implemented. Final 631 units per width pass; receiving integrations and ten rebuilt EXEs are verified. [Correction evidence](../etc/evidence/t562-s3-correction.md) records the initial x86 native-console failure and unchanged passing rerun, scope and limits; [hashes](../etc/evidence/t562-s3-correction-artifacts.json) identify current artifacts. Awaiting owner acceptance; T562 remains open. |
 
 ## T562 S2 — Accepted Shared Quality Cleanup
 

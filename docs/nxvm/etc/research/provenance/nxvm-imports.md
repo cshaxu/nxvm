@@ -169,3 +169,17 @@ the Shared source/test corpus.
   direct MyNES PCM receiver. X86 Core/NXVM names change locally, not by import.
 - [Evidence](../../evidence/t562-s1-shared-import-quality.md) records the
   baseline, finite repair ledger and receiving qualification.
+
+## T562 S3 — Selective Executor Heartbeat Correction
+
+- Source: project-owned SoftPC `7a523a42663f6fb236d6c0a99d89448b084f5bf2`.
+- Selective derivation: `src/emulator/machine/machine.c` parking/continuation
+  gate and `machine_interface.h` callback contract; same-path
+  `test/emulator/machine_wait_smoke.c` heartbeat assertions; independent
+  failure/disposal counters from `test/x86-ibmpc/product/entry_smoke.c`.
+- Root MIT owner approval and existing notices remain intact. No App/Compat,
+  recovered DSP, firmware, media or independently licensed source is copied.
+- Local additions retain the newer request failures, Debug finalizer, direct
+  composition and real long-name tests. Other vocabulary/gate changes are
+  derived locally. [Correction evidence](../../evidence/t562-s3-correction.md)
+  records the exact scope, receiver tests, counts and limits.
