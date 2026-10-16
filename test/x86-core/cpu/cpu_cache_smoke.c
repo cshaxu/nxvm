@@ -1107,9 +1107,13 @@ static lib_bool cache_flush_operations(void)
         code[bytes++] = writeback ? 9u : 8u;
         const lib_u32 flags = fixture->cpu.data.eflags;
         const lib_u32 tag = fixture->execution.cache[0][0].tag;
+        lib_u64 nominal_ticks = LIB_UINT64_MAX;
+
         if (!x86_core_cpu_instruction_lexeme_scan(code, bytes,
                 X86_CORE_CPU_PROFILE_80486SX, (mode & 1u) != 0u, &lexeme) ||
             !cache_run(fixture, code, bytes) || fixture->cpu.data.eflags != flags ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks) ||
+            nominal_ticks != (writeback ? 5u : 4u) ||
             probe.operation_count != (writeback ? 2u : 1u) ||
             probe.operations[0] != (writeback ? X86_CORE_CPU_CACHE_WRITEBACK :
                 X86_CORE_CPU_CACHE_FLUSH) ||

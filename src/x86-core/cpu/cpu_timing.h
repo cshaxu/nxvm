@@ -51,9 +51,9 @@ lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_contex
 lib_bool x86_core_cpu_80486_nominal_instruction_cost(
     const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
 
-/* Explicit L2 IMUL and variable RCL/RCR models; disjoint from the original
+/* Explicit L2 arithmetic, alias and no-FPU WAIT models; disjoint from the original
  * nominal rows. Pure query, no access costs or hardware-exact qualification. */
-lib_bool x86_core_cpu_80486_l2_arithmetic_cost(
+lib_bool x86_core_cpu_80486_l2_instruction_cost(
     const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
 
 /* E-14 entry subtotal from the mode before actual committed entry. The caller

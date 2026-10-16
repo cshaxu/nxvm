@@ -201,6 +201,270 @@ static lib_bool nominal_execution(void)
     return LIB_TRUE;
 }
 
+/* E-4 gives the same row to all eight ALU operations except CMP's memory
+ * destination. Exercise each encoding with real decode, including the SX 82
+ * alias; operand/address overrides must not change the nominal subtotal. */
+static lib_bool nominal_alu_forms(void)
+{
+    for (lib_u8 operation = 0u; operation < 8u; ++operation)
+    for (lib_u8 size = 0u; size < 3u; ++size)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 address32 = 0u; address32 < 2u; ++address32)
+    for (lib_u8 memory = 0u; memory < 2u; ++memory)
+    for (lib_u8 form = 0u; form < 6u; ++form) {
+        cpu_instruction_fixture fixture;
+        lib_u8 code[15], bytes = 0u;
+        lib_u64 ticks = LIB_UINT64_MAX;
+        t_cpu after;
+        const lib_u8 operand_bytes = (lib_u8)(1u << size);
+        const lib_bool wide = size != 0u;
+        const lib_bool accumulator = form == 2u;
+        const lib_bool immediate = form >= 2u;
+        const lib_bool short_immediate = form == 4u || form == 5u;
+        const lib_u64 expected = !memory || accumulator ? 1u :
+            form == 1u || operation == 7u ? 2u : 3u;
+
+        if ((accumulator && memory) || (form == 4u && !wide) ||
+            (form == 5u && wide)) continue;
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eax = 0x81u;
+        fixture.cpu.data.ecx = 2u;
+        if (wide && (size == 2u) != code32) code[bytes++] = 0x66u;
+        if (memory && address32 != code32) code[bytes++] = 0x67u;
+        if (form < 3u)
+            code[bytes++] = (lib_u8)((operation << 3u) | (form << 1u) | wide);
+        else
+            code[bytes++] = form == 3u ? (lib_u8)(0x80u | wide) :
+                form == 4u ? 0x83u : 0x82u;
+        if (!accumulator) {
+            const lib_u8 reg = form < 3u ? 1u : operation;
+
+            code[bytes++] = (lib_u8)((reg << 3u) |
+                (memory ? (address32 ? 5u : 6u) : 0xc0u));
+            if (memory) {
+                code[bytes++] = 0u;
+                code[bytes++] = 0x20u;
+                if (address32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+            }
+        }
+        if (immediate) {
+            code[bytes++] = 3u;
+            if (!short_immediate)
+                for (lib_u8 byte = 1u; byte < operand_bytes; ++byte)
+                    code[bytes++] = 0u;
+        }
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+            ticks != expected) {
+            lib_c_fprintf(lib_c_stderr,
+                "ALU nominal operation=%u size=%u code32=%u address32=%u memory=%u form=%u ticks=%llu\n",
+                (lib_u32)operation, (lib_u32)size, (lib_u32)code32,
+                (lib_u32)address32, (lib_u32)memory, (lib_u32)form, ticks);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+/* E-7 distinguishes taken/not-taken Jcc and true/false SETcc, with the
+ * opposite SETcc clock ordering for register and memory destinations. */
+static lib_bool nominal_condition_forms(void)
+{
+    for (lib_u8 flags = 0u; flags < 32u; ++flags)
+    for (lib_u8 condition = 0u; condition < 16u; ++condition)
+    for (lib_u8 form = 0u; form < 4u; ++form)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32) {
+        cpu_instruction_fixture fixture;
+        lib_u8 code[8], bytes = 0u;
+        lib_u64 ticks = LIB_UINT64_MAX;
+        t_cpu after;
+        const lib_bool carry = (flags & 1u) != 0u;
+        const lib_bool zero = (flags & 2u) != 0u;
+        const lib_bool sign = (flags & 4u) != 0u;
+        const lib_bool overflow = (flags & 8u) != 0u;
+        const lib_bool parity = (flags & 16u) != 0u;
+        const lib_bool conditions[] = {
+            overflow, !overflow, carry, !carry, zero, !zero,
+            carry || zero, !carry && !zero, sign, !sign, parity, !parity,
+            sign != overflow, sign == overflow,
+            zero || sign != overflow, !zero && sign == overflow
+        };
+        const lib_bool taken = conditions[condition];
+        const lib_u64 expected = form < 2u ? (taken ? 3u : 1u) :
+            form == 2u ? (taken ? 4u : 3u) : (taken ? 3u : 4u);
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eflags |= (carry ? VCPU_EFLAGS_CF : 0u) |
+            (zero ? VCPU_EFLAGS_ZF : 0u) | (sign ? VCPU_EFLAGS_SF : 0u) |
+            (overflow ? VCPU_EFLAGS_OF : 0u) | (parity ? VCPU_EFLAGS_PF : 0u);
+        if (form == 3u && code32) code[bytes++] = 0x67u;
+        if (form != 0u) code[bytes++] = 0x0fu;
+        code[bytes++] = (lib_u8)((form == 0u ? 0x70u :
+            form == 1u ? 0x80u : 0x90u) | condition);
+        if (form < 2u) {
+            code[bytes++] = 1u;
+            if (form == 1u) {
+                code[bytes++] = 0u;
+                if (code32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+            }
+        } else {
+            code[bytes++] = form == 2u ? 0xc0u : 0x06u;
+            if (form == 3u) { code[bytes++] = 0u; code[bytes++] = 0x20u; }
+        }
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+            ticks != expected || (form < 2u && after.data.eip != bytes + taken)) {
+            lib_c_fprintf(lib_c_stderr,
+                "Condition nominal flags=%u condition=%u form=%u code32=%u ticks=%llu\n",
+                (lib_u32)flags, (lib_u32)condition, (lib_u32)form,
+                (lib_u32)code32, ticks);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+/* E-12 query clocks do not depend on whether the selector is accepted.
+ * Use real protected descriptors and both ModR/M storage forms. */
+static lib_bool nominal_protection_queries(void)
+{
+    static const lib_u8 opcodes[] = {0x63u, 0x02u, 0x03u, 0x00u, 0x00u};
+    static const lib_u8 fields[] = {1u, 1u, 1u, 4u, 5u};
+    static const lib_u8 expected[] = {9u, 11u, 10u, 11u, 11u};
+
+    for (lib_u8 cpl = 0u; cpl < 4u; ++cpl)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 memory = 0u; memory < 2u; ++memory)
+    for (lib_u8 valid = 0u; valid < 2u; ++valid)
+    for (lib_u8 form = 0u; form < sizeof(opcodes); ++form) {
+        cpu_instruction_fixture fixture;
+        lib_u8 code[8], bytes = 0u;
+        const lib_u16 selector = valid ? (lib_u16)(0x10u | cpl) : 0u;
+        lib_u64 ticks = LIB_UINT64_MAX;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        cpu_instruction_prepare_protected_exception(&fixture, cpl);
+        fixture.cpu.data.ds = fixture.cpu.data.ss;
+        fixture.cpu.data.ds.sregtype = SREG_DATA;
+        fixture.memory[0x215u] |= (lib_u8)(cpl << 5u);
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eax = selector;
+        fixture.cpu.data.ecx = 3u;
+        lib_memory_copy(fixture.memory + 0x2000u, &selector, sizeof(selector));
+        if (memory && code32) code[bytes++] = 0x67u;
+        if (form != 0u) code[bytes++] = 0x0fu;
+        code[bytes++] = opcodes[form];
+        code[bytes++] = (lib_u8)((fields[form] << 3u) | (memory ? 6u : 0xc0u));
+        if (memory) { code[bytes++] = 0u; code[bytes++] = 0x20u; }
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+            ticks != expected[form] || (form != 0u &&
+                ((after.data.eflags & VCPU_EFLAGS_ZF) != 0u) != (valid != 0u))) {
+            lib_c_fprintf(lib_c_stderr,
+                "Protection nominal cpl=%u code32=%u memory=%u valid=%u form=%u ticks=%llu\n",
+                (lib_u32)cpl, (lib_u32)code32, (lib_u32)memory,
+                (lib_u32)valid, (lib_u32)form, ticks);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+/* E-6 distinguishes CMPXCHG's memory result paths; a register-only witness
+ * cannot qualify either of these two rows. */
+static lib_bool nominal_exchange_memory(void)
+{
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 size = 0u; size < 3u; ++size)
+    for (lib_u8 equal = 0u; equal < 2u; ++equal) {
+        cpu_instruction_fixture fixture;
+        lib_u8 code[8], bytes = 0u;
+        lib_u64 ticks = LIB_UINT64_MAX;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eax = equal ? 7u : 8u;
+        fixture.cpu.data.ecx = 9u;
+        fixture.memory[0x2000u] = 7u;
+        if (code32) code[bytes++] = 0x67u;
+        if (size != 0u && (size == 2u) != code32) code[bytes++] = 0x66u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = size == 0u ? 0xb0u : 0xb1u;
+        code[bytes++] = 0x0eu;
+        code[bytes++] = 0u;
+        code[bytes++] = 0x20u;
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+            ticks != (equal ? 7u : 10u) ||
+            ((after.data.eflags & VCPU_EFLAGS_ZF) != 0u) != (equal != 0u) ||
+            fixture.memory[0x2000u] != (equal ? 9u : 7u)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+/* E-12 system rows, including successful null LLDT and available-TSS LTR.
+ * The instruction itself performs descriptor validation and state updates. */
+static lib_bool nominal_system_forms(void)
+{
+    static const nominal_case cases[] = {
+        {"SLDT register", {0x0fu, 0x00u, 0xc0u}, 3u, 2u},
+        {"SLDT memory", {0x0fu, 0x00u, 0x06u, 0u, 0x20u}, 5u, 3u},
+        {"STR register", {0x0fu, 0x00u, 0xc8u}, 3u, 2u},
+        {"STR memory", {0x0fu, 0x00u, 0x0eu, 0u, 0x20u}, 5u, 3u},
+        {"LLDT register", {0x0fu, 0x00u, 0xd0u}, 3u, 11u},
+        {"LLDT memory", {0x0fu, 0x00u, 0x16u, 0u, 0x20u}, 5u, 11u},
+        {"LTR register", {0x0fu, 0x00u, 0xd8u}, 3u, 20u},
+        {"LTR memory", {0x0fu, 0x00u, 0x1eu, 0u, 0x20u}, 5u, 20u},
+        {"LGDT", {0x0fu, 0x01u, 0x16u, 0u, 0x20u}, 5u, 12u},
+        {"LIDT", {0x0fu, 0x01u, 0x1eu, 0u, 0x20u}, 5u, 12u},
+        {"LMSW register", {0x0fu, 0x01u, 0xf0u}, 3u, 13u},
+        {"LMSW memory", {0x0fu, 0x01u, 0x36u, 0u, 0x20u}, 5u, 13u},
+        {"CLTS", {0x0fu, 0x06u}, 2u, 7u}
+    };
+
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_size row = 0u; row < sizeof(cases) / sizeof(cases[0]); ++row) {
+        cpu_instruction_fixture fixture;
+        const nominal_case *test = &cases[row];
+        const lib_u8 tss[] = {0x67u, 0u, 0u, 6u, 0u, 0x89u, 0u, 0u};
+        const lib_bool task = test->code[1] == 0u &&
+            ((test->code[2] >> 3u) & 7u) == 3u;
+        lib_u8 code[8], bytes = 0u;
+        lib_u64 ticks = LIB_UINT64_MAX;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        cpu_instruction_prepare_protected_exception(&fixture, 0u);
+        fixture.cpu.data.ds = fixture.cpu.data.ss;
+        fixture.cpu.data.ds.sregtype = SREG_DATA;
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.gdtr.limit = 31u;
+        lib_memory_copy(fixture.memory + 0x218u, tss, sizeof(tss));
+        fixture.cpu.data.eax = task ? 0x18u : 0u;
+        fixture.memory[0x2000u] = task ? 0x18u : 0u;
+        if (code32 && test->bytes == 5u) code[bytes++] = 0x67u;
+        lib_memory_copy(code + bytes, test->code, test->bytes);
+        bytes += test->bytes;
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+            ticks != test->ticks) {
+            lib_c_fprintf(lib_c_stderr, "System nominal %s code32=%u ticks=%llu\n",
+                test->name, (lib_u32)code32, ticks);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool timing_prefix_penalties(void)
 {
     static const lib_u8 prefixes[] = {0x26u, 0x2eu, 0x36u, 0x3eu,
@@ -1088,7 +1352,7 @@ static lib_bool timing_dependency_boundaries(void)
 
 /* These numerical checks qualify the frozen L2 equations and operand choice,
  * not the contradictory source tables as measurements of actual silicon. */
-static lib_bool arithmetic_model_expect(cpu_instruction_fixture *fixture, lib_u64 expected)
+static lib_bool instruction_model_expect(cpu_instruction_fixture *fixture, lib_u64 expected)
 {
     const x86_core_cpu_execution_context before = fixture->execution;
     const t_cpuins instructions = fixture->instructions;
@@ -1096,12 +1360,12 @@ static lib_bool arithmetic_model_expect(cpu_instruction_fixture *fixture, lib_u6
     lib_u64 ticks = 999u, nominal = 999u;
 
     if (fixture->fault.valid || fixture->delivered_exception.valid ||
-        !x86_core_cpu_80486_l2_arithmetic_cost(&fixture->execution, &ticks) || ticks != expected ||
+        !x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &ticks) || ticks != expected ||
         x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal) || nominal != 999u ||
         lib_memory_compare(&before, &fixture->execution, sizeof(before)) ||
         lib_memory_compare(&instructions, &fixture->instructions, sizeof(instructions)) ||
         lib_memory_compare(&cpu, &fixture->cpu, sizeof(cpu))) {
-        lib_c_fprintf(lib_c_stderr, "L2 arithmetic expected=%llu actual=%llu nominal=%llu\n",
+        lib_c_fprintf(lib_c_stderr, "L2 instruction expected=%llu actual=%llu nominal=%llu\n",
             expected, ticks, nominal);
         return LIB_FALSE;
     }
@@ -1162,7 +1426,7 @@ static lib_bool arithmetic_model_multiply(void)
                 code[bytes++] = (lib_u8)(cases[row].value >> (index * 8u));
         }
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
-            !arithmetic_model_expect(&fixture, cases[row].ticks[form == 4u ? 0u : size])) {
+            !instruction_model_expect(&fixture, cases[row].ticks[form == 4u ? 0u : size])) {
             lib_c_fprintf(lib_c_stderr, "L2 IMUL form=%u size=%u code32=%u memory=%u other=%u value=%x\n",
                 (lib_u32)form, (lib_u32)size, (lib_u32)code32,
                 (lib_u32)memory, (lib_u32)other, cases[row].value);
@@ -1210,11 +1474,127 @@ static lib_bool arithmetic_model_rotate(void)
         if (memory) { code[bytes++] = 0u; code[bytes++] = 0x20u; }
         if (immediate) code[bytes++] = cases[row].count;
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
-            !arithmetic_model_expect(&fixture,
+            !instruction_model_expect(&fixture,
                 memory ? cases[row].memory[size] : cases[row].reg[size])) {
             lib_c_fprintf(lib_c_stderr, "L2 carry-rotate size=%u code32=%u immediate=%u right=%u memory=%u carry=%u count=%u\n",
                 (lib_u32)size, (lib_u32)code32, (lib_u32)immediate, (lib_u32)right,
                 (lib_u32)memory, (lib_u32)carry, (lib_u32)cases[row].count);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool special_instruction_models(void)
+{
+    for (lib_u8 mode = 0u; mode < 6u; ++mode)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 carry = 0u; carry < 2u; ++carry)
+    for (lib_u8 form = 0u; form < 10u; ++form) {
+        cpu_instruction_fixture fixture;
+        lib_u8 code[10], bytes = 0u;
+        t_cpu after;
+        const lib_bool memory = form >= 6u;
+        const lib_bool address32 = code32 != ((prefixes & 2u) != 0u);
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        if (mode != 0u) cpu_instruction_prepare_protected_exception(&fixture, mode - 1u);
+        fixture.cpu.data.ds = fixture.cpu.data.ss;
+        fixture.cpu.data.ds.sregtype = SREG_DATA;
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eax = 0x12345678u;
+        fixture.cpu.data.ecx = 0x87654321u;
+        fixture.cpu.data.eflags |= carry ? VCPU_EFLAGS_CF : 0u;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        if (form < 2u) code[bytes++] = form == 0u ? 0x9bu : 0xd6u;
+        else {
+            code[bytes++] = 0x0fu;
+            code[bytes++] = (lib_u8)(0x10u + ((form - 2u) & 3u));
+            code[bytes++] = (lib_u8)(0x08u | (memory ? (address32 ? 5u : 6u) : 0xc0u));
+            if (memory) {
+                code[bytes++] = 0u;
+                code[bytes++] = 0x20u;
+                if (address32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+            }
+        }
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            !instruction_model_expect(&fixture, form == 0u ? 3u : 1u)) {
+            lib_c_fprintf(lib_c_stderr,
+                "Special model mode=%u code32=%u prefixes=%u carry=%u form=%u\n",
+                (lib_u32)mode, (lib_u32)code32, (lib_u32)prefixes,
+                (lib_u32)carry, (lib_u32)form);
+            return LIB_FALSE;
+        }
+    }
+    /* A fault is not a successful WAIT/alias subtotal. Preserve caller output
+     * on real NM, invalid LOCK and provider failure, not only fabricated flags. */
+    for (lib_u8 form = 0u; form < 4u; ++form) {
+        cpu_instruction_fixture fixture;
+        const lib_u8 wait[] = {0x9bu};
+        const lib_u8 locked[] = {0xf0u, form == 1u ? 0x9bu : 0xd6u};
+        const lib_u8 bad_read[] = {0x67u, 0x0fu, 0x12u, 0x05u, 0u, 0u, 8u, 0u};
+        lib_u64 ticks = 999u;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        if (form == 0u) {
+            fixture.cpu.data.cr0 |= VCPU_CR0_TS | VCPU_CR0_MP;
+            if (!cpu_instruction_expect_real_fault(&fixture, wait, sizeof(wait), 7u))
+                return LIB_FALSE;
+        } else if (form < 3u) {
+            if (!cpu_instruction_expect_real_fault(&fixture, locked, sizeof(locked), 6u))
+                return LIB_FALSE;
+        } else {
+            fixture.cpu.data.ds.limit = LIB_UINT32_MAX;
+            if (cpu_instruction_run(&fixture, bad_read, sizeof(bad_read), &after) == LIB_STATUS_OK ||
+                !fixture.fault.valid) return LIB_FALSE;
+        }
+        if (x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+/* A decoder census complements source-derived numerical vectors: every
+ * successfully executed encoding must have exactly one nominal owner.
+ * Fault paths and SMM-only RSM have separate event/system proof owners. */
+static lib_bool nominal_encoding_allocation(void)
+{
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 escaped = 0u; escaped < 2u; ++escaped)
+    for (lib_u16 opcode = 0u; opcode < 256u; ++opcode)
+    for (lib_u16 suffix = 0u; suffix < 256u; ++suffix) {
+        cpu_port_instruction_fixture ports;
+        cpu_instruction_fixture *fixture = &ports.instruction;
+        lib_u8 code[15] = {0};
+        lib_u64 nominal = 999u, model = 999u;
+        t_cpu after;
+
+        cpu_port_prepare(&ports, X86_CORE_CPU_PROFILE_80486SX);
+        fixture->cpu.data.cs.seg.exec.defsize = code32;
+        fixture->cpu.data.esp = 0x6000u;
+        fixture->cpu.data.ebp = 0x5000u;
+        fixture->cpu.data.ebx = fixture->cpu.data.esi = 0x2000u;
+        fixture->cpu.data.edi = 0x3000u;
+        fixture->cpu.data.ecx = 2u;
+        if (escaped) code[0] = 0x0fu;
+        code[escaped] = (lib_u8)opcode;
+        code[escaped + 1u] = (lib_u8)suffix;
+        if (cpu_instruction_run(fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
+            fixture->fault.valid || fixture->delivered_exception.valid ||
+            fixture->instructions.data.except != 0u) continue;
+        const lib_bool original =
+            x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal);
+        const lib_bool modeled =
+            x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &model);
+
+        if (original == modeled) {
+            lib_c_fprintf(lib_c_stderr,
+                "Nominal allocation code32=%u escaped=%u opcode=%02x suffix=%02x original=%u modeled=%u\n",
+                (lib_u32)code32, (lib_u32)escaped, (lib_u32)opcode,
+                (lib_u32)suffix, (lib_u32)original, (lib_u32)modeled);
             return LIB_FALSE;
         }
     }
@@ -1229,19 +1609,19 @@ static lib_bool arithmetic_model_rejects_unowned(void)
     t_cpu after;
 
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-    if (x86_core_cpu_80486_l2_arithmetic_cost(LIB_NULL, &ticks) ||
-        x86_core_cpu_80486_l2_arithmetic_cost(&fixture.execution, LIB_NULL) ||
-        x86_core_cpu_80486_l2_arithmetic_cost(&fixture.execution, &ticks) || ticks != 999u)
+    if (x86_core_cpu_80486_l2_instruction_cost(LIB_NULL, &ticks) ||
+        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, LIB_NULL) ||
+        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
         return LIB_FALSE;
     for (lib_size row = 0u; row < sizeof(cases) / sizeof(cases[0]); ++row) {
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
         if (cpu_instruction_run(&fixture, cases[row], row ? 2u : 1u, &after) != LIB_STATUS_OK ||
-            x86_core_cpu_80486_l2_arithmetic_cost(&fixture.execution, &ticks) || ticks != 999u)
+            x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
             return LIB_FALSE;
     }
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80386);
     if (cpu_instruction_run(&fixture, (const lib_u8[]){0xf7u, 0xebu}, 2u, &after) != LIB_STATUS_OK ||
-        x86_core_cpu_80486_l2_arithmetic_cost(&fixture.execution, &ticks) || ticks != 999u)
+        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
         return LIB_FALSE;
     for (lib_u8 rotate = 0u; rotate < 2u; ++rotate) {
         const lib_u8 code[] = {0x67u, rotate ? 0xd3u : 0xf7u,
@@ -1252,7 +1632,7 @@ static lib_bool arithmetic_model_rejects_unowned(void)
         fixture.cpu.data.ecx = 1u;
         if (cpu_instruction_run(&fixture, code, sizeof(code), &after) == LIB_STATUS_OK ||
             !fixture.fault.valid || fixture.fault.exception_mask != VCPUINS_EXCEPT_CE ||
-            x86_core_cpu_80486_l2_arithmetic_cost(&fixture.execution, &ticks) || ticks != 999u)
+            x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
             return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -1260,13 +1640,16 @@ static lib_bool arithmetic_model_rejects_unowned(void)
 
 int main(void)
 {
-    if (!nominal_execution() || !nominal_rejects_unowned() || !nominal_modes() ||
+    if (!nominal_execution() || !nominal_alu_forms() || !nominal_condition_forms() ||
+        !nominal_protection_queries() || !nominal_exchange_memory() || !nominal_system_forms() ||
+        !nominal_rejects_unowned() || !nominal_modes() ||
         !nominal_cpuid() || !nominal_bit_scan() || !nominal_unsigned_multiply() ||
         !nominal_ports() || !nominal_repeat_first() || !timing_decode_facts() ||
         !nominal_protected_transfers() || !timing_prefix_penalties() ||
         !timing_decode_penalties() || !timing_dependency_writers() ||
         !timing_dependency_adjacency() || !arithmetic_model_multiply() ||
-        !arithmetic_model_rotate() || !arithmetic_model_rejects_unowned()) return 1;
+        !arithmetic_model_rotate() || !special_instruction_models() || !nominal_encoding_allocation() ||
+        !arithmetic_model_rejects_unowned()) return 1;
     if (!timing_dependency_boundaries()) {
         lib_c_fprintf(lib_c_stderr, "Dependency boundary failed\n");
         return 1;

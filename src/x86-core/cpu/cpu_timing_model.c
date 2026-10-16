@@ -4722,9 +4722,10 @@ lib_bool x86_core_cpu_80486_memory_penalty(
     return LIB_TRUE;
 }
 
-/* Explicit L2 choices for conflicting E-14 formulas, not hardware-exact
+/* Explicit L2 choices for conflicting formulas and unallocated special forms,
+ * not hardware-exact
  * cache-hit rows. Keep access/prefix costs and result qualification separate. */
-lib_bool x86_core_cpu_80486_l2_arithmetic_cost(
+lib_bool x86_core_cpu_80486_l2_instruction_cost(
     const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -4743,7 +4744,18 @@ lib_bool x86_core_cpu_80486_l2_arithmetic_cost(
     extension = prefixes + 1u < data->oplen ? (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
     bytes = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize ? 4u : 2u;
 
-    if ((opcode == 0xc0u || opcode == 0xc1u || opcode == 0xd2u || opcode == 0xd3u) &&
+    if (opcode == 0x9bu) {
+        /* PRM 26-280 gives 1--3, not an exact no-FPU SX value. This L2
+         * model selects the upper endpoint for a successful WAIT only. */
+        ticks = 3u;
+    } else if (opcode == 0xd6u || (opcode == 0x0fu && prefixes + 2u < data->oplen &&
+            data->opcodes[prefixes + 1u] >= 0x10u &&
+            data->opcodes[prefixes + 1u] <= 0x13u)) {
+        /* SALC uses the selected-SX reference model's register clock;
+         * ordinary UMOV uses the canonical MOV cache-hit model. Neither
+         * undocumented encoding is an original-table timing claim. */
+        ticks = 1u;
+    } else if ((opcode == 0xc0u || opcode == 0xc1u || opcode == 0xd2u || opcode == 0xd3u) &&
         (extension == 2u || extension == 3u)) {
         const lib_u8 width = (opcode & 1u) != 0u ? bytes * 8u : 8u;
         const lib_u8 count = (opcode < 0xd0u ? data->cimm : data->oldcpu.data.ecx) & 31u;
