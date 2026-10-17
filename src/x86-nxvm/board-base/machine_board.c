@@ -9,6 +9,7 @@
 static lib_status x86_nxvm_board_register_reset_rom_alias(void *owner);
 static lib_status x86_nxvm_board_memory_admission(void *owner,
     lib_size memory_bytes);
+static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile);
 
 lib_status x86_nxvm_board_bind_profile(x86_nxvm_board_state *board,
     const x86_nxvm_board_profile_binding *binding)
@@ -189,6 +190,7 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
     lib_u8 dma_controller_count;
     lib_size installed_bytes;
     x86_core_cpu_profile cpu_profile;
+    lib_u32 reset_alias;
 
     *out_board = LIB_NULL;
     board = (x86_nxvm_board_state *)lib_allocate_zero(1u,
@@ -262,11 +264,10 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
         x86_core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (installed_bytes >= 0x00100000u &&
-        (cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
-         cpu_profile == X86_CORE_CPU_PROFILE_80386)) {
+    reset_alias = x86_nxvm_board_reset_rom_alias(cpu_profile);
+    if (installed_bytes >= 0x00100000u && reset_alias != 0u) {
         const x86_core_machine_memory_alias_config alias = {
-            cpu_profile == X86_CORE_CPU_PROFILE_80286 ? 0x00ff0000u : 0xffff0000u,
+            reset_alias,
             0x000f0000u, 0x00010000u
         };
         lib_status status = x86_core_machine_install_memory_aliases(machine,
@@ -505,19 +506,18 @@ lib_status x86_nxvm_board_mouse_receive_relative(x86_nxvm_board_state *board,
     return x86_nxvm_board_kbc_submit_aux_report(board->shared_kbc, delta_x, delta_y, buttons);
 }
 
-static lib_u32 x86_nxvm_board_reset_rom_alias(
-    x86_core_cpu_profile profile)
+static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile)
 {
     switch (profile) {
     case X86_CORE_CPU_PROFILE_80286:
         return 0x00ff0000u;
     case X86_CORE_CPU_PROFILE_80386:
+    case X86_CORE_CPU_PROFILE_80486SX:
         return 0xffff0000u;
     case X86_CORE_CPU_PROFILE_8086:
     case X86_CORE_CPU_PROFILE_8088:
     case X86_CORE_CPU_PROFILE_80186:
     case X86_CORE_CPU_PROFILE_DEFAULT:
-    case X86_CORE_CPU_PROFILE_80486SX: /* Not admitted by Core machine. */
         return 0u;
     }
     return 0u;

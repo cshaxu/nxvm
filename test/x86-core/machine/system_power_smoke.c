@@ -66,11 +66,10 @@ static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .transaction_contract = {.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE}
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
@@ -99,12 +98,6 @@ static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
             x86_core_machine_reset(machine) != LIB_STATUS_OK;
     }
     if (!failed) {
-        /* The public constructor remains closed to 486; this is internal
-         * qualification of the real CPU/Core connection. */
-        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-        machine->maximum_instruction_ticks = 0u;
-        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
         failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK;
         if (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT)
@@ -194,7 +187,6 @@ static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
 static lib_bool power_buffer_service(void)
 {
     static const lib_u8 waits[] = {0u, 9u, 30u};
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
@@ -210,7 +202,7 @@ static lib_bool power_buffer_service(void)
     for (lib_u8 outcome = 0u; outcome < 3u; ++outcome)
     for (lib_u8 bounded = 0u; bounded < 2u; ++bounded) {
         x86_core_machine_executor_config config = {
-            .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
+            .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
         };
         const lib_u64 service = 1u + waits[index];
         power_probe probe = {.cycle = X86_CORE_CPU_SPECIAL_STOP_GRANT,
@@ -236,11 +228,6 @@ static lib_bool power_buffer_service(void)
                 x86_core_machine_reset(machine) != LIB_STATUS_OK;
         }
         if (!failed) {
-            /* Internal SX transport proof; production construction stays closed. */
-            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            machine->maximum_instruction_ticks = 0u;
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
                 x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
@@ -299,9 +286,8 @@ static lib_bool power_buffer_service(void)
 static lib_bool power_flush_timing(void)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
+        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
@@ -325,11 +311,6 @@ static lib_bool power_flush_timing(void)
                 x86_core_machine_reset(machine) != LIB_STATUS_OK;
         }
         if (!failed) {
-            /* Internal qualified FLUSH path, not public SX production admission. */
-            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            machine->maximum_instruction_ticks = 0u;
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
                 x86_core_machine_set_flush(machine, LIB_TRUE) != LIB_STATUS_OK;
@@ -374,10 +355,10 @@ static lib_bool power_shutdown_reset(void *context)
     return LIB_TRUE;
 }
 
-static lib_bool power_halted_shutdown_reset(void)
+static lib_bool power_halted_shutdown_reset(x86_core_cpu_profile profile)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
+        .memory_bytes = 65536u, .cpu_profile = profile
     };
     power_probe probe = {0};
     const x86_core_machine_attachment attachment = {
@@ -424,7 +405,8 @@ lib_i32 main(void)
 {
     if (!power_buffer_service()) return 1;
     if (!power_flush_timing()) return 1;
-    if (!power_halted_shutdown_reset()) return 1;
+    if (!power_halted_shutdown_reset(X86_CORE_CPU_PROFILE_80386) ||
+        !power_halted_shutdown_reset(X86_CORE_CPU_PROFILE_80486SX)) return 1;
     for (x86_core_cpu_special_cycle cycle = X86_CORE_CPU_SPECIAL_HALT;
         cycle <= X86_CORE_CPU_SPECIAL_STOP_GRANT; ++cycle)
     for (lib_u8 finish = 0u; finish < 5u; ++finish)

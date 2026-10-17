@@ -58,4 +58,16 @@ execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${PROBE_ROOT}"
 if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "manifest missing path")
     message(FATAL_ERROR "Unlisted source not rejected: ${output}${error}")
 endif()
+foreach(body IN ITEMS
+        "x86_core_cpu_execution_context_bind_profiles(cpu, profile, 0, 0, timing)"
+        "machine->cpu_profile = profile")
+    file(WRITE "${PROBE_ROOT}/machine/probe.c" "${body};\n")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-DMACHINE_TEST_ROOT=${PROBE_ROOT}/machine"
+        -P "${CMAKE_CURRENT_LIST_DIR}/machine/verify_boundary.cmake"
+        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+    if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "Machine tests must use configured CPU profile")
+        message(FATAL_ERROR "Machine profile bypass not rejected: ${output}${error}")
+    endif()
+endforeach()
+file(REMOVE "${PROBE_ROOT}/machine/probe.c")
 message(STATUS "x86-core verifier negatives: OK")

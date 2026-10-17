@@ -13,10 +13,9 @@ static lib_bool executor_sx_fpu_interface(void)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u16 vector[] = {0x0100u,0u};
     const lib_u8 hlt = 0xf4u;
 
@@ -54,11 +53,6 @@ static lib_bool executor_sx_fpu_interface(void)
                 x86_core_machine_reset(machine) != LIB_STATUS_OK;
         }
         if (!failed) {
-            /* Internal Executor qualification; the production admission gate stays closed. */
-            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            machine->maximum_instruction_ticks = 0u;
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0u, code, sizeof(code)) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x1cu, vector, sizeof(vector)) != LIB_STATUS_OK ||
@@ -102,12 +96,11 @@ static lib_bool executor_sx_fpu_interface(void)
 
 static lib_bool executor_event_time(void)
 {
-    const x86_core_machine_executor_config config = {
+    x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
@@ -127,15 +120,16 @@ static lib_bool executor_event_time(void)
         const lib_bool nmi = route == 1u;
         const lib_bool overflow = route == 2u;
         const lib_u8 code[] = {nmi ? 0x90u : 0x0fu, 0x0bu};
-        /* SX: cold NOP 5 + retained real NMI 29, or fault entry 33
-         * plus three FIFO stalls on this Core bus. */
+        /* Real SX reset disables caching: cold NOP 5 + NMI 31,
+         * or the original uncached fault entry 33. */
         const lib_u64 clocks = profile == X86_CORE_CPU_PROFILE_80486SX ?
-            (nmi ? 34u : 36u) : nmi ? 3u : 0u;
+            (nmi ? 36u : 33u) : nmi ? 3u : 0u;
         const lib_u64 before = overflow ? LIB_UINT64_MAX - 25u : 0u;
         lib_status status = LIB_STATUS_INTERNAL_ERROR;
         lib_bool failed;
 
         if (overflow && profile != X86_CORE_CPU_PROFILE_80486SX) continue;
+        config.cpu_profile = profile;
         failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
         if (!failed) {
             failed = x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
@@ -147,11 +141,6 @@ static lib_bool executor_event_time(void)
                 x86_core_machine_memory_write(machine, vector[0], &nop, sizeof(nop)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            /* Qualify the real Executor seam without opening production SX admission. */
-            machine->cpu_profile = profile;
-            machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(profile, &timing);
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             machine->elapsed_ticks = before;
             failed = nmi && !x86_core_cpu_request_nmi(machine->executor_cpu_execution);
             status = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result);
@@ -203,7 +192,6 @@ static lib_status executor_entry_fault_memory(void *opaque, lib_u32 address,
 
 static lib_bool executor_sx_bounded_retirement(void)
 {
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 code[] = {0x90u, 0x90u};
     const x86_core_machine_retirement_eligibility_key key = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
@@ -230,7 +218,7 @@ static lib_bool executor_sx_bounded_retirement(void)
     for (lib_u8 quantum = 1u; quantum <= 3u; ++quantum)
     for (lib_u8 mode = 0u; mode < 7u; ++mode) {
         x86_core_machine_executor_config config = {.memory_bytes = 2u * 1024u * 1024u,
-            .cpu_profile = X86_CORE_CPU_PROFILE_80386, .fpu_profile = X86_FPU_PROFILE_NONE};
+            .cpu_profile = X86_CORE_CPU_PROFILE_80486SX, .fpu_profile = X86_FPU_PROFILE_NONE};
         x86_core_machine *machine = LIB_NULL;
         executor_entry_fault_probe probe = {0};
         const x86_core_machine_attachment attachment = {.context = &probe,
@@ -258,12 +246,6 @@ static lib_bool executor_sx_bounded_retirement(void)
             x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK;
         if (!failed) {
-            /* Test the pending receiver without opening production SX admission. */
-            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                machine->cpu_profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-            machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(
-                machine->cpu_profile, &timing);
             failed = machine->maximum_instruction_ticks != 0u ||
                 x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK;
@@ -333,7 +315,6 @@ static lib_bool executor_sx_bounded_retirement(void)
 
 static lib_bool executor_retired_before_entry_fault(void)
 {
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
@@ -349,7 +330,7 @@ static lib_bool executor_retired_before_entry_fault(void)
     for (lib_u8 wait = 0u; wait <= 3u; wait += 3u)
     for (lib_u8 bounded = 0u; bounded < 2u; ++bounded) {
         x86_core_machine_executor_config config = {.memory_bytes = 2u * 1024u * 1024u,
-            .cpu_profile = X86_CORE_CPU_PROFILE_80386, .fpu_profile = X86_FPU_PROFILE_NONE};
+            .cpu_profile = X86_CORE_CPU_PROFILE_80486SX, .fpu_profile = X86_FPU_PROFILE_NONE};
         x86_core_machine *machine = LIB_NULL;
         executor_entry_fault_probe probe = {0};
         const x86_core_machine_attachment attachment = {.context = &probe,
@@ -372,11 +353,6 @@ static lib_bool executor_retired_before_entry_fault(void)
                 x86_core_machine_reset(machine) != LIB_STATUS_OK;
         }
         if (!failed) {
-            /* Internal SX transport proof; the public production gate stays closed. */
-            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-            machine->maximum_instruction_ticks = 0u;
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
                 !x86_core_cpu_request_nmi(machine->executor_cpu_execution);
@@ -441,10 +417,9 @@ static lib_bool executor_sx_soft_reset(void)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 marker = 0x5au;
     /* Relocate through the architectural SMM save area, not CPU-private state. */
     const lib_u8 relocate[] = {
@@ -462,18 +437,14 @@ static lib_bool executor_sx_soft_reset(void)
         LIB_STATUS_INVALID_ARGUMENT || x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
 
     if (!failed) {
-        failed = x86_core_machine_signal_soft_processor_reset(machine) != LIB_STATUS_UNSUPPORTED ||
-            x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+        failed = x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
             x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK;
     }
     if (!failed) {
-        /* This internal owner qualifies the chip before production SX admission. */
-        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-        machine->maximum_instruction_ticks = 0u;
-        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-        failed = x86_core_machine_memory_write(machine, 0x38000u, relocate,
+        failed = x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_CR0,
+                VCPU_CR0_ET) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x38000u, relocate,
                 sizeof(relocate)) != LIB_STATUS_OK ||
             x86_core_machine_set_smi(machine, LIB_TRUE) != LIB_STATUS_OK ||
             x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
@@ -574,10 +545,9 @@ static lib_bool executor_sx_smm(void)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 handler[] = {
         0x26u,0x66u,0x67u,0xc7u,0x05u,0xd0u,0xffu,0x03u,0u,0x78u,0x56u,0x34u,0x12u,
         0x0fu,0xaau
@@ -610,18 +580,12 @@ static lib_bool executor_sx_smm(void)
 
     if (!failed) {
         failed = x86_core_machine_set_smi(LIB_NULL, LIB_TRUE) != LIB_STATUS_INVALID_ARGUMENT ||
-            x86_core_machine_set_smi(machine, LIB_TRUE) != LIB_STATUS_UNSUPPORTED ||
             x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
             x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
             x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK;
     }
     if (!failed) {
-        /* Internal CPU/Core qualification only; the public admission gate stays closed. */
-        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-        machine->maximum_instruction_ticks = 0u;
         failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x38000u, handler, sizeof(handler)) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x100u, &nop, sizeof(nop)) != LIB_STATUS_OK ||
@@ -674,10 +638,9 @@ static lib_bool executor_sx_smm_fault(void)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = (2u * 1024u * 1024u),
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 rsm[] = {0x0fu,0xaau};
     const lib_u32 positions[] = {2u,127u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -718,10 +681,6 @@ static lib_bool executor_sx_smm_fault(void)
                 x86_core_machine_reset(machine) != LIB_STATUS_OK;
         }
         if (!failed) {
-            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-            machine->maximum_instruction_ticks = 0u;
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x38000u, rsm, sizeof(rsm)) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x3fe00u, image, sizeof(image)) != LIB_STATUS_OK ||
@@ -878,14 +837,12 @@ static lib_bool executor_dma_hold(void)
         X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386,
         X86_CORE_CPU_PROFILE_80486SX
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
 
     for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (lib_u32 wait = 0u; wait < 2u; ++wait) {
         const x86_core_machine_executor_config config = {
             .memory_bytes = (2u * 1024u * 1024u),
-            .cpu_profile = profiles[profile] == X86_CORE_CPU_PROFILE_80486SX ?
-                X86_CORE_CPU_PROFILE_80386 : profiles[profile],
+            .cpu_profile = profiles[profile],
             .fpu_profile = X86_FPU_PROFILE_NONE,
             .transaction_contract = {.dma_cycle_wait_quanta = wait,
                 .dma_cycle_bus_ready_gate_enabled = wait != 0u}
@@ -909,11 +866,7 @@ static lib_bool executor_dma_hold(void)
         }
         if (!failed) {
             stage = "grant";
-            /* Internal qualification of the scheduler and CPU together, not
-             * production admission of a 486 machine. */
-            machine->cpu_profile = profiles[profile];
-            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                profiles[profile], X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+
             failed = x86_core_machine_advance_time(machine, 4u) != LIB_STATUS_OK ||
                 probe.bad_grant || probe.granted_ticks != (wait != 0u ? 2u : 4u) ||
                 machine->transaction.hold_owner != X86_CORE_MACHINE_TRANSACTION_OWNER_NONE;

@@ -295,22 +295,17 @@ static lib_i32 retirement_wait_contract(x86_core_cpu_profile profile)
     x86_core_machine_run_result result;
     lib_i32 failed = 0;
 
-    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
+    config.cpu_profile = profile;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
-    /* Internal CPU/Core wait qualification, not production SX admission. */
-    const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
-    machine->cpu_profile = profile;
-    x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-        profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
     failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK;
     failed |= x86_core_machine_memory_write(machine, 0x10u, &data, 1u) != LIB_STATUS_OK;
-    machine->maximum_instruction_ticks = profile == X86_CORE_CPU_PROFILE_80486SX ? 0u : 1u;
+    if (profile != X86_CORE_CPU_PROFILE_80486SX) machine->maximum_instruction_ticks = 1u;
     failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
         &result) != LIB_STATUS_OK;
     failed |= result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
@@ -338,7 +333,7 @@ static lib_i32 retirement_wait_contract(x86_core_cpu_profile profile)
     failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK || x86_core_machine_memory_write(machine, 0x10u, &data, 1u) !=
         LIB_STATUS_OK;
-    machine->maximum_instruction_ticks = profile == X86_CORE_CPU_PROFILE_80486SX ? 0u : 1u;
+    if (profile != X86_CORE_CPU_PROFILE_80486SX) machine->maximum_instruction_ticks = 1u;
     failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
         &result) != LIB_STATUS_INTERNAL_ERROR || result.elapsed_ticks != 0u ||
         machine->elapsed_ticks != 0u;
@@ -355,13 +350,12 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
     x86_core_machine_run_result result;
     lib_status status;
     lib_i32 failed = 0;
-    const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
     const lib_bool sx = profile == X86_CORE_CPU_PROFILE_80486SX;
     /* SX preflights both MOVS operands before its data read; its preceding
      * committed fetch, rather than an absent data cycle, supplies the wait. */
     const lib_u32 wait_address = sx ? 0xfffffff0u : 0x100u;
 
-    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
+    config.cpu_profile = profile;
     config.transaction_contract.external_access_wait_windows[0] =
         (x86_core_machine_external_access_wait_window) {
             X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, wait_address, wait_address, 1u};
@@ -369,14 +363,13 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
-    /* Internal CPU/Executor timing proof; production SX admission stays closed. */
-    machine->cpu_profile = profile;
-    x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-        profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
     failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK;
     failed |= x86_core_machine_memory_write(machine, 0x100u, &source, 1u) != LIB_STATUS_OK;
-    machine->maximum_instruction_ticks = sx ? 0u : 1u;
+    /* This cache-enabled fault witness is separate from default reset timing. */
+    if (sx) failed |= x86_core_machine_debug_write_register(machine,
+        X86_CORE_CPU_DEBUG_CR0, VCPU_CR0_ET) != LIB_STATUS_OK;
+    if (profile != X86_CORE_CPU_PROFILE_80486SX) machine->maximum_instruction_ticks = 1u;
     failed |= x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x100u) !=
         LIB_STATUS_OK;
     failed |= x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDI, 0x00010000u) !=
@@ -566,7 +559,7 @@ static void invalidation_dma_advance(void *owner, lib_u64 ticks)
 static lib_i32 invalidation_cycle_contract(void)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386};
+        .memory_bytes = 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX};
     const x86_core_machine_memory_alias_config aliases[] = {
         {0xfffffff0u, 0xffff0u, 16u}, {0x8000u, 0x2000u, 16u}, {0x9000u, 0x2000u, 16u}};
     invalidation_fixture fixture = {0};
@@ -585,12 +578,9 @@ static lib_i32 invalidation_cycle_contract(void)
     failed |= x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK;
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_CR0,
+        VCPU_CR0_ET) != LIB_STATUS_OK;
     if (!failed) {
-        const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
-        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-        machine->maximum_instruction_ticks = 0u;
-        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
         prefetch_observed_cpu = machine->executor_cpu_execution;
         for (lib_u8 mode = 0u; mode < 4u; ++mode) {
             x86_core_machine_run_result result;
@@ -639,7 +629,7 @@ static lib_i32 prefetch_grant_contract(x86_core_cpu_profile profile)
     };
     lib_i32 failed = 0;
 
-    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
+    config.cpu_profile = profile;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
@@ -648,12 +638,6 @@ static lib_i32 prefetch_grant_contract(x86_core_cpu_profile profile)
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
-        machine->cpu_profile = profile;
-        machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(profile,
-            &instruction_timing);
-        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
         prefetch_observed_cpu = machine->executor_cpu_execution;
         prefetch_grants = 0u;
         bus_granted_ticks = bus_blocked_ticks = 0u;

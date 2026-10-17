@@ -24,7 +24,8 @@ lib_i32 x86_nxvm_board_pc_at_cpu_profile_is_valid(
     return profile == X86_CORE_CPU_PROFILE_8086 ||
         profile == X86_CORE_CPU_PROFILE_80186 ||
         profile == X86_CORE_CPU_PROFILE_80286 ||
-        profile == X86_CORE_CPU_PROFILE_80386;
+        profile == X86_CORE_CPU_PROFILE_80386 ||
+        profile == X86_CORE_CPU_PROFILE_80486SX;
 }
 
 lib_i32 x86_nxvm_board_pc_at_fpu_profile_is_valid(

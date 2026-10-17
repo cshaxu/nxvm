@@ -50,7 +50,7 @@ typedef enum x86_core_cpu_profile {
     X86_CORE_CPU_PROFILE_80186,
     X86_CORE_CPU_PROFILE_80286,
     X86_CORE_CPU_PROFILE_80386,
-    /* Instruction qualification only; Core machine admission remains gated. */
+    /* Selected embedded SX model: CPUID 042Bh, VME/SMM, no integrated FPU. */
     X86_CORE_CPU_PROFILE_80486SX
 } x86_core_cpu_profile;
 

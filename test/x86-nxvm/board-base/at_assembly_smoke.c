@@ -27,7 +27,8 @@ static void descriptor_contracts(void)
         {X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087},
         {X86_CORE_CPU_PROFILE_80186, X86_FPU_PROFILE_NONE},
         {X86_CORE_CPU_PROFILE_80286, X86_FPU_PROFILE_80287},
-        {X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_80387}
+        {X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_80387},
+        {X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE}
     };
     x86_nxvm_board_pc_at_cpu_contract contract = {0}, before;
     x86_nxvm_board_config core;

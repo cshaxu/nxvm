@@ -108,12 +108,12 @@ static lib_i32 lifecycle_find_event(const lifecycle_probe *probe,
     return 0;
 }
 
-static lib_i32 lifecycle_cpu_port_boundaries(void)
+static lib_i32 lifecycle_cpu_port_boundaries(lib_bool sx)
 {
     const x86_core_machine_port_provider ports = { lifecycle_port_read, lifecycle_port_write };
     const x86_core_machine_executor_config config = {
         .memory_bytes = 16u * 1024u * 1024u,
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386
+        .cpu_profile = sx ? X86_CORE_CPU_PROFILE_80486SX : X86_CORE_CPU_PROFILE_80386
     };
     lifecycle_probe probe = {0};
     const x86_core_machine_trace_provider trace = { lifecycle_trace, &probe };
@@ -128,7 +128,6 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
-    for (lib_u8 sx = 0u; sx < 2u && !failed; ++sx)
     for (lib_u8 bytes = 1u; bytes <= 4u && !failed; bytes *= 2u) {
         for (lib_u8 write = 0u; write < 2u && !failed; ++write) {
             /* Success, endpoint failure after a side effect, admission failure. */
@@ -138,7 +137,6 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                 const lib_u32 mask = bytes == 1u ? 0xffu :
                     bytes == 2u ? 0xffffu : LIB_UINT32_MAX;
                 lib_u8 code[3] = {0x90u}, length = 1u;
-                const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
                 const x86_core_cpu_debug_register_patch registers = {
                     .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
                         X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX),
@@ -147,13 +145,6 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                 };
 
                 failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
-                /* Exercise the real CPU publisher; production SX remains gated. */
-                machine->cpu_profile = sx ? X86_CORE_CPU_PROFILE_80486SX : X86_CORE_CPU_PROFILE_80386;
-                machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(
-                    machine->cpu_profile, &timing);
-                x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-                    sx ? X86_CORE_CPU_PROFILE_80486SX : X86_CORE_CPU_PROFILE_80386,
-                    X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
                 if (bytes == 4u) code[length++] = 0x66u;
                 code[length++] = (write ? 0xeeu : 0xecu) + (bytes != 1u);
                 failed |= x86_core_machine_memory_write(machine, 0xffff0u, code, length) != LIB_STATUS_OK ||
@@ -487,7 +478,8 @@ lib_i32 main(void)
         cpu_commit >= cpu_retire;
 
     x86_core_machine_destroy(machine);
-    failed |= lifecycle_cpu_port_boundaries();
+    failed |= lifecycle_cpu_port_boundaries(LIB_FALSE) |
+        lifecycle_cpu_port_boundaries(LIB_TRUE);
     failed |= lifecycle_cpu_memory_boundaries();
     failed |= lifecycle_interrupt_boundary();
     failed |= lifecycle_hold_reset();

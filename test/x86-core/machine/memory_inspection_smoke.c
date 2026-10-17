@@ -165,13 +165,11 @@ static void inspection_unsnooped_write(x86_core_machine *machine, lib_u32 addres
         data, bytes);
 }
 
-/* Qualify the real CPU/bus connection without opening production SX admission. */
 static lib_bool inspection_cache_execution(void)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
+        .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
     };
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 read[] = {0xa1u, 0u, 0x30u};
     const lib_u8 write[] = {0xa3u, 0u, 0x30u};
     const lib_u32 data_descriptor[] = {0x0000ffffu, 0x00009200u};
@@ -203,8 +201,6 @@ static lib_bool inspection_cache_execution(void)
         return LIB_FALSE;
     }
     cpu = machine->executor_cpu_execution;
-    x86_core_cpu_execution_context_bind_profiles(cpu, X86_CORE_CPU_PROFILE_80486SX,
-        X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
     inspection_cpu_reset(cpu, &failed);
     failed |= x86_core_machine_memory_write(machine, 0u, read, sizeof(read)) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x3000u, &value, sizeof(value)) != LIB_STATUS_OK;
@@ -375,8 +371,6 @@ static lib_bool inspection_cache_execution(void)
         device.page_machine = machine;
         device.request_dma_locked = LIB_FALSE;
         cpu = machine->executor_cpu_execution;
-        x86_core_cpu_execution_context_bind_profiles(cpu, X86_CORE_CPU_PROFILE_80486SX,
-            X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
         inspection_cpu_reset(cpu, &failed);
         inspection_unsnooped_write(machine, 0u, exchange, sizeof(exchange));
         inspection_unsnooped_write(machine, 0x8000u, &stale_alias, sizeof(stale_alias));

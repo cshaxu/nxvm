@@ -11,7 +11,10 @@ static void capture(void *context, const x86_core_machine_trace_event *event)
 
 static lib_bool bounded_retirement_trace(void)
 {
-    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
+    };
     const lib_u8 code[] = {0x90u, 0x90u};
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -24,18 +27,12 @@ static lib_bool bounded_retirement_trace(void)
     fixture state = {0};
     const x86_core_machine_trace_provider trace = {capture, &state};
     x86_core_machine *machine = LIB_NULL;
-    lib_bool failed = test_x86_core_machine_create_executor(16u * 1024u * 1024u,
-        &machine) != LIB_STATUS_OK;
+    lib_bool failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
 
     if (!failed) failed = x86_core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        /* Internal transport test; production SX construction remains closed. */
-        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-        machine->maximum_instruction_ticks = 0u;
-        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            machine->cpu_profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
         failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK;
     }

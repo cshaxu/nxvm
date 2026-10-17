@@ -32,6 +32,9 @@ static lib_i32 prepare_machine(x86_core_cpu_profile profile,
     if ((terminal_ud && test_x86_core_exception_block_vector(state->machine, 6u, state) != LIB_STATUS_OK) ||
         x86_core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(state->machine) != LIB_STATUS_OK ||
+        (profile != X86_CORE_CPU_PROFILE_80486SX &&
+            (x86_core_machine_signal_soft_processor_reset(state->machine) != LIB_STATUS_UNSUPPORTED ||
+                x86_core_machine_set_smi(state->machine, LIB_TRUE) != LIB_STATUS_UNSUPPORTED)) ||
         x86_core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
         x86_core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -130,14 +133,61 @@ static lib_i32 run_mov_rm8_imm8_8086(void)
     return failed;
 }
 
-lib_i32 main(void)
+static lib_i32 run_selected_sx(void)
 {
-    const x86_core_machine_executor_config unqualified = {
-        .memory_bytes = (2u * 1024u * 1024u),
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    x86_core_machine *unqualified_machine = LIB_NULL;
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
+        .values = {[X86_CORE_CPU_DEBUG_EFLAGS] = 2u}
+    };
+    const lib_u8 program[] = {
+        0x66u,0xb8u,1u,0u,0u,0u,           /* mov eax,1 */
+        0x0fu,0xa2u,                       /* cpuid */
+        0x66u,0xa3u,0u,4u,                 /* mov [0400h],eax */
+        0x66u,0x89u,0x16u,4u,4u,           /* mov [0404h],edx */
+        0x0fu,0x21u,0xf3u,                 /* mov ebx,dr6 */
+        0x66u,0xb8u,0x12u,0x34u,0x56u,0x78u,
+        0x66u,0x0fu,0xc8u                  /* bswap eax */
+    };
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_cpu_debug_cpu_snapshot reset, after;
+    x86_core_machine_run_result result = {0};
+    x86_core_cpu_profile profile = X86_CORE_CPU_PROFILE_DEFAULT;
+    lib_u32 identity[2] = {0};
+    lib_i32 failed = !x86_core_machine_neutral_config_is_valid(&config) ||
+        x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) failed = x86_core_machine_get_cpu_profile(machine, &profile) != LIB_STATUS_OK ||
+        profile != config.cpu_profile ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
+            &reset) != LIB_STATUS_OK || reset.edx != 0x042bu || reset.eip != 0xfff0u ||
+        reset.cs.selector != 0xf000u || reset.cs.base != 0xffff0000u ||
+        reset.cr0 != 0x60000010u ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0u, program, sizeof(program)) != LIB_STATUS_OK ||
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){7u,0u}, &result) != LIB_STATUS_OK ||
+        result.executed != 7u || result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+        x86_core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
+            &after) != LIB_STATUS_OK || after.eax != 0x12345678u || after.ebx != 0xffff0ff0u ||
+        after.eip != sizeof(program) ||
+        x86_core_machine_debug_read_memory(machine, 0x400u, identity, sizeof(identity)) != LIB_STATUS_OK ||
+        identity[0] != 0x042bu || (identity[1] & 3u) != 2u;
+    if (failed) lib_c_fprintf(lib_c_stderr, "Selected SX production construction/reset/run failed\n");
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+lib_i32 main(void)
+{
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 pusha[] = { 0x60u };
     static const lib_u8 arpl[] = { 0x63u, 0xc0u };
@@ -146,10 +196,7 @@ lib_i32 main(void)
     static const lib_u8 shift_rm16_imm8[] = { 0xc1u, 0xeau, 0x04u };
     lib_i32 failed = 0;
 
-    failed |= x86_core_machine_neutral_create(&unqualified, &unqualified_machine) !=
-        LIB_STATUS_INVALID_ARGUMENT;
-    failed |= unqualified_machine != LIB_NULL;
-    x86_core_machine_destroy(unqualified_machine);
+    failed |= run_selected_sx();
 
     failed |= run_case(X86_CORE_CPU_PROFILE_8086, nop, sizeof(nop), 0);
     failed |= run_case(X86_CORE_CPU_PROFILE_8088, nop, sizeof(nop), 0);

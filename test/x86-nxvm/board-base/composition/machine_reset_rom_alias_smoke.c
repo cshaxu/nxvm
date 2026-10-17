@@ -162,11 +162,11 @@ done:
     return failed;
 }
 
-static lib_i32 reset_alias_without_rom(void)
+static lib_i32 reset_alias_without_rom(x86_core_cpu_profile profile)
 {
     static const lib_u8 halt[] = { 0xf4u };
     const x86_nxvm_board_config config = {
-        .cpu_profile = X86_CORE_CPU_PROFILE_80386
+        .cpu_profile = profile
     };
     const x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
@@ -194,7 +194,9 @@ lib_i32 main(void)
     }
     if (reset_rom_run(X86_CORE_CPU_PROFILE_80286) ||
         reset_rom_run(X86_CORE_CPU_PROFILE_80386) ||
-        absent_fallback_run() || reset_alias_without_rom()) return 1;
+        reset_rom_run(X86_CORE_CPU_PROFILE_80486SX) ||
+        absent_fallback_run() || reset_alias_without_rom(X86_CORE_CPU_PROFILE_80386) ||
+        reset_alias_without_rom(X86_CORE_CPU_PROFILE_80486SX)) return 1;
     lib_c_printf("%s\n", "RESET-ROM-ALIAS:OK");
     return 0;
 }
