@@ -17,6 +17,7 @@
 - [T2 packed BCD string family](evidence/t2-s5-packed-bcd.md).
 - [T2 NEC bit fields](evidence/t2-s6-bit-fields.md).
 - [T2 native conditional repetition](evidence/t2-s7-conditional-repeat.md).
+- [T2 native memory transfers](evidence/t2-s8-memory-transfer.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

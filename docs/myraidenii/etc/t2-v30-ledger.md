@@ -47,7 +47,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V11 | NMI/INT/BRK/divide/step priorities, acknowledge, shadows, native entry from emulation, nested native handlers | CPU existing entry/pending path; manual sections 6, 8 | Exact vector/frame/return/restart and failed provider tests, independent of board PIC; not yet implemented/qualified |
 | V12 | 8080 slots 00--FF, register mapping, arithmetic/flags, stack, memory and port operations | CPU same executor selected by MD; manual section 8 plus NEC-documented 8080 instruction contract | Complete emulation table and ROM-free vectors, not a Z80 substitute; not yet implemented |
 | V13 | BRKEM, CALLN, RETEM, native IRET reentry, RESET abort and prohibited emulation nesting | CPU mode/entry owner; manual section 8 figures 8-4--8-7 and section 12 | Native->8080->native round trips and interrupted emulation, stack alias/failure; not yet implemented |
-| V14 | HLT/WAIT/LOCK, physical address wrapping, even/odd word lanes and split transfers, fetch versus observational reads | CPU bus/segment owner plus existing public provider; manual sections 4--6, 12 | Bus provenance/effects, wait/interrupt/reset safe points and no partial replay; not yet qualified. S6 confirms an FFFF-start V30 word is rejected by the inherited segment-limit path; resolve at this sole bus owner, not by instruction-local splitting |
+| V14 | HLT/WAIT/LOCK, physical address wrapping, even/odd word lanes and split transfers, fetch versus observational reads | CPU bus/segment owner plus existing public provider; manual sections 4--6, 12 | S8 implements native memory lanes/20-bit width and separate fetch wrap, with a pinned-source L2 contiguous data-span model at segment tails, resolving S6's inherited FFFF-word rejection at the sole owner. I/O lanes/restart, full HLT/WAIT/LOCK, prefetch/bus timing and emulation contexts remain unqualified |
 | V15 | Prefetch-qualified instruction clocks, operand transfers, branch/repeat/entry terms, maximum bounded run and waits | CPU timing selector/model; manual section 12 introductory assumptions and individual forms | V30 source/L2 origins, actual-retirement/preview/max-query consistency; no inherited Intel fallback; not yet implemented |
 | V16 | Neutral Machine validation, one clock/attachment axis, physical retirement eligibility and board vector 0x30 | Machine configuration/scheduler/retirement; T1 public contract audit | Synthetic board public-route tests then original-set instruction checkpoints; not yet implemented |
 | V17 | Old Intel 8086/8088/186/286/386/486 behavior and consumer deployment | Existing Shared units and four PC Apps | Whole repo-only x64/x86 units, required affected integration and eight current PC EXEs; existing baseline passes, post-change proof required |
@@ -150,6 +150,15 @@ first/partial read failure and actual NMI/INT-to-IRET continuation, including
 the documented three-prefix retention. Non-comparison carry targets remain
 diagnostic, not undocumented-silicon claims. This is a V05/V09 subfamily,
 not retirement of their entire block/port/prefix/mode domain or any V14/V15 row.
+
+S8 implements native memory transfer at the common logical/physical owners,
+not an INS/EXT workaround. [Memory-transfer evidence](evidence/t2-s8-memory-transfer.md)
+records primary lane/address facts and the exact reference-backed L2 segment-
+tail model, 20-bit wrapping, code versus data behavior, pair/stack/bit-field
+integration and every relevant split/fetch/observation failure position. The
+formerly failing FFFF bit-field case is restored with provider-address proof.
+This consumes the V14 native memory subfamily; no I/O, full prefetch/timing,
+mode, full V14 or complete CPU claim follows from it.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;
