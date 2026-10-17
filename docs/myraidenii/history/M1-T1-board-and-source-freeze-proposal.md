@@ -1,5 +1,8 @@
 # Selected Board And Source Freeze
 
+Archived after T1 freeze acceptance. Original research scope below is retained;
+this is not CPU or gameplay qualification.
+
 ## Objective And Owners
 
 First M1 candidate: freeze one original V30-based RAIDEN II board/game set,

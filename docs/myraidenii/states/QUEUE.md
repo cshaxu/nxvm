@@ -1,8 +1,7 @@
 # Queue
 
-M0 is owner-accepted and closed. The former first candidate is admitted as
-[M1 T1](../history/M1-T1-board-and-source-freeze.md), source/board/set and CPU
-integration-contract freeze. Current owns its active S packet. The remaining
+M0 is owner-accepted and closed. [M1 T1](../history/M1-T1-board-and-source-freeze.md)
+closed the source/board/set and CPU integration-contract freeze. The remaining
 candidates below are unadmitted; numeric T identifiers are allocated only on
 admission in MyRaidenII's independent sequence, not NXVM's sequence.
 

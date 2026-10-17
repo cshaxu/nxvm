@@ -2,7 +2,7 @@
 
 Admitted on 2026-10-17 under the owner's MyRaidenII implementation objective,
 after accepted M0 at f21a22997. This is MyRaidenII's first numeric T, not an
-NXVM task. The [proposal](../proposals/m1-board-and-source-freeze.md) retains
+NXVM task. The [proposal](M1-T1-board-and-source-freeze-proposal.md) retains
 the task outcome; Current alone owns the active packet and acceptance status.
 
 ## Scope And Exit
@@ -34,6 +34,14 @@ links, packet/queue, whitespace and ten unchanged EXE hashes pass. S1 is closed;
 T1 remains open for the named unresolved freeze batch, not full-game qualification.
 
 ## Verification Boundary
+
+S3 executor `86b0e48ff` reconciles all F01--F13 against the original proposal.
+Coordinator reviewed its actual three-file documentation diff (+62/-3),
+the thirteen-row dispositions and the retained runtime receivers. T1 and S3
+are accepted and closed as source/board/set/integration-contract freeze only.
+The [complete review](../etc/evidence/t1-s3-freeze-review.md) records why actual
+V30 execution, chip/gameplay coverage and the declined full-colour contract
+remain unimplemented requirements of their original receiving tasks.
 
 S2 delivers the bounded read-only inventory verifier, 18 ROM-free synthetic
 cases, primary OKI source inspection and concrete CPU/board/gameplay receiving
