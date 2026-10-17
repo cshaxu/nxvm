@@ -9662,14 +9662,7 @@ static void FPU_ESCAPE(x86_core_cpu_execution_context *context)
 static void ADD_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADD_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -9703,14 +9696,7 @@ static void ADD_RM32_R32(x86_core_cpu_execution_context *context)
 static void ADD_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADD_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -9741,14 +9727,7 @@ static void ADD_R32_RM32(x86_core_cpu_execution_context *context)
 static void ADD_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADD_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -9794,14 +9773,7 @@ static void PUSH_ES(x86_core_cpu_execution_context *context)
 {
     lib_u32 xs_sel;
     CPU_TRACE_CALL_BEGIN("PUSH_ES");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     xs_sel = cpu_state.data.es.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -9809,14 +9781,7 @@ static void PUSH_ES(x86_core_cpu_execution_context *context)
 static void POP_ES(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_ES");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.es,
         _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -9824,14 +9789,7 @@ static void POP_ES(x86_core_cpu_execution_context *context)
 static void OR_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OR_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -9865,14 +9823,7 @@ static void OR_RM32_R32(x86_core_cpu_execution_context *context)
 static void OR_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OR_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -9903,14 +9854,7 @@ static void OR_R32_RM32(x86_core_cpu_execution_context *context)
 static void OR_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OR_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -9956,14 +9900,7 @@ static void PUSH_CS(x86_core_cpu_execution_context *context)
 {
     lib_u32 xs_sel;
     CPU_TRACE_CALL_BEGIN("PUSH_CS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     xs_sel = cpu_state.data.cs.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -9974,14 +9911,7 @@ static void POP_CS(x86_core_cpu_execution_context *context)
         push/pop selector only or with higher 16 bit */
     lib_u32 xs_sel;
     CPU_TRACE_CALL_BEGIN("POP_CS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(xs_sel)));
     CPU_TRACE_CALL_END;
@@ -10018,14 +9948,7 @@ static void INS_0F(x86_core_cpu_execution_context *context)
 static void ADC_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADC_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -10059,14 +9982,7 @@ static void ADC_RM32_R32(x86_core_cpu_execution_context *context)
 static void ADC_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADC_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -10097,14 +10013,7 @@ static void ADC_R32_RM32(x86_core_cpu_execution_context *context)
 static void ADC_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADC_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -10150,14 +10059,7 @@ static void PUSH_SS(x86_core_cpu_execution_context *context)
 {
     lib_u32 xs_sel;
     CPU_TRACE_CALL_BEGIN("PUSH_SS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     xs_sel = cpu_state.data.ss.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -10165,14 +10067,7 @@ static void PUSH_SS(x86_core_cpu_execution_context *context)
 static void POP_SS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_SS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.ss,
         _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -10180,14 +10075,7 @@ static void POP_SS(x86_core_cpu_execution_context *context)
 static void SBB_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SBB_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -10221,14 +10109,7 @@ static void SBB_RM32_R32(x86_core_cpu_execution_context *context)
 static void SBB_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SBB_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -10259,14 +10140,7 @@ static void SBB_R32_RM32(x86_core_cpu_execution_context *context)
 static void SBB_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SBB_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -10312,14 +10186,7 @@ static void PUSH_DS(x86_core_cpu_execution_context *context)
 {
     lib_u32 xs_sel;
     CPU_TRACE_CALL_BEGIN("PUSH_DS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     xs_sel = cpu_state.data.ds.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -10327,14 +10194,7 @@ static void PUSH_DS(x86_core_cpu_execution_context *context)
 static void POP_DS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_DS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.ds,
         _GetOperandSize));
     CPU_TRACE_CALL_END;
@@ -10342,14 +10202,7 @@ static void POP_DS(x86_core_cpu_execution_context *context)
 static void AND_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AND_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -10383,14 +10236,7 @@ static void AND_RM32_R32(x86_core_cpu_execution_context *context)
 static void AND_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AND_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -10421,14 +10267,7 @@ static void AND_R32_RM32(x86_core_cpu_execution_context *context)
 static void AND_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AND_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -10522,14 +10361,7 @@ static void DAA(x86_core_cpu_execution_context *context)
 static void SUB_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SUB_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -10563,14 +10395,7 @@ static void SUB_RM32_R32(x86_core_cpu_execution_context *context)
 static void SUB_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SUB_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -10601,14 +10426,7 @@ static void SUB_R32_RM32(x86_core_cpu_execution_context *context)
 static void SUB_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SUB_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -10703,14 +10521,7 @@ static void DAS(x86_core_cpu_execution_context *context)
 static void XOR_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XOR_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -10744,14 +10555,7 @@ static void XOR_RM32_R32(x86_core_cpu_execution_context *context)
 static void XOR_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XOR_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -10782,14 +10586,7 @@ static void XOR_R32_RM32(x86_core_cpu_execution_context *context)
 static void XOR_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XOR_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.result);
@@ -10851,14 +10648,7 @@ static void PREFIX_SS(x86_core_cpu_execution_context *context)
 static void AAA(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AAA");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
@@ -10883,14 +10673,7 @@ static void AAA(x86_core_cpu_execution_context *context)
 static void CMP_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMP_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -10918,14 +10701,7 @@ static void CMP_RM32_R32(x86_core_cpu_execution_context *context)
 static void CMP_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMP_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 8));
@@ -10953,14 +10729,7 @@ static void CMP_R32_RM32(x86_core_cpu_execution_context *context)
 static void CMP_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMP_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     CPU_TRACE_CALL_END;
@@ -11018,14 +10787,7 @@ static void PREFIX_DS(x86_core_cpu_execution_context *context)
 static void AAS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AAS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
@@ -12572,14 +12334,7 @@ static void OUTSW(x86_core_cpu_execution_context *context)
 static void JO_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JO_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_OF));
     CPU_TRACE_CALL_END;
@@ -12587,14 +12342,7 @@ static void JO_REL8(x86_core_cpu_execution_context *context)
 static void JNO_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNO_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_OF));
     CPU_TRACE_CALL_END;
@@ -12602,14 +12350,7 @@ static void JNO_REL8(x86_core_cpu_execution_context *context)
 static void JC_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JC_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_CF));
     CPU_TRACE_CALL_END;
@@ -12617,14 +12358,7 @@ static void JC_REL8(x86_core_cpu_execution_context *context)
 static void JNC_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNC_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_CF));
     CPU_TRACE_CALL_END;
@@ -12632,14 +12366,7 @@ static void JNC_REL8(x86_core_cpu_execution_context *context)
 static void JZ_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JZ_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_ZF));
     CPU_TRACE_CALL_END;
@@ -12647,14 +12374,7 @@ static void JZ_REL8(x86_core_cpu_execution_context *context)
 static void JNZ_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNZ_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_ZF));
     CPU_TRACE_CALL_END;
@@ -12662,14 +12382,7 @@ static void JNZ_REL8(x86_core_cpu_execution_context *context)
 static void JNA_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNA_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
                                    (_GetEFLAGS_CF || _GetEFLAGS_ZF)));
@@ -12678,14 +12391,7 @@ static void JNA_REL8(x86_core_cpu_execution_context *context)
 static void JA_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JA_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
                                    !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
@@ -12694,14 +12400,7 @@ static void JA_REL8(x86_core_cpu_execution_context *context)
 static void JS_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JS_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_SF));
     CPU_TRACE_CALL_END;
@@ -12709,14 +12408,7 @@ static void JS_REL8(x86_core_cpu_execution_context *context)
 static void JNS_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNS_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_SF));
     CPU_TRACE_CALL_END;
@@ -12725,14 +12417,7 @@ static void JP_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JP_REL8");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_PF));
     CPU_TRACE_CALL_END;
@@ -12741,14 +12426,7 @@ static void JNP_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNP_REL8");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_PF));
     CPU_TRACE_CALL_END;
@@ -12756,14 +12434,7 @@ static void JNP_REL8(x86_core_cpu_execution_context *context)
 static void JL_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JL_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
     CPU_TRACE_CALL_END;
@@ -12771,14 +12442,7 @@ static void JL_REL8(x86_core_cpu_execution_context *context)
 static void JNL_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNL_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
     CPU_TRACE_CALL_END;
@@ -12786,14 +12450,7 @@ static void JNL_REL8(x86_core_cpu_execution_context *context)
 static void JNG_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JNG_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
                                    (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
@@ -12802,14 +12459,7 @@ static void JNG_REL8(x86_core_cpu_execution_context *context)
 static void JG_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JG_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
                                    (!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
@@ -12818,14 +12468,7 @@ static void JG_REL8(x86_core_cpu_execution_context *context)
 static void INS_80(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_80");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     if (instruction_state.data.cr != 7u)
@@ -13193,14 +12836,7 @@ static void INS_83(x86_core_cpu_execution_context *context)
 static void TEST_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("TEST_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cr, 8));
@@ -13228,14 +12864,7 @@ static void TEST_RM32_R32(x86_core_cpu_execution_context *context)
 static void XCHG_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_TRUE));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 1));
@@ -13269,14 +12898,7 @@ static void XCHG_RM32_R32(x86_core_cpu_execution_context *context)
 static void MOV_RM8_R8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_RM8_R8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     instruction_state.data.crm = instruction_state.data.cr;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -13304,14 +12926,7 @@ static void MOV_RM32_R32(x86_core_cpu_execution_context *context)
 static void MOV_R8_RM8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_R8_RM8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 1));
@@ -13339,14 +12954,7 @@ static void MOV_R32_RM32(x86_core_cpu_execution_context *context)
 static void MOV_RM16_SREG(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_RM16_SREG");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     instruction_state.data.crm = instruction_state.data.rmovsreg->selector;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -14112,42 +13720,21 @@ static void SAHF(x86_core_cpu_execution_context *context)
     lib_u32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                              VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF);
     CPU_TRACE_CALL_BEGIN("SAHF");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     cpu_state.data.eflags = (cpu_state.data.ah & mask) | (cpu_state.data.eflags & ~mask);
     CPU_TRACE_CALL_END;
 }
 static void LAHF(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LAHF");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     _WriteGPR8(ah) = X86_CPU_MASK_U8(cpu_state.data.flags) | 0x02u;
     CPU_TRACE_CALL_END;
 }
 static void MOV_AL_MOFFS8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_moffs(context, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.crm);
@@ -14186,14 +13773,7 @@ static void MOV_EAX_MOFFS32(x86_core_cpu_execution_context *context)
 static void MOV_MOFFS8_AL(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_moffs(context, 1));
     instruction_state.data.result = cpu_state.data.al;
     instruction_state.data.crm = instruction_state.data.result;
@@ -14518,14 +14098,7 @@ static void CMPSW(x86_core_cpu_execution_context *context)
 static void TEST_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("TEST_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     CPU_TRACE_CALL_END;
@@ -14987,14 +14560,7 @@ static void SCASW(x86_core_cpu_execution_context *context)
 static void MOV_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(al) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15002,14 +14568,7 @@ static void MOV_AL_I8(x86_core_cpu_execution_context *context)
 static void MOV_CL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_CL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(cl) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15017,14 +14576,7 @@ static void MOV_CL_I8(x86_core_cpu_execution_context *context)
 static void MOV_DL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_DL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(dl) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15032,14 +14584,7 @@ static void MOV_DL_I8(x86_core_cpu_execution_context *context)
 static void MOV_BL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_BL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(bl) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15047,14 +14592,7 @@ static void MOV_BL_I8(x86_core_cpu_execution_context *context)
 static void MOV_AH_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_AH_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(ah) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15062,14 +14600,7 @@ static void MOV_AH_I8(x86_core_cpu_execution_context *context)
 static void MOV_CH_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_CH_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(ch) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15077,14 +14608,7 @@ static void MOV_CH_I8(x86_core_cpu_execution_context *context)
 static void MOV_DH_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_DH_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(dh) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15092,14 +14616,7 @@ static void MOV_DH_I8(x86_core_cpu_execution_context *context)
 static void MOV_BH_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_BH_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     _WriteGPR8(bh) = X86_CPU_MASK_U8(instruction_state.data.cimm);
     CPU_TRACE_CALL_END;
@@ -15334,14 +14851,7 @@ static void INS_C0(x86_core_cpu_execution_context *context)
     _new_code_path_;
     if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
     {
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-        {
-            _adv;
-        }
-        else
-        {
-            _adv;
-        }
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
@@ -15404,14 +14914,7 @@ static void INS_C1(x86_core_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("INS_C1");
     if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
     {
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-        {
-            _adv;
-        }
-        else
-        {
-            _adv;
-        }
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
@@ -15578,14 +15081,7 @@ static void LDS_R32_M16_32(x86_core_cpu_execution_context *context)
 static void INS_C6(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_C6");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     switch (instruction_state.data.cr)
     {
@@ -16032,14 +15528,7 @@ static void IRET(x86_core_cpu_execution_context *context)
 static void INS_D0(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_D0");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     switch (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
@@ -16210,14 +15699,7 @@ static void INS_D1(x86_core_cpu_execution_context *context)
 static void INS_D2(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_D2");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     switch (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
@@ -16478,14 +15960,7 @@ static void XLAT(x86_core_cpu_execution_context *context)
 static void LOOPNZ_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LOOPNZ_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
     CPU_TRACE_CALL_END;
@@ -16493,14 +15968,7 @@ static void LOOPNZ_REL8(x86_core_cpu_execution_context *context)
 static void LOOPZ_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LOOPZ_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, _GetEFLAGS_ZF));
     CPU_TRACE_CALL_END;
@@ -16508,14 +15976,7 @@ static void LOOPZ_REL8(x86_core_cpu_execution_context *context)
 static void LOOP_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LOOP_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, 1));
     CPU_TRACE_CALL_END;
@@ -16553,14 +16014,7 @@ static void JCXZ_REL8(x86_core_cpu_execution_context *context)
 static void IN_AL_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IN_AL_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_p_input(context, X86_CPU_MASK_U8(instruction_state.data.cimm), X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     CPU_TRACE_CALL_END;
@@ -16601,14 +16055,7 @@ static void IN_EAX_I8(x86_core_cpu_execution_context *context)
 static void OUT_I8_AL(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OUT_I8_AL");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_p_output(context, X86_CPU_MASK_U8(instruction_state.data.cimm), X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     CPU_TRACE_CALL_END;
@@ -16748,14 +16195,7 @@ static void JMP_PTR16_32(x86_core_cpu_execution_context *context)
 static void JMP_REL8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JMP_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, 1));
     CPU_TRACE_CALL_END;
@@ -16763,14 +16203,7 @@ static void JMP_REL8(x86_core_cpu_execution_context *context)
 static void IN_AL_DX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IN_AL_DX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     CPU_TRACE_CALL_END;
 }
@@ -16807,14 +16240,7 @@ static void IN_EAX_DX(x86_core_cpu_execution_context *context)
 static void OUT_DX_AL(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OUT_DX_AL");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     CPU_TRACE_CALL_END;
 }
@@ -17056,14 +16482,7 @@ static void CMC(x86_core_cpu_execution_context *context)
 static void INS_F6(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_F6");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
