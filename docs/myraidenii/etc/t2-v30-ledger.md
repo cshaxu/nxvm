@@ -37,7 +37,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V01 | Family membership, enum stability, DEFAULT/invalid admission, name, FPU-none board selection | CPU interface/lifecycle and Machine create; manual sections 1, 3, 7 | S3 implements native CPU membership/name and enum stability, rejects invalid profiles and keeps Machine admission closed; board/FPU selection remains unqualified |
 | V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | S3 native reset/entry and MD-clear reset vectors implemented; full emulation-mode context remains unqualified |
 | V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Shared CPU native table-driven vectors and matching preview; not yet implemented |
-| V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements suffixes 10--1F/28/2A and shared execution/preview admission with owned bit/nibble and failure vectors; packed BCD, bit fields, mode entry and full timing remain unqualified |
+| V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements 10--1F/28/2A; S5 implements documented packed-BCD 20/22/26 with shared format/metadata/preview and failure vectors. Bit fields, mode entry, undocumented inputs and full timing remain unqualified |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | Decode/execution/preview equivalence and bounded safe-point tests; no assumed Intel 15-byte silicon rule; not yet implemented |
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | Register/stack/bus ordering, alias and wrap vectors; not yet qualified for V30 |
 | V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | Full operand/flag boundaries, divide fault saved-PC and undefined flag masks; not yet qualified |
@@ -119,6 +119,17 @@ flags and provider failure paths are checked. Unknown instruction-space values
 are now rejected at metadata ownership rather than inheriting a valid primary
 form. See [family evidence](evidence/t2-s4-nec-bit-nibble.md). This closes only
 the named V04 subfamily, not the remaining NEC, prefix, bus or timing universe.
+
+S5 implements all three packed BCD string operations for documented valid
+decimal inputs and one-to-254 digit counts, preserving indices/count and fixed
+ES destination with source overrides. An independent decimal oracle, all valid
+byte pairs and lengths, the primary example stream, overlap/wrap and accepted
+write-prefix failures provide owned proof. The NEC format owner now distinguishes
+implicit and ModRM forms across decode/preview/execution; no second executor
+or public layout change exists. See [BCD family evidence](evidence/t2-s5-packed-bcd.md).
+Odd final nibbles/flags and undocumented input behavior are not silicon-exact
+claims. Bit fields, mode/emulation, prefixes, full bus and timing retain their
+original complete receiving rows; this subfamily does not close V04 or T2.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;

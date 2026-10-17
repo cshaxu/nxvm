@@ -2,8 +2,33 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S4. No S packet is active.
+M1 T2 S5 is active after accepted S4: the complete packed BCD string family,
+ADD4S/SUB4S/CMP4S, through the existing CPU memory and execution owners.
 Single-session coordinator/executor mode remains in effect.
+
+S5 Shared `0fbc2cf9e` and eight receiving artifacts `b4d5f2013` are pushed.
+Complete final repo-only suites pass 658/658 on each host width; the initial
+obsolete-vector failure is retained in [S5 evidence](../etc/evidence/t2-s5-packed-bcd.md).
+Product-record delivery and coordinator acceptance remain; T2 is not complete.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, MyRaidenII M1 T2 S5 after S4 P4 a06307ff4; P starts at P1. |
+| Admission And Approval | Owner standing complete MyRaidenII implementation and automatic bounded S admission; approved V30/NEC integration. Shared X86 Core/owned tests, eight affected NXVM PC artifacts and MyRaidenII records only. No Lib/Emulator, peer App source or sibling import. |
+| Objective | Implement ADD4S/SUB4S/CMP4S suffixes 20/22/26 for documented CL 1--254 and valid packed decimal digits. Preserve SI/DI/CX, use overridden DS source and fixed ES destination, forward bounded byte progression, correct carry/borrow and aggregate zero, and no CMP writes. Make implicit versus ModRM form classification one private owner shared by metadata, decode and preview. |
+| Non-goals | No bit-field/mode/emulation/repeat-prefix or physical-time qualification, Machine admission, game EXE or presenter change. Undocumented CL 0/255 and non-BCD data are not silicon-exact claims; odd final upper nibble and affected flags retain manual uncertainty. |
+| Reference Baseline | Clean a06307ff4; pinned NEC October 1986 manual printed 12-42--44, PDF 87--89 including repeated-operation example proving stable indices. Existing 512-entry observation capacity covers at most 381 byte accesses. |
+| Candidate Proposal | ../proposals/m1-v30.md and ../etc/t2-v30-ledger.md V04 packed decimal family with corresponding V07/V09/V14 byte/string/failure contexts; other V04/V09 classes remain outstanding. |
+| Files And ABI Surface | cpu_instructions.c only production, owned new BCD CPU unit, existing NEC family admission/native isolation units, registration and two manifests; eight receiving PC EXEs and records. The old native negative 0F20 sample collides with newly admitted ADD4S and must move to unsupported Intel MOV DR, retaining isolation checks. Estimate production +100--170/-20--45 and tests +250--400/-2--6. No public function/type/enum/layout, persistent state, queue or worker change. |
+| Applicable Rules | Architecture one metadata/format/executor and memory owner; coding private cohesive operand-format classifier and existing trace style/Lib vocabulary; source original manual facts only; execution complete dual-width repo-only units, receiving artifacts and per-target P. Architecture/coding governance and read-only PDF inspection apply. |
+| Verification | Actual executor/reference-decimal vectors, exhaustive valid byte operands, all documented lengths, carry/borrow chains, equal/zero, odd nibble and undefined flags, indices/DF and source override/fixed destination, overlap/wrap, preview/truncation and boundary containment; first/later provider failure including retained accepted writes without replay/rollback claims. Preserve bit/nibble and old Intel regressions; full x64/x86 units/builds, manifests/Types/dependencies, eight PC PE/identity/hash and unchanged INIs/MyNES. |
+| Expected Markers | V30:PACKED-BCD:OK; correct three-opcode implicit length and existing NEC ModRM lengths, no Intel 0F reuse or invented clocks. |
+| Asset Needs | Read-only pinned NEC manual and original synthetic ROM-free vectors; unchanged existing PC build-time firmware. No game extraction/import. |
+| Reporting Requirements | Actual source/semantic domain and uncertainty, per-owner additions/deletions/net, test outcomes, accepted-write failure boundary, artifacts and full T2 residual scope. |
+| Stop Conditions | Need for public contract or unapproved component, fabricated hardware semantics, copied external code, capacity overflow/new state owner, or unexplained old-profile regression. |
+| Exit Criteria | Three documented packed-BCD operations pass owned executor/preview/failure proofs and complete dual-width regressions/builds/artifacts/gates; per-target P pushed and coordinator actual-diff acceptance. T2 remains open. |
+| Original Owner Request | Single-person dual-role governed full playable MyRaidenII; approved V30 integration, no Lib changes. |
+| Similar-Issue Sweep | NEC implicit/ModRM/immediate classification and all metadata/preview/execution consumers; every BCD operation's count, arithmetic, source/destination, flag and first/partial-provider-failure paths; no duplicate parser, iterator state or alternate bus route. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
