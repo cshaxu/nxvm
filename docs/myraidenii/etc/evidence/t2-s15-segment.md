@@ -135,10 +135,13 @@ hashes remain unchanged. All INIs, media/snapshots/ROM inputs and other Shared
 packages remain untouched.
 
 Governance, links, whitespace and actual-change review accompany the delivery.
-The coordinator separately reconciles the sixteen-field packet, original
+The coordinator separately reconciled the sixteen-field packet, original
 goal, complete admitted segment batch, source/model distinctions, remaining
-receivers, actual source/test/manifests and all artifact identities before
-acceptance. Logs under `build/myraidenii/t2-s15-*` are retained for final T2
+receivers, actual source/test/manifests and all artifact identities. Shared
+`ef0a6f30e`, NXVM `82a3aee05` and evidence `134584075` are accepted. No
+original convergence-domain member is silently retired. S15 closes through
+the following purely governance P, without another code/artifact change.
+Logs under `build/myraidenii/t2-s15-*` are retained for final T2
 qualification; all batch build/test/deployment handles have exited.
 
 No external-ROM integration, manual desktop/RDP, physical audio, real board
