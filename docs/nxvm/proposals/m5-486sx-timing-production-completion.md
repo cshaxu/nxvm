@@ -46,7 +46,7 @@ cache/TLB, GPR dependency and REP facts. The existing Core pending-completion
 owner consumes the public timing result's event subtotal. No new executor,
 hardware-state mirror, cache, worker or guest-time publisher is authorized.
 
-The sole selected-SX branch temporarily reports compatibility/unallocated
+The reference baseline's sole selected-SX branch reports compatibility/unallocated
 instruction timing while preserving REP lifetime. Its owner is the CPU timing
 selector; its removal condition is complete C16 runtime/preview allocation and
 proof in this candidate. C17's closed production gate and tests that reject
@@ -57,7 +57,7 @@ public API or a permanent alternative timing service.
 ## Planned Bounded S Batches
 
 The following sequential S plan follows the current owner audit in
-[S1 evidence](../etc/evidence/t563-s1-rebase.md). Current records S1 and S2 acceptance;
+[S1 evidence](../etc/evidence/t563-s1-rebase.md). Current records acceptance;
 [S2 evidence](../etc/evidence/t563-s2-nominal-allocation.md) retains nominal
 coverage and publication. Each later admission freezes numerical sources, files and diff estimates;
 simple related forms are implemented and tested as a cohort, not one opcode per S.

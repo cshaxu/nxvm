@@ -1,5 +1,10 @@
 # Supporting Documentation Index
 
+T563 S6: [Selected runtime, observation and bounded transport](evidence/t563-s6-selected-runtime.md)
+records Q1--Q6 source ownership, approved observation expansion, qualified
+budget delivery, full dual-width unit/selected-integration proof and eight
+[artifact hashes](evidence/t563-s6-artifacts.json).
+
 T563 S5: [Event and system elapsed time](evidence/t563-s5-event-system.md)
 records complete E1--E6 allocation, model grades, failure/budget proof,
 session-restored qualification and eight artifact hashes.

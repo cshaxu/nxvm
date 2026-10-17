@@ -57,3 +57,22 @@ packet, owned production/test deltas, source/model ledger, required dual-width
 qualification and eight artifact hashes. S5 is closed. The full packet remains
 in P2 and the linked evidence retains the review; this acceptance adds no
 implementation or executable input. T563 remains open for S6--S8.
+
+S6's frozen [Q1--Q6 implementation](../etc/evidence/t563-s6-selected-runtime.md)
+connects the sole selected-SX aggregate, completed instruction/target facts,
+accepted bus/event/FIFO service and existing bounded Core completion owner.
+The owner-approved appended observation byte replaces Core's late target
+preview. Partial time never becomes another retirement; the existing Debug
+boundary preserves copied diagnosis but rejects pending mutation/bus access.
+Production C/H is +312/-127 and tests +574/-106. Both widths pass 632/632
+units, their specialized aggregates, sixteen selected integrations and four
+final published CLI checks. Eight current 0563 PC EXEs are refreshed with
+[PE/hash proof](../etc/evidence/t563-s6-artifacts.json). Lib/Emulator, MyNES,
+Apps, owner INI/media/ROM and the four production CPU choices are unchanged.
+Actual-commit acceptance remains required; C17/S7, S8 and complete 486SX
+qualification remain open.
+
+Shared implementation P1 **395c84b91** is pushed with the complete twenty-seven
+Shared paths. NXVM's target-separated delivery retains the full evidence and
+eight artifacts from that same frozen source content; committing adds no
+executable input. Coordinator actual-commit acceptance follows both P pushes.
