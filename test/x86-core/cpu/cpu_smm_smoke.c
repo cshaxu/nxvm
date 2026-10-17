@@ -333,7 +333,7 @@ static lib_bool smm_special_write_barrier(smm_fixture *fixture)
             fixture->barrier_stall_ticks != 1u + waits[index] ||
             context->timing_result.event_ticks != 1u + waits[index] +
                 (lib_u64)(outcome == 0u && cycle != X86_CORE_CPU_SPECIAL_HALT) * 2u ||
-            context->timing_result.ticks != (lib_u64)(cycle == X86_CORE_CPU_SPECIAL_HALT) ||
+            context->timing_result.ticks != (cycle == X86_CORE_CPU_SPECIAL_HALT ? 4u : 0u) ||
             fixture->bad_order || fixture->instruction.writes != 1u ||
             context->stop_granted != (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT && outcome == 0u) ||
             fixture->cycle_polls != 1u ||
@@ -378,7 +378,7 @@ static lib_bool smm_elapsed_timing(smm_fixture *fixture)
         fixture->image_write_wait_ticks = waits[index];
         fixture->image_read_wait_ticks = waits[index];
         x86_core_cpu_execution_context_bind_external_cycle_provider(context, smm_write_wait, fixture);
-        if (!smm_enter(fixture) || context->timing_result.event_ticks != 298u ||
+        if (!smm_enter(fixture) || context->timing_result.event_ticks != 298u + 128u * waits[index] ||
             context->bus_timing.count != 0u ||
             fixture->instruction.instructions.data.timing_external_wait_ticks != 128u * waits[index])
             return LIB_FALSE;
@@ -413,7 +413,7 @@ static lib_bool smm_elapsed_timing(smm_fixture *fixture)
         if (!fixture->instruction.fault.valid || !context->stop_requested || !context->smm_active ||
             fixture->instruction.fault.exception_mask != VCPUINS_EXCEPT_CE ||
             context->timing_result.ticks != 0u || fixture->reads != failures[index] ||
-            context->timing_result.event_ticks != 5u + 2u * (failures[index] - 1u) ||
+            context->timing_result.event_ticks != 5u + 11u * (failures[index] - 1u) ||
             fixture->instruction.instructions.data.timing_external_wait_ticks != 9u * (failures[index] - 1u))
             return LIB_FALSE;
     }
@@ -1221,7 +1221,7 @@ static lib_bool smm_flush_and_priority(smm_fixture *fixture)
     if (x86_core_cpu_set_flush(context, LIB_TRUE) != LIB_STATUS_OK ||
         x86_core_cpu_set_flush(context, LIB_FALSE) != LIB_STATUS_OK) return LIB_FALSE;
     x86_core_cpu_execution_refresh(context);
-    if (context->timing_result.ticks != 1u || context->timing_result.event_ticks != 1u ||
+    if (context->timing_result.ticks != 5u || context->timing_result.event_ticks != 1u ||
         fixture->instruction.cpu.data.eip != 1u || context->flush_pending ||
         fixture->instruction.fault.valid) return LIB_FALSE;
 

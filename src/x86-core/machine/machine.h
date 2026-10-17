@@ -192,8 +192,10 @@ typedef enum x86_core_machine_time_publication_origin {
     X86_CORE_MACHINE_TIME_PUBLICATION_DEADLINE,
     X86_CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE,
     X86_CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY,
-    X86_CORE_MACHINE_TIME_PUBLICATION_CPU_EVENT
+    X86_CORE_MACHINE_TIME_PUBLICATION_CPU_EVENT,
+    X86_CORE_MACHINE_TIME_PUBLICATION_CPU_EXECUTION
 } x86_core_machine_time_publication_origin;
+lib_bool x86_core_machine_retirement_time_is_qualified(const x86_core_machine *machine);
 lib_status x86_core_machine_publish_elapsed_ticks(x86_core_machine *machine,
     lib_u64 elapsed_ticks, x86_core_machine_time_publication_origin origin);
 /* Deterministic Core-test helper. Product execution advances through the

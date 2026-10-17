@@ -2681,6 +2681,7 @@ static lib_i32 x86_core_cpu_control_stack_next_term(x86_core_cpu_execution_conte
     }
     *out_ticks = context->cpu_profile == X86_CORE_CPU_PROFILE_80286 ?
         lexeme.byte_count : lexeme.component_count;
+    context->completed_observation.next_lexeme_components = lexeme.component_count;
     return 1;
 }
 
@@ -2956,7 +2957,7 @@ static lib_i32 x86_core_cpu_control_stack_short_branch_taken(
     lib_u32 prefixes, lib_i32 *out_taken)
 {
     lib_u8 opcode;
-    lib_u16 count;
+    lib_u32 count;
 
     if (data == LIB_NULL || context == LIB_NULL || out_taken == LIB_NULL ||
         prefixes >= data->oplen) return 0;
@@ -2965,16 +2966,42 @@ static lib_i32 x86_core_cpu_control_stack_short_branch_taken(
         return x86_core_cpu_control_stack_condition_taken(data->oldcpu.data.eflags,
             opcode, out_taken);
     }
-    count = (lib_u16)data->oldcpu.data.ecx;
+    const lib_bool address32 = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_addrsize;
+    count = address32 ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
     if (opcode == 0xe3u) {
         *out_taken = count == 0u;
         return 1;
     }
     if (opcode < 0xe0u || opcode > 0xe2u) return 0;
-    --count;
+    count = address32 ? count - 1u : (lib_u16)(count - 1u);
     *out_taken = count != 0u && (opcode == 0xe2u ||
         (opcode == 0xe1u) == ((data->oldcpu.data.eflags & VCPU_EFLAGS_ZF) != 0u));
     return 1;
+}
+
+lib_bool x86_core_cpu_timing_branch_taken(
+    const x86_core_cpu_execution_context *context, lib_u32 opcode_index, lib_bool *out_taken)
+{
+    if (context == LIB_NULL || context->instructions == LIB_NULL || out_taken == LIB_NULL)
+        return LIB_FALSE;
+    const t_cpuins_data *data = &context->instructions->data;
+    if (opcode_index >= data->oplen) return LIB_FALSE;
+    const lib_u8 opcode = data->opcodes[opcode_index];
+    const lib_u8 next = opcode_index + 1u < data->oplen ? data->opcodes[opcode_index + 1u] : 0u;
+    const lib_u8 extension = (next >> 3u) & 7u;
+    lib_i32 taken;
+
+    if ((opcode >= 0x70u && opcode <= 0x7fu) || (opcode >= 0xe0u && opcode <= 0xe3u)) {
+        if (!x86_core_cpu_control_stack_short_branch_taken(data, context, opcode_index, &taken))
+            return LIB_FALSE;
+    } else if (opcode == 0x0fu && next >= 0x80u && next <= 0x8fu) {
+        if (!x86_core_cpu_control_stack_condition_taken(data->oldcpu.data.eflags, next, &taken))
+            return LIB_FALSE;
+    } else if (opcode == 0xe9u || opcode == 0xeau || opcode == 0xebu ||
+        (opcode == 0xffu && extension >= 2u && extension <= 5u)) taken = LIB_TRUE;
+    else return LIB_FALSE;
+    *out_taken = taken != 0;
+    return LIB_TRUE;
 }
 
 /* CALL/JMP task clocks are ts, not ts+m (386 DX PRM 17-40/17-86).
@@ -4309,6 +4336,8 @@ lib_u64 x86_core_cpu_timing_maximum_ticks(
         return X86_CORE_CPU_80286_SOURCE_MAXIMUM_TICKS;
     case X86_CORE_CPU_PROFILE_80386:
         return X86_CORE_CPU_80386_SOURCE_MAXIMUM_TICKS;
+    case X86_CORE_CPU_PROFILE_80486SX:
+        return 0u;
     default:
         break;
     }
@@ -4372,20 +4401,44 @@ lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_contex
     x86_core_cpu_source_timing_form form;
     const t_cpuins_data *data;
     lib_u32 prefixes;
+    lib_u64 ticks, memory, decode;
+    lib_bool original, memory_model, decode_model, bus_model;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL || context->instructions == LIB_NULL ||
         context->cpu == LIB_NULL ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return 0;
     data = &context->instructions->data;
     prefixes = x86_core_cpu_instruction_prefix_count(data);
-    /* Preserve the explicitly unallocated recipe until all C16 costs can be
-     * selected here. This is not physical timing or a second fallback route. */
-    if (!x86_core_cpu_compatibility_instruction_cost(context, out_ticks)) return 0;
-    if (prefixes < data->oplen &&
-        x86_core_cpu_source_timing_string_form(data->opcodes[prefixes], &form)) {
-        context->timing_result.form_id = (lib_u32)form;
+    if (prefixes >= data->oplen) return 0;
+    if (x86_core_cpu_source_timing_string_form(data->opcodes[prefixes], &form)) {
         x86_core_cpu_source_timing_record_repeat(context, data);
     } else context->source_repeat_active = LIB_FALSE;
+    original = x86_core_cpu_80486_nominal_instruction_cost(context, &ticks);
+    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &ticks)) ||
+        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model) ||
+        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model) ||
+        !x86_core_cpu_timing_add_ticks(&ticks, memory) ||
+        !x86_core_cpu_timing_add_ticks(&ticks, decode) ||
+        !x86_core_cpu_80486_bus_instruction_cost(context, ticks, &ticks, &bus_model)) return 0;
+    /* Source identity is the decoded opcode family. Existing eligibility
+     * fields retain ModR/M, mode, size, branch and REP variants separately. */
+    context->timing_result.form_id = data->opcodes[prefixes] == 0x0fu ?
+        0x100u + data->opcodes[prefixes + 1u] : data->opcodes[prefixes];
+    context->timing_result.retirement_origin = !original || memory_model || decode_model || bus_model ?
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL :
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE;
+    context->timing_result.formula_inputs =
+        (data->timing_cache_used ? X86_CORE_CPU_TIMING_INPUT_CACHE : 0u) |
+        (data->timing_fetch_bus_ticks != 0u ? X86_CORE_CPU_TIMING_INPUT_FETCH : 0u) |
+        (memory != 0u ? X86_CORE_CPU_TIMING_INPUT_MEMORY : 0u) |
+        (data->timing_tlb_walks[0] != 0u || data->timing_tlb_walks[1] != 0u ||
+            data->timing_tlb_walks[2] != 0u || data->timing_tlb_updates != 0u ?
+            X86_CORE_CPU_TIMING_INPUT_TRANSLATION : 0u) |
+        (decode != 0u ? X86_CORE_CPU_TIMING_INPUT_DECODE : 0u) |
+        (data->timing_bus_service_ticks != 0u || data->timing_bus_wait_ticks != 0u ||
+            data->timing_bus_stall_ticks != 0u || data->timing_bus_invalidation_ticks != 0u ?
+            X86_CORE_CPU_TIMING_INPUT_BUS : 0u);
+    *out_ticks = ticks;
     return 1;
 }
 

@@ -9,6 +9,84 @@ typedef struct nominal_case {
     lib_u64 ticks;
 } nominal_case;
 
+/* The component terms have independent numerical vectors below. This checks
+ * their real execution receiver, not a second instruction or selector. */
+static lib_bool selected_cost(const cpu_instruction_fixture *fixture)
+{
+    const x86_core_cpu_execution_context *context = &fixture->execution;
+    const x86_core_cpu_timing_result result = x86_core_cpu_capture_timing(context);
+    lib_u64 nominal, memory, decode, total;
+    lib_bool memory_model, decode_model, bus_model;
+    const lib_bool original = x86_core_cpu_80486_nominal_instruction_cost(context, &nominal);
+
+    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &nominal)) ||
+        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model) ||
+        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model) ||
+        nominal > LIB_UINT64_MAX - memory || nominal + memory > LIB_UINT64_MAX - decode ||
+        !x86_core_cpu_80486_bus_instruction_cost(context, nominal + memory + decode,
+            &total, &bus_model)) return LIB_FALSE;
+    if (result.source_timing_unallocated || result.ticks != total ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_CACHE) != 0u) !=
+            (fixture->instructions.data.timing_cache_used != LIB_FALSE) ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_FETCH) != 0u) !=
+            (fixture->instructions.data.timing_fetch_bus_ticks != 0u) ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_MEMORY) != 0u) != (memory != 0u) ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_DECODE) != 0u) != (decode != 0u) ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_TRANSLATION) != 0u) !=
+            (fixture->instructions.data.timing_tlb_walks[0] != 0u ||
+             fixture->instructions.data.timing_tlb_walks[1] != 0u ||
+             fixture->instructions.data.timing_tlb_walks[2] != 0u ||
+             fixture->instructions.data.timing_tlb_updates != 0u) ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_BUS) != 0u) !=
+            (fixture->instructions.data.timing_bus_service_ticks != 0u ||
+             fixture->instructions.data.timing_bus_wait_ticks != 0u ||
+             fixture->instructions.data.timing_bus_stall_ticks != 0u ||
+             fixture->instructions.data.timing_bus_invalidation_ticks != 0u) ||
+        result.retirement_origin != (!original || memory_model || decode_model || bus_model ?
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE) ||
+        result.form_id == X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+        result.key_id != result.form_id) {
+        lib_c_fprintf(lib_c_stderr,
+            "Selected cost: opcode=%02x ticks=%llu/%llu origin=%u unallocated=%u form=%u\n",
+            (lib_u32)fixture->instructions.data.opcodes[0], result.ticks, total,
+            (lib_u32)result.retirement_origin, (lib_u32)result.source_timing_unallocated,
+            result.form_id);
+        return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool selected_lifetime(void)
+{
+    cpu_instruction_fixture fixture;
+    const lib_u8 code[] = {0x90u,0x90u};
+    t_cpu after;
+
+    cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+    for (lib_u8 step = 0u; step < 2u; ++step) {
+        if (step == 0u) {
+            if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK)
+                return LIB_FALSE;
+        } else x86_core_cpu_execution_refresh(&fixture.execution);
+        const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.execution);
+        if (!selected_cost(&fixture) || timing.ticks != (step ? 1u : 5u) ||
+            timing.formula_inputs != (step ? 0u :
+                X86_CORE_CPU_TIMING_INPUT_FETCH |
+                    X86_CORE_CPU_TIMING_INPUT_BUS) ||
+            timing.retirement_origin != (step ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE :
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL) ||
+            timing.form_id != 0x90u || fixture.execution.completed_observation.next_lexeme_components != 0u) {
+            lib_c_fprintf(lib_c_stderr, "Selected lifetime: step=%u ticks=%llu inputs=%x origin=%u\n",
+                (lib_u32)step, timing.ticks, timing.formula_inputs, (lib_u32)timing.retirement_origin);
+            return LIB_FALSE;
+        }
+    }
+    x86_core_cpu_state_reset(&fixture.execution);
+    return !fixture.execution.completed_observation_valid &&
+        fixture.execution.completed_observation.next_lexeme_components == 0u;
+}
+
 /* Independent expected cache-hit columns from Intel 1992 PRM E-3--E-13.
  * Actual execution supplies ModR/M, mode and operand state to the calculator.
  * These are nominal-only checks, not dynamic-penalty qualification. */
@@ -189,6 +267,7 @@ static lib_bool nominal_execution(void)
                 test->name, test->ticks, ticks);
             return LIB_FALSE;
         }
+        if (!selected_cost(&fixture)) return LIB_FALSE;
         if (fixture.instructions.data.timing_data_misses == 0u &&
             fixture.instructions.data.timing_locked_reads == 0u) {
             lib_bool modeled = LIB_TRUE;
@@ -1761,7 +1840,7 @@ static lib_bool nominal_encoding_allocation(void)
         const lib_bool modeled =
             x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &model);
 
-        if (original == modeled) {
+        if (original == modeled || !selected_cost(fixture)) {
             lib_c_fprintf(lib_c_stderr,
                 "Nominal allocation code32=%u escaped=%u opcode=%02x suffix=%02x original=%u modeled=%u\n",
                 (lib_u32)code32, (lib_u32)escaped, (lib_u32)opcode,
@@ -1811,7 +1890,7 @@ static lib_bool arithmetic_model_rejects_unowned(void)
 
 int main(void)
 {
-    if (!nominal_execution() || !nominal_alu_forms() || !nominal_condition_forms() ||
+    if (!selected_lifetime() || !nominal_execution() || !nominal_alu_forms() || !nominal_condition_forms() ||
         !nominal_protection_queries() || !nominal_exchange_memory() || !nominal_system_forms() ||
         !nominal_rejects_unowned() || !nominal_modes() ||
         !nominal_cpuid() || !nominal_bit_scan() || !nominal_unsigned_multiply() ||

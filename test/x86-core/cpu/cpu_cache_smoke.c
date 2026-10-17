@@ -252,6 +252,7 @@ typedef struct cache_memory_probe {
     lib_u32 task_acknowledgements;
     lib_u64 task_transfer_ticks;
     lib_u64 task_fetch_ticks;
+    lib_u64 task_write_issues;
     x86_core_cpu_cache_operation operations[2];
 } cache_memory_probe;
 
@@ -2716,6 +2717,8 @@ static lib_u64 cache_task_cycle(void *opaque, x86_core_cpu_external_cycle_phase 
     const lib_u64 ticks = write ? 2u * fragments : 1u + fragments;
 
     probe->task_transfer_ticks += ticks;
+    if (write && (probe->instruction.cpu.data.cr0 & VCPU_CR0_CD) == 0u)
+        probe->task_write_issues += fragments;
     if (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
         provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) probe->task_fetch_ticks += ticks;
     return 0u;
@@ -2872,7 +2875,9 @@ static lib_bool cache_task_timing(void)
         probe.fail_read_at = failure == 6u ? gate_address : failure == 1u ? 0x3080u : failure == 2u ? 0x3070u :
             failure == 3u ? (task32 ? 0x261cu : 0x260eu) : task32 ? 0x2660u : 0x2620u;
         probe.fail_write = failure == 5u;
+        const lib_u64 bus_before = fixture->execution.bus_timing.service_credit;
         const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
+        const lib_u64 service = fixture->execution.bus_timing.service_credit - bus_before;
         if (failure) {
             const lib_u64 accepted = probe.task_transfer_ticks -
                 (asynchronous ? probe.task_fetch_ticks : 0u);
@@ -2883,8 +2888,10 @@ static lib_bool cache_task_timing(void)
                 failure == 2u ? 1u : 2u) + (idt ? 0u : gate);
 
             if (!fixture->fault.valid ||
-                (idt && (fixture->execution.timing_result.event_ticks != accepted + setup ||
-                    fixture->execution.timing_result.ticks != (lib_u64)asynchronous)) ||
+                (idt && (fixture->execution.timing_result.event_ticks != service + probe.task_write_issues -
+                        (asynchronous ? probe.task_fetch_ticks : 0u) + setup ||
+                    fixture->instructions.data.timing_transfer_ticks != accepted ||
+                    fixture->execution.timing_result.ticks != (asynchronous ? 5u : 0u))) ||
                 (!asynchronous && fixture->instructions.data.timing_data_misses != pointer + backlink +
                     accepted_descriptors + accepted_state + (idt && failure != 6u ? gate : 0u)) ||
                 x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
@@ -2904,17 +2911,27 @@ static lib_bool cache_task_timing(void)
             const lib_u64 nominal = 37u + (vm86 ? 140u : task32 ? 162u : 143u);
             const lib_u64 setup = form == 10u ? 11u : 3u;
             const x86_core_cpu_timing_result result = x86_core_cpu_capture_timing(&fixture->execution);
+            /* Global service survives entry-scope restoration. Committed
+             * transfer observations independently remove reads/write issues,
+             * leaving the actual FIFO stall term for this real task route. */
+            if (service + probe.task_write_issues < probe.task_transfer_ticks ||
+                service < probe.task_fetch_ticks) return LIB_FALSE;
+            const lib_u64 stalls = service + probe.task_write_issues - probe.task_transfer_ticks;
+            lib_u64 expected_event = nominal + setup + expected + stalls;
+            if (expected_event < service - probe.task_fetch_ticks)
+                expected_event = service - probe.task_fetch_ticks;
 
-            if (result.event_ticks < nominal + setup || result.ticks != 1u ||
+            /* This fixture never caches code: the selected NOP owns its
+             * five-clock prefetch, independently of the following task entry. */
+            if (result.event_ticks != expected_event || result.ticks != 5u ||
                 probe.task_interrupt || probe.task_acknowledgements != (lib_u32)(form == 10u))
             {
-                lib_c_printf("Task event mode=%u form=%u warm=%u event=%llu nominal=%llu ticks=%llu ack=%u fault=%x\n",
+                lib_c_printf("Task event mode=%u form=%u warm=%u event=%llu/%llu nominal=%llu ticks=%llu ack=%u fault=%x\n",
                     (lib_u32)mode, (lib_u32)form, (lib_u32)warm,
-                    result.event_ticks, nominal, result.ticks, probe.task_acknowledgements,
+                    result.event_ticks, expected_event, nominal, result.ticks, probe.task_acknowledgements,
                     fixture->fault.exception_mask);
                 return LIB_FALSE;
             }
-            ticks = result.event_ticks - nominal - setup;
         }
         if (status != LIB_STATUS_OK || fixture->fault.valid || fixture->delivered_exception.valid ||
             !fixture->execution.instruction_task_switched || after.data.eip != 0x100u ||
@@ -2926,7 +2943,7 @@ static lib_bool cache_task_timing(void)
                 fixture->instructions.data.timing_tss_field_misses != backlink ||
                 fixture->instructions.data.timing_idt_misses != (idt ? gate : 0u) ||
                 !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled))) ||
-            ticks != expected || (!asynchronous && modeled !=
+            (!asynchronous && ticks != expected) || (!asynchronous && modeled !=
                 (pointer + descriptors + state + backlink + (idt ? gate : 0u) != 0u))) {
             lib_c_printf("Task memory mode=%u form=%u warm=%u: miss=%u/%u desc=%u pair=%u field=%u ticks=%llu/%llu model=%u fault=%x eip=%x\n",
                 (lib_u32)mode, (lib_u32)form, (lib_u32)warm,

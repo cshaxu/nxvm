@@ -339,17 +339,20 @@ lib_status x86_core_machine_publish_elapsed_ticks(x86_core_machine *machine,
         LIB_UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    /* Physical publication is closed to the two owners whose current source
-     * rules establish a Core-axis duration. Remaining origins stay blocked
-     * until their owner supplies an exact S4 disposition. */
+    /* A partial instruction duration requires the same source qualification
+     * as its final retirement. Event and external-wait origins stay closed. */
     if (machine->retirement_time_contract == X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
         origin != X86_CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT &&
-        origin != X86_CORE_MACHINE_TIME_PUBLICATION_DEADLINE) {
+        origin != X86_CORE_MACHINE_TIME_PUBLICATION_DEADLINE &&
+        (origin != X86_CORE_MACHINE_TIME_PUBLICATION_CPU_EXECUTION ||
+         !x86_core_machine_retirement_time_is_qualified(machine))) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (origin == X86_CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) {
         x86_core_machine_trace_record(machine, X86_CORE_MACHINE_TRACE_CPU_RETIRE,
-            x86_core_machine_linear_pc(machine), (lib_u32)elapsed_ticks, 0u);
+            x86_core_machine_linear_pc(machine), (lib_u32)(machine->cpu_profile ==
+                X86_CORE_CPU_PROFILE_80486SX ? machine->cpu_retirement_source_ticks :
+                elapsed_ticks), 0u);
     } else {
         x86_core_machine_trace_record(machine, X86_CORE_MACHINE_TRACE_EXTERNAL_TIME,
             0u, (lib_u32)elapsed_ticks, 0u);

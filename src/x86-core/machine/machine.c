@@ -22,11 +22,17 @@ static lib_i32 x86_core_machine_publish_successful_retirement(x86_core_machine *
     if (machine == LIB_NULL) return 0;
     x86_core_machine_retirement_observation_publish(machine,
         machine->cpu_retirement_source_ticks);
-    return machine->retirement_time_contract != X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
+    return x86_core_machine_retirement_time_is_qualified(machine);
+}
+
+lib_bool x86_core_machine_retirement_time_is_qualified(const x86_core_machine *machine)
+{
+    return machine != LIB_NULL &&
+        (machine->retirement_time_contract != X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
         (machine->time_axis.kind == X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
          !x86_core_cpu_capture_timing(machine->executor_cpu_execution).
              source_timing_unallocated &&
-         x86_core_machine_retirement_qualification_contains(machine));
+         x86_core_machine_retirement_qualification_contains(machine)));
 }
 
 static void x86_core_machine_begin_retirement_wait(x86_core_machine *machine,
@@ -885,15 +891,6 @@ lib_status x86_core_machine_run(
                     }
                     if (machine->cpu_retirement_wait_ticks != 0u) continue;
                 }
-                if (machine->cpu_retirement_wait_retires && budget.ticks != 0u &&
-                    retiring_ticks >
-                    budget.ticks - result->ticks) {
-                    machine->lifecycle = X86_CORE_MACHINE_PAUSED;
-                    result->reason = X86_CORE_MACHINE_STOP_BUDGET;
-                    result->linear_pc = x86_core_machine_linear_pc(machine);
-                    result->elapsed_ticks = machine->elapsed_ticks;
-                    return LIB_STATUS_OK;
-                }
                 if (event_ticks > machine->cpu_retirement_completion_ticks ||
                     LIB_UINT64_MAX - result->ticks < machine->cpu_retirement_completion_ticks ||
                     LIB_UINT64_MAX - machine->elapsed_ticks <
@@ -904,6 +901,28 @@ lib_status x86_core_machine_run(
                     result->detail = machine->fault_detail;
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
+                }
+                if (machine->cpu_retirement_wait_retires && budget.ticks != 0u &&
+                    retiring_ticks > budget.ticks - result->ticks) {
+                    if (machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+                        const lib_u64 ticks = budget.ticks - result->ticks;
+
+                        if (x86_core_machine_publish_elapsed_ticks(machine, ticks,
+                                X86_CORE_MACHINE_TIME_PUBLICATION_CPU_EXECUTION) != LIB_STATUS_OK) {
+                            (void)x86_core_machine_report_fault(machine, 0x54494d55u);
+                            result->reason = X86_CORE_MACHINE_STOP_FAULT;
+                            result->linear_pc = x86_core_machine_linear_pc(machine);
+                            result->detail = machine->fault_detail;
+                            return LIB_STATUS_INTERNAL_ERROR;
+                        }
+                        machine->cpu_retirement_completion_ticks -= ticks;
+                        result->ticks += ticks;
+                    }
+                    machine->lifecycle = X86_CORE_MACHINE_PAUSED;
+                    result->reason = X86_CORE_MACHINE_STOP_BUDGET;
+                    result->linear_pc = x86_core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return LIB_STATUS_OK;
                 }
                 if (!machine->cpu_retirement_wait_retires) {
                     lib_u64 event_ticks = machine->cpu_retirement_completion_ticks;
@@ -959,7 +978,7 @@ lib_status x86_core_machine_run(
                 machine->cpu_retirement_wait_pending = LIB_FALSE;
                 if (cpu_fault_pending)
                     return x86_core_machine_complete_cpu_fault(machine, result);
-                continue;
+                goto retirement_complete;
             }
             if (budget.ticks != 0u && machine->maximum_instruction_ticks >
                 budget.ticks - result->ticks) {
@@ -1077,11 +1096,13 @@ lib_status x86_core_machine_run(
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
                 x86_core_machine_retirement_observation_capture_eligibility_key(machine);
-                if (machine->external_cycle_round_ticks != 0u || timing_result.event_ticks != 0u) {
+                if (machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+                    machine->external_cycle_round_ticks != 0u || timing_result.event_ticks != 0u) {
                     x86_core_machine_begin_retirement_wait(machine,
                         machine->external_cycle_round_ticks,
                         instruction_ticks - machine->external_cycle_round_ticks,
-                        instruction_ticks, LIB_TRUE);
+                        machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
+                            timing_result.ticks : instruction_ticks, LIB_TRUE);
                     continue;
                 }
                 machine->cpu_retirement_source_ticks = instruction_ticks;
@@ -1111,6 +1132,7 @@ lib_status x86_core_machine_run(
                 if (machine->fault_detail != 0u)
                     return x86_core_machine_complete_cpu_fault(machine, result);
             }
+retirement_complete:
             if (x86_core_cpu_execution_consume_debug_pause_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = X86_CORE_MACHINE_PAUSED;

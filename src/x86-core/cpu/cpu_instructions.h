@@ -237,6 +237,9 @@ struct x86_core_cpu_execution_context {
     t_cpuins *instructions;
     x86_core_cpu_instruction_timing instruction_timing;
     x86_core_cpu_timing_result timing_result;
+    /* Completed facts survive asynchronous decoder reuse until the next round. */
+    x86_core_cpu_instruction_observation completed_observation;
+    lib_bool completed_observation_valid;
     lib_bool source_repeat_active;
     lib_u16 source_repeat_cs;
     lib_u32 source_repeat_eip;

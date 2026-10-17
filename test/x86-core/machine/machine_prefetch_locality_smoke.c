@@ -304,22 +304,25 @@ static lib_i32 retirement_wait_contract(x86_core_cpu_profile profile)
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
     /* Internal CPU/Core wait qualification, not production SX admission. */
     const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
+    machine->cpu_profile = profile;
     x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
         profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
     failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK;
     failed |= x86_core_machine_memory_write(machine, 0x10u, &data, 1u) != LIB_STATUS_OK;
-    machine->maximum_instruction_ticks = 1u;
+    machine->maximum_instruction_ticks = profile == X86_CORE_CPU_PROFILE_80486SX ? 0u : 1u;
     failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
         &result) != LIB_STATUS_OK;
     failed |= result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 1u || machine->cpu_retirement_wait_pending == LIB_FALSE ||
-        machine->cpu_retirement_wait_ticks == 0u;
+        (profile == X86_CORE_CPU_PROFILE_80486SX ?
+            machine->cpu_retirement_completion_ticks == 0u : machine->cpu_retirement_wait_ticks == 0u);
     failed |= x86_core_machine_set_cpu_bus_ready(machine, 0) != LIB_STATUS_OK;
     failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
         &result) != LIB_STATUS_OK;
     failed |= result.executed != 0u || result.ticks != 1u ||
-        machine->cpu_retirement_wait_ticks == 0u;
+        (profile == X86_CORE_CPU_PROFILE_80486SX ?
+            machine->cpu_retirement_completion_ticks == 0u : machine->cpu_retirement_wait_ticks == 0u);
     failed |= x86_core_machine_set_cpu_bus_ready(machine, 1) != LIB_STATUS_OK;
     failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
         &result) != LIB_STATUS_OK;
@@ -335,7 +338,7 @@ static lib_i32 retirement_wait_contract(x86_core_cpu_profile profile)
     failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK || x86_core_machine_memory_write(machine, 0x10u, &data, 1u) !=
         LIB_STATUS_OK;
-    machine->maximum_instruction_ticks = 1u;
+    machine->maximum_instruction_ticks = profile == X86_CORE_CPU_PROFILE_80486SX ? 0u : 1u;
     failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
         &result) != LIB_STATUS_INTERNAL_ERROR || result.elapsed_ticks != 0u ||
         machine->elapsed_ticks != 0u;
@@ -367,12 +370,13 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
     /* Internal CPU/Executor timing proof; production SX admission stays closed. */
+    machine->cpu_profile = profile;
     x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
         profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
     failed |= x86_core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK;
     failed |= x86_core_machine_memory_write(machine, 0x100u, &source, 1u) != LIB_STATUS_OK;
-    machine->maximum_instruction_ticks = 1u;
+    machine->maximum_instruction_ticks = sx ? 0u : 1u;
     failed |= x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x100u) !=
         LIB_STATUS_OK;
     failed |= x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDI, 0x00010000u) !=
@@ -386,16 +390,16 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
         machine->cpu_retirement_wait_retires != LIB_FALSE;
     if (sx && !failed) {
         failed |= machine->cpu_retirement_wait_ticks != 0u ||
-            machine->cpu_retirement_completion_ticks != 33u;
+            machine->cpu_retirement_completion_ticks != 36u;
         /* Entry elapsed time can span budgets without another retirement or
          * losing the committed prefix; completion owns the one remaining tick. */
-        failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 32u},
-            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 32u ||
-            result.elapsed_ticks != 33u || !machine->cpu_retirement_wait_pending ||
+        failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 35u},
+            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 35u ||
+            result.elapsed_ticks != 36u || !machine->cpu_retirement_wait_pending ||
             machine->cpu_retirement_completion_ticks != 1u;
         failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
             &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 1u ||
-            result.elapsed_ticks != 34u || machine->elapsed_ticks != 34u ||
+            result.elapsed_ticks != 37u || machine->elapsed_ticks != 37u ||
             machine->cpu_retirement_wait_pending || machine->cpu_retirement_wait_retires;
     }
     if (failed)
@@ -583,6 +587,8 @@ static lib_i32 invalidation_cycle_contract(void)
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
         const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
+        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
+        machine->maximum_instruction_ticks = 0u;
         x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
             X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
         prefetch_observed_cpu = machine->executor_cpu_execution;
@@ -643,6 +649,9 @@ static lib_i32 prefetch_grant_contract(x86_core_cpu_profile profile)
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
         const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
+        machine->cpu_profile = profile;
+        machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(profile,
+            &instruction_timing);
         x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
             profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
         prefetch_observed_cpu = machine->executor_cpu_execution;

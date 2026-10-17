@@ -188,19 +188,26 @@ void x86_core_cpu_bus_write_complete(x86_core_cpu_execution_context *context,
     }
 }
 
-lib_bool x86_core_cpu_80486_bus_instruction_cost(
+void x86_core_cpu_bus_clear_observation(x86_core_cpu_execution_context *context)
+{
+    context->instructions->data.timing_bus_wait_ticks = 0u;
+    context->instructions->data.timing_bus_stall_ticks = 0u;
+    context->instructions->data.timing_bus_service_ticks = 0u;
+    context->instructions->data.timing_bus_invalidation_ticks = 0u;
+}
+
+lib_bool x86_core_cpu_80486_bus_scope_cost(
     const x86_core_cpu_execution_context *context, lib_u64 baseline_ticks,
-    lib_u64 *out_ticks, lib_bool *out_modeled)
+    lib_u64 *out_ticks)
 {
     lib_u64 ticks = baseline_ticks;
 
     if (context == LIB_NULL || context->cpu == LIB_NULL || context->instructions == LIB_NULL ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX || out_ticks == LIB_NULL ||
-        baseline_ticks == 0u || context->bus_timing.invalid || context->stop_requested ||
-        context->instruction_fault_delivered || context->instruction_wait_stall) return LIB_FALSE;
+        context->bus_timing.invalid) return LIB_FALSE;
     const t_cpuins_data *data = &context->instructions->data;
 
-    if (data->except != 0u || data->oplen == 0u || data->timing_external_wait_overflow ||
+    if (data->timing_external_wait_overflow ||
         data->timing_bus_wait_ticks > LIB_UINT64_MAX - ticks) return LIB_FALSE;
     ticks += data->timing_bus_wait_ticks;
     if (data->timing_bus_stall_ticks > LIB_UINT64_MAX - ticks) return LIB_FALSE;
@@ -209,7 +216,18 @@ lib_bool x86_core_cpu_80486_bus_instruction_cost(
     if (data->timing_bus_invalidation_ticks > LIB_UINT64_MAX - ticks) return LIB_FALSE;
     ticks += data->timing_bus_invalidation_ticks;
     *out_ticks = ticks;
-    if (out_modeled != LIB_NULL) *out_modeled = data->timing_bus_service_ticks != 0u ||
-        data->timing_bus_invalidation_ticks != 0u;
+    return LIB_TRUE;
+}
+
+lib_bool x86_core_cpu_80486_bus_instruction_cost(
+    const x86_core_cpu_execution_context *context, lib_u64 baseline_ticks,
+    lib_u64 *out_ticks, lib_bool *out_modeled)
+{
+    if (context == LIB_NULL || context->instructions == LIB_NULL || baseline_ticks == 0u ||
+        context->stop_requested || context->instruction_fault_delivered || context->instruction_wait_stall ||
+        context->instructions->data.except != 0u || context->instructions->data.oplen == 0u ||
+        !x86_core_cpu_80486_bus_scope_cost(context, baseline_ticks, out_ticks)) return LIB_FALSE;
+    if (out_modeled != LIB_NULL) *out_modeled = context->instructions->data.timing_bus_service_ticks != 0u ||
+        context->instructions->data.timing_bus_invalidation_ticks != 0u;
     return LIB_TRUE;
 }

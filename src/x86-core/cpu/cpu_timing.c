@@ -23,8 +23,8 @@ static lib_i32 x86_core_cpu_timing_string_odd_word(
         (destination_transfer && (data->oldcpu.data.di & 1u) != 0u);
 }
 
-static lib_u32 x86_core_cpu_timing_formula_inputs(
-    const x86_core_cpu_execution_context *context)
+static lib_u32 x86_core_cpu_timing_capture_formula_inputs(
+    x86_core_cpu_execution_context *context)
 {
     const t_cpuins_data *data;
     lib_u32 prefix;
@@ -97,6 +97,22 @@ static lib_u32 x86_core_cpu_timing_formula_inputs(
         x86_core_cpu_timing_string_odd_word(data, opcode_index)) {
         inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
     }
+    {
+        lib_bool taken;
+
+        if (x86_core_cpu_timing_branch_taken(context, opcode_index, &taken)) {
+            x86_core_cpu_instruction_lexeme lexeme;
+
+            inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH;
+            if (taken) inputs |= X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
+            /* Reuse the timing evaluator's next-term observation when present.
+             * Its L2 fallback already proved the target unavailable. */
+            if (taken && context->completed_observation.next_lexeme_components == 0u &&
+                context->timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL &&
+                x86_core_cpu_execution_preview_lexeme(context, &lexeme) && lexeme.available)
+                context->completed_observation.next_lexeme_components = lexeme.component_count;
+        }
+    }
     return inputs;
 }
 
@@ -111,8 +127,10 @@ static lib_i32 x86_core_cpu_timing_try(x86_core_cpu_execution_context *context,
         X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
     if (evaluate == LIB_NULL || !evaluate(context, &ticks)) return 0;
     if (context->timing_result.retirement_origin ==
-        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL) {
-        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL ||
+        context->timing_result.retirement_origin ==
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL) {
+        origin = context->timing_result.retirement_origin;
     }
     result->ticks = ticks;
     result->retirement_origin = origin;
@@ -246,7 +264,7 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
         if (!x86_core_cpu_timing_select_80286(context, &result)) return 0;
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         if (!x86_core_cpu_timing_try(context, &result,
-                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE,
                 x86_core_cpu_80486_source_instruction_cost)) return 0;
     } else if (!x86_core_cpu_timing_try(context, &result,
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO,
@@ -284,7 +302,8 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
     }
     if (!x86_core_cpu_timing_apply_8086_lock(context, &result)) return 0;
     result.key_id = context->timing_result.form_id;
-    result.formula_inputs = x86_core_cpu_timing_formula_inputs(context);
+    result.formula_inputs = context->timing_result.formula_inputs |
+        x86_core_cpu_timing_capture_formula_inputs(context);
     if (result.retirement_origin ==
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         result.retirement_origin ==

@@ -40,8 +40,12 @@ lib_i32 x86_core_cpu_80386_source_instruction_cost(x86_core_cpu_execution_contex
     lib_u64 *out_ticks);
 lib_i32 x86_core_cpu_compatibility_instruction_cost(x86_core_cpu_execution_context *context,
     lib_u64 *out_ticks);
-/* Sole selected-SX candidate. Incomplete C16 costs stay explicitly unallocated
- * while the existing repeat/result owner records their actual lifetime. */
+/* The existing instruction condition owner supplies copied branch facts;
+ * false means this is not a Jcc/LOOP/JMP or indirect CALL encoding. */
+lib_bool x86_core_cpu_timing_branch_taken(
+    const x86_core_cpu_execution_context *context, lib_u32 opcode_index, lib_bool *out_taken);
+/* Sole selected-SX aggregate: disjoint nominal/L2, memory, decode and bus
+ * terms, after the existing REP owner records this actual primitive. */
 lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_context *context,
     lib_u64 *out_ticks);
 
@@ -66,7 +70,8 @@ lib_u64 x86_core_cpu_80486_exception_setup_cost(
     const x86_core_cpu_execution_context *context, lib_u8 vector);
 
 /* Table 8-1 SX reference intervals and the actual admitted SMM image traffic.
- * Explicit L2 envelope; excludes Core-owned external waits and prior fetch. */
+ * Pure L2 zero-wait envelope; the executing receiver owns actual extra waits
+ * and prior fetch separately. */
 lib_bool x86_core_cpu_80486_smm_cost(
     const x86_core_cpu_execution_context *context, lib_bool entry,
     lib_bool complete, lib_u64 prefix_service, lib_u64 *out_ticks);
@@ -97,6 +102,11 @@ void x86_core_cpu_bus_write_complete(x86_core_cpu_execution_context *context,
     lib_bool buffered);
 void x86_core_cpu_bus_drain(x86_core_cpu_execution_context *context, lib_bool stalled);
 void x86_core_cpu_bus_invalidate(x86_core_cpu_execution_context *context);
+/* Observation scope only, never the live FIFO or service credit. Entry and
+ * failed-prefix owners consume the same checked bus formula as retirement. */
+void x86_core_cpu_bus_clear_observation(x86_core_cpu_execution_context *context);
+lib_bool x86_core_cpu_80486_bus_scope_cost(
+    const x86_core_cpu_execution_context *context, lib_u64 baseline_ticks, lib_u64 *out_ticks);
 lib_bool x86_core_cpu_80486_bus_instruction_cost(
     const x86_core_cpu_execution_context *context, lib_u64 baseline_ticks,
     lib_u64 *out_ticks, lib_bool *out_modeled);

@@ -55,37 +55,114 @@ static lib_i32 retirement_prepare(x86_core_machine **out_machine,
             LIB_STATUS_OK;
 }
 
-static lib_i32 retirement_control_context_case(lib_u8 opcode,
-    x86_core_machine_retirement_control_outcome expected_outcome,
-    lib_u8 expected_next_components)
+static lib_i32 retirement_async_context_case(lib_bool branch)
 {
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x100u, [X86_CORE_CPU_DEBUG_ESP] = 0x8000u}
+    };
+    const lib_u8 code[] = {branch ? 0xebu : 0x90u, 0x7eu};
+    const lib_u8 target[] = {0x81u, 0xc0u, 1u, 0u};
+    const lib_u8 handler = 0x90u;
+    const lib_u16 vector[] = {0x300u,0u};
+    x86_core_machine *machine = LIB_NULL;
+    retirement_probe probe = {0};
+    const x86_core_machine_retirement_observation_provider provider = {
+        .context = &probe, .callback = retirement_capture
+    };
+    x86_core_machine_run_result result;
+    lib_i32 failed = !retirement_prepare(&machine, &config, code, sizeof(code));
+
+    probe.machine = machine;
+    if (!failed)
+        failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x180u, target, sizeof(target)) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x300u, &handler, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 8u, (const lib_u8 *)vector, sizeof(vector)) != LIB_STATUS_OK ||
+            x86_core_machine_set_retirement_observation_provider(machine, &provider) != LIB_STATUS_OK ||
+            !x86_core_cpu_request_nmi(machine->executor_cpu_execution) ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
+            result.executed != 1u || result.linear_pc != 0x300u || probe.count != 1u ||
+            probe.records[0].point.eip != 0x100u ||
+            probe.records[0].eligibility_key.opcode != code[0] ||
+            probe.records[0].next_lexeme_components != (branch ? 3u :
+                X86_CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE) ||
+            probe.records[0].instruction_entry_cpu.eip != 0x100u ||
+            probe.records[0].current_cpu.eip != 0x300u;
+    if (failed && probe.count != 0u)
+        lib_c_printf("Async retirement identity: point=%x entry=%x current=%x opcode=%x next=%u\n",
+            probe.records[0].point.eip, probe.records[0].instruction_entry_cpu.eip,
+            probe.records[0].current_cpu.eip, probe.records[0].eligibility_key.opcode,
+            (lib_u32)probe.records[0].next_lexeme_components);
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 retirement_control_context_cases(void)
+{
+    static const struct {
+        lib_u8 code[9], bytes;
+        lib_u32 count;
+        x86_core_machine_retirement_control_outcome outcome;
+        lib_u8 components;
+    } cases[] = {
+        {{0x75u,1u,0x90u,0x90u},4u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,1u},
+        {{0x74u,1u,0x90u,0x90u},4u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,0xffu},
+        {{0x75u,0u,0x90u},3u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,1u},
+        {{0x74u,0u,0x90u},3u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,0xffu},
+        {{0x0fu,0x85u,0u,0u,0x90u},5u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,1u},
+        {{0x0fu,0x84u,0u,0u,0x90u},5u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,0xffu},
+        {{0x66u,0x0fu,0x85u,0u,0u,0u,0u,0x90u},8u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,1u},
+        {{0xffu,0xc0u,0x90u},3u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_NONE,0xffu},
+        {{0xffu,0xc8u,0x90u},3u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_NONE,0xffu},
+        {{0x67u,0xe2u,0u,0x90u},4u,0x10001u,X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,1u},
+        {{0x67u,0xe3u,0u,0x90u},4u,0x10000u,X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,0xffu},
+        {{0xe2u,0u,0x90u},3u,1u,X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,0xffu},
+        {{0x67u,0xe3u,0u,0x90u},4u,0u,X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,1u}
+    };
     const x86_core_machine_executor_config config = {
         .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const x86_core_machine_run_budget budget = { 1u, 0u };
-    const lib_u8 program[] = { opcode, 0x01u, 0x90u, 0x90u };
-    x86_core_machine_retirement_observation_provider provider;
-    x86_core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK,
-        { LIB_STATUS_OK, LIB_STATUS_OK } };
-    x86_core_machine *machine = LIB_NULL;
-    lib_i32 failed = !retirement_prepare(&machine, &config, program, sizeof(program));
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        x86_core_machine_retirement_observation_provider provider;
+        x86_core_machine_run_result result;
+        retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK,
+            { LIB_STATUS_OK, LIB_STATUS_OK } };
+        x86_core_machine *machine = LIB_NULL;
+        lib_i32 failed = !retirement_prepare(&machine, &config, cases[index].code, cases[index].bytes);
 
-    provider.callback = retirement_capture;
-    provider.context = &probe;
-    probe.machine = machine;
-    if (!failed) {
-        failed |= x86_core_machine_set_retirement_observation_provider(machine,
-            &provider) != LIB_STATUS_OK ||
-            x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-            probe.count != 1u ||
-            probe.records[0].control_outcome != expected_outcome ||
-            probe.records[0].next_lexeme_components != expected_next_components;
+        provider.callback = retirement_capture;
+        provider.context = &probe;
+        probe.machine = machine;
+        if (!failed) {
+            failed |= x86_core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ECX,
+                    cases[index].count) != LIB_STATUS_OK ||
+                x86_core_machine_set_retirement_observation_provider(machine,
+                    &provider) != LIB_STATUS_OK ||
+                x86_core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+                result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+                probe.count != 1u ||
+                probe.records[0].control_outcome != cases[index].outcome ||
+                probe.records[0].next_lexeme_components != cases[index].components;
+        }
+        x86_core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("Retirement branch context: case=%zu outcome=%u components=%u\n",
+                index, (lib_u32)probe.records[0].control_outcome,
+                (lib_u32)probe.records[0].next_lexeme_components);
+            return failed;
+        }
     }
-    x86_core_machine_destroy(machine);
-    return failed;
+    return 0;
 }
 static lib_i32 retirement_pre_mode_snapshot_case(void)
 {
@@ -551,7 +628,8 @@ lib_i32 main(void)
     const lib_u8 scasw[] = { 0xafu };
     const lib_u8 segment_movsw[] = { 0x26u, 0xa5u };
     const lib_u8 rep_movsw[] = { 0xf3u, 0xa5u };
-    lib_i32 failed = 0;
+    lib_i32 failed = retirement_async_context_case(LIB_FALSE) |
+        retirement_async_context_case(LIB_TRUE);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
@@ -610,11 +688,7 @@ lib_i32 main(void)
         failed |= retirement_8088_primary_case(&scalar_opcodes[index], 1u,
             scalar_ticks[index], X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
-    failed |= retirement_control_context_case(0x75u,
-        X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
-        retirement_control_context_case(0x74u,
-            X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
-            X86_CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE) ||
+    failed |= retirement_control_context_cases() ||
         retirement_pre_mode_snapshot_case() || retirement_8086_context_formula_case() ||
         retirement_8088_primary_case(add_register, sizeof(add_register), 3u,
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||

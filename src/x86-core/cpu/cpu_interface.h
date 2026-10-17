@@ -180,7 +180,9 @@ typedef enum x86_core_cpu_retirement_timing_origin {
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK,
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK,
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
-    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL,
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE,
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL
 } x86_core_cpu_retirement_timing_origin;
 
 typedef enum x86_core_cpu_retirement_repeat_phase {
@@ -252,6 +254,9 @@ typedef struct x86_core_cpu_instruction_observation {
     lib_bool address_size_32;
     lib_bool lock_prefix;
     lib_u8 repeat_prefix;
+    /* Target encoding components captured before asynchronous entry; zero
+     * when no control target is applicable or its encoding is unavailable. */
+    lib_u8 next_lexeme_components;
 } x86_core_cpu_instruction_observation;
 
 /* Bit masks reported by CPU fault snapshots, including non-deliverable stops. */
@@ -626,6 +631,9 @@ void x86_core_cpu_get_watchpoint(const x86_core_cpu_execution_context *context,
     x86_core_cpu_watchpoint kind, lib_u8 *out_enabled,
     lib_u32 *out_linear);
 
+/* Within a refresh this reports live instruction preparation; after successful
+ * selection it preserves the completed facts across asynchronous entry until
+ * the next refresh/reset. It does not expose live architectural storage. */
 void x86_core_cpu_execution_copy_observation(
     const x86_core_cpu_execution_context *context,
     x86_core_cpu_instruction_observation *observation);
@@ -686,6 +694,15 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
 #define X86_CORE_CPU_TIMING_INPUT_ODD_WORD   (1u << 8)
 #define X86_CORE_CPU_TIMING_INPUT_REPEAT_PHASE (1u << 9)
 #define X86_CORE_CPU_TIMING_INPUT_GROUP3_OPERAND (1u << 10)
+#define X86_CORE_CPU_TIMING_INPUT_BRANCH     (1u << 11)
+#define X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN (1u << 12)
+/* Actual SX timing participation, not hardware accuracy or eligibility. */
+#define X86_CORE_CPU_TIMING_INPUT_CACHE      (1u << 13)
+#define X86_CORE_CPU_TIMING_INPUT_FETCH      (1u << 14)
+#define X86_CORE_CPU_TIMING_INPUT_MEMORY     (1u << 15)
+#define X86_CORE_CPU_TIMING_INPUT_TRANSLATION (1u << 16)
+#define X86_CORE_CPU_TIMING_INPUT_DECODE     (1u << 17)
+#define X86_CORE_CPU_TIMING_INPUT_BUS        (1u << 18)
 
 /* Timing is selected before asynchronous interrupt entry overwrites decode
  * state. Zero ticks means this refresh has no classified retirement. */
@@ -694,6 +711,8 @@ x86_core_cpu_timing_result x86_core_cpu_capture_timing(
 /* Shared checked accumulation for timing selection and the retained run loop. */
 lib_i32 x86_core_cpu_timing_add_ticks(lib_u64 *value,
     lib_u64 delta);
+/* Zero means no finite static bound, including SX provider/FIFO latency.
+ * The executor must transport actual completion through its budget owner. */
 lib_u64 x86_core_cpu_timing_maximum_ticks(
     x86_core_cpu_profile profile,
     const x86_core_cpu_instruction_timing *timing);

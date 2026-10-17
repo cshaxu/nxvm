@@ -5,7 +5,7 @@
 #include "x86-core/machine/machine.h"
 
 static lib_status x86_core_machine_debug_require_boundary(
-    const x86_core_machine *machine)
+    const x86_core_machine *machine, lib_bool require_complete)
 {
     x86_core_machine_lifecycle lifecycle;
     lib_status status;
@@ -14,6 +14,9 @@ static lib_status x86_core_machine_debug_require_boundary(
     if (status != LIB_STATUS_OK) {
         return status;
     }
+    if (require_complete && machine->cpu_retirement_wait_pending &&
+        lifecycle != X86_CORE_MACHINE_FAULTED)
+        return LIB_STATUS_INVALID_STATE;
     return lifecycle == X86_CORE_MACHINE_PAUSED || lifecycle == X86_CORE_MACHINE_STOPPED ||
            lifecycle == X86_CORE_MACHINE_FAULTED ? LIB_STATUS_OK :
                                                 LIB_STATUS_INVALID_STATE;
@@ -23,7 +26,7 @@ lib_status x86_core_machine_debug_read_cpu(
     const x86_core_machine *machine,
     x86_core_cpu_state *out_state)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     return status == LIB_STATUS_OK ?
                x86_core_machine_get_cpu_state(machine, out_state) : status;
@@ -33,7 +36,7 @@ lib_status x86_core_machine_debug_capture_cpu_snapshot(const x86_core_machine *m
     x86_core_cpu_snapshot_point point,
     x86_core_cpu_debug_cpu_snapshot *out_snapshot)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     if (out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     return status == LIB_STATUS_OK ?
@@ -47,7 +50,7 @@ lib_status x86_core_machine_debug_read_memory(
     void *out_data,
     lib_size size)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
 
     return status == LIB_STATUS_OK ?
                x86_core_machine_memory_read(machine, physical, out_data, size) :
@@ -59,7 +62,7 @@ lib_status x86_core_machine_debug_step(
     x86_core_machine_run_result *out_result)
 {
     const x86_core_machine_run_budget budget = { 1u, 0u };
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     return status == LIB_STATUS_OK ?
                x86_core_machine_run(machine, budget, out_result) : status;
@@ -70,7 +73,7 @@ lib_status x86_core_machine_debug_continue(
     x86_core_machine_run_budget budget,
     x86_core_machine_run_result *out_result)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     return status == LIB_STATUS_OK ?
                x86_core_machine_run(machine, budget, out_result) : status;
@@ -79,7 +82,7 @@ lib_status x86_core_machine_debug_continue(
 lib_status x86_core_machine_debug_capture_instruction_observation(const x86_core_machine *machine,
     x86_core_cpu_debug_instruction_observation *out_observation)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     return status == LIB_STATUS_OK ?
         x86_core_cpu_debug_capture_instruction(machine->executor_cpu_execution,
@@ -89,7 +92,7 @@ lib_status x86_core_machine_debug_capture_instruction_observation(const x86_core
 lib_status x86_core_machine_debug_read_register(const x86_core_machine *machine,
     x86_core_cpu_debug_register register_id, lib_u32 *out_value)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     return status == LIB_STATUS_OK ?
         x86_core_cpu_debug_read_register(machine->executor_cpu_execution,
@@ -111,7 +114,7 @@ lib_status x86_core_machine_debug_write_register(x86_core_machine *machine,
 lib_status x86_core_machine_debug_patch_registers(x86_core_machine *machine,
     const x86_core_cpu_debug_register_patch *patch)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
 
     return status == LIB_STATUS_OK ?
         x86_core_cpu_debug_patch_registers(machine->executor_cpu_execution,
@@ -121,7 +124,7 @@ lib_status x86_core_machine_debug_patch_registers(x86_core_machine *machine,
 lib_status x86_core_machine_debug_get_code_default_size(const x86_core_machine *machine,
     lib_i32 *out_default_size)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
     if (status != LIB_STATUS_OK || out_default_size == LIB_NULL) return
         status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
     *out_default_size = x86_core_cpu_get_code_default_size(
@@ -132,7 +135,7 @@ lib_status x86_core_machine_debug_get_code_default_size(const x86_core_machine *
 lib_status x86_core_machine_debug_get_code_base(const x86_core_machine *machine,
     lib_u32 *out_base)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
     if (status != LIB_STATUS_OK || out_base == LIB_NULL) return
         status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
     *out_base = x86_core_cpu_get_code_base(machine->executor_cpu_execution);
@@ -142,7 +145,7 @@ lib_status x86_core_machine_debug_get_code_base(const x86_core_machine *machine,
 lib_status x86_core_machine_debug_read_linear(x86_core_machine *machine, lib_u32 address,
     void *out_data, lib_u8 size)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     return x86_core_cpu_read_linear(machine->executor_cpu_execution, address,
         out_data, size) == 0 ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
@@ -151,7 +154,7 @@ lib_status x86_core_machine_debug_read_linear(x86_core_machine *machine, lib_u32
 lib_status x86_core_machine_debug_write_linear(x86_core_machine *machine, lib_u32 address,
     const void *data, lib_u8 size)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     return x86_core_cpu_write_linear(machine->executor_cpu_execution, address,
         data, size) == 0 ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
@@ -160,7 +163,7 @@ lib_status x86_core_machine_debug_write_linear(x86_core_machine *machine, lib_u3
 lib_status x86_core_machine_debug_read_real(x86_core_machine *machine, lib_u16 segment,
     lib_u16 offset, void *out_data, lib_size size)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     return x86_core_machine_memory_read_real_from(&machine->executor_memory, segment,
         offset, out_data, size);
@@ -169,7 +172,7 @@ lib_status x86_core_machine_debug_read_real(x86_core_machine *machine, lib_u16 s
 lib_status x86_core_machine_debug_write_real(x86_core_machine *machine, lib_u16 segment,
     lib_u16 offset, const void *data, lib_size size)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     return x86_core_machine_memory_write_real_to(&machine->executor_memory, segment,
         offset, data, size);
@@ -178,7 +181,7 @@ lib_status x86_core_machine_debug_write_real(x86_core_machine *machine, lib_u16 
 lib_status x86_core_machine_debug_read_port(x86_core_machine *machine, lib_u16 port,
     lib_u32 *out_value)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK || out_value == LIB_NULL) return
         status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
     status = x86_core_machine_port_execute_read(&machine->executor_port, port,
@@ -191,7 +194,7 @@ lib_status x86_core_machine_debug_read_port(x86_core_machine *machine, lib_u16 p
 lib_status x86_core_machine_debug_write_port(x86_core_machine *machine, lib_u16 port,
     lib_u32 value)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     {
         lib_u32 prior_value = machine->executor_port.data.ioDWord;
@@ -207,7 +210,7 @@ lib_status x86_core_machine_debug_write_port(x86_core_machine *machine, lib_u16 
 lib_status x86_core_machine_debug_set_watchpoint(x86_core_machine *machine,
     x86_core_cpu_debug_watch_kind kind, lib_u32 address)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK || kind > X86_CORE_CPU_DEBUG_WATCH_EXECUTE)
         return status != LIB_STATUS_OK ? status : LIB_STATUS_INVALID_ARGUMENT;
     x86_core_cpu_set_watchpoint(machine->executor_cpu_execution,
@@ -218,7 +221,7 @@ lib_status x86_core_machine_debug_set_watchpoint(x86_core_machine *machine,
 lib_status x86_core_machine_debug_clear_watchpoint(x86_core_machine *machine,
     x86_core_cpu_debug_watch_kind kind)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_TRUE);
     if (status != LIB_STATUS_OK || kind > X86_CORE_CPU_DEBUG_WATCH_EXECUTE)
         return status != LIB_STATUS_OK ? status : LIB_STATUS_INVALID_ARGUMENT;
     x86_core_cpu_clear_watchpoint(machine->executor_cpu_execution,
@@ -230,7 +233,7 @@ lib_status x86_core_machine_debug_get_watchpoint(x86_core_machine *machine,
     x86_core_cpu_debug_watch_kind kind, lib_u8 *out_enabled,
     lib_u32 *out_address)
 {
-    lib_status status = x86_core_machine_debug_require_boundary(machine);
+    lib_status status = x86_core_machine_debug_require_boundary(machine, LIB_FALSE);
 
     if (status != LIB_STATUS_OK || kind > X86_CORE_CPU_DEBUG_WATCH_EXECUTE ||
         out_enabled == LIB_NULL || out_address == LIB_NULL)

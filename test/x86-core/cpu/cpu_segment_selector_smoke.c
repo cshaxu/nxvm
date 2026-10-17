@@ -1135,9 +1135,9 @@ static lib_i32 segment_test_vm86_pop_fs_gs_timing(x86_core_cpu_profile cpu_profi
                 LIB_STATUS_OK || cpu_instruction_run(&state, code, sizeof(code),
                 &after) != LIB_STATUS_OK) return 1;
         timing = x86_core_cpu_capture_timing(&state.execution);
-        if ((cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
-                !timing.source_timing_unallocated :
-                (timing.source_timing_unallocated || timing.ticks != 7u)) ||
+        if (timing.source_timing_unallocated || timing.ticks != 7u ||
+            (cpu_profile == X86_CORE_CPU_PROFILE_80486SX && timing.retirement_origin !=
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL) ||
             (opcodes[index] == 0xa1u ? after.data.fs.selector :
                 after.data.gs.selector) != selectors[index]) return 1;
     }

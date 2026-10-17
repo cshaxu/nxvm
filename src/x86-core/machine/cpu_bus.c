@@ -532,22 +532,21 @@ lib_u64 x86_core_machine_cpu_external_cycle_trace(void *opaque,
             machine->external_cycle_page_valid = LIB_TRUE;
             machine->external_cycle_page_tag = page_tag;
             cycle_ticks += wait_ticks;
-            if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
-                machine->external_cycle_round_overflow = LIB_TRUE;
-            } else {
-                machine->external_cycle_round_ticks += wait_ticks;
-            }
         }
         if (pending_matches) {
             lib_u32 wait_ticks = x86_core_machine_external_access_wait_ticks(
                 machine, space, address);
             cycle_ticks += wait_ticks;
-            if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
+            machine->external_cycle_pending_valid = LIB_FALSE;
+        }
+        /* SX records service and deferred writes in its sole CPU bus owner.
+         * Older families retain the separate Core wait envelope. */
+        if (machine->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) {
+            if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < cycle_ticks) {
                 machine->external_cycle_round_overflow = LIB_TRUE;
             } else {
-                machine->external_cycle_round_ticks += wait_ticks;
+                machine->external_cycle_round_ticks += cycle_ticks;
             }
-            machine->external_cycle_pending_valid = LIB_FALSE;
         }
         type = X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT;
         break;

@@ -55,6 +55,8 @@ static lib_bool executor_sx_fpu_interface(void)
         }
         if (!failed) {
             /* Internal Executor qualification; the production admission gate stays closed. */
+            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
+            machine->maximum_instruction_ticks = 0u;
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -125,8 +127,10 @@ static lib_bool executor_event_time(void)
         const lib_bool nmi = route == 1u;
         const lib_bool overflow = route == 2u;
         const lib_u8 code[] = {nmi ? 0x90u : 0x0fu, 0x0bu};
+        /* SX: cold NOP 5 + retained real NMI 29, or fault entry 33
+         * plus three FIFO stalls on this Core bus. */
         const lib_u64 clocks = profile == X86_CORE_CPU_PROFILE_80486SX ?
-            (nmi ? 30u : 33u) : nmi ? 3u : 0u;
+            (nmi ? 34u : 36u) : nmi ? 3u : 0u;
         const lib_u64 before = overflow ? LIB_UINT64_MAX - 25u : 0u;
         lib_status status = LIB_STATUS_INTERNAL_ERROR;
         lib_bool failed;
@@ -144,6 +148,8 @@ static lib_bool executor_event_time(void)
         }
         if (!failed) {
             /* Qualify the real Executor seam without opening production SX admission. */
+            machine->cpu_profile = profile;
+            machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(profile, &timing);
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             machine->elapsed_ticks = before;
@@ -158,12 +164,14 @@ static lib_bool executor_event_time(void)
         }
         if (!failed && !overflow) {
             failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
-                result.executed != 1u || result.ticks != (profile == X86_CORE_CPU_PROFILE_80486SX ? 1u : 3u) ||
+                result.executed != 1u || result.ticks != (profile == X86_CORE_CPU_PROFILE_80486SX ? 5u : 3u) ||
                 result.elapsed_ticks != clocks + result.ticks;
         }
         if (failed)
-            lib_c_printf("Executor event: profile=%u route=%u status=%u count=%llu ticks=%llu elapsed=%llu\n",
-                (lib_u32)profile, route, (lib_u32)status, result.executed, result.ticks, result.elapsed_ticks);
+            lib_c_printf("Executor event: profile=%u route=%u status=%u count=%llu ticks=%llu elapsed=%llu source=%llu event=%llu\n",
+                (lib_u32)profile, route, (lib_u32)status, result.executed, result.ticks, result.elapsed_ticks,
+                x86_core_cpu_capture_timing(machine->executor_cpu_execution).ticks,
+                x86_core_cpu_capture_timing(machine->executor_cpu_execution).event_ticks);
         x86_core_machine_destroy(machine);
         if (failed) return LIB_FALSE;
     }
@@ -191,6 +199,136 @@ static lib_status executor_entry_fault_memory(void *opaque, lib_u32 address,
     }
     if (!write && address >= 0x100u && address <= 0x10fu) ++probe->fetches;
     return LIB_STATUS_OK;
+}
+
+static lib_bool executor_sx_bounded_retirement(void)
+{
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    const lib_u8 code[] = {0x90u, 0x90u};
+    const x86_core_machine_retirement_eligibility_key key = {
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
+        .timing_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL,
+        .source_timing_form_id = 0x90u, .opcode = 0x90u,
+        .escape_opcode = X86_CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE,
+        .modrm_extension = X86_CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE,
+        .next_lexeme_components = X86_CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE
+    };
+    const x86_core_machine_retirement_qualification_descriptor qualification = {&key, 1u};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x100u,
+            [X86_CORE_CPU_DEBUG_ESP] = 0x8000u, [X86_CORE_CPU_DEBUG_EFLAGS] = 2u,
+            [X86_CORE_CPU_DEBUG_CR0] = 0x60000010u}
+    };
+
+    for (lib_u8 wait = 0u; wait <= 6u; wait += 3u)
+    for (lib_u8 quantum = 1u; quantum <= 3u; ++quantum)
+    for (lib_u8 mode = 0u; mode < 7u; ++mode) {
+        x86_core_machine_executor_config config = {.memory_bytes = 2u * 1024u * 1024u,
+            .cpu_profile = X86_CORE_CPU_PROFILE_80386, .fpu_profile = X86_FPU_PROFILE_NONE};
+        x86_core_machine *machine = LIB_NULL;
+        executor_entry_fault_probe probe = {0};
+        const x86_core_machine_attachment attachment = {.context = &probe,
+            .finalize_devices = executor_entry_fault_finalize,
+            .memory_cache_control = executor_entry_fault_memory};
+        x86_core_machine_run_result result = {0};
+        const lib_u64 expected = 5u + wait;
+        const lib_u64 initial = mode == 3u ? LIB_UINT64_MAX - expected + 1u : 0u;
+        lib_u64 elapsed = 0u, retired = 0u;
+        lib_status status = LIB_STATUS_OK;
+        lib_bool failed;
+
+        if (mode == 1u || mode == 2u) {
+            config.time_axis = (x86_core_machine_time_axis){
+                X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 25000000u};
+            config.retirement_time_contract = X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+            if (mode == 1u) config.retirement_qualification = &qualification;
+        }
+        config.transaction_contract.external_access_wait_windows[0] =
+            (x86_core_machine_external_access_wait_window){X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY,
+                0x100u, 0x10fu, wait};
+        failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+        if (!failed) failed = x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
+            x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+            x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK;
+        if (!failed) {
+            /* Test the pending receiver without opening production SX admission. */
+            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
+            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+                machine->cpu_profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+            machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(
+                machine->cpu_profile, &timing);
+            failed = machine->maximum_instruction_ticks != 0u ||
+                x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+                x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK;
+            machine->elapsed_ticks = initial;
+        }
+        for (lib_u32 calls = 0u; !failed && retired == 0u && status == LIB_STATUS_OK &&
+                calls < 32u; ++calls) {
+            status = x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){1u, quantum}, &result);
+            elapsed += result.ticks;
+            retired += result.executed;
+            failed = result.ticks > quantum || result.elapsed_ticks != initial + elapsed ||
+                probe.fetches != 1u || probe.rejected != 0u;
+            if (mode == 2u || mode == 3u) {
+                failed = failed || status != LIB_STATUS_INTERNAL_ERROR || elapsed != 0u ||
+                    retired != 0u || machine->lifecycle != X86_CORE_MACHINE_FAULTED;
+                break;
+            }
+            failed = failed || status != LIB_STATUS_OK || result.ticks == 0u ||
+                result.reason != X86_CORE_MACHINE_STOP_BUDGET || elapsed > expected ||
+                (elapsed < expected && retired != 0u);
+            if (mode == 6u && retired == 0u) {
+                lib_u8 output = 0xa5u;
+                x86_core_cpu_debug_cpu_snapshot snapshot;
+
+                failed = failed || x86_core_machine_debug_capture_cpu_snapshot(machine,
+                        X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                    snapshot.eip != 0x101u ||
+                    x86_core_machine_debug_patch_registers(machine, &entry) !=
+                        LIB_STATUS_INVALID_STATE ||
+                    x86_core_machine_debug_read_linear(machine, 0x100u, &output, 1u) !=
+                        LIB_STATUS_INVALID_STATE || output != 0xa5u ||
+                    x86_core_machine_debug_write_linear(machine, 0x100u, code, 1u) !=
+                        LIB_STATUS_INVALID_STATE ||
+                    x86_core_machine_debug_set_watchpoint(machine,
+                        X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x101u) != LIB_STATUS_INVALID_STATE;
+            }
+            if (mode == 4u || mode == 5u) {
+                failed = failed || retired != 0u || !machine->cpu_retirement_wait_pending ||
+                    (mode == 4u ? x86_core_machine_reset(machine) :
+                        x86_core_machine_request_stop(machine)) != LIB_STATUS_OK;
+                if (!failed && mode == 5u)
+                    failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,1u},
+                            &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_REQUESTED ||
+                        result.ticks != 0u || result.executed != 0u;
+                failed = failed || machine->cpu_retirement_wait_pending || machine->elapsed_ticks != 0u;
+                break;
+            }
+        }
+        if (mode < 2u || mode == 6u) failed = failed || elapsed != expected || retired != 1u ||
+            machine->cpu_retirement_wait_pending || x86_core_machine_linear_pc(machine) != 0x101u;
+        if (!failed && mode == 6u) {
+            lib_u8 output = 0u;
+
+            failed = x86_core_machine_debug_read_linear(machine, 0x100u, &output, 1u) !=
+                LIB_STATUS_OK || output != code[0];
+        }
+        if (failed) lib_c_fprintf(lib_c_stderr,
+            "Core SX bounded: wait=%u quantum=%u mode=%u status=%u ticks=%llu retired=%llu fetches=%u\n",
+            (lib_u32)wait, (lib_u32)quantum, (lib_u32)mode, (lib_u32)status,
+            elapsed, retired, probe.fetches);
+        x86_core_machine_destroy(machine);
+        if (failed || probe.finalized != 1u) return LIB_FALSE;
+    }
+    return LIB_TRUE;
 }
 
 static lib_bool executor_retired_before_entry_fault(void)
@@ -235,9 +373,10 @@ static lib_bool executor_retired_before_entry_fault(void)
         }
         if (!failed) {
             /* Internal SX transport proof; the public production gate stays closed. */
+            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-            machine->maximum_instruction_ticks = 1u;
+            machine->maximum_instruction_ticks = 0u;
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
                 !x86_core_cpu_request_nmi(machine->executor_cpu_execution);
@@ -252,9 +391,12 @@ static lib_bool executor_retired_before_entry_fault(void)
                     machine->lifecycle != X86_CORE_MACHINE_PAUSED));
         }
         if (!failed) {
-            const lib_u64 expected = 10u + wait * (lib_u64)probe.fetches;
+            /* Cold NOP (5), accepted entry writes (6), failed-entry setup (3).
+             * The one original fetch owns its accepted wait; entry does not
+             * speculatively fetch the interrupted next instruction. */
+            const lib_u64 expected = 14u + wait;
             failed = status != LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
-                retired != 1u || ticks != expected || probe.fetches == 0u || probe.rejected != 1u ||
+                retired != 1u || ticks != expected || probe.fetches != 1u || probe.rejected != 1u ||
                 machine->lifecycle != X86_CORE_MACHINE_FAULTED ||
                 x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
                 !diagnostic.first_fault.valid || diagnostic.first_fault.point.eip != 0x101u ||
@@ -327,6 +469,8 @@ static lib_bool executor_sx_soft_reset(void)
     }
     if (!failed) {
         /* This internal owner qualifies the chip before production SX admission. */
+        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
+        machine->maximum_instruction_ticks = 0u;
         x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
             X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
         failed = x86_core_machine_memory_write(machine, 0x38000u, relocate,
@@ -474,11 +618,10 @@ static lib_bool executor_sx_smm(void)
     }
     if (!failed) {
         /* Internal CPU/Core qualification only; the public admission gate stays closed. */
+        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
         x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
             X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-        /* Admit this fixture's one-clock compatibility instruction, not the
-         * 386 construction bound. Selected-SX bounds remain S6's receiver. */
-        machine->maximum_instruction_ticks = 1u;
+        machine->maximum_instruction_ticks = 0u;
         failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x38000u, handler, sizeof(handler)) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x100u, &nop, sizeof(nop)) != LIB_STATUS_OK ||
@@ -575,9 +718,10 @@ static lib_bool executor_sx_smm_fault(void)
                 x86_core_machine_reset(machine) != LIB_STATUS_OK;
         }
         if (!failed) {
+            machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-            machine->maximum_instruction_ticks = 1u;
+            machine->maximum_instruction_ticks = 0u;
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x38000u, rsm, sizeof(rsm)) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x3fe00u, image, sizeof(image)) != LIB_STATUS_OK ||
@@ -844,6 +988,7 @@ lib_i32 main(void)
         lib_bool (*run)(void);
     } cases[] = {
         {"event-time",executor_event_time}, {"sx-fpu-interface",executor_sx_fpu_interface},
+        {"sx-bounded-retirement",executor_sx_bounded_retirement},
         {"retired-before-entry-fault",executor_retired_before_entry_fault},
         {"sx-soft-reset",executor_sx_soft_reset}, {"sx-smm",executor_sx_smm},
         {"sx-smm-fault",executor_sx_smm_fault}, {"dma-hold",executor_dma_hold}

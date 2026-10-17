@@ -167,6 +167,7 @@ typedef struct cpu_entry_io_fixture {
     lib_bool reject_write;
     lib_u64 accepted_ticks;
     lib_u32 accepted_cycles;
+    lib_u32 buffered_write_issues;
     lib_u64 wait_ticks;
 } cpu_entry_io_fixture;
 
@@ -243,6 +244,8 @@ static lib_u64 cpu_entry_accepted_cycle(void *opaque, x86_core_cpu_external_cycl
 
     fixture->accepted_ticks += write ? 2u * transfers : 1u + transfers;
     ++fixture->accepted_cycles;
+    if (write && (fixture->state.cpu.data.cr0 & VCPU_CR0_CD) == 0u)
+        fixture->buffered_write_issues += (lib_u32)transfers;
     return fixture->wait_ticks;
 }
 
@@ -283,14 +286,19 @@ static lib_bool cpu_entry_failed_prefix_timing(void)
             fixture.state.fault.exception_mask != VCPUINS_EXCEPT_CE ||
             fixture.state.fault.exception_code != fixture.reject_address ||
             context->timing_result.ticks != 0u || fixture.accepted_ticks == 0u ||
-            context->timing_result.event_ticks != (sx ? fixture.accepted_ticks : 0u) ||
+            /* The independent global bus credit retains actual service through
+             * entry scopes. Failed-prefix reference work counts two clocks per
+             * accepted buffered write, rather than its one issue clock. */
+            context->timing_result.event_ticks != (sx ? context->bus_timing.service_credit +
+                fixture.buffered_write_issues : 0u) ||
             fixture.state.instructions.data.timing_transfer_ticks != (sx ? fixture.accepted_ticks : 0u) ||
             fixture.state.instructions.data.timing_entry_transfer_ticks != (sx ? fixture.accepted_ticks : 0u) ||
             fixture.state.instructions.data.timing_external_wait_ticks !=
                 (sx ? fixture.accepted_cycles * (lib_u64)wait : 0u)) {
-            lib_c_printf("Failed entry prefix: profile=%u nested=%u wait=%u case=%zu event=%llu accepted=%llu mask=%x/%x\n",
+            lib_c_printf("Failed entry prefix: profile=%u nested=%u wait=%u case=%zu event=%llu accepted=%llu credit=%llu buffered=%u cycles=%u mask=%x/%x\n",
                 (lib_u32)profile, (lib_u32)nested, (lib_u32)wait, index,
                 context->timing_result.event_ticks, fixture.accepted_ticks,
+                context->bus_timing.service_credit, fixture.buffered_write_issues, fixture.accepted_cycles,
                 fixture.state.fault.exception_mask, fixture.state.fault.exception_code);
             return LIB_FALSE;
         }
@@ -1340,6 +1348,8 @@ typedef struct cpu_event_timing_fixture {
     lib_u32 table_writes;
     lib_u64 accepted_ticks;
     lib_u64 fetch_ticks;
+    lib_u64 interrupted_ticks;
+    lib_u64 wait_ticks;
 } cpu_event_timing_fixture;
 
 static lib_bool cpu_event_timing_pending(void *opaque)
@@ -1352,6 +1362,7 @@ static lib_status cpu_event_timing_acknowledge(void *opaque, lib_u8 *vector)
     cpu_event_timing_fixture *fixture = opaque;
 
     ++fixture->acknowledgements;
+    fixture->interrupted_ticks = x86_core_cpu_capture_timing(&fixture->instruction.execution).ticks;
     if (fixture->reject_acknowledge) return LIB_STATUS_IO_ERROR;
     fixture->pending = LIB_FALSE;
     *vector = fixture->vector;
@@ -1432,16 +1443,21 @@ static lib_bool cpu_interrupt_memory_timing(void)
     static const lib_u8 opcodes[] = {0xccu, 0xcdu, 0xceu};
     static const lib_u8 penalties[] = {2u, 6u, 6u, 17u, 17u, 17u};
     static const lib_u8 bases[] = {26u, 44u, 44u, 71u, 71u, 82u};
+    /* Independent four-slot/two-clock write schedule. Real IVT bus reads
+     * drain three stack writes; nine VM86 pushes exceed an empty FIFO. Hot
+     * entry can also inherit the prior entry's unserviced write tail. */
+    static const lib_u8 cold_stall[] = {3u,0u,0u,0u,0u,2u};
     static const struct {
         lib_u32 uncached_start, uncached_limit;
         lib_u8 warm_penalty[3]; /* Real, same-level protected, inner protected. */
         lib_bool repeated_tss_miss;
+        lib_u8 warm_stall[6];
     } policies[] = {
-        {0u, 0u, {0u, 0u, 0u}, LIB_FALSE},
-        {0x400u, 0x600u, {2u, 3u, 3u}, LIB_FALSE},
-        {0x200u, 0x210u, {0u, 3u, 3u}, LIB_FALSE},
-        {0x600u, 0x610u, {0u, 0u, 13u}, LIB_TRUE},
-        {0u, LIB_UINT32_MAX, {2u, 6u, 22u}, LIB_TRUE}
+        {0u, 0u, {0u, 0u, 0u}, LIB_FALSE, {0u,0u,0u,3u,3u,9u}},
+        {0x400u, 0x600u, {2u, 3u, 3u}, LIB_FALSE, {3u,3u,3u,5u,5u,9u}},
+        {0x200u, 0x210u, {0u, 3u, 3u}, LIB_FALSE, {0u,3u,3u,5u,5u,9u}},
+        {0x600u, 0x610u, {0u, 0u, 13u}, LIB_TRUE, {0u,0u,0u,5u,5u,9u}},
+        {0u, LIB_UINT32_MAX, {2u, 6u, 22u}, LIB_TRUE, {3u,0u,0u,0u,0u,2u}}
     };
     const lib_u16 real_vector[] = {0x300u, 0u};
 
@@ -1488,7 +1504,8 @@ static lib_bool cpu_interrupt_memory_timing(void)
                 penalties[mode] + (mode >= 3u && policies[policy].repeated_tss_miss ? 5u : 0u);
             const lib_u64 setup = form == 1u && (mode == 0u || mode == 5u) ? 4u :
                 form == 2u ? 2u : 0u;
-            const lib_u64 expected_ticks = external ? bases[mode] + 11u + expected : expected;
+            const lib_u64 expected_ticks = external ? bases[mode] + 11u + expected +
+                (warm ? policies[policy].warm_stall[mode] : cold_stall[mode]) : expected;
             t_cpu after;
 
             instruction->cpu = before;
@@ -1503,7 +1520,11 @@ static lib_bool cpu_interrupt_memory_timing(void)
                 ticks = instruction->execution.timing_result.event_ticks;
                 nominal = instruction->execution.timing_result.ticks;
             }
-            if (ticks != expected_ticks || nominal != (external ? 1u : bases[mode] + setup) ||
+            /* The NOP subtotal is already selected before acknowledgement.
+             * Entry must preserve it, including fetch and a prior write drain;
+             * independent nominal/bus vectors qualify those component costs. */
+            if (ticks != expected_ticks || nominal != (external ?
+                    fixture.interrupted_ticks : bases[mode] + setup) || nominal == 0u ||
                 (!external && (modeled != (expected != 0u && expected != penalties[mode]) ||
                     instruction->execution.timing_result.event_ticks != 0u)) ||
                 (external && (fixture.pending || fixture.acknowledgements != warm + 1u)) ||
@@ -1546,7 +1567,49 @@ static lib_u64 cpu_event_paging_cycle(void *opaque, x86_core_cpu_external_cycle_
     fixture->accepted_ticks += ticks;
     if (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
         provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) fixture->fetch_ticks += ticks;
-    return 0u;
+    return fixture->wait_ticks;
+}
+
+static lib_bool cpu_event_wait_ownership(void)
+{
+    const lib_u64 waits[] = {0u,1u,9u};
+    const lib_u16 vector[] = {0x100u,0u};
+
+    for (lib_size index = 0u; index < sizeof(waits) / sizeof(waits[0]); ++index)
+    for (lib_u8 route = 0u; route < 3u; ++route) {
+        cpu_event_timing_fixture fixture = {0};
+        cpu_instruction_fixture *instruction = &fixture.instruction;
+        x86_core_cpu_execution_context *context = &instruction->execution;
+        x86_core_cpu_bus_provider bus = cpu_instruction_bus;
+        const lib_bool faulting = route == 2u, rejected = route == 1u;
+        const lib_u64 expected = faulting ? 33u + 5u * waits[index] :
+            rejected ? 7u + 2u * waits[index] : 31u + 4u * waits[index];
+
+        bus.read_memory = cpu_event_descriptor_read;
+        bus.write_memory = cpu_event_paging_write;
+        cpu_instruction_prepare_with_bus(instruction, X86_CORE_CPU_PROFILE_80486SX, &bus, &fixture);
+        instruction->cpu.data.cr0 |= VCPU_CR0_CD | VCPU_CR0_NW;
+        instruction->cpu.data.esp = 0x8000u;
+        instruction->memory[0] = faulting ? 0x0fu : 0x90u;
+        instruction->memory[1] = 0x0bu;
+        lib_memory_copy(instruction->memory + (faulting ? 24u : 8u), vector, sizeof(vector));
+        fixture.wait_ticks = waits[index];
+        fixture.reject_address = rejected ? 0x7ffau : 0u;
+        fixture.reject_write = rejected;
+        x86_core_cpu_execution_context_bind_external_cycle_provider(context, cpu_event_paging_cycle, &fixture);
+        if (!faulting && !x86_core_cpu_request_nmi(context)) return LIB_FALSE;
+        x86_core_cpu_execution_refresh(context);
+        if (context->timing_result.ticks != (faulting ? 0u : 5u + waits[index]) ||
+            context->timing_result.event_ticks != expected || instruction->fault.valid != rejected ||
+            context->stop_requested != rejected) {
+            lib_c_printf("Event wait ownership: route=%u wait=%llu ticks=%llu event=%llu/%llu fault=%x\n",
+                (lib_u32)route, waits[index], context->timing_result.ticks,
+                context->timing_result.event_ticks, expected, instruction->fault.exception_mask);
+            return LIB_FALSE;
+        }
+        x86_core_cpu_execution_finalize(context);
+    }
+    return LIB_TRUE;
 }
 
 static lib_bool cpu_interrupt_paging_timing(void)
@@ -1666,6 +1729,10 @@ static lib_bool cpu_interrupt_paging_timing(void)
             const lib_u64 translation = warm ? 0u : updates == 0u ? walks * 13u :
                 updates == 1u ? walks * 21u : 28u + (walks - 1u) * 21u;
             const lib_u64 memory = warm ? 0u : inner ? 17u : 6u;
+            /* IRET drains the NMI frame before its hot repeat. A directly
+             * repeated INTR instead retains the previous five/nine writes. */
+            const lib_u64 stall = vm86 ? (warm && route != 2u ? 9u : 2u) :
+                inner && warm && route != 2u ? 3u : 0u;
             const lib_u32 writes = warm || updates == 0u ? 0u : walks + (updates == 2u);
             const lib_u32 reads = warm ? 0u : 2u * walks + writes;
             lib_u64 ticks = LIB_UINT64_MAX;
@@ -1688,7 +1755,8 @@ static lib_bool cpu_interrupt_paging_timing(void)
                     !instruction->delivered_exception.valid ||
                     instruction->delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
                     after.data.eip != 0x300u || context->timing_result.ticks != 0u ||
-                    context->timing_result.event_ticks != prefix + nominal + setup + entry_translation + memory ||
+                    context->timing_result.event_ticks != prefix + nominal + setup + entry_translation + memory +
+                        (vm86 ? 3u : 0u) ||
                     fixture.table_reads != reads + 2u || fixture.table_writes != writes) {
                     lib_c_printf("Paged PF entry mode=%u updates=%u event=%llu/%llu reads=%u/%u fault=%x delivered=%x\n",
                         (lib_u32)mode, (lib_u32)updates, context->timing_result.event_ticks,
@@ -1722,7 +1790,9 @@ static lib_bool cpu_interrupt_paging_timing(void)
                 const lib_u64 accepted = fixture.accepted_ticks - (route ? fixture.fetch_ticks : 0u);
                 if (status != LIB_STATUS_INTERNAL_ERROR || !instruction->fault.valid ||
                     instruction->fault.exception_mask != VCPUINS_EXCEPT_CE ||
-                    context->timing_result.ticks != (lib_u64)(route != 0u) ||
+                    /* Code translation is warm, but this first cache line is
+                     * not: the retired NOP owns its five-clock physical fill. */
+                    context->timing_result.ticks != (route ? 5u : 0u) ||
                     context->timing_result.event_ticks != accepted + setup ||
                     instruction->instructions.data.memory_lock_active) {
                     lib_c_printf("Paged entry failure mode=%u route=%u updates=%u case=%zu event=%llu/%llu ticks=%llu fault=%x\n",
@@ -1734,7 +1804,7 @@ static lib_bool cpu_interrupt_paging_timing(void)
             } else if (status != LIB_STATUS_OK || instruction->fault.valid ||
                 instruction->delivered_exception.valid || after.data.eip != 0x300u ||
                 fixture.table_reads != reads || fixture.table_writes != writes ||
-                (route ? context->timing_result.event_ticks != nominal + setup + translation + memory :
+                (route ? context->timing_result.event_ticks != nominal + setup + translation + memory + stall :
                     !x86_core_cpu_80486_memory_penalty(context, &ticks, &modeled) ||
                     ticks != translation + memory)) {
                 lib_c_printf("Paged entry mode=%u route=%u updates=%u warm=%u read=%u/%u write=%u/%u ticks=%llu event=%llu expected=%llu fault=%x\n",
@@ -1780,7 +1850,9 @@ static lib_bool cpu_vm86_exception_timing(void)
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
         cpu_instruction_fixture fixture;
         x86_core_cpu_timing_result timing;
-        const lib_u32 entry_miss_ticks = 22u; /* Non-filling IDT/CS/SS plus two TSS reads. */
+        /* Non-filling IDT/CS/SS plus two TSS reads; ten GP-frame writes
+         * contribute three actual FIFO-full stalls in the L2 bus schedule. */
+        const lib_u32 entry_miss_ticks = 22u + 3u;
         t_cpu after;
 
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
@@ -1864,8 +1936,10 @@ static lib_bool cpu_event_entry_timing(void)
         const lib_bool reject = route == 6u;
         const lib_bool retired = route != 0u && !halted;
         const lib_u64 expected = profile != X86_CORE_CPU_PROFILE_80486SX || reject ?
-            0u : entry_clocks[mode] + entry_miss_clocks[mode] + (route == 0u ? 5u : nmi ? 3u : 11u);
+            0u : entry_clocks[mode] + entry_miss_clocks[mode] + (mode == 3u ? 2u : 0u) +
+                (route == 0u ? 5u : nmi ? 3u : 11u);
         x86_core_cpu_timing_result timing;
+        x86_core_cpu_instruction_observation completed;
 
         bus.interrupt_pending = cpu_event_timing_pending;
         bus.acknowledge_interrupt = cpu_event_timing_acknowledge;
@@ -1902,6 +1976,18 @@ static lib_bool cpu_event_entry_timing(void)
                 (lib_u32)profile, mode, route, timing.ticks, timing.event_ticks, expected);
             return LIB_FALSE;
         }
+        if (retired) {
+            x86_core_cpu_execution_copy_observation(&instruction->execution, &completed);
+            if (completed.old_eip != 0u || completed.point.eip != 1u ||
+                completed.point.bytes[0] != 0x90u || completed.cpl != (mode < 2u ? 0u : 3u) ||
+                completed.protected_mode != (mode != 0u) ||
+                completed.virtual_8086_mode != (mode == 3u)) {
+                lib_c_printf("Completed entry identity: profile=%u mode=%u route=%u old=%x next=%x cpl=%u vm=%u\n",
+                    (lib_u32)profile, mode, route, completed.old_eip, completed.point.eip,
+                    (lib_u32)completed.cpl, (lib_u32)completed.virtual_8086_mode);
+                return LIB_FALSE;
+            }
+        }
         if (!reject) {
             x86_core_cpu_execution_refresh(&instruction->execution);
             timing = x86_core_cpu_capture_timing(&instruction->execution);
@@ -1921,6 +2007,7 @@ lib_i32 main(void)
     failed |= !cpu_event_descriptor_once();
     failed |= !cpu_interrupt_memory_timing();
     failed |= !cpu_interrupt_paging_timing();
+    failed |= !cpu_event_wait_ownership();
     failed |= !cpu_entry_failed_prefix_timing();
     failed |= !cpu_event_entry_timing();
     failed |= !cpu_vm86_exception_timing();

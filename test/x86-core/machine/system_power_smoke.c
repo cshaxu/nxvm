@@ -102,6 +102,7 @@ static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
         /* The public constructor remains closed to 486; this is internal
          * qualification of the real CPU/Core connection. */
         machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
+        machine->maximum_instruction_ticks = 0u;
         x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
             X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
         failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -211,7 +212,7 @@ static lib_bool power_buffer_service(void)
         x86_core_machine_executor_config config = {
             .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
         };
-        const lib_u64 service = 1u + (waits[index] < 5u ? waits[index] : 5u);
+        const lib_u64 service = 1u + waits[index];
         power_probe probe = {.cycle = X86_CORE_CPU_SPECIAL_STOP_GRANT,
             .ready = outcome == 0u, .fail = outcome == 2u};
         const x86_core_machine_attachment attachment = {.context = &probe,
@@ -237,19 +238,19 @@ static lib_bool power_buffer_service(void)
         if (!failed) {
             /* Internal SX transport proof; production construction stays closed. */
             machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            machine->maximum_instruction_ticks = 1u;
+            machine->maximum_instruction_ticks = 0u;
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
                 x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
                     &result) != LIB_STATUS_OK || result.executed != 1u ||
-                result.ticks != 1u + waits[index] ||
+                result.ticks != 6u ||
                 probe.polls != 0u ||
                 x86_core_machine_set_stop_clock(machine, LIB_TRUE) != LIB_STATUS_OK;
             before_ticks = machine->elapsed_ticks;
         }
-        for (lib_u8 calls = 0u; !failed && calls < 8u &&
+        for (lib_u64 calls = 0u; !failed && calls < service + 2u &&
             (calls == 0u || machine->cpu_retirement_wait_pending); ++calls) {
             status = x86_core_machine_run(machine,
                 (x86_core_machine_run_budget){1u, bounded ? 1u : 0u}, &result);
@@ -259,9 +260,9 @@ static lib_bool power_buffer_service(void)
                 probe.ticks != machine->elapsed_ticks;
         }
         if (!failed) {
-            /* Two-clock write: one issue clock is already serviced. The store's
-             * 1+wait elapsed clocks first reconcile five fetch plus one issue
-             * credit; only excess clocks can service the remaining write. */
+            /* Five cold fetch clocks and one write issue clock are serviced by
+             * the six-clock store. Its remaining 1+wait write clocks belong to
+             * the FIFO drain before stop-grant, not to the retired store. */
             failed = event_ticks != service + (outcome == 0u ? 2u : 0u) ||
                 machine->cpu_retirement_wait_pending ||
                 probe.polls != 1u || probe.commits != (lib_u32)(outcome == 0u) ||
@@ -326,7 +327,7 @@ static lib_bool power_flush_timing(void)
         if (!failed) {
             /* Internal qualified FLUSH path, not public SX production admission. */
             machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
-            machine->maximum_instruction_ticks = 1u;
+            machine->maximum_instruction_ticks = 0u;
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -341,21 +342,26 @@ static lib_bool power_flush_timing(void)
         if (!failed)
             failed = x86_core_machine_set_flush(machine, LIB_FALSE) != LIB_STATUS_OK ||
                 x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
-                    &result) != LIB_STATUS_OK || result.executed != 1u || result.ticks != 1u ||
+                    &result) != LIB_STATUS_OK || result.executed != 1u || result.ticks != 5u ||
                 result.linear_pc != 0x101u ||
                 x86_core_machine_set_flush(machine, LIB_TRUE) != LIB_STATUS_OK ||
                 x86_core_machine_set_flush(machine, LIB_FALSE) != LIB_STATUS_OK;
-        for (lib_u8 calls = 0u; !failed && calls < 2u &&
+        for (lib_u8 calls = 0u; !failed && calls < 6u &&
             (calls == 0u || machine->cpu_retirement_wait_pending); ++calls) {
             failed = x86_core_machine_run(machine,
                 (x86_core_machine_run_budget){1u, bounded ? 1u : 0u}, &result) != LIB_STATUS_OK ||
-                result.ticks > (bounded ? 1u : 2u) || result.reason != X86_CORE_MACHINE_STOP_BUDGET;
+                result.ticks > (bounded ? 1u : 6u) || result.reason != X86_CORE_MACHINE_STOP_BUDGET;
             pulse_ticks += result.ticks;
             retired += result.executed;
         }
-        failed = failed || pulse_ticks != 2u || retired != 1u ||
-            (machine != LIB_NULL && (machine->elapsed_ticks != 5u ||
-                probe.ticks != 5u || machine->cpu_retirement_wait_pending));
+        /* FLUSH invalidates the fetched line: each next NOP costs five cold
+         * clocks, and the one pulse indication costs one separate clock. */
+        failed = failed || pulse_ticks != 6u || retired != 1u ||
+            (machine != LIB_NULL && (machine->elapsed_ticks != 13u ||
+                probe.ticks != 13u || machine->cpu_retirement_wait_pending));
+        if (failed) lib_c_fprintf(lib_c_stderr,
+            "Core FLUSH: bounded=%u ticks=%llu total=%llu pulse=%llu retired=%llu\n",
+            (lib_u32)bounded, result.ticks, machine->elapsed_ticks, pulse_ticks, retired);
         x86_core_machine_destroy(machine);
         if (failed || !probe.finalized || probe.bad_order) return LIB_FALSE;
     }

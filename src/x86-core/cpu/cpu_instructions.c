@@ -55,6 +55,10 @@ void x86_core_cpu_execution_copy_observation(
     x86_core_cpu_instruction_observation *observation)
 {
     if (context == LIB_NULL || observation == LIB_NULL) return;
+    if (context->completed_observation_valid) {
+        *observation = context->completed_observation;
+        return;
+    }
     *observation = (x86_core_cpu_instruction_observation){0};
     observation->point.cs = cpu_state.data.cs.selector;
     observation->point.cs_base = cpu_state.data.cs.base;
@@ -6131,20 +6135,22 @@ static lib_bool _e_timing_charge(x86_core_cpu_execution_context *context, lib_u6
     return LIB_TRUE;
 }
 
-/* Failed work has no successful INT/TS latency. Use the accepted fastest-bus
- * transfer prefix as an explicit L2 model; Core supplies extra waits once. */
+/* Failed work has no successful INT/TS latency. Its accepted transfer prefix
+ * and actual service/waits are an explicit L2 event, never a retirement. */
 static void _e_timing_failed_prefix(x86_core_cpu_execution_context *context)
 {
     const lib_u64 accepted = instruction_state.data.timing_transfer_ticks;
     const lib_u64 allocated = instruction_state.data.timing_entry_transfer_ticks;
+    lib_u64 ticks;
 
     if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
-    if (context->bus_timing.invalid || allocated > accepted) {
+    if (allocated > accepted ||
+        !x86_core_cpu_80486_bus_scope_cost(context, accepted - allocated, &ticks)) {
         _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
         return;
     }
     instruction_state.data.timing_entry_transfer_ticks = accepted;
-    (void)_e_timing_charge(context, accepted - allocated);
+    if (_e_timing_charge(context, ticks)) x86_core_cpu_bus_clear_observation(context);
 }
 
 typedef struct cpu_entry_access {
@@ -6162,10 +6168,11 @@ typedef struct cpu_entry_access {
     lib_u32 tlb_updates;
     lib_u32 tlb_walks[3];
     lib_u8 unaccessed_descriptors, task_gate_miss_mask;
+    lib_u64 bus_wait_ticks, bus_stall_ticks, bus_service_ticks, bus_invalidation_ticks;
 } cpu_entry_access;
 
-/* Recursive entries own only their accesses; the interrupted form retains
- * its original counters. This scope never swaps cache/TLB or bus state. */
+/* Recursive entries own only their access/service observations; the
+ * interrupted form retains its counters. No cache/TLB/FIFO state is swapped. */
 static cpu_entry_access _e_begin_access(x86_core_cpu_execution_context *context)
 {
     cpu_entry_access access = {0};
@@ -6203,6 +6210,11 @@ static cpu_entry_access _e_begin_access(x86_core_cpu_execution_context *context)
         access.tlb_walks[index] = instruction_state.data.timing_tlb_walks[index];
         instruction_state.data.timing_tlb_walks[index] = 0u;
     }
+    access.bus_wait_ticks = instruction_state.data.timing_bus_wait_ticks;
+    access.bus_stall_ticks = instruction_state.data.timing_bus_stall_ticks;
+    access.bus_service_ticks = instruction_state.data.timing_bus_service_ticks;
+    access.bus_invalidation_ticks = instruction_state.data.timing_bus_invalidation_ticks;
+    x86_core_cpu_bus_clear_observation(context);
     return access;
 }
 
@@ -6226,6 +6238,10 @@ static void _e_end_access(x86_core_cpu_execution_context *context,
     instruction_state.data.timing_task_gate_miss_mask = access->task_gate_miss_mask;
     for (lib_u8 index = 0u; index < 3u; ++index)
         instruction_state.data.timing_tlb_walks[index] = access->tlb_walks[index];
+    instruction_state.data.timing_bus_wait_ticks = access->bus_wait_ticks;
+    instruction_state.data.timing_bus_stall_ticks = access->bus_stall_ticks;
+    instruction_state.data.timing_bus_service_ticks = access->bus_service_ticks;
+    instruction_state.data.timing_bus_invalidation_ticks = access->bus_invalidation_ticks;
 }
 
 static void _e_timing_entry(x86_core_cpu_execution_context *context,
@@ -6248,11 +6264,12 @@ static void _e_timing_entry(x86_core_cpu_execution_context *context,
         if (base == 0u) _SetExcept_CE(LIB_STATUS_INTERNAL_ERROR);
         else own = base;
     }
-    if (own > LIB_UINT64_MAX - setup) {
+    if (own > LIB_UINT64_MAX - setup ||
+        !x86_core_cpu_80486_bus_scope_cost(context, setup + own, &own)) {
         _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
         return;
     }
-    (void)_e_timing_charge(context, setup + own);
+    (void)_e_timing_charge(context, own);
 }
 
 static void _e_external_entry_error(x86_core_cpu_execution_context *context)
@@ -19643,8 +19660,13 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
         _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
         return LIB_TRUE;
     }
-    if (!_e_timing_charge(context, ticks)) return LIB_TRUE;
+    if (!x86_core_cpu_timing_add_ticks(&ticks, instruction_state.data.timing_external_wait_ticks) ||
+        !_e_timing_charge(context, ticks)) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return LIB_TRUE;
+    }
     instruction_state.data.timing_entry_transfer_ticks = instruction_state.data.timing_transfer_ticks;
+    x86_core_cpu_bus_clear_observation(context);
     if (instruction_state.data.except) return LIB_TRUE;
     cpu_state.data.eflags = 2u;
     cpu_state.data.cr0 &= ~(VCPU_CR0_PE | VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_PG);
@@ -19682,8 +19704,14 @@ static void _smm_failed_restore(x86_core_cpu_execution_context *context, lib_boo
     }
     /* Failed RSM does not retire: accepted fetch/restore work is an event
      * prefix, without the successful restore floor or normal-state restart. */
-    (void)_e_timing_charge(context, ticks + fetch + exit_ticks);
+    ticks += fetch + exit_ticks;
+    if (!x86_core_cpu_timing_add_ticks(&ticks, instruction_state.data.timing_external_wait_ticks)) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return;
+    }
+    (void)_e_timing_charge(context, ticks);
     instruction_state.data.timing_entry_transfer_ticks = instruction_state.data.timing_transfer_ticks;
+    x86_core_cpu_bus_clear_observation(context);
 }
 
 static void RSM(x86_core_cpu_execution_context *context)
@@ -20101,7 +20129,9 @@ static void ExecInit(x86_core_cpu_execution_context *context)
         instruction_state.data.oplen = available;
     }
 
-    if (context->diagnostic_provider != LIB_NULL &&
+    /* Entry preparation may fetch through this helper, but it does not begin
+     * another instruction or replace the pending retirement observation. */
+    if (context->instruction_in_progress && context->diagnostic_provider != LIB_NULL &&
         context->diagnostic_provider->record_instruction != LIB_NULL)
     {
         x86_core_cpu_instruction_observation observation;
@@ -20582,7 +20612,10 @@ static void ExecInt(x86_core_cpu_execution_context *context)
         context->nmi_in_service =
             context->cpu_profile >= X86_CORE_CPU_PROFILE_80286;
         x86_core_cpu_legacy_string_interrupt_resume(context);
-        ExecInit(context);
+        /* SX checkpoints the accepted entry without fetching an interrupted
+         * next instruction. Older-family prefetch behavior remains intact. */
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+        else ExecInit(context);
         _e_intr_n(context, 0x02, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
             cpu_state.data.flagHalt = LIB_FALSE;
@@ -20597,13 +20630,15 @@ static void ExecInt(x86_core_cpu_execution_context *context)
         acknowledge_status = context->bus->acknowledge_interrupt(
             context->bus_context, &intr);
         if (acknowledge_status != LIB_STATUS_OK) {
-            ExecInit(context);
+            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+            else ExecInit(context);
             _SetExcept_CE((lib_u32)acknowledge_status);
             ExecFinal(context);
             return;
         }
         x86_core_cpu_legacy_string_interrupt_resume(context);
-        ExecInit(context);
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+        else ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize, LIB_FALSE);
         if (!instruction_state.data.except) {
             cpu_state.data.flagHalt = LIB_FALSE;
@@ -21188,6 +21223,8 @@ static void _system_poll_cycle(x86_core_cpu_execution_context *context)
         context->bus->cancel_special_cycle != LIB_NULL;
     const lib_status status = provided ?
         context->bus->special_cycle(context->bus_context, cycle, &acknowledged) : LIB_STATUS_UNSUPPORTED;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+        x86_core_cpu_bus_clear_observation(context);
 
     if (status != LIB_STATUS_OK) {
         if (provided)
@@ -21288,6 +21325,8 @@ void x86_core_cpu_execution_reset(
     context->shutdown_requested = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->instruction_in_progress = LIB_FALSE;
+    context->completed_observation = (x86_core_cpu_instruction_observation){0};
+    context->completed_observation_valid = LIB_FALSE;
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
     context->wait_state = CPU_WAIT_STATE_NONE;
@@ -21298,6 +21337,8 @@ static void _execution_refresh(
 {
     lib_bool executed = LIB_FALSE;
 
+    context->completed_observation = (x86_core_cpu_instruction_observation){0};
+    context->completed_observation_valid = LIB_FALSE;
     context->timing_result = (x86_core_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
@@ -21370,17 +21411,33 @@ static void _execution_refresh(
         /* Interrupt entry reuses the decoder record. Select the completed
          * instruction's timing while both its operands and result are intact. */
         if (!context->instruction_fault_delivered &&
-            !context->instruction_wait_stall && !context->stop_requested &&
-            !x86_core_cpu_timing_select(context, &context->timing_result))
-            context->timing_result = (x86_core_cpu_timing_result) {0};
+            !context->instruction_wait_stall && !context->stop_requested) {
+            if (!x86_core_cpu_timing_select(context, &context->timing_result))
+                context->timing_result = (x86_core_cpu_timing_result) {0};
+            else {
+                const lib_u8 next_components = context->completed_observation.next_lexeme_components;
+
+                x86_core_cpu_execution_copy_observation(context, &context->completed_observation);
+                context->completed_observation.next_lexeme_components = next_components;
+                context->completed_observation_valid = LIB_TRUE;
+            }
+        }
+    }
+    const lib_bool retired_sx = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
+        context->timing_result.ticks != 0u;
+    cpu_entry_access event_scope = {0};
+    if (retired_sx) {
+        instruction_state.data.timing_entry_transfer_ticks = instruction_state.data.timing_transfer_ticks;
+        event_scope = _e_begin_access(context);
     }
     if (context->special_cycle != X86_CORE_CPU_SPECIAL_NONE) {
         _system_poll_cycle(context);
-        if (context->special_cycle != X86_CORE_CPU_SPECIAL_NONE || context->stop_requested) return;
     }
-    if (context->debug_pause_requested) return;
-    ExecInt(context);
-    if (!executed && !cpu_state.data.flagHalt)
+    const lib_bool dispatch_ready = context->special_cycle == X86_CORE_CPU_SPECIAL_NONE &&
+        !context->stop_requested && !context->debug_pause_requested;
+    if (dispatch_ready) ExecInt(context);
+    if (retired_sx) _e_end_access(context, &event_scope);
+    if (dispatch_ready && !executed && !cpu_state.data.flagHalt)
         context->instruction_fault_delivered = LIB_TRUE;
 }
 

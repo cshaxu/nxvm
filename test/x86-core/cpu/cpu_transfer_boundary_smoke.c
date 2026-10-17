@@ -230,8 +230,8 @@ static lib_i32 transfer_unmapped_target(x86_core_cpu_profile profile)
                 lib_memory_copy(&target_pte, state.memory + 0x8008u, sizeof(target_pte));
                 const lib_bool timing_invalid =
                     profile == X86_CORE_CPU_PROFILE_80486SX ?
-                    (!timing.source_timing_unallocated || timing.retirement_origin !=
-                        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) :
+                    (timing.source_timing_unallocated || timing.ticks == 0u || timing.retirement_origin !=
+                        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL) :
                     (timing.source_timing_unallocated || timing.ticks <= 1u ||
                     (!fixed_timing && !mapped && timing.retirement_origin !=
                         X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL) ||
@@ -342,8 +342,8 @@ static lib_i32 transfer_inner_gate(x86_core_cpu_profile profile)
                 lib_memory_copy(&target_pte, state.memory + 0x8008u, sizeof(target_pte));
                 const lib_bool timing_invalid =
                     profile == X86_CORE_CPU_PROFILE_80486SX ?
-                    (!timing.source_timing_unallocated || timing.retirement_origin !=
-                        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) :
+                    (timing.source_timing_unallocated || timing.ticks == 0u || timing.retirement_origin !=
+                        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL) :
                     (timing.source_timing_unallocated || timing.ticks <= 1u ||
                         (interrupt && timing.ticks != 99u));
                 if (state.execution.stop_requested || state.fault.valid ||
@@ -530,8 +530,8 @@ static lib_i32 transfer_next_term_limit(void)
             timing = x86_core_cpu_capture_timing(&state.execution);
             const lib_bool timing_invalid =
                 profiles[profile] == X86_CORE_CPU_PROFILE_80486SX ?
-                (!timing.source_timing_unallocated || timing.retirement_origin !=
-                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) :
+                (timing.source_timing_unallocated || timing.ticks == 0u || timing.retirement_origin !=
+                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL) :
                 (timing.source_timing_unallocated ||
                 (!complete && timing.retirement_origin !=
                     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL) ||

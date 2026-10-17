@@ -148,6 +148,9 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
 
                 failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
                 /* Exercise the real CPU publisher; production SX remains gated. */
+                machine->cpu_profile = sx ? X86_CORE_CPU_PROFILE_80486SX : X86_CORE_CPU_PROFILE_80386;
+                machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(
+                    machine->cpu_profile, &timing);
                 x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                     sx ? X86_CORE_CPU_PROFILE_80486SX : X86_CORE_CPU_PROFILE_80386,
                     X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);

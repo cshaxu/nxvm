@@ -98,12 +98,8 @@ static void x86_core_machine_retirement_observation_capture_context(
     x86_core_machine *machine, const x86_core_cpu_instruction_observation *data,
     x86_core_machine_retirement_observation *observation)
 {
-    x86_core_cpu_instruction_lexeme instruction_lexeme;
-    x86_core_cpu_instruction_lexeme next_lexeme;
     lib_u8 opcode_index;
-    lib_u8 opcode;
     lib_u8 modrm_index;
-    lib_u32 fallthrough;
     if (machine == LIB_NULL || data == LIB_NULL ||
         observation == LIB_NULL) return;
     observation->modrm_form = X86_CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE;
@@ -113,7 +109,6 @@ static void x86_core_machine_retirement_observation_capture_context(
     observation->repeat_phase = X86_CORE_CPU_RETIREMENT_REPEAT_NONE;
     opcode_index = x86_core_machine_retirement_observation_prefix_count(data);
     if (opcode_index >= data->point.byte_count) return;
-    opcode = data->point.bytes[opcode_index];
     if (x86_core_machine_retirement_observation_modrm_index(data, opcode_index,
             &modrm_index)) {
         observation->modrm_form = (data->point.bytes[modrm_index] & 0xc0u) == 0xc0u ?
@@ -122,33 +117,14 @@ static void x86_core_machine_retirement_observation_capture_context(
         observation->modrm_extension = (lib_u8)(
             (data->point.bytes[modrm_index] >> 3u) & 7u);
     }
-    switch (opcode) {
-    case 0x70u: case 0x71u: case 0x72u: case 0x73u: case 0x74u: case 0x75u:
-    case 0x76u: case 0x77u: case 0x78u: case 0x79u: case 0x7au: case 0x7bu:
-    case 0x7cu: case 0x7du: case 0x7eu: case 0x7fu:
-    case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
-        if (x86_core_cpu_instruction_lexeme_scan(data->point.bytes + opcode_index,
-                (lib_u8)(sizeof(data->point.bytes) - opcode_index), machine->cpu_profile,
-                data->old_default_size_32, &instruction_lexeme)) {
-            fallthrough = data->old_eip + opcode_index +
-                instruction_lexeme.byte_count;
-            if (!data->old_default_size_32) fallthrough &= 0xffffu;
-            observation->control_outcome = data->point.eip == fallthrough ?
-                X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH :
-                X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
-        }
-        break;
-    case 0xe9u: case 0xeau: case 0xebu: case 0xffu:
-        observation->control_outcome = X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
-        break;
-    default:
-        break;
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(machine->executor_cpu_execution);
+    if ((timing.formula_inputs & X86_CORE_CPU_TIMING_INPUT_BRANCH) != 0u) {
+        observation->control_outcome = (timing.formula_inputs & X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN) != 0u ?
+            X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN : X86_CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH;
     }
     if (observation->control_outcome == X86_CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
-        x86_core_cpu_execution_preview_lexeme(machine->executor_cpu_execution,
-            &next_lexeme) && next_lexeme.available) {
-        observation->next_lexeme_components = next_lexeme.component_count;
-    }
+        data->next_lexeme_components != 0u)
+        observation->next_lexeme_components = data->next_lexeme_components;
 }
 
 static void x86_core_machine_retirement_observation_capture_io(
@@ -213,6 +189,9 @@ void x86_core_machine_retirement_observation_capture_instruction(x86_core_machin
     x86_core_machine_retirement_observation_capture_io(observation, data);
     machine->retirement_observation.pending =
         machine->retirement_observation.provider.callback != LIB_NULL;
+    if (machine->retirement_observation.pending)
+        (void)x86_core_cpu_debug_capture_snapshot(machine->executor_cpu_execution,
+            X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &observation->instruction_entry_cpu);
 }
 
 void x86_core_machine_retirement_observation_capture_eligibility_key(
@@ -286,8 +265,6 @@ void x86_core_machine_retirement_observation_publish(x86_core_machine *machine,
     x86_core_cpu_execution_copy_observation(machine->executor_cpu_execution, &data);
     x86_core_machine_retirement_observation_capture_context(machine, &data, observation);
     observation->repeat_phase = timing.repeat_phase;
-    (void)x86_core_cpu_debug_capture_snapshot(machine->executor_cpu_execution,
-        X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &observation->instruction_entry_cpu);
     (void)x86_core_cpu_debug_capture_snapshot(machine->executor_cpu_execution,
         X86_CORE_CPU_SNAPSHOT_CURRENT, &observation->current_cpu);
     state->provider.callback(state->provider.context, observation);
