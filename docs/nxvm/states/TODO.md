@@ -29,9 +29,11 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   behavior is not complete 287/387 numeric execution. Admit only a separately
   selected coprocessor, primary function/timing ledger and owned corpus;
   preserve existing no-FPU and exception behavior.
-- [ ] **VME/PVI extensions (`TODO(Medium)`).** Ordinary 386 VM86 is retained,
-  but later virtual-interrupt extensions need exact selected-CPU evidence.
-  Admit only if the frozen CPU variant actually requires them.
+- [ ] **Other virtual-interrupt extensions (`TODO(Medium)`).** Selected embedded
+  486SX VME has actual CR4/flags/TSS/entry proof; it is not deferred here.
+  Ordinary 386 VM86 is retained. PVI or extensions for another CPU variant need
+  that variant's exact source and admission; they are not advertised by the
+  selected SX or implied by its VME support.
 - [ ] **CPU fault reporting (`TODO(Medium)`).** Re-admit from a reproducible
   missing outcome at the existing Common/Debug boundary; keep first-fault
   evidence and one execution path.

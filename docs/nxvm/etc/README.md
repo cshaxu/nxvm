@@ -1,5 +1,11 @@
 # Supporting Documentation Index
 
+T563 S8: [Whole CPU qualification](evidence/t563-s8-whole-qualification.md)
+reconciles the original C01--C17 and inherited receiver universe against current
+owners, direct proof, source/model limits and full receiving suites;
+[eight rebuilt artifacts](evidence/t563-s8-artifacts.json) retain receiving
+identities without asserting that the unresolved native MIDI gate passed.
+
 T563 S7: [Real SX production admission](evidence/t563-s7-production-admission.md)
 records A1--A7 construction/reset ownership, removal of staged CPU rebinding,
 actual diff, dual-width receiving qualification and eight

@@ -116,3 +116,30 @@ committed hashes. S7 is closed and its full packet remains in P2. This
 governance acceptance adds no executable input. T563 remains open for S8's
 complete original C01--C17 reconciliation; PC110 and manual RDP/GUI
 qualification are not inferred.
+
+## S8 Whole Reconciliation And Candidate-Cache Repair
+
+The original C01--C17/T558/T559 universe is reconciled against current owners,
+direct proof and retained original/L2 source limits. The final audit confirms
+a real paused-Debug defect: a copied context writes descriptor Accessed to RAM
+but leaves the live cache stale, and a later invalid field can reject after an
+earlier descriptor write. B1--B4 closes the full candidate/preflight/live-cache
+commit boundary, including prepared entry with its distinct original load order.
+No public API/layout, second cache/bus/time source or raw Debug policy changes.
+
+Shared S8 P1 **16e7e3a97** delivers seven paths, production +116/-58 and tests
++266/-1, plus two manifests. Both builds and 498/498 strict matrices pass;
+all 166 X86 Core units, 48 registered integrations and four published CLI
+checks pass per width. Eight current PC EXEs have final
+[PE/hash identities](../etc/evidence/t563-s8-artifacts.json). Whole repository
+units remain honestly 631/632 per width: only unchanged native MIDI create
+fails; the observed native midiOutOpen return is 1. All failures and manual
+verification limits remain in the [complete evidence](../etc/evidence/t563-s8-whole-qualification.md).
+
+On 2026-10-17 the owner explicitly permits bounded S8 closure and requests
+S9 audit/import of SoftPC's committed eight shared trees. This transfers that
+single native qualification obligation, not an unimplemented CPU row, and does
+not authorize a whole-T/CPU-complete claim. The pinned incoming corpus moves
+native MIDI from unit to integration/native_audio without changing its backend;
+classification and actual endpoint availability must remain distinct. NXVM P2
+retains the amended full packet and eight artifacts before coordinator review.

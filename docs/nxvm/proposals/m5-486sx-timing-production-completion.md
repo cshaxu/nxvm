@@ -71,7 +71,8 @@ simple related forms are implemented and tested as a cohort, not one opcode per 
 | S5 | CPU/Core event and system elapsed time | Entry/nesting/failure, SMM/RSM and power assumptions resolved at their real owners; event-only time never retires an instruction. |
 | S6 | CPU selector/preview and Core budget transport | All prior cohorts connected through the sole selected-SX path; origins/source keys, safe maximum bounds, overflow and nonmutating preview proven; no unallocated applicable form. |
 | S7 | Core/Board C17 production admission | Construction and real reset/run/debug/wait/clock/DMA predicates qualified after C16; no accidental 386 fallback, unchanged four App CPU choices. |
-| S8 | Whole C01--C17 qualification | Original ledger fully reconciled, full dual-width units and required integrations/gates, eight current PC artifacts, actual-diff review and owner acceptance. |
+| S8 | Whole C01--C17 qualification | Original ledger reconciled, B1--B4 candidate-cache defect repaired, full dual-width qualification executed and eight PC artifacts checked. Owner permits bounded closure on 2026-10-17 with the single unchanged native MIDI failure explicitly transferred to S9; no false whole-suite pass or T closure. |
+| S9 | Committed SoftPC shared-eight audit/import | Pin and audit Lib/Emulator/X86 Debug/X86 IBMPC source/test pairs; import accepted corpus bytes unchanged, adapt genuine callers, preserve X86 Core CPU work and requalify all receivers. Distinguish native-test classification from actual native endpoint availability; retain the S8 MIDI result until current proof resolves it. |
 
 Do not combine C17 with an incomplete C16 implementation merely to get a boot.
 If a cohort cannot meet its stated exit, retain its unresolved members explicitly
