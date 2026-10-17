@@ -94,7 +94,10 @@ static lib_i32 v30_field_run(cpu_bus_fixture *fixture, lib_u8 opcode,
         fixture->cpu.data.edi != result.data.edi || fixture->cpu.data.ebp != result.data.ebp ||
         fixture->cpu.data.esp != result.data.esp ||
         lib_memory_compare(expected, fixture->memory, sizeof(expected)) != 0 ||
-        fixture->writes != (lib_u32)(insert ? (offset + length > 16u ? 2u : 1u) : 0u)) return 1;
+        fixture->writes != (lib_u32)(insert ? (offset + length > 16u ? 2u : 1u) *
+            ((index & 1u) ? 2u : 1u) : 0u) ||
+        fixture->last_address != ((base + (lib_u16)(index +
+            (offset + length > 16u ? 2u : 0u)) + ((index & 1u) ? 1u : 0u)) & 0x000fffffu)) return 1;
     const lib_u32 undefined_flags = VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
         VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF;
     return (fixture->instructions.data.udf & undefined_flags) != undefined_flags ||
@@ -123,9 +126,10 @@ static lib_i32 v30_field_operands(void)
                     }
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
         for (lib_u8 prefix_index = 0u; prefix_index < 5u; ++prefix_index)
-            for (lib_u8 boundary = 0u; boundary < 2u; ++boundary) {
+            for (lib_u8 boundary = 0u; boundary < 3u; ++boundary) {
                 static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
-                v30_field_prepare(&fixture, boundary == 0u ? 0x401u : 0xfffeu);
+                v30_field_prepare(&fixture, boundary == 0u ? 0x401u :
+                    boundary == 1u ? 0xfffeu : 0xffffu);
                 fixture.cpu.data.cl = 15u;
                 fixture.cpu.data.dl = 15u;
                 fixture.cpu.data.eflags |= VCPU_EFLAGS_DF;

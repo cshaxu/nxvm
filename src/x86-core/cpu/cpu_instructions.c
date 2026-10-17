@@ -374,6 +374,12 @@ static void _kma_read_bus(x86_core_cpu_execution_context *context,
     CPU_TRACE_CALL_END;
 }
 
+/* NEC V30: an even word uses both lanes; an odd word uses two byte cycles. */
+static lib_u8 _kma_v30_bus_part(lib_u32 physical, lib_u8 remaining)
+{
+    return remaining >= 2u && (physical & 1u) == 0u ? 2u : 1u;
+}
+
 /* Cache eligibility affects fills, not hits in an already resident line. */
 static void _kma_read_physical(x86_core_cpu_execution_context *context,
     lib_u32 physical, lib_uptr rdata, lib_u8 byte,
@@ -388,6 +394,18 @@ static void _kma_read_physical(x86_core_cpu_execution_context *context,
         physical &= 0x000fffffu;
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
+    }
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        for (lib_u8 done = 0u; done < byte;) {
+            const lib_u32 address = (physical + done) & 0x000fffffu;
+            const lib_u8 part = _kma_v30_bus_part(address, byte - done);
+
+            CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, address, rdata + done,
+                part, provenance, attributes));
+            done += part;
+        }
+        CPU_TRACE_CALL_END;
+        return;
     }
     if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) {
         CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, physical, rdata, byte, provenance, attributes));
@@ -497,6 +515,18 @@ static void _kma_write_physical(x86_core_cpu_execution_context *context, lib_u32
         physical &= 0x000fffffu;
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
+    }
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        for (lib_u8 done = 0u; done < byte;) {
+            const lib_u32 address = (physical + done) & 0x000fffffu;
+            const lib_u8 part = _kma_v30_bus_part(address, byte - done);
+
+            CPU_TRACE_CHECK_RETURN(_kma_write_bus(context, address, rdata + done,
+                part, provenance, attributes));
+            done += part;
+        }
+        CPU_TRACE_CALL_END;
+        return;
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         for (lib_u8 done = 0u; done < byte;) {
@@ -1050,6 +1080,14 @@ static lib_u32 _kma_linear_logical(x86_core_cpu_execution_context *context, t_cp
     lib_u32 upper;
     lib_u64 lower;
     CPU_TRACE_CALL_BEGIN("_kma_linear_logical");
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 && !_GetCR0_PE &&
+        (rsreg->sregtype == SREG_CODE || rsreg->sregtype == SREG_STACK ||
+         rsreg->sregtype == SREG_DATA)) {
+        /* No segment protection. A data operand continues in physical order
+         * (source-graded L2 at FFFF); instruction-pointer wrap is separate. */
+        CPU_TRACE_CALL_END;
+        return rsreg->base + offset;
+    }
     switch (rsreg->sregtype)
     {
     case SREG_CODE:
@@ -1346,7 +1384,10 @@ static lib_u8 _kma_real_legacy_segment_wrap(
     return context != LIB_NULL && !_GetCR0_PE &&
         (context->cpu_profile == X86_CORE_CPU_PROFILE_8086 ||
          context->cpu_profile == X86_CORE_CPU_PROFILE_8088 ||
-         context->cpu_profile == X86_CORE_CPU_PROFILE_80186) &&
+         context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ||
+         (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+          (context->memory_access_provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+           context->memory_access_provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH))) &&
         offset <= 0x0000ffffu && byte != 0u &&
         (lib_u32)(byte - 1u) > 0x0000ffffu - offset;
 }
@@ -19819,6 +19860,9 @@ static void ExecInit(x86_core_cpu_execution_context *context)
             prefetch_bytes = (lib_u8)((lib_u64)
                 cpu_state.data.cs.limit - cpu_state.data.eip + 1u);
         }
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            (instruction_state.data.linear & 1u) && prefetch_bytes > 1u &&
+            (prefetch_bytes & 1u) == 0u) --prefetch_bytes;
         context->memory_access_provenance = X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
         _kma_read_logical(context, &cpu_state.data.cs, cpu_state.data.eip,
             (lib_uptr)context->prefetch_bytes, prefetch_bytes,

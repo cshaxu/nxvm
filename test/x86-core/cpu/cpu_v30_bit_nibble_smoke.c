@@ -88,7 +88,7 @@ static lib_i32 v30_bit_case(lib_u8 opcode, lib_u8 mode, lib_u8 reg,
         (byte == 1u ? 0u : (lib_u32)fixture.memory[address + 1u] << 8u);
     if (fixture.execution.stop_requested || fixture.faults ||
         fixture.delivered_exceptions || fixture.cpu.data.eip != 0x100u + size ||
-        result != expected || fixture.writes != (lib_u32)(mode != 3u && operation != 0u))
+        result != expected || fixture.writes != (lib_u32)(mode != 3u && operation != 0u ? byte : 0u))
         return 1;
     if (operation == 0u) {
         const lib_u32 defined = VCPU_EFLAGS_ZF | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
