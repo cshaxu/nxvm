@@ -126,7 +126,7 @@ static lib_bool executor_event_time(void)
         const lib_bool overflow = route == 2u;
         const lib_u8 code[] = {nmi ? 0x90u : 0x0fu, 0x0bu};
         const lib_u64 clocks = profile == X86_CORE_CPU_PROFILE_80486SX ?
-            (nmi ? 30u : 26u) : nmi ? 3u : 0u;
+            (nmi ? 30u : 33u) : nmi ? 3u : 0u;
         const lib_u64 before = overflow ? LIB_UINT64_MAX - 25u : 0u;
         lib_status status = LIB_STATUS_INTERNAL_ERROR;
         lib_bool failed;
@@ -166,6 +166,109 @@ static lib_bool executor_event_time(void)
                 (lib_u32)profile, route, (lib_u32)status, result.executed, result.ticks, result.elapsed_ticks);
         x86_core_machine_destroy(machine);
         if (failed) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+typedef struct executor_entry_fault_probe {
+    lib_u32 fetches, rejected, finalized;
+} executor_entry_fault_probe;
+
+static void executor_entry_fault_finalize(void *opaque)
+{
+    ++((executor_entry_fault_probe *)opaque)->finalized;
+}
+
+static lib_status executor_entry_fault_memory(void *opaque, lib_u32 address,
+    lib_u8 bytes, lib_bool write, lib_u8 cache_control)
+{
+    executor_entry_fault_probe *probe = opaque;
+    (void)bytes;
+    (void)cache_control;
+    if (!write && address == 8u) {
+        ++probe->rejected;
+        return LIB_STATUS_IO_ERROR;
+    }
+    if (!write && address >= 0x100u && address <= 0x10fu) ++probe->fetches;
+    return LIB_STATUS_OK;
+}
+
+static lib_bool executor_retired_before_entry_fault(void)
+{
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x100u, [X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 2u, [X86_CORE_CPU_DEBUG_CR0] = 0x60000010u}
+    };
+    const lib_u8 code[] = {0x90u, 0x90u};
+
+    for (lib_u8 wait = 0u; wait <= 3u; wait += 3u)
+    for (lib_u8 bounded = 0u; bounded < 2u; ++bounded) {
+        x86_core_machine_executor_config config = {.memory_bytes = 2u * 1024u * 1024u,
+            .cpu_profile = X86_CORE_CPU_PROFILE_80386, .fpu_profile = X86_FPU_PROFILE_NONE};
+        x86_core_machine *machine = LIB_NULL;
+        executor_entry_fault_probe probe = {0};
+        const x86_core_machine_attachment attachment = {.context = &probe,
+            .finalize_devices = executor_entry_fault_finalize,
+            .memory_cache_control = executor_entry_fault_memory};
+        x86_core_machine_run_result result = {0};
+        x86_core_cpu_diagnostic diagnostic;
+        lib_u64 ticks = 0u, retired = 0u;
+        lib_status status = LIB_STATUS_OK;
+        lib_bool failed;
+
+        config.transaction_contract.external_access_wait_windows[0] =
+            (x86_core_machine_external_access_wait_window){X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY,
+                0x100u, 0x10fu, wait};
+        failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+        if (!failed) {
+            failed = x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
+                x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+                x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            /* Internal SX transport proof; the public production gate stays closed. */
+            x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+                X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+            machine->maximum_instruction_ticks = 1u;
+            failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+                x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
+                !x86_core_cpu_request_nmi(machine->executor_cpu_execution);
+        }
+        for (lib_u32 calls = 0u; !failed && status == LIB_STATUS_OK && calls < 128u; ++calls) {
+            status = x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){1u, bounded ? 1u : 0u}, &result);
+            ticks += result.ticks;
+            retired += result.executed;
+            failed = result.elapsed_ticks != ticks || result.ticks > (bounded ? 1u : LIB_UINT64_MAX) ||
+                (status == LIB_STATUS_OK && (result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+                    machine->lifecycle != X86_CORE_MACHINE_PAUSED));
+        }
+        if (!failed) {
+            const lib_u64 expected = 10u + wait * (lib_u64)probe.fetches;
+            failed = status != LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+                retired != 1u || ticks != expected || probe.fetches == 0u || probe.rejected != 1u ||
+                machine->lifecycle != X86_CORE_MACHINE_FAULTED ||
+                x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+                !diagnostic.first_fault.valid || diagnostic.first_fault.point.eip != 0x101u ||
+                diagnostic.first_fault.exception_mask != VCPUINS_EXCEPT_CE ||
+                diagnostic.first_fault.exception_code != 8u ||
+                x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,1u}, &result) !=
+                    LIB_STATUS_INTERNAL_ERROR || result.executed != 0u || result.ticks != 0u ||
+                result.elapsed_ticks != ticks || probe.rejected != 1u;
+        }
+        if (failed) lib_c_printf("Retired before entry fault: wait=%u bounded=%u status=%u ticks=%llu retired=%llu fetches=%u rejected=%u\n",
+            (lib_u32)wait, (lib_u32)bounded, (lib_u32)status, ticks, retired,
+            probe.fetches, probe.rejected);
+        x86_core_machine_destroy(machine);
+        if (failed || probe.finalized != 1u) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -252,6 +355,16 @@ static lib_bool executor_sx_soft_reset(void)
             machine->elapsed_ticks != ticks || machine->lifecycle != X86_CORE_MACHINE_STOPPED ||
             x86_core_machine_memory_read(machine, 0x100u, &observed, sizeof(observed)) != LIB_STATUS_OK ||
             observed != marker || !executor_smm_return_at(machine, 0x180000u);
+    }
+    if (!failed) {
+        /* SMI entry now advances guest time: the earlier deadline fires
+         * during the round trip. Re-arm one to prove hard-reset preservation. */
+        failed = event_tick != ticks + 10u ||
+            x86_core_machine_timeline_pending_count(&machine->timeline) != 0u;
+        ticks = machine->elapsed_ticks;
+        event_tick = 0u;
+        failed = failed || x86_core_machine_timeline_schedule(&machine->timeline, ticks + 10u,
+            executor_reset_event, &event_tick, &token) != LIB_STATUS_OK;
     }
     if (!failed) {
         x86_core_machine_signal_processor_reset(machine);
@@ -344,9 +457,11 @@ static lib_bool executor_sx_smm(void)
         .finalize_devices = executor_smm_finalize,
         .system_management_active = executor_smm_active};
     x86_core_machine *machine = LIB_NULL;
-    x86_core_machine_run_result result;
+    x86_core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot after;
     lib_u8 observed = 0u;
+    lib_u64 event_tick = 0u;
+    x86_core_machine_timeline_token token;
     lib_bool failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
 
     if (!failed) {
@@ -361,15 +476,31 @@ static lib_bool executor_sx_smm(void)
         /* Internal CPU/Core qualification only; the public admission gate stays closed. */
         x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
             X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        /* Admit this fixture's one-clock compatibility instruction, not the
+         * 386 construction bound. Selected-SX bounds remain S6's receiver. */
+        machine->maximum_instruction_ticks = 1u;
         failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x38000u, handler, sizeof(handler)) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x100u, &nop, sizeof(nop)) != LIB_STATUS_OK ||
+            x86_core_machine_timeline_schedule(&machine->timeline, 150u,
+                executor_reset_event, &event_tick, &token) != LIB_STATUS_OK ||
             x86_core_machine_set_smi(machine, LIB_TRUE) != LIB_STATUS_OK ||
-            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
-            result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 0u || result.ticks != 0u ||
-            result.linear_pc != 0x38000u || !probe.active || probe.assertions != 1u ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,100u}, &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 0u || result.ticks != 100u ||
+            !machine->cpu_retirement_wait_pending || machine->cpu_retirement_completion_ticks != 198u ||
+            event_tick != 0u || result.linear_pc != 0x38000u || !probe.active || probe.assertions != 1u ||
             x86_core_machine_memory_read(machine, 0x100u, &observed, sizeof(observed)) != LIB_STATUS_OK ||
             observed != nop;
+    }
+    for (lib_u8 slice = 0u; !failed && slice < 2u; ++slice) {
+        const lib_u64 ticks = slice == 0u ? 100u : 98u;
+
+        failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,ticks}, &result) != LIB_STATUS_OK ||
+            result.executed != 0u || result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.ticks != ticks ||
+            result.elapsed_ticks != (slice == 0u ? 200u : 298u) || event_tick != 150u ||
+            machine->cpu_retirement_wait_pending != (slice == 0u) ||
+            machine->cpu_retirement_completion_ticks != (slice == 0u ? 98u : 0u) ||
+            probe.assertions != 1u || result.linear_pc != 0x38000u;
     }
     for (lib_u8 instruction = 0u; !failed && instruction < 2u; ++instruction) {
         failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
@@ -384,6 +515,13 @@ static lib_bool executor_sx_smm(void)
             x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.executed != 0u || !probe.active;
     }
+    if (failed && machine != LIB_NULL)
+        lib_c_fprintf(lib_c_stderr,
+            "Core SMM time: count=%llu ticks=%llu elapsed=%llu pc=%08x pending=%u "
+            "remaining=%llu deadline=%llu active=%u assertions=%u\n",
+            result.executed, result.ticks, result.elapsed_ticks, result.linear_pc,
+            (lib_u32)machine->cpu_retirement_wait_pending, machine->cpu_retirement_completion_ticks,
+            event_tick, (lib_u32)probe.active, probe.assertions);
     x86_core_machine_destroy(machine);
     return !failed && probe.finalized == 1u && probe.assertions == 2u &&
         probe.releases == 2u && !probe.bad_order;
@@ -407,6 +545,7 @@ static lib_bool executor_sx_smm_fault(void)
             [X86_CORE_CPU_DEBUG_CR0] = VCPU_CR0_ET | VCPU_CR0_CD | VCPU_CR0_NW}
     };
 
+    for (lib_u8 bounded = 0u; bounded < 3u; ++bounded)
     for (lib_u8 restore = 0u; restore < 2u; ++restore)
     for (lib_size index = 0u; index < sizeof(positions) / sizeof(positions[0]); ++index) {
         executor_smm_probe probe = {.fail_restore = restore != 0u};
@@ -421,6 +560,11 @@ static lib_bool executor_sx_smm_fault(void)
         lib_status run_status = LIB_STATUS_OK;
         lib_u8 image[512], observed[4];
         lib_u64 cancelled = 0u;
+        lib_u64 before_ticks = 0u;
+        lib_u64 event_tick = 0u;
+        x86_core_machine_timeline_token token;
+        const lib_u64 prefix_ticks = (restore ? 5u : 42u) + 2u * (positions[index] - 1u);
+        const lib_bool reset_prefix = bounded == 2u;
         lib_bool failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
 
         lib_memory_set(image, 0xa5u, sizeof(image));
@@ -433,6 +577,7 @@ static lib_bool executor_sx_smm_fault(void)
         if (!failed) {
             x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
                 X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+            machine->maximum_instruction_ticks = 1u;
             failed = x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x38000u, rsm, sizeof(rsm)) != LIB_STATUS_OK ||
                 x86_core_machine_memory_write(machine, 0x3fe00u, image, sizeof(image)) != LIB_STATUS_OK ||
@@ -445,12 +590,25 @@ static lib_bool executor_sx_smm_fault(void)
         if (!failed) {
             probe.fail_transfer = positions[index];
             cancelled = machine->transaction.cancelled_count;
+            before_ticks = machine->elapsed_ticks;
             failed = x86_core_machine_debug_capture_cpu_snapshot(machine,
                     X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-                (run_status = x86_core_machine_run(machine,
-                    (x86_core_machine_run_budget){1u,0u}, &result)) !=
-                    LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
-                result.executed != 0u || result.ticks != 0u ||
+                x86_core_machine_timeline_schedule(&machine->timeline, before_ticks + prefix_ticks / 2u,
+                    executor_reset_event, &event_tick, &token) != LIB_STATUS_OK;
+            const lib_u64 calls = reset_prefix ? 1u : bounded ? prefix_ticks : 1u;
+
+            for (lib_u64 step = 0u; !failed && step < calls; ++step) {
+                const lib_bool final = !reset_prefix && step + 1u == calls;
+
+                run_status = x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){1u,bounded ? 1u : 0u}, &result);
+                failed = run_status != (final ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
+                    result.reason != (final ? X86_CORE_MACHINE_STOP_FAULT : X86_CORE_MACHINE_STOP_BUDGET) ||
+                    result.executed != 0u || result.ticks != (bounded ? 1u : prefix_ticks) ||
+                    result.elapsed_ticks != before_ticks + (bounded ? step + 1u : prefix_ticks) ||
+                    machine->lifecycle != (final ? X86_CORE_MACHINE_FAULTED : X86_CORE_MACHINE_PAUSED);
+            }
+            failed = failed || event_tick != (reset_prefix ? 0u : before_ticks + prefix_ticks / 2u) ||
                 probe.transfers != positions[index] || probe.bad_order || !probe.active ||
                 x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
                 !diagnostic.first_fault.valid ||
@@ -461,6 +619,33 @@ static lib_bool executor_sx_smm_fault(void)
                 lib_memory_compare(&before, &after, sizeof(before)) ||
                 machine->transaction.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_NONE ||
                 machine->transaction.cancelled_count != cancelled + 1u;
+        }
+        if (!failed && reset_prefix) {
+            const lib_u8 nop = 0x90u;
+
+            if (restore) failed = x86_core_machine_signal_soft_processor_reset(machine) != LIB_STATUS_OK;
+            else x86_core_machine_signal_processor_reset(machine);
+            failed = failed || x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,1u},
+                    &result) != LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
+                result.executed != 0u || result.ticks != 0u || machine->fault_detail != 0u ||
+                machine->cpu_retirement_wait_pending || result.elapsed_ticks != before_ticks + 1u ||
+                x86_core_machine_timeline_pending_count(&machine->timeline) != 1u ||
+                x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+                !diagnostic.first_fault.valid ||
+                x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+                x86_core_machine_memory_write(machine, 0x100u, &nop, sizeof(nop)) != LIB_STATUS_OK ||
+                x86_core_machine_set_smi(machine, LIB_FALSE) != LIB_STATUS_OK ||
+                x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
+                result.executed != 1u || machine->fault_detail != 0u ||
+                probe.transfers != positions[index] || probe.active;
+        }
+        if (!failed && !reset_prefix) {
+            x86_core_machine_run_result repeated = {0};
+
+            failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,1u},
+                    &repeated) != LIB_STATUS_INTERNAL_ERROR || repeated.executed != 0u || repeated.ticks != 0u ||
+                repeated.elapsed_ticks != before_ticks + prefix_ticks ||
+                probe.transfers != positions[index] || machine->transaction.cancelled_count != cancelled + 1u;
         }
         if (!failed && restore == 0u) {
             const lib_u8 cr0[] = {0x10u,0u,0u,0x60u};
@@ -476,10 +661,10 @@ static lib_bool executor_sx_smm_fault(void)
         if (failed && machine != LIB_NULL) {
             (void)x86_core_machine_get_cpu_diagnostic(machine, &diagnostic);
             lib_c_fprintf(lib_c_stderr,
-                "Core SMM fault detail: status=%u reason=%u retired=%llu active=%u bad=%u "
+                "Core SMM fault detail: status=%u reason=%u retired=%llu ticks=%llu expected=%llu active=%u bad=%u "
                 "mask=%08x code=%08x cancelled=%llu/%llu\n",
                 (lib_u32)run_status, (lib_u32)result.reason,
-                (unsigned long long)result.executed, (lib_u32)probe.active,
+                (unsigned long long)result.executed, result.ticks, prefix_ticks, (lib_u32)probe.active,
                 (lib_u32)probe.bad_order, diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.exception_code,
                 (unsigned long long)machine->transaction.cancelled_count,
@@ -654,8 +839,24 @@ lib_i32 main(void)
         0xf4u
     };
 
-    if (!executor_event_time() || !executor_sx_fpu_interface() || !executor_sx_soft_reset() || !executor_sx_smm() ||
-        !executor_sx_smm_fault() || !executor_dma_hold()) return 1;
+    static const struct {
+        const char *name;
+        lib_bool (*run)(void);
+    } cases[] = {
+        {"event-time",executor_event_time}, {"sx-fpu-interface",executor_sx_fpu_interface},
+        {"retired-before-entry-fault",executor_retired_before_entry_fault},
+        {"sx-soft-reset",executor_sx_soft_reset}, {"sx-smm",executor_sx_smm},
+        {"sx-smm-fault",executor_sx_smm_fault}, {"dma-hold",executor_dma_hold}
+    };
+    lib_bool failed = LIB_FALSE;
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        if (!cases[index].run()) {
+            lib_c_fprintf(lib_c_stderr, "Core executor case failed: %s\n", cases[index].name);
+            failed = LIB_TRUE;
+        }
+    }
+    if (failed) return 1;
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) {
         x86_core_machine_destroy(machine);
         return 1;

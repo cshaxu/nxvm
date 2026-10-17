@@ -126,11 +126,16 @@ typedef struct {
     lib_u64 timing_bus_stall_ticks;
     lib_u64 timing_bus_wait_ticks;
     lib_u64 timing_bus_invalidation_ticks;
+    /* Accepted physical work, excluding Core waits; entry allocation prevents
+     * nested handlers from charging the same prefix twice. Not a clock. */
+    lib_u64 timing_transfer_ticks;
+    lib_u64 timing_entry_transfer_ticks;
     lib_bool timing_cache_used;
     lib_u32 timing_data_misses;
     lib_u32 timing_missed_reads; /* Completed logical DATA reads with a physical miss. */
     lib_u32 timing_descriptor_misses;
     lib_u32 timing_missed_descriptors;
+    lib_u32 timing_idt_misses;
     lib_u8 timing_task_gate_miss_mask;
     lib_u32 timing_pair_misses;
     lib_u32 timing_tss_field_misses;

@@ -355,12 +355,13 @@ static lib_bool repeat_interrupt_and_fault(void)
         x86_core_cpu_set_nmi(&fixture.execution, LIB_TRUE) != LIB_STATUS_OK) return LIB_FALSE;
     x86_core_cpu_execution_refresh(&fixture.execution);
     /* Async entry reuses the decoder. Inspect the already-published retirement
-     * and entry cost here, not a fresh nominal query on the handler's record. */
+     * and entry cost here, not a fresh nominal query on the handler's record.
+     * The uncached IVT adds 2 to real entry 26 and NMI setup 3. */
     if (fixture.cpu.data.eip != 0x100u ||
         fixture.execution.source_repeat_active ||
         fixture.execution.timing_result.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION ||
         fixture.execution.timing_result.ticks == 0u ||
-        fixture.execution.timing_result.event_ticks != 29u) {
+        fixture.execution.timing_result.event_ticks != 31u) {
         lib_c_fprintf(lib_c_stderr, "Repeat NMI ip=%x active=%u phase=%u ticks=%llu event=%llu\n",
             fixture.cpu.data.eip, (lib_u32)fixture.execution.source_repeat_active,
             (lib_u32)fixture.execution.timing_result.repeat_phase,

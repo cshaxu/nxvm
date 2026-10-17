@@ -671,9 +671,34 @@ static lib_bool task32_expect(x86_core_cpu_profile profile, task32_case test_cas
     return LIB_FALSE;
 }
 
+typedef struct task32_entry_work {
+    lib_u64 accepted_ticks, prefix_ticks;
+    lib_bool gp_started;
+} task32_entry_work;
+
+static lib_u64 task32_entry_cycle(void *opaque, x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address, lib_u8 bytes,
+    lib_u8 write, x86_core_cpu_memory_access_provenance provenance)
+{
+    task32_entry_work *work = opaque;
+    (void)provenance;
+    if (space != X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY) return 0u;
+    if (phase == X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN && !work->gp_started &&
+        address == TASK32_IDT_BASE + 13u * 8u) {
+        work->prefix_ticks = work->accepted_ticks;
+        work->gp_started = LIB_TRUE;
+    }
+    if (phase == X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT) {
+        const lib_u64 transfers = ((address & 3u) + bytes + 3u) / 4u;
+        work->accepted_ticks += write ? 2u * transfers : 1u + transfers;
+    }
+    return 0u;
+}
+
 static lib_bool task32_test_published_fault_context(x86_core_cpu_profile profile)
 {
     cpu_instruction_fixture fixture;
+    task32_entry_work work = {0};
     const lib_u8 gp_gate[] = {0x80u,1u,8u,0u,0u,0x86u,0u,0u};
     lib_u8 step;
     lib_u32 outgoing_ip = 0u;
@@ -686,6 +711,8 @@ static lib_bool task32_test_published_fault_context(x86_core_cpu_profile profile
         x86_core_cpu_execution_refresh(&fixture.execution);
     if (fixture.execution.stop_requested || fixture.cpu.data.tr.selector != 0x28u ||
         fixture.cpu.data.eip != 48u) return LIB_FALSE;
+    x86_core_cpu_execution_context_bind_external_cycle_provider(&fixture.execution,
+        task32_entry_cycle, &work);
     x86_core_cpu_execution_refresh(&fixture.execution);
     const lib_u64 event_ticks = x86_core_cpu_capture_timing(&fixture.execution).event_ticks;
     lib_memory_copy(&outgoing_ip, fixture.memory + TASK32_A_BASE + 0x20u,
@@ -700,7 +727,8 @@ static lib_bool task32_test_published_fault_context(x86_core_cpu_profile profile
         fixture.delivered_exception.esp != 0x8000u ||
         fixture.cpu.data.tr.selector != 0x30u || fixture.cpu.data.eip != 0x180u ||
         fixture.cpu.data.esp != 0x7ff8u || outgoing_ip != 53u ||
-        event_ticks != (profile == X86_CORE_CPU_PROFILE_80486SX ? 44u : 0u) ||
+        !work.gp_started || work.prefix_ticks == 0u ||
+        event_ticks != (profile == X86_CORE_CPU_PROFILE_80486SX ? 50u + work.prefix_ticks : 0u) ||
         (fixture.cpu.data.dr6 & 0x00008000u) == 0u) {
         lib_c_fprintf(lib_c_stderr, "Published task fault point=%x mask=%x code=%x tr=%x ip=%x sp=%x old-ip=%x event=%llu\n",
             fixture.delivered_exception.point.eip,

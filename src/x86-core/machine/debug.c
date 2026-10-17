@@ -277,10 +277,12 @@ static void x86_core_machine_cpu_diagnostic_record_fault(void *opaque,
     x86_core_cpu_fault_snapshot *fault;
 
     if (machine == LIB_NULL || snapshot == LIB_NULL) return;
+    /* Active cause is separate from retained history. The run owner commits
+     * failure only after accepted CPU work has elapsed. */
+    machine->fault_detail = snapshot->exception_mask;
     fault = &machine->cpu_diagnostic.snapshot.first_fault;
     if (fault->valid) return;
     *fault = *snapshot;
-    (void)x86_core_machine_report_fault(machine, fault->exception_mask);
 }
 
 static void x86_core_machine_cpu_diagnostic_record_delivered_exception(

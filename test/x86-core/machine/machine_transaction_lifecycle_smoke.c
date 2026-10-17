@@ -134,6 +134,7 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
             /* Success, endpoint failure after a side effect, admission failure. */
             for (lib_u8 outcome = 0u; outcome < 3u && !failed; ++outcome) {
                 lib_u32 value = 0xabcdef01u;
+                x86_core_machine_run_result result = {0};
                 const lib_u32 mask = bytes == 1u ? 0xffu :
                     bytes == 2u ? 0xffffu : LIB_UINT32_MAX;
                 lib_u8 code[3] = {0x90u}, length = 1u;
@@ -154,7 +155,8 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                 code[length++] = (write ? 0xeeu : 0xecu) + (bytes != 1u);
                 failed |= x86_core_machine_memory_write(machine, 0xffff0u, code, length) != LIB_STATUS_OK ||
                     x86_core_cpu_debug_patch_registers(machine->executor_cpu_execution, &registers) != LIB_STATUS_OK;
-                x86_core_cpu_execution_refresh(machine->executor_cpu_execution);
+                failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
+                    &result) != LIB_STATUS_OK || result.executed != 1u;
                 /* NOP warms the actual prefetch queue. Admission failure must
                  * occur at the port, not at an earlier instruction fetch. */
                 probe = (lifecycle_probe){0};
@@ -165,19 +167,25 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                         X86_CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, 0u, 0u, 0u) != LIB_STATUS_OK;
                     probe.count = 0u;
                 }
-                x86_core_cpu_execution_refresh(machine->executor_cpu_execution);
+                const lib_status run_status = x86_core_machine_run(machine,
+                    (x86_core_machine_run_budget){1u,0u}, &result);
+                failed |= run_status != (outcome == 0u ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR) ||
+                    result.executed != (outcome == 0u ? 1u : 0u);
                 failed |= x86_core_cpu_debug_read_register(machine->executor_cpu_execution,
                     X86_CORE_CPU_DEBUG_EAX, &value) != LIB_STATUS_OK ||
                     value != (outcome == 0u && !write ?
                         (0xabcdef01u & ~mask) | (0x12345678u & mask) : 0xabcdef01u);
                 failed |= probe.transfers != (outcome == 2u ? 0u : 1u) ||
-                    probe.count != (outcome == 2u ? 3u : outcome == 1u ? 5u : 4u) ||
+                    probe.count != (outcome == 2u ? 3u : outcome == 1u ? 5u : 6u) ||
                     probe.events[0].type != X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN ||
                     machine->external_cycle_pending_valid;
                 if (outcome != 0u)
                     failed |= probe.count == 0u ||
                         probe.events[probe.count - 1u].type != X86_CORE_MACHINE_TRACE_FAULT ||
                         machine->fault_detail != VCPUINS_EXCEPT_CE;
+                else
+                    failed |= probe.events[4].type != X86_CORE_MACHINE_TRACE_CPU_RETIRE ||
+                        probe.events[5].type != X86_CORE_MACHINE_TRACE_RUN_BOUNDARY;
                 if (outcome == 2u) {
                     failed |= probe.events[1].type != X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL ||
                         machine->transaction.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_DMA;

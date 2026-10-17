@@ -541,6 +541,9 @@ static void _kma_cache_invalidate(x86_core_cpu_execution_context *context)
     }
 }
 
+static void ExecFinal(x86_core_cpu_execution_context *context);
+static lib_bool _e_timing_charge(x86_core_cpu_execution_context *context, lib_u64 ticks);
+
 static lib_bool _system_flush_pending(x86_core_cpu_execution_context *context)
 {
     if ((!context->flush_pending && !context->flush_asserted) ||
@@ -549,6 +552,10 @@ static lib_bool _system_flush_pending(x86_core_cpu_execution_context *context)
         (context->nmi_masked || context->nmi_in_service || !context->nmi_pending) &&
         (!X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IF) ||
          !context->bus->interrupt_pending(context->bus_context))) return LIB_FALSE;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !_e_timing_charge(context, 1u)) {
+        ExecFinal(context);
+        return LIB_TRUE;
+    }
     _kma_cache_invalidate(context);
     x86_core_cpu_execution_invalidate_prefetch(context);
     context->flush_pending = LIB_FALSE;
@@ -1864,13 +1871,9 @@ static void _ksa_test_write_xdt(x86_core_cpu_execution_context *context,
 }
 static void _ksa_prepare_code_sreg(x86_core_cpu_execution_context *context,
     lib_u16 selector, lib_u8 cpl, t_cpu_data_sreg *rsreg,
-    lib_u64 *rdescriptor)
+    lib_u64 descriptor)
 {
-    lib_u64 descriptor = 0u;
-
     CPU_TRACE_CALL_BEGIN("_ksa_prepare_code_sreg");
-    CPU_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
-        X86_CPU_REFERENCE_OF(descriptor)));
     if (!_IsDescCode(descriptor))
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
     if (!_IsDescPresent(descriptor))
@@ -1891,18 +1894,13 @@ static void _ksa_prepare_code_sreg(x86_core_cpu_execution_context *context,
     rsreg->seg.exec.defsize = (lib_u8)_IsDescCode32(descriptor);
     rsreg->seg.exec.conform = (lib_u8)_IsDescCodeConform(descriptor);
     rsreg->seg.exec.readable = (lib_u8)_IsDescCodeReadable(descriptor);
-    *rdescriptor = descriptor;
     CPU_TRACE_CALL_END;
 }
 static void _ksa_prepare_stack_sreg(x86_core_cpu_execution_context *context,
     lib_u16 selector, lib_u8 cpl, t_cpu_data_sreg *rsreg,
-    lib_u64 *rdescriptor)
+    lib_u64 descriptor)
 {
-    lib_u64 descriptor = 0u;
-
     CPU_TRACE_CALL_BEGIN("_ksa_prepare_stack_sreg");
-    CPU_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
-        X86_CPU_REFERENCE_OF(descriptor)));
     if (!_IsDescDataWritable(descriptor) || _GetSelector_RPL(selector) != cpl ||
         _GetDesc_DPL(descriptor) != cpl)
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
@@ -1924,7 +1922,6 @@ static void _ksa_prepare_stack_sreg(x86_core_cpu_execution_context *context,
     rsreg->seg.data.big = (lib_u8)_IsDescDataBig(descriptor);
     rsreg->seg.data.expdown = (lib_u8)_IsDescDataExpDown(descriptor);
     rsreg->seg.data.writable = (lib_u8)_IsDescDataWritable(descriptor);
-    *rdescriptor = descriptor;
     CPU_TRACE_CALL_END;
 }
 /* Clearing PE deliberately retains protected caches.  A later real-address
@@ -2246,8 +2243,18 @@ static lib_u8 _s_check_selector(x86_core_cpu_execution_context *context, lib_u16
 }
 static void _s_read_idt(x86_core_cpu_execution_context *context, lib_u8 intid, lib_uptr rdata)
 {
+    const lib_u32 misses = instruction_state.data.timing_data_misses;
     CPU_TRACE_CALL_BEGIN("_s_read_idt");
-    CPU_TRACE_CHECK_RETURN(_ksa_read_idt(context, intid, rdata));
+    _ksa_read_idt(context, intid, rdata);
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !context->preview_mode) {
+        const lib_u32 accepted = instruction_state.data.timing_data_misses - misses;
+        instruction_state.data.timing_idt_misses += accepted;
+        if (accepted != 0u && _GetCR0_PE && !instruction_state.data.except) {
+            lib_u64 descriptor;
+            lib_memory_copy(&descriptor, (const void *)rdata, sizeof(descriptor));
+            if (_IsDescTaskGate(descriptor)) instruction_state.data.timing_task_gate_miss_mask |= 1u;
+        }
+    }
     CPU_TRACE_CALL_END;
 }
 static void _s_read_xdt(x86_core_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
@@ -4288,7 +4295,7 @@ static void _ser_call_far_call_gate_32(x86_core_cpu_execution_context *context,
     oldss_frame = oldss;
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
@@ -4307,7 +4314,7 @@ static void _ser_call_far_call_gate_32(x86_core_cpu_execution_context *context,
         instruction_state.data.timing_transfer_parameters = parameter_count;
         newss_cache = cpu_state.data.ss;
         CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
-            target_cpl, &newss_cache, &ss_desc));
+            target_cpl, &newss_cache, ss_desc));
         CPU_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
             newesp, (lib_u8)(4u + parameter_count), target_cpl));
         for (index = 0u; index < parameter_count; ++index)
@@ -4411,7 +4418,7 @@ static void _ser_call_far_call_gate(x86_core_cpu_execution_context *context,
     instruction_state.data.timing_transfer_parameters = parameter_count;
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
@@ -4444,7 +4451,7 @@ static void _ser_call_far_call_gate(x86_core_cpu_execution_context *context,
             target_cpl, X86_CPU_REFERENCE_OF(ss_desc)));
         newss_cache = cpu_state.data.ss;
         CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
-            target_cpl, &newss_cache, &ss_desc));
+            target_cpl, &newss_cache, ss_desc));
         CPU_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
             newsp, (lib_u8)(4u + parameter_count), target_cpl));
         for (index = 0u; index < parameter_count; ++index)
@@ -4602,9 +4609,8 @@ static lib_u16 _ser_idt_error_code(lib_u8 intid)
     return X86_CPU_MASK_U16(intid * 8u + 2u);
 }
 static void _ser_int_protected_16(x86_core_cpu_execution_context *context,
-    lib_u8 intid, lib_u8 software_origin, lib_u8 error_frame)
+    lib_u8 intid, lib_u64 gate_desc, lib_u8 software_origin, lib_u8 error_frame)
 {
-    lib_u64 gate_desc;
     lib_u64 code_desc;
     lib_u64 ss_desc;
     lib_u16 newcs;
@@ -4629,8 +4635,6 @@ static void _ser_int_protected_16(x86_core_cpu_execution_context *context,
         X86_CPU_MASK_U16(cpu_state.data.idtr.limit)) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
-    CPU_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
-        X86_CPU_REFERENCE_OF(gate_desc)));
     interrupt_gate = _GetDesc_Type(gate_desc) == VCPU_DESC_SYS_TYPE_INTGATE_16;
     if (!interrupt_gate && _GetDesc_Type(gate_desc) !=
         VCPU_DESC_SYS_TYPE_TRAPGATE_16) {
@@ -4666,7 +4670,7 @@ static void _ser_int_protected_16(x86_core_cpu_execution_context *context,
     error_code = X86_CPU_MASK_U16(instruction_state.data.excode);
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
@@ -4700,9 +4704,11 @@ static void _ser_int_protected_16(x86_core_cpu_execution_context *context,
             _GetSelector_RPL(newss) != target_cpl) {
             CPU_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
         }
+        CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newss,
+            X86_CPU_REFERENCE_OF(ss_desc)));
         newss_cache = cpu_state.data.ss;
         CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
-            target_cpl, &newss_cache, &ss_desc));
+            target_cpl, &newss_cache, ss_desc));
         CPU_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
             newsp, (lib_u8)(frame_words + 2u), target_cpl));
 
@@ -4739,10 +4745,9 @@ static void _ser_int_protected_16(x86_core_cpu_execution_context *context,
     CPU_TRACE_CALL_END;
 }
 static void _ser_int_protected_32_outer(x86_core_cpu_execution_context *context,
-    lib_u8 intid, lib_u64 gate_desc, lib_u8 software_origin,
+    lib_u8 intid, lib_u64 gate_desc, lib_u64 code_desc, lib_u8 software_origin,
     lib_u8 error_frame)
 {
-    lib_u64 code_desc;
     lib_u64 ss_desc;
     lib_u16 newcs;
     lib_u16 newss;
@@ -4804,8 +4809,6 @@ static void _ser_int_protected_32_outer(x86_core_cpu_execution_context *context,
     newcs = X86_CPU_MASK_U16(_GetDescGate_Selector(gate_desc));
     if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs))
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
-    CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
-        X86_CPU_REFERENCE_OF(code_desc)));
     if (!_IsDescCodeNonConform(code_desc) || _GetDesc_DPL(code_desc) > oldcpl)
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     target_cpl = (lib_u8)_GetDesc_DPL(code_desc);
@@ -4839,13 +4842,15 @@ static void _ser_int_protected_32_outer(x86_core_cpu_execution_context *context,
         (error_frame ? 1u : 0u));
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
+    CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newss,
+        X86_CPU_REFERENCE_OF(ss_desc)));
     newss_cache = cpu_state.data.ss;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
-        &newss_cache, &ss_desc));
+        &newss_cache, ss_desc));
     CPU_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
         newesp, frame_dwords, target_cpl));
 
@@ -4922,7 +4927,7 @@ static void _ser_int_protected_32_same(x86_core_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     if (_GetDesc_DPL(code_desc) < oldcpl) {
         CPU_TRACE_CHECK_RETURN(_ser_int_protected_32_outer(context, intid,
-            gate_desc, software_origin, error_frame));
+            gate_desc, code_desc, software_origin, error_frame));
         CPU_TRACE_CALL_END;
         return;
     }
@@ -4936,7 +4941,7 @@ static void _ser_int_protected_32_same(x86_core_cpu_execution_context *context,
     error_code = X86_CPU_MASK_U32(instruction_state.data.excode);
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, oldcpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         oldcpl, 1));
@@ -4989,7 +4994,7 @@ static void _ser_int_protected(x86_core_cpu_execution_context *context,
     case VCPU_DESC_SYS_TYPE_INTGATE_16:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
         CPU_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid,
-            software_origin, flagext));
+            gate_desc, software_origin, flagext));
         break;
     case VCPU_DESC_SYS_TYPE_INTGATE_32:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
@@ -5102,9 +5107,11 @@ static void _ser_ret_far_outer(x86_core_cpu_execution_context *context,
         _GetSelector_RPL(newss) != target_cpl) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newss & 0xfffcu));
     }
+    CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newss,
+        X86_CPU_REFERENCE_OF(ss_desc)));
     newss_cache = cpu_state.data.ss;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
-        &newss_cache, &ss_desc));
+        &newss_cache, ss_desc));
     CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         X86_CPU_REFERENCE_OF(code_desc)));
     if (!_IsDescCode(code_desc) ||
@@ -5117,7 +5124,7 @@ static void _ser_ret_far_outer(x86_core_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         neweip, 1u, 0, target_cpl, 1));
     CPU_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
@@ -5235,7 +5242,7 @@ static void _ser_jmp_far_call_gate(x86_core_cpu_execution_context *context,
     }
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, target_selector,
-        cpl, &newcs_cache, &code_desc));
+        cpl, &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         gate32 ? X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)) :
         X86_CPU_MASK_U16(_GetDescGate_Offset(gate_desc)), 1u, 0, cpl, 1));
@@ -6114,6 +6121,140 @@ _______todo _e_int_n(x86_core_cpu_execution_context *context, lib_u8 intid, lib_
         instruction_state.data.timing_gpr_writes = 0u;
     CPU_TRACE_CALL_END;
 }
+static lib_bool _e_timing_charge(x86_core_cpu_execution_context *context, lib_u64 ticks)
+{
+    if (ticks > LIB_UINT64_MAX - context->timing_result.event_ticks) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return LIB_FALSE;
+    }
+    context->timing_result.event_ticks += ticks;
+    return LIB_TRUE;
+}
+
+/* Failed work has no successful INT/TS latency. Use the accepted fastest-bus
+ * transfer prefix as an explicit L2 model; Core supplies extra waits once. */
+static void _e_timing_failed_prefix(x86_core_cpu_execution_context *context)
+{
+    const lib_u64 accepted = instruction_state.data.timing_transfer_ticks;
+    const lib_u64 allocated = instruction_state.data.timing_entry_transfer_ticks;
+
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
+    if (context->bus_timing.invalid || allocated > accepted) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return;
+    }
+    instruction_state.data.timing_entry_transfer_ticks = accepted;
+    (void)_e_timing_charge(context, accepted - allocated);
+}
+
+typedef struct cpu_entry_access {
+    lib_u32 data_misses;
+    lib_u32 missed_reads;
+    lib_u32 descriptor_misses;
+    lib_u32 missed_descriptors;
+    lib_u32 idt_misses;
+    lib_u32 pair_misses;
+    lib_u32 tss_field_misses;
+    lib_u32 missed_tss_fields;
+    lib_u32 locked_reads;
+    lib_u32 table_misses;
+    lib_u32 unaligned_accesses;
+    lib_u32 tlb_updates;
+    lib_u32 tlb_walks[3];
+    lib_u8 unaccessed_descriptors, task_gate_miss_mask;
+} cpu_entry_access;
+
+/* Recursive entries own only their accesses; the interrupted form retains
+ * its original counters. This scope never swaps cache/TLB or bus state. */
+static cpu_entry_access _e_begin_access(x86_core_cpu_execution_context *context)
+{
+    cpu_entry_access access = {0};
+
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return access;
+    access.data_misses = instruction_state.data.timing_data_misses;
+    instruction_state.data.timing_data_misses = 0u;
+    access.missed_reads = instruction_state.data.timing_missed_reads;
+    instruction_state.data.timing_missed_reads = 0u;
+    access.descriptor_misses = instruction_state.data.timing_descriptor_misses;
+    instruction_state.data.timing_descriptor_misses = 0u;
+    access.missed_descriptors = instruction_state.data.timing_missed_descriptors;
+    instruction_state.data.timing_missed_descriptors = 0u;
+    access.idt_misses = instruction_state.data.timing_idt_misses;
+    instruction_state.data.timing_idt_misses = 0u;
+    access.pair_misses = instruction_state.data.timing_pair_misses;
+    instruction_state.data.timing_pair_misses = 0u;
+    access.tss_field_misses = instruction_state.data.timing_tss_field_misses;
+    instruction_state.data.timing_tss_field_misses = 0u;
+    access.missed_tss_fields = instruction_state.data.timing_missed_tss_fields;
+    instruction_state.data.timing_missed_tss_fields = 0u;
+    access.locked_reads = instruction_state.data.timing_locked_reads;
+    instruction_state.data.timing_locked_reads = 0u;
+    access.table_misses = instruction_state.data.timing_table_misses;
+    instruction_state.data.timing_table_misses = 0u;
+    access.unaligned_accesses = instruction_state.data.timing_unaligned_accesses;
+    instruction_state.data.timing_unaligned_accesses = 0u;
+    access.tlb_updates = instruction_state.data.timing_tlb_updates;
+    instruction_state.data.timing_tlb_updates = 0u;
+    access.unaccessed_descriptors = instruction_state.data.timing_unaccessed_descriptors;
+    instruction_state.data.timing_unaccessed_descriptors = 0u;
+    access.task_gate_miss_mask = instruction_state.data.timing_task_gate_miss_mask;
+    instruction_state.data.timing_task_gate_miss_mask = 0u;
+    for (lib_u8 index = 0u; index < 3u; ++index) {
+        access.tlb_walks[index] = instruction_state.data.timing_tlb_walks[index];
+        instruction_state.data.timing_tlb_walks[index] = 0u;
+    }
+    return access;
+}
+
+static void _e_end_access(x86_core_cpu_execution_context *context,
+    const cpu_entry_access *access)
+{
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
+    instruction_state.data.timing_data_misses = access->data_misses;
+    instruction_state.data.timing_missed_reads = access->missed_reads;
+    instruction_state.data.timing_descriptor_misses = access->descriptor_misses;
+    instruction_state.data.timing_missed_descriptors = access->missed_descriptors;
+    instruction_state.data.timing_idt_misses = access->idt_misses;
+    instruction_state.data.timing_pair_misses = access->pair_misses;
+    instruction_state.data.timing_tss_field_misses = access->tss_field_misses;
+    instruction_state.data.timing_missed_tss_fields = access->missed_tss_fields;
+    instruction_state.data.timing_locked_reads = access->locked_reads;
+    instruction_state.data.timing_table_misses = access->table_misses;
+    instruction_state.data.timing_unaligned_accesses = access->unaligned_accesses;
+    instruction_state.data.timing_tlb_updates = access->tlb_updates;
+    instruction_state.data.timing_unaccessed_descriptors = access->unaccessed_descriptors;
+    instruction_state.data.timing_task_gate_miss_mask = access->task_gate_miss_mask;
+    for (lib_u8 index = 0u; index < 3u; ++index)
+        instruction_state.data.timing_tlb_walks[index] = access->tlb_walks[index];
+}
+
+static void _e_timing_entry(x86_core_cpu_execution_context *context,
+    lib_u64 before, lib_u64 allocated_before, lib_u64 setup, lib_u64 base)
+{
+    const lib_u64 accepted = instruction_state.data.timing_transfer_ticks;
+    const lib_u64 allocated = instruction_state.data.timing_entry_transfer_ticks;
+    lib_u64 own;
+
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
+    if (context->bus_timing.invalid || allocated_before > before ||
+        accepted < before || allocated < allocated_before ||
+        allocated - allocated_before > accepted - before) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return;
+    }
+    own = accepted - before - (allocated - allocated_before);
+    instruction_state.data.timing_entry_transfer_ticks += own;
+    if (instruction_state.data.except == 0u) {
+        if (base == 0u) _SetExcept_CE(LIB_STATUS_INTERNAL_ERROR);
+        else own = base;
+    }
+    if (own > LIB_UINT64_MAX - setup) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return;
+    }
+    (void)_e_timing_charge(context, setup + own);
+}
+
 static void _e_external_entry_error(x86_core_cpu_execution_context *context)
 {
     if (instruction_state.data.except == VCPUINS_EXCEPT_GP ||
@@ -6129,7 +6270,10 @@ _______todo _e_intr_n(x86_core_cpu_execution_context *context,
     const lib_u32 entry_cr0 = cpu_state.data.cr0;
     const lib_u32 entry_flags = cpu_state.data.eflags;
     const lib_u8 entry_cpl = _GetCPL;
+    const lib_u64 before = instruction_state.data.timing_transfer_ticks;
+    const lib_u64 allocated_before = instruction_state.data.timing_entry_transfer_ticks;
     lib_bool task_entry = LIB_FALSE;
+    const cpu_entry_access access = _e_begin_access(context);
 
     CPU_TRACE_CALL_BEGIN("_e_intr_n");
     context->repeat_compare_flags_valid = LIB_FALSE;
@@ -6138,7 +6282,7 @@ _______todo _e_intr_n(x86_core_cpu_execution_context *context,
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
-        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte));
+        _ser_int_real(context, intid, byte);
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -6148,13 +6292,13 @@ _______todo _e_intr_n(x86_core_cpu_execution_context *context,
         _e_external_entry_error(context);
         CPU_TRACE_BLOCK_END;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
-        !instruction_state.data.except) {
-        instruction_state.data.timing_gpr_writes = 0u;
-        context->timing_result.event_ticks += (nmi ? 3u : 11u) +
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+        if (!instruction_state.data.except) instruction_state.data.timing_gpr_writes = 0u;
+        _e_timing_entry(context, before, allocated_before, nmi ? 3u : 11u,
             x86_core_cpu_80486_interrupt_entry_cost(context,
-                entry_cr0, entry_flags, entry_cpl, task_entry);
+                entry_cr0, entry_flags, entry_cpl, task_entry));
     }
+    _e_end_access(context, &access);
     CPU_TRACE_CALL_END;
 }
 static lib_u8 _e_exception_has_error_code(lib_u8 exid)
@@ -6168,11 +6312,14 @@ _______todo _e_except_n(x86_core_cpu_execution_context *context, lib_u8 exid, li
     lib_u32 oldflags = cpu_state.data.eflags;
     const lib_u32 entry_cr0 = cpu_state.data.cr0;
     const lib_u8 entry_cpl = _GetCPL;
+    const lib_u64 before = instruction_state.data.timing_transfer_ticks;
+    const lib_u64 allocated_before = instruction_state.data.timing_entry_transfer_ticks;
     const lib_u64 setup_ticks = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
         x86_core_cpu_80486_exception_setup_cost(context, exid) : 0u;
     lib_bool task_entry = LIB_FALSE;
 
     CPU_TRACE_CALL_BEGIN("_e_except_n");
+    const cpu_entry_access access = _e_begin_access(context);
     context->repeat_compare_flags_valid = LIB_FALSE;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
         context->source_repeat_active = LIB_FALSE;
@@ -6199,12 +6346,13 @@ _______todo _e_except_n(x86_core_cpu_execution_context *context, lib_u8 exid, li
         CPU_TRACE_BLOCK_END;
     }
     if (instruction_state.data.except) cpu_state.data.eflags = oldflags;
-    else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
-        instruction_state.data.timing_gpr_writes = 0u;
-        context->timing_result.event_ticks += setup_ticks +
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+        if (!instruction_state.data.except) instruction_state.data.timing_gpr_writes = 0u;
+        _e_timing_entry(context, before, allocated_before, setup_ticks,
             x86_core_cpu_80486_interrupt_entry_cost(context,
-                entry_cr0, oldflags, entry_cpl, task_entry);
+                entry_cr0, oldflags, entry_cpl, task_entry));
     }
+    _e_end_access(context, &access);
     CPU_TRACE_CALL_END;
 }
 static void _ser_iret_protected_outer(x86_core_cpu_execution_context *context,
@@ -6312,12 +6460,14 @@ static void _ser_iret_protected_outer(x86_core_cpu_execution_context *context,
     }
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, newcpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache, neweip,
         1u, 0, newcpl, 1));
+    CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newss,
+        X86_CPU_REFERENCE_OF(ss_desc)));
     newss_cache = cpu_state.data.ss;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, newcpl,
-        &newss_cache, &ss_desc));
+        &newss_cache, ss_desc));
     CPU_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
         X86_CPU_REFERENCE_OF(code_desc)));
     CPU_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
@@ -6392,7 +6542,7 @@ static void _ser_iret_protected_same(x86_core_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, cpl,
-        &newcs_cache, &code_desc));
+        &newcs_cache, code_desc));
     CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache, neweip,
         1u, 0, cpl, 1));
     if (cpl) {
@@ -19289,11 +19439,14 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
     instruction_state.data.timing_bus_stall_ticks = 0u;
     instruction_state.data.timing_bus_wait_ticks = 0u;
     instruction_state.data.timing_bus_invalidation_ticks = 0u;
+    instruction_state.data.timing_transfer_ticks = 0u;
+    instruction_state.data.timing_entry_transfer_ticks = 0u;
     instruction_state.data.timing_cache_used = LIB_FALSE;
     instruction_state.data.timing_data_misses = 0u;
     instruction_state.data.timing_missed_reads = 0u;
     instruction_state.data.timing_descriptor_misses = 0u;
     instruction_state.data.timing_missed_descriptors = 0u;
+    instruction_state.data.timing_idt_misses = 0u;
     instruction_state.data.timing_task_gate_miss_mask = 0u;
     instruction_state.data.timing_pair_misses = 0u;
     instruction_state.data.timing_tss_field_misses = 0u;
@@ -19455,6 +19608,7 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
     t_cpu_data_sreg *segments[] = {&cpu_state.data.es, &cpu_state.data.ss,
         &cpu_state.data.ds, &cpu_state.data.fs, &cpu_state.data.gs};
     const lib_u32 physical = context->smbase + 0xfe00u;
+    lib_u64 prefix_service, ticks;
 
     if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
         !context->smi_pending || context->smm_active || x86_core_cpu_is_system_waiting(context) ||
@@ -19469,14 +19623,29 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
      * cannot be fetched. The existing finalizer owns any provider failure. */
     ExecBoundary(context);
     context->smi_pending = LIB_FALSE;
+    x86_core_cpu_bus_drain(context, LIB_TRUE);
+    if (context->bus_timing.invalid) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return LIB_TRUE;
+    }
+    prefix_service = instruction_state.data.timing_bus_service_ticks;
     context->smm_active = LIB_TRUE;
     context->bus->system_management_active(context->bus_context, LIB_TRUE);
     for (lib_u16 remaining = X86_CPU_SMM_IMAGE_BYTES; remaining != 0u; remaining -= 4u) {
         _kma_write_physical(context, physical + remaining - 4u,
             (lib_uptr)(image + remaining - 4u), 4u,
             X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
-        if (instruction_state.data.except) return LIB_TRUE;
+        if (instruction_state.data.except) break;
     }
+    x86_core_cpu_bus_drain(context, LIB_TRUE);
+    if (!x86_core_cpu_80486_smm_cost(context, LIB_TRUE,
+            instruction_state.data.except == 0u, prefix_service, &ticks)) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return LIB_TRUE;
+    }
+    if (!_e_timing_charge(context, ticks)) return LIB_TRUE;
+    instruction_state.data.timing_entry_transfer_ticks = instruction_state.data.timing_transfer_ticks;
+    if (instruction_state.data.except) return LIB_TRUE;
     cpu_state.data.eflags = 2u;
     cpu_state.data.cr0 &= ~(VCPU_CR0_PE | VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_PG);
     cpu_state.data.dr6 = 0u;
@@ -19500,6 +19669,23 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
     return LIB_TRUE;
 }
 
+static void _smm_failed_restore(x86_core_cpu_execution_context *context, lib_bool released)
+{
+    const lib_u64 fetch = instruction_state.data.timing_fetch_bus_ticks;
+    const lib_u64 exit_ticks = released ? 4u : 0u;
+    lib_u64 ticks;
+
+    if (!x86_core_cpu_80486_smm_cost(context, LIB_FALSE, LIB_FALSE, fetch, &ticks) ||
+        fetch > LIB_UINT64_MAX - ticks || exit_ticks > LIB_UINT64_MAX - ticks - fetch) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return;
+    }
+    /* Failed RSM does not retire: accepted fetch/restore work is an event
+     * prefix, without the successful restore floor or normal-state restart. */
+    (void)_e_timing_charge(context, ticks + fetch + exit_ticks);
+    instruction_state.data.timing_entry_transfer_ticks = instruction_state.data.timing_transfer_ticks;
+}
+
 static void RSM(x86_core_cpu_execution_context *context)
 {
     lib_u8 image[X86_CPU_SMM_IMAGE_BYTES];
@@ -19520,9 +19706,14 @@ static void RSM(x86_core_cpu_execution_context *context)
     if (!context->smm_active) CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
     _adv;
     for (lib_u16 remaining = X86_CPU_SMM_IMAGE_BYTES; remaining != 0u; remaining -= 4u) {
-        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, physical + remaining - 4u,
+        _kma_read_physical(context, physical + remaining - 4u,
             (lib_uptr)(image + remaining - 4u), 4u,
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u));
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        if (instruction_state.data.except) {
+            _smm_failed_restore(context, LIB_FALSE);
+            CPU_TRACE_CALL_END;
+            return;
+        }
     }
     smbase = _smm_get(image, 0x7ef8u);
     candidate.data.cr0 = _smm_get(image, 0x7ffcu);
@@ -19533,6 +19724,11 @@ static void RSM(x86_core_cpu_execution_context *context)
     if ((smbase & 0x7fffu) || (candidate.data.cr4 & ~VCPU_CR4_VME) ||
         ((candidate.data.cr0 & (VCPU_CR0_PG | VCPU_CR0_PE)) == VCPU_CR0_PG) ||
         ((candidate.data.cr0 & (VCPU_CR0_NW | VCPU_CR0_CD)) == VCPU_CR0_NW)) {
+        _smm_failed_restore(context, LIB_TRUE);
+        if (instruction_state.data.except) {
+            CPU_TRACE_CALL_END;
+            return;
+        }
         context->shutdown_state = CPU_SHUTDOWN_SMM;
         CPU_TRACE_CHECK_RETURN(x86_core_cpu_execution_raise_exception(context,
             VCPUINS_EXCEPT_SHUTDOWN, 0u));
@@ -19864,7 +20060,6 @@ static void MOVSX_R32_RM16(x86_core_cpu_execution_context *context)
     CPU_TRACE_CALL_END;
 }
 
-static void ExecFinal(x86_core_cpu_execution_context *context);
 
 static void ExecInit(x86_core_cpu_execution_context *context)
 {
@@ -20108,7 +20303,9 @@ static void _debug_deliver_trap(x86_core_cpu_execution_context *context)
     context->debug_trap_pending = LIB_FALSE;
     context->debug_trap_cause = 0u;
     trap_cpu = cpu_state;
-    ExecInit(context);
+    /* PRM Table 9-2: this trap precedes a fault fetching the next instruction. */
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+    else ExecInit(context);
     /* The completed instruction's size does not select an exception frame. */
     _e_except_n(context, 0x01u, 2u);
     if (!instruction_state.data.except && context->diagnostic_provider !=
@@ -20184,6 +20381,7 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
             context->repeat_compare_flags_valid = LIB_FALSE;
         return;
     }
+    _e_timing_failed_prefix(context);
     fault_cpu = context->instruction_task_switched ?
         context->instruction_task_checkpoint : instruction_state.data.oldcpu;
     if (context->repeat_compare_flags_valid &&
@@ -20974,6 +21172,18 @@ static void _system_poll_cycle(x86_core_cpu_execution_context *context)
 {
     const x86_core_cpu_special_cycle cycle = context->special_cycle;
     lib_bool acknowledged = LIB_FALSE;
+
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+        const lib_u64 before = instruction_state.data.timing_bus_stall_ticks;
+
+        x86_core_cpu_bus_drain(context, LIB_TRUE);
+        if (context->bus_timing.invalid || !_e_timing_charge(context,
+                instruction_state.data.timing_bus_stall_ticks - before)) {
+            _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+            ExecFinal(context);
+            return;
+        }
+    }
     const lib_bool provided = context->bus->special_cycle != LIB_NULL &&
         context->bus->cancel_special_cycle != LIB_NULL;
     const lib_status status = provided ?
@@ -20988,6 +21198,10 @@ static void _system_poll_cycle(x86_core_cpu_execution_context *context)
     } else if (acknowledged) {
         context->special_cycle = X86_CORE_CPU_SPECIAL_NONE;
         if (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT) context->stop_granted = LIB_TRUE;
+        /* L2 minimum nonburst service (273021-001 10.3.1/10.3.11).
+         * HLT already owns its indication in its nominal/wake envelope. */
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
+            cycle != X86_CORE_CPU_SPECIAL_HALT && !_e_timing_charge(context, 2u)) ExecFinal(context);
     }
 }
 
@@ -21002,6 +21216,12 @@ static lib_bool _system_boundary(x86_core_cpu_execution_context *context)
     }
     if (context->stop_granted) {
         if (!context->clock_running || context->stop_clock_asserted) return LIB_TRUE;
+        /* 273021-001 9.6.4.2 gives approximately 10--20 CLK. Use the
+         * upper endpoint as L2, not the figure's ten-clock example as L3. */
+        if (!_e_timing_charge(context, 20u)) {
+            ExecFinal(context);
+            return LIB_TRUE;
+        }
         context->stop_granted = LIB_FALSE;
         released = LIB_TRUE;
         if (context->smi_asserted) context->smi_pending = LIB_TRUE;

@@ -1,4 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
+#include "x86-core/cpu/cpu_timing.h"
 #include "lib/types/file.h"
 
 typedef struct smm_fixture {
@@ -20,6 +21,11 @@ typedef struct smm_fixture {
     lib_u32 halt_cycles;
     lib_u32 shutdown_cycles;
     lib_u32 stop_cycles;
+    lib_u64 write_wait_ticks;
+    lib_u64 image_write_wait_ticks;
+    lib_u64 image_read_wait_ticks;
+    lib_u64 barrier_stall_ticks;
+    lib_u8 barrier_pending_writes;
     x86_core_cpu_special_cycle held_cycle;
     lib_bool cycle_ready;
     lib_bool cycle_fail;
@@ -92,6 +98,10 @@ static void smm_active(void *opaque, lib_bool active)
     if (fixture->active == active || fixture->locked) ++fixture->bad_order;
     fixture->active = active;
     if (active) {
+        fixture->barrier_pending_writes = fixture->instruction.execution.bus_timing.count;
+        if (fixture->instruction.execution.bus_timing.count != 0u) ++fixture->bad_order;
+        fixture->barrier_stall_ticks =
+            fixture->instruction.instructions.data.timing_bus_stall_ticks;
         ++fixture->assertions;
         fixture->image_base = fixture->next_image_base;
         fixture->writes = fixture->reads = 0u;
@@ -167,6 +177,9 @@ static lib_status smm_special_cycle(void *opaque, x86_core_cpu_special_cycle cyc
     if (fixture->held_cycle != X86_CORE_CPU_SPECIAL_NONE && fixture->held_cycle != cycle)
         ++fixture->bad_order;
     if (fixture->locked) ++fixture->bad_order;
+    fixture->barrier_pending_writes = fixture->instruction.execution.bus_timing.count;
+    fixture->barrier_stall_ticks = fixture->instruction.instructions.data.timing_bus_stall_ticks;
+    if (fixture->barrier_pending_writes != 0u) ++fixture->bad_order;
     fixture->held_cycle = cycle;
     ++fixture->cycle_polls;
     if (fixture->cycle_fail) return LIB_STATUS_IO_ERROR;
@@ -238,6 +251,207 @@ static lib_bool smm_enter(smm_fixture *fixture)
         !context->stop_requested && fixture->writes == 128u && !fixture->bad_order &&
         x86_core_cpu_execution_consume_instruction_fault_delivery(context) &&
         x86_core_cpu_capture_timing(context).ticks == 0u;
+}
+
+static lib_u64 smm_write_wait(void *owner, x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address, lib_u8 bytes,
+    lib_u8 write, x86_core_cpu_memory_access_provenance provenance)
+{
+    const smm_fixture *fixture = owner;
+
+    (void)bytes;
+    (void)provenance;
+    if (phase != X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT ||
+        space != X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY) return 0u;
+    if (address >= fixture->image_base && address < fixture->image_base + 512u)
+        return write ? fixture->image_write_wait_ticks : fixture->image_read_wait_ticks;
+    return address == 0x200u && write ? fixture->write_wait_ticks : 0u;
+}
+
+static lib_bool smm_pending_write_barrier(smm_fixture *fixture)
+{
+    static const lib_u64 waits[] = {0u,9u,30u};
+    const lib_u8 store[] = {0xa3u,0u,2u};
+
+    for (lib_size index = 0u; index < sizeof(waits) / sizeof(waits[0]); ++index) {
+        x86_core_cpu_execution_context *context = &fixture->instruction.execution;
+        t_cpu after;
+
+        smm_prepare(fixture);
+        fixture->write_wait_ticks = waits[index];
+        fixture->instruction.cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        fixture->instruction.cpu.data.eax = 0x1234u;
+        x86_core_cpu_execution_context_bind_external_cycle_provider(context, smm_write_wait, fixture);
+        if (cpu_instruction_run(&fixture->instruction, store, sizeof(store), &after) != LIB_STATUS_OK ||
+            context->bus_timing.count != 1u || fixture->instruction.writes != 1u ||
+            fixture->instruction.instructions.data.timing_bus_service_ticks != 6u)
+            return LIB_FALSE;
+        x86_core_cpu_execution_advance_bus(context, 6u, LIB_TRUE, 0u);
+        if (context->bus_timing.service_credit != 0u) return LIB_FALSE;
+        const lib_bool entered = smm_enter(fixture);
+        if (!entered ||
+            fixture->barrier_pending_writes != 0u ||
+            fixture->barrier_stall_ticks != 1u + waits[index]) {
+            lib_c_printf("SMIACT barrier wait=%llu pending=%u stall=%llu expected=%llu order=%u\n",
+                waits[index], (lib_u32)fixture->barrier_pending_writes,
+                fixture->barrier_stall_ticks, 1u + waits[index], fixture->bad_order);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool smm_special_write_barrier(smm_fixture *fixture)
+{
+    static const lib_u64 waits[] = {0u,9u,30u};
+    const lib_u8 store[] = {0xa3u,0u,2u,0xf4u};
+
+    for (lib_size index = 0u; index < sizeof(waits) / sizeof(waits[0]); ++index)
+    for (x86_core_cpu_special_cycle cycle = X86_CORE_CPU_SPECIAL_HALT;
+        cycle <= X86_CORE_CPU_SPECIAL_STOP_GRANT; ++cycle)
+    for (lib_u8 outcome = 0u; outcome < 3u; ++outcome) {
+        x86_core_cpu_execution_context *context = &fixture->instruction.execution;
+        t_cpu after;
+
+        smm_prepare(fixture);
+        fixture->write_wait_ticks = waits[index];
+        fixture->instruction.cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        x86_core_cpu_execution_context_bind_external_cycle_provider(context, smm_write_wait, fixture);
+        if (cpu_instruction_run(&fixture->instruction, store, sizeof(store), &after) != LIB_STATUS_OK ||
+            context->bus_timing.count != 1u || fixture->instruction.writes != 1u)
+            return LIB_FALSE;
+        x86_core_cpu_execution_advance_bus(context, 6u, LIB_TRUE, 0u);
+        fixture->cycle_ready = outcome == 0u;
+        fixture->cycle_fail = outcome == 2u;
+        if (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT) {
+            if (x86_core_cpu_set_stop_clock(context, LIB_TRUE) != LIB_STATUS_OK) return LIB_FALSE;
+        } else if (cycle == X86_CORE_CPU_SPECIAL_SHUTDOWN) {
+            x86_core_cpu_execution_request_shutdown(context);
+        }
+        x86_core_cpu_execution_refresh(context);
+        if (fixture->barrier_pending_writes != 0u ||
+            fixture->barrier_stall_ticks != 1u + waits[index] ||
+            context->timing_result.event_ticks != 1u + waits[index] +
+                (lib_u64)(outcome == 0u && cycle != X86_CORE_CPU_SPECIAL_HALT) * 2u ||
+            context->timing_result.ticks != (lib_u64)(cycle == X86_CORE_CPU_SPECIAL_HALT) ||
+            fixture->bad_order || fixture->instruction.writes != 1u ||
+            context->stop_granted != (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT && outcome == 0u) ||
+            fixture->cycle_polls != 1u ||
+            fixture->instruction.fault.valid != (outcome == 2u)) {
+            lib_c_printf("Special barrier cycle=%u outcome=%u wait=%llu pending=%u stall=%llu event=%llu ticks=%llu polls=%u fault=%u order=%u\n",
+                (lib_u32)cycle, (lib_u32)outcome, waits[index],
+                (lib_u32)fixture->barrier_pending_writes, fixture->barrier_stall_ticks,
+                context->timing_result.event_ticks, context->timing_result.ticks,
+                fixture->cycle_polls, (lib_u32)fixture->instruction.fault.valid, fixture->bad_order);
+            return LIB_FALSE;
+        }
+        if (outcome == 2u && (fixture->cycle_cancels != 1u ||
+            fixture->instruction.fault.exception_code != LIB_STATUS_IO_ERROR)) return LIB_FALSE;
+        if (outcome == 1u) {
+            fixture->cycle_ready = LIB_TRUE;
+            x86_core_cpu_execution_refresh(context);
+            if (context->stop_granted != (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT) ||
+                fixture->cycle_polls != 2u || fixture->bad_order ||
+                fixture->barrier_stall_ticks != 0u || context->timing_result.event_ticks !=
+                    (lib_u64)(cycle != X86_CORE_CPU_SPECIAL_HALT) * 2u ||
+                fixture->instruction.writes != 1u)
+                return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool smm_elapsed_timing(smm_fixture *fixture)
+{
+    static const lib_u64 waits[] = {0u,9u,30u};
+    static const lib_u32 failures[] = {1u,64u,128u};
+    x86_core_cpu_execution_context *context = &fixture->instruction.execution;
+
+    for (lib_size index = 0u; index < sizeof(waits) / sizeof(waits[0]); ++index)
+    for (lib_u8 buffered = 0u; buffered < 2u; ++buffered) {
+        x86_core_cpu_execution_context saved;
+        lib_u64 ticks = LIB_UINT64_MAX, memory = LIB_UINT64_MAX;
+        lib_bool modeled = LIB_FALSE;
+
+        smm_prepare(fixture);
+        if (buffered) fixture->instruction.cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        fixture->image_write_wait_ticks = waits[index];
+        fixture->image_read_wait_ticks = waits[index];
+        x86_core_cpu_execution_context_bind_external_cycle_provider(context, smm_write_wait, fixture);
+        if (!smm_enter(fixture) || context->timing_result.event_ticks != 298u ||
+            context->bus_timing.count != 0u ||
+            fixture->instruction.instructions.data.timing_external_wait_ticks != 128u * waits[index])
+            return LIB_FALSE;
+        x86_core_cpu_execution_refresh(context);
+        saved = *context;
+        if (context->smm_active || fixture->reads != 128u || fixture->instruction.fault.valid ||
+            context->timing_result.event_ticks != 0u ||
+            !x86_core_cpu_80486_l2_instruction_cost(context, &ticks) || ticks != 280u ||
+            !x86_core_cpu_80486_memory_penalty(context, &memory, &modeled) || memory != 0u || !modeled ||
+            fixture->instruction.instructions.data.timing_external_wait_ticks != 128u * waits[index] ||
+            lib_memory_compare(&saved, context, sizeof(saved))) return LIB_FALSE;
+    }
+    for (lib_size index = 0u; index < sizeof(failures) / sizeof(failures[0]); ++index) {
+        smm_prepare(fixture);
+        fixture->fail_write = failures[index];
+        if (x86_core_cpu_set_smi(context, LIB_TRUE) != LIB_STATUS_OK) return LIB_FALSE;
+        x86_core_cpu_execution_refresh(context);
+        if (!fixture->instruction.fault.valid || !context->stop_requested ||
+            fixture->instruction.fault.exception_mask != VCPUINS_EXCEPT_CE ||
+            context->timing_result.ticks != 0u ||
+            context->timing_result.event_ticks != 42u + 2u * (failures[index] - 1u) ||
+            fixture->instruction.writes != failures[index] - 1u || context->bus_timing.count != 0u)
+            return LIB_FALSE;
+    }
+    for (lib_size index = 0u; index < sizeof(failures) / sizeof(failures[0]); ++index) {
+        smm_prepare(fixture);
+        if (!smm_enter(fixture)) return LIB_FALSE;
+        fixture->fail_read = failures[index];
+        fixture->image_read_wait_ticks = 9u;
+        x86_core_cpu_execution_context_bind_external_cycle_provider(context, smm_write_wait, fixture);
+        x86_core_cpu_execution_refresh(context);
+        if (!fixture->instruction.fault.valid || !context->stop_requested || !context->smm_active ||
+            fixture->instruction.fault.exception_mask != VCPUINS_EXCEPT_CE ||
+            context->timing_result.ticks != 0u || fixture->reads != failures[index] ||
+            context->timing_result.event_ticks != 5u + 2u * (failures[index] - 1u) ||
+            fixture->instruction.instructions.data.timing_external_wait_ticks != 9u * (failures[index] - 1u))
+            return LIB_FALSE;
+    }
+    for (lib_u8 invalid = 0u; invalid < 3u; ++invalid) {
+        smm_prepare(fixture);
+        if (!smm_enter(fixture)) return LIB_FALSE;
+        smm_image_put(fixture, invalid == 0u ? 0x7ffcu : invalid == 1u ? 0x7f28u : 0x7ef8u,
+            invalid == 0u ? VCPU_CR0_PG : invalid == 1u ? 1u << 15u : 1u);
+        x86_core_cpu_execution_refresh(context);
+        if (context->smm_active || !x86_core_cpu_is_shutdown(context) ||
+            fixture->instruction.fault.valid || fixture->reads != 128u || fixture->releases != 1u ||
+            context->timing_result.ticks != 0u || context->timing_result.event_ticks != 265u + 2u)
+            return LIB_FALSE;
+    }
+    smm_prepare(fixture);
+    if (!smm_enter(fixture)) return LIB_FALSE;
+    {
+        t_cpuins_data *data = &fixture->instruction.instructions.data;
+        lib_u64 ticks = 0u;
+
+        data->timing_bus_service_ticks = 100u;
+        if (!x86_core_cpu_80486_smm_cost(context, LIB_TRUE, LIB_TRUE, 0u, &ticks) || ticks != 181u ||
+            !x86_core_cpu_80486_smm_cost(context, LIB_FALSE, LIB_TRUE, 0u, &ticks) || ticks != 260u)
+            return LIB_FALSE;
+        data->timing_bus_service_ticks = LIB_UINT64_MAX;
+        ticks = 0xfeedu;
+        if (x86_core_cpu_80486_smm_cost(context, LIB_TRUE, LIB_TRUE, 0u, &ticks) || ticks != 0xfeedu)
+            return LIB_FALSE;
+        data->timing_bus_service_ticks = 10u;
+        data->timing_external_wait_ticks = 11u;
+        if (x86_core_cpu_80486_smm_cost(context, LIB_FALSE, LIB_TRUE, 0u, &ticks) || ticks != 0xfeedu)
+            return LIB_FALSE;
+        data->timing_external_wait_ticks = 0u;
+        context->bus_timing.invalid = LIB_TRUE;
+        if (x86_core_cpu_80486_smm_cost(context, LIB_FALSE, LIB_TRUE, 0u, &ticks) || ticks != 0xfeedu)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
 }
 
 static lib_bool smm_round_trip(smm_fixture *fixture)
@@ -931,6 +1145,7 @@ static lib_bool smm_power_wait(smm_fixture *fixture)
 
 static lib_bool smm_power_wake(smm_fixture *fixture)
 {
+    static const lib_u64 wake_ticks[] = {51u, 318u, 59u};
     x86_core_cpu_execution_context *context = &fixture->instruction.execution;
 
     for (lib_u8 input = 0u; input < 3u; ++input) {
@@ -954,6 +1169,7 @@ static lib_bool smm_power_wake(smm_fixture *fixture)
         if (context->stop_granted || fixture->instruction.fault.valid ||
             fixture->instruction.cpu.data.eip != (input == 1u ? 0x8000u : 0x200u) ||
             fixture->active != (input == 1u) ||
+            context->timing_result.event_ticks != wake_ticks[input] ||
             x86_core_cpu_capture_timing(context).ticks || fixture->bad_order) return LIB_FALSE;
         x86_core_cpu_execution_finalize(context);
     }
@@ -993,11 +1209,21 @@ static lib_bool smm_flush_and_priority(smm_fixture *fixture)
         x86_core_cpu_execution_refresh(context);
         if (context->cache[0][0].valid || fixture->instruction.cpu.data.eip ||
             x86_core_cpu_capture_timing(context).ticks || !context->instruction_wait_stall ||
-            fixture->cycle_polls) return LIB_FALSE;
+            context->timing_result.event_ticks != 1u || fixture->cycle_polls) return LIB_FALSE;
     }
     if (x86_core_cpu_set_flush(context, LIB_FALSE) != LIB_STATUS_OK) return LIB_FALSE;
     x86_core_cpu_execution_refresh(context);
-    if (fixture->instruction.cpu.data.eip != 1u || fixture->instruction.fault.valid) return LIB_FALSE;
+    if (fixture->instruction.cpu.data.eip != 1u || fixture->instruction.fault.valid ||
+        context->timing_result.event_ticks != 0u) return LIB_FALSE;
+
+    smm_prepare(fixture);
+    fixture->instruction.memory[0] = 0x90u;
+    if (x86_core_cpu_set_flush(context, LIB_TRUE) != LIB_STATUS_OK ||
+        x86_core_cpu_set_flush(context, LIB_FALSE) != LIB_STATUS_OK) return LIB_FALSE;
+    x86_core_cpu_execution_refresh(context);
+    if (context->timing_result.ticks != 1u || context->timing_result.event_ticks != 1u ||
+        fixture->instruction.cpu.data.eip != 1u || context->flush_pending ||
+        fixture->instruction.fault.valid) return LIB_FALSE;
 
     smm_prepare(fixture);
     context->cache[0][0].valid = LIB_TRUE;
@@ -1207,6 +1433,9 @@ lib_i32 main(void)
         const char *name;
         lib_bool (*run)(smm_fixture *);
     } cases[] = {
+        {"pending-write-barrier",smm_pending_write_barrier},
+        {"special-write-barrier",smm_special_write_barrier},
+        {"elapsed-timing",smm_elapsed_timing},
         {"round-trip",smm_round_trip}, {"guest-changes",smm_guest_changes},
         {"relocation-pending",smm_relocation_and_pending}, {"failures",smm_failures},
         {"halt-restart",smm_halt_restart}, {"io-restart",smm_io_restart},

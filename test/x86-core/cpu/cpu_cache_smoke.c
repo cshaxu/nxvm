@@ -248,6 +248,10 @@ typedef struct cache_memory_probe {
     lib_u64 cycle_wait_ticks;
     lib_u32 cycle_commits;
     lib_u32 cycle_cancels;
+    lib_bool task_interrupt;
+    lib_u32 task_acknowledgements;
+    lib_u64 task_transfer_ticks;
+    lib_u64 task_fetch_ticks;
     x86_core_cpu_cache_operation operations[2];
 } cache_memory_probe;
 
@@ -2686,42 +2690,89 @@ static lib_bool cache_call_gate_timing(void)
     return LIB_TRUE;
 }
 
+static lib_bool cache_task_interrupt_pending(void *opaque)
+{
+    return ((cache_memory_probe *)opaque)->task_interrupt;
+}
+
+static lib_status cache_task_interrupt_acknowledge(void *opaque, lib_u8 *vector)
+{
+    cache_memory_probe *probe = opaque;
+    if (!probe->task_interrupt) return LIB_STATUS_INVALID_STATE;
+    probe->task_interrupt = LIB_FALSE;
+    ++probe->task_acknowledgements;
+    *vector = 0x30u;
+    return LIB_STATUS_OK;
+}
+
+static lib_u64 cache_task_cycle(void *opaque, x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address, lib_u8 bytes,
+    lib_u8 write, x86_core_cpu_memory_access_provenance provenance)
+{
+    cache_memory_probe *probe = opaque;
+    if (phase != X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT ||
+        space != X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY) return 0u;
+    const lib_u64 fragments = ((address & 3u) + bytes + 3u) / 4u;
+    const lib_u64 ticks = write ? 2u * fragments : 1u + fragments;
+
+    probe->task_transfer_ticks += ticks;
+    if (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+        provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) probe->task_fetch_ticks += ticks;
+    return 0u;
+}
+
 static lib_bool cache_task_timing(void)
 {
     static const lib_u8 descriptor_counts[] = {6u, 8u, 2u, 9u};
     static const lib_u8 cold_state[] = {16u, 34u, 34u, 34u};
     static const lib_u8 partial_state[] = {11u, 29u, 29u, 29u};
 
+    for (lib_u8 paging = 0u; paging < 2u; ++paging)
     for (lib_u8 mode = 0u; mode < 4u; ++mode)
-    for (lib_u8 form = 0u; form < 9u; ++form)
+    for (lib_u8 form = 0u; form < 12u; ++form)
     for (lib_u8 warm = 0u; warm < (form >= 5u ? 32u : 16u); ++warm)
-    for (lib_u8 failure = 0u; failure < (warm == 0u ? 6u : 1u); ++failure) {
+    for (lib_u8 failure = 0u; failure < (warm == 0u ? (form >= 9u ? 7u : 6u) : 1u); ++failure) {
+        if (paging && (form < 9u || warm != 0u)) continue;
         cache_memory_probe probe = {0};
         cpu_instruction_fixture *fixture = &probe.instruction;
         const lib_bool task32 = mode != 0u, vm86 = mode == 2u, ldt = mode == 3u;
         const lib_bool gated = form >= 5u;
-        const lib_bool indirect = form == 1u || form == 3u || form >= 7u, returning = form == 4u;
+        const lib_bool idt = form >= 9u, asynchronous = form >= 10u;
+        const lib_u16 gate_address = idt ? (form == 11u ? 0x3610u : 0x3780u) : 0x30a0u;
+        const lib_bool indirect = form == 1u || form == 3u || form == 7u || form == 8u;
+        const lib_bool returning = form == 4u;
         const lib_u8 lines = task32 ? 6u : 3u;
         const lib_u32 pointer = indirect && (warm & 1u) == 0u;
         const lib_u32 gate = gated && (warm & 16u) == 0u;
-        const lib_u32 descriptors = ((warm & 2u) ? 0u : descriptor_counts[mode]) + gate;
+        const lib_u32 descriptors = ((warm & 2u) ? 0u : descriptor_counts[mode]) + (idt ? 0u : gate);
         const lib_u8 residency = (warm >> 2u) & 3u;
         const lib_u32 state = residency == 1u ? 0u : residency == 0u ? lines : lines - 1u;
         const lib_u32 backlink = returning && residency != 1u;
-        const lib_u64 expected = 7u * pointer + 3u * (descriptors - (gate && (warm & 2u) == 0u)) +
-            (state == 0u ? 0u : state == lines ? cold_state[mode] : partial_state[mode]) + backlink;
+        const lib_u64 expected = 7u * pointer + 3u * (descriptors + (idt ? gate : 0u) -
+            (gate && (warm & 2u) == 0u)) +
+            (state == 0u ? 0u : state == lines ? cold_state[mode] : partial_state[mode]) + backlink +
+            (paging ? 13u * (task32 && !vm86 ? 3u : 2u) : 0u);
         lib_u8 code[5], bytes = 0u;
         lib_u64 ticks = 999u;
         lib_bool modeled = LIB_TRUE;
         t_cpu after;
+        x86_core_cpu_bus_provider bus = cache_memory_bus;
 
+        bus.interrupt_pending = cache_task_interrupt_pending;
+        bus.acknowledge_interrupt = cache_task_interrupt_acknowledge;
         cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
-            &cache_memory_bus, &probe);
+            &bus, &probe);
         cpu_instruction_prepare_protected_exception(fixture, 0u);
         fixture->cpu.data.ds = fixture->cpu.data.ss;
         fixture->cpu.data.ds.sregtype = SREG_DATA;
         fixture->cpu.data.gdtr.base = 0x3000u;
         fixture->cpu.data.gdtr.limit = gated ? 0xa7u : ldt ? 0x97u : 0x87u;
+        if (idt) {
+            fixture->cpu.data.idtr.base = 0x3600u;
+            fixture->cpu.data.idtr.limit = 0x187u;
+            lib_memory_copy(fixture->memory + gate_address,
+                (const lib_u8[]){0u, 0u, 0x80u, 0u, 0u, 0x85u, 0u, 0u}, 8u);
+        }
         if (gated)
             lib_memory_copy(fixture->memory + 0x30a0u,
                 (const lib_u8[]){0u, 0u, 0x80u, 0u, 0u, 0x85u, 0u, 0u}, 8u);
@@ -2741,7 +2792,8 @@ static lib_bool cache_task_timing(void)
         lib_memory_copy(fixture->memory + 0x2400u, &(lib_u16){0x80u}, sizeof(lib_u16));
         lib_memory_copy(fixture->memory + 0x2002u, &(lib_u16){gated ? 0xa0u : 0x80u}, sizeof(lib_u16));
         if (task32) {
-            const lib_u32 image[] = {0u, 0x100u, vm86 ? 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 2u,
+            const lib_u32 image[] = {paging ? 0x10000u : 0u,
+                0x100u, vm86 ? 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 2u,
                 0u, 0u, 0u, 0u, 0x2800u, 0u, 0u, 0u,
                 vm86 ? 0u : 0x40u | (ldt ? 4u : 0u), vm86 ? 0u : 0x10u | (ldt ? 4u : 0u),
                 vm86 ? 0u : 0x20u | (ldt ? 4u : 0u), vm86 ? 0u : 0x30u | (ldt ? 4u : 0u),
@@ -2754,6 +2806,20 @@ static lib_bool cache_task_timing(void)
                 0u, 0u, 0u, 0x40u, 0x10u, 0x20u, 0x30u, 0u};
 
             lib_memory_copy(fixture->memory + 0x260eu, image, sizeof(image));
+        }
+        if (paging) {
+            lib_u32 entry = 0x11027u;
+
+            fixture->cpu.data.cr0 |= VCPU_CR0_PG;
+            fixture->cpu.data.cr3 = 0x10000u;
+            lib_memory_copy(fixture->memory + 0x10000u, &entry, sizeof(entry));
+            for (lib_u32 page = 0u; page < 16u; ++page) {
+                entry = (page << 12u) | 0x67u;
+                lib_memory_copy(fixture->memory + 0x11000u + page * 4u, &entry, sizeof(entry));
+            }
+            /* Warm only code's TLB entry. Task data uses pages 2 and 3;
+             * 32-bit non-VM entry must translate descriptors again after CR3. */
+            if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u)) return LIB_FALSE;
         }
         for (lib_u8 part = 0u; part < 3u; ++part) {
             const lib_u16 starts[] = {0x2000u, 0x3010u, task32 ? 0x2610u : 0x2600u};
@@ -2771,10 +2837,18 @@ static lib_bool cache_task_timing(void)
                 if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
             }
         }
-        if (gated && (warm & 16u) != 0u &&
-            !cache_run(fixture, (const lib_u8[]){0xa0u, 0xa0u, 0x30u}, 3u)) return LIB_FALSE;
+        if (gated && (warm & 16u) != 0u) {
+            const lib_u8 load[] = {0xa0u, (lib_u8)gate_address, (lib_u8)(gate_address >> 8u)};
+            if (!cache_run(fixture, load, sizeof(load))) return LIB_FALSE;
+        }
         fixture->cpu.data.esp = 0x2300u;
-        if (returning) {
+        if (idt) {
+            code[bytes++] = asynchronous ? 0x90u : 0xcdu;
+            if (!asynchronous) code[bytes++] = 0x30u;
+            fixture->cpu.data.eflags |= VCPU_EFLAGS_IF;
+            probe.task_interrupt = form == 10u;
+            if (form == 11u && !x86_core_cpu_request_nmi(&fixture->execution)) return LIB_FALSE;
+        } else if (returning) {
             fixture->cpu.data.eflags |= VCPU_EFLAGS_NT;
             code[bytes++] = 0xcfu;
         } else if (indirect) {
@@ -2791,32 +2865,69 @@ static lib_bool cache_task_timing(void)
         }
         fixture->cpu.data.eip = 0u;
         x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        if (idt)
+            x86_core_cpu_execution_context_bind_external_cycle_provider(&fixture->execution,
+                cache_task_cycle, &probe);
         probe.fail_read = failure != 0u && failure != 5u;
-        probe.fail_read_at = failure == 1u ? 0x3080u : failure == 2u ? 0x3070u :
+        probe.fail_read_at = failure == 6u ? gate_address : failure == 1u ? 0x3080u : failure == 2u ? 0x3070u :
             failure == 3u ? (task32 ? 0x261cu : 0x260eu) : task32 ? 0x2660u : 0x2620u;
         probe.fail_write = failure == 5u;
         const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
         if (failure) {
-            const lib_u32 accepted_state = failure <= 3u ? 0u : failure == 4u ? lines - 1u : lines;
-            const lib_u32 accepted_descriptors = (failure == 1u ? 0u : failure == 2u ? 1u : 2u) + gate;
+            const lib_u64 accepted = probe.task_transfer_ticks -
+                (asynchronous ? probe.task_fetch_ticks : 0u);
+            const lib_u64 setup = form == 10u ? 11u : form == 11u ? 3u : 0u;
+            const lib_u32 accepted_state = failure <= 3u || failure == 6u ? 0u :
+                failure == 4u ? lines - 1u : lines;
+            const lib_u32 accepted_descriptors = (failure == 1u || failure == 6u ? 0u :
+                failure == 2u ? 1u : 2u) + (idt ? 0u : gate);
 
             if (!fixture->fault.valid ||
-                fixture->instructions.data.timing_data_misses != pointer + backlink +
-                    accepted_descriptors + accepted_state ||
+                (idt && (fixture->execution.timing_result.event_ticks != accepted + setup ||
+                    fixture->execution.timing_result.ticks != (lib_u64)asynchronous)) ||
+                (!asynchronous && fixture->instructions.data.timing_data_misses != pointer + backlink +
+                    accepted_descriptors + accepted_state + (idt && failure != 6u ? gate : 0u)) ||
                 x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
-                ticks != 999u || !modeled || probe.lock_active || probe.lock_protocol_error)
+                ticks != 999u || !modeled || probe.lock_active || probe.lock_protocol_error) {
+                lib_c_printf("Task failure page=%u mode=%u form=%u warm=%u failure=%u misses=%u expected=%u fault=%x ticks=%llu event=%llu/%llu\n",
+                    (lib_u32)paging,
+                    (lib_u32)mode, (lib_u32)form, (lib_u32)warm, (lib_u32)failure,
+                    fixture->instructions.data.timing_data_misses, pointer + backlink +
+                    accepted_descriptors + accepted_state + (idt && failure != 6u ? gate : 0u),
+                    fixture->fault.exception_mask, ticks,
+                    fixture->execution.timing_result.event_ticks, accepted + setup);
                 return LIB_FALSE;
+            }
             continue;
+        }
+        if (asynchronous) {
+            const lib_u64 nominal = 37u + (vm86 ? 140u : task32 ? 162u : 143u);
+            const lib_u64 setup = form == 10u ? 11u : 3u;
+            const x86_core_cpu_timing_result result = x86_core_cpu_capture_timing(&fixture->execution);
+
+            if (result.event_ticks < nominal + setup || result.ticks != 1u ||
+                probe.task_interrupt || probe.task_acknowledgements != (lib_u32)(form == 10u))
+            {
+                lib_c_printf("Task event mode=%u form=%u warm=%u event=%llu nominal=%llu ticks=%llu ack=%u fault=%x\n",
+                    (lib_u32)mode, (lib_u32)form, (lib_u32)warm,
+                    result.event_ticks, nominal, result.ticks, probe.task_acknowledgements,
+                    fixture->fault.exception_mask);
+                return LIB_FALSE;
+            }
+            ticks = result.event_ticks - nominal - setup;
         }
         if (status != LIB_STATUS_OK || fixture->fault.valid || fixture->delivered_exception.valid ||
             !fixture->execution.instruction_task_switched || after.data.eip != 0x100u ||
             after.data.tr.selector != 0x80u || ((after.data.eflags & VCPU_EFLAGS_VM) != 0u) != vm86 ||
-            fixture->instructions.data.timing_data_misses != pointer + descriptors + state + backlink ||
-            fixture->instructions.data.timing_descriptor_misses != descriptors ||
-            fixture->instructions.data.timing_pair_misses != pointer ||
-            fixture->instructions.data.timing_tss_field_misses != backlink ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
-            ticks != expected || modeled != (pointer + descriptors + state + backlink != 0u)) {
+            (!asynchronous && (fixture->instructions.data.timing_data_misses != pointer + descriptors +
+                state + backlink + (idt ? gate : 0u) ||
+                fixture->instructions.data.timing_descriptor_misses != descriptors ||
+                fixture->instructions.data.timing_pair_misses != pointer ||
+                fixture->instructions.data.timing_tss_field_misses != backlink ||
+                fixture->instructions.data.timing_idt_misses != (idt ? gate : 0u) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled))) ||
+            ticks != expected || (!asynchronous && modeled !=
+                (pointer + descriptors + state + backlink + (idt ? gate : 0u) != 0u))) {
             lib_c_printf("Task memory mode=%u form=%u warm=%u: miss=%u/%u desc=%u pair=%u field=%u ticks=%llu/%llu model=%u fault=%x eip=%x\n",
                 (lib_u32)mode, (lib_u32)form, (lib_u32)warm,
                 fixture->instructions.data.timing_data_misses, pointer + descriptors + state + backlink,
@@ -2825,15 +2936,23 @@ static lib_bool cache_task_timing(void)
                 (lib_u32)modeled, fixture->fault.exception_mask, after.data.eip);
             return LIB_FALSE;
         }
+        /* Async entry has reused the decoder; its published event was checked
+         * above. Instruction-query purity belongs to the retained forms. */
+        if (asynchronous) continue;
         const t_cpu before_cpu = fixture->cpu;
         const t_cpuins before_instructions = fixture->instructions;
         const x86_core_cpu_execution_context before_execution = fixture->execution;
         const lib_u32 data_reads = probe.data_reads, writes = fixture->writes;
         if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != expected ||
             lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
             lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
             lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
-            data_reads != probe.data_reads || writes != fixture->writes) return LIB_FALSE;
+            data_reads != probe.data_reads || writes != fixture->writes) {
+            lib_c_printf("Task query purity mode=%u form=%u warm=%u ticks=%llu expected=%llu\n",
+                (lib_u32)mode, (lib_u32)form, (lib_u32)warm, ticks, expected);
+            return LIB_FALSE;
+        }
     }
     return LIB_TRUE;
 }

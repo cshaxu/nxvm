@@ -386,15 +386,16 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
         machine->cpu_retirement_wait_retires != LIB_FALSE;
     if (sx && !failed) {
         failed |= machine->cpu_retirement_wait_ticks != 0u ||
-            machine->cpu_retirement_completion_ticks != 26u;
-        /* A small next budget cannot discard or partially publish committed entry. */
-        failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 25u},
-            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 0u ||
-            result.elapsed_ticks != 1u || !machine->cpu_retirement_wait_pending ||
-            machine->cpu_retirement_completion_ticks != 26u;
-        failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 26u},
-            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 26u ||
-            result.elapsed_ticks != 27u || machine->elapsed_ticks != 27u ||
+            machine->cpu_retirement_completion_ticks != 33u;
+        /* Entry elapsed time can span budgets without another retirement or
+         * losing the committed prefix; completion owns the one remaining tick. */
+        failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 32u},
+            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 32u ||
+            result.elapsed_ticks != 33u || !machine->cpu_retirement_wait_pending ||
+            machine->cpu_retirement_completion_ticks != 1u;
+        failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){0u, 1u},
+            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 1u ||
+            result.elapsed_ticks != 34u || machine->elapsed_ticks != 34u ||
             machine->cpu_retirement_wait_pending || machine->cpu_retirement_wait_retires;
     }
     if (failed)

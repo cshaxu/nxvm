@@ -143,6 +143,8 @@ void x86_core_cpu_bus_read_complete(x86_core_cpu_execution_context *context,
     lib_u64 duration = 1u + ((address & 3u) + bytes + 3u) / 4u;
 
     if (!cpu_bus_observes(context) || bytes == 0u) return;
+    if (!cpu_bus_add(context, &context->instructions->data.timing_transfer_ticks, duration))
+        return;
     if (!cpu_bus_add(context, &duration, wait_ticks) ||
         !cpu_bus_add(context, &context->instructions->data.timing_bus_wait_ticks, wait_ticks))
         return;
@@ -154,9 +156,13 @@ void x86_core_cpu_bus_write_complete(x86_core_cpu_execution_context *context,
     lib_u32 address, lib_u8 bytes, lib_u64 wait_ticks, lib_bool cache_hit,
     lib_bool buffered)
 {
+    const lib_u64 transfer_ticks = 2u * (((address & 3u) + bytes + 3u) / 4u);
+
     if (!cpu_bus_observes(context) || bytes == 0u) return;
+    if (!cpu_bus_add(context, &context->instructions->data.timing_transfer_ticks, transfer_ticks))
+        return;
     if (!buffered) {
-        lib_u64 duration = 2u * (((address & 3u) + bytes + 3u) / 4u);
+        lib_u64 duration = transfer_ticks;
 
         if (!cpu_bus_add(context, &duration, wait_ticks) ||
             !cpu_bus_add(context, &context->instructions->data.timing_bus_wait_ticks, wait_ticks))

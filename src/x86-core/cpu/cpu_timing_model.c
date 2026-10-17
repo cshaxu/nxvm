@@ -4453,7 +4453,7 @@ lib_u64 x86_core_cpu_80486_exception_setup_cost(
 }
 
 /* E-14's INT value; instruction-specific setup is a separate E-13 term. */
-lib_u64 x86_core_cpu_80486_interrupt_entry_cost(
+static lib_u64 x86_core_cpu_80486_nominal_interrupt_entry_cost(
     const x86_core_cpu_execution_context *context,
     lib_u32 entry_cr0, lib_u32 entry_flags, lib_u8 entry_cpl, lib_bool task_entry)
 {
@@ -4463,6 +4463,36 @@ lib_u64 x86_core_cpu_80486_interrupt_entry_cost(
     if ((entry_flags & VCPU_EFLAGS_VM) != 0u)
         return (context->cpu->data.eflags & VCPU_EFLAGS_VM) != 0u ? 26u : 82u;
     return entry_cpl == context->cpu->data.cs.dpl ? 44u : 71u;
+}
+
+/* Intel 273021-001 Table 8-1 SX column. Its save/restore figures are
+ * approximate and assume a silicon image footprint. The full admitted image
+ * and serialized service envelope therefore retain an explicit L2 grade. */
+lib_bool x86_core_cpu_80486_smm_cost(
+    const x86_core_cpu_execution_context *context, lib_bool entry,
+    lib_bool complete, lib_u64 prefix_service, lib_u64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    lib_u64 service, ticks;
+
+    if (context == LIB_NULL || context->instructions == LIB_NULL || out_ticks == LIB_NULL ||
+        context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX || context->bus_timing.invalid)
+        return LIB_FALSE;
+    data = &context->instructions->data;
+    if (data->timing_external_wait_overflow ||
+        prefix_service > data->timing_bus_service_ticks ||
+        data->timing_external_wait_ticks > data->timing_bus_service_ticks - prefix_service)
+        return LIB_FALSE;
+    service = data->timing_bus_service_ticks - prefix_service - data->timing_external_wait_ticks;
+    if (complete && service < (entry ? 139u : 236u)) service = entry ? 139u : 236u;
+    ticks = entry ? 42u : complete ? 24u : 0u;
+    if (entry) {
+        if (prefix_service > LIB_UINT64_MAX - ticks) return LIB_FALSE;
+        ticks += prefix_service;
+    }
+    if (service > LIB_UINT64_MAX - ticks) return LIB_FALSE;
+    *out_ticks = ticks + service;
+    return LIB_TRUE;
 }
 
 /* E-15: real, protected without/with I/O permission checks, then VM86.
@@ -4614,6 +4644,54 @@ static lib_bool x86_core_cpu_80486_repeat_cache_penalty(
 
 /* E-3--E-9 allocate actual access groups. Split and partial-residency models
  * keep their qualification beside the corresponding source coefficient. */
+static lib_bool x86_core_cpu_80486_interrupt_cache_penalty(
+    const t_cpuins_data *data, lib_bool real, lib_bool inner,
+    lib_u64 *out_ticks, lib_bool *out_modeled)
+{
+    const lib_u64 misses = (lib_u64)data->timing_data_misses - data->timing_descriptor_misses;
+    const lib_u64 tss = data->timing_tss_field_misses;
+    const lib_u64 gate = misses - tss;
+    const lib_bool cold = gate == 1u && tss == (lib_u64)inner &&
+        data->timing_descriptor_misses == (real ? 0u : inner ? 2u : 1u);
+
+    if (data->timing_locked_reads != 0u) return LIB_FALSE;
+    /* E-14: IVT 2; protected IDT/CS 3+3; inner IDT/CS/SS/TSS
+     * 3+3+3+8. Descriptor terms belong to the common access owner.
+     * Partial residency and additional misses are explicit L2 splits. */
+    *out_ticks = (gate ? (real ? 2u : 3u) + 5u * (gate - 1u) : 0u) +
+        (tss ? 8u + 5u * (tss - 1u) : 0u);
+    *out_modeled = (data->timing_data_misses != 0u && !cold) ||
+        (data->timing_data_misses != 0u && (data->oldcpu.data.cr0 & VCPU_CR0_CD) != 0u);
+    return LIB_TRUE;
+}
+
+static lib_bool x86_core_cpu_80486_task_cache_penalty(
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+{
+    const t_cpuins_data *data = &context->instructions->data;
+    const lib_bool task32 = context->instruction_task_checkpoint.data.tr.sys.type !=
+        VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
+    const lib_u8 lines = task32 ? 6u : 3u;
+    const lib_u8 cold = task32 ? 34u : 16u;
+    const lib_u64 pointer = data->timing_pair_misses;
+    const lib_u64 backlink = data->timing_tss_field_misses;
+    const lib_u64 idt = data->timing_idt_misses;
+    const lib_u64 state = (lib_u64)data->timing_data_misses - data->timing_descriptor_misses -
+        pointer - backlink - idt;
+
+    if (data->timing_locked_reads != 0u) return LIB_FALSE;
+    /* E-8/E-9 and E-14 share the TS memory model. IDT is not TSS image
+     * traffic; descriptor/Gate coalescing remains in the common owner.
+     * The inferred role split, including partial state, is explicitly L2. */
+    *out_ticks = (state >= lines ? cold + 5u * (state - lines) :
+        ((lib_u64)cold * state + lines - 1u) / lines) +
+        (pointer ? 7u + 5u * (pointer - 1u) : 0u) +
+        (backlink ? 1u + 5u * (backlink - 1u) : 0u) +
+        (idt ? 3u + 5u * (idt - 1u) : 0u);
+    *out_modeled = data->timing_data_misses != 0u;
+    return LIB_TRUE;
+}
+
 static lib_bool x86_core_cpu_80486_operand_cache_penalty(
     const x86_core_cpu_execution_context *context, lib_u32 prefixes,
     lib_u64 *out_ticks, lib_bool *out_modeled)
@@ -4634,28 +4712,18 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
 
     *out_modeled = opcode == 0x0fu && prefixes + 1u < data->oplen &&
         data->opcodes[prefixes + 1u] >= 0x10u && data->opcodes[prefixes + 1u] <= 0x13u;
+    if (opcode == 0x0fu && prefixes + 1u < data->oplen &&
+        data->opcodes[prefixes + 1u] == 0xaau) {
+        /* RSM's physical image traffic already belongs to its SMM envelope. */
+        *out_ticks = 0u;
+        *out_modeled = LIB_TRUE;
+        return LIB_TRUE;
+    }
     if (data->prefix_rep != PREFIX_REP_NONE &&
         x86_core_cpu_source_timing_string_form(opcode, &string_form))
         return x86_core_cpu_80486_repeat_cache_penalty(context, string_form, out_ticks, out_modeled);
-    if (context->instruction_task_switched) {
-        const lib_bool task32 = context->instruction_task_checkpoint.data.tr.sys.type !=
-            VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
-        const lib_u8 lines = task32 ? 6u : 3u;
-        const lib_u8 cold = task32 ? 34u : 16u;
-        const lib_u64 pointer = data->timing_pair_misses;
-        const lib_u64 backlink = data->timing_tss_field_misses;
-        const lib_u64 state = misses - pointer - backlink;
-
-        if (data->timing_locked_reads != 0u) return LIB_FALSE;
-        /* E-13 TS minus its observed descriptor roles. The partial-state
-         * distribution is a qualified L2 model, including the cold match. */
-        *out_ticks = (state >= lines ? cold + 5u * (state - lines) :
-            ((lib_u64)cold * state + lines - 1u) / lines) +
-            (pointer ? 7u + 5u * (pointer - 1u) : 0u) +
-            (backlink ? 1u + 5u * (backlink - 1u) : 0u);
-        *out_modeled = data->timing_data_misses != 0u;
-        return LIB_TRUE;
-    }
+    if (context->instruction_task_switched)
+        return x86_core_cpu_80486_task_cache_penalty(context, out_ticks, out_modeled);
     if (inner_gate && (opcode == 0x9au || (opcode == 0xffu && extension == 3u))) {
         const lib_u64 pointer = data->timing_pair_misses;
         const lib_u64 tss = data->timing_tss_field_misses;
@@ -4669,6 +4737,14 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
         *out_modeled = pointer > 1u || tss > 1u ||
             (parameters != 0u && ((data->oldcpu.data.esp & 15u) != 0u || parameters != lines));
         return LIB_TRUE;
+    }
+    if (opcode == 0xccu || opcode == 0xcdu || opcode == 0xceu) {
+        const lib_bool real = (data->oldcpu.data.cr0 & VCPU_CR0_PE) == 0u ||
+            (context->cpu->data.eflags & VCPU_EFLAGS_VM) != 0u;
+        const lib_bool inner = !real &&
+            ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+             data->oldcpu.data.cs.dpl > context->cpu->data.cs.dpl);
+        return x86_core_cpu_80486_interrupt_cache_penalty(data, real, inner, out_ticks, out_modeled);
     }
     if (misses == 0u && data->timing_locked_reads == 0u) {
         *out_ticks = 0u;
@@ -4933,32 +5009,18 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
     return LIB_TRUE;
 }
 
-/* Intel 1992 PRM Appendix E.2--E-15: source rows and qualified access models. */
-lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+/* Common E.2 translation/alignment and E-14 descriptor access terms. */
+static lib_bool x86_core_cpu_80486_access_penalty(const t_cpuins_data *data,
+    lib_bool descriptors, lib_bool task, lib_u64 *out_ticks, lib_bool *out_modeled)
 {
-    const t_cpuins_data *data;
-    lib_u32 prefixes;
-    lib_u64 walks, attempts, saved_transfers, ticks, operand;
-    lib_bool operand_modeled;
+    lib_u64 walks, attempts, saved_transfers, ticks;
 
-    if (context == LIB_NULL || out_ticks == LIB_NULL ||
-        context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
-        context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
-        context->instruction_fault_delivered || context->stop_requested)
-        return LIB_FALSE;
-    data = &context->instructions->data;
-    if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(data);
-    if (prefixes >= data->oplen) return LIB_FALSE;
     if (data->timing_missed_reads > data->timing_data_misses ||
         data->timing_descriptor_misses > data->timing_data_misses ||
         data->timing_missed_descriptors > data->timing_missed_reads ||
         data->timing_missed_descriptors > data->timing_descriptor_misses ||
         (lib_u64)data->timing_pair_misses + data->timing_tss_field_misses +
-            data->timing_descriptor_misses > data->timing_data_misses)
-        return LIB_FALSE;
-    if (!x86_core_cpu_80486_operand_cache_penalty(context, prefixes, &operand, &operand_modeled))
+            data->timing_descriptor_misses + data->timing_idt_misses > data->timing_data_misses)
         return LIB_FALSE;
     walks = (lib_u64)data->timing_tlb_walks[0] + data->timing_tlb_walks[1] +
         data->timing_tlb_walks[2];
@@ -4974,23 +5036,78 @@ lib_bool x86_core_cpu_80486_memory_penalty(
         21u * (lib_u64)data->timing_tlb_walks[1] +
         28u * (lib_u64)data->timing_tlb_walks[2] - 2u * saved_transfers +
         3u * (lib_u64)data->timing_unaligned_accesses +
-        11u * (lib_u64)data->timing_unaccessed_descriptors +
-        operand;
-    /* E-12 deliberately leaves LTR's miss column blank. */
-    if (!(data->opcodes[prefixes] == 0x0fu && prefixes + 2u < data->oplen &&
-            data->opcodes[prefixes + 1u] == 0x00u &&
-            ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 3u))
+        11u * (lib_u64)data->timing_unaccessed_descriptors;
+    if (descriptors)
         ticks += 3u * (lib_u64)data->timing_missed_descriptors +
             5u * (lib_u64)(data->timing_descriptor_misses - data->timing_missed_descriptors);
-    /* E-8/E-9 give one three-clock transfer term for both direct TSS and
-     * Task Gate forms. Coalesce their two cold descriptor roles once. */
-    if (context->instruction_task_switched && data->timing_task_gate_miss_mask == 3u)
+    /* A cold Gate and target TSS share one transfer term, whether the Gate
+     * came from GDT/LDT or IDT. Preserve independent partial residency. */
+    if (task && data->timing_task_gate_miss_mask == 3u) {
+        if (ticks < 3u) return LIB_FALSE;
         ticks -= 3u;
+    }
+    *out_ticks = ticks;
+    *out_modeled = saved_transfers != 0u ||
+        data->timing_descriptor_misses > data->timing_missed_descriptors;
+    return LIB_TRUE;
+}
+
+/* Intel 1992 PRM Appendix E.2--E-15: source rows and qualified access models. */
+lib_bool x86_core_cpu_80486_memory_penalty(
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+{
+    const t_cpuins_data *data;
+    lib_u32 prefixes;
+    lib_u64 ticks, operand;
+    lib_bool operand_modeled, access_modeled, descriptors;
+
+    if (context == LIB_NULL || out_ticks == LIB_NULL ||
+        context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
+        context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
+        context->instruction_fault_delivered || context->stop_requested)
+        return LIB_FALSE;
+    data = &context->instructions->data;
+    if (data->except != 0u) return LIB_FALSE;
+    prefixes = x86_core_cpu_instruction_prefix_count(data);
+    if (prefixes >= data->oplen) return LIB_FALSE;
+    /* E-12 deliberately leaves LTR's miss column blank. */
+    descriptors = !(data->opcodes[prefixes] == 0x0fu && prefixes + 2u < data->oplen &&
+        data->opcodes[prefixes + 1u] == 0x00u &&
+        ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 3u);
+    if (!x86_core_cpu_80486_access_penalty(data, descriptors,
+            context->instruction_task_switched, &ticks, &access_modeled) ||
+        !x86_core_cpu_80486_operand_cache_penalty(context, prefixes, &operand, &operand_modeled))
+        return LIB_FALSE;
+    ticks += operand;
     *out_ticks = ticks;
     if (out_modeled != LIB_NULL)
-        *out_modeled = saved_transfers != 0u || operand_modeled ||
-            data->timing_descriptor_misses > data->timing_missed_descriptors;
+        *out_modeled = access_modeled || operand_modeled;
     return LIB_TRUE;
+}
+
+/* Entry counters are scoped by the executor; there is no decoded opcode and
+ * no instruction-wide exception/stop gate at this internal calculation seam. */
+lib_u64 x86_core_cpu_80486_interrupt_entry_cost(
+    const x86_core_cpu_execution_context *context,
+    lib_u32 entry_cr0, lib_u32 entry_flags, lib_u8 entry_cpl, lib_bool task_entry)
+{
+    const t_cpuins_data *data = &context->instructions->data;
+    lib_u64 ticks = x86_core_cpu_80486_nominal_interrupt_entry_cost(context,
+        entry_cr0, entry_flags, entry_cpl, task_entry);
+    lib_u64 access, operand;
+    lib_bool modeled;
+    const lib_bool real = (entry_cr0 & VCPU_CR0_PE) == 0u ||
+        (context->cpu->data.eflags & VCPU_EFLAGS_VM) != 0u;
+    const lib_bool inner = !real && ((entry_flags & VCPU_EFLAGS_VM) != 0u ||
+        entry_cpl > context->cpu->data.cs.dpl);
+
+    if (data->except != 0u) return 0u;
+    if (!x86_core_cpu_80486_access_penalty(data, LIB_TRUE, task_entry, &access, &modeled) ||
+        !(task_entry ? x86_core_cpu_80486_task_cache_penalty(context, &operand, &modeled) :
+            x86_core_cpu_80486_interrupt_cache_penalty(data, real, inner, &operand, &modeled)) ||
+        access > LIB_UINT64_MAX - ticks || operand > LIB_UINT64_MAX - ticks - access)
+        return 0u;
+    return ticks + access + operand;
 }
 
 /* Explicit L2 choices for conflicting formulas and unallocated special forms,
@@ -5015,7 +5132,11 @@ lib_bool x86_core_cpu_80486_l2_instruction_cost(
     extension = prefixes + 1u < data->oplen ? (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
     bytes = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize ? 4u : 2u;
 
-    if (opcode == 0x9bu) {
+    if (opcode == 0x0fu && prefixes + 1u < data->oplen &&
+        data->opcodes[prefixes + 1u] == 0xaau) {
+        return x86_core_cpu_80486_smm_cost(context, LIB_FALSE, LIB_TRUE,
+            data->timing_fetch_bus_ticks, out_ticks);
+    } else if (opcode == 0x9bu) {
         /* PRM 26-280 gives 1--3, not an exact no-FPU SX value. This L2
          * model selects the upper endpoint for a successful WAIT only. */
         ticks = 3u;
@@ -5219,7 +5340,7 @@ lib_bool x86_core_cpu_80486_nominal_instruction_cost(
         if (opcode == 0xceu && (data->oldcpu.data.eflags & VCPU_EFLAGS_OF) == 0u)
             ticks = 3u;
         else {
-            ticks = x86_core_cpu_80486_interrupt_entry_cost(context,
+            ticks = x86_core_cpu_80486_nominal_interrupt_entry_cost(context,
                 data->oldcpu.data.cr0, data->oldcpu.data.eflags, data->oldcpu.data.cs.dpl,
                 context->instruction_task_switched);
             if (opcode == 0xcdu && !protected_mode) ticks += 4u;
