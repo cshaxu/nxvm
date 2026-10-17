@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M1 T2 S14 native GP-stack/frame delivery is verified; coordinator acceptance follows.
+M1 T2 remains open after accepted S14. No S packet is active.
 Single-session coordinator/executor mode remains in effect.
-
-## Active S14 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: MyRaidenII M1 T2 S14, next unused S after accepted S13; single-session coordinator/executor, no delegation. |
-| Admission And Approval | Owner's standing full implementation/automatic S/V30 integration approvals retained on 2026-10-17. Shared CPU and tests, affected eight NXVM PC artifacts and MyRaidenII evidence only. No public API/layout, Lib/Emulator or MyNES modification. |
-| Objective | Consume V06 native GP-stack/register-set/frame subfamily: PUSH/POP GP and r/m16, PUSH imm8/16, PUSHR/POPR, PREPARE/DISPOSE, complete ordering/alias/tail/overlap/provider-failure contexts. Repair the documented POPR skipped-SP transfer at its sole instruction owner; reuse existing scalar stack/bus paths. |
-| Non-goals | Segment-register transfer/interrupt shadow, PSW/MD and interrupt/control frames remain V06/V08/V10/V11; no complete V06/native/mode/8080/time/Machine/board/game qualification or new source import. No Intel transfer-order/timing change. |
-| Reference Baseline | Clean pushed 361d436c3. Pinned October 1986 NEC manual printed 12-146--12-153 gives stack operations and seven POPR transfers; original scalar native data-tail behavior retains S8's L2 grade. Read-only pinned MAME NEC reference clarifies retained SP-source/target model ambiguities, not imported implementation or silicon-exact evidence. |
-| Candidate Proposal | [T2 proposal](../proposals/m1-v30.md) and [complete ledger](../etc/t2-v30-ledger.md), complete native GP-stack/register-set/frame subfamily of V06. Every other original receiver remains open. |
-| Files And ABI Surface | Existing cpu_instructions.c POPA native branch; CPU-owned new stack unit/registration, reusable real-storage fixture extracted from existing native memory unit with bounded record capacity, source/test manifests; eight PC 0563 EXEs; MyRaidenII status/ledger/evidence/history. No public function/type/layout or production persistent state. |
-| Applicable Rules | Execution/Architecture/Coding/Document and product architecture/layout/source policy; architecture-governance then coding-governance. Sole instruction/stack/bus owners, Lib Types, original table/handler style, inward dependencies, ROM-free independent expectations and accepted-prefix failure proof; no duplicate interpreter, stack memory, journal or framework. |
-| Verification | Baseline actual POPR read-count/refused-skipped-slot reproducer; independent register/full-memory and exact transfer address/width/value expectations for all admitted stack families, all GP registers, immediates, segment choices, aligned/odd/tail/overlap, frame levels 0--255 and every relevant provider failure position. Existing original x64/x86 Release Ninja/ccache full builds and complete repo-only units sequentially; manifests/gates, eight PE/product/version/INI/hash identities, documentation/links and actual-diff review. |
-| Expected Markers | V30:STACK:OK; retained V30:MEMORY-TRANSFER:OK; complete dual-width units and eight current PC 0563 artifacts. Original graphs/cache retained and default restored after deployment. |
-| Asset Needs | No game ROM/media. Rebuild eight CPU-consuming PC EXEs at retained 0563 and preserve MyNES pair, INIs, media, snapshots, ROMs and unrelated changes. Ignored batch logs retained for final T2 acceptance. |
-| Reporting Requirements | Report initial source/design/estimate, actual baseline versus repaired behavior, retained L2 ambiguity and similar-path sweep, precise source/test plus/minus/net, complete validation/artifacts and non-qualified contexts. Estimate production +4--7/-1; tests/fixture about net +400--600, excluding manifests/docs/artifacts. |
-| Stop Conditions | Stop for public API/layout/state, copied/protected code/assets, Lib/Emulator/outside-target change or unsupported source model. No new mode flag, stack path, recovery journal, timing owner, second executor or silent Intel bus-order change. |
-| Exit Criteria | All GP-stack/register-set/frame members have independent result/order/failure proof in both widths. Native POPR restores seven GP values, advances over but does not read the SP slot; Intel remains unchanged. Native alias and data-tail models are explicit rather than promoted to silicon claims. Complete units/artifacts/gates and complete scoped delivery pass; T2 stays open. |
-| Original Owner Request | Implement fully playable MyRaidenII using governed single-session dual-role execution, approved V30 integration and automatic complete-mechanism S admission. |
-| Similar-Issue Sweep | Inspect every scalar push/pop caller, SP alias encodings, PUSHR/POPR and complete PREPARE/DISPOSE loops, frame admission, native wrap and accepted-prefix rollback; examine segment/PSW/control consumers without modifying their separate semantics. Record the newly found native all-segment interrupt-shadow gap at V06/V11 for its complete later receiver. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
@@ -41,7 +20,7 @@ Single-session coordinator/executor mode remains in effect.
 | T2 S11 | Accepted Shared 36bba8907, NXVM b1fd77101 and evidence 395d126d0: native full-count shift/rotate and long-shift CF qualification; dual-width 664/664 complete units, eight PC 0563 artifacts. Reserved memory admission remains V03; actual-change review passed. |
 | T2 S12 | Accepted Shared 9d069e6e4/310bd9aba, NXVM 663ce268d and evidence 87207373d/2c53350e6: common native primary ModRM admission, nineteen-opcode encoding matrix and failure/wrap witnesses; final dual-width 665/665 units and eight PC artifacts. Actual-change review passed. |
 | T2 S13 | Accepted Shared 5c9695356, NXVM c7ab4fdd4 and evidence 597780b1a: native fetch-start normalization and original span/cache reuse; 5,700 instruction/preview witnesses, fetch failures, first dual-width 665/665 units and eight PC artifacts. Actual-change review passed. |
-| T2 S14 | Shared 1ec55bd3d and NXVM d3ad9d003 pushed: native GP-stack/register-set/frame qualification and seven-transfer POPR; independent order/alias/overlap/tail/failure proof, first dual-width 666/666 units and eight PC artifacts. Coordinator acceptance follows. |
+| T2 S14 | Accepted Shared 1ec55bd3d, NXVM d3ad9d003 and evidence 8011c084c: native GP-stack/register-set/frame qualification and seven-transfer POPR; independent order/alias/overlap/tail/failure proof, first dual-width 666/666 units and eight PC artifacts. Actual-change review passed. |
 | T2 remaining | Complete native semantics and slot/form disposition, mode/8080/entry, unqualified block/port-prefix/LOCK/long-prefix contexts, physical prefetch/bus timing, source-graded timing/neutral Machine and real board proof remain. Bit-field AX/AL/AH output collision is not silicon-exact; S8 native data-tail behavior remains L2. |
 
 ## Accepted Evidence And Review
@@ -51,12 +30,13 @@ Single-session coordinator/executor mode remains in effect.
 [eight artifact identities](../etc/evidence/t2-s14-pc-artifacts.json) retain
 complete source, scope, actual deltas and verification.
 
-Executor actual-diff review covers the native POPR skipped-slot branch,
+Coordinator actual-diff review covers the native POPR skipped-slot branch,
 unchanged Intel/scalar stack owners, extracted real-storage fixture, complete
 new unit/registration, manifests, eight artifact identities and task documents.
 The sixteen-field packet, original full goal, complete GP-stack/register-set/
-frame batch, target/P boundaries and remaining receivers are reconciled for
-coordinator acceptance. No production helper, public API/layout, persistent
+frame batch, target/P boundaries and remaining receivers were reconciled.
+Shared 1ec55bd3d, NXVM d3ad9d003 and evidence 8011c084c are accepted.
+No production helper, public API/layout, persistent
 state, second memory path/executor or Intel behavior is introduced. Production
 +5/-1/net +4 and tests +453/-96/net +357 exclude manifests/docs/artifacts.
 
