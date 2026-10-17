@@ -19,6 +19,7 @@
 - [T2 native conditional repetition](evidence/t2-s7-conditional-repeat.md).
 - [T2 native memory transfers](evidence/t2-s8-memory-transfer.md).
 - [T2 native port transfers](evidence/t2-s9-port-transfer.md).
+- [T2 native data-block transfers](evidence/t2-s10-block-transfer.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

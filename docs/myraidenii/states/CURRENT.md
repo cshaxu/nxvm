@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S9. No S packet is active.
+M1 T2 remains open after accepted S9. S10 qualifies native data-block transfers.
 Single-session coordinator/executor mode remains in effect.
+
+## Active S10 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T2 S10, next unused S after accepted S9; one-session coordinator/executor without delegation. |
+| Admission And Approval | Owner's standing full implementation/automatic S/V30 integration approvals retained on 2026-10-17. Targets Shared CPU-owned tests and MyRaidenII evidence; NXVM artifacts only if executable inputs actually change. No public API, Lib/Emulator or MyNES modification admitted. |
+| Objective | Consume V09's complete six-form native MOVS/LODS/STOS transfer subfamily, through the existing handlers and S8 memory owner: single/REP, zero/count, DF, segment choices, index/bus tails, overlap, accepted-prefix failures and actual interrupt/IRET continuation. |
+| Non-goals | No full V03/V09 retirement, 8080/mode, timing/electrical queue qualification, undocumented carry/F2/LOCK or long-prefix semantics, Machine/board/game admission or external ROM test. |
+| Reference Baseline | Clean pushed 01c5cd23a, pinned NEC October 1986 manual 12-15--12-20 and section 6; S8 segment-tail L2 model retained, not promoted to silicon measurement. |
+| Candidate Proposal | [T2 proposal](../proposals/m1-v30.md), [complete ledger](../etc/t2-v30-ledger.md), V09 six-form data-block transfer batch with V14 contextual proof. |
+| Files And ABI Surface | New owned test/x86-core/cpu/cpu_v30_block_transfer_smoke.c, registration and test manifest; existing CPU handlers only if demonstrated defect requires correction, then source manifest/eight PC 0563 artifacts. Product evidence/status/history/ledger. No new public type/layout/function or persistent production state. |
+| Applicable Rules | Execution/Architecture/Coding/Document, product architecture/layout/source policy, architecture-governance then coding-governance: inward test ownership, sole handler/memory owner, original source style, Lib Types, original synthetic data and no external implementation copy. |
+| Verification | Existing x64/x86 Release Ninja/ccache graphs and full repository-only units, sequential architectures with bounded parallelism; actual instruction/preview/interrupt/failure proof, manifests and registered Types/dependency/ownership gates, documentation/links/actual-change review. |
+| Expected Markers | V30:BLOCK-TRANSFER:OK and dual-width full units; retained PC/MyNES artifacts match current recorded hashes if no executable inputs change. |
+| Asset Needs | No game ROM/media or new output artifact needed for test-only change. If production changes, rebuild/deploy all eight PC 0563 EXEs and verify PE/product/version/INI/hash; preserve MyNES, all INIs/media/snapshots. |
+| Reporting Requirements | Report initial reuse/estimate, observed semantic and failure outcomes and actual source/test plus/minus/net, full verification and unverified boundaries. Estimate production zero, tests +280--380; do not fabricate production edits to satisfy a repair label. |
+| Stop Conditions | Stop for new public API/layout, external/protected source, Lib/Emulator/outside-target or incompatible source-model change. No replacing existing handlers or second bus/executor/test framework. |
+| Exit Criteria | All six forms execute through existing CPU routes with independent expected data, complete flags/register/count/index and actual provider address/width/failure checks; REP overlap and interrupt continuation retain exactly-once accepted effects, full dual-width units and applicable artifact proof pass, delivery pushed/reviewed. T2 stays open. |
+| Original Owner Request | Implement full MyRaidenII with governed single-session dual roles, approved V30 integration and automatic complete-mechanism S admission. |
+| Similar-Issue Sweep | Inspect all six handlers, _m_movs/_m_lods/_m_stos, _kas_move_index, repeat admission/restart and S8 logical/physical owners. Preserve comparison and port owners' distinct semantics; remaining modes/timing/undocumented prefixes retain existing ledger receivers. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
@@ -16,6 +37,7 @@ Single-session coordinator/executor mode remains in effect.
 | T2 S7 | Shared 297ae1637, NXVM 860fa1282 and evidence 1656b79fb accepted after actual-change review. Native carry/zero comparison repetition, dual-width 660/660 units and eight current PC 0563 artifacts. |
 | T2 S8 | Accepted Shared 70dde1d31, NXVM 0ed0a9e30 and evidence b9f9c0110 after actual-change review: native memory lanes/addressing and source-graded L2 tail model, dual-width 661/661 units and eight PC 0563 artifacts. |
 | T2 S9 | Accepted Shared 7a9433dc1, NXVM 2f0ac6b63 and evidence 4fdfe424d: native scalar/string I/O lanes and exact completion/failure effects; final dual-width 662/662 complete units and eight PC 0563 artifacts. First-run gate timeouts and complete unchanged-budget rechecks recorded; actual-change review passed. |
+| T2 S10 | Delivered Shared 871fdfe1b: six native data-block forms qualified without production changes; dual-width 663/663 complete units, existing PC/MyNES artifact hashes unchanged. Coordinator review pending. |
 | T2 remaining | Native full-form qualification, mode/8080/entry, other block/unqualified-port-prefix/LOCK/long-prefix contexts, physical bus, source-graded timing/neutral Machine and real board proof remain. Bit-field AX/AL/AH output collision is not silicon-exact; FFFF-start native data spans now have S8 L2 proof, not silicon-exact certification. |
 
 ## Accepted Evidence And Review

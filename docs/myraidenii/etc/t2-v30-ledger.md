@@ -42,7 +42,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | Register/stack/bus ordering, alias and wrap vectors; not yet qualified for V30 |
 | V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | Full operand/flag boundaries, divide fault saved-PC and undefined flag masks; not yet qualified |
 | V08 | Near/far/conditional branches, loops, calls/returns, breakpoint/interrupt return | CPU control/entry helpers; manual sections 6, 12 | Taken/not-taken, stack frame, segment wrap and target-failure observations; not yet qualified |
-| V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | S7 implements four native CMPS/SCAS byte/word comparison forms with carry/zero conditions. S9 implements native port-string REP/DF/index/segment, zero/count/continuation/terminal, failure and NMI/INT-to-IRET proofs through existing handlers. Other block forms, unqualified prefix, full bus/timing and mode contexts remain open |
+| V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | S7 implements four native CMPS/SCAS byte/word comparison forms with carry/zero conditions. S9 qualifies port-string transfers; S10 qualifies six MOVS/LODS/STOS forms, REP/DF/index/segment/overlap/tails, provider failures and NMI/INT-to-IRET continuation through existing handlers. Unqualified prefix, complete comparison-flag, electrical bus/timing and mode contexts remain open |
 | V10 | PSW fixed/writable bits and MD, flag load/image, debug patches/entry, native versus emulation flag meanings | CPU owned architectural register image; manual sections 3, 8, 12 | PUSHF/POPF/IRET/BRKEM/CALLN/RETEM transitions and safe debug writes; no second mode flag; not yet implemented |
 | V11 | NMI/INT/BRK/divide/step priorities, acknowledge, shadows, native entry from emulation, nested native handlers | CPU existing entry/pending path; manual sections 6, 8 | Exact vector/frame/return/restart and failed provider tests, independent of board PIC; not yet implemented/qualified |
 | V12 | 8080 slots 00--FF, register mapping, arithmetic/flags, stack, memory and port operations | CPU same executor selected by MD; manual section 8 plus NEC-documented 8080 instruction contract | Complete emulation table and ROM-free vectors, not a Z80 substitute; not yet implemented |
@@ -168,6 +168,15 @@ positions and actual NMI/INT-to-IRET continuation. Device completion occurs
 once per accepted cycle; no failed instruction replays an accepted prefix.
 Mode/8080, electrical timing and unqualified prefix behavior retain their
 original receivers; this batch does not retire all V09/V14 or T2.
+
+S10 qualifies the existing native MOVS/LODS/STOS byte/word mechanism without
+production changes. [Data-block evidence](evidence/t2-s10-block-transfer.md)
+records independent full-memory/CPU expectations, actual provider addresses,
+REP/DF/segment/count/tail and overlap contexts, every applicable failure
+position and native interrupt/IRET continuation. The test does not copy a
+production interpreter or weaken an existing assertion. The complete ledger
+still retains mode/8080, timing, native full-form and real-board requirements;
+S8's segment-tail L2 model is not promoted by these synthetic tests.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;
