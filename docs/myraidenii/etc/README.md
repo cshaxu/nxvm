@@ -16,6 +16,7 @@
 - [T2 NEC bit and nibble family](evidence/t2-s4-nec-bit-nibble.md).
 - [T2 packed BCD string family](evidence/t2-s5-packed-bcd.md).
 - [T2 NEC bit fields](evidence/t2-s6-bit-fields.md).
+- [T2 native conditional repetition](evidence/t2-s7-conditional-repeat.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

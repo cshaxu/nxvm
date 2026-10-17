@@ -38,11 +38,11 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | S3 native reset/entry and MD-clear reset vectors implemented; full emulation-mode context remains unqualified |
 | V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Shared CPU native table-driven vectors and matching preview; not yet implemented |
 | V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements 10--1F/28/2A; S5 implements documented packed-BCD 20/22/26; S6 adds bit-field 31/33/39/3B through the same format/metadata/preview owner. Output-alias silicon, prefix/bus contexts, mode entry, undocumented inputs and full timing remain unqualified |
-| V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | Decode/execution/preview equivalence and bounded safe-point tests; no assumed Intel 15-byte silicon rule; not yet implemented |
+| V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | S7 implements native carry comparison prefixes, one execution/preview recognizer, prefix-selection vectors and up-to-three-prefix interrupt restart; complete LOCK, long-stream and other mode/prefix qualification remains open |
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | Register/stack/bus ordering, alias and wrap vectors; not yet qualified for V30 |
 | V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | Full operand/flag boundaries, divide fault saved-PC and undefined flag masks; not yet qualified |
 | V08 | Near/far/conditional branches, loops, calls/returns, breakpoint/interrupt return | CPU control/entry helpers; manual sections 6, 12 | Taken/not-taken, stack frame, segment wrap and target-failure observations; not yet qualified |
-| V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | Register/memory/port effects, repeat flags and restart point; not yet implemented/qualified |
+| V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | S7 implements four native CMPS/SCAS byte/word comparison forms with carry/zero conditions, zero/first/continuing/terminal and interrupt/failure vectors. Other block/port, full flags, bus and mode contexts remain unqualified |
 | V10 | PSW fixed/writable bits and MD, flag load/image, debug patches/entry, native versus emulation flag meanings | CPU owned architectural register image; manual sections 3, 8, 12 | PUSHF/POPF/IRET/BRKEM/CALLN/RETEM transitions and safe debug writes; no second mode flag; not yet implemented |
 | V11 | NMI/INT/BRK/divide/step priorities, acknowledge, shadows, native entry from emulation, nested native handlers | CPU existing entry/pending path; manual sections 6, 8 | Exact vector/frame/return/restart and failed provider tests, independent of board PIC; not yet implemented/qualified |
 | V12 | 8080 slots 00--FF, register mapping, arithmetic/flags, stack, memory and port operations | CPU same executor selected by MD; manual section 8 plus NEC-documented 8080 instruction contract | Complete emulation table and ROM-free vectors, not a Z80 substitute; not yet implemented |
@@ -140,6 +140,16 @@ distinguishes documented operations from AX/AL/AH output-alias source-order
 model and still-unqualified physical bus/prefix cases. The FFFF-start word
 limitation is now specifically inventoried under V14, not fixed by a parallel
 instruction bus. No existing V03/V05--V16 receiving obligation is retired.
+
+S7 implements native REPC/REPNC and existing zero-condition comparison repeat
+through one prefix recognizer and one comparison-result predicate. All original
+operand handlers, one-iteration execution, interrupt entry and IRET remain the
+only production routes. [Conditional-repeat evidence](evidence/t2-s7-conditional-repeat.md)
+records count/initial-flag/DF/termination vectors, segment/repeat selection,
+first/partial read failure and actual NMI/INT-to-IRET continuation, including
+the documented three-prefix retention. Non-comparison carry targets remain
+diagnostic, not undocumented-silicon claims. This is a V05/V09 subfamily,
+not retirement of their entire block/port/prefix/mode domain or any V14/V15 row.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;
