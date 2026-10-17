@@ -2922,6 +2922,13 @@ static void _p_input(x86_core_cpu_execution_context *context, lib_u16 portid, li
     lib_u8 octet;
     CPU_TRACE_CALL_BEGIN("_p_input");
     CPU_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 && byte == 2u && (portid & 1u)) {
+        /* Each accepted byte completes before the next bus cycle begins. */
+        CPU_TRACE_CHECK_RETURN(_p_input(context, portid, rdata, 1u));
+        CPU_TRACE_CHECK_RETURN(_p_input(context, (lib_u16)(portid + 1u), rdata + 1u, 1u));
+        CPU_TRACE_CALL_END;
+        return;
+    }
     if (byte != 1u && byte != 2u && byte != 4u) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
@@ -2980,6 +2987,12 @@ static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, l
     lib_u8 octet;
     CPU_TRACE_CALL_BEGIN("_p_output");
     CPU_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 && byte == 2u && (portid & 1u)) {
+        CPU_TRACE_CHECK_RETURN(_p_output(context, portid, rdata, 1u));
+        CPU_TRACE_CHECK_RETURN(_p_output(context, (lib_u16)(portid + 1u), rdata + 1u, 1u));
+        CPU_TRACE_CALL_END;
+        return;
+    }
     switch (byte)
     {
     case 1:
