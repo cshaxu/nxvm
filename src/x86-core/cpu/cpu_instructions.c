@@ -12243,7 +12243,11 @@ static void POPA(x86_core_cpu_execution_context *context)
             CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
             CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
             CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
-            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cesp), 2));
+            /* NEC POPR lists seven transfers; the saved-SP slot is not read. */
+            if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+                _WriteGPR16(sp) += 2u;
+            else
+                CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cesp), 2));
             CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
             CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
             CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
