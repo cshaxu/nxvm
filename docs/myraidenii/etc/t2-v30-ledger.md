@@ -36,7 +36,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | --- | --- | --- | --- |
 | V01 | Family membership, enum stability, DEFAULT/invalid admission, name, FPU-none board selection | CPU interface/lifecycle and Machine create; manual sections 1, 3, 7 | S3 implements native CPU membership/name and enum stability, rejects invalid profiles and keeps Machine admission closed; board/FPU selection remains unqualified |
 | V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | S3 native reset/entry and MD-clear reset vectors implemented; full emulation-mode context remains unqualified |
-| V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Complete native table-driven vectors and preview/admission remain unqualified. S11 verifies Group-2 /6 register rejection; reserved /6 memory still reads an operand before diagnostic rejection. The complete ModRM-class admission/effect audit must resolve this at the shared form owner, not instruction-specific patches or fabricated native hardware faults |
+| V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | S12 unifies actual primary ModRM shape/minimum admission with pure scan before operand effects; nineteen constrained opcode families cover every ModRM and segment prefix, valid witnesses, truncation and fetch failures/wrap. No invented native INT6. Complete native slot/form disposition and legal instruction semantics remain unqualified |
 | V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements 10--1F/28/2A; S5 implements documented packed-BCD 20/22/26; S6 adds bit-field 31/33/39/3B through the same format/metadata/preview owner. Output-alias silicon, prefix/bus contexts, mode entry, undocumented inputs and full timing remain unqualified |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | S7 implements native carry comparison prefixes, one execution/preview recognizer, prefix-selection vectors and up-to-three-prefix interrupt restart; complete LOCK, long-stream and other mode/prefix qualification remains open |
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | Register/stack/bus ordering, alias and wrap vectors; not yet qualified for V30 |
@@ -185,6 +185,23 @@ memory/segment/odd-tail and complete provider failure positions. Intel count
 behavior and existing handlers remain unchanged. V30 timing still exits as
 unallocated before Intel timing-count rules; this does not retire all V07,
 mode/8080, Machine or board requirements.
+
+S12 reuses existing format/minimum predicates at actual native primary dispatch,
+removing the placeholder-ModRM admission gap without handler-specific guards.
+[Form-admission evidence](evidence/t2-s12-form-admission.md) records every
+ModRM for nineteen constrained opcode families with five segment selections,
+actual rejected-form effect boundaries, valid witnesses and code-fetch failure/
+wrap contexts. Existing NEC admission and Intel dispatch order remain unchanged.
+The baseline reserved-memory read is repaired; complete legal native semantics,
+all slot dispositions, mode/8080, electrical timing and Machine/board proof
+remain explicit receiving obligations. This does not retire all V03 or T2.
+
+S12's source sweep finds an explicit V04/V14 fetch receiver: NEC suffix-at-FFFF
+lookahead passes unmasked `eip + 1` to the native logical translator, which
+deliberately preserves data offsets. Complete instruction-fetch start/span
+qualification must reproduce and fix this and related multi-byte cases at
+their common owner; S12's primary one-byte wrap proof does not retire them.
+No NEC runtime boundary vector has yet been executed for this source finding.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;

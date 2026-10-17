@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S11. No S packet is active.
+M1 T2 remains open after accepted S11. S12 unifies native ModRM admission.
 Single-session coordinator/executor mode remains in effect.
+
+## Active S12 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T2 S12, next unused S after accepted S11; single-session coordinator/executor, no delegation. |
+| Admission And Approval | Owner's standing full implementation/automatic S/V30 integration approvals retained on 2026-10-17. Shared CPU/tests, eight affected NXVM PC artifacts and MyRaidenII evidence only. No new public API/layout, Lib/Emulator or MyNES modification. |
+| Objective | Consume V03 native primary ModRM shape/admission subfamily, including all nineteen constrained opcode families: actual ModRM must satisfy the same existing format/minimum predicates as pure scan before operand/device effects; audit NEC/Intel routes and code-fetch failure/segment-tail contexts. |
+| Non-goals | No complete primary instruction semantics or all V03 qualification, undocumented hardware faults, native FPU, LOCK/long-prefix certification, mode/8080, timing, Machine/board/game admission or new source import. |
+| Reference Baseline | Clean pushed f55f5caec; pinned NEC October 1986 manual section 12/Appendix A encodings and S11 actual-source reserved-memory finding. Existing diagnostic unsupported-form policy retained; this is not native INT6 emulation. |
+| Candidate Proposal | [T2 proposal](../proposals/m1-v30.md), [complete ledger](../etc/t2-v30-ledger.md), complete existing native ModRM shape-predicate and minimum-capability batch. All native semantic/mode/time receivers remain. |
+| Files And ABI Surface | Existing cpu_instructions.c dispatch and private shape predicates, CPU-owned new form-admission unit/registration/source/test manifests; eight PC 0563 EXEs; MyRaidenII status/ledger/evidence/history. No new public function/type/layout or persistent state. |
+| Applicable Rules | Execution/Architecture/Coding/Document and product architecture/layout/source policy; architecture-governance then coding-governance. One format/dispatch owner, inward dependencies, original handler style, Lib Types and independent ROM-free assertions; no per-instruction workaround or parallel decoder. |
+| Verification | Existing x64/x86 Release Ninja/ccache full builds and complete repo-only units sequentially; exhaustive nineteen-opcode x 256-ModRM x segment-prefix matrix, rejected forms cause no data/port/stack effects, positive real instruction witnesses, preview/truncation/provider-failure and fetch-wrap proof, old Intel/NEC regressions; manifests/gates and eight PE/product/version/INI/hash identities; documentation/links/actual-change review. |
+| Expected Markers | V30:FORM-ADMISSION:OK; dual-width complete units and eight current PC 0563 artifacts; original default graphs/cache retained, MyNES and INIs/media unchanged. |
+| Asset Needs | No game ROM/media. Rebuild eight CPU-consuming PC EXEs at retained 0563 and preserve other assets/configuration/snapshots. |
+| Reporting Requirements | Report design/estimate before code, baseline failure versus repaired evidence and actual source/test plus/minus/net, full suite/artifact proof and unqualified contexts. Estimate production +15--25/-3--6, tests +250--380. |
+| Stop Conditions | Stop for public ABI/layout, copied/protected source, Lib/Emulator/outside-target changes or incompatible source model. No second parse table, register model, instruction cache, clock or executor; Intel fault-order changes require separate evidence/admission. |
+| Exit Criteria | V30 actual dispatch reuses the same shape/capability owners as pure scan, rejects all inventoried invalid classes before operand effects, and keeps legal representative paths/NEC and Intel regressions; code-fetch failures remain diagnostic without invented guest faults. All dual-width units and eight artifacts pass; target-scoped complete delivery pushed/reviewed. T2 stays open. |
+| Original Owner Request | Implement full playable MyRaidenII in governed single-session dual-role mode, approved V30 integration and automatic complete-mechanism S admission. |
+| Similar-Issue Sweep | Inspect primary has-ModRM/shape/minimum checks, segment encodings, Group-2/3/4/5, POP/MOV-immediate and memory-only forms, NEC escape prior-admission, code fetch/prefetch and interruption. Preserve genuine Intel quirks and separate mode/semantic/timing receivers; no partial opcode-only claim. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
@@ -18,7 +39,8 @@ Single-session coordinator/executor mode remains in effect.
 | T2 S9 | Accepted Shared 7a9433dc1, NXVM 2f0ac6b63 and evidence 4fdfe424d: native scalar/string I/O lanes and exact completion/failure effects; final dual-width 662/662 complete units and eight PC 0563 artifacts. First-run gate timeouts and complete unchanged-budget rechecks recorded; actual-change review passed. |
 | T2 S10 | Accepted Shared 871fdfe1b and evidence 22fe9ffcb: six native data-block forms qualified without production changes; dual-width 663/663 complete units, existing PC/MyNES artifact hashes unchanged; actual-change review passed. |
 | T2 S11 | Accepted Shared 36bba8907, NXVM b1fd77101 and evidence 395d126d0: native full-count shift/rotate and long-shift CF qualification; dual-width 664/664 complete units, eight PC 0563 artifacts. Reserved memory admission remains V03; actual-change review passed. |
-| T2 remaining | Native full-form/reserved-memory admission, mode/8080/entry, unqualified block/port-prefix/LOCK/long-prefix contexts, physical bus, source-graded timing/neutral Machine and real board proof remain. Bit-field AX/AL/AH output collision is not silicon-exact; FFFF-start native data spans now have S8 L2 proof, not silicon-exact certification. |
+| T2 S12 | Delivered Shared 9d069e6e4 and NXVM 663ce268d: common native primary ModRM admission, full nineteen-opcode encoding matrix, actual failure/wrap and valid witnesses; first dual-width 665/665 units and eight PC artifacts. Coordinator acceptance remains pending. |
+| T2 remaining | Complete native semantics and slot/form disposition, mode/8080/entry, unqualified block/port-prefix/LOCK/long-prefix contexts, physical bus, source-graded timing/neutral Machine and real board proof remain. V04/V14 retain NEC suffix-at-FFFF and complete instruction-fetch start/span qualification. Bit-field AX/AL/AH output collision is not silicon-exact; S8 native data-tail behavior remains L2. |
 
 ## Accepted Evidence And Review
 
