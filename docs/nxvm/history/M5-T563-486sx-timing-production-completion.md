@@ -143,3 +143,9 @@ not authorize a whole-T/CPU-complete claim. The pinned incoming corpus moves
 native MIDI from unit to integration/native_audio without changing its backend;
 classification and actual endpoint availability must remain distinct. NXVM P2
 retains the amended full packet and eight artifacts before coordinator review.
+
+Coordinator actual-commit review accepts S8 Shared **16e7e3a97** and NXVM
+**f1174de9f**, inspecting the actual source/test/manifest, evidence and artifact
+paths and matching the true dual-width results. The owner-approved single
+native-MIDI transfer permits S8 closure, not a false full-suite success or
+T563 closure. S9 is the next committed-SoftPC eight-tree audit/import receiver.

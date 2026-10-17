@@ -448,3 +448,21 @@ retains this complete amended packet, universe audit, true qualification
 results, history and eight already-qualified EXEs. The owner-approved native
 gate transfer is the only closure exception. Coordinator actual-commit review
 and the governance closure still follow this delivery.
+
+## Coordinator Actual-Commit Acceptance
+
+Review the actual seven Shared paths in **16e7e3a97** and fifteen NXVM paths
+in **f1174de9f**, not just their summaries. Check the candidate/publication
+mechanism, all six segment/GDT/LDT/paging/failure/entry cases, public-Core
+receiver and replacement hashes; then inspect the amended 16-field packet,
+complete ledger, TODO clarification, history and eight binaries. Recheck final
+JUnit: 632 executed/one native MIDI failure and 48 integration successes per
+width, plus eight current recorded hashes. The pre-governance worktree is clean.
+
+Accept and close S8 under the owner's 2026-10-17 amendment. The only exception
+is the one native qualification gate, assigned explicitly to S9; no CPU row,
+failed test or model limit disappears. No T closure, native playback, manual
+RDP/full guest GUI or PC110 qualification is claimed. This governance update
+changes no executable input and requires no timestamp-only rebuild. Next,
+admit S9 from the clean pushed acceptance and audit the pinned incoming eight
+trees before any source replacement.

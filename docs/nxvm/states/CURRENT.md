@@ -4,42 +4,16 @@
 
 ## M5 T563 — Remaining 486SX Timing And Production
 
-S7 is closed after one-session coordinator actual-commit review of Shared
-`d592300bd` and NXVM `ebe095ac1`. Its complete packet is retained in P2.
-The [existing proposal](../proposals/m5-486sx-timing-production-completion.md)
-retains S8 whole C01--C17 qualification. S7 qualifies the selected SX Core/Board
-production route, not PC110 or an App CPU cutover. Under the owner's standing
-sequential-S approval and continued complete-486SX goal, S8 is admitted from
-clean acceptance cd523e0a0. The complete objective remains open until the
-original universe and final receiving qualification are reconciled.
-
-## T563 S8 Active Packet
-
-Owner amendment, 2026-10-17: close this CPU/receiving batch and admit S9 to
-audit and import SoftPC's committed eight shared trees. This explicitly
-transfers the single unchanged native MIDI qualification failure to S9;
-631/632 is not relabeled 632/632. The amendment permits S8 delivery/closure,
-not T563 or complete-CPU qualification closure. All other packet requirements
-and the complete original C01--C17 universe remain intact.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T563 S8, next unused S after accepted S7 cd523e0a0; one-session coordinator/executor cycle. Complete Shared P1 16e7e3a97 is pushed; this NXVM delivery retains the amended packet, evidence and eight receiving artifacts for coordinator review. |
-| Admission And Approval | Owner's complete 486SX objective and standing automatic sequential-S admission. NXVM final CPU evidence, whole-suite qualification and eight current PC artifacts. Read all Shared sources/tests, but no production/test edit is initially admitted; report and bound any confirmed gap before implementation. No excluded App, Lib/Emulator, sibling or owner-input modification. |
-| Objective | Complete the original C01--C17 final reconciliation against current source, actual direct tests, source/model restrictions and inherited T558/T559 transfers; execute full repository units and all registered four-profile integrations, including the independent MyNES suite once per width, and verify the current eight PC artifacts. |
-| Non-goals | No new CPU variant, exact PC110 package/stepping or board qualification, App CPU cutover, new hardware/guest capability, source-grade downgrade, extra framework, second interpreter/clock/queue or fabricated manual GUI/RDP result. Do not turn final qualification into a moving first-failure repair list. |
-| Reference Baseline | Clean cd523e0a0; accepted S7 d592300bd/ebe095ac1, all original T560 C01--C17 and T563 R1--R10 cohorts. S7 has 632 units and sixteen selected integrations per width plus eight 0563 artifacts; those selected integrations do not replace this T-level whole integration suite. |
-| Candidate Proposal | [Remaining 486SX completion](../proposals/m5-486sx-timing-production-completion.md), S8; original [C01--C17 universe](../etc/evidence/t560-s1-cpu-convergence.md), [post-refactor receivers](../etc/evidence/t563-s1-rebase.md) and [S8 reconciliation](../etc/evidence/t563-s8-whole-qualification.md). |
-| Files And ABI Surface | Initial audit is documentation-only, but the confirmed B1--B4 Debug candidate/cache defect is now admitted before repair: existing X86 Core cpu.c/cpu_instructions.c, interface contract comment, existing CPU Cache and Core Debug/inspection tests, two Core manifests, NXVM evidence and eight affected PC EXEs. Estimated production +65--110/-40--65, tests +160--280/-0--15; no new public API/type/layout or persistent state. Lib/Emulator, raw Debug policy and App sources stay excluded. |
-| Applicable Rules | AGENTS, NXVM guide/Contributing, shared Execution/Architecture/Coding/Document, NXVM Architecture/Coding/Roadmap/source policy; architecture-governance then coding-governance. Preserve inward ownership, single architectural state/time, Types/original code style, whole-domain ledger and explicit original/L2 restrictions. |
-| Verification | First preserve the real cache-enabled Debug counterexample, then B1--B4 success/logical-failure/provider-prefix/paging and real-Core regressions as a cohort. Do not edit source/tests/manifests until the existing baseline job terminates. Freeze the repair before repeating complete dual-width units, specialized gates and whole integrations on the original graphs. Capture current inventories; Default includes MyNES once, other profiles exclude only that duplicate App. No skipped/disabled/missing case or changed budget. Restore Default and verify eight CLI/PE/hash identities and owner inputs. |
-| Expected Markers | Every original row and transfer has current source and direct-proof owners with explicit accepted/non-applicable/model dispositions, no silently deferred applicable CPU gap or unallocated selected legal timing. All registered complete suites pass; eight current 0563 artifacts and unchanged owner inputs agree with the frozen source. Manual GUI, physical audio/MIDI and PC110 claims stay excluded rather than inferred. |
-| Asset Needs | Existing approved external ROM/disk/manual inputs read-only, no import/download. Preserve four owner INIs, media/snapshots/ROM and MyNES pair. Keep source revision plus eight PE/hash records; do not create timestamp-only builds for documentation or falsely claim old selected-suite proof as whole-suite execution. |
-| Reporting Requirements | Report original-universe/current-source audit, confirmed gaps or retained model limits, full suite counts and separate background/automated desktop/manual scope, actual source/test delta and artifact decisions. Deliver complete scoped P and actual-commit coordinator review; do not claim complete CPU from green manifests or older-family boot alone. |
-| Stop Conditions | Missing/contradictory direct source, an actual unimplemented cohort, new public API/layout or Lib/Emulator/excluded-target need requires an explicit bounded decision before repair. No silent downgrade, budget/assertion weakening, lost original transfer, fake fallback CPU or invented owner/manual acceptance. |
-| Exit Criteria | Every original C01--C17 requirement and T558/T559/T563 receiver reconciles against current source/direct regressions and accepted source/model grades; complete dual-width units, whole registered integration inventory and applicable gates pass; eight current artifacts and owner inputs verified; complete delivery pushed and actually reviewed. Any outstanding requirement remains explicit and prevents a whole-CPU completion claim. |
-| Original Owner Request | Implement complete 486SX; preserve all unfinished C16/C17/final obligations across the approved T560 stage transfer and refactor, automatically admit sequential cohesive S batches and finish with honest complete qualification. |
-| Similar-Issue Sweep | Reconcile all seventeen original rows, twenty C15 families/two opcode spaces/groups, ten post-refactor receiver gaps and accepted model/source limits. Search current selected-SX production predicates, timing fallback/origins/qualification and tests for staged rebinding; compare source owners and registered test inventories across both architectures. Audit full rule/doc/debt/asset boundaries before any T closure. |
+S8 is closed after owner-approved bounded acceptance and actual-commit review
+of Shared **16e7e3a97** and NXVM **f1174de9f**. P2 retains its complete amended
+packet. Both widths pass all 166 X86 Core units, 498 strict rows and 48
+integrations; eight rebuilt PC artifacts pass final CLI/PE/hash checks.
+Whole units remain honestly 631/632 per width. The owner explicitly transfers
+the unchanged native MIDI gate to the next S9 committed-SoftPC eight-tree
+audit/import. This does not close T563 or assert whole-CPU qualification.
+No S is active between this acceptance and S9 admission. The
+[proposal](../proposals/m5-486sx-timing-production-completion.md) retains the
+complete C01--C17 universe and final receiving requirements.
 
 | Task | Progress |
 | --- | --- |
@@ -50,7 +24,7 @@ and the complete original C01--C17 universe remain intact.
 | T563 S5 | Closed after actual-commit review of 0b7c189e1/7524bb939: E1--E6 entry/access/failure/SMM/system allocation and Core event delivery complete. Both widths pass 632/632 units, both specialized aggregates and sixteen selected integrations; eight final CLI checks and rebuilt/deployed 0563 EXEs have proof. The unchanged restored-session x64 run resolves native MIDI qualification without a Lib change or waiver. Production +528/-125, tests +1361/-69. No public ABI, Lib/Emulator, MyNES or owner-input change. Subsequent batch acceptance is recorded below. |
 | T563 S6 | Closed after actual-commit review of 395c84b91/051baac83: Q1--Q6 selector/observation/wait/purity/budget batch complete, 632/632 units, specialized aggregates, sixteen selected integrations and four final published CLI checks per width. Eight current 0563 PC EXEs rebuilt/deployed with PE/hash proof. Production +312/-127, tests +574/-106. Only the approved observation byte expands public layout; Lib/Emulator, MyNES, Apps and owner inputs unchanged. C17/S7, S8 and complete CPU qualification remain open. |
 | T563 S7 | Closed after actual-commit review of d592300bd/ebe095ac1: real SX construction/Board reset admission, nineteen staged rebindings removed, 632/632 units and sixteen selected integrations per width, specialized gates and eight final published CLI checks pass. Eight current 0563 PC EXEs are refreshed; S8 and whole CPU qualification remain open. |
-| T563 S8 | Active, qualification blocked: B1--B4 Debug/prepared-entry candidate-cache repair is implemented. Both builds, both 498/498 strict matrices, all 166 X86 Core units and all 48 registered integrations per width pass; eight rebuilt PC EXEs pass published CLI/PE/hash review. Whole units remain 631/632 per width, blocked only by unchanged native MIDI create; current native midiOutOpen returns 1. No implementation P, S closure or complete CPU acceptance yet; retain all work and native failure evidence pending resolution. |
+| T563 S8 | Closed by owner-approved bounded acceptance after actual-commit review of 16e7e3a97/f1174de9f: B1--B4 repaired, dual-width builds/498 strict rows/166 Core units/48 integrations pass and eight artifacts verified. Whole units stay 631/632 per width; the single native MIDI gate transfers explicitly to S9. No complete CPU/T closure is claimed. |
 
 [S1 evidence](../etc/evidence/t563-s1-rebase.md) retains the original receiver
 ledger. [S2 delivery](../etc/evidence/t563-s2-nominal-allocation.md) records the
@@ -61,14 +35,16 @@ records the complete fetch/bus/decode/REP cohort;
 [S5 event/system delivery](../etc/evidence/t563-s5-event-system.md) records
 complete E1--E6 allocation and its review; [S6 selected runtime delivery](../etc/evidence/t563-s6-selected-runtime.md)
 records complete Q1--Q6 allocation, bounded transport and actual-commit acceptance;
-[current artifact hashes](../etc/evidence/t563-s7-artifacts.json) were checked
+[current artifact hashes](../etc/evidence/t563-s8-artifacts.json) were checked
 after all builds, published CLI tests and pushed deliveries. Lib, Emulator, MyNES,
 owner INIs/media/firmware and four App CPU choices remain unchanged.
 
 [S7 production admission](../etc/evidence/t563-s7-production-admission.md)
 records the complete implementation, receiving qualification and actual-commit
-acceptance. T563 and the complete 486SX goal remain open for S8
-whole C01--C17 reconciliation. No PC110, full external-media or manual guest
+acceptance. [S8 reconciliation](../etc/evidence/t563-s8-whole-qualification.md)
+records its accepted CPU repair and true receiving results. T563 and the
+complete 486SX goal remain open for S9 shared import and final MIDI/whole-suite
+qualification. No PC110, full external-media or manual guest
 GUI qualification is inferred.
 
 ## Previous Task
