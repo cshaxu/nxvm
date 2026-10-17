@@ -192,8 +192,10 @@ static void x86_core_machine_arbitration_advance(x86_core_machine *machine,
     lib_u8 refresh_pending;
     lib_u8 refresh_address;
     lib_bool refresh_occupied;
+    lib_bool bus_used;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
+    machine->bus_invalidation_cycles = 0u;
     dma_ticks = machine->attachment.dma_ticks != LIB_NULL ?
         machine->attachment.dma_ticks(machine->attachment.context, source_ticks) : 0u;
     refresh_pending = machine->attachment.refresh_request != LIB_NULL &&
@@ -202,6 +204,7 @@ static void x86_core_machine_arbitration_advance(x86_core_machine *machine,
     refresh_occupied = machine->refresh_cycle_ticks_remaining != 0u;
     x86_core_machine_refresh_hold_advance(machine, source_ticks);
     refresh_occupied = refresh_occupied || machine->refresh_cycle_ticks_remaining != 0u;
+    bus_used = refresh_pending || refresh_occupied;
     if (refresh_occupied) {
         /* The clock still advances; occupied intervals cannot become a later
          * DMA grant or advance a DMA service phase. */
@@ -210,6 +213,7 @@ static void x86_core_machine_arbitration_advance(x86_core_machine *machine,
         for (tick = 0u; tick < dma_ticks; ++tick) {
             if (machine->attachment.dma_request != LIB_NULL &&
                 machine->attachment.dma_request(machine->attachment.context)) {
+                bus_used = LIB_TRUE;
                 if (machine->transaction_contract.dma_cycle_bus_ready_gate_enabled &&
                     !machine->dma_cycle_bus_ready) {
                     continue;
@@ -231,6 +235,7 @@ static void x86_core_machine_arbitration_advance(x86_core_machine *machine,
         machine->attachment.dma_request(machine->attachment.context) &&
         x86_core_machine_transaction_hold_request(&machine->transaction,
             X86_CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
+        bus_used = LIB_TRUE;
         if (x86_core_machine_transaction_hold_acknowledge(&machine->transaction,
                 X86_CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
             if (machine->attachment.dma_advance != LIB_NULL)
@@ -242,6 +247,13 @@ static void x86_core_machine_arbitration_advance(x86_core_machine *machine,
         if (machine->attachment.dma_advance != LIB_NULL)
             machine->attachment.dma_advance(machine->attachment.context, dma_ticks);
     }
+    x86_core_cpu_execution_advance_bus(machine->executor_cpu_execution, source_ticks,
+        !bus_used && (!machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled ||
+            machine->cpu_cycle_bus_ready) &&
+        machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_NONE &&
+        machine->transaction.hold_owner == X86_CORE_MACHINE_TRANSACTION_OWNER_NONE,
+        machine->cpu_retirement_source_ticks != 0u || machine->cpu_retirement_wait_pending ?
+            machine->bus_invalidation_cycles : 0u);
     if (machine->transaction_contract.cpu_prefetch_reservation_enabled && !refresh_pending &&
         (machine->attachment.refresh_request == LIB_NULL ||
          !machine->attachment.refresh_request(machine->attachment.context,

@@ -505,25 +505,42 @@ static lib_bool timing_prefix_penalties(void)
         code[bytes++] = 0x90u;
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) || ticks != expected) {
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != expected) {
             lib_c_fprintf(lib_c_stderr, "Prefix penalty code32=%u mask=%x ticks=%llu\n",
                 code32, mask, ticks);
             return LIB_FALSE;
         }
     }
+    for (lib_u8 kind = 0u; kind < 4u; ++kind)
     for (lib_u8 count = 0u; count < 15u; ++count) {
         cpu_instruction_fixture fixture;
         lib_u8 code[15];
         lib_u64 ticks = LIB_UINT64_MAX;
+        lib_bool modeled = LIB_TRUE;
+        const lib_bool repeated = kind >= 2u && count != 0u;
+        const lib_bool expected_model = kind != 0u && count != 0u &&
+            (kind != 3u || count > 1u);
         t_cpu after;
 
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-        for (lib_u8 index = 0u; index < count; ++index) code[index] = 0x2eu;
-        code[count] = 0x90u;
+        fixture.cpu.data.esi = 0x2000u;
+        fixture.cpu.data.edi = 0x3000u;
+        fixture.cpu.data.ecx = 3u;
+        for (lib_u8 index = 0u; index < count; ++index)
+            code[index] = kind == 0u ? 0x2eu : kind == 3u || (index & 1u) ? 0xf3u : 0xf2u;
+        code[count] = kind >= 2u ? 0xa4u : 0x90u;
         if (cpu_instruction_run(&fixture, code, count + 1u, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) || ticks != count)
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
+            ticks != count - (lib_u64)repeated || modeled != expected_model)
             return LIB_FALSE;
+        if (repeated) {
+            x86_core_cpu_execution_refresh(&fixture.execution);
+            if (!fixture.execution.source_repeat_active || fixture.cpu.data.ecx != 1u ||
+                fixture.execution.timing_result.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION ||
+                !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
+                ticks != 0u || modeled != expected_model) return LIB_FALSE;
+        }
     }
     return LIB_TRUE;
 }
@@ -556,14 +573,14 @@ static lib_bool timing_decode_penalties(void)
         fixture.cpu.data.ebx = fixture.cpu.data.esi = 0x1000u;
         if (cpu_instruction_run(&fixture, test->code, test->bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) || ticks != test->ticks) {
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != test->ticks) {
             lib_c_fprintf(lib_c_stderr, "Decode penalty %s: ticks=%llu\n", test->name, ticks);
             return LIB_FALSE;
         }
         const t_cpuins before_instructions = fixture.instructions;
         const x86_core_cpu_execution_context before_execution = fixture.execution;
         const t_cpu before_cpu = fixture.cpu;
-        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) ||
+        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) ||
             lib_memory_compare(&before_instructions, &fixture.instructions, sizeof(before_instructions)) ||
             lib_memory_compare(&before_execution, &fixture.execution, sizeof(before_execution)) ||
             lib_memory_compare(&before_cpu, &fixture.cpu, sizeof(before_cpu)))
@@ -573,13 +590,14 @@ static lib_bool timing_decode_penalties(void)
         cpu_instruction_fixture fixture;
         const lib_u8 code[] = {0xf3u, form ? 0xf3u : 0x90u, 0xa4u};
         lib_u64 ticks = LIB_UINT64_MAX;
+        lib_bool modeled = LIB_FALSE;
         t_cpu after;
 
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
         if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) ||
-            ticks != LIB_UINT64_MAX)
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
+            ticks != 1u || !modeled)
             return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -591,20 +609,21 @@ static lib_bool nominal_rejects_unowned(void)
     cpu_instruction_fixture fixture;
     t_cpu after;
     lib_u64 ticks = LIB_UINT64_MAX;
+    lib_bool modeled = LIB_TRUE;
 
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80386);
     if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
         x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
-        x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) ||
-        ticks != LIB_UINT64_MAX) return LIB_FALSE;
+        x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
+        ticks != LIB_UINT64_MAX || !modeled) return LIB_FALSE;
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
     return !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) &&
-        !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) &&
+        !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) &&
         ticks == LIB_UINT64_MAX &&
         !x86_core_cpu_80486_nominal_instruction_cost(LIB_NULL, &ticks) &&
         !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, LIB_NULL) &&
-        !x86_core_cpu_80486_decode_penalty(LIB_NULL, &ticks) &&
-        !x86_core_cpu_80486_decode_penalty(&fixture.execution, LIB_NULL);
+        !x86_core_cpu_80486_decode_penalty(LIB_NULL, &ticks, LIB_NULL) &&
+        !x86_core_cpu_80486_decode_penalty(&fixture.execution, LIB_NULL, LIB_NULL);
 }
 
 static lib_bool nominal_modes(void)
@@ -901,15 +920,6 @@ static lib_bool nominal_ports(void)
     return LIB_TRUE;
 }
 
-static lib_status port_timing_query(void *opaque, lib_u32 address,
-    x86_core_cpu_cache_query query, x86_core_cpu_cache_memory *out_memory)
-{
-    (void)opaque;
-    *out_memory = (x86_core_cpu_cache_memory){.address = address,
-        .fill_enabled = query == X86_CORE_CPU_CACHE_FILL_PROBE && address >= 0x600u};
-    return LIB_STATUS_OK;
-}
-
 static lib_bool port_memory_timing(void)
 {
     static const lib_u8 opcodes[] = {0xe4u, 0xe5u, 0xe6u, 0xe7u, 0xecu, 0xedu,
@@ -937,7 +947,7 @@ static lib_bool port_memory_timing(void)
         x86_core_cpu_bus_provider bus = cpu_port_bus;
 
         cpu_port_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-        bus.query_cache_memory = port_timing_query;
+        bus.query_cache_memory = cpu_port_cache_query;
         fixture.instruction.execution.bus = &bus;
         fixture.instruction.cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
         lib_memory_copy(fixture.instruction.memory + 0x666u, &(lib_u16){0x80u}, sizeof(lib_u16));
@@ -1085,7 +1095,7 @@ static lib_bool timing_decode_facts(void)
                             fixture.instructions.data.timing_ea_indexed != indexed ||
                             fixture.instructions.data.timing_ea_displacement != displacement ||
                             fixture.instructions.data.timing_immediate ||
-                            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty) ||
+                            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL) ||
                             penalty != (lib_u64)address_prefix + indexed) {
                             lib_c_fprintf(lib_c_stderr,
                                 "Timing decode: code32=%u address_prefix=%u mod=%u rm=%u sib=%x\n",
@@ -1107,7 +1117,7 @@ static lib_bool timing_decode_facts(void)
         !fixture.instructions.data.timing_ea_displacement ||
         !fixture.instructions.data.timing_immediate) return LIB_FALSE;
     lib_u64 penalty = LIB_UINT64_MAX;
-    if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty) || penalty != 1u)
+    if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL) || penalty != 1u)
         return LIB_FALSE;
     x86_core_cpu_execution_refresh(&fixture.execution);
     return !fixture.fault.valid && !fixture.delivered_exception.valid &&
@@ -1116,7 +1126,37 @@ static lib_bool timing_decode_facts(void)
         !fixture.instructions.data.timing_ea_indexed &&
         !fixture.instructions.data.timing_ea_displacement &&
         !fixture.instructions.data.timing_immediate &&
-        x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty) && penalty == 0u;
+        x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL) && penalty == 0u;
+}
+
+static lib_bool port_wait_feedback(void)
+{
+    for (lib_u8 width = 0u; width < 3u; ++width)
+    for (lib_u8 write = 0u; write < 2u; ++write)
+    for (lib_u8 failed = 0u; failed < 2u; ++failed) {
+        cpu_port_instruction_fixture fixture;
+        lib_u8 code[3], bytes = 0u;
+        t_cpu after;
+
+        cpu_port_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        fixture.cycle_wait_ticks = 9u;
+        fixture.fail_status = failed ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+        x86_core_cpu_execution_context_bind_external_cycle_provider(&fixture.instruction.execution,
+            cpu_port_cycle_wait, &fixture);
+        if (width == 2u) code[bytes++] = 0x66u;
+        code[bytes++] = (write ? 0xe6u : 0xe4u) + (width != 0u);
+        code[bytes++] = 0x80u;
+        if (cpu_instruction_run(&fixture.instruction, code, bytes, &after) !=
+                (failed ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
+            fixture.instruction.fault.valid != (failed != 0u) ||
+            fixture.cycle_begins != 1u || fixture.cycle_commits != !failed ||
+            fixture.cycle_cancels != failed || fixture.cycle_order_error ||
+            fixture.complete_count != !failed ||
+            fixture.instruction.instructions.data.timing_external_wait_ticks != (failed ? 0u : 9u) ||
+            fixture.instruction.instructions.data.timing_external_wait_overflow)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
 }
 
 static lib_bool nominal_protected_transfers(void)
@@ -1250,7 +1290,7 @@ static lib_bool timing_dependency_writer(const dependency_case *test)
         if (fixture.fault.valid || fixture.delivered_exception.valid ||
             fixture.cpu.data.eip != bytes ||
             fixture.instructions.data.timing_previous_gpr_writes != test->writes ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) ||
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) ||
             ticks != 1u + ((test->writes & (1u << base)) != 0u)) {
             lib_c_fprintf(lib_c_stderr, "GPR dependency %s: base=%u previous=%x ticks=%llu fault=%x\n",
                 test->name, base, fixture.instructions.data.timing_previous_gpr_writes,
@@ -1382,7 +1422,7 @@ static lib_bool timing_dependency_adjacency(void)
         x86_core_cpu_execution_refresh(&fixture.execution);
         if (fixture.fault.valid || fixture.delivered_exception.valid ||
             fixture.cpu.data.eip != cases[index].bytes ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) || ticks != cases[index].ticks) {
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != cases[index].ticks) {
             lib_c_fprintf(lib_c_stderr, "Dependency adjacency %u: previous=%x ticks=%llu\n",
                 (lib_u32)index, fixture.instructions.data.timing_previous_gpr_writes, ticks);
             return LIB_FALSE;
@@ -1416,7 +1456,7 @@ static lib_bool timing_dependency_boundaries(void)
         x86_core_cpu_execution_refresh(&fixture.execution);
         if (fixture.fault.valid || fixture.execution.instruction_fault_delivered ||
             fixture.cpu.data.eip != 0x100u + sizeof(handler) ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) || ticks != 1u)
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 1u)
             return LIB_FALSE;
     }
     {
@@ -1439,7 +1479,7 @@ static lib_bool timing_dependency_boundaries(void)
             x86_core_cpu_debug_patch_registers(&fixture.execution, &patch) != LIB_STATUS_OK)
             return LIB_FALSE;
         x86_core_cpu_execution_refresh(&fixture.execution);
-        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) || ticks != 1u)
+        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 1u)
             return LIB_FALSE;
         x86_core_cpu_state_reset(&fixture.execution);
         if (fixture.instructions.data.timing_gpr_writes != 0u ||
@@ -1461,7 +1501,7 @@ static lib_bool timing_dependency_boundaries(void)
             return LIB_FALSE;
         x86_core_cpu_finish_entry(entry, commit);
         x86_core_cpu_execution_refresh(&fixture.execution);
-        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks) ||
+        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) ||
             ticks != (commit ? 1u : 2u)) return LIB_FALSE;
     }
     {
@@ -1775,7 +1815,8 @@ int main(void)
         !nominal_protection_queries() || !nominal_exchange_memory() || !nominal_system_forms() ||
         !nominal_rejects_unowned() || !nominal_modes() ||
         !nominal_cpuid() || !nominal_bit_scan() || !nominal_unsigned_multiply() ||
-        !nominal_ports() || !port_memory_timing() || !nominal_repeat_first() || !timing_decode_facts() ||
+        !nominal_ports() || !port_memory_timing() || !port_wait_feedback() ||
+        !nominal_repeat_first() || !timing_decode_facts() ||
         !nominal_protected_transfers() || !timing_prefix_penalties() ||
         !timing_decode_penalties() || !timing_dependency_writers() ||
         !timing_dependency_adjacency() || !arithmetic_model_multiply() ||

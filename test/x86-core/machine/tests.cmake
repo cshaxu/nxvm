@@ -7,7 +7,8 @@ add_library(x86-core-machine-prefetch-scheduler-test OBJECT
     "${X86_CORE_ROOT}/machine/machine_scheduler.c")
 target_link_libraries(x86-core-machine-prefetch-scheduler-test PRIVATE x86-core-machine)
 target_compile_definitions(x86-core-machine-prefetch-scheduler-test PRIVATE
-    x86_core_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
+    x86_core_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant
+    x86_core_cpu_execution_advance_bus=test_cpu_bus_service)
 add_executable(x86-core-machine-prefetch-locality-smoke ${CMAKE_CURRENT_LIST_DIR}/machine_prefetch_locality_smoke.c)
 target_link_libraries(x86-core-machine-prefetch-locality-smoke PRIVATE
     x86-core-machine-prefetch-scheduler-test x86-core-machine)

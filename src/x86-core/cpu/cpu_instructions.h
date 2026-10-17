@@ -120,6 +120,13 @@ typedef struct {
      * histogram is indexed by zero, one or two attempted A/D updates in a
      * completed walk. Writes also retain the accepted prefix of failed walks. */
     lib_u32 timing_fetch_bus_ticks; /* L2 serialized 2-1 burst baseline; waits are external. */
+    lib_u64 timing_external_wait_ticks;
+    lib_bool timing_external_wait_overflow;
+    lib_u64 timing_bus_service_ticks;
+    lib_u64 timing_bus_stall_ticks;
+    lib_u64 timing_bus_wait_ticks;
+    lib_u64 timing_bus_invalidation_ticks;
+    lib_bool timing_cache_used;
     lib_u32 timing_data_misses;
     lib_u32 timing_missed_reads; /* Completed logical DATA reads with a physical miss. */
     lib_u32 timing_descriptor_misses;
@@ -127,6 +134,8 @@ typedef struct {
     lib_u8 timing_task_gate_miss_mask;
     lib_u32 timing_pair_misses;
     lib_u32 timing_tss_field_misses;
+    lib_u32 timing_missed_tss_fields;
+    lib_u32 timing_repeat_previous_misses;
     lib_u32 timing_locked_reads;
     lib_u32 timing_table_misses;
     lib_u32 timing_unaligned_accesses;
@@ -187,6 +196,22 @@ struct t_cpuins {
 #define X86_CPU_CACHE_SETS 128u
 #define X86_CPU_CACHE_WAYS 4u
 #define X86_CPU_CACHE_LINE_DWORDS 4u
+#define X86_CPU_WRITE_BUFFER_CAPACITY 4u
+
+typedef struct cpu_write_buffer {
+    lib_u64 ticks;
+    lib_bool cache_hit;
+} cpu_write_buffer;
+
+typedef struct cpu_bus_timing {
+    cpu_write_buffer writes[X86_CPU_WRITE_BUFFER_CAPACITY];
+    /* Predicted service already consumed by the atomic execution owner. */
+    lib_u64 service_credit;
+    lib_u8 head;
+    lib_u8 count;
+    lib_bool write_active;
+    lib_bool invalid;
+} cpu_bus_timing;
 
 typedef struct cpu_cache_line {
     lib_u32 tag;
@@ -218,6 +243,9 @@ struct x86_core_cpu_execution_context {
      * repeat lifecycle. Older profiles retain their existing identity. */
     lib_u8 source_repeat_byte_count;
     lib_u8 source_repeat_bytes[15];
+    lib_u32 source_repeat_data_misses;
+    cpu_bus_timing bus_timing;
+    lib_bool timing_bus_active;
     const x86_core_cpu_bus_provider *bus;
     void *bus_context;
     const x86_core_cpu_execution_diagnostic_provider *diagnostic_provider;
@@ -317,6 +345,7 @@ void x86_core_cpu_execution_reset(
     x86_core_cpu_execution_context *context);
 void x86_core_cpu_execution_invalidate_tlb(
     x86_core_cpu_execution_context *context);
+lib_u32 x86_core_cpu_instruction_prefix_count(const t_cpuins_data *data);
 
 
 #ifdef __cplusplus

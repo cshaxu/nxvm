@@ -100,6 +100,13 @@ void x86_core_machine_cpu_bus_snoop_write(void *opaque, lib_u32 physical,
 {
     x86_core_machine *machine = opaque;
 
+    if (bytes != 0u && !machine->bus_invalidation_seen &&
+        machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_DMA &&
+        machine->transaction.kind == X86_CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE) {
+        machine->bus_invalidation_seen = LIB_TRUE;
+        if (machine->bus_invalidation_cycles != LIB_UINT64_MAX)
+            ++machine->bus_invalidation_cycles;
+    }
     if (machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         (machine->transaction.kind == X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE ||
          machine->transaction.kind == X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK) &&
@@ -111,15 +118,6 @@ void x86_core_machine_cpu_bus_snoop_write(void *opaque, lib_u32 physical,
         physical, bytes);
 }
 
-static void x86_core_machine_cpu_bus_port_phase(x86_core_machine *machine,
-    x86_core_cpu_external_cycle_phase phase, lib_u16 port, lib_u8 bytes,
-    lib_bool write)
-{
-    x86_core_machine_cpu_external_cycle_trace(machine, phase,
-        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, port, bytes, write,
-        X86_CORE_CPU_MEMORY_ACCESS_DATA);
-}
-
 static lib_status x86_core_machine_cpu_bus_transfer_port(void *opaque,
     lib_u16 port, lib_u8 bytes, lib_bool write, lib_u32 *value)
 {
@@ -127,7 +125,7 @@ static lib_status x86_core_machine_cpu_bus_transfer_port(void *opaque,
     t_port *ports = &machine->executor_port;
     lib_status status;
 
-    /* Preserve the board latch before beginning the externally visible cycle. */
+    /* Prepare the write latch before transaction admission and device access. */
     if (write) {
         switch (bytes) {
         case 1u: ports->data.ioByte = (lib_u8)*value; break;
@@ -136,24 +134,16 @@ static lib_status x86_core_machine_cpu_bus_transfer_port(void *opaque,
         default: return LIB_STATUS_INVALID_ARGUMENT;
         }
     }
-    x86_core_machine_cpu_bus_port_phase(machine,
-        X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, port, bytes, write);
     status = x86_core_machine_transaction_begin(&machine->transaction,
         X86_CORE_MACHINE_TRANSACTION_OWNER_CPU,
         write ? X86_CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE :
             X86_CORE_MACHINE_TRANSACTION_CPU_PORT_READ,
         port, write ? *value : bytes, write ? bytes : 0u);
-    if (status != LIB_STATUS_OK) {
-        x86_core_machine_cpu_bus_port_phase(machine,
-            X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, port, bytes, write);
-        return status;
-    }
+    if (status != LIB_STATUS_OK) return status;
     status = write ? x86_core_machine_port_execute_write_width(ports, port, bytes) :
         x86_core_machine_port_execute_read_width(ports, port, bytes, machine->elapsed_ticks);
     if (status != LIB_STATUS_OK) {
         x86_core_machine_transaction_cancel(&machine->transaction);
-        x86_core_machine_cpu_bus_port_phase(machine,
-            X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, port, bytes, write);
         return status;
     }
     if (!write) {
@@ -170,8 +160,9 @@ static void x86_core_machine_cpu_bus_complete_port(void *opaque,
     x86_core_machine *machine = (x86_core_machine *)opaque;
 
     x86_core_machine_transaction_commit(&machine->transaction);
-    x86_core_machine_cpu_bus_port_phase(machine,
-        X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, port, bytes, write);
+    (void)port;
+    (void)bytes;
+    (void)write;
 }
 
 static lib_bool x86_core_machine_cpu_bus_interrupt_pending(void *opaque)
@@ -381,6 +372,8 @@ void x86_core_machine_transaction_trace(void *opaque,
     x86_core_machine_trace_event_type type;
 
     if (machine == LIB_NULL) return;
+    if (phase == X86_CORE_MACHINE_TRANSACTION_PHASE_BEGIN)
+        machine->bus_invalidation_seen = LIB_FALSE;
     /* Generic-AT policy: an acknowledged DMA bus handoff breaks CPU-side
      * locality. D4 establishes the HOLD/HLDA topology, not this page-retention
      * behavior or any physical phase duration. */
@@ -465,7 +458,7 @@ void x86_core_machine_external_cycle_invalidate(x86_core_machine *machine)
     machine->external_cycle_overlap_valid = LIB_FALSE;
 }
 
-void x86_core_machine_cpu_external_cycle_trace(void *opaque,
+lib_u64 x86_core_machine_cpu_external_cycle_trace(void *opaque,
     x86_core_cpu_external_cycle_phase phase,
     x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 bytes, lib_u8 write,
@@ -475,8 +468,9 @@ void x86_core_machine_cpu_external_cycle_trace(void *opaque,
     x86_core_machine_trace_event_type type;
     lib_i32 pending_matches;
     lib_u8 page_timing_enabled;
+    lib_u64 cycle_ticks = 0u;
 
-    if (machine == LIB_NULL) return;
+    if (machine == LIB_NULL) return 0u;
     page_timing_enabled = space == X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
         machine->transaction_contract.external_cycle_timing.page_bytes != 0u &&
         ((machine->transaction_contract.external_cycle_timing.first_eligible_address == 0u &&
@@ -537,6 +531,7 @@ void x86_core_machine_cpu_external_cycle_trace(void *opaque,
             }
             machine->external_cycle_page_valid = LIB_TRUE;
             machine->external_cycle_page_tag = page_tag;
+            cycle_ticks += wait_ticks;
             if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
                 machine->external_cycle_round_overflow = LIB_TRUE;
             } else {
@@ -546,6 +541,7 @@ void x86_core_machine_cpu_external_cycle_trace(void *opaque,
         if (pending_matches) {
             lib_u32 wait_ticks = x86_core_machine_external_access_wait_ticks(
                 machine, space, address);
+            cycle_ticks += wait_ticks;
             if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
                 machine->external_cycle_round_overflow = LIB_TRUE;
             } else {
@@ -563,8 +559,9 @@ void x86_core_machine_cpu_external_cycle_trace(void *opaque,
         type = X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL;
         break;
     default:
-        return;
+        return 0u;
     }
     x86_core_machine_trace_record(machine, type, address, bytes,
         (lib_u32)provenance);
+    return cycle_ticks;
 }

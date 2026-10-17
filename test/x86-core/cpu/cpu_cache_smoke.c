@@ -238,12 +238,16 @@ typedef struct cache_memory_probe {
     lib_bool fail_read;
     lib_u32 fail_read_at;
     lib_bool fail_write;
+    lib_u32 fail_write_at;
     lib_bool fail_fetch;
     lib_bool cache_code;
     lib_bool cache_page_tables;
     lib_u32 fail_fetch_at;
     lib_u8 operation_count;
     lib_u8 fail_operation;
+    lib_u64 cycle_wait_ticks;
+    lib_u32 cycle_commits;
+    lib_u32 cycle_cancels;
     x86_core_cpu_cache_operation operations[2];
 } cache_memory_probe;
 
@@ -324,7 +328,9 @@ static lib_status cache_memory_write(void *opaque, lib_u32 address,
         if (address == 0x11010u) ++probe->target_table_writes;
         if (probe->fail_page_write) return LIB_STATUS_IO_ERROR;
     }
-    if (probe->fail_write) return LIB_STATUS_IO_ERROR;
+    if (probe->fail_write && (probe->fail_write_at == 0u ||
+        (address <= probe->fail_write_at &&
+         (lib_u64)address + bytes > probe->fail_write_at))) return LIB_STATUS_IO_ERROR;
     return cpu_instruction_write(&probe->instruction, address, source, bytes, provenance, cache_control);
 }
 
@@ -539,7 +545,7 @@ static lib_bool cache_locked_operands(void)
             probe.lock_cancellations != 0u || probe.lock_active || probe.lock_protocol_error ||
             fixture->instructions.data.memory_lock_active ||
             fixture->instructions.data.flagLock != prefix || probe.fill_probes != 0u ||
-            !x86_core_cpu_80486_decode_penalty(&fixture->execution, &decode_ticks) ||
+            !x86_core_cpu_80486_decode_penalty(&fixture->execution, &decode_ticks, LIB_NULL) ||
             decode_ticks != (lib_u64)prefix + (size == 2u))
             return LIB_FALSE;
         lib_memory_copy(&observed, fixture->memory + 0x2000u, sizeof(observed));
@@ -1304,6 +1310,181 @@ static lib_bool cache_fetch_timing(void)
             &cache_memory_bus, &probe);
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
             fixture->instructions.data.timing_fetch_bus_ticks != 0u) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_branch_fetch_timing(void)
+{
+    static const lib_u16 targets[] = {0x300u, 0x30fu, 0x2fffu};
+
+    for (lib_u8 form = 0u; form < 4u; ++form)
+    for (lib_u8 position = 0u; position < sizeof(targets) / sizeof(targets[0]); ++position)
+    for (lib_u8 long_target = 0u; long_target < 2u; ++long_target)
+    for (lib_u8 warm = 0u; warm < 2u; ++warm)
+    for (lib_u8 take = 0u; take < (form == 3u ? 2u : 1u); ++take) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u16 target = targets[position];
+        const lib_bool taken = form != 3u || take != 0u;
+        const lib_u8 length = form == 3u ? 4u : form == 2u ? 1u : 3u;
+        const lib_u16 displacement = target - length;
+        /* Page-clipped prefetch does not touch the next page unless decoding
+         * needs it; an ordinary line boundary can fill the whole queue. */
+        const lib_u8 lines = position == 0u || (position == 2u && !long_target) ? 1u : 2u;
+        lib_u32 reads;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        probe.cache_code = LIB_TRUE;
+        lib_memory_set(fixture->memory, 0x90u, 0x3100u);
+        lib_memory_set(fixture->memory + target, 0x2eu, long_target ? 14u : 0u);
+        fixture->memory[0] = form == 0u ? 0xe9u : form == 1u ? 0xe8u : form == 2u ? 0xc3u : 0x0fu;
+        if (form == 3u) fixture->memory[1] = 0x84u;
+        if (form != 2u)
+            lib_memory_copy(fixture->memory + length - 2u, &displacement, sizeof(displacement));
+        lib_memory_copy(fixture->memory + 0x2300u, &target, sizeof(target));
+        if (warm) {
+            fixture->cpu.data.eip = target;
+            x86_core_cpu_execution_refresh(&fixture->execution);
+            if (fixture->fault.valid || fixture->cpu.data.eip != target + (long_target ? 15u : 1u))
+                return LIB_FALSE;
+        }
+        fixture->cpu.data.esp = 0x2300u;
+        fixture->cpu.data.eip = 0u;
+        if (taken) fixture->cpu.data.eflags |= VCPU_EFLAGS_ZF;
+        else fixture->cpu.data.eflags &= ~VCPU_EFLAGS_ZF;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        reads = probe.completed_fetches;
+        x86_core_cpu_execution_refresh(&fixture->execution);
+        if (fixture->fault.valid || fixture->cpu.data.eip != (taken ? target : length) ||
+            fixture->instructions.data.timing_fetch_bus_ticks != 5u ||
+            probe.completed_fetches != reads + 1u ||
+            fixture->instructions.data.timing_data_misses != (lib_u32)(form == 2u))
+            return LIB_FALSE;
+        reads = probe.completed_fetches;
+        x86_core_cpu_execution_refresh(&fixture->execution);
+        const lib_u32 expected = taken && !warm ? 5u * lines : 0u;
+        if (fixture->fault.valid ||
+            fixture->cpu.data.eip != (taken ? target + (long_target ? 15u : 1u) : length + 1u) ||
+            fixture->instructions.data.timing_fetch_bus_ticks != expected ||
+            probe.completed_fetches != reads + (taken && !warm ? lines : 0u) ||
+            fixture->instructions.data.timing_data_misses != 0u) {
+            lib_c_printf("Branch fetch form=%u position=%u length=%u warm=%u taken=%u: ip=%x ticks=%u/%u\n",
+                (lib_u32)form, (lib_u32)position, (lib_u32)long_target,
+                (lib_u32)warm, (lib_u32)taken, fixture->cpu.data.eip,
+                fixture->instructions.data.timing_fetch_bus_ticks, expected);
+            return LIB_FALSE;
+        }
+    }
+    for (lib_u8 form = 0u; form < 4u; ++form)
+    for (lib_u8 page = 0u; page < 2u; ++page)
+    for (lib_u8 failed_line = 0u; failed_line < 2u; ++failed_line) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u16 target = page ? 0x2fffu : 0x30fu;
+        const lib_u8 length = form == 3u ? 4u : form == 2u ? 1u : 3u;
+        const lib_u16 displacement = target - length;
+        const lib_u32 failed_address = (target & ~15u) + 16u * failed_line;
+        lib_u32 reads;
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        probe.cache_code = LIB_TRUE;
+        lib_memory_set(fixture->memory, 0x90u, 0x3100u);
+        lib_memory_set(fixture->memory + target, 0x2eu, 14u);
+        fixture->memory[0] = form == 0u ? 0xe9u : form == 1u ? 0xe8u : form == 2u ? 0xc3u : 0x0fu;
+        if (form == 3u) fixture->memory[1] = 0x84u;
+        if (form != 2u)
+            lib_memory_copy(fixture->memory + length - 2u, &displacement, sizeof(displacement));
+        lib_memory_copy(fixture->memory + 0x2300u, &target, sizeof(target));
+        fixture->cpu.data.esp = 0x2300u;
+        fixture->cpu.data.eflags |= VCPU_EFLAGS_ZF;
+        probe.fail_fetch = LIB_TRUE;
+        probe.fail_fetch_at = failed_address;
+        /* A target failure is not a failure of the already completed branch. */
+        x86_core_cpu_execution_refresh(&fixture->execution);
+        if (fixture->fault.valid || fixture->cpu.data.eip != target ||
+            fixture->instructions.data.timing_fetch_bus_ticks != 5u)
+            return LIB_FALSE;
+        reads = probe.completed_fetches;
+        x86_core_cpu_execution_refresh(&fixture->execution);
+        if (!fixture->fault.valid || fixture->fault.exception_mask != VCPUINS_EXCEPT_CE ||
+            fixture->cpu.data.eip != target ||
+            fixture->instructions.data.timing_fetch_bus_ticks != 5u * failed_line ||
+            probe.completed_fetches != reads + failed_line ||
+            fixture->execution.timing_result.ticks != 0u ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 999u || !modeled)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_u64 cache_cycle_wait(void *opaque,
+    x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address,
+    lib_u8 bytes, lib_u8 write,
+    x86_core_cpu_memory_access_provenance provenance)
+{
+    cache_memory_probe *probe = opaque;
+
+    (void)space;
+    (void)address;
+    (void)bytes;
+    (void)write;
+    (void)provenance;
+    if (phase == X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT) {
+        ++probe->cycle_commits;
+        return probe->cycle_wait_ticks;
+    }
+    if (phase == X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL) ++probe->cycle_cancels;
+    /* Only a completed transfer may contribute a returned wait. */
+    return LIB_UINT64_MAX;
+}
+
+static lib_bool cache_external_wait_feedback(void)
+{
+    for (lib_u8 sx = 0u; sx < 2u; ++sx)
+    for (lib_u8 write = 0u; write < 2u; ++write)
+    for (lib_u8 failure = 0u; failure < (sx ? 3u : 2u); ++failure)
+    for (lib_u8 overflow = 0u; overflow < 2u; ++overflow) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 code[] = {write ? 0xa3u : 0xa1u, 0x0fu, 0x20u};
+        const lib_u32 accepted = 1u + (failure ? failure - 1u : sx ? 2u : 1u);
+
+        cpu_instruction_prepare_with_bus(fixture, sx ? X86_CORE_CPU_PROFILE_80486SX :
+            X86_CORE_CPU_PROFILE_80386, &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        probe.cache_code = LIB_TRUE;
+        probe.fail_read = !write && failure != 0u;
+        probe.fail_write = write && failure != 0u;
+        probe.fail_read_at = probe.fail_write_at = failure == 2u ? 0x2010u : 0x200fu;
+        probe.cycle_wait_ticks = overflow ? LIB_UINT64_MAX : 7u;
+        x86_core_cpu_execution_context_bind_external_cycle_provider(&fixture->execution,
+            cache_cycle_wait, &probe);
+        if (cache_run(fixture, code, sizeof(code)) != (failure == 0u) ||
+            fixture->fault.valid != (failure != 0u) ||
+            probe.cycle_commits != accepted || probe.cycle_cancels != (lib_u32)(failure != 0u) ||
+            fixture->writes != (write ? accepted - 1u : 0u) ||
+            fixture->instructions.data.timing_external_wait_ticks !=
+                (sx ? overflow ? LIB_UINT64_MAX : 7u * accepted : 0u) ||
+            fixture->instructions.data.timing_external_wait_overflow !=
+                (sx && overflow && accepted > 1u)) {
+            lib_c_printf("Cycle feedback sx=%u write=%u failure=%u overflow=%u: commits=%u/%u cancel=%u ticks=%llu\n",
+                (lib_u32)sx, (lib_u32)write, (lib_u32)failure, (lib_u32)overflow,
+                probe.cycle_commits, accepted, probe.cycle_cancels,
+                fixture->instructions.data.timing_external_wait_ticks);
+            return LIB_FALSE;
+        }
+        x86_core_cpu_state_reset(&fixture->execution);
+        if (fixture->instructions.data.timing_external_wait_ticks != 0u ||
+            fixture->instructions.data.timing_external_wait_overflow) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -2657,6 +2838,114 @@ static lib_bool cache_task_timing(void)
     return LIB_TRUE;
 }
 
+static lib_bool cache_repeat_timing(void)
+{
+    static const lib_u8 opcodes[] = {0xa4u, 0xa6u, 0xaau, 0xacu, 0xaeu};
+    static const lib_u8 first[] = {1u, 3u, 0u, 2u, 2u};
+    static const lib_u8 deferred[] = {3u, 0u, 0u, 0u, 2u};
+    static const lib_u8 counts[] = {0u, 1u, 2u, 17u};
+    static const lib_u8 offsets[] = {0u, 1u, 15u};
+
+    for (lib_u8 form = 0u; form < sizeof(opcodes); ++form)
+    for (lib_u8 size = 0u; size < 3u; ++size)
+    for (lib_u8 prefix = 0u; prefix < 2u; ++prefix)
+    for (lib_u8 backward = 0u; backward < 2u; ++backward)
+    for (lib_u8 position = 0u; position < sizeof(offsets); ++position)
+    for (lib_u8 phase = 0u; phase < 5u; ++phase)
+    for (lib_u8 row = 0u; row < sizeof(counts); ++row) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 width = 1u << size, count = counts[row];
+        const lib_u16 starts[] = {0x2100u + offsets[position] + (backward ? 0x40u : 0u),
+            0x2200u + offsets[position] + (backward ? 0x40u : 0u)};
+        const lib_u8 warm = phase == 1u ? 3u : phase == 2u ? 1u : phase == 3u ? 2u : 0u;
+        const lib_u32 unaligned = (offsets[position] & (width - 1u)) != 0u ?
+            (form <= 1u ? 2u : 1u) : 0u;
+        lib_u8 code[4], bytes = 0u;
+        lib_u32 previous = 0u;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        if (phase != 4u) fixture->cpu.data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
+        if (prefix) lib_memory_set(fixture->memory + 0x2200u, 1, 0x90u);
+        for (lib_u8 part = 0u; part < 2u; ++part)
+        for (lib_u8 line = 0u; line < 9u; ++line) {
+            const lib_u16 address = (part ? 0x2200u : 0x2100u) + 16u * line;
+            const lib_u8 load[] = {0xa0u, (lib_u8)address, (lib_u8)(address >> 8u)};
+
+            if ((warm & (1u << part)) != 0u && !cache_run(fixture, load, sizeof(load)))
+                return LIB_FALSE;
+        }
+        fixture->cpu.data.esi = starts[0];
+        fixture->cpu.data.edi = starts[1];
+        fixture->cpu.data.ecx = count;
+        fixture->cpu.data.eax = 0u;
+        if (backward) fixture->cpu.data.eflags |= VCPU_EFLAGS_DF;
+        if (size == 2u) code[bytes++] = 0x66u;
+        code[bytes++] = prefix ? 0xf2u : 0xf3u;
+        code[bytes++] = opcodes[form] | (size != 0u);
+        t_cpu after;
+        fixture->cpu.data.eip = 0u;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture->execution);
+        if (cpu_instruction_run(fixture, code, bytes, &after) != LIB_STATUS_OK)
+            return LIB_FALSE;
+        for (lib_u8 step = 0u; step < (count ? count : 1u); ++step) {
+            lib_u32 misses = 0u, reads = 0u;
+            lib_u64 ticks = 999u;
+            lib_bool modeled = LIB_TRUE;
+
+            if (count)
+                for (lib_u8 part = 0u; part < 2u; ++part) {
+                    if (part == 0u ? form != 0u && form != 1u && form != 3u :
+                            form != 1u && form != 4u) continue;
+                    const lib_u16 address = backward ? starts[part] - step * width :
+                        starts[part] + step * width;
+                    const lib_u8 prior = step ? step - 1u : 0u;
+                    const lib_u16 low = address & ~15u, high = (address + width - 1u) & ~15u;
+                    const lib_u16 old_low = (backward ? starts[part] - prior * width : starts[part]) & ~15u;
+                    const lib_u16 old_high = ((backward ? starts[part] :
+                        starts[part] + prior * width) + width - 1u) & ~15u;
+                    const lib_u32 fragments = phase == 4u || step == 0u ? 1u + (low != high) :
+                        (low < old_low || low > old_high) +
+                        (lib_u32)(high != low && (high < old_low || high > old_high));
+                    const lib_u32 missing = (warm & (1u << part)) ? 0u : fragments;
+
+                    misses += missing;
+                    reads += missing != 0u;
+                }
+            const lib_u64 expected = first[form] * reads + 5u * (misses - reads) +
+                deferred[form] * previous + 3u * (count ? unaligned : 0u);
+            const lib_bool expected_model = (deferred[form] != 0u && previous != 0u) ||
+                misses > reads || (form == 1u && reads == 1u) || (phase == 4u && misses != 0u);
+            if (fixture->fault.valid || fixture->delivered_exception.valid ||
+                fixture->cpu.data.ecx != (count ? count - step - 1u : 0u) ||
+                fixture->cpu.data.eip != (count > step + 1u ? 0u : bytes) ||
+                fixture->instructions.data.timing_data_misses != misses ||
+                fixture->instructions.data.timing_missed_reads != reads ||
+                fixture->instructions.data.timing_repeat_previous_misses != previous ||
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                ticks != expected || modeled != expected_model) {
+                lib_c_printf("Repeat cache form=%u size=%u prefix=%u df=%u offset=%u phase=%u count=%u step=%u: miss=%u/%u previous=%u/%u ticks=%llu/%llu model=%u/%u\n",
+                    (lib_u32)form, (lib_u32)size, (lib_u32)prefix, (lib_u32)backward,
+                    (lib_u32)offsets[position], (lib_u32)phase, (lib_u32)count, (lib_u32)step,
+                    fixture->instructions.data.timing_data_misses, misses,
+                    fixture->instructions.data.timing_repeat_previous_misses, previous,
+                    ticks, expected, (lib_u32)modeled, (lib_u32)expected_model);
+                return LIB_FALSE;
+            }
+            previous = misses;
+            if (count > step + 1u) x86_core_cpu_execution_refresh(&fixture->execution);
+        }
+        lib_u64 ticks = 999u;
+        lib_bool modeled = LIB_TRUE;
+        if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
+            fixture->instructions.data.timing_repeat_previous_misses != 0u ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            ticks != 0u || modeled) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool cache_translation_timing(void)
 {
     static const lib_u64 walk_ticks[] = {13u, 21u, 28u};
@@ -2858,6 +3147,8 @@ int main(void)
     if (!cache_snoop_write()) { lib_c_printf("Cache snoop failed\n"); return 1; }
     if (!cache_reset_and_snoop_bounds()) { lib_c_printf("Cache reset/bounds failed\n"); return 1; }
     if (!cache_fetch_timing()) { lib_c_printf("Cache fetch timing failed\n"); return 1; }
+    if (!cache_branch_fetch_timing()) { lib_c_printf("Cache branch fetch timing failed\n"); return 1; }
+    if (!cache_external_wait_feedback()) { lib_c_printf("Cache wait feedback failed\n"); return 1; }
     if (!cache_access_timing()) { lib_c_printf("Cache access timing failed\n"); return 1; }
     if (!cache_integer_timing()) { lib_c_printf("Cache integer timing failed\n"); return 1; }
     if (!cache_integer_alignment_timing()) { lib_c_printf("Cache integer alignment failed\n"); return 1; }
@@ -2870,6 +3161,7 @@ int main(void)
     if (!cache_far_timing()) { lib_c_printf("Cache far timing failed\n"); return 1; }
     if (!cache_call_gate_timing()) { lib_c_printf("Cache call gate timing failed\n"); return 1; }
     if (!cache_task_timing()) { lib_c_printf("Cache task timing failed\n"); return 1; }
+    if (!cache_repeat_timing()) { lib_c_printf("Cache repeat timing failed\n"); return 1; }
     if (!cache_translation_timing()) { lib_c_printf("Cache translation timing failed\n"); return 1; }
     if (!cache_translation_failure_timing()) { lib_c_printf("Cache translation failure timing failed\n"); return 1; }
     if (!cache_translation_residency_timing()) { lib_c_printf("Cache translation residency timing failed\n"); return 1; }

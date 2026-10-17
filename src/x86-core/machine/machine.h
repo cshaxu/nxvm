@@ -72,6 +72,8 @@ struct x86_core_machine {
     x86_core_machine_transaction_contract transaction_contract;
     lib_u32 external_cycle_page_tag;
     lib_u64 external_cycle_round_ticks;
+    lib_u64 bus_invalidation_cycles;
+    lib_bool bus_invalidation_seen;
     lib_u64 cpu_retirement_wait_ticks;
     lib_u64 cpu_retirement_completion_ticks;
     lib_u64 cpu_retirement_source_ticks;
@@ -168,7 +170,7 @@ void x86_core_machine_transaction_trace(void *opaque,
     x86_core_machine_transaction_owner owner, x86_core_machine_transaction_kind kind,
     x86_core_machine_transaction_phase phase, lib_u32 address,
     lib_u32 value, lib_u32 detail);
-void x86_core_machine_cpu_external_cycle_trace(void *opaque,
+lib_u64 x86_core_machine_cpu_external_cycle_trace(void *opaque,
     x86_core_cpu_external_cycle_phase phase,
     x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 bytes, lib_u8 write,

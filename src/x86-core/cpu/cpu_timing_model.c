@@ -23,7 +23,7 @@ static lib_i32 x86_core_cpu_instruction_is_prefix(lib_u8 opcode)
     }
 }
 
-static lib_u32 x86_core_cpu_instruction_prefix_count(const t_cpuins_data *data)
+lib_u32 x86_core_cpu_instruction_prefix_count(const t_cpuins_data *data)
 {
     lib_u32 count = 0u;
 
@@ -1020,6 +1020,9 @@ static void x86_core_cpu_source_timing_record_repeat(
     }
     const lib_u32 count = address_size ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
     const lib_bool continuing = x86_core_cpu_source_timing_repeat_continuing(context, data);
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+        context->instructions->data.timing_repeat_previous_misses = continuing ?
+            context->source_repeat_data_misses : 0u;
     context->timing_result.repeat_phase = count == 0u ?
         X86_CORE_CPU_RETIREMENT_REPEAT_ZERO_COUNT : continuing ?
         X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION :
@@ -1038,6 +1041,8 @@ static void x86_core_cpu_source_timing_record_repeat(
             context->source_repeat_byte_count = (lib_u8)(x86_core_cpu_instruction_prefix_count(data) + 1u);
             lib_memory_copy(context->source_repeat_bytes, data->opcodes,
                 context->source_repeat_byte_count);
+            context->source_repeat_data_misses = data->timing_data_misses -
+                data->timing_tss_field_misses;
         }
     }
 }
@@ -4377,8 +4382,7 @@ lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_contex
      * selected here. This is not physical timing or a second fallback route. */
     if (!x86_core_cpu_compatibility_instruction_cost(context, out_ticks)) return 0;
     if (prefixes < data->oplen &&
-        x86_core_cpu_source_timing_string_form(data->opcodes[prefixes], &form) &&
-        x86_core_cpu_source_timing_string_repeat_is_defined(form, data->prefix_rep)) {
+        x86_core_cpu_source_timing_string_form(data->opcodes[prefixes], &form)) {
         context->timing_result.form_id = (lib_u32)form;
         x86_core_cpu_source_timing_record_repeat(context, data);
     } else context->source_repeat_active = LIB_FALSE;
@@ -4513,12 +4517,14 @@ static lib_bool x86_core_cpu_80486_push_pop_opcode(lib_u16 opcode)
 /* Prefix costs are per decoded macroinstruction. The selected REP owner must
  * not charge these again for a continuation of that same instruction. */
 lib_bool x86_core_cpu_80486_decode_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
 {
     const t_cpuins_data *data;
     lib_u32 prefixes;
     lib_u8 opcode, repeats = 0u;
     lib_u64 ticks = 0u;
+    lib_bool modeled = LIB_FALSE;
+    x86_core_cpu_source_timing_form string_form;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
         context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
@@ -4534,16 +4540,18 @@ lib_bool x86_core_cpu_80486_decode_penalty(
         if (data->opcodes[index] == 0xf2u || data->opcodes[index] == 0xf3u) ++repeats;
         else ++ticks;
     }
-    /* E-11 includes REP in string timing, not in the ordinary one-clock
-     * prefixes. Redundant REP and REP on other instructions need separate
-     * source/model disposition rather than a guessed zero-prefix cost. */
-    if (repeats > 1u || (repeats != 0u &&
-        !(opcode >= 0x6cu && opcode <= 0x6fu) &&
-        !(opcode >= 0xa4u && opcode <= 0xa7u) &&
-        !(opcode >= 0xaau && opcode <= 0xafu)))
-        return LIB_FALSE;
+    /* One effective string REP belongs to setup. Extra/ignored REP bytes
+     * use the explicit L2 one-clock decode model, not a new nominal row. */
+    if (repeats != 0u) {
+        const lib_bool string = x86_core_cpu_source_timing_string_form(opcode, &string_form);
+
+        modeled = repeats > 1u || !string ||
+            !x86_core_cpu_source_timing_string_repeat_is_defined(string_form, data->prefix_rep);
+        ticks += repeats - (lib_u64)string;
+    }
     if (context->timing_result.repeat_phase == X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION) {
         *out_ticks = 0u;
+        if (out_modeled != LIB_NULL) *out_modeled = modeled;
         return LIB_TRUE;
     }
     if (data->timing_ea_indexed && opcode != 0x8du) ++ticks;
@@ -4561,6 +4569,46 @@ lib_bool x86_core_cpu_80486_decode_penalty(
         if ((writes & bases) != 0u) ++ticks;
     }
     *out_ticks = ticks;
+    if (out_modeled != LIB_NULL) *out_modeled = modeled;
+    return LIB_TRUE;
+}
+
+/* E-10/E-14 notes 17--20 and E-15 note 3. The previous missing-line fact
+ * belongs to the validated macroinstruction, not a second cache/debt queue. */
+static lib_bool x86_core_cpu_80486_repeat_cache_penalty(
+    const x86_core_cpu_execution_context *context,
+    x86_core_cpu_source_timing_form form, lib_u64 *out_ticks, lib_bool *out_modeled)
+{
+    const t_cpuins_data *data = &context->instructions->data;
+    const lib_u64 permission = data->timing_tss_field_misses;
+    const lib_u64 fields = data->timing_missed_tss_fields;
+    const lib_u64 previous = data->timing_repeat_previous_misses;
+    const lib_u64 misses = data->timing_data_misses - permission;
+    lib_u64 first = 0u, deferred = 0u;
+
+    if (data->timing_locked_reads != 0u || data->timing_descriptor_misses != 0u ||
+        fields > data->timing_missed_reads || fields > permission) return LIB_FALSE;
+    const lib_u64 reads = data->timing_missed_reads - fields;
+    if (misses < reads || misses > 2u * reads || reads > 2u) return LIB_FALSE;
+    switch (form) {
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_MOVS: first = 1u; deferred = 3u; break;
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_SCAS: first = 2u; deferred = 2u; break;
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_OUTS: deferred = 2u; break;
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_LODS: first = 2u; break;
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_CMPS: first = 3u; break;
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_STOS:
+    case X86_CORE_CPU_SOURCE_TIMING_STRING_INS:
+        if (misses != 0u) return LIB_FALSE;
+        break;
+    default: return LIB_FALSE;
+    }
+    *out_ticks = 2u * fields + 5u * (permission - fields) +
+        first * reads + 5u * (misses - reads) + deferred * previous;
+    /* The cross-primitive handoff and nonreference residency are models;
+     * the weights retain the published first/second-operation schedule. */
+    *out_modeled = permission != 0u || (deferred != 0u && previous != 0u) ||
+        misses > reads || (form == X86_CORE_CPU_SOURCE_TIMING_STRING_CMPS && reads == 1u) ||
+        (misses != 0u && (data->oldcpu.data.cr0 & VCPU_CR0_CD) != 0u);
     return LIB_TRUE;
 }
 
@@ -4582,9 +4630,13 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
     const lib_bool inner_gate = (data->timing_transfer_type == VCPU_DESC_SYS_TYPE_CALLGATE_16 ||
         data->timing_transfer_type == VCPU_DESC_SYS_TYPE_CALLGATE_32) &&
         data->oldcpu.data.cs.dpl > context->cpu->data.cs.dpl;
+    x86_core_cpu_source_timing_form string_form;
 
     *out_modeled = opcode == 0x0fu && prefixes + 1u < data->oplen &&
         data->opcodes[prefixes + 1u] >= 0x10u && data->opcodes[prefixes + 1u] <= 0x13u;
+    if (data->prefix_rep != PREFIX_REP_NONE &&
+        x86_core_cpu_source_timing_string_form(opcode, &string_form))
+        return x86_core_cpu_80486_repeat_cache_penalty(context, string_form, out_ticks, out_modeled);
     if (context->instruction_task_switched) {
         const lib_bool task32 = context->instruction_task_checkpoint.data.tr.sys.type !=
             VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
@@ -4673,7 +4725,7 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
     case 0x6cu: case 0x6du: case 0x6eu: case 0x6fu:
     case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
     case 0xecu: case 0xedu: case 0xeeu: case 0xefu:
-        if (data->prefix_rep != PREFIX_REP_NONE || data->timing_locked_reads != 0u ||
+        if (data->timing_locked_reads != 0u ||
             reads == 0u || misses < reads) return LIB_FALSE;
         if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u &&
             ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
@@ -4719,14 +4771,11 @@ static lib_bool x86_core_cpu_80486_operand_cache_penalty(
         break;
     case 0xa4u: case 0xa5u: case 0xaau: case 0xabu:
     case 0xacu: case 0xadu: case 0xaeu: case 0xafu:
-        /* E-10 REP has its own line/iteration distribution, not E-9's
-         * non-repeated read coefficient. */
-        if (data->prefix_rep != PREFIX_REP_NONE) return LIB_FALSE;
         read = opcode != 0xaau && opcode != 0xabu;
         miss = 2u;
         break;
     case 0xa6u: case 0xa7u:
-        if (data->prefix_rep != PREFIX_REP_NONE || data->timing_locked_reads != 0u ||
+        if (data->timing_locked_reads != 0u ||
             reads == 0u || reads > 2u || misses < reads || misses > 2u * reads)
             return LIB_FALSE;
         /* E-9 gives six clocks for the pair. A partial hit uses the L2

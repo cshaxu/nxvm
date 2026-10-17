@@ -227,20 +227,30 @@ static void _kma_write_ref(x86_core_cpu_execution_context *context, lib_uptr ref
     lib_memory_copy((void *)_kma_gpr_destination(context, ref), (void *)rdata, byte);
     CPU_TRACE_CALL_END;
 }
-/* Observation only: this does not assert that a serial logical access already
- * overlaps a physical 80386 external bus cycle. */
-static void _kma_publish_external_cycle(
+/* Both spaces share accepted-cycle publication. Core computes the extra
+ * waits; this observation publishes neither guest time nor physical overlap. */
+static lib_u64 _kma_publish_external_cycle(
     x86_core_cpu_execution_context *context,
-    x86_core_cpu_external_cycle_phase phase, lib_u32 physical,
+    x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 byte, lib_u8 write,
     x86_core_cpu_memory_access_provenance provenance)
 {
     if (context != LIB_NULL && !context->preview_mode &&
         context->external_cycle_provider != LIB_NULL) {
-        context->external_cycle_provider(context->external_cycle_context, phase,
-            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, write,
-            provenance);
+        const lib_u64 ticks = context->external_cycle_provider(
+            context->external_cycle_context, phase, space, address, byte,
+            write, provenance);
+
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && context->timing_bus_active &&
+            phase == X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT) {
+            if (ticks > LIB_UINT64_MAX - instruction_state.data.timing_external_wait_ticks)
+                instruction_state.data.timing_external_wait_overflow = LIB_TRUE;
+            else instruction_state.data.timing_external_wait_ticks += ticks;
+        }
+        return ticks;
     }
+    return 0u;
 }
 
 static lib_i32 _kma_is_reset_vector_fetch(
@@ -308,6 +318,7 @@ static void _kma_begin_memory_lock(x86_core_cpu_execution_context *context)
     if ((context->bus->begin_memory_lock != LIB_NULL) !=
         (context->bus->complete_memory_lock != LIB_NULL))
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
+    x86_core_cpu_bus_drain(context, LIB_TRUE);
     if (context->bus->begin_memory_lock != LIB_NULL &&
         context->bus->begin_memory_lock(context->bus_context) != LIB_STATUS_OK)
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
@@ -319,6 +330,7 @@ static void _kma_complete_memory_lock(x86_core_cpu_execution_context *context,
     lib_bool commit)
 {
     if (!instruction_state.data.memory_lock_active) return;
+    x86_core_cpu_bus_drain(context, LIB_FALSE);
     instruction_state.data.memory_lock_active = LIB_FALSE;
     if (context->bus->complete_memory_lock != LIB_NULL)
         context->bus->complete_memory_lock(context->bus_context, commit);
@@ -331,19 +343,21 @@ static void _kma_read_bus(x86_core_cpu_execution_context *context,
 {
     lib_status memory_status;
     CPU_TRACE_CALL_BEGIN("_kma_read_bus");
+    x86_core_cpu_bus_prepare_read(context, instruction_state.data.memory_lock_active);
     _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, LIB_FALSE, provenance);
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_FALSE, provenance);
     memory_status = context->bus->read_memory(context->bus_context, physical,
         (void *)rdata, byte, provenance, context->preview_mode,
         _kma_is_reset_vector_fetch(context, physical, byte, provenance),
         _kma_memory_cache_control(context, attributes));
     if (memory_status != LIB_STATUS_OK) {
         _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, LIB_FALSE, provenance);
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_FALSE, provenance);
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
-    _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, LIB_FALSE, provenance);
+    const lib_u64 wait_ticks = _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_FALSE, provenance);
+    x86_core_cpu_bus_read_complete(context, physical, byte, wait_ticks);
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !context->preview_mode &&
         (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
          provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH))
@@ -448,17 +462,22 @@ static void _kma_write_bus(x86_core_cpu_execution_context *context,
     x86_core_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     CPU_TRACE_CALL_BEGIN("_kma_write_bus");
+    x86_core_cpu_bus_prepare_write(context);
     _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, LIB_TRUE, provenance);
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_TRUE, provenance);
     if (context->bus->write_memory(context->bus_context, physical,
             (const void *)rdata, byte, provenance,
             _kma_memory_cache_control(context, attributes)) != LIB_STATUS_OK) {
         _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, LIB_TRUE, provenance);
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_TRUE, provenance);
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
-    _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, LIB_TRUE, provenance);
+    const lib_u64 wait_ticks = _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_TRUE, provenance);
+    x86_core_cpu_bus_write_complete(context, physical, byte, wait_ticks,
+        context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
+            _kma_cache_way(context, physical) != X86_CPU_CACHE_WAYS,
+        (cpu_state.data.cr0 & VCPU_CR0_CD) == 0u);
     CPU_TRACE_CALL_END;
 }
 
@@ -514,6 +533,7 @@ static void _kma_write_physical(x86_core_cpu_execution_context *context, lib_u32
 /* Invalidating does not erase the tag or data arrays (Intel 273021-001 B.2.5). */
 static void _kma_cache_invalidate(x86_core_cpu_execution_context *context)
 {
+    x86_core_cpu_bus_invalidate(context);
     for (lib_u8 set = 0u; set < X86_CPU_CACHE_SETS; ++set) {
         for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way)
             context->cache[set][way].valid = LIB_FALSE;
@@ -540,6 +560,8 @@ static void _kma_cache_touch(x86_core_cpu_execution_context *context,
 {
     lib_u8 lru = context->cache_lru[set];
 
+    if (context->timing_bus_active && !context->preview_mode)
+        instruction_state.data.timing_cache_used = LIB_TRUE;
     if (way < 2u)
         lru = (lru & 4u) | 1u | (way == 0u ? 2u : 0u);
     else
@@ -559,12 +581,15 @@ static void _kma_cache_test(x86_core_cpu_execution_context *context,
     case 0u:
         break;
     case 1u:
+        x86_core_cpu_bus_invalidate(context);
         line->tag = cpu_state.data.tr4 & 0xfffff800u;
         line->valid = (cpu_state.data.tr4 & 0x400u) != 0u;
         lib_memory_copy(line->data, context->cache_fill, sizeof(line->data));
         _kma_cache_touch(context, set, way);
         break;
     case 2u:
+        if (context->timing_bus_active && !context->preview_mode)
+            instruction_state.data.timing_cache_used = LIB_TRUE;
         _kma_cache_report(context, set, way);
         break;
     case 3u:
@@ -593,6 +618,7 @@ void x86_core_cpu_signal_cache_write(x86_core_cpu_execution_context *context,
     if (context == LIB_NULL || bytes == 0u ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
         (cpu_state.data.cr0 & VCPU_CR0_NW) != 0u) return;
+    x86_core_cpu_bus_invalidate(context);
     remaining = (lib_u64)LIB_UINT32_MAX + 1u - physical;
     end = (lib_u64)physical + (bytes > remaining ? remaining : bytes);
     if ((end - (physical & ~15u)) / 16u < X86_CPU_CACHE_SETS) {
@@ -2235,10 +2261,13 @@ static void _s_read_xdt(x86_core_cpu_execution_context *context, lib_u16 selecto
 static void _s_read_tss(x86_core_cpu_execution_context *context, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
 {
     const lib_u32 misses = instruction_state.data.timing_data_misses;
+    const lib_u32 reads = instruction_state.data.timing_missed_reads;
     CPU_TRACE_CALL_BEGIN("_s_read_tss");
     _kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1);
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !context->preview_mode)
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX && !context->preview_mode) {
         instruction_state.data.timing_tss_field_misses += instruction_state.data.timing_data_misses - misses;
+        instruction_state.data.timing_missed_tss_fields += instruction_state.data.timing_missed_reads - reads;
+    }
     CPU_TRACE_CALL_END;
 }
 static void _s_read_es(x86_core_cpu_execution_context *context, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
@@ -2832,8 +2861,15 @@ static void _p_input(x86_core_cpu_execution_context *context, lib_u16 portid, li
     if (byte != 1u && byte != 2u && byte != 4u) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
+    x86_core_cpu_bus_prepare_read(context, LIB_TRUE);
+    _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_FALSE,
+        X86_CORE_CPU_MEMORY_ACCESS_DATA);
     if (context->bus->transfer_port(context->bus_context, portid, byte,
             LIB_FALSE, &value) != LIB_STATUS_OK) {
+        _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_FALSE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     switch (byte)
@@ -2867,6 +2903,10 @@ static void _p_input(x86_core_cpu_execution_context *context, lib_u16 portid, li
     instruction_state.data.flagIgnore = LIB_TRUE;
     _smm_record_io(context);
     context->bus->complete_port(context->bus_context, portid, byte, LIB_FALSE);
+    const lib_u64 wait_ticks = _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_FALSE,
+        X86_CORE_CPU_MEMORY_ACCESS_DATA);
+    x86_core_cpu_bus_read_complete(context, 0u, byte, wait_ticks);
     CPU_TRACE_CALL_END;
 }
 static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, lib_uptr rdata, lib_u8 byte)
@@ -2904,13 +2944,34 @@ static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, l
         CPU_TRACE_BLOCK_END;
         break;
     }
+    lib_bool buffered = LIB_FALSE;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
+        (cpu_state.data.cr0 & VCPU_CR0_CD) == 0u &&
+        instruction_state.data.prefix_rep != PREFIX_REP_NONE) {
+        const lib_u8 opcode = instruction_state.data.opcodes[
+            x86_core_cpu_instruction_prefix_count(&instruction_state.data)];
+
+        buffered = opcode == 0x6eu || opcode == 0x6fu;
+    }
+    if (buffered) x86_core_cpu_bus_prepare_write(context);
+    else x86_core_cpu_bus_drain(context, LIB_TRUE);
+    _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_TRUE,
+        X86_CORE_CPU_MEMORY_ACCESS_DATA);
     if (context->bus->transfer_port(context->bus_context, portid, byte,
             LIB_TRUE, &value) != LIB_STATUS_OK) {
+        _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_TRUE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     instruction_state.data.flagIgnore = LIB_TRUE;
     _smm_record_io(context);
     context->bus->complete_port(context->bus_context, portid, byte, LIB_TRUE);
+    const lib_u64 wait_ticks = _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_TRUE,
+        X86_CORE_CPU_MEMORY_ACCESS_DATA);
+    x86_core_cpu_bus_write_complete(context, 0u, byte, wait_ticks, LIB_FALSE, buffered);
     CPU_TRACE_CALL_END;
 }
 
@@ -19222,6 +19283,13 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
     instruction_state.data.timing_unaccessed_descriptors = 0u;
     instruction_state.data.timing_invlpg_hit = LIB_FALSE;
     instruction_state.data.timing_fetch_bus_ticks = 0u;
+    instruction_state.data.timing_external_wait_ticks = 0u;
+    instruction_state.data.timing_external_wait_overflow = LIB_FALSE;
+    instruction_state.data.timing_bus_service_ticks = 0u;
+    instruction_state.data.timing_bus_stall_ticks = 0u;
+    instruction_state.data.timing_bus_wait_ticks = 0u;
+    instruction_state.data.timing_bus_invalidation_ticks = 0u;
+    instruction_state.data.timing_cache_used = LIB_FALSE;
     instruction_state.data.timing_data_misses = 0u;
     instruction_state.data.timing_missed_reads = 0u;
     instruction_state.data.timing_descriptor_misses = 0u;
@@ -19229,6 +19297,8 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
     instruction_state.data.timing_task_gate_miss_mask = 0u;
     instruction_state.data.timing_pair_misses = 0u;
     instruction_state.data.timing_tss_field_misses = 0u;
+    instruction_state.data.timing_missed_tss_fields = 0u;
+    instruction_state.data.timing_repeat_previous_misses = 0u;
     instruction_state.data.timing_locked_reads = 0u;
     instruction_state.data.timing_table_misses = 0u;
     instruction_state.data.timing_unaligned_accesses = 0u;
@@ -20982,6 +21052,7 @@ void x86_core_cpu_execution_reset(
     lib_memory_set(context->cache_lru, 0u, sizeof(context->cache_lru));
     lib_memory_set(context->cache_fill, 0u, sizeof(context->cache_fill));
     lib_memory_set(context->cache_read, 0u, sizeof(context->cache_read));
+    x86_core_cpu_bus_reset(context);
     lib_memory_set((void *)(&instruction_state.data), 0u, sizeof(t_cpuins_data));
     context->debug_pause_requested = LIB_FALSE;
     context->debug_trap_pending = LIB_FALSE;
@@ -21002,7 +21073,7 @@ void x86_core_cpu_execution_reset(
     context->wait_state = CPU_WAIT_STATE_NONE;
     context->wait_poll_remaining_ticks = 0u;
 }
-void x86_core_cpu_execution_refresh(
+static void _execution_refresh(
     x86_core_cpu_execution_context *context)
 {
     lib_bool executed = LIB_FALSE;
@@ -21091,6 +21162,16 @@ void x86_core_cpu_execution_refresh(
     ExecInt(context);
     if (!executed && !cpu_state.data.flagHalt)
         context->instruction_fault_delivered = LIB_TRUE;
+}
+
+/* One actual execution scope, including asynchronous entry; host debugger
+ * accesses and preview never become write-buffer timing observations. */
+void x86_core_cpu_execution_refresh(x86_core_cpu_execution_context *context)
+{
+    if (context == LIB_NULL) return;
+    context->timing_bus_active = LIB_TRUE;
+    _execution_refresh(context);
+    context->timing_bus_active = LIB_FALSE;
 }
 
 lib_u8 x86_core_cpu_execution_consume_instruction_fault_delivery(

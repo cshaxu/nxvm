@@ -462,7 +462,10 @@ typedef enum x86_core_cpu_external_cycle_phase {
 } x86_core_cpu_external_cycle_phase;
 
 
-typedef void (*x86_core_cpu_external_cycle_provider)(void *context,
+/* Return this matching COMMIT's extra wait clocks, not its baseline bus
+ * duration. Other phases and unmatched COMMIT return zero. CPU records the
+ * completed-access fact; the executor remains the sole clock publisher. */
+typedef lib_u64 (*x86_core_cpu_external_cycle_provider)(void *context,
     x86_core_cpu_external_cycle_phase phase,
     x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 bytes, lib_u8 write,
@@ -547,6 +550,14 @@ void x86_core_cpu_execution_poll_wait(
     x86_core_cpu_execution_context *context);
 void x86_core_cpu_execution_advance_wait(
     x86_core_cpu_execution_context *context, lib_u64 elapsed_ticks);
+/* Owning executor thread: advance only from the existing guest timeline.
+ * Unavailable bus or stopped CLK preserves pending write service. This L2
+ * timing model never repeats a functional memory/port provider operation.
+ * invalidation_cycles counts actual external cycles during pending CPU work,
+ * not invalidated lines or alias notifications. Idle advancement passes zero. */
+void x86_core_cpu_execution_advance_bus(
+    x86_core_cpu_execution_context *context, lib_u64 elapsed_ticks,
+    lib_bool bus_available, lib_u64 invalidation_cycles);
 /* WAIT re-samples an asserted board condition after five clocks.  This is the
  * 8086/80186 manual formula and an explicit L2 control model for later CPUs;
  * a valid result is a Core deadline, never a host sleep or synthetic opcode. */

@@ -463,17 +463,23 @@ static lib_bool smm_io_restart(smm_fixture *fixture)
         fixture->instruction.cpu.data.dx = 0x80u;
         fixture->io_smi = LIB_TRUE;
         x86_core_cpu_execution_refresh(context);
-        if (!context->smm_active || fixture->port_transfers != 1u ||
+        if (!context->smm_active || context->source_repeat_active ||
+            fixture->port_transfers != 1u ||
             !context->io_restart_valid || fixture->instruction.fault.valid) return LIB_FALSE;
         smm_image_put(fixture, 0x7f00u, 0xffu);
         fixture->io_smi = LIB_FALSE;
         x86_core_cpu_execution_refresh(context);
-        if (context->smm_active || fixture->instruction.cpu.data.eip != 0u ||
+        if (context->smm_active || context->source_repeat_active ||
+            fixture->instruction.cpu.data.eip != 0u ||
             fixture->instruction.cpu.data.ecx != 2u ||
             fixture->instruction.cpu.data.esi != 0x200u ||
             fixture->instruction.cpu.data.edi != 0x300u) return LIB_FALSE;
         x86_core_cpu_execution_refresh(context);
         if (fixture->port_transfers != 2u || fixture->instruction.fault.valid || fixture->bad_order)
+            return LIB_FALSE;
+        if (index >= 4u &&
+            (context->timing_result.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_FIRST ||
+             fixture->instruction.instructions.data.timing_repeat_previous_misses != 0u))
             return LIB_FALSE;
     }
     for (lib_u8 opcode = 0x6cu; opcode <= 0x6eu; opcode += 2u) {

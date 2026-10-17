@@ -123,9 +123,12 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
     failed = x86_core_machine_install_port_provider(machine, 0x1234u, 0x1234u,
             &ports, &probe) != LIB_STATUS_OK ||
+        test_x86_core_machine_fixture_register_reset_mapping(machine,
+            0xfffffff0u, 0xffff0u, 16u) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    for (lib_u8 sx = 0u; sx < 2u && !failed; ++sx)
     for (lib_u8 bytes = 1u; bytes <= 4u && !failed; bytes *= 2u) {
         for (lib_u8 write = 0u; write < 2u && !failed; ++write) {
             /* Success, endpoint failure after a side effect, admission failure. */
@@ -133,8 +136,27 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                 lib_u32 value = 0xabcdef01u;
                 const lib_u32 mask = bytes == 1u ? 0xffu :
                     bytes == 2u ? 0xffffu : LIB_UINT32_MAX;
-                lib_status status;
+                lib_u8 code[3] = {0x90u}, length = 1u;
+                const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+                const x86_core_cpu_debug_register_patch registers = {
+                    .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+                        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX),
+                    .values = {[X86_CORE_CPU_DEBUG_EAX] = 0xabcdef01u,
+                        [X86_CORE_CPU_DEBUG_EDX] = 0x1234u}
+                };
 
+                failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
+                /* Exercise the real CPU publisher; production SX remains gated. */
+                x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+                    sx ? X86_CORE_CPU_PROFILE_80486SX : X86_CORE_CPU_PROFILE_80386,
+                    X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+                if (bytes == 4u) code[length++] = 0x66u;
+                code[length++] = (write ? 0xeeu : 0xecu) + (bytes != 1u);
+                failed |= x86_core_machine_memory_write(machine, 0xffff0u, code, length) != LIB_STATUS_OK ||
+                    x86_core_cpu_debug_patch_registers(machine->executor_cpu_execution, &registers) != LIB_STATUS_OK;
+                x86_core_cpu_execution_refresh(machine->executor_cpu_execution);
+                /* NOP warms the actual prefetch queue. Admission failure must
+                 * occur at the port, not at an earlier instruction fetch. */
                 probe = (lifecycle_probe){0};
                 probe.transfer_status = outcome == 1u ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
                 if (outcome == 2u) {
@@ -143,21 +165,19 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                         X86_CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, 0u, 0u, 0u) != LIB_STATUS_OK;
                     probe.count = 0u;
                 }
-                status = x86_core_machine_cpu_bus.transfer_port(machine, 0x1234u,
-                    bytes, write, &value);
-                if (outcome == 0u) {
-                    failed |= status != LIB_STATUS_OK || probe.count != 2u ||
-                        machine->transaction.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_CPU;
-                    if (!write) failed |= value != (0x12345678u & mask);
-                    x86_core_machine_cpu_bus.complete_port(machine, 0x1234u, bytes, write);
-                } else {
-                    failed |= status != (outcome == 1u ? LIB_STATUS_IO_ERROR :
-                        LIB_STATUS_INVALID_ARGUMENT) || value != 0xabcdef01u;
-                }
+                x86_core_cpu_execution_refresh(machine->executor_cpu_execution);
+                failed |= x86_core_cpu_debug_read_register(machine->executor_cpu_execution,
+                    X86_CORE_CPU_DEBUG_EAX, &value) != LIB_STATUS_OK ||
+                    value != (outcome == 0u && !write ?
+                        (0xabcdef01u & ~mask) | (0x12345678u & mask) : 0xabcdef01u);
                 failed |= probe.transfers != (outcome == 2u ? 0u : 1u) ||
-                    probe.count != (outcome == 2u ? 2u : 4u) ||
+                    probe.count != (outcome == 2u ? 3u : outcome == 1u ? 5u : 4u) ||
                     probe.events[0].type != X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN ||
                     machine->external_cycle_pending_valid;
+                if (outcome != 0u)
+                    failed |= probe.count == 0u ||
+                        probe.events[probe.count - 1u].type != X86_CORE_MACHINE_TRACE_FAULT ||
+                        machine->fault_detail != VCPUINS_EXCEPT_CE;
                 if (outcome == 2u) {
                     failed |= probe.events[1].type != X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL ||
                         machine->transaction.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_DMA;
@@ -169,6 +189,14 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
                         probe.events[3].type != (outcome == 0u ? X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT :
                             X86_CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL) ||
                         machine->transaction.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_NONE;
+                }
+                if (failed) {
+                    lib_c_printf("Port lifecycle sx=%u bytes=%u write=%u outcome=%u: events=%u transfers=%u value=%x fault=%x\n",
+                        (lib_u32)sx, (lib_u32)bytes, (lib_u32)write, (lib_u32)outcome,
+                        probe.count, probe.transfers, value, machine->fault_detail);
+                    for (lib_u32 event = 0u; event < probe.count; ++event)
+                        lib_c_printf("  event %u: type=%u detail=%x\n", event,
+                            probe.events[event].type, probe.events[event].detail);
                 }
             }
         }

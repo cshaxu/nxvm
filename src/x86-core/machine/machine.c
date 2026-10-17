@@ -528,6 +528,8 @@ static lib_status x86_core_machine_cold_reset(x86_core_machine *machine)
     machine->cpu_cycle_bus_ready = LIB_TRUE;
     machine->external_cycle_page_tag = 0u;
     machine->external_cycle_round_ticks = 0u;
+    machine->bus_invalidation_cycles = 0u;
+    machine->bus_invalidation_seen = LIB_FALSE;
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
     machine->cpu_retirement_source_ticks = 0u;
@@ -592,6 +594,8 @@ static lib_status x86_core_machine_processor_reset(x86_core_machine *machine,
     machine->external_cycle_page_valid = LIB_FALSE;
     machine->external_cycle_pending_valid = LIB_FALSE;
     machine->external_cycle_round_ticks = 0u;
+    machine->bus_invalidation_cycles = 0u;
+    machine->bus_invalidation_seen = LIB_FALSE;
     machine->external_cycle_round_overflow = LIB_FALSE;
     machine->external_cycle_overlap_valid = LIB_FALSE;
     machine->retirement_eligibility_key_valid = LIB_FALSE;

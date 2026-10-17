@@ -72,9 +72,27 @@ lib_bool x86_core_cpu_80486_memory_penalty(
 
 /* Per decoded instruction, not per REP continuation. E-11 prefixes and the
  * E.2 index/displacement assumptions; nominal LEA already includes its index.
- * AGI uses the actual adjacent GPR-write record, including same-value writes. */
+ * AGI uses the actual adjacent GPR-write record, including same-value writes.
+ * Optional modeled identifies redundant/ignored REP prefix estimates. */
 lib_bool x86_core_cpu_80486_decode_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled);
+
+/* Private L2 bus observations; only actual CPU execution records transfers.
+ * Core is the clock owner; the pure cost query never advances the FIFO. */
+void x86_core_cpu_bus_reset(x86_core_cpu_execution_context *context);
+void x86_core_cpu_bus_prepare_read(x86_core_cpu_execution_context *context,
+    lib_bool ordered);
+void x86_core_cpu_bus_prepare_write(x86_core_cpu_execution_context *context);
+void x86_core_cpu_bus_read_complete(x86_core_cpu_execution_context *context,
+    lib_u32 address, lib_u8 bytes, lib_u64 wait_ticks);
+void x86_core_cpu_bus_write_complete(x86_core_cpu_execution_context *context,
+    lib_u32 address, lib_u8 bytes, lib_u64 wait_ticks, lib_bool cache_hit,
+    lib_bool buffered);
+void x86_core_cpu_bus_drain(x86_core_cpu_execution_context *context, lib_bool stalled);
+void x86_core_cpu_bus_invalidate(x86_core_cpu_execution_context *context);
+lib_bool x86_core_cpu_80486_bus_instruction_cost(
+    const x86_core_cpu_execution_context *context, lib_u64 baseline_ticks,
+    lib_u64 *out_ticks, lib_bool *out_modeled);
 
 #ifdef __cplusplus
 }

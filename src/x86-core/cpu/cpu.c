@@ -7,6 +7,7 @@
 #include "x86-core/cpu/cpu_instructions.h"
 
 #include "x86-core/cpu/cpu.h"
+#include "x86-core/cpu/cpu_timing.h"
 
 #define cpu_state (*context->cpu)
 #define instruction_state (*context->instructions)
@@ -545,6 +546,9 @@ void x86_core_cpu_execution_context_initialize(
     context->instruction_timing = (x86_core_cpu_instruction_timing) { .base_ticks = 1u };
     context->timing_result = (x86_core_cpu_timing_result) {0};
     context->source_repeat_byte_count = 0u;
+    context->source_repeat_data_misses = 0u;
+    x86_core_cpu_bus_reset(context);
+    context->timing_bus_active = LIB_FALSE;
     context->bus = bus;
     context->bus_context = bus_context;
     context->diagnostic_provider = LIB_NULL;
@@ -607,6 +611,7 @@ void x86_core_cpu_execution_context_bind_profiles(
 {
     if (context == LIB_NULL) return;
     context->instruction_timing = *timing;
+    if (context->cpu_profile != cpu_profile) x86_core_cpu_bus_reset(context);
     context->cpu_profile = cpu_profile;
     context->prefetch_capacity = cpu_profile == X86_CORE_CPU_PROFILE_8088 ?
         4u : 15u;
