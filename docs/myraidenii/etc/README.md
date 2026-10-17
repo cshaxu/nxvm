@@ -11,6 +11,7 @@
 - [T1 repeatable inventory and contract delivery](evidence/t1-s2-inventory-and-contracts.md).
 - [T1 complete freeze review](evidence/t1-s3-freeze-review.md).
 - [T2 V30 convergence and admission audit](t2-v30-ledger.md).
+- [T2 CPU advancement consolidation](evidence/t2-s2-advancement-consolidation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

@@ -95,6 +95,13 @@ single handler path. The estimated delta is approximately +0/-581 instruction
 lines (seven net lines per fork); actual diff must be counted before delivery.
 That removal is not resolution of the other 223 ordering candidates.
 
+S2 implements that exact preparation: 83 forks removed, CPU +86/-667/net
+-581 and existing gate/negative coverage +6/-0, total net -575 code lines.
+Both full repo-only unit suites pass 655/655 after the recorded unchanged
+x86 timeout/retry; eight current PC artifacts are refreshed. No V30 row is
+accepted as implemented by this preparation. See the
+[complete delivery](evidence/t2-s2-advancement-consolidation.md).
+
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;
 8080/mode-entry about +600--1400; timing/Machine about +400--1000; ROM-free CPU
