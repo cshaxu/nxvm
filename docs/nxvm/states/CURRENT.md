@@ -5,6 +5,10 @@
 No active T or S. The owner accepts T563 S10 and authorizes final T closure
 on 2026-10-17 after complete selected-486SX reconciliation.
 
+The owner's subsequent selection of former queue entry 10 is governed by
+[MyRaidenII M0](../../myraidenii/states/CURRENT.md), not an admitted NXVM T.
+The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending.
+
 ## Latest Task Closure
 
 M5 T563 is closed after actual-change review of S10 Shared **a936e554b**,

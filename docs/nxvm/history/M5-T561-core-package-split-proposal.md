@@ -230,7 +230,7 @@ them; do not claim sibling SoftPC runtime qualification without executing it.
 No new V30/Z80/68000, sound chip, arcade video/protection, game ROM loader or
 game compatibility is delivered here. No universal multi-CPU framework or
 plugin architecture is justified by this extraction. The separate
-[Raiden II candidate](../proposals/myarcade-raiden2.md) consumes the accepted boundary;
+[Raiden II candidate](myarcade-raiden2-candidate.md) consumes the accepted boundary;
 its older MyArcade naming and product admission remain its own receiver work.
 
 Stop and re-scope if a public contract requires product/game identifiers,

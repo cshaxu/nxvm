@@ -6,7 +6,9 @@ Milestone: M5, by owner direction on 2026-10-13.
 
 Implement an independent MyNeoGeo App, with running the real Metal Slug 2 ROM
 set as its first required compatibility goal. The owner placed this candidate
-after MyArcade at the NXVM queue tail. It has no implementation T number yet.
+after the former MyArcade candidate at the NXVM queue tail. MyArcade is now
+independently governed as MyRaidenII; this candidate remains in NXVM M5.
+It has no implementation T number yet.
 This is Neo Geo MVS, not x86 or an IBM PC; Metal Slug X and Neo Geo CD are not
 substitutes for the requested game. Admission fixes the exact MVS revision,
 region, BIOS and cartridge set against lawful owner inputs.
@@ -24,7 +26,7 @@ region, BIOS and cartridge set against lawful owner inputs.
   cartridge/BIOS mappings, input, interrupts and one coherent guest timeline.
   Audit existing capabilities first; neither NXVM's Intel CPU nor PC board
   code supplies these semantics. Do not depend on shared x86 Product/Debug.
-- MyArcade and MyNeoGeo may reuse a proven Z80 mechanism if their actual
+- MyRaidenII and MyNeoGeo may reuse a proven Z80 mechanism if their actual
   contracts support it, with a separately reviewed owner/dependency decision.
   Do not duplicate host loops or prebuild a universal arcade device framework.
 - Fixed monitor syntax and completion text stay in Emulator. Machine-specific

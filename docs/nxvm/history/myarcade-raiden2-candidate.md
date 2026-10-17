@@ -1,5 +1,9 @@
 # MyArcade: RAIDEN II
 
+Historical candidate, superseded on 2026-10-17 by the owner's rename and
+transfer to [independent MyRaidenII M0/M1](../../myraidenii/README.md).
+The original scope below is retained for provenance, not current admission.
+
 ## Goal And Admission
 
 Milestone: M5, by owner direction on 2026-10-13.

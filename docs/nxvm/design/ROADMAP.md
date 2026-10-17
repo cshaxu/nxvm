@@ -87,10 +87,10 @@ Broaden the selected machines after hardware/corpus prerequisites. The former ma
 owned-DOS and NXVDM milestones are withdrawn. New web, Windows 95 or unrelated
 machine products require a separate owner decision.
 
-The owner has queued [MyArcade](../proposals/myarcade-raiden2.md) for RAIDEN II,
-then [MyNeoGeo](../proposals/myneogeo-metal-slug2.md) for Metal Slug 2, after the
-existing candidates. These are independent Seibu and Neo Geo Apps, not PC
-profiles. The owner assigns every current queue candidate to M5 on 2026-10-13;
-PC110 is admitted first as T558. The other candidates retain their queue order.
-No current queued work is assigned to M6 or later. Shared component boundaries
-remain unchanged; implementation identifiers still require admission.
+The owner originally queued MyArcade for RAIDEN II, then
+[MyNeoGeo](../proposals/myneogeo-metal-slug2.md) for Metal Slug 2. On 2026-10-17,
+MyArcade was renamed [MyRaidenII](../../myraidenii/README.md) and transferred to
+its own M0 planning / M1 implementation sequence. It is no longer a pending
+NXVM M5 candidate. MyNeoGeo and the PC110 receivers retain their NXVM M5 scope
+and order; no M6 allocation is implied. Shared production boundaries remain
+unchanged and implementation identifiers still require admission.

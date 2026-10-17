@@ -73,8 +73,13 @@ the ordered candidates below remain unadmitted.
 7. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
 8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-10. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
-11. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+10. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+
+On 2026-10-17 the owner selected former entry 10, MyArcade, renamed it
+[MyRaidenII](../../myraidenii/README.md) and transferred it to an independent
+M0 planning / M1 implementation sequence. Its [original candidate]
+(../history/myarcade-raiden2-candidate.md) is preserved as history, not a pending
+NXVM M5 task. No NXVM T is allocated for that product bootstrap.
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
@@ -112,5 +117,6 @@ The former Multi-App repository consolidation candidate was delivered by
 T536/T537 and removed in Td S172; it is not a remaining NXVM implementation
 receiver.
 
-MyArcade and MyNeoGeo remain separate Seibu and Neo Geo candidates in M5;
-their numeric T identifiers are allocated only at admission.
+MyNeoGeo remains an unadmitted M5 Neo Geo candidate; MyRaidenII now owns the
+independent Seibu product queue linked above. Neither has a numeric T assigned
+by this NXVM queue.
