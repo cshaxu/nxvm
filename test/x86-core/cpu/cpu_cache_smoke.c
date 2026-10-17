@@ -392,6 +392,198 @@ static const x86_core_cpu_bus_provider cache_memory_bus = {
     .begin_memory_lock = cache_memory_begin_memory_lock,
     .complete_memory_lock = cache_memory_complete_memory_lock};
 
+static lib_bool cache_debug_patch(void)
+{
+    static const x86_core_cpu_debug_register segments[] = {
+        X86_CORE_CPU_DEBUG_ES, X86_CORE_CPU_DEBUG_CS, X86_CORE_CPU_DEBUG_SS,
+        X86_CORE_CPU_DEBUG_DS, X86_CORE_CPU_DEBUG_FS, X86_CORE_CPU_DEBUG_GS};
+    const lib_u8 read[] = {0xa0u, 0x15u, 0x30u};
+
+    for (lib_u8 older = 0u; older < 2u; ++older)
+    for (lib_u8 local = 0u; local < 2u; ++local)
+    for (lib_size field = 0u; field < sizeof(segments) / sizeof(segments[0]); ++field) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const x86_core_cpu_debug_register reg = segments[field];
+        const lib_u8 access = reg == X86_CORE_CPU_DEBUG_CS ? 0x9au : 0x92u;
+        const lib_u8 descriptor[] = {0xffu, 0xffu, 0u, 0u, 0u, access, 0u, 0u};
+        const lib_u16 selector = local ? 0x14u : 0x10u;
+        x86_core_cpu_debug_register_patch patch = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(reg)};
+        lib_u32 actual;
+
+        cpu_instruction_prepare_with_bus(fixture, older ? X86_CORE_CPU_PROFILE_80386 :
+            X86_CORE_CPU_PROFILE_80486SX, &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_ET;
+        fixture->cpu.data.cs.selector = 8u;
+        fixture->cpu.data.ds.selector = 0x10u;
+        fixture->cpu.data.ss.selector = 0x10u;
+        fixture->cpu.data.gdtr.base = fixture->cpu.data.ldtr.base = 0x3000u;
+        fixture->cpu.data.gdtr.limit = fixture->cpu.data.ldtr.limit = 23u;
+        fixture->cpu.data.ldtr.flagValid = LIB_TRUE;
+        fixture->cpu.data.ldtr.selector = 8u;
+        lib_memory_copy(fixture->memory + 0x3010u, descriptor, sizeof(descriptor));
+        if (!cache_run(fixture, read, sizeof(read)) || fixture->cpu.data.al != access) {
+            lib_c_printf("Debug warm: older=%u local=%u reg=%u\n",
+                (lib_u32)older, (lib_u32)local, (lib_u32)reg);
+            return LIB_FALSE;
+        }
+        patch.values[reg] = selector;
+        if (x86_core_cpu_debug_patch_registers(&fixture->execution, &patch) != LIB_STATUS_OK ||
+            x86_core_cpu_debug_read_register(&fixture->execution, reg, &actual) != LIB_STATUS_OK ||
+            actual != selector || fixture->memory[0x3015u] != (access | 1u) ||
+            fixture->writes != 1u || !cache_run(fixture, read, sizeof(read)) ||
+            fixture->cpu.data.al != (access | 1u)) {
+            lib_c_printf("Debug commit: older=%u local=%u reg=%u memory=%x writes=%u\n",
+                (lib_u32)older, (lib_u32)local, (lib_u32)reg,
+                (lib_u32)fixture->memory[0x3015u], fixture->writes);
+            return LIB_FALSE;
+        }
+        x86_core_cpu_execution_finalize(&fixture->execution);
+    }
+    for (lib_u8 failure = 0u; failure < 2u; ++failure) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 descriptor[] = {0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0u, 0u};
+        x86_core_cpu_debug_register_patch patch = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS),
+            .values = {[X86_CORE_CPU_DEBUG_ES] = 0x10u,
+                [X86_CORE_CPU_DEBUG_DS] = 0x18u}};
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_ET;
+        fixture->cpu.data.cs.selector = 8u;
+        fixture->cpu.data.ds.selector = fixture->cpu.data.ss.selector = 0x10u;
+        fixture->cpu.data.gdtr.base = 0x3000u;
+        fixture->cpu.data.gdtr.limit = failure ? 31u : 23u;
+        lib_memory_copy(fixture->memory + 0x3010u, descriptor, sizeof(descriptor));
+        lib_memory_copy(fixture->memory + 0x3018u, descriptor, sizeof(descriptor));
+        if (!cache_run(fixture, read, sizeof(read))) return LIB_FALSE;
+        const t_cpu before_cpu = fixture->cpu;
+        const t_cpuins before_instructions = fixture->instructions;
+        const x86_core_cpu_execution_context before_execution = fixture->execution;
+
+        probe.fail_write = failure != 0u;
+        probe.fail_write_at = 0x301du;
+        if (x86_core_cpu_debug_patch_registers(&fixture->execution, &patch) != LIB_STATUS_INVALID_STATE ||
+            lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
+            fixture->memory[0x3015u] != (failure ? 0x93u : 0x92u) ||
+            fixture->memory[0x301du] != 0x92u || fixture->writes != failure ||
+            fixture->execution.cpu != &fixture->cpu ||
+            fixture->execution.instructions != &fixture->instructions) {
+            lib_c_printf("Debug failure prefix: %u\n", (lib_u32)failure);
+            return LIB_FALSE;
+        }
+        if (!failure &&
+            (lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
+             lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution))))
+            return LIB_FALSE;
+        probe.fail_write = LIB_FALSE;
+        if (!cache_run(fixture, read, sizeof(read)) ||
+            fixture->cpu.data.al != (failure ? 0x93u : 0x92u) || fixture->writes != failure)
+            return LIB_FALSE;
+        x86_core_cpu_execution_finalize(&fixture->execution);
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_debug_paging(void)
+{
+    const lib_u8 read[] = {0xa0u, 0x15u, 0x30u};
+
+    for (lib_u8 writable = 0u; writable < 2u; ++writable)
+    for (lib_u8 accessed = 0u; accessed < 2u; ++accessed)
+    for (lib_u8 reject = 0u; reject < 2u; ++reject) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        const lib_u8 descriptor[] = {0xffu, 0xffu, 0u, 0u, 0u,
+            (lib_u8)(0x92u | accessed), 0u, 0u};
+        x86_core_cpu_debug_register_patch patch = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES),
+            .values = {[X86_CORE_CPU_DEBUG_ES] = 0x10u, [X86_CORE_CPU_DEBUG_GS] = 0x18u}};
+        const lib_status expected = reject || (!writable && !accessed) ?
+            LIB_STATUS_INVALID_STATE : LIB_STATUS_OK;
+        const lib_u32 entries[] = {0x11023u, 0x63u, writable ? 0x3023u : 0x3021u};
+        lib_u32 actual;
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG | VCPU_CR0_WP | VCPU_CR0_ET;
+        fixture->cpu.data.cr3 = 0x10000u;
+        fixture->cpu.data.cs.selector = 8u;
+        fixture->cpu.data.ds.selector = fixture->cpu.data.ss.selector = 0x10u;
+        fixture->cpu.data.gdtr.base = 0x3000u;
+        fixture->cpu.data.gdtr.limit = 23u;
+        lib_memory_copy(fixture->memory + 0x10000u, entries, sizeof(lib_u32));
+        lib_memory_copy(fixture->memory + 0x11000u, entries + 1u, sizeof(lib_u32));
+        lib_memory_copy(fixture->memory + 0x1100cu, entries + 2u, sizeof(lib_u32));
+        lib_memory_copy(fixture->memory + 0x3010u, descriptor, sizeof(descriptor));
+        if (!cache_run(fixture, read, sizeof(read))) return LIB_FALSE;
+        const t_cpu before_cpu = fixture->cpu;
+        const x86_core_cpu_execution_context before_execution = fixture->execution;
+        const lib_u32 writes = fixture->writes;
+
+        if (reject) patch.mask |= X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_GS);
+        if (x86_core_cpu_debug_patch_registers(&fixture->execution, &patch) != expected)
+            return LIB_FALSE;
+        if (expected != LIB_STATUS_OK &&
+            (fixture->writes != writes ||
+             lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
+             lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution))))
+            return LIB_FALSE;
+        lib_memory_copy(&actual, fixture->memory + 0x1100cu, sizeof(actual));
+        if (actual != (entries[2] | (expected == LIB_STATUS_OK && !accessed ? 0x40u : 0u)) ||
+            !cache_run(fixture, read, sizeof(read)) ||
+            fixture->cpu.data.al != (expected == LIB_STATUS_OK ? 0x93u : descriptor[5]))
+            return LIB_FALSE;
+        x86_core_cpu_execution_finalize(&fixture->execution);
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cache_prepared_segment(void)
+{
+    const lib_u8 read[] = {0xa0u, 0x15u, 0x30u};
+    const lib_u8 descriptors[] = {
+        0xffu, 0xffu, 0u, 0u, 0u, 0x9bu, 0u, 0u,
+        0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0u, 0u};
+
+    for (lib_u8 action = 0u; action < 3u; ++action) {
+        cache_memory_probe probe = {0};
+        cpu_instruction_fixture *fixture = &probe.instruction;
+        x86_core_cpu_prepared_entry *entry = LIB_NULL;
+        const x86_core_cpu_entry_plan_state state = {
+            .cs = 8u, .ds = 0x10u, .es = 0x10u,
+            .ss = action == 2u ? 0x18u : 0x10u, .sp = 0x6000u};
+
+        cpu_instruction_prepare_with_bus(fixture, X86_CORE_CPU_PROFILE_80486SX,
+            &cache_memory_bus, &probe);
+        fixture->cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_ET;
+        fixture->cpu.data.cs.selector = 8u;
+        fixture->cpu.data.ds.selector = fixture->cpu.data.ss.selector = 0x10u;
+        fixture->cpu.data.gdtr.base = 0x3000u;
+        fixture->cpu.data.gdtr.limit = 23u;
+        lib_memory_copy(fixture->memory + 0x3008u, descriptors, sizeof(descriptors));
+        if (!cache_run(fixture, read, sizeof(read))) return LIB_FALSE;
+        const t_cpu before = fixture->cpu;
+        const lib_status status = x86_core_cpu_prepare_entry(&fixture->execution, &state, &entry);
+
+        if (status != (action == 2u ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK) ||
+            (entry == LIB_NULL) != (action == 2u) ||
+            lib_memory_compare(&before, &fixture->cpu, sizeof(before))) return LIB_FALSE;
+        x86_core_cpu_finish_entry(entry, action == 1u);
+        if ((action != 1u && lib_memory_compare(&before, &fixture->cpu, sizeof(before))) ||
+            fixture->writes != (action == 2u ? 0u : 1u) ||
+            !cache_run(fixture, read, sizeof(read)) ||
+            fixture->cpu.data.al != (action == 2u ? 0x92u : 0x93u))
+            return LIB_FALSE;
+        x86_core_cpu_execution_finalize(&fixture->execution);
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool cache_replacement_matrix(void)
 {
     static const lib_u8 victims[] = {0u, 2u, 1u, 2u, 0u, 3u, 1u, 3u};
@@ -3269,6 +3461,9 @@ int main(void)
     if (!cache_test_forms()) { lib_c_printf("Cache forms failed\n"); return 1; }
     if (!cache_test_observation_and_fetch()) { lib_c_printf("Cache observation failed\n"); return 1; }
     if (!cache_normal_access()) { lib_c_printf("Cache normal access failed\n"); return 1; }
+    if (!cache_debug_patch()) { lib_c_printf("Cache Debug patch failed\n"); return 1; }
+    if (!cache_debug_paging()) { lib_c_printf("Cache Debug paging failed\n"); return 1; }
+    if (!cache_prepared_segment()) { lib_c_printf("Cache prepared segment failed\n"); return 1; }
     if (!cache_replacement_matrix()) { lib_c_printf("Cache replacement failed\n"); return 1; }
     if (!cache_locked_operands()) { lib_c_printf("Cache locked operands failed\n"); return 1; }
     if (!cache_page_attributes()) { lib_c_printf("Cache page attributes failed\n"); return 1; }

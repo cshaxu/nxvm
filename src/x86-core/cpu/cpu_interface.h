@@ -614,6 +614,9 @@ lib_status x86_core_cpu_debug_capture_instruction(
 lib_status x86_core_cpu_debug_read_register(
     const x86_core_cpu_execution_context *context,
     x86_core_cpu_debug_register register_id, lib_u32 *out_value);
+/* Register publication is atomic after read-only validation. A physical
+ * provider failure during commit retains its accepted write prefix; callers
+ * must not replay it. Descriptor effects use the live CPU cache owner. */
 lib_status x86_core_cpu_debug_patch_registers(
     x86_core_cpu_execution_context *context,
     const x86_core_cpu_debug_register_patch *patch);

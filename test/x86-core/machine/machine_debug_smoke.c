@@ -49,6 +49,75 @@ static lib_i32 debug_observation_contract(x86_core_machine *machine)
     return 0;
 }
 
+static lib_bool debug_cached_segment_patch(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX};
+    const x86_core_machine_memory_alias_config alias = {
+        0xffff0000u, 0x000f0000u, 0x00010000u};
+    const lib_u8 code[] = {0x0fu, 0x01u, 0x16u, 0u, 2u, 0xa0u, 0x1du, 0x30u};
+    const lib_u8 gdtr[] = {31u, 0u, 0u, 0x30u, 0u, 0u};
+    const lib_u8 descriptors[] = {
+        0xffu, 0xffu, 0u, 0u, 0u, 0x9bu, 0u, 0u,
+        0xffu, 0xffu, 0u, 0u, 0u, 0x93u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0u, 0u};
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result;
+    x86_core_cpu_debug_register_patch patch = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0u, [X86_CORE_CPU_DEBUG_EIP] = 0x100u}};
+    lib_bool valid = LIB_FALSE;
+    lib_u32 value;
+    lib_u8 byte;
+
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)
+        return LIB_FALSE;
+    if (x86_core_machine_install_memory_aliases(machine, &alias, 1u, LIB_FALSE) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x200u, gdtr, sizeof(gdtr)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x3008u, descriptors, sizeof(descriptors)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
+        x86_core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET) goto done;
+    patch = (x86_core_cpu_debug_register_patch){
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 8u, [X86_CORE_CPU_DEBUG_DS] = 0x10u,
+            [X86_CORE_CPU_DEBUG_SS] = 0x10u, [X86_CORE_CPU_DEBUG_CR0] = 0x11u}};
+    if (x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
+        x86_core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
+        x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX, &value) != LIB_STATUS_OK ||
+        (value & 0xffu) != 0x92u) goto done;
+    patch = (x86_core_cpu_debug_register_patch){
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS),
+        .values = {[X86_CORE_CPU_DEBUG_ES] = 0x18u, [X86_CORE_CPU_DEBUG_SS] = 0x20u}};
+    if (x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_debug_read_memory(machine, 0x301du, &byte, 1u) != LIB_STATUS_OK ||
+        byte != 0x92u) goto done;
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES);
+    if (x86_core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
+        x86_core_machine_debug_read_memory(machine, 0x301du, &byte, 1u) != LIB_STATUS_OK ||
+        byte != 0x93u) goto done;
+    patch = (x86_core_cpu_debug_register_patch){
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x105u}};
+    valid = x86_core_machine_debug_patch_registers(machine, &patch) == LIB_STATUS_OK &&
+        x86_core_machine_debug_step(machine, &result) == LIB_STATUS_OK &&
+        result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
+        x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX, &value) == LIB_STATUS_OK &&
+        (value & 0xffu) == 0x93u;
+done:
+    x86_core_machine_destroy(machine);
+    return valid;
+}
+
 lib_i32 main(void)
 {
     x86_core_machine *machine = LIB_NULL;
@@ -65,7 +134,8 @@ lib_i32 main(void)
     debug_port_probe port_probe = {LIB_STATUS_OK, 0x11u};
     x86_core_machine_port_provider port_provider = {debug_port_read, debug_port_write};
 
-    if (test_x86_core_machine_create_executor(16u * 1024u * 1024u, &machine) != LIB_STATUS_OK ||
+    if (!debug_cached_segment_patch() ||
+        test_x86_core_machine_create_executor(16u * 1024u * 1024u, &machine) != LIB_STATUS_OK ||
         x86_core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &port_provider, &port_probe) != LIB_STATUS_OK ||
         x86_core_machine_debug_read_cpu(machine, &cpu) != LIB_STATUS_INVALID_STATE ||

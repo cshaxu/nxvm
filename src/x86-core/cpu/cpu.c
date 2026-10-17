@@ -21,13 +21,16 @@ struct x86_core_cpu_prepared_entry {
     VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_TF | \
     VCPU_EFLAGS_IF | VCPU_EFLAGS_DF | VCPU_EFLAGS_OF)
 
+static lib_status x86_core_cpu_prepare_patch(x86_core_cpu_execution_context *context,
+    const x86_core_cpu_debug_register_patch *patch, lib_bool entry, t_cpu *out_cpu);
+
 lib_status x86_core_cpu_prepare_entry(x86_core_cpu_execution_context *context,
     const x86_core_cpu_entry_plan_state *state,
     x86_core_cpu_prepared_entry **out_entry)
 {
-    x86_core_cpu_execution_context candidate;
     x86_core_cpu_prepared_entry *entry;
     t_cpu *out_cpu;
+    x86_core_cpu_debug_register_patch patch = {0};
 
     if (out_entry == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_entry = LIB_NULL;
@@ -39,15 +42,15 @@ lib_status x86_core_cpu_prepare_entry(x86_core_cpu_execution_context *context,
     if (entry == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     entry->owner = context;
     out_cpu = &entry->cpu;
-    *out_cpu = *context->cpu;
-    candidate = *context;
-    candidate.cpu = out_cpu;
-    if (x86_core_cpu_execution_load_segment(&candidate, &out_cpu->data.cs,
-            state->cs) || x86_core_cpu_execution_load_segment(&candidate,
-            &out_cpu->data.ds, state->ds) ||
-        x86_core_cpu_execution_load_segment(&candidate, &out_cpu->data.es,
-            state->es) || x86_core_cpu_execution_load_segment(&candidate,
-            &out_cpu->data.ss, state->ss)) {
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS);
+    patch.values[X86_CORE_CPU_DEBUG_CS] = state->cs;
+    patch.values[X86_CORE_CPU_DEBUG_DS] = state->ds;
+    patch.values[X86_CORE_CPU_DEBUG_ES] = state->es;
+    patch.values[X86_CORE_CPU_DEBUG_SS] = state->ss;
+    if (x86_core_cpu_prepare_patch(context, &patch, LIB_TRUE, out_cpu) != LIB_STATUS_OK) {
         lib_release(entry);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -439,14 +442,106 @@ lib_status x86_core_cpu_debug_read_register(const x86_core_cpu_execution_context
     return LIB_STATUS_OK;
 }
 
+static lib_status x86_core_cpu_debug_apply_patch(x86_core_cpu_execution_context *context,
+    const x86_core_cpu_debug_register_patch *patch, lib_bool entry)
+{
+    static const x86_core_cpu_debug_register entry_order[] = {
+        X86_CORE_CPU_DEBUG_CS, X86_CORE_CPU_DEBUG_DS,
+        X86_CORE_CPU_DEBUG_ES, X86_CORE_CPU_DEBUG_SS};
+    t_cpu *candidate_cpu = context->cpu;
+    const lib_size count = entry ? sizeof(entry_order) / sizeof(entry_order[0]) :
+        X86_CORE_CPU_DEBUG_REGISTER_COUNT;
+
+    /* Segment validation uses the complete candidate paging context, even
+     * though segment identifiers precede control registers in the patch enum. */
+    if (patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0))
+        candidate_cpu->data.cr0 = patch->values[X86_CORE_CPU_DEBUG_CR0];
+    if (patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3))
+        candidate_cpu->data.cr3 = patch->values[X86_CORE_CPU_DEBUG_CR3];
+    if (patch->mask & (X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3))) {
+        x86_core_cpu_execution_invalidate_tlb(context);
+    }
+    /* Prepared entry reloads CS before data; Debug preserves enum order. */
+    for (lib_size index = 0u; index < count; ++index) {
+        const x86_core_cpu_debug_register register_id = entry ? entry_order[index] :
+            (x86_core_cpu_debug_register)index;
+        if ((patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id)) == 0u)
+            continue;
+        switch (register_id) {
+        case X86_CORE_CPU_DEBUG_EAX: candidate_cpu->data.eax = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_ECX: candidate_cpu->data.ecx = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_EDX: candidate_cpu->data.edx = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_EBX: candidate_cpu->data.ebx = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_ESP: candidate_cpu->data.esp = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_EBP: candidate_cpu->data.ebp = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_ESI: candidate_cpu->data.esi = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_EDI: candidate_cpu->data.edi = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_EIP: candidate_cpu->data.eip = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_EFLAGS:
+            candidate_cpu->data.eflags = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
+                x86_core_cpu_eflags_normalize(context->cpu_profile, patch->values[register_id]) :
+                patch->values[register_id];
+            break;
+        case X86_CORE_CPU_DEBUG_CR0: candidate_cpu->data.cr0 = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_CR1: candidate_cpu->data.cr1 = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_CR2: candidate_cpu->data.cr2 = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_CR3: candidate_cpu->data.cr3 = patch->values[register_id]; break;
+        case X86_CORE_CPU_DEBUG_CR4: candidate_cpu->data.cr4 = patch->values[register_id]; break;
+        default:
+            if (x86_core_cpu_debug_patch_segment(context,
+                    candidate_cpu, register_id, patch->values[register_id]))
+                return LIB_STATUS_INVALID_STATE;
+            break;
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status x86_core_cpu_prepare_patch(x86_core_cpu_execution_context *context,
+    const x86_core_cpu_debug_register_patch *patch, lib_bool entry, t_cpu *out_cpu)
+{
+    x86_core_cpu_execution_context candidate_context;
+    t_cpu candidate_cpu;
+    t_cpuins candidate_instructions;
+    t_cpu *original_cpu;
+    t_cpuins *original_instructions;
+    lib_status status;
+
+    original_cpu = context->cpu;
+    original_instructions = context->instructions;
+    candidate_cpu = *original_cpu;
+    candidate_instructions = *original_instructions;
+    candidate_context = *context;
+    candidate_context.cpu = &candidate_cpu;
+    candidate_context.instructions = &candidate_instructions;
+    candidate_context.preview_mode = LIB_TRUE;
+    status = x86_core_cpu_debug_apply_patch(&candidate_context, patch, entry);
+    if (status != LIB_STATUS_OK) return status;
+
+    /* Preflight publishes nothing. Commit uses the live cache/TLB and bus,
+     * while register and instruction candidates remain unpublished. */
+    candidate_cpu = *original_cpu;
+    candidate_instructions = *original_instructions;
+    context->cpu = &candidate_cpu;
+    context->instructions = &candidate_instructions;
+    status = x86_core_cpu_debug_apply_patch(context, patch, entry);
+    context->cpu = original_cpu;
+    context->instructions = original_instructions;
+    if (status == LIB_STATUS_OK) *out_cpu = candidate_cpu;
+    if (patch->mask & (X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3))) {
+        x86_core_cpu_execution_invalidate_tlb(context);
+        x86_core_cpu_execution_invalidate_prefetch(context);
+    }
+    return status;
+}
+
 lib_status x86_core_cpu_debug_patch_registers(x86_core_cpu_execution_context *context,
     const x86_core_cpu_debug_register_patch *patch)
 {
-    const lib_u32 valid_mask =
-        (1u << X86_CORE_CPU_DEBUG_REGISTER_COUNT) - 1u;
-    x86_core_cpu_execution_context candidate_context;
-    t_cpu candidate_cpu;
-    x86_core_cpu_debug_register register_id;
+    const lib_u32 valid_mask = (1u << X86_CORE_CPU_DEBUG_REGISTER_COUNT) - 1u;
+    lib_status status;
 
     if (context == LIB_NULL || patch == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -457,51 +552,8 @@ lib_status x86_core_cpu_debug_patch_registers(x86_core_cpu_execution_context *co
         !x86_core_cpu_cr4_value_valid(context->cpu_profile,
             patch->values[X86_CORE_CPU_DEBUG_CR4]))
         return LIB_STATUS_INVALID_ARGUMENT;
-    candidate_cpu = *context->cpu;
-    candidate_context = *context;
-    candidate_context.cpu = &candidate_cpu;
-    /* Segment validation uses the complete candidate paging context, even
-     * though segment identifiers precede control registers in the patch enum. */
-    if (patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0))
-        candidate_cpu.data.cr0 = patch->values[X86_CORE_CPU_DEBUG_CR0];
-    if (patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3))
-        candidate_cpu.data.cr3 = patch->values[X86_CORE_CPU_DEBUG_CR3];
-    if (patch->mask & (X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0) |
-        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3))) {
-        x86_core_cpu_execution_invalidate_tlb(&candidate_context);
-    }
-    for (register_id = X86_CORE_CPU_DEBUG_EAX;
-         register_id < X86_CORE_CPU_DEBUG_REGISTER_COUNT; ++register_id) {
-        if ((patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id)) == 0u)
-            continue;
-        switch (register_id) {
-        case X86_CORE_CPU_DEBUG_EAX: candidate_cpu.data.eax = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_ECX: candidate_cpu.data.ecx = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_EDX: candidate_cpu.data.edx = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_EBX: candidate_cpu.data.ebx = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_ESP: candidate_cpu.data.esp = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_EBP: candidate_cpu.data.ebp = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_ESI: candidate_cpu.data.esi = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_EDI: candidate_cpu.data.edi = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_EIP: candidate_cpu.data.eip = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_EFLAGS:
-            candidate_cpu.data.eflags = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
-                x86_core_cpu_eflags_normalize(context->cpu_profile, patch->values[register_id]) :
-                patch->values[register_id];
-            break;
-        case X86_CORE_CPU_DEBUG_CR0: candidate_cpu.data.cr0 = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_CR1: candidate_cpu.data.cr1 = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_CR2: candidate_cpu.data.cr2 = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_CR3: candidate_cpu.data.cr3 = patch->values[register_id]; break;
-        case X86_CORE_CPU_DEBUG_CR4: candidate_cpu.data.cr4 = patch->values[register_id]; break;
-        default:
-            if (x86_core_cpu_debug_patch_segment(&candidate_context,
-                    &candidate_cpu, register_id, patch->values[register_id]))
-                return LIB_STATUS_INVALID_STATE;
-            break;
-        }
-    }
-    *context->cpu = candidate_cpu;
+    status = x86_core_cpu_prepare_patch(context, patch, LIB_FALSE, context->cpu);
+    if (status != LIB_STATUS_OK) return status;
     context->repeat_compare_flags_valid = LIB_FALSE;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
         context->source_repeat_active = LIB_FALSE;
@@ -509,12 +561,7 @@ lib_status x86_core_cpu_debug_patch_registers(x86_core_cpu_execution_context *co
         instruction_state.data.timing_gpr_writes = 0u;
         instruction_state.data.timing_previous_gpr_writes = 0u;
     }
-    if (patch->mask & (X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0) |
-        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3))) {
-        x86_core_cpu_execution_invalidate_tlb(context);
-        x86_core_cpu_execution_invalidate_prefetch(context);
-    }
-    return LIB_STATUS_OK;
+    return status;
 }
 
 static lib_u32 x86_core_cpu_reset_code_base(

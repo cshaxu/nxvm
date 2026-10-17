@@ -1812,6 +1812,8 @@ static void _ksa_write_gdt(x86_core_cpu_execution_context *context, lib_u16 sele
         &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
     CPU_TRACE_CALL_END;
 }
+static void _ksa_test_write_xdt(x86_core_cpu_execution_context *context,
+    lib_u16 selector);
 static void _ksa_write_xdt(x86_core_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
 {
     lib_u64 *descriptor = (lib_u64 *)rdata;
@@ -1831,6 +1833,12 @@ static void _ksa_write_xdt(x86_core_cpu_execution_context *context, lib_u16 sele
             return;
         }
         _SetDescUserAccessed(*descriptor);
+    }
+    if (context->preview_mode)
+    {
+        CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
+        CPU_TRACE_CALL_END;
+        return;
     }
     if (_GetSelector_TI(selector))
     {
