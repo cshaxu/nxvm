@@ -5,9 +5,30 @@
 ## M5 T563 — Remaining 486SX Timing And Production
 
 S4 is closed after coordinator actual-commit review of Shared `f48b7984c`
-and NXVM `f5b4b1eee`. Its complete packet is retained in P2. No S is active;
-S5 events/system remains the next planned cohort under the
+and NXVM `f5b4b1eee`. Its complete packet is retained in P2. S5 is admitted
+for events/system under the
 [existing proposal](../proposals/m5-486sx-timing-production-completion.md).
+
+## T563 S5 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T563 S5, one-session coordinator/executor role cycle after accepted S4 at 54292e0bd; Shared implementation P1 0b7c189e1 is pushed, target-separated NXVM P2 delivery and coordinator review follow. |
+| Admission And Approval | Owner's complete 486SX objective, standing sequential-S admission and CPU accuracy-upgrade approval, 2026-10-16. Shared X86 Core CPU/Machine and their tests; NXVM evidence/gates and eight affected PC artifacts. No Lib/Emulator, MyNES, sibling or owner-input change. |
+| Objective | Consume original C16 events/system and S1 R7 as a complete finite batch: interrupt/exception setup and entry accesses, partial/nested failures, SMM entry/RSM, system special cycles, write-buffer barriers, reset and qualified clock/signal assumptions; event-only elapsed work must never invent a retirement. |
+| Non-goals | No second executor, timing selector, clock, event queue or hardware-state mirror; no C17 admission, PC110 board/pin model, App CPU selection, whole-C16 or complete-CPU claim. Sole selected runtime/preview and final budget reconciliation remain S6. |
+| Reference Baseline | Clean accepted 54292e0bd; S4 Shared f48b7984c and NXVM f5b4b1eee, original T560 C01--C17 and E01--E20 system matrix, T563 S1 R7 and S2--S4 allocations. |
+| Candidate Proposal | [Remaining 486SX completion](../proposals/m5-486sx-timing-production-completion.md), S5; [S5 complete event/system ledger](../etc/evidence/t563-s5-event-system.md). |
+| Files And ABI Surface | Existing CPU execution/event/SMM/system owners, private timing queries/observations and bus service; Core pending-completion/scheduler/reset owners. CPU fault-event/SMM/cache/nominal and Core system-power/executor/locality tests, registrations/manifests as needed; NXVM source-scanning gates only if their actual owner changes. No public ABI expansion planned. Initial production estimate +350--750/-60--160; tests +600--1300/-20--80, excluding docs/manifests/CMake/artifacts. Refine each numerical cohort before editing. |
+| Applicable Rules | AGENTS, NXVM guide/Contributing; shared Execution/Architecture/Coding/Document; NXVM Architecture/Coding/source policy; architecture-governance and coding-governance skills. CPU owns execution and event facts; Core alone publishes time. Types vocabulary, original instruction style, inward dependencies, explicit source/model grades and failure/lifetime/purity apply. |
+| Verification | Original x64/x86 Ninja/ccache graphs, -j8 build/-j4 CTest; grouped actual CPU/Core event and system vectors during development. After freeze: complete repository units, specialized manifests/dependencies/Types/docs gates, selected four-PC boot/config/Console integrations, eight rebuilt 0563 EXEs and final published CLI/PE/hash proof. No weakened assertions/budgets, timeout restart or alternate build graph. |
+| Expected Markers | Every E1--E6 ledger row reconciles complete forms/contexts, source/model and actual execution. Successful, failed-prefix and nested entry preserve accepted work without false successful retirement; no old-instruction or duplicate wait charge. SMM/Stop Grant use the existing write-buffer owner before the relevant physical effect. Pure queries/preview and reset/clock boundaries retain their contract. |
+| Asset Needs | Existing original manuals and approved external firmware/media read-only. Refresh eight current PC 0.5.0563 EXEs after executable changes; hash only after final gates/builds. Preserve INIs, ROM originals, media, snapshots and MyNES pair. |
+| Reporting Requirements | Report census, source assumptions, ownership and estimated diff before implementation; numerical model decisions before each affected cohort edit. At delivery report actual C/H additions/deletions/net, retained/deleted paths, source/model limits, tests/artifacts and unperformed manual checks. Complete target-separated P pushes and coordinator actual-commit acceptance; no partial implementation P. |
+| Stop Conditions | Unresolved source conflict requiring downgrade, public interface expansion outside existing approved contracts, Lib/Emulator change, imported source or owner-input mutation requires review. Do not turn a minimum/approximate latency into a hardware-exact constant or use qualified signal inputs as proof of board pin timing. |
+| Exit Criteria | Complete E1--E6 batch has reviewed source/formula and direct actual-path proof, including failed/nested and event-only transport. Required dual-width qualification/eight artifacts, manifests/docs and complete reviewed/pushed P delivery pass. S5 stays active while a row lacks disposition; S6/C17 remain closed. |
+| Original Owner Request | Implement complete 486SX, continue the approved S plan and group related forms efficiently; preserve the full transferred C16/C17/final qualification objective. |
+| Similar-Issue Sweep | Every event_ticks writer, software/external/debug/exception/task entry, failure/nesting and retirement boundary; SMM save/restore/restart and special-cycle output; qualified SMI/NMI/FLUSH/STPCLK/CLK/reset inputs; CPU bus drain/cache/overflow and Core pending wait, shutdown/budget/time publication; all corresponding tests and source-scanning gates. |
 
 
 | Task | Progress |
@@ -16,6 +37,7 @@ S5 events/system remains the next planned cohort under the
 | T563 S2 | Closed at 68dd1b9e0: nominal/form allocation, real numerical/mode/failure witnesses and source grades; required dual-width qualification and eight 0563 PC EXEs. |
 | T563 S3 | Closed: memory/translation, stack/string/descriptor/control/task/permission roles and source-qualified models; 631/631 units, 16 selected integrations, four published CLI checks and specialized gates pass per width. Eight 0563 PC EXEs refreshed. C16 final selection and C17 stay closed. |
 | T563 S4 | Closed after actual-commit review of f48b7984c/f5b4b1eee: complete F1--R3 batch, 632/632 units, 16 selected integrations, complete specialized gates and four final published CLI checks per width. Eight 0563 PC EXEs rebuilt/deployed with final PE/hash proof. Production +479/-62, tests +1223/-74; timing-seam gate +17/-2. No complete C16/C17 claim. |
+| T563 S5 | Complete delivery pending coordinator review: Shared P1 0b7c189e1 is pushed; target-separated NXVM P2 follows. E1--E6 source/actual-diff review and event/system implementation complete. Both widths pass 632/632 units; the owner reports Windows session closure and the unchanged restored-session x64 run resolves the native MIDI failure without a Lib change or waiver. Both specialized aggregates, sixteen selected integrations per width, eight final CLI checks and eight rebuilt/deployed 0563 PC EXEs have proof. Production +528/-125, tests +1361/-69. Owner inputs/MyNES and Lib/Emulator are unchanged. S6/C17 and full CPU qualification remain closed; no acceptance claim before actual-commit review. |
 
 [S1 evidence](../etc/evidence/t563-s1-rebase.md) retains the original receiver
 ledger. [S2 delivery](../etc/evidence/t563-s2-nominal-allocation.md) records the
@@ -23,7 +45,7 @@ nominal family census and source restrictions. [S3 delivery and actual-commit
 review](../etc/evidence/t563-s3-memory-translation.md) maps the whole admitted
 access batch to proof. [S4 delivery and actual-commit review](../etc/evidence/t563-s4-fetch-bus-repeat.md)
 records the complete fetch/bus/decode/REP cohort;
-[current artifact hashes](../etc/evidence/t563-s4-artifacts.json) were checked
+[current artifact hashes](../etc/evidence/t563-s5-artifacts.json) were checked
 after all builds, published CLI tests and pushed deliveries. Lib, Emulator, MyNES,
 owner INIs/media/firmware and four App CPU choices remain unchanged.
 

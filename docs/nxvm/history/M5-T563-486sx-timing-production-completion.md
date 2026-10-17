@@ -38,3 +38,15 @@ observations and actual REP/fetch/failure/lifetime proof. Both widths pass
 specialized gates. Eight 0563 artifacts are refreshed. S5 system/event totals,
 S6 sole selected runtime/preview and C17/final qualification remain mandatory;
 this delivery is not a complete 486SX or PC110 claim.
+
+S5 complete implementation P1 is Shared `0b7c189e1`, followed by its
+target-separated NXVM evidence/artifact delivery. The [event/system ledger](../etc/evidence/t563-s5-event-system.md)
+maps E1--E6 to scoped accepted accesses, explicit L2 envelopes, failed/nested
+entry, SMM/system output and the sole Core pending timeline. Final units pass
+632/632 per width; specialized aggregates, sixteen selected integrations per
+width, eight final CLI checks and eight refreshed 0563 artifacts pass.
+The unchanged x64 gate passes after the owner reports restoring the Windows
+session; prior native MIDI failures are retained in evidence, not hidden by
+a Lib edit or test waiver. Actual-commit coordinator acceptance remains
+required. S6 final selector/preview, C17 and complete C01--C17 qualification
+remain the existing S6--S8 receivers, not completed by this delivery.

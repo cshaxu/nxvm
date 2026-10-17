@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T563 S5: [Event and system elapsed time](evidence/t563-s5-event-system.md)
+records complete E1--E6 allocation, model grades, failure/budget proof,
+session-restored qualification and eight artifact hashes.
+
 T562 S3: [Equivalent-path consolidation](evidence/t562-s3-equivalent-paths.md)
 records five retained owners, per-package estimated/actual deltas and receiver proof.
 
