@@ -3,7 +3,7 @@
 
 typedef struct v30_form_fixture {
     cpu_instruction_fixture instruction;
-    lib_u32 reads, writes, ports, observations, fetches;
+    lib_u32 reads, writes, ports;
     lib_u32 failed_code_address;
     lib_bool refuse_code;
 } v30_form_fixture;
@@ -13,9 +13,7 @@ static lib_status v30_form_read(void *opaque, lib_u32 address, void *data,
     lib_bool observe, lib_bool reset_fetch, lib_u8 cache_control)
 {
     v30_form_fixture *fixture = opaque;
-    if (observe) ++fixture->observations;
-    else if (provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) ++fixture->reads;
-    else ++fixture->fetches;
+    if (!observe && provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) ++fixture->reads;
     if (fixture->refuse_code && provenance != X86_CORE_CPU_MEMORY_ACCESS_DATA &&
         address <= fixture->failed_code_address && fixture->failed_code_address - address < bytes)
         return LIB_STATUS_IO_ERROR;
