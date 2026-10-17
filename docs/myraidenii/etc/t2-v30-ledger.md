@@ -39,7 +39,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | S12 unifies actual primary ModRM shape/minimum admission with pure scan before operand effects; nineteen constrained opcode families cover every ModRM and segment prefix, valid witnesses, truncation and fetch failures/wrap. No invented native INT6. Complete native slot/form disposition and legal instruction semantics remain unqualified |
 | V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements 10--1F/28/2A; S5 implements documented packed-BCD 20/22/26; S6 adds bit-field 31/33/39/3B through the same format/metadata/preview owner. Output-alias silicon, prefix/bus contexts, mode entry, undocumented inputs and full timing remain unqualified |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | S7 implements native carry comparison prefixes, one execution/preview recognizer, prefix-selection vectors and up-to-three-prefix interrupt restart; complete LOCK, long-stream and other mode/prefix qualification remains open |
-| V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | S14 qualifies native GP stack/register-set/frame forms and seven-transfer POPR. S15 implements all segment MOV/POP external inhibition and qualifies segment MOV/PUSH/POP plus LDS/LES results, aliases, default/override, lanes/tails and failures. SP aliases/data tails retain L2 grades; store-BRK suppression shares the existing shadow as explicit L2. General MOV/exchange/address, PSW/control frames and complete V06 remain open |
+| V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | S14 qualifies native GP stack/register-set/frame forms and seven-transfer POPR; S15 qualifies segment transfer/results and associated external inhibition. S16 qualifies ordinary byte/word MOV, XCH, LEA and XLAT results, all memory ModRM/default/override, GP aliases, immediates, wrap/lane/tail and data failures through unchanged handlers. SP/data-tail and store-BRK L2 grades remain explicit. Physical LOCK/interoperation, complete prefix/mode contexts and PSW/control frames retain their original receivers; complete V06/T2 is not inferred from result tests |
 | V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | S11 fixes full eight-bit native shift/rotate counts and long-shift defined CF, with seven-operation byte/word one/CL/imm8, register/alias/memory/segment and provider-failure proofs. Other arithmetic/decimal/multiply/divide, mode, timing and undocumented contexts remain unqualified |
 | V08 | Near/far/conditional branches, loops, calls/returns, breakpoint/interrupt return | CPU control/entry helpers; manual sections 6, 12 | Taken/not-taken, stack frame, segment wrap and target-failure observations; not yet qualified |
 | V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | S7 implements four native CMPS/SCAS byte/word comparison forms with carry/zero conditions. S9 qualifies port-string transfers; S10 qualifies six MOVS/LODS/STOS forms, REP/DF/index/segment/overlap/tails, provider failures and NMI/INT-to-IRET continuation through existing handlers. Unqualified prefix, complete comparison-flag, electrical bus/timing and mode contexts remain open |
@@ -227,6 +227,17 @@ branches are removed. Native store-BRK behavior reuses the existing shadow as
 an explicit L2 model; general BRK/entry/mode/PSW qualifications remain V10/V11.
 The full original domain and all other native/timing/Machine/board obligations
 remain unchanged.
+
+S16 qualifies the ordinary native MOV/XCH/LEA/XLAT result and data-order
+subfamily without production changes. [Transfer evidence](evidence/t2-s16-transfer.md)
+records 55,200 explicit input vectors, pure previews, all memory ModRM and
+short segment choices, byte/word alias preservation, EA wrap, immediate and
+lookup values, and every applicable data-provider failure. Actual callbacks
+prove read-before-write and accepted-prefix effects, not physical bus-lock
+exclusion or clocks. `_m_read_rmw`'s existing lock-signal admission is still
+486-only; native BUSLOCK/arbitration/prefetch remains the complete V05/V14/V15
+receiver, not an implicitly certified property of a successful XCH value.
+All original native/entry/mode/time/Machine/board requirements remain.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;

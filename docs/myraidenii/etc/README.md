@@ -23,6 +23,7 @@
 - [T2 native shift and rotate](evidence/t2-s11-shift-rotate.md).
 - [T2 native GP stack and frames](evidence/t2-s14-stack.md).
 - [T2 native segment transfers and inhibition](evidence/t2-s15-segment.md).
+- [T2 ordinary native transfers and addresses](evidence/t2-s16-transfer.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
