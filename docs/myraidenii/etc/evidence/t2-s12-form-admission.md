@@ -73,13 +73,22 @@ all existing fetch callers. No per-handler workaround is added to the NEC route.
 
 ## Delivery And Verification
 
-Shared `9d069e6e4` and NXVM artifacts `663ce268d` are pushed.
+Shared `9d069e6e4`, test cleanup `310bd9aba` and NXVM artifacts `663ce268d`
+are pushed.
 Both original Release Ninja/ccache graphs build all targets. First complete
 repo-only unit suites pass x64 665/665 in 284.78 seconds and x86 665/665 in
 102.77 seconds, including 176 X86 Core units and receiving App units. The new
 unit passes in 0.14/0.20 seconds. Architectures run sequentially without retry,
 budget change or assertion removal. The direct repaired unit also emits
 `V30:FORM-ADMISSION:OK` after the added truncation assertions.
+
+Coordinator actual-change review removed two unused observation/fetch counters
+from the new test fixture, without changing any assertion or production code.
+The final complete repo-only suites pass x64 665/665 in 72.90 seconds and x86
+665/665 in 79.29 seconds. These are post-review complete runs, not retries of
+failed tests: both initial suites had passed. The final eight artifact hashes
+remain identical. Prevention: review fixture fields for assertion ownership
+before the full validation pass in subsequent batches.
 
 Source/test manifests and registered Types, inward dependency, ownership and
 negative gates pass. A separate `-Wall -Wextra -Wpedantic` syntax review
@@ -98,15 +107,15 @@ unchanged. No external-ROM integration, desktop/RDP, physical audio, actual
 board/game execution or MyRaidenII EXE is claimed.
 
 Actual change excluding manifests/docs/artifacts: production +17/-4/net +13;
-tests +220/-0/net +220 (219-line unit and one registration); combined
-+237/-4/net +233. This is smaller than the test estimate because the existing
+tests +218/-0/net +218 (217-line unit and one registration); combined
++235/-4/net +231. This is smaller than the test estimate because the existing
 fixture supports the complete finite encoding matrix without a new framework.
 Two private helpers are renamed/reused, not added; no public API/type/layout,
 persistent state, handler replacement, second executor/cache/clock/queue exists.
 Source SHA-256:
 `B43741E4F755AD34D45E9AAB1AEC018977041D80CE79CA727B07D6340AB52815`.
 Test SHA-256:
-`EE205985BA4BFF6F27A486C184D887310EAEAA32F882AA0764473644AA818B7E`.
+`7F58F848B903B6C83E89288F45F550AD5FDA9F441FA4A1312FE70CD41AC57B1C`.
 Ignored logs under `build/myraidenii/t2-s12-*` retain baseline, repaired build,
 full-unit, warning and artifact proof for final T2 acceptance. No manual/table,
 external implementation, trace or protected input is imported.
