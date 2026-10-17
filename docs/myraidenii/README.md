@@ -29,7 +29,10 @@ Research/import/asset work first reads the [source policy](etc/operations/policy
 - [TODO](states/TODO.md): unplanned debt, not a second task queue.
 - [Supporting index](etc/README.md): sources, detailed design and evidence.
 
-Use commit target `MyRaidenII` for this product, `Shared` for shared mechanisms
-and `NXVM` only for the old queue transfer. One commit has one target. M0
+Use commit target `MyRaidenII` for this product and `Shared` for shared mechanisms.
+An explicitly admitted cross-target S uses `NXVM` for affected PC artifacts
+or the historical queue transfer, not for MyRaidenII source. Receiving artifact
+verification follows the shared Execution Rules; this does not authorize
+undeclared NXVM source or configuration changes. One commit has one target. M0
 governance uses `M0 Td S1 Pn`; M1 implementation uses `M1 Tn Sn Pn`. Do not
 inherit NXVM's T564 or MyNES's task/version sequence.
