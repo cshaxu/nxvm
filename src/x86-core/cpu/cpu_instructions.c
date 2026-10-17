@@ -8157,7 +8157,8 @@ static void _a_imul3(x86_core_cpu_execution_context *context, lib_u64 csrc1, lib
 static lib_u8 _a_shift_rotate_count(x86_core_cpu_execution_context *context,
     lib_u8 csrc)
 {
-    return x86_core_cpu_profile_has_8086_semantics(context->cpu_profile) ? csrc :
+    return (x86_core_cpu_profile_has_8086_semantics(context->cpu_profile) ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30) ? csrc :
         (lib_u8)(csrc & 0x1fu);
 }
 static void _a_rol(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
@@ -8510,7 +8511,7 @@ static void _a_shl(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u
     CPU_TRACE_CALL_BEGIN("_a_shl");
     count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
-    if (count >= bit)
+    if (count >= bit && context->cpu_profile != X86_CORE_CPU_PROFILE_V30)
         instruction_state.data.udf |= VCPU_EFLAGS_CF;
     switch (bit)
     {
@@ -8603,7 +8604,7 @@ static void _a_shr(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u
     CPU_TRACE_CALL_BEGIN("_a_shr");
     count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
-    if (count >= bit)
+    if (count >= bit && context->cpu_profile != X86_CORE_CPU_PROFILE_V30)
         instruction_state.data.udf |= VCPU_EFLAGS_CF;
     switch (bit)
     {
