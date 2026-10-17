@@ -28,3 +28,13 @@ identities, specialized gates and eight 0563 PC artifacts pass. Lib, Emulator,
 MyNES and owner inputs are unchanged. S3 is closed, not complete C16/C17;
 fetch/bus/decode/REP, events/system, final selector/preview, production admission
 and whole qualification retain their S4--S8 receivers.
+
+S4 completes its frozen F1--R3 fetch/bus/decode/REP cohort and awaits the
+target-separated P/coordinator cycle. The [S4 evidence](../etc/evidence/t563-s4-fetch-bus-repeat.md)
+records owner-approved wait feedback/Core-clock bus advancement, one CPU phase
+publisher, four-slot L2 timing, transaction-deduplicated invalidation
+observations and actual REP/fetch/failure/lifetime proof. Both widths pass
+632 repository units, 16 selected integrations, final published CLI checks and
+specialized gates. Eight 0563 artifacts are refreshed. S5 system/event totals,
+S6 sole selected runtime/preview and C17/final qualification remain mandatory;
+this delivery is not a complete 486SX or PC110 claim.

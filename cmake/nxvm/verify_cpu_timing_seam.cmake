@@ -26,8 +26,23 @@ cpu_timing_seam_require_count("${machine_text}" "x86_core_cpu_timing_select\\(" 
     "machine.c must not reselect timing after interrupt entry")
 cpu_timing_seam_require_count("${execution_text}" "x86_core_cpu_timing_select\\(" 1
     "CPU execution must select retirement timing once")
-string(FIND "${execution_text}" "void x86_core_cpu_execution_refresh(" refresh_start)
-string(SUBSTRING "${execution_text}" ${refresh_start} -1 refresh_text)
+cpu_timing_seam_require_count("${execution_text}" "static void _execution_refresh\\(" 1
+    "CPU must own one scoped execution body")
+cpu_timing_seam_require_count("${execution_text}" "void x86_core_cpu_execution_refresh\\(" 1
+    "CPU must expose one refresh entry")
+cpu_timing_seam_require_count("${execution_text}" "[ \t]_execution_refresh\\(context\\)" 1
+    "the refresh entry must invoke its execution body once")
+if(NOT execution_text MATCHES
+    "context->timing_bus_active = LIB_TRUE;[ \t\r\n]*_execution_refresh\\(context\\);[ \t\r\n]*context->timing_bus_active = LIB_FALSE;")
+    message(FATAL_ERROR "CPU refresh must bracket its sole execution body")
+endif()
+string(FIND "${execution_text}" "static void _execution_refresh(" refresh_start)
+string(FIND "${execution_text}" "void x86_core_cpu_execution_refresh(" entry_start)
+if(refresh_start LESS 0 OR entry_start LESS refresh_start)
+    message(FATAL_ERROR "CPU scoped execution body/entry is missing or reordered")
+endif()
+math(EXPR refresh_length "${entry_start} - ${refresh_start}")
+string(SUBSTRING "${execution_text}" ${refresh_start} ${refresh_length} refresh_text)
 string(FIND "${refresh_text}" "x86_core_cpu_timing_select(context," timing_position)
 string(FIND "${refresh_text}" "ExecInt(context)" interrupt_position)
 if(timing_position LESS 0 OR interrupt_position LESS timing_position)
