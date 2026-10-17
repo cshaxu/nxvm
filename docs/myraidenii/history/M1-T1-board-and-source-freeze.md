@@ -41,6 +41,14 @@ contracts. The owner explicitly approved future V30/NEC/timing enum expansion;
 S2 itself does not modify Shared code. Its [delivery evidence](../etc/evidence/t1-s2-inventory-and-contracts.md)
 records dual-width verification and the remaining full-colour release gate.
 
+Coordinator accepted S2 executor `b29e44ce0` after reviewing the complete
+13-file +622/-15 diff, including +313/-0 tool/test code. Both existing repo-only
+unit suites passed 655/655; the new CTest unit and all 18 synthetic cases passed,
+as did the actual owner archive in both PowerShell widths. Documentation,
+55 relative links, whitespace and ten unchanged executable hashes passed.
+S2 is closed. T1 remains open for final task-level ledger reconciliation;
+no Shared runtime or game execution qualification is asserted.
+
 Research-only batches use documentation/source/diff checks and leave existing
 production, test, build, INI and ten released EXEs untouched. No MyRaidenII
 executable exists yet. Actual runtime and source imports require later admission
