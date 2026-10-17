@@ -76,3 +76,11 @@ Shared implementation P1 **395c84b91** is pushed with the complete twenty-seven
 Shared paths. NXVM's target-separated delivery retains the full evidence and
 eight artifacts from that same frozen source content; committing adds no
 executable input. Coordinator actual-commit acceptance follows both P pushes.
+
+Coordinator review accepts S6 Shared **395c84b91** and NXVM **051baac83** after
+inspecting their actual 27/14 paths, Q1--Q6 mapping, ABI approval, source/model
+grades, frozen dual-width qualification and committed artifact hashes. The
+worktree was clean before the governance-only acceptance update. S6 is closed;
+its full packet remains in P2 and the detailed ledger retains the review.
+T563 remains open for S7 C17 and S8 whole qualification. No complete CPU,
+PC110 or manual desktop/RDP claim is added.

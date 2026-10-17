@@ -448,3 +448,34 @@ NXVM P2 carries the complete packet/evidence, family history/index/proposal
 clarification, artifact inventory and eight PC EXEs without mixing Shared or
 MyNES files into that commit. Coordinator actual-commit acceptance of both
 deliveries is still required.
+
+## Coordinator Actual-Commit Acceptance
+
+Switch from executor to coordinator in the same session and review pushed
+Shared **395c84b91** and NXVM **051baac83**. Inspect the actual CPU selection,
+completed-fact and event-scope patches, private declarations, Core wait,
+qualification, Debug and finish paths, and corresponding existing regression
+patches. Match all 27 Shared paths to Q1--Q6; no Lib/Emulator, App, MyNES,
+new executor/clock or unsupported C17 admission is present. Review confirms
+the explicitly approved observation field is the only public layout change,
+old enum values stay fixed, and original versus L2 grades are not collapsed.
+The old-family atomic path and pure component formulas have their distinct
+documented responsibilities; no retired Core live-preview or duplicate SX
+wait path remains.
+
+Inspect P2's fourteen paths: eight artifacts and six NXVM documentation or
+inventory files. Recheck all eight hashes from the committed JSON, both
+changed manifests, 632/632 JUnit counts with no failures/skips per width,
+3/3/5/5 selected integration counts per width, final published identity logs,
+specialized aggregates and source/test C/H counts. Verify both graphs are
+restored to Default and owner INI files and MyNES are unchanged. Earlier
+failing checkpoints and the ad-hoc over-strict COFF check remain transparent
+in evidence, not passed-off tests or reasons for a new binary recipe.
+
+origin/master equals P2 and the worktree is clean before this governance-only
+update. Accept the complete S6 batch and close S6. This review is one-session
+role separation, not independent-person review. The full admitted packet is
+retained in P2, with original sources and assumptions linked above. C17/S7,
+whole C01--C17/S8, PC110 and the complete 486SX goal remain uncompleted; no
+remaining S6 member is silently transferred or used to claim the T complete.
+The acceptance update changes no executable input and needs no rebuild.
