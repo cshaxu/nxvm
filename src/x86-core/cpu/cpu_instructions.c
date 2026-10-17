@@ -9228,6 +9228,24 @@ static lib_u8 x86_core_cpu_instruction_lexeme_immediate_bytes(
     return 0u;
 }
 
+typedef enum x86_core_cpu_nec_format {
+    X86_CPU_NEC_FORMAT_UNSUPPORTED,
+    X86_CPU_NEC_FORMAT_MODRM,
+    X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE,
+    X86_CPU_NEC_FORMAT_IMPLICIT
+} x86_core_cpu_nec_format;
+
+static x86_core_cpu_nec_format x86_core_cpu_nec_instruction_format(lib_u8 opcode)
+{
+    if ((opcode >= 0x10u && opcode <= 0x17u) || opcode == 0x28u || opcode == 0x2au)
+        return X86_CPU_NEC_FORMAT_MODRM;
+    if (opcode >= 0x18u && opcode <= 0x1fu)
+        return X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE;
+    if (opcode == 0x20u || opcode == 0x22u || opcode == 0x26u)
+        return X86_CPU_NEC_FORMAT_IMPLICIT;
+    return X86_CPU_NEC_FORMAT_UNSUPPORTED;
+}
+
 static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     const lib_u8 *bytes, lib_u8 available_bytes,
     x86_core_cpu_profile profile, lib_u8 code_32,
@@ -9244,6 +9262,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     lib_u8 immediate;
     lib_u8 extended = LIB_FALSE;
     lib_bool nec = LIB_FALSE;
+    x86_core_cpu_nec_format nec_format = X86_CPU_NEC_FORMAT_UNSUPPORTED;
     lib_u8 lock_prefix = LIB_FALSE;
     lib_u8 operand_size_prefix = LIB_FALSE;
     lib_u8 address_size_prefix = LIB_FALSE;
@@ -9287,10 +9306,13 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
             profile != X86_CORE_CPU_PROFILE_80486SX) return LIB_FALSE;
         if (index >= available_bytes || index >= 15u) return LIB_FALSE;
         opcode = bytes[index++];
+        if (nec) nec_format = x86_core_cpu_nec_instruction_format(opcode);
         ++components;
         extended = LIB_TRUE;
     }
-    if (nec || x86_core_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
+    if (nec ? nec_format == X86_CPU_NEC_FORMAT_MODRM ||
+        nec_format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE :
+        x86_core_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
         lib_u8 mod;
         lib_u8 rm;
 
@@ -9333,7 +9355,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     if (!metadata.valid || !cpu_profile_allows_minimum(profile, metadata.minimum_cpu) || lock_prefix) {
         return LIB_FALSE;
     }
-    immediate = nec ? (opcode >= 0x18u && opcode <= 0x1fu ? 1u : 0u) :
+    immediate = nec ? (nec_format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE ? 1u : 0u) :
         x86_core_cpu_instruction_lexeme_immediate_bytes(opcode,
             extended, modrm, operand_bytes, address_bytes);
     if ((lib_u32)index + displacement + immediate > available_bytes ||
@@ -9487,11 +9509,13 @@ x86_core_cpu_instruction_metadata x86_core_cpu_instruction_metadata_get(
         metadata.minimum_fpu = X86_FPU_PROFILE_8087;
         metadata.valid = opcode >= 0xd8u && opcode <= 0xdfu;
         break;
-    case X86_CORE_CPU_INSTRUCTION_NEC_0F:
+    case X86_CORE_CPU_INSTRUCTION_NEC_0F: {
+        const x86_core_cpu_nec_format format = x86_core_cpu_nec_instruction_format(opcode);
         metadata.minimum_cpu = X86_CORE_CPU_PROFILE_V30;
-        metadata.valid = ((opcode >= 0x10u && opcode <= 0x1fu) ||
-            opcode == 0x28u || opcode == 0x2au) && (modrm & 0x38u) == 0u;
+        metadata.valid = format != X86_CPU_NEC_FORMAT_UNSUPPORTED &&
+            (format == X86_CPU_NEC_FORMAT_IMPLICIT || (modrm & 0x38u) == 0u);
         break;
+    }
     default:
         metadata.valid = LIB_FALSE;
         break;
@@ -9933,34 +9957,20 @@ static void POP_CS(x86_core_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(xs_sel)));
     CPU_TRACE_CALL_END;
 }
-static void NEC_BIT_NIBBLE(x86_core_cpu_execution_context *context)
+static void NEC_BIT_NIBBLE(x86_core_cpu_execution_context *context,
+    lib_u8 opcode, x86_core_cpu_nec_format format)
 {
-    lib_u8 opcode;
-    lib_u8 modrm;
     lib_u8 count;
     lib_u8 byte;
     lib_u8 operation;
     lib_u8 al;
     lib_u16 mask;
     CPU_TRACE_CALL_BEGIN("NEC_BIT_NIBBLE");
-    _adv;
-    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
-        X86_CPU_REFERENCE_OF(opcode), 1));
-    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 1u,
-        X86_CPU_REFERENCE_OF(modrm), 1));
-    if (!x86_core_cpu_profile_allows_form(context,
-        X86_CORE_CPU_INSTRUCTION_NEC_0F, opcode, modrm))
-    {
-        UndefinedOpcode(context);
-        CPU_TRACE_CALL_END;
-        return;
-    }
-    _adv;
     byte = opcode < 0x20u ? (lib_u8)(1u + (opcode & 1u)) : 1u;
     operation = (opcode >> 1u) & 3u;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, byte));
     count = cpu_state.data.cl;
-    if (opcode >= 0x18u && opcode <= 0x1fu)
+    if (format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE)
     {
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         count = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -10007,13 +10017,110 @@ static void NEC_BIT_NIBBLE(x86_core_cpu_execution_context *context)
     }
     CPU_TRACE_CALL_END;
 }
+static void NEC_PACKED_BCD(x86_core_cpu_execution_context *context, lib_u8 opcode)
+{
+    const lib_u16 bytes = ((lib_u16)cpu_state.data.cl + 1u) / 2u;
+    lib_bool carry = LIB_FALSE;
+    lib_bool zero = LIB_TRUE;
+    CPU_TRACE_CALL_BEGIN("NEC_PACKED_BCD");
+    if (cpu_state.data.cl == 0u || cpu_state.data.cl == 255u)
+    {
+        /* These lengths are outside the documented 1--254 digit contract. */
+        UndefinedOpcode(context);
+        CPU_TRACE_CALL_END;
+        return;
+    }
+    for (lib_u16 index = 0u; index < bytes; ++index)
+    {
+        const lib_u16 source_offset = X86_CPU_MASK_U16(cpu_state.data.si + index);
+        const lib_u16 destination_offset = X86_CPU_MASK_U16(cpu_state.data.di + index);
+        lib_u8 source = 0u;
+        lib_u8 destination = 0u;
+        lib_u8 result;
+        lib_i32 value;
+        lib_i32 source_value;
+        if (opcode != 0x26u)
+            CPU_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.es,
+                destination_offset, 1, LIB_TRUE));
+        CPU_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds,
+            source_offset, X86_CPU_REFERENCE_OF(source), 1));
+        CPU_TRACE_CHECK_RETURN(_s_read_es(context, destination_offset,
+            X86_CPU_REFERENCE_OF(destination), 1));
+        if ((cpu_state.data.cl & 1u) && index + 1u == bytes)
+        {
+            /* The unused final nibble and odd-count flags are unspecified. */
+            source &= 0x0fu;
+            destination &= 0x0fu;
+        }
+        if ((source & 0x0fu) > 9u || (source >> 4u) > 9u ||
+            (destination & 0x0fu) > 9u || (destination >> 4u) > 9u)
+        {
+            /* Do not invent NEC results for non-decimal operand digits. */
+            UndefinedOpcode(context);
+            CPU_TRACE_CALL_END;
+            return;
+        }
+        source_value = (lib_i32)(source >> 4u) * 10 + (lib_i32)(source & 0x0fu);
+        value = (lib_i32)(destination >> 4u) * 10 + (lib_i32)(destination & 0x0fu);
+        if (opcode == 0x20u)
+        {
+            value += source_value + (carry ? 1 : 0);
+            carry = value > 99;
+            if (carry) value -= 100;
+        }
+        else
+        {
+            value -= source_value + (carry ? 1 : 0);
+            carry = value < 0;
+            if (carry) value += 100;
+        }
+        result = (lib_u8)(((lib_u32)(value / 10) << 4u) | (lib_u32)(value % 10));
+        zero = zero && result == 0u;
+        if (opcode != 0x26u)
+            CPU_TRACE_CHECK_RETURN(_s_write_es(context, destination_offset,
+                X86_CPU_REFERENCE_OF(result), 1));
+    }
+    X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, carry);
+    X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_ZF, zero);
+    instruction_state.data.udf |= VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF;
+    if (cpu_state.data.cl & 1u)
+        instruction_state.data.udf |= VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
+    CPU_TRACE_CALL_END;
+}
+static void INS_NEC_0F(x86_core_cpu_execution_context *context)
+{
+    lib_u8 opcode;
+    lib_u8 modrm = 0u;
+    x86_core_cpu_nec_format format;
+    CPU_TRACE_CALL_BEGIN("INS_NEC_0F");
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+        X86_CPU_REFERENCE_OF(opcode), 1));
+    format = x86_core_cpu_nec_instruction_format(opcode);
+    if (format == X86_CPU_NEC_FORMAT_MODRM || format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE)
+        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 1u,
+            X86_CPU_REFERENCE_OF(modrm), 1));
+    if (!x86_core_cpu_profile_allows_form(context,
+        X86_CORE_CPU_INSTRUCTION_NEC_0F, opcode, modrm))
+    {
+        UndefinedOpcode(context);
+        CPU_TRACE_CALL_END;
+        return;
+    }
+    _adv;
+    if (format == X86_CPU_NEC_FORMAT_IMPLICIT)
+        NEC_PACKED_BCD(context, opcode);
+    else
+        NEC_BIT_NIBBLE(context, opcode, format);
+    CPU_TRACE_CALL_END;
+}
 static void INS_0F(x86_core_cpu_execution_context *context)
 {
     lib_u8 opcode = 0x00;
     lib_u8 modrm = 0x00;
     CPU_TRACE_CALL_BEGIN("INS_0F");
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
-        NEC_BIT_NIBBLE(context);
+        INS_NEC_0F(context);
     else if (cpu_profile_has_protected_architecture(context->cpu_profile))
     {
         _adv;

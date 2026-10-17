@@ -167,7 +167,7 @@ static lib_i32 v30_not_admitted(void)
         {0x63u,0xc0u,0u},                  /* Not Intel ARPL */
         {0x66u,0x90u,0u},                  /* Not Intel size override */
         {0x67u,0x90u,0u},
-        {0x0fu,0x20u,0xc0u}                /* Not Intel 0F MOV CR */
+        {0x0fu,0x21u,0xc0u}                /* Not Intel 0F MOV DR */
     };
     cpu_bus_fixture fixture;
     x86_core_cpu_instruction_lexeme lexeme;
