@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S13. No S packet is active.
+M1 T2 S14 native GP-stack/frame delivery is verified; coordinator acceptance follows.
 Single-session coordinator/executor mode remains in effect.
+
+## Active S14 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T2 S14, next unused S after accepted S13; single-session coordinator/executor, no delegation. |
+| Admission And Approval | Owner's standing full implementation/automatic S/V30 integration approvals retained on 2026-10-17. Shared CPU and tests, affected eight NXVM PC artifacts and MyRaidenII evidence only. No public API/layout, Lib/Emulator or MyNES modification. |
+| Objective | Consume V06 native GP-stack/register-set/frame subfamily: PUSH/POP GP and r/m16, PUSH imm8/16, PUSHR/POPR, PREPARE/DISPOSE, complete ordering/alias/tail/overlap/provider-failure contexts. Repair the documented POPR skipped-SP transfer at its sole instruction owner; reuse existing scalar stack/bus paths. |
+| Non-goals | Segment-register transfer/interrupt shadow, PSW/MD and interrupt/control frames remain V06/V08/V10/V11; no complete V06/native/mode/8080/time/Machine/board/game qualification or new source import. No Intel transfer-order/timing change. |
+| Reference Baseline | Clean pushed 361d436c3. Pinned October 1986 NEC manual printed 12-146--12-153 gives stack operations and seven POPR transfers; original scalar native data-tail behavior retains S8's L2 grade. Read-only pinned MAME NEC reference clarifies retained SP-source/target model ambiguities, not imported implementation or silicon-exact evidence. |
+| Candidate Proposal | [T2 proposal](../proposals/m1-v30.md) and [complete ledger](../etc/t2-v30-ledger.md), complete native GP-stack/register-set/frame subfamily of V06. Every other original receiver remains open. |
+| Files And ABI Surface | Existing cpu_instructions.c POPA native branch; CPU-owned new stack unit/registration, reusable real-storage fixture extracted from existing native memory unit with bounded record capacity, source/test manifests; eight PC 0563 EXEs; MyRaidenII status/ledger/evidence/history. No public function/type/layout or production persistent state. |
+| Applicable Rules | Execution/Architecture/Coding/Document and product architecture/layout/source policy; architecture-governance then coding-governance. Sole instruction/stack/bus owners, Lib Types, original table/handler style, inward dependencies, ROM-free independent expectations and accepted-prefix failure proof; no duplicate interpreter, stack memory, journal or framework. |
+| Verification | Baseline actual POPR read-count/refused-skipped-slot reproducer; independent register/full-memory and exact transfer address/width/value expectations for all admitted stack families, all GP registers, immediates, segment choices, aligned/odd/tail/overlap, frame levels 0--255 and every relevant provider failure position. Existing original x64/x86 Release Ninja/ccache full builds and complete repo-only units sequentially; manifests/gates, eight PE/product/version/INI/hash identities, documentation/links and actual-diff review. |
+| Expected Markers | V30:STACK:OK; retained V30:MEMORY-TRANSFER:OK; complete dual-width units and eight current PC 0563 artifacts. Original graphs/cache retained and default restored after deployment. |
+| Asset Needs | No game ROM/media. Rebuild eight CPU-consuming PC EXEs at retained 0563 and preserve MyNES pair, INIs, media, snapshots, ROMs and unrelated changes. Ignored batch logs retained for final T2 acceptance. |
+| Reporting Requirements | Report initial source/design/estimate, actual baseline versus repaired behavior, retained L2 ambiguity and similar-path sweep, precise source/test plus/minus/net, complete validation/artifacts and non-qualified contexts. Estimate production +4--7/-1; tests/fixture about net +400--600, excluding manifests/docs/artifacts. |
+| Stop Conditions | Stop for public API/layout/state, copied/protected code/assets, Lib/Emulator/outside-target change or unsupported source model. No new mode flag, stack path, recovery journal, timing owner, second executor or silent Intel bus-order change. |
+| Exit Criteria | All GP-stack/register-set/frame members have independent result/order/failure proof in both widths. Native POPR restores seven GP values, advances over but does not read the SP slot; Intel remains unchanged. Native alias and data-tail models are explicit rather than promoted to silicon claims. Complete units/artifacts/gates and complete scoped delivery pass; T2 stays open. |
+| Original Owner Request | Implement fully playable MyRaidenII using governed single-session dual-role execution, approved V30 integration and automatic complete-mechanism S admission. |
+| Similar-Issue Sweep | Inspect every scalar push/pop caller, SP alias encodings, PUSHR/POPR and complete PREPARE/DISPOSE loops, frame admission, native wrap and accepted-prefix rollback; examine segment/PSW/control consumers without modifying their separate semantics. Record the newly found native all-segment interrupt-shadow gap at V06/V11 for its complete later receiver. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
@@ -20,46 +41,46 @@ Single-session coordinator/executor mode remains in effect.
 | T2 S11 | Accepted Shared 36bba8907, NXVM b1fd77101 and evidence 395d126d0: native full-count shift/rotate and long-shift CF qualification; dual-width 664/664 complete units, eight PC 0563 artifacts. Reserved memory admission remains V03; actual-change review passed. |
 | T2 S12 | Accepted Shared 9d069e6e4/310bd9aba, NXVM 663ce268d and evidence 87207373d/2c53350e6: common native primary ModRM admission, nineteen-opcode encoding matrix and failure/wrap witnesses; final dual-width 665/665 units and eight PC artifacts. Actual-change review passed. |
 | T2 S13 | Accepted Shared 5c9695356, NXVM c7ab4fdd4 and evidence 597780b1a: native fetch-start normalization and original span/cache reuse; 5,700 instruction/preview witnesses, fetch failures, first dual-width 665/665 units and eight PC artifacts. Actual-change review passed. |
+| T2 S14 | Shared 1ec55bd3d and NXVM d3ad9d003 pushed: native GP-stack/register-set/frame qualification and seven-transfer POPR; independent order/alias/overlap/tail/failure proof, first dual-width 666/666 units and eight PC artifacts. Coordinator acceptance follows. |
 | T2 remaining | Complete native semantics and slot/form disposition, mode/8080/entry, unqualified block/port-prefix/LOCK/long-prefix contexts, physical prefetch/bus timing, source-graded timing/neutral Machine and real board proof remain. Bit-field AX/AL/AH output collision is not silicon-exact; S8 native data-tail behavior remains L2. |
 
 ## Accepted Evidence And Review
 
 [T2 history](../history/M1-T2-v30.md), [ledger](../etc/t2-v30-ledger.md),
-[S13 delivery](../etc/evidence/t2-s13-code-fetch.md) and
-[eight artifact identities](../etc/evidence/t2-s13-pc-artifacts.json) retain
+[S14 delivery](../etc/evidence/t2-s14-stack.md) and
+[eight artifact identities](../etc/evidence/t2-s14-pc-artifacts.json) retain
 complete source, scope, actual deltas and verification.
 
-Coordinator reviewed actual code-read normalization and removed caller clamp,
-the existing logical span/provenance and physical lane owners, all twenty-six
-code-read callers, complete owned test additions, manifests, eight artifact
-identities and task documents. The sixteen-field packet, original full goal,
-complete logical native fetch-start/span batch, target/P boundaries and all
-remaining receivers were reconciled. No production helper, public API/layout,
-persistent state, second reader/cache/executor or Intel path is introduced.
-Production +3/-1/net +2 and tests +180/-0/net +180 exclude manifests/docs/artifacts.
+Executor actual-diff review covers the native POPR skipped-slot branch,
+unchanged Intel/scalar stack owners, extracted real-storage fixture, complete
+new unit/registration, manifests, eight artifact identities and task documents.
+The sixteen-field packet, original full goal, complete GP-stack/register-set/
+frame batch, target/P boundaries and remaining receivers are reconciled for
+coordinator acceptance. No production helper, public API/layout, persistent
+state, second memory path/executor or Intel behavior is introduced. Production
++5/-1/net +4 and tests +453/-96/net +357 exclude manifests/docs/artifacts.
 
 Both original Release Ninja/ccache graphs build all targets. First complete
-repo-only unit suites pass x64 665/665 in 290.26 seconds and x86 665/665 in
-93.96 seconds, including 176 X86 Core units and receiving App units. The
-expanded native memory unit passes in 0.28/0.72 seconds. No retry, budget
+repo-only unit suites pass x64 666/666 in 574.51 seconds and x86 666/666 in
+116.63 seconds, including 177 X86 Core units and receiving App units. The
+new stack unit passes in 3.84/12.00 seconds. No retry, budget
 change or assertion removal is used. All eight PC 0563 links/deployments and
 PE/product/version/INI/hash checks pass, reusing CPU objects and restoring
 default. MyNES pair, all INIs/media and other Shared packages remain unchanged.
 
 Manifests, Types/dependency/ownership/negative gates, governance, relative links
-and whitespace pass. Existing warning exemptions remain unchanged. The guide's
-stale M0-only NXVM commit-target wording now matches already approved receiving
-artifacts and root Execution Rules; it creates no extra product authority.
-During witness expansion, BOUND ranges were explicitly supplied in all four
-segments rather than weakening valid instruction behavior or assertions.
+and whitespace pass. Existing warning exemptions remain unchanged. The new
+unit uses independent operation/word expectations and complete CPU/memory
+comparisons, not a production decoder or borrowed App test. The old memory
+assertions remain intact through extraction into one shared CPU test fixture.
 
-S12's NEC suffix-at-FFFF finding is now dynamically reproduced and resolved
-at the common fetch owner. The 38-stream, prefix/base/start matrix checks
-actual code bytes and bus windows, with contiguous execution as a relational
-CPU/data witness, not a second semantic oracle. Cache continuation and fetch/
-observation failure positions are qualified. Physical prefetch arbitration/
-clocks, complete native semantic/slot disposition, mode/8080, Machine and
-real-board/game work remain open. Data-tail behavior retains S8's L2 grade.
+The 3,356 success vectors and applicable failure positions cover all admitted
+GP aliases, memory/segment/overlap/tail contexts, full PREPARE levels and
+DISPOSE. POPR's unused slot refuses reads even on success. SP aliases and
+data tails retain explicit source-graded L2 models. The native all-segment
+MOV/POP inhibition gap is retained in V06/V11 for its complete later batch,
+not a POP-only patch. Complete native semantics/slots, PSW/control frames,
+mode/8080, physical prefetch/bus clocks, Machine and board/game remain open.
 No external-ROM integration, desktop/RDP, physical audio or game run was
 performed. No MyRaidenII EXE exists. The lossless-colour [High TODO](TODO.md)
 still gates final release; no quantization or second presenter is admitted.

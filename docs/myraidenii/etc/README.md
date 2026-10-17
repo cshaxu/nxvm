@@ -21,6 +21,7 @@
 - [T2 native port transfers](evidence/t2-s9-port-transfer.md).
 - [T2 native data-block transfers](evidence/t2-s10-block-transfer.md).
 - [T2 native shift and rotate](evidence/t2-s11-shift-rotate.md).
+- [T2 native GP stack and frames](evidence/t2-s14-stack.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
