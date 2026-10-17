@@ -211,3 +211,22 @@ family history, artifact inventory and eight PC EXEs, without mixing Shared
 or MyNES paths into the commit. After both complete target-separated pushes,
 coordinator actual-commit review is still required. T563/S8 and the complete
 CPU goal remain open.
+
+## Coordinator Actual-Commit Acceptance
+
+Switch to coordinator and review actual pushed Shared **d592300bd** and NXVM
+**ebe095ac1**, not just their reports. Inspect the four production-file changes,
+all converted/new test cases, boundary probes and four manifests, then the
+receiving gate, full packet/history/index, artifact inventory and eight binary
+paths. Their twenty/fourteen paths respect the target split and frozen input
+boundary. Recheck both 632-case JUnit inventories, zero failures/skips, eight
+committed artifact hashes and exclusion of Lib/Emulator, MyNES and App source.
+The worktree is clean before this governance-only acceptance update.
+
+Accept A1--A7 and close S7. Real construction, both reset aliases and the
+existing run/preview/Debug/system/DMA receivers now qualify the selected
+embedded SX without a private 386-to-SX bridge. The source/model limits,
+unchanged App CPUs/owner inputs and unperformed manual verification remain
+explicit. S8 and the complete original CPU goal remain open. This acceptance
+changes no source, test, manifest or executable input and therefore does not
+trigger a timestamp-only rebuild.
