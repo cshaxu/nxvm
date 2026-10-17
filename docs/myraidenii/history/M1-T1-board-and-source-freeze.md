@@ -35,6 +35,12 @@ T1 remains open for the named unresolved freeze batch, not full-game qualificati
 
 ## Verification Boundary
 
+S2 delivers the bounded read-only inventory verifier, 18 ROM-free synthetic
+cases, primary OKI source inspection and concrete CPU/board/gameplay receiving
+contracts. The owner explicitly approved future V30/NEC/timing enum expansion;
+S2 itself does not modify Shared code. Its [delivery evidence](../etc/evidence/t1-s2-inventory-and-contracts.md)
+records dual-width verification and the remaining full-colour release gate.
+
 Research-only batches use documentation/source/diff checks and leave existing
 production, test, build, INI and ten released EXEs untouched. No MyRaidenII
 executable exists yet. Actual runtime and source imports require later admission

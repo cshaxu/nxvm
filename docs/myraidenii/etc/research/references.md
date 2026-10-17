@@ -93,3 +93,23 @@ Primary manuals constrain each chip. MAME remains a source-graded L2 board
 reference, not proof that every clock, PAL, protection operation or game stage
 is described by an original schematic. Owner-supplied game data remains external;
 only measured metadata is in [the inventory](../evidence/t1-s1-rom-inventory.json).
+
+## T1 S2 Source Completion
+
+The original [OKI 1994 Voice Synthesis IC databook](https://ftpmirror.your.org/pub/misc/bitsavers/components/oki/_dataBooks/1994_OKI_Voice_Synthesis_ICs.pdf)
+was acquired instead of attempting to bypass the challenged standalone mirror.
+It is 45453866 bytes, SHA-256
+`582368add98884f605cf22cad81fdf450358b5e73ef8bb050e2355e5f728b0ac`.
+PDF pages 64--79 are the MSM6295 section (printed pages 59--74). The function,
+phrase/channel/attenuation and ROM address descriptions were inspected, with
+PDF pages 71--72 rendered and read visually. This resolves the source-acquisition
+gap, not ADPCM implementation or electrical/cycle accuracy. A later synthesis
+model still needs vectors for command, nibble order, sample range and mixing.
+
+The original [US publisher flyer](https://flyers.arcade-museum.com/videogames/show/4176)
+was also visually inspected. The image SHA-256 is
+`06da3d074f86ed710fce6101a3a43da20b6102b7fa250dd18fda61353ee5c9de`.
+It identifies RAIDEN II/Fabtek, but supplies no complete stage count or memory
+signature matrix. Do not invent those from another game or a port. The finite
+semantic acceptance checkpoints and their later measured proof owners are
+fixed in [the integration freeze](t1-integration-contract.md).
