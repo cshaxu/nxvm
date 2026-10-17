@@ -7,8 +7,31 @@
 S6 is closed after one-session coordinator actual-commit review of Shared
 `395c84b91` and NXVM `051baac83`. Its complete packet is retained in P2.
 The [existing proposal](../proposals/m5-486sx-timing-production-completion.md)
-retains S7 C17 production admission and S8 whole qualification. No next S is
-admitted by this acceptance; the complete 486SX objective remains open.
+retains S7 C17 production admission and S8 whole qualification. Under the
+owner's standing sequential-S approval and continued complete-486SX request,
+S7 is admitted from clean acceptance f2cea924c. The complete objective remains
+open; this is not a PC110 or App CPU cutover.
+
+## T563 S7 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T563 S7 after accepted S6 f2cea924c; one-session coordinator/executor role cycle. Complete Shared P1 d592300bd is pushed; this NXVM P2 retains the full implementation packet and receiving delivery for actual-commit review. |
+| Admission And Approval | Owner's complete 486SX goal, standing automatic sequential-S admission and CPU/Core/Board accuracy-upgrade permission. Shared X86 Core and X86 NXVM construction/receiver tests; NXVM evidence and eight affected PC artifacts. No Lib/Emulator, MyNES, App CPU choice, sibling or owner-input change. |
+| Objective | Complete original C17/R9--R10: admit the already source-qualified selected SX through real neutral Core and Board construction, reset/run/debug/wait/system/DMA routes; remove obsolete internal 386-to-SX test rebinding and prove production connection without a fallback CPU. |
+| Non-goals | No new CPU variant, exact fitted PC110 claim, App CPU override, new board/profile, silicon/source-grade downgrade, interpreter, clock, queue, raw-CPU API or new hardware state mirror. S8 remains whole C01--C17 qualification. |
+| Reference Baseline | Clean f2cea924c; S6 395c84b91/051baac83, original C01--C17 ledger and accepted T560/T563 source/model limits. Baseline 632/632 units per width, specialized aggregates, sixteen selected integrations per width and eight current 0563 PC artifacts. |
+| Candidate Proposal | [Remaining 486SX completion](../proposals/m5-486sx-timing-production-completion.md), S7; [C17 production receiver ledger](../etc/evidence/t563-s7-production-admission.md), complete A1--A7 batch. |
+| Files And ABI Surface | Existing X86 Core CPU profile comment, Machine validation and existing test construction; X86 NXVM Board reset-alias owner and PC/AT CPU selector with matching tests; four manifests, NXVM docs/eight artifacts and actual gates if required. No new public function/type/layout. Initial C/H estimate production +25--60/-25--65, tests +200--450/-100--200; refine from complete staged-test census before edits. |
+| Applicable Rules | AGENTS, NXVM guide/Contributing, shared Execution/Architecture/Coding/Document, NXVM Architecture/Coding/source policy; architecture-governance then coding-governance skills. Preserve inward dependencies, one CPU state and Core timeline, one reset-alias policy, Types vocabulary, original instruction style and explicit source/L2 limits. |
+| Verification | Original dual-width Ninja/ccache graphs; grouped actual-constructor Core/Board regressions, then frozen complete repository units and specialized/static/manifests/Types/docs gates. Rebuild/deploy eight 0563 PC EXEs, selected four-profile integrations and final CLI/PE/debug-section/hash proof. Serialize native desktop qualification; unchanged shared objects are reused per App. |
+| Expected Markers | SX construction succeeds with no FPU, invalid/out-of-range/386-only options fail atomically, actual reset identity and execution differ from 386, both Board reset routes use one high-alias selector. Existing SX event/power/DMA/budget/preview/debug cases construct SX directly; no production claim depends on private profile override. Four shipped CPU selections remain unchanged. |
+| Asset Needs | Existing approved ROM/media/manual inputs read-only, no new asset/import. Eight affected PC EXEs refreshed under the current 0563 revision; preserve owner INIs/media/ROM/snapshots and unchanged MyNES pair. |
+| Reporting Requirements | Report initial census/owner decisions and estimated diff, meaningful cohort checkpoints, all A dispositions, actual C/H add/delete/net and retained/deleted paths; complete target-separated P pushes and coordinator actual-commit review. Do not use a successful boot or a widened upper bound as the C17 proof. |
+| Stop Conditions | New public function/type/layout, Lib/Emulator or excluded-owner modification, source contradiction/downgrade, changed App CPU/firmware or new third-party material requires review. Unverified silicon/electrical behavior cannot become an implicit claim. Do not weaken test assertions or budgets. |
+| Exit Criteria | Complete A1--A7/C17 receiver batch passes real construction and all affected lifecycle/scheduler/debug routes, old families retained, full required dual-width qualification and eight artifacts delivered/pushed/reviewed. No obsolete staged Core rebinding remains in these production witnesses; S8 and the whole CPU goal remain open. |
+| Original Owner Request | Implement complete 486SX, preserving the entire transferred C16/C17/final universe; automatically admit bounded S batches and implement related cases together. |
+| Similar-Issue Sweep | Every production CPU/profile validator, exact-family reset/DMA/clock/wait predicate, Board descriptor/materialization and Machine adapter path; every Core-running test that mutates a created 386 into SX, its assertions and source-scanning gate. Distinguish pure chip/lexical tests from production construction; record all retained variants and source limits. |
 
 | Task | Progress |
 | --- | --- |
@@ -18,6 +41,7 @@ admitted by this acceptance; the complete 486SX objective remains open.
 | T563 S4 | Closed after actual-commit review of f48b7984c/f5b4b1eee: complete F1--R3 batch, 632/632 units, 16 selected integrations, complete specialized gates and four final published CLI checks per width. Eight 0563 PC EXEs rebuilt/deployed with final PE/hash proof. Production +479/-62, tests +1223/-74; timing-seam gate +17/-2. No complete C16/C17 claim. |
 | T563 S5 | Closed after actual-commit review of 0b7c189e1/7524bb939: E1--E6 entry/access/failure/SMM/system allocation and Core event delivery complete. Both widths pass 632/632 units, both specialized aggregates and sixteen selected integrations; eight final CLI checks and rebuilt/deployed 0563 EXEs have proof. The unchanged restored-session x64 run resolves native MIDI qualification without a Lib change or waiver. Production +528/-125, tests +1361/-69. No public ABI, Lib/Emulator, MyNES or owner-input change. Subsequent batch acceptance is recorded below. |
 | T563 S6 | Closed after actual-commit review of 395c84b91/051baac83: Q1--Q6 selector/observation/wait/purity/budget batch complete, 632/632 units, specialized aggregates, sixteen selected integrations and four final published CLI checks per width. Eight current 0563 PC EXEs rebuilt/deployed with PE/hash proof. Production +312/-127, tests +574/-106. Only the approved observation byte expands public layout; Lib/Emulator, MyNES, Apps and owner inputs unchanged. C17/S7, S8 and complete CPU qualification remain open. |
+| T563 S7 | Complete Shared P1 d592300bd pushed; NXVM P2 and coordinator review follow. Real SX construction/Board reset admission, nineteen staged rebindings removed, 632/632 units and sixteen selected integrations per width, specialized gates and eight final published CLI checks pass. Eight current 0563 PC EXEs are refreshed; S8 and whole CPU qualification remain open. |
 
 [S1 evidence](../etc/evidence/t563-s1-rebase.md) retains the original receiver
 ledger. [S2 delivery](../etc/evidence/t563-s2-nominal-allocation.md) records the
@@ -28,14 +52,15 @@ records the complete fetch/bus/decode/REP cohort;
 [S5 event/system delivery](../etc/evidence/t563-s5-event-system.md) records
 complete E1--E6 allocation and its review; [S6 selected runtime delivery](../etc/evidence/t563-s6-selected-runtime.md)
 records complete Q1--Q6 allocation, bounded transport and actual-commit acceptance;
-[current artifact hashes](../etc/evidence/t563-s6-artifacts.json) were checked
+[current artifact hashes](../etc/evidence/t563-s7-artifacts.json) were checked
 after all builds, published CLI tests and pushed deliveries. Lib, Emulator, MyNES,
 owner INIs/media/firmware and four App CPU choices remain unchanged.
 
-T563 and the complete 486SX goal remain open for S7--S8. S6 completes the
-admitted C16 selector/preview/budget batch; it does not complete C17 production
-admission, whole C01--C17 acceptance, PC110, full external-media or manual guest
-GUI qualification.
+[S7 production admission](../etc/evidence/t563-s7-production-admission.md)
+records the complete implementation and receiving qualification, pending its
+actual-commit acceptance. T563 and the complete 486SX goal remain open for S8
+whole C01--C17 reconciliation. No PC110, full external-media or manual guest
+GUI qualification is inferred.
 
 ## Previous Task
 

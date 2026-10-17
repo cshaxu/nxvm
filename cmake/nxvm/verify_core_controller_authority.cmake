@@ -65,7 +65,11 @@ foreach(operation IN ITEMS keyboard_get_native_scan_set keyboard_receive_native_
     endforeach()
 endforeach()
 string(FIND "${machine_board_text}" "lib_status x86_nxvm_board_keyboard_receive_native_byte(" input_begin)
-string(FIND "${machine_board_text}" "static lib_u32 x86_nxvm_board_reset_rom_alias(" input_end)
+string(FIND "${machine_board_text}"
+    "static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile)\n{" input_end)
+if(input_begin LESS 0 OR input_end LESS input_begin)
+    message(FATAL_ERROR "Board input operation boundaries are missing or reversed")
+endif()
 math(EXPR input_length "${input_end} - ${input_begin}")
 string(SUBSTRING "${machine_board_text}" ${input_begin} ${input_length} input_operations)
 if(input_operations MATCHES "->board" OR input_operations MATCHES "x86_core_machine \\*machine")

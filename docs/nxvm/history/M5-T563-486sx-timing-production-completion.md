@@ -84,3 +84,27 @@ worktree was clean before the governance-only acceptance update. S6 is closed;
 its full packet remains in P2 and the detailed ledger retains the review.
 T563 remains open for S7 C17 and S8 whole qualification. No complete CPU,
 PC110 or manual desktop/RDP claim is added.
+
+S7's [A1--A7 implementation](../etc/evidence/t563-s7-production-admission.md)
+admits the selected SX through the real Core constructor and the Board's
+single high reset-alias selector. The AT capability list includes SX/NONE;
+Core rejects incompatible FPU and 386-only options before allocation.
+Nineteen private profile rebindings disappear from existing production
+witnesses, with model-specific reset/cache conditions now explicit. The
+existing local boundary and negative probes prevent reintroducing that test
+bypass; the receiving controller gate distinguishes a function definition
+from its forward declaration. No public API/state, Lib/Emulator, MyNES,
+App CPU or owner-input change is introduced.
+
+Production C/H is +15/-15; tests are +117/-157. Both widths pass 632/632
+repository units (three automated desktop cases each), specialized gates,
+498/498 direct strict-compilation rows and sixteen selected integrations.
+Eight final published CLI checks and rebuilt/deployed 0563 PC EXEs have
+[PE/hash proof](../etc/evidence/t563-s7-artifacts.json). Complete target-separated
+P pushes and coordinator acceptance remain required. S8 still owns final
+original C01--C17 reconciliation; this is not PC110 or manual GUI qualification.
+
+Complete Shared S7 P1 **d592300bd** is pushed with twenty paths. NXVM P2
+retains the complete packet, receiving gate and eight qualified artifacts
+from that identical frozen source; coordinator actual-commit acceptance
+follows both target-separated deliveries.

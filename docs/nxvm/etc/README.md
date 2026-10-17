@@ -1,5 +1,10 @@
 # Supporting Documentation Index
 
+T563 S7: [Real SX production admission](evidence/t563-s7-production-admission.md)
+records A1--A7 construction/reset ownership, removal of staged CPU rebinding,
+actual diff, dual-width receiving qualification and eight
+[artifact hashes](evidence/t563-s7-artifacts.json). S8 retains final CPU acceptance.
+
 T563 S6: [Selected runtime, observation and bounded transport](evidence/t563-s6-selected-runtime.md)
 records Q1--Q6 source ownership, approved observation expansion, qualified
 budget delivery, full dual-width unit/selected-integration proof and eight
