@@ -3,7 +3,7 @@ param(
     [string]$RepositoryRoot,
 
     [Parameter(Mandatory = $true)]
-    [ValidateSet('nxvm', 'mynes')]
+    [ValidateSet('nxvm', 'mynes', 'myraidenii')]
     [string]$Product
 )
 

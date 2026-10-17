@@ -12,6 +12,7 @@
 !/assets/my5170/**
 !/assets/mydeskpro386/**
 !/assets/mynes/**
+!/assets/myraidenii/*.exe
 
 # MyNES integration ROM fixtures are owner-local BYOROM inputs.  Tests may
 # discover them locally, but no ROM bytes are repository artifacts.

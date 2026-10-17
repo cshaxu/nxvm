@@ -273,12 +273,15 @@ before the receiving session resumes.
 **Declared change targets.** An admitted T or Td has one numeric task identity
 and one product-local packet location, but neither is a restriction on the
 target of every later S or P. Each active S declares its allowed change targets
-from exactly `NXVM`, `MyNES`, and `Shared`; each P and its one Git commit have
-exactly one declared target.
+from exactly `NXVM`, `MyNES`, `MyRaidenII`, and `Shared`; each P and its one
+Git commit have exactly one declared target.
 
 - `NXVM` owns only NXVM code, configuration, documentation, tests, tools,
   artifacts and media declarations. `MyNES` owns the corresponding MyNES
-  surface.
+  surface. `MyRaidenII` owns src/myraidenii, test/myraidenii,
+  assets/myraidenii, docs/myraidenii and its own future tools/configuration.
+  Its owner-selected source/test roots deliberately omit the app- prefix;
+  they do not create a shared-component boundary or permission to edit peers.
 - `Shared` owns the six shared source/test components (`lib`, `common`, and
   `x86`), shared configuration, and shared governance documents.
 
@@ -292,8 +295,8 @@ or permit NXVM changes to MyNES or Shared-owned mechanisms.
   verification for every target. It delivers one P per target; no P or commit
   may modify more than one target. A required cross-target result is therefore
   split into ordered, independently reviewable P commits.
-- A product-led T may therefore deliver NXVM, MyNES, or Shared P commits when
-  those targets were explicitly admitted. The T identifier remains unchanged
+- A product-led T may therefore deliver NXVM, MyNES, MyRaidenII, or Shared P
+  commits when those targets were explicitly admitted. The T identifier remains unchanged
   across those P commits; it is the active task number, not an ownership label.
 
 Reading any sibling or shared path is allowed. A discovered need to change one
@@ -359,11 +362,17 @@ admission it remains an unnumbered Queue candidate; do not allocate a numeric
 
 Every commit subject starts with its actual change target so the multi-App
 history is readable without opening the diff. Use exactly one of `NXVM`,
-`MyNES`, or `Shared`. `Shared` names only a shared-component or
+`MyNES`, `MyRaidenII`, or `Shared`. `Shared` names only a shared-component or
 root-governance P; a product prefix names only its respective product surface.
 One P changes exactly one target.
 Do not use a product prefix for a shared-source change merely because that
 product's packet admitted it.
+
+MyRaidenII has its own MTSP and numeric T sequence, independent of NXVM and
+MyNES. Its owner-approved milestones are M0 planning and M1 implementation.
+Standalone M0 governance/design uses Td; implementation T1 is allocated only
+on M1 admission. A new product's bootstrap may admit Shared registration and
+the old product's queue transfer explicitly, with one target per P as above.
 
 The resulting subjects are
 `<target> M<milestone> Td [S<subtask>] P<part>: description` for a standalone

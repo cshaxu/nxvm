@@ -1,8 +1,9 @@
 # Agent Instructions
 
-Before changing a product, read its guide (`docs/nxvm/README.md` or
-`docs/mynes/README.md`), its active packet, and every authority named by its S
-brief. Read the shared rules under `docs/rules/` that the product guide names.
+Before changing a product, read its guide (`docs/nxvm/README.md`,
+`docs/mynes/README.md` or `docs/myraidenii/README.md`), its active packet,
+and every authority named by its S brief. Read the shared rules under
+`docs/rules/` that the product guide names.
 
 ## Authority
 

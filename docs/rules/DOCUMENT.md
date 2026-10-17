@@ -12,13 +12,15 @@ shared rules instead of duplicating an authority.
 | `docs/rules/` | Repository | Shared architecture, coding, documentation, and execution rules. |
 | `docs/nxvm/` | NXVM | NXVM design, task state, proposals, history, evidence, and source policy. |
 | `docs/mynes/` | MyNES | MyNES design, task state, proposals, history, evidence, and source policy. |
+| `docs/myraidenii/` | MyRaidenII | Independent design, task state, queue, history, evidence and source policy; shared rules are linked, not copied. |
 | `src/{lib,common,x86}` and matching `test/` roots | Repository | Neutral shared implementation and tests. |
 | `src/app-<product>` and matching `test/`, `tools/`, `assets/<product>` roots | Product | Product implementation, tests, tools, and versioned artifacts. |
+| `src/myraidenii`, `test/myraidenii`, `assets/myraidenii` | MyRaidenII | Owner-selected product roots without an app- prefix; not shared component packages. |
 
 There is one active packet per product, in
-`docs/<product>/states/CURRENT.md`. A packet may declare NXVM, MyNES and/or
-Shared change targets; for a cross-target S it lists every affected consumer,
-boundary and verification. Its product-local location is task coordination,
+`docs/<product>/states/CURRENT.md`. A packet may declare NXVM, MyNES,
+MyRaidenII and/or Shared change targets; for a cross-target S it lists every
+affected consumer, boundary and verification. Its product-local location is task coordination,
 not implicit authorization to edit another target. It does not create a root
 task queue or authorize an undeclared target.
 
@@ -45,6 +47,6 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -RepositoryRoot . -Product nxvm
 ```
 
-Replace `nxvm` with `mynes` for MyNES work. This gate verifies topology and
-essential reading-set links; task closure still requires the packet's actual
+Replace `nxvm` with `mynes` or `myraidenii` for the selected product. This gate
+verifies topology and essential reading-set links; task closure still requires the packet's actual
 change review and product-specific verification.

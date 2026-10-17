@@ -3,8 +3,9 @@
 Read the selected product's guide and active status, and the shared
 [Execution Rules](docs/rules/EXECUTION.md) before proposing or changing work.
 NXVM work uses [NXVM status](docs/nxvm/states/CURRENT.md); MyNES work uses
-[MyNES status](docs/mynes/states/CURRENT.md). Follow the guide's **Task Reading
-Set** for your role and change surface.
+[MyNES status](docs/mynes/states/CURRENT.md); MyRaidenII uses its
+[guide](docs/myraidenii/README.md) and [status](docs/myraidenii/states/CURRENT.md).
+Follow the guide's **Task Reading Set** for your role and change surface.
 
 ## Change Submission
 
