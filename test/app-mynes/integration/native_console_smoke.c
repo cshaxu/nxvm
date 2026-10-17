@@ -272,7 +272,7 @@ int main(void)
     state_sink(&fixture, EMULATOR_MACHINE_STOPPED,
         emulator_machine_run_generation(fixture.machine));
     kvm_hotkey_registry_initialize(&hotkeys);
-    assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
+    assert(kvm_hotkey_registry_register(&hotkeys, LIB_KEY_ESCAPE, 0u,
                                         "pause-toggle") == LIB_STATUS_OK);
     fixture.raw_console_ready = CreateEventW(NULL, FALSE, FALSE, NULL);
     assert(fixture.raw_console_ready != NULL);

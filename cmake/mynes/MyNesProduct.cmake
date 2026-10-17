@@ -79,6 +79,6 @@ add_custom_target(run-mynes-tests
 # its test stack.  Preserve the MyNES CMake behavior without changing the
 # shared Lib source.
 if(WIN32 AND MINGW AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-    target_link_options(lib-test-kvm_window_capture_contract PRIVATE
+    target_link_options(lib-test-kvm-window-win32-kvm_window_capture_contract PRIVATE
         "-Wl,--stack,4194304")
 endif()

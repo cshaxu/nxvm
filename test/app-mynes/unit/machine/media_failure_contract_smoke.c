@@ -86,7 +86,7 @@ int main(void)
         /* Both physical modifier sides and scan-less virtual/RDP keys map
          * through KVM's neutral virtual-key contract. */
         input.source_identity = 101u;
-        input.data.key.key = KVM_KEY_SHIFT; input.data.key.scan_code = 0x2au;
+        input.data.key.key = LIB_KEY_SHIFT; input.data.key.scan_code = 0x2au;
         input.data.key.flags = 0u; input.data.key.pressed = 1u;
         machine_driver_deliver_input(driver, &input);
         input.data.key.scan_code = 0x36u;
@@ -99,33 +99,33 @@ int main(void)
         core_controller_write_strobe(&driver->machine->controller, 1u);
         core_controller_write_strobe(&driver->machine->controller, 0u);
         assert((driver->machine->controller.live & 0x04u) == 0u);
-        input.data.key.key = KVM_KEY_CONTROL; input.data.key.scan_code = 0x1du;
+        input.data.key.key = LIB_KEY_CONTROL; input.data.key.scan_code = 0x1du;
         input.data.key.flags = 0u; input.data.key.pressed = 1u;
         machine_driver_deliver_input(driver, &input);
-        input.data.key.flags = KVM_KEY_FLAG_EXTENDED;
+        input.data.key.flags = LIB_KEY_FLAG_EXTENDED;
         machine_driver_deliver_input(driver, &input);
         input.data.key.flags = 0u; input.data.key.pressed = 0u;
         machine_driver_deliver_input(driver, &input);
         assert((driver->machine->controller.live & 0x02u) != 0u);
-        input.data.key.flags = KVM_KEY_FLAG_EXTENDED;
+        input.data.key.flags = LIB_KEY_FLAG_EXTENDED;
         machine_driver_deliver_input(driver, &input);
         core_controller_write_strobe(&driver->machine->controller, 1u);
         core_controller_write_strobe(&driver->machine->controller, 0u);
         assert((driver->machine->controller.live & 0x02u) == 0u);
-        input.data.key.key = KVM_KEY_ALT; input.data.key.scan_code = 0x38u;
+        input.data.key.key = LIB_KEY_ALT; input.data.key.scan_code = 0x38u;
         input.data.key.flags = 0u; input.data.key.pressed = 1u;
         machine_driver_deliver_input(driver, &input);
-        input.data.key.flags = KVM_KEY_FLAG_EXTENDED;
+        input.data.key.flags = LIB_KEY_FLAG_EXTENDED;
         machine_driver_deliver_input(driver, &input);
         input.data.key.flags = 0u; input.data.key.pressed = 0u;
         machine_driver_deliver_input(driver, &input);
         assert((driver->machine->controller.live & 0x01u) != 0u);
-        input.data.key.flags = KVM_KEY_FLAG_EXTENDED;
+        input.data.key.flags = LIB_KEY_FLAG_EXTENDED;
         machine_driver_deliver_input(driver, &input);
         core_controller_write_strobe(&driver->machine->controller, 1u);
         core_controller_write_strobe(&driver->machine->controller, 0u);
         assert((driver->machine->controller.live & 0x01u) == 0u);
-        input.data.key.key = KVM_KEY_ALT; input.data.key.scan_code = 0u;
+        input.data.key.key = LIB_KEY_ALT; input.data.key.scan_code = 0u;
         input.data.key.flags = 0u; input.data.key.pressed = 1u;
         machine_driver_deliver_input(driver, &input);
         assert((driver->machine->controller.live & 0x01u) != 0u);
@@ -174,12 +174,12 @@ int main(void)
             /* A physical make/break may both arrive before the NES next
              * samples $4016. Every controller binding must still be observed
              * once, just as a text-only record is. This includes the normal
-             * KVM_KEY_ENTER path used by Win32/RDP. */
-            static const struct { kvm_key key; lib_u16 scan; lib_u32 flags; lib_u8 button; }
+             * LIB_KEY_ENTER path used by Win32/RDP. */
+            static const struct { lib_key key; lib_u16 scan; lib_u32 flags; lib_u8 button; }
                 physical_map[] = {
-                    { 'K', 0x25u, 0u, 0x01u }, { KVM_KEY_ALT, 0x38u, 0u, 0x01u },
-                    { 'J', 0x24u, 0u, 0x02u }, { KVM_KEY_CONTROL, 0x1du, 0u, 0x02u },
-                    { KVM_KEY_SHIFT, 0x2au, 0u, 0x04u }, { KVM_KEY_ENTER, 0x1cu, 0u, 0x08u },
+                    { 'K', 0x25u, 0u, 0x01u }, { LIB_KEY_ALT, 0x38u, 0u, 0x01u },
+                    { 'J', 0x24u, 0u, 0x02u }, { LIB_KEY_CONTROL, 0x1du, 0u, 0x02u },
+                    { LIB_KEY_SHIFT, 0x2au, 0u, 0x04u }, { LIB_KEY_ENTER, 0x1cu, 0u, 0x08u },
                     { 'W', 0x11u, 0u, 0x10u }, { 'S', 0x1fu, 0u, 0x20u },
                     { 'A', 0x1eu, 0u, 0x40u }, { 'D', 0x20u, 0u, 0x80u }
                 };

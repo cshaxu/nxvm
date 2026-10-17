@@ -216,7 +216,7 @@ static lib_u8 machine_driver_modifier_binding(const kvm_input_event *event,
     lib_u16 scan_code, lib_u8 left, lib_u8 right, lib_u8 virtual)
 {
     if (event->data.key.scan_code != scan_code) return virtual;
-    return (event->data.key.flags & KVM_KEY_FLAG_EXTENDED) != 0u ? right : left;
+    return (event->data.key.flags & LIB_KEY_FLAG_EXTENDED) != 0u ? right : left;
 }
 
 static lib_u8 machine_driver_binding_for_key(const kvm_input_event *event)
@@ -226,21 +226,21 @@ static lib_u8 machine_driver_binding_for_key(const kvm_input_event *event)
      * when present; virtual keyboards and RDP may omit it and use the third,
      * scan-less binding without changing the controller mapping. */
     if (event->data.key.key == 'K') return MACHINE_DRIVER_BINDING_A_K;
-    if (event->data.key.key == KVM_KEY_ALT)
+    if (event->data.key.key == LIB_KEY_ALT)
         return machine_driver_modifier_binding(event, 0x38u,
             MACHINE_DRIVER_BINDING_A_ALT_LEFT, MACHINE_DRIVER_BINDING_A_ALT_RIGHT,
             MACHINE_DRIVER_BINDING_A_ALT_VIRTUAL);
     if (event->data.key.key == 'J') return MACHINE_DRIVER_BINDING_B_J;
-    if (event->data.key.key == KVM_KEY_CONTROL)
+    if (event->data.key.key == LIB_KEY_CONTROL)
         return machine_driver_modifier_binding(event, 0x1du,
             MACHINE_DRIVER_BINDING_B_CONTROL_LEFT, MACHINE_DRIVER_BINDING_B_CONTROL_RIGHT,
             MACHINE_DRIVER_BINDING_B_CONTROL_VIRTUAL);
-    if (event->data.key.key == KVM_KEY_SHIFT) {
+    if (event->data.key.key == LIB_KEY_SHIFT) {
         if (event->data.key.scan_code == 0x2au) return MACHINE_DRIVER_BINDING_SELECT_SHIFT_LEFT;
         if (event->data.key.scan_code == 0x36u) return MACHINE_DRIVER_BINDING_SELECT_SHIFT_RIGHT;
         return MACHINE_DRIVER_BINDING_SELECT_SHIFT_VIRTUAL;
     }
-    if (event->data.key.key == KVM_KEY_ENTER) return MACHINE_DRIVER_BINDING_START_ENTER;
+    if (event->data.key.key == LIB_KEY_ENTER) return MACHINE_DRIVER_BINDING_START_ENTER;
     if (event->data.key.key == 'W') return MACHINE_DRIVER_BINDING_UP_W;
     if (event->data.key.key == 'S') return MACHINE_DRIVER_BINDING_DOWN_S;
     if (event->data.key.key == 'A') return MACHINE_DRIVER_BINDING_LEFT_A;

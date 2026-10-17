@@ -22,7 +22,7 @@ static lib_status probe(const char *path, lib_bool character)
     lib_u64 previous_cycle = 0u;
     lib_bool injected = LIB_FALSE, released = LIB_FALSE;
     kvm_input_event key = {.type = KVM_EVENT_KEY, .source_identity = 1u,
-        .data.key = {.key = KVM_KEY_ENTER, .pressed = LIB_TRUE}};
+        .data.key = {.key = LIB_KEY_ENTER, .pressed = LIB_TRUE}};
 
     if (status != LIB_STATUS_OK) return status;
     if (!machine_driver_set_media(driver, path, LIB_STORAGE_MEDIUM_READONLY)) {
@@ -37,12 +37,12 @@ static lib_status probe(const char *path, lib_bool character)
 
         if (!injected && machine->ppu.frame_revision >= 180u) {
             if (character) {
-                kvm_keyboard_normalizer normalizer = {0};
-                const kvm_keyboard_record record = {
-                    .kind = KVM_KEYBOARD_CHARACTER, .utf16 = '\r',
+                base_keyboard_decoder normalizer = {0};
+                const base_keyboard_record record = {
+                    .kind = BASE_KEYBOARD_CHARACTER, .utf16 = '\r',
                     .repeat_count = 1u};
                 if (kvm_keyboard_submit_record(&normalizer, LIB_NULL,
-                        driver, deliver, &record) != KVM_KEYBOARD_ACCEPTED) {
+                        driver, deliver, &record) != BASE_KEYBOARD_ACCEPTED) {
                     status = LIB_STATUS_INTERNAL_ERROR;
                     goto done;
                 }

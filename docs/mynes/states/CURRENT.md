@@ -2,21 +2,23 @@
 
 ## Current Work
 
-NXVM-hosted [T562 S3](../../nxvm/states/CURRENT.md) admits MyNES as a receiver
-of Shared KVM cursor-shape and Emulator fixed-command metadata consolidation.
-The S3 correction additionally admits the real Machine pacing/PCM receiver
-regression and rebuilt artifacts for the Emulator heartbeat fix. No MyNES
-production, configuration or snapshot change is admitted. Earlier delivery
-source was `c81762c5f`; corrective Shared delivery is `86175d302`. Both
-widths pass all 631 repository units and 12 MyNES integrations, including
-automated native Window/Console tests. Both 0044 EXEs are rebuilt and recorded
-in the [correction inventory](../../nxvm/etc/evidence/t562-s3-correction-artifacts.json).
-The first x86 native-console integration failed its Escape/pause assertion;
-unchanged isolated and complete-suite reruns passed. Its unproven cause remains
-in the review ledger; it is not claimed repaired.
-The [S3 evidence](../../nxvm/etc/evidence/t562-s3-correction.md) distinguishes
-background/automated desktop proof from unperformed manual RDP acceptance.
-Earlier hashes below remain historical; RDP input is not requalified.
+NXVM-hosted [T563 S9](../../nxvm/states/CURRENT.md) admits MyNES as a receiver
+of the committed SoftPC shared-eight import. Machine input, Escape registration,
+matching integration/unit tests and the opt-in input diagnostic adopt the new
+neutral Lib input symbols. The existing KVM route, deterministic Core, controller
+mapping, configuration and snapshot format are unchanged. Both 0044 EXEs are
+rebuilt in the existing unified graphs; [S9 evidence](../../nxvm/etc/evidence/t563-s9-shared-import.md)
+records 655/655 whole units per width, including 45/45 MyNES units, plus
+12/12 MyNES integrations per width. Both optional diagnostic targets compile;
+manual RDP/owner-ROM diagnostic execution is not claimed. The current pair is
+in the [ten-artifact inventory](../../nxvm/etc/evidence/t563-s9-artifacts.json).
+No independent MyNES S is started.
+
+Earlier T562 S3's [correction evidence](../../nxvm/etc/evidence/t562-s3-correction.md)
+and [artifact inventory](../../nxvm/etc/evidence/t562-s3-correction-artifacts.json)
+remain historical. Its native-console intermittency stays in TODO; this import
+does not claim an RDP or physical-controller repair. Manual RDP input remains
+unqualified.
 
 No active MyNES S. On 2026-10-13 the owner requested T556 S10 closure.
 S10 is closed as a bounded diagnostic delivery with the unresolved repair

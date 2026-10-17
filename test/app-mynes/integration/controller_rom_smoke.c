@@ -50,7 +50,7 @@ int main(void)
     machine_driver_deliver_input(driver, &input);
     for (index = 0u; index < 16u; ++index) assert(machine_driver_run(driver));
     assert((driver->machine->ram[0] & 1u) == 0u);
-    input.data.key.key = KVM_KEY_ENTER; input.data.key.pressed = 1u;
+    input.data.key.key = LIB_KEY_ENTER; input.data.key.pressed = 1u;
     machine_driver_deliver_input(driver, &input);
     for (index = 0u; index < 16u; ++index) assert(machine_driver_run(driver));
     assert((driver->machine->ram[3] & 1u) == 1u);
