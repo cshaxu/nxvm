@@ -49,6 +49,47 @@ The clean local baseline was `da9e84b88`:
   Emulator Machine's driver already provide the host composition and safe
   execution route. Reuse those, not PC board or MyNES private host code.
 
-NEC, Zilog, Yamaha, OKI and Seibu primary hardware documentation remains a
-receiving requirement. The bounded external filename search did not inventory
-the owner's game set; do not infer possession or absence of lawful ROMs.
+Those were M0 findings, not current acquisition status. T1's update below
+records newly inspected originals and actual owner-supplied set metadata.
+
+## T1 S1 Primary-Source Update
+
+The MAME driver above was re-fetched and its hash matched. Local baseline for
+the new audit is f21a22997. The source/contract audit records inspected APIs and
+the 13 verified runtime ROM images; it imports no third-party implementation.
+
+Original hardware documents were acquired into ignored research output, not
+tracked or redistributed. Identity and inspection limits are:
+
+- [NEC V20/V30 User's Manual, October 1986](https://www.dosdays.co.uk/media/nec/NEC-V20-V30-Users-Manual.pdf):
+  11512205 bytes, SHA-256
+  `fabbfcd19d4a2fcdaac9f0bc06b00bf0a6a4beedafbd3ff16accd075a374ea4c`.
+  This mirror includes a Ceibo insertion; PDF page numbers differ from printed
+  sections. Reset is section 7, native/8080 modes section 8, instruction
+  descriptions section 12. Relevant reset/mode/interrupt/prefix pages were
+  inspected, not every instruction's encoding/timing fully qualified.
+- [Zilog Z80 CPU User Manual UM008011-0816](https://www.zilog.com/docs/z80/um0080.pdf):
+  1587333 bytes, SHA-256
+  `e3c83da5a5d8e372364c20fa53665e6fbb165ec6ac38c8c1eebc359603447b5e`.
+  Edition and coverage verified. Instruction/cycle-by-cycle sound CPU
+  qualification belongs to the sound receiver, not this source inventory.
+- [Yamaha YM2151 December 1991 scan](https://ftpmirror.your.org/pub/misc/bitsavers/components/yamaha/YM2151_199112.pdf):
+  2429553 bytes, SHA-256
+  `9c15c4be47cc1b4dbcc61d81d4275248fab604b52ec4b687889096a00c873216`.
+  Device identity, register-bus and timer/IRQ scope inspected. This datasheet
+  alone does not qualify FM synthesis algorithms or all analogue behavior.
+- [Original RAIDEN II operator manual](https://www.arcade-museum.com/manuals-videogames/R/Raiden-II.pdf):
+  463441 bytes, SHA-256
+  `4fbd38c4da28eb20577149ca185a3947ce1c899bc6e1c1d582282894753274f6`.
+  All three scanned pages visually inspected: vertical JAMMA, two-player
+  directions/two buttons, DIP and connector controls. No board schematic,
+  program listing or game-stage enumeration is supplied by these pages.
+- [OKI MSM6295 original datasheet scan](https://consolemods.org/wiki/images/1/1b/MSM6295.pdf):
+  web view identifies a 16-page PDF; local acquisition hit an interactive
+  challenge and another mirror returned 404. No byte identity, full inspection
+  or synthesis qualification is claimed. Sound admission must finish this item.
+
+Primary manuals constrain each chip. MAME remains a source-graded L2 board
+reference, not proof that every clock, PAL, protection operation or game stage
+is described by an original schematic. Owner-supplied game data remains external;
+only measured metadata is in [the inventory](../evidence/t1-s1-rom-inventory.json).

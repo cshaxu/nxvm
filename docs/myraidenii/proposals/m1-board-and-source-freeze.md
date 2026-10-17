@@ -5,7 +5,17 @@
 First M1 candidate: freeze one original V30-based RAIDEN II board/game set,
 lawful owner assets and implementation evidence. Owns MyRaidenII design,
 research, ROM-free inventory validation and its finite convergence ledger.
-It does not allocate M1 T1 before owner admission.
+Admitted as M1 T1 on 2026-10-17 by the owner's implementation objective.
+Current owns the exact active S scope; this proposal owns the complete T exit.
+
+## Bounded Batches
+
+S1 audits primary sources, candidate-set requirements and actual availability,
+the existing CPU/bus/time contracts, and the complete capability ledger.
+Subsequent S admission consumes the unresolved batch: actual owner/legal-set
+inventory and final source/interface freeze. No missing asset may be silently
+transferred merely to declare T1 complete. CPU implementation remains a later
+candidate with its own Shared review and regression boundary.
 
 ## Work And Decisions
 

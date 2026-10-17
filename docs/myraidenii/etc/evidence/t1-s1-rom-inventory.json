@@ -1,0 +1,142 @@
+{
+  "schema": "myraidenii-rom-inventory-v1",
+  "audit_date": "2026-10-17",
+  "selected_set": "raiden2",
+  "description": "Original V30 board, US set 1",
+  "reference_commit": "c1425a1af00b88aa07477b1b23a30ed5e5f856ff",
+  "source": "Owner-supplied external archive; read-only metadata audit. No redistribution authorization inferred.",
+  "archive": {
+    "name": "raiden2.zip",
+    "bytes": 10654480,
+    "sha256": "9fedc8ddac2208408c3b05201316e3f2db43bdfb104551ba17337bb55db13d71",
+    "entry_count": 14
+  },
+  "runtime_images": [
+    {
+      "role": "program-even",
+      "name": "prg0.u0211",
+      "bytes": 524288,
+      "sha1": "05027f2d8f9e11fcbd485659eda68ada286dae32",
+      "sha256": "90bb05525c1529b97c359deb47305e8e25ee9de8d7c951b0be0b5587c89354ec",
+      "reference_name": "prg0.u0211"
+    },
+    {
+      "role": "program-odd",
+      "name": "prg1.u0212",
+      "bytes": 524288,
+      "sha1": "272d2aa75b8ea4d133daddf42c4fc9089093df2e",
+      "sha256": "c0a6e9a660843851f1cfbcfa84977f82f69a2fd7a4b28b7561c692389d4577b7",
+      "reference_name": "prg1.u0212"
+    },
+    {
+      "role": "sound-program",
+      "name": "snd.u1110",
+      "bytes": 65536,
+      "sha1": "7ae2e2ba0c8159a544a8fd2bb0c2c694ba849302",
+      "sha256": "53d1070d7de94bee906ec9ded0a5a2417cab881f802ea5bb718133276fbbfd67",
+      "reference_name": "snd.u1110"
+    },
+    {
+      "role": "characters",
+      "name": "seibu7.u0724",
+      "bytes": 131072,
+      "sha1": "a29f480a1bee073be7a177096ef58e1887a5af24",
+      "sha256": "3d749b4b6d67134c2181a4ce28d6d53b5ac8ca8ba7b69e1b14688107726a6fc8",
+      "reference_name": "seibu7.u0724"
+    },
+    {
+      "role": "copx",
+      "name": "copx-d2.u0313",
+      "bytes": 262144,
+      "sha1": "c4856ec77869d9098da24b1bb3d7d58bb74b4cda",
+      "sha256": "fb72435382cf822deed1e1434d9c5a34b61b3c3d83704eb21e1f70a15beaf936",
+      "reference_name": "copx-d2.u0313"
+    },
+    {
+      "role": "background-1",
+      "name": "raiden_2_seibu_bg-1.u0714",
+      "bytes": 2097152,
+      "sha1": "63b06cd38db946ad3fc5c1482dc863ef80b58fec",
+      "sha256": "fc5f161091571a3237511205f5e10a3260a028e45ec68bb95363c0d1f67d372f",
+      "reference_name": "raiden_2_seibu_bg-1.u075"
+    },
+    {
+      "role": "background-2",
+      "name": "raiden_2_seibu_bg-2.u075",
+      "bytes": 2097152,
+      "sha1": "39c2614d0effc899fe58f735604283097769df77",
+      "sha256": "aa08fb017daa6d5cead69fecb4f63c981d9a539e07d295bddac23298e4d90042",
+      "reference_name": "raiden_2_seibu_bg-2.u0714"
+    },
+    {
+      "role": "sprites-1",
+      "name": "raiden_2_seibu_obj-1.u0811",
+      "bytes": 2097152,
+      "sha1": "a1858430e8171ca8bab785457ef60e151b5e5cf1",
+      "sha256": "34db21461927d33e85b5bdd309ed52624b32e003c4f2edf99f090508c4e11ed4",
+      "reference_name": "raiden_2_seibu_obj-1.u0811"
+    },
+    {
+      "role": "sprites-2",
+      "name": "raiden_2_seibu_obj-2.u082",
+      "bytes": 2097152,
+      "sha1": "9774cc070e71668d7d1d20795502dccd21ca557b",
+      "sha256": "bf95ed2e9e7c6875d91f708bb8c417c3a28ed0f41cf86a86d3d010da0ccc469c",
+      "reference_name": "raiden_2_seibu_obj-2.u082"
+    },
+    {
+      "role": "sprites-3",
+      "name": "raiden_2_seibu_obj-3.u0837",
+      "bytes": 2097152,
+      "sha1": "abb2737a2446da5b364fc2d96524b43d808f4126",
+      "sha256": "865a3cd7b63ad743a1e475b388c0cd528539bdffb986c0534b8d7be0f45ef550",
+      "reference_name": "raiden_2_seibu_obj-3.u0837"
+    },
+    {
+      "role": "sprites-4",
+      "name": "raiden_2_seibu_obj-4.u0836",
+      "bytes": 2097152,
+      "sha1": "19cc838f1ccf9c4203cd0e5365e5d99ff3a4ff0f",
+      "sha256": "ba3e2a38886caab102f4d93c690fcb3c3ac4fab2e6dce238a5261aca29a3d51a",
+      "reference_name": "raiden_2_seibu_obj-4.u0836"
+    },
+    {
+      "role": "samples-1",
+      "name": "seibu6.u1017",
+      "bytes": 262144,
+      "sha1": "4b2217b121a66c5ab6015537609cf908ffedaf86",
+      "sha256": "19dff9d74f907836238d0765cc5f45d77c915a99698e857426e8518953452aa4",
+      "reference_name": "seibu6.u1017"
+    },
+    {
+      "role": "samples-2",
+      "name": "raiden_2_pcm.u1018",
+      "bytes": 262144,
+      "sha1": "0fbe0b1e1ca5360c7c8329331408e3d799b4714c",
+      "sha256": "fcf0b840286763ca2be60bf5231b3d5dc03a569c41bd0ac82d257bb582995c88",
+      "reference_name": "raiden_2_pcm.u1018"
+    }
+  ],
+  "extra_nonruntime_images": [
+    {
+      "name": "jj4b01__mmipal16l8bcn.u0341.jed",
+      "bytes": 821,
+      "sha1": "f88ff8674d5be17ae9085b51aefcf6abf0574883",
+      "sha256": "d09ac3a1c9429f0d90c1ea6c1302f11651418e599e30e9464cb8c8e2cc66b7f2",
+      "disposition": "JED representation; not interchangeable with either reference binary PAL dump."
+    }
+  ],
+  "absent_reference_nonruntime_images": [
+    {
+      "name": "jj4b02__ami18cv8-15.u0342",
+      "bytes": 341,
+      "sha1": "8b46f6673ddf11efbc3394ae423ec89d4a1283bf"
+    },
+    {
+      "name": "jj4b01__mmipal16l8bcn.u0341",
+      "bytes": 279,
+      "sha1": "95ce9cfbfb280dfc6a326e378684eff3c6f54701"
+    }
+  ],
+  "result": "All 13 runtime images match reference length and SHA-1; this is not a complete 15-image MAME PAL audit, game execution, or proof of source rights."
+}
