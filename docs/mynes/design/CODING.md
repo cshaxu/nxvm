@@ -37,7 +37,8 @@ Directories are introduced with real cohesive source. Tiny App modules can
 begin as adjacent files and move into these subdirectories when justified.
 Cartridge formats and mappers stay in the machine's cartridge owner;
 device-private registers stay with their device. Emulator UI groups surface bindings; session groups event/prompt
-dispatch. Generic native input normalization belongs in kvm-base and its leaves.
+dispatch. Base owns native input decoding and the neutral input vocabulary;
+kvm-base owns hotkey matching and character-to-chord delivery.
 Graphics-to-text conversion belongs with Machine frame adaptation;
 its algorithm tests belong under `test/app-mynes/unit/machine`. It derives text cells from the
 completed PPU image and does not duplicate PPU rendering. kvm-console contains

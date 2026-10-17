@@ -22,7 +22,7 @@ static lib_status probe(const char *path, lib_bool character)
     lib_u64 previous_cycle = 0u;
     lib_bool injected = LIB_FALSE, released = LIB_FALSE;
     kvm_input_event key = {.type = KVM_EVENT_KEY, .source_identity = 1u,
-        .data.key = {.key = LIB_KEY_ENTER, .pressed = LIB_TRUE}};
+        .data.key = {.key = BASE_KEY_ENTER, .pressed = LIB_TRUE}};
 
     if (status != LIB_STATUS_OK) return status;
     if (!machine_driver_set_media(driver, path, LIB_STORAGE_MEDIUM_READONLY)) {

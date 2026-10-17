@@ -192,7 +192,7 @@ static lib_status app_composition_configure_ui(void *opaque,
     if (composition == LIB_NULL || out_options == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     kvm_hotkey_registry_initialize(&hotkeys);
-    if (kvm_hotkey_registry_register(&hotkeys, LIB_KEY_ESCAPE, 0u,
+    if (kvm_hotkey_registry_register(&hotkeys, BASE_KEY_ESCAPE, 0u,
                                      "pause-toggle") != LIB_STATUS_OK)
         return LIB_STATUS_INTERNAL_ERROR;
     if (emulator_product_monitor_format_window_titles("MyNES",

@@ -29,6 +29,10 @@
 - Admission: separately investigate input delivery, broker takeover and machine
   pause observations if reproduced; preserve the original failure evidence.
 - Evidence: [S3 correction](../../nxvm/etc/evidence/t562-s3-correction.md).
+  T563 S10 also observed the same assertion on x64; the unchanged complete
+  35-case receiving integration rerun passed, including all twelve MyNES cases.
+  [S10 evidence](../../nxvm/etc/evidence/t563-s10-shared-import.md) retains the
+  failure and final result without claiming a native-input repair.
 
 | Priority | Debt | Admission path |
 | --- | --- | --- |

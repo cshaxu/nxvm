@@ -107,11 +107,11 @@ loading and debug semantics into shared contracts. It owns no additional run fla
 | Lib component | Responsibility and permitted support |
 | --- | --- |
 | types | Header-only scalar/status/C and platform declaration vocabulary. |
-| base | Clocks, waits, synchronization and worker primitives; uses types. |
+| base | Clocks, waits, synchronization, worker primitives, native input decoding and neutral input vocabulary; uses types. |
 | storage | Files and bounded byte storage; uses types. |
 | console | Logical text/input endpoint; uses types/base; no native Console ownership. |
 | console-broker | Sole native Console owner and raw/cooked binding transaction; uses types/base/console. |
-| kvm-base | Copied frame/input, source identities, neutral key/hotkey and private mailbox mechanics; uses types/base. |
+| kvm-base | Copied frame/input, source identities, hotkey matching, character-to-chord delivery and private mailbox mechanics; uses types/base. |
 | kvm-window | Independent Win32 window/message lifetime and pixels/input; uses types/kvm-base. |
 | kvm-console | Raw logical Console, text-frame cell presentation and input; accepts text frames only; uses types/base/console/kvm-base. |
 

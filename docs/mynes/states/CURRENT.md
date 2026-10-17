@@ -2,17 +2,20 @@
 
 ## Current Work
 
-NXVM-hosted [T563 S9](../../nxvm/states/CURRENT.md) admits MyNES as a receiver
-of the committed SoftPC shared-eight import. Machine input, Escape registration,
-matching integration/unit tests and the opt-in input diagnostic adopt the new
-neutral Lib input symbols. The existing KVM route, deterministic Core, controller
+NXVM-hosted [T563 S10](../../nxvm/states/CURRENT.md) admits MyNES as a receiver
+of committed SoftPC 1451522f's shared-eight import. Machine input, Escape registration,
+matching integration/unit tests and the opt-in input diagnostic adopt Base's
+neutral input symbols. The existing KVM route, deterministic Core, controller
 mapping, configuration and snapshot format are unchanged. Both 0044 EXEs are
-rebuilt in the existing unified graphs; [S9 evidence](../../nxvm/etc/evidence/t563-s9-shared-import.md)
+rebuilt in the existing unified graphs; [S10 evidence](../../nxvm/etc/evidence/t563-s10-shared-import.md)
 records 655/655 whole units per width, including 45/45 MyNES units, plus
 12/12 MyNES integrations per width. Both optional diagnostic targets compile;
 manual RDP/owner-ROM diagnostic execution is not claimed. The current pair is
-in the [ten-artifact inventory](../../nxvm/etc/evidence/t563-s9-artifacts.json).
-No independent MyNES S is started.
+in the [ten-artifact inventory](../../nxvm/etc/evidence/t563-s10-artifacts.json).
+The initial x64 native Console pause assertion failed; the unchanged complete
+receiving integration rerun passed. Existing TODO retains that unresolved
+intermittency, not a claimed input repair. No independent MyNES S is started;
+S10 awaits owner acceptance in the NXVM packet.
 
 Earlier T562 S3's [correction evidence](../../nxvm/etc/evidence/t562-s3-correction.md)
 and [artifact inventory](../../nxvm/etc/evidence/t562-s3-correction-artifacts.json)
