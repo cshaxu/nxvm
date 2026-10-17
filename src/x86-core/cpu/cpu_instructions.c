@@ -2342,6 +2342,8 @@ static void _s_read_es(x86_core_cpu_execution_context *context, lib_u32 offset, 
 }
 static void _s_read_cs(x86_core_cpu_execution_context *context, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
 {
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+        offset = X86_CPU_MASK_U16(offset);
     x86_core_cpu_memory_access_provenance previous =
         context->memory_access_provenance;
     lib_u32 linear = cpu_state.data.cs.base + offset;
@@ -20320,7 +20322,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
                 _kdf_has_modrm(opcode, LIB_FALSE)) {
                 lib_u8 modrm;
                 CPU_TRACE_CHECK_BREAK(_s_read_cs(context,
-                    X86_CPU_MASK_U16(cpu_state.data.eip + 1u), X86_CPU_REFERENCE_OF(modrm), 1));
+                    cpu_state.data.eip + 1u, X86_CPU_REFERENCE_OF(modrm), 1));
                 if (!_kdf_modrm_form_valid(opcode, LIB_FALSE, modrm, LIB_FALSE,
                         context->cpu_profile) ||
                     !x86_core_cpu_profile_allows_form(context,

@@ -314,6 +314,184 @@ static lib_i32 v30_memory_failures(void)
     return 0;
 }
 
+static void v30_memory_fetch_code(v30_memory_fixture *fixture, lib_u32 base,
+    lib_u16 start, const lib_u8 *code, lib_u8 bytes)
+{
+    v30_memory_prepare(fixture);
+    fixture->bus.cpu.data.cs.base = base;
+    fixture->bus.cpu.data.cs.selector = (lib_u16)(base / 16u);
+    fixture->bus.cpu.data.eip = start;
+    fixture->bus.cpu.data.ax = 0x1234u;
+    fixture->bus.cpu.data.cx = 0x0101u;
+    fixture->bus.cpu.data.dx = 0x0202u;
+    fixture->bus.cpu.data.bp = 0x600u;
+    fixture->bus.cpu.data.si = 0x400u;
+    fixture->bus.cpu.data.di = 0x500u;
+    lib_memory_copy(fixture->memory + 0x10400u,
+        (const lib_u8[]){0x78u,0x56u,0x34u,0x12u}, 4u);
+    const lib_u32 segments[] = {base,0x10000u,0x20000u,0x30000u};
+    for (lib_size segment = 0u; segment < sizeof(segments) / sizeof(segments[0]); ++segment)
+        lib_memory_copy(fixture->memory + (segments[segment] + 0x600u) % 0x100000u,
+            (const lib_u8[]){0u,0u,0xffu,0x7fu}, 4u);
+    fixture->memory[(base + 0x400u) % 0x100000u] = 0x34u;
+    fixture->memory[(base + 0x401u) % 0x100000u] = 0x12u;
+    for (lib_u8 item = 0u; item < bytes + 15u; ++item)
+        fixture->memory[(base + (lib_u16)(start + item)) % 0x100000u] =
+            item < bytes ? code[item] : 0x90u;
+}
+
+/* An actual bus record must fit the program segment, not its unwrapped alias. */
+static lib_i32 v30_memory_fetch_records(const v30_memory_fixture *fixture,
+    lib_u32 base)
+{
+    for (lib_u32 item = 0u; item < fixture->record_count; ++item) {
+        const v30_memory_record *record = &fixture->records[item];
+        if (record->provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) continue;
+        const lib_u32 offset = (record->address - base) & 0xfffffu;
+        if (record->write || offset + record->bytes > 0x10000u) return 1;
+    }
+    return fixture->invalid;
+}
+
+static lib_i32 v30_memory_fetch_run(v30_memory_fixture *fixture, lib_u32 base,
+    lib_u16 start, const lib_u8 *code, lib_u8 bytes)
+{
+    x86_core_cpu_instruction_lexeme lexeme;
+    x86_core_cpu_instruction_observation observation;
+    v30_memory_fetch_code(fixture, base, start, code, bytes);
+    const t_cpu before = fixture->bus.cpu;
+    if (!x86_core_cpu_execution_preview_lexeme(&fixture->bus.execution, &lexeme) ||
+        lexeme.byte_count != bytes || fixture->phase_count || fixture->reads || fixture->writes ||
+        fixture->fetches || !fixture->observations || fixture->bus.execution.prefetch_valid ||
+        lib_memory_compare(&fixture->bus.cpu, &before, sizeof(before)) != 0 ||
+        v30_memory_fetch_records(fixture, base)) return 1;
+    fixture->record_count = fixture->observations = 0u;
+    x86_core_cpu_execution_refresh(&fixture->bus.execution);
+    x86_core_cpu_execution_copy_observation(&fixture->bus.execution, &observation);
+    if (fixture->bus.execution.stop_requested || fixture->bus.faults ||
+        fixture->bus.delivered_exceptions || fixture->bus.cpu.data.eip != (lib_u16)(start + bytes) ||
+        observation.point.byte_count < bytes ||
+        lib_memory_compare(observation.point.bytes, code, bytes) != 0 ||
+        v30_memory_fetch_records(fixture, base)) return 1;
+    return 0;
+}
+
+static lib_i32 v30_memory_fetch_forms(void)
+{
+    static const struct { lib_u8 code[6], bytes; } forms[] = {
+        {{0x0fu,0x31u,0xc9u},3u}, {{0x0fu,0x33u,0xc9u},3u},
+        {{0x0fu,0x39u,0xc1u,3u},4u}, {{0x0fu,0x3bu,0xc1u,3u},4u},
+        {{0x0fu,0x10u,0xc0u},3u}, {{0x0fu,0x11u,0xc0u},3u},
+        {{0x0fu,0x18u,0xc0u,3u},4u}, {{0x0fu,0x19u,0xc0u,3u},4u},
+        {{0x0fu,0x28u,6u,0u,4u},5u}, {{0x0fu,0x2au,6u,0u,4u},5u},
+        {{0xb8u,0x34u,0x12u},3u}, {{5u,0x34u,0x12u},3u},
+        {{0x8bu,0x86u,0u,4u},4u}, {{0x8bu,0x46u,7u},3u},
+        {{0xc7u,6u,0u,4u,0x34u,0x12u},6u}, {{0xc6u,0x86u,0u,4u,0x12u},5u},
+        {{0xc1u,0x26u,0u,4u,3u},5u}, {{0x69u,0xc0u,3u,0u},4u},
+        {{0x68u,0x34u,0x12u},3u}, {{0xc8u,4u,0u,0u},4u},
+        {{0x8du,0x86u,0x34u,0x12u},4u}, {{0xa1u,0u,4u},3u},
+        {{0xd1u,0x26u,0u,4u},4u}, {{0xb0u,3u},2u}, {{0x90u},1u},
+        {{0x0fu,0x20u},2u}, {{0x0fu,0x22u},2u}, {{0x0fu,0x26u},2u},
+        {{0x0fu,0x16u,6u,0u,4u},5u}, {{0x0fu,0x1eu,6u,0u,4u,3u},6u},
+        {{0xebu,0u},2u}, {{0xe9u,0u,0u},3u}, {{0x74u,0u},2u}, {{0x75u,0u},2u},
+        {{0x62u,6u,0u,6u},4u}, {{0x8fu,6u,0u,4u},4u},
+        {{0xffu,6u,0u,4u},4u}, {{0xffu,0x36u,0u,4u},4u}
+    };
+    static const lib_u32 bases[] = {0x80000u,0u,0xffff0u};
+    static const lib_u16 starts[] = {0xfffeu,0xffffu,0xfffdu,0xfffcu,0xfffbu,0xfffau,0xfff9u,0xfff8u,0x101u};
+    static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
+    static v30_memory_fixture reference, fixture;
+    for (lib_size base = 0u; base < sizeof(bases) / sizeof(bases[0]); ++base)
+        for (lib_size form = 0u; form < sizeof(forms) / sizeof(forms[0]); ++form)
+            for (lib_u8 prefix = 0u; prefix < sizeof(prefixes); ++prefix) {
+                lib_u8 code[7];
+                const lib_u8 extra = prefix != 0u;
+                if (extra) code[0] = prefixes[prefix];
+                lib_memory_copy(code + extra, forms[form].code, forms[form].bytes);
+                const lib_u8 bytes = forms[form].bytes + extra;
+                if (v30_memory_fetch_run(&reference, bases[base], 0x100u, code, bytes)) {
+                    lib_c_printf("V30:FETCH-REFERENCE:%u:%u:%u\n",(lib_u32)base,(lib_u32)form,prefix);
+                    return 1;
+                }
+                for (lib_size start = 0u; start < sizeof(starts) / sizeof(starts[0]); ++start) {
+                    if (v30_memory_fetch_run(&fixture, bases[base], starts[start], code, bytes)) {
+                        lib_c_printf("V30:FETCH-FORM:%u:%u:%u:%04x\n",(lib_u32)base,
+                            (lib_u32)form,prefix,starts[start]);
+                        return 1;
+                    }
+                    t_cpu expected = reference.bus.cpu;
+                    expected.data.eip = (lib_u16)(starts[start] + bytes);
+                    if (lib_memory_compare(&fixture.bus.cpu, &expected, sizeof(expected)) != 0 ||
+                        lib_memory_compare(fixture.memory + 0x10000u, reference.memory + 0x10000u, 0x30000u) != 0 ||
+                        fixture.memory[(bases[base] + 0x400u) % 0x100000u] !=
+                            reference.memory[(bases[base] + 0x400u) % 0x100000u] ||
+                        fixture.memory[(bases[base] + 0x401u) % 0x100000u] !=
+                            reference.memory[(bases[base] + 0x401u) % 0x100000u]) return 1;
+                }
+            }
+    return 0;
+}
+
+static lib_i32 v30_memory_fetch_cache_and_failures(void)
+{
+    static const lib_u32 bases[] = {0x80000u,0u,0xffff0u};
+    static const lib_u8 code[] = {0x0fu,0x18u,0xc0u,3u};
+    static v30_memory_fixture fixture;
+    for (lib_size base = 0u; base < sizeof(bases) / sizeof(bases[0]); ++base) {
+        v30_memory_fetch_code(&fixture, bases[base], 0xfffbu,
+            (const lib_u8[]){0xb8u,0x34u,0x12u,0x0fu,0x18u,0xc0u,3u}, 7u);
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.ax != 0x1234u ||
+            fixture.bus.cpu.data.eip != 0xfffeu || !fixture.bus.execution.prefetch_valid ||
+            fixture.bus.execution.prefetch_count != 5u) return 1;
+        fixture.record_count = fixture.fetches = 0u;
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 2u ||
+            fixture.bus.cpu.data.ax != 0x1234u || !(fixture.bus.cpu.data.eflags & VCPU_EFLAGS_ZF) ||
+            !fixture.fetches || v30_memory_fetch_records(&fixture, bases[base])) return 1;
+        for (lib_u32 item = 0u; item < fixture.record_count; ++item)
+            if (fixture.records[item].provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) return 1;
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 3u ||
+            v30_memory_fetch_records(&fixture, bases[base])) return 1;
+
+        v30_memory_fetch_code(&fixture, bases[base], 0xfffeu, code, sizeof(code));
+        x86_core_cpu_instruction_lexeme lexeme;
+        if (!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution, &lexeme)) return 1;
+        const lib_u32 observation_parts = fixture.observations;
+        if (observation_parts == 0u) return 1;
+        fixture.record_count = fixture.observations = 0u;
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (fixture.bus.execution.stop_requested) return 1;
+        const lib_u32 fetch_parts = fixture.fetches;
+        if (fetch_parts == 0u) return 1;
+        for (lib_u8 observe = 0u; observe < 2u; ++observe)
+            for (lib_u32 part = 1u; part <= (observe ? observation_parts : fetch_parts); ++part) {
+                v30_memory_fetch_code(&fixture, bases[base], 0xfffeu, code, sizeof(code));
+                const t_cpu before = fixture.bus.cpu;
+                if (observe) {
+                    fixture.fail_observe = part;
+                    if (x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution, &lexeme) ||
+                        fixture.observations != part || fixture.bus.execution.stop_requested ||
+                        fixture.bus.execution.prefetch_valid || fixture.phase_count || fixture.fetches ||
+                        fixture.bus.faults) return 1;
+                } else {
+                    fixture.fail_fetch = part;
+                    x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                    if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                        fixture.fetches != part) return 1;
+                }
+                if (fixture.reads || fixture.writes || fixture.bus.delivered_exceptions ||
+                    fixture.bus.execution.memory_access_provenance != X86_CORE_CPU_MEMORY_ACCESS_DATA ||
+                    lib_memory_compare(&fixture.bus.cpu, &before, sizeof(before)) != 0 ||
+                    v30_memory_fetch_records(&fixture, bases[base])) return 1;
+                for (lib_u32 item = 0u; item < fixture.record_count; ++item)
+                    if (fixture.records[item].accepted != (item + 1u != part)) return 1;
+            }
+    }
+    return 0;
+}
+
 lib_i32 main(void)
 {
     if (v30_memory_scalars()) { lib_c_printf("V30:MEMORY-SCALAR:FAIL\n"); return 1; }
@@ -321,6 +499,8 @@ lib_i32 main(void)
     if (v30_memory_pair_and_stack()) { lib_c_printf("V30:MEMORY-PAIR-STACK:FAIL\n"); return 1; }
     if (v30_memory_fetch()) { lib_c_printf("V30:MEMORY-FETCH:FAIL\n"); return 1; }
     if (v30_memory_failures()) { lib_c_printf("V30:MEMORY-FAILURES:FAIL\n"); return 1; }
+    if (v30_memory_fetch_forms()) { lib_c_printf("V30:FETCH-FORMS:FAIL\n"); return 1; }
+    if (v30_memory_fetch_cache_and_failures()) { lib_c_printf("V30:FETCH-CACHE-FAILURES:FAIL\n"); return 1; }
     lib_c_printf("V30:MEMORY-TRANSFER:OK\n");
     return 0;
 }
