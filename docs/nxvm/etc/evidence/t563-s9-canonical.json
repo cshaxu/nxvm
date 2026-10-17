@@ -1,0 +1,42 @@
+[
+  {
+    "root": "src/lib",
+    "files": 122,
+    "identical": true
+  },
+  {
+    "root": "src/emulator",
+    "files": 30,
+    "identical": true
+  },
+  {
+    "root": "src/x86-debug",
+    "files": 15,
+    "identical": true
+  },
+  {
+    "root": "src/x86-ibmpc",
+    "files": 13,
+    "identical": true
+  },
+  {
+    "root": "test/lib",
+    "files": 77,
+    "identical": true
+  },
+  {
+    "root": "test/emulator",
+    "files": 23,
+    "identical": true
+  },
+  {
+    "root": "test/x86-debug",
+    "files": 9,
+    "identical": true
+  },
+  {
+    "root": "test/x86-ibmpc",
+    "files": 7,
+    "identical": true
+  }
+]

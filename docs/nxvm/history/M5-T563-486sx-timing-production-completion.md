@@ -149,3 +149,32 @@ Coordinator actual-commit review accepts S8 Shared **16e7e3a97** and NXVM
 paths and matching the true dual-width results. The owner-approved single
 native-MIDI transfer permits S8 closure, not a false full-suite success or
 T563 closure. S9 is the next committed-SoftPC eight-tree audit/import receiver.
+
+## S9 Committed Shared Import And Receiving Qualification
+
+Owner admission pins SoftPC `4a675c00390af2efb9adb9c5d0607d569ab0ba05` and
+imports source/test pairs for Lib, Emulator, X86 Debug and X86 IBMPC unchanged.
+Shared P1 **3a07320e4** preserves all 296 canonical files and integrates neutral
+input vocabulary and source-relative test registration. Necessary stronger
+six-package test guards remain outside the imported roots. X86 Core CPU and
+tests are unchanged. MyNES P2 **ffb9ce6a5** adapts its real input consumers,
+matching tests/diagnostic and publishes the rebuilt 0044 pair without a NES
+algorithm, INI or snapshot change. NXVM delivery contains its target-reference
+and process-resource inventory update, full evidence and eight 0563 PC EXEs.
+
+Both widths pass 655/655 units, 48/48 product integrations, 4/4 shared native
+integrations, complete specialized gates and 498/498 strict rows. All ten PEs,
+eight actual published PC CLI/INI checks and MyNES deployment hashes pass.
+Current native MIDI actually opens and releases on both widths; its backend
+is unchanged, so this is current host qualification rather than a claimed
+repair for S8's native error. Physical playback and manual RDP remain unproven.
+
+[S9 evidence](../etc/evidence/t563-s9-shared-import.md),
+[canonical inventory](../etc/evidence/t563-s9-canonical.json),
+[results](../etc/evidence/t563-s9-results.json),
+[actual diff](../etc/evidence/t563-s9-diff.json) and
+[ten artifact hashes](../etc/evidence/t563-s9-artifacts.json) retain the proof.
+Code totals are production +908/-679 and tests +2313/-1328. The owner requests
+the existing committed import first: Base/Types input ownership, hotkey aliases
+and related cleanup await a separately committed upstream correction and next
+import. This does not close T563 or assert an entirely defect-free corpus.

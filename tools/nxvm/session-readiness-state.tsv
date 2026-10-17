@@ -3,3 +3,4 @@ src/x86-nxvm/board-base/dma_bus.c	process-wide-token-issuer	T540	x86-nxvm/board-
 src/lib/base/linux/sync.c	process-wide-wait-hub	T531	lib/base
 src/lib/console-broker/console.c	process-exclusive-console-lease	T531	lib/console-broker
 src/lib/kvm-base/component.c	process-wide-source-identity	T531	lib/kvm-base
+src/lib/kvm-window/win32/mouse.c	process-wide-native-mouse-registration-lock	T563	lib/kvm-window

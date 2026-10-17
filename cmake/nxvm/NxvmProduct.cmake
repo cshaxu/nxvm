@@ -515,19 +515,19 @@ function(project_configure_strict_cpu_smokes)
 set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "x86-nxvm-board-cli-sti-smoke|test/x86-nxvm/board-base/board_cli_sti_profiles_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/x86-nxvm/board-base/machine_cli_sti_interrupt_smoke.c"
-    "x86-core-test-cpu_control_state|test/x86-core/cpu/cpu_control_state_smoke.c"
-    "x86-core-test-cpu_control_transfer_branch|test/x86-core/cpu/cpu_control_transfer_branch_smoke.c"
-    "x86-core-test-cpu_control_transfer_near|test/x86-core/cpu/cpu_control_transfer_near_smoke.c"
-    "x86-core-test-cpu_control_transfer_far|test/x86-core/cpu/cpu_control_transfer_far_smoke.c"
-    "x86-core-test-cpu_idt_privilege_entry|test/x86-core/cpu/cpu_idt_privilege_entry_smoke.c"
-    "x86-core-test-cpu_protected_far|test/x86-core/cpu/cpu_protected_far_smoke.c"
-    "x86-core-test-cpu_protected_data_access|test/x86-core/cpu/cpu_protected_data_access_smoke.c"
-    "x86-core-test-cpu_debug_state|test/x86-core/cpu/cpu_debug_state_smoke.c"
-    "x86-core-test-cpu_descriptor_table_register|test/x86-core/cpu/cpu_descriptor_table_register_smoke.c"
-    "x86-core-test-cpu_descriptor_system|test/x86-core/cpu/cpu_descriptor_system_smoke.c"
-    "x86-core-test-cpu_lar_lsl|test/x86-core/cpu/cpu_lar_lsl_smoke.c"
-    "x86-core-test-cpu_verr_verw|test/x86-core/cpu/cpu_verr_verw_smoke.c"
-    "x86-core-test-cpu_eflags_local|test/x86-core/cpu/cpu_eflags_local_smoke.c"
+    "x86-core-test-cpu-cpu_control_state|test/x86-core/cpu/cpu_control_state_smoke.c"
+    "x86-core-test-cpu-cpu_control_transfer_branch|test/x86-core/cpu/cpu_control_transfer_branch_smoke.c"
+    "x86-core-test-cpu-cpu_control_transfer_near|test/x86-core/cpu/cpu_control_transfer_near_smoke.c"
+    "x86-core-test-cpu-cpu_control_transfer_far|test/x86-core/cpu/cpu_control_transfer_far_smoke.c"
+    "x86-core-test-cpu-cpu_idt_privilege_entry|test/x86-core/cpu/cpu_idt_privilege_entry_smoke.c"
+    "x86-core-test-cpu-cpu_protected_far|test/x86-core/cpu/cpu_protected_far_smoke.c"
+    "x86-core-test-cpu-cpu_protected_data_access|test/x86-core/cpu/cpu_protected_data_access_smoke.c"
+    "x86-core-test-cpu-cpu_debug_state|test/x86-core/cpu/cpu_debug_state_smoke.c"
+    "x86-core-test-cpu-cpu_descriptor_table_register|test/x86-core/cpu/cpu_descriptor_table_register_smoke.c"
+    "x86-core-test-cpu-cpu_descriptor_system|test/x86-core/cpu/cpu_descriptor_system_smoke.c"
+    "x86-core-test-cpu-cpu_lar_lsl|test/x86-core/cpu/cpu_lar_lsl_smoke.c"
+    "x86-core-test-cpu-cpu_verr_verw|test/x86-core/cpu/cpu_verr_verw_smoke.c"
+    "x86-core-test-cpu-cpu_eflags_local|test/x86-core/cpu/cpu_eflags_local_smoke.c"
     "x86-nxvm-board-enter-leave-smoke|test/x86-nxvm/board-base/board_enter_leave_smoke.c"
     "x86-core-machine-fpu-interface-smoke|test/x86-core/machine/machine_fpu_interface_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/x86-nxvm/board-base/composition/board_fs_gs_stack_smoke.c"
@@ -535,12 +535,12 @@ set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "x86-nxvm-board-gpr-push-pop-smoke|test/x86-nxvm/board-base/board_gpr_push_pop_smoke.c"
     "x86-nxvm-board-hlt-smoke|test/x86-nxvm/board-base/board_hlt_profiles_smoke.c"
     "x86-nxvm-board-imul-immediate-smoke|test/x86-nxvm/board-base/board_imul_immediate_profiles_smoke.c"
-    "x86-core-test-cpu_outer_return|test/x86-core/cpu/cpu_outer_return_smoke.c"
-    "x86-core-test-cpu_task_switch16|test/x86-core/cpu/cpu_task_switch16_smoke.c"
-    "x86-core-test-cpu_task_switch32_decode|test/x86-core/cpu/cpu_task_switch32_decode_smoke.c"
-    "x86-core-test-cpu_task_switch32_state|test/x86-core/cpu/cpu_task_switch32_state_smoke.c"
+    "x86-core-test-cpu-cpu_outer_return|test/x86-core/cpu/cpu_outer_return_smoke.c"
+    "x86-core-test-cpu-cpu_task_switch16|test/x86-core/cpu/cpu_task_switch16_smoke.c"
+    "x86-core-test-cpu-cpu_task_switch32_decode|test/x86-core/cpu/cpu_task_switch32_decode_smoke.c"
+    "x86-core-test-cpu-cpu_task_switch32_state|test/x86-core/cpu/cpu_task_switch32_state_smoke.c"
     "x86-nxvm-board-iret-smoke|test/x86-nxvm/board-base/board_iret_profiles_smoke.c"
-    "x86-core-test-cpu_lgdt_lidt|test/x86-core/cpu/cpu_lgdt_lidt_smoke.c"
+    "x86-core-test-cpu-cpu_lgdt_lidt|test/x86-core/cpu/cpu_lgdt_lidt_smoke.c"
     "x86-nxvm-board-lea-smoke|test/x86-nxvm/board-base/board_lea_smoke.c"
     "x86-nxvm-board-legacy-sreg-stack-smoke|test/x86-nxvm/board-base/board_legacy_sreg_stack_smoke.c"
     "x86-nxvm-board-les-lds-board-smoke|test/x86-nxvm/board-base/board_les_lds_board_smoke.c"
@@ -554,7 +554,7 @@ set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "x86-nxvm-board-sign-extend-smoke|test/x86-nxvm/board-base/board_sign_extend_smoke.c"
     "x86-nxvm-board-software-int-smoke|test/x86-nxvm/board-base/board_software_int_profiles_smoke.c"
     "x86-nxvm-board-sreg-mov-smoke|test/x86-nxvm/board-base/board_sreg_mov_smoke.c"
-    "x86-core-test-cpu_sgdt_sidt|test/x86-core/cpu/cpu_sgdt_sidt_smoke.c"
+    "x86-core-test-cpu-cpu_sgdt_sidt|test/x86-core/cpu/cpu_sgdt_sidt_smoke.c"
     "machine-debug-state-board-smoke|test/x86-nxvm/board-base/machine_debug_state_board_smoke.c"
     "x86-nxvm-board-xchg-smoke|test/x86-nxvm/board-base/board_xchg_smoke.c")
 
@@ -1148,25 +1148,25 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-operand-address-smoke
     x86-nxvm-board-prefix-attributes-smoke
     core-machine-legacy-lock-smoke
-    x86-core-test-cpu_legacy_lock
+    x86-core-test-cpu-cpu_legacy_lock
     x86-nxvm-board-setcc-smoke
-    x86-core-test-cpu_setcc
+    x86-core-test-cpu-cpu_setcc
     core-machine-movx-smoke
-    x86-core-test-cpu_movx
-    x86-core-test-cpu_lea
-    x86-core-test-cpu_prefix_attributes
-    x86-core-test-cpu_operand_address
-    x86-core-test-cpu_bit_scan
-    x86-core-test-cpu_double_shift
-    x86-core-test-cpu_imul2
+    x86-core-test-cpu-cpu_movx
+    x86-core-test-cpu-cpu_lea
+    x86-core-test-cpu-cpu_prefix_attributes
+    x86-core-test-cpu-cpu_operand_address
+    x86-core-test-cpu-cpu_bit_scan
+    x86-core-test-cpu-cpu_double_shift
+    x86-core-test-cpu-cpu_imul2
     x86-nxvm-board-bit-test-smoke
-    x86-core-test-cpu_bit_test
+    x86-core-test-cpu-cpu_bit_test
     x86-nxvm-board-inc-dec-first-group-board-smoke
     x86-nxvm-board-inc-dec-second-group-board-smoke
     x86-nxvm-board-inc-dec-final-group-board-smoke
     core-machine-legacy-alu-smoke
     x86-nxvm-board-rotate-smoke
-    x86-core-test-cpu_eflags_local
+    x86-core-test-cpu-cpu_eflags_local
     x86-nxvm-board-direct-flags-board-smoke
     x86-nxvm-board-lahf-sahf-board-smoke
     x86-nxvm-board-pushf-popf-board-smoke
@@ -1175,11 +1175,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-nxvm-board-hlt-smoke
     x86-nxvm-board-software-int-smoke
     x86-nxvm-board-iret-smoke
-    x86-core-test-cpu_outer_return
+    x86-core-test-cpu-cpu_outer_return
     machine-outer-iret-pic-board-smoke
-    x86-core-test-cpu_task_switch16
-    x86-core-test-cpu_task_switch32_decode
-    x86-core-test-cpu_task_switch32_state
+    x86-core-test-cpu-cpu_task_switch16
+    x86-core-test-cpu-cpu_task_switch32_decode
+    x86-core-test-cpu-cpu_task_switch32_state
     machine-task-switch16-pic-board-smoke
     core-machine-fs-gs-stack-smoke
     x86-nxvm-board-lss-lfs-lgs-smoke
@@ -1193,7 +1193,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-nxvm-board-lea-smoke
     x86-nxvm-board-xchg-smoke
     x86-nxvm-board-sign-extend-smoke
-    x86-core-test-cpu_sign_extend
+    x86-core-test-cpu-cpu_sign_extend
     x86-nxvm-board-moffs-smoke
     x86-nxvm-board-gpr-mov-smoke
     x86-nxvm-board-sreg-mov-smoke
@@ -1202,26 +1202,26 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-lods-board-smoke
     machine-scas-board-smoke
     machine-cmps-board-smoke
-    x86-core-test-cpu_port_strings
+    x86-core-test-cpu-cpu_port_strings
     machine-port-strings-board-smoke
-    x86-core-test-cpu_port_io
+    x86-core-test-cpu-cpu_port_io
     machine-port-io-board-smoke
-    x86-core-test-cpu_debug_state
+    x86-core-test-cpu-cpu_debug_state
     machine-debug-state-board-smoke
     x86-nxvm-board-double-shift-smoke
     x86-nxvm-board-bit-scan-smoke
     x86-nxvm-board-imul2-smoke
     x86-nxvm-board-imul-immediate-smoke
-    x86-core-test-cpu_imul_immediate
-    x86-core-test-cpu_control_state
-    x86-core-test-cpu_control_transfer_branch
-    x86-core-test-cpu_control_transfer_near
-    x86-core-test-cpu_control_transfer_far
-    x86-core-test-cpu_idt_privilege_entry
+    x86-core-test-cpu-cpu_imul_immediate
+    x86-core-test-cpu-cpu_control_state
+    x86-core-test-cpu-cpu_control_transfer_branch
+    x86-core-test-cpu-cpu_control_transfer_near
+    x86-core-test-cpu-cpu_control_transfer_far
+    x86-core-test-cpu-cpu_idt_privilege_entry
     machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
-    x86-core-test-cpu_protected_far
-    x86-core-test-cpu_protected_data_access
+    x86-core-test-cpu-cpu_protected_far
+    x86-core-test-cpu-cpu_protected_data_access
     machine-protected-far-pic-board-smoke
     machine-protected-data-pic-board-smoke
     core-machine-protected-16-gate-smoke
@@ -1235,15 +1235,15 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-interrupt-entry-smoke
     x86-core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
-    x86-core-test-cpu_arpl
+    x86-core-test-cpu-cpu_arpl
     machine-arpl-board-smoke
-    x86-core-test-cpu_bound
-    x86-core-test-cpu_descriptor_table_register
-    x86-core-test-cpu_descriptor_system
-    x86-core-test-cpu_lar_lsl
-    x86-core-test-cpu_verr_verw
-    x86-core-test-cpu_lgdt_lidt
-    x86-core-test-cpu_sgdt_sidt
+    x86-core-test-cpu-cpu_bound
+    x86-core-test-cpu-cpu_descriptor_table_register
+    x86-core-test-cpu-cpu_descriptor_system
+    x86-core-test-cpu-cpu_lar_lsl
+    x86-core-test-cpu-cpu_verr_verw
+    x86-core-test-cpu-cpu_lgdt_lidt
+    x86-core-test-cpu-cpu_sgdt_sidt
     machine-table-register-board-smoke
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
@@ -1287,7 +1287,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-nxvm-board-kbc-controller-smoke
     x86-nxvm-board-xt-ppi-keyboard-smoke
     x86-nxvm-board-kbc-serial-cadence-smoke
-    x86-nxvm-test-board_kbc_aux_port
+    x86-nxvm-test-board-base-board_kbc_aux_port
     x86-nxvm-board-dma-channel-smoke
     x86-nxvm-board-dma-binding-token-smoke
     x86-nxvm-machine-media-provider-smoke
@@ -1406,10 +1406,10 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     x86-nxvm-board-instance-smoke
     x86-nxvm-board-explicit-time-smoke
     x86-core-machine-debug-smoke
-    x86-core-test-cpu_execution_fault_event
+    x86-core-test-cpu-cpu_execution_fault_event
     vm-fdc-authority-smoke
     core-machine-cpu-fpu-profile-smoke
-    x86-core-test-cpu_execution_context
+    x86-core-test-cpu-cpu_execution_context
     core-machine-cpu-fpu-profile-closure-smoke)
 
 # A real-mode #UD owner must not rely on an all-zero IVT entry.  The terminal
@@ -1423,18 +1423,18 @@ set(PROJECT_UNDEFINED_OPCODE_REAL_DELIVERY_TARGETS
     core-machine-real-ud-delivery-smoke
     )
 set(PROJECT_UNDEFINED_OPCODE_NO_REAL_NEGATIVE_TARGETS
-    x86-core-test-cpu_execution_fault_event
-    x86-core-test-cpu_descriptor_system
-    x86-core-test-cpu_lar_lsl
-    x86-core-test-cpu_verr_verw
+    x86-core-test-cpu-cpu_execution_fault_event
+    x86-core-test-cpu-cpu_descriptor_system
+    x86-core-test-cpu-cpu_lar_lsl
+    x86-core-test-cpu-cpu_verr_verw
     machine-fpu-escape-smoke
-    x86-core-test-cpu_control_state
-    x86-core-test-cpu_control_transfer_branch
-    x86-core-test-cpu_control_transfer_far
-    x86-core-test-cpu_debug_state
+    x86-core-test-cpu-cpu_control_state
+    x86-core-test-cpu-cpu_control_transfer_branch
+    x86-core-test-cpu-cpu_control_transfer_far
+    x86-core-test-cpu-cpu_debug_state
     core-machine-protected-16-gate-smoke
-    x86-core-test-cpu_protected_data_access
-    x86-core-test-cpu_protected_far
+    x86-core-test-cpu-cpu_protected_data_access
+    x86-core-test-cpu-cpu_protected_far
     core-machine-protected-ud-delivery-smoke
     x86-core-machine-task-switch-cross-width-smoke
     machine-vm86-delivery-smoke

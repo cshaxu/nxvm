@@ -1,0 +1,114 @@
+[
+  {
+    "code_deleted": 613,
+    "added": 969,
+    "code_net": 226,
+    "code_added": 839,
+    "deleted": 698,
+    "root": "src/lib"
+  },
+  {
+    "code_deleted": 4,
+    "added": 10,
+    "code_net": 3,
+    "code_added": 7,
+    "deleted": 7,
+    "root": "src/emulator"
+  },
+  {
+    "code_deleted": 0,
+    "added": 0,
+    "code_net": 0,
+    "code_added": 0,
+    "deleted": 0,
+    "root": "src/x86-debug"
+  },
+  {
+    "code_deleted": 15,
+    "added": 16,
+    "code_net": 0,
+    "code_added": 15,
+    "deleted": 16,
+    "root": "src/x86-ibmpc"
+  },
+  {
+    "code_deleted": 0,
+    "added": 0,
+    "code_net": 0,
+    "code_added": 0,
+    "deleted": 0,
+    "root": "src/x86-core"
+  },
+  {
+    "code_deleted": 41,
+    "added": 42,
+    "code_net": 0,
+    "code_added": 41,
+    "deleted": 42,
+    "root": "src/x86-nxvm"
+  },
+  {
+    "code_deleted": 6,
+    "added": 6,
+    "code_net": 0,
+    "code_added": 6,
+    "deleted": 6,
+    "root": "src/app-mynes"
+  },
+  {
+    "code_deleted": 1128,
+    "added": 2263,
+    "code_net": 907,
+    "code_added": 2035,
+    "deleted": 1236,
+    "root": "test/lib"
+  },
+  {
+    "code_deleted": 140,
+    "added": 262,
+    "code_net": 78,
+    "code_added": 218,
+    "deleted": 174,
+    "root": "test/emulator"
+  },
+  {
+    "code_deleted": 0,
+    "added": 2,
+    "code_net": 0,
+    "code_added": 0,
+    "deleted": 1,
+    "root": "test/x86-debug"
+  },
+  {
+    "code_deleted": 10,
+    "added": 13,
+    "code_net": 0,
+    "code_added": 10,
+    "deleted": 12,
+    "root": "test/x86-ibmpc"
+  },
+  {
+    "code_deleted": 0,
+    "added": 0,
+    "code_net": 0,
+    "code_added": 0,
+    "deleted": 0,
+    "root": "test/x86-core"
+  },
+  {
+    "code_deleted": 29,
+    "added": 33,
+    "code_net": 0,
+    "code_added": 29,
+    "deleted": 33,
+    "root": "test/x86-nxvm"
+  },
+  {
+    "code_deleted": 21,
+    "added": 21,
+    "code_net": 0,
+    "code_added": 21,
+    "deleted": 21,
+    "root": "test/app-mynes"
+  }
+]

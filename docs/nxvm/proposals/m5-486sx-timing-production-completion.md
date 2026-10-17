@@ -74,6 +74,16 @@ simple related forms are implemented and tested as a cohort, not one opcode per 
 | S8 | Whole C01--C17 qualification | Original ledger reconciled, B1--B4 candidate-cache defect repaired, full dual-width qualification executed and eight PC artifacts checked. Owner permits bounded closure on 2026-10-17 with the single unchanged native MIDI failure explicitly transferred to S9; no false whole-suite pass or T closure. |
 | S9 | Committed SoftPC shared-eight audit/import | Pin and audit Lib/Emulator/X86 Debug/X86 IBMPC source/test pairs; import accepted corpus bytes unchanged, adapt genuine callers, preserve X86 Core CPU work and requalify all receivers. Distinguish native-test classification from actual native endpoint availability; retain the S8 MIDI result until current proof resolves it. |
 
+S9 is the owner's explicit shared-import exception to the original CPU-only
+boundary below. It pins committed SoftPC
+`4a675c00390af2efb9adb9c5d0607d569ab0ba05`, imports the eight roots unchanged
+and admits only necessary neutral-input/target-name receiving changes in
+X86 NXVM, MyNES and root test infrastructure. Shared, MyNES and NXVM changes
+use separate P commits. All ten affected current artifacts are rebuilt;
+no NES algorithm, product command policy, owner configuration or media changes.
+The owner requests upstream input-ownership cleanup separately and a second
+import after that correction is committed; it is not locally folded into S9.
+
 Do not combine C17 with an incomplete C16 implementation merely to get a boot.
 If a cohort cannot meet its stated exit, retain its unresolved members explicitly
 and refine the plan before closing that S; do not silently narrow the T universe.

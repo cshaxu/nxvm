@@ -1,5 +1,12 @@
 # Supporting Documentation Index
 
+T563 S9: [Committed shared import](evidence/t563-s9-shared-import.md) pins the
+eight canonical roots, necessary receiving changes and owner-deferred upstream
+cleanup. [Ten current artifacts](evidence/t563-s9-artifacts.json) and
+[dual-width results](evidence/t563-s9-results.json) record 655 units plus 52
+integration executions per width. Native MIDI open/release is distinguished
+from physical playback and the earlier unchanged backend failure.
+
 T563 S8: [Whole CPU qualification](evidence/t563-s8-whole-qualification.md)
 reconciles the original C01--C17 and inherited receiver universe against current
 owners, direct proof, source/model limits and full receiving suites;

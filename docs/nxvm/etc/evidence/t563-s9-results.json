@@ -1,0 +1,18 @@
+[
+  {
+    "arch": "x64",
+    "product_integrations": 48,
+    "shared_native_integrations": 4,
+    "failures": 0,
+    "skipped": 0,
+    "units": 655
+  },
+  {
+    "arch": "x86",
+    "product_integrations": 48,
+    "shared_native_integrations": 4,
+    "failures": 0,
+    "skipped": 0,
+    "units": 655
+  }
+]

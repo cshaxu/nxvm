@@ -170,6 +170,20 @@ the Shared source/test corpus.
 - [Evidence](../../evidence/t562-s1-shared-import-quality.md) records the
   baseline, finite repair ledger and receiving qualification.
 
+## T563 S9 — Committed SoftPC Eight-Tree Transfer
+
+- Source: project-owned SoftPC `4a675c00390af2efb9adb9c5d0607d569ab0ba05`.
+- Transfer: same-path source/test pairs for Lib, Emulator, X86 Debug and
+  X86 IBMPC, from a committed archive with byte/hash inventory. Root test
+  registration is adopted; production-owner test checks are merged into the
+  stronger six-package receiving infrastructure rather than weakening it.
+- Root MIT owner authorization and existing notices are preserved. No App,
+  firmware, media, third-party payload or sibling artifact is imported.
+- Actual X86 NXVM/MyNES callers are adapted locally; X86 Core CPU work remains
+  intact. Known input-ownership cleanup awaits the owner's second upstream
+  import. [S9 evidence](../../evidence/t563-s9-shared-import.md) distinguishes
+  native MIDI classification from actual endpoint qualification.
+
 ## T562 S3 — Selective Executor Heartbeat Correction
 
 - Source: project-owned SoftPC `7a523a42663f6fb236d6c0a99d89448b084f5bf2`.
