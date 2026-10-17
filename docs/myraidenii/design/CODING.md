@@ -1,0 +1,38 @@
+# Source Layout And Coding
+
+Apply shared [Coding Rules](../../rules/CODING.md). Product root spelling is
+`myraidenii`; display/commit identity is `MyRaidenII`. Exact roots:
+
+```text
+src/myraidenii/{product,machine,core}/
+test/myraidenii/{unit,setup,integration,diagnostic}/
+assets/myraidenii/
+docs/myraidenii/{design,states,proposals,history,etc}/
+```
+
+Only root README files exist in src/test/assets during M0. Create subdirectories
+with real cohesive code, not empty future chips or CMake stubs. Unit tests
+mirror actual source owners below `unit/{product,machine,core}`. Setup holds
+only real shared integration/diagnostic harnesses; diagnostics are opt-in and
+are never silently counted as integration. External game tests are integration,
+not units. No tests under src and no fixture borrowing from another App.
+
+New C uses Lib Types and C-runtime vocabulary, `lib_bool`/LIB_TRUE/LIB_FALSE,
+LIB_NULL and existing lib_status errors. Deterministic Core has no platform,
+filesystem, host clock or worker dependency. Public component headers end in
+`_interface.h`; plain headers are private by default. Do not add `_internal`,
+`_private` or compatibility aliases. Symbols identify their actual owner,
+for example `myraidenii_machine_*` and `myraidenii_core_*`; game register
+constants retain meaningful hardware names rather than task numbers.
+
+The future `product/version.h` owns product/version/banner strings. A numeric
+implementation T selects its four-digit revision, not an S or compiler option.
+Initial release format is `myraidenii_0_0_NNNN_{x64,x86}.exe`, alongside the
+lowercase INI. M0 creates neither version header nor EXE. Only the latest
+verified pair is retained/committed; no ROM bytes or generated embedded source.
+
+M1 build registration uses a product option disabled for unrelated product-only
+builds, one source list per owner and existing Ninja/ccache graphs. Libraries
+are built once per architecture and reused by tests/App targets. Shared build
+edits have Shared commits; product commits cannot mutate other products.
+Tools are introduced under tools/myraidenii only when a real tool exists.
