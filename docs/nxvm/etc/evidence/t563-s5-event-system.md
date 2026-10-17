@@ -1032,3 +1032,35 @@ rebuild. NXVM P2 delivers the complete packet, this source/model/test record,
 artifact hashes, family history/index and eight PC EXEs, without another
 target's files. Coordinator review must inspect both actual commits before
 acceptance; the successful gate record alone is not that review.
+
+## Coordinator Actual-Commit Acceptance
+
+Review Shared `0b7c189e1` and NXVM `7524bb939` after both are pushed, switching
+from executor to coordinator in the same session. Inspect the actual modified
+CPU bus/instruction/access/timing and Core diagnostic/pending-completion
+diffs, private declarations, test witnesses and manifest changes; match their
+eighteen paths to the E1--E6 ledger and source/model restrictions above. The
+two new accepted/allocation totals and IDT provenance remain per-round private
+CPU observations. No public `_interface.h` changes, second time owner, queue,
+functional memory path or App dependency is introduced. Core preserves active
+fault versus retained first-fault ownership and publishes accepted work before
+failure through its original pending path.
+
+Inspect P2's thirteen actual paths: eight current PC EXEs, two detailed
+evidence files, supporting index, family history and complete active packet.
+Check the committed artifact JSON against all eight deployed file hashes;
+verify the final x64/x86 JUnit counts are each 632 with zero failures,
+selected groups reconcile sixteen unique scenarios per width, and the three
+pre-relink probe results have their explicit rebuilt replacements. Original
+failed MIDI observations remain historical, with the owner's session-closure
+report and the unchanged passing rerun recorded separately. No weakened test,
+timeout, Lib edit, firmware/media/INI or MyNES change is hidden in either P.
+
+Production/test C/H totals match the ledger (+528/-125 and +1361/-69), while
+manifests and documentation/artifacts are excluded from that count. Source
+and test hashes, structural documentation governance and whitespace checks
+pass; origin/master equals the delivered head. The worktree is clean before
+this governance-only acceptance update. Accept the complete S5 batch and
+close S5; the separate final-selector/preview, C17 and full C01--C17 predicates
+remain unmet, so T563 and the full 486SX objective are not closed. This
+governance update changes no executable input and does not rebuild artifacts.

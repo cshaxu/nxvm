@@ -50,3 +50,10 @@ session; prior native MIDI failures are retained in evidence, not hidden by
 a Lib edit or test waiver. Actual-commit coordinator acceptance remains
 required. S6 final selector/preview, C17 and complete C01--C17 qualification
 remain the existing S6--S8 receivers, not completed by this delivery.
+
+Coordinator actual-commit review accepts S5 Shared `0b7c189e1` and NXVM
+`7524bb939`: eighteen Shared paths and thirteen NXVM paths match the complete
+packet, owned production/test deltas, source/model ledger, required dual-width
+qualification and eight artifact hashes. S5 is closed. The full packet remains
+in P2 and the linked evidence retains the review; this acceptance adds no
+implementation or executable input. T563 remains open for S6--S8.
