@@ -95,8 +95,9 @@ negative gates pass. A separate `-Wall -Wextra -Wpedantic` syntax review
 records existing unused warnings and the trace macro's empty-else warning,
 including its newly added use. The build retains exactly the old warning
 exceptions; no new exemption is introduced and no waiver-free claim is made.
-Documentation governance, relative links, whitespace and actual-change review
-are required for final coordinator acceptance.
+Documentation governance, relative links, whitespace and coordinator actual-
+change review pass. The accepted packet is removed through the following
+governance P; the full T2 ledger and goal remain open.
 
 Both original graphs link/deploy four PC profiles per architecture, reusing
 objects and restoring default. The [artifact inventory](t2-s12-pc-artifacts.json)
