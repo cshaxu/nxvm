@@ -57,6 +57,10 @@ invented INT 6. Read and write failure injection covers all eighteen suffixes,
 including TEST1's absence of a write attempt and preservation of failed CPU/
 memory publication. The existing native and complete Intel regressions remain.
 
+Failure injection refuses the first data transfer before any data write is
+accepted. It does not establish rollback after an accepted partial bus prefix;
+that separate V14 qualification is neither claimed nor replaced here.
+
 The instruction-space sweep also found that an unknown enum previously fell
 through with the initial valid-primary metadata. The same owner now rejects
 unknown spaces, with a regression; an Intel profile cannot satisfy the NEC-only
