@@ -178,3 +178,10 @@ Code totals are production +908/-679 and tests +2313/-1328. The owner requests
 the existing committed import first: Base/Types input ownership, hotkey aliases
 and related cleanup await a separately committed upstream correction and next
 import. This does not close T563 or assert an entirely defect-free corpus.
+
+Coordinator actual-commit acceptance closes S9 after reviewing Shared
+**3a07320e4**, MyNES **ffb9ce6a5** and NXVM **55eb866ed**, their actual
+181/11/20 changed paths, unchanged canonical bytes, dual-width full results
+and committed ten-artifact hashes. P3 retains the complete packet. No
+executable input changes in this acceptance; T563 remains open for owner
+direction and any separately admitted upstream follow-up.

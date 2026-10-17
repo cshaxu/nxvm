@@ -181,3 +181,18 @@ are pushed; no intermediate commit is described as the complete receiving
 product tree. T563 remains open. The owner's second import will receive the
 separately committed upstream input-ownership cleanup; this delivery does not
 silently make those corrections or claim a completely clean upstream corpus.
+
+Coordinator actual-commit review accepts Shared **3a07320e4** (181 paths),
+MyNES **ffb9ce6a5** (eleven paths) and NXVM **55eb866ed** (twenty paths).
+Review covers the actual source/test changes, canonical-tree inventory,
+root-infrastructure merge, real receiver and optional diagnostic adaptations,
+target isolation, committed release hashes and original owner request. A first
+automated commit-scope rejection was resolved with read-only ownership proof:
+X86 NXVM is the Shared package used by preceding Shared deliveries, and the
+root CMake is shared configuration. No target was relabelled or approval bypassed.
+
+Both original graphs are restored to Default. Current artifact hashes are
+rechecked after the final diagnostic/gate builds; X86 Core source/test and
+owner INIs/firmware/media/snapshots remain unchanged. S9 is accepted and closed;
+the complete packet remains in P3. This acceptance changes no executable input
+and does not close T563 or admit the second upstream import prematurely.
