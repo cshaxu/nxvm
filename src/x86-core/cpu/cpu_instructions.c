@@ -7075,6 +7075,7 @@ static void _e_pop_sreg(x86_core_cpu_execution_context *context,
         break;
     }
     if (rsreg->sregtype == SREG_STACK ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ||
         !cpu_profile_has_186_integer(context->cpu_profile))
         context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
@@ -13315,6 +13316,9 @@ static void MOV_RM16_SREG(x86_core_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     instruction_state.data.crm = instruction_state.data.rmovsreg->selector;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+    /* NEC manual 6-4 includes both directions of segment MOV. */
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+        context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
 }
 static void LEA_R32_M32(x86_core_cpu_execution_context *context)
@@ -13352,22 +13356,15 @@ static void LEA_R32_M32(x86_core_cpu_execution_context *context)
 static void MOV_SREG_RM16(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_SREG_RM16");
-    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
-    {
-        _adv;
-        CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
-    }
-    else
-    {
-        _adv;
-        CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
-    }
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     if (instruction_state.data.rmovsreg->sregtype == SREG_CODE)
         CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
     CPU_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg,
         X86_CPU_MASK_U16(instruction_state.data.crm)));
     if (instruction_state.data.rmovsreg->sregtype == SREG_STACK ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ||
         !cpu_profile_has_186_integer(context->cpu_profile))
         context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
