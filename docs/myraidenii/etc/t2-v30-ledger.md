@@ -37,7 +37,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V01 | Family membership, enum stability, DEFAULT/invalid admission, name, FPU-none board selection | CPU interface/lifecycle and Machine create; manual sections 1, 3, 7 | S3 implements native CPU membership/name and enum stability, rejects invalid profiles and keeps Machine admission closed; board/FPU selection remains unqualified |
 | V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | S3 native reset/entry and MD-clear reset vectors implemented; full emulation-mode context remains unqualified |
 | V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Shared CPU native table-driven vectors and matching preview; not yet implemented |
-| V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | Every defined suffix/form/length and undefined disposition; no copied external decoder; not yet implemented |
+| V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements suffixes 10--1F/28/2A and shared execution/preview admission with owned bit/nibble and failure vectors; packed BCD, bit fields, mode entry and full timing remain unqualified |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | Decode/execution/preview equivalence and bounded safe-point tests; no assumed Intel 15-byte silicon rule; not yet implemented |
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | Register/stack/bus ordering, alias and wrap vectors; not yet qualified for V30 |
 | V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | Full operand/flag boundaries, divide fault saved-PC and undefined flag masks; not yet qualified |
@@ -110,6 +110,15 @@ The owner additionally approved the sole external Board profile switch's
 equivalent default branch and its manifest; it adds no PC V30 admission.
 See [native family evidence](evidence/t2-s3-native-progress.md). No complete
 runtime mechanism row is promoted solely from representative instruction tests.
+
+S4 implements the complete eighteen-suffix bit/nibble subfamily at the same
+metadata/execution owner, using primary NEC encodings and original synthetic
+vectors. Its approved NEC-space enum is appended; old Intel values and dispatch
+are preserved. Pure/execution preview, register/high-byte/alias, addressing,
+flags and provider failure paths are checked. Unknown instruction-space values
+are now rejected at metadata ownership rather than inheriting a valid primary
+form. See [family evidence](evidence/t2-s4-nec-bit-nibble.md). This closes only
+the named V04 subfamily, not the remaining NEC, prefix, bus or timing universe.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;

@@ -2,8 +2,33 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S3. No S packet is active.
+M1 T2 S4 is active after accepted S3: the complete NEC single-bit and nibble
+operation family, using the sole CPU decoder/executor and preview.
 Single-session coordinator/executor mode remains in effect.
+
+S4 implementation and complete dual-width 657/657 repo-only units are complete.
+Shared `25895916f` and eight receiving PC artifacts `c3a20dc4c` are pushed;
+[family evidence](../etc/evidence/t2-s4-nec-bit-nibble.md) awaits coordinator
+acceptance after its product-record delivery. No full V30/game claim is made.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, MyRaidenII M1 T2 S4 after S3 P4 ed0fda0bb; P starts at P1. |
+| Admission And Approval | Owner standing implementation and automatic S admission; explicit approved V30 profile/NEC instruction-space enum extension. Shared X86 Core/tests, eight affected NXVM PC artifacts and MyRaidenII records only. No Lib/Emulator/MyNES production or sibling import. |
+| Objective | Implement all eighteen NEC suffixes 10--1F, 28 and 2A: TEST1/CLR1/SET1/NOT1 byte/word, CL/immediate, register/memory, and ROL4/ROR4 byte register/memory. One form admission owner shared by execution and preview; preserve Intel 0F meanings. |
+| Non-goals | No packed-decimal/bitfield/mode instruction, 8080, timing qualification, Machine admission, game EXE or Shared presenter change. Undefined flags/AL upper nibble are not claimed as silicon behavior. |
+| Reference Baseline | Clean ed0fda0bb; pinned NEC October 1986 manual section 12, printed 12-45--46 and 12-81--99 encoding/flag diagrams, existing handler/bus/preview mechanism. |
+| Candidate Proposal | ../proposals/m1-v30.md; complete eighteen-suffix V04 subfamily and corresponding V03/V06/V07/V14 preview/bus obligations in ../etc/t2-v30-ledger.md. Other V04 classes remain explicit receivers, not omitted. |
+| Files And ABI Surface | Existing cpu_instructions.c, cpu.h, approved instruction-space enum append, CPU tests/registration and two manifests; eight PC artifacts and records. Estimate production +130--220/-15--35, tests +200--350/-0. Preserve all old enum values/functions/layouts. |
+| Applicable Rules | Architecture sole form/state/executor; coding existing trace/table style, private cohesive helpers, Lib vocabulary; source original manual facts and independently written code only; execution full dual-width repo-only units and affected artifact delivery. Architecture/coding governance and read-only PDF skill apply. |
+| Verification | All eighteen suffixes and legal widths/count sources, low-bit masking and flags; register/high-byte/alias and memory/displacement/segment forms; preview length/truncation/actual-executor agreement, unsupported suffix/ModRM rejection, fault/read-write behavior and Intel isolation; complete x64/x86 repo-only units, manifests/Types/dependencies, eight Release products/PE/hash and unchanged INIs/MyNES. |
+| Expected Markers | V30:NEC-BIT-NIBBLE:OK from owned CPU vectors, no fabricated Intel 0F dispatch or clock cost. Existing native test and Intel profiles remain green. |
+| Asset Needs | Read-only pinned manual and original synthetic byte vectors only; existing PC build-time firmware unchanged. No protected game extraction/import. |
+| Reporting Requirements | Exact implemented form domain, undefined/model boundaries, actual per-owner added/deleted/net code, verification outcomes, artifact identities and incomplete full T2 rows. |
+| Stop Conditions | Additional public function/layout, unsupported source/flag fact, unapproved component, copied external code or unexplained Intel regression. |
+| Exit Criteria | Eighteen-suffix family works through actual execution and preview, owned regressions and complete dual-width units/builds/artifacts/gates pass, per-target P pushed and coordinator actual-diff review accepted. T2 remains open. |
+| Original Owner Request | Single-person dual-role governed implementation of complete playable MyRaidenII, with approved V30/NEC enum integration and no Lib change. |
+| Similar-Issue Sweep | Check native 0F form selection, metadata/preview lengths, ModRM reserved fields, byte/word CL/immediate masking, modifying versus read-only bus paths, alias and failure publication, all instruction-space switch consumers. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |

@@ -13,6 +13,7 @@
 - [T2 V30 convergence and admission audit](t2-v30-ledger.md).
 - [T2 CPU advancement consolidation](evidence/t2-s2-advancement-consolidation.md).
 - [T2 native family delivery](evidence/t2-s3-native-progress.md).
+- [T2 NEC bit and nibble family](evidence/t2-s4-nec-bit-nibble.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
