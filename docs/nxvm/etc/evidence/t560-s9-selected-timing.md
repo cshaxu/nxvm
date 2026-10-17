@@ -8,7 +8,7 @@ This explicitly supersedes the original whole-C16 S9 exit; it does not claim
 whole C16, C17 or complete 486SX qualification. The following chronological
 stage reports retain their original verification limits. Final closure proof
 is recorded separately at the end of this evidence, not inferred from those
-intermediate runs. All remaining work has a complete [CPU successor](../../proposals/m5-486sx-timing-production-completion.md)
+intermediate runs. All remaining work has a complete [CPU successor](../../history/M5-T563-486sx-timing-production-completion-proposal.md)
 at queue position two after the Core refactor. C17 remains closed.
 
 ## Admission And Baseline
@@ -1039,7 +1039,7 @@ No MyNES receiving code or release change is introduced by this staged closure.
 
 All uncompleted timing, runtime/preview, source applicability, production
 construction and final CPU obligations transfer through the complete residual
-ledger in the [CPU successor](../../proposals/m5-486sx-timing-production-completion.md).
+ledger in the [CPU successor](../../history/M5-T563-486sx-timing-production-completion-proposal.md).
 It is second after Core refactoring; no numeric T is preallocated. C16 and
 C17 remain unmet. Neither staged closure nor passing the four shipped older
 CPU products qualifies a production 486SX or PC110. This explicit owner

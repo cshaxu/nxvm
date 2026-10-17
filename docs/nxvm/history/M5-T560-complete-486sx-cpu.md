@@ -6,7 +6,7 @@ The owner approved staged closure and priority adjustment, not complete 486SX
 delivery. S9 is frozen for actual review, full required regression and eight
 0560 artifacts. The original full-CPU completion requirement remains unmet;
 all unfinished C16 timing/runtime/preview, C17 production admission and final
-qualification transfer to the [second queued CPU candidate](../proposals/m5-486sx-timing-production-completion.md),
+qualification transfer to the [second queued CPU candidate](../history/M5-T563-486sx-timing-production-completion-proposal.md),
 after the first queued Core refactor. Original no-transfer wording below is
 historical and is superseded only for this explicitly approved stage. No new
 CPU capability or next T is admitted by this closure decision.
@@ -963,7 +963,7 @@ complete selected runtime/preview. The sole SX instruction recipe remains
 explicitly compatibility/unallocated and production construction stays closed.
 
 The [Core refactor](M5-T561-core-package-split-proposal.md) is first in
-Queue; the [complete CPU residual receiver](../proposals/m5-486sx-timing-production-completion.md)
+Queue; the [complete CPU residual receiver](../history/M5-T563-486sx-timing-production-completion-proposal.md)
 is second. Original C01--C17 ledger and evidence remain intact, and the original
 proposal is archived without changing its historical full-CPU requirement.
 No numeric successor or original planned S10 is admitted. Complete P push and

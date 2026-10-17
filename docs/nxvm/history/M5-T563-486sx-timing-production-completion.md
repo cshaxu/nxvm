@@ -1,7 +1,7 @@
 # M5 T563 Remaining 486SX Timing And Production Qualification
 
 Owner admits the queued CPU successor after T562 closure, baseline 606ee84f4.
-The [proposal](../proposals/m5-486sx-timing-production-completion.md) retains
+The [proposal](../history/M5-T563-486sx-timing-production-completion-proposal.md) retains
 all original C01--C17 obligations and source/model restrictions. S1 audits
 current ownership and remaining cohorts; it does not open C17 or qualify CPU
 timing by reusing a successful older-family boot.
@@ -185,3 +185,33 @@ Coordinator actual-commit acceptance closes S9 after reviewing Shared
 and committed ten-artifact hashes. P3 retains the complete packet. No
 executable input changes in this acceptance; T563 remains open for owner
 direction and any separately admitted upstream follow-up.
+
+## S10 Acceptance And Final T Closure
+
+Owner-approved S10 imports committed SoftPC 1451522f unchanged, including the
+Base input ownership correction and native PCM input-channel gain. Actual
+receiving adaptations are symbol-only; X86 Core source/tests are unchanged
+from S8 repair 16e7e3a97. Shared **a936e554b**, MyNES **621b98d15** and NXVM
+**80bc1ac92** are pushed and reviewed against the complete packet and actual
+source/test/documentation/artifact changes. All ten current releases are verified.
+
+Final per-width qualification is 655/655 repository units (including all 166
+X86 Core), 48/48 product integrations, 4/4 shared native integrations and all
+498 strict rows, plus complete specialized gates. S10 preserves first-run
+x64 timeout/native Console failures and unchanged successful full reruns;
+no assertion/budget is weakened or intermittency-repair claim made.
+
+On 2026-10-17 the owner accepts S10 and requests T closure if all assigned
+486 CPU work is complete. The [final audit](../etc/evidence/t563-final-closure.md)
+reconciles the original C01--C17 and all twenty C15 families, R1--R10 and
+T558/T559 receivers. C16's sole selected timing/preview/budget path and C17's
+real constructor/Board admission remain implemented; S8's only transferred
+MIDI test actually succeeds in S9/S10. No applicable missing CPU requirement
+is newly deferred. Accept and close S10 and T563, not merely another stage.
+
+Retain approved L2/source/undefined behavior boundaries, existing raw Debug,
+x87 and test reliability debt. This does not implement every 486 variant,
+fit a PC110 board, prove analog timing or claim manual RDP/physical sound/full
+guest GUI verification. The proposal is archived and Queue remains unchanged
+apart from recording closure. No new T is admitted. Governance-only closure
+does not change executable inputs or rebuild the accepted ten EXEs.

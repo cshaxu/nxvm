@@ -6,7 +6,7 @@ The owner explicitly approved T560 staged closure and priority adjustment,
 not completion of this original universe. Preserve every original row and
 source/model limit below. S1--S8 accepted mechanisms and S9 frozen staging
 remain available; whole C16, C17 and final CPU qualification remain unmet.
-Their complete receiving contract is the [second queued CPU candidate](../../proposals/m5-486sx-timing-production-completion.md).
+Their complete receiving contract is the [second queued CPU candidate](../../history/M5-T563-486sx-timing-production-completion-proposal.md).
 It resumes only after the Core refactor and new owner admission. Historical
 no-transfer statements below describe the original contract and are superseded
 only by this explicit bounded-stage decision, never by passing a boot test.

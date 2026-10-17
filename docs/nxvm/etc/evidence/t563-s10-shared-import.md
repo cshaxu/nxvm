@@ -138,3 +138,10 @@ Shared/MyNES commits. Its delivery does not record owner acceptance or close
 S10/T563. All ten artifacts are rechecked against the committed inventory;
 the eight canonical packages retain their pinned bytes, and owner inputs and
 X86 Core source/tests remain unchanged against the S9 baseline.
+
+On 2026-10-17 the owner accepts this delivery. Coordinator actual-commit
+review confirms all three pushed target scopes, unchanged canonical bytes,
+true final XML and ten committed hashes. S10 is accepted and closed; the
+[whole-T audit](t563-final-closure.md) separately confirms T563 completion.
+The complete active packet remains in P3. No executable input changes at
+acceptance, so the current ten releases are retained without rebuilding.

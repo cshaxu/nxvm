@@ -1,5 +1,15 @@
 # Complete Remaining 486SX Timing And Production Qualification
 
+## Final Acceptance (2026-10-17)
+
+The owner accepts S10 and authorizes final T563 closure after the complete
+selected-486SX audit. [Closure evidence](../etc/evidence/t563-final-closure.md)
+confirms C01--C17, F01--F20 and R1--R10 are reconciled; no applicable CPU work
+is transferred to obtain closure. S9/S10 resolve the S8 native qualification
+hold. The proposal below is retained as the original contract and chronology,
+including earlier staged/closed-gate statements, not current implementation
+status. Approved L2 models and separate PC110/physical/manual boundaries remain.
+
 ## Admission And Priority
 
 Owner-admitted M5 T563, after closed T562 at 606ee84f4. Originally queued

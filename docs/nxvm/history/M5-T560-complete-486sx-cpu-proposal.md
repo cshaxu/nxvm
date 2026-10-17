@@ -6,7 +6,7 @@ The owner explicitly approves freezing completed S9 work and closing T560 as
 a bounded stage after actual review, required regression and eight-artifact
 publication. This overrides the original no-transfer exit below only for this
 stage. It is not complete 486SX delivery: all remaining C16, C17 and final
-qualification transfer intact to [the CPU successor](../proposals/m5-486sx-timing-production-completion.md),
+qualification transfer intact to [the CPU successor](../history/M5-T563-486sx-timing-production-completion-proposal.md),
 queue position two after the Core refactor. The original objective, ledger,
 source restrictions and evidence remain preserved; C17 stays closed.
 
