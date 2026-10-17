@@ -29,8 +29,8 @@ MyNES and owner inputs are unchanged. S3 is closed, not complete C16/C17;
 fetch/bus/decode/REP, events/system, final selector/preview, production admission
 and whole qualification retain their S4--S8 receivers.
 
-S4 completes its frozen F1--R3 fetch/bus/decode/REP cohort and awaits the
-target-separated P/coordinator cycle. The [S4 evidence](../etc/evidence/t563-s4-fetch-bus-repeat.md)
+S4 accepts Shared `f48b7984c` and NXVM `f5b4b1eee` after coordinator
+actual-commit review of the frozen F1--R3 cohort. The [S4 evidence](../etc/evidence/t563-s4-fetch-bus-repeat.md)
 records owner-approved wait feedback/Core-clock bus advancement, one CPU phase
 publisher, four-slot L2 timing, transaction-deduplicated invalidation
 observations and actual REP/fetch/failure/lifetime proof. Both widths pass

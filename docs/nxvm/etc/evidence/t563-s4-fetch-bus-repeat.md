@@ -626,3 +626,34 @@ complete active packet, evidence and eight final artifacts. No executable
 input changes occur between these target-separated deliveries. Coordinator
 acceptance still requires actual committed-diff and artifact verification;
 the executor report alone does not close S4.
+
+## Coordinator Actual-Commit Acceptance
+
+The one-session coordinator reviews pushed Shared `f48b7984c` and NXVM
+`f5b4b1eee`: actual new bus implementation and real-execution tests, modified
+CPU decode/REP/access/lifecycle hunks, Core phase/snoop/scheduler/reset owners,
+public contracts, both manifests, CMake registrations, project timing-seam
+checker, complete packet and final artifacts. The committed path inventory
+matches the admitted boundary. C/H line totals match the table, and the
+original F1--R3 rows have direct source/model and failure/lifetime proof.
+CPU/host/cache scope, prefix distribution, accepted access publication,
+single Core guest clock, L2 labels and selected-production gate are preserved.
+
+Both source/test manifests, inward boundary and all eight artifact hashes
+pass again after push. Actual root qualification records prove 632/632 units
+and 16/16 selected integrations per width, including the unchanged-budget
+DeskPro terminals; both full specialized targets and eight final deployed
+CLI checks pass. The stale timing-seam verifier was corrected without
+changing CPU ordering or disabling its negative assertion. No failed or
+skipped required qualification row is recast as passing. Manual RDP, complete
+guest Windows GUI and physical device results remain explicitly unperformed.
+
+P1 modifies only X86 Core source/tests; P2 modifies only NXVM-owned gate,
+documents and eight PC artifacts. Their actual diffs confirm no Lib,
+Emulator, other X86 package, MyNES, App CPU selection, owner INI, media or
+firmware-original change. Both implementation commits are on origin/master;
+all verification handles are terminal. The owned copied-source negative probe
+is disposable after this review; its small rejection logs retain the result.
+S4's complete admitted cohort is accepted and closed. Full C16 event/system
+allocation, selected runtime/preview transport, C17 and final qualification
+retain S5--S8; T563 and the original complete-486SX goal remain open.

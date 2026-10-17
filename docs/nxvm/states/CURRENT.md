@@ -4,49 +4,31 @@
 
 ## M5 T563 — Remaining 486SX Timing And Production
 
-S3 is closed after coordinator actual-commit review of Shared `6f4a03a89`
-and NXVM `1006281a9`. Its complete active packet is retained in P2. S4 is
-admitted for fetch/bus, decode and REP under
-the [existing proposal](../proposals/m5-486sx-timing-production-completion.md).
+S4 is closed after coordinator actual-commit review of Shared `f48b7984c`
+and NXVM `f5b4b1eee`. Its complete packet is retained in P2. No S is active;
+S5 events/system remains the next planned cohort under the
+[existing proposal](../proposals/m5-486sx-timing-production-completion.md).
 
-## T563 S4 Active Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T563 S4, one-session coordinator/executor role cycle; Shared P1 f48b7984c is pushed; this NXVM P2 supplies the qualified publication/evidence and awaits coordinator actual-commit review. |
-| Admission And Approval | Owner's complete 486SX objective and standing sequential-S/CPU accuracy-upgrade approval, 2026-10-16. Owner additionally approved the CPU/Core bus timing contract expansion: completed-cycle extra-wait feedback and Core-clock-driven CPU bus advancement, with a CPU-owned four-slot L2 timing model. Shared X86 Core CPU/Machine and owned tests; NXVM evidence, verification and eight PC artifacts. MyNES, siblings, Lib and Emulator remain unchanged. |
-| Objective | Consume original C16 fetch/bus/decode/REP and S1 R5/R6 as one finite cohort: actual instruction fetch/cache/refill and branch association, baseline read/burst/write and overlap assumptions, extra waits/HOLD/invalidation ownership, complete prefix/EA/AGI and REP setup/continuation/termination, dynamic accesses and all lifetime boundaries. |
-| Non-goals | No second executor, time axis, hardware-state mirror or bus publisher; no C17 admission, App CPU/configuration change, Lib/Emulator edit, imported source or complete CPU claim. Event/system totals remain S5 and final selected runtime/preview aggregation S6. |
-| Reference Baseline | Clean accepted ed59d3182, S3 Shared 6f4a03a89 and NXVM 1006281a9; original T560 C01--C17 ledger, staged S9 source limits and T563 S1 receiver ledger retained. |
-| Candidate Proposal | [Remaining 486SX completion](../proposals/m5-486sx-timing-production-completion.md), S4 and C16 fetch/bus/decode/REP; [S4 cohort ledger](../etc/evidence/t563-s4-fetch-bus-repeat.md). |
-| Files And ABI Surface | CPU timing model/private state, actual instruction observations and CPU lifetime owner; existing Core cpu_bus/scheduler/machine owners. Approved public changes are the existing external-cycle callback's returned extra-wait duration and CPU bus advancement from Core time, including the interval's copied invalidation-cycle count; no public mutable layout or second memory provider. Owned Cache/nominal/REP/executor/locality/bus tests and manifests; NXVM timing-seam checker follows the sole scoped execution body and still rejects selection after interrupt entry. Initial production estimate +180--450/-50--150, tests +650--1400/-30--100; transport increment +45--80/-25--45 production, +80--140/-8--20 tests. Four-slot increment +260--380/-20--40 production, +350--650 tests; invalidate-allocation increment +70--130/-5--15 production, +120--220 tests. Service/commit design is in the cohort evidence. Docs/eight artifacts excluded from code counts. |
-| Applicable Rules | AGENTS, NXVM guide/Contributing; shared Execution/Architecture/Coding/Document; NXVM Architecture/Coding/source policy; architecture-governance and coding-governance skills. Actual access ownership, inward boundaries, Types vocabulary, truthful source/model grades, failure/purity/lifetime and no imported external source. |
-| Verification | Original reusable x64/x86 Ninja/ccache graphs, -j8 builds/-j4 CTest; grouped real CPU execution and actual Core wait/HOLD vectors during development; frozen complete repository units, specialized manifests/dependencies/Types/docs gates, selected four-PC boot/config/Console integrations and final published CLI/PE/hash verification. Each required group once after freeze; no timeout restart or weakened assertion. |
-| Expected Markers | Every ledger row has original-source or explicitly qualified model proof at its real owner; REP does not recharge setup/prefixes or lose accepted partial accesses; no double-counted baseline/extra waits or fictitious branch fetch. Query and preview do not mutate state; failed results preserve outputs. |
-| Asset Needs | Existing external manuals/ROM/media read-only, no new acquisition; rebuild/deploy eight current 0.5.0563 PC EXEs after executable changes, hash after all gates/builds. Preserve MyNES, INIs, snapshots and protected originals. |
-| Reporting Requirements | Confirm census, sources, plan and estimated per-owner diff before implementation; report source/model decisions, same-issue dispositions, actual C/H additions/deletions/net and test/artifact limits. Complete target-separated P commits, immediate pushes and coordinator actual-commit review; no partial P or CPU-complete claim. |
-| Stop Conditions | Unresolved source conflict requiring downgrade, a public interface expansion beyond the owner's approved CPU/Core bus timing handoff, Lib/Emulator change or owner-input mutation requires review. No guessed overlap promoted to hardware exact; do not count failed accesses as successful or hide unresolved rows behind a later checkpoint. |
-| Exit Criteria | All admitted fetch/bus/decode/REP rows reconciled with actual execution, source/model and lifecycle proof; no duplicate bus/wait owner; dual-width required qualification, eight artifacts, manifests/docs, complete reviewed and pushed delivery. S4 stays active if any row lacks proof/disposition. |
-| Original Owner Request | Implement complete 486SX, batch related forms efficiently and continue the next approved S; do not shrink the original C16/C17/final qualification objective. |
-| Similar-Issue Sweep | All fetch/external-cycle producers/consumers and invalidations; every source_repeat_* lifecycle writer, prefix/decode and GPR dependency observation; ordinary and REP memory/I/O variants, zero/early/fault/restart and preview; actual Core waits, LOCK/HOLD/reset interactions. Record exclusions and receiving S5/S6 boundaries explicitly. |
 
 | Task | Progress |
 | --- | --- |
 | T563 S1 | Closed after review of 895c1e360: original C01--C17 and ten residual receivers reconciled; unchanged 631/631 units per width. |
 | T563 S2 | Closed at 68dd1b9e0: nominal/form allocation, real numerical/mode/failure witnesses and source grades; required dual-width qualification and eight 0563 PC EXEs. |
 | T563 S3 | Closed: memory/translation, stack/string/descriptor/control/task/permission roles and source-qualified models; 631/631 units, 16 selected integrations, four published CLI checks and specialized gates pass per width. Eight 0563 PC EXEs refreshed. C16 final selection and C17 stay closed. |
-| T563 S4 | Complete executor delivery awaiting P/coordinator review: F1--R3 implemented and reconciled; 632/632 repository units, 16 selected integrations, complete specialized gates and four final published CLI checks pass per width. Eight 0563 PC EXEs rebuilt/deployed with final PE/hash proof. Actual C/H: production +479/-62, tests +1223/-74; NXVM timing-seam gate +17/-2. Selected runtime/preview aggregation stays S6 and C17 remains closed. |
+| T563 S4 | Closed after actual-commit review of f48b7984c/f5b4b1eee: complete F1--R3 batch, 632/632 units, 16 selected integrations, complete specialized gates and four final published CLI checks per width. Eight 0563 PC EXEs rebuilt/deployed with final PE/hash proof. Production +479/-62, tests +1223/-74; timing-seam gate +17/-2. No complete C16/C17 claim. |
 
 [S1 evidence](../etc/evidence/t563-s1-rebase.md) retains the original receiver
 ledger. [S2 delivery](../etc/evidence/t563-s2-nominal-allocation.md) records the
 nominal family census and source restrictions. [S3 delivery and actual-commit
 review](../etc/evidence/t563-s3-memory-translation.md) maps the whole admitted
-access batch to proof; [final artifact hashes](../etc/evidence/t563-s3-artifacts.json)
-were checked after all builds and published CLI tests. Lib, Emulator, MyNES,
+access batch to proof. [S4 delivery and actual-commit review](../etc/evidence/t563-s4-fetch-bus-repeat.md)
+records the complete fetch/bus/decode/REP cohort;
+[current artifact hashes](../etc/evidence/t563-s4-artifacts.json) were checked
+after all builds, published CLI tests and pushed deliveries. Lib, Emulator, MyNES,
 owner INIs/media/firmware and four App CPU choices remain unchanged.
 
-T563 and the complete 486SX goal remain open for S4--S8. S3 is scoped access
-allocation, not full external-media, complete C16 runtime/preview, C17 production
+T563 and the complete 486SX goal remain open for S5--S8. S4 is scoped timing
+allocation/observation, not full external-media, complete C16 runtime/preview, C17 production
 admission, PC110 or complete CPU qualification.
 
 ## Previous Task
