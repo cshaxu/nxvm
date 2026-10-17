@@ -85,6 +85,8 @@ static inline lib_bool cpu_profile_allows_minimum(x86_core_cpu_profile profile,
         return cpu_profile_has_32bit_architecture(profile);
     case X86_CORE_CPU_PROFILE_80486SX:
         return profile == X86_CORE_CPU_PROFILE_80486SX;
+    case X86_CORE_CPU_PROFILE_V30:
+        return profile == X86_CORE_CPU_PROFILE_V30;
     default:
         return LIB_FALSE;
     }

@@ -9243,6 +9243,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     lib_u8 displacement = 0u;
     lib_u8 immediate;
     lib_u8 extended = LIB_FALSE;
+    lib_bool nec = LIB_FALSE;
     lib_u8 lock_prefix = LIB_FALSE;
     lib_u8 operand_size_prefix = LIB_FALSE;
     lib_u8 address_size_prefix = LIB_FALSE;
@@ -9280,7 +9281,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
             address_bytes = code_32 ? 2u : 4u;
     }
     if (opcode == 0x0fu && !x86_core_cpu_profile_has_8086_semantics(profile)) {
-        if (profile != X86_CORE_CPU_PROFILE_80286 &&
+        nec = profile == X86_CORE_CPU_PROFILE_V30;
+        if (!nec && profile != X86_CORE_CPU_PROFILE_80286 &&
             profile != X86_CORE_CPU_PROFILE_80386 &&
             profile != X86_CORE_CPU_PROFILE_80486SX) return LIB_FALSE;
         if (index >= available_bytes || index >= 15u) return LIB_FALSE;
@@ -9288,7 +9290,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         ++components;
         extended = LIB_TRUE;
     }
-    if (x86_core_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
+    if (nec || x86_core_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
         lib_u8 mod;
         lib_u8 rm;
 
@@ -9319,10 +9321,11 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
             }
         }
     }
-    if (!x86_core_cpu_instruction_lexeme_modrm_form_valid(opcode, extended, modrm,
+    if (!nec && !x86_core_cpu_instruction_lexeme_modrm_form_valid(opcode, extended, modrm,
         cpu_80386_cr_mov_ignores_mod, profile))
         return LIB_FALSE;
-    metadata = x86_core_cpu_instruction_metadata_get(extended ?
+    metadata = x86_core_cpu_instruction_metadata_get(nec ?
+        X86_CORE_CPU_INSTRUCTION_NEC_0F : extended ?
         X86_CORE_CPU_INSTRUCTION_0F : X86_CORE_CPU_INSTRUCTION_PRIMARY,
         opcode, modrm);
     if (extended && opcode >= 0xc8u && opcode <= 0xcfu && operand_bytes != 4u)
@@ -9330,8 +9333,9 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     if (!metadata.valid || !cpu_profile_allows_minimum(profile, metadata.minimum_cpu) || lock_prefix) {
         return LIB_FALSE;
     }
-    immediate = x86_core_cpu_instruction_lexeme_immediate_bytes(opcode,
-        extended, modrm, operand_bytes, address_bytes);
+    immediate = nec ? (opcode >= 0x18u && opcode <= 0x1fu ? 1u : 0u) :
+        x86_core_cpu_instruction_lexeme_immediate_bytes(opcode,
+            extended, modrm, operand_bytes, address_bytes);
     if ((lib_u32)index + displacement + immediate > available_bytes ||
         (lib_u32)index + displacement + immediate > 15u) return LIB_FALSE;
     if (displacement != 0u) {
@@ -9483,6 +9487,14 @@ x86_core_cpu_instruction_metadata x86_core_cpu_instruction_metadata_get(
         metadata.minimum_fpu = X86_FPU_PROFILE_8087;
         metadata.valid = opcode >= 0xd8u && opcode <= 0xdfu;
         break;
+    case X86_CORE_CPU_INSTRUCTION_NEC_0F:
+        metadata.minimum_cpu = X86_CORE_CPU_PROFILE_V30;
+        metadata.valid = ((opcode >= 0x10u && opcode <= 0x1fu) ||
+            opcode == 0x28u || opcode == 0x2au) && (modrm & 0x38u) == 0u;
+        break;
+    default:
+        metadata.valid = LIB_FALSE;
+        break;
     }
     return metadata;
 }
@@ -9496,7 +9508,8 @@ static lib_i32 x86_core_cpu_profile_allows_form(
     if (context == LIB_NULL)
         return 0;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
-        space != X86_CORE_CPU_INSTRUCTION_PRIMARY) return 0;
+        space != X86_CORE_CPU_INSTRUCTION_PRIMARY &&
+        space != X86_CORE_CPU_INSTRUCTION_NEC_0F) return 0;
     metadata = x86_core_cpu_instruction_metadata_get(space, opcode, modrm);
     return metadata.valid && cpu_profile_allows_minimum(context->cpu_profile, metadata.minimum_cpu);
 }
@@ -9920,12 +9933,88 @@ static void POP_CS(x86_core_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(xs_sel)));
     CPU_TRACE_CALL_END;
 }
+static void NEC_BIT_NIBBLE(x86_core_cpu_execution_context *context)
+{
+    lib_u8 opcode;
+    lib_u8 modrm;
+    lib_u8 count;
+    lib_u8 byte;
+    lib_u8 operation;
+    lib_u8 al;
+    lib_u16 mask;
+    CPU_TRACE_CALL_BEGIN("NEC_BIT_NIBBLE");
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+        X86_CPU_REFERENCE_OF(opcode), 1));
+    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 1u,
+        X86_CPU_REFERENCE_OF(modrm), 1));
+    if (!x86_core_cpu_profile_allows_form(context,
+        X86_CORE_CPU_INSTRUCTION_NEC_0F, opcode, modrm))
+    {
+        UndefinedOpcode(context);
+        CPU_TRACE_CALL_END;
+        return;
+    }
+    _adv;
+    byte = opcode < 0x20u ? (lib_u8)(1u + (opcode & 1u)) : 1u;
+    operation = (opcode >> 1u) & 3u;
+    CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, byte));
+    count = cpu_state.data.cl;
+    if (opcode >= 0x18u && opcode <= 0x1fu)
+    {
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        count = X86_CPU_MASK_U8(instruction_state.data.cimm);
+    }
+    if (opcode < 0x20u && operation == 0u)
+        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, byte));
+    else
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, byte, LIB_FALSE));
+    if (opcode < 0x20u)
+    {
+        mask = (lib_u16)(1u << (count & (byte * 8u - 1u)));
+        switch (operation)
+        {
+        case 0:
+            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_ZF,
+                (instruction_state.data.crm & mask) == 0u);
+            cpu_state.data.eflags &= ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_OF);
+            instruction_state.data.udf |= VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF;
+            break;
+        case 1:
+            instruction_state.data.crm &= ~(lib_u64)mask;
+            break;
+        case 2:
+            instruction_state.data.crm |= mask;
+            break;
+        case 3:
+            instruction_state.data.crm ^= mask;
+            break;
+        }
+        if (operation != 0u)
+            CPU_TRACE_CHECK_RETURN(_m_write_rm(context, byte));
+    }
+    else
+    {
+        al = cpu_state.data.al;
+        count = X86_CPU_MASK_U8(instruction_state.data.crm);
+        instruction_state.data.crm = opcode == 0x28u ?
+            X86_CPU_MASK_U8((count << 4u) | (al & 0x0fu)) :
+            (lib_u8)(((al & 0x0fu) << 4u) | (count >> 4u));
+        CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        /* The upper AL nibble is unspecified; retain its post-write value. */
+        cpu_state.data.al = (cpu_state.data.al & 0xf0u) |
+            (opcode == 0x28u ? count >> 4u : count & 0x0fu);
+    }
+    CPU_TRACE_CALL_END;
+}
 static void INS_0F(x86_core_cpu_execution_context *context)
 {
     lib_u8 opcode = 0x00;
     lib_u8 modrm = 0x00;
     CPU_TRACE_CALL_BEGIN("INS_0F");
-    if (cpu_profile_has_protected_architecture(context->cpu_profile))
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+        NEC_BIT_NIBBLE(context);
+    else if (cpu_profile_has_protected_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(opcode), 1));

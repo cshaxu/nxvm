@@ -456,7 +456,8 @@ typedef struct x86_core_cpu_debug_register_patch {
 typedef enum x86_core_cpu_instruction_space {
     X86_CORE_CPU_INSTRUCTION_PRIMARY,
     X86_CORE_CPU_INSTRUCTION_0F,
-    X86_CORE_CPU_INSTRUCTION_FPU_ESCAPE
+    X86_CORE_CPU_INSTRUCTION_FPU_ESCAPE,
+    X86_CORE_CPU_INSTRUCTION_NEC_0F
 } x86_core_cpu_instruction_space;
 
 typedef enum x86_core_cpu_external_cycle_phase {
