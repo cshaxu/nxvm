@@ -2,55 +2,47 @@
 
 ## Current Work
 
-M1 T1 S1 is admitted on 2026-10-17 under the owner's standing objective:
-implement MyRaidenII in single-session coordinator/executor mode under the
-project rules. This first batch freezes research, local capability boundaries
-and the game-set inventory status; it does not implement a CPU or import source.
+M1 T1 remains open. S1 is coordinator-accepted and closed after complete
+source/set/contract audit delivery `972fc7715`. No S is active between batches.
+The next bounded S must finish the remaining source/contract/checkpoint freeze;
+no CPU or other Shared implementation is admitted by the completed audit.
 
-| Field | Required record |
+| Task progress | Accepted result / remaining work |
 | --- | --- |
-| Identifier Mode | New, first product-local numeric task M1 T1 S1; P starts at P1. M0 Td S1 is closed. Coordinator and executor run sequentially in this session. |
-| Admission And Approval | Owner objective on 2026-10-17 authorizes implementation of MyRaidenII under governance. Subsequent owner messages authorize online ROM search/download; this does not establish a third-party redistribution grant. Target is MyRaidenII only. Shared packages, root build/rules and peer Apps remain read-only. |
-| Objective | Complete the source/board and local CPU/bus/time audit for the first implementation receiver, record exact ROM requirements and actual asset/source availability, and define a finite evidence-to-implementation ledger without fabricated hardware qualification. |
-| Non-goals | No game execution claim, CPU/chip implementation, Shared API/source edit, third-party implementation import, ROM commit/embedding, peer product change or runnable artifact. No bypass of COP/decryption or substitution of another board. |
-| Reference Baseline | Clean f21a22997, accepted M0 architecture and original MAME file reference; recheck current source, actual assets and primary manuals before recording facts. |
-| Candidate Proposal | ../proposals/m1-board-and-source-freeze.md; admitted task history ../history/M1-T1-board-and-source-freeze.md. |
-| Files And ABI Surface | docs/myraidenii only: Current, Queue, admitted proposal/history, source register and T1 evidence/coverage ledger. No ABI, production/test code, CMake, INI or EXE change. Public reference material may be inspected outside tracked source. |
-| Applicable Rules | Shared Execution admission/linear MTSP/full-P and dual-role review; Architecture single owners/inward dependencies/opaque CPU bus; Coding no duplicate interpreter or generic framework; Document authority/compact closure; product source policy. Apply architecture-governance then coding-governance. |
-| Verification | Pin primary/manual and reference identities; inspect source passages and current CPU/Machine callers; audit bounded external assets without modifying them; validate ordered proposal disposition, 16 packet fields, relative links, documentation gate, whitespace and actual target-only diff. Verify existing executable inputs/hashes unchanged. Documentation/research only: runtime suites are not qualification for this batch. |
-| Expected Markers | One admitted T1, six remaining unnumbered candidates, M0 no longer described as active; explicit owner/source/grade/test receiver for each fixed capability and no unsupported claims of V30, ROM presence or lawful download. |
-| Asset Needs | Owner supplied an external raiden2.zip after authorizing a search. Read-only audit proves all 13 original-US-set-1 runtime images by length/SHA-1/SHA-256; two background socket filenames differ from the reference and an extra JED is not a binary PAL dump. No game download or redistribution is claimed. Hardware manual identities and remaining source gaps are recorded in the audit. |
-| Reporting Requirements | Initial scope/estimate; source and ROM findings; concrete CPU ordinal/decode/timing and bus/time reuse decisions; blocker boundaries; complete-P commit/push and coordinator review. No claim that research implements the game. |
-| Stop Conditions | Unreviewed source/license import or protected payload publication; uncertain ROM acquisition rights; Shared runtime/API change; unavailable source needed for an exact claim. Continue independent research and record unresolved receiving gates. |
-| Exit Criteria | S1's complete audit/ledger delivered with actual sources, local contract evidence and honest missing-input dispositions, gates passed, reviewed and pushed. T1 itself remains open until lawful selected-set identity and remaining freeze requirements are proven; no automatic transfer to declare implementation complete. |
-| Original Owner Request | Single-person dual-role implementation of MyRaidenII under project governance, preserving the full playable RAIDEN II objective and owner-approved M0 design. |
-| Similar-Issue Sweep | Check all MyRaidenII current/queue/roadmap/proposal statements for stale M0-active/unadmitted wording, inspect all CPU profile-ordering gates and preview/timing callers, and distinguish shared host audio from missing guest sound devices. No unrelated cleanup. |
+| T1 S1 | Source/set/contract audit accepted. All 13 original-US-set-1 runtime ROM identities verified, primary references pinned and CPU/Machine/host reuse risks recorded. T1 remains open; OKI source inspection, final boundary review and checkpoint freeze remain. |
 
-## Latest Governance Closure
+## Accepted Evidence And Review
 
-| Milestone / task | Closure |
-| --- | --- |
-| M0 Td S1 | Owner-accepted and closed. Independent MyRaidenII governance, exact source/test/assets/docs roots, architecture, lawful-source policy and seven ordered M1 proposals are delivered. No numeric implementation T is allocated. |
+The complete S1 packet and delivery are retained in `972fc7715`.
+[Audit](../etc/evidence/t1-s1-source-and-contract-audit.md),
+[inventory](../etc/evidence/t1-s1-rom-inventory.json) and
+[freeze ledger](../etc/t1-freeze-ledger.md) distinguish data/source qualification
+from unimplemented runtime behavior. Review inspected the actual 11-file
+diff (+530/-31 documentation/metadata lines; source/test +0/-0), all 14 ZIP
+members, the independent 13-image reference comparison, 16 packet fields,
+six ordered Queue candidates and 46 relative links. Documentation/whitespace
+checks pass; all ten existing EXE hashes remain unchanged.
 
-Delivery is Shared P1 `f295a4a6b`, NXVM P2 `5fc82badb` and MyRaidenII P3
-`585cbabd7`. The complete admitted packet is retained in `585cbabd7`;
-[bootstrap evidence](../etc/evidence/m0-s1-bootstrap.md) records source identity,
-actual-change review, three passing documentation gates, 155 checked relative
-links and unchanged hashes for all ten existing EXEs.
+The owner requires no Lib change. Its 256-colour graphics contract versus the
+board's 2048-entry palette is recorded as [High TODO](TODO.md), not silently
+quantized, bypassed or declared compatible. CPU/board/source work may proceed;
+full-colour release remains gated by that unresolved contract.
 
-The accepted design separates Product, Machine and deterministic board Core.
-Lib/Emulator are planned for unchanged reuse; V30 requires a reviewed X86 Core
-extension, and complete NEC Debug may require X86 Debug work. X86 IBMPC/NXVM
-are not dependencies. This design is not approval to modify Shared runtime APIs.
+Source/test/assets still contain descriptive root README files. There is no
+MyRaidenII EXE, V30 implementation or successful game execution to report.
+Research-only work does not rebuild unchanged executable inputs; no runtime,
+desktop/RDP or physical-audio qualification is claimed.
 
-Source/test/assets still contain root README files, not a runnable scaffold.
-T1 now has actual metadata for the owner-supplied game's 13 runtime ROM images;
-that is not V30 implementation, protection/gameplay qualification or permission
-to redistribute content. No MyRaidenII EXE or runtime/desktop test is claimed.
-This batch changes documentation only; executable inputs remain unchanged.
+## Previous Milestone
 
-## Task Boundary
+M0 Td S1 is owner-accepted and closed at `f21a22997`. Bootstrap delivery was
+Shared `f295a4a6b`, NXVM `5fc82badb`, MyRaidenII `585cbabd7`.
+[Bootstrap evidence](../etc/evidence/m0-s1-bootstrap.md) preserves its original
+scope/proofs. T1 supersedes M0's unconditional unchanged-Lib reuse assumption;
+it does not rewrite the historical acceptance or authorize Shared changes.
 
-T1 owns selected-board/source/ROM inventory and V30 integration-contract
-freeze. [Queue](QUEUE.md) starts with the subsequent V30 implementation
-candidate; no Shared production change or later numeric task is admitted by S1.
+## Queue
+
+[Queue](QUEUE.md) contains six unadmitted implementation candidates beginning
+with V30. Only T1 is currently admitted, under the owner's standing MyRaidenII
+implementation objective and single-session dual-role execution.
