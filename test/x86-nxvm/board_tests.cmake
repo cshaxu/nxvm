@@ -164,7 +164,7 @@ shared_register_test(x86-nxvm board-base/pit_ports x86-nxvm-board-base x86-core-
 shared_register_test(x86-nxvm board-base/dma_ports x86-nxvm-board-base x86-core-machine)
 shared_register_test(x86-nxvm board-at/parity x86-nxvm-board-at x86-core-machine)
 shared_register_test(x86-nxvm board-base/board_kbc_aux_port x86-nxvm-board-base x86-core-machine)
-target_sources(x86-nxvm-test-board_kbc_aux_port PRIVATE
+target_sources(x86-nxvm-test-board-base-board_kbc_aux_port PRIVATE
     "${X86_NXVM_TEST_ROOT}/board-at/controller_fixture.c")
 add_executable(x86-nxvm-board-kbc-serial-cadence-smoke
     "${X86_NXVM_TEST_ROOT}/board-at/board_kbc_serial_cadence_smoke.c")
@@ -311,7 +311,7 @@ add_test(NAME unit.x86-nxvm-board-xt-ppi-keyboard-smoke COMMAND x86-nxvm-board-x
 set_tests_properties(unit.x86-nxvm-board-xt-ppi-keyboard-smoke PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
 list(APPEND X86_NXVM_BOARD_TEST_TARGETS x86-nxvm-board-xt-ppi-keyboard-smoke)
 shared_register_test(x86-nxvm board-xt/controller_registration x86-nxvm-board-xt x86-core-machine)
-target_sources(x86-nxvm-test-controller_registration PRIVATE
+target_sources(x86-nxvm-test-board-xt-controller_registration PRIVATE
     ${X86_NXVM_TEST_ROOT}/board-xt/controller_fixture.c)
 
 add_executable(x86-nxvm-board-cpu-pic-lifecycle-smoke

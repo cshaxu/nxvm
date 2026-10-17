@@ -17,5 +17,5 @@ lib_u8 kvm_window_modifiers_from_key_state(void)
 
 lib_u8 kvm_window_keyboard_flags_from_lparam(lib_u64 message_lparam)
 {
-    return (message_lparam & 0x01000000u) != 0u ? KVM_KEY_FLAG_EXTENDED : 0u;
+    return (message_lparam & 0x01000000u) != 0u ? LIB_KEY_FLAG_EXTENDED : 0u;
 }

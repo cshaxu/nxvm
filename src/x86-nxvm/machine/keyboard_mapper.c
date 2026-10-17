@@ -28,42 +28,42 @@ static lib_u8 x86_nxvm_machine_keyboard_map_ascii(lib_u16 value)
     return scan_codes[value];
 }
 
-static lib_u8 x86_nxvm_machine_keyboard_map_kvm_key(kvm_key key)
+static lib_u8 x86_nxvm_machine_keyboard_map_kvm_key(lib_key key)
 {
     switch (key) {
-    case KVM_KEY_F1: return 0x3bu;
-    case KVM_KEY_F2: return 0x3cu;
-    case KVM_KEY_F3: return 0x3du;
-    case KVM_KEY_F4: return 0x3eu;
-    case KVM_KEY_F5: return 0x3fu;
-    case KVM_KEY_F6: return 0x40u;
-    case KVM_KEY_F7: return 0x41u;
-    case KVM_KEY_F8: return 0x42u;
-    case KVM_KEY_F9: return 0x43u;
-    case KVM_KEY_F10: return 0x44u;
-    case KVM_KEY_F11: return 0x57u;
-    case KVM_KEY_F12: return 0x58u;
-    case KVM_KEY_ENTER: return 0x1cu;
-    case KVM_KEY_BACKSPACE: return 0x0eu;
-    case KVM_KEY_UP: return 0x48u;
-    case KVM_KEY_DOWN: return 0x50u;
-    case KVM_KEY_LEFT: return 0x4bu;
-    case KVM_KEY_RIGHT: return 0x4du;
-    case KVM_KEY_HOME: return 0x47u;
-    case KVM_KEY_END: return 0x4fu;
-    case KVM_KEY_PAGE_UP: return 0x49u;
-    case KVM_KEY_PAGE_DOWN: return 0x51u;
-    case KVM_KEY_INSERT: return 0x52u;
-    case KVM_KEY_DELETE: return 0x53u;
-    case KVM_KEY_ESCAPE: return 0x01u;
-    case KVM_KEY_TAB: return 0x0fu;
-    case KVM_KEY_SHIFT: return 0x2au;
-    case KVM_KEY_CONTROL: return 0x1du;
-    case KVM_KEY_ALT: return 0x38u;
-    case KVM_KEY_CAPS_LOCK: return 0x3au;
-    case KVM_KEY_NUM_LOCK: return 0x45u;
-    case KVM_KEY_SCROLL_LOCK: return 0x46u;
-    case KVM_KEY_PRINT_SCREEN: return 0x37u;
+    case LIB_KEY_F1: return 0x3bu;
+    case LIB_KEY_F2: return 0x3cu;
+    case LIB_KEY_F3: return 0x3du;
+    case LIB_KEY_F4: return 0x3eu;
+    case LIB_KEY_F5: return 0x3fu;
+    case LIB_KEY_F6: return 0x40u;
+    case LIB_KEY_F7: return 0x41u;
+    case LIB_KEY_F8: return 0x42u;
+    case LIB_KEY_F9: return 0x43u;
+    case LIB_KEY_F10: return 0x44u;
+    case LIB_KEY_F11: return 0x57u;
+    case LIB_KEY_F12: return 0x58u;
+    case LIB_KEY_ENTER: return 0x1cu;
+    case LIB_KEY_BACKSPACE: return 0x0eu;
+    case LIB_KEY_UP: return 0x48u;
+    case LIB_KEY_DOWN: return 0x50u;
+    case LIB_KEY_LEFT: return 0x4bu;
+    case LIB_KEY_RIGHT: return 0x4du;
+    case LIB_KEY_HOME: return 0x47u;
+    case LIB_KEY_END: return 0x4fu;
+    case LIB_KEY_PAGE_UP: return 0x49u;
+    case LIB_KEY_PAGE_DOWN: return 0x51u;
+    case LIB_KEY_INSERT: return 0x52u;
+    case LIB_KEY_DELETE: return 0x53u;
+    case LIB_KEY_ESCAPE: return 0x01u;
+    case LIB_KEY_TAB: return 0x0fu;
+    case LIB_KEY_SHIFT: return 0x2au;
+    case LIB_KEY_CONTROL: return 0x1du;
+    case LIB_KEY_ALT: return 0x38u;
+    case LIB_KEY_CAPS_LOCK: return 0x3au;
+    case LIB_KEY_NUM_LOCK: return 0x45u;
+    case LIB_KEY_SCROLL_LOCK: return 0x46u;
+    case LIB_KEY_PRINT_SCREEN: return 0x37u;
     default: return key <= 0x7fu ? x86_nxvm_machine_keyboard_map_ascii((lib_u16)key) : 0u;
     }
 }
@@ -158,14 +158,14 @@ lib_status x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(
         return LIB_STATUS_UNSUPPORTED;
     }
     if (native_scan_set == X86_NXVM_BOARD_KEYBOARD_SCAN_SET_3 &&
-        (event->data.key.key == KVM_KEY_PAUSE ||
-         event->data.key.key == KVM_KEY_PRINT_SCREEN)) {
-        scan_code = event->data.key.key == KVM_KEY_PAUSE ? 0x62u : 0x57u;
+        (event->data.key.key == LIB_KEY_PAUSE ||
+         event->data.key.key == LIB_KEY_PRINT_SCREEN)) {
+        scan_code = event->data.key.key == LIB_KEY_PAUSE ? 0x62u : 0x57u;
         if (!event->data.key.pressed) out_sequence->bytes[out_sequence->count++] = 0xf0u;
         out_sequence->bytes[out_sequence->count++] = scan_code;
         return LIB_STATUS_OK;
     }
-    if (event->data.key.key == KVM_KEY_PAUSE) {
+    if (event->data.key.key == LIB_KEY_PAUSE) {
         if (!event->data.key.pressed) return LIB_STATUS_OK;
         if (native_scan_set == X86_NXVM_BOARD_KEYBOARD_SCAN_SET_1) {
             static const lib_u8 pause_set1[] = {
@@ -194,7 +194,7 @@ lib_status x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(
     }
     if (native_scan_set == X86_NXVM_BOARD_KEYBOARD_SCAN_SET_1) {
         if (!event->data.key.pressed) scan_code |= 0x80u;
-        if ((event->data.key.flags & KVM_KEY_FLAG_EXTENDED) != 0u) {
+        if ((event->data.key.flags & LIB_KEY_FLAG_EXTENDED) != 0u) {
             out_sequence->bytes[out_sequence->count++] = 0xe0u;
         }
         out_sequence->bytes[out_sequence->count++] = scan_code;
@@ -202,7 +202,7 @@ lib_status x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(
     }
     if (native_scan_set == X86_NXVM_BOARD_KEYBOARD_SCAN_SET_3) {
         scan_code = x86_nxvm_machine_keyboard_set1_to_set3(scan_code,
-            (event->data.key.flags & KVM_KEY_FLAG_EXTENDED) != 0u);
+            (event->data.key.flags & LIB_KEY_FLAG_EXTENDED) != 0u);
         if (scan_code == 0u) return LIB_STATUS_UNSUPPORTED;
         if (!event->data.key.pressed) out_sequence->bytes[out_sequence->count++] = 0xf0u;
         out_sequence->bytes[out_sequence->count++] = scan_code;
@@ -210,7 +210,7 @@ lib_status x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(
     }
     scan_code = x86_nxvm_machine_keyboard_set1_to_set2(scan_code, &known);
     if (!known) return LIB_STATUS_UNSUPPORTED;
-    if ((event->data.key.flags & KVM_KEY_FLAG_EXTENDED) != 0u) {
+    if ((event->data.key.flags & LIB_KEY_FLAG_EXTENDED) != 0u) {
         out_sequence->bytes[out_sequence->count++] = 0xe0u;
     }
     if (!event->data.key.pressed) out_sequence->bytes[out_sequence->count++] = 0xf0u;

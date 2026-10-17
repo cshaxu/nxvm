@@ -11,6 +11,15 @@
 #include "lib/kvm-window/win32/mouse.h"
 
 #include "lib/types/win32/window.h"
+#include "lib/types/win32/text.h"
+
+static lib_bool kvm_window_apply_title(lib_win32_hwnd window, const char *title)
+{
+    lib_win32_wchar wide[KVM_WINDOW_TITLE_CAPACITY];
+    return lib_win32_multi_byte_to_wide_char(LIB_WIN32_CP_UTF8,
+        LIB_WIN32_MB_ERR_INVALID_CHARS, title, -1, wide,
+        KVM_WINDOW_TITLE_CAPACITY) != 0 && lib_win32_set_window_text_w(window, wide);
+}
 
 #define WIN32_WINDOW_MAILBOX_READY (LIB_WIN32_WM_APP + 1u)
 #define WIN32_WINDOW_MOUSE_READY (LIB_WIN32_WM_APP + 2u)
@@ -30,7 +39,7 @@ typedef struct kvm_win32_window_context {
     lib_u32 surface_height;
     lib_bool surface_valid;
     lib_u32 displayed_sequence;
-    kvm_keyboard_normalizer keyboard_normalizer;
+    base_keyboard_decoder keyboard_normalizer;
     lib_bool left_button;
     lib_bool right_button;
     lib_i64 pending_mouse_dx;
@@ -350,8 +359,8 @@ static void win32_window_advance_cursor_blink(lib_win32_hwnd window,
 static lib_i32 win32_window_transition(kvm_win32_window_context *context,
     lib_win32_wparam key, lib_win32_lparam lparam, lib_bool released)
 {
-    kvm_keyboard_record record = {
-        KVM_KEYBOARD_TRANSITION, (lib_u16)((lparam >> 16) & 0xffu),
+    base_keyboard_record record = {
+        BASE_KEYBOARD_TRANSITION, (lib_u16)((lparam >> 16) & 0xffu),
         (lib_u16)key, 0u,
         kvm_window_keyboard_flags_from_lparam((lib_u64)lparam),
         kvm_window_modifiers_from_key_state(), !released, (lib_u16)lparam };
@@ -398,8 +407,8 @@ static void win32_window_queue_mouse(lib_win32_hwnd window,
     context->pending_mouse_dx += dx;
     context->pending_mouse_dy += dy;
     context->pending_mouse_buttons =
-        (context->left_button ? KVM_MOUSE_BUTTON_LEFT : 0u) |
-        (context->right_button ? KVM_MOUSE_BUTTON_RIGHT : 0u);
+        (context->left_button ? LIB_MOUSE_BUTTON_LEFT : 0u) |
+        (context->right_button ? LIB_MOUSE_BUTTON_RIGHT : 0u);
     if (context->mouse_delivery_posted) return;
     context->mouse_delivery_posted = LIB_TRUE;
     if (!lib_win32_post_message_a(window, WIN32_WINDOW_MOUSE_READY, 0u, 0))
@@ -428,8 +437,8 @@ static void win32_window_mouse(lib_win32_hwnd window, kvm_win32_window_context *
 static void win32_window_mouse_buttons(kvm_win32_window_context *context)
 {
     win32_window_emit_mouse(context, 0, 0,
-        (context->left_button ? KVM_MOUSE_BUTTON_LEFT : 0u) |
-        (context->right_button ? KVM_MOUSE_BUTTON_RIGHT : 0u));
+        (context->left_button ? LIB_MOUSE_BUTTON_LEFT : 0u) |
+        (context->right_button ? LIB_MOUSE_BUTTON_RIGHT : 0u));
 }
 
 static void win32_window_release_mouse(kvm_win32_window_context *context)
@@ -555,7 +564,7 @@ static lib_bool win32_window_consume_mailboxes(lib_win32_hwnd window,
             return LIB_FALSE;
         }
         if (control.kind == KVM_WINDOW_CONTROL_SET_TITLE) {
-            if (!lib_win32_set_window_text_a(window, (char *)control.payload)) {
+            if (!kvm_window_apply_title(window, (char *)control.payload)) {
                 kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
                 return LIB_FALSE;
             }
@@ -698,7 +707,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
     case LIB_WIN32_WM_KEYDOWN:
     case LIB_WIN32_WM_SYSKEYDOWN:
         if (win32_window_accepting_input(context) &&
-            win32_window_transition(context, wparam, lparam, 0) == KVM_KEYBOARD_UNMAPPED) {
+            win32_window_transition(context, wparam, lparam, 0) == BASE_KEYBOARD_UNMAPPED) {
             lib_win32_msg native = { 0 };
             native.hwnd = window; native.message = message;
             native.wParam = wparam; native.lParam = lparam;
@@ -715,8 +724,8 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
     case LIB_WIN32_WM_CHAR:
     case LIB_WIN32_WM_SYSCHAR:
         if (win32_window_accepting_input(context)) {
-            kvm_keyboard_record record = {
-                KVM_KEYBOARD_CHARACTER, (lib_u16)((lparam >> 16) & 0xffu),
+            base_keyboard_record record = {
+                BASE_KEYBOARD_CHARACTER, (lib_u16)((lparam >> 16) & 0xffu),
                 0u, (lib_u16)wparam, 0u, 0u, LIB_TRUE, (lib_u16)lparam };
             (void)kvm_keyboard_submit_record(&context->keyboard_normalizer,
                 &context->component->base.hotkey_matcher, context,
@@ -862,7 +871,7 @@ static lib_win32_dword LIB_WIN32_WINAPI kvm_window_worker(void *opaque)
         return 0u; /* Creator also observes worker exit. */
     }
     state->startup_status = LIB_STATUS_IO_ERROR;
-    if (!lib_win32_set_window_text_a(window, component->initial_title)) goto startup_failed;
+    if (!kvm_window_apply_title(window, component->initial_title)) goto startup_failed;
     context->transparent_cursor = win32_window_create_transparent_cursor();
     if (context->transparent_cursor == LIB_NULL) goto startup_failed;
     if (!context->frozen && !lib_win32_set_timer(window,

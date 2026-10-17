@@ -10,12 +10,12 @@ set(library_dependencies_types "")
 set(library_dependencies_base types)
 set(library_dependencies_console types base)
 set(library_dependencies_console-broker types base console)
-set(library_dependencies_storage types)
+set(library_dependencies_storage types base)
 set(library_dependencies_audio-pcm types base)
 set(library_dependencies_audio-midi types)
 set(library_dependencies_audio-fm types)
 set(library_dependencies_kvm-base types base)
-set(library_dependencies_kvm-window types kvm-base)
+set(library_dependencies_kvm-window types base kvm-base)
 set(library_dependencies_kvm-console types base console kvm-base)
 
 function(library_source_owner path out_owner out_local)
@@ -114,7 +114,7 @@ if(EXISTS "${LIBRARY_ROOT}/CMakeLists.txt")
             endif()
             if(dependency IN_LIST library_components)
                 library_check_edge("${owner}" "${dependency}")
-            elseif((dependency STREQUAL "user32" AND owner MATCHES "^(console-broker|kvm-base|kvm-window)$") OR
+            elseif((dependency STREQUAL "user32" AND owner MATCHES "^(base|console-broker|kvm-base|kvm-window)$") OR
                    (dependency STREQUAL "gdi32" AND owner STREQUAL "kvm-window") OR
                    (dependency STREQUAL "ole32" AND owner STREQUAL "audio-pcm") OR
                    (dependency STREQUAL "winmm" AND owner STREQUAL "audio-midi") OR

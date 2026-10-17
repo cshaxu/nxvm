@@ -14,7 +14,7 @@ lib_bool emulator_machine_enqueue_input(emulator_machine *machine,
 }
 
 static lib_bool chord(const char *identifier, const lib_u32 *scan,
-    const kvm_key *key, const lib_u32 *flags, lib_size count)
+    const lib_key *key, const lib_u32 *flags, lib_size count)
 {
     emulator_session_command_result result;
     lib_size index;
@@ -60,9 +60,9 @@ static lib_bool chord_rejects_each_prefix(const char *identifier,
 
 lib_i32 main(void)
 {
-    const lib_u32 cad_scan[] = {0x1du, 0x38u, 0x0153u};
-    const kvm_key cad_key[] = {KVM_KEY_CONTROL, KVM_KEY_ALT, KVM_KEY_DELETE};
-    const lib_u32 cad_flags[] = {0u, 0u, KVM_KEY_FLAG_EXTENDED};
+    const lib_u32 cad_scan[] = {0x1du, 0x38u, 0x53u};
+    const lib_key cad_key[] = {LIB_KEY_CONTROL, LIB_KEY_ALT, LIB_KEY_DELETE};
+    const lib_u32 cad_flags[] = {0u, 0u, LIB_KEY_FLAG_EXTENDED};
     emulator_session_command_result result;
 
     if (!chord("send-ctrl-alt-del", cad_scan, cad_key, cad_flags, 3u)) return 1;
@@ -71,12 +71,12 @@ lib_i32 main(void)
     if (!x86_ibmpc_product_keyboard_handle_hotkey((emulator_machine *)&events,
             EMULATOR_SESSION_MACHINE_RUNNING, (const lib_u8 *)"send-alt-enter",
             &result) || event_count != 6u || events[0].data.key.pressed ||
-        events[0].data.key.key != KVM_KEY_CONTROL || events[1].data.key.pressed ||
-        events[1].data.key.key != KVM_KEY_ALT || !events[2].data.key.pressed ||
-        events[2].data.key.key != KVM_KEY_ALT || !events[3].data.key.pressed ||
-        events[3].data.key.key != KVM_KEY_ENTER || events[4].data.key.pressed ||
-        events[4].data.key.key != KVM_KEY_ENTER || events[5].data.key.pressed ||
-        events[5].data.key.key != KVM_KEY_ALT) return 2;
+        events[0].data.key.key != LIB_KEY_CONTROL || events[1].data.key.pressed ||
+        events[1].data.key.key != LIB_KEY_ALT || !events[2].data.key.pressed ||
+        events[2].data.key.key != LIB_KEY_ALT || !events[3].data.key.pressed ||
+        events[3].data.key.key != LIB_KEY_ENTER || events[4].data.key.pressed ||
+        events[4].data.key.key != LIB_KEY_ENTER || events[5].data.key.pressed ||
+        events[5].data.key.key != LIB_KEY_ALT) return 2;
     if (!chord_rejects_each_prefix("send-ctrl-alt-del", 6u)) return 3;
     if (!chord_rejects_each_prefix("send-alt-enter", 6u)) return 4;
     if (!x86_ibmpc_product_keyboard_handle_hotkey(LIB_NULL, EMULATOR_SESSION_MACHINE_RUNNING,

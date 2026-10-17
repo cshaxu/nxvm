@@ -6,16 +6,16 @@
 #define KVM_HOTKEY_CAPACITY 16u
 
 enum {
-    KVM_HOTKEY_MODIFIER_CONTROL = KVM_KEY_MODIFIER_CONTROL,
-    KVM_HOTKEY_MODIFIER_ALT = KVM_KEY_MODIFIER_ALT,
-    KVM_HOTKEY_MODIFIER_SHIFT = KVM_KEY_MODIFIER_SHIFT,
-    KVM_HOTKEY_KEY_CONTROL = KVM_KEY_CONTROL,
-    KVM_HOTKEY_KEY_ALT = KVM_KEY_ALT,
-    KVM_HOTKEY_KEY_SHIFT = KVM_KEY_SHIFT
+    KVM_HOTKEY_MODIFIER_CONTROL = LIB_KEY_MODIFIER_CONTROL,
+    KVM_HOTKEY_MODIFIER_ALT = LIB_KEY_MODIFIER_ALT,
+    KVM_HOTKEY_MODIFIER_SHIFT = LIB_KEY_MODIFIER_SHIFT,
+    KVM_HOTKEY_KEY_CONTROL = LIB_KEY_CONTROL,
+    KVM_HOTKEY_KEY_ALT = LIB_KEY_ALT,
+    KVM_HOTKEY_KEY_SHIFT = LIB_KEY_SHIFT
 };
 
 typedef struct kvm_hotkey_registration {
-    kvm_key key;
+    lib_key key;
     lib_u8 modifiers;
     lib_u8 identifier[KVM_HOTKEY_IDENTIFIER_CAPACITY];
 } kvm_hotkey_registration;
@@ -48,7 +48,7 @@ typedef struct kvm_hotkey_matcher {
 
 void kvm_hotkey_registry_initialize(kvm_hotkey_registry *registry);
 lib_status kvm_hotkey_registry_register(kvm_hotkey_registry *registry,
-    kvm_key key, lib_u8 modifiers, const char *identifier);
+    lib_key key, lib_u8 modifiers, const char *identifier);
 void kvm_hotkey_matcher_initialize(kvm_hotkey_matcher *matcher,
     const kvm_hotkey_registry *registry);
 /* Emits ordinary events and matched KVM_EVENT_HOTKEY values through sink.
@@ -64,6 +64,6 @@ void kvm_hotkey_matcher_discard(kvm_hotkey_matcher *matcher);
 /* Borrowed until the next submit/discard. Includes either physical side of a
  * modifier; synthesis must not release a key already owned by this ledger. */
 const kvm_input_event *kvm_hotkey_matcher_held_key(
-    const kvm_hotkey_matcher *matcher, kvm_key key);
+    const kvm_hotkey_matcher *matcher, lib_key key);
 
 #endif

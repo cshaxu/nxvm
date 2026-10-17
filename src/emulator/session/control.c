@@ -226,8 +226,8 @@ static void emulator_session_forget_pressed(emulator_session_queue *queue,
     for (index = 0u; index < queue->pressed_count; ++index) {
         kvm_input_event *pressed = &queue->pressed[index];
         if (pressed->source_identity == event->source_identity &&
-            (pressed->data.key.flags & KVM_KEY_FLAG_EXTENDED) ==
-                (event->data.key.flags & KVM_KEY_FLAG_EXTENDED) &&
+            (pressed->data.key.flags & LIB_KEY_FLAG_EXTENDED) ==
+                (event->data.key.flags & LIB_KEY_FLAG_EXTENDED) &&
             ((pressed->data.key.scan_code != 0u || event->data.key.scan_code != 0u)
                 ? pressed->data.key.scan_code == event->data.key.scan_code
                 : pressed->data.key.key == event->data.key.key)) {

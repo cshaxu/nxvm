@@ -475,7 +475,7 @@ lib_status emulator_product_monitor_format_window_status(const char *name,
         return LIB_STATUS_INVALID_ARGUMENT;
     out_text[0] = '\0';
     written = lib_c_snprintf(out_text, capacity,
-            "%s is running in the Window.\r\n\r\nWhile the machine is running:\r\n",
+            "%s is running in the window.\r\n\r\nWhile the machine is running:\r\n",
             name);
     if (written < 0 || (lib_size)written >= capacity)
         return LIB_STATUS_LIMIT_EXCEEDED;

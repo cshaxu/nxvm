@@ -54,10 +54,10 @@ add_subdirectory(test/x86-core)
 
 # The native capture fixture needs its existing larger stack.
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_link_options(lib-test-kvm_window_capture_contract PRIVATE
+    target_link_options(lib-test-kvm-window-win32-kvm_window_capture_contract PRIVATE
         -Wl,--stack,8388608)
 elseif(MSVC)
-    target_link_options(lib-test-kvm_window_capture_contract PRIVATE /STACK:8388608)
+    target_link_options(lib-test-kvm-window-win32-kvm_window_capture_contract PRIVATE /STACK:8388608)
 endif()
 
 if(REPOSITORY_BUILD_NXVM)

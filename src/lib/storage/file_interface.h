@@ -3,6 +3,11 @@
 
 #include "lib/types/types_interface.h"
 
+/* Paths are NUL-terminated UTF-8 on every platform. Malformed UTF-8 returns
+ * INVALID_ARGUMENT; no locale/code-page fallback is attempted. POSIX names
+ * containing non-UTF-8 bytes are outside this contract. File contents are
+ * arbitrary bytes, not text. Failed opens leave their output object null. */
+
 typedef struct lib_storage_file_writer lib_storage_file_writer;
 typedef struct lib_storage_file_reader lib_storage_file_reader;
 

@@ -1,5 +1,6 @@
 #include "lib/types/win32/window.h"
 #include "lib/types/win32/scalar.h"
+#include "lib/types/win32/sync.h"
 #include "lib/kvm-window/win32/mouse.h"
 
 /* Raw mouse registration is process-wide. Never replace an existing consumer. */
@@ -23,6 +24,27 @@ static lib_status mouse_registration(lib_win32_raw_input_device *mouse)
     return received == (lib_win32_uint)-1 ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 
+/* Serialize only registry operations, never message-producing focus/capture. */
+static lib_status mouse_bind(lib_win32_hwnd window, lib_bool acquire)
+{
+    static lib_win32_srwlock lock = LIB_WIN32_SRWLOCK_INIT;
+    lib_win32_raw_input_device binding;
+    lib_status status;
+    lib_win32_acquire_srwlock_exclusive(&lock);
+    status = mouse_registration(&binding);
+    if (status == LIB_STATUS_OK) {
+        if (acquire && binding.usUsage == 2u) status = LIB_STATUS_INVALID_STATE;
+        else if (acquire || (binding.usUsage == 2u && binding.hwndTarget == window)) {
+            binding = (lib_win32_raw_input_device){1u, 2u,
+                acquire ? 0u : LIB_WIN32_RIDEV_REMOVE, acquire ? window : LIB_NULL};
+            if (!lib_win32_register_raw_input_devices(&binding, 1u, sizeof(binding)))
+                status = LIB_STATUS_IO_ERROR;
+        }
+    }
+    lib_win32_release_srwlock_exclusive(&lock);
+    return status;
+}
+
 static lib_bool same_bounds(const lib_win32_rect *a, const lib_win32_rect *b)
 {
     return a->left == b->left && a->top == b->top &&
@@ -39,24 +61,18 @@ lib_status kvm_win32_mouse_release(kvm_win32_mouse *mouse)
 {
     lib_status status = LIB_STATUS_OK;
     lib_win32_rect clipped;
-    lib_win32_raw_input_device binding;
     if (mouse == LIB_NULL || !mouse->captured) return LIB_STATUS_OK;
     /* Clear ownership before ReleaseCapture synchronously notifies the window. */
     mouse->captured = LIB_FALSE;
-    status = mouse_registration(&binding);
-    if (status == LIB_STATUS_OK && binding.usUsage == 2u &&
-        binding.hwndTarget == mouse->window) {
-        binding.dwFlags = LIB_WIN32_RIDEV_REMOVE;
-        binding.hwndTarget = LIB_NULL;
-        if (!lib_win32_register_raw_input_devices(&binding, 1u, sizeof(binding)))
-            status = LIB_STATUS_IO_ERROR;
-    }
     /* Do not remove another window's replacement clipping rectangle. */
     if (!lib_win32_get_clip_cursor(&clipped) ||
         (same_bounds(&clipped, &mouse->bounds) && !lib_win32_clip_cursor(LIB_NULL)))
         status = LIB_STATUS_IO_ERROR;
     if (lib_win32_get_capture() == mouse->window && !lib_win32_release_capture())
         status = LIB_STATUS_IO_ERROR;
+    /* Finish native cleanup before another Lib Window can acquire the slot. */
+    lib_status binding_status = mouse_bind(mouse->window, LIB_FALSE);
+    if (status == LIB_STATUS_OK) status = binding_status;
     mouse->window = LIB_NULL;
     lib_win32_set_cursor(lib_win32_load_cursor_a(LIB_NULL, LIB_WIN32_IDC_ARROW));
     lib_memory_set(&mouse->motion, 0, sizeof(mouse->motion));
@@ -87,23 +103,24 @@ lib_bool kvm_win32_mouse_refresh_bounds(kvm_win32_mouse *mouse)
 lib_status kvm_win32_mouse_capture(kvm_win32_mouse *mouse,
     lib_win32_hwnd window)
 {
-    lib_win32_raw_input_device binding;
     lib_status status;
     if (mouse == LIB_NULL || window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (mouse->captured) return LIB_STATUS_INVALID_STATE;
-    status = mouse_registration(&binding);
+    status = mouse_bind(window, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
-    if (binding.usUsage == 2u) return LIB_STATUS_INVALID_STATE;
     lib_win32_set_focus(window);
-    if (lib_win32_get_focus() != window) return LIB_STATUS_INVALID_STATE;
-    lib_win32_set_capture(window);
-    if (lib_win32_get_capture() != window) return LIB_STATUS_INVALID_STATE;
+    if (lib_win32_get_focus() == window) lib_win32_set_capture(window);
+    if (lib_win32_get_focus() != window || lib_win32_get_capture() != window) {
+        lib_bool released = lib_win32_get_capture() != window ||
+            lib_win32_release_capture();
+        status = mouse_bind(window, LIB_FALSE);
+        if (!released) return LIB_STATUS_IO_ERROR;
+        return status == LIB_STATUS_OK ? LIB_STATUS_INVALID_STATE : status;
+    }
     mouse->window = window;
     mouse->captured = LIB_TRUE;
-    binding = (lib_win32_raw_input_device){ 1u, 2u, 0u, window };
     /* Keep legacy clicks/keyboard; only raw records supply captured motion. */
-    if (!kvm_win32_mouse_refresh_bounds(mouse) ||
-        !lib_win32_register_raw_input_devices(&binding, 1u, sizeof(binding))) {
+    if (!kvm_win32_mouse_refresh_bounds(mouse)) {
         (void)kvm_win32_mouse_release(mouse);
         return LIB_STATUS_IO_ERROR;
     }

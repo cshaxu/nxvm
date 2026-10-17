@@ -37,6 +37,7 @@ by matching platform implementations. Application-facing
 copied-value APIs are distinct from the leaf-support contracts:
 `kvm-base/worker_interface.h`, `mailbox_interface.h`,
 `kvm-base/input_interface.h` serves only the KVM leaves;
+`base/input_adapter_interface.h` serves native Lib input producers;
 `console/binding_interface.h` serves console-broker binding implementations.
 Other component headers are exclusively component-local. They use short
 names and live directly in their owning directory; no filename carries a
@@ -46,9 +47,10 @@ only application-facing `*_interface.h`, not the leaf-support contracts.
 Types declaration headers are the explicit naming exception. The common types interface includes its own atomic
 vocabulary helper; it never imports platform SDK headers.
 
-Input support owns common normalization and copied-event delivery in kvm-base.
-Its same-signature platform operations decode keys and query physical text
-layout. Window message flags and key-state queries are Window-local. External
+Base input support decodes native keys and UTF-16 into Types-owned neutral
+values. Console-broker publishes those values; KVM owns repetition, physical
+text synthesis and copied-event delivery. Its layout query uses the same Base
+adapter. Window message flags and key-state queries are Window-local. External
 declarations remain types-owned; actual consumers declare OS link libraries.
 
 ## Component graph
@@ -58,7 +60,7 @@ component on the left:
 
 ```text
 types -> base + console + console-broker + storage + audio/pcm + audio/midi + audio/fm + kvm-base + kvm-window + kvm-console
-base -> console + console-broker + audio/pcm + kvm-base + kvm-console
+base -> console + console-broker + storage + audio/pcm + kvm-base + kvm-window + kvm-console
 console -> console-broker + kvm-console
 kvm-base -> kvm-window + kvm-console
 ```
@@ -76,7 +78,7 @@ lifecycle controller, or public unified presenter API.
   to its platform-neutral base source. Common types headers contain no OS
   selection; platform declaration groups live in `types/win32` and
   `types/linux`. The compiler-only atomic adaptation remains common.
-- `base` owns generic sync/time and depends only on Types. Console and KVM
+- `base` owns generic sync/time, input and UTF-8 scalar validation and depends only on Types. Console and KVM
   frame gates reuse its blocking mutex instead of private implementations.
 - `console` provides the logical Console object. It is a neutral copied-value
   endpoint: it has no native handle, platform input mode, Window, raw Console,
@@ -92,6 +94,12 @@ lifecycle controller, or public unified presenter API.
 - `storage` provides file and byte-medium primitives. Medium and writer own
   embedded file storage; owned-byte reads use a stack file. Closing consumes
   the stream, not its enclosing allocation; failed opens leave it empty.
+  File paths and Base executable directories use UTF-8, not a host code page.
+  Windows converts paths at its native boundary; POSIX names with non-UTF-8
+  bytes are outside the contract. File contents remain arbitrary bytes.
+  Base directory capacity counts UTF-8 bytes including NUL and must fit the
+  full executable path; failure leaves caller output unchanged. Root/separator
+  interpretation belongs to each native implementation, not the shared root.
 - `audio/pcm` (target `audio-pcm`) provides bounded copied PCM playback. The Windows delivery worker
   owns one shared WASAPI endpoint from COM initialization through release and
   waits on its endpoint event without invoking producer code; one concurrent
@@ -247,3 +255,14 @@ The broker alone sequences deactivation, including failed initial activation.
 Backend disposal frees inactive resources without repeating mode restoration
 or reader retirement. KVM Console disposal similarly follows its worker's sink
 detachment; it does not detach a second time.
+
+### Windows native input integration
+
+Window capture reserves the process-wide raw mouse registration before focus
+or clipping changes. Lib serializes registration query/update across its Windows;
+release removes only its own binding, after native capture/clipping cleanup.
+The lock is never held across focus/capture calls that can dispatch messages.
+Third-party code using Raw Input directly must not concurrently replace/remove
+that registration during Lib capture/release. Such code does not participate in
+Lib's lock; Lib cannot synchronize arbitrary native calls. An existing foreign
+binding prevents capture, and release does not remove a foreign replacement.

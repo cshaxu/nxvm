@@ -7,6 +7,9 @@
 #include "lib/types/file.h"
 
 #define lib_win32_create_file_a CreateFileA
+#define lib_win32_create_file_w CreateFileW
+#define lib_win32_wfopen _wfopen
+#define lib_win32_wremove _wremove
 #define lib_win32_get_std_handle GetStdHandle
 #define lib_win32_open_osfhandle _open_osfhandle
 #define lib_win32_fdopen _fdopen

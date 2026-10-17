@@ -16,6 +16,8 @@ typedef struct lib_storage_file {
  * Linux uses advisory flock locks tied to each open file description. */
 lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file);
+lib_status storage_file_platform_writer_open(const char *path, lib_bool append,
+    lib_storage_file *file);
 lib_status storage_file_platform_seek(const lib_storage_file *file,
     lib_i64 offset, lib_i32 origin);
 lib_i64 storage_file_platform_tell(const lib_storage_file *file);

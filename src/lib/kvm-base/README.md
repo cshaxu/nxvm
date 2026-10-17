@@ -61,10 +61,9 @@ until their breaks. One ordered held-key ledger gives every physical key one
 pending, delivered or consumed disposition. Repeats reuse it, releases remove
 it, and storage growth failure is terminal rather than dropping key state.
 
-No leaf includes anything under `kvm-base/win32` or `kvm-base/linux`. The root
-input declarations expose copied input normalization with common surrogate,
-recovery and delivery state. Same-shape platform operations decode raw keys and
-text layout; Linux terminal text uses TEXT rather than inventing physical keys.
+Base owns native keyboard decoding, surrogate state and layout queries; KVM
+owns neutral delivery and text synthesis. Linux terminal text uses TEXT rather
+than inventing physical keys. No KVM leaf decodes native key values itself.
 Window message decoding and key-state queries belong only to kvm-window.
 Base owns the default Event implementation; no KVM platform wake duplicate remains.
 Capture copies the active bytes without consuming; acknowledgement clears pending only
@@ -92,9 +91,10 @@ application terminal infrastructure failure; the library does not terminate or
 add a fallback wake channel. A selected wake failure after a request has been
 accepted reports through the failure sink; it does not roll back or replay it.
 
-Both leaves submit copied keyboard records through kvm_keyboard_submit_record:
-Window supplies separate transitions/characters, Console combined records.
-The common entry chooses physical versus UTF-16 input. An accepted physical
+Window submits copied native records through kvm_keyboard_submit_record, which
+delegates decoding to Base before the shared kvm_keyboard_submit_input entry.
+Console's broker already decoded combined native records; Console goes straight
+to that same neutral entry. Base chooses physical versus UTF-16 input. An accepted physical
 transition must not also be translated to a character by the native caller.
 Only UNMAPPED asks the Window adapter for character translation; combined
 Console records consume their attached text when a physical key is available.
@@ -105,7 +105,7 @@ keys it introduces. Existing keys (including either modifier side) remain held;
 a held trigger receives a repeat make with its original physical identity.
 The ledger borrow is used synchronously on the same input owner as submission.
 
-Native adapters preserve repeat counts in copied records. This normalizer alone
+Native adapters preserve repeat counts in copied records. KVM delivery alone
 expands physical makes (breaks stay single), or complete decoded characters.
 Zero count means one. UTF-16 halves must have matching counts; malformed pairs
 are rejected and cleared. A new high replaces an unfinished high; a valid BMP

@@ -8,26 +8,26 @@ static emulator_product_monitor_command last_fixed_command;
 static const char *last_fixed_arguments;
 
 static lib_bool submit_fixed(void *opaque, emulator_product_monitor_command command,
-    emulator_session_machine_state state, const char *arguments,
-    emulator_session_command_result *out)
+                             emulator_session_machine_state state, const char *arguments,
+                             emulator_session_command_result *out)
 {
     (void)opaque;
     (void)state;
     ++fixed_calls[command];
     last_fixed_command = command;
     last_fixed_arguments = arguments;
-    out->request = command == EMULATOR_PRODUCT_MONITOR_COMMAND_START ?
-        EMULATOR_SESSION_REQUEST_START : EMULATOR_SESSION_REQUEST_NONE;
+    out->request = command == EMULATOR_PRODUCT_MONITOR_COMMAND_START ? EMULATOR_SESSION_REQUEST_START : EMULATOR_SESSION_REQUEST_NONE;
     return LIB_TRUE;
 }
 
 static lib_bool submit_extension(void *opaque, emulator_session_machine_state state,
-    const char *line, emulator_session_command_result *out)
+                                 const char *line, emulator_session_command_result *out)
 {
     (void)opaque;
     (void)state;
     ++extension_calls;
-    if (lib_text_compare(line, "media attach disk.img") != 0) return LIB_FALSE;
+    if (lib_text_compare(line, "media attach disk.img") != 0)
+        return LIB_FALSE;
     (void)lib_c_snprintf(out->text, sizeof(out->text), "Media attached.\r\n");
     out->arm_prompt = LIB_TRUE;
     return LIB_TRUE;
@@ -42,10 +42,10 @@ static void command_parse(void)
     lib_test_assert(command == EMULATOR_PRODUCT_MONITOR_COMMAND_START && arguments[0] == '\0');
     lib_test_assert(emulator_product_monitor_parse("save state.bin", &command, &arguments));
     lib_test_assert(command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
-        lib_text_compare(arguments, "state.bin") == 0);
+                    lib_text_compare(arguments, "state.bin") == 0);
     lib_test_assert(emulator_product_monitor_parse("debug regs", &command, &arguments));
     lib_test_assert(command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG &&
-        lib_text_compare(arguments, "regs") == 0);
+                    lib_text_compare(arguments, "regs") == 0);
     lib_test_assert(!emulator_product_monitor_parse("floppy eject", &command, &arguments));
 }
 
@@ -65,34 +65,35 @@ static void text_format(void)
     char paused_title[64];
 
     lib_test_assert(emulator_product_monitor_format_help(
-        (emulator_product_help_map){extensions, sizeof(extensions) / sizeof(extensions[0])},
-        (emulator_product_help_map){hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
-        text, sizeof(text)) == LIB_STATUS_OK);
+                        (emulator_product_help_map){extensions, sizeof(extensions) / sizeof(extensions[0])},
+                        (emulator_product_help_map){hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
+                        text, sizeof(text)) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(text, "  start          cold-reset") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "  save <file>") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "  disk attach <file>") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text,
-        "  floppy insert <mode> <image>\r\n                 insert a test disk\r\n") != LIB_NULL);
+                                            "  floppy insert <mode> <image>\r\n                 insert a test disk\r\n") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "While the machine is running:") != LIB_NULL);
     lib_test_assert(emulator_product_monitor_format_help(
-        (emulator_product_help_map){(const emulator_product_help_row[]){{"bad\r\nkey", "text"}}, 1u},
-        (emulator_product_help_map){LIB_NULL, 0u}, text, sizeof(text)) ==
-        LIB_STATUS_INVALID_ARGUMENT);
+                        (emulator_product_help_map){(const emulator_product_help_row[]){{"bad\r\nkey", "text"}}, 1u},
+                        (emulator_product_help_map){LIB_NULL, 0u}, text, sizeof(text)) ==
+                    LIB_STATUS_INVALID_ARGUMENT);
     start = lib_text_find_substring(text, "  start          cold-reset");
     reset = lib_text_find_substring(text, "  reset          cold-reset");
     load = lib_text_find_substring(text, "  load <file>");
     debug = lib_text_find_substring(text, "  debug          enter debugger");
     lib_test_assert(start != LIB_NULL && reset != LIB_NULL && load != LIB_NULL &&
-        debug != LIB_NULL && start < reset && reset < load && load < debug);
+                    debug != LIB_NULL && start < reset && reset < load && load < debug);
     lib_test_assert(emulator_product_monitor_format_window_titles("Test Machine",
-        running_title, sizeof(running_title), paused_title, sizeof(paused_title)) ==
-        LIB_STATUS_OK && lib_text_compare(running_title, "Test Machine (Running)") == 0 &&
-        lib_text_compare(paused_title, "Test Machine (Paused)") == 0);
+                                                                  running_title, sizeof(running_title), paused_title, sizeof(paused_title)) ==
+                        LIB_STATUS_OK &&
+                    lib_text_compare(running_title, "Test Machine (Running)") == 0 &&
+                    lib_text_compare(paused_title, "Test Machine (Paused)") == 0);
     lib_test_assert(emulator_product_monitor_format_window_status("Test Machine",
-        (emulator_product_help_map){hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
-        text, sizeof(text)) == LIB_STATUS_OK);
+                                                                  (emulator_product_help_map){hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
+                                                                  text, sizeof(text)) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(text,
-        "Test Machine is running in the Window.") != LIB_NULL);
+                                            "Test Machine is running in the window.") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "While the machine is running:") != LIB_NULL);
 }
 
@@ -103,26 +104,78 @@ static void window_text_capacity(void)
     lib_size capacity;
 
     lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-        running, sizeof("Test (Running)"), paused, sizeof("Test (Paused)")) == LIB_STATUS_OK);
+                                                                  running, sizeof("Test (Running)"), paused, sizeof("Test (Paused)")) == LIB_STATUS_OK);
     lib_test_assert(lib_text_compare(running, "Test (Running)") == 0);
     lib_test_assert(lib_text_compare(paused, "Test (Paused)") == 0);
     lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-        running, sizeof("Test (Running)") - 1u, paused, sizeof(paused)) == LIB_STATUS_LIMIT_EXCEEDED);
+                                                                  running, sizeof("Test (Running)") - 1u, paused, sizeof(paused)) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-        running, sizeof(running), paused, sizeof("Test (Paused)") - 1u) == LIB_STATUS_LIMIT_EXCEEDED);
+                                                                  running, sizeof(running), paused, sizeof("Test (Paused)") - 1u) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-        running, 1u, paused, sizeof(paused)) == LIB_STATUS_LIMIT_EXCEEDED);
+                                                                  running, 1u, paused, sizeof(paused)) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-        running, sizeof(running), paused, 1u) == LIB_STATUS_LIMIT_EXCEEDED);
+                                                                  running, sizeof(running), paused, 1u) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-        text, sizeof(text)) == LIB_STATUS_OK);
+                                                                  text, sizeof(text)) == LIB_STATUS_OK);
     capacity = lib_text_length(text) + 1u;
     lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-        text, capacity) == LIB_STATUS_OK);
+                                                                  text, capacity) == LIB_STATUS_OK);
     lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-        text, capacity - 1u) == LIB_STATUS_LIMIT_EXCEEDED);
+                                                                  text, capacity - 1u) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-        text, 1u) == LIB_STATUS_LIMIT_EXCEEDED);
+                                                                  text, 1u) == LIB_STATUS_LIMIT_EXCEEDED);
+}
+
+static void window_format_boundaries(void)
+{
+    static const char *names[] = {"", "A much longer machine name for boundary testing"};
+    static const emulator_product_help_row row = {"Ctrl+Alt+P", "pause or resume"};
+    char running[128], paused[128], text[256], expected[256];
+    lib_size n, capacity, length, rows;
+
+    for (n = 0u; n < sizeof(names) / sizeof(names[0]); ++n)
+    {
+        length = lib_text_length(names[n]) + sizeof(" (Running)");
+        for (capacity = 1u; capacity <= length; ++capacity)
+        {
+            lib_test_assert(emulator_product_monitor_format_window_titles(names[n],
+                                                                          running, capacity, paused, sizeof(paused)) ==
+                            (capacity == length ? LIB_STATUS_OK : LIB_STATUS_LIMIT_EXCEEDED));
+            lib_test_assert(running[capacity - 1u] == '\0');
+        }
+        length = lib_text_length(names[n]) + sizeof(" (Paused)");
+        for (capacity = 1u; capacity <= length; ++capacity)
+        {
+            lib_test_assert(emulator_product_monitor_format_window_titles(names[n],
+                                                                          running, sizeof(running), paused, capacity) ==
+                            (capacity == length ? LIB_STATUS_OK : LIB_STATUS_LIMIT_EXCEEDED));
+            lib_test_assert(paused[capacity - 1u] == '\0');
+        }
+        for (rows = 0u; rows != 2u; ++rows)
+        {
+            emulator_product_help_map map = {rows ? &row : LIB_NULL, rows};
+            lib_test_assert(emulator_product_monitor_format_window_status(names[n],
+                                                                          map, expected, sizeof(expected)) == LIB_STATUS_OK);
+            length = lib_text_length(expected) + 1u;
+            for (capacity = 1u; capacity <= length; ++capacity)
+            {
+                lib_test_assert(emulator_product_monitor_format_window_status(names[n],
+                                                                              map, text, capacity) ==
+                                (capacity == length ? LIB_STATUS_OK : LIB_STATUS_LIMIT_EXCEEDED));
+            }
+            lib_test_assert(lib_text_compare(text, expected) == 0);
+        }
+    }
+    lib_test_assert(emulator_product_monitor_format_window_titles(LIB_NULL,
+                                                                  running, sizeof(running), paused, sizeof(paused)) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(emulator_product_monitor_format_window_titles("x",
+                                                                  running, 0u, paused, sizeof(paused)) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(emulator_product_monitor_format_window_titles("x",
+                                                                  running, sizeof(running), LIB_NULL, sizeof(paused)) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(emulator_product_monitor_format_window_status("x",
+                                                                  (emulator_product_help_map){LIB_NULL, 0u}, text, 0u) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(emulator_product_monitor_format_window_status("x",
+                                                                  (emulator_product_help_map){LIB_NULL, 1u}, text, sizeof(text)) == LIB_STATUS_INVALID_ARGUMENT);
 }
 
 static void provider_contract(void)
@@ -131,33 +184,35 @@ static void provider_contract(void)
         {"media attach <file>", "attach test media"}};
     static const emulator_product_help_row hotkeys[] = {
         {"Ctrl+Alt+P", "pause or resume"}};
-    static const struct {
+    static const struct
+    {
         const char *line;
         emulator_product_monitor_command command;
     } provider_commands[] = {
         {"debug", EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG}};
-    static const struct {
+    static const struct
+    {
         const char *line;
         emulator_product_monitor_command command;
         emulator_session_machine_state state;
         emulator_session_request request;
     } lifecycle_commands[] = {
         {"start", EMULATOR_PRODUCT_MONITOR_COMMAND_START,
-            EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_START},
+         EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_START},
         {"resume", EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME,
-            EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESUME},
+         EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESUME},
         {"pause", EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE,
-            EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_PAUSE},
+         EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_PAUSE},
         {"stop", EMULATOR_PRODUCT_MONITOR_COMMAND_STOP,
-            EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_STOP},
+         EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_STOP},
         {"stop", EMULATOR_PRODUCT_MONITOR_COMMAND_STOP,
-            EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_STOP},
+         EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_STOP},
         {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET,
-            EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_RESET},
+         EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_RESET},
         {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET,
-            EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_RESET},
+         EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_RESET},
         {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET,
-            EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESET}};
+         EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESET}};
     const emulator_product_monitor_provider provider = {
         .extension_commands = {extensions, sizeof(extensions) / sizeof(extensions[0])},
         .hotkeys = {hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
@@ -169,79 +224,82 @@ static void provider_contract(void)
 
     emulator_product_monitor_provider_open((void *)&provider, &result);
     lib_test_assert(lib_text_find_substring(result.text, "media attach") != LIB_NULL &&
-        result.arm_prompt && lib_text_compare(result.prompt,
-            EMULATOR_SESSION_MONITOR_PROMPT) == 0);
+                    result.arm_prompt && lib_text_compare(result.prompt, EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     for (index = 0u; index < sizeof(provider_commands) /
-            sizeof(provider_commands[0]); ++index) {
+                                 sizeof(provider_commands[0]);
+         ++index)
+    {
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            EMULATOR_SESSION_MACHINE_STOPPED, provider_commands[index].line, &result);
+                                                      EMULATOR_SESSION_MACHINE_STOPPED, provider_commands[index].line, &result);
         lib_test_assert(last_fixed_command == provider_commands[index].command &&
-            last_fixed_arguments[0] == '\0' && fixed_calls[last_fixed_command] == 1u &&
-            extension_calls == 0u);
+                        last_fixed_arguments[0] == '\0' && fixed_calls[last_fixed_command] == 1u &&
+                        extension_calls == 0u);
         lib_test_assert(lib_c_snprintf(invalid_line, sizeof(invalid_line), "%s unexpected",
-            provider_commands[index].line) >= 0);
+                                       provider_commands[index].line) >= 0);
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            EMULATOR_SESSION_MACHINE_STOPPED, invalid_line, &result);
+                                                      EMULATOR_SESSION_MACHINE_STOPPED, invalid_line, &result);
         lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
-            extension_calls == 0u);
+                        extension_calls == 0u);
     }
     for (index = 0u; index < sizeof(lifecycle_commands) /
-            sizeof(lifecycle_commands[0]); ++index) {
+                                 sizeof(lifecycle_commands[0]);
+         ++index)
+    {
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            lifecycle_commands[index].state, lifecycle_commands[index].line, &result);
+                                                      lifecycle_commands[index].state, lifecycle_commands[index].line, &result);
         lib_test_assert(result.request == lifecycle_commands[index].request &&
-            !result.arm_prompt && extension_calls == 0u);
+                        !result.arm_prompt && extension_calls == 0u);
     }
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "save state.bin", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "save state.bin", &result);
     lib_test_assert(last_fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
-        lib_text_compare(last_fixed_arguments, "state.bin") == 0 && extension_calls == 0u);
+                    lib_text_compare(last_fixed_arguments, "state.bin") == 0 && extension_calls == 0u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "load state.bin", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "load state.bin", &result);
     lib_test_assert(last_fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD &&
-        lib_text_compare(last_fixed_arguments, "state.bin") == 0 && extension_calls == 0u);
+                    lib_text_compare(last_fixed_arguments, "state.bin") == 0 && extension_calls == 0u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_ERROR, "debug", &result);
+                                                  EMULATOR_SESSION_MACHINE_ERROR, "debug", &result);
     lib_test_assert(last_fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG &&
-        fixed_calls[EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG] == 2u &&
-        lib_text_compare(last_fixed_arguments, "") == 0 && extension_calls == 0u);
+                    fixed_calls[EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG] == 2u &&
+                    lib_text_compare(last_fixed_arguments, "") == 0 && extension_calls == 0u);
     for (index = 0u; index < sizeof(lifecycle_commands) /
-            sizeof(lifecycle_commands[0]); ++index) {
+                                 sizeof(lifecycle_commands[0]);
+         ++index)
+    {
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            EMULATOR_SESSION_MACHINE_ERROR, lifecycle_commands[index].line, &result);
+                                                      EMULATOR_SESSION_MACHINE_ERROR, lifecycle_commands[index].line, &result);
         lib_test_assert(lib_text_compare(result.text,
-            "Machine has failed; exit and restart the program.\r\n") == 0 &&
-            fixed_calls[lifecycle_commands[index].command] == 0u);
+                                         "Machine has failed; exit and restart the program.\r\n") == 0 &&
+                        fixed_calls[lifecycle_commands[index].command] == 0u);
     }
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_ERROR, "save state.bin", &result);
+                                                  EMULATOR_SESSION_MACHINE_ERROR, "save state.bin", &result);
     lib_test_assert(lib_text_compare(result.text,
-        "Machine has failed; exit and restart the program.\r\n") == 0);
+                                     "Machine has failed; exit and restart the program.\r\n") == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_ERROR, "load state.bin", &result);
+                                                  EMULATOR_SESSION_MACHINE_ERROR, "load state.bin", &result);
     lib_test_assert(lib_text_compare(result.text,
-        "Machine has failed; exit and restart the program.\r\n") == 0);
+                                     "Machine has failed; exit and restart the program.\r\n") == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "media attach disk.img", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "media attach disk.img", &result);
     lib_test_assert(lib_text_compare(result.text, "Media attached.\r\n") == 0 &&
-        extension_calls == 1u && lib_text_compare(result.prompt,
-            EMULATOR_SESSION_MONITOR_PROMPT) == 0);
+                    extension_calls == 1u && lib_text_compare(result.prompt, EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_ERROR, "media attach disk.img", &result);
+                                                  EMULATOR_SESSION_MACHINE_ERROR, "media attach disk.img", &result);
     lib_test_assert(lib_text_compare(result.text, "Media attached.\r\n") == 0 &&
-        extension_calls == 2u && lib_text_compare(result.prompt,
-            EMULATOR_SESSION_MONITOR_PROMPT) == 0);
+                    extension_calls == 2u && lib_text_compare(result.prompt, EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "help unexpected", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "help unexpected", &result);
     lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
-        extension_calls == 2u);
+                    extension_calls == 2u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "exit", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "exit", &result);
     lib_test_assert(result.exit_requested && !result.arm_prompt);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "exit unexpected", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "exit unexpected", &result);
     lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
-        extension_calls == 2u);
+                    extension_calls == 2u);
 }
 
 static void unavailable_fixed_commands(void)
@@ -251,30 +309,30 @@ static void unavailable_fixed_commands(void)
     emulator_session_command_result result;
     lib_size index;
 
-    for (index = 0u; index < sizeof(lines) / sizeof(lines[0]); ++index) {
+    for (index = 0u; index < sizeof(lines) / sizeof(lines[0]); ++index)
+    {
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            EMULATOR_SESSION_MACHINE_STOPPED, lines[index], &result);
+                                                      EMULATOR_SESSION_MACHINE_STOPPED, lines[index], &result);
         lib_test_assert(lib_text_compare(result.text, "Feature not implemented.\r\n") == 0 &&
-            result.arm_prompt && lib_text_compare(result.prompt,
-                EMULATOR_SESSION_MONITOR_PROMPT) == 0);
+                        result.arm_prompt && lib_text_compare(result.prompt, EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     }
 }
 
 static void fixed_argument_contract(void)
 {
     const char *words[] = {"start", "reset", "stop", "pause", "resume",
-        "load", "save", "debug", "help", "exit"};
+                           "load", "save", "debug", "help", "exit"};
     const emulator_product_monitor_provider provider = {0};
     emulator_session_command_result result;
     char line[64];
-    for (lib_size index = 0u; index < sizeof(words) / sizeof(words[0]); ++index) {
+    for (lib_size index = 0u; index < sizeof(words) / sizeof(words[0]); ++index)
+    {
         lib_test_assert(lib_c_snprintf(line, sizeof(line), "%s unexpected", words[index]) > 0);
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            EMULATOR_SESSION_MACHINE_STOPPED, line, &result);
-        lib_test_assert(lib_text_compare(result.text, index == 5u || index == 6u ?
-            "Feature not implemented.\r\n" : "Unknown command.\r\n") == 0);
+                                                      EMULATOR_SESSION_MACHINE_STOPPED, line, &result);
+        lib_test_assert(lib_text_compare(result.text, index == 5u || index == 6u ? "Feature not implemented.\r\n" : "Unknown command.\r\n") == 0);
         lib_test_assert(result.request == EMULATOR_SESSION_REQUEST_NONE &&
-            result.arm_prompt && !result.exit_requested);
+                        result.arm_prompt && !result.exit_requested);
     }
 }
 
@@ -284,30 +342,30 @@ static void lifecycle_contract(void)
     emulator_session_command_result result;
 
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_PAUSED, "start", &result);
+                                                  EMULATOR_SESSION_MACHINE_PAUSED, "start", &result);
     lib_test_assert(lib_text_compare(result.text,
-        "Machine is paused; use resume, reset, or stop.\r\n") == 0);
+                                     "Machine is paused; use resume, reset, or stop.\r\n") == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, "pause", &result);
+                                                  EMULATOR_SESSION_MACHINE_STOPPED, "pause", &result);
     lib_test_assert(lib_text_compare(result.text,
-        "Machine is stopped; use start or reset.\r\n") == 0);
+                                     "Machine is stopped; use start or reset.\r\n") == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
-        EMULATOR_SESSION_MACHINE_ERROR, "reset", &result);
+                                                  EMULATOR_SESSION_MACHINE_ERROR, "reset", &result);
     lib_test_assert(lib_text_compare(result.text,
-        "Machine has failed; exit and restart the program.\r\n") == 0);
+                                     "Machine has failed; exit and restart the program.\r\n") == 0);
     emulator_product_monitor_provider_note_runtime((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_RUNNING, &result);
+                                                   EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_RUNNING, &result);
     lib_test_assert(lib_text_compare(result.text, "Machine started.\r\n") == 0 &&
-        result.arm_prompt);
+                    result.arm_prompt);
     emulator_product_monitor_provider_note_runtime((void *)&provider,
-        EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
+                                                   EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
     lib_test_assert(lib_text_compare(result.text, "Machine reset and paused.\r\n") == 0 &&
-        result.arm_prompt);
+                    result.arm_prompt);
     emulator_product_monitor_provider_note_runtime((void *)&provider,
-        EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_PAUSED, &result);
+                                                   EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_PAUSED, &result);
     lib_test_assert(result.text[0] == '\0' && !result.arm_prompt);
     emulator_product_monitor_provider_note_runtime((void *)&provider,
-        EMULATOR_SESSION_MACHINE_INIT, EMULATOR_SESSION_MACHINE_PAUSED, &result);
+                                                   EMULATOR_SESSION_MACHINE_INIT, EMULATOR_SESSION_MACHINE_PAUSED, &result);
     lib_test_assert(result.text[0] == '\0' && !result.arm_prompt);
 }
 
@@ -316,6 +374,7 @@ int main(void)
     command_parse();
     text_format();
     window_text_capacity();
+    window_format_boundaries();
     provider_contract();
     unavailable_fixed_commands();
     fixed_argument_contract();

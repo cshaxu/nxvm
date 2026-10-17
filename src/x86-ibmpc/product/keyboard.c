@@ -48,37 +48,37 @@ static lib_bool x86_ibmpc_product_keyboard_emit(void *context, kvm_input_sink si
     kvm_input_event event = { 0 };
     if (sink == LIB_NULL) return LIB_FALSE;
     event.type = KVM_EVENT_KEY;
-    event.data.key.scan_code = scan;
+    event.data.key.scan_code = scan & 0xffu;
     event.data.key.key = key;
-    event.data.key.flags = (scan & 0x0100u) != 0u ? KVM_KEY_FLAG_EXTENDED : 0u;
+    event.data.key.flags = (scan & 0x0100u) != 0u ? LIB_KEY_FLAG_EXTENDED : 0u;
     event.data.key.pressed = pressed;
     return sink(context, &event);
 }
 
 lib_bool x86_ibmpc_product_keyboard_release_ctrl_alt(void *context, kvm_input_sink sink)
 {
-    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, KVM_KEY_CONTROL, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE);
+    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, LIB_KEY_CONTROL, LIB_FALSE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_FALSE);
 }
 
 lib_bool x86_ibmpc_product_keyboard_submit_ctrl_alt_del(void *context, kvm_input_sink sink)
 {
-    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, KVM_KEY_CONTROL, LIB_TRUE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_TRUE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, KVM_KEY_DELETE, LIB_TRUE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, KVM_KEY_DELETE, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, KVM_KEY_CONTROL, LIB_FALSE);
+    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, LIB_KEY_CONTROL, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, LIB_KEY_DELETE, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, LIB_KEY_DELETE, LIB_FALSE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_FALSE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, LIB_KEY_CONTROL, LIB_FALSE);
 }
 
 static lib_bool x86_ibmpc_product_keyboard_submit_alt_key(void *context, kvm_input_sink sink,
-    lib_u32 scan, kvm_key key)
+    lib_u32 scan, lib_key key)
 {
     return x86_ibmpc_product_keyboard_release_ctrl_alt(context, sink) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_TRUE) &&
         x86_ibmpc_product_keyboard_emit(context, sink, scan, key, LIB_TRUE) &&
         x86_ibmpc_product_keyboard_emit(context, sink, scan, key, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE);
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_FALSE);
 }
 
 lib_bool x86_ibmpc_product_keyboard_handle_hotkey(emulator_machine *machine,
@@ -100,9 +100,9 @@ lib_bool x86_ibmpc_product_keyboard_handle_hotkey(emulator_machine *machine,
             x86_ibmpc_product_keyboard_deliver_input);
     if (lib_text_compare(name, "send-alt-enter") == 0)
         return x86_ibmpc_product_keyboard_submit_alt_key(machine,
-            x86_ibmpc_product_keyboard_deliver_input, 0x1cu, KVM_KEY_ENTER);
+            x86_ibmpc_product_keyboard_deliver_input, 0x1cu, LIB_KEY_ENTER);
     if (lib_text_compare(name, "send-alt-tab") == 0)
         return x86_ibmpc_product_keyboard_submit_alt_key(machine,
-            x86_ibmpc_product_keyboard_deliver_input, 0x0fu, KVM_KEY_TAB);
+            x86_ibmpc_product_keyboard_deliver_input, 0x0fu, LIB_KEY_TAB);
     return LIB_TRUE;
 }

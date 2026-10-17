@@ -287,8 +287,6 @@ int main(void)
     lib_test_assert(lib_audio_pcm_stream_create(LIB_NULL, &stream) == LIB_STATUS_INVALID_ARGUMENT);
     options.sample_rate = 0u;
     lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_UNSUPPORTED);
-    options.sample_rate = LIB_UINT32_MAX;
-    lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_UNSUPPORTED);
     options.sample_rate = 48000u;
     options.channel_count = 3u;
     lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_UNSUPPORTED);
@@ -361,8 +359,9 @@ int main(void)
     lib_test_assert(lib_audio_pcm_stream_query(stream, &queued, &writable) == LIB_STATUS_OK);
     lib_test_assert(queued == 0u && writable == AUDIO_PCM_STREAM_QUEUE_CAPACITY);
 
-    /* A sole queued tail is still completed while destruction is safe. */
+    /* Explicit flush, not destruction, guarantees backend submission. */
     lib_test_assert(lib_audio_pcm_stream_enqueue(stream, samples, 3u, &accepted) == LIB_STATUS_OK);
+    lib_test_assert(lib_audio_pcm_stream_flush(stream) == LIB_STATUS_OK);
 
     destroy_status = LIB_STATUS_IO_ERROR;
     lib_test_assert(lib_audio_pcm_stream_destroy(&stream) == LIB_STATUS_IO_ERROR && stream != LIB_NULL);
@@ -427,21 +426,28 @@ int main(void)
     native_wait_entered = native_wait_entered_event;
     native_wait_release = native_wait_release_event;
     native_wait_blocks = LIB_TRUE;
-    lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_OK);
-    lib_test_assert(lib_audio_pcm_stream_enqueue(stream, submission, 512u, &accepted) == LIB_STATUS_OK);
-    lib_test_assert(lib_audio_pcm_stream_enqueue(stream, submission, 512u, &accepted) == LIB_STATUS_OK);
-    lib_test_assert(base_sync_event_wait(native_wait_entered_event, LIB_UINT32_MAX) ==
-        BASE_SYNC_WAIT_SIGNALED);
-    before_destroy_enqueue_calls = enqueue_calls;
-    cancel_status = LIB_STATUS_IO_ERROR;
-    lib_test_assert(lib_audio_pcm_stream_destroy(&stream) == LIB_STATUS_IO_ERROR);
-    lib_test_assert(stream != LIB_NULL && stream->worker != LIB_NULL &&
-        stream->platform == &fake_platform);
-    lib_test_assert(base_sync_event_wait(native_wait_release_event, 0u) ==
-        BASE_SYNC_WAIT_TIMED_OUT);
-    cancel_status = LIB_STATUS_OK;
-    lib_test_assert(lib_audio_pcm_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
-    lib_test_assert(enqueue_calls == before_destroy_enqueue_calls);
+    const lib_u32 destroy_counts[] = {1u, 512u, 1024u, 1025u, AUDIO_PCM_STREAM_QUEUE_CAPACITY};
+    for (lib_size n = 0u; n < sizeof(destroy_counts) / sizeof(destroy_counts[0]); ++n) {
+        lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_OK);
+        for (lib_u32 remaining = destroy_counts[n]; remaining != 0u;) {
+            lib_u32 count = remaining > 512u ? 512u : remaining;
+            lib_test_assert(lib_audio_pcm_stream_enqueue(stream, submission, count, &accepted) == LIB_STATUS_OK);
+            lib_test_assert(accepted == count);
+            remaining -= accepted;
+        }
+        lib_test_assert(base_sync_event_wait(native_wait_entered_event, LIB_UINT32_MAX) ==
+            BASE_SYNC_WAIT_SIGNALED);
+        before_destroy_enqueue_calls = enqueue_calls;
+        cancel_status = LIB_STATUS_IO_ERROR;
+        lib_test_assert(lib_audio_pcm_stream_destroy(&stream) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(stream != LIB_NULL && stream->worker != LIB_NULL &&
+            stream->platform == &fake_platform);
+        lib_test_assert(base_sync_event_wait(native_wait_release_event, 0u) ==
+            BASE_SYNC_WAIT_TIMED_OUT);
+        cancel_status = LIB_STATUS_OK;
+        lib_test_assert(lib_audio_pcm_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
+        lib_test_assert(enqueue_calls == before_destroy_enqueue_calls);
+    }
     native_wait_blocks = LIB_FALSE;
     native_wait_entered = LIB_NULL;
     native_wait_release = LIB_NULL;
@@ -479,7 +485,7 @@ int main(void)
      * This fixture proves forwarding; the native fixture proves negotiation. */
     {
         const lib_u32 rates[] = { 3921u, 8000u, 11025u, 12345u,
-            22050u, 44100u, 48000u };
+            22050u, 44100u, 48000u, LIB_UINT32_MAX };
         lib_size index;
         for (options.channel_count = 1u; options.channel_count <= 2u;
             ++options.channel_count) {
@@ -535,6 +541,7 @@ int main(void)
         lib_test_assert(base_sync_event_wait(notification, 1000u) == BASE_SYNC_WAIT_SIGNALED);
         lib_test_assert(lib_audio_pcm_stream_enqueue(stream, samples, 3u, &accepted) == LIB_STATUS_OK);
         lib_test_assert(base_sync_event_wait(progress_entered, 1000u) == BASE_SYNC_WAIT_SIGNALED);
+        lib_test_assert(lib_audio_pcm_stream_flush(stream) == LIB_STATUS_OK);
         lib_test_assert(lib_audio_pcm_stream_progress(stream, &progress) == LIB_STATUS_OK);
         lib_test_assert(progress.epoch == 0u && progress.accepted_frames == 3u &&
             progress.submitted_frames == 3u && progress.consumed_frames == 0u);

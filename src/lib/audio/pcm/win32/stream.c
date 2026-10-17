@@ -81,9 +81,10 @@ lib_status audio_pcm_stream_platform_create(const lib_audio_pcm_stream_options *
     if (options == LIB_NULL || out_platform == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_platform = LIB_NULL;
     if (options->channel_count < 1u || options->channel_count > 2u ||
-        options->sample_rate == 0u || options->sample_rate >
-            LIB_UINT32_MAX / (options->channel_count * sizeof(lib_i16)))
+        options->sample_rate == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (options->sample_rate > LIB_UINT32_MAX /
+            (options->channel_count * sizeof(lib_i16))) return LIB_STATUS_UNSUPPORTED;
     platform = lib_allocate_zero(1u, sizeof(*platform));
     if (platform == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     platform->sample_rate = options->sample_rate;

@@ -10,6 +10,12 @@ outer-layer or importing-application files. Emulator tests also run without
 test/lib. Shared tools
 register/check tests only; each package selects and owns its own suite.
 
+Unit directories mirror machine, session, ui and product. Each unit tests its
+owner's responsibility using legal inward production dependencies; unrelated
+inner-contract assertions belong to that inner owner. Cross-component calls
+alone do not justify integration/. No current test here requires real desktop,
+audio or external guest media; those requirements remain with their owners.
+
 ```text
 cmake -S test/emulator -B build/emulator-tests -DCMAKE_BUILD_TYPE=Release
 cmake --build build/emulator-tests
@@ -25,7 +31,7 @@ and independent source manifest/DAG negative probes. Emulator sync
 tests use Base; the existing native-thread machine fake is Windows-only and
 does not imply Linux execution coverage. Production Emulator stays platform-free.
 
-`machine_fixture.h` and `machine_fixture.c` own that neutral fake driver and its
+`machine/machine_fixture.h` and `machine/machine_fixture.c` own that neutral fake driver and its
 native-thread test resources. Emulator tests inject a token protocol; other
 test packages own their own minimal drivers. No architecture
 commands or registers belong to this fixture. The scripted `machine_wait` test

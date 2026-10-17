@@ -1,11 +1,11 @@
 #ifndef KVM_EVENT_INTERFACE_H
 #define KVM_EVENT_INTERFACE_H
 
-#include "lib/types/types_interface.h"
+#include "lib/types/input_values.h"
 
-/* Product-neutral host input emitted by the presentation library. Key
- * identities and scan codes describe a host physical transition; text is the
- * Unicode scalar that could not be represented by such a transition. */
+/* Product-neutral input emitted by the presentation library. Keys and PC
+ * set-1 scan identities follow types/input_values.h, not native OS encodings.
+ * Text is a Unicode scalar not represented by a physical transition. */
 typedef enum kvm_event_type {
     KVM_EVENT_KEY,
     KVM_EVENT_TEXT,
@@ -24,88 +24,6 @@ typedef enum kvm_event_type {
 
 #define KVM_HOTKEY_IDENTIFIER_CAPACITY 64u
 
-typedef lib_u32 kvm_key;
-
-enum {
-    /* Neutral key identities. Printable keys use their ASCII scalar. These
-     * values describe input only; product hotkey interpretation remains an
-     * application concern. */
-    KVM_KEY_F1 = 0x00010001u,
-    KVM_KEY_F2 = 0x00010002u,
-    KVM_KEY_F3 = 0x00010003u,
-    KVM_KEY_F4 = 0x00010004u,
-    KVM_KEY_F5 = 0x00010005u,
-    KVM_KEY_F6 = 0x00010006u,
-    KVM_KEY_F7 = 0x00010007u,
-    KVM_KEY_F8 = 0x00010008u,
-    KVM_KEY_F9 = 0x00010009u,
-    KVM_KEY_F10 = 0x0001000au,
-    KVM_KEY_F11 = 0x0001000bu,
-    KVM_KEY_F12 = 0x0001000cu,
-    KVM_KEY_ENTER = 0x00020001u,
-    KVM_KEY_BACKSPACE = 0x00020002u,
-    KVM_KEY_UP = 0x00020003u,
-    KVM_KEY_DOWN = 0x00020004u,
-    KVM_KEY_LEFT = 0x00020005u,
-    KVM_KEY_RIGHT = 0x00020006u,
-    KVM_KEY_HOME = 0x00020007u,
-    KVM_KEY_END = 0x00020008u,
-    KVM_KEY_PAGE_UP = 0x00020009u,
-    KVM_KEY_PAGE_DOWN = 0x0002000au,
-    KVM_KEY_INSERT = 0x0002000bu,
-    KVM_KEY_DELETE = 0x0002000cu,
-    KVM_KEY_ESCAPE = 0x00030001u,
-    KVM_KEY_TAB = 0x00030002u,
-    KVM_KEY_SHIFT = 0x00030003u,
-    KVM_KEY_CONTROL = 0x00030004u,
-    KVM_KEY_ALT = 0x00030005u,
-    KVM_KEY_CAPS_LOCK = 0x00030006u,
-    KVM_KEY_NUM_LOCK = 0x00030007u,
-    KVM_KEY_SCROLL_LOCK = 0x00030008u,
-    KVM_KEY_PAUSE = 0x00030009u,
-    KVM_KEY_PRINT_SCREEN = 0x0003000au,
-    KVM_KEY_LEFT_WINDOWS = 0x0003000bu,
-    KVM_KEY_RIGHT_WINDOWS = 0x0003000cu,
-    KVM_KEY_MENU = 0x0003000du,
-    KVM_KEY_KEYPAD_0 = 0x00040000u,
-    KVM_KEY_KEYPAD_1,
-    KVM_KEY_KEYPAD_2,
-    KVM_KEY_KEYPAD_3,
-    KVM_KEY_KEYPAD_4,
-    KVM_KEY_KEYPAD_5,
-    KVM_KEY_KEYPAD_6,
-    KVM_KEY_KEYPAD_7,
-    KVM_KEY_KEYPAD_8,
-    KVM_KEY_KEYPAD_9,
-    KVM_KEY_KEYPAD_MULTIPLY,
-    KVM_KEY_KEYPAD_ADD,
-    KVM_KEY_KEYPAD_SUBTRACT,
-    KVM_KEY_KEYPAD_DECIMAL,
-    KVM_KEY_KEYPAD_DIVIDE,
-    KVM_KEY_F13 = 0x0005000du,
-    KVM_KEY_F14,
-    KVM_KEY_F15,
-    KVM_KEY_F16,
-    KVM_KEY_F17,
-    KVM_KEY_F18,
-    KVM_KEY_F19,
-    KVM_KEY_F20,
-    KVM_KEY_F21,
-    KVM_KEY_F22,
-    KVM_KEY_F23,
-    KVM_KEY_F24,
-    KVM_MOUSE_BUTTON_LEFT = 0x01u,
-    KVM_MOUSE_BUTTON_RIGHT = 0x02u,
-    KVM_MOUSE_BUTTON_MIDDLE = 0x04u
-};
-
-enum {
-    KVM_KEY_FLAG_EXTENDED = 0x01u,
-    KVM_KEY_MODIFIER_CONTROL = 0x01u,
-    KVM_KEY_MODIFIER_ALT = 0x02u,
-    KVM_KEY_MODIFIER_SHIFT = 0x04u
-};
-
 typedef struct kvm_input_event {
     /* Borrowed opaque component handle. It is for lifetime tracing only;
      * product action policy never branches on input source. */
@@ -118,8 +36,8 @@ typedef struct kvm_input_event {
     union {
         struct {
             lib_u16 scan_code;
-            /* A kvm-base-defined key identity. Zero means absent. */
-            kvm_key key;
+            /* A Types-defined key identity. Zero means absent. */
+            lib_key key;
             /* Platform-neutral physical-key facts. */
             lib_u32 flags;
             /* Current Ctrl/Alt/Shift state for the generic matcher. */

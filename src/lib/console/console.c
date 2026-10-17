@@ -2,6 +2,7 @@
 
 #include "lib/types/atomic.h"
 #include "lib/base/sync_interface.h"
+#include "lib/base/text_interface.h"
 
 struct lib_console {
     base_sync_mutex *lock;
@@ -152,8 +153,9 @@ lib_status lib_console_write_text(lib_console *console,
     lib_console_output_sink sink;
     void *context;
     lib_status status;
-    if (console == LIB_NULL || (text == LIB_NULL && length != 0u))
+    if (console == LIB_NULL || !base_text_utf8_valid_bytes(text, length))
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (length == 0u) return LIB_STATUS_OK;
     base_sync_mutex_lock(console->output_lock);
     sink = console->output.text;
     context = console->output.context;

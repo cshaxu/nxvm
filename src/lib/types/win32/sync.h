@@ -5,6 +5,10 @@
 #include <windows.h>
 
 typedef CRITICAL_SECTION lib_win32_critical_section;
+typedef SRWLOCK lib_win32_srwlock;
+#define LIB_WIN32_SRWLOCK_INIT SRWLOCK_INIT
+#define lib_win32_acquire_srwlock_exclusive AcquireSRWLockExclusive
+#define lib_win32_release_srwlock_exclusive ReleaseSRWLockExclusive
 #define lib_win32_create_event_a CreateEventA
 #define lib_win32_create_semaphore_a CreateSemaphoreA
 #define lib_win32_release_semaphore ReleaseSemaphore

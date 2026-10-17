@@ -3,7 +3,7 @@
 
 #include "lib/types/win32/scalar.h"
 
-#define lib_win32_get_module_file_name_a GetModuleFileNameA
+#define lib_win32_get_module_file_name_w GetModuleFileNameW
 #define lib_win32_get_current_process GetCurrentProcess
 #define lib_win32_terminate_process TerminateProcess
 #define lib_win32_get_current_process_id GetCurrentProcessId

@@ -117,7 +117,7 @@ typedef lib_win32_point *lib_win32_ppoint;
 #define lib_win32_set_window_long_ptr_a SetWindowLongPtrA
 #define lib_win32_set_window_long_ptr_w SetWindowLongPtrW
 #define lib_win32_set_window_pos SetWindowPos
-#define lib_win32_set_window_text_a SetWindowTextA
+#define lib_win32_set_window_text_w SetWindowTextW
 #define lib_win32_show_window ShowWindow
 #define lib_win32_stretch_blt StretchBlt
 #define lib_win32_translate_message TranslateMessage

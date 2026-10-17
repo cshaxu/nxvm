@@ -17,6 +17,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
 add_test(NAME x86-debug.test-boundaries COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=x86-debug"
+    "-DTEST_SOURCE_ROOT=${CORPUS_ROOT}"
     -P "${CMAKE_CURRENT_LIST_DIR}/../verify_test_boundaries.cmake")
 set_tests_properties(x86-debug.test-boundaries PROPERTIES LABELS "unit;x86-debug" TIMEOUT 30)
 set(SHARED_X86_DEBUG_TEST_TARGETS)

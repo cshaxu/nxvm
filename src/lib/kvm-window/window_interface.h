@@ -10,7 +10,9 @@ typedef struct kvm_window kvm_window;
 
 typedef struct kvm_window_options {
     kvm_component_options component;
-    /* Copied during creation.  The application owns both initial product
+    /* NUL-terminated UTF-8, capacity in bytes including NUL. Malformed or
+     * oversized titles return INVALID_ARGUMENT before creation/enqueue.
+     * Copied during creation. The application owns both initial product
      * identity and later title changes; kvm-window never supplies one. */
     const char *initial_title;
     /* Frozen forbids capture and host cursor blink. It does not own a capture;
@@ -18,9 +20,10 @@ typedef struct kvm_window_options {
     lib_bool initial_frozen;
 } kvm_window_options;
 
-/* Win32 capture requires exclusive raw mouse registration while captured.
- * An existing registration prevents capture. Applications must not concurrently
- * change that process-wide registration during capture/release.
+/* Capture is exclusive: a conflicting input owner or denied host activation
+ * leaves the Window uncaptured, without taking another owner's input binding.
+ * Lib coordinates its Window instances; ordinary callers need no native
+ * input registration. Capture/release I/O failures use the component failure sink.
  * On failure *out_window remains NULL. A live worker that cannot be joined is
  * a terminal application infrastructure fault, not a caller-owned half object. */
 lib_status kvm_window_create(kvm_window **out_window,
@@ -28,6 +31,8 @@ lib_status kvm_window_create(kvm_window **out_window,
 lib_status kvm_window_publish_frame(kvm_window *window, const kvm_window_frame *frame);
 /* Same checked destruction contract as kvm_component_destroy. */
 lib_status kvm_window_destroy(kvm_window *window);
+/* Same UTF-8/capacity contract as initial_title; accepted native failures
+ * report through the existing component failure sink. */
 lib_status kvm_window_set_title(kvm_window *window, const char *title);
 /* Freeze atomically prevents future capture, stops the Window-local cursor
  * blink, and releases any current capture in FIFO order. */

@@ -3,6 +3,9 @@
 
 #include "lib/types/types_interface.h"
 
+/* File paths use NUL-terminated UTF-8, including on POSIX (non-UTF-8 names are
+ * unsupported). Malformed UTF-8 is INVALID_ARGUMENT. Medium bytes are binary. */
+
 typedef enum lib_storage_medium_mode {
     LIB_STORAGE_MEDIUM_DIRECT,
     LIB_STORAGE_MEDIUM_READONLY,

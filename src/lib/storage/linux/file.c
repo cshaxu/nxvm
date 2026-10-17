@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
+#include "lib/base/text_interface.h"
 
 #include "lib/types/linux/file.h"
 
@@ -9,6 +10,8 @@
 lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file)
 {
+    file->stream = LIB_NULL;
+    if (!base_text_utf8_valid(path)) return LIB_STATUS_INVALID_ARGUMENT;
     file->stream = lib_c_fopen(path,
         readwrite != LIB_FALSE ? "rb+" : "rb");
     if (file->stream == LIB_NULL) {
@@ -22,6 +25,15 @@ lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
         return LIB_STATUS_IO_ERROR;
     }
     return LIB_STATUS_OK;
+}
+
+lib_status storage_file_platform_writer_open(const char *path, lib_bool append,
+    lib_storage_file *file)
+{
+    file->stream = LIB_NULL;
+    if (!base_text_utf8_valid(path)) return LIB_STATUS_INVALID_ARGUMENT;
+    file->stream = lib_c_fopen(path, append ? "ab" : "wb");
+    return file->stream != LIB_NULL ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
 lib_status storage_file_platform_seek(const lib_storage_file *file, lib_i64 offset,

@@ -1,6 +1,6 @@
 #include "lib/kvm-base/hotkey_interface.h"
 
-static lib_u8 kvm_hotkey_modifier_bit(kvm_key key)
+static lib_u8 kvm_hotkey_modifier_bit(lib_key key)
 {
     if (key == KVM_HOTKEY_KEY_CONTROL) return KVM_HOTKEY_MODIFIER_CONTROL;
     if (key == KVM_HOTKEY_KEY_ALT) return KVM_HOTKEY_MODIFIER_ALT;
@@ -9,7 +9,7 @@ static lib_u8 kvm_hotkey_modifier_bit(kvm_key key)
 }
 
 static const kvm_hotkey_registration *kvm_hotkey_registry_match(
-    const kvm_hotkey_registry *registry, kvm_key key, lib_u8 modifiers)
+    const kvm_hotkey_registry *registry, lib_key key, lib_u8 modifiers)
 {
     lib_u32 index;
     if (registry == LIB_NULL) return LIB_NULL;
@@ -35,8 +35,8 @@ static lib_bool kvm_hotkey_registry_has_modifier(const kvm_hotkey_registry *regi
 static lib_bool kvm_hotkey_same_key(const kvm_input_event *a,
     const kvm_input_event *b)
 {
-    if ((a->data.key.flags & KVM_KEY_FLAG_EXTENDED) !=
-        (b->data.key.flags & KVM_KEY_FLAG_EXTENDED)) return LIB_FALSE;
+    if ((a->data.key.flags & LIB_KEY_FLAG_EXTENDED) !=
+        (b->data.key.flags & LIB_KEY_FLAG_EXTENDED)) return LIB_FALSE;
     if (a->data.key.scan_code != 0u || b->data.key.scan_code != 0u)
         return a->data.key.scan_code == b->data.key.scan_code;
     return a->data.key.key == b->data.key.key;
@@ -133,7 +133,7 @@ void kvm_hotkey_registry_initialize(kvm_hotkey_registry *registry)
 }
 
 lib_status kvm_hotkey_registry_register(kvm_hotkey_registry *registry,
-    kvm_key key, lib_u8 modifiers, const char *identifier)
+    lib_key key, lib_u8 modifiers, const char *identifier)
 {
     lib_u32 index;
     const void *end;
@@ -189,7 +189,7 @@ void kvm_hotkey_matcher_discard(kvm_hotkey_matcher *matcher)
 }
 
 const kvm_input_event *kvm_hotkey_matcher_held_key(
-    const kvm_hotkey_matcher *matcher, kvm_key key)
+    const kvm_hotkey_matcher *matcher, lib_key key)
 {
     lib_size i;
     if (matcher != LIB_NULL)

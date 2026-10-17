@@ -24,8 +24,8 @@ enum {
 };
 
 /* PCM frames are interleaved signed 16-bit samples. A stream accepts mono or
- * stereo PCM at a nonzero rate representable by the native byte-rate field;
- * the native backend determines format support. Create waits for native
+ * stereo PCM at a nonzero sample rate; unsupported platform formats return
+ * UNSUPPORTED. Create waits for native
  * initialization and returns no stream on failure. The library owns a
  * private bounded producer queue and delegates output to its platform backend.
  * The caller owns sample storage and serializes operations on a
@@ -39,9 +39,11 @@ lib_status lib_audio_pcm_stream_enqueue(lib_audio_pcm_stream *stream,
     const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted_frames);
 lib_status lib_audio_pcm_stream_query(lib_audio_pcm_stream *stream,
     lib_u32 *out_queued_frames, lib_u32 *out_writable_frames);
-/* Copied input-frame counters. Consumed means removed from native padding,
- * not proof of sound at the physical output. Clear changes epoch and resets
- * all counters, cancelling rather than completing previous accepted ranges. */
+/* Copied counts in input frames for one epoch: accepted is copied into the
+ * stream, submitted is accepted by the playback backend, consumed is reported
+ * as processed by that backend, not proof of audible sound. Within an epoch,
+ * 0 <= consumed <= submitted <= accepted; counts never decrease. Clear starts
+ * a new epoch with zero counts, cancelling rather than completing old ranges. */
 lib_status lib_audio_pcm_stream_progress(lib_audio_pcm_stream *stream,
     lib_audio_pcm_progress *out_progress);
 /* Optional coalescing wake, not a callback carrying PCM or guest work. It runs
@@ -59,10 +61,11 @@ lib_status lib_audio_pcm_stream_cancel_wait(lib_audio_pcm_stream *stream);
 /* The worker submits even short prefixes without a subsequent producer call.
  * Flush waits for every accepted FIFO frame, including a sub-batch tail, in
  * order. It returns only after the backend accepts that tail or the stream
- * reaches a terminal error. clear is the explicit discard operation. */
+ * reaches a terminal error. It does not wait for consumption or audible sound.
+ * clear is the explicit discard operation. */
 lib_status lib_audio_pcm_stream_flush(lib_audio_pcm_stream *stream);
-/* Inactive streams reject nonempty enqueue. Disabling clears unsounded native
- * PCM; clear preserves active state. Neither operation retracts heard audio. */
+/* Inactive streams reject nonempty enqueue. Disabling flushes then clears
+ * pending playback; clear preserves active state. Neither retracts heard audio. */
 lib_status lib_audio_pcm_stream_set_active(lib_audio_pcm_stream *stream, lib_bool active);
 lib_status lib_audio_pcm_stream_clear(lib_audio_pcm_stream *stream);
 /* Applies one gain per channel on the native worker, including while inactive.
@@ -71,12 +74,10 @@ lib_status lib_audio_pcm_stream_clear(lib_audio_pcm_stream *stream);
  * Native failure makes the stream terminal, like submission failure. */
 lib_status lib_audio_pcm_stream_set_gain(lib_audio_pcm_stream *stream,
     const lib_u16 *gains, lib_u32 channel_count);
-/* Null is idempotent. Destruction submits a sole queued sub-batch tail before
- * teardown; once a full batch is awaiting a native backend, destruction
- * cancels that wait and discards remaining FIFO data. Use flush before destroy
- * when delivery of every accepted frame is required. A destroy failure retains
- * the stream for another cleanup attempt and never releases storage that the
- * platform may still own. */
+/* Null is idempotent. Destruction cancels waits and discards pending playback,
+ * independent of batch size. Flush first if all accepted frames must reach
+ * the backend; neither flush nor destruction promises audible completion.
+ * Failure retains ownership and never frees storage still in use. */
 lib_status lib_audio_pcm_stream_destroy(lib_audio_pcm_stream **stream);
 
 #endif

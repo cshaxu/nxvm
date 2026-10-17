@@ -3,9 +3,7 @@
 static lib_bool audio_pcm_stream_options_supported(const lib_audio_pcm_stream_options *options)
 {
     return options->channel_count >= 1u && options->channel_count <= 2u &&
-        options->sample_rate != 0u &&
-        options->sample_rate <= LIB_UINT32_MAX /
-            (options->channel_count * (lib_u32)sizeof(lib_i16));
+        options->sample_rate != 0u;
 }
 
 static void audio_pcm_stream_notify_locked(lib_audio_pcm_stream *stream)
@@ -503,17 +501,6 @@ lib_status lib_audio_pcm_stream_destroy(lib_audio_pcm_stream **stream)
 
     if (stream == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (*stream == LIB_NULL) return LIB_STATUS_OK;
-    base_sync_mutex_lock((*stream)->lock);
-    status = (*stream)->failure;
-    {
-        lib_bool tail_only = (*stream)->count != 0u &&
-            (*stream)->count < AUDIO_PCM_STREAM_PLAY_BATCH;
-        base_sync_mutex_unlock((*stream)->lock);
-        if (status == LIB_STATUS_OK && tail_only) {
-            status = lib_audio_pcm_stream_flush(*stream);
-            if (status != LIB_STATUS_OK && status != LIB_STATUS_INVALID_STATE) return status;
-        }
-    }
     (void)lib_audio_pcm_stream_cancel_wait(*stream);
     if ((*stream)->worker != LIB_NULL) {
         status = base_sync_task_request_cancel((*stream)->worker);

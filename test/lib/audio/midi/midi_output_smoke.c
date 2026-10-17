@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/audio/midi/output.c"
-#include "lib/audio/fm/output_interface.h"
 
 int main(void)
 {
@@ -37,8 +36,5 @@ int main(void)
     lib_test_assert(audio_midi_sysex_validate(bytes, LIB_AUDIO_MIDI_SYSEX_MAX_BYTES) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(audio_midi_sysex_validate(bytes, 1) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(audio_midi_sysex_validate(LIB_NULL, 2) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_audio_fm_output *fm = (lib_audio_fm_output *)bytes;
-    lib_test_assert(lib_audio_fm_output_create(&fm) == LIB_STATUS_UNSUPPORTED && !fm);
-    lib_test_assert(lib_audio_fm_output_create(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     return 0;
 }

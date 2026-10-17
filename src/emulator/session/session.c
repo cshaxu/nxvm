@@ -77,11 +77,14 @@ static lib_bool emulator_session_write_text(emulator_session *session, const cha
     char previous = '\0';
     if (text == LIB_NULL) return LIB_TRUE;
     for (; *text != '\0'; ++text) {
-        if (used + 2u >= sizeof(chunk)) {
+        /* Flush only between UTF-8 scalars; reserve four bytes plus NUL.
+         * CR insertion is ASCII and therefore also fits this bound. */
+        if (used + 5u >= sizeof(chunk) && ((lib_u8)*text & 0xc0u) != 0x80u) {
             chunk[used] = '\0';
             if (emulator_ui_write_monitor(session->ui, chunk) != LIB_STATUS_OK) return LIB_FALSE;
             used = 0u;
         }
+        if (used >= sizeof(chunk) - 1u) return LIB_FALSE;
         if (*text == '\n' && previous != '\r') chunk[used++] = '\r';
         chunk[used++] = *text;
         previous = *text;

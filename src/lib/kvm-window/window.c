@@ -1,4 +1,5 @@
 #include "lib/kvm-window/window.h"
+#include "lib/base/text_interface.h"
 
 static lib_status kvm_window_component_stop(kvm_component *base, lib_u32 timeout_ms)
 { return kvm_window_worker_join((kvm_window *)base, timeout_ms); }
@@ -28,6 +29,7 @@ lib_status kvm_window_create(kvm_window **out_window,
     if (options == LIB_NULL ||
         options->initial_title == LIB_NULL ||
         lib_memory_find(options->initial_title, '\0', KVM_WINDOW_TITLE_CAPACITY) == LIB_NULL ||
+        !base_text_utf8_valid(options->initial_title) ||
         options->component.input_sink == LIB_NULL ||
         options->component.failure_sink == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -73,7 +75,7 @@ lib_status kvm_window_set_title(kvm_window *window, const char *title)
         .kind = KVM_WINDOW_CONTROL_SET_TITLE
     };
     if (title == LIB_NULL || lib_memory_find(title, '\0',
-            KVM_WINDOW_TITLE_CAPACITY) == LIB_NULL)
+            KVM_WINDOW_TITLE_CAPACITY) == LIB_NULL || !base_text_utf8_valid(title))
         return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_copy(control.payload, title, lib_text_length(title) + 1u);
     return kvm_window_enqueue(window, control);

@@ -10,15 +10,6 @@ typedef struct kvm_console_win32_state {
     lib_win32_handle worker;
 } kvm_console_win32_state;
 
-lib_u8 kvm_console_mouse_buttons(lib_u32 buttons)
-{
-    lib_u8 result = (buttons & LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED) != 0u ?
-        KVM_MOUSE_BUTTON_LEFT : 0u;
-    if ((buttons & LIB_WIN32_RIGHTMOST_BUTTON_PRESSED) != 0u)
-        result |= KVM_MOUSE_BUTTON_RIGHT;
-    return result;
-}
-
 static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
 {
     kvm_console *console = (kvm_console *)opaque;

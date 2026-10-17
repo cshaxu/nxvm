@@ -100,16 +100,17 @@ lib_status lib_storage_file_reader_open(const char *path,
     lib_storage_file_reader **out_reader)
 {
     lib_storage_file_reader *reader;
+    lib_status status;
 
     if (out_reader == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_reader = LIB_NULL;
     if (path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     reader = lib_allocate(sizeof(*reader));
     if (reader == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    if (storage_file_platform_open(path, LIB_FALSE, &reader->file) !=
-        LIB_STATUS_OK) {
+    status = storage_file_platform_open(path, LIB_FALSE, &reader->file);
+    if (status != LIB_STATUS_OK) {
         lib_release(reader);
-        return LIB_STATUS_IO_ERROR;
+        return status;
     }
     *out_reader = reader;
     return LIB_STATUS_OK;
@@ -136,6 +137,7 @@ lib_status lib_storage_file_writer_open(const char *path,
     lib_storage_file_writer **out_writer)
 {
     lib_storage_file_writer *writer;
+    lib_status status;
 
     if (out_writer == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_writer = LIB_NULL;
@@ -144,11 +146,11 @@ lib_status lib_storage_file_writer_open(const char *path,
         mode > LIB_STORAGE_FILE_WRITER_APPEND) return LIB_STATUS_INVALID_ARGUMENT;
     writer = lib_allocate(sizeof(*writer));
     if (writer == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    writer->file.stream = lib_c_fopen(path,
-        mode == LIB_STORAGE_FILE_WRITER_TRUNCATE ? "wb" : "ab");
-    if (writer->file.stream == LIB_NULL) {
+    status = storage_file_platform_writer_open(path,
+        mode == LIB_STORAGE_FILE_WRITER_APPEND, &writer->file);
+    if (status != LIB_STATUS_OK) {
         lib_release(writer);
-        return LIB_STATUS_IO_ERROR;
+        return status;
     }
     *out_writer = writer;
     return LIB_STATUS_OK;
