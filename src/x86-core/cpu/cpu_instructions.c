@@ -9188,7 +9188,7 @@ static lib_bool _e_compare_repeat_continues(x86_core_cpu_execution_context *cont
     }
 }
 
-static lib_u8 x86_core_cpu_instruction_lexeme_has_modrm(
+static lib_u8 _kdf_has_modrm(
     lib_u8 opcode, lib_u8 extended)
 {
     if (extended) {
@@ -9216,7 +9216,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_has_modrm(
         opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu;
 }
 
-static lib_u8 x86_core_cpu_instruction_lexeme_modrm_form_valid(
+static lib_u8 _kdf_modrm_form_valid(
     lib_u8 opcode, lib_u8 extended, lib_u8 modrm,
     lib_u8 cpu_80386_cr_mov_ignores_mod, x86_core_cpu_profile profile)
 {
@@ -9377,7 +9377,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     }
     if (nec ? nec_format != X86_CPU_NEC_FORMAT_UNSUPPORTED &&
         nec_format != X86_CPU_NEC_FORMAT_IMPLICIT :
-        x86_core_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
+        _kdf_has_modrm(opcode, extended)) {
         lib_u8 mod;
         lib_u8 rm;
 
@@ -9408,7 +9408,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
             }
         }
     }
-    if (!nec && !x86_core_cpu_instruction_lexeme_modrm_form_valid(opcode, extended, modrm,
+    if (!nec && !_kdf_modrm_form_valid(opcode, extended, modrm,
         cpu_80386_cr_mov_ignores_mod, profile))
         return LIB_FALSE;
     metadata = x86_core_cpu_instruction_metadata_get(nec ?
@@ -20315,6 +20315,19 @@ static void ExecIns(x86_core_cpu_execution_context *context)
                 !_kdf_is_comparison_string(opcode)) {
                 UndefinedOpcode(context);
                 break;
+            }
+            if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+                _kdf_has_modrm(opcode, LIB_FALSE)) {
+                lib_u8 modrm;
+                CPU_TRACE_CHECK_BREAK(_s_read_cs(context,
+                    X86_CPU_MASK_U16(cpu_state.data.eip + 1u), X86_CPU_REFERENCE_OF(modrm), 1));
+                if (!_kdf_modrm_form_valid(opcode, LIB_FALSE, modrm, LIB_FALSE,
+                        context->cpu_profile) ||
+                    !x86_core_cpu_profile_allows_form(context,
+                        X86_CORE_CPU_INSTRUCTION_PRIMARY, opcode, modrm)) {
+                    UndefinedOpcode(context);
+                    break;
+                }
             }
             const lib_bool comparing = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
                 instruction_state.data.prefix_rep != PREFIX_REP_NONE &&
