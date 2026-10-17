@@ -170,7 +170,8 @@ static lib_i32 v30_invalid_forms(void)
     for (lib_u16 suffix = 0u; suffix < 256u; ++suffix) {
         const lib_bool valid = (suffix >= 0x10u && suffix <= 0x1fu) ||
             suffix == 0x28u || suffix == 0x2au || suffix == 0x20u ||
-            suffix == 0x22u || suffix == 0x26u;
+            suffix == 0x22u || suffix == 0x26u || suffix == 0x31u ||
+            suffix == 0x33u || suffix == 0x39u || suffix == 0x3bu;
         const lib_u8 code[] = {0x0fu,(lib_u8)suffix,0xc0u,0u};
         const x86_core_cpu_instruction_metadata metadata =
             x86_core_cpu_instruction_metadata_get(X86_CORE_CPU_INSTRUCTION_NEC_0F,
