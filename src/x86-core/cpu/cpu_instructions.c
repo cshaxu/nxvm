@@ -3000,7 +3000,7 @@ static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, l
 
 /* decoding unit */
 /* kernel decoding function */
-static lib_u8 _kdf_check_prefix(x86_core_cpu_execution_context *context, lib_u8 opcode)
+static lib_u8 _kdf_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile)
 {
     switch (opcode)
     {
@@ -3012,21 +3012,15 @@ static lib_u8 _kdf_check_prefix(x86_core_cpu_execution_context *context, lib_u8 
     case 0x3e:
     case 0x26:
         return LIB_TRUE;
-        break;
     case 0x64:
     case 0x65:
+        return profile == X86_CORE_CPU_PROFILE_V30 || cpu_profile_has_32bit_architecture(profile);
     case 0x66:
     case 0x67:
-        if (cpu_profile_has_32bit_architecture(context->cpu_profile))
-            return LIB_TRUE;
-        else
-            return LIB_FALSE;
-        break;
+        return cpu_profile_has_32bit_architecture(profile);
     default:
         return LIB_FALSE;
-        break;
     }
-    return LIB_FALSE;
 }
 
 static void _kdf_skip(x86_core_cpu_execution_context *context, lib_u8 byte)
@@ -5954,7 +5948,7 @@ static void _e_push(x86_core_cpu_execution_context *context, lib_uptr rdata, lib
         lib_u8 index = 0u;
         lib_u8 opcode;
         while (index < instruction_state.data.oplen &&
-            _kdf_check_prefix(context, instruction_state.data.opcodes[index])) ++index;
+            _kdf_is_prefix(instruction_state.data.opcodes[index], context->cpu_profile)) ++index;
         opcode = index < instruction_state.data.oplen ?
             instruction_state.data.opcodes[index] : 0u;
         if (opcode == 0x9cu || (cpu_profile_has_32bit_architecture(context->cpu_profile) &&
@@ -9122,17 +9116,20 @@ static void _a_scas(x86_core_cpu_execution_context *context, lib_u8 bit)
 }
 #define _adv CPU_TRACE_CHECK_RETURN(_d_skip(context, 1))
 
-static lib_u8 x86_core_cpu_instruction_lexeme_is_prefix(
-    lib_u8 byte, x86_core_cpu_profile profile)
+static lib_bool _kdf_is_comparison_string(lib_u8 opcode)
 {
-    switch (byte) {
-    case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
-    case 0xf0u: case 0xf2u: case 0xf3u:
-        return LIB_TRUE;
-    case 0x64u: case 0x65u: case 0x66u: case 0x67u:
-        return cpu_profile_has_32bit_architecture(profile);
+    return (opcode & 0xfeu) == 0xa6u || (opcode & 0xfeu) == 0xaeu;
+}
+
+static lib_bool _e_compare_repeat_continues(x86_core_cpu_execution_context *context)
+{
+    switch (instruction_state.data.prefix_rep) {
+    case PREFIX_REP_REPZ: return _GetEFLAGS_ZF != 0u;
+    case PREFIX_REP_REPZNZ: return _GetEFLAGS_ZF == 0u;
+    case PREFIX_REP_REPC: return _GetEFLAGS_CF != 0u;
+    case PREFIX_REP_REPNC: return _GetEFLAGS_CF == 0u;
     default:
-        return LIB_FALSE;
+        return LIB_TRUE;
     }
 }
 
@@ -9268,6 +9265,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     lib_u8 immediate;
     lib_u8 extended = LIB_FALSE;
     lib_bool nec = LIB_FALSE;
+    lib_bool carry_repeat = LIB_FALSE;
     x86_core_cpu_nec_format nec_format = X86_CPU_NEC_FORMAT_UNSUPPORTED;
     lib_u8 lock_prefix = LIB_FALSE;
     lib_u8 operand_size_prefix = LIB_FALSE;
@@ -9280,8 +9278,12 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         !cpu_profile_allows_minimum(profile, X86_CORE_CPU_PROFILE_8086) ||
         (profile == X86_CORE_CPU_PROFILE_V30 && code_32)) return LIB_FALSE;
     while (index < available_bytes && index < 15u &&
-        x86_core_cpu_instruction_lexeme_is_prefix(bytes[index], profile)) {
+        _kdf_is_prefix(bytes[index], profile)) {
         if (bytes[index] == 0xf0u) lock_prefix = LIB_TRUE;
+        if (profile == X86_CORE_CPU_PROFILE_V30) {
+            if (bytes[index] == 0x64u || bytes[index] == 0x65u) carry_repeat = LIB_TRUE;
+            else if (bytes[index] == 0xf2u || bytes[index] == 0xf3u) carry_repeat = LIB_FALSE;
+        }
         ++index;
         ++components;
     }
@@ -9290,6 +9292,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
          bytes[index] == 0x66u || bytes[index] == 0x67u)) return LIB_FALSE;
     if (index >= available_bytes || index >= 15u) return LIB_FALSE;
     opcode = bytes[index++];
+    if (carry_repeat && !_kdf_is_comparison_string(opcode))
+        return LIB_FALSE;
     ++components;
     operand_bytes = code_32 ? 4u : 2u;
     address_bytes = code_32 ? 4u : 2u;
@@ -9543,6 +9547,9 @@ static lib_i32 x86_core_cpu_profile_allows_form(
 
     if (context == LIB_NULL)
         return 0;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        space == X86_CORE_CPU_INSTRUCTION_PRIMARY &&
+        _kdf_is_prefix(opcode, context->cpu_profile)) return LIB_TRUE;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
         space != X86_CORE_CPU_INSTRUCTION_PRIMARY &&
         space != X86_CORE_CPU_INSTRUCTION_NEC_0F) return 0;
@@ -12284,7 +12291,12 @@ static void ARPL_RM16_R16(x86_core_cpu_execution_context *context)
 static void PREFIX_FS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_FS");
-    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+    {
+        _adv;
+        instruction_state.data.prefix_rep = PREFIX_REP_REPNC;
+    }
+    else if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.fs;
@@ -12297,7 +12309,12 @@ static void PREFIX_FS(x86_core_cpu_execution_context *context)
 static void PREFIX_GS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_GS");
-    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+    {
+        _adv;
+        instruction_state.data.prefix_rep = PREFIX_REP_REPC;
+    }
+    else if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.gs;
@@ -14253,8 +14270,7 @@ static void CMPSB(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14268,8 +14284,7 @@ static void CMPSB(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14293,8 +14308,7 @@ static void CMPSB(x86_core_cpu_execution_context *context)
                 _WriteGPR16(cx)--;
             }
             if (cpu_state.data.cx &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                _e_compare_repeat_continues(context))
                 instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
@@ -14327,8 +14341,7 @@ static void CMPSW(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14342,8 +14355,7 @@ static void CMPSW(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14367,8 +14379,7 @@ static void CMPSW(x86_core_cpu_execution_context *context)
                 _WriteGPR16(cx)--;
             }
             if (cpu_state.data.cx &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                _e_compare_repeat_continues(context))
                 instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
@@ -14715,8 +14726,7 @@ static void SCASB(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14730,8 +14740,7 @@ static void SCASB(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14755,8 +14764,7 @@ static void SCASB(x86_core_cpu_execution_context *context)
                 _WriteGPR16(cx)--;
             }
             if (cpu_state.data.cx &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                _e_compare_repeat_continues(context))
                 instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
@@ -14789,8 +14797,7 @@ static void SCASW(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14804,8 +14811,7 @@ static void SCASW(x86_core_cpu_execution_context *context)
                     CPU_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                    !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                    _e_compare_repeat_continues(context))
                     instruction_state.data.flagInsLoop = LIB_TRUE;
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -14829,8 +14835,7 @@ static void SCASW(x86_core_cpu_execution_context *context)
                 _WriteGPR16(cx)--;
             }
             if (cpu_state.data.cx &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
-                !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
+                _e_compare_repeat_continues(context))
                 instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
@@ -16569,7 +16574,7 @@ static void PREFIX_LOCK(x86_core_cpu_execution_context *context)
         {
             CPU_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, X86_CPU_REFERENCE_OF(opcode), 1));
             ceip++;
-        } while (_kdf_check_prefix(context, opcode));
+        } while (_kdf_is_prefix(opcode, context->cpu_profile));
         switch (opcode)
         {
         case 0x00:
@@ -19116,7 +19121,7 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
         lib_u8 prefixes = 0u;
 
         while (prefixes < instruction_state.data.oplen &&
-            _kdf_check_prefix(context, instruction_state.data.opcodes[prefixes])) ++prefixes;
+            _kdf_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile)) ++prefixes;
         instruction_state.data.timing_previous_opcode = prefixes < instruction_state.data.oplen ?
             instruction_state.data.opcodes[prefixes] : 0u;
         if (prefixes + 1u < instruction_state.data.oplen)
@@ -20246,10 +20251,16 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             UndefinedOpcode(context);
             break;
         }
-        if (!_kdf_check_prefix(context, opcode)) {
+        if (!_kdf_is_prefix(opcode, context->cpu_profile)) {
+            if ((instruction_state.data.prefix_rep == PREFIX_REP_REPC ||
+                instruction_state.data.prefix_rep == PREFIX_REP_REPNC) &&
+                !_kdf_is_comparison_string(opcode)) {
+                UndefinedOpcode(context);
+                break;
+            }
             const lib_bool comparing = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
                 instruction_state.data.prefix_rep != PREFIX_REP_NONE &&
-                ((opcode & 0xfeu) == 0xa6u || (opcode & 0xfeu) == 0xaeu);
+                _kdf_is_comparison_string(opcode);
 
             if (comparing && !context->repeat_compare_flags_valid) {
                 context->repeat_compare_flags = instruction_state.data.oldcpu.data.eflags;
@@ -20258,7 +20269,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
         }
         CPU_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
         CPU_TRACE_CALL_END;
-    } while (_kdf_check_prefix(context, opcode));
+    } while (_kdf_is_prefix(opcode, context->cpu_profile));
     if (instruction_state.data.except) context->io_restart_valid = LIB_FALSE;
     if (!smm_before || context->smm_active) _debug_complete_instruction(context, opcode);
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear)
@@ -20274,14 +20285,16 @@ static void x86_core_cpu_legacy_string_interrupt_resume(
 {
     lib_u8 prefixes = 0u;
 
-    if (cpu_profile_has_186_integer(context->cpu_profile) ||
+    if ((cpu_profile_has_186_integer(context->cpu_profile) &&
+         context->cpu_profile != X86_CORE_CPU_PROFILE_V30) ||
         !instruction_state.data.flagInsLoop) return;
     while (prefixes < instruction_state.data.oplen &&
-        _kdf_check_prefix(context, instruction_state.data.opcodes[prefixes]))
+        _kdf_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile))
         ++prefixes;
-    if (prefixes > 1u)
+    const lib_u8 retained = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? 3u : 1u;
+    if (prefixes > retained)
         cpu_state.data.eip = X86_CPU_MASK_U16(
-            instruction_state.data.oldcpu.data.eip + prefixes - 1u);
+            instruction_state.data.oldcpu.data.eip + prefixes - retained);
 }
 
 static void ExecInt(x86_core_cpu_execution_context *context)

@@ -32,7 +32,9 @@ typedef enum {
 typedef enum {
     PREFIX_REP_NONE,
     PREFIX_REP_REPZ,
-    PREFIX_REP_REPZNZ
+    PREFIX_REP_REPZNZ,
+    PREFIX_REP_REPC,
+    PREFIX_REP_REPNC
 } t_cpuins_data_prefix_rep;
 
 typedef enum {
