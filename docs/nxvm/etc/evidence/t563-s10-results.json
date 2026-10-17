@@ -1,0 +1,94 @@
+[
+  {
+    "arch": "x64",
+    "units": 655,
+    "unit_seconds": 64.0,
+    "product_integrations": 48,
+    "shared_native_integrations": 4,
+    "failures": 0,
+    "skipped": 0,
+    "groups": [
+      {
+        "owner": "nxvm",
+        "tests": 35,
+        "seconds": 19.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "my5160",
+        "tests": 3,
+        "seconds": 30.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "my5170",
+        "tests": 5,
+        "seconds": 43.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "mydeskpro386",
+        "tests": 5,
+        "seconds": 116.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "shared-native",
+        "tests": 4,
+        "seconds": 1.0,
+        "failures": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  {
+    "arch": "x86",
+    "units": 655,
+    "unit_seconds": 72.0,
+    "product_integrations": 48,
+    "shared_native_integrations": 4,
+    "failures": 0,
+    "skipped": 0,
+    "groups": [
+      {
+        "owner": "nxvm",
+        "tests": 35,
+        "seconds": 23.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "my5160",
+        "tests": 3,
+        "seconds": 40.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "my5170",
+        "tests": 5,
+        "seconds": 59.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "mydeskpro386",
+        "tests": 5,
+        "seconds": 178.0,
+        "failures": 0,
+        "skipped": 0
+      },
+      {
+        "owner": "shared-native",
+        "tests": 4,
+        "seconds": 1.0,
+        "failures": 0,
+        "skipped": 0
+      }
+    ]
+  }
+]

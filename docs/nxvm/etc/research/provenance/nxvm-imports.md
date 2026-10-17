@@ -184,6 +184,20 @@ the Shared source/test corpus.
   import. [S9 evidence](../../evidence/t563-s9-shared-import.md) distinguishes
   native MIDI classification from actual endpoint qualification.
 
+## T563 S10 — Base Input Ownership And PCM Gain Transfer
+
+- Source: project-owned SoftPC `1451522f42efc8152d4d4e75fbf97f80015e297b`.
+- Same-path unchanged transfer: `src/{lib,emulator,x86-debug,x86-ibmpc}` and
+  matching `test` packages, exported from committed Git objects. Root helper
+  files are unchanged upstream; stronger local receiving checks remain intact.
+- Root MIT owner authorization and existing notices are preserved. No App,
+  recovered implementation, firmware/media or sibling artifact is imported.
+- Base is the sole input-vocabulary owner. Actual X86 NXVM/MyNES callers adopt
+  its names without aliases or algorithm changes; X86 Core remains untouched.
+  Native PCM gain applies before channel conversion, on the existing worker.
+- [S10 evidence](../../evidence/t563-s10-shared-import.md) records canonical
+  hashes, whole receiving qualification, current ten artifacts and limits.
+
 ## T562 S3 — Selective Executor Heartbeat Correction
 
 - Source: project-owned SoftPC `7a523a42663f6fb236d6c0a99d89448b084f5bf2`.

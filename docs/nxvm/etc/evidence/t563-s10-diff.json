@@ -1,0 +1,142 @@
+[
+  {
+    "root": "src/lib",
+    "paths": 28,
+    "added": 278,
+    "deleted": 287,
+    "net": -9,
+    "code_added": 231,
+    "code_deleted": 250,
+    "code_net": -19
+  },
+  {
+    "root": "src/emulator",
+    "paths": 2,
+    "added": 3,
+    "deleted": 3,
+    "net": 0,
+    "code_added": 2,
+    "code_deleted": 2,
+    "code_net": 0
+  },
+  {
+    "root": "src/x86-debug",
+    "paths": 0,
+    "added": 0,
+    "deleted": 0,
+    "net": 0,
+    "code_added": 0,
+    "code_deleted": 0,
+    "code_net": 0
+  },
+  {
+    "root": "src/x86-ibmpc",
+    "paths": 2,
+    "added": 20,
+    "deleted": 20,
+    "net": 0,
+    "code_added": 19,
+    "code_deleted": 19,
+    "code_net": 0
+  },
+  {
+    "root": "src/x86-nxvm",
+    "paths": 2,
+    "added": 42,
+    "deleted": 42,
+    "net": 0,
+    "code_added": 41,
+    "code_deleted": 41,
+    "code_net": 0
+  },
+  {
+    "root": "src/x86-core",
+    "paths": 0,
+    "added": 0,
+    "deleted": 0,
+    "net": 0,
+    "code_added": 0,
+    "code_deleted": 0,
+    "code_net": 0
+  },
+  {
+    "root": "src/app-mynes",
+    "paths": 2,
+    "added": 6,
+    "deleted": 6,
+    "net": 0,
+    "code_added": 6,
+    "code_deleted": 6,
+    "code_net": 0
+  },
+  {
+    "root": "test/lib",
+    "paths": 17,
+    "added": 236,
+    "deleted": 196,
+    "net": 40,
+    "code_added": 210,
+    "code_deleted": 179,
+    "code_net": 31
+  },
+  {
+    "root": "test/emulator",
+    "paths": 3,
+    "added": 14,
+    "deleted": 14,
+    "net": 0,
+    "code_added": 12,
+    "code_deleted": 12,
+    "code_net": 0
+  },
+  {
+    "root": "test/x86-debug",
+    "paths": 0,
+    "added": 0,
+    "deleted": 0,
+    "net": 0,
+    "code_added": 0,
+    "code_deleted": 0,
+    "code_net": 0
+  },
+  {
+    "root": "test/x86-ibmpc",
+    "paths": 2,
+    "added": 10,
+    "deleted": 10,
+    "net": 0,
+    "code_added": 9,
+    "code_deleted": 9,
+    "code_net": 0
+  },
+  {
+    "root": "test/x86-nxvm",
+    "paths": 2,
+    "added": 30,
+    "deleted": 30,
+    "net": 0,
+    "code_added": 29,
+    "code_deleted": 29,
+    "code_net": 0
+  },
+  {
+    "root": "test/x86-core",
+    "paths": 0,
+    "added": 0,
+    "deleted": 0,
+    "net": 0,
+    "code_added": 0,
+    "code_deleted": 0,
+    "code_net": 0
+  },
+  {
+    "root": "test/app-mynes",
+    "paths": 5,
+    "added": 17,
+    "deleted": 17,
+    "net": 0,
+    "code_added": 17,
+    "code_deleted": 17,
+    "code_net": 0
+  }
+]
