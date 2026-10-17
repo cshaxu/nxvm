@@ -15,7 +15,8 @@ in the [ten-artifact inventory](../../nxvm/etc/evidence/t563-s10-artifacts.json)
 The initial x64 native Console pause assertion failed; the unchanged complete
 receiving integration rerun passed. Existing TODO retains that unresolved
 intermittency, not a claimed input repair. No independent MyNES S is started;
-S10 awaits owner acceptance in the NXVM packet.
+The owner accepted S10 on 2026-10-17; its closure and the separate complete
+T563 CPU audit are recorded in the NXVM packet. No new MyNES work is admitted.
 
 Earlier T562 S3's [correction evidence](../../nxvm/etc/evidence/t562-s3-correction.md)
 and [artifact inventory](../../nxvm/etc/evidence/t562-s3-correction-artifacts.json)
