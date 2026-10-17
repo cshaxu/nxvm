@@ -519,8 +519,9 @@ static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile)
     case X86_CORE_CPU_PROFILE_80186:
     case X86_CORE_CPU_PROFILE_DEFAULT:
         return 0u;
+    default:
+        return 0u;
     }
-    return 0u;
 }
 
 static lib_status x86_nxvm_board_register_reset_rom_alias(void *owner)

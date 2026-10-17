@@ -196,6 +196,17 @@ lib_i32 main(void)
     static const lib_u8 shift_rm16_imm8[] = { 0xc1u, 0xeau, 0x04u };
     lib_i32 failed = 0;
 
+    /* CPU-native development is not complete Machine/time qualification. */
+    const x86_core_machine_executor_config unqualified = {
+        .memory_bytes = 2u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_V30,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    x86_core_machine *candidate = LIB_NULL;
+    failed |= x86_core_machine_neutral_config_is_valid(&unqualified) ||
+        x86_core_machine_neutral_create(&unqualified, &candidate) != LIB_STATUS_INVALID_ARGUMENT ||
+        candidate != LIB_NULL;
+
     failed |= run_selected_sx();
 
     failed |= run_case(X86_CORE_CPU_PROFILE_8086, nop, sizeof(nop), 0);

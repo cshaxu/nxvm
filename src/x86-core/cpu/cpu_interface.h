@@ -51,7 +51,9 @@ typedef enum x86_core_cpu_profile {
     X86_CORE_CPU_PROFILE_80286,
     X86_CORE_CPU_PROFILE_80386,
     /* Selected embedded SX model: CPUID 042Bh, VME/SMM, no integrated FPU. */
-    X86_CORE_CPU_PROFILE_80486SX
+    X86_CORE_CPU_PROFILE_80486SX,
+    /* Native CPU work is incremental; Machine admission requires qualification. */
+    X86_CORE_CPU_PROFILE_V30
 } x86_core_cpu_profile;
 
 /* CPU provenance is independent of the board's physical address decoder. */

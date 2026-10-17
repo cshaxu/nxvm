@@ -63,7 +63,8 @@ lib_status x86_core_cpu_prepare_entry(x86_core_cpu_execution_context *context,
     out_cpu->data.esi = state->esi;
     out_cpu->data.edi = state->edi;
     out_cpu->data.ebp = state->ebp;
-    out_cpu->data.eflags = state->eflags | 0x00000002u;
+    out_cpu->data.eflags = state->eflags | 0x00000002u |
+        (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? X86_CPU_NEC_PSW_MD : 0u);
     out_cpu->data.flagHalt = LIB_FALSE;
     *out_entry = entry;
     return LIB_STATUS_OK;
@@ -414,6 +415,10 @@ lib_status x86_core_cpu_debug_read_register(const x86_core_cpu_execution_context
 
     if (context == LIB_NULL || out_value == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        register_id >= X86_CORE_CPU_DEBUG_FS &&
+        register_id < X86_CORE_CPU_DEBUG_REGISTER_COUNT)
+        return LIB_STATUS_UNSUPPORTED;
     cpu = context->cpu;
     switch (register_id) {
     case X86_CORE_CPU_DEBUG_EAX: *out_value = cpu->data.eax; break;
@@ -479,7 +484,10 @@ static lib_status x86_core_cpu_debug_apply_patch(x86_core_cpu_execution_context 
         case X86_CORE_CPU_DEBUG_EDI: candidate_cpu->data.edi = patch->values[register_id]; break;
         case X86_CORE_CPU_DEBUG_EIP: candidate_cpu->data.eip = patch->values[register_id]; break;
         case X86_CORE_CPU_DEBUG_EFLAGS:
-            candidate_cpu->data.eflags = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
+            candidate_cpu->data.eflags = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+                (patch->values[register_id] & 0x0fd5u) | 0x02u |
+                    (candidate_cpu->data.eflags & X86_CPU_NEC_PSW_MD) :
+                context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
                 x86_core_cpu_eflags_normalize(context->cpu_profile, patch->values[register_id]) :
                 patch->values[register_id];
             break;
@@ -547,6 +555,9 @@ lib_status x86_core_cpu_debug_patch_registers(x86_core_cpu_execution_context *co
         return LIB_STATUS_INVALID_ARGUMENT;
     if (patch->mask == 0u || (patch->mask & ~valid_mask) != 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        (patch->mask >> X86_CORE_CPU_DEBUG_FS) != 0u)
+        return LIB_STATUS_UNSUPPORTED;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
         (patch->mask & X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR4)) &&
         !x86_core_cpu_cr4_value_valid(context->cpu_profile,
@@ -571,6 +582,7 @@ static lib_u32 x86_core_cpu_reset_code_base(
     case X86_CORE_CPU_PROFILE_8086:
     case X86_CORE_CPU_PROFILE_8088:
     case X86_CORE_CPU_PROFILE_80186:
+    case X86_CORE_CPU_PROFILE_V30:
         return 0x000ffff0u;
     case X86_CORE_CPU_PROFILE_80286:
         return 0x00ff0000u;
@@ -660,8 +672,7 @@ void x86_core_cpu_execution_context_bind_profiles(
     context->instruction_timing = *timing;
     if (context->cpu_profile != cpu_profile) x86_core_cpu_bus_reset(context);
     context->cpu_profile = cpu_profile;
-    context->prefetch_capacity = cpu_profile == X86_CORE_CPU_PROFILE_8088 ?
-        4u : 15u;
+    context->prefetch_capacity = cpu_profile_prefetch_capacity(cpu_profile);
     context->fpu_profile = fpu_profile;
     context->cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod;
 }
@@ -690,6 +701,7 @@ const char *x86_core_cpu_profile_name(x86_core_cpu_profile profile)
     case X86_CORE_CPU_PROFILE_80286: return "80286";
     case X86_CORE_CPU_PROFILE_80386: return "80386";
     case X86_CORE_CPU_PROFILE_80486SX: return "80486SX";
+    case X86_CORE_CPU_PROFILE_V30: return "V30";
     case X86_CORE_CPU_PROFILE_DEFAULT: return "default";
     }
     return "invalid";
@@ -727,8 +739,7 @@ void x86_core_cpu_state_initialize(
         context->nmi_pending = LIB_FALSE;
         context->debug_trap_cause = 0u;
         context->prefetch_count = 0u;
-        context->prefetch_capacity = context->cpu_profile ==
-            X86_CORE_CPU_PROFILE_8088 ? 4u : 15u;
+        context->prefetch_capacity = cpu_profile_prefetch_capacity(context->cpu_profile);
         context->prefetch_valid = LIB_FALSE;
         context->prefetch_expected_valid = LIB_FALSE;
         context->prefetch_reservation_valid = LIB_FALSE;
@@ -743,7 +754,8 @@ static void x86_core_cpu_state_apply_reset(
     if (context == LIB_NULL || context->cpu == LIB_NULL ||
         context->instructions == LIB_NULL) return;
     const lib_bool early = x86_core_cpu_profile_has_8086_semantics(
-        context->cpu_profile) || context->cpu_profile == X86_CORE_CPU_PROFILE_80186;
+        context->cpu_profile) || context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30;
     const lib_u32 smbase = context->smbase;
     context->source_repeat_active = LIB_FALSE;
     context->repeat_compare_flags_valid = LIB_FALSE;
@@ -761,8 +773,7 @@ static void x86_core_cpu_state_apply_reset(
         context->reset_requested = X86_CORE_CPU_RESET_NONE;
         context->shutdown_requested = LIB_FALSE;
         context->prefetch_count = 0u;
-        context->prefetch_capacity = context->cpu_profile ==
-            X86_CORE_CPU_PROFILE_8088 ? 4u : 15u;
+        context->prefetch_capacity = cpu_profile_prefetch_capacity(context->cpu_profile);
         context->prefetch_valid = LIB_FALSE;
         context->prefetch_expected_valid = LIB_FALSE;
         context->prefetch_reservation_valid = LIB_FALSE;
@@ -772,6 +783,8 @@ static void x86_core_cpu_state_apply_reset(
 
     cpu_state.data.eip = early ? 0u : 0x0000fff0u;
     cpu_state.data.eflags = 0x00000002;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+        cpu_state.data.eflags |= X86_CPU_NEC_PSW_MD;
     /* Intel 80386 PRM 10.1 defines DH=3 after RESET# for the 386DX.
      * The selected zero revision keeps the documented device identifier
      * without inventing a board-specific stepping value. */

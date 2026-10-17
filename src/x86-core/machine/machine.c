@@ -115,8 +115,18 @@ static lib_i32 x86_core_machine_retirement_qualification_contains(
 }
 static lib_i32 x86_core_machine_valid_cpu_profile(x86_core_cpu_profile profile)
 {
-    return profile >= X86_CORE_CPU_PROFILE_8086 &&
-        profile <= X86_CORE_CPU_PROFILE_80486SX;
+    switch (profile) {
+    case X86_CORE_CPU_PROFILE_8086:
+    case X86_CORE_CPU_PROFILE_8088:
+    case X86_CORE_CPU_PROFILE_80186:
+    case X86_CORE_CPU_PROFILE_80286:
+    case X86_CORE_CPU_PROFILE_80386:
+    case X86_CORE_CPU_PROFILE_80486SX:
+        return LIB_TRUE;
+    default:
+        /* New CPU families need complete runtime/time qualification first. */
+        return LIB_FALSE;
+    }
 }
 
 static lib_i32 x86_core_machine_valid_fpu_profile(x86_fpu_profile profile)

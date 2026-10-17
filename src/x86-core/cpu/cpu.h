@@ -47,6 +47,56 @@ extern "C" {
 #define X86_CORE_CPU_DEVICE_CPU X86_CORE_CPU_DEVICE_NAME
 #define X86_CPU_DEFAULT_SMBASE 0x00030000u
 
+#define X86_CPU_NEC_PSW_MD 0x8000u
+
+/* Family capabilities are not an ordering of the public profile enum. */
+static inline lib_bool cpu_profile_has_protected_architecture(x86_core_cpu_profile profile)
+{
+    return profile == X86_CORE_CPU_PROFILE_80286 ||
+        profile == X86_CORE_CPU_PROFILE_80386 ||
+        profile == X86_CORE_CPU_PROFILE_80486SX;
+}
+
+static inline lib_bool cpu_profile_has_32bit_architecture(x86_core_cpu_profile profile)
+{
+    return profile == X86_CORE_CPU_PROFILE_80386 ||
+        profile == X86_CORE_CPU_PROFILE_80486SX;
+}
+
+static inline lib_bool cpu_profile_has_186_integer(x86_core_cpu_profile profile)
+{
+    return profile == X86_CORE_CPU_PROFILE_80186 ||
+        profile == X86_CORE_CPU_PROFILE_V30 ||
+        cpu_profile_has_protected_architecture(profile);
+}
+
+static inline lib_bool cpu_profile_allows_minimum(x86_core_cpu_profile profile,
+    x86_core_cpu_profile minimum)
+{
+    switch (minimum) {
+    case X86_CORE_CPU_PROFILE_8086:
+        return x86_core_cpu_profile_has_8086_semantics(profile) ||
+            cpu_profile_has_186_integer(profile);
+    case X86_CORE_CPU_PROFILE_80186:
+        return cpu_profile_has_186_integer(profile);
+    case X86_CORE_CPU_PROFILE_80286:
+        return cpu_profile_has_protected_architecture(profile);
+    case X86_CORE_CPU_PROFILE_80386:
+        return cpu_profile_has_32bit_architecture(profile);
+    case X86_CORE_CPU_PROFILE_80486SX:
+        return profile == X86_CORE_CPU_PROFILE_80486SX;
+    default:
+        return LIB_FALSE;
+    }
+}
+
+static inline lib_u8 cpu_profile_prefetch_capacity(x86_core_cpu_profile profile)
+{
+    if (profile == X86_CORE_CPU_PROFILE_8088) return 4u;
+    if (profile == X86_CORE_CPU_PROFILE_V30) return 6u;
+    return 15u;
+}
+
 typedef enum {
     SREG_DATA,
     SREG_STACK,

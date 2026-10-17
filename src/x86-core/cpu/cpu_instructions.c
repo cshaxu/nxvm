@@ -143,7 +143,7 @@ static lib_u16 _e_real_flags_defined_mask(
     const x86_core_cpu_execution_context *context)
 {
     if (context == LIB_NULL ||
-        context->cpu_profile < X86_CORE_CPU_PROFILE_80286) {
+        !cpu_profile_has_protected_architecture(context->cpu_profile)) {
         return 0x0fd5u;
     }
     return 0x7fd5u;
@@ -153,13 +153,17 @@ static lib_u16 _e_real_flags_load_16(
     const x86_core_cpu_execution_context *context, lib_u16 flags)
 {
     return X86_CPU_MASK_U16((flags &
-        _e_real_flags_defined_mask(context)) | 0x02u);
+        _e_real_flags_defined_mask(context)) | 0x02u |
+        (context != LIB_NULL && context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+            context->cpu->data.eflags & X86_CPU_NEC_PSW_MD : 0u));
 }
 
 static lib_u16 _e_real_flags_image_16(
     const x86_core_cpu_execution_context *context, lib_u16 flags)
 {
     const lib_u16 fixed = context != LIB_NULL &&
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? 0x7000u :
+        context != LIB_NULL &&
         (x86_core_cpu_profile_has_8086_semantics(context->cpu_profile) ||
          context->cpu_profile == X86_CORE_CPU_PROFILE_80186) ? 0xf000u : 0u;
 
@@ -170,7 +174,7 @@ static lib_u32 _e_eflags_load(
     const x86_core_cpu_execution_context *context, lib_u32 flags)
 {
     if (context == LIB_NULL ||
-        context->cpu_profile < X86_CORE_CPU_PROFILE_80386) {
+        !cpu_profile_has_32bit_architecture(context->cpu_profile)) {
         return _e_real_flags_load_16(context, X86_CPU_MASK_U16(flags));
     }
     return x86_core_cpu_eflags_normalize(context->cpu_profile, flags);
@@ -380,7 +384,7 @@ static void _kma_read_physical(x86_core_cpu_execution_context *context,
      * Board A20 routing remains in the memory owner and is applied afterwards.
      * In particular, the 80286 reset fetch at FFFFF0h wraps at 16 MiB rather
      * than falling into a synthetic 25th address bit. */
-    if (context->cpu_profile <= X86_CORE_CPU_PROFILE_80186) {
+    if (!cpu_profile_has_protected_architecture(context->cpu_profile)) {
         physical &= 0x000fffffu;
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
@@ -489,7 +493,7 @@ static void _kma_write_bus(x86_core_cpu_execution_context *context,
 static void _kma_write_physical(x86_core_cpu_execution_context *context, lib_u32 physical, lib_uptr rdata, lib_u8 byte, x86_core_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     CPU_TRACE_CALL_BEGIN("_kma_write_physical");
-    if (context->cpu_profile <= X86_CORE_CPU_PROFILE_80186) {
+    if (!cpu_profile_has_protected_architecture(context->cpu_profile)) {
         physical &= 0x000fffffu;
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
@@ -1172,7 +1176,7 @@ static lib_u32 _kma_linear_logical(x86_core_cpu_execution_context *context, t_cp
     case SREG_IDTR:
         CPU_TRACE_BLOCK_BEGIN("sregtype(SREG_IDTR)");
         lower = 0x00000000;
-        upper = context->cpu_profile < X86_CORE_CPU_PROFILE_80286 ?
+        upper = !cpu_profile_has_protected_architecture(context->cpu_profile) ?
             0x03ffu : rsreg->limit;
         CPU_TRACE_BLOCK_END;
         break;
@@ -1208,7 +1212,7 @@ static lib_u32 _kma_linear_logical(x86_core_cpu_execution_context *context, t_cp
         CPU_TRACE_IMPOSSIBLE_RETURN_ZERO;
     }
     linear = (rsreg->sregtype == SREG_IDTR &&
-        context->cpu_profile < X86_CORE_CPU_PROFILE_80286 ? 0u : rsreg->base) + offset;
+        !cpu_profile_has_protected_architecture(context->cpu_profile) ? 0u : rsreg->base) + offset;
     if (offset < lower || offset > upper || (byte != 0u &&
         (lib_u32)(byte - 1u) > upper - offset))
     {
@@ -1654,7 +1658,7 @@ static void _ksa_read_table(x86_core_cpu_execution_context *context,
     t_cpu_data_sreg *rtable, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
 {
     const lib_u32 base = rtable->sregtype == SREG_IDTR &&
-        context->cpu_profile < X86_CORE_CPU_PROFILE_80286 ? 0u :
+        !cpu_profile_has_protected_architecture(context->cpu_profile) ? 0u :
         rtable->base;
 
     CPU_TRACE_CALL_BEGIN("_ksa_read_table");
@@ -1684,7 +1688,7 @@ static void _ksa_read_idt(x86_core_cpu_execution_context *context, lib_u8 intid,
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("CR0_PE(0)");
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286 &&
+        if (cpu_profile_has_protected_architecture(context->cpu_profile) &&
             X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
         CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
@@ -2303,9 +2307,9 @@ static void _s_read_cs(x86_core_cpu_execution_context *context, lib_u32 offset, 
     lib_u32 prefetch_offset;
     lib_u32 instruction_offset = offset - instruction_state.data.receip;
     lib_u8 length_limit = context->cpu_profile == X86_CORE_CPU_PROFILE_80286 ?
-        10u : context->cpu_profile >= X86_CORE_CPU_PROFILE_80386 ? 15u : 0u;
+        10u : cpu_profile_has_32bit_architecture(context->cpu_profile) ? 15u : 0u;
     CPU_TRACE_CALL_BEGIN("_s_read_cs");
-    if (context->cpu_profile < X86_CORE_CPU_PROFILE_80286)
+    if (!cpu_profile_has_protected_architecture(context->cpu_profile))
         instruction_offset = X86_CPU_MASK_U16(instruction_offset);
     if (length_limit != 0u && (lib_u64)instruction_offset + byte > length_limit) {
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286)
@@ -2440,7 +2444,7 @@ static void _s_test_ss_push(x86_core_cpu_execution_context *context, lib_u8 byte
     {
     case 2:
         CPU_TRACE_BLOCK_BEGIN("StackSize(2)");
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286 &&
+        if (cpu_profile_has_protected_architecture(context->cpu_profile) &&
             cpu_state.data.sp && cpu_state.data.sp < byte)
             CPU_TRACE_CHECK_RETURN(_SetExcept_SS(0));
         CPU_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, X86_CPU_MASK_U16(cpu_state.data.sp - byte), byte, 1));
@@ -2448,7 +2452,7 @@ static void _s_test_ss_push(x86_core_cpu_execution_context *context, lib_u8 byte
         break;
     case 4:
         CPU_TRACE_BLOCK_BEGIN("StackSize(4)");
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286 &&
+        if (cpu_profile_has_protected_architecture(context->cpu_profile) &&
             cpu_state.data.esp && cpu_state.data.esp < byte)
             CPU_TRACE_CHECK_RETURN(_SetExcept_SS(0));
         CPU_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, X86_CPU_MASK_U32(cpu_state.data.esp - byte), byte, 1));
@@ -2820,7 +2824,7 @@ _______todo _kpa_test_iomap(x86_core_cpu_execution_context *context, lib_u16 por
     if (byte != 1u && byte != 2u && byte != 4u) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
-    if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386 ||
+    if (!cpu_profile_has_32bit_architecture(context->cpu_profile) ||
         !cpu_state.data.tr.flagValid ||
         cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
@@ -3013,7 +3017,7 @@ static lib_u8 _kdf_check_prefix(x86_core_cpu_execution_context *context, lib_u8 
     case 0x65:
     case 0x66:
     case 0x67:
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+        if (cpu_profile_has_32bit_architecture(context->cpu_profile))
             return LIB_TRUE;
         else
             return LIB_FALSE;
@@ -3028,7 +3032,7 @@ static lib_u8 _kdf_check_prefix(x86_core_cpu_execution_context *context, lib_u8 
 static void _kdf_skip(x86_core_cpu_execution_context *context, lib_u8 byte)
 {
     CPU_TRACE_CALL_BEGIN("_kdf_skip");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+    if (cpu_profile_has_protected_architecture(context->cpu_profile))
         CPU_TRACE_CHECK_RETURN(cpu_state.data.eip += byte);
     else
         CPU_TRACE_CHECK_RETURN(cpu_state.data.eip = X86_CPU_MASK_U16(
@@ -3835,12 +3839,12 @@ static void _d_modrm_sreg(x86_core_cpu_execution_context *context, lib_u8 rmbyte
         instruction_state.data.rmovsreg = &cpu_state.data.ds;
         break;
     case 4:
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386)
+        if (!cpu_profile_has_32bit_architecture(context->cpu_profile))
             CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         instruction_state.data.rmovsreg = &cpu_state.data.fs;
         break;
     case 5:
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386)
+        if (!cpu_profile_has_32bit_architecture(context->cpu_profile))
             CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         instruction_state.data.rmovsreg = &cpu_state.data.gs;
         break;
@@ -4565,7 +4569,7 @@ static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
     CPU_TRACE_CALL_BEGIN("_ser_int_real");
     if (_IsProtected)
         CPU_TRACE_IMPOSSIBLE_RETURN;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286 &&
+    if (cpu_profile_has_protected_architecture(context->cpu_profile) &&
         X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
     {
         CPU_TRACE_BLOCK_BEGIN("intid(>idtr.limit)");
@@ -5010,7 +5014,7 @@ static void _ser_int_protected(x86_core_cpu_execution_context *context,
         break;
     case VCPU_DESC_SYS_TYPE_INTGATE_32:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386)
+        if (!cpu_profile_has_32bit_architecture(context->cpu_profile))
             CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
         CPU_TRACE_CHECK_RETURN(_ser_int_protected_32_same(context, intid,
             gate_desc, software_origin, flagext));
@@ -5066,7 +5070,7 @@ static void _ser_return_outer_cleanup_sregs(
     CPU_TRACE_CALL_BEGIN("_ser_return_outer_cleanup_sregs");
     _ser_return_outer_cleanup_sreg(&cpu_state.data.ds, target_cpl);
     _ser_return_outer_cleanup_sreg(&cpu_state.data.es, target_cpl);
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386) {
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile)) {
         _ser_return_outer_cleanup_sreg(&cpu_state.data.fs, target_cpl);
         _ser_return_outer_cleanup_sreg(&cpu_state.data.gs, target_cpl);
     }
@@ -5791,8 +5795,7 @@ static void _ser_task_transition_tss_plan(
         _s_task_set_unavailable(&cpu_state.data.gs, incoming32.gs.selector,
             SREG_DATA);
     } else {
-        const lib_u32 high = context->cpu_profile >=
-            X86_CORE_CPU_PROFILE_80386 ? 0xffff0000u : 0u;
+        const lib_u32 high = cpu_profile_has_32bit_architecture(context->cpu_profile) ? 0xffff0000u : 0u;
 
         _WriteGPR32(eax) = high | incoming16.ax;
         _WriteGPR32(ecx) = high | incoming16.cx;
@@ -5816,7 +5819,7 @@ static void _ser_task_transition_tss_plan(
     newtr.sys.type = new_is_32 ? VCPU_DESC_SYS_TYPE_TSS_32_BUSY :
         VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
     cpu_state.data.tr = newtr;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
         cpu_state.data.dr7 &= ~VCPU_DR7_LOCAL_ENABLE_MASK;
     _SetCR0_TS;
     if (new_is_32 && X86_CPU_GET_LSB(debug_trap)) cpu_state.data.dr6 |= VCPU_DR6_BT;
@@ -5893,10 +5896,10 @@ static void _ser_task_transition_tss(x86_core_cpu_execution_context *context,
     lib_u8 new_is_32;
 
     CPU_TRACE_CALL_BEGIN("_ser_task_transition_tss");
-    old_is_32 = context->cpu_profile >= X86_CORE_CPU_PROFILE_80386 &&
+    old_is_32 = cpu_profile_has_32bit_architecture(context->cpu_profile) &&
         cpu_state.data.tr.flagValid && cpu_state.data.tr.sys.type ==
         VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386 &&
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile) &&
         !_GetSelector_TI(newcs)) {
         const lib_u32 misses = instruction_state.data.timing_missed_descriptors;
 
@@ -5944,7 +5947,7 @@ static void _ser_task_return_tss(x86_core_cpu_execution_context *context)
 static void _e_push(x86_core_cpu_execution_context *context, lib_uptr rdata, lib_u8 byte)
 {
     CPU_TRACE_CALL_BEGIN("_e_push");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286 &&
+    if (cpu_profile_has_protected_architecture(context->cpu_profile) &&
         !_IsProtected && (_GetStackSize == 2 ? cpu_state.data.sp :
             cpu_state.data.esp) == 1u)
     {
@@ -5954,8 +5957,7 @@ static void _e_push(x86_core_cpu_execution_context *context, lib_uptr rdata, lib
             _kdf_check_prefix(context, instruction_state.data.opcodes[index])) ++index;
         opcode = index < instruction_state.data.oplen ?
             instruction_state.data.opcodes[index] : 0u;
-        if (opcode == 0x9cu || (context->cpu_profile >=
-            X86_CORE_CPU_PROFILE_80386 &&
+        if (opcode == 0x9cu || (cpu_profile_has_32bit_architecture(context->cpu_profile) &&
             ((opcode >= 0x50u && opcode <= 0x57u) || opcode == 0x68u ||
             opcode == 0x6au || opcode == 0x06u || opcode == 0x0eu ||
             opcode == 0x16u || opcode == 0x1eu || opcode == 0xffu ||
@@ -6352,7 +6354,7 @@ _______todo _e_except_n(x86_core_cpu_execution_context *context, lib_u8 exid, li
         cpu_state.data.dr7 &= ~VCPU_DR7_GD;
     /* Fault images set RF; the rollback checkpoint and trap images do not.
      * Gate entry clears live RF, while task entry loads the incoming TSS. */
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386 &&
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile) &&
         X86_CPU_BIT_IS_SET(instruction_state.data.except, UINT32_C(1) << exid) &&
         exid != 0x08u && exid != 0x09u) _SetEFLAGS_RF;
     instruction_state.data.except &= ~(UINT32_C(1) << exid);
@@ -6693,7 +6695,7 @@ _______todo _e_iret(x86_core_cpu_execution_context *context, lib_u8 byte)
     lib_u32 mask = x86_core_cpu_eflags_reserved_mask(context->cpu_profile);
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     CPU_TRACE_CALL_BEGIN("_e_iret");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+    if (cpu_profile_has_protected_architecture(context->cpu_profile))
         context->nmi_in_service = LIB_FALSE;
     if (!_GetCR0_PE)
     {
@@ -6736,7 +6738,7 @@ _______todo _e_iret(x86_core_cpu_execution_context *context, lib_u8 byte)
         cpu_state.data.eip = neweip;
         cpu_state.data.eflags = _e_eflags_load(context,
             (neweflags & ~mask) | (cpu_state.data.eflags & mask));
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80186)
+        if (!cpu_profile_has_186_integer(context->cpu_profile))
             context->interrupt_shadow = CPU_INTERRUPT_SHADOW_INTR;
         CPU_TRACE_BLOCK_END;
     }
@@ -7023,7 +7025,7 @@ static void _e_pop_sreg(x86_core_cpu_execution_context *context,
         break;
     }
     if (rsreg->sregtype == SREG_STACK ||
-        context->cpu_profile < X86_CORE_CPU_PROFILE_80186)
+        !cpu_profile_has_186_integer(context->cpu_profile))
         context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
 }
@@ -9128,7 +9130,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_is_prefix(
     case 0xf0u: case 0xf2u: case 0xf3u:
         return LIB_TRUE;
     case 0x64u: case 0x65u: case 0x66u: case 0x67u:
-        return profile >= X86_CORE_CPU_PROFILE_80386;
+        return cpu_profile_has_32bit_architecture(profile);
     default:
         return LIB_FALSE;
     }
@@ -9249,15 +9251,15 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     if (out_lexeme == LIB_NULL) return LIB_FALSE;
     *out_lexeme = (x86_core_cpu_instruction_lexeme) { 0u, 0u, LIB_FALSE };
     if (bytes == LIB_NULL || available_bytes == 0u ||
-        profile < X86_CORE_CPU_PROFILE_8086 ||
-        profile > X86_CORE_CPU_PROFILE_80486SX) return LIB_FALSE;
+        !cpu_profile_allows_minimum(profile, X86_CORE_CPU_PROFILE_8086) ||
+        (profile == X86_CORE_CPU_PROFILE_V30 && code_32)) return LIB_FALSE;
     while (index < available_bytes && index < 15u &&
         x86_core_cpu_instruction_lexeme_is_prefix(bytes[index], profile)) {
         if (bytes[index] == 0xf0u) lock_prefix = LIB_TRUE;
         ++index;
         ++components;
     }
-    if (index < available_bytes && profile < X86_CORE_CPU_PROFILE_80386 &&
+    if (index < available_bytes && !cpu_profile_has_32bit_architecture(profile) &&
         (bytes[index] == 0x64u || bytes[index] == 0x65u ||
          bytes[index] == 0x66u || bytes[index] == 0x67u)) return LIB_FALSE;
     if (index >= available_bytes || index >= 15u) return LIB_FALSE;
@@ -9265,7 +9267,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     ++components;
     operand_bytes = code_32 ? 4u : 2u;
     address_bytes = code_32 ? 4u : 2u;
-    if (profile >= X86_CORE_CPU_PROFILE_80386) {
+    if (cpu_profile_has_32bit_architecture(profile)) {
         lib_u8 prefix_index;
 
         for (prefix_index = 0u; prefix_index < index - 1u; ++prefix_index) {
@@ -9325,7 +9327,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         opcode, modrm);
     if (extended && opcode >= 0xc8u && opcode <= 0xcfu && operand_bytes != 4u)
         return LIB_FALSE;
-    if (!metadata.valid || profile < metadata.minimum_cpu || lock_prefix) {
+    if (!metadata.valid || !cpu_profile_allows_minimum(profile, metadata.minimum_cpu) || lock_prefix) {
         return LIB_FALSE;
     }
     immediate = x86_core_cpu_instruction_lexeme_immediate_bytes(opcode,
@@ -9493,8 +9495,10 @@ static lib_i32 x86_core_cpu_profile_allows_form(
 
     if (context == LIB_NULL)
         return 0;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        space != X86_CORE_CPU_INSTRUCTION_PRIMARY) return 0;
     metadata = x86_core_cpu_instruction_metadata_get(space, opcode, modrm);
-    return metadata.valid && context->cpu_profile >= metadata.minimum_cpu;
+    return metadata.valid && cpu_profile_allows_minimum(context->cpu_profile, metadata.minimum_cpu);
 }
 
 lib_u8 x86_core_cpu_instruction_lexeme_scan(
@@ -9551,7 +9555,7 @@ static void x86_core_cpu_begin_wait(
      * contract. */
     context->wait_poll_remaining_ticks = state == CPU_WAIT_STATE_ESC_RESTART ?
         5u : (context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ? 6u :
-            context->cpu_profile >= X86_CORE_CPU_PROFILE_80386 ? 7u : 3u) + 5u;
+            cpu_profile_has_32bit_architecture(context->cpu_profile) ? 7u : 3u) + 5u;
     cpu_state.data.flagHalt = LIB_TRUE;
 }
 
@@ -9673,7 +9677,7 @@ static void ADD_RM8_R8(x86_core_cpu_execution_context *context)
 static void ADD_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADD_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -9706,7 +9710,7 @@ static void ADD_R8_RM8(x86_core_cpu_execution_context *context)
 static void ADD_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADD_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -9736,7 +9740,7 @@ static void ADD_AL_I8(x86_core_cpu_execution_context *context)
 static void ADD_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADD_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -9800,7 +9804,7 @@ static void OR_RM8_R8(x86_core_cpu_execution_context *context)
 static void OR_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OR_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -9833,7 +9837,7 @@ static void OR_R8_RM8(x86_core_cpu_execution_context *context)
 static void OR_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OR_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -9863,7 +9867,7 @@ static void OR_AL_I8(x86_core_cpu_execution_context *context)
 static void OR_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OR_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -9921,7 +9925,7 @@ static void INS_0F(x86_core_cpu_execution_context *context)
     lib_u8 opcode = 0x00;
     lib_u8 modrm = 0x00;
     CPU_TRACE_CALL_BEGIN("INS_0F");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+    if (cpu_profile_has_protected_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(opcode), 1));
@@ -9959,7 +9963,7 @@ static void ADC_RM8_R8(x86_core_cpu_execution_context *context)
 static void ADC_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADC_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -9992,7 +9996,7 @@ static void ADC_R8_RM8(x86_core_cpu_execution_context *context)
 static void ADC_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADC_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10022,7 +10026,7 @@ static void ADC_AL_I8(x86_core_cpu_execution_context *context)
 static void ADC_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ADC_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10086,7 +10090,7 @@ static void SBB_RM8_R8(x86_core_cpu_execution_context *context)
 static void SBB_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SBB_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10119,7 +10123,7 @@ static void SBB_R8_RM8(x86_core_cpu_execution_context *context)
 static void SBB_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SBB_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10149,7 +10153,7 @@ static void SBB_AL_I8(x86_core_cpu_execution_context *context)
 static void SBB_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SBB_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10213,7 +10217,7 @@ static void AND_RM8_R8(x86_core_cpu_execution_context *context)
 static void AND_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AND_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10246,7 +10250,7 @@ static void AND_R8_RM8(x86_core_cpu_execution_context *context)
 static void AND_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AND_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10276,7 +10280,7 @@ static void AND_AL_I8(x86_core_cpu_execution_context *context)
 static void AND_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("AND_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10312,7 +10316,7 @@ static void AND_EAX_I32(x86_core_cpu_execution_context *context)
 static void PREFIX_ES(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_ES");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.es;
@@ -10330,7 +10334,7 @@ static void DAA(x86_core_cpu_execution_context *context)
 {
     lib_u8 oldAL = cpu_state.data.al;
     CPU_TRACE_CALL_BEGIN("DAA");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
         _adv;
     else
         _adv;
@@ -10372,7 +10376,7 @@ static void SUB_RM8_R8(x86_core_cpu_execution_context *context)
 static void SUB_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SUB_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10405,7 +10409,7 @@ static void SUB_R8_RM8(x86_core_cpu_execution_context *context)
 static void SUB_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SUB_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10435,7 +10439,7 @@ static void SUB_AL_I8(x86_core_cpu_execution_context *context)
 static void SUB_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SUB_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10471,7 +10475,7 @@ static void SUB_EAX_I32(x86_core_cpu_execution_context *context)
 static void PREFIX_CS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_CS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.cs;
@@ -10490,7 +10494,7 @@ static void DAS(x86_core_cpu_execution_context *context)
     lib_u8 oldAL = cpu_state.data.al;
     const lib_bool oldCF = _GetEFLAGS_CF;
     CPU_TRACE_CALL_BEGIN("DAS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
         _adv;
     else
         _adv;
@@ -10532,7 +10536,7 @@ static void XOR_RM8_R8(x86_core_cpu_execution_context *context)
 static void XOR_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XOR_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10565,7 +10569,7 @@ static void XOR_R8_RM8(x86_core_cpu_execution_context *context)
 static void XOR_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XOR_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10595,7 +10599,7 @@ static void XOR_AL_I8(x86_core_cpu_execution_context *context)
 static void XOR_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XOR_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10631,7 +10635,7 @@ static void XOR_EAX_I32(x86_core_cpu_execution_context *context)
 static void PREFIX_SS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_SS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.ss;
@@ -10682,7 +10686,7 @@ static void CMP_RM8_R8(x86_core_cpu_execution_context *context)
 static void CMP_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMP_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10710,7 +10714,7 @@ static void CMP_R8_RM8(x86_core_cpu_execution_context *context)
 static void CMP_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMP_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -10737,7 +10741,7 @@ static void CMP_AL_I8(x86_core_cpu_execution_context *context)
 static void CMP_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMP_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10770,7 +10774,7 @@ static void CMP_EAX_I32(x86_core_cpu_execution_context *context)
 static void PREFIX_DS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_DS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.ds;
@@ -10812,7 +10816,7 @@ static void AAS(x86_core_cpu_execution_context *context)
 static void INC_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10845,7 +10849,7 @@ static void INC_EAX(x86_core_cpu_execution_context *context)
 static void INC_ECX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_ECX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10878,7 +10882,7 @@ static void INC_ECX(x86_core_cpu_execution_context *context)
 static void INC_EDX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_EDX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10911,7 +10915,7 @@ static void INC_EDX(x86_core_cpu_execution_context *context)
 static void INC_EBX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_EBX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10944,7 +10948,7 @@ static void INC_EBX(x86_core_cpu_execution_context *context)
 static void INC_ESP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_ESP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -10977,7 +10981,7 @@ static void INC_ESP(x86_core_cpu_execution_context *context)
 static void INC_EBP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_EBP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11010,7 +11014,7 @@ static void INC_EBP(x86_core_cpu_execution_context *context)
 static void INC_ESI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_ESI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11043,7 +11047,7 @@ static void INC_ESI(x86_core_cpu_execution_context *context)
 static void INC_EDI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INC_EDI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11076,7 +11080,7 @@ static void INC_EDI(x86_core_cpu_execution_context *context)
 static void DEC_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11109,7 +11113,7 @@ static void DEC_EAX(x86_core_cpu_execution_context *context)
 static void DEC_ECX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_ECX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11142,7 +11146,7 @@ static void DEC_ECX(x86_core_cpu_execution_context *context)
 static void DEC_EDX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_EDX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11175,7 +11179,7 @@ static void DEC_EDX(x86_core_cpu_execution_context *context)
 static void DEC_EBX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_EBX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11208,7 +11212,7 @@ static void DEC_EBX(x86_core_cpu_execution_context *context)
 static void DEC_ESP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_ESP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11241,7 +11245,7 @@ static void DEC_ESP(x86_core_cpu_execution_context *context)
 static void DEC_EBP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_EBP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11274,7 +11278,7 @@ static void DEC_EBP(x86_core_cpu_execution_context *context)
 static void DEC_ESI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_ESI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11307,7 +11311,7 @@ static void DEC_ESI(x86_core_cpu_execution_context *context)
 static void DEC_EDI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("DEC_EDI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11340,7 +11344,7 @@ static void DEC_EDI(x86_core_cpu_execution_context *context)
 static void PUSH_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11370,7 +11374,7 @@ static void PUSH_EAX(x86_core_cpu_execution_context *context)
 static void PUSH_ECX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_ECX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11400,7 +11404,7 @@ static void PUSH_ECX(x86_core_cpu_execution_context *context)
 static void PUSH_EDX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_EDX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11430,7 +11434,7 @@ static void PUSH_EDX(x86_core_cpu_execution_context *context)
 static void PUSH_EBX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_EBX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11460,7 +11464,7 @@ static void PUSH_EBX(x86_core_cpu_execution_context *context)
 static void PUSH_ESP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_ESP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11486,7 +11490,7 @@ static void PUSH_ESP(x86_core_cpu_execution_context *context)
         /* 8086/8088 and 80186/80188 expose the decremented SP when SP is
          * the PUSH source.  The 80286 changes this one observable case to
          * push the pre-instruction value. */
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80286)
+        if (!cpu_profile_has_protected_architecture(context->cpu_profile))
         {
             lib_u16 value = cpu_state.data.sp - 2;
 
@@ -11501,7 +11505,7 @@ static void PUSH_ESP(x86_core_cpu_execution_context *context)
 static void PUSH_EBP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_EBP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11531,7 +11535,7 @@ static void PUSH_EBP(x86_core_cpu_execution_context *context)
 static void PUSH_ESI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_ESI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11561,7 +11565,7 @@ static void PUSH_ESI(x86_core_cpu_execution_context *context)
 static void PUSH_EDI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_EDI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11591,7 +11595,7 @@ static void PUSH_EDI(x86_core_cpu_execution_context *context)
 static void POP_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11621,7 +11625,7 @@ static void POP_EAX(x86_core_cpu_execution_context *context)
 static void POP_ECX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_ECX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11651,7 +11655,7 @@ static void POP_ECX(x86_core_cpu_execution_context *context)
 static void POP_EDX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_EDX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11681,7 +11685,7 @@ static void POP_EDX(x86_core_cpu_execution_context *context)
 static void POP_EBX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_EBX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11711,7 +11715,7 @@ static void POP_EBX(x86_core_cpu_execution_context *context)
 static void POP_ESP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_ESP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11741,7 +11745,7 @@ static void POP_ESP(x86_core_cpu_execution_context *context)
 static void POP_EBP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_EBP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11771,7 +11775,7 @@ static void POP_EBP(x86_core_cpu_execution_context *context)
 static void POP_ESI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_ESI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11801,7 +11805,7 @@ static void POP_ESI(x86_core_cpu_execution_context *context)
 static void POP_EDI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("POP_EDI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -11832,10 +11836,10 @@ static void PUSHA(x86_core_cpu_execution_context *context)
 {
     lib_u32 cesp;
     CPU_TRACE_CALL_BEGIN("PUSHA");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286 &&
+        if (cpu_profile_has_protected_architecture(context->cpu_profile) &&
             !_IsProtected)
         {
             cesp = _GetStackSize == 2 ? cpu_state.data.sp : cpu_state.data.esp;
@@ -11888,7 +11892,7 @@ static void POPA(x86_core_cpu_execution_context *context)
 {
     lib_u32 cesp;
     CPU_TRACE_CALL_BEGIN("POPA");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_s_test_ss_frame(context, _GetOperandSize,
@@ -11934,7 +11938,7 @@ static void BOUND_R16_M16_16(x86_core_cpu_execution_context *context)
     lib_i32 a32, l32, u32;
     lib_u8 modrm;
     CPU_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
@@ -11976,7 +11980,7 @@ static void BOUND_R16_M16_16(x86_core_cpu_execution_context *context)
 static void ARPL_RM16_R16(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("ARPL_RM16_R16");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+    if (cpu_profile_has_protected_architecture(context->cpu_profile))
     {
         if (_IsProtected)
         {
@@ -12005,7 +12009,7 @@ static void ARPL_RM16_R16(x86_core_cpu_execution_context *context)
 static void PREFIX_FS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_FS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.fs;
@@ -12018,7 +12022,7 @@ static void PREFIX_FS(x86_core_cpu_execution_context *context)
 static void PREFIX_GS(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_GS");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.gs;
@@ -12031,7 +12035,7 @@ static void PREFIX_GS(x86_core_cpu_execution_context *context)
 static void PREFIX_OprSize(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_OprSize");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.prefix_oprsize = LIB_TRUE;
@@ -12043,7 +12047,7 @@ static void PREFIX_OprSize(x86_core_cpu_execution_context *context)
 static void PREFIX_AddrSize(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_AddrSize");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.prefix_addrsize = LIB_TRUE;
@@ -12055,7 +12059,7 @@ static void PREFIX_AddrSize(x86_core_cpu_execution_context *context)
 static void PUSH_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.flagLock)
@@ -12070,7 +12074,7 @@ static void PUSH_I32(x86_core_cpu_execution_context *context)
 static void IMUL_R32_RM32_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12086,7 +12090,7 @@ static void IMUL_R32_RM32_I32(x86_core_cpu_execution_context *context)
 static void PUSH_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PUSH_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.flagLock)
@@ -12102,7 +12106,7 @@ static void PUSH_I8(x86_core_cpu_execution_context *context)
 static void IMUL_R32_RM32_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12118,7 +12122,7 @@ static void IMUL_R32_RM32_I8(x86_core_cpu_execution_context *context)
 static void INSB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INSB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -12172,7 +12176,7 @@ static void INSB(x86_core_cpu_execution_context *context)
 static void INSW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INSW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -12226,7 +12230,7 @@ static void INSW(x86_core_cpu_execution_context *context)
 static void OUTSB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OUTSB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -12280,7 +12284,7 @@ static void OUTSB(x86_core_cpu_execution_context *context)
 static void OUTSW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OUTSW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -12541,7 +12545,7 @@ static void INS_80(x86_core_cpu_execution_context *context)
 static void INS_81(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_81");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -12689,7 +12693,7 @@ static void INS_83(x86_core_cpu_execution_context *context)
 {
     lib_u8 bit;
     CPU_TRACE_CALL_BEGIN("INS_83");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -12845,7 +12849,7 @@ static void TEST_RM8_R8(x86_core_cpu_execution_context *context)
 static void TEST_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("TEST_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12875,7 +12879,7 @@ static void XCHG_RM8_R8(x86_core_cpu_execution_context *context)
 static void XCHG_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12907,7 +12911,7 @@ static void MOV_RM8_R8(x86_core_cpu_execution_context *context)
 static void MOV_RM32_R32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_RM32_R32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12935,7 +12939,7 @@ static void MOV_R8_RM8(x86_core_cpu_execution_context *context)
 static void MOV_R32_RM32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_R32_RM32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12963,7 +12967,7 @@ static void MOV_RM16_SREG(x86_core_cpu_execution_context *context)
 static void LEA_R32_M32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LEA_R32_M32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize, _GetOperandSize));
@@ -12995,7 +12999,7 @@ static void LEA_R32_M32(x86_core_cpu_execution_context *context)
 static void MOV_SREG_RM16(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_SREG_RM16");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
@@ -13011,7 +13015,7 @@ static void MOV_SREG_RM16(x86_core_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg,
         X86_CPU_MASK_U16(instruction_state.data.crm)));
     if (instruction_state.data.rmovsreg->sregtype == SREG_STACK ||
-        context->cpu_profile < X86_CORE_CPU_PROFILE_80186)
+        !cpu_profile_has_186_integer(context->cpu_profile))
         context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
 }
@@ -13021,7 +13025,7 @@ static void INS_8F(x86_core_cpu_execution_context *context)
     lib_u32 value;
 
     CPU_TRACE_CALL_BEGIN("INS_8F");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
@@ -13142,7 +13146,7 @@ static void INS_8F(x86_core_cpu_execution_context *context)
 static void NOP(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("NOP");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
     }
@@ -13153,7 +13157,7 @@ static void NOP(x86_core_cpu_execution_context *context)
 static void XCHG_ECX_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13190,7 +13194,7 @@ static void XCHG_ECX_EAX(x86_core_cpu_execution_context *context)
 static void XCHG_EDX_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13227,7 +13231,7 @@ static void XCHG_EDX_EAX(x86_core_cpu_execution_context *context)
 static void XCHG_EBX_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13265,7 +13269,7 @@ static void XCHG_ESP_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13302,7 +13306,7 @@ static void XCHG_ESP_EAX(x86_core_cpu_execution_context *context)
 static void XCHG_EBP_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13339,7 +13343,7 @@ static void XCHG_EBP_EAX(x86_core_cpu_execution_context *context)
 static void XCHG_ESI_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13376,7 +13380,7 @@ static void XCHG_ESI_EAX(x86_core_cpu_execution_context *context)
 static void XCHG_EDI_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13413,7 +13417,7 @@ static void XCHG_EDI_EAX(x86_core_cpu_execution_context *context)
 static void CBW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CBW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13439,7 +13443,7 @@ static void CBW(x86_core_cpu_execution_context *context)
 static void CWD(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CWD");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13470,7 +13474,7 @@ static void CALL_PTR16_32(x86_core_cpu_execution_context *context)
     lib_u16 newcs;
     lib_u32 neweip;
     CPU_TRACE_CALL_BEGIN("CALL_PTR16_32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -13533,7 +13537,7 @@ static void PUSHF(x86_core_cpu_execution_context *context)
 {
     lib_u32 ceflags;
     CPU_TRACE_CALL_BEGIN("PUSHF");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (_e_vm86_interrupts_virtualized(context) && _GetOperandSize == 2u) {
@@ -13590,7 +13594,7 @@ static void POPF(x86_core_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("POPF");
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
         mask |= VCPU_EFLAGS_VM | VCPU_EFLAGS_VIF | VCPU_EFLAGS_VIP;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (!_GetCR0_PE || !_GetEFLAGS_VM)
@@ -13743,7 +13747,7 @@ static void MOV_AL_MOFFS8(x86_core_cpu_execution_context *context)
 static void MOV_EAX_MOFFS32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_moffs(context, _GetOperandSize));
@@ -13783,7 +13787,7 @@ static void MOV_MOFFS8_AL(x86_core_cpu_execution_context *context)
 static void MOV_MOFFS32_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_moffs(context, _GetOperandSize));
@@ -13814,7 +13818,7 @@ static void MOV_MOFFS32_EAX(x86_core_cpu_execution_context *context)
 static void MOVSB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOVSB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -13882,7 +13886,7 @@ static void MOVSB(x86_core_cpu_execution_context *context)
 static void MOVSW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOVSW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -13950,7 +13954,7 @@ static void MOVSW(x86_core_cpu_execution_context *context)
 static void CMPSB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMPSB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14024,7 +14028,7 @@ static void CMPSB(x86_core_cpu_execution_context *context)
 static void CMPSW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMPSW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14106,7 +14110,7 @@ static void TEST_AL_I8(x86_core_cpu_execution_context *context)
 static void TEST_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("TEST_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -14140,7 +14144,7 @@ static void TEST_EAX_I32(x86_core_cpu_execution_context *context)
 static void STOSB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("STOSB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14208,7 +14212,7 @@ static void STOSB(x86_core_cpu_execution_context *context)
 static void STOSW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("STOSW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14276,7 +14280,7 @@ static void STOSW(x86_core_cpu_execution_context *context)
 static void LODSB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LODSB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14344,7 +14348,7 @@ static void LODSB(x86_core_cpu_execution_context *context)
 static void LODSW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("LODSW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14412,7 +14416,7 @@ static void LODSW(x86_core_cpu_execution_context *context)
 static void SCASB(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SCASB");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14486,7 +14490,7 @@ static void SCASB(x86_core_cpu_execution_context *context)
 static void SCASW(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("SCASW");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -14624,7 +14628,7 @@ static void MOV_BH_I8(x86_core_cpu_execution_context *context)
 static void MOV_EAX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_EAX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14652,7 +14656,7 @@ static void MOV_EAX_I32(x86_core_cpu_execution_context *context)
 static void MOV_ECX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_ECX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14680,7 +14684,7 @@ static void MOV_ECX_I32(x86_core_cpu_execution_context *context)
 static void MOV_EDX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_EDX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14708,7 +14712,7 @@ static void MOV_EDX_I32(x86_core_cpu_execution_context *context)
 static void MOV_EBX_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_EBX_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14736,7 +14740,7 @@ static void MOV_EBX_I32(x86_core_cpu_execution_context *context)
 static void MOV_ESP_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_ESP_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14764,7 +14768,7 @@ static void MOV_ESP_I32(x86_core_cpu_execution_context *context)
 static void MOV_EBP_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_EBP_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14792,7 +14796,7 @@ static void MOV_EBP_I32(x86_core_cpu_execution_context *context)
 static void MOV_ESI_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_ESI_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14820,7 +14824,7 @@ static void MOV_ESI_I32(x86_core_cpu_execution_context *context)
 static void MOV_EDI_I32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("MOV_EDI_I32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -14849,7 +14853,7 @@ static void INS_C0(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_C0");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
@@ -14912,7 +14916,7 @@ static void INS_C0(x86_core_cpu_execution_context *context)
 static void INS_C1(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_C1");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -14975,7 +14979,7 @@ static void INS_C1(x86_core_cpu_execution_context *context)
 static void RET_I16(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("RET_I16");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
@@ -14992,7 +14996,7 @@ static void RET_I16(x86_core_cpu_execution_context *context)
 static void RET(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("RET");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_e_ret_near(context, 0, _GetOperandSize));
@@ -15009,7 +15013,7 @@ static void LES_R32_M16_32(x86_core_cpu_execution_context *context)
     lib_u16 selector;
     lib_u32 offset;
     CPU_TRACE_CALL_BEGIN("LES_R32_M16_32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
@@ -15046,7 +15050,7 @@ static void LDS_R32_M16_32(x86_core_cpu_execution_context *context)
     lib_u16 selector;
     lib_u32 offset;
     CPU_TRACE_CALL_BEGIN("LDS_R32_M16_32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
@@ -15136,7 +15140,7 @@ static void INS_C6(x86_core_cpu_execution_context *context)
 static void INS_C7(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_C7");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -15252,7 +15256,7 @@ static void ENTER(x86_core_cpu_execution_context *context)
     lib_u16 size = 0u;
     lib_u8 level = 0u;
     CPU_TRACE_CALL_BEGIN("ENTER");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
@@ -15261,7 +15265,7 @@ static void ENTER(x86_core_cpu_execution_context *context)
         level = (lib_u8)instruction_state.data.cimm;
         /* The 80186 defines the byte as an unsigned lexical level through
          * 255.  The later 80286/80386 architecture limits it to 0--31. */
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+        if (cpu_profile_has_protected_architecture(context->cpu_profile))
             level %= 32;
         CPU_TRACE_CHECK_RETURN(_s_test_ss_frame(context, _GetOperandSize,
             (lib_u16)1u + level, size, LIB_TRUE));
@@ -15377,7 +15381,7 @@ static void LEAVE(x86_core_cpu_execution_context *context)
 {
     lib_u32 stack = 0u;
     CPU_TRACE_CALL_BEGIN("LEAVE");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80186)
+    if (cpu_profile_has_186_integer(context->cpu_profile))
     {
         _adv;
         switch (_GetStackSize)
@@ -15430,7 +15434,7 @@ static void LEAVE(x86_core_cpu_execution_context *context)
 static void RETF_I16(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("RETF_I16");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
@@ -15447,7 +15451,7 @@ static void RETF_I16(x86_core_cpu_execution_context *context)
 static void RETF(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("RETF");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_e_ret_far(context, 0, _GetOperandSize));
@@ -15463,7 +15467,7 @@ static void INT3(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INT3");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_e_int3(context, _GetOperandSize));
@@ -15478,7 +15482,7 @@ static void INT3(x86_core_cpu_execution_context *context)
 static void INT_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INT_I8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -15497,7 +15501,7 @@ static void INTO(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INTO");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_e_into(context, _GetOperandSize));
@@ -15513,7 +15517,7 @@ static void INTO(x86_core_cpu_execution_context *context)
 static void IRET(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IRET");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_e_iret(context, _GetOperandSize));
@@ -15585,7 +15589,7 @@ static void INS_D0(x86_core_cpu_execution_context *context)
 static void INS_D1(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_D1");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -15756,7 +15760,7 @@ static void INS_D2(x86_core_cpu_execution_context *context)
 static void INS_D3(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_D3");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -15871,7 +15875,7 @@ static void AAM(x86_core_cpu_execution_context *context)
 {
     lib_u8 base;
     CPU_TRACE_CALL_BEGIN("AAM");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -15899,7 +15903,7 @@ static void AAD(x86_core_cpu_execution_context *context)
 {
     lib_u8 base;
     CPU_TRACE_CALL_BEGIN("AAD");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -15928,7 +15932,7 @@ static void SALC(x86_core_cpu_execution_context *context)
 static void XLAT(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XLAT");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetAddressSize)
@@ -15985,7 +15989,7 @@ static void JCXZ_REL8(x86_core_cpu_execution_context *context)
 {
     lib_u32 cecx = 0x00000000;
     CPU_TRACE_CALL_BEGIN("JCXZ_REL8");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -16023,7 +16027,7 @@ static void IN_EAX_I8(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IN_EAX_I8");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -16064,7 +16068,7 @@ static void OUT_I8_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -16098,7 +16102,7 @@ static void OUT_I8_EAX(x86_core_cpu_execution_context *context)
 static void CALL_REL32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CALL_REL32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -16134,7 +16138,7 @@ static void CALL_REL32(x86_core_cpu_execution_context *context)
 static void JMP_REL32(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("JMP_REL32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -16153,7 +16157,7 @@ static void JMP_PTR16_32(x86_core_cpu_execution_context *context)
     lib_u16 newcs = 0x0000;
     lib_u32 neweip = 0x00000000;
     CPU_TRACE_CALL_BEGIN("JMP_PTR16_32");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -16210,7 +16214,7 @@ static void IN_AL_DX(x86_core_cpu_execution_context *context)
 static void IN_EAX_DX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("IN_EAX_DX");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -16248,7 +16252,7 @@ static void OUT_DX_EAX(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _new_code_path_;
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         switch (_GetOperandSize)
@@ -16283,7 +16287,7 @@ static void PREFIX_LOCK(x86_core_cpu_execution_context *context)
     lib_u8 opcode_0f = 0x00;
     lib_u32 ceip = cpu_state.data.eip;
     CPU_TRACE_CALL_BEGIN("PREFIX_LOCK");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         do
@@ -16421,7 +16425,7 @@ static void INT1(x86_core_cpu_execution_context *context)
 static void PREFIX_REPNZ(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_REPNZ");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZNZ;
@@ -16436,7 +16440,7 @@ static void PREFIX_REPNZ(x86_core_cpu_execution_context *context)
 static void PREFIX_REPZ(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_REPZ");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZ;
@@ -16467,7 +16471,7 @@ static void HLT(x86_core_cpu_execution_context *context)
 static void CMC(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CMC");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         cpu_state.data.eflags ^= VCPU_EFLAGS_CF;
@@ -16546,7 +16550,7 @@ static void INS_F6(x86_core_cpu_execution_context *context)
 static void INS_F7(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_F7");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
@@ -16672,7 +16676,7 @@ static void INS_F7(x86_core_cpu_execution_context *context)
 static void CLC(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CLC");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         _ClrEFLAGS_CF;
@@ -16687,7 +16691,7 @@ static void CLC(x86_core_cpu_execution_context *context)
 static void STC(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("STC");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         _SetEFLAGS_CF;
@@ -16702,7 +16706,7 @@ static void STC(x86_core_cpu_execution_context *context)
 static void CLI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CLI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+    if (cpu_profile_has_protected_architecture(context->cpu_profile))
     {
         _adv;
         if (!_GetCR0_PE)
@@ -16744,7 +16748,7 @@ static void CLI(x86_core_cpu_execution_context *context)
 static void STI(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("STI");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+    if (cpu_profile_has_protected_architecture(context->cpu_profile))
     {
         _adv;
         if (!_GetCR0_PE)
@@ -16790,7 +16794,7 @@ static void STI(x86_core_cpu_execution_context *context)
 static void CLD(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("CLD");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         _ClrEFLAGS_DF;
@@ -16805,7 +16809,7 @@ static void CLD(x86_core_cpu_execution_context *context)
 static void STD(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("STD");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         _SetEFLAGS_DF;
@@ -16882,7 +16886,7 @@ static void INS_FF(x86_core_cpu_execution_context *context)
     lib_u16 newcs;
     lib_u32 neweip;
     CPU_TRACE_CALL_BEGIN("INS_FF");
-    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(modrm), 1));
@@ -17995,7 +17999,7 @@ static void LAR_R32_RM32(x86_core_cpu_execution_context *context)
                 case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
                 case VCPU_DESC_SYS_TYPE_CALLGATE_32:
-                    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+                    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
                         _SetEFLAGS_ZF;
                     else
                         _ClrEFLAGS_ZF;
@@ -18086,7 +18090,7 @@ static void LSL_R32_RM32(x86_core_cpu_execution_context *context)
                     break;
                 case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
-                    if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386)
+                    if (cpu_profile_has_32bit_architecture(context->cpu_profile))
                         _SetEFLAGS_ZF;
                     else
                         _ClrEFLAGS_ZF;
@@ -19616,7 +19620,7 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
         if (preview_instructions.data.oplen >= sizeof(preview_instructions.data.opcodes))
             return LIB_FALSE;
         offset = preview_instructions.data.receip + preview_instructions.data.oplen;
-        if (preview.cpu_profile < X86_CORE_CPU_PROFILE_80286)
+        if (!cpu_profile_has_protected_architecture(preview.cpu_profile))
             offset = X86_CPU_MASK_U16(offset);
         _s_read_cs(&preview, offset, (lib_uptr)&byte, 1u);
         if (preview_instructions.data.except) return LIB_FALSE;
@@ -19661,7 +19665,7 @@ static lib_u32 _debug_match_instruction_breakpoint(
     lib_u8 index;
 
     *matched = 0u;
-    if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386 ||
+    if (!cpu_profile_has_32bit_architecture(context->cpu_profile) ||
         context->debug_rf_before || context->debug_segment_shadow_before) return 0u;
     for (index = 0u; index < 4u; ++index) {
         lib_u32 control = (cpu_state.data.dr7 >> (16u + index * 4u)) &
@@ -19686,7 +19690,7 @@ static lib_u32 _debug_match_data_breakpoint(
     lib_u16 access_index;
 
     *matched = 0u;
-    if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386) return 0u;
+    if (!cpu_profile_has_32bit_architecture(context->cpu_profile)) return 0u;
     for (access_index = 0u; access_index < instruction_state.data.msize;
         ++access_index) {
         const t_cpuins_data_memory *access =
@@ -19789,20 +19793,23 @@ static lib_u8 _e_exception_vector(x86_core_cpu_execution_context *context,
     lib_u8 vector;
 
     if ((exception & supported) == 0u) return 0xffu;
+    /* Unsupported NEC forms are diagnostics, not an invented hardware INT 6. */
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        exception == VCPUINS_EXCEPT_UD) return 0xffu;
     for (vector = 0u; vector <= 17u; ++vector) {
         if (exception != (UINT32_C(1) << vector)) continue;
         /* Earlier chips have no protected-mode delivery or vectors 8-16,
          * except the 8087 WAIT-error interface, which reports #MF through
          * the real-mode vector-16 table.  A strict unsupported-op diagnostic
          * is not hardware INT 6. */
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80286 &&
+        if (!cpu_profile_has_protected_architecture(context->cpu_profile) &&
             (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE) ||
              (vector >= 8u && exception != VCPUINS_EXCEPT_MF)))
             return 0xffu;
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80186 &&
+        if (!cpu_profile_has_186_integer(context->cpu_profile) &&
             vector >= 5u && exception != VCPUINS_EXCEPT_MF)
             return 0xffu;
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80386 &&
+        if (!cpu_profile_has_32bit_architecture(context->cpu_profile) &&
             vector == 14u) return 0xffu;
         if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX &&
             vector == 17u) return 0xffu;
@@ -19869,7 +19876,7 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
         if (vector == 0xffu) break;
         cpu_state = fault_cpu;
         if (active == VCPUINS_EXCEPT_DE &&
-            context->cpu_profile < X86_CORE_CPU_PROFILE_80186)
+            !cpu_profile_has_186_integer(context->cpu_profile))
             cpu_state.data.eip = next_eip;
         instruction_state.data.except = active;
         instruction_state.data.excode = code;
@@ -19992,7 +19999,7 @@ static void x86_core_cpu_legacy_string_interrupt_resume(
 {
     lib_u8 prefixes = 0u;
 
-    if (context->cpu_profile > X86_CORE_CPU_PROFILE_8088 ||
+    if (cpu_profile_has_186_integer(context->cpu_profile) ||
         !instruction_state.data.flagInsLoop) return;
     while (prefixes < instruction_state.data.oplen &&
         _kdf_check_prefix(context, instruction_state.data.opcodes[prefixes]))
@@ -20007,7 +20014,7 @@ static void ExecInt(x86_core_cpu_execution_context *context)
     lib_u8 intr = 0x00;
     lib_status acknowledge_status;
     const lib_bool debug_first =
-        context->cpu_profile >= X86_CORE_CPU_PROFILE_80286;
+        cpu_profile_has_protected_architecture(context->cpu_profile);
 
     if (context->stop_requested || x86_core_cpu_is_system_waiting(context)) return;
     if (_system_flush_pending(context) && context->flush_asserted) return;
@@ -20037,7 +20044,7 @@ static void ExecInt(x86_core_cpu_execution_context *context)
     {
         context->nmi_pending = LIB_FALSE;
         context->nmi_in_service =
-            context->cpu_profile >= X86_CORE_CPU_PROFILE_80286;
+            cpu_profile_has_protected_architecture(context->cpu_profile);
         x86_core_cpu_legacy_string_interrupt_resume(context);
         /* SX checkpoints the accepted entry without fetching an interrupted
          * next instruction. Older-family prefetch behavior remains intact. */
@@ -20769,6 +20776,12 @@ static void _execution_refresh(
     context->timing_result = (x86_core_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
+    /* The emulation-mode executor is a later complete V30 batch. */
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        (cpu_state.data.eflags & X86_CPU_NEC_PSW_MD) == 0u) {
+        x86_core_cpu_execution_request_stop(context);
+        return;
+    }
     if (_system_boundary(context)) {
         if (!context->instruction_fault_delivered) context->instruction_wait_stall = LIB_TRUE;
         return;

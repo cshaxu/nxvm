@@ -64,7 +64,7 @@ static inline lib_bool cpu_exception_requires_double_fault(
         VCPUINS_EXCEPT_NP | VCPUINS_EXCEPT_SS | VCPUINS_EXCEPT_GP;
     const lib_u32 later_contributory = contributory | VCPUINS_EXCEPT_09;
 
-    if (profile < X86_CORE_CPU_PROFILE_80286) return LIB_FALSE;
+    if (!cpu_profile_has_protected_architecture(profile)) return LIB_FALSE;
     if (profile == X86_CORE_CPU_PROFILE_80286)
         return (first & contributory) != 0u;
     return ((first & later_contributory) != 0u &&

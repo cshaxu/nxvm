@@ -232,6 +232,14 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
     x86_core_cpu_timing_result result;
 
     if (context == LIB_NULL || out_result == LIB_NULL) return 0;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        *out_result = (x86_core_cpu_timing_result){
+            .source_timing_unallocated = LIB_TRUE,
+            .key_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED,
+            .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
+        };
+        return 1;
+    }
     context->timing_result.source_timing_unallocated = LIB_FALSE;
     context->timing_result.retirement_origin =
         X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;

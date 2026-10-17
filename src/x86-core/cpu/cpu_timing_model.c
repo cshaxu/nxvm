@@ -3270,11 +3270,11 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
     case 0x60u:
         *out_ticks = x86_core_cpu_control_stack_source_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_PUSHA);
-        return context->cpu_profile >= X86_CORE_CPU_PROFILE_80186;
+        return cpu_profile_has_186_integer(context->cpu_profile);
     case 0x61u:
         *out_ticks = x86_core_cpu_control_stack_source_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_POPA);
-        return context->cpu_profile >= X86_CORE_CPU_PROFILE_80186;
+        return cpu_profile_has_186_integer(context->cpu_profile);
     case 0x62u:
         if (!memory) return 0;
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
@@ -3288,7 +3288,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
     case 0x68u: case 0x6au:
         *out_ticks = x86_core_cpu_control_stack_source_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE);
-        return context->cpu_profile >= X86_CORE_CPU_PROFILE_80186;
+        return cpu_profile_has_186_integer(context->cpu_profile);
     case 0x8fu:
         if (extension != 0u) return 0;
         return x86_core_cpu_control_stack_source_result(context, memory ?
@@ -3303,10 +3303,10 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
         return x86_core_cpu_control_stack_source_result(context,
             X86_CORE_CPU_SOURCE_TIMING_POPF, 0u, 0, out_ticks);
     case 0xc8u:
-        if (context->cpu_profile < X86_CORE_CPU_PROFILE_80186) return 0;
+        if (!cpu_profile_has_186_integer(context->cpu_profile)) return 0;
         if (prefixes + 3u >= data->oplen) return 0;
         extension = data->opcodes[prefixes + 3u];
-        if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80286)
+        if (cpu_profile_has_protected_architecture(context->cpu_profile))
             extension &= 0x1fu;
         if (extension == 0u) {
             *out_ticks = x86_core_cpu_control_stack_source_lookup(context,
@@ -3330,7 +3330,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
     case 0xc9u:
         *out_ticks = x86_core_cpu_control_stack_source_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_LEAVE);
-        return context->cpu_profile >= X86_CORE_CPU_PROFILE_80186;
+        return cpu_profile_has_186_integer(context->cpu_profile);
     case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u: {
         lib_i32 taken;
 
@@ -4337,6 +4337,7 @@ lib_u64 x86_core_cpu_timing_maximum_ticks(
     case X86_CORE_CPU_PROFILE_80386:
         return X86_CORE_CPU_80386_SOURCE_MAXIMUM_TICKS;
     case X86_CORE_CPU_PROFILE_80486SX:
+    case X86_CORE_CPU_PROFILE_V30:
         return 0u;
     default:
         break;

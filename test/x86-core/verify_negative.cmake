@@ -19,6 +19,8 @@ expect_rejected("void *p = malloc(1);\n" "Raw CRT/platform")
 expect_rejected("void *p = NULL;\n" "Raw CRT/platform")
 expect_rejected("void probe(void) { if (context->cpu_profile >= X86_CORE_CPU_PROFILE_80386) { _adv; } else { _adv; } }\n"
     "Redundant CPU advancement branch")
+expect_rejected("void probe(void) { if (profile >= X86_CORE_CPU_PROFILE_80386) return; }\n"
+    "CPU profile ordinal is not a capability")
 expect_rejected("#include \"x86-core/machine/machine_interface.h\"\n"
     "CPU/FPU cannot depend on Machine")
 expect_rejected("#include \"x86-core/fpu/fpu.h\"\n" "Private chip header")
