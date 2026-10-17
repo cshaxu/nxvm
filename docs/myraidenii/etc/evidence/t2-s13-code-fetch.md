@@ -115,8 +115,9 @@ Source/test manifests and registered Types, inward dependency, ownership and
 negative gates pass. A separate `-Wall -Wextra -Wpedantic` syntax inspection
 retains only the original warning classes; the fetch normalization adds no
 warning. Existing instruction-file exemptions are not changed or promoted
-to a waiver-free whole-tree claim. Governance, links and actual-change review
-remain required for final acceptance.
+to a waiver-free whole-tree claim. Governance, links and coordinator actual-
+change review pass. The accepted packet is removed through the following
+governance P; T2 and the full original goal remain open.
 
 The product guide's M0-era `NXVM` commit-target wording is aligned with the
 already approved receiving-artifact process and root Execution Rules. The
