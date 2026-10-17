@@ -26,15 +26,15 @@ lib_bool x86_ibmpc_product_keyboard_deliver_input(void *context, const kvm_input
 lib_bool x86_ibmpc_product_keyboard_hotkeys(kvm_hotkey_registry *registry)
 {
     static const kvm_hotkey_registry hotkeys = {
-        { { 'P', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+        { { 'P', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
               "pause-toggle" },
-          { 'D', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+          { 'D', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
               "send-ctrl-alt-del" },
-          { 'F', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+          { 'F', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
               "send-alt-enter" },
-          { 'T', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+          { 'T', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
               "send-alt-tab" },
-          { 'M', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+          { 'M', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
               "release-window-mouse" } }, 5u };
 
     if (registry == LIB_NULL) return LIB_FALSE;
@@ -50,35 +50,35 @@ static lib_bool x86_ibmpc_product_keyboard_emit(void *context, kvm_input_sink si
     event.type = KVM_EVENT_KEY;
     event.data.key.scan_code = scan & 0xffu;
     event.data.key.key = key;
-    event.data.key.flags = (scan & 0x0100u) != 0u ? LIB_KEY_FLAG_EXTENDED : 0u;
+    event.data.key.flags = (scan & 0x0100u) != 0u ? BASE_KEY_FLAG_EXTENDED : 0u;
     event.data.key.pressed = pressed;
     return sink(context, &event);
 }
 
 lib_bool x86_ibmpc_product_keyboard_release_ctrl_alt(void *context, kvm_input_sink sink)
 {
-    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, LIB_KEY_CONTROL, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_FALSE);
+    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, BASE_KEY_CONTROL, LIB_FALSE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, BASE_KEY_ALT, LIB_FALSE);
 }
 
 lib_bool x86_ibmpc_product_keyboard_submit_ctrl_alt_del(void *context, kvm_input_sink sink)
 {
-    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, LIB_KEY_CONTROL, LIB_TRUE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_TRUE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, LIB_KEY_DELETE, LIB_TRUE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, LIB_KEY_DELETE, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, LIB_KEY_CONTROL, LIB_FALSE);
+    return x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, BASE_KEY_CONTROL, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, BASE_KEY_ALT, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, BASE_KEY_DELETE, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x0153u, BASE_KEY_DELETE, LIB_FALSE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, BASE_KEY_ALT, LIB_FALSE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x1du, BASE_KEY_CONTROL, LIB_FALSE);
 }
 
 static lib_bool x86_ibmpc_product_keyboard_submit_alt_key(void *context, kvm_input_sink sink,
-    lib_u32 scan, lib_key key)
+    lib_u32 scan, base_key key)
 {
     return x86_ibmpc_product_keyboard_release_ctrl_alt(context, sink) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_TRUE) &&
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, BASE_KEY_ALT, LIB_TRUE) &&
         x86_ibmpc_product_keyboard_emit(context, sink, scan, key, LIB_TRUE) &&
         x86_ibmpc_product_keyboard_emit(context, sink, scan, key, LIB_FALSE) &&
-        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, LIB_KEY_ALT, LIB_FALSE);
+        x86_ibmpc_product_keyboard_emit(context, sink, 0x38u, BASE_KEY_ALT, LIB_FALSE);
 }
 
 lib_bool x86_ibmpc_product_keyboard_handle_hotkey(emulator_machine *machine,
@@ -100,9 +100,9 @@ lib_bool x86_ibmpc_product_keyboard_handle_hotkey(emulator_machine *machine,
             x86_ibmpc_product_keyboard_deliver_input);
     if (lib_text_compare(name, "send-alt-enter") == 0)
         return x86_ibmpc_product_keyboard_submit_alt_key(machine,
-            x86_ibmpc_product_keyboard_deliver_input, 0x1cu, LIB_KEY_ENTER);
+            x86_ibmpc_product_keyboard_deliver_input, 0x1cu, BASE_KEY_ENTER);
     if (lib_text_compare(name, "send-alt-tab") == 0)
         return x86_ibmpc_product_keyboard_submit_alt_key(machine,
-            x86_ibmpc_product_keyboard_deliver_input, 0x0fu, LIB_KEY_TAB);
+            x86_ibmpc_product_keyboard_deliver_input, 0x0fu, BASE_KEY_TAB);
     return LIB_TRUE;
 }

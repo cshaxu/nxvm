@@ -29,9 +29,11 @@ existing lock order and callback non-reentry requirements.
 
 `input_adapter_interface.h` is internal Lib native-producer support, not an
 application event API. One source-local decoder maps native key records and
-combines UTF-16 pairs before emitting neutral `lib_key_input` values. Definitions
-live in `types/input_values.h`; neither public Console nor KVM events carry
-native virtual keys or UTF-16 units. The selected layout query returns neutral
+combines UTF-16 pairs before emitting neutral `base_key_input` values. Definitions
+live in `input_interface.h`, the sole public input vocabulary. Base owns key,
+modifier, extended-key and mouse-button values, not hotkeys or held-key state.
+Neither public Console nor KVM events carry native virtual keys or UTF-16 units.
+The selected layout query returns neutral
 physical identity or failure, allowing the consumer's existing TEXT fallback.
 Decoder reset discards an unfinished prefix; repeated characters are expanded
 by the consumer only after complete scalar decoding. Linux terminal keys may

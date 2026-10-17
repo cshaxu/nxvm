@@ -21,11 +21,11 @@ static lib_win32_long_ptr LIB_WIN32_WINAPI context_pointer(lib_win32_hwnd window
 
 #include "lib/kvm-base/input_interface.h"
 /* Isolate the leaf's message lifetime from the host keyboard layout. */
-static lib_bool fixture_scalar(lib_u32 scalar, lib_key_input *out)
+static lib_bool fixture_scalar(lib_u32 scalar, base_key_input *out)
 {
     if (scalar!='a' && scalar!='A') return LIB_FALSE;
-    *out=(lib_key_input){.key='A',.scan_code=0x1e,
-        .modifiers=scalar=='A'?LIB_KEY_MODIFIER_SHIFT:0};
+    *out=(base_key_input){.key='A',.scan_code=0x1e,
+        .modifiers=scalar=='A'?BASE_KEY_MODIFIER_SHIFT:0};
     return LIB_TRUE;
 }
 #define base_keyboard_map_scalar fixture_scalar

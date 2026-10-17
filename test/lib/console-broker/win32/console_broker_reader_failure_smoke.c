@@ -10,7 +10,7 @@ static lib_win32_bool LIB_WIN32_WINAPI failed_read(lib_win32_handle input, lib_w
 static lib_win32_input_record records[5];
 static lib_u32 record_count, record_index, raw_count;
 static lib_u32 raw_unicode[16], raw_repeat[16];
-static lib_key_input raw_keys[16];
+static base_key_input raw_keys[16];
 static lib_console_raw_mouse raw_mouse;
 static lib_win32_bool LIB_WIN32_WINAPI read_wide(lib_win32_handle input, lib_win32_input_record *record, lib_win32_dword length, lib_win32_lpdword read)
 {
@@ -93,8 +93,8 @@ int main(void)
     lib_test_assert(raw_unicode[1] == 0x1f600 && raw_unicode[2] == 0);
     lib_test_assert(raw_repeat[1] == 1 && raw_repeat[2] == 1);
     lib_test_assert(raw_repeat[3] == 1 && !raw_keys[2].pressed);
-    lib_test_assert(raw_keys[3].key == LIB_KEY_CONTROL && raw_keys[3].extended &&
-        raw_keys[3].scan_code == 0x1d && raw_keys[3].modifiers == LIB_KEY_MODIFIER_CONTROL);
+    lib_test_assert(raw_keys[3].key == BASE_KEY_CONTROL && raw_keys[3].extended &&
+        raw_keys[3].scan_code == 0x1d && raw_keys[3].modifiers == BASE_KEY_MODIFIER_CONTROL);
     /* A binding reset discards an incomplete UTF-16 prefix in the producer,
      * never exposing either half to a public Console sink. */
     lib_win32_key_event_record key = {0};
@@ -115,11 +115,11 @@ int main(void)
     mouse.dwButtonState = LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED | LIB_WIN32_RIGHTMOST_BUTTON_PRESSED;
     lib_test_assert(console_broker_emit_mouse(&backend, &mouse) == LIB_STATUS_OK);
     lib_test_assert(raw_mouse.column == 7 && raw_mouse.row == 9 &&
-        raw_mouse.buttons == (LIB_MOUSE_BUTTON_LEFT | LIB_MOUSE_BUTTON_RIGHT));
+        raw_mouse.buttons == (BASE_MOUSE_BUTTON_LEFT | BASE_MOUSE_BUTTON_RIGHT));
     const lib_win32_dword native_buttons[] = { 0u,
         LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED, LIB_WIN32_RIGHTMOST_BUTTON_PRESSED,
         LIB_WIN32_FROM_LEFT_2ND_BUTTON_PRESSED };
-    const lib_u32 neutral_buttons[] = { 0u, LIB_MOUSE_BUTTON_LEFT, LIB_MOUSE_BUTTON_RIGHT, 0u };
+    const lib_u32 neutral_buttons[] = { 0u, BASE_MOUSE_BUTTON_LEFT, BASE_MOUSE_BUTTON_RIGHT, 0u };
     for (lib_size i = 0; i < sizeof(native_buttons) / sizeof(native_buttons[0]); ++i) {
         mouse.dwButtonState = native_buttons[i];
         lib_test_assert(console_broker_emit_mouse(&backend, &mouse) == LIB_STATUS_OK);

@@ -23,13 +23,13 @@ int main(void)
     for (lib_u32 raw=0;raw<8;++raw) {
         lib_u16 key;
         lib_u8 modifiers, expected=0;
-        if(raw&1u) expected|=LIB_KEY_MODIFIER_SHIFT;
-        if(raw&2u) expected|=LIB_KEY_MODIFIER_CONTROL;
-        if(raw&4u) expected|=LIB_KEY_MODIFIER_ALT;
+        if(raw&1u) expected|=BASE_KEY_MODIFIER_SHIFT;
+        if(raw&2u) expected|=BASE_KEY_MODIFIER_CONTROL;
+        if(raw&4u) expected|=BASE_KEY_MODIFIER_ALT;
         layout_result=(lib_win32_short)((raw<<8u)|'A');
         lib_test_assert(base_keyboard_platform_map_scalar('a',&key,&modifiers));
         lib_test_assert(key=='A' && modifiers==expected);
-        lib_key_input mapped;
+        base_key_input mapped;
         lib_test_assert(base_keyboard_map_scalar('a',&mapped));
         lib_test_assert(mapped.key=='A' && mapped.scan_code==0x1e && mapped.modifiers==expected);
     }
@@ -38,7 +38,7 @@ int main(void)
     lib_test_assert(!base_keyboard_platform_map_scalar('a',&key,&modifiers));
     lib_test_assert(key==99 && modifiers==99);
     layout_result=LIB_WIN32_KEY_OEM_102;
-    lib_key_input mapped;
+    base_key_input mapped;
     lib_test_assert(!base_keyboard_map_scalar('<',&mapped));
     return 0;
 }

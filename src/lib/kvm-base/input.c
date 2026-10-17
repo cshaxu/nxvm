@@ -13,8 +13,8 @@ static lib_bool kvm_keyboard_emit(void *context, kvm_input_sink sink,
     event.data.key.pressed = pressed;
     event.data.key.key = key;
     event.data.key.scan_code = scan;
-    event.data.key.flags = (record_flags & LIB_KEY_FLAG_EXTENDED) != 0u ?
-        LIB_KEY_FLAG_EXTENDED : 0u;
+    event.data.key.flags = (record_flags & BASE_KEY_FLAG_EXTENDED) != 0u ?
+        BASE_KEY_FLAG_EXTENDED : 0u;
     event.data.key.modifiers = hotkey_modifiers;
     return sink(context, &event);
 }
@@ -22,12 +22,12 @@ static lib_bool kvm_keyboard_emit(void *context, kvm_input_sink sink,
 static lib_bool kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_keys,
     void *context, kvm_input_sink sink, lib_u32 scalar)
 {
-    static const lib_key modifier_keys[] = { LIB_KEY_CONTROL, LIB_KEY_ALT, LIB_KEY_SHIFT };
+    static const base_key modifier_keys[] = { BASE_KEY_CONTROL, BASE_KEY_ALT, BASE_KEY_SHIFT };
     static const lib_u16 modifier_scans[] = { 0x1du, 0x38u, 0x2au };
     kvm_input_event keys[4] = { 0 };
     lib_bool owned[4] = { 0 };
     lib_u16 scan;
-    lib_key_input mapped;
+    base_key_input mapped;
     lib_u32 key, i, count = 0u;
     lib_u8 modifiers, active = 0u;
 
@@ -45,7 +45,7 @@ static lib_bool kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_key
     /* Snapshot before any delivery can grow the shared ledger. This local
      * chord owns only the keys it adds; it is not a second held-key table. */
     for (i = 0u; i < 4u; ++i) {
-        lib_key identity = i < 3u ? modifier_keys[i] : key;
+        base_key identity = i < 3u ? modifier_keys[i] : key;
         const kvm_input_event *held = kvm_hotkey_matcher_held_key(held_keys, identity);
         if (i < 3u) {
             if (held != LIB_NULL) active |= (lib_u8)(1u << i);
@@ -63,8 +63,8 @@ static lib_bool kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_key
     for (i = 0u; i < count; ++i) {
         if (i + 1u < count) {
             if (!owned[i]) continue;
-            active |= keys[i].data.key.key == LIB_KEY_CONTROL ? LIB_KEY_MODIFIER_CONTROL :
-                keys[i].data.key.key == LIB_KEY_ALT ? LIB_KEY_MODIFIER_ALT : LIB_KEY_MODIFIER_SHIFT;
+            active |= keys[i].data.key.key == BASE_KEY_CONTROL ? BASE_KEY_MODIFIER_CONTROL :
+                keys[i].data.key.key == BASE_KEY_ALT ? BASE_KEY_MODIFIER_ALT : BASE_KEY_MODIFIER_SHIFT;
         }
         keys[i].data.key.pressed = LIB_TRUE;
         keys[i].data.key.modifiers = active;
@@ -74,9 +74,9 @@ static lib_bool kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_key
         --count;
         if (!owned[count]) continue;
         keys[count].data.key.pressed = LIB_FALSE;
-        if (keys[count].data.key.key == LIB_KEY_CONTROL) active &= (lib_u8)~LIB_KEY_MODIFIER_CONTROL;
-        if (keys[count].data.key.key == LIB_KEY_ALT) active &= (lib_u8)~LIB_KEY_MODIFIER_ALT;
-        if (keys[count].data.key.key == LIB_KEY_SHIFT) active &= (lib_u8)~LIB_KEY_MODIFIER_SHIFT;
+        if (keys[count].data.key.key == BASE_KEY_CONTROL) active &= (lib_u8)~BASE_KEY_MODIFIER_CONTROL;
+        if (keys[count].data.key.key == BASE_KEY_ALT) active &= (lib_u8)~BASE_KEY_MODIFIER_ALT;
+        if (keys[count].data.key.key == BASE_KEY_SHIFT) active &= (lib_u8)~BASE_KEY_MODIFIER_SHIFT;
         keys[count].data.key.modifiers = active;
         if (!sink(context, &keys[count])) return LIB_FALSE;
     }
@@ -84,34 +84,35 @@ static lib_bool kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_key
 }
 
 
-lib_i32 kvm_keyboard_submit_input(const kvm_hotkey_matcher *held_keys,
-    void *context, kvm_input_sink sink, const lib_key_input *input)
+lib_bool kvm_keyboard_submit_input(const kvm_hotkey_matcher *held_keys,
+    void *context, kvm_input_sink sink, const base_key_input *input)
 {
     lib_u32 count;
-    if (input == LIB_NULL || sink == LIB_NULL) return BASE_KEYBOARD_REJECTED;
+    if (input == LIB_NULL || sink == LIB_NULL) return LIB_FALSE;
     if (input->key != 0u) {
         count = input->pressed && input->repeat_count != 0u ? input->repeat_count : 1u;
         while (count-- != 0u)
             if (!kvm_keyboard_emit(context, sink, input->scan_code, input->key,
-                    input->extended ? LIB_KEY_FLAG_EXTENDED : 0u,
-                    input->modifiers, input->pressed)) return BASE_KEYBOARD_REJECTED;
+                    input->extended ? BASE_KEY_FLAG_EXTENDED : 0u,
+                    input->modifiers, input->pressed)) return LIB_FALSE;
     } else if (input->scalar != 0u) {
         count = input->repeat_count != 0u ? input->repeat_count : 1u;
         while (count-- != 0u)
             if (!kvm_keyboard_submit_character(held_keys, context, sink, input->scalar))
-                return BASE_KEYBOARD_REJECTED;
+                return LIB_FALSE;
     }
-    return BASE_KEYBOARD_ACCEPTED;
+    return LIB_TRUE;
 }
 
 lib_i32 kvm_keyboard_submit_record(base_keyboard_decoder *state,
     const kvm_hotkey_matcher *held_keys, void *context,
     kvm_input_sink sink, const base_keyboard_record *record)
 {
-    lib_key_input input;
+    base_key_input input;
     lib_i32 result;
     if (sink == LIB_NULL) return BASE_KEYBOARD_REJECTED;
     result = base_keyboard_decode(state, record, &input);
-    return result == BASE_KEYBOARD_ACCEPTED ?
-        kvm_keyboard_submit_input(held_keys, context, sink, &input) : result;
+    if (result != BASE_KEYBOARD_ACCEPTED) return result;
+    return kvm_keyboard_submit_input(held_keys, context, sink, &input) ?
+        BASE_KEYBOARD_ACCEPTED : BASE_KEYBOARD_REJECTED;
 }

@@ -5,11 +5,11 @@
 #include "lib/kvm-console/win32/component.c"
 #include "lib/kvm-base/input_interface.h"
 /* Isolate the leaf's message lifetime from the host keyboard layout. */
-static lib_bool fixture_scalar(lib_u32 scalar, lib_key_input *out)
+static lib_bool fixture_scalar(lib_u32 scalar, base_key_input *out)
 {
     if (scalar!='a' && scalar!='A') return LIB_FALSE;
-    *out=(lib_key_input){.key='A',.scan_code=0x1e,
-        .modifiers=scalar=='A'?LIB_KEY_MODIFIER_SHIFT:0};
+    *out=(base_key_input){.key='A',.scan_code=0x1e,
+        .modifiers=scalar=='A'?BASE_KEY_MODIFIER_SHIFT:0};
     return LIB_TRUE;
 }
 #define base_keyboard_map_scalar fixture_scalar
@@ -58,7 +58,7 @@ static void console_record(kvm_console *console, lib_u32 key, lib_u32 scan,
     lib_u32 scalar, lib_bool down, lib_u32 repeat)
 {
     lib_console_event e = { .kind = LIB_CONSOLE_EVENT_RAW_KEY };
-    e.value.raw_key=(lib_key_input){.key=key,.scan_code=(lib_u16)scan,
+    e.value.raw_key=(base_key_input){.key=key,.scan_code=(lib_u16)scan,
         .scalar=key?0:scalar,.pressed=down,.repeat_count=(lib_u16)repeat};
     kvm_console_receive_event(console,&e);
 }

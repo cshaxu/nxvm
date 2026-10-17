@@ -1,7 +1,7 @@
 #ifndef BASE_LINUX_INPUT_H
 #define BASE_LINUX_INPUT_H
 
-#include "lib/types/input_values.h"
+#include "lib/base/input_interface.h"
 
 typedef enum base_linux_key {
     BASE_LINUX_KEY_ENTER,

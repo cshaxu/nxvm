@@ -5,7 +5,7 @@
 struct audio_pcm_stream_platform {
     lib_win32_audio_client *client;
     lib_win32_audio_render_client *renderer;
-    lib_win32_audio_stream_volume *volume;
+    lib_u16 gains[2];
     lib_win32_handle render_ready;
     lib_win32_handle interruption;
     lib_u32 sample_rate;
@@ -28,9 +28,6 @@ static const lib_win32_guid audio_client_interface = {
 static const lib_win32_guid audio_render_client_interface = {
     0xf294acfcu, 0x3146u, 0x4483u, { 0xa7u, 0xbfu, 0xadu, 0xdcu,
     0xa7u, 0xc2u, 0x60u, 0xe2u } };
-static const lib_win32_guid audio_stream_volume_interface = {
-    0x93014887u, 0x242du, 0x4068u, { 0x8au, 0x15u, 0xcfu, 0x5eu,
-    0x93u, 0xb9u, 0x0fu, 0xe3u } };
 
 static lib_status audio_pcm_stream_win32_status(lib_win32_hresult result)
 {
@@ -40,10 +37,6 @@ static lib_status audio_pcm_stream_win32_status(lib_win32_hresult result)
 
 static void audio_pcm_stream_release_endpoint(audio_pcm_stream_platform *platform)
 {
-    if (platform->volume != LIB_NULL) {
-        (void)lib_win32_audio_stream_volume_release(platform->volume);
-        platform->volume = LIB_NULL;
-    }
     if (platform->renderer != LIB_NULL) {
         (void)lib_win32_audio_render_client_release(platform->renderer);
         platform->renderer = LIB_NULL;
@@ -89,6 +82,7 @@ lib_status audio_pcm_stream_platform_create(const lib_audio_pcm_stream_options *
     if (platform == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     platform->sample_rate = options->sample_rate;
     platform->channel_count = options->channel_count;
+    platform->gains[0] = platform->gains[1] = 65535u;
     platform->interruption = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_FALSE,
         LIB_WIN32_FALSE, LIB_NULL);
     if (platform->interruption == LIB_NULL) {
@@ -152,9 +146,6 @@ lib_status audio_pcm_stream_platform_worker_attach(audio_pcm_stream_platform *pl
     }
     status = audio_pcm_stream_win32_status(lib_win32_audio_client_get_service(platform->client,
         &audio_render_client_interface, (void **)&platform->renderer));
-    if (status != LIB_STATUS_OK) goto fail;
-    status = audio_pcm_stream_win32_status(lib_win32_audio_client_get_service(platform->client,
-        &audio_stream_volume_interface, (void **)&platform->volume));
     if (status != LIB_STATUS_OK) goto fail;
     {
         lib_win32_byte *silence = LIB_NULL;
@@ -254,15 +245,10 @@ lib_status audio_pcm_stream_platform_progress(audio_pcm_stream_platform *platfor
 lib_status audio_pcm_stream_platform_set_gain(audio_pcm_stream_platform *platform,
     const lib_u16 *gains, lib_u32 channel_count)
 {
-    float levels[2];
-    lib_u32 channel;
-
     if (platform == LIB_NULL || platform->attached == LIB_FALSE || gains == LIB_NULL ||
         channel_count != platform->channel_count) return LIB_STATUS_INVALID_ARGUMENT;
-    for (channel = 0u; channel < channel_count; ++channel)
-        levels[channel] = (float)gains[channel] / 65535.0f;
-    return audio_pcm_stream_win32_status(lib_win32_audio_stream_volume_set_all(
-        platform->volume, channel_count, levels));
+    lib_memory_copy(platform->gains, gains, channel_count * sizeof(*gains));
+    return LIB_STATUS_OK;
 }
 
 lib_status audio_pcm_stream_platform_enqueue(audio_pcm_stream_platform *platform,
@@ -293,8 +279,13 @@ lib_status audio_pcm_stream_platform_enqueue(audio_pcm_stream_platform *platform
         status = audio_pcm_stream_win32_status(lib_win32_audio_render_client_get_buffer(
             platform->renderer, writable, &destination));
         if (status != LIB_STATUS_OK) return status;
-        lib_memory_copy(destination, &samples[(lib_size)submitted * platform->channel_count],
-            (lib_size)writable * platform->channel_count * sizeof(*samples));
+        /* Apply input-channel gain before native channel conversion. The
+         * endpoint's volume channels need not match the input PCM format. */
+        for (lib_size index = 0; index < (lib_size)writable * platform->channel_count; ++index) {
+            lib_i32 sample = samples[(lib_size)submitted * platform->channel_count + index];
+            ((lib_i16 *)destination)[index] = (lib_i16)(sample *
+                (lib_i32)platform->gains[index % platform->channel_count] / 65535);
+        }
         status = audio_pcm_stream_win32_status(lib_win32_audio_render_client_release_buffer(
             platform->renderer, writable, 0u));
         if (status != LIB_STATUS_OK) return status;

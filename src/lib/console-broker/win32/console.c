@@ -164,11 +164,11 @@ static lib_u8 console_broker_modifiers(lib_win32_dword state)
 {
     lib_u8 modifiers = 0u;
     if ((state & (LIB_WIN32_LEFT_CTRL_PRESSED | LIB_WIN32_RIGHT_CTRL_PRESSED)) != 0u)
-        modifiers |= LIB_KEY_MODIFIER_CONTROL;
+        modifiers |= BASE_KEY_MODIFIER_CONTROL;
     if ((state & (LIB_WIN32_LEFT_ALT_PRESSED | LIB_WIN32_RIGHT_ALT_PRESSED)) != 0u)
-        modifiers |= LIB_KEY_MODIFIER_ALT;
+        modifiers |= BASE_KEY_MODIFIER_ALT;
     if ((state & LIB_WIN32_SHIFT_PRESSED) != 0u)
-        modifiers |= LIB_KEY_MODIFIER_SHIFT;
+        modifiers |= BASE_KEY_MODIFIER_SHIFT;
     return modifiers;
 }
 
@@ -181,7 +181,7 @@ static lib_status console_broker_emit_key(console_broker_backend *backend,
     base_keyboard_record record = {
         BASE_KEYBOARD_COMBINED, key->wVirtualScanCode, key->wVirtualKeyCode,
         key->uChar.UnicodeChar,
-        (key->dwControlKeyState & LIB_WIN32_ENHANCED_KEY) != 0u ? LIB_KEY_FLAG_EXTENDED : 0u,
+        (key->dwControlKeyState & LIB_WIN32_ENHANCED_KEY) != 0u ? BASE_KEY_FLAG_EXTENDED : 0u,
         console_broker_modifiers(key->dwControlKeyState),
         key->bKeyDown ? LIB_TRUE : LIB_FALSE, key->wRepeatCount };
     if (base_keyboard_decode(&backend->keyboard, &record, &event.value.raw_key) !=
@@ -200,8 +200,8 @@ static lib_status console_broker_emit_mouse(console_broker_backend *backend,
     event.value.raw_mouse.column = mouse->dwMousePosition.X;
     event.value.raw_mouse.row = mouse->dwMousePosition.Y;
     event.value.raw_mouse.buttons =
-        ((mouse->dwButtonState & LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED) != 0u ? LIB_MOUSE_BUTTON_LEFT : 0u) |
-        ((mouse->dwButtonState & LIB_WIN32_RIGHTMOST_BUTTON_PRESSED) != 0u ? LIB_MOUSE_BUTTON_RIGHT : 0u);
+        ((mouse->dwButtonState & LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED) != 0u ? BASE_MOUSE_BUTTON_LEFT : 0u) |
+        ((mouse->dwButtonState & LIB_WIN32_RIGHTMOST_BUTTON_PRESSED) != 0u ? BASE_MOUSE_BUTTON_RIGHT : 0u);
     return lib_console_deliver_event(backend->console, &event);
 }
 

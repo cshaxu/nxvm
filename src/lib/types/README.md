@@ -3,6 +3,8 @@
 `types` is the root component. It provides scalar aliases, generic status
 values, portable atomic helpers, and one-to-one C-runtime or SDK vocabulary
 wrappers.
+Project input-domain definitions belong to Base, even when multiple components
+use them; Types retains only their underlying scalar and native SDK vocabulary.
 Every other component may depend on it; it has no component dependency,
 resource policy, platform worker, or product behavior.
 
@@ -46,7 +48,8 @@ input is validated by its consumer, not silently reinterpreted here.
 `file.h` contains common C stream declarations. `win32/file.h` and
 `linux/file.h` add their platform declarations. File operations and ownership
 remain in storage. Counter validation/composition belongs to base; input
-normalization belongs to kvm-base and Window key-state queries to kvm-window.
+definitions and native normalization belong to base; KVM owns policy and
+delivery, and Window key-state queries belong to kvm-window.
 There is no runtime layer or zero-result
 fallback pretending to implement another platform's input query.
 

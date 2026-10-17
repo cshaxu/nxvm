@@ -407,8 +407,8 @@ static void win32_window_queue_mouse(lib_win32_hwnd window,
     context->pending_mouse_dx += dx;
     context->pending_mouse_dy += dy;
     context->pending_mouse_buttons =
-        (context->left_button ? LIB_MOUSE_BUTTON_LEFT : 0u) |
-        (context->right_button ? LIB_MOUSE_BUTTON_RIGHT : 0u);
+        (context->left_button ? BASE_MOUSE_BUTTON_LEFT : 0u) |
+        (context->right_button ? BASE_MOUSE_BUTTON_RIGHT : 0u);
     if (context->mouse_delivery_posted) return;
     context->mouse_delivery_posted = LIB_TRUE;
     if (!lib_win32_post_message_a(window, WIN32_WINDOW_MOUSE_READY, 0u, 0))
@@ -437,8 +437,8 @@ static void win32_window_mouse(lib_win32_hwnd window, kvm_win32_window_context *
 static void win32_window_mouse_buttons(kvm_win32_window_context *context)
 {
     win32_window_emit_mouse(context, 0, 0,
-        (context->left_button ? LIB_MOUSE_BUTTON_LEFT : 0u) |
-        (context->right_button ? LIB_MOUSE_BUTTON_RIGHT : 0u));
+        (context->left_button ? BASE_MOUSE_BUTTON_LEFT : 0u) |
+        (context->right_button ? BASE_MOUSE_BUTTON_RIGHT : 0u));
 }
 
 static void win32_window_release_mouse(kvm_win32_window_context *context)

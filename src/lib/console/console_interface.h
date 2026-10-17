@@ -5,7 +5,7 @@
  * on the same Console. Detach waits for callbacks; output replacement waits
  * for writes. These gates block instead of busy-waiting. */
 
-#include "lib/types/input_values.h"
+#include "lib/base/input_interface.h"
 
 /* A logical Console is a copied-value endpoint.  It deliberately has no
  * native handle, process ownership, reader, or presentation policy. Console
@@ -37,7 +37,7 @@ typedef enum lib_console_event_kind {
 
 typedef struct lib_console_raw_mouse {
     /* Absolute zero-based screen-buffer cells, not relative pixel motion.
-     * buttons uses LIB_MOUSE_BUTTON_*; no native input-record bits escape. */
+     * buttons uses BASE_MOUSE_BUTTON_*; no native input-record bits escape. */
     lib_i32 column;
     lib_i32 row;
     lib_u32 buttons;
@@ -54,7 +54,7 @@ typedef struct lib_console_event {
     lib_console_event_kind kind;
     lib_u32 binding_generation;
     union {
-        lib_key_input raw_key;
+        base_key_input raw_key;
         lib_console_raw_mouse raw_mouse;
         lib_console_line line;
     } value;

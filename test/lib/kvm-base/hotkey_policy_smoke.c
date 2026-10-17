@@ -24,29 +24,29 @@ int main(void)
 
     kvm_hotkey_registry_initialize(&registry);
     lib_test_assert(kvm_hotkey_registry_register(&registry, 'P',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+        BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
         "pause-toggle") == LIB_STATUS_OK);
     kvm_hotkey_matcher_initialize(&matcher, &registry);
     event.type = KVM_EVENT_KEY;
-    event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1du;
     event.data.key.pressed = LIB_TRUE;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
         &capture, LIB_TRUE));
-    event.data.key.key = KVM_HOTKEY_KEY_ALT;
+    event.data.key.key = BASE_KEY_ALT;
     event.data.key.flags = 0u;
     event.data.key.scan_code = 0x38u;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL |
-        KVM_HOTKEY_MODIFIER_ALT;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL |
+        BASE_KEY_MODIFIER_ALT;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
         &capture, LIB_TRUE));
     event.type = KVM_EVENT_KEY;
     event.data.key.key = 'P';
     event.data.key.scan_code = 0x19u;
     event.data.key.pressed = LIB_TRUE;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL |
-        KVM_HOTKEY_MODIFIER_ALT;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL |
+        BASE_KEY_MODIFIER_ALT;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
         &capture, LIB_TRUE));
     lib_test_assert(capture.count == 1u && capture.events[0].type == KVM_EVENT_HOTKEY);
@@ -65,7 +65,7 @@ int main(void)
     event.data.key.pressed = LIB_FALSE;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
         &capture, LIB_TRUE));
-    event.data.key.key = KVM_HOTKEY_KEY_ALT;
+    event.data.key.key = BASE_KEY_ALT;
     event.data.key.flags = 0u;
     event.data.key.scan_code = 0x38u;
     event.data.key.pressed = LIB_TRUE;
@@ -74,7 +74,7 @@ int main(void)
     event.data.key.pressed = LIB_FALSE;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
         &capture, LIB_TRUE));
-    event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1du;
     event.data.key.modifiers = 0u;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
@@ -86,18 +86,18 @@ int main(void)
     kvm_hotkey_matcher_discard(&matcher);
     kvm_hotkey_matcher_initialize(&matcher, &registry);
     event.type = KVM_EVENT_KEY;
-    event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1du;
     event.data.key.pressed = LIB_TRUE;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
-    event.data.key.flags = LIB_KEY_FLAG_EXTENDED;
+    event.data.key.flags = BASE_KEY_FLAG_EXTENDED;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
-    event.data.key.key = KVM_HOTKEY_KEY_ALT;
+    event.data.key.key = BASE_KEY_ALT;
     event.data.key.flags = 0u;
     event.data.key.scan_code = 0x38u;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL |
-        KVM_HOTKEY_MODIFIER_ALT;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL |
+        BASE_KEY_MODIFIER_ALT;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     event.data.key.key = 'P';
     event.data.key.scan_code = 0x19u;
@@ -105,14 +105,14 @@ int main(void)
     lib_test_assert(capture.count == 1u && capture.events[0].type == KVM_EVENT_HOTKEY);
     event.data.key.pressed = LIB_FALSE;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
-    event.data.key.key = KVM_HOTKEY_KEY_ALT;
+    event.data.key.key = BASE_KEY_ALT;
     event.data.key.flags = 0u;
     event.data.key.scan_code = 0x38u;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
-    event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1du;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
-    event.data.key.flags = LIB_KEY_FLAG_EXTENDED;
+    event.data.key.flags = BASE_KEY_FLAG_EXTENDED;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     lib_test_assert(capture.count == 1u);
     event.data.key.flags = 0u;
@@ -122,19 +122,19 @@ int main(void)
     kvm_hotkey_matcher_discard(&matcher);
     kvm_hotkey_matcher_initialize(&matcher, &registry);
     event.type = KVM_EVENT_KEY;
-    event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.pressed = LIB_TRUE;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     event.data.key.key = 'X';
     event.data.key.scan_code = 0x2du;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     lib_test_assert(capture.count == 2u);
-    lib_test_assert(capture.events[0].data.key.key == KVM_HOTKEY_KEY_CONTROL);
+    lib_test_assert(capture.events[0].data.key.key == BASE_KEY_CONTROL);
     lib_test_assert(capture.events[1].data.key.key == 'X');
     /* Once Ctrl was delivered with X, later Alt/P cannot consume that make. */
-    event.data.key.key = LIB_KEY_ALT; event.data.key.scan_code = 0x38;
+    event.data.key.key = BASE_KEY_ALT; event.data.key.scan_code = 0x38;
     event.data.key.modifiers = 3;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     event.data.key.key = 'P'; event.data.key.scan_code = 0x19;
@@ -145,12 +145,12 @@ int main(void)
     capture.count = 0;
     kvm_hotkey_matcher_discard(&matcher);
     kvm_hotkey_matcher_initialize(&matcher, &registry);
-    event.data.key.key = LIB_KEY_CONTROL; event.data.key.scan_code = 0x1d;
+    event.data.key.key = BASE_KEY_CONTROL; event.data.key.scan_code = 0x1d;
     event.data.key.modifiers = 1;
     for (lib_u32 i = 0; i != 100; ++i)
         lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     lib_test_assert(matcher.held_count == 1 && capture.count == 0);
-    event.data.key.key = LIB_KEY_ALT; event.data.key.scan_code = 0x38;
+    event.data.key.key = BASE_KEY_ALT; event.data.key.scan_code = 0x38;
     event.data.key.modifiers = 3;
     lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     event.data.key.key = 'P'; event.data.key.scan_code = 0x19;
@@ -161,7 +161,7 @@ int main(void)
     kvm_hotkey_matcher_discard(&matcher);
     kvm_hotkey_matcher_initialize(&matcher, &registry);
     event.data.key.key = 'P';
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT;
     for (lib_u32 i = 0; i < 64; ++i) {
         event.data.key.scan_code = (lib_u16)(i + 1);
         lib_test_assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));

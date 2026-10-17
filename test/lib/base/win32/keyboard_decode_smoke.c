@@ -31,28 +31,30 @@ int main(void)
     const struct {
         lib_u16 scan, native_key;
         lib_bool extended;
-        lib_key key;
+        base_key key;
     } physical[] = {
-        { 0x2au, LIB_WIN32_KEY_LEFT_SHIFT, LIB_FALSE, LIB_KEY_SHIFT },
-        { 0x36u, LIB_WIN32_KEY_RIGHT_SHIFT, LIB_FALSE, LIB_KEY_SHIFT },
-        { 0x1du, LIB_WIN32_KEY_CONTROL, LIB_FALSE, LIB_KEY_CONTROL },
-        { 0x1du, LIB_WIN32_KEY_CONTROL, LIB_TRUE, LIB_KEY_CONTROL },
-        { 0x1cu, LIB_WIN32_KEY_RETURN, LIB_FALSE, LIB_KEY_ENTER },
-        { 0x1cu, LIB_WIN32_KEY_RETURN, LIB_TRUE, LIB_KEY_ENTER },
-        { 0x47u, LIB_WIN32_KEY_NUMPAD_0 + 7u, LIB_FALSE, LIB_KEY_KEYPAD_7 },
-        { 0x47u, LIB_WIN32_KEY_HOME, LIB_TRUE, LIB_KEY_HOME },
-        { 0x45u, LIB_WIN32_KEY_PAUSE, LIB_FALSE, LIB_KEY_PAUSE },
-        { 0x37u, LIB_WIN32_KEY_SNAPSHOT, LIB_TRUE, LIB_KEY_PRINT_SCREEN }
+        { 0x2au, LIB_WIN32_KEY_LEFT_SHIFT, LIB_FALSE, BASE_KEY_SHIFT },
+        { 0x36u, LIB_WIN32_KEY_RIGHT_SHIFT, LIB_FALSE, BASE_KEY_SHIFT },
+        { 0x1du, LIB_WIN32_KEY_CONTROL, LIB_FALSE, BASE_KEY_CONTROL },
+        { 0x1du, LIB_WIN32_KEY_CONTROL, LIB_TRUE, BASE_KEY_CONTROL },
+        { 0x38u, LIB_WIN32_KEY_ALT, LIB_FALSE, BASE_KEY_ALT },
+        { 0x38u, LIB_WIN32_KEY_ALT, LIB_TRUE, BASE_KEY_ALT },
+        { 0x1cu, LIB_WIN32_KEY_RETURN, LIB_FALSE, BASE_KEY_ENTER },
+        { 0x1cu, LIB_WIN32_KEY_RETURN, LIB_TRUE, BASE_KEY_ENTER },
+        { 0x47u, LIB_WIN32_KEY_NUMPAD_0 + 7u, LIB_FALSE, BASE_KEY_KEYPAD_7 },
+        { 0x47u, LIB_WIN32_KEY_HOME, LIB_TRUE, BASE_KEY_HOME },
+        { 0x45u, LIB_WIN32_KEY_PAUSE, LIB_FALSE, BASE_KEY_PAUSE },
+        { 0x37u, LIB_WIN32_KEY_SNAPSHOT, LIB_TRUE, BASE_KEY_PRINT_SCREEN }
     };
     for (lib_size i = 0; i < sizeof(physical) / sizeof(physical[0]); ++i) {
         base_keyboard_decoder decoder = { 0 };
         base_keyboard_record native = {
             .kind = BASE_KEYBOARD_COMBINED, .scan = physical[i].scan,
             .key = physical[i].native_key,
-            .flags = physical[i].extended ? LIB_KEY_FLAG_EXTENDED : 0u,
+            .flags = physical[i].extended ? BASE_KEY_FLAG_EXTENDED : 0u,
             .pressed = LIB_TRUE, .repeat_count = 3u
         };
-        lib_key_input neutral;
+        base_key_input neutral;
         lib_test_assert(base_keyboard_decode(&decoder, &native, &neutral) ==
             BASE_KEYBOARD_ACCEPTED);
         lib_test_assert(neutral.key == physical[i].key && neutral.scalar == 0u &&
@@ -64,17 +66,17 @@ int main(void)
         lib_test_assert(!neutral.pressed && neutral.repeat_count == 1u);
     }
     base_keyboard_decoder decoder = {0};
-    lib_key_input input;
+    base_key_input input;
     base_keyboard_record record = {.kind=BASE_KEYBOARD_TRANSITION,
         .key=LIB_WIN32_KEY_RETURN, .pressed=LIB_TRUE, .repeat_count=1};
     lib_test_assert(base_keyboard_decode(&decoder,&record,&input)==BASE_KEYBOARD_ACCEPTED);
-    lib_test_assert(input.key==LIB_KEY_ENTER && input.scan_code==0x1c);
+    lib_test_assert(input.key==BASE_KEY_ENTER && input.scan_code==0x1c);
     record.pressed=LIB_FALSE;
     lib_test_assert(base_keyboard_decode(&decoder,&record,&input)==BASE_KEYBOARD_ACCEPTED && !input.pressed);
     record=(base_keyboard_record){.kind=BASE_KEYBOARD_TRANSITION,
-        .scan=0xe04d,.key=LIB_WIN32_KEY_RIGHT,.flags=LIB_KEY_FLAG_EXTENDED,.pressed=LIB_TRUE};
+        .scan=0xe04d,.key=LIB_WIN32_KEY_RIGHT,.flags=BASE_KEY_FLAG_EXTENDED,.pressed=LIB_TRUE};
     lib_test_assert(base_keyboard_decode(&decoder,&record,&input)==BASE_KEYBOARD_ACCEPTED);
-    lib_test_assert(input.key==LIB_KEY_RIGHT && input.scan_code==0x4d && input.extended);
+    lib_test_assert(input.key==BASE_KEY_RIGHT && input.scan_code==0x4d && input.extended);
     record.scan=0x4d;
     lib_test_assert(base_keyboard_decode(&decoder,&record,&input)==BASE_KEYBOARD_ACCEPTED && input.scan_code==0x4d);
     record=(base_keyboard_record){.kind=BASE_KEYBOARD_TRANSITION,.key=LIB_WIN32_KEY_PACKET,.pressed=LIB_TRUE};

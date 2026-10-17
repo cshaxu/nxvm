@@ -62,7 +62,10 @@ pending, delivered or consumed disposition. Repeats reuse it, releases remove
 it, and storage growth failure is terminal rather than dropping key state.
 
 Base owns native keyboard decoding, surrogate state and layout queries; KVM
-owns neutral delivery and text synthesis. Linux terminal text uses TEXT rather
+owns neutral delivery and text synthesis. Key values and input records come
+directly from Base; there are no KVM key/modifier synonyms. Neutral submission
+reports boolean delivery success; only native decoding distinguishes UNMAPPED.
+Linux terminal text uses TEXT rather
 than inventing physical keys. No KVM leaf decodes native key values itself.
 Window message decoding and key-state queries belong only to kvm-window.
 Base owns the default Event implementation; no KVM platform wake duplicate remains.

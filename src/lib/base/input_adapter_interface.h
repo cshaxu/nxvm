@@ -1,11 +1,11 @@
 #ifndef BASE_INPUT_ADAPTER_INTERFACE_H
 #define BASE_INPUT_ADAPTER_INTERFACE_H
 
-#include "lib/types/input_values.h"
+#include "lib/base/input_interface.h"
 
 /* Internal Lib native-adapter support, not a portable application input API.
  * Only selected native producers interpret these copied native key/scan/UTF-16
- * fields. Public Console/KVM consumers receive lib_key_input instead. */
+ * fields. Public Console/KVM consumers receive base_key_input instead. */
 typedef struct base_keyboard_decoder {
     lib_u16 pending_high_surrogate;
     lib_u16 pending_repeat_count;
@@ -33,9 +33,9 @@ typedef struct base_keyboard_record {
  * ACCEPTED with zero key/scalar buffers an incomplete prefix or ignores a
  * non-text break. Native repetitions are expanded only after decoding. */
 lib_i32 base_keyboard_decode(base_keyboard_decoder *state,
-    const base_keyboard_record *record, lib_key_input *output);
+    const base_keyboard_record *record, base_key_input *output);
 
 /* Host layout query with neutral results; false permits Unicode TEXT fallback. */
-lib_bool base_keyboard_map_scalar(lib_u32 scalar, lib_key_input *output);
+lib_bool base_keyboard_map_scalar(lib_u32 scalar, base_key_input *output);
 
 #endif

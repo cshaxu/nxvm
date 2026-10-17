@@ -17,9 +17,9 @@ int main(void)
 {
     for (pressed = LIB_FALSE; pressed != 8u; ++pressed) {
         lib_u8 expected = 0u;
-        if ((pressed & 1u) != 0u) expected |= KVM_HOTKEY_MODIFIER_CONTROL;
-        if ((pressed & 2u) != 0u) expected |= KVM_HOTKEY_MODIFIER_ALT;
-        if ((pressed & 4u) != 0u) expected |= KVM_HOTKEY_MODIFIER_SHIFT;
+        if ((pressed & 1u) != 0u) expected |= BASE_KEY_MODIFIER_CONTROL;
+        if ((pressed & 2u) != 0u) expected |= BASE_KEY_MODIFIER_ALT;
+        if ((pressed & 4u) != 0u) expected |= BASE_KEY_MODIFIER_SHIFT;
         CHECK(kvm_window_modifiers_from_key_state() == expected);
     }
     return 0;

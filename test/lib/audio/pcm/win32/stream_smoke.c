@@ -15,7 +15,6 @@ static lib_u32 fail_at, calls;
 static lib_win32_dword wait_result;
 static lib_bool interrupted;
 static lib_win32_hresult format_status;
-static float volumes[2];
 
 static lib_win32_hresult result(void)
 { return ++calls == fail_at ? (lib_win32_hresult)-1 : 0; }
@@ -46,14 +45,6 @@ static lib_win32_hresult format_check(const lib_win32_wave_format *format,
         LIB_WIN32_AUDIO_STREAM_FLAGS_AUTOCONVERTPCM | LIB_WIN32_AUDIO_STREAM_FLAGS_SRC_DEFAULT_QUALITY));
     lib_win32_hresult status = result();
     return status < 0 ? status : format_status;
-}
-
-static lib_win32_hresult set_volumes(lib_win32_uint32 count, const float *levels)
-{
-    lib_test_assert(count == channels);
-    lib_win32_hresult status = result();
-    if (status >= 0) lib_memory_copy(volumes, levels, count * sizeof(*levels));
-    return status;
 }
 
 static lib_win32_handle event_create(void)
@@ -139,10 +130,6 @@ static lib_win32_dword wait_events(lib_win32_dword count,
 #define lib_win32_audio_client_reset(c) ((void)(c),++reset,result())
 #undef lib_win32_audio_render_client_release
 #define lib_win32_audio_render_client_release(c) ((void)(c),++released)
-#undef lib_win32_audio_stream_volume_set_all
-#define lib_win32_audio_stream_volume_set_all(c,n,v) ((void)(c),set_volumes(n,v))
-#undef lib_win32_audio_stream_volume_release
-#define lib_win32_audio_stream_volume_release(c) ((void)(c),++released)
 #undef lib_win32_audio_client_release
 #define lib_win32_audio_client_release(c) ((void)(c),++released)
 #undef lib_win32_audio_device_release
@@ -180,7 +167,6 @@ int main(void)
         audio_pcm_stream_platform *platform = LIB_NULL;
         lib_u32 accepted;
         lib_u64 submitted, consumed;
-        const lib_u16 gains[2] = {0u, 65535u};
         expected_rate = rates[rate];
         lib_audio_pcm_stream_options options = {expected_rate, channels};
         clear_probe();
@@ -190,12 +176,6 @@ int main(void)
         padding = 4;
         lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
         lib_test_assert(submitted == 0 && consumed == 0);
-        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, gains, channels) == LIB_STATUS_OK);
-        lib_test_assert(volumes[0] == 0.0f && (channels == 1 || volumes[1] == 1.0f));
-        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, gains, 3) == LIB_STATUS_INVALID_ARGUMENT);
-        fail_at = calls + 1;
-        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, gains, channels) == LIB_STATUS_IO_ERROR);
-        fail_at = 0;
         padding = 4;
         lib_test_assert(audio_pcm_stream_platform_wait_writable(platform) == LIB_STATUS_OK && waits == 1);
         for (lib_u32 run = 0; run < 2; ++run) {
@@ -269,7 +249,7 @@ int main(void)
     /* Every initialization OS call may fail; all already acquired resources
      * must be released, and the platform remains safe to destroy. */
     channels = 1; expected_rate = 48000;
-    for (lib_u32 failure = 1; failure <= 14; ++failure) {
+    for (lib_u32 failure = 1; failure <= 13; ++failure) {
         audio_pcm_stream_platform *platform = LIB_NULL;
         lib_audio_pcm_stream_options options = {expected_rate, channels};
         clear_probe(); fail_at = failure;
@@ -312,10 +292,10 @@ int main(void)
         lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
         lib_test_assert(audio_pcm_stream_platform_worker_attach(platform) == LIB_STATUS_OK);
         lib_test_assert(audio_pcm_stream_platform_set_gain(platform, half_gain, 1) == LIB_STATUS_OK);
-        lib_test_assert(volumes[0] > 0.5f && volumes[0] < 0.501f);
         /* Two priming frames remain ahead of one newly submitted input frame. */
         padding = 2;
         lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_OK);
+        lib_test_assert(delivered[0] == -4000);
         lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
         lib_test_assert(submitted == 1 && consumed == 0);
         padding = 1;
@@ -329,6 +309,36 @@ int main(void)
         lib_test_assert(accepted == 0 && platform->submitted_frames == LIB_UINT64_MAX);
         audio_pcm_stream_platform_worker_detach(platform);
         lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK);
+    }
+    /* Gain belongs to input channels, regardless of the native mix layout.
+     * The adapter must not acquire a native channel-volume service. */
+    for (channels = 1; channels <= 2; ++channels) {
+        audio_pcm_stream_platform *platform = LIB_NULL;
+        lib_audio_pcm_stream_options options = {22050, channels};
+        const lib_i16 input[8] = {-32768, 32767, -12345, 12345, -1, 1, 0, 6553};
+        const lib_i16 half[8] = {-16384, 16383, -6172, 6172, 0, 0, 0, 3276};
+        const lib_u16 settings[3][2] = {{0,65535},{65535,0},{32768,32768}};
+        lib_u32 accepted;
+        clear_probe(); expected_rate = 22050;
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_worker_attach(platform) == LIB_STATUS_OK);
+        lib_test_assert(acquired == 4);
+        for (lib_u32 mode = 0; mode < 3; ++mode) {
+            padding = delivered_samples = 0;
+            lib_test_assert(audio_pcm_stream_platform_set_gain(platform, settings[mode], channels) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_set_gain(platform, settings[mode], 3) == LIB_STATUS_INVALID_ARGUMENT);
+            lib_test_assert(audio_pcm_stream_platform_enqueue(platform, input, 8 / channels, &accepted) == LIB_STATUS_OK);
+            lib_test_assert(accepted == 8 / channels && delivered_samples == 8);
+            for (lib_u32 i = 0; i < 8; ++i) {
+                lib_i16 expected = mode == 2 ? half[i] :
+                    (settings[mode][i % channels] == 0 ? 0 : input[i]);
+                lib_test_assert(delivered[i] == expected);
+            }
+            lib_test_assert(audio_pcm_stream_platform_clear(platform) == LIB_STATUS_OK);
+        }
+        audio_pcm_stream_platform_worker_detach(platform);
+        lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK);
+        lib_test_assert(acquired == released && initialized == uninitialized);
     }
     return 0;
 }

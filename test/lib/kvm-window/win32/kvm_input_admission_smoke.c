@@ -56,7 +56,7 @@ static void initialize(void)
     kvm_component_options options = { 0 };
     options.input_sink = sink; options.failure_sink = failure;
     lib_test_assert(kvm_hotkey_registry_register(&options.hotkeys, 'P',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "toggle") == LIB_STATUS_OK);
+        BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT, "toggle") == LIB_STATUS_OK);
     lib_test_assert(kvm_component_initialize(&window.base, &options, join, dispose,
         &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
@@ -68,7 +68,7 @@ static void initialize(void)
     reject_reset = LIB_FALSE;
     frame.valid = LIB_TRUE; frame.text.base.text_columns = 80; frame.text.base.text_rows = 25;
 }
-static lib_bool key(lib_key key, lib_u16 scan, lib_bool down, lib_u8 modifiers)
+static lib_bool key(base_key key, lib_u16 scan, lib_bool down, lib_u8 modifiers)
 {
     kvm_input_event event = { 0 };
     event.type = KVM_EVENT_KEY;
@@ -94,18 +94,18 @@ static void frozen_prefix_replay(void)
         text.data.text.scalar = 0x1f600;
         initialize();
         set_frozen(frozen);
-        lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+        lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
         set_frozen(!frozen);
         set_frozen(LIB_FALSE);
-        lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+        lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
         lib_test_assert(window.base.hotkey_matcher.held_count == 1 && count == 0);
         if (cause == 0) lib_test_assert(key('A', 0x1e, 1, 1));
-        else if (cause == 1) lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 0, 0));
+        else if (cause == 1) lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 0, 0));
         else lib_test_assert(win32_window_emit_normalized(&context, &text));
         lib_test_assert(count == (frozen ? 1u : 2u));
         if (!frozen)
             lib_test_assert(delivered[0].type == KVM_EVENT_KEY &&
-                delivered[0].data.key.key == LIB_KEY_CONTROL &&
+                delivered[0].data.key.key == BASE_KEY_CONTROL &&
                 delivered[0].data.key.pressed);
         if (cause == 0) lib_test_assert(delivered[count - 1].data.key.key == 'A');
         if (cause == 1) lib_test_assert(!delivered[count - 1].data.key.pressed);
@@ -116,14 +116,14 @@ static void frozen_prefix_replay(void)
     for (lib_u32 frozen = 0u; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
-        lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+        lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
         set_frozen(!frozen);
-        lib_test_assert(key(LIB_KEY_ALT, 0x38, 1, 3));
+        lib_test_assert(key(BASE_KEY_ALT, 0x38, 1, 3));
         lib_test_assert(key('P', 0x19, 1, 3));
         lib_test_assert(count == 1 && delivered[0].type == KVM_EVENT_HOTKEY);
         lib_test_assert(key('P', 0x19, 0, 3));
-        lib_test_assert(key(LIB_KEY_ALT, 0x38, 0, 1));
-        lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 0, 0));
+        lib_test_assert(key(BASE_KEY_ALT, 0x38, 0, 1));
+        lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 0, 0));
         lib_test_assert(count == 1);
         lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
@@ -140,7 +140,7 @@ static void frozen_prefix_replay(void)
     }
     initialize();
     set_frozen(LIB_TRUE);
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
     set_frozen(LIB_FALSE);
     reject_at = 1;
     lib_test_assert(!key('A', 0x1e, 1, 1));
@@ -152,7 +152,7 @@ static void frozen_prefix_replay(void)
 static void frozen_reset(void)
 {
     initialize();
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
     lib_test_assert(window.base.hotkey_matcher.held_count == 1 && count == 0u);
     set_frozen(LIB_TRUE);
     lib_test_assert(resets == 1u && count == 0u &&
@@ -170,7 +170,7 @@ static void frozen_reset(void)
 static void rejected_reset(void)
 {
     initialize();
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
     lib_test_assert(window.base.hotkey_matcher.held_count == 1u && count == 0u);
     reject_reset = LIB_TRUE;
     win32_window_proc((lib_win32_hwnd)1, LIB_WIN32_WM_KILLFOCUS, 0u, 0u);
@@ -190,7 +190,7 @@ static void focus_reset(void)
     for (lib_u32 i = 0u; i < 2u; ++i) {
         lib_test_assert(key('A', 0x1e, LIB_TRUE, 0));
         lib_test_assert(key('A', 0x1e, LIB_FALSE, 0));
-        lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, LIB_TRUE, 1));
+        lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, LIB_TRUE, 1));
         lib_test_assert(count == (i + 1u) * 2u && window.base.hotkey_matcher.held_count == 1u);
         for (lib_u32 repeat = 0u; repeat < 2u; ++repeat) {
             win32_window_proc((lib_win32_hwnd)1, messages[i], 0u, 0u);
@@ -225,37 +225,37 @@ int main(void)
     focus_reset();
     initialize();
     context.frozen = LIB_TRUE;
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
     lib_test_assert(win32_window_emit_normalized(&context, &event));
     lib_test_assert(count == 1 && delivered[0].type == KVM_EVENT_WINDOW_CLOSE);
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 0, 0));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 0, 0));
     lib_test_assert(count == 1); /* mismatch replay also uses the frozen filter */
     win32_window_emit_mouse(&context, 1, 1, 0);
     lib_test_assert(count == 1);
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
-    lib_test_assert(key(LIB_KEY_ALT, 0x38, 1, 3));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_ALT, 0x38, 1, 3));
     lib_test_assert(key('P', 0x19, 1, 3));
     lib_test_assert(count == 2 && delivered[1].type == KVM_EVENT_HOTKEY);
     lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 
     initialize();
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
     win32_window_emit_mouse(&context, 1, 1, 0);
     lib_test_assert(count == 1 && delivered[0].type == KVM_EVENT_MOUSE);
-    lib_test_assert(key(LIB_KEY_ALT, 0x38, 1, 3));
+    lib_test_assert(key(BASE_KEY_ALT, 0x38, 1, 3));
     lib_test_assert(key('P', 0x19, 1, 3));
     lib_test_assert(key('P', 0x19, 0, 3));
-    lib_test_assert(key(LIB_KEY_ALT, 0x38, 0, 1));
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 0, 0));
+    lib_test_assert(key(BASE_KEY_ALT, 0x38, 0, 1));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 0, 0));
     lib_test_assert(count == 2 && delivered[1].type == KVM_EVENT_HOTKEY);
     lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 
     initialize();
-    lib_test_assert(key(LIB_KEY_CONTROL, 0x1d, 1, 1));
-    lib_test_assert(key(LIB_KEY_ALT, 0x38, 1, 3));
+    lib_test_assert(key(BASE_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(BASE_KEY_ALT, 0x38, 1, 3));
     reject_at = 2;
     lib_test_assert(!key('A', 0x1e, 1, 3));
-    lib_test_assert(count == 1 && delivered[0].data.key.key == LIB_KEY_CONTROL);
+    lib_test_assert(count == 1 && delivered[0].data.key.key == BASE_KEY_CONTROL);
     lib_test_assert(window.base.hotkey_matcher.held_count == 0);
     lib_test_assert(!key('B', 0x30, 1, 0));
     lib_test_assert(attempts == 2 && count == 1);

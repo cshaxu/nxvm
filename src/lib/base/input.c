@@ -1,6 +1,6 @@
 #include "lib/base/input.h"
 
-lib_bool base_keyboard_map_scalar(lib_u32 scalar, lib_key_input *output)
+lib_bool base_keyboard_map_scalar(lib_u32 scalar, base_key_input *output)
 {
     lib_u16 raw_key;
     if (output == LIB_NULL) return LIB_FALSE;
@@ -10,7 +10,7 @@ lib_bool base_keyboard_map_scalar(lib_u32 scalar, lib_key_input *output)
 }
 
 lib_i32 base_keyboard_decode(base_keyboard_decoder *state,
-    const base_keyboard_record *record, lib_key_input *output)
+    const base_keyboard_record *record, base_key_input *output)
 {
     lib_u16 high, prior_count, count;
     lib_u32 scalar;
@@ -24,7 +24,7 @@ lib_i32 base_keyboard_decode(base_keyboard_decoder *state,
                 &output->scan_code, &output->key)) {
             state->pending_high_surrogate = state->pending_repeat_count = 0u;
             output->modifiers = record->modifiers;
-            output->extended = (record->flags & LIB_KEY_FLAG_EXTENDED) != 0u;
+            output->extended = (record->flags & BASE_KEY_FLAG_EXTENDED) != 0u;
             output->pressed = record->pressed;
             output->repeat_count = record->pressed && record->repeat_count != 0u ?
                 record->repeat_count : 1u;

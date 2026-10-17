@@ -162,8 +162,8 @@ static void input_scenario(void)
     kvm_win32_window_context *ctx = win32_window_context(created);
     kvm_input_event key = { .type = KVM_EVENT_KEY };
     key.data.key.pressed = LIB_TRUE; key.data.key.scan_code = 0x1d;
-    key.data.key.key = scenario == 7 ? 'A' : LIB_KEY_CONTROL;
-    key.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
+    key.data.key.key = scenario == 7 ? 'A' : BASE_KEY_CONTROL;
+    key.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL;
     if (scenario == 7) {
         lib_test_assert(!win32_window_emit_normalized(ctx, &key));
         lib_test_assert(!win32_window_emit_normalized(ctx, &key));
@@ -201,7 +201,7 @@ int main(void)
         options.initial_title = "retirement proof";
         options.initial_frozen = scenario == 8 || scenario == 16;
         lib_test_assert(kvm_hotkey_registry_register(&options.component.hotkeys, 'P',
-            KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "toggle") == LIB_STATUS_OK);
+            BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT, "toggle") == LIB_STATUS_OK);
         if (scenario==13 || scenario==15 || scenario==19 || scenario>=22) {
             lib_test_assert(kvm_window_create(&window,&options)==
                 (scenario==23 ? LIB_STATUS_INVALID_STATE : LIB_STATUS_IO_ERROR) && !window);

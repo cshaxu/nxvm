@@ -12,7 +12,7 @@ int main(void)
     first.type = KVM_EVENT_MOUSE;
     first.data.mouse.relative = LIB_TRUE;
     first.data.mouse.delta_y = 16;
-    first.data.mouse.buttons = LIB_MOUSE_BUTTON_LEFT;
+    first.data.mouse.buttons = BASE_MOUSE_BUTTON_LEFT;
     second = first;
     second.data.mouse.delta_y = 16;
     lib_test_assert(emulator_machine_input_queue_initialize(queue) == LIB_STATUS_OK);

@@ -1,10 +1,10 @@
 #ifndef KVM_EVENT_INTERFACE_H
 #define KVM_EVENT_INTERFACE_H
 
-#include "lib/types/input_values.h"
+#include "lib/base/input_interface.h"
 
 /* Product-neutral input emitted by the presentation library. Keys and PC
- * set-1 scan identities follow types/input_values.h, not native OS encodings.
+ * set-1 scan identities follow base/input_interface.h, not native OS encodings.
  * Text is a Unicode scalar not represented by a physical transition. */
 typedef enum kvm_event_type {
     KVM_EVENT_KEY,
@@ -36,8 +36,8 @@ typedef struct kvm_input_event {
     union {
         struct {
             lib_u16 scan_code;
-            /* A Types-defined key identity. Zero means absent. */
-            lib_key key;
+            /* A Base-defined key identity. Zero means absent. */
+            base_key key;
             /* Platform-neutral physical-key facts. */
             lib_u32 flags;
             /* Current Ctrl/Alt/Shift state for the generic matcher. */

@@ -68,9 +68,10 @@ lib_status lib_audio_pcm_stream_flush(lib_audio_pcm_stream *stream);
  * pending playback; clear preserves active state. Neither retracts heard audio. */
 lib_status lib_audio_pcm_stream_set_active(lib_audio_pcm_stream *stream, lib_bool active);
 lib_status lib_audio_pcm_stream_clear(lib_audio_pcm_stream *stream);
-/* Applies one gain per channel on the native worker, including while inactive.
+/* Applies one gain per input channel on the native worker, including while inactive.
  * Count must match creation; 0 is silent and 65535 is unity. Values are copied
  * for this synchronous request. No endpoint/session-wide volume is changed.
+ * Gain applies to subsequent backend submissions, not already submitted frames.
  * Native failure makes the stream terminal, like submission failure. */
 lib_status lib_audio_pcm_stream_set_gain(lib_audio_pcm_stream *stream,
     const lib_u16 *gains, lib_u32 channel_count);

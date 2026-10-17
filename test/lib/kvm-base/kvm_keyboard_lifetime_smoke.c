@@ -10,11 +10,11 @@ static void *test_reallocate(void *memory, lib_size size)
 
 #include "lib/kvm-base/input_interface.h"
 /* Deterministic layout: synthesis tests must not depend on the host session. */
-static lib_bool map_test_scalar(lib_u32 scalar, lib_key_input *out)
+static lib_bool map_test_scalar(lib_u32 scalar, base_key_input *out)
 {
     if (scalar != 'a' && scalar != 'A') return LIB_FALSE;
-    *out = (lib_key_input){.key = 'A', .scan_code = 0x1e,
-        .modifiers = scalar == 'A' ? LIB_KEY_MODIFIER_SHIFT : 0};
+    *out = (base_key_input){.key = 'A', .scan_code = 0x1e,
+        .modifiers = scalar == 'A' ? BASE_KEY_MODIFIER_SHIFT : 0};
     return LIB_TRUE;
 }
 #define base_keyboard_map_scalar map_test_scalar
@@ -35,7 +35,7 @@ static lib_bool capture_event(void *opaque, const kvm_input_event *event)
     c->events[c->count++].source_identity = 0;
     return LIB_TRUE;
 }
-static lib_bool submit(kvm_hotkey_matcher *m, capture *c, lib_key key, lib_u32 scan,
+static lib_bool submit(kvm_hotkey_matcher *m, capture *c, base_key key, lib_u32 scan,
     lib_u32 flags, lib_u32 mods, lib_bool down)
 {
     kvm_input_event e = { .type = KVM_EVENT_KEY };
@@ -46,12 +46,12 @@ static lib_bool submit(kvm_hotkey_matcher *m, capture *c, lib_key key, lib_u32 s
 static void permutations(void)
 {
     const lib_u32 orders[6][3] = {{0,1,2},{0,2,1},{1,0,2},{1,2,0},{2,0,1},{2,1,0}};
-    const lib_key triggers[3] = {'P','D','F'};
+    const base_key triggers[3] = {'P','D','F'};
     for (lib_u32 t = 0; t < 3; ++t)
     for (lib_u32 side = 0; side < 4; ++side)
     for (lib_u32 a = 0; a < 6; ++a)
     for (lib_u32 b = 0; b < 6; ++b) {
-        lib_key keys[3] = {LIB_KEY_CONTROL, LIB_KEY_ALT, triggers[t]};
+        base_key keys[3] = {BASE_KEY_CONTROL, BASE_KEY_ALT, triggers[t]};
         lib_u32 scans[3] = {0x1d, 0x38, 0x19};
         lib_u32 flags[3] = {side & 1, (side >> 1) & 1, 0};
         lib_u32 mods = 0, hotkeys = 0, down[3] = {0};
@@ -100,8 +100,8 @@ static void failure_paths(void)
     lib_test_assert(!submit(&matcher, &c, 'A', 0x1e, 0, 0, 1));
     lib_test_assert(c.count == 0);
     kvm_hotkey_matcher_discard(&matcher);
-    lib_test_assert(submit(&matcher, &c, LIB_KEY_CONTROL, 0x1d, 0, 1, 1));
-    lib_test_assert(submit(&matcher, &c, LIB_KEY_ALT, 0x38, 0, 3, 1));
+    lib_test_assert(submit(&matcher, &c, BASE_KEY_CONTROL, 0x1d, 0, 1, 1));
+    lib_test_assert(submit(&matcher, &c, BASE_KEY_ALT, 0x38, 0, 3, 1));
     c.reject_at = 2;
     lib_test_assert(!submit(&matcher, &c, 'A', 0x1e, 0, 3, 1));
     lib_test_assert(!submit(&matcher, &c, 'B', 0x30, 0, 3, 1));
@@ -115,12 +115,12 @@ static void orphan_releases(void)
     capture c = {0};
     lib_test_assert(kvm_hotkey_registry_register(&registry, 'P', 3, "action") == LIB_STATUS_OK);
     kvm_hotkey_matcher_initialize(&matcher, &registry);
-    lib_test_assert(submit(&matcher, &c, LIB_KEY_ENTER, 0x1c, 0, 0, LIB_FALSE));
+    lib_test_assert(submit(&matcher, &c, BASE_KEY_ENTER, 0x1c, 0, 0, LIB_FALSE));
     lib_test_assert(c.attempts == 0 && matcher.held_count == 0);
-    lib_test_assert(submit(&matcher, &c, LIB_KEY_CONTROL, 0x1d, 0, 1, LIB_TRUE));
-    lib_test_assert(submit(&matcher, &c, LIB_KEY_ENTER, 0x1c, 0, 1, LIB_FALSE));
+    lib_test_assert(submit(&matcher, &c, BASE_KEY_CONTROL, 0x1d, 0, 1, LIB_TRUE));
+    lib_test_assert(submit(&matcher, &c, BASE_KEY_ENTER, 0x1c, 0, 1, LIB_FALSE));
     lib_test_assert(c.attempts == 0 && matcher.held_count == 1);
-    lib_test_assert(submit(&matcher, &c, LIB_KEY_CONTROL, 0x1d, 0, 0, LIB_FALSE));
+    lib_test_assert(submit(&matcher, &c, BASE_KEY_CONTROL, 0x1d, 0, 0, LIB_FALSE));
     lib_test_assert(c.count == 2 && matcher.held_count == 0);
     lib_test_assert(submit(&matcher, &c, 'A', 0x1e, 0, 0, LIB_TRUE));
     kvm_hotkey_matcher_discard(&matcher);
@@ -145,7 +145,7 @@ static void synthesis_lifetimes(void)
         base_keyboard_decoder n = {0};
         capture c = {0};
         void *pair[] = { &m, &c };
-        const lib_key keys[] = { LIB_KEY_CONTROL, LIB_KEY_ALT, LIB_KEY_SHIFT, 'A' };
+        const base_key keys[] = { BASE_KEY_CONTROL, BASE_KEY_ALT, BASE_KEY_SHIFT, 'A' };
         const lib_u32 scans[] = {0x1d, 0x38, side & 4 ? 0x36 : 0x2a, 0x1e};
         lib_u32 flags[] = {side & 1, (side >> 1) & 1, 0, 0};
         lib_u32 held = 0;
@@ -191,17 +191,17 @@ static void physical_identity(void)
     kvm_hotkey_matcher m;
     capture c = {0};
     kvm_hotkey_matcher_initialize(&m, LIB_NULL);
-    lib_test_assert(submit(&m, &c, LIB_KEY_KEYPAD_7, 0x47, 0, 0, 1));
-    lib_test_assert(submit(&m, &c, LIB_KEY_HOME, 0x47, 0, 0, 1));
-    lib_test_assert(m.held_count == 1 && c.events[1].data.key.key == LIB_KEY_KEYPAD_7);
-    lib_test_assert(submit(&m, &c, LIB_KEY_HOME, 0x47, 0, 0, 0));
+    lib_test_assert(submit(&m, &c, BASE_KEY_KEYPAD_7, 0x47, 0, 0, 1));
+    lib_test_assert(submit(&m, &c, BASE_KEY_HOME, 0x47, 0, 0, 1));
+    lib_test_assert(m.held_count == 1 && c.events[1].data.key.key == BASE_KEY_KEYPAD_7);
+    lib_test_assert(submit(&m, &c, BASE_KEY_HOME, 0x47, 0, 0, 0));
     lib_test_assert(m.held_count == 0 && c.count == 3);
-    lib_test_assert(c.events[2].data.key.key == LIB_KEY_KEYPAD_7 && !c.events[2].data.key.pressed);
-    lib_test_assert(submit(&m, &c, LIB_KEY_HOME, 0x47, LIB_KEY_FLAG_EXTENDED, 0, 1));
-    lib_test_assert(submit(&m, &c, LIB_KEY_KEYPAD_7, 0x47, 0, 0, 1));
+    lib_test_assert(c.events[2].data.key.key == BASE_KEY_KEYPAD_7 && !c.events[2].data.key.pressed);
+    lib_test_assert(submit(&m, &c, BASE_KEY_HOME, 0x47, BASE_KEY_FLAG_EXTENDED, 0, 1));
+    lib_test_assert(submit(&m, &c, BASE_KEY_KEYPAD_7, 0x47, 0, 0, 1));
     lib_test_assert(m.held_count == 2);
-    lib_test_assert(submit(&m, &c, LIB_KEY_HOME, 0x47, 0, 0, 0));
-    lib_test_assert(submit(&m, &c, LIB_KEY_HOME, 0x47, LIB_KEY_FLAG_EXTENDED, 0, 0));
+    lib_test_assert(submit(&m, &c, BASE_KEY_HOME, 0x47, 0, 0, 0));
+    lib_test_assert(submit(&m, &c, BASE_KEY_HOME, 0x47, BASE_KEY_FLAG_EXTENDED, 0, 0));
     lib_test_assert(m.held_count == 0);
     lib_test_assert(submit(&m, &c, 'A', 0, 0, 0, 1));
     lib_test_assert(submit(&m, &c, 'B', 0, 0, 0, 1));

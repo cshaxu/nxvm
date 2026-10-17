@@ -5,7 +5,7 @@
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-nxvm/board-at/kbc_interface.h"
 
-static lib_i32 vm_keyboard_native_set2_expect(lib_key key, lib_u16 scan,
+static lib_i32 vm_keyboard_native_set2_expect(base_key key, lib_u16 scan,
     lib_u32 flags, lib_bool pressed, const lib_u8 *expected, lib_u8 count)
 {
     kvm_input_event event = {0};
@@ -70,10 +70,10 @@ static lib_bool vm_keyboard_native_set3_matrix(void)
 
     failed |= sizeof(keys) / sizeof(keys[0]) != 101u;
     for (lib_size index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
-        event.data.key.key = keys[index].key_number == 126u ? LIB_KEY_PAUSE :
-            keys[index].key_number == 124u ? LIB_KEY_PRINT_SCREEN : 0u;
+        event.data.key.key = keys[index].key_number == 126u ? BASE_KEY_PAUSE :
+            keys[index].key_number == 124u ? BASE_KEY_PRINT_SCREEN : 0u;
         event.data.key.scan_code = keys[index].set1 & 0xffu;
-        event.data.key.flags = keys[index].set1 & 0x100u ? LIB_KEY_FLAG_EXTENDED : 0u;
+        event.data.key.flags = keys[index].set1 & 0x100u ? BASE_KEY_FLAG_EXTENDED : 0u;
         for (lib_u8 pressed = 0u; pressed <= 1u; ++pressed) {
             event.data.key.pressed = pressed != 0u;
             failed |= x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
@@ -84,14 +84,14 @@ static lib_bool vm_keyboard_native_set3_matrix(void)
         }
     }
     event = (kvm_input_event){.type = KVM_EVENT_KEY,
-        .data.key = {.key = LIB_KEY_PAUSE, .pressed = LIB_TRUE}};
+        .data.key = {.key = BASE_KEY_PAUSE, .pressed = LIB_TRUE}};
     for (lib_u16 set = 0u; set < 256u; ++set) {
         if (set >= 1u && set <= 3u) continue;
         sequence.count = 8u;
         failed |= x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
             (lib_u8)set, &sequence) != LIB_STATUS_UNSUPPORTED || sequence.count != 0u;
     }
-    event.data.key.key = LIB_KEY_PRINT_SCREEN;
+    event.data.key.key = BASE_KEY_PRINT_SCREEN;
     failed |= x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
         X86_NXVM_BOARD_KEYBOARD_SCAN_SET_3, &sequence) != LIB_STATUS_OK ||
         sequence.count != 1u || sequence.bytes[0] != 0x57u;
@@ -101,7 +101,7 @@ static lib_bool vm_keyboard_native_set3_matrix(void)
         X86_NXVM_BOARD_KEYBOARD_SCAN_SET_3, &sequence) != LIB_STATUS_UNSUPPORTED ||
         sequence.count != 0u;
     event.data.key.scan_code = 0x1eu;
-    event.data.key.flags = LIB_KEY_FLAG_EXTENDED; /* No E0 A key. */
+    event.data.key.flags = BASE_KEY_FLAG_EXTENDED; /* No E0 A key. */
     failed |= x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
         X86_NXVM_BOARD_KEYBOARD_SCAN_SET_3, &sequence) != LIB_STATUS_UNSUPPORTED ||
         sequence.count != 0u;
@@ -131,22 +131,22 @@ static lib_bool mapped_keyboard_take(x86_core_machine *machine,
 static lib_bool vm_keyboard_set3_receiving_route(void)
 {
     static const struct {
-        lib_key key;
+        base_key key;
         lib_u16 scan;
         lib_u32 flags;
         lib_u8 code;
         lib_bool has_break;
     } keys[] = {
         {'A',0x1e,0u,0x1c,LIB_FALSE},
-        {LIB_KEY_UP,0x48,LIB_KEY_FLAG_EXTENDED,0x63,LIB_FALSE},
-        {LIB_KEY_CONTROL,0x1d,0u,0x11,LIB_TRUE},
-        {LIB_KEY_CONTROL,0x1d,LIB_KEY_FLAG_EXTENDED,0x58,LIB_FALSE},
-        {LIB_KEY_ALT,0x38,0u,0x19,LIB_TRUE},
-        {LIB_KEY_ALT,0x38,LIB_KEY_FLAG_EXTENDED,0x39,LIB_FALSE},
-        {LIB_KEY_SHIFT,0x2a,0u,0x12,LIB_TRUE},
-        {LIB_KEY_SHIFT,0x36,0u,0x59,LIB_TRUE},
-        {LIB_KEY_PAUSE,0u,0u,0x62,LIB_FALSE},
-        {LIB_KEY_PRINT_SCREEN,0u,0u,0x57,LIB_FALSE}
+        {BASE_KEY_UP,0x48,BASE_KEY_FLAG_EXTENDED,0x63,LIB_FALSE},
+        {BASE_KEY_CONTROL,0x1d,0u,0x11,LIB_TRUE},
+        {BASE_KEY_CONTROL,0x1d,BASE_KEY_FLAG_EXTENDED,0x58,LIB_FALSE},
+        {BASE_KEY_ALT,0x38,0u,0x19,LIB_TRUE},
+        {BASE_KEY_ALT,0x38,BASE_KEY_FLAG_EXTENDED,0x39,LIB_FALSE},
+        {BASE_KEY_SHIFT,0x2a,0u,0x12,LIB_TRUE},
+        {BASE_KEY_SHIFT,0x36,0u,0x59,LIB_TRUE},
+        {BASE_KEY_PAUSE,0u,0u,0x62,LIB_FALSE},
+        {BASE_KEY_PRINT_SCREEN,0u,0u,0x57,LIB_FALSE}
     };
     const x86_core_machine_executor_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
@@ -242,9 +242,9 @@ lib_i32 main(void)
 
     {
         kvm_input_event event = { .type = KVM_EVENT_KEY };
-        event.data.key.key = LIB_KEY_UP;
+        event.data.key.key = BASE_KEY_UP;
         event.data.key.scan_code = 0x48u;
-        event.data.key.flags = LIB_KEY_FLAG_EXTENDED;
+        event.data.key.flags = BASE_KEY_FLAG_EXTENDED;
         event.data.key.pressed = LIB_TRUE;
         if (x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
                 X86_NXVM_BOARD_KEYBOARD_SCAN_SET_1, &set1) != LIB_STATUS_OK ||
@@ -258,27 +258,27 @@ lib_i32 main(void)
 
     if (!vm_keyboard_native_set2_expect('A', 0x1eu, 0u, LIB_TRUE, a_make, sizeof(a_make)) ||
         !vm_keyboard_native_set2_expect('A', 0x1eu, 0u, LIB_FALSE, a_break, sizeof(a_break)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_UP, 0x48u, LIB_KEY_FLAG_EXTENDED, LIB_TRUE, up_make,
+        !vm_keyboard_native_set2_expect(BASE_KEY_UP, 0x48u, BASE_KEY_FLAG_EXTENDED, LIB_TRUE, up_make,
             sizeof(up_make)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_UP, 0x48u, LIB_KEY_FLAG_EXTENDED, LIB_FALSE, up_break,
+        !vm_keyboard_native_set2_expect(BASE_KEY_UP, 0x48u, BASE_KEY_FLAG_EXTENDED, LIB_FALSE, up_break,
             sizeof(up_break)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_RIGHT, 0u, LIB_KEY_FLAG_EXTENDED, LIB_TRUE, right_make,
+        !vm_keyboard_native_set2_expect(BASE_KEY_RIGHT, 0u, BASE_KEY_FLAG_EXTENDED, LIB_TRUE, right_make,
             sizeof(right_make)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_CONTROL, 0x1du, 0u, LIB_TRUE,
+        !vm_keyboard_native_set2_expect(BASE_KEY_CONTROL, 0x1du, 0u, LIB_TRUE,
             left_control_make, sizeof(left_control_make)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_CONTROL, 0x1du, LIB_KEY_FLAG_EXTENDED, LIB_TRUE,
+        !vm_keyboard_native_set2_expect(BASE_KEY_CONTROL, 0x1du, BASE_KEY_FLAG_EXTENDED, LIB_TRUE,
             right_control_make, sizeof(right_control_make)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_ALT, 0x38u, 0u, LIB_FALSE,
+        !vm_keyboard_native_set2_expect(BASE_KEY_ALT, 0x38u, 0u, LIB_FALSE,
             left_alt_break, sizeof(left_alt_break)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_ALT, 0x38u, LIB_KEY_FLAG_EXTENDED, LIB_FALSE,
+        !vm_keyboard_native_set2_expect(BASE_KEY_ALT, 0x38u, BASE_KEY_FLAG_EXTENDED, LIB_FALSE,
             right_alt_break, sizeof(right_alt_break)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_PAUSE, 0u, 0u, LIB_TRUE, pause_make,
+        !vm_keyboard_native_set2_expect(BASE_KEY_PAUSE, 0u, 0u, LIB_TRUE, pause_make,
             sizeof(pause_make)) ||
-        !vm_keyboard_native_set2_expect(LIB_KEY_PAUSE, 0u, 0u, LIB_FALSE, LIB_NULL, 0u)) {
+        !vm_keyboard_native_set2_expect(BASE_KEY_PAUSE, 0u, 0u, LIB_FALSE, LIB_NULL, 0u)) {
         return 1;
     }
     for (index = 0u; index < sizeof(function_set1); ++index) {
-        if (!vm_keyboard_native_set2_expect(LIB_KEY_F1 + index,
+        if (!vm_keyboard_native_set2_expect(BASE_KEY_F1 + index,
                 function_set1[index], 0u, LIB_TRUE,
                 &function_set2[index], 1u)) return 1;
     }

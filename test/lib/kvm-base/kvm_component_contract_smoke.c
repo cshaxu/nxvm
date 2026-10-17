@@ -77,7 +77,7 @@ int main(void)
     probe.accept_input = LIB_TRUE;
     kvm_hotkey_registry_initialize(&hotkeys);
     lib_test_assert(kvm_hotkey_registry_register(&hotkeys, 'P',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+        BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT,
         "pause-toggle") == LIB_STATUS_OK);
     options.input_context = &probe;
     options.input_sink = component_probe_input;
@@ -165,21 +165,21 @@ int main(void)
     probe.accept_input = LIB_TRUE;
     probe.input_count = 0u;
     kvm_hotkey_matcher_initialize(&first.hotkey_matcher, &hotkeys);
-    event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1du;
     event.data.key.pressed = LIB_TRUE;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
     const kvm_input_event *held = kvm_hotkey_matcher_held_key(&first.hotkey_matcher,
-        KVM_HOTKEY_KEY_CONTROL);
+        BASE_KEY_CONTROL);
     lib_test_assert(held != LIB_NULL && held->data.key.scan_code == 0x1du);
     lib_test_assert(kvm_hotkey_matcher_held_key(&first.hotkey_matcher, 'Z') == LIB_NULL);
     lib_test_assert(kvm_hotkey_matcher_held_key(LIB_NULL, 'Z') == LIB_NULL);
-    event.data.key.key = KVM_HOTKEY_KEY_ALT;
+    event.data.key.key = BASE_KEY_ALT;
     event.data.key.scan_code = 0x38u;
-    event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL |
-        KVM_HOTKEY_MODIFIER_ALT;
+    event.data.key.modifiers = BASE_KEY_MODIFIER_CONTROL |
+        BASE_KEY_MODIFIER_ALT;
     lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
     event.data.key.key = 'P';

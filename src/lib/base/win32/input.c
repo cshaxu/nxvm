@@ -21,11 +21,11 @@ lib_bool base_keyboard_platform_map_scalar(lib_u32 scalar,
     *out_virtual_key = (lib_u16)(mapped & 0xff);
     *out_modifiers = 0u;
     if (((mapped >> 8) & LIB_WIN32_KEY_SCAN_SHIFT) != 0u)
-        *out_modifiers |= LIB_KEY_MODIFIER_SHIFT;
+        *out_modifiers |= BASE_KEY_MODIFIER_SHIFT;
     if (((mapped >> 8) & LIB_WIN32_KEY_SCAN_CONTROL) != 0u)
-        *out_modifiers |= LIB_KEY_MODIFIER_CONTROL;
+        *out_modifiers |= BASE_KEY_MODIFIER_CONTROL;
     if (((mapped >> 8) & LIB_WIN32_KEY_SCAN_ALT) != 0u)
-        *out_modifiers |= LIB_KEY_MODIFIER_ALT;
+        *out_modifiers |= BASE_KEY_MODIFIER_ALT;
     return LIB_TRUE;
 }
 
@@ -37,11 +37,11 @@ static lib_u32 base_keyboard_key(lib_u16 virtual_key)
         (virtual_key >= LIB_WIN32_KEY_A && virtual_key <= LIB_WIN32_KEY_Z))
         return virtual_key;
     if (virtual_key >= LIB_WIN32_KEY_NUMPAD_0 && virtual_key <= LIB_WIN32_KEY_NUMPAD_9)
-        return LIB_KEY_KEYPAD_0 + virtual_key - LIB_WIN32_KEY_NUMPAD_0;
+        return BASE_KEY_KEYPAD_0 + virtual_key - LIB_WIN32_KEY_NUMPAD_0;
     if (virtual_key >= LIB_WIN32_KEY_F1 && virtual_key <= LIB_WIN32_KEY_F12)
-        return LIB_KEY_F1 + virtual_key - LIB_WIN32_KEY_F1;
+        return BASE_KEY_F1 + virtual_key - LIB_WIN32_KEY_F1;
     if (virtual_key >= LIB_WIN32_KEY_F13 && virtual_key <= LIB_WIN32_KEY_F24)
-        return LIB_KEY_F13 + virtual_key - LIB_WIN32_KEY_F13;
+        return BASE_KEY_F13 + virtual_key - LIB_WIN32_KEY_F13;
     switch (virtual_key) {
     case LIB_WIN32_KEY_SPACE: return ' ';
     case LIB_WIN32_KEY_OEM_1: return ';'; case LIB_WIN32_KEY_OEM_PLUS: return '=';
@@ -50,23 +50,23 @@ static lib_u32 base_keyboard_key(lib_u16 virtual_key)
     case LIB_WIN32_KEY_OEM_3: return '`'; case LIB_WIN32_KEY_OEM_4: return '[';
     case LIB_WIN32_KEY_OEM_5: return '\\'; case LIB_WIN32_KEY_OEM_6: return ']';
     case LIB_WIN32_KEY_OEM_7: return '\'';
-    case LIB_WIN32_KEY_BACK: return LIB_KEY_BACKSPACE; case LIB_WIN32_KEY_TAB: return LIB_KEY_TAB;
-    case LIB_WIN32_KEY_RETURN: return LIB_KEY_ENTER; case LIB_WIN32_KEY_ESCAPE: return LIB_KEY_ESCAPE;
-    case LIB_WIN32_KEY_SHIFT: case LIB_WIN32_KEY_LEFT_SHIFT: case LIB_WIN32_KEY_RIGHT_SHIFT: return LIB_KEY_SHIFT;
-    case LIB_WIN32_KEY_CONTROL: case LIB_WIN32_KEY_LEFT_CONTROL: case LIB_WIN32_KEY_RIGHT_CONTROL: return LIB_KEY_CONTROL;
-    case LIB_WIN32_KEY_ALT: case LIB_WIN32_KEY_LEFT_ALT: case LIB_WIN32_KEY_RIGHT_ALT: return LIB_KEY_ALT;
-    case LIB_WIN32_KEY_CAPS_LOCK: return LIB_KEY_CAPS_LOCK; case LIB_WIN32_KEY_NUM_LOCK: return LIB_KEY_NUM_LOCK;
-    case LIB_WIN32_KEY_SCROLL_LOCK: return LIB_KEY_SCROLL_LOCK; case LIB_WIN32_KEY_PAUSE: return LIB_KEY_PAUSE;
-    case LIB_WIN32_KEY_SNAPSHOT: return LIB_KEY_PRINT_SCREEN; case LIB_WIN32_KEY_HOME: return LIB_KEY_HOME;
-    case LIB_WIN32_KEY_END: return LIB_KEY_END; case LIB_WIN32_KEY_PAGE_UP: return LIB_KEY_PAGE_UP;
-    case LIB_WIN32_KEY_PAGE_DOWN: return LIB_KEY_PAGE_DOWN; case LIB_WIN32_KEY_LEFT: return LIB_KEY_LEFT;
-    case LIB_WIN32_KEY_UP: return LIB_KEY_UP; case LIB_WIN32_KEY_RIGHT: return LIB_KEY_RIGHT;
-    case LIB_WIN32_KEY_DOWN: return LIB_KEY_DOWN; case LIB_WIN32_KEY_INSERT: return LIB_KEY_INSERT;
-    case LIB_WIN32_KEY_DELETE: return LIB_KEY_DELETE; case LIB_WIN32_KEY_LEFT_WINDOWS: return LIB_KEY_LEFT_WINDOWS;
-    case LIB_WIN32_KEY_RIGHT_WINDOWS: return LIB_KEY_RIGHT_WINDOWS; case LIB_WIN32_KEY_APPS: return LIB_KEY_MENU;
-    case LIB_WIN32_KEY_MULTIPLY: return LIB_KEY_KEYPAD_MULTIPLY;
-    case LIB_WIN32_KEY_ADD: return LIB_KEY_KEYPAD_ADD; case LIB_WIN32_KEY_SUBTRACT: return LIB_KEY_KEYPAD_SUBTRACT;
-    case LIB_WIN32_KEY_DECIMAL: return LIB_KEY_KEYPAD_DECIMAL; case LIB_WIN32_KEY_DIVIDE: return LIB_KEY_KEYPAD_DIVIDE;
+    case LIB_WIN32_KEY_BACK: return BASE_KEY_BACKSPACE; case LIB_WIN32_KEY_TAB: return BASE_KEY_TAB;
+    case LIB_WIN32_KEY_RETURN: return BASE_KEY_ENTER; case LIB_WIN32_KEY_ESCAPE: return BASE_KEY_ESCAPE;
+    case LIB_WIN32_KEY_SHIFT: case LIB_WIN32_KEY_LEFT_SHIFT: case LIB_WIN32_KEY_RIGHT_SHIFT: return BASE_KEY_SHIFT;
+    case LIB_WIN32_KEY_CONTROL: case LIB_WIN32_KEY_LEFT_CONTROL: case LIB_WIN32_KEY_RIGHT_CONTROL: return BASE_KEY_CONTROL;
+    case LIB_WIN32_KEY_ALT: case LIB_WIN32_KEY_LEFT_ALT: case LIB_WIN32_KEY_RIGHT_ALT: return BASE_KEY_ALT;
+    case LIB_WIN32_KEY_CAPS_LOCK: return BASE_KEY_CAPS_LOCK; case LIB_WIN32_KEY_NUM_LOCK: return BASE_KEY_NUM_LOCK;
+    case LIB_WIN32_KEY_SCROLL_LOCK: return BASE_KEY_SCROLL_LOCK; case LIB_WIN32_KEY_PAUSE: return BASE_KEY_PAUSE;
+    case LIB_WIN32_KEY_SNAPSHOT: return BASE_KEY_PRINT_SCREEN; case LIB_WIN32_KEY_HOME: return BASE_KEY_HOME;
+    case LIB_WIN32_KEY_END: return BASE_KEY_END; case LIB_WIN32_KEY_PAGE_UP: return BASE_KEY_PAGE_UP;
+    case LIB_WIN32_KEY_PAGE_DOWN: return BASE_KEY_PAGE_DOWN; case LIB_WIN32_KEY_LEFT: return BASE_KEY_LEFT;
+    case LIB_WIN32_KEY_UP: return BASE_KEY_UP; case LIB_WIN32_KEY_RIGHT: return BASE_KEY_RIGHT;
+    case LIB_WIN32_KEY_DOWN: return BASE_KEY_DOWN; case LIB_WIN32_KEY_INSERT: return BASE_KEY_INSERT;
+    case LIB_WIN32_KEY_DELETE: return BASE_KEY_DELETE; case LIB_WIN32_KEY_LEFT_WINDOWS: return BASE_KEY_LEFT_WINDOWS;
+    case LIB_WIN32_KEY_RIGHT_WINDOWS: return BASE_KEY_RIGHT_WINDOWS; case LIB_WIN32_KEY_APPS: return BASE_KEY_MENU;
+    case LIB_WIN32_KEY_MULTIPLY: return BASE_KEY_KEYPAD_MULTIPLY;
+    case LIB_WIN32_KEY_ADD: return BASE_KEY_KEYPAD_ADD; case LIB_WIN32_KEY_SUBTRACT: return BASE_KEY_KEYPAD_SUBTRACT;
+    case LIB_WIN32_KEY_DECIMAL: return BASE_KEY_KEYPAD_DECIMAL; case LIB_WIN32_KEY_DIVIDE: return BASE_KEY_KEYPAD_DIVIDE;
     default: return 0u;
     }
 }

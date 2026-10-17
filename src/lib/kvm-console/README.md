@@ -20,7 +20,7 @@ supported Win32 implementation only; the Linux leaf is an intentional
 The component root owns event dispatch and the mouse-position baseline.
 The selected platform owns worker startup/join. The broker uses Base to decode
 native keyboard records and translates mouse buttons before public delivery.
-Neutral `lib_key_input` records enter kvm-base's shared delivery path.
+Neutral `base_key_input` records enter kvm-base's shared delivery path.
 The Console adapter does not synthesize characters or decide text fallback.
 
 Before a new native input stream starts, the broker synchronously delivers INPUT_RESET.

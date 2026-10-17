@@ -12,7 +12,7 @@ static lib_bool receive(void *context, const kvm_input_event *event)
     if (event->data.key.pressed) ++c->makes;
     else {
         ++c->breaks;
-        if (event->data.key.flags & LIB_KEY_FLAG_EXTENDED) ++c->extended_breaks;
+        if (event->data.key.flags & BASE_KEY_FLAG_EXTENDED) ++c->extended_breaks;
     }
     return LIB_TRUE;
 }
@@ -23,7 +23,7 @@ static void dispatch(emulator_session_queue *q, kvm_input_event *event, capture 
         receive, c));
 }
 
-static void check(lib_key key, lib_u16 scan, lib_i32 release_first, lib_i32 extended_first)
+static void check(base_key key, lib_u16 scan, lib_i32 release_first, lib_i32 extended_first)
 {
     emulator_session_queue storage = { 0 }, *q = &storage;
     kvm_input_event event = { 0 };
@@ -36,11 +36,11 @@ static void check(lib_key key, lib_u16 scan, lib_i32 release_first, lib_i32 exte
     event.data.key.pressed = LIB_TRUE;
     dispatch(q, &event, &c);
     dispatch(q, &event, &c); /* Repeat never adds a second held-key entry. */
-    event.data.key.flags = LIB_KEY_FLAG_EXTENDED;
+    event.data.key.flags = BASE_KEY_FLAG_EXTENDED;
     dispatch(q, &event, &c);
     if (release_first) {
         event.data.key.pressed = LIB_FALSE;
-        event.data.key.flags = extended_first ? LIB_KEY_FLAG_EXTENDED : 0;
+        event.data.key.flags = extended_first ? BASE_KEY_FLAG_EXTENDED : 0;
         dispatch(q, &event, &c);
     }
     event.type = KVM_EVENT_SOURCE_RETIRED;
@@ -62,7 +62,7 @@ static void check_sources(emulator_session_machine_state retirement_state)
     capture c = { 0 };
     lib_test_assert(emulator_session_queue_initialize(q));
     event.type = KVM_EVENT_KEY;
-    event.data.key.key = LIB_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1d;
     event.data.key.pressed = LIB_TRUE;
     event.source_identity = 1;
@@ -90,7 +90,7 @@ static void check_input_reset(void)
     capture c = { 0 };
 
     lib_test_assert(emulator_session_queue_initialize(&q));
-    event.data.key.key = LIB_KEY_ALT;
+    event.data.key.key = BASE_KEY_ALT;
     event.data.key.scan_code = 0x38u;
     event.data.key.pressed = LIB_TRUE;
     event.source_identity = 1u;
@@ -149,7 +149,7 @@ static void check_capacity(void)
     const lib_u32 capacity = EMULATOR_SESSION_EVENT_PRESSED_CAPACITY;
     lib_test_assert(emulator_session_queue_initialize(&q));
     event.type = KVM_EVENT_KEY;
-    event.data.key.key = LIB_KEY_CONTROL;
+    event.data.key.key = BASE_KEY_CONTROL;
     event.data.key.scan_code = 0x1d;
     event.data.key.pressed = LIB_TRUE;
     /* Same physical key on distinct sources must occupy distinct entries. */
@@ -164,7 +164,7 @@ static void check_capacity(void)
     /* Neither a new physical key nor a new source may bypass the ledger. */
     for (lib_u32 i = 0u; i < 2u; ++i) {
         event.source_identity = i == 0u ? 1u : capacity + 1u;
-        event.data.key.flags = i == 0u ? LIB_KEY_FLAG_EXTENDED : 0u;
+        event.data.key.flags = i == 0u ? BASE_KEY_FLAG_EXTENDED : 0u;
         lib_test_assert(!emulator_session_dispatch_input(&q, &event,
             EMULATOR_SESSION_MACHINE_RUNNING, receive, &c));
         lib_test_assert(q.pressed_count == capacity && c.makes == capacity + 1u);
@@ -201,9 +201,9 @@ int main(void)
     lib_i32 release_first, extended_first;
     for (release_first = 0; release_first <= 1; ++release_first)
         for (extended_first = 0; extended_first <= 1; ++extended_first) {
-            check(LIB_KEY_CONTROL, 0x1d, release_first, extended_first);
-            check(LIB_KEY_ALT, 0x38, release_first, extended_first);
-            check(LIB_KEY_CONTROL, 0, release_first, extended_first);
+            check(BASE_KEY_CONTROL, 0x1d, release_first, extended_first);
+            check(BASE_KEY_ALT, 0x38, release_first, extended_first);
+            check(BASE_KEY_CONTROL, 0, release_first, extended_first);
         }
     check_sources(EMULATOR_SESSION_MACHINE_RUNNING);
     check_sources(EMULATOR_SESSION_MACHINE_PAUSED);
