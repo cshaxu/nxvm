@@ -29,9 +29,9 @@ as a Shared change. Product supplies the banner; Emulator owns Built on, fixed m
 grammar, help formatting, prompt and lifecycle. One provider/router is injected.
 Lib owns native handles, input decoding, presentation and actual audio output.
 
-The current X86 Core CPU has no V30 profile. An 8086/386 profile is not a valid
-substitute. Preferred direction is a separately reviewed V30 extension at the
-existing shared CPU owner, qualified for NEC instructions, flags, entry,
+X86 Core now has a separately approved, incremental V30 native CPU profile.
+It is not yet eligible for Machine or board execution; an 8086/386 profile is
+not a valid substitute. The existing shared CPU owner must qualify NEC instructions, flags, entry,
 mode/bus behavior and timing before board admission. The neutral X86 Core
 Machine may supply execution/time only if its public bus/scheduler contract
 fits this board without PC dependencies. If it does not, revise the design

@@ -34,8 +34,8 @@ which reaches further cannot substitute for the complete form/state ledger.
 
 | ID | Complete mechanism / necessary contexts | Source and current owner | Receiving proof / disposition |
 | --- | --- | --- | --- |
-| V01 | Family membership, enum stability, DEFAULT/invalid admission, name, FPU-none board selection | CPU interface/lifecycle and Machine create; manual sections 1, 3, 7 | Family/reset batch; preserve old values and reject future/invalid integers; not yet implemented |
-| V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | Public reset/entry vectors; no invented register constants; not yet implemented |
+| V01 | Family membership, enum stability, DEFAULT/invalid admission, name, FPU-none board selection | CPU interface/lifecycle and Machine create; manual sections 1, 3, 7 | S3 implements native CPU membership/name and enum stability, rejects invalid profiles and keeps Machine admission closed; board/FPU selection remains unqualified |
+| V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | S3 native reset/entry and MD-clear reset vectors implemented; full emulation-mode context remains unqualified |
 | V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Shared CPU native table-driven vectors and matching preview; not yet implemented |
 | V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | Every defined suffix/form/length and undefined disposition; no copied external decoder; not yet implemented |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | Decode/execution/preview equivalence and bounded safe-point tests; no assumed Intel 15-byte silicon rule; not yet implemented |
@@ -102,12 +102,22 @@ x86 timeout/retry; eight current PC artifacts are refreshed. No V30 row is
 accepted as implemented by this preparation. See the
 [complete delivery](evidence/t2-s2-advancement-consolidation.md).
 
+S3 replaces the remaining ordinal candidates with explicit private Intel/NEC
+capability decisions and adds native reset/PSW and representative compatible
+16-bit execution/preview at the existing CPU owner. This does not qualify
+all primary forms, NEC extensions, emulation, entry/repeat, timing or Machine.
+The owner additionally approved the sole external Board profile switch's
+equivalent default branch and its manifest; it adds no PC V30 admission.
+See [native family evidence](evidence/t2-s3-native-progress.md). No complete
+runtime mechanism row is promoted solely from representative instruction tests.
+
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;
 8080/mode-entry about +600--1400; timing/Machine about +400--1000; ROM-free CPU
 and Machine vectors about +700--1600 across those batches. Existing verified
 mechanisms are reused, not reproduced to meet a guessed line count. No Lib,
-Emulator, X86 IBMPC or X86 NXVM source change is currently justified. These
+Emulator or X86 IBMPC source change is justified by the native batch. The narrow
+approved X86 NXVM default branch is the sole consumer compatibility edit. These
 estimates are not approval for new public functions, layouts or callbacks.
 
 S1 rechecked source admission/reset/form/preview/entry/time seams and rendered
