@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S10. No S packet is active.
+M1 T2 remains open after accepted S10. S11 qualifies native shift/rotate semantics.
 Single-session coordinator/executor mode remains in effect.
+
+## Active S11 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T2 S11, next unused S after accepted S10; single-session coordinator/executor, no delegation. |
+| Admission And Approval | Owner standing full implementation/automatic S/V30 integration approval retained on 2026-10-17. Shared CPU/tests, eight receiving NXVM PC artifacts and MyRaidenII records only; no new public API/layout, Lib/Emulator or MyNES change. |
+| Objective | Consume V07 native Group-2 ROL/ROR/RCL/RCR/SHL/SHR/SAR byte/word subfamily, one/CL/immediate, register/memory, full 8-bit V30 counts, defined flags, alias/segment/odd-tail/provider failures and reserved extension rejection. |
+| Non-goals | No other ALU/divide qualification, mode/8080, source timing/electrical bus, undocumented flag values/prefixes, V03/V07 complete claim, Machine/board/game admission, Lib/Emulator or protected-source import. |
+| Reference Baseline | Clean pushed bf48635bb. Pinned NEC October 1986 manual printed 12-100--12-141, full CL/imm8 repeat semantics; one-bit overflow rules versus undefined multi-bit flags. Original production count helper wrongly masks V30 with 31. |
+| Candidate Proposal | [T2 proposal](../proposals/m1-v30.md), [complete ledger](../etc/t2-v30-ledger.md), V07 seven-operation Group-2 family. Other domain rows remain. |
+| Files And ABI Surface | Existing private count owner in src/x86-core/cpu/cpu_instructions.c, CPU-owned new shift/rotate unit, registration/source/test manifests; eight PC 0563 EXEs and MyRaidenII evidence/ledger/history/status. No new public function/type/layout or persistent production state. |
+| Applicable Rules | Execution/Architecture/Coding/Document, product architecture/layout/source policy, architecture-governance then coding-governance: sole count/handler/bus owners, original trace/table style, Lib Types, independent synthetic oracle, inward tests and honest undefined/model boundaries. |
+| Verification | Existing Release Ninja/ccache x64/x86 builds and complete repo-only units sequentially; all Group-2 forms and counts 0--255 with independent results/defined flags, failures and Intel regressions; manifests/Types/dependency/ownership gates; eight real PC links/deployments with PE/product/version/INI/hash, documentation/links/actual-change review. |
+| Expected Markers | V30:SHIFT-ROTATE:OK, dual-width complete units, eight current PC 0563 artifacts, original graphs/default selection/cache retained, MyNES/INIs unchanged. |
+| Asset Needs | No game ROM/media. Rebuild eight CPU-consuming PC EXEs at retained 0563, preserve all other assets/configurations/snapshots. |
+| Reporting Requirements | Report before-code estimate and sole-owner plan, semantic/failure milestone and actual source/test plus/minus/net, whole-suite/artifact results and remaining qualifications. Estimate production +2--5/-1--3, tests +250--380. |
+| Stop Conditions | Stop for new public ABI/state, third-party copy/protected source, Lib/Emulator/outside-target change or undocumented behavior that needs a new model. No global V30-as-8086 classification, second ALU/decoder/timing route or weakened assertions. |
+| Exit Criteria | Seven documented operations use full V30 count at one private owner while Intel counts remain unchanged; byte/word one/CL/immediate register/memory, flags, count/alias and complete accepted-prefix failures pass; metadata/preview/rejection agree, full dual-width units and eight artifacts verified and pushed/reviewed. T2 remains open. |
+| Original Owner Request | Implement full playable MyRaidenII with governed single-session dual roles, approved V30 integration and automatic bounded S admission. |
+| Similar-Issue Sweep | Inspect all seven arithmetic helpers, six Group-2 opcode handlers and their profile branches, count-zero write path, RCL/RCR modulo-equivalent reduction, metadata/preview and physical RMW failures. Retain Intel/486-only paths and undefined flags/prefix/mode/timing receivers rather than broad capability aliases. |
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
@@ -17,6 +38,7 @@ Single-session coordinator/executor mode remains in effect.
 | T2 S8 | Accepted Shared 70dde1d31, NXVM 0ed0a9e30 and evidence b9f9c0110 after actual-change review: native memory lanes/addressing and source-graded L2 tail model, dual-width 661/661 units and eight PC 0563 artifacts. |
 | T2 S9 | Accepted Shared 7a9433dc1, NXVM 2f0ac6b63 and evidence 4fdfe424d: native scalar/string I/O lanes and exact completion/failure effects; final dual-width 662/662 complete units and eight PC 0563 artifacts. First-run gate timeouts and complete unchanged-budget rechecks recorded; actual-change review passed. |
 | T2 S10 | Accepted Shared 871fdfe1b and evidence 22fe9ffcb: six native data-block forms qualified without production changes; dual-width 663/663 complete units, existing PC/MyNES artifact hashes unchanged; actual-change review passed. |
+| T2 S11 | Delivered Shared 36bba8907 and NXVM b1fd77101: native full-count shift/rotate and long-shift CF qualification; dual-width 664/664 complete units, eight PC 0563 artifacts. Reserved memory admission remains V03; coordinator review pending. |
 | T2 remaining | Native full-form qualification, mode/8080/entry, unqualified block/port-prefix/LOCK/long-prefix contexts, physical bus, source-graded timing/neutral Machine and real board proof remain. Bit-field AX/AL/AH output collision is not silicon-exact; FFFF-start native data spans now have S8 L2 proof, not silicon-exact certification. |
 
 ## Accepted Evidence And Review

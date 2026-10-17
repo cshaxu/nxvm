@@ -36,11 +36,11 @@ which reaches further cannot substitute for the complete form/state ledger.
 | --- | --- | --- | --- |
 | V01 | Family membership, enum stability, DEFAULT/invalid admission, name, FPU-none board selection | CPU interface/lifecycle and Machine create; manual sections 1, 3, 7 | S3 implements native CPU membership/name and enum stability, rejects invalid profiles and keeps Machine admission closed; board/FPU selection remains unqualified |
 | V02 | Reset native PSW/MD, FFFF:0000, segments, register-defined versus unspecified values, reset after both modes | CPU reset; manual sections 3, 7--8 | S3 native reset/entry and MD-clear reset vectors implemented; full emulation-mode context remains unqualified |
-| V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Shared CPU native table-driven vectors and matching preview; not yet implemented |
+| V03 | Native primary slots 00--FF with every documented form and reserved disposition | CPU form metadata/handler table; manual section 12 and Appendix A | Complete native table-driven vectors and preview/admission remain unqualified. S11 verifies Group-2 /6 register rejection; reserved /6 memory still reads an operand before diagnostic rejection. The complete ModRM-class admission/effect audit must resolve this at the shared form owner, not instruction-specific patches or fabricated native hardware faults |
 | V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements 10--1F/28/2A; S5 implements documented packed-BCD 20/22/26; S6 adds bit-field 31/33/39/3B through the same format/metadata/preview owner. Output-alias silicon, prefix/bus contexts, mode entry, undocumented inputs and full timing remain unqualified |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | S7 implements native carry comparison prefixes, one execution/preview recognizer, prefix-selection vectors and up-to-three-prefix interrupt restart; complete LOCK, long-stream and other mode/prefix qualification remains open |
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | Register/stack/bus ordering, alias and wrap vectors; not yet qualified for V30 |
-| V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | Full operand/flag boundaries, divide fault saved-PC and undefined flag masks; not yet qualified |
+| V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | S11 fixes full eight-bit native shift/rotate counts and long-shift defined CF, with seven-operation byte/word one/CL/imm8, register/alias/memory/segment and provider-failure proofs. Other arithmetic/decimal/multiply/divide, mode, timing and undocumented contexts remain unqualified |
 | V08 | Near/far/conditional branches, loops, calls/returns, breakpoint/interrupt return | CPU control/entry helpers; manual sections 6, 12 | Taken/not-taken, stack frame, segment wrap and target-failure observations; not yet qualified |
 | V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | S7 implements four native CMPS/SCAS byte/word comparison forms with carry/zero conditions. S9 qualifies port-string transfers; S10 qualifies six MOVS/LODS/STOS forms, REP/DF/index/segment/overlap/tails, provider failures and NMI/INT-to-IRET continuation through existing handlers. Unqualified prefix, complete comparison-flag, electrical bus/timing and mode contexts remain open |
 | V10 | PSW fixed/writable bits and MD, flag load/image, debug patches/entry, native versus emulation flag meanings | CPU owned architectural register image; manual sections 3, 8, 12 | PUSHF/POPF/IRET/BRKEM/CALLN/RETEM transitions and safe debug writes; no second mode flag; not yet implemented |
@@ -177,6 +177,14 @@ position and native interrupt/IRET continuation. The test does not copy a
 production interpreter or weaken an existing assertion. The complete ledger
 still retains mode/8080, timing, native full-form and real-board requirements;
 S8's segment-tail L2 model is not promoted by these synthetic tests.
+
+S11 repairs native Group-2 count ownership rather than copying an ALU.
+[Shift/rotate evidence](evidence/t2-s11-shift-rotate.md) records full CL/imm8
+counts 0--255, defined flags versus masked undefined values, register aliases,
+memory/segment/odd-tail and complete provider failure positions. Intel count
+behavior and existing handlers remain unchanged. V30 timing still exits as
+unallocated before Intel timing-count rules; this does not retire all V07,
+mode/8080, Machine or board requirements.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;
