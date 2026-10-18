@@ -1,9 +1,9 @@
 #include "support/cpu_v30_memory_fixture.h"
 #include "lib/types/file.h"
 
-/* NEC ADJBA/ADJBS and the documented radix-ten CVTBD/CVTDB encodings. */
+/* NEC scalar decimal adjustment and documented radix-ten conversion. */
 static lib_u16 v30_decimal_result(lib_u8 operation, lib_u16 input,
-    lib_u32 *flags, lib_u32 *defined)
+    lib_u32 *flags, lib_u32 *defined, lib_i32 decimal, lib_bool auxiliary)
 {
     const lib_u8 low = (lib_u8)input, high = (lib_u8)(input >> 8u);
     if (operation < 2u) {
@@ -16,12 +16,19 @@ static lib_u16 v30_decimal_result(lib_u8 operation, lib_u16 input,
             (adjust ? VCPU_EFLAGS_CF | VCPU_EFLAGS_AF : 0u);
         return (lib_u16)(256u * upper + lower);
     }
-    const lib_u16 result = operation == 2u ?
-        (lib_u16)(256u * (low / 10u) + low % 10u) : (lib_u8)(10u * high + low);
+    const lib_u8 digits = (lib_u8)((decimal + 100) % 100);
+    const lib_u16 result = operation < 4u ? (operation == 2u ?
+        (lib_u16)(256u * (low / 10u) + low % 10u) : (lib_u8)(10u * high + low)) :
+        (lib_u16)(256u * high + 16u * (digits / 10u) + digits % 10u);
     const lib_u8 byte = (lib_u8)result;
     lib_u8 ones = 0u;
     for (lib_u8 bit = 0u; bit < 8u; ++bit) ones += (byte >> bit) & 1u;
-    *defined = ~(VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
+    *defined = operation < 4u ? ~(VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF) :
+        ~VCPU_EFLAGS_OF;
+    if (operation >= 4u)
+        *flags = (*flags & ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_AF)) |
+            (decimal < 0 || decimal >= 100 ? VCPU_EFLAGS_CF : 0u) |
+            (auxiliary ? VCPU_EFLAGS_AF : 0u);
     *flags = (*flags & ~(VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)) |
         (byte >= 128u ? VCPU_EFLAGS_SF : 0u) | (byte == 0u ? VCPU_EFLAGS_ZF : 0u) |
         (ones % 2u == 0u ? VCPU_EFLAGS_PF : 0u);
@@ -41,7 +48,7 @@ static lib_u32 v30_decimal_flags(lib_u8 seed)
 static void v30_decimal_prepare(v30_memory_fixture *fixture, lib_u8 operation,
     lib_u16 input, lib_u8 seed, lib_u8 prefix, lib_bool wrap)
 {
-    static const lib_u8 opcodes[] = {0x37u,0x3fu,0xd4u,0xd5u};
+    static const lib_u8 opcodes[] = {0x37u,0x3fu,0xd4u,0xd5u,0x27u,0x2fu};
     static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
     v30_memory_restart(fixture);
     fixture->bus.cpu.data.eax = 0x12340000u | input;
@@ -50,7 +57,7 @@ static void v30_decimal_prepare(v30_memory_fixture *fixture, lib_u8 operation,
     lib_u16 offset = (lib_u16)fixture->bus.cpu.data.eip;
     if (prefix) fixture->memory[0x80000u + offset++] = prefixes[prefix];
     fixture->memory[0x80000u + offset++] = opcodes[operation];
-    if (operation >= 2u) fixture->memory[0x80000u + offset] = 10u;
+    if (operation == 2u || operation == 3u) fixture->memory[0x80000u + offset] = 10u;
 }
 
 static lib_bool v30_decimal_no_data(const v30_memory_fixture *fixture, lib_bool preview)
@@ -65,15 +72,16 @@ static lib_bool v30_decimal_no_data(const v30_memory_fixture *fixture, lib_bool 
 }
 
 static lib_i32 v30_decimal_check(lib_u8 operation, lib_u16 input, lib_u8 seed,
-    lib_u8 prefix, lib_bool wrap, lib_bool deep)
+    lib_u8 prefix, lib_bool wrap, lib_bool deep, lib_i32 decimal, lib_bool auxiliary)
 {
     static v30_memory_fixture fixture;
-    const lib_u8 length = 1u + (operation >= 2u) + (prefix != 0u);
+    const lib_u8 length = 1u + (operation == 2u || operation == 3u) + (prefix != 0u);
     v30_decimal_prepare(&fixture,operation,input,seed,prefix,wrap);
     const t_cpu before = fixture.bus.cpu;
     t_cpu expected = before;
     lib_u32 defined;
-    expected.data.ax = v30_decimal_result(operation,input,&expected.data.eflags,&defined);
+    expected.data.ax = v30_decimal_result(operation,input,&expected.data.eflags,&defined,
+        decimal,auxiliary);
     expected.data.eip = (lib_u16)(expected.data.eip + length);
     lib_u32 observations = 0u;
     if (deep) {
@@ -92,14 +100,15 @@ static lib_i32 v30_decimal_check(lib_u8 operation, lib_u16 input, lib_u8 seed,
     t_cpu actual = fixture.bus.cpu;
     actual.data.eflags &= defined;
     expected.data.eflags &= defined;
-    static const lib_u8 nominal[] = {3u,7u,15u,7u};
-    const lib_u64 clocks = nominal[operation] + (prefix ? 2u : 0u);
+    /* Packed-adjust clock/source reconciliation is separate from result proof. */
+    static const lib_u8 nominal[] = {3u,7u,15u,7u,0u,0u};
+    const lib_u64 clocks = nominal[operation] ? nominal[operation] + (prefix ? 2u : 0u) : 0u;
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
     const lib_u32 form = clocks ? fixture.memory[0x80000u+(lib_u16)(before.data.eip+(prefix != 0u))] :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
         timing.form_id != form || timing.key_id != form || timing.formula_inputs !=
-            (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) ||
+            (clocks && prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) ||
         timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture.observations ||
         x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) return 1;
@@ -159,7 +168,8 @@ lib_i32 main(void)
             for (lib_u8 seed = 0u; seed < (operation < 2u ? 4u : 2u); ++seed) {
                 const lib_u8 flags = operation < 2u ?
                     (lib_u8)(((seed & 1u) ? 4u : 0u) | ((seed & 2u) ? 1u : 0u)) : seed ? 63u : 0u;
-                if (v30_decimal_check(operation,(lib_u16)input,flags,0u,LIB_FALSE,LIB_FALSE)) return 1;
+                if (v30_decimal_check(operation,(lib_u16)input,flags,0u,LIB_FALSE,LIB_FALSE,
+                    0,LIB_FALSE)) return 1;
                 ++cases;
             }
     for (lib_u8 operation = 0u; operation < 4u; ++operation)
@@ -167,10 +177,41 @@ lib_i32 main(void)
             for (lib_u8 seed = 0u; seed < 64u; ++seed)
                 for (lib_u8 value = 0u; value < sizeof(boundaries)/sizeof(boundaries[0]); ++value)
                     for (lib_u8 wrap = 0u; wrap < 2u; ++wrap) {
-                        if (v30_decimal_check(operation,boundaries[value],seed,prefix,wrap != 0u,LIB_TRUE)) return 1;
+                        if (v30_decimal_check(operation,boundaries[value],seed,prefix,wrap != 0u,LIB_TRUE,
+                            0,LIB_FALSE)) return 1;
                         ++cases;
                     }
     lib_c_printf("V30:DECIMAL:OK cases=%u\n",cases);
     lib_c_printf("V30:NOMINAL-DECIMAL:OK cases=%u\n",cases);
+    lib_u32 packed_cases = 0u;
+    for (lib_u8 operation = 4u; operation < 6u; ++operation)
+        for (lib_i32 left = 0; left < 100; ++left)
+            for (lib_i32 right = 0; right < 100; ++right)
+                for (lib_u8 carry = 0u; carry < 2u; ++carry) {
+                    const lib_i32 direction = operation == 4u ? 1 : -1;
+                    const lib_i32 binary = 16 * (left / 10) + left % 10 + direction *
+                        (16 * (right / 10) + right % 10 + carry);
+                    const lib_i32 low = left % 10 + direction * (right % 10 + carry);
+                    const lib_i32 decimal = left + direction * (right + carry);
+                    const lib_bool auxiliary = low < 0 || low >= 10;
+                    const lib_u8 seed = (lib_u8)(58u |
+                        (binary < 0 || binary > 255 ? 1u : 0u) |
+                        (low < 0 || low > 15 ? 4u : 0u));
+                    const lib_u16 input = (lib_u16)(256u * (lib_u8)(left * right + 0xa5) +
+                        (lib_u8)binary);
+                    if (v30_decimal_check(operation,input,seed,0u,LIB_FALSE,LIB_FALSE,
+                        decimal,auxiliary)) return 1;
+                    ++packed_cases;
+                    /* Carry, low correction, zero and wrap witnesses use every segment/fetch seam. */
+                    if ((left == 0 || left == 9 || left == 99) &&
+                        (right == 0 || right == 9 || right == 99))
+                        for (lib_u8 prefix = 0u; prefix < 5u; ++prefix)
+                            for (lib_u8 wrap = 0u; wrap < 2u; ++wrap) {
+                                if (v30_decimal_check(operation,input,seed,prefix,wrap != 0u,
+                                    LIB_TRUE,decimal,auxiliary)) return 1;
+                                ++packed_cases;
+                            }
+                }
+    lib_c_printf("V30:PACKED-ADJUST:OK cases=%u\n",packed_cases);
     return 0;
 }
