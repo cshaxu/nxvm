@@ -1,5 +1,6 @@
 #include "support/cpu_bus_fixture.h"
 #include "lib/types/file.h"
+#include "support/cpu_v30_string_timing.h"
 
 typedef struct v30_port_record {
     lib_u16 port;
@@ -26,6 +27,7 @@ static lib_status v30_port_read(void *opaque, lib_u32 address, void *data,
     v30_port_fixture *fixture = opaque;
     (void)reset_fetch;
     (void)cache_control;
+    if (observe) ++fixture->bus.observations;
     if (address >= sizeof(fixture->memory) || bytes > sizeof(fixture->memory) - address)
         return LIB_STATUS_IO_ERROR;
     if (!observe && provenance != X86_CORE_CPU_MEMORY_ACCESS_DATA &&
@@ -244,7 +246,10 @@ static lib_i32 v30_port_strings(void)
                     lib_memory_copy(fixture.memory + 0x100u, code, size);
                     for (lib_u16 iteration = 0u; iteration < count; ++iteration) {
                         const lib_u16 offset = index + (direction ? 0u - iteration * width : iteration * width);
+                        const t_cpu retiring = fixture.bus.cpu;
                         x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                        if (v30_string_timing(&fixture.bus.execution,&retiring,opcode,prefixes[repeat],
+                            (lib_u8)iteration,segment == 0u) || fixture.bus.observations) return 1;
                         const lib_u16 next = index + (direction ? 0u - (iteration + 1u) * width : (iteration + 1u) * width);
                         lib_u16 actual = 0u;
                         lib_memory_copy(&actual, fixture.memory + base + offset, width);
@@ -309,6 +314,8 @@ static lib_i32 v30_port_failures(void)
             lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.cpu.data.cx != 3u ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.cpu.data.eip != 0x100u || fixture.bus.cpu.data.si != 0xffffu ||
                 fixture.bus.cpu.data.di != 0xffffu || fixture.bus.delivered_exceptions ||
                 (write ? fixture.reads : fixture.writes) != stage ||
@@ -327,7 +334,9 @@ static lib_i32 v30_port_repeat_and_entry(void)
         v30_port_prepare(&fixture);
         fixture.bus.cpu.data.cx = 0u;
         lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
+        const t_cpu zero = fixture.bus.cpu;
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (v30_string_timing(&fixture.bus.execution,&zero,opcode,0xf3u,0u,LIB_TRUE)) return 1;
         if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x102u ||
             fixture.transfers || fixture.reads || fixture.writes || fixture.bus.cpu.data.si != 0x400u ||
             fixture.bus.cpu.data.di != 0x500u) return 1;
@@ -409,5 +418,6 @@ lib_i32 main(void)
     if (v30_port_repeat_failure()) { lib_c_printf("V30:PORT-REPEAT-FAILURE:FAIL\n"); return 1; }
     lib_c_printf("V30:PORT-TRANSFER:OK\n");
     lib_c_printf("V30:NOMINAL-PORT:OK cases=160\n");
+    lib_c_printf("V30:NOMINAL-STRING:OK\n");
     return 0;
 }

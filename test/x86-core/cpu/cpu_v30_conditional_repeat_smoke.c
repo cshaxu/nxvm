@@ -1,5 +1,6 @@
 #include "support/cpu_v30_memory_fixture.h"
 #include "lib/types/file.h"
+#include "support/cpu_v30_string_timing.h"
 
 static lib_bool v30_repeat_condition(lib_u8 prefix, lib_u16 left, lib_u16 right)
 {
@@ -163,6 +164,8 @@ static lib_i32 v30_compare_refusals(const v30_compare_case *item, lib_u8 iterati
             else fixture.fail_fetch=ordinal;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.delivered_exceptions || fixture.writes || fixture.invalid ||
                 lib_memory_compare(&fixture.bus.cpu,before,sizeof(*before)) ||
                 (kind == 0u && v30_memory_check_plan(&fixture,plan,LIB_TRUE))) return 1;
@@ -193,6 +196,8 @@ static lib_i32 v30_compare_check(const v30_compare_case *item, lib_bool deep)
             v30_compare_clear(&fixture);
         }
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (v30_string_timing(&fixture.bus.execution,&before,item->opcode,item->repeat,
+            iteration,item->source == 0u) || fixture.observations) return 1;
         if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
             fixture.bus.execution.nec_md_write_enabled || fixture.writes ||
             lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
@@ -494,5 +499,6 @@ lib_i32 main(void)
     if (v30_repeat_intel_isolation()) { lib_c_printf("V30:REPEAT-INTEL:FAIL\n"); return 1; }
     if (v30_repeat_interrupts()) { lib_c_printf("V30:REPEAT-INTERRUPTS:FAIL\n"); return 1; }
     lib_c_printf("V30:CONDITIONAL-REPEAT:OK\n");
+    lib_c_printf("V30:NOMINAL-STRING:OK\n");
     return 0;
 }

@@ -4675,6 +4675,8 @@ static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(vector >> 16)));
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
         cpu_state.data.eflags |= X86_CPU_NEC_PSW_MD;
+        /* A committed entry restarts REP even if its target aliases the old code. */
+        context->source_repeat_active = LIB_FALSE;
         if (context->instruction_in_progress)
             context->instruction_software_entry = LIB_TRUE;
         /* Accepted entry clears BRK; a lower-priority outgoing step cannot

@@ -230,10 +230,13 @@ static lib_i32 x86_core_cpu_timing_apply_8086_lock(x86_core_cpu_execution_contex
  * do not add the Intel EA recipe or count each byte callback as another cost.
  * Fetch starvation, prefixes and extra waits still need their own allocation. */
 static void x86_core_cpu_timing_select_v30(
-    const x86_core_cpu_execution_context *context, x86_core_cpu_timing_result *result)
+    x86_core_cpu_execution_context *context, x86_core_cpu_timing_result *result)
 {
     const t_cpuins_data *data = &context->instructions->data;
-    const lib_u8 opcode = data->opcodes[0];
+    const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(data);
+    const lib_u8 opcode = prefixes < data->oplen ? data->opcodes[prefixes] : 0u;
+    const lib_bool string = (opcode >= 0xa4u && opcode <= 0xafu &&
+        opcode != 0xa8u && opcode != 0xa9u) || (opcode >= 0x6cu && opcode <= 0x6fu);
     const lib_bool scalar = opcode < 0x40u && (opcode & 7u) < 4u;
     const lib_bool shift = opcode == 0xc0u || opcode == 0xc1u ||
         (opcode >= 0xd0u && opcode <= 0xd3u);
@@ -241,7 +244,7 @@ static void x86_core_cpu_timing_select_v30(
         opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu || shift;
     lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
-    lib_u8 suffix = 0u;
+    lib_u8 form_extension = 0u;
     lib_u64 ticks;
     lib_u8 odd_penalty = 0u;
     lib_u32 stack_penalty = 0u;
@@ -253,9 +256,59 @@ static void x86_core_cpu_timing_select_v30(
         .key_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED,
         .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
     };
-    if (data->oplen == 0u || !(data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD)) return;
-    if (opcode == 0x0fu) {
-        suffix = data->opcodes[1];
+    if (prefixes >= data->oplen || !(data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD)) {
+        context->source_repeat_active = LIB_FALSE;
+        return;
+    }
+    if (!string) {
+        context->source_repeat_active = LIB_FALSE;
+        if (prefixes) return;
+    }
+    if (string) {
+        const lib_bool repeat = data->prefix_rep != PREFIX_REP_NONE;
+        const lib_bool comparison = (opcode & 0xfeu) == 0xa6u || (opcode & 0xfeu) == 0xaeu;
+        if (prefixes != (repeat ? 1u : 0u) || (repeat && data->opcodes[0] != 0xf3u &&
+            !(comparison && (data->opcodes[0] == 0xf2u || data->opcodes[0] == 0x64u ||
+                data->opcodes[0] == 0x65u)))) {
+            context->source_repeat_active = LIB_FALSE;
+            return;
+        }
+        lib_u64 setup = 7u, iteration;
+        switch (opcode & 0xfeu) {
+        case 0xa4u: ticks = 11u; setup = 11u; iteration = 8u; break;
+        case 0xa6u: ticks = 13u; iteration = 14u; break;
+        case 0xaau: ticks = 7u; iteration = 4u; break;
+        case 0xacu: ticks = 7u; iteration = 9u; break;
+        case 0xaeu: ticks = 7u; iteration = 10u; break;
+        default: ticks = 10u; setup = 9u; iteration = 8u; break;
+        }
+        const lib_bool source = (opcode & 0xfeu) == 0xa4u || (opcode & 0xfeu) == 0xa6u ||
+            (opcode & 0xfeu) == 0xacu || (opcode & 0xfeu) == 0x6eu;
+        const lib_bool destination = (opcode & 0xfeu) == 0xa4u || (opcode & 0xfeu) == 0xa6u ||
+            (opcode & 0xfeu) == 0xaau || (opcode & 0xfeu) == 0xaeu || (opcode & 0xfeu) == 0x6cu;
+        const lib_u8 odd = !(opcode & 1u) ? (lib_u8)0u :
+            (lib_u8)((source && (data->oldcpu.data.si & 1u)) +
+            (destination && (data->oldcpu.data.di & 1u)) +
+            (opcode < 0x70u && (data->oldcpu.data.dx & 1u)));
+        x86_core_cpu_source_timing_record_repeat(context, data);
+        result->repeat_phase = context->timing_result.repeat_phase;
+        if (repeat) {
+            const lib_bool zero = result->repeat_phase == X86_CORE_CPU_RETIREMENT_REPEAT_ZERO_COUNT;
+            ticks = result->repeat_phase == X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION ? 0u : setup;
+            /* Use the printed aggregate once, not another prefix setup per iteration. */
+            if (!zero) ticks += iteration + ((opcode & 0xfeu) == 0xa4u && odd ? 8u : 4u * odd);
+            odd_word = !zero && odd;
+            result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_REPEAT |
+                X86_CORE_CPU_TIMING_INPUT_REPEAT_PHASE | (zero ? 0u : X86_CORE_CPU_TIMING_INPUT_MEMORY);
+            form_extension = data->opcodes[0];
+        } else {
+            ticks += 4u * odd;
+            odd_word = odd != 0u;
+            result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY;
+        }
+    } else if (opcode == 0x0fu) {
+        const lib_u8 suffix = data->opcodes[1];
+        form_extension = suffix;
         if (suffix >= 0x10u && suffix <= 0x1fu) {
             static const lib_u8 registers[] = {3u,5u,4u,4u};
             static const lib_u8 memory[] = {12u,14u,13u,18u};
@@ -450,7 +503,7 @@ static void x86_core_cpu_timing_select_v30(
         X86_CORE_CPU_TIMING_INPUT_BRANCH | (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u);
     result->ticks = ticks;
     result->retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
-    result->form_id = opcode | ((lib_u32)suffix << 16u) | (modrm && data->flagMem ? 0x100u : 0u);
+    result->form_id = opcode | ((lib_u32)form_extension << 16u) | (modrm && data->flagMem ? 0x100u : 0u);
     if (group) result->form_id |= ((lib_u32)(data->opcodes[1] >> 3u) & 7u) << 9u;
     result->key_id = result->form_id;
 }

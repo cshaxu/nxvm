@@ -360,6 +360,9 @@ void x86_core_cpu_execution_reset(
 void x86_core_cpu_execution_invalidate_tlb(
     x86_core_cpu_execution_context *context);
 lib_u32 x86_core_cpu_instruction_prefix_count(const t_cpuins_data *data);
+/* One repeat identity/phase owner for CPU-local nominal evaluators. */
+void x86_core_cpu_source_timing_record_repeat(
+    x86_core_cpu_execution_context *context, const t_cpuins_data *data);
 
 
 #ifdef __cplusplus

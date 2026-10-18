@@ -1004,7 +1004,7 @@ static lib_u64 x86_core_cpu_source_timing_string_modifiers(
     return modifiers;
 }
 
-static void x86_core_cpu_source_timing_record_repeat(
+void x86_core_cpu_source_timing_record_repeat(
     x86_core_cpu_execution_context *context, const t_cpuins_data *data)
 {
     const lib_bool operand_size = data->oldcpu.data.cs.seg.exec.defsize !=
