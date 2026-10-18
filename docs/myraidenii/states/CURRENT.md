@@ -2,37 +2,16 @@
 
 ## Current Work
 
-M1 T2 S27 is delivered at Shared P1 `6409cc290` and receiving NXVM P2
-`8a17e9b58`. Complete packet/evidence delivery precedes coordinator actual-
-change review and separate governance acceptance. T2 and the playable goal
-remain open.
-
-## T2 S27 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, MyRaidenII M1 T2 S27 after accepted/pushed S26 3f15588eb. |
-| Admission And Approval | Owner's durable single-person dual-role full MyRaidenII implementation goal and standing V30 CPU authority. Shared X86 Core existing entry/pending owners and CPU-owned tests; MyRaidenII records; NXVM eight receiving artifacts/status if executable inputs change. No Lib/Emulator, MyNES production, private Apps or public-interface expansion. |
-| Objective | Consume the V11 ordinary-completion asynchronous arbitration receiver: native/8080 NMI over enabled INT over BRK step, source/IE masks, EI/segment inhibition and HALT boundaries; exact single accepted frame, lower-priority cancellation/retention, handler execution and real RETI. Repair demonstrated queued-step leakage at the existing successful entry commit owner; qualify full CPU/stack/vector/pending/accepted-prefix failure behavior. |
-| Non-goals | No software-entry versus simultaneous external-entry arbitration, loaded-BRK sampling/model promotion, new public API/state, physical clocks/LOCK or Machine/board/game. Those original V10/V11/V15 receivers remain explicit. No second arbitration queue or special handler-address logic. |
-| Reference Baseline | Clean 3f15588eb; pinned NEC October 1986 Table 6-1 and 6-3..4 / section 8; existing _ser_int_real, ExecInt, debug step/pending, ordinary emulator executor and real RETI. Baseline 674 units/187 Core, 498 strict rows and S26 current ten identities. |
-| Candidate Proposal | [V30 proposal](../proposals/m1-v30.md) and [V11 ledger](../etc/t2-v30-ledger.md); full ordinary-completion priority class, not one game checkpoint or all V11. |
-| Files And ABI Surface | src/x86-core/cpu/cpu_instructions.c successful real-entry pending commit if proven, source manifest; new test/x86-core/cpu/cpu_v30_interrupt_smoke.c using the existing memory/plan fixture, its registration/manifest. Existing cpu/support/cpu_v30_memory_fixture.h plan capacity grows 12 to 14 for an actual odd-stack RETI (six reads) immediately followed by retained INT entry (six writes plus two vector reads), not another planner. MyRaidenII evidence/history/ledger/Current; receiving NXVM assets/status if production changes. Estimate production +8..15/-1..3, tests/registration +350..650/-0. No public ABI, enum, layout or stored state. |
-| Applicable Rules | Guide/Current/proposal/ledger, architecture/layout/source policy, Contributing and shared Execution/Architecture/Coding/Document. Architecture-governance then coding-governance; read-only PDF workflow. One entry/pending/CPU owner, Lib Types, independent test oracle and inward dependencies. One target per complete pushed P. |
-| Verification | Actual before witness for simultaneous external/step requests; both-width complete priority/context and each relevant entry/fetch/preview/ack refusal. Original Release Ninja/ccache all-target -j8, full repository units -j4, strict rows/Types/dependency/ownership/negative/manifests/docs/whitespace. If production changes, eight PC builds/deploys and fourteen selected receiving integrations plus restored-default identity per width. Verify all ten PE/hashes and unchanged INIs/MyNES/media. No old budget increases. |
-| Expected Markers | V30:INTERRUPT:OK with finite matrix count, exact full CPU/native-frame/vector/pending expectations, actual native handler instruction and RETI, no nested lower-priority step at entry, and accurate accepted provider prefixes on failure. |
-| Asset Needs | Existing pinned original NEC manual/rendered priority and step pages only; original ROM-free vectors, no external implementation or protected input. Read receiving firmware/artifact authorities before deployment. |
-| Reporting Requirements | Report scope/reuse/estimated per-owner diff before editing and counterexample/model conflict before expansion. Preserve complete packet, source pin, matrix/failure proof, actual diff and retained/deleted paths, final handles and receiving identities. |
-| Stop Conditions | Unresolved primary/model decision, new public boundary/state/clock/worker, foreign/protected code need, software-entry expansion or unrelated repair returns to coordinator before affected work. No weaker assertions or higher budgets. |
-| Exit Criteria | Entire ordinary asynchronous priority batch passes both widths, all complete unit/gate results and required receiving releases pass, scoped Ps pushed and coordinator actual-change review accepted. Original full CPU/Machine/game completion predicate unchanged. |
-| Original Owner Request | Continue single-person dual-role implementation toward full MyRaidenII, including required NEC V30 and facilities; do not substitute synthetic CPU tests for playable completion. |
-| Similar-Issue Sweep | Inspect successful _ser_int_real commit plus all callers (NMI/INT/step/software/mode), ExecInt, pending step generation/delivery, EI/segment shadow, HALT/reset and native RETI. Resolve repeated external-entry pending-step leakage once at its owner, preserving Intel and non-disabling mode calls; explicitly retain software-entry arbitration, loaded-BRK and physical models in the original ledger. |
+M1 T2 S27 is accepted and closed after coordinator actual-change review of
+Shared P1 `6409cc290`, NXVM receiving P2 `8a17e9b58` and evidence P3
+`c0ba0e06c`. P3 preserves the complete sixteen-field packet. No next S is
+active; T2 and the full playable objective stay open.
 
 ## Task Progress
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
-| T2 S26 | Accepted logical POLL; S27 ordinary asynchronous arbitration is delivered and awaiting coordinator review. |
+| T2 S27 | Accepted ordinary native/8080 asynchronous arbitration and receiving releases. Original remaining CPU/Machine/board/game obligations stay open. |
 
 [S27 evidence](../etc/evidence/t2-s27-interrupt.md),
 [results](../etc/evidence/t2-s27-results.json) and
