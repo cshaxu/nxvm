@@ -17,6 +17,15 @@ static void vm_runner_completed_state(void *context,
         vm_test_emulator_machine_state_changed(context, state, run_generation);
 }
 
+/* Every caller has confirmed PAUSED. Check the original guest index as well
+ * as its resolved publication colour; the fixture programs a nonstandard palette. */
+static lib_bool vm_runner_pixel_equals(const x86_nxvm_machine *machine,
+    const kvm_window_frame_storage *frame, lib_size pixel, lib_u8 colour)
+{
+    return machine->latest_snapshot.pixels[pixel] == colour &&
+        frame->data.graphics.pixels[pixel] == machine->latest_snapshot.palette_rgb[colour];
+}
+
 static lib_bool vm_runner_debug_execute(x86_nxvm_machine *machine,
     const emulator_machine_debug_lease *lease, const x86_debug_request *request,
     x86_debug_response *response)
@@ -74,7 +83,7 @@ static lib_bool vm_runner_step_and_pause(x86_nxvm_machine *machine,
 
 static lib_bool vm_runner_blink_cycle(x86_nxvm_machine *machine,
     const vm_test_emulator_machine_state_waiter *waiter,
-    emulator_machine_frame *frame, lib_u32 run_generation, lib_bool character)
+    kvm_window_frame_storage *frame, lib_u32 run_generation, lib_bool character)
 {
     static const vm_runner_port_write ports[] = {
         {0x03c4u, 3u}, {0x03c5u, 0u}, {0x03c4u, 2u}, {0x03c5u, 1u},
@@ -110,32 +119,32 @@ static lib_bool vm_runner_blink_cycle(x86_nxvm_machine *machine,
         }, &response) || !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, frame, run_generation))
         return LIB_FALSE;
-    if (character ? !frame->window.graphics || frame->window.image.width != 8u ||
-            frame->window.image.height != 2u || frame->window.image.pixels[0] != 2u :
-        frame->window.graphics || !frame->window.text.base.cursor_phase)
+    if (character ? !frame->frame.graphics || frame->data.graphics.width != 8u ||
+            frame->data.graphics.height != 2u || !vm_runner_pixel_equals(machine, frame, 0, 2u) :
+        frame->frame.graphics || !frame->data.text.base.cursor_phase)
         return LIB_FALSE;
-    sequence = frame->sequence;
+    sequence = frame->frame.sequence;
     /* Only real execution may produce the next named blink transition. */
     for (lib_u16 segment = 0u; segment < 128u && !visible_again; ++segment) {
         lib_bool visible;
 
         if (!emulator_machine_copy_published_frame(machine->executor, frame, run_generation) ||
-            frame->sequence != sequence || !vm_runner_step_and_pause(machine, waiter, 16u) ||
+            frame->frame.sequence != sequence || !vm_runner_step_and_pause(machine, waiter, 16u) ||
             !emulator_machine_copy_published_frame(machine->executor, frame, run_generation))
             return LIB_FALSE;
-        if (character ? !frame->window.graphics || frame->window.image.width != 8u ||
-                frame->window.image.height != 2u || frame->window.image.pixels[1] != 1u :
-            frame->window.graphics || frame->window.text.base.text_columns != 1u ||
-                frame->window.text.base.text_rows != 1u) return LIB_FALSE;
-        visible = character ? frame->window.image.pixels[0] == 2u :
-            frame->window.text.base.cursor_phase;
-        if (character && !visible && frame->window.image.pixels[0] != 1u) return LIB_FALSE;
+        if (character ? !frame->frame.graphics || frame->data.graphics.width != 8u ||
+                frame->data.graphics.height != 2u || !vm_runner_pixel_equals(machine, frame, 1, 1u) :
+            frame->frame.graphics || frame->data.text.base.text_columns != 1u ||
+                frame->data.text.base.text_rows != 1u) return LIB_FALSE;
+        visible = character ? vm_runner_pixel_equals(machine, frame, 0, 2u) :
+            frame->data.text.base.cursor_phase;
+        if (character && !visible && !vm_runner_pixel_equals(machine, frame, 0, 1u)) return LIB_FALSE;
         if (!visible || hidden) {
-            if ((!hidden || visible) && frame->sequence == sequence) return LIB_FALSE;
+            if ((!hidden || visible) && frame->frame.sequence == sequence) return LIB_FALSE;
             if (!visible) hidden = LIB_TRUE;
             else visible_again = LIB_TRUE;
         }
-        sequence = frame->sequence;
+        sequence = frame->frame.sequence;
     }
     if (!hidden || !visible_again)
         lib_c_fprintf(lib_c_stderr, "RUNNER:BLINK-CYCLE:FAIL character=%u hidden=%u\n",
@@ -184,7 +193,7 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
     };
     emulator_machine_debug_lease lease;
     x86_debug_response response;
-    static emulator_machine_frame published;
+    static kvm_window_frame_storage published;
     lib_u32 sequence;
     lib_u32 run_generation;
 
@@ -197,13 +206,13 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
         return LIB_FALSE;
     run_generation = emulator_machine_run_generation(machine->executor);
     if (!emulator_machine_copy_published_frame(machine->executor, &published,
-            run_generation) || published.window.graphics ||
-        !published.window.valid ||
+            run_generation) || published.frame.graphics ||
+        published.frame.text == LIB_NULL ||
         emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK ||
         !vm_runner_debug_execute(machine, &lease, &(x86_debug_request) {
             .operation = X86_DEBUG_READ_PORT, .port = 0x03dau, .bytes = 1u
         }, &response)) return LIB_FALSE;
-    sequence = published.sequence;
+    sequence = published.frame.sequence;
     if (!vm_runner_program_ports(machine, &lease, graphics,
             sizeof(graphics) / sizeof(graphics[0]))) return LIB_FALSE;
     if (!vm_runner_debug_execute(machine, &lease, &(x86_debug_request) {
@@ -220,15 +229,15 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
                 .address = 0xa0000u, .bytes = 1u, .data = {0x80u}}, &response) ||
 !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published,
-            run_generation) || !published.window.graphics ||
-        published.window.image.width != 320u || published.window.image.height != 200u ||
-        published.window.image.pixels[0] != 15u || published.sequence != sequence + 1u)
+            run_generation) || !published.frame.graphics ||
+        published.data.graphics.width != 320u || published.data.graphics.height != 200u ||
+        !vm_runner_pixel_equals(machine, &published, 0, 15u) || published.frame.sequence != sequence + 1u)
         return LIB_FALSE;
-    sequence = published.sequence;
+    sequence = published.frame.sequence;
     if (!vm_runner_step_and_pause(machine, waiter, 4u) ||
         emulator_machine_published_frame_sequence(machine->executor) != sequence ||
         !emulator_machine_copy_published_frame(machine->executor, &published,
-            run_generation) || !published.window.graphics || published.sequence != sequence)
+            run_generation) || !published.frame.graphics || published.frame.sequence != sequence)
         return LIB_FALSE;
     if (emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK ||
         !vm_runner_debug_execute(machine, &lease, &(x86_debug_request) {
@@ -257,21 +266,21 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
             }, &response)) return LIB_FALSE;
     }
     if (!emulator_machine_copy_published_frame(machine->executor, &published,
-            run_generation) || !published.window.graphics || published.sequence != sequence ||
+            run_generation) || !published.frame.graphics || published.frame.sequence != sequence ||
         !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
-        published.window.graphics || published.sequence != sequence + 1u ||
-        published.window.text.base.text_columns != 80u || published.window.text.base.text_rows != 50u ||
-        published.window.text.base.cells[0].glyph_index != 'A' ||
-        published.window.text.base.cells[0].glyph_bank != 0u ||
-        published.window.text.base.cells[3920u].glyph_index != 'A' ||
-        published.window.text.base.cells[3920u].glyph_bank != 1u ||
-        published.window.text.font[65u * 32u] != 0x80u ||
-        published.window.text.secondary_font[65u * 32u] != 0x40u ||
-        !published.window.text.base.cursor_phase ||
-        published.window.text.base.cursor_column != 2 || published.window.text.base.cursor_row != 49)
+        published.frame.graphics || published.frame.sequence != sequence + 1u ||
+        published.data.text.base.text_columns != 80u || published.data.text.base.text_rows != 50u ||
+        published.data.text.base.cells[0].glyph_index != 'A' ||
+        published.data.text.base.cells[0].glyph_bank != 0u ||
+        published.data.text.base.cells[3920u].glyph_index != 'A' ||
+        published.data.text.base.cells[3920u].glyph_bank != 1u ||
+        published.data.text.font[65u * 32u] != 0x80u ||
+        published.data.text.secondary_font[65u * 32u] != 0x40u ||
+        !published.data.text.base.cursor_phase ||
+        published.data.text.base.cursor_column != 2 || published.data.text.base.cursor_row != 49)
         return LIB_FALSE;
-    sequence = published.sequence;
+    sequence = published.frame.sequence;
     if (emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK ||
         !vm_runner_program_ports(machine, &lease, (const vm_runner_port_write[]) {
             {0x03c4u, 2u}, {0x03c5u, 4u} }, 2u) ||
@@ -280,9 +289,9 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
             .bytes = 1u, .data = {0x20u}
         }, &response) || !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
-        published.sequence != sequence + 1u ||
-        published.window.text.secondary_font[65u * 32u] != 0x20u) return LIB_FALSE;
-    sequence = published.sequence;
+        published.frame.sequence != sequence + 1u ||
+        published.data.text.secondary_font[65u * 32u] != 0x20u) return LIB_FALSE;
+    sequence = published.frame.sequence;
     if (!vm_runner_step_and_pause(machine, waiter, 4u) ||
         emulator_machine_published_frame_sequence(machine->executor) != sequence)
         return LIB_FALSE;
@@ -295,18 +304,18 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
                 {0x03c4u, 0u}, {0x03c5u, 3u}, {0x03c0u, 0x33u}, {0x03c0u, 8u}
             }, 8u) || !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
-        !published.window.graphics || published.window.image.width != 720u ||
-        published.window.image.height != 400u || published.window.image.pixels[0] != 7u ||
-        published.window.image.pixels[1] != 1u ||
-        published.window.image.pixels[392u * 720u + 2u] != 7u ||
-        published.sequence != sequence + 1u) {
+        !published.frame.graphics || published.data.graphics.width != 720u ||
+        published.data.graphics.height != 400u || !vm_runner_pixel_equals(machine, &published, 0, 7u) ||
+        !vm_runner_pixel_equals(machine, &published, 1, 1u) ||
+        !vm_runner_pixel_equals(machine, &published, 392u * 720u + 2u, 7u) ||
+        published.frame.sequence != sequence + 1u) {
         lib_c_fprintf(lib_c_stderr, "RUNNER:PIXEL-TEXT:graphics=%u width=%u height=%u sequence=%u expected=%u first=%u second=%u last=%u\n",
-            published.window.graphics, published.window.image.width, published.window.image.height,
-            published.sequence, sequence + 1u, published.window.image.pixels[0],
-            published.window.image.pixels[1], published.window.image.pixels[392u * 720u + 2u]);
+            published.frame.graphics != LIB_NULL, published.data.graphics.width, published.data.graphics.height,
+            published.frame.sequence, sequence + 1u, published.data.graphics.pixels[0],
+            published.data.graphics.pixels[1], published.data.graphics.pixels[392u * 720u + 2u]);
         return LIB_FALSE;
     }
-    sequence = published.sequence;
+    sequence = published.frame.sequence;
     if (!vm_runner_step_and_pause(machine, waiter, 4u) ||
         emulator_machine_published_frame_sequence(machine->executor) != sequence)
         return LIB_FALSE;
@@ -323,17 +332,17 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
                 .address = 0xa0000u, .bytes = 1u, .data = {1u}}, &response) ||
         !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
-        !published.window.graphics || published.window.image.width != 640u ||
-        published.window.image.height != 400u || published.window.image.pixels[0] != 1u ||
-        published.window.image.pixels[640u] != 0u || published.sequence != sequence + 1u)
+        !published.frame.graphics || published.data.graphics.width != 640u ||
+        published.data.graphics.height != 400u || !vm_runner_pixel_equals(machine, &published, 0, 1u) ||
+        !vm_runner_pixel_equals(machine, &published, 640u, 0u) || published.frame.sequence != sequence + 1u)
         return LIB_FALSE;
     for (lib_u16 x = 0u; x < 8u; ++x)
-        if (published.window.image.pixels[1280u + x] != 1u) return LIB_FALSE;
-    sequence = published.sequence;
+        if (!vm_runner_pixel_equals(machine, &published, 1280u + x, 1u)) return LIB_FALSE;
+    sequence = published.frame.sequence;
     if (!vm_runner_blink_cycle(machine, waiter, &published, run_generation, LIB_FALSE) ||
         !vm_runner_blink_cycle(machine, waiter, &published, run_generation, LIB_TRUE))
         return LIB_FALSE;
-    sequence = published.sequence;
+    sequence = published.frame.sequence;
     if (base_sync_event_reset(waiter->event) != LIB_STATUS_OK ||
         !emulator_machine_reset(machine->executor) ||
         base_sync_event_wait(waiter->event, 2000u) != BASE_SYNC_WAIT_SIGNALED ||
@@ -342,19 +351,21 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
             run_generation) ||
         !emulator_machine_copy_published_frame(machine->executor, &published,
             emulator_machine_run_generation(machine->executor))) return LIB_FALSE;
-    return published.window.valid && !published.window.graphics &&
-        published.window.text.base.text_columns == 1u &&
-        published.window.text.base.text_rows == 1u &&
-        published.window.text.font[65u * 32u] == 0u &&
-        published.window.text.secondary_font[65u * 32u] == 0u &&
-        published.sequence == sequence + 1u;
+    return published.frame.text != LIB_NULL && !published.frame.graphics &&
+        published.data.text.base.text_columns == 1u &&
+        published.data.text.base.text_rows == 1u &&
+        published.data.text.font[65u * 32u] == 0u &&
+        published.data.text.secondary_font[65u * 32u] == 0u &&
+        published.frame.sequence == sequence + 1u;
 }
 
 lib_i32 main(void)
 {
     x86_nxvm_machine *session = LIB_NULL;
     vm_test_emulator_machine_state_waiter waiter = {0};
-    static emulator_machine_frame frame;
+    static kvm_window_frame_storage frame;
+    kvm_console_text_frame console;
+    lib_bool produced;
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
@@ -363,9 +374,10 @@ lib_i32 main(void)
         goto done;
     }
     if (x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
-        x86_nxvm_machine_copy_emulator_frame(session, &frame) != LIB_STATUS_OK ||
-        frame.window.text.base.text_columns != 1u ||
-        frame.window.text.base.text_rows != 1u ||
+        x86_nxvm_machine_copy_emulator_frame(session, &frame, &console, &produced) != LIB_STATUS_OK ||
+        !produced ||
+        frame.data.text.base.text_columns != 1u ||
+        frame.data.text.base.text_rows != 1u ||
         vm_test_emulator_machine_bind(session) != LIB_STATUS_OK ||
         vm_test_emulator_machine_state_waiter_initialize(session, &waiter) !=
             LIB_STATUS_OK ||

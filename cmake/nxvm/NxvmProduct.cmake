@@ -1917,8 +1917,8 @@ function(add_current_vm_artifact target version)
         APP_PRODUCT_INI_NAME="${NXVM_PRODUCT_INI_NAME}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0563)
-add_current_vm_artifact(vm-0-5-0563 "0.5.0563")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0564)
+add_current_vm_artifact(vm-0-5-0564 "0.5.0564")
 add_dependencies(pc-product-ini-identity-smoke ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/test/pc-product-ini-identity")
 project_add_test(pc-product-ini-identity-smoke integration "${PROJECT_CURRENT_VM_RUNTIME_PATH}"

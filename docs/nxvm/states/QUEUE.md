@@ -2,6 +2,10 @@
 
 The entries below are ordered unnumbered candidates.
 
+The owner explicitly inserted [T564's committed frame import](../proposals/m5-softpc-rgb-frame-import.md)
+on 2026-10-17. It is active in Current, not another pending candidate; the
+PC110 candidates below retain their order.
+
 The owner's Shared import/repair request is closed as
 [T562](../history/M5-T562-shared-audio-import-quality-proposal.md) after S4 final
 qualification at 131e7d65c. The candidates below remain unadmitted; CPU work

@@ -82,31 +82,33 @@ static lib_i32 vm_display_composition_enable_planar(x86_nxvm_machine *session)
 static lib_i32 vm_display_composition_delivery(x86_nxvm_machine *session)
 {
     emulator_machine_driver driver;
-    static emulator_machine_frame delivered;
+    static kvm_window_frame_storage delivered;
+    kvm_console_text_frame console;
+    lib_bool produced;
     lib_u32 sequence;
     lib_u32 width;
     lib_i32 failed = 0;
 
     if (x86_nxvm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK)
         return 0;
-    delivered.window.valid = LIB_FALSE;
-    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
-        !delivered.window.valid || !delivered.window.graphics;
-    sequence = delivered.sequence;
-    delivered.window.valid = LIB_FALSE;
-    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
-        delivered.window.valid || delivered.sequence != sequence;
+    produced = LIB_FALSE;
+    failed |= driver.copy_frame(driver.context, &delivered, &console, &produced) != LIB_STATUS_OK ||
+        !produced || !delivered.frame.graphics;
+    sequence = delivered.frame.sequence;
+    produced = LIB_FALSE;
+    failed |= driver.copy_frame(driver.context, &delivered, &console, &produced) != LIB_STATUS_OK ||
+        produced || delivered.frame.sequence != sequence;
     if (x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK) return 0;
-    width = session->latest_frame.window.image.width;
-    session->latest_frame.window.image.width = 0u;
-    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_IO_ERROR ||
-        delivered.window.valid || delivered.sequence != sequence;
-    session->latest_frame.window.image.width = width;
-    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
-        !delivered.window.valid || delivered.sequence <= sequence;
-    delivered.window.valid = LIB_FALSE;
-    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
-        delivered.window.valid;
+    width = session->latest_snapshot.pixel_width;
+    session->latest_snapshot.pixel_width = 0u;
+    failed |= driver.copy_frame(driver.context, &delivered, &console, &produced) != LIB_STATUS_INVALID_ARGUMENT ||
+        produced || delivered.frame.sequence != sequence;
+    session->latest_snapshot.pixel_width = width;
+    failed |= driver.copy_frame(driver.context, &delivered, &console, &produced) != LIB_STATUS_OK ||
+        !produced || delivered.frame.sequence <= sequence;
+    produced = LIB_FALSE;
+    failed |= driver.copy_frame(driver.context, &delivered, &console, &produced) != LIB_STATUS_OK ||
+        produced;
     return !failed;
 }
 
@@ -151,7 +153,7 @@ lib_i32 main(void)
             (void)test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine, 0x03dau);
             failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
                 frame.palette_rgb[1] != rgb[color] || frame.generation <= text_generation ||
-                session->latest_frame.window.text.base.text_palette[1] != rgb[color];
+                session->latest_snapshot.palette_rgb[1] != rgb[color];
             text_generation = frame.generation;
             session->last_display_publish_milliseconds = 0u;
             failed |= x86_nxvm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
@@ -225,13 +227,13 @@ lib_i32 main(void)
         frame.pixels[2] != 15u || frame.palette_rgb[15] != 0xaaaaffu ||
         frame.generation <= cga_generation;
     {
-        static emulator_machine_frame saved;
+        static x86_video_snapshot saved;
         const lib_u64 generation = session->display_generation;
         const lib_u64 acknowledged = session->display_snapshot_generation;
         const lib_bool pending = session->display_frame_pending;
         const lib_bool valid = session->display_snapshot_generation_valid;
 
-        lib_memory_copy(&saved, &session->latest_frame, sizeof(saved));
+        lib_memory_copy(&saved, &session->latest_snapshot, sizeof(saved));
         vm_display_composition_port_write(session, 0x03d4u, 1u);
         vm_display_composition_port_write(session, 0x03d5u, 0u);
         failed |= x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
@@ -239,7 +241,7 @@ lib_i32 main(void)
             session->display_snapshot_generation != acknowledged ||
             session->display_snapshot_generation_valid != valid ||
             session->display_frame_pending != pending ||
-            lib_memory_compare(&saved, &session->latest_frame, sizeof(saved)) != 0;
+            lib_memory_compare(&saved, &session->latest_snapshot, sizeof(saved)) != 0;
         vm_display_composition_port_write(session, 0x03d5u, 0x27u);
         failed |= x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK;
     }

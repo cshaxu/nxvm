@@ -11,23 +11,24 @@ extern const x86_nxvm_machine_assets vm_app_firmware;
 
 static lib_bool default_firmware_text_geometry(const x86_video_snapshot *snapshot)
 {
-    emulator_machine_frame *frame = lib_allocate(sizeof(*frame));
+    kvm_window_frame_storage *frame = lib_allocate(sizeof(*frame));
     lib_bool passed;
+    kvm_console_text_frame console;
 
     if (frame == LIB_NULL) return LIB_FALSE;
     passed = snapshot->kind == X86_VIDEO_KIND_TEXT && snapshot->columns == 80u &&
         snapshot->rows == 25u && snapshot->text_cell_height == 16u &&
         snapshot->text_glyph_height == 16u && snapshot->cursor_top == 14u &&
         snapshot->cursor_bottom == 15u && snapshot->text_glyphs_present &&
-        x86_nxvm_machine_frame_from_display(snapshot, 1u, frame) == LIB_STATUS_OK &&
-        !frame->window.graphics && frame->window.text.base.font_height == 16u &&
-        frame->window.text.base.text_columns * 8u == 640u &&
-        frame->window.text.base.text_rows * frame->window.text.base.font_height == 400u;
+        x86_nxvm_machine_frame_from_display(snapshot, 1u, frame, &console) == LIB_STATUS_OK &&
+        !frame->frame.graphics && frame->data.text.base.font_height == 16u &&
+        frame->data.text.base.text_columns * 8u == 640u &&
+        frame->data.text.base.text_rows * frame->data.text.base.font_height == 400u;
     for (lib_size row = 0u; passed && row < X86_VIDEO_TEXT_GLYPH_ROWS; ++row) {
         const lib_u8 expected = row < 8u ? 0x55u : row < 16u ? 0x33u : 0u;
 
         passed = snapshot->text_glyphs[(lib_size)'A' * X86_VIDEO_TEXT_GLYPH_ROWS + row] ==
-            expected && frame->window.text.font[(lib_size)'A' * KVM_WINDOW_FONT_HEIGHT + row] ==
+            expected && frame->data.text.font[(lib_size)'A' * KVM_WINDOW_FONT_HEIGHT + row] ==
             expected;
     }
     lib_release(frame);

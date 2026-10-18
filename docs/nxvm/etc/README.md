@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T564 S1: [Committed RGB frame import](evidence/t564-s1-shared-frame-import.md)
+records the frozen upstream baseline, receiving ownership and qualification.
+
 T563 S9: [Committed shared import](evidence/t563-s9-shared-import.md) pins the
 eight canonical roots, necessary receiving changes and owner-deferred upstream
 cleanup. [Ten current artifacts](evidence/t563-s9-artifacts.json) and

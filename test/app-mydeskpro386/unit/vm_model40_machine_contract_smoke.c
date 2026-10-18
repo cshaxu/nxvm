@@ -220,13 +220,13 @@ lib_i32 main(void)
             x86_core_machine_bus_write(session->x86_core_machine, 0x03d4u, 0x0fu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(session->x86_core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
             x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
-            !session->latest_frame.window.valid || session->latest_frame.window.graphics ||
-            !session->latest_frame.window.text.base.cursor_mode ||
-            session->latest_frame.window.text.base.font_height != 14u ||
-            session->latest_frame.window.text.base.text_columns != 80u ||
-            session->latest_frame.window.text.base.text_rows != 25u ||
-            session->latest_frame.window.text.base.cursor_top != 12u ||
-            session->latest_frame.window.text.base.cursor_bottom != 13u) goto done;
+            session->latest_snapshot.kind != X86_VIDEO_KIND_TEXT ||
+            !session->latest_snapshot.cursor_enabled ||
+            session->latest_snapshot.text_glyph_height != 14u ||
+            session->latest_snapshot.columns != 80u ||
+            session->latest_snapshot.rows != 25u ||
+            session->latest_snapshot.cursor_top != 12u ||
+            session->latest_snapshot.cursor_bottom != 13u) goto done;
     }
     failed = 0;
 done:

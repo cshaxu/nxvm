@@ -1,5 +1,17 @@
 # NXVM Import Index
 
+## T564 S1 Canonical SoftPC Frame Import
+
+Owner-authorized MIT transfer from SoftPC
+`dfc85aac4387600033d3ed11d7fb26e74b9eb631`: exact same-path src/test pairs
+for lib, emulator, x86-debug and x86-ibmpc. Preserve all notices; no sibling
+App, recovered implementation, protected input or binary is imported. The
+canonical roots stay unmodified; receiving PC/NES adapters adopt RGB32,
+four-slot exchange and direct Console production in their own owners.
+Root test infrastructure retains its stronger local dependency checks.
+The [task proposal](../../../proposals/m5-softpc-rgb-frame-import.md) records
+the exact receiving scope and qualification predicate.
+
 ## T561 S1 Canonical SoftPC Split
 
 Owner-authorized project MIT import from SoftPC

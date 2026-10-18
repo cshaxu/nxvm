@@ -258,6 +258,13 @@ initializes Core-owned writable CMOS rather than a second BIOS/register mirror.
 
 Guest writes flow through sole device state into copied snapshots, Emulator UI
 and Lib KVM. Native handles, fonts and presentation are not guest-video owners.
+The reviewed frame contract uses four reusable storage slots per leaf exchange.
+The Machine driver converts its guest snapshot directly into the writable slot;
+Window pixels are resolved numeric RGB32, while Console receives text and copied
+character maps. Emulator owns publication and sequence, Session routes metadata,
+and neither UI nor the PC adapter keeps another transport-frame cache. The PC
+adapter retains its guest snapshot only for source decode/readiness between
+bounded execution and the driver callback. Diagnostic copies are not transport.
 All executables retain the same lifecycle and UX. The shared INI is one format
 and parser, not a promise that every memory size or disk fits every board.
 Omitted values use selected-profile defaults; explicit unsupported values fail

@@ -46,7 +46,15 @@ legacy_profile_require("opcode == 0x82u || opcode == 0xd6u"
 
 # The historical LOCK branch is independently owned. This metadata verifier
 # must not reintroduce the 80386 whitelist to the 8086/80186 route.
-legacy_profile_require("context->cpu_profile >= X86_CORE_CPU_PROFILE_80386"
+string(FIND "${legacy_profile_text}" "static void PREFIX_LOCK(" legacy_lock_begin)
+string(FIND "${legacy_profile_text}" "static void INT1(" legacy_lock_end)
+if(legacy_lock_begin LESS 0 OR legacy_lock_end LESS legacy_lock_begin)
+    message(FATAL_ERROR "legacy-profile metadata drift: LOCK owner is missing")
+endif()
+math(EXPR legacy_lock_length "${legacy_lock_end} - ${legacy_lock_begin}")
+string(SUBSTRING "${legacy_profile_text}" ${legacy_lock_begin} ${legacy_lock_length}
+    legacy_profile_text)
+legacy_profile_require("if \\(cpu_profile_has_32bit_architecture\\(context->cpu_profile\\)\\)"
     "80386 LOCK whitelist branch is missing")
 legacy_profile_require("context->cpu_profile == X86_CORE_CPU_PROFILE_80286"
     "legacy LOCK branch must retain the distinct 80286 privilege condition")

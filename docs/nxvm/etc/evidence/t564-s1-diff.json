@@ -1,0 +1,660 @@
+{
+    "method":  "git diff --numstat plus untracked source lines; C/H/CMake and root presets only; excludes manifests, docs and binaries",
+    "groups":  [
+                   {
+                       "root":  "CMakePresets.json",
+                       "files":  1,
+                       "added":  3,
+                       "deleted":  3,
+                       "net":  0
+                   },
+                   {
+                       "root":  "cmake/nxvm",
+                       "files":  2,
+                       "added":  11,
+                       "deleted":  3,
+                       "net":  8
+                   },
+                   {
+                       "root":  "src/app-mynes",
+                       "files":  2,
+                       "added":  36,
+                       "deleted":  67,
+                       "net":  -31
+                   },
+                   {
+                       "root":  "src/emulator",
+                       "files":  11,
+                       "added":  157,
+                       "deleted":  163,
+                       "net":  -6
+                   },
+                   {
+                       "root":  "src/lib",
+                       "files":  25,
+                       "added":  430,
+                       "deleted":  192,
+                       "net":  238
+                   },
+                   {
+                       "root":  "src/x86-nxvm",
+                       "files":  10,
+                       "added":  79,
+                       "deleted":  60,
+                       "net":  19
+                   },
+                   {
+                       "root":  "test/app-mydeskpro386",
+                       "files":  1,
+                       "added":  7,
+                       "deleted":  7,
+                       "net":  0
+                   },
+                   {
+                       "root":  "test/app-mynes",
+                       "files":  9,
+                       "added":  118,
+                       "deleted":  122,
+                       "net":  -4
+                   },
+                   {
+                       "root":  "test/app-nxvm",
+                       "files":  3,
+                       "added":  107,
+                       "deleted":  92,
+                       "net":  15
+                   },
+                   {
+                       "root":  "test/emulator",
+                       "files":  13,
+                       "added":  308,
+                       "deleted":  295,
+                       "net":  13
+                   },
+                   {
+                       "root":  "test/lib",
+                       "files":  28,
+                       "added":  1127,
+                       "deleted":  599,
+                       "net":  528
+                   },
+                   {
+                       "root":  "test/x86-debug",
+                       "files":  1,
+                       "added":  5,
+                       "deleted":  2,
+                       "net":  3
+                   },
+                   {
+                       "root":  "test/x86-ibmpc",
+                       "files":  1,
+                       "added":  10,
+                       "deleted":  24,
+                       "net":  -14
+                   },
+                   {
+                       "root":  "test/x86-nxvm",
+                       "files":  4,
+                       "added":  137,
+                       "deleted":  107,
+                       "net":  30
+                   }
+               ],
+    "files":  [
+                  {
+                      "path":  "CMakePresets.json",
+                      "added":  3,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "cmake/nxvm/NxvmProduct.cmake",
+                      "added":  2,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "cmake/nxvm/verify_legacy_profile_metadata.cmake",
+                      "added":  9,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/app-mynes/machine/driver.c",
+                      "added":  34,
+                      "deleted":  66
+                  },
+                  {
+                      "path":  "src/app-mynes/machine/driver.h",
+                      "added":  2,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/emulator/machine/frame_interface.h",
+                      "added":  0,
+                      "deleted":  29
+                  },
+                  {
+                      "path":  "src/emulator/machine/machine.c",
+                      "added":  85,
+                      "deleted":  82
+                  },
+                  {
+                      "path":  "src/emulator/machine/machine_interface.h",
+                      "added":  28,
+                      "deleted":  10
+                  },
+                  {
+                      "path":  "src/emulator/product/composition.c",
+                      "added":  5,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "src/emulator/session/control.c",
+                      "added":  1,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "src/emulator/session/control.h",
+                      "added":  1,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "src/emulator/session/session.c",
+                      "added":  17,
+                      "deleted":  14
+                  },
+                  {
+                      "path":  "src/emulator/session/session_interface.h",
+                      "added":  2,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/emulator/ui/ui.c",
+                      "added":  10,
+                      "deleted":  17
+                  },
+                  {
+                      "path":  "src/emulator/ui/ui_interface.h",
+                      "added":  7,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "src/emulator/verify_corpus.cmake",
+                      "added":  1,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/lib/CMakeLists.txt",
+                      "added":  1,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/lib/console-broker/console.c",
+                      "added":  1,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/lib/console-broker/win32/console.c",
+                      "added":  21,
+                      "deleted":  21
+                  },
+                  {
+                      "path":  "src/lib/console/binding_interface.h",
+                      "added":  2,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "src/lib/console/console_interface.h",
+                      "added":  5,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/lib/kvm-base/component.c",
+                      "added":  4,
+                      "deleted":  5
+                  },
+                  {
+                      "path":  "src/lib/kvm-base/mailbox.c",
+                      "added":  27,
+                      "deleted":  29
+                  },
+                  {
+                      "path":  "src/lib/kvm-base/mailbox_interface.h",
+                      "added":  13,
+                      "deleted":  18
+                  },
+                  {
+                      "path":  "src/lib/kvm-base/worker_interface.h",
+                      "added":  3,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "src/lib/kvm-console/console.c",
+                      "added":  26,
+                      "deleted":  17
+                  },
+                  {
+                      "path":  "src/lib/kvm-console/console.h",
+                      "added":  2,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "src/lib/kvm-console/console_interface.h",
+                      "added":  8,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "src/lib/kvm-console/frame_interface.h",
+                      "added":  10,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/lib/kvm-console/win32/component.c",
+                      "added":  7,
+                      "deleted":  8
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/frame_interface.h",
+                      "added":  74,
+                      "deleted":  31
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/geometry.c",
+                      "added":  6,
+                      "deleted":  6
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/geometry.h",
+                      "added":  1,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/render.c",
+                      "added":  9,
+                      "deleted":  9
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/render.h",
+                      "added":  2,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/win32/component.c",
+                      "added":  31,
+                      "deleted":  26
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/window.c",
+                      "added":  4,
+                      "deleted":  9
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/window.h",
+                      "added":  0,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/lib/kvm-window/window_interface.h",
+                      "added":  7,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/x86-nxvm/CMakeLists.txt",
+                      "added":  2,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/display.c",
+                      "added":  3,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/frame.c",
+                      "added":  38,
+                      "deleted":  40
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/frame_interface.h",
+                      "added":  5,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/lifecycle.c",
+                      "added":  5,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/machine.c",
+                      "added":  10,
+                      "deleted":  5
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/machine_private.h",
+                      "added":  3,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "src/x86-nxvm/product/version.h",
+                      "added":  1,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/x86-nxvm/verify_corpus.cmake",
+                      "added":  6,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "test/app-mydeskpro386/unit/vm_model40_machine_contract_smoke.c",
+                      "added":  7,
+                      "deleted":  7
+                  },
+                  {
+                      "path":  "test/app-mynes/diagnostic/performance_probe.c",
+                      "added":  18,
+                      "deleted":  15
+                  },
+                  {
+                      "path":  "test/app-mynes/integration/motion_rom_smoke.c",
+                      "added":  15,
+                      "deleted":  11
+                  },
+                  {
+                      "path":  "test/app-mynes/integration/native_console_smoke.c",
+                      "added":  3,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/app-mynes/integration/native_window_smoke.c",
+                      "added":  3,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/app-mynes/integration/ppu_timing_rom_smoke.c",
+                      "added":  8,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/app-mynes/integration/visual_rom_smoke.c",
+                      "added":  20,
+                      "deleted":  16
+                  },
+                  {
+                      "path":  "test/app-mynes/unit/machine/media_failure_contract_smoke.c",
+                      "added":  24,
+                      "deleted":  20
+                  },
+                  {
+                      "path":  "test/app-mynes/unit/machine/owner_rom_probe.c",
+                      "added":  7,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/app-mynes/unit/machine/palette_smoke.c",
+                      "added":  20,
+                      "deleted":  48
+                  },
+                  {
+                      "path":  "test/app-nxvm/unit/firmware/text_cursor_smoke.c",
+                      "added":  7,
+                      "deleted":  6
+                  },
+                  {
+                      "path":  "test/app-nxvm/unit/nxvm_display_composition_smoke.c",
+                      "added":  24,
+                      "deleted":  22
+                  },
+                  {
+                      "path":  "test/app-nxvm/unit/nxvm_runner_display_cadence_smoke.c",
+                      "added":  76,
+                      "deleted":  64
+                  },
+                  {
+                      "path":  "test/emulator/machine/machine_fixture.c",
+                      "added":  9,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/emulator/machine/machine_smoke.c",
+                      "added":  18,
+                      "deleted":  17
+                  },
+                  {
+                      "path":  "test/emulator/machine/machine_wait_smoke.c",
+                      "added":  125,
+                      "deleted":  77
+                  },
+                  {
+                      "path":  "test/emulator/product/composition_smoke.c",
+                      "added":  12,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/emulator/product/monitor_smoke.c",
+                      "added":  0,
+                      "deleted":  30
+                  },
+                  {
+                      "path":  "test/emulator/session/presentation_plan_smoke.c",
+                      "added":  0,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/emulator/session/reconciler_smoke.c",
+                      "added":  1,
+                      "deleted":  16
+                  },
+                  {
+                      "path":  "test/emulator/session/session_frame_smoke.c",
+                      "added":  47,
+                      "deleted":  80
+                  },
+                  {
+                      "path":  "test/emulator/session/session_monitor_smoke.c",
+                      "added":  12,
+                      "deleted":  11
+                  },
+                  {
+                      "path":  "test/emulator/session/session_queue_failure_smoke.c",
+                      "added":  2,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/emulator/session/sync_smoke.c",
+                      "added":  4,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/emulator/ui/composition_smoke.c",
+                      "added":  76,
+                      "deleted":  48
+                  },
+                  {
+                      "path":  "test/emulator/verify_negative.cmake",
+                      "added":  2,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/CMakeLists.txt",
+                      "added":  2,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "test/lib/base/linux/sync_smoke.c",
+                      "added":  3,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/base/task_failure_output_smoke.c",
+                      "added":  0,
+                      "deleted":  14
+                  },
+                  {
+                      "path":  "test/lib/base/win32/sync_smoke.c",
+                      "added":  3,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/console-broker/win32/console_smoke.c",
+                      "added":  32,
+                      "deleted":  3
+                  },
+                  {
+                      "path":  "test/lib/console/lib_console_smoke.c",
+                      "added":  1,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "test/lib/integration/console_broker_display_smoke.c",
+                      "added":  120,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/lib/integration/kvm_window_retirement_smoke.c",
+                      "added":  10,
+                      "deleted":  8
+                  },
+                  {
+                      "path":  "test/lib/kvm-base/control_capacity_smoke.c",
+                      "added":  0,
+                      "deleted":  65
+                  },
+                  {
+                      "path":  "test/lib/kvm-base/kvm_component_contract_smoke.c",
+                      "added":  18,
+                      "deleted":  18
+                  },
+                  {
+                      "path":  "test/lib/kvm-base/kvm_frame_lock_smoke.c",
+                      "added":  15,
+                      "deleted":  10
+                  },
+                  {
+                      "path":  "test/lib/kvm-base/kvm_mailbox_selection_smoke.c",
+                      "added":  17,
+                      "deleted":  13
+                  },
+                  {
+                      "path":  "test/lib/kvm-base/text_cursor_smoke.c",
+                      "added":  46,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/kvm-console/win32/console_keyboard_lifetime_smoke.c",
+                      "added":  1,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/lib/kvm-console/win32/kvm_console_retirement_barrier_smoke.c",
+                      "added":  86,
+                      "deleted":  39
+                  },
+                  {
+                      "path":  "test/lib/kvm-console/win32/kvm_shutdown_failure_smoke.c",
+                      "added":  5,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/kvm_frame_copy_smoke.c",
+                      "added":  111,
+                      "deleted":  122
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/kvm_frame_damage_mouse_smoke.c",
+                      "added":  199,
+                      "deleted":  148
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/kvm_leaf_control_capacity_smoke.c",
+                      "added":  1,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/text_frame_smoke.c",
+                      "added":  0,
+                      "deleted":  16
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/win32/kvm_input_admission_smoke.c",
+                      "added":  14,
+                      "deleted":  11
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/win32/kvm_window_capture_contract_smoke.c",
+                      "added":  73,
+                      "deleted":  76
+                  },
+                  {
+                      "path":  "test/lib/kvm-window/win32/window_keyboard_lifetime_smoke.c",
+                      "added":  2,
+                      "deleted":  4
+                  },
+                  {
+                      "path":  "test/lib/storage/storage_utf8_smoke.c",
+                      "added":  2,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/lib/types_layout_selftest.cmake",
+                      "added":  46,
+                      "deleted":  37
+                  },
+                  {
+                      "path":  "test/x86-debug/product/machine_smoke.c",
+                      "added":  5,
+                      "deleted":  2
+                  },
+                  {
+                      "path":  "test/x86-ibmpc/product/entry_smoke.c",
+                      "added":  10,
+                      "deleted":  24
+                  },
+                  {
+                      "path":  "test/x86-nxvm/CMakeLists.txt",
+                      "added":  3,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/x86-nxvm/machine/frame_smoke.c",
+                      "added":  80,
+                      "deleted":  81
+                  },
+                  {
+                      "path":  "test/x86-nxvm/machine/support/nxvm_presentation_capture.h",
+                      "added":  43,
+                      "deleted":  25
+                  },
+                  {
+                      "path":  "test/x86-nxvm/verify_negative.cmake",
+                      "added":  11,
+                      "deleted":  1
+                  },
+                  {
+                      "path":  "src/lib/kvm-base/frame_exchange.c",
+                      "added":  125,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/lib/kvm-base/frame_exchange_interface.h",
+                      "added":  41,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "src/x86-nxvm/machine/frame.h",
+                      "added":  6,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/fixtures/console_frame.h",
+                      "added":  16,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/fixtures/window_frame.h",
+                      "added":  20,
+                      "deleted":  0
+                  },
+                  {
+                      "path":  "test/lib/kvm-base/frame_exchange_smoke.c",
+                      "added":  284,
+                      "deleted":  0
+                  }
+              ]
+}
