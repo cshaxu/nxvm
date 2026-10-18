@@ -9683,10 +9683,11 @@ static void x86_core_cpu_begin_wait(
      * re-sample is five clocks after that row, yielding the 3/6 + 5n source
      * formulas for 8086/8088 and 80186.  ESC restart has no retired WAIT row,
      * so it starts at the bounded five-clock L2 control cadence instead.
-     * Later CPU profiles retain that cadence until a board gives a stronger
-     * contract. */
+     * NEC POLL uses 2 + 5n instead. Later Intel profiles retain the existing
+     * cadence until a board gives a stronger contract. */
     context->wait_poll_remaining_ticks = state == CPU_WAIT_STATE_ESC_RESTART ?
-        5u : (context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ? 6u :
+        5u : (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? 2u :
+            context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ? 6u :
             cpu_profile_has_32bit_architecture(context->cpu_profile) ? 7u : 3u) + 5u;
     cpu_state.data.flagHalt = LIB_TRUE;
 }

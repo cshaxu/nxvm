@@ -193,6 +193,164 @@ static lib_i32 v30_not_admitted(void)
         x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30, &timing) != 0u;
 }
 
+typedef struct v30_poll_fixture {
+    cpu_bus_fixture bus;
+    x86_core_cpu_bus_provider provider;
+    lib_bool blocked;
+    lib_u32 samples;
+} v30_poll_fixture;
+
+static lib_bool v30_poll_pin(void *opaque)
+{
+    v30_poll_fixture *fixture = opaque;
+    ++fixture->samples;
+    return fixture->blocked;
+}
+
+static void v30_poll_prepare(v30_poll_fixture *fixture, x86_core_cpu_profile profile,
+    lib_bool blocked, lib_u16 pc, lib_u16 flags)
+{
+    cpu_bus_prepare(&fixture->bus,profile);
+    fixture->provider=cpu_bus_provider;
+    fixture->provider.wait_test_asserted=v30_poll_pin;
+    fixture->bus.execution.bus=&fixture->provider;
+    fixture->blocked=blocked;
+    fixture->samples=0u;
+    fixture->bus.cpu.data.eip=pc;
+    fixture->bus.cpu.data.flags=(lib_u16)(0x8002u | flags);
+    fixture->bus.memory[pc % sizeof(fixture->bus.memory)]=0x9bu;
+    fixture->bus.memory[(lib_u16)(pc+1u) % sizeof(fixture->bus.memory)]=0x90u;
+}
+
+static lib_i32 v30_poll(void)
+{
+    static const lib_u16 pcs[]={0x100u,0x101u,0xffffu};
+    static const lib_u16 seeds[]={0u,0x8d5u,0x200u,0xad5u};
+    lib_u32 cases=0u;
+    for (lib_u8 position=0u; position < sizeof(pcs)/sizeof(pcs[0]); ++position)
+        for (lib_u8 seed=0u; seed < sizeof(seeds)/sizeof(seeds[0]); ++seed)
+            for (lib_u8 blocked=0u; blocked < 2u; ++blocked) {
+                v30_poll_fixture fixture;
+                v30_poll_prepare(&fixture,X86_CORE_CPU_PROFILE_V30,blocked != 0u,
+                    pcs[position],seeds[seed]);
+                const t_cpu before=fixture.bus.cpu;
+                t_cpu expected=before;
+                expected.data.eip=(lib_u16)(expected.data.eip+1u);
+                expected.data.flagHalt=blocked != 0u;
+                x86_core_cpu_instruction_lexeme lexeme;
+                if (!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution,&lexeme) ||
+                    !lexeme.available || lexeme.byte_count != 1u || lexeme.component_count != 1u || fixture.samples ||
+                    lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) return 1;
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                lib_u64 ticks=0u;
+                if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
+                    fixture.bus.delivered_exceptions || fixture.bus.writes || fixture.bus.completions ||
+                    fixture.samples != 1u || lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
+                if (!blocked) {
+                    if (x86_core_cpu_execution_wait_poll_ticks(&fixture.bus.execution,&ticks) !=
+                        LIB_STATUS_INVALID_STATE) return 1;
+                    ++cases;
+                    continue;
+                }
+                if (x86_core_cpu_execution_wait_poll_ticks(&fixture.bus.execution,&ticks) != LIB_STATUS_OK ||
+                    ticks != 7u) {
+                    lib_c_printf("V30:POLL:FIRST-SAMPLE ticks=%llu\n",(lib_u64)ticks);
+                    return 1;
+                }
+                const lib_u32 instructions=fixture.bus.instruction_count;
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,0u);
+                if (fixture.samples != 1u || fixture.bus.instruction_count != instructions ||
+                    lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
+                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,6u);
+                if (fixture.samples != 1u || x86_core_cpu_execution_wait_poll_ticks(
+                    &fixture.bus.execution,&ticks) != LIB_STATUS_OK || ticks != 1u) return 1;
+                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,1u);
+                if (fixture.samples != 2u || x86_core_cpu_execution_wait_poll_ticks(
+                    &fixture.bus.execution,&ticks) != LIB_STATUS_OK || ticks != 5u) return 1;
+                fixture.blocked=LIB_FALSE;
+                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,4u);
+                if (fixture.samples != 2u || !fixture.bus.cpu.data.flagHalt) return 1;
+                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,1u);
+                expected.data.flagHalt=LIB_FALSE;
+                if (fixture.samples != 3u || fixture.bus.execution.wait_state != CPU_WAIT_STATE_NONE ||
+                    x86_core_cpu_execution_wait_poll_ticks(&fixture.bus.execution,&ticks) !=
+                        LIB_STATUS_INVALID_STATE || lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                expected.data.eip=(lib_u16)(expected.data.eip+1u);
+                if (fixture.bus.execution.stop_requested || fixture.samples != 3u ||
+                    lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
+                ++cases;
+            }
+    /* Existing Intel WAIT/ESC scheduling is not changed into NEC POLL timing. */
+    static const x86_core_cpu_profile intel[]={X86_CORE_CPU_PROFILE_8086,
+        X86_CORE_CPU_PROFILE_8088,X86_CORE_CPU_PROFILE_80186,X86_CORE_CPU_PROFILE_80286,
+        X86_CORE_CPU_PROFILE_80386};
+    static const lib_u64 delays[]={8u,8u,11u,8u,12u};
+    for (lib_u8 profile=0u; profile < sizeof(intel)/sizeof(intel[0]); ++profile) {
+        v30_poll_fixture fixture;
+        lib_u64 ticks=0u;
+        v30_poll_prepare(&fixture,intel[profile],LIB_TRUE,0x100u,0u);
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (x86_core_cpu_execution_wait_poll_ticks(&fixture.bus.execution,&ticks) != LIB_STATUS_OK ||
+            ticks != delays[profile]) return 1;
+        ++cases;
+    }
+    for (lib_u8 nmi=0u; nmi < 2u; ++nmi) {
+        v30_poll_fixture fixture;
+        v30_poll_prepare(&fixture,X86_CORE_CPU_PROFILE_V30,LIB_TRUE,0x100u,VCPU_EFLAGS_IF);
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        const t_cpu resumed=fixture.bus.cpu;
+        const lib_u8 vector=nmi ? 2u : 0x30u;
+        fixture.bus.memory[4u*vector+1u]=2u;
+        fixture.bus.memory[0x200u]=0xcfu;
+        if (nmi) {
+            if (!x86_core_cpu_request_nmi(&fixture.bus.execution)) return 1;
+        } else fixture.bus.interrupt=LIB_TRUE;
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
+            fixture.bus.cpu.data.eip != 0x200u || fixture.bus.cpu.data.flagHalt ||
+            fixture.bus.execution.wait_state != CPU_WAIT_STATE_NONE ||
+            fixture.bus.execution.wait_poll_remaining_ticks ||
+            fixture.bus.acknowledgements != (lib_u32)!nmi) return 1;
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        t_cpu expected=resumed;
+        expected.data.flagHalt=LIB_FALSE;
+        if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
+            lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
+        ++cases;
+    }
+    v30_poll_fixture fixture;
+    v30_poll_prepare(&fixture,X86_CORE_CPU_PROFILE_V30,LIB_TRUE,0x100u,0u);
+    x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    x86_core_cpu_state_reset(&fixture.bus.execution);
+    if (fixture.bus.cpu.data.flagHalt || fixture.bus.execution.wait_state != CPU_WAIT_STATE_NONE ||
+        fixture.bus.execution.wait_poll_remaining_ticks || fixture.bus.cpu.data.eip ||
+        fixture.bus.cpu.data.cs.selector != 0xffffu) return 1;
+    v30_poll_prepare(&fixture,X86_CORE_CPU_PROFILE_V30,LIB_TRUE,0x100u,0u);
+    fixture.bus.cpu.data.eflags &= ~X86_CPU_NEC_PSW_MD;
+    fixture.bus.cpu.data.eax=0x12340003u;
+    fixture.bus.cpu.data.edx=0x23450001u; /* 8080 SBB E, not native POLL. */
+    x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.samples ||
+        fixture.bus.execution.wait_state != CPU_WAIT_STATE_NONE || fixture.bus.cpu.data.al != 2u ||
+        fixture.bus.cpu.data.eip != 0x101u) return 1;
+    v30_poll_prepare(&fixture,X86_CORE_CPU_PROFILE_V30,LIB_TRUE,0x100u,0u);
+    fixture.provider.wait_test_asserted=LIB_NULL;
+    x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.flagHalt ||
+        fixture.samples || fixture.bus.cpu.data.eip != 0x101u) return 1;
+    v30_poll_prepare(&fixture,X86_CORE_CPU_PROFILE_V30,LIB_TRUE,0x100u,0u);
+    const t_cpu before=fixture.bus.cpu;
+    fixture.bus.fail_transfer=LIB_TRUE;
+    x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u || fixture.samples ||
+        fixture.bus.execution.wait_state != CPU_WAIT_STATE_NONE ||
+        lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) return 1;
+    lib_c_printf("V30:POLL:OK cases=%u\n",cases+4u);
+    return 0;
+}
+
 lib_i32 main(void)
 {
     if (v30_family()) { lib_c_printf("V30:FAMILY:FAIL\n"); return 1; }
@@ -201,6 +359,7 @@ lib_i32 main(void)
     if (v30_flags()) { lib_c_printf("V30:FLAGS:FAIL\n"); return 1; }
     if (v30_preview()) { lib_c_printf("V30:PREVIEW:FAIL\n"); return 1; }
     if (v30_not_admitted()) { lib_c_printf("V30:ADMISSION:FAIL\n"); return 1; }
+    if (v30_poll()) return 1;
     lib_c_printf("V30:NATIVE-FAMILY:OK\n");
     return 0;
 }
