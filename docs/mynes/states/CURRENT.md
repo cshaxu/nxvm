@@ -13,8 +13,10 @@ native Window and Console cases, within the complete 666-unit/52-integration
 receiving qualification. The optional diagnostics compile on both widths.
 The current pair is in the [ten-artifact inventory](../../nxvm/etc/evidence/t564-s1-artifacts.json);
 [receiving evidence](../../nxvm/etc/evidence/t564-s1-shared-frame-import.md)
-records scope, failures and final results. Owner acceptance remains pending in
-the [NXVM packet](../../nxvm/states/CURRENT.md). This does not resolve the
+records scope, failures and final results. The owner accepted the complete
+T564 S1 delivery on 2026-10-17 and requested S1 closure. The
+[NXVM status](../../nxvm/states/CURRENT.md) records that closure while T564
+remains open with no active successor S. This does not resolve the
 existing RDP input or intermittent native Console TODOs; no new independent
 MyNES S or manual RDP/physical-controller proof is claimed.
 
