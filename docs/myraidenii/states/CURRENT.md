@@ -2,12 +2,44 @@
 
 ## Current Work
 
-M1 T2 remains open. S17 is accepted after coordinator actual-change review;
-no S is active and no next S is automatically admitted. The owner requested
+M1 T2 S18 is admitted at clean `4bf9de32a`, after accepted S17. The owner requested
 continued native V30/facility work, not a declaration of complete CPU or game
 support. Single-session coordinator/executor mode remains in effect.
 
+S18's new independent matrix and both complete builds/whole-repo unit runs
+pass: 817,152 successful inputs plus fetch/preview failures; 668/668 units per
+width including 181 X86 Core units. Production is unchanged and fresh checks
+retain all ten release hashes. Tests/registration are +163/-0/net +163.
+Both specialized targets pass all 498 strict rows; target-scoped delivery and
+coordinator review precede closure.
+[S18 evidence](../etc/evidence/t2-s18-decimal.md) owns exact boundaries.
+
+## T2 S18 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, MyRaidenII M1 T2 S18, after latest pushed S17. |
+| Admission And Approval | Owner's durable MyRaidenII implementation request and standing native V30 CPU authority; single-session coordinator admits the next bounded V07 batch. Targets Shared tests/source if a defect is reproduced, MyRaidenII records, conditionally NXVM receiving artifacts. |
+| Objective | Qualify native ADJBA/ADJBS and radix-ten CVTBD/CVTDB through the sole existing CPU executor: complete AX domain, defined flags and preserved CPU state, prefix/fetch/preview and provider failure. Repair a reproduced in-scope defect at its owner. |
+| Non-goals | Packed ADJ4A/ADJ4S ambiguity, non-ten conversion encodings, multiply/divide, entry/mode/8080, full prefixes/LOCK/prefetch/timing, Machine/board/game. No Lib/Emulator, API/layout/state or alternate executor change. |
+| Reference Baseline | Clean 4bf9de32a; NEC October 1986 manual pinned by T1, visually checked printed 12-61--12-63. ADJ4A's printed condition and V flag are unresolved rather than treated as Intel behavior. Current 667 units and ten accepted PC 0564/MyNES 0044 releases. |
+| Candidate Proposal | [V30 proposal](../proposals/m1-v30.md), [V07 ledger](../etc/t2-v30-ledger.md); four unambiguous decimal/convert forms, not all V07. |
+| Files And ABI Surface | test/x86-core/cpu/cpu_v30_decimal_smoke.c, registration and manifest; existing arithmetic handlers/source manifest only for reproduced defects. MyRaidenII packet/history/ledger/evidence/index. Estimate tests +160..230/-0, source +0..40/-0..40; public ABI unchanged. |
+| Applicable Rules | MyRaidenII guide, architecture/layout/UX/source policy; shared Execution/Architecture/Coding/Document; architecture-governance then coding-governance, PDF skill for original source-layout verification. No imported external code or ROM. |
+| Verification | Original x64/x86 Release Ninja/ccache graphs -j8, focused CPU unit and gates then whole repository units -j4, specialized gates and governance. Complete CPU and exact no-data-transfer checks; refused actual/observational fetches. Fresh ten PE/size/hash checks. CPU source changes require rebuild/deploy eight PC receivers and relevant integrations before acceptance; MyNES unchanged. |
+| Expected Markers | V30:DECIMAL:OK with finite case count; no CPU mutation/data reads/writes/phases in preview, no fabricated guest exception on host refusal. |
+| Asset Needs | Existing pinned manual only; rendered ignored primary pages and original synthetic ROM-free vectors; no protected game data or external code. |
+| Reporting Requirements | Report source ambiguity and exact boundary before coding, initial/actual per-owner line counts, full dual-width results and artifact decision. Sequential complete target P commits, immediate push, actual-change coordinator review and governance closure. |
+| Stop Conditions | New public boundary, undocumented behavior claim, license/protected input, production change outside native arithmetic requires revised authority. No masking a flag that the source marks defined, no test budget relaxation or ignored failures. |
+| Exit Criteria | All four frozen forms have independent input/result/failure proof on both widths; similar-path/source-grade audit, gates and complete units pass; current artifacts verified, evidence and complete P commits pushed. Full T2 remains open. |
+| Original Owner Request | Continue implementing MyRaidenII under single-session coordinator/executor governance. |
+| Similar-Issue Sweep | Inspect DAA/DAS/AAA/AAS/AAM/AAD and legacy ALU test callers together. Keep Intel-only 486 carry differences unchanged. Record packed-adjust primary contradictions and non-ten conversion disposition in V07 instead of silently widening successful encodings or claiming full decimal completion. |
+
 ## Accepted Progress
+
+| Task progress | Accepted result / remaining work |
+| --- | --- |
+| T2 S17 | Scalar native ALU/sign-extension accepted at 4bf9de32a; full T2 remains open. |
 
 S1--S16 retain their complete accepted outcomes in
 [T2 history](../history/M1-T2-v30.md) and the

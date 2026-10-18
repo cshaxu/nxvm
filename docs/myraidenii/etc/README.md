@@ -25,6 +25,7 @@
 - [T2 native segment transfers and inhibition](evidence/t2-s15-segment.md).
 - [T2 ordinary native transfers and addresses](evidence/t2-s16-transfer.md).
 - [T2 native scalar ALU qualification](evidence/t2-s17-alu.md).
+- [T2 native unpacked decimal and conversion](evidence/t2-s18-decimal.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
