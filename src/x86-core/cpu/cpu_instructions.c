@@ -7939,6 +7939,7 @@ static void _a_idiv(x86_core_cpu_execution_context *context, lib_u64 csrc, lib_u
     lib_i64 temp;
     lib_i64 dividend;
     lib_i64 divisor;
+    /* NEC's native quotient range excludes -128/-32768 (12-58--12-60). */
     CPU_TRACE_CALL_BEGIN("_a_idiv");
     switch (bit)
     {
@@ -7959,7 +7960,8 @@ static void _a_idiv(x86_core_cpu_execution_context *context, lib_u64 csrc, lib_u
             dividend = (lib_i16)cpu_state.data.ax;
             divisor = (lib_i8)csrc;
             temp = dividend / divisor;
-            if (temp > 0x7f || temp < -0x80)
+            if (temp > 0x7f || temp <
+                (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? -0x7f : -0x80))
             {
                 CPU_TRACE_BLOCK_BEGIN("temp(>0x7f/<0x80)");
                 CPU_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -7997,7 +7999,8 @@ static void _a_idiv(x86_core_cpu_execution_context *context, lib_u64 csrc, lib_u
                 CPU_TRACE_CHECK_RETURN(_SetExcept_DE(0));
                 CPU_TRACE_BLOCK_END;
             }
-            else if ((temp = dividend / divisor) > 0x7fff || temp < -0x8000)
+            else if ((temp = dividend / divisor) > 0x7fff || temp <
+                (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? -0x7fff : -0x8000))
             {
                 CPU_TRACE_BLOCK_BEGIN("temp(>0x7fff/<0x8000)");
                 CPU_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -20216,8 +20219,10 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
         vector = _e_exception_vector(context, active);
         if (vector == 0xffu) break;
         cpu_state = fault_cpu;
+        /* Native NEC division is a software interrupt at the following PC. */
         if (active == VCPUINS_EXCEPT_DE &&
-            !cpu_profile_has_186_integer(context->cpu_profile))
+            (!cpu_profile_has_186_integer(context->cpu_profile) ||
+             context->cpu_profile == X86_CORE_CPU_PROFILE_V30))
             cpu_state.data.eip = next_eip;
         instruction_state.data.except = active;
         instruction_state.data.excode = code;
