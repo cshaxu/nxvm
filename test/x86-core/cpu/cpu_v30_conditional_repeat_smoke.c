@@ -23,7 +23,7 @@ static void v30_repeat_prepare(cpu_bus_fixture *fixture)
 typedef struct v30_compare_case {
     lib_u8 opcode, repeat, source, terminal;
     lib_u16 count, si, di, pc, left, right, flags;
-    lib_bool reverse, pattern;
+    lib_bool reverse, pattern, locked;
 } v30_compare_case;
 
 static t_cpu_data_sreg *v30_compare_source(t_cpu *cpu, lib_u8 prefix)
@@ -88,7 +88,8 @@ static lib_u8 v30_compare_prepare(v30_memory_fixture *fixture, const v30_compare
         if (!scan) v30_compare_store(fixture,source+(lib_u16)(item->si+delta),left,width);
         v30_compare_store(fixture,cpu->data.es.base+(lib_u16)(item->di+delta),right,width);
     }
-    lib_u8 code[3], length=0u;
+    lib_u8 code[4], length=0u;
+    if (item->locked) code[length++]=0xf0u;
     if (item->repeat) code[length++]=item->repeat;
     if (item->source) code[length++]=item->source;
     code[length++]=item->opcode;
@@ -187,17 +188,24 @@ static lib_i32 v30_compare_check(const v30_compare_case *item, lib_bool deep)
         lib_u32 observations=0u;
         if (deep) {
             x86_core_cpu_instruction_lexeme lexeme;
-            if (!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution,&lexeme) ||
-                lexeme.byte_count != length || lexeme.component_count != length ||
-                !lexeme.available || fixture.reads || fixture.writes || fixture.fetches ||
+            const lib_bool preview=x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution,&lexeme);
+            /* Preserve the common conservative LOCK-preview contract. */
+            if (preview != !item->locked || lexeme.byte_count != (preview ? length : 0u) ||
+                lexeme.component_count != (preview ? length : 0u) ||
+                lexeme.available != preview || fixture.reads || fixture.writes || fixture.fetches ||
                 fixture.phase_count || fixture.bus.faults ||
-                lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) return 1;
+                lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) {
+                lib_c_printf("comparison preview bytes=%u/%u components=%u\n",lexeme.byte_count,length,lexeme.component_count);
+                return 1;
+            }
             observations=fixture.observations;
             v30_compare_clear(&fixture);
         }
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
         if (v30_string_timing(&fixture.bus.execution,&before,item->opcode,item->repeat,
-            iteration,item->source == 0u) || fixture.observations) return 1;
+            iteration,(lib_u8)((item->source != 0u)+item->locked),
+            (item->source ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+            (item->locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u)) || fixture.observations) return 1;
         if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
             fixture.bus.execution.nec_md_write_enabled || fixture.writes ||
             lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
@@ -208,10 +216,43 @@ static lib_i32 v30_compare_check(const v30_compare_case *item, lib_bool deep)
             return 1;
         }
         if (deep && v30_compare_refusals(item,iteration,&before,&plan,fixture.reads,
-                fixture.fetches,observations)) return 1;
+                fixture.fetches,observations)) {
+            lib_c_printf("comparison refusal step=%u reads=%u fetches=%u observations=%u\n",
+                iteration,fixture.reads,fixture.fetches,observations);
+            return 1;
+        }
         if (!continuing) return 0;
     }
     return 1; /* A budget alone is never successful repetition coverage. */
+}
+
+static lib_i32 v30_compare_prefix_failures(void)
+{
+    static const lib_u8 opcodes[]={0xa6u,0xa7u,0xaeu,0xafu};
+    static const lib_u8 repeats[]={0xf2u,0xf3u,0x64u,0x65u};
+    static const lib_u8 sources[]={0u,0x26u,0x2eu,0x36u,0x3eu};
+    static const lib_u16 counts[]={0u,1u,3u};
+    lib_u32 cases=0u;
+    for (lib_size operation=0u; operation<sizeof(opcodes); ++operation)
+        for (lib_size repeat=0u; repeat<sizeof(repeats); ++repeat)
+            for (lib_size source=0u; source<sizeof(sources); ++source)
+                for (lib_size count=0u; count<sizeof(counts)/sizeof(counts[0]); ++count)
+                    for (lib_u8 direction=0u; direction<2u; ++direction)
+                        for (lib_u8 terminal=0u; terminal<3u; ++terminal) {
+                            const v30_compare_case item={.opcode=opcodes[operation],
+                                .repeat=repeats[repeat],.source=sources[source],.terminal=terminal,
+                                .count=counts[count],.si=0xffffu,.di=1u,
+                                .pc=direction ? 0xffffu : 0x100u,.left=2u,.right=2u,
+                                .flags=0x8d5u,.reverse=direction!=0u,.pattern=LIB_TRUE,.locked=LIB_TRUE};
+                            if (v30_compare_check(&item,LIB_TRUE)) {
+                                lib_c_printf("comparison prefix op=%02x repeat=%02x source=%02x count=%u direction=%u terminal=%u\n",
+                                    item.opcode,item.repeat,item.source,item.count,direction,terminal);
+                                return 1;
+                            }
+                            ++cases;
+                        }
+    lib_c_printf("V30:PREFIX-STRING:COMPARISON:OK cases=%u\n",cases);
+    return 0;
 }
 
 static lib_i32 v30_repeat_operands(void)
@@ -494,6 +535,7 @@ static lib_i32 v30_repeat_interrupts(void)
 lib_i32 main(void)
 {
     if (v30_repeat_operands()) { lib_c_printf("V30:REPEAT-OPERANDS:FAIL\n"); return 1; }
+    if (v30_compare_prefix_failures()) { lib_c_printf("V30:COMPARISON-PREFIX-FAILURE:FAIL\n"); return 1; }
     if (v30_compare_interrupts()) { lib_c_printf("V30:COMPARISON-INTERRUPTS:FAIL\n"); return 1; }
     if (v30_repeat_prefixes()) { lib_c_printf("V30:REPEAT-PREFIXES:FAIL\n"); return 1; }
     if (v30_repeat_intel_isolation()) { lib_c_printf("V30:REPEAT-INTEL:FAIL\n"); return 1; }

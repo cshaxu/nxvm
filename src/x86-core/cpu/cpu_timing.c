@@ -281,9 +281,18 @@ static void x86_core_cpu_timing_select_v30(
     } else if (string) {
         const lib_bool repeat = data->prefix_rep != PREFIX_REP_NONE;
         const lib_bool comparison = (opcode & 0xfeu) == 0xa6u || (opcode & 0xfeu) == 0xaeu;
-        if (prefixes != (repeat ? 1u : 0u) || (repeat && data->opcodes[0] != 0xf3u &&
-            !(comparison && (data->opcodes[0] == 0xf2u || data->opcodes[0] == 0x64u ||
-                data->opcodes[0] == 0x65u)))) {
+        /* Account only the one effective repeat byte; the prefix extent is
+         * already decoded. Redundant repeat bytes have no combined source row. */
+        for (lib_u32 index = 0u; index < prefixes; ++index) {
+            const lib_u8 byte = data->opcodes[index];
+            if (byte != 0xf2u && byte != 0xf3u && byte != 0x64u && byte != 0x65u) continue;
+            if (form_extension) {
+                context->source_repeat_active = LIB_FALSE;
+                return;
+            }
+            form_extension = byte;
+        }
+        if (repeat && form_extension != 0xf3u && !comparison) {
             context->source_repeat_active = LIB_FALSE;
             return;
         }
@@ -314,7 +323,7 @@ static void x86_core_cpu_timing_select_v30(
             odd_word = !zero && odd;
             result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_REPEAT |
                 X86_CORE_CPU_TIMING_INPUT_REPEAT_PHASE | (zero ? 0u : X86_CORE_CPU_TIMING_INPUT_MEMORY);
-            form_extension = data->opcodes[0];
+            if (prefixes > 1u) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
         } else {
             ticks += 4u * odd;
             odd_word = odd != 0u;
@@ -582,9 +591,12 @@ static void x86_core_cpu_timing_select_v30(
     if (odd_word) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
     if (control) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL |
         X86_CORE_CPU_TIMING_INPUT_BRANCH | (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u);
-    if (!string && prefixes) {
+    if (prefixes) {
         /* Each retired native segment/BUSLOCK prefix has a two-clock row. */
-        ticks += 2u * prefixes;
+        const lib_u32 additional = prefixes - (string && data->prefix_rep != PREFIX_REP_NONE ? 1u : 0u);
+        /* Combined repeat-prefix phase placement is an explicit L2 policy. */
+        if (!string || result->repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION)
+            ticks += 2u * additional;
         if (x86_core_cpu_timing_has_lock_prefix(data))
             result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_LOCK;
         /* An override selects one segment for both default-segment routes. */

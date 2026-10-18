@@ -147,7 +147,7 @@ static lib_i32 v30_nominal_boundaries(lib_u32 *count)
     static v30_memory_fixture fixture;
     static const lib_u8 code[][5]={
         {0xf2u,0x89u,0xc0u}, {0xf3u,0x90u},
-        {0x64u,0x26u,0xa6u}, {0x65u,0x26u,0xa6u}
+        {0x26u,0x27u}, {0x26u,0x2fu}
     };
     v30_memory_prepare(&fixture);
     for (lib_size item=0u; item < sizeof(code)/sizeof(code[0]); ++item) {

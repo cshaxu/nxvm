@@ -218,10 +218,14 @@ static lib_i32 v30_port_strings(void)
     static const lib_u8 segments[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
     static const lib_u32 bases[] = {0x10000u,0x30000u,0u,0x20000u,0x10000u};
     static v30_port_fixture fixture;
+    lib_u32 cases=0u;
     for (lib_u8 opcode = 0x6cu; opcode <= 0x6fu; ++opcode)
-        for (lib_u8 repeat = 0u; repeat < 2u; ++repeat)
+        for (lib_u8 control = 0u; control < 4u; ++control)
             for (lib_u8 segment = 0u; segment < 5u; ++segment)
                 for (lib_u8 mode = 0u; mode < 8u; ++mode) {
+                    const lib_bool repeat=(control & 1u)!=0u, locked=(control & 2u)!=0u;
+                    const lib_u32 inputs=(segment ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+                        (locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u);
                     const lib_bool write = (opcode & 2u) != 0u;
                     const lib_u8 width = (opcode & 1u) + 1u;
                     const lib_bool direction = (mode & 4u) != 0u;
@@ -229,7 +233,8 @@ static lib_i32 v30_port_strings(void)
                     const lib_u16 index = (mode & 2u) ? 0xffffu : 0x400u;
                     const lib_u32 base = write ? bases[segment] : 0x30000u;
                     const lib_u16 count = repeat ? 3u : 1u;
-                    lib_u8 code[3], size = 0u;
+                    lib_u8 code[4], size = 0u;
+                    if (locked) code[size++]=0xf0u;
                     if (prefixes[repeat]) code[size++] = prefixes[repeat];
                     if (segments[segment]) code[size++] = segments[segment];
                     code[size++] = opcode;
@@ -250,7 +255,7 @@ static lib_i32 v30_port_strings(void)
                         const t_cpu retiring = fixture.bus.cpu;
                         x86_core_cpu_execution_refresh(&fixture.bus.execution);
                         if (v30_string_timing(&fixture.bus.execution,&retiring,opcode,prefixes[repeat],
-                            (lib_u8)iteration,segment == 0u) || fixture.bus.observations) return 1;
+                            (lib_u8)iteration,(lib_u8)((segment != 0u)+locked),inputs) || fixture.bus.observations) return 1;
                         const lib_u16 next = index + (direction ? 0u - (iteration + 1u) * width : (iteration + 1u) * width);
                         lib_u16 actual = 0u;
                         lib_memory_copy(&actual, fixture.memory + base + offset, width);
@@ -271,7 +276,9 @@ static lib_i32 v30_port_strings(void)
                     for (lib_u32 part = 0u; part < fixture.transfers; ++part)
                         if (fixture.records[part].value != (width == 2u && (port & 1u) ?
                             (value >> ((part % 2u) * 8u)) & 0xffu : width == 1u ? value & 0xffu : value)) return 1;
+                    ++cases;
                 }
+    lib_c_printf("V30:PREFIX-STRING:PORT:OK cases=%u\n",cases);
     return 0;
 }
 
@@ -330,15 +337,20 @@ static lib_i32 v30_port_failures(void)
 static lib_i32 v30_port_repeat_and_entry(void)
 {
     static v30_port_fixture fixture;
-    for (lib_u8 opcode = 0x6cu; opcode <= 0x6fu; ++opcode) {
-        const lib_u8 code[] = {0xf3u,opcode};
+    for (lib_u8 form=0u; form<8u; ++form) {
+        const lib_u8 opcode=0x6cu+(form & 3u);
+        const lib_bool additional=(form & 4u)!=0u;
+        const lib_u8 bytes=additional ? 4u : 2u;
+        const lib_u32 inputs=additional ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            X86_CORE_CPU_TIMING_INPUT_LOCK : 0u;
+        const lib_u8 code[] = {0xf0u,0x3eu,0xf3u,opcode};
         v30_port_prepare(&fixture);
         fixture.bus.cpu.data.cx = 0u;
-        lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
+        lib_memory_copy(fixture.memory + 0x100u,code+(additional ? 0u : 2u),bytes);
         const t_cpu zero = fixture.bus.cpu;
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
-        if (v30_string_timing(&fixture.bus.execution,&zero,opcode,0xf3u,0u,LIB_TRUE)) return 1;
-        if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x102u ||
+        if (v30_string_timing(&fixture.bus.execution,&zero,opcode,0xf3u,0u,additional ? 2u : 0u,inputs)) return 1;
+        if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x100u+bytes ||
             fixture.transfers || fixture.reads || fixture.writes || fixture.bus.cpu.data.si != 0x400u ||
             fixture.bus.cpu.data.di != 0x500u) return 1;
         for (lib_u8 prefix = 0x64u; prefix <= 0x65u; ++prefix) {
@@ -359,7 +371,7 @@ static lib_i32 v30_port_repeat_and_entry(void)
             fixture.bus.cpu.data.eflags |= VCPU_EFLAGS_IF;
             fixture.memory[nmi ? 0x09u : 0xc1u] = 2u;
             fixture.memory[0x200u] = 0xcfu;
-            lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
+            lib_memory_copy(fixture.memory + 0x100u,code+(additional ? 0u : 2u),bytes);
             if (nmi) { if (!x86_core_cpu_request_nmi(&fixture.bus.execution)) return 1; }
             else fixture.bus.interrupt = LIB_TRUE;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
@@ -372,7 +384,7 @@ static lib_i32 v30_port_repeat_and_entry(void)
             if (fixture.bus.execution.stop_requested || fixture.transfers != first || fixture.bus.cpu.data.eip != 0x100u ||
                 fixture.bus.cpu.data.sp != 0x700u || !(fixture.bus.cpu.data.eflags & X86_CPU_NEC_PSW_MD)) return 1;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
-            if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.cx || fixture.bus.cpu.data.eip != 0x102u ||
+            if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.cx || fixture.bus.cpu.data.eip != 0x100u+bytes ||
                 v30_port_records(&fixture, 0x21u, (opcode & 1u) + 1u, (opcode & 2u) != 0u, 2u, 0u)) return 1;
         }
     }
@@ -390,7 +402,7 @@ static lib_i32 v30_port_repeat_failure(void)
             v30_port_prepare(&fixture);
             fixture.bus.cpu.data.dx = 0x21u;
             lib_memory_copy(fixture.memory + 0x10400u, (const lib_u8[]){0x12u,0x34u,0x56u,0x78u}, 4u);
-            lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
+            lib_memory_copy(fixture.memory + 0x100u,code,sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             const t_cpu before = fixture.bus.cpu;
             if (fixture.bus.execution.stop_requested || before.data.eip != 0x100u || before.data.cx != 2u) return 1;

@@ -615,7 +615,8 @@ static lib_bool x86_core_cpu_source_timing_repeat_continuing(
     const x86_core_cpu_execution_context *context, const t_cpuins_data *data)
 {
     if (!context->source_repeat_active) return LIB_FALSE;
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
         const lib_u32 bytes = x86_core_cpu_instruction_prefix_count(data) + 1u;
 
         if (bytes != context->source_repeat_byte_count ||
@@ -1037,10 +1038,13 @@ void x86_core_cpu_source_timing_record_repeat(
         context->source_repeat_prefix = (lib_u8)data->prefix_rep;
         context->source_repeat_operand_size = operand_size;
         context->source_repeat_address_size = address_size;
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+            context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
             context->source_repeat_byte_count = (lib_u8)(x86_core_cpu_instruction_prefix_count(data) + 1u);
             lib_memory_copy(context->source_repeat_bytes, data->opcodes,
                 context->source_repeat_byte_count);
+        }
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
             context->source_repeat_data_misses = data->timing_data_misses -
                 data->timing_tss_field_misses;
         }
