@@ -127,11 +127,67 @@ static lib_u8 v30_control_prepare(v30_memory_fixture *fixture, const v30_control
     return length;
 }
 
+/* NEC 12-142..146,154..166, selected by semantic form rather than opcode. */
+static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
+    const v30_control_case *item, const t_cpu *before, lib_u8 opcode, lib_bool taken)
+{
+    const lib_bool indirect=item->form>=V30_CONTROL_INDIRECT_JUMP && item->form<=V30_CONTROL_INDIRECT_FAR_CALL;
+    const lib_bool memory=indirect && (item->modrm>>6u)!=3u;
+    const lib_bool stack=item->form==V30_CONTROL_CALL_WORD || item->form==V30_CONTROL_FAR_CALL ||
+        item->form==V30_CONTROL_INDIRECT_CALL || item->form==V30_CONTROL_INDIRECT_FAR_CALL ||
+        item->form>=V30_CONTROL_RETURN;
+    const lib_bool odd=(stack ? before->data.sp : memory ? v30_control_address(before,item) : 0u) & 1u;
+    lib_u64 clocks=0u;
+    if (!item->prefix) switch (item->form) {
+    case V30_CONTROL_CONDITIONAL: clocks=taken ? 14u : 4u; break;
+    case V30_CONTROL_LOOP: clocks=taken ? (item->condition<2u ? 14u : 13u) : 5u; break;
+    case V30_CONTROL_JUMP_BYTE: case V30_CONTROL_JUMP_WORD: clocks=12u; break;
+    case V30_CONTROL_FAR_JUMP: clocks=15u; break;
+    case V30_CONTROL_CALL_WORD: clocks=odd ? 20u : 16u; break;
+    case V30_CONTROL_FAR_CALL: clocks=odd ? 29u : 21u; break;
+    case V30_CONTROL_INDIRECT_JUMP: clocks=memory ? (odd ? 24u : 20u) : 11u; break;
+    case V30_CONTROL_INDIRECT_FAR_JUMP: clocks=memory ? (odd ? 35u : 27u) : 0u; break;
+    case V30_CONTROL_INDIRECT_CALL:
+        if (memory && ((v30_control_address(before,item) ^ before->data.sp) & 1u)) break;
+        clocks=memory ? (odd ? 31u : 23u) : odd ? 18u : 14u;
+        break;
+    case V30_CONTROL_INDIRECT_FAR_CALL:
+        if (!memory || ((v30_control_address(before,item) ^ before->data.sp) & 1u)) break;
+        clocks=odd ? 47u : 31u;
+        break;
+    case V30_CONTROL_RETURN: clocks=odd ? 19u : 15u; break;
+    case V30_CONTROL_FAR_RETURN: clocks=odd ? 29u : 21u; break;
+    case V30_CONTROL_RETURN_CLEANUP: clocks=odd ? 24u : 20u; break;
+    case V30_CONTROL_FAR_RETURN_CLEANUP: clocks=odd ? 32u : 24u; break;
+    }
+    lib_u32 form=X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs=0u;
+    if (clocks) {
+        form=opcode | (memory ? 0x100u : 0u);
+        if (indirect) form|=((lib_u32)(item->modrm>>3u) & 7u)<<9u;
+        inputs=X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH |
+            (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u) |
+            (stack ? X86_CORE_CPU_TIMING_INPUT_MEMORY : 0u) |
+            (memory ? X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS : 0u) |
+            (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
+    }
+    const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
+    if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.form_id!=form || timing.key_id!=form || timing.formula_inputs!=inputs ||
+        timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
+        lib_c_printf("V30:NOMINAL-CONTROL:FAIL form=%u modrm=%02x prefix=%u taken=%u ticks=%llu/%llu inputs=%x/%x\n",
+            item->form,item->modrm,item->prefix,taken,timing.ticks,clocks,timing.formula_inputs,inputs);
+        return 1;
+    }
+    return 0;
+}
+
 static lib_i32 v30_control_check(const v30_control_case *item, lib_bool deep)
 {
     static v30_memory_fixture fixture;
     const lib_u8 length = v30_control_prepare(&fixture,item);
     const t_cpu before = fixture.bus.cpu;
+    const lib_u8 opcode=fixture.memory[0x80000u+item->pc];
     const lib_u16 next = item->pc+length;
     const lib_bool call = item->form == V30_CONTROL_CALL_WORD || item->form == V30_CONTROL_FAR_CALL ||
         item->form == V30_CONTROL_INDIRECT_CALL || item->form == V30_CONTROL_INDIRECT_FAR_CALL;
@@ -144,12 +200,15 @@ static lib_i32 v30_control_check(const v30_control_case *item, lib_bool deep)
     lib_u16 target = item->target, segment = item->segment;
     if (item->form <= V30_CONTROL_JUMP_BYTE) target = next+(lib_i8)item->target;
     else if (item->form <= V30_CONTROL_CALL_WORD) target = next+(lib_i16)item->target;
-    if (item->form == V30_CONTROL_CONDITIONAL &&
-        !v30_control_condition(item->condition,before.data.eflags)) target = next;
+    lib_bool taken=LIB_TRUE;
+    if (item->form == V30_CONTROL_CONDITIONAL) {
+        taken=v30_control_condition(item->condition,before.data.eflags);
+        if (!taken) target=next;
+    }
     if (item->form == V30_CONTROL_LOOP) {
         if (item->condition < 3u) --expected.data.cx;
         const lib_bool zero = (before.data.eflags & VCPU_EFLAGS_ZF) != 0u;
-        const lib_bool taken = item->condition == 3u ? before.data.cx == 0u :
+        taken = item->condition == 3u ? before.data.cx == 0u :
             expected.data.cx != 0u && (item->condition == 2u || zero == (item->condition == 1u));
         if (!taken) target = next;
     }
@@ -198,6 +257,7 @@ static lib_i32 v30_control_check(const v30_control_case *item, lib_bool deep)
     }
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
+        fixture.observations || v30_control_timing(&fixture,item,&before,opcode,taken) ||
         fixture.bus.instruction_count != 1u || fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
         lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
         v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
@@ -213,6 +273,8 @@ static lib_i32 v30_control_check(const v30_control_case *item, lib_bool deep)
         fixture.memory[(expected.data.cs.base+target) & 0xfffffu] = far ? 0xcbu : 0xc3u;
         x86_core_cpu_execution_invalidate_prefetch(&fixture.bus.execution);
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        const v30_control_case returning_item={.form=far ? V30_CONTROL_FAR_RETURN : V30_CONTROL_RETURN};
+        if (v30_control_timing(&fixture,&returning_item,&expected,far ? 0xcbu : 0xc3u,LIB_TRUE)) return 1;
         t_cpu returned = before;
         returned.data.eip = next;
         if (fixture.bus.execution.stop_requested || lib_memory_compare(&fixture.bus.cpu,&returned,sizeof(returned))) return 1;
@@ -231,7 +293,10 @@ static lib_i32 v30_control_check(const v30_control_case *item, lib_bool deep)
                     fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.fetches) return 1;
             } else {
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
-                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults) return 1;
+                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                    fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                    fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)
+                    return 1;
             }
             if (fixture.bus.delivered_exceptions ||
                 fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
@@ -298,5 +363,6 @@ lib_i32 main(void)
             ++cases;
         }
     lib_c_printf("V30:CONTROL-FLOW:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-CONTROL:OK cases=%u\n",cases);
     return 0;
 }

@@ -243,6 +243,7 @@ static void x86_core_cpu_timing_select_v30(
     lib_u8 odd_penalty = 0u;
     lib_u32 stack_penalty = 0u;
     lib_bool odd_word = LIB_FALSE;
+    lib_bool control = LIB_FALSE, taken = LIB_TRUE;
 
     *result = (x86_core_cpu_timing_result){
         .source_timing_unallocated = LIB_TRUE,
@@ -257,7 +258,11 @@ static void x86_core_cpu_timing_select_v30(
     } else if (opcode < 0x40u && (opcode & 7u) < 6u) ticks = 4u;
     else if (opcode >= 0x40u && opcode <= 0x4fu) ticks = 2u;
     else if (opcode >= 0x50u && opcode <= 0x5fu) { ticks = 8u; stack_penalty = 4u; }
-    else if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
+    else if ((opcode >= 0x70u && opcode <= 0x7fu) || (opcode >= 0xe0u && opcode <= 0xe3u)) {
+        if (!x86_core_cpu_timing_branch_taken(context, 0u, &taken)) return;
+        control = LIB_TRUE;
+        ticks = taken ? (opcode >= 0xe2u ? 13u : 14u) : opcode < 0xe0u ? 4u : 5u;
+    } else if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
     else if (opcode >= 0x90u && opcode <= 0x97u) ticks = 3u;
     else switch (opcode) {
     case 0x80u: case 0x81u: case 0x83u: {
@@ -280,18 +285,33 @@ static void x86_core_cpu_timing_select_v30(
         odd_penalty = !(opcode & 1u) ? 0u : operation ? 8u : 4u;
         break;
     }
-    case 0xfeu: case 0xffu:
-        if (opcode == 0xffu && ((data->opcodes[1] >> 3u) & 7u) == 6u) {
+    case 0xfeu: case 0xffu: {
+        const lib_u8 operation = (data->opcodes[1] >> 3u) & 7u;
+        if (opcode == 0xffu && operation >= 2u && operation <= 5u) {
+            if ((operation == 3u || operation == 5u) && !data->flagMem) return;
+            if (operation <= 3u) {
+                if (data->flagMem && ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
+                ticks = !data->flagMem ? 14u : operation == 2u ? 23u : 31u;
+                stack_penalty = !data->flagMem ? 4u : operation == 2u ? 8u : 16u;
+            } else {
+                ticks = !data->flagMem ? 11u : operation == 4u ? 20u : 27u;
+                odd_penalty = !data->flagMem ? 0u : operation == 4u ? 4u : 8u;
+            }
+            control = LIB_TRUE;
+            break;
+        }
+        if (opcode == 0xffu && operation == 6u) {
             /* Only all-even/all-odd source rows are documented for both addresses. */
             if (!data->flagMem || ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
             ticks = 18u;
             stack_penalty = 8u;
         } else {
-            if (((data->opcodes[1] >> 3u) & 7u) > 1u) return;
+            if (operation > 1u) return;
             ticks = data->flagMem ? 16u : 2u;
             odd_penalty = (opcode & 1u) ? 8u : 0u;
         }
         break;
+    }
     case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
     case 0x07u: case 0x17u: case 0x1fu: case 0x68u: case 0x9cu: case 0x9du:
         ticks = 8u; stack_penalty = 4u; break;
@@ -314,6 +334,14 @@ static void x86_core_cpu_timing_select_v30(
         break;
     }
     case 0xc9u: ticks = 6u; stack_penalty = 4u; break;
+    case 0xe8u: ticks = 16u; stack_penalty = 4u; control = LIB_TRUE; break;
+    case 0x9au: ticks = 21u; stack_penalty = 8u; control = LIB_TRUE; break;
+    case 0xc3u: ticks = 15u; stack_penalty = 4u; control = LIB_TRUE; break;
+    case 0xc2u: ticks = 20u; stack_penalty = 4u; control = LIB_TRUE; break;
+    case 0xcbu: ticks = 21u; stack_penalty = 8u; control = LIB_TRUE; break;
+    case 0xcau: ticks = 24u; stack_penalty = 8u; control = LIB_TRUE; break;
+    case 0xe9u: case 0xebu: ticks = 12u; control = LIB_TRUE; break;
+    case 0xeau: ticks = 15u; control = LIB_TRUE; break;
     case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
     case 0xecu: case 0xedu: case 0xeeu: case 0xefu: {
         const lib_u16 port = opcode < 0xecu ? data->opcodes[1] : data->oldcpu.data.dx;
@@ -377,6 +405,8 @@ static void x86_core_cpu_timing_select_v30(
         }
     }
     if (odd_word) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+    if (control) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL |
+        X86_CORE_CPU_TIMING_INPUT_BRANCH | (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u);
     result->ticks = ticks;
     result->retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
     result->form_id = opcode | (modrm && data->flagMem ? 0x100u : 0u);

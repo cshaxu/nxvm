@@ -342,7 +342,7 @@ lib_i32 main(void)
         {0x82u,0xc0u,0x01u}, {0xf6u,0xc8u,0x01u}, {0xf7u,0xc8u,0x01u,0x00u},
         {0xf6u,0xe0u}, {0xf7u,0xe0u}, {0xf6u,0xf3u}, {0xf7u,0xfbu},
         {0xd0u,0xc0u}, {0xc1u,0xe0u,0x04u}, {0x0fu,0x10u,0xc0u},
-        {0xffu,0xd0u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x98u}, {0x99u}
+        {0xffu,0xd8u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x98u}, {0x99u}
     };
     static v30_memory_fixture boundary;
     v30_memory_prepare(&boundary);
@@ -353,7 +353,8 @@ lib_i32 main(void)
         lib_memory_copy(boundary.memory+0x80100u,unallocated[index],sizeof(unallocated[index]));
         x86_core_cpu_execution_refresh(&boundary.bus.execution);
         const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&boundary.bus.execution);
-        const lib_bool rejected = index == 1u || index == 2u; /* Prohibited F6/F7 /1. */
+        /* F6/F7 /1 and far register CALL remain prohibited by form admission. */
+        const lib_bool rejected = index == 1u || index == 2u || index == 10u;
         if (boundary.bus.execution.stop_requested != rejected || boundary.bus.faults != (lib_u32)rejected ||
             (rejected && boundary.bus.execution.completed_observation_valid) || timing.ticks ||
             (!rejected && (!timing.source_timing_unallocated ||
