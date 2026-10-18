@@ -35,6 +35,7 @@
 - [T2 full native comparison-string results](evidence/t2-s25-comparison.md).
 - [T2 native POLL facility and cadence](evidence/t2-s26-poll.md).
 - [T2 ordinary asynchronous interrupt arbitration](evidence/t2-s27-interrupt.md).
+- [T2 software-entry arbitration](evidence/t2-s28-software-arbitration.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
