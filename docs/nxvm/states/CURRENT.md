@@ -36,16 +36,19 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
-MyRaidenII M1 T2 S24 refreshes the eight current 0564 PC EXEs after the
-scoped Shared V30 ordinary 8080AF implementation in `ceab5712c`. It changes no NXVM source,
+MyRaidenII M1 T2 S26 refreshes the eight current 0564 PC EXEs after the
+scoped Shared native V30 POLL cadence correction in `e9d56309b`. It changes no NXVM source,
 configuration, firmware or media and allocates no NXVM task/S. MyNES 0044
 hashes remain unchanged. This receiving publication supersedes only the PC
 hashes in the historical T564 snapshot above; it does not rewrite T564's
 accepted evidence or its open task status. See the
-[current receiving evidence](../../myraidenii/etc/evidence/t2-s24-emulation.md)
-and [ten release identities](../../myraidenii/etc/evidence/t2-s24-artifacts.json).
+[current receiving evidence](../../myraidenii/etc/evidence/t2-s26-poll.md)
+and [ten release identities](../../myraidenii/etc/evidence/t2-s26-artifacts.json).
 Each width passes 674 units plus 14 selected PC receiving integrations and a
 post-restoration identity check, not a new full integration-suite claim.
+Both original Ninja/ccache graphs are restored to default. Receiving profile
+switches recompile zero CPU objects per width; the qualified object is reused.
+The earlier S24 receiving proof remains in MyRaidenII history, not rewritten.
 
 ## Latest Task Closure
 
