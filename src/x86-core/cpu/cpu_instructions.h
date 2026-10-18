@@ -313,6 +313,8 @@ struct x86_core_cpu_execution_context {
     /* A temporary CPU-owned lexical fetch may validate bytes without any
      * architectural, transaction, trace, or diagnostic publication. */
     lib_u8 preview_mode;
+    /* NEC hardware permits MD restoration only between BRKEM and RETEM. */
+    lib_bool nec_md_write_enabled;
     cpu_tlb_entry tlb[X86_CPU_TLB_SETS][X86_CPU_TLB_WAYS];
     lib_u8 tlb_lru[X86_CPU_TLB_SETS];
     cpu_cache_line cache[X86_CPU_CACHE_SETS][X86_CPU_CACHE_WAYS];

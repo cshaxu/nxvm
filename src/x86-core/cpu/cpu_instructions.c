@@ -144,7 +144,9 @@ static lib_u16 _e_real_flags_defined_mask(
 {
     if (context == LIB_NULL ||
         !cpu_profile_has_protected_architecture(context->cpu_profile)) {
-        return 0x0fd5u;
+        return 0x0fd5u | (context != LIB_NULL &&
+            context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            context->nec_md_write_enabled ? X86_CPU_NEC_PSW_MD : 0u);
     }
     return 0x7fd5u;
 }
@@ -154,7 +156,8 @@ static lib_u16 _e_real_flags_load_16(
 {
     return X86_CPU_MASK_U16((flags &
         _e_real_flags_defined_mask(context)) | 0x02u |
-        (context != LIB_NULL && context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+        (context != LIB_NULL && context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            !context->nec_md_write_enabled ?
             context->cpu->data.eflags & X86_CPU_NEC_PSW_MD : 0u));
 }
 
@@ -4610,7 +4613,8 @@ static void _ser_call_far_tss(x86_core_cpu_execution_context *context,
         LIB_TRUE));
     CPU_TRACE_CALL_END;
 }
-static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid, lib_u8 byte)
+static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
+    lib_u8 byte, lib_bool disable_interrupts)
 {
     lib_u16 cip;
     lib_u16 oldflags;
@@ -4633,9 +4637,11 @@ static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
         CPU_TRACE_CHECK_RETURN(_s_test_ss_push(context, 6));
         oldflags = _e_real_flags_image_16(context, cpu_state.data.flags);
         CPU_TRACE_CHECK_RETURN(_kec_push(context, X86_CPU_REFERENCE_OF(oldflags), 2));
-        _ClrEFLAGS_IF;
-        _ClrEFLAGS_TF;
-        _ClrEFLAGS_RF;
+        if (disable_interrupts) {
+            _ClrEFLAGS_IF;
+            _ClrEFLAGS_TF;
+            _ClrEFLAGS_RF;
+        }
         CPU_TRACE_CHECK_RETURN(_kec_push(context, X86_CPU_REFERENCE_OF(oldcs), 2));
         CPU_TRACE_CHECK_RETURN(_kec_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.ip), 2));
         CPU_TRACE_BLOCK_END;
@@ -4667,6 +4673,8 @@ static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
     /* The word target belongs to the CS reloaded below, not the old cache. */
     cpu_state.data.eip = cip;
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(vector >> 16)));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+        cpu_state.data.eflags |= X86_CPU_NEC_PSW_MD;
     CPU_TRACE_CALL_END;
 }
 static lib_u16 _ser_idt_error_code(lib_u8 intid)
@@ -6074,7 +6082,7 @@ _______todo _e_int3(x86_core_cpu_execution_context *context, lib_u8 byte)
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
-        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, 0x03, byte));
+        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, 0x03, byte, LIB_TRUE));
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -6095,7 +6103,7 @@ _______todo _e_into(x86_core_cpu_execution_context *context, lib_u8 byte)
         if (!_GetCR0_PE)
         {
             CPU_TRACE_BLOCK_BEGIN("Real");
-            CPU_TRACE_CHECK_RETURN(_ser_int_real(context, 0x04, byte));
+            CPU_TRACE_CHECK_RETURN(_ser_int_real(context, 0x04, byte, LIB_TRUE));
             CPU_TRACE_BLOCK_END;
         }
         else
@@ -6165,7 +6173,7 @@ _______todo _e_int_n(x86_core_cpu_execution_context *context, lib_u8 intid, lib_
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
-        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte));
+        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte, LIB_TRUE));
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -6359,7 +6367,7 @@ _______todo _e_intr_n(x86_core_cpu_execution_context *context,
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
-        _ser_int_real(context, intid, byte);
+        _ser_int_real(context, intid, byte, LIB_TRUE);
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -6411,7 +6419,7 @@ _______todo _e_except_n(x86_core_cpu_execution_context *context, lib_u8 exid, li
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
-        _ser_int_real(context, exid, byte);
+        _ser_int_real(context, exid, byte, LIB_TRUE);
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -6745,6 +6753,8 @@ _______todo _e_iret(x86_core_cpu_execution_context *context, lib_u8 byte)
     lib_u32 mask = x86_core_cpu_eflags_reserved_mask(context->cpu_profile);
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     CPU_TRACE_CALL_BEGIN("_e_iret");
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 && context->nec_md_write_enabled)
+        mask &= ~X86_CPU_NEC_PSW_MD;
     if (cpu_profile_has_protected_architecture(context->cpu_profile))
         context->nmi_in_service = LIB_FALSE;
     if (!_GetCR0_PE)
@@ -9292,7 +9302,8 @@ typedef enum x86_core_cpu_nec_format {
     X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE,
     X86_CPU_NEC_FORMAT_IMPLICIT,
     X86_CPU_NEC_FORMAT_REGISTERS,
-    X86_CPU_NEC_FORMAT_REGISTER_IMMEDIATE
+    X86_CPU_NEC_FORMAT_REGISTER_IMMEDIATE,
+    X86_CPU_NEC_FORMAT_VECTOR
 } x86_core_cpu_nec_format;
 
 static x86_core_cpu_nec_format x86_core_cpu_nec_instruction_format(lib_u8 opcode)
@@ -9307,6 +9318,7 @@ static x86_core_cpu_nec_format x86_core_cpu_nec_instruction_format(lib_u8 opcode
         return X86_CPU_NEC_FORMAT_REGISTERS;
     if (opcode == 0x39u || opcode == 0x3bu)
         return X86_CPU_NEC_FORMAT_REGISTER_IMMEDIATE;
+    if (opcode == 0xffu) return X86_CPU_NEC_FORMAT_VECTOR;
     return X86_CPU_NEC_FORMAT_UNSUPPORTED;
 }
 
@@ -9382,7 +9394,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         extended = LIB_TRUE;
     }
     if (nec ? nec_format != X86_CPU_NEC_FORMAT_UNSUPPORTED &&
-        nec_format != X86_CPU_NEC_FORMAT_IMPLICIT :
+        nec_format != X86_CPU_NEC_FORMAT_IMPLICIT &&
+        nec_format != X86_CPU_NEC_FORMAT_VECTOR :
         _kdf_has_modrm(opcode, extended)) {
         lib_u8 mod;
         lib_u8 rm;
@@ -9427,7 +9440,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         return LIB_FALSE;
     }
     immediate = nec ? (nec_format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE ||
-        nec_format == X86_CPU_NEC_FORMAT_REGISTER_IMMEDIATE ? 1u : 0u) :
+        nec_format == X86_CPU_NEC_FORMAT_REGISTER_IMMEDIATE ||
+        nec_format == X86_CPU_NEC_FORMAT_VECTOR ? 1u : 0u) :
         x86_core_cpu_instruction_lexeme_immediate_bytes(opcode,
             extended, modrm, operand_bytes, address_bytes);
     if ((lib_u32)index + displacement + immediate > available_bytes ||
@@ -9590,7 +9604,8 @@ x86_core_cpu_instruction_metadata x86_core_cpu_instruction_metadata_get(
             metadata.valid = (modrm & 0xf8u) == 0xc0u;
         else
             metadata.valid = format != X86_CPU_NEC_FORMAT_UNSUPPORTED &&
-                (format == X86_CPU_NEC_FORMAT_IMPLICIT || (modrm & 0x38u) == 0u);
+                (format == X86_CPU_NEC_FORMAT_IMPLICIT ||
+                 format == X86_CPU_NEC_FORMAT_VECTOR || (modrm & 0x38u) == 0u);
         break;
     }
     default:
@@ -10241,7 +10256,8 @@ static void INS_NEC_0F(x86_core_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
         X86_CPU_REFERENCE_OF(opcode), 1));
     format = x86_core_cpu_nec_instruction_format(opcode);
-    if (format != X86_CPU_NEC_FORMAT_UNSUPPORTED && format != X86_CPU_NEC_FORMAT_IMPLICIT)
+    if (format != X86_CPU_NEC_FORMAT_UNSUPPORTED && format != X86_CPU_NEC_FORMAT_IMPLICIT &&
+        format != X86_CPU_NEC_FORMAT_VECTOR)
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 1u,
             X86_CPU_REFERENCE_OF(modrm), 1));
     if (!x86_core_cpu_profile_allows_form(context,
@@ -10252,7 +10268,21 @@ static void INS_NEC_0F(x86_core_cpu_execution_context *context)
         return;
     }
     _adv;
-    if (format == X86_CPU_NEC_FORMAT_IMPLICIT)
+    if (format == X86_CPU_NEC_FORMAT_VECTOR) {
+        lib_u8 vector;
+        if (context->nec_md_write_enabled) {
+            /* NEC explicitly prohibits nesting another emulation invocation. */
+            UndefinedOpcode(context);
+            CPU_TRACE_CALL_END;
+            return;
+        }
+        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+            X86_CPU_REFERENCE_OF(vector), 1u));
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, vector, 2u, LIB_FALSE));
+        cpu_state.data.eflags &= ~X86_CPU_NEC_PSW_MD;
+        context->nec_md_write_enabled = LIB_TRUE;
+    } else if (format == X86_CPU_NEC_FORMAT_IMPLICIT)
         NEC_PACKED_BCD(context, opcode);
     else if (format == X86_CPU_NEC_FORMAT_REGISTERS ||
         format == X86_CPU_NEC_FORMAT_REGISTER_IMMEDIATE)
@@ -19917,6 +19947,17 @@ static void ExecInit(x86_core_cpu_execution_context *context)
     }
 }
 
+/* Mode-specific control encodings share this admission owner with execution.
+ * Ordinary 8080 slots remain diagnostic until their complete V12 batch. */
+static lib_u8 _kdf_emulation_control_length(const lib_u8 *bytes, lib_u8 count)
+{
+    if (count == 0u) return 0u;
+    if (bytes[0] == 0x00u) return 1u;
+    if (count < 2u || bytes[0] != 0xedu) return 0u;
+    if (bytes[1] == 0xfdu) return 2u;
+    return bytes[1] == 0xedu ? 3u : 0u;
+}
+
 lib_u8 x86_core_cpu_execution_preview_lexeme(
     const x86_core_cpu_execution_context *context,
     x86_core_cpu_instruction_lexeme *out_lexeme)
@@ -19957,7 +19998,15 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
         lib_u8 byte;
         lib_u32 offset;
 
-        if (x86_core_cpu_instruction_lexeme_scan_with_options(
+        if (preview.cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            !(preview_cpu.data.eflags & X86_CPU_NEC_PSW_MD)) {
+            const lib_u8 length = _kdf_emulation_control_length(
+                preview_instructions.data.opcodes, preview_instructions.data.oplen);
+            if (length != 0u && preview_instructions.data.oplen >= length) {
+                *out_lexeme = (x86_core_cpu_instruction_lexeme){length, length, LIB_TRUE};
+                return LIB_TRUE;
+            }
+        } else if (x86_core_cpu_instruction_lexeme_scan_with_options(
                 preview_instructions.data.opcodes, preview_instructions.data.oplen,
                 preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize,
                 preview.cpu_80386_cr_mov_ignores_mod, out_lexeme)) return LIB_TRUE;
@@ -20282,6 +20331,35 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
             context->diagnostic_context, &fault_cpu, &instruction_state);
     x86_core_cpu_execution_request_stop(context);
 }
+static void NEC_EMULATION_CONTROL(x86_core_cpu_execution_context *context)
+{
+    lib_u8 code[3];
+    lib_u8 length;
+    CPU_TRACE_CALL_BEGIN("NEC_EMULATION_CONTROL");
+    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+        (lib_uptr)code, 1u));
+    if (code[0] == 0xedu)
+        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 1u,
+            (lib_uptr)(code + 1u), 1u));
+    length = _kdf_emulation_control_length(code, code[0] == 0xedu ? 2u : 1u);
+    if (length == 0u) {
+        UndefinedOpcode(context);
+        CPU_TRACE_CALL_END;
+        return;
+    }
+    if (length == 3u)
+        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 2u,
+            (lib_uptr)(code + 2u), 1u));
+    for (lib_u8 byte = 0u; byte < length; ++byte) _adv;
+    if (length == 3u) {
+        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, code[2], 2u, LIB_FALSE));
+    } else if (length == 2u) {
+        CPU_TRACE_CHECK_RETURN(_e_iret(context, 2u));
+        context->nec_md_write_enabled = LIB_FALSE;
+    }
+    CPU_TRACE_CALL_END;
+}
+
 static void ExecIns(x86_core_cpu_execution_context *context)
 {
     lib_u8 opcode = 0;
@@ -20311,6 +20389,11 @@ static void ExecIns(x86_core_cpu_execution_context *context)
     do
     {
         CPU_TRACE_CALL_BEGIN("ExecIns");
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            !(cpu_state.data.eflags & X86_CPU_NEC_PSW_MD)) {
+            NEC_EMULATION_CONTROL(context);
+            break;
+        }
         CPU_TRACE_CHECK_BREAK(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(opcode), 1));
         if (!x86_core_cpu_profile_allows_form(context,
                                                   X86_CORE_CPU_INSTRUCTION_PRIMARY, opcode, 0u))
@@ -21133,6 +21216,7 @@ void x86_core_cpu_execution_reset(
     context->instruction_wait_stall = LIB_FALSE;
     context->wait_state = CPU_WAIT_STATE_NONE;
     context->wait_poll_remaining_ticks = 0u;
+    context->nec_md_write_enabled = LIB_FALSE;
 }
 static void _execution_refresh(
     x86_core_cpu_execution_context *context)
@@ -21144,12 +21228,6 @@ static void _execution_refresh(
     context->timing_result = (x86_core_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
-    /* The emulation-mode executor is a later complete V30 batch. */
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
-        (cpu_state.data.eflags & X86_CPU_NEC_PSW_MD) == 0u) {
-        x86_core_cpu_execution_request_stop(context);
-        return;
-    }
     if (_system_boundary(context)) {
         if (!context->instruction_fault_delivered) context->instruction_wait_stall = LIB_TRUE;
         return;

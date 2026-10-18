@@ -639,6 +639,7 @@ void x86_core_cpu_execution_context_initialize(
     context->nmi_pending = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->preview_mode = LIB_FALSE;
+    context->nec_md_write_enabled = LIB_FALSE;
     lib_memory_set(context->tlb, 0u, sizeof(context->tlb));
     lib_memory_set(context->tlb_lru, 0u, sizeof(context->tlb_lru));
     lib_memory_set(context->cache, 0u, sizeof(context->cache));
