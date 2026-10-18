@@ -1,0 +1,216 @@
+[
+  {
+    "arch": "x64",
+    "units": 678,
+    "x86_core_units": 191,
+    "failures": 0,
+    "skipped": 0,
+    "suite_seconds": 305.61,
+    "software_arbitration_seconds": 0.80964,
+    "completion_seconds": 0.0478858,
+    "completion_vectors": 43,
+    "arbitration_vectors": 3457,
+    "focused_tests": 5,
+    "prefix_vectors": 3410,
+    "field_nominal_vectors": 66108,
+    "field_seconds": 0.311436,
+    "software_entry_vectors": 655265,
+    "software_entry_seconds": 9.38764,
+    "mode_transition_vectors": 328192,
+    "mode_transition_seconds": 1.71256,
+    "multiplication_division_vectors": 1796424,
+    "multiplication_division_seconds": 4.16765,
+    "string_nominal_units": 3,
+    "block_matrix_inputs": 9504,
+    "block_restart_vectors": 7,
+    "comparison_prefix_vectors": 1440,
+    "port_string_vectors": 640,
+    "block_entry_cases": 48,
+    "same_address_entry_cases": 24,
+    "global_types_inputs": 1389,
+    "comparison_vectors": 942920,
+    "comparison_seconds": 3.52214,
+    "bit_vectors": 6720,
+    "nibble_vectors": 4608,
+    "bcd_vectors": 61688,
+    "bcd_odd_byte_pairs": 30000,
+    "bcd_odd_lengths": 127,
+    "bcd_padding_vectors": 80,
+    "bcd_provider_refusals": 48,
+    "bcd_invalid_inputs": 15,
+    "wrapped_comparisons": 5130,
+    "shift_vectors": 20356,
+    "shift_seconds": 0.813759,
+    "decimal_vectors": 817152,
+    "decimal_seconds": 2.09423,
+    "control_vectors": 463982,
+    "control_seconds": 2.43337,
+    "stack_vectors": 4380,
+    "port_vectors": 160,
+    "stack_seconds": 5.47772,
+    "port_seconds": 0.145508,
+    "alu_vectors": 917460,
+    "alu_boundary_vectors": 19,
+    "flag_vectors": 406800,
+    "alu_seconds": 2.71216,
+    "flag_seconds": 1.8992,
+    "nominal_transfer_vectors": 24157,
+    "nominal_transfer_seconds": 0.444116,
+    "strict_rows": 498,
+    "receivers": [
+      {
+        "profile": "default-pc-at-80386-1440k-hdd",
+        "tests": 5,
+        "cases": [
+          "integration.vm-debug-pause-boundary-smoke",
+          "integration.vm-control-lifecycle-smoke",
+          "integration.session-ini-status-smoke",
+          "integration.pc-product-ini-identity-smoke",
+          "integration.vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x64-default-pc-at-80386-1440k-hdd-test.log"
+      },
+      {
+        "profile": "ibm-5160-model-268-360k",
+        "tests": 3,
+        "cases": [
+          "integration.pc-product-ini-identity-smoke",
+          "integration.vm-profile-floppy-boot-matrix.ibm-5160-model-268-360k.ini",
+          "integration.session-ini-status-smoke"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x64-ibm-5160-model-268-360k-test.log"
+      },
+      {
+        "profile": "ibm-5170-model-339-1200k",
+        "tests": 3,
+        "cases": [
+          "integration.pc-product-ini-identity-smoke",
+          "integration.session-ini-status-smoke",
+          "integration.vm-profile-floppy-boot-matrix.ibm-5170-model-339-1200k.ini"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x64-ibm-5170-model-339-1200k-test.log"
+      },
+      {
+        "profile": "compaq-deskpro-386-model-40-1200k",
+        "tests": 3,
+        "cases": [
+          "integration.pc-product-ini-identity-smoke",
+          "integration.session-ini-status-smoke",
+          "integration.vm-profile-floppy-boot-matrix.compaq-deskpro-386-model-40-1200k.ini"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x64-compaq-deskpro-386-model-40-1200k-test.log"
+      }
+    ],
+    "restored_default_identity_tests": 1,
+    "receiving_cpu_object_recompilations": 0,
+    "restored_cpu_object_recompilations": 0,
+    "log": "build/myraidenii/t2-s43-unit-x64.log"
+  },
+  {
+    "arch": "x86",
+    "units": 678,
+    "x86_core_units": 191,
+    "failures": 0,
+    "skipped": 0,
+    "suite_seconds": 138.07,
+    "software_arbitration_seconds": 0.0953955,
+    "completion_seconds": 0.0612364,
+    "completion_vectors": 43,
+    "arbitration_vectors": 3457,
+    "focused_tests": 5,
+    "prefix_vectors": 3410,
+    "field_nominal_vectors": 66108,
+    "field_seconds": 0.294066,
+    "software_entry_vectors": 655265,
+    "software_entry_seconds": 10.5531,
+    "mode_transition_vectors": 328192,
+    "mode_transition_seconds": 1.31151,
+    "multiplication_division_vectors": 1796424,
+    "multiplication_division_seconds": 5.16986,
+    "string_nominal_units": 3,
+    "block_matrix_inputs": 9504,
+    "block_restart_vectors": 7,
+    "comparison_prefix_vectors": 1440,
+    "port_string_vectors": 640,
+    "block_entry_cases": 48,
+    "same_address_entry_cases": 24,
+    "global_types_inputs": 1389,
+    "comparison_vectors": 942920,
+    "comparison_seconds": 3.00794,
+    "bit_vectors": 6720,
+    "nibble_vectors": 4608,
+    "bcd_vectors": 61688,
+    "bcd_odd_byte_pairs": 30000,
+    "bcd_odd_lengths": 127,
+    "bcd_padding_vectors": 80,
+    "bcd_provider_refusals": 48,
+    "bcd_invalid_inputs": 15,
+    "wrapped_comparisons": 5130,
+    "shift_vectors": 20356,
+    "shift_seconds": 0.420441,
+    "decimal_vectors": 817152,
+    "decimal_seconds": 1.71243,
+    "control_vectors": 463982,
+    "control_seconds": 2.28875,
+    "stack_vectors": 4380,
+    "port_vectors": 160,
+    "stack_seconds": 17.6405,
+    "port_seconds": 0.1546,
+    "alu_vectors": 917460,
+    "alu_boundary_vectors": 19,
+    "flag_vectors": 406800,
+    "alu_seconds": 3.61343,
+    "flag_seconds": 1.01642,
+    "nominal_transfer_vectors": 24157,
+    "nominal_transfer_seconds": 0.147463,
+    "strict_rows": 498,
+    "receivers": [
+      {
+        "profile": "default-pc-at-80386-1440k-hdd",
+        "tests": 5,
+        "cases": [
+          "integration.vm-debug-pause-boundary-smoke",
+          "integration.vm-control-lifecycle-smoke",
+          "integration.session-ini-status-smoke",
+          "integration.pc-product-ini-identity-smoke",
+          "integration.vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x86-default-pc-at-80386-1440k-hdd-test.log"
+      },
+      {
+        "profile": "ibm-5160-model-268-360k",
+        "tests": 3,
+        "cases": [
+          "integration.pc-product-ini-identity-smoke",
+          "integration.vm-profile-floppy-boot-matrix.ibm-5160-model-268-360k.ini",
+          "integration.session-ini-status-smoke"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x86-ibm-5160-model-268-360k-test.log"
+      },
+      {
+        "profile": "ibm-5170-model-339-1200k",
+        "tests": 3,
+        "cases": [
+          "integration.pc-product-ini-identity-smoke",
+          "integration.session-ini-status-smoke",
+          "integration.vm-profile-floppy-boot-matrix.ibm-5170-model-339-1200k.ini"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x86-ibm-5170-model-339-1200k-test.log"
+      },
+      {
+        "profile": "compaq-deskpro-386-model-40-1200k",
+        "tests": 3,
+        "cases": [
+          "integration.pc-product-ini-identity-smoke",
+          "integration.session-ini-status-smoke",
+          "integration.vm-profile-floppy-boot-matrix.compaq-deskpro-386-model-40-1200k.ini"
+        ],
+        "log": "build/myraidenii/t2-s43-release-x86-compaq-deskpro-386-model-40-1200k-test.log"
+      }
+    ],
+    "restored_default_identity_tests": 1,
+    "receiving_cpu_object_recompilations": 0,
+    "restored_cpu_object_recompilations": 0,
+    "log": "build/myraidenii/t2-s43-unit-x86.log"
+  }
+]

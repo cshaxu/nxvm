@@ -1,0 +1,62 @@
+[
+  {
+    "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+    "machine": "0x8664",
+    "bytes": 1569875,
+    "sha256": "70627AA09132C906BCDC4B31146838A8892A2FC338D0CD74313D0F793DEA2AE3"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+    "machine": "0x8664",
+    "bytes": 1558667,
+    "sha256": "BF908E5AABEF6B18341ECF6DAE89E6614676CA34CF923969281FEFA8D7760A4E"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+    "machine": "0x8664",
+    "bytes": 1570729,
+    "sha256": "A27AC19232D9703A4F331A48794E74215FA375225C6CCB6FF9A2A495C2B6235A"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+    "machine": "0x8664",
+    "bytes": 1558415,
+    "sha256": "002A20900CCB76D3B52CDDA87BBEFB677228796A6B80E46488E24561E4C90109"
+  },
+  {
+    "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+    "machine": "0x8664",
+    "bytes": 263694,
+    "sha256": "94F889447DF29B7C26CB99D93EC89DC52FCE2A62B01537B3D0C9D118F2484BF6"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+    "machine": "0x014C",
+    "bytes": 1720835,
+    "sha256": "EDD06B2F0BE91BFE58453A36AA0A51588D39F5A6316288E07C5B15EC37F5593D"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+    "machine": "0x014C",
+    "bytes": 1708168,
+    "sha256": "07F54B7430066FB9F77330F6C012436EF01F94C438FE7760BB5B955F7DDAC65B"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+    "machine": "0x014C",
+    "bytes": 1722049,
+    "sha256": "2274AE3C79281962CE4CFF392A00177CF9455F1D25291EC8D233CB036EA014F7"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+    "machine": "0x014C",
+    "bytes": 1708254,
+    "sha256": "BD9F72D8070537CFE31F9BF80E360A3F79FBECFD16F49EF4C0F96C54C2013A99"
+  },
+  {
+    "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+    "machine": "0x014C",
+    "bytes": 262670,
+    "sha256": "0B3947144DFBC5A18D81F8D2DF47DEC88A55C9927738EF06F37B07406A9263BF"
+  }
+]
