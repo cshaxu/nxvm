@@ -46,6 +46,7 @@
 - [T2 V30 ordinary string nominal clocks](evidence/t2-s36-nominal-string.md).
 - [T2 V30 ordinary multiply/divide nominal timing](evidence/t2-s37-nominal-multiply-divide.md).
 - [T2 V30 ordinary software/mode control nominal timing](evidence/t2-s38-nominal-software-control.md).
+- [T2 V30 native data range nominal models](evidence/t2-s39-native-data-range-models.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
