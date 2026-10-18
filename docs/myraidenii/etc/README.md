@@ -34,6 +34,7 @@
 - [T2 ordinary 8080AF execution](evidence/t2-s24-emulation.md).
 - [T2 full native comparison-string results](evidence/t2-s25-comparison.md).
 - [T2 native POLL facility and cadence](evidence/t2-s26-poll.md).
+- [T2 ordinary asynchronous interrupt arbitration](evidence/t2-s27-interrupt.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
