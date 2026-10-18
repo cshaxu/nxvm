@@ -92,6 +92,16 @@ static lib_i32 v30_decimal_check(lib_u8 operation, lib_u16 input, lib_u8 seed,
     t_cpu actual = fixture.bus.cpu;
     actual.data.eflags &= defined;
     expected.data.eflags &= defined;
+    static const lib_u8 nominal[] = {3u,7u,15u,7u};
+    const lib_u64 clocks = prefix ? 0u : nominal[operation];
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
+    const lib_u32 form = clocks ? fixture.memory[0x80000u+(lib_u16)before.data.eip] :
+        X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.form_id != form || timing.key_id != form || timing.formula_inputs ||
+        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture.observations ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) return 1;
     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
         fixture.bus.instruction_count != 1u ||
         fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
@@ -119,6 +129,8 @@ static lib_i32 v30_decimal_check(lib_u8 operation, lib_u16 input, lib_u8 seed,
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
                 /* Entry diagnostics also observe a failed fetch; they are not retirement. */
                 if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                    fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                    fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                     fixture.bus.instruction_count != 1u) {
                     lib_c_printf("V30:DECIMAL:FETCH op=%u prefix=%u wrap=%u part=%u observations=%u\n",
                         operation,prefix,wrap,part,fixture.bus.instruction_count);
@@ -158,5 +170,6 @@ lib_i32 main(void)
                         ++cases;
                     }
     lib_c_printf("V30:DECIMAL:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-DECIMAL:OK cases=%u\n",cases);
     return 0;
 }

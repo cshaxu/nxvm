@@ -3,7 +3,7 @@
 
 typedef struct v30_shift_fixture {
     cpu_instruction_fixture instruction;
-    lib_u32 reads, writes, fail_read, fail_write;
+    lib_u32 reads, writes, observations, fail_read, fail_write;
     lib_u32 read_address[2], write_address[2];
     lib_u8 read_bytes[2], write_bytes[2];
     lib_bool invalid;
@@ -14,6 +14,7 @@ static lib_status v30_shift_read(void *opaque, lib_u32 address, void *data,
     lib_bool observe, lib_bool reset_fetch, lib_u8 cache_control)
 {
     v30_shift_fixture *fixture = opaque;
+    if (observe) ++fixture->observations;
     if (!observe && provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) {
         if (fixture->reads >= 2u) { fixture->invalid = LIB_TRUE; return LIB_STATUS_IO_ERROR; }
         fixture->read_address[fixture->reads] = address;
@@ -154,11 +155,31 @@ static lib_i32 v30_shift_case(lib_u8 operation, lib_u8 width, lib_u8 form,
     if (!x86_core_cpu_execution_preview_lexeme(&fixture.instruction.execution, &lexeme) ||
         lexeme.byte_count != size || fixture.reads || fixture.writes ||
         lib_memory_compare(&fixture.instruction.cpu, &before, sizeof(before)) != 0) return 1;
+    fixture.observations = 0u;
     x86_core_cpu_execution_refresh(&fixture.instruction.execution);
     lib_u16 actual = 0u;
     if (memory) lib_memory_copy(&actual, fixture.instruction.memory + address, width);
     expected.data.eip = size;
     expected.data.eflags = (expected_flags & defined) | (fixture.instruction.cpu.data.eflags & ~defined);
+    /* NEC 12-100..141: count means the original full byte, not an Intel mask. */
+    const lib_bool odd = memory && width == 2u && (address & 1u);
+    const lib_u64 clocks = segment ? 0u : (form == 0u ? (memory ? 16u : 2u) :
+        (memory ? 19u : 7u) + actual_count) + (odd ? 8u : 0u);
+    const lib_u32 key = clocks ? code[0] | (memory ? 0x100u : 0u) | ((lib_u32)operation << 9u) :
+        X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    const lib_u32 inputs = clocks ? (form ? X86_CORE_CPU_TIMING_INPUT_SIZE : 0u) |
+        (memory ? X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS : 0u) |
+        (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u;
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.instruction.execution);
+    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.form_id != key || timing.key_id != key || timing.formula_inputs != inputs || fixture.observations ||
+        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+        lib_c_printf("V30:NOMINAL-SHIFT:FAIL op=%u form=%u width=%u dest=%u count=%u/%u segment=%u ticks=%llu/%llu\n",
+            operation,form,width,destination,count,actual_count,segment,timing.ticks,clocks);
+        return 1;
+    }
     if (fixture.instruction.execution.stop_requested || fixture.invalid || fixture.instruction.delivered_exception.valid ||
         lib_memory_compare(&fixture.instruction.cpu, &expected, sizeof(expected)) != 0 ||
         (actual_count && (fixture.instruction.instructions.data.udf & VCPU_EFLAGS_CF)) ||
@@ -228,6 +249,10 @@ static lib_i32 v30_shift_failures(void)
                         lib_u16 actual = 0u;
                         lib_memory_copy(&actual, fixture.instruction.memory + 0xffffu, width);
                         if (!fixture.instruction.execution.stop_requested || fixture.invalid ||
+                            fixture.instruction.execution.completed_observation_valid ||
+                            fixture.instruction.execution.timing_result.ticks ||
+                            fixture.instruction.execution.timing_result.retirement_origin !=
+                                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                             fixture.instruction.delivered_exception.valid ||
                             lib_memory_compare(&fixture.instruction.cpu, &before, sizeof(before)) != 0 ||
                             (write ? fixture.writes : fixture.reads) != stage ||
@@ -276,5 +301,6 @@ lib_i32 main(void)
     if (v30_shift_failures()) { lib_c_printf("V30:SHIFT-FAILURES:FAIL\n"); return 1; }
     if (v30_shift_rejection_and_intel()) { lib_c_printf("V30:SHIFT-ADMISSION:FAIL\n"); return 1; }
     lib_c_printf("V30:SHIFT-ROTATE:OK\n");
+    lib_c_printf("V30:NOMINAL-SHIFT:OK\n");
     return 0;
 }

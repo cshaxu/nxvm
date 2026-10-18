@@ -147,7 +147,7 @@ static lib_i32 v30_nominal_boundaries(lib_u32 *count)
     static v30_memory_fixture fixture;
     static const lib_u8 code[][5]={
         {0xf0u,0x87u,0x07u}, {0xf2u,0x89u,0xc0u}, {0xf3u,0x90u},
-        {0x64u,0xa6u}, {0x65u,0xa6u}, {0x98u}, {0x0fu,0x10u,0xc0u}
+        {0x64u,0xa6u}, {0x65u,0xa6u}, {0x99u}, {0x0fu,0x10u,0xc0u}
     };
     v30_memory_prepare(&fixture);
     for (lib_size item=0u; item < sizeof(code)/sizeof(code[0]); ++item) {
@@ -218,7 +218,7 @@ static lib_i32 v30_nominal_boundaries(lib_u32 *count)
      * failure may inherit the preceding successful nominal publication. */
     v30_nominal_prepare(&fixture);
     lib_memory_copy(fixture.memory+0x80100u,
-        (const lib_u8[]){0xb0u,0x55u,0x98u,0x9fu,0x8bu,0x07u},6u);
+        (const lib_u8[]){0xb0u,0x55u,0x99u,0x9fu,0x8bu,0x07u},6u);
     const lib_u64 clocks[]={4u,0u,2u};
     const lib_u32 forms[]={0xb0u,0u,0x9fu};
     for (lib_u8 step=0u; step < 3u; ++step) {

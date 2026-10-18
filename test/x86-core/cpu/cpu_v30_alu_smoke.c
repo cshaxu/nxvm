@@ -176,7 +176,10 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
 {
     lib_u64 clocks = 0u;
     lib_u8 odd_cost = 0u;
-    if (!item->prefix && item->form != V30_ALU_EXTEND) {
+    if (!item->prefix && item->form == V30_ALU_EXTEND) {
+        /* CVTWL gives only a data-dependent range; CVTBW has a fixed row. */
+        if (item->operation == V30_ALU_CBW) clocks = 2u;
+    } else if (!item->prefix) {
         if (!memory) clocks = item->form >= V30_ALU_ACC_IMMEDIATE &&
             item->form <= V30_ALU_GROUP_SIGNED ? 4u : 2u;
         else if (item->form >= V30_ALU_UNARY_GROUP) { clocks = 16u; odd_cost = 8u; }
@@ -341,8 +344,9 @@ lib_i32 main(void)
     static const lib_u8 unallocated[][4] = {
         {0x82u,0xc0u,0x01u}, {0xf6u,0xc8u,0x01u}, {0xf7u,0xc8u,0x01u,0x00u},
         {0xf6u,0xe0u}, {0xf7u,0xe0u}, {0xf6u,0xf3u}, {0xf7u,0xfbu},
-        {0xd0u,0xc0u}, {0xc1u,0xe0u,0x04u}, {0x0fu,0x10u,0xc0u},
-        {0xffu,0xd8u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x98u}, {0x99u}
+        {0xd0u,0xf0u}, {0xc1u,0xf0u,0x04u}, {0x0fu,0x10u,0xc0u},
+        {0xffu,0xd8u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x2eu,0x98u}, {0x99u},
+        {0xd4u,9u}, {0xd5u,9u}, {0x27u}, {0x2fu}
     };
     static v30_memory_fixture boundary;
     v30_memory_prepare(&boundary);
@@ -353,8 +357,8 @@ lib_i32 main(void)
         lib_memory_copy(boundary.memory+0x80100u,unallocated[index],sizeof(unallocated[index]));
         x86_core_cpu_execution_refresh(&boundary.bus.execution);
         const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&boundary.bus.execution);
-        /* F6/F7 /1 and far register CALL remain prohibited by form admission. */
-        const lib_bool rejected = index == 1u || index == 2u || index == 10u;
+        /* F6/F7 /1, group-2 /6 and far register CALL remain prohibited. */
+        const lib_bool rejected = index == 1u || index == 2u || index == 7u || index == 8u || index == 10u;
         if (boundary.bus.execution.stop_requested != rejected || boundary.bus.faults != (lib_u32)rejected ||
             (rejected && boundary.bus.execution.completed_observation_valid) || timing.ticks ||
             (!rejected && (!timing.source_timing_unallocated ||
@@ -440,6 +444,6 @@ lib_i32 main(void)
         }
     lib_c_printf("V30:ALU:OK cases=%u\n",cases);
     lib_c_printf("V30:NOMINAL-ALU:OK cases=%u\n",cases);
-    lib_c_printf("V30:NOMINAL-ALU:BOUNDARIES:OK cases=15\n");
+    lib_c_printf("V30:NOMINAL-ALU:BOUNDARIES:OK cases=%u\n",(lib_u32)(sizeof(unallocated)/sizeof(unallocated[0])));
     return 0;
 }

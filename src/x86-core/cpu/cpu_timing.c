@@ -235,8 +235,10 @@ static void x86_core_cpu_timing_select_v30(
     const t_cpuins_data *data = &context->instructions->data;
     const lib_u8 opcode = data->opcodes[0];
     const lib_bool scalar = opcode < 0x40u && (opcode & 7u) < 4u;
+    const lib_bool shift = opcode == 0xc0u || opcode == 0xc1u ||
+        (opcode >= 0xd0u && opcode <= 0xd3u);
     const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u || opcode == 0x8fu ||
-        opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu;
+        opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu || shift;
     const lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
     lib_u64 ticks;
@@ -264,7 +266,25 @@ static void x86_core_cpu_timing_select_v30(
         ticks = taken ? (opcode >= 0xe2u ? 13u : 14u) : opcode < 0xe0u ? 4u : 5u;
     } else if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
     else if (opcode >= 0x90u && opcode <= 0x97u) ticks = 3u;
+    else if (shift) {
+        if (((data->opcodes[1] >> 3u) & 7u) == 6u) return;
+        const lib_bool single = opcode == 0xd0u || opcode == 0xd1u;
+        const lib_u8 count = single ? 1u : opcode >= 0xd2u ?
+            data->oldcpu.data.cl : (lib_u8)data->cimm;
+        ticks = single ? (data->flagMem ? 16u : 2u) :
+            (data->flagMem ? 19u : 7u) + count;
+        odd_penalty = (opcode & 1u) ? 8u : 0u;
+        if (!single) result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
+    }
     else switch (opcode) {
+    case 0x37u: ticks = 3u; break;
+    case 0x3fu: ticks = 7u; break;
+    case 0x98u: ticks = 2u; break;
+    case 0xd4u: case 0xd5u:
+        /* Only the encoded radix-ten forms have documented nominal rows. */
+        if (data->opcodes[1] != 10u) return;
+        ticks = opcode == 0xd4u ? 15u : 7u;
+        break;
     case 0x80u: case 0x81u: case 0x83u: {
         const lib_bool compare = ((data->opcodes[1] >> 3u) & 7u) == 7u;
         ticks = !data->flagMem ? 4u : compare ? 13u : 18u;
