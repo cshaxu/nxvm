@@ -184,7 +184,9 @@ typedef enum x86_core_cpu_retirement_timing_origin {
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL,
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE,
-    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL,
+    /* NEC section 12 prefetched, zero-wait subtotal, not complete elapsed time. */
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE
 } x86_core_cpu_retirement_timing_origin;
 
 typedef enum x86_core_cpu_retirement_repeat_phase {
@@ -208,6 +210,8 @@ typedef struct x86_core_cpu_timing_result {
     lib_u32 key_id;
     lib_u32 formula_inputs;
     x86_core_cpu_retirement_timing_origin retirement_origin;
+    /* V30 may expose a nominal subtotal in ticks/origin while total time is
+     * unallocated; that partial result cannot qualify its Machine admission. */
     lib_u8 source_timing_unallocated;
     lib_u32 form_id;
     x86_core_cpu_retirement_repeat_phase repeat_phase;

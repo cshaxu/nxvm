@@ -226,6 +226,83 @@ static lib_i32 x86_core_cpu_timing_apply_8086_lock(x86_core_cpu_execution_contex
     return 1;
 }
 
+/* NEC October 1986, 12-1 and 12-4..12-13. Operand/EA work is already included;
+ * do not add the Intel EA recipe or count each byte callback as another cost.
+ * Fetch starvation, prefixes and extra waits still need their own allocation. */
+static void x86_core_cpu_timing_select_v30(
+    const x86_core_cpu_execution_context *context, x86_core_cpu_timing_result *result)
+{
+    const t_cpuins_data *data = &context->instructions->data;
+    const lib_u8 opcode = data->opcodes[0];
+    const lib_bool modrm = (opcode >= 0x86u && opcode <= 0x8eu) ||
+        (opcode >= 0xc4u && opcode <= 0xc7u);
+    lib_u64 ticks;
+    lib_u8 odd_penalty = 0u;
+    lib_bool odd_word = LIB_FALSE;
+
+    *result = (x86_core_cpu_timing_result){
+        .source_timing_unallocated = LIB_TRUE,
+        .key_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED,
+        .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
+    };
+    if (data->oplen == 0u || !(data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD)) return;
+    if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
+    else if (opcode >= 0x90u && opcode <= 0x97u) ticks = 3u;
+    else switch (opcode) {
+    case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
+        ticks = !data->flagMem ? 2u : opcode & 2u ? 11u : 9u;
+        odd_penalty = (opcode & 1u) ? 4u : 0u;
+        break;
+    case 0x8cu: case 0x8eu:
+        ticks = !data->flagMem ? 2u : opcode == 0x8cu ? 10u : 11u;
+        odd_penalty = 4u;
+        break;
+    case 0xc6u: case 0xc7u:
+        /* The source describes only memory destinations for this encoding. */
+        if (!data->flagMem) return;
+        ticks = 11u;
+        odd_penalty = (opcode & 1u) ? 4u : 0u;
+        break;
+    case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
+        ticks = opcode & 2u ? 9u : 10u;
+        if ((opcode & 1u) && (data->opcodes[1] & 1u)) {
+            ticks += 4u;
+            odd_word = LIB_TRUE;
+        }
+        break;
+    case 0xc4u: case 0xc5u:
+        if (!data->flagMem) return;
+        ticks = 18u;
+        odd_penalty = 8u;
+        break;
+    case 0x8du:
+        if (!data->flagMem) return;
+        ticks = 4u;
+        break;
+    case 0x86u: case 0x87u:
+        ticks = data->flagMem ? 16u : 3u;
+        odd_penalty = (opcode & 1u) ? 8u : 0u;
+        break;
+    case 0x9eu: ticks = 3u; break;
+    case 0x9fu: ticks = 2u; break;
+    case 0xd7u: ticks = 9u; break;
+    default: return;
+    }
+    if (modrm && data->flagMem) {
+        result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MODRM |
+            X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+        if (odd_penalty && (data->mrm.offset & 1u)) {
+            ticks += odd_penalty;
+            odd_word = LIB_TRUE;
+        }
+    }
+    if (odd_word) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+    result->ticks = ticks;
+    result->retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
+    result->form_id = opcode | (modrm && data->flagMem ? 0x100u : 0u);
+    result->key_id = result->form_id;
+}
+
 lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
     x86_core_cpu_timing_result *out_result)
 {
@@ -233,11 +310,7 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
 
     if (context == LIB_NULL || out_result == LIB_NULL) return 0;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
-        *out_result = (x86_core_cpu_timing_result){
-            .source_timing_unallocated = LIB_TRUE,
-            .key_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED,
-            .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
-        };
+        x86_core_cpu_timing_select_v30(context, out_result);
         return 1;
     }
     context->timing_result.source_timing_unallocated = LIB_FALSE;
