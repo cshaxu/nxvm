@@ -28,6 +28,7 @@
 - [T2 native unpacked decimal and conversion](evidence/t2-s18-decimal.md).
 - [T2 native multiplication and division](evidence/t2-s19-multiply-divide.md).
 - [T2 native branch, call and return](evidence/t2-s20-control-flow.md).
+- [T2 native PSW and flag control](evidence/t2-s21-flags.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
