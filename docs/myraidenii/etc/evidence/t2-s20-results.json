@@ -1,0 +1,34 @@
+[
+    {
+        "arch":  "x64",
+        "units":  670,
+        "x86_core_units":  183,
+        "failures":  0,
+        "skipped":  0,
+        "suite_seconds":  109.21,
+        "control_flow_seconds":  2.45062,
+        "control_flow_cases":  463982,
+        "multiply_divide_seconds":  4.28376,
+        "multiply_divide_cases":  1796404,
+        "strict_rows":  498,
+        "production_changes":  0,
+        "artifact_changes":  0,
+        "log":  "build/myraidenii/t2-s20-unit-x64.log"
+    },
+    {
+        "arch":  "x86",
+        "units":  670,
+        "x86_core_units":  183,
+        "failures":  0,
+        "skipped":  0,
+        "suite_seconds":  114.38,
+        "control_flow_seconds":  2.1298,
+        "control_flow_cases":  463982,
+        "multiply_divide_seconds":  4.75838,
+        "multiply_divide_cases":  1796404,
+        "strict_rows":  498,
+        "production_changes":  0,
+        "artifact_changes":  0,
+        "log":  "build/myraidenii/t2-s20-unit-x86.log"
+    }
+]
