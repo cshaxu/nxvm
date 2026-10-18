@@ -109,4 +109,71 @@ static inline void v30_memory_prepare(v30_memory_fixture *fixture)
     v30_memory_restart(fixture);
 }
 
+#define CPU_V30_MEMORY_PLAN_CAPACITY 12u
+
+typedef struct v30_memory_expected_transfer {
+    lib_u32 address;
+    lib_u16 value, initial;
+    lib_u8 bytes;
+    lib_bool write;
+} v30_memory_expected_transfer;
+
+typedef struct v30_memory_plan {
+    v30_memory_expected_transfer transfers[CPU_V30_MEMORY_PLAN_CAPACITY];
+    lib_u8 count;
+} v30_memory_plan;
+
+static inline void v30_memory_plan_transfer(v30_memory_plan *plan, const v30_memory_fixture *fixture,
+    lib_u32 address, lib_u8 bytes, lib_bool write, lib_u16 value)
+{
+    for (lib_u8 offset = 0u; offset < bytes;) {
+        const lib_u8 part = bytes-offset >= 2 && !((address+offset) & 1u) ? 2u : 1u;
+        const lib_u16 initial = fixture->memory[address+offset] |
+            (part == 2u ? 256u*fixture->memory[address+offset+1u] : 0u);
+        plan->transfers[plan->count++] = (v30_memory_expected_transfer){address+offset,
+            (lib_u16)(value >> (8u*offset)),initial,part,write};
+        offset += part;
+    }
+}
+
+static inline lib_i32 v30_memory_check_plan(const v30_memory_fixture *fixture,
+    const v30_memory_plan *plan, lib_bool failed)
+{
+    lib_u32 reads = 0u, writes = 0u;
+    lib_u8 used = 0u;
+    lib_bool refused = LIB_FALSE;
+    for (lib_u32 index = 0u; index < fixture->record_count; ++index) {
+        const v30_memory_record *record = &fixture->records[index];
+        if (record->observe || record->provenance != X86_CORE_CPU_MEMORY_ACCESS_DATA) continue;
+        if (refused || used >= plan->count) return 1;
+        const v30_memory_expected_transfer *transfer = &plan->transfers[used];
+        const lib_u32 ordinal = transfer->write ? ++writes : ++reads;
+        const lib_bool accepted = ordinal != (transfer->write ? fixture->fail_write : fixture->fail_read);
+        if (record->address != transfer->address || record->bytes != transfer->bytes ||
+            record->write != transfer->write || record->accepted != accepted ||
+            fixture->phases[2u*used] != X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN ||
+            fixture->phases[2u*used+1u] != (accepted ? X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT :
+                X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL)) return 1;
+        refused = !accepted;
+        ++used;
+    }
+    if (fixture->invalid || fixture->reads != reads || fixture->writes != writes ||
+        fixture->phase_count != 2u*used || refused != failed || (!failed && used != plan->count)) return 1;
+    for (lib_u8 index = 0u; index < plan->count; ++index) {
+        const v30_memory_expected_transfer *transfer = &plan->transfers[index];
+        for (lib_u8 byte = 0u; byte < transfer->bytes; ++byte) {
+            const lib_u32 address = transfer->address+byte;
+            lib_u8 value = (lib_u8)(transfer->initial >> (8u*byte));
+            for (lib_u8 write = 0u; write < used; ++write) {
+                const v30_memory_expected_transfer *prior = &plan->transfers[write];
+                if (prior->write && !(refused && write+1u == used) &&
+                    address >= prior->address && address-prior->address < prior->bytes)
+                    value = (lib_u8)(prior->value >> (8u*(address-prior->address)));
+            }
+            if (fixture->memory[address] != value) return 1;
+        }
+    }
+    return 0;
+}
+
 #endif

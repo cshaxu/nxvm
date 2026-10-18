@@ -15,18 +15,6 @@ typedef struct v30_multiply_case {
     lib_bool flags;
 } v30_multiply_case;
 
-typedef struct v30_multiply_transfer {
-    lib_u32 address;
-    lib_u16 value, initial;
-    lib_u8 bytes;
-    lib_bool write;
-} v30_multiply_transfer;
-
-typedef struct v30_multiply_plan {
-    v30_multiply_transfer transfers[12];
-    lib_u8 count;
-} v30_multiply_plan;
-
 static lib_u32 *v30_multiply_word(t_cpu *cpu, lib_u8 reg)
 {
     lib_u32 *words[] = {&cpu->data.eax,&cpu->data.ecx,&cpu->data.edx,&cpu->data.ebx,
@@ -98,19 +86,6 @@ static lib_u8 v30_multiply_prepare(v30_memory_fixture *fixture, const v30_multip
     return length;
 }
 
-static void v30_multiply_plan_word(v30_multiply_plan *plan, const v30_memory_fixture *fixture,
-    lib_u32 address, lib_u8 bytes, lib_bool write, lib_u16 value)
-{
-    for (lib_u8 offset = 0u; offset < bytes;) {
-        const lib_u8 part = bytes == 2u && !(address & 1u) ? 2u : 1u;
-        const lib_u16 initial = fixture->memory[address+offset] |
-            (part == 2u ? 256u*fixture->memory[address+offset+1u] : 0u);
-        plan->transfers[plan->count++] = (v30_multiply_transfer){address+offset,
-            (lib_u16)(value >> (8u*offset)),initial,part,write};
-        offset += part;
-    }
-}
-
 /* Wide arithmetic computes results before any destination alias is changed. */
 static lib_bool v30_multiply_expected(t_cpu *cpu, const v30_multiply_case *item,
     lib_u16 operand, lib_u32 *defined)
@@ -158,46 +133,6 @@ static lib_bool v30_multiply_expected(t_cpu *cpu, const v30_multiply_case *item,
     return LIB_FALSE;
 }
 
-static lib_i32 v30_multiply_records(const v30_memory_fixture *fixture,
-    const v30_multiply_plan *plan, lib_bool failed)
-{
-    lib_u32 reads = 0u, writes = 0u;
-    lib_u8 used = 0u;
-    lib_bool refused = LIB_FALSE;
-    for (lib_u32 index = 0u; index < fixture->record_count; ++index) {
-        const v30_memory_record *record = &fixture->records[index];
-        if (record->observe || record->provenance != X86_CORE_CPU_MEMORY_ACCESS_DATA) continue;
-        if (refused || used >= plan->count) return 1;
-        const v30_multiply_transfer *transfer = &plan->transfers[used];
-        const lib_u32 ordinal = transfer->write ? ++writes : ++reads;
-        const lib_bool accepted = ordinal != (transfer->write ? fixture->fail_write : fixture->fail_read);
-        if (record->address != transfer->address || record->bytes != transfer->bytes ||
-            record->write != transfer->write || record->accepted != accepted ||
-            fixture->phases[2u*used] != X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN ||
-            fixture->phases[2u*used+1u] != (accepted ? X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT :
-                X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL)) return 1;
-        refused = !accepted;
-        ++used;
-    }
-    if (fixture->invalid || fixture->reads != reads || fixture->writes != writes ||
-        fixture->phase_count != 2u*used || refused != failed || (!failed && used != plan->count)) return 1;
-    for (lib_u8 index = 0u; index < plan->count; ++index) {
-        const v30_multiply_transfer *transfer = &plan->transfers[index];
-        for (lib_u8 byte = 0u; byte < transfer->bytes; ++byte) {
-            const lib_u32 address = transfer->address+byte;
-            lib_u8 value = (lib_u8)(transfer->initial >> (8u*byte));
-            for (lib_u8 write = 0u; write < used; ++write) {
-                const v30_multiply_transfer *prior = &plan->transfers[write];
-                if (prior->write && !(refused && write+1u == used) &&
-                    address >= prior->address && address-prior->address < prior->bytes)
-                    value = (lib_u8)(prior->value >> (8u*(address-prior->address)));
-            }
-            if (fixture->memory[address] != value) return 1;
-        }
-    }
-    return 0;
-}
-
 static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
 {
     static v30_memory_fixture fixture;
@@ -211,16 +146,16 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
         v30_multiply_register(&expected,item->modrm & 7u,item->width);
     lib_u32 defined;
     const lib_bool trap = v30_multiply_expected(&expected,item,operand,&defined);
-    v30_multiply_plan plan = {0};
-    if (memory) v30_multiply_plan_word(&plan,&fixture,address,item->width,LIB_FALSE,operand);
+    v30_memory_plan plan = {0};
+    if (memory) v30_memory_plan_transfer(&plan,&fixture,address,item->width,LIB_FALSE,operand);
     const lib_u16 next_ip = 0x100u+length;
     if (trap) {
         const lib_u16 frame[] = {(lib_u16)(before.data.eflags | 0x7000u),0x8000u,next_ip};
         for (lib_u8 word = 0u; word < 3u; ++word)
-            v30_multiply_plan_word(&plan,&fixture,0x20000u+(lib_u16)(before.data.sp-2u*(word+1u)),
+            v30_memory_plan_transfer(&plan,&fixture,0x20000u+(lib_u16)(before.data.sp-2u*(word+1u)),
                 2u,LIB_TRUE,frame[word]);
-        v30_multiply_plan_word(&plan,&fixture,0u,2u,LIB_FALSE,0x200u);
-        v30_multiply_plan_word(&plan,&fixture,2u,2u,LIB_FALSE,0x9000u);
+        v30_memory_plan_transfer(&plan,&fixture,0u,2u,LIB_FALSE,0x200u);
+        v30_memory_plan_transfer(&plan,&fixture,2u,2u,LIB_FALSE,0x9000u);
         expected.data.cs.selector = 0x9000u;
         expected.data.cs.base = 0x90000u;
         expected.data.eip = 0x200u;
@@ -249,7 +184,7 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
         fixture.bus.delivered_exceptions != (lib_u32)trap ||
         (trap && fixture.bus.delivered_exception.exception_mask != VCPUINS_EXCEPT_DE) ||
         fixture.bus.instruction_count != 1u || lib_memory_compare(&actual,&expected,sizeof(actual)) ||
-        v30_multiply_records(&fixture,&plan,LIB_FALSE)) {
+        v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
         lib_c_printf("V30:MULTIPLY-DIVIDE:FAIL op=%u width=%u modrm=%02x prefix=%u input=%08x operand=%04x trap=%u ax=%04x/%04x dx=%04x/%04x ip=%04x/%04x sp=%04x/%04x\n",
             item->operation,item->width,item->modrm,item->prefix,item->dividend,item->operand,trap,
             actual.data.ax,expected.data.ax,actual.data.dx,expected.data.dx,
@@ -258,7 +193,7 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
             const lib_u32 stack = 0x20000u+actual.data.sp;
             lib_c_printf("V30:MULTIPLY-DIVIDE:FRAME saved=%04x expected=%04x records=%u\n",
                 fixture.memory[stack]+256u*fixture.memory[stack+1u],next_ip,
-                v30_multiply_records(&fixture,&plan,LIB_FALSE));
+                v30_memory_check_plan(&fixture,&plan,LIB_FALSE));
         }
         return 1;
     }
@@ -285,11 +220,11 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
             if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.bus.delivered_exceptions ||
                 fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
-                v30_multiply_records(&fixture,&plan,LIB_TRUE)) {
+                v30_memory_check_plan(&fixture,&plan,LIB_TRUE)) {
                 lib_c_printf("V30:MULTIPLY-DIVIDE:REFUSAL op=%u modrm=%02x width=%u prefix=%u write=%u part=%u stop=%u faults=%u delivered=%u records=%u\n",
                     item->operation,item->modrm,item->width,item->prefix,write,part,
                     fixture.bus.execution.stop_requested,fixture.bus.faults,fixture.bus.delivered_exceptions,
-                    v30_multiply_records(&fixture,&plan,LIB_TRUE));
+                    v30_memory_check_plan(&fixture,&plan,LIB_TRUE));
                 return 1;
             }
         }
