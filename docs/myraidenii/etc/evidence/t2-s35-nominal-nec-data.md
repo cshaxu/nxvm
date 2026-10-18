@@ -104,6 +104,7 @@ not misclassified as ordinary data. Existing Intel selectors and physical
 time mechanisms remain unchanged.
 
 Reproducible sweep queries include:
+
 - `rg -n '0x0fu|suffix|odd_penalty|oldcpu.data.cl|form_id' src/x86-core/cpu/cpu_timing.c`
 - `rg -n 'source_timing_unallocated|observations|completed_observation_valid|0x39u' test/x86-core/cpu/cpu_v30*smoke.c`
 - `rg -n '_s_read_cs|instruction_offset|opcodes' src/x86-core/cpu/cpu_instructions.c`
