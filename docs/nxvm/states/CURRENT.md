@@ -36,14 +36,14 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
-MyRaidenII M1 T2 S42 refreshes the eight current 0564 PC EXEs after
-Shared V30 string extra-prefix phase clocks P1 `45dcb1d26`. It changes no NXVM
+MyRaidenII M1 T2 S43 refreshes the eight current 0564 PC EXEs after
+Shared V30 packed BCD full-byte semantics P1 `bb03dcd87`. It changes no NXVM
 source, configuration, firmware or media and allocates no NXVM task/S.
 MyNES 0044 hashes remain unchanged. This receiving publication supersedes
 only the PC hashes in the historical T564 snapshot above; it does not rewrite
 T564's accepted evidence or open task status. See the
-[current receiving evidence](../../myraidenii/etc/evidence/t2-s42-string-prefix-phase.md)
-and [ten release identities](../../myraidenii/etc/evidence/t2-s42-artifacts.json).
+[current receiving evidence](../../myraidenii/etc/evidence/t2-s43-packed-bcd-bytes.md)
+and [ten release identities](../../myraidenii/etc/evidence/t2-s43-artifacts.json).
 Each width passes678 units (191 X86 Core),498 strict rows,1389 Types inputs
 and14 selected PC receiving integrations plus a restored-default identity,
 not a new full integration-suite claim. Both original Ninja/ccache Release
