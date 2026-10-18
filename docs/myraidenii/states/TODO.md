@@ -64,3 +64,22 @@ event. Reproduce failed SMI and STOP-GRANT interrupt entry through their real
 providers, pin existing failed-prefix/time expectations, then qualify the
 result contract on both widths. This is outside S29's ordinary V30/HALT
 result batch and is not a replacement for planned V30 physical timing work.
+
+## Medium: Older Intel LOCK Arbitration Callback Qualification
+
+Owner: Shared X86 Core CPU and neutral Machine bus-arbitration contracts.
+S45's complete lock-admission sweep confirms that the existing modern RMW
+callback gate admits80486SX; the newly implemented whole-instruction gate
+admits V30 only. Older Intel profiles retain their existing prefix/operand
+semantics without a qualified physical lock-callback lifetime. S45 does not
+silently extend their behavior or treat passing legacy timing tests as pin proof.
+
+Risk: bus-aware consumers must not infer Intel physical HOLD exclusion from
+decoder acceptance alone. No current guest corruption or new regression is
+established; its relation to legacy serialized scheduling needs direct proof.
+Admission: a separately admitted Shared CPU/neutral-Machine arbitration audit,
+before relying on those profiles' physical exclusion. Pin each Intel primary
+contract, actual memory/port/DMA interleaving and existing source/time grades,
+then qualify all relevant profiles and receiving products on both widths.
+This is not a transfer of V30's original V05/V14/V15 obligations or a blocker
+for independent MyRaidenII work; its complete V30 time/Machine receivers remain.
