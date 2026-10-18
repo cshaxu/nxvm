@@ -20219,10 +20219,11 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
         vector = _e_exception_vector(context, active);
         if (vector == 0xffu) break;
         cpu_state = fault_cpu;
-        /* Native NEC division is a software interrupt at the following PC. */
-        if (active == VCPUINS_EXCEPT_DE &&
-            (!cpu_profile_has_186_integer(context->cpu_profile) ||
-             context->cpu_profile == X86_CORE_CPU_PROFILE_V30))
+        /* NEC divide/index software interrupts save the following PC. */
+        if ((active == VCPUINS_EXCEPT_DE &&
+             !cpu_profile_has_186_integer(context->cpu_profile)) ||
+            (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+             (active == VCPUINS_EXCEPT_DE || active == VCPUINS_EXCEPT_BR)))
             cpu_state.data.eip = next_eip;
         instruction_state.data.except = active;
         instruction_state.data.excode = code;
