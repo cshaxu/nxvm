@@ -126,3 +126,14 @@ form/flag decisions, complete new oracle/matrix/failures, registration and
 manifest, retained fixture consumers, baseline and release identities.
 Integration suites are not rerun for this unchanged-production batch; retained
 release hashes do not count as a new integration, desktop or game run.
+
+## Coordinator Acceptance
+
+Shared P1 `a40ee9742` and MyRaidenII evidence P2 `f66f829ed` are accepted
+after single-session actual-change review. The original request/packet,
+complete four-form V07 domain, explicit packed/other receivers, primary flag
+decisions, independent oracle and every new failure branch, registration/
+manifest, existing fixture callers, first complete suite and gate logs, ten
+retained artifacts and documentation agree. No production path, interface,
+state, warning waiver or protected input changed. The final governance P
+closes S18 only; T2 and the original full MyRaidenII goal remain open.
