@@ -4673,8 +4673,15 @@ static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
     /* The word target belongs to the CS reloaded below, not the old cache. */
     cpu_state.data.eip = cip;
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(vector >> 16)));
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
         cpu_state.data.eflags |= X86_CPU_NEC_PSW_MD;
+        /* Accepted entry clears BRK; a lower-priority outgoing step cannot
+         * immediately nest inside the newly entered handler. */
+        if (disable_interrupts) {
+            context->debug_trap_pending = LIB_FALSE;
+            context->debug_trap_cause = 0u;
+        }
+    }
     CPU_TRACE_CALL_END;
 }
 static lib_u16 _ser_idt_error_code(lib_u8 intid)

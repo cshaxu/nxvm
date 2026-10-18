@@ -109,7 +109,7 @@ static inline void v30_memory_prepare(v30_memory_fixture *fixture)
     v30_memory_restart(fixture);
 }
 
-#define CPU_V30_MEMORY_PLAN_CAPACITY 12u
+#define CPU_V30_MEMORY_PLAN_CAPACITY 14u
 
 typedef struct v30_memory_expected_transfer {
     lib_u32 address;
