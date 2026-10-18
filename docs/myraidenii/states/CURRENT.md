@@ -2,34 +2,20 @@
 
 ## Current Work
 
-M1 T2 S39 is delivered after accepted S38 `eb1299862`. The complete
-native data-range nominal batch below is implemented and qualified;
-coordinator actual committed-diff acceptance remains. T2/M1 stay open.
+M1 T2 S39 is accepted and closed after coordinator actual committed-diff
+review of Shared `de015fde0`, NXVM receiving `e453f8f1f` and MyRaidenII
+records `c5adf36a9`. No next S is admitted. T2/M1 and the full goal stay open.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, MyRaidenII M1 T2 S39, next unused S after accepted S38. |
-| Admission And Approval | Owner's standing automatic single-person coordinator/executor MyRaidenII implementation and timing-upgrade approval; coordinator admits the complete remaining range-valued native data nominal batch on 2026-10-18 at clean eb1299862. Targets Shared X86 Core/tests, NXVM eight receiving artifacts/status and MyRaidenII records. No Lib/Emulator/MyNES or public contract change. |
-| Objective | Allocate all four native INS/EXT register/immediate encodings plus CVTWL using explicit conservative source-range upper endpoints at the sole V30 timing selector. Preserve original semantics, complete actual data/alias/defined-flag/failure proof, source-model grading and original unallocated elapsed-time receiver. |
-| Non-goals | No instruction/executor/decoder, operand reads, mode/entry/priority, public API/enum/layout, persistent state, Intel or Lib/Emulator change. No claim of actual input-specific microcode, new 8080/prefix/BCD rounding/physical bus/prefetch/wait cost or Machine/board/game admission. |
-| Reference Baseline | eb1299862; original NEC October1986 manual SHA FABBFCD19D4A2FCDAAC9F0BC06B00BF0A6A4BEEDAFBD3FF16ACCD075A374EA4C, printed12-21..24 and12-64 (PDF66..69,109), five pages rendered and visually inspected. Existing S6 bit-field execution and S17/S34 arithmetic proof; original S35 ranges remain historical evidence, not current allocation. |
-| Candidate Proposal | proposals/m1-v30.md and original V04/V07/V14/V15. Existing L2_DYNAMIC_ARITHMETIC labels conservative endpoints: INS register117/113, immediate87/103; EXT register55/59, immediate44/52 (even/odd implicit memory); CVTWL5. EXT register even row prints70115 amid70116 context: retain that source typo explicitly; no exact-silicon assertion. Original SI for extraction and DI for insertion determine parity; no per-transfer slopes or length-to-microcode guesses. Field publication records implicit MEMORY/ODD and suffix identity; CVTWL has no memory term. |
-| Files And ABI Surface | src/x86-core/cpu/cpu_timing.c and manifest; existing cpu_v30_bit_field_smoke.c, cpu_v30_alu_smoke.c, cpu_v30_nominal_transfer_smoke.c and test manifest. Estimate production +18..28/-1..3; tests +35..75/-12..25, no new helper/target/header. Extend complete field matrix to both parity axes; retain every ALU/transfer input and nineteen ALU unknown/refusal boundaries with legal extra-prefixed counterparts where newly allocated placeholders no longer apply. |
-| Applicable Rules | MyRaidenII guide/goal/proposal/ledger/queue/roadmap/architecture/coding/source policy, Shared Execution/Architecture/Coding/Document and Contributing; architecture/coding-governance and read-only PDF skills; receiving NXVM guide/current/architecture/coding/source policy and X86 Core README. Unique execution/data/timing/publication owners, Lib Types, honest L2, frozen proof, one target per P and coordinator actual committed-diff acceptance. |
-| Verification | Actual complete four-form field execution matrix covers every offset/length/register alias at even and odd memory with the unused SI/DI index having opposite parity, boundaries/segment prefixes/real examples/invalid forms/all existing provider refusals; independent source-row/key/input/origin/no-observation expectations. Preserve all917460 ALU inputs including full CVTWL sign-extension domain and all24160 transfer inputs, failure/publication/Intel guards. Transient focus: bit-field, ALU, nominal-transfer, memory-transfer, decimal, software-arbitration and completion. Both original Ninja/ccache all-target builds -j8, full678 repository units -j4, specialized498 strict rows/Types,14 selected PC receiving integrations plus restored identity per width, ten PE/hash records and protected-input/docs checks. |
-| Expected Markers | Retain V30:BIT-FIELD:OK, V30:NOMINAL-ALU:OK cases=917460 and V30:NOMINAL-TRANSFER:OK cases=24160; add V30:NOMINAL-FIELD:OK cases=66108 for the both-parity matrix. All final suites zero failures/skips; explicit L2_DYNAMIC_ARITHMETIC, no extra observations, unknown extra-prefix disposition, source_timing_unallocated/max0/closed Machine preserved. |
-| Asset Needs | Original synthetic ROM-free inputs and reusable Ninja/ccache graphs only. Rebuild/deploy eight PC0564 EXEs, verify all ten identities and unchanged MyNES0044, INIs, firmware/media/snapshots. No new source/ROM import or MyRaidenII EXE; retain manual and proof/logs, remove five owned temporary source renderings after review. |
-| Reporting Requirements | Report source/model/owner decisions, exact paths and estimated diff before implementation; preserve actual failures and corrections. Deliver actual production/test added/deleted/net, retained unique paths, complete batch disposition, dual-width qualification/artifacts/commits and remaining full-goal boundary. |
-| Stop Conditions | New public/source/license authority, hidden guest/Intel semantic change, source range promoted to exact silicon fact, new execution/timing state or observation, protected-input mutation or failed qualification prevents acceptance. No weakened assertions/budgets or fabricated eligibility. |
-| Exit Criteria | All five range-valued native data encodings have explicit L2 nominal endpoints at the existing selector and actual full execution/failure proof. Complete required dual-width builds/units/gates/selected integrations/artifacts/docs pass; complete target-separated Ps pushed; coordinator actual committed-diff review accepts and closes only S39. |
-| Original Owner Request | Single-person two-role governed implementation of complete playable MyRaidenII, NEC V30 and needed facilities. This source-graded batch does not complete full CPU physical time, neutral Machine, board/video/sound or gameplay. |
-| Similar-Issue Sweep | All four field suffixes and CVTWL source ranges/callers, original versus mutated SI/DI/AX/alias inputs, implicit-memory parity, source/L2 origins and keys, unknown placeholders/live publication reset, each existing host refusal, no extra observation and Intel/max/Machine guards. Remaining native/8080/prefix/BCD/entry/bus/model questions retain original V01--V17 receivers, not removed to narrow completion. |
+All sixteen admission fields remain in the
+[S39 evidence](../etc/evidence/t2-s39-native-data-range-models.md).
+The ordinary native data-range nominal batch is complete; source-model
+limitations and full elapsed-time/Machine/board/game receivers remain.
 
 ## Task Progress
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
-| T2 S39 | Delivered: native data-range models, full dual-width units/gates and receiving releases. Coordinator acceptance remains; full physical time, Machine, board and game stay open. |
+| T2 S39 | Accepted and closed: native data-range models, full dual-width units/gates and receiving releases. Full physical time, Machine, board and game stay open. |
 
 [S39 evidence](../etc/evidence/t2-s39-native-data-range-models.md),
 [results](../etc/evidence/t2-s39-results.json) and
