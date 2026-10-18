@@ -2,6 +2,7 @@
 #define KVM_CONSOLE_FRAME_INTERFACE_H
 
 #include "lib/kvm-base/frame_interface.h"
+#include "lib/kvm-base/frame_exchange_interface.h"
 
 /* One BMP character (excluding surrogate code units) per glyph index. Both banks are copied frame data, not
  * resources retained from a caller. Each cell's glyph_bank selects the map. */
@@ -27,6 +28,15 @@ static inline lib_status kvm_console_text_frame_validate(const kvm_console_text_
             return LIB_STATUS_INVALID_ARGUMENT;
     }
     return LIB_STATUS_OK;
+}
+
+static inline lib_status kvm_console_frame_commit(kvm_frame_exchange *frames)
+{
+    lib_status status;
+    if (frames == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = kvm_console_text_frame_validate(kvm_frame_exchange_writer(frames));
+    if (status == LIB_STATUS_OK) kvm_frame_exchange_publish(frames);
+    return status;
 }
 
 #endif

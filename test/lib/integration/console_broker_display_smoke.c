@@ -4,6 +4,18 @@
 #include "lib/types/win32/console.h"
 #include "lib/types/win32/sync.h"
 #include "lib/base/sync_interface.h"
+#include "lib/kvm-console/console_interface.h"
+
+static lib_win32_handle frame_drawn;
+static lib_win32_bool LIB_WIN32_WINAPI set_frame_cursor(lib_win32_handle output,
+    const lib_win32_console_cursor_info *cursor)
+{
+    lib_win32_bool result = lib_win32_set_console_cursor_info(output, cursor);
+    if (result && frame_drawn != LIB_NULL) lib_win32_set_event(frame_drawn);
+    return result;
+}
+#undef lib_win32_set_console_cursor_info
+#define lib_win32_set_console_cursor_info set_frame_cursor
 
 static lib_u32 mutex_creates, fail_mutex, live_mutexes;
 static lib_status create_mutex(base_sync_mutex **out)
@@ -56,6 +68,10 @@ static lib_win32_handle LIB_WIN32_WINAPI start_reader(lib_win32_lpsecurity_attri
     (void)attributes; (void)size; (void)entry; (void)arg; (void)flags; (void)id;
     if (fail_reader) { fail_reader = 0; return LIB_NULL; }
     return lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_TRUE, LIB_NULL);
+}
+static void hide_owned_console(void)
+{
+    lib_win32_show_window(lib_win32_get_console_window(), LIB_WIN32_SW_HIDE);
 }
 static lib_win32_hwnd LIB_WIN32_WINAPI no_foreground(void) { return LIB_NULL; }
 #undef lib_win32_create_console_screen_buffer
@@ -209,6 +225,7 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
     lib_console *cooked, *raw;
     lib_console_text_frame frame = {0};
     lib_win32_console_screen_buffer_info before, actual;
+    display_snapshot cooked_display;
     lib_win32_coord extent = {columns, rows}, origin = {0, 0}, cells_size = {80, 25};
     lib_win32_small_rect viewport = {0, 0, 19, 9}, region;
     lib_win32_char_info cells[80 * 25];
@@ -223,10 +240,32 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
     lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
     lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
     lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &before));
+    lib_test_assert(lib_console_write_text(cooked, "cooked", 6u) == LIB_STATUS_OK);
+    snapshot(&cooked_display);
     frame.columns = 80; frame.rows = 25; frame.font_height = 16;
-    for (lib_u32 i=0; i<80u*25u; ++i) frame.text[i]='#';
+    frame.cursor_column = 7; frame.cursor_row = 8; frame.cursor_visible = LIB_TRUE; frame.cursor_phase = LIB_TRUE;
+    frame.cursor_bottom = 15;
+    for (lib_u32 i=0; i<80u*25u; ++i) {
+        frame.text[i]=(lib_u32)('A'+i%26u);
+        frame.foreground[i]=14u; frame.background[i]=1u;
+    }
     for (lib_i32 round = 0; round < 3; ++round) {
-        lib_test_assert(console_broker_replace(broker, cooked, raw, CONSOLE_BROKER_RAW_EVENTS) == 0);
+        lib_status status = console_broker_replace(broker, cooked, raw, CONSOLE_BROKER_RAW_EVENTS);
+        lib_test_assert(status == LIB_STATUS_OK);
+        if (round != 0 && before.srWindow.Right - before.srWindow.Left + 1 >= 80 &&
+                before.srWindow.Bottom - before.srWindow.Top + 1 >= 25) {
+            /* No ensure, viewport adjustment or rewrite may precede this read. */
+            region = (lib_win32_small_rect){0,0,79,24};
+            lib_test_assert(lib_win32_read_console_output_w(broker->backend->output, cells, cells_size, origin, &region));
+            lib_test_assert(region.Right==79 && region.Bottom==24);
+            for (lib_u32 i=0; i<80u*25u; ++i) {
+                lib_test_assert(cells[i].Char.UnicodeChar==frame.text[i]);
+                lib_test_assert(cells[i].Attributes==0x1eu);
+            }
+            lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &actual));
+            lib_test_assert(actual.dwCursorPosition.X==7 && actual.dwCursorPosition.Y==8);
+        }
+        /* Deliberate test resize and subsequent frame repair are separate. */
         set_supported_viewport(broker->backend->output, &viewport);
         if (round == 0 && !scrolled && rows == 13) {
             fail_resize = 1;
@@ -252,8 +291,12 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
         region = (lib_win32_small_rect){0, 0, 79, 24};
         lib_test_assert(lib_win32_read_console_output_w(broker->backend->output, cells, cells_size, origin, &region));
         lib_test_assert(region.Left == 0 && region.Top == 0 && region.Right == 79 && region.Bottom == 24);
-        for (lib_u32 i = 0; i < 80 * 25; ++i) lib_test_assert(cells[i].Char.UnicodeChar == '#');
+        for (lib_u32 i = 0; i < 80 * 25; ++i) {
+            lib_test_assert(cells[i].Char.UnicodeChar == frame.text[i]);
+            lib_test_assert(cells[i].Attributes == 0x1eu);
+        }
         lib_test_assert(console_broker_replace(broker, raw, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
+        expect_display(&cooked_display);
         lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &actual));
         if (actual.dwSize.X != before.dwSize.X || actual.dwSize.Y != before.dwSize.Y)
             lib_c_fprintf(lib_c_stderr, "extent %d,%d round %d: restored %d,%d expected %d,%d\n",
@@ -270,6 +313,75 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
     lib_console_release(raw); lib_console_release(cooked);
 }
 
+static lib_bool restore_input(void *context, const kvm_input_event *event)
+{ (void)context; (void)event; return LIB_TRUE; }
+
+static void restore_failure(void *context, lib_u64 source, lib_status status)
+{ (void)context; (void)source; (void)status; lib_test_assert(0); }
+
+static void check_retained_console_restore(void)
+{
+    lib_console *cooked;
+    console_broker *broker;
+    kvm_console *console;
+    kvm_frame_exchange *frames;
+    kvm_console_options options = {0};
+    lib_win32_coord extent = {30,30}, origin = {0,0}, size = {80,25};
+    lib_win32_small_rect viewport = {0,0,29,29}, region;
+    lib_win32_char_info cells[80*25];
+    display_snapshot cooked_display;
+    prepare_output_surface(extent, &viewport);
+    lib_test_assert(lib_console_create(&cooked) == LIB_STATUS_OK);
+    lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_OK);
+    lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
+    lib_test_assert(lib_console_write_text(cooked, "monitor", 7u) == LIB_STATUS_OK);
+    snapshot(&cooked_display);
+    options.input_sink = restore_input; options.failure_sink = restore_failure;
+    lib_test_assert(kvm_console_create(&console, &options) == LIB_STATUS_OK);
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_console_text_frame)) == LIB_STATUS_OK);
+    kvm_console_text_frame *frame = kvm_frame_exchange_writer(frames);
+    frame->base.text_columns=80; frame->base.text_rows=25;
+    frame->base.cursor_mode=KVM_CURSOR_HOST;
+    frame->base.cursor_column=7; frame->base.cursor_row=8;
+    frame->base.cursor_top=14; frame->base.cursor_bottom=15;
+    for (lib_u32 i=0;i<256u;++i) frame->characters.primary[i]=(lib_u16)i;
+    for (lib_u32 i=0;i<2000u;++i) {
+        frame->base.cells[i].glyph_index=(lib_u8)('A'+i%26u);
+        frame->base.cells[i].foreground=14; frame->base.cells[i].background=1;
+    }
+    lib_test_assert(kvm_console_frame_commit(frames) == LIB_STATUS_OK);
+    frame_drawn=lib_win32_create_event_a(LIB_NULL,LIB_WIN32_FALSE,LIB_WIN32_FALSE,LIB_NULL);
+    lib_test_assert(frame_drawn != LIB_NULL);
+    lib_console *raw=kvm_console_get_console(console);
+    lib_test_assert(console_broker_replace(broker,cooked,raw,CONSOLE_BROKER_RAW_EVENTS)==LIB_STATUS_OK);
+    lib_test_assert(kvm_console_publish_frame(console,frames)==LIB_STATUS_OK);
+    for (lib_u32 round=0;round<3u;++round) {
+        lib_test_assert(lib_win32_wait_for_single_object(frame_drawn,5000u)==LIB_WIN32_WAIT_OBJECT_0);
+        console_broker_backend_lock_output(broker->backend);
+        region=(lib_win32_small_rect){0,0,79,24};
+        lib_test_assert(lib_win32_read_console_output_w(broker->backend->output,cells,size,origin,&region));
+        lib_test_assert(region.Right==79 && region.Bottom==24);
+        for (lib_u32 i=0;i<2000u;++i) {
+            lib_test_assert(cells[i].Char.UnicodeChar==(lib_u16)('A'+i%26u));
+            lib_test_assert(cells[i].Attributes==0x1eu);
+        }
+        lib_win32_console_screen_buffer_info actual;
+        lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output,&actual));
+        lib_test_assert(actual.dwCursorPosition.X==7 && actual.dwCursorPosition.Y==8);
+        console_broker_backend_unlock_output(broker->backend);
+        lib_test_assert(console_broker_replace(broker,raw,cooked,CONSOLE_BROKER_COOKED_LINES)==LIB_STATUS_OK);
+        expect_display(&cooked_display);
+        if (round!=2u)
+            lib_test_assert(console_broker_replace(broker,cooked,raw,CONSOLE_BROKER_RAW_EVENTS)==LIB_STATUS_OK);
+        /* No producer commit or notification after the first publication. */
+    }
+    lib_test_assert(console_broker_destroy(broker)==LIB_STATUS_OK);
+    lib_test_assert(kvm_console_destroy(console)==LIB_STATUS_OK);
+    kvm_frame_exchange_destroy(frames);
+    lib_win32_close_handle(frame_drawn); frame_drawn=LIB_NULL;
+    lib_console_release(cooked);
+}
+
 int main(void)
 {
     console_broker *broker;
@@ -282,7 +394,7 @@ int main(void)
     /* FreeConsole only detaches this test process, never its parent. */
     (void)lib_win32_free_console(); /* An attached pseudoconsole need not have an lib_win32_hwnd. */
     lib_test_assert(lib_win32_alloc_console());
-    lib_win32_show_window(lib_win32_get_console_window(), LIB_WIN32_SW_HIDE);
+    hide_owned_console();
     for (fail_mutex = 1; fail_mutex <= 2; ++fail_mutex) {
         console_broker_backend *failed = LIB_NULL;
         lib_win32_dword handles_before, handles_after;
@@ -341,6 +453,9 @@ int main(void)
     frame.palette[1] = 0x123456;
     for (lib_i32 round = 0; round < 3; ++round) {
         lib_test_assert(console_broker_replace(broker, cooked, raw, CONSOLE_BROKER_RAW_EVENTS) == 0);
+        /* Prove saved raw contents before rewriting them. The separate extent
+         * tests intentionally resize host geometry and test frame repair. */
+        if (round != 0) expect_display(&raw_display);
         lib_test_assert(lib_console_write_text_frame(raw, &frame) == 0);
         snapshot(&raw_display);
         lib_test_assert(raw_display.cells[0].Char.UnicodeChar == '#');
@@ -394,6 +509,7 @@ int main(void)
     check_frame_extent(80, 13, 0);
     check_frame_extent(120, 13, 0);
     check_frame_extent(120, 60, 1);
+    check_retained_console_restore();
     lib_test_assert(lib_win32_free_console());
     return 0;
 }

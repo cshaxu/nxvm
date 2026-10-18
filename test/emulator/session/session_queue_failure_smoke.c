@@ -68,7 +68,7 @@ int main(void)
     lib_test_assert(blocks == 1u && mutexes == 1u && events == 1u);
     for (round = 0u; round < 2u; ++round) {
         for (i = 0u; i < 64u; ++i)
-            lib_test_assert(emulator_session_queue_push_frame_completed(queue, i, 0, 1u));
+            lib_test_assert(emulator_session_queue_push_frame_completed(queue, i + 1u));
         fail_allocation = 1;
         /* Reverse arrival order still retains the original class priority. */
         lib_test_assert(!emulator_session_queue_push_runtime_completed(queue,
@@ -81,7 +81,7 @@ int main(void)
         for (i = 0u; i < 64u; ++i) {
             lib_test_assert(emulator_session_queue_take(queue, &event, 0u));
             lib_test_assert(event.kind == EMULATOR_SESSION_EVENT_FRAME_COMPLETED);
-            lib_test_assert(event.value.frame.sequence == i);
+            lib_test_assert(event.run_generation == i + 1u);
         }
         lib_test_assert(emulator_session_queue_take(queue, &event, 0u));
         lib_test_assert(event.kind == EMULATOR_SESSION_EVENT_KVM_DELIVERY_FAILED);

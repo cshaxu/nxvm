@@ -34,7 +34,7 @@ struct x86_nxvm_machine {
     x86_nxvm_board_display_provider_slot *display_provider;
     emulator_machine_executor_callback executor_callback;
     void *executor_callback_context;
-    emulator_machine_frame latest_frame;
+    x86_video_snapshot latest_snapshot;
     lib_bool display_frame_pending;
     lib_u64 display_generation;
     lib_u64 display_snapshot_generation;
@@ -62,7 +62,8 @@ lib_status x86_nxvm_machine_apply_cmos_seed(const x86_nxvm_machine *session,
 void x86_nxvm_machine_storage_finalize(x86_nxvm_machine *machine);
 lib_status x86_nxvm_machine_deliver_emulator_input(x86_nxvm_machine *machine,
     const kvm_input_event *event);
-lib_status x86_nxvm_machine_copy_emulator_frame(x86_nxvm_machine *machine, emulator_machine_frame *frame);
+lib_status x86_nxvm_machine_copy_emulator_frame(x86_nxvm_machine *machine,
+    kvm_window_frame_storage *frame, kvm_console_text_frame *console, lib_bool *produced);
 lib_status x86_nxvm_machine_set_emulator_media(x86_nxvm_machine *machine, const char *path,
     lib_storage_medium_mode mode);
 #endif

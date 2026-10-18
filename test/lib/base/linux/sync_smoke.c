@@ -30,6 +30,9 @@ static void signal_on_second_wait(void)
 
 int main(void)
 {
+    base_sync_task *invalid_task = (base_sync_task *)1;
+    lib_test_assert(base_sync_task_create(LIB_NULL, LIB_NULL, &invalid_task) ==
+        LIB_STATUS_INVALID_ARGUMENT && invalid_task == LIB_NULL);
     base_sync_event *events[2];
     lib_bool signaled;
     lib_u32 index;

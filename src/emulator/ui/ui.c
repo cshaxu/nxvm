@@ -277,9 +277,10 @@ lib_status emulator_ui_set_state(emulator_ui *ui, emulator_ui_state state)
     return LIB_STATUS_OK;
 }
 
-static void emulator_ui_status_frame(kvm_console_text_frame *frame,
-    const char *text)
+void emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame)
 {
+    const emulator_ui *ui = context;
+    const char *text = ui->options.graphics_console_status_text;
     lib_size index;
     lib_size row = 0u, column = 0u;
     lib_memory_set(frame, 0, sizeof(*frame));
@@ -304,35 +305,27 @@ static void emulator_ui_status_frame(kvm_console_text_frame *frame,
     }
 }
 
-lib_status emulator_ui_publish_frame(emulator_ui *ui, const kvm_window_frame *frame,
-    const kvm_console_character_map *characters, lib_u32 sequence,
+lib_status emulator_ui_publish_frame(emulator_ui *ui, kvm_frame_exchange *frames,
+    kvm_frame_exchange *console_frames, lib_bool graphics, lib_u32 sequence,
     lib_bool window_actual, lib_bool vm_console_current,
     lib_bool console_status_surface)
 {
-    kvm_console_text_frame console_frame;
     lib_status status;
     lib_bool show_status;
-    if (ui == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    show_status = frame->graphics != 0u && console_status_surface;
+    if (ui == LIB_NULL || frames == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    show_status = graphics && console_status_surface;
     if (vm_console_current && ui->console != LIB_NULL &&
         (show_status != ui->console_status_delivered ||
          (!show_status && ui->console_delivered_frame_sequence != sequence))) {
-        if (show_status) {
-            emulator_ui_status_frame(&console_frame, ui->options.graphics_console_status_text);
-        } else {
-            if (frame->graphics != 0u) return LIB_STATUS_UNSUPPORTED;
-            if (characters == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-            console_frame.base = frame->text.base;
-            console_frame.characters = *characters;
-        }
-        status = kvm_console_publish_frame(ui->console, &console_frame);
+        if (graphics && !show_status) return LIB_STATUS_UNSUPPORTED;
+        status = kvm_console_publish_frame(ui->console, console_frames);
         if (status != LIB_STATUS_OK) return status;
         ui->console_delivered_frame_sequence = sequence;
         ui->console_status_delivered = show_status;
     }
     if (window_actual && ui->window != LIB_NULL &&
         ui->window_delivered_frame_sequence != sequence) {
-        status = kvm_window_publish_frame(ui->window, frame);
+        status = kvm_window_publish_frame(ui->window, frames);
         if (status != LIB_STATUS_OK) return status;
         ui->window_delivered_frame_sequence = sequence;
     }

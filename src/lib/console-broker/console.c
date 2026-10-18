@@ -212,7 +212,7 @@ lib_status console_broker_replace(console_broker *broker,
     }
     console_broker_install_output_binding(next, next_output);
     /* Every bound writer blocks behind this native gate. Once it opens,
-       validation makes an old write NOT_CURRENT and a next write current. */
+       validation drops stale output and permits the current binding's output. */
     console_broker_backend_lock_output(broker->backend);
     status = console_broker_backend_deactivate(broker->backend, &old_cooked_request);
     if (status != LIB_STATUS_OK) {

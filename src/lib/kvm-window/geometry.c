@@ -104,16 +104,16 @@ lib_bool kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_
 {
     lib_i32 width, height, cell_top, cell_bottom;
     lib_u32 top, bottom, font_height;
-    if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !display || !cursor || frame->graphics ||
-        !kvm_text_cursor_shape(&frame->text.base, &font_height, &top, &bottom))
+    if (frame == LIB_NULL || (frame->text == LIB_NULL && frame->graphics == LIB_NULL) || !display || !cursor || frame->graphics ||
+        !kvm_text_cursor_shape(&frame->text->base, &font_height, &top, &bottom))
         return LIB_FALSE;
     width = display->right - display->left;
     height = display->bottom - display->top;
     if (width <= 0 || height <= 0) return LIB_FALSE;
-    cell_top = (lib_i32)((lib_i64)frame->text.base.cursor_row*height/frame->text.base.text_rows);
-    cell_bottom = (lib_i32)((lib_i64)(frame->text.base.cursor_row+1)*height/frame->text.base.text_rows);
-    cursor->left = display->left+(lib_i32)((lib_i64)frame->text.base.cursor_column*width/frame->text.base.text_columns);
-    cursor->right = display->left+(lib_i32)((lib_i64)(frame->text.base.cursor_column+1)*width/frame->text.base.text_columns);
+    cell_top = (lib_i32)((lib_i64)frame->text->base.cursor_row*height/frame->text->base.text_rows);
+    cell_bottom = (lib_i32)((lib_i64)(frame->text->base.cursor_row+1)*height/frame->text->base.text_rows);
+    cursor->left = display->left+(lib_i32)((lib_i64)frame->text->base.cursor_column*width/frame->text->base.text_columns);
+    cursor->right = display->left+(lib_i32)((lib_i64)(frame->text->base.cursor_column+1)*width/frame->text->base.text_columns);
     cursor->top = display->top+cell_top+(lib_i32)(
         (lib_i64)(cell_bottom-cell_top)*top/font_height);
     cursor->bottom = display->top+cell_top+(lib_i32)(

@@ -133,11 +133,9 @@ lib_bool emulator_session_queue_push_runtime_completed(emulator_session_queue *q
 }
 
 lib_bool emulator_session_queue_push_frame_completed(emulator_session_queue *queue,
-    lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
+    lib_u32 run_generation)
 {
     emulator_session_event event = { .kind = EMULATOR_SESSION_EVENT_FRAME_COMPLETED, .run_generation = run_generation };
-    event.value.frame.sequence = sequence;
-    event.value.frame.graphics = graphics;
     return emulator_session_queue_push_required(queue, &event);
 }
 

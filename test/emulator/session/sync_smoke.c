@@ -19,7 +19,7 @@ static void producer(void *opaque, const base_sync_task *task)
     lib_test_assert(base_sync_event_wait(p->go, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     for (i = 0; i < 1000u; ++i) {
         base_sync_mutex_lock(p->mutex);
-        lib_test_assert(emulator_session_queue_push_frame_completed(&p->queue, p->count, 0, 7u));
+        lib_test_assert(emulator_session_queue_push_frame_completed(&p->queue, p->count + 1u));
         ++p->count;
         base_sync_mutex_unlock(p->mutex);
     }
@@ -38,10 +38,10 @@ int main(void)
     lib_test_assert(!emulator_session_queue_take(&p.queue, &event, 0u));
     /* Force growth before a consumer exists; no fixed-capacity silent loss. */
     for (i = 0; i < 1000u; ++i)
-        lib_test_assert(emulator_session_queue_push_frame_completed(&p.queue, i, 0, 9u));
+        lib_test_assert(emulator_session_queue_push_frame_completed(&p.queue, i + 1u));
     for (i = 0; i < 1000u; ++i) {
         lib_test_assert(emulator_session_queue_take(&p.queue, &event, 0u));
-        lib_test_assert(event.value.frame.sequence == i && event.run_generation == 9u);
+        lib_test_assert(event.run_generation == i + 1u);
     }
     lib_test_assert(!emulator_session_queue_take(&p.queue, &event, 0u));
     base_sync_mutex_lock(p.mutex);
@@ -56,7 +56,7 @@ int main(void)
     for (i = 0; i < 2000u; ++i) {
         lib_test_assert(emulator_session_queue_take(&p.queue, &event, LIB_UINT32_MAX));
         lib_test_assert(event.kind == EMULATOR_SESSION_EVENT_FRAME_COMPLETED);
-        lib_test_assert(event.value.frame.sequence == i && event.run_generation == 7u);
+        lib_test_assert(event.run_generation == i + 1u);
     }
     base_sync_task_destroy(a);
     base_sync_task_destroy(b);

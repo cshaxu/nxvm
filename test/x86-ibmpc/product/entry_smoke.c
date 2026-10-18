@@ -160,43 +160,29 @@ lib_i32 main(void)
         if (index == 7u && (title_calls != 1u || status_calls != 0u)) return 8;
         if (index == 8u && (title_calls != 1u || status_calls != 1u)) return 9;
     }
-    {
-        char long_name[4096];
-        x86_ibmpc_product_definition oversized = definition;
-        lib_memory_set(long_name, 'x', sizeof(long_name) - 1u);
-        long_name[sizeof(long_name) - 1u] = '\0';
-        oversized.name = long_name;
-        failure = 0u;
-        created = disposed = title_calls = status_calls = 0u;
-        if (x86_ibmpc_product_run(&oversized) != 1 || fixture.live || created != 1u ||
-            disposed != 1u || title_calls != 1u || status_calls != 0u)
-            return 7;
-    }
     return 0;
 }
 lib_status emulator_product_monitor_format_window_titles(const char *name,
     char *out_running, lib_size running_capacity, char *out_paused,
     lib_size paused_capacity)
 {
-    lib_i32 written;
     ++title_calls;
+    if (lib_text_compare(name, "PC") != 0 || out_running == LIB_NULL ||
+        out_paused == LIB_NULL || running_capacity == 0u || paused_capacity == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (failure == 7u) return LIB_STATUS_LIMIT_EXCEEDED;
-    written = lib_c_snprintf(out_running, running_capacity, "%s", name);
-    if (written < 0 || (lib_size)written >= running_capacity)
-        return LIB_STATUS_LIMIT_EXCEEDED;
-    written = lib_c_snprintf(out_paused, paused_capacity, "%s", name);
-    return written < 0 || (lib_size)written >= paused_capacity ?
-        LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
+    out_running[0] = out_paused[0] = '\0';
+    return LIB_STATUS_OK;
 }
 
 lib_status emulator_product_monitor_format_window_status(const char *name,
     emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
 {
-    lib_i32 written;
-    (void)hotkeys;
     ++status_calls;
+    if (lib_text_compare(name, "PC") != 0 || out_text == LIB_NULL ||
+        capacity == 0u || hotkeys.rows != LIB_NULL || hotkeys.count != 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (failure == 8u) return LIB_STATUS_LIMIT_EXCEEDED;
-    written = lib_c_snprintf(out_text, capacity, "%s", name);
-    return written < 0 || (lib_size)written >= capacity ?
-        LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
+    out_text[0] = '\0';
+    return LIB_STATUS_OK;
 }

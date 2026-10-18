@@ -17,7 +17,6 @@ _Static_assert(KVM_WINDOW_TITLE_CAPACITY <= KVM_COMPONENT_CONTROL_PAYLOAD_CAPACI
 
 struct kvm_window {
     kvm_component base;
-    kvm_window_frame pending_frame;
     char initial_title[KVM_WINDOW_TITLE_CAPACITY];
     lib_bool initial_frozen;
     void *worker_state;

@@ -44,8 +44,8 @@ int main(void)
 #else
     lib_test_assert(lib_c_remove(path) == 0);
 #endif
-    static const char *invalid[] = { "\x80", "\xc0\xaf", "\xc2", "\xe0\x80\x80",
-        "\xed\xa0\x80", "\xf0\x80\x80\x80", "\xf4\x90\x80\x80", "\xf5\x80\x80\x80" };
+    /* Decoder enumeration belongs to Base; these exercise each Storage entry. */
+    static const char *invalid[] = { "\x80", "\xc2" };
     for (lib_size i = 0u; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
         lib_test_assert(lib_storage_file_writer_open(invalid[i], LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_INVALID_ARGUMENT);
         lib_test_assert(writer == LIB_NULL);

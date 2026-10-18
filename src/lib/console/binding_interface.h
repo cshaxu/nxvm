@@ -20,8 +20,8 @@ typedef struct lib_console_output_binding {
 /* Copies the binding; NULL clears both outputs. Waits for in-flight output
  * before replacing it. The borrowed context must survive until replacement
  * returns; output callbacks must not reenter binding or destruction.
- * A valid Console always accepts replacement. An absent callback returns
- * NOT_CURRENT from its corresponding write operation. */
+ * A valid Console always accepts replacement. An absent callback accepts
+ * its corresponding write without native output. */
 lib_status lib_console_set_output_binding(lib_console *console,
     const lib_console_output_binding *binding);
 lib_status lib_console_deliver_event(lib_console *console,

@@ -20,7 +20,11 @@ function(expect_source_rejected suffix source expected)
     set(probe "${PROBE_ROOT}/${suffix}")
     file(REMOVE_RECURSE "${probe}")
     file(COPY "${CORPUS_ROOT}/" DESTINATION "${probe}")
-    file(WRITE "${probe}/chips/pit825x/probe.c" "${source}")
+    set(relative "chips/pit825x/probe.c")
+    if(ARGC GREATER 3)
+        set(relative "${ARGV3}")
+    endif()
+    file(WRITE "${probe}/${relative}" "${source}")
     execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${probe}"
         -P "${probe}/verify_corpus.cmake" RESULT_VARIABLE result
         OUTPUT_VARIABLE output ERROR_VARIABLE error)
@@ -34,6 +38,12 @@ expect_source_rejected("outer-source"
     "#include \"outer/product/main.c\"\n" "Noncanonical")
 expect_source_rejected("retired-fdd"
     "void x86_nxvm_machine_fdd_read_byte(void);\n" "Retired FDD access path")
+expect_source_rejected("machine-window-operations"
+    "#include \"lib/kvm-window/window_interface.h\"\n"
+    "Machine may consume only KVM frame values" "machine/probe.c")
+expect_source_rejected("machine-console-operations"
+    "#include \"lib/kvm-console/console_interface.h\"\n"
+    "Machine may consume only KVM frame values" "machine/probe.c")
 
 # Test ownership includes nested registration files and component fixtures.
 set(probe "${PROBE_ROOT}/test-ownership")

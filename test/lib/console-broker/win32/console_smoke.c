@@ -41,7 +41,7 @@ static lib_win32_coord buffer_size={80,30};
 static lib_win32_small_rect viewport={0,0,79,29};
 static lib_win32_coord native_cursor;
 static lib_win32_coord viewport_limit;
-static lib_bool limit_viewport, fail_viewport_set;
+static lib_bool limit_viewport, fail_viewport_set, viewport_resizes_buffer;
 static lib_bool reject_resize, ignore_resize;
 static lib_u32 resize_attempts;
 static lib_win32_small_rect palette_metadata_window;
@@ -77,7 +77,14 @@ static lib_win32_bool LIB_WIN32_WINAPI palette_set(lib_win32_handle h, lib_win32
 }
 static lib_win32_bool LIB_WIN32_WINAPI viewport_set(lib_win32_handle h, lib_win32_bool absolute,
     const lib_win32_small_rect *next)
-{ (void)h; (void)absolute; if(fail_viewport_set) return LIB_WIN32_FALSE; viewport=*next; return LIB_WIN32_TRUE; }
+{
+    (void)h; (void)absolute;
+    if(fail_viewport_set) return LIB_WIN32_FALSE;
+    viewport=*next;
+    if (viewport_resizes_buffer)
+        buffer_size=(lib_win32_coord){next->Right-next->Left+1,next->Bottom-next->Top+1};
+    return LIB_WIN32_TRUE;
+}
 static lib_win32_bool LIB_WIN32_WINAPI write_cells(lib_win32_handle h, const lib_win32_char_info *p, lib_win32_coord a, lib_win32_coord b, lib_win32_small_rect *r)
 {
     (void)h; (void)a; (void)b; ++writes; first_cell=p[0].Char.UnicodeChar;
@@ -308,6 +315,13 @@ int main(void)
         lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
         lib_test_assert(viewport.Right==19 && viewport.Bottom==9);
         fail_viewport_set = LIB_FALSE;
+        /* A successful viewport API may still resize the buffer. Reject a
+         * truncated handoff; do not resize again and claim content survived. */
+        viewport_resizes_buffer = LIB_TRUE;
+        resize_attempts = 0u;
+        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_IO_ERROR);
+        lib_test_assert(buffer_size.X==120 && buffer_size.Y==30 && resize_attempts==0u);
+        viewport_resizes_buffer = LIB_FALSE;
         limit_viewport = LIB_FALSE;
         buffer_size = (lib_win32_coord){80,30};
         viewport = (lib_win32_small_rect){0,0,79,29};
@@ -315,6 +329,7 @@ int main(void)
         palette_set_ok = 0;
     }
     f.columns=80;f.rows=25;f.text[0]=0x2588;f.palette[0]=1;
+    f.cells_unchanged=LIB_TRUE; /* No prior native output still forces a write. */
     for(lib_i32 i=0;i<2;++i) lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(first_cell==0x2588 && writes==1 && palette_attempts==2);
     lib_test_assert(captured_region.Bottom==24);
@@ -342,8 +357,18 @@ int main(void)
     lib_u32 before_palette_resize=writes;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(buffer_size.X==80 && buffer_size.Y==30);
-    lib_test_assert(writes==before_palette_resize);
+    lib_test_assert(writes==before_palette_resize+1u);
+    lib_test_assert(captured_region.Bottom==24);
     palette_resize_after_set=LIB_FALSE;
+    /* Successful cell output followed by cursor failure is not a committed
+     * frame. Reusing the preceding input must repaint, not retain failed B. */
+    f.cells_unchanged=LIB_FALSE; f.text[0]='B'; cursor_ok=0;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
+    lib_test_assert(!b.previous_columns && !b.previous_rows);
+    lib_u32 before_cursor_retry=writes;
+    f.cells_unchanged=LIB_TRUE; f.text[0]=0x2588; cursor_ok=1;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    lib_test_assert(writes==before_cursor_retry+1u && first_cell==0x2588);
     /* Native approximation consumes the already normalized scanline range. */
     f.font_height=16; f.cursor_top=14; f.cursor_bottom=15;
     f.cursor_visible=f.cursor_phase=LIB_TRUE;
@@ -396,6 +421,7 @@ int main(void)
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     /* Failed B can partly overwrite A: retrying A must not hit the old cache. */
     for (lib_i32 failure=1;failure<=5;++failure) {
+        f.cells_unchanged=LIB_FALSE;
         partial_write=failure; f.text[0]='B';
         lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
         lib_test_assert(!b.previous_columns && !b.previous_rows);
@@ -405,10 +431,12 @@ int main(void)
         lib_test_assert(writes==attempted+1 && b.previous_columns==80);
     }
     for (lib_u32 attribute=0;attribute<256;++attribute) {
+        f.cells_unchanged=LIB_FALSE;
         f.foreground[0]=attribute & 15u; f.background[0]=attribute >> 4;
         lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
         lib_test_assert(first_attribute==attribute);
         lib_u32 completed=writes;
+        f.cells_unchanged=LIB_TRUE;
         lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
         lib_test_assert(writes==completed);
     }
@@ -431,6 +459,7 @@ int main(void)
     }
     /* A partial 50-to-25 clear invalidates the cached cells, but retrying
      * must still cover the former tail rather than leaving old characters. */
+    f.cells_unchanged=LIB_FALSE;
     f.rows=50; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*50u-1u]='T';
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     f.rows=25; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*25u-1u]='S';

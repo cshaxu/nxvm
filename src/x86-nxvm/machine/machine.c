@@ -6,6 +6,7 @@
 #include "x86-nxvm/machine/control.h"
 #include "x86-nxvm/machine/lifecycle.h"
 #include "x86-nxvm/machine/display.h"
+#include "x86-nxvm/machine/frame_interface.h"
 #include "x86-nxvm/machine/media/media_interface.h"
 #include "x86-nxvm/machine/machine_devices.h"
 #include "x86-nxvm/machine/media/fdd_interface.h"
@@ -68,20 +69,24 @@ lib_status x86_nxvm_machine_deliver_emulator_input(x86_nxvm_machine *session,
     return LIB_STATUS_UNSUPPORTED;
 }
 
-lib_status x86_nxvm_machine_copy_emulator_frame(x86_nxvm_machine *machine, emulator_machine_frame *frame)
+lib_status x86_nxvm_machine_copy_emulator_frame(x86_nxvm_machine *machine,
+    kvm_window_frame_storage *frame, kvm_console_text_frame *console, lib_bool *produced)
 {
     lib_status status;
 
-    if (machine == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL || frame == LIB_NULL || console == LIB_NULL || produced == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *produced = LIB_FALSE;
     status = x86_nxvm_machine_publish_display(machine, LIB_FALSE);
     if (status != LIB_STATUS_OK) return status;
     if (!machine->display_frame_pending) {
-        frame->window.valid = LIB_FALSE;
         return LIB_STATUS_OK;
     }
-    if (!emulator_machine_frame_copy(frame, &machine->latest_frame))
-        return LIB_STATUS_IO_ERROR;
+    status = x86_nxvm_machine_frame_from_display(&machine->latest_snapshot,
+        machine->display_generation, frame, console);
+    if (status != LIB_STATUS_OK) return status;
     machine->display_frame_pending = LIB_FALSE;
+    *produced = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 

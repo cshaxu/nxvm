@@ -6,10 +6,12 @@
 struct emulator_machine {
     emulator_machine_driver driver;
     emulator_machine_input_queue input_queue;
-    emulator_machine_frame *frame_buffers[2];
+    kvm_frame_exchange *frames;
+    kvm_frame_exchange *console_frames;
+    void (*console_status_source)(void *context, kvm_console_text_frame *frame);
+    void *console_status_context;
     base_sync_mutex *frame_lock;
     base_sync_mutex *request_lock;
-    lib_i32 published_frame_index;
     lib_u32 published_frame_sequence;
     lib_u32 published_frame_run_generation;
     base_sync_event *command_event;
@@ -72,84 +74,52 @@ static void emulator_machine_invalidate_published_frame(emulator_machine *machin
 {
     if (machine == LIB_NULL) return;
     base_sync_mutex_lock(machine->frame_lock);
-    machine->frame_buffers[0]->window.valid = LIB_FALSE;
-    machine->frame_buffers[1]->window.valid = LIB_FALSE;
-    machine->published_frame_index = 0;
+    kvm_frame_exchange_invalidate(machine->frames);
+    kvm_frame_exchange_invalidate(machine->console_frames);
     machine->published_frame_run_generation = 0u;
     base_sync_mutex_unlock(machine->frame_lock);
 }
 
-static lib_bool emulator_machine_text_frame_changed(const emulator_machine_frame *previous,
-    const emulator_machine_frame *candidate)
-{
-    const kvm_text_frame *old_text = &previous->window.text.base;
-    const kvm_text_frame *new_text = &candidate->window.text.base;
-    if (previous->window.valid == 0u || previous->window.graphics != 0u)
-        return LIB_TRUE;
-    return old_text->text_columns != new_text->text_columns ||
-        old_text->text_rows != new_text->text_rows ||
-        old_text->cursor_column != new_text->cursor_column ||
-        old_text->cursor_row != new_text->cursor_row ||
-        old_text->cursor_top != new_text->cursor_top ||
-        old_text->cursor_bottom != new_text->cursor_bottom ||
-        old_text->cursor_mode != new_text->cursor_mode ||
-        old_text->cursor_phase != new_text->cursor_phase ||
-        old_text->font_height != new_text->font_height ||
-        lib_memory_compare(old_text->cells, new_text->cells, sizeof(new_text->cells)) != 0 ||
-        lib_memory_compare(old_text->text_palette, new_text->text_palette,
-            sizeof(new_text->text_palette)) != 0 ||
-        lib_memory_compare(previous->window.text.font, candidate->window.text.font, sizeof(candidate->window.text.font)) != 0 ||
-        lib_memory_compare(previous->window.text.secondary_font, candidate->window.text.secondary_font,
-            sizeof(candidate->window.text.secondary_font)) != 0 ||
-        lib_memory_compare(&previous->characters, &candidate->characters,
-            sizeof(candidate->characters)) != 0;
-}
-
 static lib_status emulator_machine_publish(emulator_machine *machine)
 {
+    kvm_window_frame_storage *storage;
+    kvm_window_frame *frame;
+    kvm_console_text_frame *console;
     lib_status status;
-    emulator_machine_frame *frame;
-    lib_i32 staging_index;
-    emulator_machine_frame_sink sink = LIB_NULL;
-    void *sink_context = LIB_NULL;
-    lib_u32 sequence = 0u;
-    lib_u32 generation = 0u;
-    lib_bool graphics = LIB_FALSE;
-    emulator_machine_frame *published_frame = LIB_NULL;
-
-    if (machine == LIB_NULL || machine->driver.copy_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    lib_bool produced = LIB_FALSE;
+    lib_u32 generation;
+    if (machine == LIB_NULL || machine->driver.copy_frame == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    storage = kvm_frame_exchange_writer(machine->frames);
+    frame = &storage->frame;
+    console = kvm_frame_exchange_writer(machine->console_frames);
+    status = machine->driver.copy_frame(machine->driver.context, storage, console, &produced);
+    if (status != LIB_STATUS_OK || !produced) return status;
+    status = kvm_window_frame_validate(frame);
+    if (status != LIB_STATUS_OK) return status;
+    if (frame->graphics && machine->console_status_source != LIB_NULL)
+        machine->console_status_source(machine->console_status_context, console);
+    if (!frame->graphics || machine->console_status_source != LIB_NULL) {
+        status = kvm_console_text_frame_validate(console);
+        if (status != LIB_STATUS_OK) return status;
+    }
     base_sync_mutex_lock(machine->frame_lock);
-    staging_index = machine->published_frame_index == 0 ? 1 : 0;
-    frame = machine->frame_buffers[staging_index];
-    frame->window.valid = LIB_FALSE;
-    status = machine->driver.copy_frame(machine->driver.context, frame);
-    if (status != LIB_STATUS_OK) {
-        base_sync_mutex_unlock(machine->frame_lock);
-        return status;
-    }
-    if (frame->window.valid == 0u || (frame->window.graphics == 0u &&
-        !emulator_machine_text_frame_changed(
-            machine->frame_buffers[machine->published_frame_index], frame))) {
-        base_sync_mutex_unlock(machine->frame_lock);
-        return LIB_STATUS_OK;
-    }
-    /* Zero is reserved for consumers without a published frame. */
-    if (++machine->published_frame_sequence == 0u)
-        ++machine->published_frame_sequence;
-    frame->sequence = machine->published_frame_sequence;
+    frame->sequence = machine->published_frame_sequence + 1u;
+    if (frame->sequence == 0u) frame->sequence = 1u;
+    kvm_frame_exchange_publish(machine->frames);
+    if (!frame->graphics || machine->console_status_source != LIB_NULL)
+        kvm_frame_exchange_publish(machine->console_frames);
+    else
+        kvm_frame_exchange_invalidate(machine->console_frames);
+    machine->published_frame_sequence = frame->sequence;
     generation = emulator_machine_run_generation(machine);
     machine->published_frame_run_generation = generation;
-    machine->published_frame_index = staging_index;
-    sink = machine->frame_sink;
-    sink_context = machine->frame_context;
-    sequence = frame->sequence;
-    graphics = frame->window.graphics != 0u;
-    published_frame = frame;
     base_sync_mutex_unlock(machine->frame_lock);
     if (machine->driver.frame_published != LIB_NULL)
-        machine->driver.frame_published(machine->driver.context, published_frame);
-    if (sink != LIB_NULL)
-        sink(sink_context, sequence, graphics, generation);
+        machine->driver.frame_published(machine->driver.context, frame);
+    if (machine->frame_sink != LIB_NULL)
+        machine->frame_sink(machine->frame_context, frame->sequence,
+            frame->graphics != LIB_NULL, generation);
     return LIB_STATUS_OK;
 }
 
@@ -643,12 +613,12 @@ lib_status emulator_machine_create(emulator_machine **out_machine,
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->debug_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->state_event);
     if (status == LIB_STATUS_OK) status = emulator_machine_input_queue_initialize(&machine->input_queue);
-    if (status == LIB_STATUS_OK) {
-        machine->frame_buffers[0] = lib_allocate_zero(1u, sizeof(*machine->frame_buffers[0]));
-        machine->frame_buffers[1] = lib_allocate_zero(1u, sizeof(*machine->frame_buffers[1]));
-        if (machine->frame_buffers[0] == LIB_NULL || machine->frame_buffers[1] == LIB_NULL)
-            status = LIB_STATUS_NO_MEMORY;
-    }
+    if (status == LIB_STATUS_OK)
+        status = kvm_frame_exchange_create(&machine->frames,
+            sizeof(kvm_window_frame_storage));
+    if (status == LIB_STATUS_OK)
+        status = kvm_frame_exchange_create(&machine->console_frames,
+            sizeof(kvm_console_text_frame));
     if (status == LIB_STATUS_OK)
         status = base_sync_task_create(emulator_machine_worker, machine, &machine->worker);
     if (status != LIB_STATUS_OK) {
@@ -815,18 +785,51 @@ lib_bool emulator_machine_enqueue_input(emulator_machine *machine,
 }
 
 lib_bool emulator_machine_copy_published_frame(emulator_machine *machine,
-    emulator_machine_frame *destination, lib_u32 run_generation)
+    kvm_window_frame_storage *destination, lib_u32 run_generation)
 {
     lib_bool copied;
     if (machine == LIB_NULL || destination == LIB_NULL) return LIB_FALSE;
     base_sync_mutex_lock(machine->frame_lock);
-    copied = machine->published_frame_run_generation == run_generation &&
-        machine->frame_buffers[machine->published_frame_index]->window.valid != 0u;
-    if (copied)
-        copied = emulator_machine_frame_copy(destination,
-            machine->frame_buffers[machine->published_frame_index]);
+    const kvm_window_frame *frame = kvm_frame_exchange_lock_latest(machine->frames);
+    copied = frame != LIB_NULL && machine->published_frame_run_generation == run_generation;
+    if (copied) copied = kvm_window_frame_copy(destination, frame);
+    kvm_frame_exchange_unlock(machine->frames);
     base_sync_mutex_unlock(machine->frame_lock);
     return copied;
+}
+
+kvm_frame_exchange *emulator_machine_frame_exchange(emulator_machine *machine)
+{ return machine == LIB_NULL ? LIB_NULL : machine->frames; }
+
+kvm_frame_exchange *emulator_machine_console_exchange(emulator_machine *machine)
+{ return machine == LIB_NULL ? LIB_NULL : machine->console_frames; }
+
+void emulator_machine_set_console_status_source(emulator_machine *machine,
+    void (*produce)(void *context, kvm_console_text_frame *frame), void *context)
+{
+    if (machine == LIB_NULL) return;
+    machine->console_status_source = produce;
+    machine->console_status_context = context;
+}
+
+lib_bool emulator_machine_read_presentation(emulator_machine *machine,
+    lib_u32 run_generation, lib_u32 *sequence, lib_bool *graphics)
+{
+    lib_bool available;
+    const kvm_window_frame *frame;
+    if (machine == LIB_NULL || sequence == LIB_NULL || graphics == LIB_NULL)
+        return LIB_FALSE;
+    base_sync_mutex_lock(machine->frame_lock);
+    frame = kvm_frame_exchange_lock_latest(machine->frames);
+    available = frame != LIB_NULL &&
+        machine->published_frame_run_generation == run_generation;
+    if (available) {
+        *sequence = frame->sequence;
+        *graphics = frame->graphics != LIB_NULL;
+    }
+    kvm_frame_exchange_unlock(machine->frames);
+    base_sync_mutex_unlock(machine->frame_lock);
+    return available;
 }
 
 lib_u32 emulator_machine_published_frame_sequence(const emulator_machine *machine)
@@ -936,8 +939,8 @@ lib_status emulator_machine_destroy(emulator_machine *machine)
     emulator_machine_input_queue_dispose(&machine->input_queue);
     base_sync_mutex_destroy(machine->frame_lock);
     base_sync_mutex_destroy(machine->request_lock);
-    lib_release(machine->frame_buffers[0]);
-    lib_release(machine->frame_buffers[1]);
+    kvm_frame_exchange_destroy(machine->frames);
+    kvm_frame_exchange_destroy(machine->console_frames);
     base_sync_event_destroy(machine->command_event);
     lib_release(machine);
     return LIB_STATUS_OK;

@@ -67,6 +67,11 @@ typedef struct lib_console_event {
 typedef struct lib_console_text_frame {
     lib_u16 columns;
     lib_u16 rows;
+    /* Cells equal the preceding successful frame on this logical Console.
+     * The caller serializes that comparison and its frame writes. This only
+     * permits reuse: binding/geometry changes still require complete output.
+     * False is always safe. Palette and cursor are applied independently. */
+    lib_bool cells_unchanged;
     lib_u16 text[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* BMP characters */
     lib_u8 foreground[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* palette index 0..15 */
     lib_u8 background[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* palette index 0..15 */

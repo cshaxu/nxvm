@@ -106,13 +106,15 @@ static void x86_nxvm_machine_driver_deliver_input(void *context,
     const kvm_input_event *event)
 { (void)x86_nxvm_machine_deliver_emulator_input((x86_nxvm_machine *)context, event); }
 
-static lib_status x86_nxvm_machine_driver_copy_frame(void *context, emulator_machine_frame *frame)
+static lib_status x86_nxvm_machine_driver_copy_frame(void *context,
+    kvm_window_frame_storage *frame, kvm_console_text_frame *console, lib_bool *produced)
 {
     if (context == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    /* Common clears staging validity before this call.  A Core display that
+    /* The publisher clears readiness before this call. A Core display that
      * has not yet published is an ordinary no-frame result, not a machine
      * failure. */
-    return x86_nxvm_machine_copy_emulator_frame((x86_nxvm_machine *)context, frame);
+    return x86_nxvm_machine_copy_emulator_frame((x86_nxvm_machine *)context,
+        frame, console, produced);
 }
 
 static lib_bool x86_nxvm_machine_driver_set_removable_media(void *context,

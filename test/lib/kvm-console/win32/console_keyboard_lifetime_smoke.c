@@ -71,8 +71,7 @@ static void adapter_lifetime(lib_u32 scan)
     capture c = {0};
     kvm_component_options options = { .input_sink = capture_event, .failure_sink = no_failure };
     options.input_context = &c;
-    lib_test_assert(kvm_component_initialize(&console.base, &options, no_join, no_dispose,
-        &console.pending_frame, sizeof(console.pending_frame)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_initialize(&console.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&console.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     console.worker_state = &state;

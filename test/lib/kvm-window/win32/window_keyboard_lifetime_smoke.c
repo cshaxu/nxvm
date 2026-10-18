@@ -79,8 +79,7 @@ static void adapter_lifetime(lib_u32 scan)
     capture w = {0};
     kvm_component_options options = { .input_sink = capture_event, .failure_sink = no_failure };
     options.input_context = &w;
-    lib_test_assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose,
-        &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     context.component = &window; window_context = &context;
@@ -196,8 +195,7 @@ static void repeat_delivery_failure(void)
     capture c = { .reject_at = 3 };
     kvm_component_options options = { .input_context = &c,
         .input_sink = capture_event, .failure_sink = no_failure };
-    lib_test_assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose,
-        &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     context.component = &window; window_context = &context;

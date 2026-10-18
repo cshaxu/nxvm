@@ -37,7 +37,6 @@ typedef struct emulator_session_event {
         kvm_input_event kvm;
         lib_console_line line;
         emulator_session_machine_state runtime_state;
-        struct { lib_u32 sequence; lib_bool graphics; } frame;
         struct { emulator_session_component_kind component; lib_bool exists; } component;
         lib_bool broker_vm_console_current;
         struct { lib_u64 source_identity; lib_status status; } delivery_failure;
@@ -71,7 +70,7 @@ lib_bool emulator_session_queue_push_console_failed(emulator_session_queue *queu
 lib_bool emulator_session_queue_push_runtime_completed(emulator_session_queue *queue,
     emulator_session_machine_state state, lib_u32 run_generation);
 lib_bool emulator_session_queue_push_frame_completed(emulator_session_queue *queue,
-    lib_u32 sequence, lib_bool graphics, lib_u32 run_generation);
+    lib_u32 run_generation);
 lib_bool emulator_session_queue_push_component_completed(emulator_session_queue *queue,
     emulator_session_component_kind component, lib_bool exists, lib_u32 run_generation);
 lib_bool emulator_session_queue_push_broker_completed(emulator_session_queue *queue,

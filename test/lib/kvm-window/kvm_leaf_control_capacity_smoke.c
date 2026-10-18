@@ -50,8 +50,7 @@ int main(void)
     options.input_sink = leaf_input;
     options.failure_sink = leaf_failure;
     options.failure_context = &window_probe;
-    lib_test_assert(kvm_component_initialize(&window.base, &options, leaf_stop, leaf_dispose,
-        &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_initialize(&window.base, &options, leaf_stop, leaf_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     {

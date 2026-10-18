@@ -36,24 +36,23 @@ static lib_status notify(void *context)
 
 int main(void)
 {
-    lib_u32 storage;
     static kvm_component_mailboxes mailbox;
     for (reject_mutex = 1; reject_mutex <= 2; ++reject_mutex) {
         mutex_creates = 0;
-        lib_test_assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_NO_MEMORY);
+        lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_NO_MEMORY);
         lib_test_assert(mailbox.frame_lock == LIB_NULL && mailbox.control_lock == LIB_NULL);
         lib_test_assert(mailbox.wake == LIB_NULL && creates == 0);
         kvm_component_mailboxes_destroy(&mailbox);
     }
     reject_mutex = 0;
-    lib_test_assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
     lib_test_assert(creates == 0u && mailbox.notify == LIB_NULL && mailbox.wake == LIB_NULL);
     lib_test_assert(kvm_component_mailboxes_notify(&mailbox) == LIB_STATUS_INVALID_STATE);
     kvm_component_mailboxes_destroy(&mailbox);
     lib_test_assert(destroys == 0u);
 
     /* Window succeeds even when default-wake allocation would fail. */
-    lib_test_assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&mailbox, notify, &token) == LIB_STATUS_OK);
     lib_test_assert(creates == 0u && mailbox.wake == LIB_NULL);
     lib_test_assert(kvm_component_mailboxes_select_notify(&mailbox, LIB_NULL, LIB_NULL) == LIB_STATUS_INVALID_STATE);
@@ -64,13 +63,13 @@ int main(void)
     lib_test_assert(destroys == 0u);
 
     /* Failed Console selection owns nothing and can be safely disposed. */
-    lib_test_assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&mailbox, LIB_NULL, LIB_NULL) == LIB_STATUS_NO_MEMORY);
     lib_test_assert(creates == 1u && mailbox.notify == LIB_NULL && mailbox.wake == LIB_NULL);
     kvm_component_mailboxes_destroy(&mailbox);
     lib_test_assert(destroys == 0u);
     allocation = LIB_STATUS_OK;
-    lib_test_assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&mailbox, LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_test_assert(creates == 2u && mailbox.wake != LIB_NULL);
     lib_test_assert(kvm_component_mailboxes_select_notify(&mailbox, LIB_NULL, LIB_NULL) == LIB_STATUS_INVALID_STATE);
@@ -78,20 +77,25 @@ int main(void)
     lib_test_assert(kvm_component_mailboxes_notify(&mailbox) == LIB_STATUS_OK);
     lib_test_assert(signals == 1u && notifications == 1u && creates == 2u);
     kvm_component_control control = { .kind = 1u }, taken;
-    lib_u32 generation = 0u, captured = 0u, value = 0x12345678u;
-    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, &value, sizeof(value)) == LIB_STATUS_OK);
+    kvm_frame_exchange *frames;
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(lib_u32)) == LIB_STATUS_OK);
+    lib_u32 *value = kvm_frame_exchange_writer(frames);
+    *value = 0x12345678u;
+    kvm_frame_exchange_publish(frames);
+    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, frames) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_enqueue_control(&mailbox, &control) == LIB_STATUS_OK);
     kvm_component_mailboxes_close(&mailbox);
     kvm_component_mailboxes_close(&mailbox);
-    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, &value, sizeof(value)) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, frames) == LIB_STATUS_INVALID_STATE);
     lib_test_assert(kvm_component_mailboxes_enqueue_control(&mailbox, &control) == LIB_STATUS_INVALID_STATE);
     lib_test_assert(kvm_component_mailboxes_take_control(&mailbox, &taken) && taken.kind == 1u);
     lib_test_assert(!kvm_component_mailboxes_take_control(&mailbox, &taken));
-    lib_test_assert(kvm_component_mailboxes_capture_frame(&mailbox, &generation, &captured, sizeof(captured)));
-    lib_test_assert(captured == value); /* Closing admission does not erase accepted state. */
-    kvm_component_mailboxes_acknowledge_frame(&mailbox, generation);
-    lib_test_assert(!kvm_component_mailboxes_capture_frame(&mailbox, &generation, &captured, sizeof(captured)));
+    lib_test_assert(kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL) == value);
+    lib_test_assert(*value == 0x12345678u); /* Closure retains accepted state. */
+    kvm_component_mailboxes_finish_frame(&mailbox, LIB_TRUE);
+    lib_test_assert(kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL) == LIB_NULL);
     kvm_component_mailboxes_destroy(&mailbox);
+    kvm_frame_exchange_destroy(frames);
     lib_test_assert(destroys == 1u);
     return 0;
 }

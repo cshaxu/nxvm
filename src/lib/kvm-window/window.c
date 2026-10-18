@@ -39,8 +39,7 @@ lib_status kvm_window_create(kvm_window **out_window,
         lib_text_length(options->initial_title) + 1u);
     window->initial_frozen = options->initial_frozen != LIB_FALSE;
     status = kvm_component_initialize(&window->base, &options->component,
-        kvm_window_component_stop, kvm_window_component_dispose,
-        &window->pending_frame, sizeof(window->pending_frame));
+        kvm_window_component_stop, kvm_window_component_dispose);
     if (status == LIB_STATUS_OK) status = kvm_window_worker_start(window);
     if (status != LIB_STATUS_OK) {
         /* The worker start path has either joined its failed worker or has
@@ -54,14 +53,10 @@ lib_status kvm_window_create(kvm_window **out_window,
     return LIB_STATUS_OK;
 }
 
-lib_status kvm_window_publish_frame(kvm_window *window, const kvm_window_frame *frame)
+lib_status kvm_window_publish_frame(kvm_window *window, kvm_frame_exchange *frames)
 {
-    lib_status status;
-    if (window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = kvm_window_frame_validate(frame);
-    if (status != LIB_STATUS_OK) return status;
-    return kvm_component_publish_frame(&window->base, frame,
-        kvm_window_frame_size_bytes(frame));
+    if (window == LIB_NULL || frames == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return kvm_component_publish_frame(&window->base, frames);
 }
 
 lib_status kvm_window_destroy(kvm_window *window)

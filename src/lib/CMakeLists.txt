@@ -40,6 +40,7 @@ library_root(console)
 target_link_libraries(console PUBLIC types base)
 
 set(LIBRARY_KVM_BASE_SOURCES
+    kvm-base/frame_exchange.c
     kvm-base/component.c
     kvm-base/hotkey.c
     kvm-base/input.c

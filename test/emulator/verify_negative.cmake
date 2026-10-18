@@ -44,6 +44,8 @@ reject("#include \"emulator/debug/debug_interface.h\"\n" "" "Unknown Emulator de
 reject("#include \"emulator/xasm32/xasm32_interface.h\"\n" "" "Unknown Emulator dependency")
 reject("#include \"lib/base/sync.h\"\n" "" "Private dependency")
 reject("#include \"lib/kvm-base/component_interface.h\"\n" "" "Private KVM support")
+reject("#include \"lib/kvm-base/mailbox_interface.h\"\n" "" "Private KVM support")
+reject("#include \"lib/kvm-base/worker_interface.h\"\n" "" "Private KVM support")
 reject("#include \"lib/kvm-window/window_interface.h\"\n" "" "only KVM frame values")
 reject("#include \"lib/kvm-console/console_interface.h\"\n" "" "only KVM frame values")
 reject("#include \"../session/control.h\"\n" "" "Noncanonical")

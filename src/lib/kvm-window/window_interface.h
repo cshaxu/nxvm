@@ -2,6 +2,7 @@
 #define KVM_WINDOW_INTERFACE_H
 
 #include "lib/kvm-base/component_interface.h"
+#include "lib/kvm-base/frame_exchange_interface.h"
 #include "lib/kvm-window/frame_interface.h"
 
 #define KVM_WINDOW_TITLE_CAPACITY 128u
@@ -28,7 +29,12 @@ typedef struct kvm_window_options {
  * a terminal application infrastructure fault, not a caller-owned half object. */
 lib_status kvm_window_create(kvm_window **out_window,
     const kvm_window_options *options);
-lib_status kvm_window_publish_frame(kvm_window *window, const kvm_window_frame *frame);
+/* Notify after committing a validated Window frame. Use a four-slot exchange
+ * of kvm_window_frame_storage slots. Its payload pointers remain slot-owned and
+ * immutable until retirement. The exchange is fixed for this Window lifetime
+ * and outlives successful destroy.
+ * Notification never copies a frame or creates another pending owner. */
+lib_status kvm_window_publish_frame(kvm_window *window, kvm_frame_exchange *frames);
 /* Same checked destruction contract as kvm_component_destroy. */
 lib_status kvm_window_destroy(kvm_window *window);
 /* Same UTF-8/capacity contract as initial_title; accepted native failures

@@ -12,16 +12,25 @@ Emulator has no platform directories, platform types, native calls or OS-selecte
 implementations. Base owns blocking mutex/event/task/wait; Types owns the atomic
 vocabulary. Emulator retains queue, lifecycle and frame-publication ownership.
 
-Machine frame snapshots combine a publication sequence, a typed Window frame
-and text-only Console character maps. Copying transfers the active Window
-extent and, for text only, both character maps. They specify the expected run
-and leave the destination unchanged on rejection. UI publishes the Window
-value and builds the small Console text value; it owns neither character
-encoding nor a duplicate graphics buffer. Machine compares both maps and
-font banks when detecting text changes.
-Session treats frame events as publication hints and
-derives content, sequence and graphics/text routing from that one snapshot,
-which may be newer than the notification. UI owns the shared action vocabulary;
+Machine owns a four-slot exchange for each of Window and Console.
+Window publication uses the Lib reference/schema directly; there is no Machine
+frame wrapper. The driver reports no-ready-frame separately through produced,
+never by publishing an invalid payload. The executor passes writable Window
+storage and Console text directly to the driver; each
+consumer borrows its exchange through UI. Character maps belong only to the
+Console frame. Session retains
+metadata, never another frame. Machine can keep replacing pending output while
+Window processes and retains older slots. UI/Window must be destroyed before
+Machine and its exchanges.
+Session treats events as hints: one bounded observation checks run, sequence
+and graphics/text routing without copying payloads. It may observe a newer
+publication than the notification. UI owns immutable status text and its pure
+frame builder; composition injects that builder into the executor's existing
+Console production flow for graphics mode. UI owns no frame exchange.
+Machine publishes every produced frame without content comparison. Readiness
+and optional dirty tracking belong to the driver; consumers optimize drawing.
+Explicit diagnostic snapshot copies remain available, with the expected run and
+unchanged destination on rejection; they are not the presentation transport. UI owns the shared action vocabulary;
 session does not maintain a second action enum or mapping.
 UI APIs have one control-thread caller. Immutable creation options are shared
 with input callbacks; their run-generation tag uses a Types atomic. Frame

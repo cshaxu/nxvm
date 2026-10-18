@@ -3,16 +3,25 @@
 `kvm-console` depends on `types`, `base`, `console`, and `kvm-base` only. It owns one raw Console lifecycle,
 creates its logical Console object, and publishes copied text frames through
 that object. It never opens, registers, or renders native Console I/O.
-Publication takes a `kvm_console_text_frame`: common text fields plus two copied
-256-entry BMP character maps. It has no graphics or bitmap-font storage.
+A producer writes a `kvm_console_text_frame` into a four-slot exchange:
+common text fields plus two 256-entry BMP character maps. It commits validated
+text, then notifies Console with the same borrowed exchange. The worker owns
+the taken pointer through output, retaining the previous displayed pointer
+until successful finish. The last successful input remains held while idle.
+It has no graphics or bitmap-font storage.
 The caller supplies character meaning; this component has no built-in encoding.
 Each cell's explicit glyph bank selects its character map independently of colour.
 Foreground/background indices pass unchanged to the logical Console boundary.
+The worker compares mapped visible characters and colours with the held previous
+input. It permits native cell reuse when identical, without skipping palette,
+cursor or geometry handling. Native binding, stream writes and surface changes
+invalidate reuse; the broker keeps no duplicate character/colour arrays.
 DISABLED hides the native cursor. HOST and SOURCE both enable the native cursor:
 Console owns its blinking, and source phase is deliberately ignored. This is a
 presentation limitation, not a claim of precise source-phase reproduction.
 Malformed text returns INVALID_ARGUMENT before changing pending output or
-notifying the worker. Valid text after STOP returns INVALID_STATE.
+notifying the worker. Notification after STOP returns INVALID_STATE; the producer's exchange remains
+independent and must outlive Console destruction.
 The public component contract is cross-platform. This corpus currently has a
 supported Win32 implementation only; the Linux leaf is an intentional
 `LIB_STATUS_UNSUPPORTED` placeholder, not a claimed Linux presenter.
@@ -34,11 +43,14 @@ these are not measured host-font pixels or guest-device coordinates. The
 product adapter owns conversion to its guest input protocol.
 
 Successful broker binding delivers a neutral Console activation event. The callback
-only signals the existing worker's wake; it neither renders nor reenters the broker.
+requeues held input only when no newer frame is pending, then signals the existing
+worker's wake; it neither renders nor reenters the broker.
 A failed activation notification enters the same terminal failure path as a
 failed frame/control notification. Checked destroy uses the shared bounded-join
 contract; failure retains the component and its callback dependencies.
-The worker draws a pending mailbox frame, or does nothing if empty. NOT_CURRENT
-does not acknowledge a frame: the next publication or activation wakes it again.
-STOP retains priority over frame consumption. No separate activation renderer,
-polling retry or application republish requirement exists.
+The worker draws a pending exchange frame, or does nothing if empty. An unbound
+logical Console accepts output without native drawing; successful consumption
+retains that frame. Activation redraws through the same output path even when
+the producer has not published another frame. Invalidation prevents stale redraw.
+STOP retains priority over frame consumption. There is no separate activation
+renderer or polling retry.

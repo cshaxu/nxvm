@@ -83,7 +83,8 @@ int main(void)
     emulator_machine_driver driver = { 0 };
     emulator_machine *machine = LIB_NULL;
     kvm_input_event input = { 0 };
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
+    lib_memory_set(&frame, 0, sizeof(frame));
     lib_u32 generation = 0u;
     emulator_machine_debug_lease lease = { 0 };
     lib_u32 token = 0x1234u, debug_result = 0u;
@@ -95,11 +96,11 @@ int main(void)
     lib_test_assert(emulator_machine_create(&machine, &driver) == LIB_STATUS_OK);
     lib_test_assert(emulator_machine_published_frame_run_generation(LIB_NULL) == 0u);
     lib_test_assert(emulator_machine_published_frame_run_generation(machine) == 0u);
-    frame.window.valid = LIB_TRUE;
-    frame.sequence = 77u;
+    (void)kvm_window_frame_begin_text(&frame);
+    frame.frame.sequence = 77u;
     lib_test_assert(!emulator_machine_copy_published_frame(machine, &frame,
         emulator_machine_run_generation(machine)));
-    lib_test_assert(frame.window.valid == 1u && frame.sequence == 77u);
+    lib_test_assert(frame.frame.text != LIB_NULL && frame.frame.sequence == 77u);
     emulator_machine_set_state_sink(machine, machine_fake_note_state, &fake);
     emulator_machine_set_frame_sink(machine, machine_fake_note_frame, &fake);
     lib_test_assert(emulator_machine_start(machine));
@@ -108,17 +109,17 @@ int main(void)
     lib_test_assert(lib_win32_interlocked_compare_exchange(&fake.resets, 0, 0) == 1);
     generation = emulator_machine_run_generation(machine);
     lib_test_assert(emulator_machine_published_frame_run_generation(machine) == generation);
-    lib_memory_set(&frame.window, 0xa5, sizeof(frame.window));
+    lib_memory_set(&frame, 0xa5, sizeof(frame));
     lib_test_assert(emulator_machine_copy_published_frame(machine, &frame, generation));
-    lib_test_assert(frame.window.valid == 1u && generation == emulator_machine_run_generation(machine));
-    lib_test_assert(!frame.window.graphics);
-    for (lib_size i = kvm_window_frame_size_bytes(&frame.window);
-            i < sizeof(frame.window); ++i)
-        lib_test_assert(((const lib_u8 *)&frame.window)[i] == 0xa5);
+    lib_test_assert(frame.frame.text != LIB_NULL && generation == emulator_machine_run_generation(machine));
+    lib_test_assert(!frame.frame.graphics);
+    for (lib_size i = lib_offsetof(kvm_window_frame_storage, data) + sizeof(frame.data.text);
+            i < sizeof(frame); ++i)
+        lib_test_assert(((const lib_u8 *)&frame.frame)[i] == 0xa5);
     {
-        lib_u32 sequence = frame.sequence;
+        lib_u32 sequence = frame.frame.sequence;
         lib_test_assert(!emulator_machine_copy_published_frame(machine, &frame, generation + 1u));
-        lib_test_assert(frame.window.valid == 1u && frame.sequence == sequence);
+        lib_test_assert(frame.frame.text != LIB_NULL && frame.frame.sequence == sequence);
     }
     input.type = KVM_EVENT_KEY;
     input.data.key.pressed = LIB_TRUE;
@@ -176,11 +177,11 @@ int main(void)
     lib_test_assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED);
     /* Identical text is still the first publication of the reset run. */
     {
-        lib_u32 sequence = frame.sequence;
+        lib_u32 sequence = frame.frame.sequence;
         lib_test_assert(emulator_machine_copy_published_frame(machine, &frame,
             emulator_machine_run_generation(machine)));
-        lib_test_assert(frame.window.valid && !frame.window.graphics &&
-            frame.sequence > sequence && frame.window.text.base.text_rows == KVM_TEXT_ROWS);
+        lib_test_assert(frame.frame.text != LIB_NULL && !frame.frame.graphics &&
+            frame.frame.sequence > sequence && frame.data.text.base.text_rows == KVM_TEXT_ROWS);
     }
     lib_test_assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     lib_test_assert(emulator_machine_debug_execute_with_lease(machine, &lease,
@@ -208,9 +209,9 @@ int main(void)
         &(emulator_machine_state_reader) { state_read, &transfer }) ==
         LIB_STATUS_INVALID_STATE);
     {
-        lib_u32 sequence = frame.sequence;
+        lib_u32 sequence = frame.frame.sequence;
         lib_test_assert(!emulator_machine_copy_published_frame(machine, &frame, generation));
-        lib_test_assert(frame.window.valid == 1u && frame.sequence == sequence);
+        lib_test_assert(frame.frame.text != LIB_NULL && frame.frame.sequence == sequence);
     }
     emulator_machine_shutdown(machine);
     emulator_machine_shutdown(machine);

@@ -46,23 +46,8 @@ int main(void)
 
     emulator_session_state_initialize(&state, EMULATOR_SESSION_DISPLAY_CONSOLE, 1);
     emulator_session_state_note_runtime(&state, EMULATOR_SESSION_MACHINE_RUNNING);
-    emulator_session_state_note_frame(&state, 4u, 0);
-    lib_test_assert(emulator_session_state_take_action(&state) ==
-        EMULATOR_UI_ACTION_CREATE_VM_CONSOLE);
-    emulator_session_state_note_vm_console(&state, 1);
-    lib_test_assert(emulator_session_state_take_action(&state) ==
-        EMULATOR_UI_ACTION_BIND_VM_CONSOLE);
-    emulator_session_state_note_current_console(&state, EMULATOR_SESSION_CONSOLE_VM);
-    lib_test_assert(emulator_session_state_next_action(&state) == EMULATOR_UI_ACTION_NONE);
-
-    /* Console ownership work precedes Window creation/final activation. */
+    /* Text-to-graphics ordering is covered by control_state_matrix. */
     emulator_session_state_note_frame(&state, 5u, 1);
-    lib_test_assert(emulator_session_state_take_action(&state) ==
-        EMULATOR_UI_ACTION_BIND_MONITOR);
-    emulator_session_state_note_current_console(&state, EMULATOR_SESSION_CONSOLE_MONITOR);
-    lib_test_assert(emulator_session_state_take_action(&state) ==
-        EMULATOR_UI_ACTION_DESTROY_VM_CONSOLE);
-    emulator_session_state_note_vm_console(&state, 0);
     lib_test_assert(emulator_session_state_take_action(&state) ==
         EMULATOR_UI_ACTION_CREATE_WINDOW);
     emulator_session_state_note_window(&state, 1);

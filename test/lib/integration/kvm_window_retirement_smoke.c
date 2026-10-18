@@ -1,3 +1,5 @@
+#include "../fixtures/window_frame.h"
+static kvm_frame_exchange *frames;
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
 #include "lib/kvm-window/window.h"
@@ -124,10 +126,8 @@ static lib_win32_dword LIB_WIN32_WINAPI controlled_wait(lib_win32_dword count, c
 #define kvm_component_mailboxes_select_notify select_notify
 static void checked_fail(kvm_component *component, lib_status status)
 {
-    static kvm_window_frame rejected = { .valid = LIB_TRUE, .text.base = { .text_columns = 80, .text_rows = 25 } };
     kvm_component_fail(component, status);
-    lib_test_assert(kvm_component_mailboxes_publish_frame(&component->mailboxes, &rejected,
-        kvm_window_frame_size_bytes(&rejected)) ==
+    lib_test_assert(kvm_component_mailboxes_publish_frame(&component->mailboxes, frames) ==
         LIB_STATUS_INVALID_STATE);
     kvm_component_control title = { .kind = KVM_WINDOW_CONTROL_SET_TITLE };
     lib_test_assert(kvm_component_mailboxes_enqueue_control(&component->mailboxes, &title) ==
@@ -183,7 +183,8 @@ static void paint_scenario(void)
 }
 int main(void)
 {
-    static kvm_window_frame frame;
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_window_frame_storage)) == LIB_STATUS_OK);
+    static kvm_window_frame_storage frame;
     for (scenario = 0; scenario != 24; ++scenario) {
         kvm_window_options options = { 0 };
         kvm_window *window = LIB_NULL;
@@ -211,9 +212,9 @@ int main(void)
         }
         lib_test_assert(kvm_window_create(&window, &options) == LIB_STATUS_OK);
         lib_test_assert(lib_win32_wait_for_single_object(waiting, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
-        frame.valid = LIB_TRUE; frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
-        frame.text.base.cursor_mode=KVM_CURSOR_HOST; frame.text.base.font_height=16; frame.text.base.cursor_top=14; frame.text.base.cursor_bottom=15;
-        lib_test_assert(kvm_window_publish_frame(window, &frame) == LIB_STATUS_OK);
+        (void)kvm_window_frame_begin_text(&frame); frame.data.text.base.text_columns = 80u; frame.data.text.base.text_rows = 25u;
+        frame.data.text.base.cursor_mode=KVM_CURSOR_HOST; frame.data.text.base.font_height=16; frame.data.text.base.cursor_top=14; frame.data.text.base.cursor_bottom=15;
+        lib_test_assert(test_window_frame(window, frames, &frame.frame) == LIB_STATUS_OK);
         if(scenario==18) {
             void *retained=window->worker_state;
             reject_join=1;
@@ -238,10 +239,11 @@ int main(void)
         lib_test_assert(!lib_win32_is_window(created));
         if (scenario==10 || scenario==11) lib_test_assert(paint_ends>0);
         lib_test_assert(ordinary == (scenario == 7) && closes == (scenario == 8));
-        lib_test_assert(kvm_window_publish_frame(window, &frame) == LIB_STATUS_INVALID_STATE);
+        lib_test_assert(test_window_frame(window, frames, &frame.frame) == LIB_STATUS_INVALID_STATE);
         lib_test_assert(kvm_window_destroy(window)==LIB_STATUS_OK);
         lib_test_assert(retired == 1);
         lib_win32_close_handle(waiting); lib_win32_close_handle(proceed);
     }
+    kvm_frame_exchange_destroy(frames);
     return 0;
 }

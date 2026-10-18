@@ -30,7 +30,7 @@ static lib_bool kvm_window_apply_title(lib_win32_hwnd window, const char *title)
 
 typedef struct kvm_win32_window_context {
     kvm_window *component;
-    kvm_window_frame frame;
+    const kvm_window_frame *frame;
     lib_win32_hdc surface_dc;
     lib_win32_hbitmap surface_bitmap;
     lib_win32_hgdiobj surface_previous_bitmap;
@@ -38,7 +38,6 @@ typedef struct kvm_win32_window_context {
     lib_u32 surface_width;
     lib_u32 surface_height;
     lib_bool surface_valid;
-    lib_u32 displayed_sequence;
     base_keyboard_decoder keyboard_normalizer;
     lib_bool left_button;
     lib_bool right_button;
@@ -293,16 +292,17 @@ static lib_bool win32_window_cursor_rect(lib_win32_hwnd window,
     kvm_window_rect result;
     if (!window || !context || !cursor || !win32_window_display_rect(context,
             context->surface_width, context->surface_height, &display)) return LIB_FALSE;
-    if (!kvm_window_cursor_rect(&context->frame, &display, &result)) return LIB_FALSE;
+    if (!kvm_window_cursor_rect(context->frame, &display, &result)) return LIB_FALSE;
     kvm_win32_rect_store(cursor, &result);
     return LIB_TRUE;
 }
 
 static lib_bool win32_window_cursor_visible(const kvm_win32_window_context *context)
 {
-    const kvm_text_frame *text = &context->frame.text.base;
-    return !context->frame.graphics &&
-        (text->cursor_mode == KVM_CURSOR_SOURCE ? text->cursor_phase :
+    if (context->frame == LIB_NULL) return LIB_FALSE;
+    if (context->frame->text == LIB_NULL) return LIB_FALSE;
+    const kvm_text_frame *text = &context->frame->text->base;
+    return (text->cursor_mode == KVM_CURSOR_SOURCE ? text->cursor_phase :
             text->cursor_mode == KVM_CURSOR_HOST && context->cursor_blink_visible);
 }
 
@@ -312,7 +312,7 @@ static lib_bool win32_window_paint(lib_win32_hwnd window, kvm_win32_window_conte
     kvm_window_rect display;
 
     if (context == LIB_NULL || context->surface_dc == LIB_NULL ||
-        kvm_window_frame_validate(&context->frame) != LIB_STATUS_OK ||
+        context->frame == LIB_NULL || (context->frame->text == LIB_NULL && context->frame->graphics == LIB_NULL) ||
         !win32_window_display_rect(context, context->surface_width,
             context->surface_height, &display)) return LIB_TRUE;
     if (!lib_win32_stretch_blt(dc, display.left, display.top, display.right - display.left,
@@ -344,8 +344,8 @@ static void win32_window_advance_cursor_blink(lib_win32_hwnd window,
     /* KillTimer does not remove an already queued tick. The frozen/due guards
      * also prevent an old tick from advancing a newly unfrozen phase early. */
     if (!win32_window_accepting_input(context) || context->frozen ||
-        kvm_window_frame_validate(&context->frame) != LIB_STATUS_OK || context->frame.graphics ||
-        context->frame.text.base.cursor_mode != KVM_CURSOR_HOST ||
+        context->frame == LIB_NULL || (context->frame->text == LIB_NULL && context->frame->graphics == LIB_NULL) || context->frame->graphics ||
+        context->frame->text->base.cursor_mode != KVM_CURSOR_HOST ||
         (lib_win32_long)(now - context->cursor_blink_due) < 0)
         return;
     periods = (now - context->cursor_blink_due) / WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS + 1u;
@@ -488,17 +488,19 @@ static void win32_window_consume_frame(lib_win32_hwnd window,
     lib_u32 width;
     lib_u32 height;
     lib_win32_rect old_cursor = {0}, new_cursor = {0};
-    const kvm_cursor_mode old_mode = context->frame.graphics ?
-        KVM_CURSOR_DISABLED : context->frame.text.base.cursor_mode;
+    const kvm_cursor_mode old_mode = context->frame == LIB_NULL || context->frame->graphics ?
+        KVM_CURSOR_DISABLED : context->frame->text->base.cursor_mode;
     lib_bool old_visible = win32_window_cursor_visible(context) &&
         win32_window_cursor_rect(window, context, &old_cursor);
     lib_bool new_visible;
 
-    if (!win32_window_accepting_input(context) ||
-        !kvm_component_mailboxes_capture_frame(&context->component->base.mailboxes,
-            &context->displayed_sequence, &context->frame, sizeof(context->frame)))
-        return;
-    if (!context->frame.graphics && context->frame.text.base.cursor_mode == KVM_CURSOR_HOST &&
+    const kvm_window_frame *previous = context->frame;
+    const kvm_window_frame *incoming;
+    if (!win32_window_accepting_input(context)) return;
+    incoming = kvm_component_mailboxes_take_frame(&context->component->base.mailboxes, LIB_NULL);
+    if (incoming == LIB_NULL) return;
+    context->frame = incoming;
+    if (!context->frame->graphics && context->frame->text->base.cursor_mode == KVM_CURSOR_HOST &&
         old_mode != KVM_CURSOR_HOST) {
         context->cursor_blink_visible = LIB_TRUE;
         context->cursor_blink_due = lib_win32_get_tick_count() +
@@ -506,28 +508,28 @@ static void win32_window_consume_frame(lib_win32_hwnd window,
         if (!context->frozen && !lib_win32_set_timer(window, WIN32_WINDOW_CURSOR_TIMER,
                 WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS, LIB_NULL)) {
             kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
-            return;
+            goto failed;
         }
     }
-    if (!kvm_window_frame_size(&context->frame, &width, &height) ||
+    if (!kvm_window_frame_size(context->frame, &width, &height) ||
         !win32_window_ensure_surface(window, context, width, height)) {
         kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
-        return;
+        goto failed;
     }
     win32_window_resize_client(window, context, width, height);
-    if (!win32_window_accepting_input(context)) return;
+    if (!win32_window_accepting_input(context)) goto failed;
     {
         kvm_window_rect changed;
         kvm_window_rect changed_target;
         kvm_window_rect display;
         lib_win32_rect target;
-        if (kvm_window_render_frame(&context->frame, context->surface_pixels,
+        if (kvm_window_render_frame(context->frame, context->surface_pixels,
                 context->surface_width, context->surface_height,
                 &context->surface_valid, &changed) &&
             win32_window_display_rect(context, width, height, &display)) {
             kvm_window_map_dirty_rect(&changed, &display, width, height, &changed_target);
             kvm_win32_rect_store(&target, &changed_target);
-            if (!win32_window_invalidate(window, context, &target)) return;
+            if (!win32_window_invalidate(window, context, &target)) goto failed;
         }
     }
     new_visible = win32_window_cursor_visible(context) &&
@@ -535,11 +537,14 @@ static void win32_window_consume_frame(lib_win32_hwnd window,
     if (old_visible != new_visible ||
         (old_visible && (old_cursor.left != new_cursor.left || old_cursor.top != new_cursor.top ||
             old_cursor.right != new_cursor.right || old_cursor.bottom != new_cursor.bottom))) {
-        if (old_visible && !win32_window_invalidate(window, context, &old_cursor)) return;
-        if (new_visible && !win32_window_invalidate(window, context, &new_cursor)) return;
+        if (old_visible && !win32_window_invalidate(window, context, &old_cursor)) goto failed;
+        if (new_visible && !win32_window_invalidate(window, context, &new_cursor)) goto failed;
     }
-    kvm_component_mailboxes_acknowledge_frame(&context->component->base.mailboxes,
-        context->displayed_sequence);
+    kvm_component_mailboxes_finish_frame(&context->component->base.mailboxes, LIB_TRUE);
+    return;
+failed:
+    context->frame = previous;
+    kvm_component_mailboxes_finish_frame(&context->component->base.mailboxes, LIB_FALSE);
 }
 
 static lib_bool win32_window_consume_mailboxes(lib_win32_hwnd window,

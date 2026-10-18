@@ -118,7 +118,8 @@ lib_bool emulator_session_enqueue_ui_event(void *context,
     const emulator_ui_event *event);
 lib_bool emulator_session_enqueue_runtime_completed(emulator_session *session,
     emulator_session_machine_state state, lib_u32 run_generation);
+/* Wake hint for this run; presentation metadata comes from the latest frame. */
 lib_bool emulator_session_enqueue_frame_completed(emulator_session *session,
-    lib_u32 sequence, lib_bool graphics, lib_u32 run_generation);
+    lib_u32 run_generation);
 
 #endif

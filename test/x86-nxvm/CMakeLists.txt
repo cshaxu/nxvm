@@ -92,6 +92,9 @@ set_tests_properties(
     x86-nxvm.verifier-negative
     x86-nxvm.test-manifest
     PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
+# Whole-corpus negative probes need the existing budget without competing
+# filesystem copies/compiler self-tests; this does not extend their deadline.
+set_tests_properties(x86-nxvm.verifier-negative PROPERTIES RUN_SERIAL TRUE)
 
 add_custom_target(x86-nxvm-product-tests DEPENDS ${SHARED_X86_NXVM_TEST_TARGETS})
 set(SHARED_X86_NXVM_TEST_TARGETS)

@@ -13,12 +13,12 @@ typedef struct kvm_console_win32_state {
 static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
 {
     kvm_console *console = (kvm_console *)opaque;
-    lib_u32 generation = 0u;
 
     while (lib_atomic_i32_load_explicit(&console->base.stopping,
         LIB_MEMORY_ORDER_ACQUIRE) == 0) {
         kvm_component_control control;
-        kvm_console_text_frame frame;
+        const kvm_console_text_frame *frame;
+        const void *previous;
         base_sync_wait_result wake = base_sync_event_wait(
             console->base.mailboxes.wake, LIB_UINT32_MAX);
         if (wake != BASE_SYNC_WAIT_SIGNALED) {
@@ -36,12 +36,11 @@ static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
             kvm_component_fail(&console->base, LIB_STATUS_INVALID_ARGUMENT);
             goto retired;
         }
-        if (kvm_component_mailboxes_capture_frame(&console->base.mailboxes,
-                &generation, &frame, sizeof(frame))) {
-            lib_status status = kvm_console_publish_text_frame(console, &frame);
-            if (status == LIB_STATUS_OK)
-                kvm_component_mailboxes_acknowledge_frame(&console->base.mailboxes,
-                    generation);
+        frame = kvm_component_mailboxes_take_frame(&console->base.mailboxes, &previous);
+        if (frame != LIB_NULL) {
+            lib_status status = kvm_console_publish_text_frame(console, frame, previous);
+            kvm_component_mailboxes_finish_frame(&console->base.mailboxes,
+                status == LIB_STATUS_OK);
             if (status != LIB_STATUS_OK) {
                 kvm_component_fail(&console->base, status);
                 break;

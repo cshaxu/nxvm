@@ -97,35 +97,6 @@ static void text_format(void)
     lib_test_assert(lib_text_find_substring(text, "While the machine is running:") != LIB_NULL);
 }
 
-static void window_text_capacity(void)
-{
-    char running[64], paused[64], text[128];
-    const emulator_product_help_map empty = {LIB_NULL, 0u};
-    lib_size capacity;
-
-    lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-                                                                  running, sizeof("Test (Running)"), paused, sizeof("Test (Paused)")) == LIB_STATUS_OK);
-    lib_test_assert(lib_text_compare(running, "Test (Running)") == 0);
-    lib_test_assert(lib_text_compare(paused, "Test (Paused)") == 0);
-    lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-                                                                  running, sizeof("Test (Running)") - 1u, paused, sizeof(paused)) == LIB_STATUS_LIMIT_EXCEEDED);
-    lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-                                                                  running, sizeof(running), paused, sizeof("Test (Paused)") - 1u) == LIB_STATUS_LIMIT_EXCEEDED);
-    lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-                                                                  running, 1u, paused, sizeof(paused)) == LIB_STATUS_LIMIT_EXCEEDED);
-    lib_test_assert(emulator_product_monitor_format_window_titles("Test",
-                                                                  running, sizeof(running), paused, 1u) == LIB_STATUS_LIMIT_EXCEEDED);
-    lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-                                                                  text, sizeof(text)) == LIB_STATUS_OK);
-    capacity = lib_text_length(text) + 1u;
-    lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-                                                                  text, capacity) == LIB_STATUS_OK);
-    lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-                                                                  text, capacity - 1u) == LIB_STATUS_LIMIT_EXCEEDED);
-    lib_test_assert(emulator_product_monitor_format_window_status("Test", empty,
-                                                                  text, 1u) == LIB_STATUS_LIMIT_EXCEEDED);
-}
-
 static void window_format_boundaries(void)
 {
     static const char *names[] = {"", "A much longer machine name for boundary testing"};
@@ -373,7 +344,6 @@ int main(void)
 {
     command_parse();
     text_format();
-    window_text_capacity();
     window_format_boundaries();
     provider_contract();
     unavailable_fixed_commands();

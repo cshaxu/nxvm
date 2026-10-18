@@ -9,7 +9,6 @@
 struct emulator_session {
     emulator_session_queue queue;
     emulator_session_state state;
-    emulator_machine_frame frame;
     emulator_machine *machine;
     emulator_session_command_provider command;
     emulator_ui *ui;
@@ -189,22 +188,30 @@ static lib_bool emulator_session_drive(emulator_session *session)
 {
     emulator_ui_action action;
     lib_bool console_status_surface;
+    lib_bool graphics;
+    lib_u32 sequence;
+    lib_bool available;
     if (session == LIB_NULL || session->ui == LIB_NULL || session->machine == LIB_NULL)
         return LIB_FALSE;
     emulator_ui_set_run_generation(session->ui,
         emulator_machine_run_generation(session->machine));
+    available = emulator_machine_read_presentation(session->machine,
+        emulator_machine_run_generation(session->machine), &sequence, &graphics);
+    if (available)
+        (void)emulator_session_state_note_frame(&session->state, sequence, graphics);
     action = emulator_session_state_take_action(&session->state);
     if (action != EMULATOR_UI_ACTION_NONE &&
         emulator_ui_apply_action(session->ui, action,
             emulator_session_ui_state(session->state.runtime_actual)) != LIB_STATUS_OK)
         return LIB_FALSE;
-    if (session->state.observed_frame_sequence == 0u ||
-        !emulator_session_state_frame_targets_ready(&session->state)) return LIB_TRUE;
+    if (!available || !emulator_session_state_frame_targets_ready(&session->state))
+        return LIB_TRUE;
     console_status_surface =
         session->state.display == EMULATOR_SESSION_DISPLAY_CONSOLE &&
-        !session->state.console_control && session->frame.window.graphics != 0u;
-    return emulator_ui_publish_frame(session->ui, &session->frame.window,
-        &session->frame.characters, session->frame.sequence,
+        !session->state.console_control && graphics;
+    return emulator_ui_publish_frame(session->ui,
+        emulator_machine_frame_exchange(session->machine),
+        emulator_machine_console_exchange(session->machine), graphics, sequence,
         session->state.window_actual,
         session->state.vm_console_actual &&
             session->state.current_console_actual == EMULATOR_SESSION_CONSOLE_VM,
@@ -260,12 +267,8 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
         if (event->value.runtime_state != EMULATOR_SESSION_MACHINE_INIT)
             session->pending_request = EMULATOR_SESSION_REQUEST_NONE;
     } else if (event->kind == EMULATOR_SESSION_EVENT_FRAME_COMPLETED) {
-        lib_u32 sequence = event->value.frame.sequence;
-        if (emulator_session_frame_is_newer(sequence, session->state.observed_frame_sequence) &&
-            emulator_machine_copy_published_frame(session->machine, &session->frame,
-                event->run_generation))
-            (void)emulator_session_state_note_frame(&session->state, session->frame.sequence,
-                session->frame.window.graphics != 0u);
+        /* The notice wakes routing; drive observes the latest complete
+         * publication, without retaining another full frame. */
     } else if (event->kind == EMULATOR_SESSION_EVENT_COMPONENT_COMPLETED) {
         if (event->value.component.component == EMULATOR_SESSION_EVENT_COMPONENT_WINDOW)
             emulator_session_state_note_window(&session->state,
@@ -380,10 +383,10 @@ lib_bool emulator_session_enqueue_runtime_completed(emulator_session *session,
 }
 
 lib_bool emulator_session_enqueue_frame_completed(emulator_session *session,
-    lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
+    lib_u32 run_generation)
 {
     return session != LIB_NULL && emulator_session_queue_push_frame_completed(&session->queue,
-        sequence, graphics, run_generation);
+        run_generation);
 }
 
 lib_bool emulator_session_run(emulator_session *session)

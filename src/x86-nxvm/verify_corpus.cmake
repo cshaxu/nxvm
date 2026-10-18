@@ -12,7 +12,8 @@ set(edges_board-base lib/types x86-core/machine x86-nxvm/board-at x86-nxvm/board
     x86-nxvm/chips/dma8237 x86-nxvm/chips/fdc8272 x86-nxvm/chips/hdc
     x86-nxvm/chips/pic8259 x86-nxvm/chips/pit825x x86-nxvm/chips/rtc146818
     x86-nxvm/chips/video x86-nxvm/chips/xtkeyboard)
-set(edges_machine lib/types lib/base lib/storage lib/kvm-base emulator/machine
+set(edges_machine lib/types lib/base lib/storage lib/kvm-base lib/kvm-window
+    lib/kvm-console emulator/machine
     x86-core/machine x86-debug/product x86-nxvm/board-base x86-nxvm/chips/video)
 set(edges_product emulator/product lib/types lib/base lib/storage
     x86-ibmpc/product x86-nxvm/machine)
@@ -101,6 +102,10 @@ foreach(path IN LISTS paths)
             set(dependency "x86-nxvm/machine")
         endif()
         check_edge("${owner}" "${dependency}")
+        if(owner STREQUAL "machine" AND dependency MATCHES "^lib/kvm-(window|console)$"
+                AND NOT file STREQUAL "frame_interface.h")
+            message(FATAL_ERROR "Machine may consume only KVM frame values: ${header}")
+        endif()
         if(dependency STREQUAL "x86-nxvm/${owner}")
             string(REGEX REPLACE "^x86-nxvm/" "" local_header "${header}")
             if(NOT EXISTS "${CORPUS_ROOT}/${local_header}")

@@ -55,10 +55,13 @@ static void fixture_callback(void *opaque,
 }
 static void fixture_input(void *opaque, const kvm_input_event *event)
 { (void)opaque; (void)event; }
-static lib_status fixture_frame(void *opaque, emulator_machine_frame *frame)
+static lib_status fixture_frame(void *opaque, kvm_window_frame_storage *frame,
+    kvm_console_text_frame *console, lib_bool *produced)
 {
     (void)opaque;
-    frame->window.valid = LIB_FALSE;
+    (void)console;
+    (void)frame;
+    *produced = LIB_FALSE;
     return LIB_STATUS_OK;
 }
 static lib_status fixture_debug(void *opaque, const void *request, lib_size size,

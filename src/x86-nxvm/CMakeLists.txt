@@ -88,7 +88,8 @@ target_link_libraries(x86-nxvm-machine-media PUBLIC types storage x86-nxvm-board
 add_library(x86-nxvm-machine-conversion STATIC machine/frame.c machine/keyboard_mapper.c
     machine/mouse_mapper.c)
 target_include_directories(x86-nxvm-machine-conversion PUBLIC ${X86_NXVM_SOURCE_ROOT})
-target_link_libraries(x86-nxvm-machine-conversion PUBLIC types kvm-base x86-nxvm-board-base)
+target_link_libraries(x86-nxvm-machine-conversion PUBLIC types kvm-base kvm-window
+    kvm-console x86-nxvm-board-base)
 
 add_library(x86-nxvm-machine STATIC machine/preparation.c machine/debug.c
     machine/pc_at_preparation.c machine/executor_state.c machine/debug_adapter.c

@@ -1,6 +1,8 @@
 #ifndef KVM_WINDOW_RENDER_H
 #define KVM_WINDOW_RENDER_H
 #include "lib/kvm-window/geometry.h"
+/* Private helpers consume a validated, immutable published frame. Validation
+ * belongs to the publication boundary, not each repaint of the held frame. */
 lib_bool kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, lib_u32 *height);
 
 /* Compare decoded RGB against the existing surface. False means no damage or

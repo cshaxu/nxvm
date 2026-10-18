@@ -4,7 +4,7 @@
 #include "x86-nxvm/board-base/display_interface.h"
 
 #include "x86-nxvm/machine/display.h"
-#include "x86-nxvm/machine/frame_interface.h"
+#include "x86-nxvm/machine/frame.h"
 
 #include "lib/base/clock_interface.h"
 
@@ -61,9 +61,9 @@ lib_status x86_nxvm_machine_publish_display(x86_nxvm_machine *machine,
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return LIB_STATUS_OK;
-    status = x86_nxvm_machine_frame_from_display(&snapshot, machine->display_generation + 1u,
-        &machine->latest_frame);
+    status = x86_nxvm_machine_frame_validate_source(&snapshot);
     if (status != LIB_STATUS_OK) return status;
+    machine->latest_snapshot = snapshot;
     machine->display_frame_pending = LIB_TRUE;
     machine->display_kind = snapshot.kind;
     ++machine->display_generation;

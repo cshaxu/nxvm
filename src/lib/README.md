@@ -9,13 +9,13 @@ Unit tests and fixtures live in `test/lib`, not in the production corpus.
 Copied predicate fields use byte-sized `lib_bool` (`lib_u8`) and
 `LIB_TRUE`/`LIB_FALSE`; numeric
 indices, wire bytes, native results and atomic storage keep their own types.
-Copied frames/events are in-process values, not a serialized or stable binary
+Frames/events are in-process values, not a serialized or stable binary
 ABI. Importers must rebuild all receivers together when their layouts change.
 Configure `cmake -S test/lib -B build/lib-tests`, build that directory, then
 run CTest there. The source-only CMake entry retains its manifest target;
 the external suite owns all test registration and needs no product resources.
 
-`src/lib` contains product-neutral, copied-value platform capabilities. It has
+`src/lib` contains product-neutral platform capabilities. It has
 no application state pointer, runtime queue, monitor command, lifecycle
 policy, or native SDK type in a public API. `MANIFEST.sha256` lists every source file and
 its exact corpus revision; `verify_manifest.cmake` rejects an unlisted, stale,
@@ -34,7 +34,7 @@ accessible only from that component's corresponding platform implementation,
 not from a sibling component or a forwarding root header. The sole exception
 is `types/{win32,linux}`: these shared external declarations may be included
 by matching platform implementations. Application-facing
-copied-value APIs are distinct from the leaf-support contracts:
+value and ownership APIs are distinct from the leaf-support contracts:
 `kvm-base/worker_interface.h`, `mailbox_interface.h`,
 `kvm-base/input_interface.h` serves only the KVM leaves;
 `base/input_adapter_interface.h` serves native Lib input producers;
@@ -162,8 +162,8 @@ synchronously through the logical Console. Consumers clear local input history
 before the next reader starts; this is distinct from successful ACTIVATED and
 permanent KVM source retirement. Rollback uses the same reset-before-reader path.
 Normal replacement cancellation is not failure. A KVM Console reports genuine
-input/output errors through its failure sink and retires; NOT_CURRENT output
-is an expected inactive-object write. Neither path makes application decisions.
+input/output errors through its failure sink and retires; inactive-object output
+succeeds without native drawing. Neither path makes application decisions.
 Broker replacement holds its transaction lock through old output-sink cleanup;
 the backend output lock is released first so in-flight writes can complete.
 
@@ -266,3 +266,10 @@ Third-party code using Raw Input directly must not concurrently replace/remove
 that registration during Lib capture/release. Such code does not participate in
 Lib's lock; Lib cannot synchronize arbitrary native calls. An existing foreign
 binding prevents capture, and release does not remove a foreign replacement.
+
+Win32 cooked handoff verifies saved capacity after the final viewport operation.
+Raw handoff restores native metadata, then KVM Console's activation requeues its
+retained input through ordinary output. That path establishes required capacity
+after palette/viewport operations and writes cells and cursor. No native screen
+backup or additional frame storage is used. Traditional Console can retain a
+narrow viewport over a wider buffer; pseudoconsole activation may clip it.

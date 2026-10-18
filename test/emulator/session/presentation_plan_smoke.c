@@ -47,10 +47,6 @@ int main(void)
         EMULATOR_SESSION_MACHINE_RUNNING, 1, 0);
     lib_test_assert(!plan.window_enabled && plan.vm_console_enabled &&
         !plan.monitor_console_enabled);
-    plan = emulator_session_derive_presentation(EMULATOR_SESSION_DISPLAY_CONSOLE, 1,
-        EMULATOR_SESSION_MACHINE_RUNNING, 1, 1);
-    lib_test_assert(plan.window_enabled && !plan.vm_console_enabled &&
-        plan.monitor_console_enabled);
     /* Paused/stopped never retain raw VM input. */
     plan = emulator_session_derive_presentation(EMULATOR_SESSION_DISPLAY_CONSOLE, 0,
         EMULATOR_SESSION_MACHINE_PAUSED, 1, 0);

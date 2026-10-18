@@ -53,7 +53,6 @@ static void component_probe_dispose(kvm_component *component)
 int main(void)
 {
     component_probe probe = { 0 };
-    lib_u8 storage[3];
     static kvm_component first;
     static kvm_component second;
     static kvm_component third;
@@ -85,34 +84,34 @@ int main(void)
     options.failure_sink = component_probe_failure;
     options.hotkeys = hotkeys;
     lib_test_assert(kvm_component_initialize(&first, &options, component_probe_stop,
-        component_probe_dispose, &storage[0], 1u) == LIB_STATUS_OK);
+        component_probe_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_initialize(&second, &options, component_probe_stop,
-        component_probe_dispose, &storage[1], 1u) == LIB_STATUS_OK);
+        component_probe_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&second.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_initialize(&third, &options, component_probe_stop,
-        component_probe_dispose, &storage[2], 1u) == LIB_STATUS_OK);
+        component_probe_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&third.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_test_assert(first.source_identity != 0u);
     lib_test_assert(second.source_identity != 0u);
     lib_test_assert(first.source_identity != second.source_identity);
 
-    /* Component publication copies the frame and wakes its selected consumer. */
-    lib_u8 frame = 0x5au, captured = 0u;
-    lib_u32 generation = 0u;
-    lib_test_assert(kvm_component_publish_frame(LIB_NULL, &frame, 1u) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(kvm_component_publish_frame(&first, LIB_NULL, 1u) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(kvm_component_publish_frame(&first, &frame, 0u) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(kvm_component_publish_frame(&first, &frame, 2u) == LIB_STATUS_LIMIT_EXCEEDED);
-    lib_test_assert(kvm_component_publish_frame(&first, &frame, 1u) == LIB_STATUS_OK);
-    frame = 0u;
+    /* Notification binds one exchange; consumption transfers its actual pointer. */
+    kvm_frame_exchange *frames;
+    lib_test_assert(kvm_frame_exchange_create(&frames, 1u) == LIB_STATUS_OK);
+    lib_u8 *frame = kvm_frame_exchange_writer(frames);
+    *frame = 0x5au;
+    kvm_frame_exchange_publish(frames);
+    lib_test_assert(kvm_component_publish_frame(LIB_NULL, frames) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_component_publish_frame(&first, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_component_publish_frame(&first, frames) == LIB_STATUS_OK);
     lib_test_assert(base_sync_event_wait(first.mailboxes.wake, 0u) == BASE_SYNC_WAIT_SIGNALED);
-    lib_test_assert(kvm_component_mailboxes_capture_frame(&first.mailboxes, &generation, &captured, 1u));
-    lib_test_assert(captured == 0x5au);
-    kvm_component_mailboxes_acknowledge_frame(&first.mailboxes, generation);
+    lib_test_assert(kvm_component_mailboxes_take_frame(&first.mailboxes, LIB_NULL) == frame);
+    lib_test_assert(*frame == 0x5au);
+    kvm_component_mailboxes_finish_frame(&first.mailboxes, LIB_TRUE);
 
     /* The transport cannot restrict consumer opcodes or interpret payloads.
        Copy every byte (including embedded zeroes) before the caller mutates it. */
@@ -150,12 +149,12 @@ int main(void)
     lib_test_assert(probe.failure_count == 1u);
     lib_test_assert(!kvm_component_emit(&first, &event));
     kvm_component_retire(&first, LIB_STATUS_OK);
-    lib_test_assert(kvm_component_publish_frame(&first, &frame, 1u) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_component_publish_frame(&first, frames) == LIB_STATUS_INVALID_STATE);
     lib_test_assert(probe.failure_count == 1u);
     lib_test_assert(probe.last_failure == LIB_STATUS_IO_ERROR);
     kvm_component_mailboxes_destroy(&first.mailboxes);
     lib_test_assert(kvm_component_initialize(&first, &options, component_probe_stop,
-        component_probe_dispose, &storage[0], 1u) == LIB_STATUS_OK);
+        component_probe_dispose) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
 
@@ -238,5 +237,6 @@ int main(void)
     lib_test_assert(kvm_component_destroy(&first) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_destroy(&second) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_destroy(&third) == LIB_STATUS_OK);
+    kvm_frame_exchange_destroy(frames);
     return 0;
 }

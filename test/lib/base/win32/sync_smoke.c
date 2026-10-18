@@ -58,6 +58,8 @@ static void immediate_entry(void *context, const base_sync_task *task)
 
 int main(void)
 {
+    lib_test_assert(base_sync_mutex_create(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    base_sync_mutex_destroy(LIB_NULL);
     base_sync_event *event;
     base_sync_task *task;
     lib_iptr identity;
@@ -91,6 +93,7 @@ int main(void)
     lib_test_assert(base_sync_task_create(task_entry, &completed, &task) == LIB_STATUS_IO_ERROR);
     lib_test_assert(task == LIB_NULL && allocations == releases);
     fail_create = 0;
+    task = (base_sync_task *)1;
     lib_test_assert(base_sync_task_create(LIB_NULL, LIB_NULL, &task) == LIB_STATUS_INVALID_ARGUMENT && !task);
     lib_test_assert(base_sync_task_create(task_entry, LIB_NULL, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(base_sync_task_destroy(LIB_NULL) == LIB_STATUS_OK);

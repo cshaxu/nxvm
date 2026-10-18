@@ -2,7 +2,8 @@
 #define EMULATOR_MACHINE_INTERFACE_H
 
 #include "lib/kvm-base/event_interface.h"
-#include "emulator/machine/frame_interface.h"
+#include "lib/kvm-window/frame_interface.h"
+#include "lib/kvm-console/frame_interface.h"
 #include "lib/storage/medium_interface.h"
 #include "lib/types/types_interface.h"
 
@@ -72,12 +73,17 @@ typedef struct emulator_machine_driver {
     void (*set_executor_callback)(void *context,
         emulator_machine_executor_callback callback, void *callback_context);
     void (*deliver_input)(void *context, const kvm_input_event *event);
-    /* Return a complete frame on display change (including palette/geometry).
-     * First ready output must be published. OK with window.valid == 0 means
-     * no new ready frame. Publications may be skipped by latest-wins consumers;
+    /* produced means a complete frame is ready for publication. Machine does
+     * not compare content: dirty/readiness policy belongs solely to the driver,
+     * which may always produce when it has no update signal.
+     * First ready output must be published. OK with produced == false means
+     * no new ready frame. Set produced only after completing both required outputs. Publications may be skipped by latest-wins consumers;
      * no incremental damage contract crosses this boundary. Failure does not
-     * publish staging and terminates through the existing ERROR fact. */
-    lib_status (*copy_frame)(void *context, emulator_machine_frame *out_frame);
+     * publish staging and terminates through the existing ERROR fact.
+     * Text fills both leaf frames directly from the source; graphics fills
+     * Window only. Do not retain either writable pointer after returning. */
+    lib_status (*copy_frame)(void *context, kvm_window_frame_storage *out_frame,
+        kvm_console_text_frame *out_console, lib_bool *produced);
     lib_bool (*set_removable_media)(void *context, const char *path,
         lib_storage_medium_mode mode);
     /* Emulator invokes only these state-specific driver hooks on its existing
@@ -94,7 +100,7 @@ typedef struct emulator_machine_driver {
     void (*cancel_debug)(void *context);
     /* Optional product-owned observation after a complete frame has been
      * published. It must not call machine lifecycle APIs. */
-    void (*frame_published)(void *context, const emulator_machine_frame *frame);
+    void (*frame_published)(void *context, const kvm_window_frame *frame);
 } emulator_machine_driver;
 
 lib_status emulator_machine_create(emulator_machine **out_machine,
@@ -124,10 +130,22 @@ lib_status emulator_machine_write_state(emulator_machine *machine,
 emulator_machine_state emulator_machine_state_get(const emulator_machine *machine);
 lib_bool emulator_machine_enqueue_input(emulator_machine *machine,
     const kvm_input_event *event);
-/* Copy one complete frame only from the requested run. On rejection the
- * destination is unchanged; content, sequence and route are one snapshot. */
+/* Borrow the sole Window exchange. Only the executor writes it; one Window
+ * consumes it. Destroy the consumer before destroying Machine. */
+kvm_frame_exchange *emulator_machine_frame_exchange(emulator_machine *machine);
+kvm_frame_exchange *emulator_machine_console_exchange(emulator_machine *machine);
+/* Install before starting the executor. The optional graphics-mode Console
+ * producer fills the same four-slot stream as the driver's text output.
+ * Context must remain alive until Machine shutdown; callback performs no UI I/O. */
+void emulator_machine_set_console_status_source(emulator_machine *machine,
+    void (*produce)(void *context, kvm_console_text_frame *frame), void *context);
+/* Observe metadata only; both leaf exchanges retain their own payloads. */
+lib_bool emulator_machine_read_presentation(emulator_machine *machine,
+    lib_u32 run_generation, lib_u32 *sequence, lib_bool *graphics);
+/* Explicit diagnostic copy, not presentation transport. Rejection leaves the
+ * destination unchanged; content, sequence and route are one snapshot. */
 lib_bool emulator_machine_copy_published_frame(emulator_machine *machine,
-    emulator_machine_frame *destination, lib_u32 run_generation);
+    kvm_window_frame_storage *destination, lib_u32 run_generation);
 lib_u32 emulator_machine_published_frame_sequence(const emulator_machine *machine);
 lib_u32 emulator_machine_published_frame_run_generation(const emulator_machine *machine);
 lib_u32 emulator_machine_run_generation(const emulator_machine *machine);

@@ -26,6 +26,7 @@ void kvm_console_receive_event(void *context,
         if (!kvm_component_reset_input(&console->base)) return;
         console->previous_mouse_valid = LIB_FALSE;
     } else if (event->kind == LIB_CONSOLE_EVENT_ACTIVATED) {
+        kvm_component_mailboxes_redraw_frame(&console->base.mailboxes);
         lib_status status = kvm_component_mailboxes_notify(&console->base.mailboxes);
         if (status != LIB_STATUS_OK) kvm_component_fail(&console->base, status);
     } else if (event->kind == LIB_CONSOLE_EVENT_IO_FAILURE) {
@@ -79,8 +80,7 @@ lib_status kvm_console_create(kvm_console **out_console,
     console = lib_allocate_zero(1u, sizeof(*console));
     if (console == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     status = kvm_component_initialize(&console->base, options,
-        kvm_console_component_stop, kvm_console_component_dispose,
-        &console->pending_frame, sizeof(console->pending_frame));
+        kvm_console_component_stop, kvm_console_component_dispose);
     if (status == LIB_STATUS_OK)
         status = kvm_component_mailboxes_select_notify(&console->base.mailboxes,
             LIB_NULL, LIB_NULL);
@@ -96,13 +96,10 @@ lib_status kvm_console_create(kvm_console **out_console,
     return LIB_STATUS_OK;
 }
 
-lib_status kvm_console_publish_frame(kvm_console *console, const kvm_console_text_frame *frame)
+lib_status kvm_console_publish_frame(kvm_console *console, kvm_frame_exchange *frames)
 {
-    lib_status status;
-    if (console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = kvm_console_text_frame_validate(frame);
-    if (status != LIB_STATUS_OK) return status;
-    return kvm_component_publish_frame(&console->base, frame, sizeof(*frame));
+    if (console == LIB_NULL || frames == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return kvm_component_publish_frame(&console->base, frames);
 }
 
 lib_status kvm_console_destroy(kvm_console *console)
@@ -116,24 +113,36 @@ lib_console *kvm_console_get_console(const kvm_console *console)
 }
 
 lib_status kvm_console_publish_text_frame(kvm_console *console,
-    const kvm_console_text_frame *frame)
+    const kvm_console_text_frame *frame, const kvm_console_text_frame *previous)
 {
     lib_console_text_frame text_frame = { 0 };
     const kvm_text_frame *text;
-    lib_size index;
     lib_u32 top, bottom;
 
     if (console == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     text = &frame->base;
     text_frame.columns = text->text_columns;
     text_frame.rows = text->text_rows;
-    for (index = 0u; index < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++index) {
-        const kvm_text_cell *cell = &text->cells[index];
-        const lib_u16 *map = cell->glyph_bank != 0u ?
-            frame->characters.secondary : frame->characters.primary;
-        text_frame.text[index] = map[cell->glyph_index];
-        text_frame.foreground[index] = cell->foreground;
-        text_frame.background[index] = cell->background;
+    text_frame.cells_unchanged = previous != LIB_NULL &&
+        previous->base.text_columns == text->text_columns &&
+        previous->base.text_rows == text->text_rows;
+    for (lib_size row = 0u; row < text->text_rows; ++row) {
+        for (lib_size column = 0u; column < text->text_columns; ++column) {
+            lib_size index = row * KVM_TEXT_COLUMNS + column;
+            const kvm_text_cell *cell = &text->cells[index];
+            const lib_u16 *map = cell->glyph_bank != 0u ?
+                frame->characters.secondary : frame->characters.primary;
+            text_frame.text[index] = map[cell->glyph_index];
+            text_frame.foreground[index] = cell->foreground;
+            text_frame.background[index] = cell->background;
+            if (text_frame.cells_unchanged) {
+                const kvm_text_cell *old = &previous->base.cells[index];
+                const lib_u16 *old_map = old->glyph_bank != 0u ?
+                    previous->characters.secondary : previous->characters.primary;
+                text_frame.cells_unchanged = old_map[old->glyph_index] == text_frame.text[index] &&
+                    old->foreground == cell->foreground && old->background == cell->background;
+            }
+        }
     }
     lib_memory_copy(text_frame.palette, text->text_palette, sizeof(text_frame.palette));
     text_frame.cursor_column = text->cursor_column;

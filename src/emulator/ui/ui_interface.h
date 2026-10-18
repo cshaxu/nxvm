@@ -3,6 +3,7 @@
 
 #include "lib/console/console_interface.h"
 #include "lib/kvm-base/event_interface.h"
+#include "lib/kvm-base/frame_exchange_interface.h"
 #include "lib/kvm-window/frame_interface.h"
 #include "lib/kvm-console/frame_interface.h"
 #include "lib/kvm-base/hotkey_interface.h"
@@ -74,8 +75,12 @@ void emulator_ui_set_run_generation(emulator_ui *ui, lib_u32 run_generation);
 lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,
     emulator_ui_state state);
 lib_status emulator_ui_set_state(emulator_ui *ui, emulator_ui_state state);
-lib_status emulator_ui_publish_frame(emulator_ui *ui, const kvm_window_frame *frame,
-    const kvm_console_character_map *characters, lib_u32 sequence,
+/* Pure producer callback: reads immutable UI options, fills an executor-owned
+ * slot, performs no host I/O. Stop the producer before destroying UI. */
+void emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame);
+/* Borrow both producer exchanges until their consumers have been destroyed. */
+lib_status emulator_ui_publish_frame(emulator_ui *ui, kvm_frame_exchange *frames,
+    kvm_frame_exchange *console_frames, lib_bool graphics, lib_u32 sequence,
     lib_bool window_actual, lib_bool vm_console_current,
     lib_bool console_status_surface);
 lib_status emulator_ui_release_window_mouse(emulator_ui *ui);
