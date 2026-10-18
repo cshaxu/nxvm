@@ -169,6 +169,48 @@ static lib_i32 v30_alu_records(const v30_memory_fixture *fixture, lib_u32 addres
     return 0;
 }
 
+/* NEC 12-29..41, 12-47..49 and 12-65..81, selected by semantic test
+ * operation/form, independently of the production opcode-based selector. */
+static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
+    const v30_alu_case *item, lib_bool memory, lib_u32 address)
+{
+    lib_u64 clocks = 0u;
+    lib_u8 odd_cost = 0u;
+    if (!item->prefix && item->form != V30_ALU_EXTEND) {
+        if (!memory) clocks = item->form >= V30_ALU_ACC_IMMEDIATE &&
+            item->form <= V30_ALU_GROUP_SIGNED ? 4u : 2u;
+        else if (item->form >= V30_ALU_UNARY_GROUP) { clocks = 16u; odd_cost = 8u; }
+        else if (item->form == V30_ALU_GROUP_IMMEDIATE || item->form == V30_ALU_GROUP_SIGNED) {
+            clocks = item->operation == V30_ALU_CMP ? 13u : item->operation == V30_ALU_TEST ? 11u : 18u;
+            odd_cost = item->operation == V30_ALU_CMP || item->operation == V30_ALU_TEST ? 4u : 8u;
+        } else if (item->operation == V30_ALU_TEST) { clocks = 10u; odd_cost = 4u; }
+        else if (item->operation == V30_ALU_CMP || item->form == V30_ALU_REGISTER_RM) {
+            clocks = 11u; odd_cost = 4u;
+        } else { clocks = 16u; odd_cost = 8u; }
+    }
+    const lib_bool odd = clocks && odd_cost && item->width == 2u && (address & 1u);
+    if (odd) clocks += odd_cost;
+    lib_u32 form = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    if (clocks) {
+        form = item->code[0] | (memory ? 0x100u : 0u);
+        if (item->form == V30_ALU_GROUP_IMMEDIATE || item->form == V30_ALU_GROUP_SIGNED ||
+            item->form == V30_ALU_UNARY_GROUP) form |= ((lib_u32)(item->modrm >> 3u) & 7u) << 9u;
+    }
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->bus.execution);
+    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) ||
+        timing.form_id != form || timing.key_id != form ||
+        timing.formula_inputs != (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
+            X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u) ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+        lib_c_printf("V30:NOMINAL-ALU:FAIL op=%u form=%u opcode=%02x modrm=%02x prefix=%u ticks=%llu/%llu key=%x/%x\n",
+            item->operation,item->form,item->code[0],item->modrm,item->prefix,timing.ticks,clocks,timing.form_id,form);
+        return 1;
+    }
+    return 0;
+}
+
 static lib_i32 v30_alu_check(const v30_alu_case *item, lib_bool deep)
 {
     static v30_memory_fixture fixture;
@@ -212,6 +254,7 @@ static lib_i32 v30_alu_check(const v30_alu_case *item, lib_bool deep)
     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
         fixture.bus.instruction_count != 1u ||
         fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
+        v30_alu_timing(&fixture,item,memory,address) ||
         lib_memory_compare(&actual,&expected,sizeof(actual)) ||
         v30_alu_records(&fixture,address,item->width,memory,write,initial,value,LIB_FALSE)) {
         lib_c_printf("V30:ALU:FAIL op=%u form=%u width=%u modrm=%02x left=%04x imm=%04x flags=%08x/%08x result=%08x/%08x\n",
@@ -219,17 +262,42 @@ static lib_i32 v30_alu_check(const v30_alu_case *item, lib_bool deep)
             actual.data.eflags,expected.data.eflags,actual.data.eax,expected.data.eax);
         return 1;
     }
-    const lib_u32 reads = fixture.reads, writes = fixture.writes;
-    if (deep) for (lib_u8 output = 0u; output < 2u; ++output)
-        for (lib_u32 part = 1u; part <= (output ? writes : reads); ++part) {
+    const lib_u32 counts[] = {fixture.reads,fixture.writes,fixture.fetches};
+    lib_u32 reads_before_fetch[sizeof(item->code)] = {0}, fetched = 0u, read_prefix = 0u;
+    if (deep) for (lib_u32 index = 0u; index < fixture.record_count; ++index) {
+        const v30_memory_record *record = &fixture.records[index];
+        if (record->observe) continue;
+        if (record->provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) {
+            if (!record->write) ++read_prefix;
+        } else {
+            if (fetched >= sizeof(reads_before_fetch)/sizeof(reads_before_fetch[0])) return 1;
+            reads_before_fetch[fetched++] = read_prefix;
+        }
+    }
+    if (deep) for (lib_u8 kind = 0u; kind < 3u; ++kind)
+        for (lib_u32 part = 1u; part <= counts[kind]; ++part) {
             v30_alu_prepare(&fixture,item);
-            if (output) fixture.fail_write = part;
-            else fixture.fail_read = part;
+            if (kind == 0u) fixture.fail_read = part;
+            else if (kind == 1u) fixture.fail_write = part;
+            else fixture.fail_fetch = part;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.bus.delivered_exceptions ||
                 fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
-                v30_alu_records(&fixture,address,item->width,memory,write,initial,value,LIB_TRUE)) return 1;
+                fixture.bus.execution.completed_observation_valid ||
+                fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
+                (kind == 2u ? fixture.reads != reads_before_fetch[part-1u] || fixture.writes ||
+                    v30_alu_records(&fixture,address,item->width,reads_before_fetch[part-1u] != 0u,
+                        LIB_FALSE,initial,initial,LIB_FALSE) :
+                    v30_alu_records(&fixture,address,item->width,memory,write,initial,value,LIB_TRUE))) {
+                lib_c_printf("V30:NOMINAL-ALU:REFUSAL op=%u form=%u modrm=%02x prefix=%u kind=%u part=%u stop=%u fault=%u pc=%x/%x reads=%u writes=%u complete=%u ticks=%llu\n",
+                    item->operation,item->form,item->modrm,item->prefix,kind,part,
+                    fixture.bus.execution.stop_requested,fixture.bus.faults,fixture.bus.cpu.data.eip,before.data.eip,
+                    fixture.reads,fixture.writes,fixture.bus.execution.completed_observation_valid,
+                    fixture.bus.execution.timing_result.ticks);
+                return 1;
+            }
         }
     return 0;
 }
@@ -269,6 +337,34 @@ static v30_alu_case v30_alu_build(v30_alu_operation operation, lib_u8 width,
 
 lib_i32 main(void)
 {
+    /* Adjacent dynamic/alias/prefix forms must not inherit fixed scalar rows. */
+    static const lib_u8 unallocated[][4] = {
+        {0x82u,0xc0u,0x01u}, {0xf6u,0xc8u,0x01u}, {0xf7u,0xc8u,0x01u,0x00u},
+        {0xf6u,0xe0u}, {0xf7u,0xe0u}, {0xf6u,0xf3u}, {0xf7u,0xfbu},
+        {0xd0u,0xc0u}, {0xc1u,0xe0u,0x04u}, {0x0fu,0x10u,0xc0u},
+        {0xffu,0xd0u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x98u}, {0x99u}
+    };
+    static v30_memory_fixture boundary;
+    v30_memory_prepare(&boundary);
+    for (lib_size index = 0u; index < sizeof(unallocated)/sizeof(unallocated[0]); ++index) {
+        v30_memory_restart(&boundary);
+        boundary.bus.cpu.data.ax = 5u;
+        boundary.bus.cpu.data.bx = 3u;
+        lib_memory_copy(boundary.memory+0x80100u,unallocated[index],sizeof(unallocated[index]));
+        x86_core_cpu_execution_refresh(&boundary.bus.execution);
+        const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&boundary.bus.execution);
+        const lib_bool rejected = index == 1u || index == 2u; /* Prohibited F6/F7 /1. */
+        if (boundary.bus.execution.stop_requested != rejected || boundary.bus.faults != (lib_u32)rejected ||
+            (rejected && boundary.bus.execution.completed_observation_valid) || timing.ticks ||
+            (!rejected && (!timing.source_timing_unallocated ||
+                timing.key_id != X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED)) ||
+            timing.form_id != timing.key_id || timing.formula_inputs ||
+            timing.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) {
+            lib_c_printf("V30:NOMINAL-ALU:EXCLUDED index=%u stop=%u ticks=%llu\n",
+                (lib_u32)index,boundary.bus.execution.stop_requested,timing.ticks);
+            return 1;
+        }
+    }
     static const lib_u16 values[] = {0u,1u,15u,16u,127u,128u,255u,256u,
         0x7fffu,0x8000u,0xfffeu,0xffffu};
     lib_u32 cases = 0u;
@@ -342,5 +438,7 @@ lib_i32 main(void)
             ++cases;
         }
     lib_c_printf("V30:ALU:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-ALU:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-ALU:BOUNDARIES:OK cases=15\n");
     return 0;
 }

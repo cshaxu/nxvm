@@ -226,7 +226,7 @@ static lib_i32 x86_core_cpu_timing_apply_8086_lock(x86_core_cpu_execution_contex
     return 1;
 }
 
-/* NEC October 1986, 12-1 and 12-4..12-13. Operand/EA work is already included;
+/* NEC October 1986 section 12 nominal rows. Operand/EA work is already included;
  * do not add the Intel EA recipe or count each byte callback as another cost.
  * Fetch starvation, prefixes and extra waits still need their own allocation. */
 static void x86_core_cpu_timing_select_v30(
@@ -234,7 +234,10 @@ static void x86_core_cpu_timing_select_v30(
 {
     const t_cpuins_data *data = &context->instructions->data;
     const lib_u8 opcode = data->opcodes[0];
-    const lib_bool modrm = (opcode >= 0x86u && opcode <= 0x8eu) ||
+    const lib_bool scalar = opcode < 0x40u && (opcode & 7u) < 4u;
+    const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u ||
+        opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu;
+    const lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
     lib_u64 ticks;
     lib_u8 odd_penalty = 0u;
@@ -246,9 +249,43 @@ static void x86_core_cpu_timing_select_v30(
         .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
     };
     if (data->oplen == 0u || !(data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD)) return;
-    if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
+    if (scalar) {
+        const lib_bool read_only = (opcode & 0x38u) == 0x38u || (opcode & 2u);
+        ticks = !data->flagMem ? 2u : read_only ? 11u : 16u;
+        odd_penalty = !(opcode & 1u) ? 0u : read_only ? 4u : 8u;
+    } else if (opcode < 0x40u && (opcode & 7u) < 6u) ticks = 4u;
+    else if (opcode >= 0x40u && opcode <= 0x4fu) ticks = 2u;
+    else if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
     else if (opcode >= 0x90u && opcode <= 0x97u) ticks = 3u;
     else switch (opcode) {
+    case 0x80u: case 0x81u: case 0x83u: {
+        const lib_bool compare = ((data->opcodes[1] >> 3u) & 7u) == 7u;
+        ticks = !data->flagMem ? 4u : compare ? 13u : 18u;
+        odd_penalty = !(opcode & 1u) ? 0u : compare ? 4u : 8u;
+        break;
+    }
+    case 0x84u: case 0x85u:
+        ticks = data->flagMem ? 10u : 2u;
+        odd_penalty = (opcode & 1u) ? 4u : 0u;
+        break;
+    case 0xa8u: case 0xa9u: ticks = 4u; break;
+    case 0xf6u: case 0xf7u: {
+        const lib_u8 operation = (data->opcodes[1] >> 3u) & 7u;
+        /* TEST, NOT and NEG have fixed rows; multiply/divide and the
+         * undocumented TEST alias cannot inherit their nominal costs. */
+        if (operation != 0u && operation != 2u && operation != 3u) return;
+        ticks = !data->flagMem ? (operation ? 2u : 4u) : operation ? 16u : 11u;
+        odd_penalty = !(opcode & 1u) ? 0u : operation ? 8u : 4u;
+        break;
+    }
+    case 0xfeu: case 0xffu:
+        if (((data->opcodes[1] >> 3u) & 7u) > 1u) return;
+        ticks = data->flagMem ? 16u : 2u;
+        odd_penalty = (opcode & 1u) ? 8u : 0u;
+        break;
+    case 0xf5u: case 0xf8u: case 0xf9u: case 0xfau: case 0xfbu: case 0xfcu: case 0xfdu:
+        ticks = 2u;
+        break;
     case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
         ticks = !data->flagMem ? 2u : opcode & 2u ? 11u : 9u;
         odd_penalty = (opcode & 1u) ? 4u : 0u;
@@ -300,6 +337,7 @@ static void x86_core_cpu_timing_select_v30(
     result->ticks = ticks;
     result->retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
     result->form_id = opcode | (modrm && data->flagMem ? 0x100u : 0u);
+    if (group) result->form_id |= ((lib_u32)(data->opcodes[1] >> 3u) & 7u) << 9u;
     result->key_id = result->form_id;
 }
 

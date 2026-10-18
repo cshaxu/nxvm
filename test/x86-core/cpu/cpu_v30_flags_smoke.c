@@ -101,6 +101,15 @@ static lib_i32 v30_flags_check(const v30_flags_case *item, lib_bool deep)
         fixture.record_count = fixture.observations = 0u;
     }
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    const lib_u64 clocks = item->prefix || item->operation <= V30_FLAGS_POP ? 0u :
+        item->operation == V30_FLAGS_FROM_AH ? 3u : 2u;
+    const lib_u32 form = clocks ? fixture.memory[0x80000u+item->pc] :
+        X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
+    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.formula_inputs || timing.form_id != form || timing.key_id != form ||
+        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
     t_cpu actual = fixture.bus.cpu;
     /* NEC leaves AH bits 5,3,1 undefined for MOV AH,PSW. */
     if (item->operation == V30_FLAGS_TO_AH) actual.data.ah &= 0xd5u;
@@ -142,7 +151,11 @@ static lib_i32 v30_flags_check(const v30_flags_case *item, lib_bool deep)
                     fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.fetches) return 1;
             } else {
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
-                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults) return 1;
+                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                    fixture.bus.execution.completed_observation_valid ||
+                    fixture.bus.execution.timing_result.ticks ||
+                    fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)
+                    return 1;
             }
             if (fixture.bus.delivered_exceptions || fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
