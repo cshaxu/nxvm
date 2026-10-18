@@ -36,15 +36,15 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
-MyRaidenII M1 T2 S43 refreshes the eight current 0564 PC EXEs after
-Shared V30 packed BCD full-byte semantics P1 `bb03dcd87`. It changes no NXVM
+MyRaidenII M1 T2 S45 refreshes the eight current 0564 PC EXEs after
+Shared native V30 BUSLOCK lifetime P1 `5b963bb87`. It changes no NXVM
 source, configuration, firmware or media and allocates no NXVM task/S.
 MyNES 0044 hashes remain unchanged. This receiving publication supersedes
 only the PC hashes in the historical T564 snapshot above; it does not rewrite
 T564's accepted evidence or open task status. See the
-[current receiving evidence](../../myraidenii/etc/evidence/t2-s43-packed-bcd-bytes.md)
-and [ten release identities](../../myraidenii/etc/evidence/t2-s43-artifacts.json).
-Each width passes678 units (191 X86 Core),498 strict rows,1389 Types inputs
+[current receiving evidence](../../myraidenii/etc/evidence/t2-s45-bus-lock.md)
+and [ten release identities](../../myraidenii/etc/evidence/t2-s45-artifacts.json).
+Each width passes679 units (192 X86 Core),498 strict rows,1390 Types inputs
 and14 selected PC receiving integrations plus a restored-default identity,
 not a new full integration-suite claim. Both original Ninja/ccache Release
 graphs finish at default. Profile switches/restores recompile zero CPU
