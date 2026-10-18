@@ -136,7 +136,9 @@ static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
     const lib_bool stack=item->form==V30_CONTROL_CALL_WORD || item->form==V30_CONTROL_FAR_CALL ||
         item->form==V30_CONTROL_INDIRECT_CALL || item->form==V30_CONTROL_INDIRECT_FAR_CALL ||
         item->form>=V30_CONTROL_RETURN;
-    const lib_bool odd=(stack ? before->data.sp : memory ? v30_control_address(before,item) : 0u) & 1u;
+    const lib_u32 pointer=memory ? v30_control_address(before,item) : 0u;
+    const lib_bool mixed=stack && memory && ((pointer ^ before->data.sp) & 1u);
+    const lib_bool odd=((stack ? before->data.sp : pointer) & 1u) || (stack && memory && (pointer & 1u));
     lib_u64 clocks=0u;
     if (!item->prefix) switch (item->form) {
     case V30_CONTROL_CONDITIONAL: clocks=taken ? 14u : 4u; break;
@@ -148,11 +150,10 @@ static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
     case V30_CONTROL_INDIRECT_JUMP: clocks=memory ? (odd ? 24u : 20u) : 11u; break;
     case V30_CONTROL_INDIRECT_FAR_JUMP: clocks=memory ? (odd ? 35u : 27u) : 0u; break;
     case V30_CONTROL_INDIRECT_CALL:
-        if (memory && ((v30_control_address(before,item) ^ before->data.sp) & 1u)) break;
         clocks=memory ? (odd ? 31u : 23u) : odd ? 18u : 14u;
         break;
     case V30_CONTROL_INDIRECT_FAR_CALL:
-        if (!memory || ((v30_control_address(before,item) ^ before->data.sp) & 1u)) break;
+        if (!memory) break;
         clocks=odd ? 47u : 31u;
         break;
     case V30_CONTROL_RETURN: clocks=odd ? 19u : 15u; break;
@@ -173,7 +174,8 @@ static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
     const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
     if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
         timing.form_id!=form || timing.key_id!=form || timing.formula_inputs!=inputs ||
-        timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+        timing.retirement_origin!=(clocks ? (mixed ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE) :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
         lib_c_printf("V30:NOMINAL-CONTROL:FAIL form=%u modrm=%02x prefix=%u taken=%u ticks=%llu/%llu inputs=%x/%x\n",
             item->form,item->modrm,item->prefix,taken,timing.ticks,clocks,timing.formula_inputs,inputs);
@@ -364,5 +366,6 @@ lib_i32 main(void)
         }
     lib_c_printf("V30:CONTROL-FLOW:OK cases=%u\n",cases);
     lib_c_printf("V30:NOMINAL-CONTROL:OK cases=%u\n",cases);
+    lib_c_printf("V30:CONTROL-ALIGNMENT-MODEL:OK\n");
     return 0;
 }

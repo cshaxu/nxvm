@@ -458,7 +458,6 @@ static void x86_core_cpu_timing_select_v30(
         if (opcode == 0xffu && operation >= 2u && operation <= 5u) {
             if ((operation == 3u || operation == 5u) && !data->flagMem) return;
             if (operation <= 3u) {
-                if (data->flagMem && ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
                 ticks = !data->flagMem ? 14u : operation == 2u ? 23u : 31u;
                 stack_penalty = !data->flagMem ? 4u : operation == 2u ? 8u : 16u;
             } else {
@@ -469,10 +468,9 @@ static void x86_core_cpu_timing_select_v30(
             break;
         }
         if (opcode == 0xffu && operation == 6u) {
-            /* Only all-even/all-odd source rows are documented for both addresses. */
-            if (!data->flagMem || ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
-            ticks = 18u;
-            stack_penalty = 8u;
+            ticks = data->flagMem ? 18u : 8u;
+            stack_penalty = data->flagMem ? 8u : 4u;
+            if (!data->flagMem) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
         } else {
             if (operation > 1u) return;
             ticks = data->flagMem ? 16u : 2u;
@@ -488,14 +486,14 @@ static void x86_core_cpu_timing_select_v30(
     /* POPR's table has a 32-clock delta despite its seven data reads. */
     case 0x61u: ticks = 43u; stack_penalty = 32u; break;
     case 0x8fu:
-        if (!data->flagMem || ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
-        ticks = 17u;
-        stack_penalty = 8u;
+        ticks = data->flagMem ? 17u : 8u;
+        stack_penalty = data->flagMem ? 8u : 4u;
+        if (!data->flagMem) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
         break;
     case 0xc8u: {
         const lib_u8 level = data->opcodes[3];
-        /* The source omits level one and mixed stack/frame alignment. */
-        if (level == 1u || (level && ((data->oldcpu.data.sp ^ data->oldcpu.data.bp) & 1u))) return;
+        /* Level one extends the printed n>1 formula as an explicit L2 model. */
+        if (level == 1u) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
         ticks = level ? 19u + 8u * (level - 1u) : 12u;
         stack_penalty = level ? 4u + 8u * (level - 1u) : 4u;
         result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
@@ -562,7 +560,15 @@ static void x86_core_cpu_timing_select_v30(
     if (stack_penalty) {
         result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
         const lib_u16 stack = opcode == 0xc9u ? data->oldcpu.data.bp : data->oldcpu.data.sp;
-        if (stack & 1u) { ticks += stack_penalty; odd_word = LIB_TRUE; }
+        lib_bool odd = (stack & 1u) != 0u;
+        if ((modrm && data->flagMem) || (opcode == 0xc8u && data->opcodes[3] > 1u)) {
+            const lib_u16 operand = opcode == 0xc8u ? data->oldcpu.data.bp : data->mrm.offset;
+            /* Missing mixed rows use the all-odd envelope, not a physical bound.
+             * PREPARE level one never reads the BP frame chain. */
+            if ((stack ^ operand) & 1u) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+            odd = ((stack | operand) & 1u) != 0u;
+        }
+        if (odd) { ticks += stack_penalty; odd_word = LIB_TRUE; }
     }
     if (modrm && data->flagMem) {
         result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM |

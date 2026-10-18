@@ -199,20 +199,23 @@ static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_sta
     const lib_bool memory=item->operation==V30_STACK_PUSH_MEMORY || item->operation==V30_STACK_POP_MEMORY;
     const lib_bool alias=!memory && (opcode==0xffu || opcode==0x8fu);
     const lib_bool prefix=opcode==0x26u || opcode==0x2eu || opcode==0x36u || opcode==0x3eu;
-    const lib_bool odd=(item->operation==V30_STACK_LEAVE ? item->bp : item->sp) & 1u;
-    if (!prefix && !alias) switch (item->operation) {
+    lib_bool odd=(item->operation==V30_STACK_LEAVE ? item->bp : item->sp) & 1u;
+    lib_bool modeled=alias;
+    if (!prefix) switch (item->operation) {
     case V30_STACK_PUSH_REG: case V30_STACK_PUSH_DECREMENTED_SP: case V30_STACK_POP_REG:
         clocks=odd ? 12u : 8u; break;
     case V30_STACK_PUSH_VALUE: clocks=(item->bytes==2u ? 7u : 8u)+(odd ? 4u : 0u); break;
     case V30_STACK_PUSH_MEMORY: case V30_STACK_POP_MEMORY:
-        if ((item->address & 1u)!=(item->sp & 1u)) break;
+        modeled=((item->address ^ item->sp) & 1u)!=0u;
+        odd=((item->address | item->sp) & 1u)!=0u;
         clocks=(item->operation==V30_STACK_PUSH_MEMORY ? 18u : 17u)+(odd ? 8u : 0u);
         inputs=X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         break;
     case V30_STACK_PUSH_ALL: clocks=odd ? 67u : 35u; break;
     case V30_STACK_POP_ALL: clocks=odd ? 75u : 43u; break;
     case V30_STACK_ENTER:
-        if (item->level==1u || (item->level && ((item->sp ^ item->bp) & 1u))) break;
+        modeled=item->level==1u || (item->level>1u && ((item->sp ^ item->bp) & 1u));
+        if (item->level>1u) odd=((item->sp | item->bp) & 1u)!=0u;
         clocks=item->level ? (odd ? 23u+16u*(item->level-1u) : 19u+8u*(item->level-1u)) : odd ? 16u : 12u;
         inputs=X86_CORE_CPU_TIMING_INPUT_SIZE;
         break;
@@ -222,13 +225,15 @@ static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_sta
     if (clocks) {
         inputs|=X86_CORE_CPU_TIMING_INPUT_MEMORY | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
         form=opcode | (memory ? 0x100u : 0u);
-        if (memory) form|=((lib_u32)(item->code[1]>>3u) & 7u)<<9u;
+        if (memory || alias) form|=((lib_u32)(item->code[1]>>3u) & 7u)<<9u;
     }
     const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
     if (timing.ticks!=clocks || timing.formula_inputs!=inputs || timing.key_id!=form || timing.form_id!=form ||
         !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
+        timing.retirement_origin!=(clocks ? (modeled ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE) :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture->observations ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
         lib_c_printf("V30:NOMINAL-STACK:FAIL op=%u sp=%04x bp=%04x level=%u ticks=%llu/%llu\n",
             item->operation,item->sp,item->bp,item->level,timing.ticks,clocks);
         return 1;
@@ -236,7 +241,7 @@ static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_sta
     return 0;
 }
 
-static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
+static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures, lib_u32 *cases)
 {
     static v30_memory_fixture fixture;
     static v30_stack_model model;
@@ -265,6 +270,7 @@ static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
         return 1;
     }
     const lib_u32 read_parts=fixture.reads, write_parts=fixture.writes, fetch_parts=fixture.fetches;
+    ++*cases;
     if (!failures) return 0;
     for (lib_u8 write=0u; write<2u; ++write)
         for (lib_u32 part=1u; part<=(write ? write_parts : read_parts); ++part) {
@@ -300,7 +306,7 @@ static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
     return 0;
 }
 
-static lib_i32 v30_stack_scalars(void)
+static lib_i32 v30_stack_scalars(lib_u32 *cases)
 {
     static const lib_u16 stacks[]={0x700u,0x701u,0u,1u,0xffffu};
     static const lib_u8 prefixes[]={0u,0x26u,0x2eu,0x36u,0x3eu};
@@ -314,14 +320,14 @@ static lib_i32 v30_stack_scalars(void)
                     item.code[0]=alias ? pop ? 0x8fu : 0xffu : (pop ? 0x58u : 0x50u)+reg;
                     item.bytes=alias ? 2u : 1u;
                     if (alias) item.code[1]=(pop ? 0xc0u : 0xf0u)+reg;
-                    if (v30_stack_check(&item,LIB_TRUE)) return 1;
+                    if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
                 }
     for (lib_u16 value=0u; value<=255u; ++value)
         for (lib_u8 alignment=0u; alignment<2u; ++alignment) {
             v30_stack_case item={.operation=V30_STACK_PUSH_VALUE,.code={0x6au,(lib_u8)value},
                 .bytes=2u,.sp=(lib_u16)(0x700u+alignment),.bp=0x600u,
                 .value=(lib_u16)(value<128u ? value : value+0xff00u)};
-            if (v30_stack_check(&item,LIB_TRUE)) return 1;
+            if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
         }
     for (lib_size stack=0u; stack<sizeof(stacks)/sizeof(stacks[0]); ++stack)
         for (lib_u8 prefix=0u; prefix<sizeof(prefixes); ++prefix)
@@ -342,7 +348,7 @@ static lib_i32 v30_stack_scalars(void)
                         item.code[extra+2u]=bp ? 0u : (lib_u8)offset;
                         if (!bp) item.code[extra+3u]=(lib_u8)(offset>>8u);
                         item.bytes=extra+(bp ? 3u : 4u);
-                        if (v30_stack_check(&item,LIB_TRUE)) return 1;
+                        if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
                     }
     static const lib_u16 values[]={0u,0x1234u,0x7fffu,0x8000u,0xffffu};
     for (lib_size stack=0u; stack<sizeof(stacks)/sizeof(stacks[0]); ++stack)
@@ -350,12 +356,12 @@ static lib_i32 v30_stack_scalars(void)
             v30_stack_case item={.operation=V30_STACK_PUSH_VALUE,
                 .code={0x68u,(lib_u8)values[value],(lib_u8)(values[value]>>8u)},
                 .bytes=3u,.sp=stacks[stack],.bp=0x600u,.value=values[value]};
-            if (v30_stack_check(&item,LIB_TRUE)) return 1;
+            if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
         }
     return 0;
 }
 
-static lib_i32 v30_stack_sets_and_frames(void)
+static lib_i32 v30_stack_sets_and_frames(lib_u32 *cases)
 {
     static const lib_u16 stacks[]={0x700u,0x701u,0u,1u,0xffffu};
     static const lib_u8 prefixes[]={0u,0x26u,0x2eu,0x36u,0x3eu};
@@ -368,19 +374,21 @@ static lib_i32 v30_stack_sets_and_frames(void)
                 if (extra) item.code[0]=prefixes[prefix];
                 item.code[extra]=pop ? 0x61u : 0x60u;
                 item.bytes=extra+1u;
-                if (v30_stack_check(&item,LIB_TRUE)) return 1;
+                if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
             }
     for (lib_u16 level=0u; level<=255u; ++level)
-        for (lib_u8 alignment=0u; alignment<2u; ++alignment)
+        for (lib_u8 alignment=0u; alignment<4u; ++alignment)
             for (lib_u8 overlap=0u; overlap<2u; ++overlap)
                 for (lib_u8 allocation=0u; allocation<2u; ++allocation) {
+                    /* Two independent parities; true overlap needs equal indices. */
+                    if (overlap && alignment>=2u) continue;
                     v30_stack_case item={.operation=V30_STACK_ENTER,.code={0xc8u,0u,0u,(lib_u8)level},
-                        .bytes=4u,.sp=(lib_u16)(0x700u+alignment),
-                        .bp=(lib_u16)(overlap ? 0x700u+alignment : 0x600u),
+                        .bytes=4u,.sp=(lib_u16)(0x700u+(alignment & 1u)),
+                        .bp=(lib_u16)(overlap ? 0x700u+(alignment & 1u) : 0x600u+(alignment>>1u)),
                         .level=(lib_u8)level,.allocation=allocation ? 0xffffu : 0u};
                     item.code[1]=item.code[2]=allocation ? 0xffu : 0u;
                     if (v30_stack_check(&item,level==0u || level==1u || level==2u ||
-                        level==31u || level==32u || level==255u)) return 1;
+                        level==31u || level==32u || level==255u,cases)) return 1;
                 }
     static const lib_u8 levels[]={0u,1u,2u,3u,31u,32u,255u};
     for (lib_size stack=0u; stack<sizeof(stacks)/sizeof(stacks[0]); ++stack)
@@ -388,25 +396,27 @@ static lib_i32 v30_stack_sets_and_frames(void)
             v30_stack_case item={.operation=V30_STACK_ENTER,.code={0xc8u,0xffu,0x7fu,levels[level]},
                 .bytes=4u,.sp=stacks[stack],.bp=stacks[stack],
                 .level=levels[level],.allocation=0x7fffu};
-            if (v30_stack_check(&item,LIB_TRUE)) return 1;
+            if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
         }
     for (lib_size stack=0u; stack<sizeof(stacks)/sizeof(stacks[0]); ++stack)
         for (lib_size frame=0u; frame<sizeof(stacks)/sizeof(stacks[0]); ++frame) {
             const v30_stack_case item={.operation=V30_STACK_LEAVE,.code={0xc9u},
                 .bytes=1u,.sp=stacks[stack],.bp=stacks[frame]};
-            if (v30_stack_check(&item,LIB_TRUE)) return 1;
+            if (v30_stack_check(&item,LIB_TRUE,cases)) return 1;
         }
     return 0;
 }
 
 lib_i32 main(void)
 {
+    lib_u32 cases=0u;
     const v30_stack_case popr={.operation=V30_STACK_POP_ALL,.code={0x61u},
         .bytes=1u,.sp=0x700u,.bp=0x600u};
-    if (v30_stack_check(&popr,LIB_TRUE)) return 1;
-    if (v30_stack_scalars()) return 1;
-    if (v30_stack_sets_and_frames()) return 1;
+    if (v30_stack_check(&popr,LIB_TRUE,&cases)) return 1;
+    if (v30_stack_scalars(&cases)) return 1;
+    if (v30_stack_sets_and_frames(&cases)) return 1;
     lib_c_printf("V30:STACK:OK\n");
     lib_c_printf("V30:NOMINAL-STACK:OK\n");
+    lib_c_printf("V30:STACK-ALIGNMENT-MODEL:OK cases=%u\n",cases);
     return 0;
 }
