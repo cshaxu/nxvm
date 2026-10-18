@@ -1,0 +1,118 @@
+[
+    {
+        "arch":  "x64",
+        "units":  672,
+        "x86_core_units":  185,
+        "failures":  0,
+        "skipped":  0,
+        "suite_seconds":  323.4,
+        "junit_suite_seconds":  323,
+        "software_entry_seconds":  8.16742,
+        "success_vectors":  655265,
+        "receivers":  [
+                          {
+                              "profile":  "default-pc-at-80386-1440k-hdd",
+                              "tests":  5,
+                              "cases":  [
+                                            "integration.vm-debug-pause-boundary-smoke",
+                                            "integration.vm-control-lifecycle-smoke",
+                                            "integration.session-ini-status-smoke",
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x64-default-pc-at-80386-1440k-hdd-test.log"
+                          },
+                          {
+                              "profile":  "ibm-5160-model-268-360k",
+                              "tests":  3,
+                              "cases":  [
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.ibm-5160-model-268-360k.ini",
+                                            "integration.session-ini-status-smoke"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x64-ibm-5160-model-268-360k-test.log"
+                          },
+                          {
+                              "profile":  "ibm-5170-model-339-1200k",
+                              "tests":  3,
+                              "cases":  [
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.session-ini-status-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.ibm-5170-model-339-1200k.ini"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x64-ibm-5170-model-339-1200k-test.log"
+                          },
+                          {
+                              "profile":  "compaq-deskpro-386-model-40-1200k",
+                              "tests":  3,
+                              "cases":  [
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.session-ini-status-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.compaq-deskpro-386-model-40-1200k.ini"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x64-compaq-deskpro-386-model-40-1200k-test.log"
+                          }
+                      ],
+        "restored_default_identity_tests":  1,
+        "receiving_cpu_object_recompilations":  0,
+        "log":  "build/myraidenii/t2-s22-unit-x64.log"
+    },
+    {
+        "arch":  "x86",
+        "units":  672,
+        "x86_core_units":  185,
+        "failures":  0,
+        "skipped":  0,
+        "suite_seconds":  136.98,
+        "junit_suite_seconds":  136,
+        "software_entry_seconds":  9.66592,
+        "success_vectors":  655265,
+        "receivers":  [
+                          {
+                              "profile":  "default-pc-at-80386-1440k-hdd",
+                              "tests":  5,
+                              "cases":  [
+                                            "integration.vm-debug-pause-boundary-smoke",
+                                            "integration.vm-control-lifecycle-smoke",
+                                            "integration.session-ini-status-smoke",
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x86-default-pc-at-80386-1440k-hdd-test.log"
+                          },
+                          {
+                              "profile":  "ibm-5160-model-268-360k",
+                              "tests":  3,
+                              "cases":  [
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.ibm-5160-model-268-360k.ini",
+                                            "integration.session-ini-status-smoke"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x86-ibm-5160-model-268-360k-test.log"
+                          },
+                          {
+                              "profile":  "ibm-5170-model-339-1200k",
+                              "tests":  3,
+                              "cases":  [
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.session-ini-status-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.ibm-5170-model-339-1200k.ini"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x86-ibm-5170-model-339-1200k-test.log"
+                          },
+                          {
+                              "profile":  "compaq-deskpro-386-model-40-1200k",
+                              "tests":  3,
+                              "cases":  [
+                                            "integration.pc-product-ini-identity-smoke",
+                                            "integration.session-ini-status-smoke",
+                                            "integration.vm-profile-floppy-boot-matrix.compaq-deskpro-386-model-40-1200k.ini"
+                                        ],
+                              "log":  "build/myraidenii/t2-s22-release-x86-compaq-deskpro-386-model-40-1200k-test.log"
+                          }
+                      ],
+        "restored_default_identity_tests":  1,
+        "receiving_cpu_object_recompilations":  0,
+        "log":  "build/myraidenii/t2-s22-unit-x86.log"
+    }
+]
