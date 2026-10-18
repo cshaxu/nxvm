@@ -183,7 +183,8 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
     if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
         fixture.bus.delivered_exceptions != (lib_u32)trap ||
         (trap && fixture.bus.delivered_exception.exception_mask != VCPUINS_EXCEPT_DE) ||
-        fixture.bus.instruction_count != 1u || lib_memory_compare(&actual,&expected,sizeof(actual)) ||
+        fixture.bus.instruction_count != 1u || v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
+        lib_memory_compare(&actual,&expected,sizeof(actual)) ||
         v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
         lib_c_printf("V30:MULTIPLY-DIVIDE:FAIL op=%u width=%u modrm=%02x prefix=%u input=%08x operand=%04x trap=%u ax=%04x/%04x dx=%04x/%04x ip=%04x/%04x sp=%04x/%04x\n",
             item->operation,item->width,item->modrm,item->prefix,item->dividend,item->operand,trap,
@@ -218,6 +219,7 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
             else fixture.fail_read = part;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.bus.delivered_exceptions ||
+                v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE) ||
                 fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
                 v30_memory_check_plan(&fixture,&plan,LIB_TRUE)) {

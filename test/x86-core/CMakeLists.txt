@@ -19,6 +19,7 @@ set(SHARED_X86_CORE_TEST_TARGETS)
 # CPU/FPU registrations move here without changing their assertions.
 shared_register_test(x86-core fpu/fpu_contract x86-core-fpu)
 shared_register_test(x86-core cpu/cpu_contract x86-core-cpu)
+shared_register_test(x86-core cpu/cpu_completion x86-core-cpu)
 shared_register_test(x86-core cpu/cpu_v30_native x86-core-cpu)
 shared_register_test(x86-core cpu/cpu_v30_interrupt x86-core-cpu)
 shared_register_test(x86-core cpu/cpu_v30_software_arbitration x86-core-cpu)

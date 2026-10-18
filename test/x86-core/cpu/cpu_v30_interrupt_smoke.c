@@ -179,6 +179,7 @@ static lib_i32 v30_interrupt_case_check(const v30_interrupt_case *item)
     if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
         fixture.bus.execution.nmi_pending != nmi_pending || fixture.bus.interrupt != int_pending ||
         fixture.bus.acknowledgements != (lib_u32)(winner == 0x30u) ||
+        v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
         fixture.bus.delivered_exceptions != (lib_u32)(winner == 1u) ||
         lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
         v30_memory_check_plan(&fixture,&plan,LIB_FALSE) ||
@@ -280,7 +281,8 @@ static lib_i32 v30_interrupt_wake(v30_memory_fixture *fixture, const v30_interru
     if (!v30_interrupt_prepare(fixture,&halted)) return 1;
     x86_core_cpu_execution_refresh(&fixture->bus.execution);
     if (fixture->bus.execution.stop_requested || !fixture->bus.cpu.data.flagHalt ||
-        !fixture->bus.execution.debug_trap_pending) return 1;
+        !fixture->bus.execution.debug_trap_pending ||
+        v30_memory_check_completion(fixture,LIB_TRUE,LIB_FALSE)) return 1;
     *checkpoint=fixture->bus.cpu;
     checkpoint->data.flagHalt=LIB_FALSE;
     t_cpu entered=*checkpoint;
@@ -315,7 +317,9 @@ static lib_i32 v30_interrupt_refusals(void)
                 v30_interrupt_clear(&fixture);
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
                 if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
-                    fixture.bus.execution.debug_trap_pending || v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) return 1;
+                    fixture.bus.execution.debug_trap_pending ||
+                    v30_memory_check_completion(&fixture,LIB_FALSE,LIB_TRUE) ||
+                    v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) return 1;
                 const lib_u32 counts[]={fixture.reads,fixture.writes,fixture.fetches,observations};
                 for (lib_u8 kind=0u; kind < sizeof(counts)/sizeof(counts[0]); ++kind)
                     for (lib_u32 ordinal=1u; ordinal <= counts[kind]; ++ordinal) {
@@ -336,6 +340,7 @@ static lib_i32 v30_interrupt_refusals(void)
                         else fixture.fail_fetch=ordinal;
                         x86_core_cpu_execution_refresh(&fixture.bus.execution);
                         if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
+                            v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE) ||
                             fixture.bus.delivered_exceptions || !fixture.bus.execution.debug_trap_pending ||
                             fixture.bus.execution.nmi_pending != !source || fixture.bus.interrupt ||
                             fixture.bus.acknowledgements != source ||
@@ -355,6 +360,7 @@ static lib_i32 v30_interrupt_refusals(void)
                     fixture.bus.fail_acknowledge=LIB_TRUE;
                     x86_core_cpu_execution_refresh(&fixture.bus.execution);
                     if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
+                        v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE) ||
                         !fixture.bus.interrupt || fixture.bus.acknowledgements || fixture.reads || fixture.writes ||
                         !fixture.bus.execution.debug_trap_pending ||
                         lib_memory_compare(&fixture.bus.cpu,&checkpoint,sizeof(checkpoint))) return 1;
@@ -397,6 +403,7 @@ static lib_i32 v30_interrupt_step_refusals(void)
                     /* The winning step consumes its own request before entry;
                      * host failure stops execution, never retries that prefix. */
                     if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
+                        v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
                         fixture.bus.delivered_exceptions || fixture.bus.acknowledgements ||
                         fixture.bus.execution.debug_trap_pending || fixture.bus.execution.debug_trap_cause ||
                         lib_memory_compare(&fixture.bus.cpu,&checkpoint,sizeof(checkpoint)) ||

@@ -150,6 +150,7 @@ static lib_i32 v30_software_check(const v30_software_case *item)
         fixture.bus.interrupt != ((item->events & 2u) && winner != 0x30u) ||
         fixture.bus.acknowledgements != (lib_u32)(winner == 0x30u) ||
         fixture.bus.execution.instruction_software_entry != taken ||
+        v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
         fixture.bus.execution.debug_trap_pending ||
         lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
         v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
@@ -175,6 +176,7 @@ static lib_i32 v30_software_check(const v30_software_case *item)
         fixture.bus.interrupt != ((item->events & 2u) && winner != 0x30u) ||
         fixture.bus.acknowledgements != (lib_u32)(winner == 0x30u) ||
         fixture.bus.execution.instruction_software_entry ||
+        v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
         fixture.bus.execution.debug_trap_pending ||
         lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
         v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
@@ -242,6 +244,7 @@ static lib_i32 v30_software_refusals(void)
                     else fixture.fail_fetch=ordinal;
                     x86_core_cpu_execution_refresh(&fixture.bus.execution);
                     if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
+                        v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE) ||
                         fixture.bus.execution.instruction_software_entry ||
                         fixture.bus.acknowledgements || !fixture.bus.interrupt ||
                         !fixture.bus.execution.nmi_pending ||

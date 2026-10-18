@@ -167,7 +167,8 @@ static lib_i32 v30_entry_check(const v30_entry_case *item, lib_bool deep)
     if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
         fixture.bus.delivered_exceptions != (lib_u32)diagnostic ||
         (diagnostic && fixture.bus.delivered_exception.exception_mask != VCPUINS_EXCEPT_BR) ||
-        fixture.bus.instruction_count != 1u || fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
+        fixture.bus.instruction_count != 1u || v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
+        fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
         lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) || v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
         const lib_u32 frame = 0x20000u+fixture.bus.cpu.data.sp;
         lib_c_printf("V30:SOFTWARE-ENTRY:FAIL op=%u vector=%u modrm=%02x prefix=%u pc=%04x sp=%04x ip=%04x/%04x flags=%04x/%04x saved=%04x expected-next=%04x plan=%u\n",
@@ -197,7 +198,8 @@ static lib_i32 v30_entry_check(const v30_entry_case *item, lib_bool deep)
                     fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.fetches) return 1;
             } else {
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
-                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults) return 1;
+                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                    v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE)) return 1;
             }
             if (fixture.bus.delivered_exceptions || fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||

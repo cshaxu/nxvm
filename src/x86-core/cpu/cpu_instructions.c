@@ -20382,7 +20382,8 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
                     context->diagnostic_provider->record_delivered_exception,
                     context->diagnostic_context, &fault_cpu, &instruction_state);
             instruction_state.data.except = 0u;
-            _e_mark_instruction_fault_delivered(context);
+            if (!context->instruction_software_entry)
+                _e_mark_instruction_fault_delivered(context);
             return;
         }
         secondary = instruction_state.data.except;
@@ -21707,7 +21708,8 @@ static void _execution_refresh(
         !context->instruction_software_entry;
     if (dispatch_ready) ExecInt(context);
     if (retired_sx) _e_end_access(context, &event_scope);
-    if (dispatch_ready && !executed && !cpu_state.data.flagHalt)
+    if (dispatch_ready && !executed && !cpu_state.data.flagHalt &&
+        !context->stop_requested)
         context->instruction_fault_delivered = LIB_TRUE;
 }
 

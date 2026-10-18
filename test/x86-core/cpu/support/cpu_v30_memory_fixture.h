@@ -2,6 +2,7 @@
 #define TEST_CPU_V30_MEMORY_FIXTURE_H
 
 #include "cpu_bus_fixture.h"
+#include "lib/types/file.h"
 
 #define CPU_V30_MEMORY_RECORD_CAPACITY 2048u
 
@@ -172,6 +173,24 @@ static inline lib_i32 v30_memory_check_plan(const v30_memory_fixture *fixture,
             }
             if (fixture->memory[address] != value) return 1;
         }
+    }
+    return 0;
+}
+
+/* Completion and event-only delivery are separate from clock allocation.
+ * The public event query consumes its result, never the saved observation. */
+static inline lib_i32 v30_memory_check_completion(v30_memory_fixture *fixture,
+    lib_bool completed, lib_bool event_only)
+{
+    x86_core_cpu_execution_context *execution = &fixture->bus.execution;
+    const lib_bool delivered = x86_core_cpu_execution_consume_instruction_fault_delivery(execution);
+    const lib_bool consumed = x86_core_cpu_execution_consume_instruction_fault_delivery(execution);
+    if (execution->completed_observation_valid != completed || delivered != event_only || consumed ||
+        (!completed && x86_core_cpu_capture_timing(execution).ticks != 0u)) {
+        lib_c_printf("V30:COMPLETION:FAIL completed=%u/%u event=%u/%u consumed=%u pc=%x halt=%u stop=%u\n",
+            execution->completed_observation_valid,completed,delivered,event_only,consumed,
+            fixture->bus.cpu.data.eip,fixture->bus.cpu.data.flagHalt,execution->stop_requested);
+        return 1;
     }
     return 0;
 }
