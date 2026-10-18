@@ -38,6 +38,7 @@
 - [T2 software-entry arbitration](evidence/t2-s28-software-arbitration.md).
 - [T2 completion versus event-only entry](evidence/t2-s29-completion.md).
 - [T2 V30 native transfer nominal clocks](evidence/t2-s30-nominal-transfer.md).
+- [T2 V30 fixed scalar nominal clocks](evidence/t2-s31-nominal-alu.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
