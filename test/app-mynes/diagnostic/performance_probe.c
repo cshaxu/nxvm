@@ -1,9 +1,13 @@
+#include "lib/kvm-console/frame_interface.h"
 #include "machine/driver.h"
 #include "core/machine.h"
 #include "core/snapshot_interface.h"
 #include "lib/base/clock_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
+
+static kvm_console_text_frame console_frame;
+static lib_bool frame_produced;
 
 enum { PERF_ROUNDS = 5, PERF_WARMUP_FRAMES = 60, PERF_MEASURED_FRAMES = 120 };
 
@@ -30,17 +34,16 @@ static lib_status clock_read(lib_u64 *units, lib_u64 *frequency)
     return base_clock_monotonic_counter(units, frequency);
 }
 
-static void hash_frame(lib_u64 *hash, const emulator_machine_frame *frame)
+static void hash_frame(lib_u64 *hash, const kvm_window_frame_storage *frame)
 {
-    if (frame->window.graphics) {
-        hash_bytes(hash, frame->window.image.palette,
-            sizeof(frame->window.image.palette));
-        hash_bytes(hash, frame->window.image.pixels, CORE_PPU_WIDTH * CORE_PPU_HEIGHT);
+    if (frame->frame.graphics) {
+        hash_bytes(hash, frame->data.graphics.pixels,
+            CORE_PPU_WIDTH * CORE_PPU_HEIGHT * sizeof(lib_u32));
     } else {
-        hash_bytes(hash, frame->window.text.base.cells,
-            80u * 25u * sizeof(frame->window.text.base.cells[0]));
-        hash_bytes(hash, frame->characters.primary, sizeof(frame->characters.primary));
-        hash_bytes(hash, frame->characters.secondary, sizeof(frame->characters.secondary));
+        hash_bytes(hash, frame->data.text.base.cells,
+            80u * 25u * sizeof(frame->data.text.base.cells[0]));
+        hash_bytes(hash, console_frame.characters.primary, sizeof(console_frame.characters.primary));
+        hash_bytes(hash, console_frame.characters.secondary, sizeof(console_frame.characters.secondary));
     }
 }
 
@@ -51,7 +54,7 @@ static lib_status measure_round(const lib_u8 *rom, lib_size rom_size,
     lib_bool text, performance_result *result, lib_u64 *frequency)
 {
     core_machine *machine = LIB_NULL;
-    emulator_machine_frame *frame = LIB_NULL;
+    kvm_window_frame_storage *frame = LIB_NULL;
     machine_driver driver = {0};
     lib_status status;
     lib_u64 start_cycles = 0u, start_instructions = 0u;
@@ -116,10 +119,10 @@ static lib_status measure_round(const lib_u8 *rom, lib_size rom_size,
         if (clock_read(&begin, &rate) != LIB_STATUS_OK) {
             status = LIB_STATUS_IO_ERROR; goto done;
         }
-        status = machine_driver_copy_frame(&driver, frame);
+        status = machine_driver_copy_frame(&driver, frame, &console_frame, &frame_produced);
         if (clock_read(&end, &rate) != LIB_STATUS_OK || rate != *frequency ||
                 end < begin) { status = LIB_STATUS_IO_ERROR; goto done; }
-        if (status != LIB_STATUS_OK || !frame->window.valid) {
+        if (status != LIB_STATUS_OK || !frame_produced) {
             if (status == LIB_STATUS_OK) status = LIB_STATUS_INVALID_STATE;
             goto done;
         }
@@ -138,7 +141,7 @@ done:
 static int measure_conversion(lib_bool text)
 {
     core_machine *machine = lib_allocate_zero(1u, sizeof(*machine));
-    emulator_machine_frame *frame = lib_allocate_zero(1u, sizeof(*frame));
+    kvm_window_frame_storage *frame = lib_allocate_zero(1u, sizeof(*frame));
     machine_driver driver = {0};
     if (machine == LIB_NULL || frame == LIB_NULL) {
         lib_release(machine); lib_release(frame); return 1;
@@ -160,8 +163,8 @@ static int measure_conversion(lib_bool text)
             if (clock_read(&begin, &frequency) != LIB_STATUS_OK) goto failure;
             for (lib_u32 number = 0u; number < 240u; ++number) {
                 ++machine->ppu.frame_revision;
-                if (machine_driver_copy_frame(&driver, frame) != LIB_STATUS_OK ||
-                        !frame->window.valid) goto failure;
+                if (machine_driver_copy_frame(&driver, frame, &console_frame, &frame_produced) != LIB_STATUS_OK ||
+                        !frame_produced) goto failure;
             }
             if (clock_read(&end, &rate) != LIB_STATUS_OK || rate != frequency ||
                     end < begin) goto failure;

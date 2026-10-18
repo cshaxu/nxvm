@@ -1,8 +1,12 @@
+#include "lib/kvm-console/frame_interface.h"
 #include <assert.h>
 
 #include "machine/driver.h"
 #include "core/machine.h"
 #include "lib/storage/file_interface.h"
+
+static kvm_console_text_frame console_frame;
+static lib_bool frame_produced;
 
 #define FIXTURE_PATH "mynes-ppu-timing-rom-fixture.nes"
 #define LIGHT_GREEN 0x64b0ffu
@@ -79,9 +83,9 @@ static void run_fresh_frames(machine_driver *driver, lib_u32 count)
     assert(driver->machine->ppu.frame_revision >= revision);
 }
 
-static lib_u32 rgb_at(const emulator_machine_frame *frame, lib_u32 x, lib_u32 y)
+static lib_u32 rgb_at(const kvm_window_frame_storage *frame, lib_u32 x, lib_u32 y)
 {
-    return frame->window.image.palette[frame->window.image.pixels[y * 256u + x]];
+    return frame->data.graphics.pixels[y * 256u + x];
 }
 
 static lib_u8 expected_bit(lib_u8 fine_x, lib_u32 x)
@@ -95,14 +99,14 @@ static lib_u8 expected_bit(lib_u8 fine_x, lib_u32 x)
 static void prove_fine_x(lib_u8 fine_x)
 {
     machine_driver *driver = LIB_NULL;
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
     lib_u32 x;
 
     write_fixture(fine_x);
     assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
     assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_fresh_frames(driver, 3u);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.graphics);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame.frame.graphics);
     for (x = 0u; x < 24u; ++x)
         assert(rgb_at(&frame, x, 1u) ==
             (expected_bit(fine_x, x) ? LIGHT_GREEN : BLACK));

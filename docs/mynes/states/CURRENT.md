@@ -2,6 +2,24 @@
 
 ## Current Work
 
+NXVM-hosted T564 S1 admits MyNES as the receiver of committed SoftPC
+dfc85aac's RGB32/four-slot frame import. The Machine driver resolves its
+existing NES palette directly into the writable RGB frame; the indexed host
+palette and colour-cube fallback are removed. Core execution, input, snapshot
+format and owner configuration remain unchanged. Both 0044 EXEs are receiving
+artifacts of that task, not a new MyNES version or independent MyNES S.
+Each width passes 45 MyNES units and 12 MyNES integrations, including actual
+native Window and Console cases, within the complete 666-unit/52-integration
+receiving qualification. The optional diagnostics compile on both widths.
+The current pair is in the [ten-artifact inventory](../../nxvm/etc/evidence/t564-s1-artifacts.json);
+[receiving evidence](../../nxvm/etc/evidence/t564-s1-shared-frame-import.md)
+records scope, failures and final results. Owner acceptance remains pending in
+the [NXVM packet](../../nxvm/states/CURRENT.md). This does not resolve the
+existing RDP input or intermittent native Console TODOs; no new independent
+MyNES S or manual RDP/physical-controller proof is claimed.
+
+## Previous Receiving Baseline
+
 NXVM-hosted [T563 S10](../../nxvm/states/CURRENT.md) admits MyNES as a receiver
 of committed SoftPC 1451522f's shared-eight import. Machine input, Escape registration,
 matching integration/unit tests and the opt-in input diagnostic adopt Base's

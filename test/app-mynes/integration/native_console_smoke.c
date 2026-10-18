@@ -101,8 +101,9 @@ static void frame_sink(void *opaque, lib_u32 sequence, lib_bool graphics,
                        lib_u32 generation)
 {
     native_console_fixture *fixture = opaque;
-    assert(emulator_session_enqueue_frame_completed(fixture->session, sequence,
-                                                  graphics, generation));
+    (void)sequence;
+    (void)graphics;
+    assert(emulator_session_enqueue_frame_completed(fixture->session, generation));
 }
 
 static DWORD WINAPI run_session(void *opaque)

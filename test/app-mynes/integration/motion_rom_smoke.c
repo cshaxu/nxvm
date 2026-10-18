@@ -1,8 +1,12 @@
+#include "lib/kvm-console/frame_interface.h"
 #include <assert.h>
 
 #include "machine/driver.h"
 #include "core/machine.h"
 #include "lib/storage/file_interface.h"
+
+static kvm_console_text_frame console_frame;
+static lib_bool frame_produced;
 
 #define FIXTURE_PATH "mynes-motion-rom-fixture.nes"
 
@@ -113,15 +117,15 @@ static void run_fresh_frames(machine_driver *driver, lib_u32 count)
     assert(driver->machine->ppu.frame_revision >= revision);
 }
 
-static lib_u32 rgb_at(const emulator_machine_frame *frame, lib_u32 x, lib_u32 y)
+static lib_u32 rgb_at(const kvm_window_frame_storage *frame, lib_u32 x, lib_u32 y)
 {
-    return frame->window.image.palette[frame->window.image.pixels[y * 256u + x]];
+    return frame->data.graphics.pixels[y * 256u + x];
 }
 
 static void prove_console(void)
 {
     machine_driver *driver = LIB_NULL;
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 2u };
     kvm_text_cell idle;
 
@@ -129,21 +133,21 @@ static void prove_console(void)
         LIB_STATUS_OK);
     assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_frame(driver);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && !frame.window.graphics);
-    idle = frame.window.text.base.cells[7u];
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && !frame.frame.graphics);
+    idle = frame.data.text.base.cells[7u];
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
     machine_driver_deliver_input(driver, &input);
     run_fresh_frames(driver, 2u);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && !frame.window.graphics);
-    assert(frame.window.text.base.cells[7u].glyph_index != idle.glyph_index ||
-        frame.window.text.base.cells[7u].foreground != idle.foreground);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && !frame.frame.graphics);
+    assert(frame.data.text.base.cells[7u].glyph_index != idle.glyph_index ||
+        frame.data.text.base.cells[7u].foreground != idle.foreground);
     assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 
 int main(void)
 {
     machine_driver *driver = LIB_NULL;
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 1u };
 
     write_fixture();
@@ -151,14 +155,14 @@ int main(void)
     assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_frame(driver);
     run_fresh_frames(driver, 2u);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.graphics);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame.frame.graphics);
     assert(rgb_at(&frame, 0u, 1u) == 0x388700u);
     assert(rgb_at(&frame, 8u, 1u) == 0x9290ffu);
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
     machine_driver_deliver_input(driver, &input);
     run_fresh_frames(driver, 2u);
     assert(!driver->machine->trap.trap_valid);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.graphics);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame.frame.graphics);
     assert(rgb_at(&frame, 0u, 1u) == 0x9290ffu);
     assert(rgb_at(&frame, 16u, 1u) == 0x388700u);
     assert(machine_driver_destroy(driver) == LIB_STATUS_OK);

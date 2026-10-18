@@ -51,7 +51,8 @@ void machine_driver_set_heartbeat(void *context, lib_bool enabled);
 void machine_driver_set_executor_callback(void *context,
     emulator_machine_executor_callback callback, void *callback_context);
 void machine_driver_deliver_input(void *context, const kvm_input_event *event);
-lib_status machine_driver_copy_frame(void *context, emulator_machine_frame *out_frame);
+lib_status machine_driver_copy_frame(void *context, kvm_window_frame_storage *out_frame,
+    kvm_console_text_frame *out_console, lib_bool *produced);
 lib_bool machine_driver_take_debug_stop(void *context);
 void machine_driver_cancel_debug(void *context);
 emulator_machine_debug_execute machine_driver_debug_execute(void);

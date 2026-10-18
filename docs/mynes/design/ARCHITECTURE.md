@@ -361,12 +361,17 @@ Unfinished-line interaction is defined in [Product UX](UI.md).
 
 Both presenters display the same machine through different complete frame
 representations and emit the same neutral input/hotkey events. Window receives
-pixels. KVM Console always receives text frames containing character cells and
-optional cell colors; it has no graphics input, pixel sampling or ASCII conversion
+resolved RGB32 pixels, directly from the driver's immutable colour table;
+there is no indexed transport palette or colour-cube fallback. Each presenter
+borrows its own four-slot exchange owned by Emulator Machine. Machine fills
+both complete text representations before declaring a text frame produced;
+Session/UI route notifications without copying the payload. KVM Console always
+receives text frames containing character cells and optional cell colors;
+it has no graphics input, pixel sampling or ASCII conversion
 path. A graphical frame submitted to it is explicitly rejected without changing
 the last accepted text frame; silently skipping it or reporting success is invalid.
 
-Core's machine display implementation converts a completed guest pixel image to a text frame
+Machine's driver converts a completed guest pixel image to a text frame
 for ASCII gameplay. The PPU still produces the normal guest image; conversion
 does not change hardware timing, pixel resolution or emulated state. It runs at
 the existing executor/driver boundary with bounded work and copied format options,

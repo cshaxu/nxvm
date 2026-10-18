@@ -1,10 +1,14 @@
+#include "lib/kvm-console/frame_interface.h"
 #include <assert.h>
 
 #include "machine/driver.h"
 #include "core/machine.h"
 #include "machine/debug_interface.h"
-#include "emulator/machine/frame_interface.h"
+#include "lib/kvm-window/frame_interface.h"
 #include "lib/storage/file_interface.h"
+
+static kvm_console_text_frame console_frame;
+static lib_bool frame_produced;
 
 static lib_u8 fixture[16u + 131072u];
 static lib_size fixture_size;
@@ -65,7 +69,7 @@ int main(void)
     machine_driver *driver = LIB_NULL;
     core_machine *accepted;
     lib_size index;
-    static emulator_machine_frame frame;
+    static kvm_window_frame_storage frame;
 
     make_fixture();
     write_fixture();
@@ -256,33 +260,33 @@ int main(void)
     }
     for (index = 0u; index < 64u; ++index)
         assert(machine_driver_run(driver));
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
-    assert(frame.window.valid == 1u && frame.window.graphics == 1u);
-    assert(frame.window.image.width == 256u && frame.window.image.height == 240u &&
-        frame.window.image.stride == 256u);
-    assert(frame.window.image.pixels[0] == 0u &&
-        frame.window.image.pixels[256u * 239u + 255u] == 0u);
-    assert(frame.window.image.palette[0] == 0x666666u);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.valid == 0u);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
+    assert(frame_produced && frame.frame.graphics != LIB_NULL);
+    assert(frame.data.graphics.width == 256u && frame.data.graphics.height == 240u &&
+        frame.data.graphics.stride == 256u);
+    assert(frame.data.graphics.pixels[0] == 0x666666u &&
+        frame.data.graphics.pixels[256u * 239u + 255u] == 0x666666u);
+    assert(frame.data.graphics.pixels[0] == 0x666666u);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame_produced == 0u);
     driver->machine->ppu.completed[0] = 0x1c3u;
     ++driver->machine->ppu.frame_revision;
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.valid == 1u);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame_produced == 1u);
     /* Palette index 3 with every emphasis bit uses the immutable combined
      * attenuation table: 0x3b00a4 -> 0x21005c. */
-    assert(frame.window.image.pixels[0] == 0u && frame.window.image.palette[0] == 0x21005cu);
+    assert(frame.data.graphics.pixels[0] == 0x21005cu);
     {
         lib_u8 request[16] = { MACHINE_DEBUG_VERSION, 0u, MACHINE_DEBUG_OUTPUT_SET, 0u, 8u };
         lib_u8 response[16]; lib_size response_size = 0u;
         request[8] = 1u;
         assert(machine_driver_debug_execute()(driver, request, sizeof(request), response,
             sizeof(response), &response_size) == LIB_STATUS_OK && response_size == 12u);
-        assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK &&
-            frame.window.valid == 1u && frame.window.graphics == 0u);
-        assert(frame.window.text.base.cells[0].glyph_index == ' ' &&
-            frame.window.text.base.cells[0].foreground == 0u &&
-            frame.window.text.base.cells[7].glyph_index == '-' &&
-            frame.window.text.base.cells[7].foreground == 8u &&
-            frame.characters.primary['-'] == '-' && frame.characters.primary[0x80u] == ' ');
+        assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK &&
+            frame_produced && frame.frame.graphics == LIB_NULL);
+        assert(frame.data.text.base.cells[0].glyph_index == ' ' &&
+            frame.data.text.base.cells[0].foreground == 0u &&
+            frame.data.text.base.cells[7].glyph_index == '-' &&
+            frame.data.text.base.cells[7].foreground == 8u &&
+            console_frame.characters.primary['-'] == '-' && console_frame.characters.primary[0x80u] == ' ');
         request[8] = 2u;
         assert(machine_driver_debug_execute()(driver, request, sizeof(request), response,
             sizeof(response), &response_size) == LIB_STATUS_INVALID_ARGUMENT);
@@ -295,7 +299,7 @@ int main(void)
     accepted = driver->machine;
     for (index = 0u; index < 64u; ++index)
         assert(machine_driver_run(driver));
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.valid == 1u);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame_produced == 1u);
     assert(!machine_driver_set_media(driver, "missing.nes", LIB_STORAGE_MEDIUM_READONLY));
     assert(driver->machine == accepted);
     make_uxrom_fixture();

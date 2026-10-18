@@ -174,20 +174,21 @@ static lib_u32 machine_driver_rgb(lib_u16 sample)
     return machine_driver_rgb_table[((sample >> 6u) & 7u) + ((sample & 0x3fu) << 3u)];
 }
 
+static const lib_u32 machine_driver_rgbi[16] = {
+    0x000000u,0x0000aau,0x00aa00u,0x00aaaau,0xaa0000u,0xaa00aau,0xaa5500u,0xaaaaaau,
+    0x555555u,0x5555ffu,0x55ff55u,0x55ffffu,0xff5555u,0xff55ffu,0xffff55u,0xffffffu
+};
+
 static lib_u8 machine_driver_nearest_rgbi(lib_u32 rgb)
 {
-    static const lib_u32 colors[16] = {
-        0x000000u,0x0000aau,0x00aa00u,0x00aaaau,0xaa0000u,0xaa00aau,0xaa5500u,0xaaaaaau,
-        0x555555u,0x5555ffu,0x55ff55u,0x55ffffu,0xff5555u,0xff55ffu,0xffff55u,0xffffffu
-    };
     lib_u32 best = 0u;
     lib_u32 best_distance = LIB_UINT32_MAX;
     lib_u32 index;
     for (index = 0u; index < 16u; ++index) {
-        lib_i32 red = (lib_i32)(rgb >> 16u) - (lib_i32)(colors[index] >> 16u);
+        lib_i32 red = (lib_i32)(rgb >> 16u) - (lib_i32)(machine_driver_rgbi[index] >> 16u);
         lib_i32 green = (lib_i32)((rgb >> 8u) & 0xffu) -
-            (lib_i32)((colors[index] >> 8u) & 0xffu);
-        lib_i32 blue = (lib_i32)(rgb & 0xffu) - (lib_i32)(colors[index] & 0xffu);
+            (lib_i32)((machine_driver_rgbi[index] >> 8u) & 0xffu);
+        lib_i32 blue = (lib_i32)(rgb & 0xffu) - (lib_i32)(machine_driver_rgbi[index] & 0xffu);
         lib_u32 distance = (lib_u32)(red * red + green * green + blue * blue);
         if (distance < best_distance) { best_distance = distance; best = index; }
     }
@@ -586,32 +587,35 @@ void machine_driver_deliver_input(void *context, const kvm_input_event *event)
     machine_driver_publish_buttons(driver);
 }
 
-lib_status machine_driver_copy_frame(void *context, emulator_machine_frame *out_frame)
+lib_status machine_driver_copy_frame(void *context, kvm_window_frame_storage *out_frame,
+    kvm_console_text_frame *out_console, lib_bool *produced)
 {
     machine_driver *driver = context;
     core_machine_video video;
     lib_status status;
     lib_u32 index;
-    lib_u32 palette_count;
-    lib_u16 sample_palette[512];
-    lib_bool cube;
 
-    if (driver == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    out_frame->window.valid = LIB_FALSE;
+    if (driver == LIB_NULL || out_frame == LIB_NULL || out_console == LIB_NULL ||
+        produced == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *produced = LIB_FALSE;
     if (driver->machine == LIB_NULL) return LIB_STATUS_OK;
     status = core_machine_copy_video(driver->machine, driver->video_samples,
         CORE_MACHINE_VIDEO_SAMPLE_CAPACITY, &video);
     if (status != LIB_STATUS_OK) return status;
     if (!video.ready || video.revision == driver->published_frame_revision)
         return LIB_STATUS_OK;
-    out_frame->window.graphics = !driver->text_output;
     if (driver->text_output) {
         lib_u32 row;
         lib_u32 column;
-        out_frame->window.text.base.text_columns = 80u;
-        out_frame->window.text.base.text_rows = 25u;
-        out_frame->window.text.base.cursor_mode = KVM_CURSOR_DISABLED;
-        out_frame->window.text.base.font_height = 16u;
+        (void)kvm_window_frame_begin_text(out_frame);
+        lib_memory_set(&out_frame->data.text, 0, sizeof(out_frame->data.text));
+        lib_memory_set(out_console, 0, sizeof(*out_console));
+        out_frame->data.text.base.text_columns = 80u;
+        out_frame->data.text.base.text_rows = 25u;
+        out_frame->data.text.base.cursor_mode = KVM_CURSOR_DISABLED;
+        out_frame->data.text.base.font_height = 16u;
+        lib_memory_copy(out_frame->data.text.base.text_palette, machine_driver_rgbi,
+            sizeof(machine_driver_rgbi));
         for (row = 0u; row < 25u; ++row) for (column = 0u; column < 80u; ++column) {
             static const lib_u8 glyphs[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', 0u};
             lib_u32 source_y_begin = row * 240u / 25u;
@@ -624,7 +628,7 @@ lib_status machine_driver_copy_frame(void *context, emulator_machine_frame *out_
             lib_u32 samples = 0u;
             lib_u32 source_y;
             lib_u32 source_x;
-            kvm_text_cell *cell = &out_frame->window.text.base.cells[row * 80u + column];
+            kvm_text_cell *cell = &out_frame->data.text.base.cells[row * 80u + column];
             if (column < 7u || column >= 73u) {
                 cell->glyph_index = ' '; cell->foreground = 0u;
                 cell->background = 0u; cell->glyph_bank = 0u;
@@ -652,57 +656,21 @@ lib_status machine_driver_copy_frame(void *context, emulator_machine_frame *out_
             }
         }
         for (index = 0u; index < 256u; ++index) {
-            out_frame->characters.primary[index] = index < 128u ? (lib_u16)index : ' ';
-            out_frame->characters.secondary[index] = index < 128u ? (lib_u16)index : ' ';
+            out_console->characters.primary[index] = index < 128u ? (lib_u16)index : ' ';
+            out_console->characters.secondary[index] = index < 128u ? (lib_u16)index : ' ';
         }
-        out_frame->window.valid = LIB_TRUE;
+        out_console->base = out_frame->data.text.base;
+        *produced = LIB_TRUE;
         driver->published_frame_revision = video.revision;
         return LIB_STATUS_OK;
     }
-    out_frame->window.image.width = CORE_MACHINE_VIDEO_WIDTH;
-    out_frame->window.image.height = CORE_MACHINE_VIDEO_HEIGHT;
-    out_frame->window.image.stride = CORE_MACHINE_VIDEO_WIDTH;
-    lib_memory_set(out_frame->window.image.palette, 0,
-        sizeof(out_frame->window.image.palette));
-    palette_count = 0u;
-    lib_memory_set(sample_palette, 0xff, sizeof(sample_palette));
-    cube = LIB_FALSE;
-    for (index = 0u; index < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY; ++index) {
-        lib_u16 sample = driver->video_samples[index] & 0x1ffu;
-        lib_u32 rgb;
-        lib_u32 candidate;
-        if (sample_palette[sample] != 0xffffu) {
-            out_frame->window.image.pixels[index] = (lib_u8)sample_palette[sample];
-            continue;
-        }
-        rgb = machine_driver_rgb(sample);
-        for (candidate = 0u; candidate < palette_count; ++candidate)
-            if (out_frame->window.image.palette[candidate] == rgb) break;
-        if (candidate == palette_count) {
-            if (palette_count == KVM_WINDOW_GRAPHICS_PALETTE_ENTRIES) {
-                cube = LIB_TRUE;
-                break;
-            }
-            out_frame->window.image.palette[palette_count++] = rgb;
-        }
-        out_frame->window.image.pixels[index] = (lib_u8)candidate;
-        sample_palette[sample] = (lib_u16)candidate;
-    }
-    if (cube) for (index = 0u; index < KVM_WINDOW_GRAPHICS_PALETTE_ENTRIES; ++index) {
-        lib_u32 red = index / 36u;
-        lib_u32 green = (index / 6u) % 6u;
-        lib_u32 blue = index % 6u;
-        out_frame->window.image.palette[index] = (red * 51u << 16u) |
-            (green * 51u << 8u) | blue * 51u;
-    }
-    if (cube) for (index = 0u; index < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY; ++index) {
-        lib_u32 rgb = machine_driver_rgb(driver->video_samples[index]);
-        lib_u32 red = ((rgb >> 16u) + 25u) / 51u;
-        lib_u32 green = (((rgb >> 8u) & 0xffu) + 25u) / 51u;
-        lib_u32 blue = ((rgb & 0xffu) + 25u) / 51u;
-        out_frame->window.image.pixels[index] = (lib_u8)(36u * red + 6u * green + blue);
-    }
-    out_frame->window.valid = LIB_TRUE;
+    kvm_window_graphics_frame *image = kvm_window_frame_begin_graphics(out_frame);
+    image->width = CORE_MACHINE_VIDEO_WIDTH;
+    image->height = CORE_MACHINE_VIDEO_HEIGHT;
+    image->stride = CORE_MACHINE_VIDEO_WIDTH;
+    for (index = 0u; index < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY; ++index)
+        image->pixels[index] = machine_driver_rgb(driver->video_samples[index]);
+    *produced = LIB_TRUE;
     driver->published_frame_revision = video.revision;
     return LIB_STATUS_OK;
 }

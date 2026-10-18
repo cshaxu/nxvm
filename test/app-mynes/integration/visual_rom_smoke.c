@@ -1,8 +1,12 @@
+#include "lib/kvm-console/frame_interface.h"
 #include <assert.h>
 
 #include "machine/driver.h"
 #include "core/machine.h"
 #include "lib/storage/file_interface.h"
+
+static kvm_console_text_frame console_frame;
+static lib_bool frame_produced;
 
 #define FIXTURE_PATH "mynes-visual-rom-fixture.nes"
 #define COLOR_IDLE 0x64b0ffu
@@ -71,15 +75,15 @@ static void run_frame(machine_driver *driver)
     for (index = 0u; index < 64u; ++index) assert(machine_driver_run(driver));
 }
 
-static lib_u32 pixel_rgb(const emulator_machine_frame *frame, lib_u32 pixel)
+static lib_u32 pixel_rgb(const kvm_window_frame_storage *frame, lib_u32 pixel)
 {
-    return frame->window.image.palette[frame->window.image.pixels[pixel]];
+    return frame->data.graphics.pixels[pixel];
 }
 
 static void prove_window(void)
 {
     machine_driver *driver = LIB_NULL;
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 1u };
 
     assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
@@ -89,14 +93,14 @@ static void prove_window(void)
     assert(driver->machine->ppu.palette[1] == 0x21u);
     assert(driver->machine->cartridge->chr[0] == 0xffu);
     assert(driver->machine->ppu.mask == 0x0au);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
-    assert(frame.window.valid && frame.window.graphics);
-    assert(frame.window.image.width == 256u && frame.window.image.height == 240u);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
+    assert(frame_produced && frame.frame.graphics);
+    assert(frame.data.graphics.width == 256u && frame.data.graphics.height == 240u);
     assert(pixel_rgb(&frame, 9u) == COLOR_IDLE);
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
     machine_driver_deliver_input(driver, &input);
     run_frame(driver);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
     assert(pixel_rgb(&frame, 9u) == COLOR_A);
     assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
@@ -104,7 +108,7 @@ static void prove_window(void)
 static void prove_console(void)
 {
     machine_driver *driver = LIB_NULL;
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 2u };
     kvm_text_cell idle;
 
@@ -112,17 +116,17 @@ static void prove_console(void)
         LIB_STATUS_OK);
     assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_frame(driver);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
-    assert(frame.window.valid && !frame.window.graphics);
-    assert(frame.window.text.base.text_columns == 80u && frame.window.text.base.text_rows == 25u);
-    assert(frame.window.text.base.cells[0].glyph_index == ' ');
-    idle = frame.window.text.base.cells[7];
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
+    assert(frame_produced && !frame.frame.graphics);
+    assert(frame.data.text.base.text_columns == 80u && frame.data.text.base.text_rows == 25u);
+    assert(frame.data.text.base.cells[0].glyph_index == ' ');
+    idle = frame.data.text.base.cells[7];
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
     machine_driver_deliver_input(driver, &input);
     run_frame(driver);
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
-    assert(frame.window.text.base.cells[7].glyph_index != idle.glyph_index ||
-        frame.window.text.base.cells[7].foreground != idle.foreground);
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
+    assert(frame.data.text.base.cells[7].glyph_index != idle.glyph_index ||
+        frame.data.text.base.cells[7].foreground != idle.foreground);
     assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 

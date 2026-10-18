@@ -1,9 +1,13 @@
+#include "lib/kvm-console/frame_interface.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "machine/driver.h"
 #include "core/machine.h"
+
+static kvm_console_text_frame console_frame;
+static lib_bool frame_produced;
 
 static lib_u32 probe_audio_queued(const machine_driver *driver)
 {
@@ -23,7 +27,7 @@ static void probe(const char *variable, lib_u8 mapper, lib_bool text_output)
     const char *limit_text = getenv("MYNES_OWNER_SLICES");
     lib_u32 limit = 20000u;
     lib_u32 slice;
-    emulator_machine_frame frame = { 0 };
+    static kvm_window_frame_storage frame;
 
     if (path == LIB_NULL || path[0] == '\0') return;
     if (limit_text != LIB_NULL && limit_text[0] != '\0') {
@@ -38,9 +42,8 @@ static void probe(const char *variable, lib_u8 mapper, lib_bool text_output)
     machine_driver_set_heartbeat(driver, LIB_TRUE);
     for (slice = 0u; slice < limit && !driver->machine->trap.trap_valid; ++slice)
         assert(machine_driver_run(driver));
-    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
-    assert(frame.window.valid != 0u && frame.window.graphics ==
-        (text_output ? 0u : 1u));
+    assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
+    assert(frame_produced && (frame.frame.graphics != LIB_NULL) == !text_output);
     printf("mapper=%u frame=%s slices=%u instructions=%llu frames=%u pcm=%u queued=%u dropped=%llu trap=%d reason=%u pc=%04x address=%04x opcode=%02x\\n", mapper,
         text_output ? "text" : "graphics",
         slice, (unsigned long long)driver->machine->instructions,
