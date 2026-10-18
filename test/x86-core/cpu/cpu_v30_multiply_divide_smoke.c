@@ -133,6 +133,48 @@ static lib_bool v30_multiply_expected(t_cpu *cpu, const v30_multiply_case *item,
     return LIB_FALSE;
 }
 
+static lib_i32 v30_multiply_timing(const v30_memory_fixture *fixture,
+    const v30_multiply_case *item, lib_bool trap, lib_u32 address)
+{
+    /* Independent NEC row endpoints: register, even memory, odd memory.
+     * Ranges deliberately use the conservative L2 endpoint, not silicon data timing. */
+    static const lib_u8 clocks[][2][3] = {
+        {{22u,28u,28u},{30u,36u,40u}}, {{39u,45u,45u},{47u,53u,57u}},
+        {{19u,25u,25u},{25u,31u,35u}}, {{34u,40u,40u},{43u,49u,53u}},
+        {{0u,0u,0u},{34u,40u,44u}}, {{0u,0u,0u},{42u,48u,52u}}
+    };
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->bus.execution);
+    const lib_bool allocated = !item->prefix && !trap;
+    const lib_bool memory = item->modrm < 0xc0u;
+    const lib_bool odd = memory && item->width == 2u && (address & 1u);
+    const lib_u8 opcode = item->operation >= V30_MULTIPLY_IMMEDIATE_BYTE ?
+        (item->operation == V30_MULTIPLY_IMMEDIATE_BYTE ? 0x6bu : 0x69u) : 0xf5u+item->width;
+    lib_u32 key = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs = 0u;
+    lib_u64 expected = 0u;
+    x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
+    if (allocated) {
+        expected = clocks[item->operation][item->width - 1u][memory ? (odd ? 2u : 1u) : 0u];
+        key = opcode | (memory ? 0x100u : 0u);
+        if (item->operation < V30_MULTIPLY_IMMEDIATE_BYTE) key |= (lib_u32)(item->operation+4u) << 9u;
+        inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
+        if (memory) inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+        if (odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+        origin = item->operation == V30_DIVIDE_UNSIGNED ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
+    }
+    if (timing.ticks != expected || timing.key_id != key || timing.form_id != key ||
+        timing.formula_inputs != inputs || timing.retirement_origin != origin ||
+        timing.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_NONE || timing.event_ticks ||
+        !timing.source_timing_unallocated || fixture->observations ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+        lib_c_printf("V30:NOMINAL-MULTIPLY-DIVIDE:FAIL op=%u width=%u modrm=%02x prefix=%u trap=%u clocks=%llu/%llu origin=%u/%u\n",
+            item->operation,item->width,item->modrm,item->prefix,trap,
+            timing.ticks,expected,timing.retirement_origin,origin);
+        return 1;
+    }
+    return 0;
+}
+
 static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
 {
     static v30_memory_fixture fixture;
@@ -177,6 +219,7 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
         fixture.record_count = fixture.observations = 0u;
     }
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (v30_multiply_timing(&fixture,item,trap,address)) return 1;
     t_cpu actual = fixture.bus.cpu;
     actual.data.eflags &= defined;
     expected.data.eflags &= defined;
@@ -219,6 +262,8 @@ static lib_i32 v30_multiply_check(const v30_multiply_case *item, lib_bool deep)
             else fixture.fail_read = part;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.bus.delivered_exceptions ||
+                fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE) ||
                 fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
@@ -238,6 +283,19 @@ lib_i32 main(void)
     static const lib_u16 values[] = {0u,1u,2u,127u,128u,255u,256u,0x7fffu,0x8000u,0xfffeu,0xffffu};
     static const lib_u8 divisors[] = {0u,1u,2u,127u,128u,129u,254u,255u};
     lib_u32 cases = 0u;
+    /* BX+SI is even and BX is odd in the prepared register image; every
+     * source family reaches both memory timing rows with successful arithmetic. */
+    for (lib_u8 operation = 0u; operation < 6u; ++operation)
+        for (lib_u8 width = 1u; width <= 2u; ++width) {
+            if (operation >= V30_MULTIPLY_IMMEDIATE_BYTE && width == 1u) continue;
+            for (lib_u8 odd = 0u; odd < 2u; ++odd) {
+                const v30_multiply_case item = {.operation=(v30_multiply_operation)operation,.width=width,
+                    .modrm=(lib_u8)((operation < V30_MULTIPLY_IMMEDIATE_BYTE ? 8u*(operation+4u) : 0u) + 7u*odd),
+                    .dividend=20u,.operand=3u,.immediate=5u};
+                if (v30_multiply_check(&item,LIB_TRUE)) return 1;
+                ++cases;
+            }
+        }
     for (lib_u8 width = 1u; width <= 2u; ++width) {
         const v30_multiply_case item = {.operation=V30_DIVIDE_SIGNED,.width=width,
             .modrm=0xf9u,.dividend=width == 1u ? 0xff80u : 0xffff8000u,.operand=1u};
@@ -290,5 +348,6 @@ lib_i32 main(void)
                 ++cases;
             }
     lib_c_printf("V30:MULTIPLY-DIVIDE:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-MULTIPLY-DIVIDE:OK\n");
     return 0;
 }

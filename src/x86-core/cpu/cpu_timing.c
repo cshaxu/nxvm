@@ -242,8 +242,10 @@ static void x86_core_cpu_timing_select_v30(
         (opcode >= 0xd0u && opcode <= 0xd3u);
     const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u || opcode == 0x8fu ||
         opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu || shift;
-    lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
+    lib_bool modrm = scalar || group || opcode == 0x69u || opcode == 0x6bu ||
+        (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
+    x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
     lib_u8 form_extension = 0u;
     lib_u64 ticks;
     lib_u8 odd_penalty = 0u;
@@ -372,13 +374,30 @@ static void x86_core_cpu_timing_select_v30(
     case 0xa8u: case 0xa9u: ticks = 4u; break;
     case 0xf6u: case 0xf7u: {
         const lib_u8 operation = (data->opcodes[1] >> 3u) & 7u;
-        /* TEST, NOT and NEG have fixed rows; multiply/divide and the
-         * undocumented TEST alias cannot inherit their nominal costs. */
-        if (operation != 0u && operation != 2u && operation != 3u) return;
+        if (operation >= 4u) {
+            /* Conservative endpoints of NEC's data-dependent ranges are L2,
+             * never an inferred operand-specific microsequence. DIVU is fixed. */
+            static const lib_u8 upper[][2] = {{22u,30u},{39u,47u},{19u,25u},{34u,43u}};
+            /* A DE entry owns a combined cost, not the successful divide row. */
+            if (operation >= 6u && context->instruction_software_entry) return;
+            ticks = upper[operation - 4u][opcode & 1u] + (data->flagMem ? 6u : 0u);
+            odd_penalty = (opcode & 1u) ? 4u : 0u;
+            result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
+            if (operation != 6u) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
+            break;
+        }
+        /* The undocumented TEST alias has no source row. */
+        if (operation == 1u) return;
         ticks = !data->flagMem ? (operation ? 2u : 4u) : operation ? 16u : 11u;
         odd_penalty = !(opcode & 1u) ? 0u : operation ? 8u : 4u;
         break;
     }
+    case 0x69u: case 0x6bu:
+        ticks = (opcode == 0x69u ? 42u : 34u) + (data->flagMem ? 6u : 0u);
+        odd_penalty = 4u;
+        result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
+        break;
     case 0xfeu: case 0xffu: {
         const lib_u8 operation = (data->opcodes[1] >> 3u) & 7u;
         if (opcode == 0xffu && operation >= 2u && operation <= 5u) {
@@ -502,7 +521,7 @@ static void x86_core_cpu_timing_select_v30(
     if (control) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL |
         X86_CORE_CPU_TIMING_INPUT_BRANCH | (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u);
     result->ticks = ticks;
-    result->retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
+    result->retirement_origin = origin;
     result->form_id = opcode | ((lib_u32)form_extension << 16u) | (modrm && data->flagMem ? 0x100u : 0u);
     if (group) result->form_id |= ((lib_u32)(data->opcodes[1] >> 3u) & 7u) << 9u;
     result->key_id = result->form_id;
