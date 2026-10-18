@@ -1,0 +1,62 @@
+[
+    {
+        "path":  "assets/nxvm/nxvm_0_5_0564_x64.exe",
+        "machine":  "0x8664",
+        "bytes":  1549219,
+        "sha256":  "2F5A889A233DBC53F53798135EDF3E6D411A8F84284F357B27D5C1DA36D7A1A7"
+    },
+    {
+        "path":  "assets/my5160/my5160_0_5_0564_x64.exe",
+        "machine":  "0x8664",
+        "bytes":  1538011,
+        "sha256":  "437F5AE37FD8DD09DFF3964886232A841BAB8D2F2A9A5BA89B75A4947FB11E8B"
+    },
+    {
+        "path":  "assets/my5170/my5170_0_5_0564_x64.exe",
+        "machine":  "0x8664",
+        "bytes":  1550073,
+        "sha256":  "E572BAC61BB8ACC149501BB59A7025F7A897284AC3C44B79C326E8B0DE78C376"
+    },
+    {
+        "path":  "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+        "machine":  "0x8664",
+        "bytes":  1537247,
+        "sha256":  "D02EF4910DE1E6F17A289110C5AC8B1E2C510B63927C1576218C86B3EB70860D"
+    },
+    {
+        "path":  "assets/mynes/mynes_0_0_0044_x64.exe",
+        "machine":  "0x8664",
+        "bytes":  263694,
+        "sha256":  "94F889447DF29B7C26CB99D93EC89DC52FCE2A62B01537B3D0C9D118F2484BF6"
+    },
+    {
+        "path":  "assets/nxvm/nxvm_0_5_0564_x86.exe",
+        "machine":  "0x014C",
+        "bytes":  1696448,
+        "sha256":  "C136F0DF85FE0C9ED20CE0266B51A84CE8B51298F7DACAB429BEF9CC91628000"
+    },
+    {
+        "path":  "assets/my5160/my5160_0_5_0564_x86.exe",
+        "machine":  "0x014C",
+        "bytes":  1683269,
+        "sha256":  "4EB0EEABA3201750B85EF54124D4C425A632F5CD4FC30AC5E5B6AB60ACA65516"
+    },
+    {
+        "path":  "assets/my5170/my5170_0_5_0564_x86.exe",
+        "machine":  "0x014C",
+        "bytes":  1697150,
+        "sha256":  "4C9829F84F2960074A7BF5BA41F46ADEF71FBBAE2521737EA6A3819E4900E53F"
+    },
+    {
+        "path":  "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+        "machine":  "0x014C",
+        "bytes":  1684379,
+        "sha256":  "6F43A5C3D2A88D063C934514678034FA0372A102402A9D7096802A043E1997E6"
+    },
+    {
+        "path":  "assets/mynes/mynes_0_0_0044_x86.exe",
+        "machine":  "0x014C",
+        "bytes":  262670,
+        "sha256":  "0B3947144DFBC5A18D81F8D2DF47DEC88A55C9927738EF06F37B07406A9263BF"
+    }
+]

@@ -26,6 +26,7 @@
 - [T2 ordinary native transfers and addresses](evidence/t2-s16-transfer.md).
 - [T2 native scalar ALU qualification](evidence/t2-s17-alu.md).
 - [T2 native unpacked decimal and conversion](evidence/t2-s18-decimal.md).
+- [T2 native multiplication and division](evidence/t2-s19-multiply-divide.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
