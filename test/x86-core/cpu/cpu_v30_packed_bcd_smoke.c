@@ -88,13 +88,14 @@ static lib_i32 v30_bcd_run(cpu_bus_fixture *fixture, lib_u8 opcode, lib_u8 prefi
         lexeme.byte_count != size || fixture->writes != 0u) return 1;
     fixture->observations = 0u;
     x86_core_cpu_execution_refresh(&fixture->execution);
-    const lib_u64 clocks = prefix || odd ? 0u : 7u + 19u * (before.data.cl / 2u);
+    const lib_u64 clocks = odd ? 0u : 7u + 19u * (before.data.cl / 2u) + (prefix ? 2u : 0u);
     const lib_u32 key = clocks ? 0x0fu | ((lib_u32)opcode << 16u) :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
     if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
         timing.form_id != key || timing.key_id != key || fixture->observations ||
-        timing.formula_inputs != (clocks ? X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE : 0u) ||
+        timing.formula_inputs != (clocks ? X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE |
+            (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) : 0u) ||
         timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||

@@ -25,13 +25,14 @@ static lib_u8 *v30_byte_register(cpu_bus_fixture *fixture, lib_u8 index)
 }
 
 static lib_i32 v30_nec_nominal_result(const cpu_bus_fixture *fixture,
-    lib_u64 clocks, lib_u8 suffix, lib_bool memory, lib_bool odd)
+    lib_u64 clocks, lib_u8 suffix, lib_bool memory, lib_bool odd, lib_bool prefix)
 {
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
     const lib_u32 form = clocks ? 0x0fu | ((lib_u32)suffix << 16u) | (memory ? 0x100u : 0u) :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    const lib_u32 inputs = clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
-        X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u;
+    const lib_u32 inputs = (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+        (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
+        X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u);
     if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
         timing.form_id != form || timing.key_id != form || timing.formula_inputs != inputs ||
         timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
@@ -104,9 +105,9 @@ static lib_i32 v30_bit_case(lib_u8 opcode, lib_u8 mode, lib_u8 reg,
     /* Source columns: register, byte/even memory, odd-word delta. */
     static const lib_u8 nominal[][3] = {{3u,12u,4u},{5u,14u,8u},{4u,13u,8u},{4u,18u,8u}};
     const lib_bool odd = mode != 3u && byte == 2u && (address & 1u);
-    const lib_u64 clocks = override ? 0u : nominal[operation][mode == 3u ? 0u : 1u] +
-        (opcode >= 0x18u) + (odd ? nominal[operation][2] : 0u);
-    if (v30_nec_nominal_result(&fixture,clocks,opcode,mode != 3u,odd)) return 1;
+    const lib_u64 clocks = nominal[operation][mode == 3u ? 0u : 1u] +
+        (opcode >= 0x18u) + (odd ? nominal[operation][2] : 0u) + (override ? 2u : 0u);
+    if (v30_nec_nominal_result(&fixture,clocks,opcode,mode != 3u,odd,override)) return 1;
     result = mode == 3u ? (byte == 1u ? *v30_byte_register(&fixture, reg) :
         *v30_word_register(&fixture, reg)) : fixture.memory[address] |
         (byte == 1u ? 0u : (lib_u32)fixture.memory[address + 1u] << 8u);
@@ -179,7 +180,7 @@ static lib_i32 v30_nibbles(void)
                 fixture.observations = 0u;
                 x86_core_cpu_execution_refresh(&fixture.execution);
                 const lib_u64 clocks = direction ? (reg < 8u ? 29u : 33u) : reg < 8u ? 25u : 28u;
-                if (v30_nec_nominal_result(&fixture,clocks,opcode,reg == 8u,LIB_FALSE)) return 1;
+                if (v30_nec_nominal_result(&fixture,clocks,opcode,reg == 8u,LIB_FALSE,LIB_FALSE)) return 1;
                 result = reg < 8u ? *v30_byte_register(&fixture, reg) : fixture.memory[0x501u];
                 /* AL's upper nibble is unspecified, including an AL destination. */
                 if (fixture.execution.stop_requested || fixture.faults ||

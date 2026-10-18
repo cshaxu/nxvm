@@ -89,18 +89,17 @@ static lib_i32 v30_field_run(cpu_bus_fixture *fixture, lib_u8 opcode,
     fixture->observations = 0u;
     x86_core_cpu_execution_refresh(&fixture->execution);
     /* Independent parity rows from NEC 12-21..24; upper endpoints are L2. */
-    const lib_u64 clocks = prefix ? 0u : insert ?
+    const lib_u64 clocks = (insert ?
         (immediate_form ? ((index & 1u) ? 103u : 87u) : ((index & 1u) ? 113u : 117u)) :
-        immediate_form ? ((index & 1u) ? 52u : 44u) : ((index & 1u) ? 59u : 55u);
-    const lib_u32 key = prefix ? X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED :
-        0x0fu | ((lib_u32)opcode << 16u);
-    const lib_u32 inputs = prefix ? 0u : X86_CORE_CPU_TIMING_INPUT_MEMORY |
+        immediate_form ? ((index & 1u) ? 52u : 44u) : ((index & 1u) ? 59u : 55u)) + (prefix ? 2u : 0u);
+    const lib_u32 key = 0x0fu | ((lib_u32)opcode << 16u);
+    const lib_u32 inputs = (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+        X86_CORE_CPU_TIMING_INPUT_MEMORY |
         ((index & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
     if (!timing.source_timing_unallocated || timing.ticks != clocks || timing.event_ticks ||
         timing.formula_inputs != inputs || timing.form_id != key || timing.key_id != key ||
-        timing.retirement_origin != (prefix ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) || fixture->observations ||
+        timing.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC || fixture->observations ||
         x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL))
         return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||

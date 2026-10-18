@@ -140,7 +140,7 @@ static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
     const lib_bool mixed=stack && memory && ((pointer ^ before->data.sp) & 1u);
     const lib_bool odd=((stack ? before->data.sp : pointer) & 1u) || (stack && memory && (pointer & 1u));
     lib_u64 clocks=0u;
-    if (!item->prefix) switch (item->form) {
+    switch (item->form) {
     case V30_CONTROL_CONDITIONAL: clocks=taken ? 14u : 4u; break;
     case V30_CONTROL_LOOP: clocks=taken ? (item->condition<2u ? 14u : 13u) : 5u; break;
     case V30_CONTROL_JUMP_BYTE: case V30_CONTROL_JUMP_WORD: clocks=12u; break;
@@ -163,9 +163,10 @@ static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
     }
     lib_u32 form=X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs=0u;
     if (clocks) {
+        if (item->prefix) { clocks+=2u; inputs|=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE; }
         form=opcode | (memory ? 0x100u : 0u);
         if (indirect) form|=((lib_u32)(item->modrm>>3u) & 7u)<<9u;
-        inputs=X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH |
+        inputs|=X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH |
             (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u) |
             (stack ? X86_CORE_CPU_TIMING_INPUT_MEMORY : 0u) |
             (memory ? X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS : 0u) |
@@ -189,7 +190,7 @@ static lib_i32 v30_control_check(const v30_control_case *item, lib_bool deep)
     static v30_memory_fixture fixture;
     const lib_u8 length = v30_control_prepare(&fixture,item);
     const t_cpu before = fixture.bus.cpu;
-    const lib_u8 opcode=fixture.memory[0x80000u+item->pc];
+    const lib_u8 opcode=fixture.memory[0x80000u+(lib_u16)(item->pc+(item->prefix != 0u))];
     const lib_u16 next = item->pc+length;
     const lib_bool call = item->form == V30_CONTROL_CALL_WORD || item->form == V30_CONTROL_FAR_CALL ||
         item->form == V30_CONTROL_INDIRECT_CALL || item->form == V30_CONTROL_INDIRECT_FAR_CALL;

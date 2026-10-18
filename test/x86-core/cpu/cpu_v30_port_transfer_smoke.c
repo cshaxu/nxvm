@@ -178,12 +178,13 @@ static lib_i32 v30_port_scalars(void)
                 lib_memory_compare(&fixture.bus.cpu, &before, sizeof(before)) != 0) return 1;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             const lib_bool odd=width==2u && (port & 1u);
-            const lib_u64 clocks=prefix ? 0u : (form<2u ? 9u : 8u)+(odd ? 4u : 0u);
+            const lib_u64 clocks=(form<2u ? 9u : 8u)+(odd ? 4u : 0u)+(prefix ? 2u : 0u);
             const lib_u32 key=clocks ? opcodes[form] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
             const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
             if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
                 timing.key_id!=key || timing.form_id!=key ||
-                timing.formula_inputs!=(clocks && odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) ||
+                timing.formula_inputs!=((prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+                    (clocks && odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u)) ||
                 timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
                     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
             if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x100u+size ||

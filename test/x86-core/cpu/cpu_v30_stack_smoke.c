@@ -195,13 +195,14 @@ static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_sta
 {
     lib_u64 clocks=0u;
     lib_u32 inputs=0u;
-    const lib_u8 opcode=item->code[0];
     const lib_bool memory=item->operation==V30_STACK_PUSH_MEMORY || item->operation==V30_STACK_POP_MEMORY;
-    const lib_bool alias=!memory && (opcode==0xffu || opcode==0x8fu);
-    const lib_bool prefix=opcode==0x26u || opcode==0x2eu || opcode==0x36u || opcode==0x3eu;
+    const lib_bool prefix=item->code[0]==0x26u || item->code[0]==0x2eu ||
+        item->code[0]==0x36u || item->code[0]==0x3eu;
+    const lib_u8 opcode=item->code[prefix];
     lib_bool odd=(item->operation==V30_STACK_LEAVE ? item->bp : item->sp) & 1u;
+    const lib_bool alias=!memory && (opcode==0xffu || opcode==0x8fu);
     lib_bool modeled=alias;
-    if (!prefix) switch (item->operation) {
+    switch (item->operation) {
     case V30_STACK_PUSH_REG: case V30_STACK_PUSH_DECREMENTED_SP: case V30_STACK_POP_REG:
         clocks=odd ? 12u : 8u; break;
     case V30_STACK_PUSH_VALUE: clocks=(item->bytes==2u ? 7u : 8u)+(odd ? 4u : 0u); break;
@@ -223,9 +224,10 @@ static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_sta
     }
     lib_u32 form=X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     if (clocks) {
+        if (prefix) { clocks+=2u; inputs|=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE; }
         inputs|=X86_CORE_CPU_TIMING_INPUT_MEMORY | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
         form=opcode | (memory ? 0x100u : 0u);
-        if (memory || alias) form|=((lib_u32)(item->code[1]>>3u) & 7u)<<9u;
+        if (memory || alias) form|=((lib_u32)(item->code[1u+prefix]>>3u) & 7u)<<9u;
     }
     const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
     if (timing.ticks!=clocks || timing.formula_inputs!=inputs || timing.key_id!=form || timing.form_id!=form ||

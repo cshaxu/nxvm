@@ -185,7 +185,7 @@ static lib_i32 x86_core_cpu_timing_select_80286(x86_core_cpu_execution_context *
             x86_core_cpu_80286_source_instruction_cost);
 }
 
-static lib_i32 x86_core_cpu_timing_has_8086_lock_prefix(
+static lib_i32 x86_core_cpu_timing_has_lock_prefix(
     const t_cpuins_data *data)
 {
     lib_u32 index = 0u;
@@ -219,7 +219,7 @@ static lib_i32 x86_core_cpu_timing_apply_8086_lock(x86_core_cpu_execution_contex
         context->cpu_profile != X86_CORE_CPU_PROFILE_8088 &&
         context->cpu_profile != X86_CORE_CPU_PROFILE_80186) return 1;
     data = &context->instructions->data;
-    if (!x86_core_cpu_timing_has_8086_lock_prefix(data) ||
+    if (!x86_core_cpu_timing_has_lock_prefix(data) ||
         result->source_timing_unallocated) return 1;
     if (result->ticks > LIB_UINT64_MAX - 2u) return 0;
     result->ticks += 2u;
@@ -234,7 +234,8 @@ static void x86_core_cpu_timing_select_v30(
 {
     const t_cpuins_data *data = &context->instructions->data;
     const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(data);
-    const lib_u8 opcode = prefixes < data->oplen ? data->opcodes[prefixes] : 0u;
+    const lib_u8 *code = data->opcodes + prefixes;
+    const lib_u8 opcode = prefixes < data->oplen ? code[0] : 0u;
     const lib_bool string = (opcode >= 0xa4u && opcode <= 0xafu &&
         opcode != 0xa8u && opcode != 0xa9u) || (opcode >= 0x6cu && opcode <= 0x6fu);
     const lib_bool scalar = opcode < 0x40u && (opcode & 7u) < 4u;
@@ -260,16 +261,16 @@ static void x86_core_cpu_timing_select_v30(
         .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
     };
     if (prefixes >= data->oplen || (!native && (opcode != 0xedu || data->oplen < 2u ||
-        (data->opcodes[1] != 0xedu && data->opcodes[1] != 0xfdu)))) {
+        (code[1] != 0xedu && code[1] != 0xfdu)))) {
         context->source_repeat_active = LIB_FALSE;
         return;
     }
     if (!string) {
         context->source_repeat_active = LIB_FALSE;
-        if (prefixes) return;
+        if (data->prefix_rep != PREFIX_REP_NONE) return;
     }
     if (!native) {
-        form_extension = data->opcodes[1];
+        form_extension = code[1];
         const lib_bool call = form_extension == 0xedu;
         /* The capture may include lookahead beyond the completed instruction. */
         if (data->oplen < (call ? 3u : 2u)) return;
@@ -320,7 +321,7 @@ static void x86_core_cpu_timing_select_v30(
             result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY;
         }
     } else if (opcode == 0x0fu) {
-        const lib_u8 suffix = data->opcodes[1];
+        const lib_u8 suffix = code[1];
         form_extension = suffix;
         if (suffix >= 0x10u && suffix <= 0x1fu) {
             static const lib_u8 registers[] = {3u,5u,4u,4u};
@@ -363,13 +364,13 @@ static void x86_core_cpu_timing_select_v30(
     else if (opcode >= 0x40u && opcode <= 0x4fu) ticks = 2u;
     else if (opcode >= 0x50u && opcode <= 0x5fu) { ticks = 8u; stack_penalty = 4u; }
     else if ((opcode >= 0x70u && opcode <= 0x7fu) || (opcode >= 0xe0u && opcode <= 0xe3u)) {
-        if (!x86_core_cpu_timing_branch_taken(context, 0u, &taken)) return;
+        if (!x86_core_cpu_timing_branch_taken(context, prefixes, &taken)) return;
         control = LIB_TRUE;
         ticks = taken ? (opcode >= 0xe2u ? 13u : 14u) : opcode < 0xe0u ? 4u : 5u;
     } else if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
     else if (opcode >= 0x90u && opcode <= 0x97u) ticks = 3u;
     else if (shift) {
-        if (((data->opcodes[1] >> 3u) & 7u) == 6u) return;
+        if (((code[1] >> 3u) & 7u) == 6u) return;
         const lib_bool single = opcode == 0xd0u || opcode == 0xd1u;
         const lib_u8 count = single ? 1u : opcode >= 0xd2u ?
             data->oldcpu.data.cl : (lib_u8)data->cimm;
@@ -413,11 +414,11 @@ static void x86_core_cpu_timing_select_v30(
         break;
     case 0xd4u: case 0xd5u:
         /* Only the encoded radix-ten forms have documented nominal rows. */
-        if (data->opcodes[1] != 10u) return;
+        if (code[1] != 10u) return;
         ticks = opcode == 0xd4u ? 15u : 7u;
         break;
     case 0x80u: case 0x81u: case 0x83u: {
-        const lib_bool compare = ((data->opcodes[1] >> 3u) & 7u) == 7u;
+        const lib_bool compare = ((code[1] >> 3u) & 7u) == 7u;
         ticks = !data->flagMem ? 4u : compare ? 13u : 18u;
         odd_penalty = !(opcode & 1u) ? 0u : compare ? 4u : 8u;
         break;
@@ -428,7 +429,7 @@ static void x86_core_cpu_timing_select_v30(
         break;
     case 0xa8u: case 0xa9u: ticks = 4u; break;
     case 0xf6u: case 0xf7u: {
-        const lib_u8 operation = (data->opcodes[1] >> 3u) & 7u;
+        const lib_u8 operation = (code[1] >> 3u) & 7u;
         if (operation >= 4u) {
             /* Conservative endpoints of NEC's data-dependent ranges are L2,
              * never an inferred operand-specific microsequence. DIVU is fixed. */
@@ -454,7 +455,7 @@ static void x86_core_cpu_timing_select_v30(
         origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
         break;
     case 0xfeu: case 0xffu: {
-        const lib_u8 operation = (data->opcodes[1] >> 3u) & 7u;
+        const lib_u8 operation = (code[1] >> 3u) & 7u;
         if (opcode == 0xffu && operation >= 2u && operation <= 5u) {
             if ((operation == 3u || operation == 5u) && !data->flagMem) return;
             if (operation <= 3u) {
@@ -491,7 +492,7 @@ static void x86_core_cpu_timing_select_v30(
         if (!data->flagMem) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
         break;
     case 0xc8u: {
-        const lib_u8 level = data->opcodes[3];
+        const lib_u8 level = code[3];
         /* Level one extends the printed n>1 formula as an explicit L2 model. */
         if (level == 1u) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
         ticks = level ? 19u + 8u * (level - 1u) : 12u;
@@ -510,7 +511,7 @@ static void x86_core_cpu_timing_select_v30(
     case 0xeau: ticks = 15u; control = LIB_TRUE; break;
     case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
     case 0xecu: case 0xedu: case 0xeeu: case 0xefu: {
-        const lib_u16 port = opcode < 0xecu ? data->opcodes[1] : data->oldcpu.data.dx;
+        const lib_u16 port = opcode < 0xecu ? code[1] : data->oldcpu.data.dx;
         ticks = opcode == 0xe4u || opcode == 0xe5u ? 9u : 8u;
         if ((opcode & 1u) && (port & 1u)) { ticks += 4u; odd_word = LIB_TRUE; }
         break;
@@ -534,7 +535,7 @@ static void x86_core_cpu_timing_select_v30(
         break;
     case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
         ticks = opcode & 2u ? 9u : 10u;
-        if ((opcode & 1u) && (data->opcodes[1] & 1u)) {
+        if ((opcode & 1u) && (code[1] & 1u)) {
             ticks += 4u;
             odd_word = LIB_TRUE;
         }
@@ -561,7 +562,7 @@ static void x86_core_cpu_timing_select_v30(
         result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
         const lib_u16 stack = opcode == 0xc9u ? data->oldcpu.data.bp : data->oldcpu.data.sp;
         lib_bool odd = (stack & 1u) != 0u;
-        if ((modrm && data->flagMem) || (opcode == 0xc8u && data->opcodes[3] > 1u)) {
+        if ((modrm && data->flagMem) || (opcode == 0xc8u && code[3] > 1u)) {
             const lib_u16 operand = opcode == 0xc8u ? data->oldcpu.data.bp : data->mrm.offset;
             /* Missing mixed rows use the all-odd envelope, not a physical bound.
              * PREPARE level one never reads the BP frame chain. */
@@ -581,10 +582,19 @@ static void x86_core_cpu_timing_select_v30(
     if (odd_word) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
     if (control) result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL |
         X86_CORE_CPU_TIMING_INPUT_BRANCH | (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u);
+    if (!string && prefixes) {
+        /* Each retired native segment/BUSLOCK prefix has a two-clock row. */
+        ticks += 2u * prefixes;
+        if (x86_core_cpu_timing_has_lock_prefix(data))
+            result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_LOCK;
+        /* An override selects one segment for both default-segment routes. */
+        if (data->roverds == data->roverss)
+            result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+    }
     result->ticks = ticks;
     result->retirement_origin = origin;
     result->form_id = opcode | ((lib_u32)form_extension << 16u) | (modrm && data->flagMem ? 0x100u : 0u);
-    if (group) result->form_id |= ((lib_u32)(data->opcodes[1] >> 3u) & 7u) << 9u;
+    if (group) result->form_id |= ((lib_u32)(code[1] >> 3u) & 7u) << 9u;
     result->key_id = result->form_id;
 }
 

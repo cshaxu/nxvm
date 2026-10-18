@@ -151,12 +151,12 @@ static lib_i32 v30_segment_check(const v30_segment_case *item)
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
     if (item->operation==V30_SEGMENT_PUSH || item->operation==V30_SEGMENT_POP) {
         const lib_bool unprefixed=item->bytes==1u;
-        const lib_u64 clocks=unprefixed ? 8u+4u*(item->sp & 1u) : 0u;
-        const lib_u32 form=clocks ? item->code[0] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+        const lib_u64 clocks=8u+4u*(item->sp & 1u)+(unprefixed ? 0u : 2u);
+        const lib_u32 form=clocks ? item->code[!unprefixed] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
         const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
         if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-            timing.key_id!=form || timing.form_id!=form || timing.formula_inputs!=(clocks ?
-                X86_CORE_CPU_TIMING_INPUT_MEMORY | ((item->sp & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u) ||
+            timing.key_id!=form || timing.form_id!=form || timing.formula_inputs!=((unprefixed ? 0u : X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE) | (clocks ?
+                X86_CORE_CPU_TIMING_INPUT_MEMORY | ((item->sp & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u)) ||
             timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
                 X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
     }

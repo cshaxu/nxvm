@@ -177,11 +177,11 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
     lib_u64 clocks = 0u;
     lib_u8 odd_cost = 0u;
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
-    if (!item->prefix && item->form == V30_ALU_EXTEND) {
+    if (item->form == V30_ALU_EXTEND) {
         clocks = item->operation == V30_ALU_CBW ? 2u : 5u;
         if (item->operation != V30_ALU_CBW)
             origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
-    } else if (!item->prefix) {
+    } else {
         if (!memory) clocks = item->form >= V30_ALU_ACC_IMMEDIATE &&
             item->form <= V30_ALU_GROUP_SIGNED ? 4u : 2u;
         else if (item->form >= V30_ALU_UNARY_GROUP) { clocks = 16u; odd_cost = 8u; }
@@ -195,9 +195,10 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
     }
     const lib_bool odd = clocks && odd_cost && item->width == 2u && (address & 1u);
     if (odd) clocks += odd_cost;
+    if (clocks && item->prefix) clocks += 2u;
     lib_u32 form = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     if (clocks) {
-        form = item->code[0] | (memory ? 0x100u : 0u);
+        form = item->code[item->prefix != 0u] | (memory ? 0x100u : 0u);
         if (item->form == V30_ALU_GROUP_IMMEDIATE || item->form == V30_ALU_GROUP_SIGNED ||
             item->form == V30_ALU_UNARY_GROUP) form |= ((lib_u32)(item->modrm >> 3u) & 7u) << 9u;
     }
@@ -206,8 +207,9 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
         timing.retirement_origin != (clocks ? origin :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) ||
         timing.form_id != form || timing.key_id != form ||
-        timing.formula_inputs != (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
-            X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u) ||
+        timing.formula_inputs != ((clocks && item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+            (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
+            X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u)) ||
         x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
         lib_c_printf("V30:NOMINAL-ALU:FAIL op=%u form=%u opcode=%02x modrm=%02x prefix=%u ticks=%llu/%llu key=%x/%x\n",
             item->operation,item->form,item->code[0],item->modrm,item->prefix,timing.ticks,clocks,timing.form_id,form);
@@ -343,30 +345,40 @@ static v30_alu_case v30_alu_build(v30_alu_operation operation, lib_u8 width,
 lib_i32 main(void)
 {
     /* Adjacent dynamic/alias/prefix forms must not inherit fixed scalar rows. */
-    static const lib_u8 unallocated[][4] = {
+    static const lib_u8 boundaries[][4] = {
         {0x82u,0xc0u,0x01u}, {0xf6u,0xc8u,0x01u}, {0xf7u,0xc8u,0x01u,0x00u},
         {0x26u,0xf6u,0xe0u}, {0x26u,0xf7u,0xe0u}, {0x26u,0xf6u,0xf3u}, {0x26u,0xf7u,0xfbu},
         {0xd0u,0xf0u}, {0xc1u,0xf0u,0x04u}, {0x26u,0x0fu,0x10u,0xc0u},
         {0xffu,0xd8u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x2eu,0x98u}, {0x2eu,0x99u},
         {0xd4u,9u}, {0xd5u,9u}, {0x27u}, {0x2fu}
     };
+    static const x86_core_cpu_timing_result allocated[19] = {
+        [3] = {.ticks=24u,.form_id=0x8f6u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC},
+        [4] = {.ticks=32u,.form_id=0x8f7u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC},
+        [5] = {.ticks=21u,.form_id=0xcf6u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [9] = {.ticks=5u,.form_id=0x10000fu,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [11] = {.ticks=26u,.form_id=0x101u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | X86_CORE_CPU_TIMING_INPUT_ODD_WORD | X86_CORE_CPU_TIMING_INPUT_LOCK,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [13] = {.ticks=4u,.form_id=0x98u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [14] = {.ticks=7u,.form_id=0x99u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC}
+    };
     static v30_memory_fixture boundary;
     v30_memory_prepare(&boundary);
-    for (lib_size index = 0u; index < sizeof(unallocated)/sizeof(unallocated[0]); ++index) {
+    for (lib_size index = 0u; index < sizeof(boundaries)/sizeof(boundaries[0]); ++index) {
         v30_memory_restart(&boundary);
         boundary.bus.cpu.data.ax = 5u;
         boundary.bus.cpu.data.bx = 3u;
-        lib_memory_copy(boundary.memory+0x80100u,unallocated[index],sizeof(unallocated[index]));
+        lib_memory_copy(boundary.memory+0x80100u,boundaries[index],sizeof(boundaries[index]));
         x86_core_cpu_execution_refresh(&boundary.bus.execution);
         const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&boundary.bus.execution);
         /* F6/F7 /1, group-2 /6 and far register CALL remain prohibited. */
         const lib_bool rejected = index == 1u || index == 2u || index == 7u || index == 8u || index == 10u;
+        const x86_core_cpu_timing_result expected=allocated[index];
+        const lib_u32 key=rejected ? 0u : expected.ticks ? expected.form_id :
+            X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
         if (boundary.bus.execution.stop_requested != rejected || boundary.bus.faults != (lib_u32)rejected ||
-            (rejected && boundary.bus.execution.completed_observation_valid) || timing.ticks ||
-            (!rejected && (!timing.source_timing_unallocated ||
-                timing.key_id != X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED)) ||
-            timing.form_id != timing.key_id || timing.formula_inputs ||
-            timing.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) {
+            (rejected && boundary.bus.execution.completed_observation_valid) || timing.ticks!=expected.ticks ||
+            (!rejected && !timing.source_timing_unallocated) || timing.key_id!=key || timing.form_id!=key ||
+            timing.formula_inputs!=expected.formula_inputs || timing.retirement_origin!=expected.retirement_origin) {
             lib_c_printf("V30:NOMINAL-ALU:EXCLUDED index=%u stop=%u ticks=%llu\n",
                 (lib_u32)index,boundary.bus.execution.stop_requested,timing.ticks);
             return 1;
@@ -446,6 +458,6 @@ lib_i32 main(void)
         }
     lib_c_printf("V30:ALU:OK cases=%u\n",cases);
     lib_c_printf("V30:NOMINAL-ALU:OK cases=%u\n",cases);
-    lib_c_printf("V30:NOMINAL-ALU:BOUNDARIES:OK cases=%u\n",(lib_u32)(sizeof(unallocated)/sizeof(unallocated[0])));
+    lib_c_printf("V30:NOMINAL-ALU:BOUNDARIES:OK cases=%u\n",(lib_u32)(sizeof(boundaries)/sizeof(boundaries[0])));
     return 0;
 }

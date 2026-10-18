@@ -93,12 +93,13 @@ static lib_i32 v30_decimal_check(lib_u8 operation, lib_u16 input, lib_u8 seed,
     actual.data.eflags &= defined;
     expected.data.eflags &= defined;
     static const lib_u8 nominal[] = {3u,7u,15u,7u};
-    const lib_u64 clocks = prefix ? 0u : nominal[operation];
+    const lib_u64 clocks = nominal[operation] + (prefix ? 2u : 0u);
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
-    const lib_u32 form = clocks ? fixture.memory[0x80000u+(lib_u16)before.data.eip] :
+    const lib_u32 form = clocks ? fixture.memory[0x80000u+(lib_u16)(before.data.eip+(prefix != 0u))] :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.form_id != form || timing.key_id != form || timing.formula_inputs ||
+        timing.form_id != form || timing.key_id != form || timing.formula_inputs !=
+            (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) ||
         timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture.observations ||
         x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) return 1;

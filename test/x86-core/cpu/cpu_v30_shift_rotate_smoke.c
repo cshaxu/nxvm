@@ -163,11 +163,11 @@ static lib_i32 v30_shift_case(lib_u8 operation, lib_u8 width, lib_u8 form,
     expected.data.eflags = (expected_flags & defined) | (fixture.instruction.cpu.data.eflags & ~defined);
     /* NEC 12-100..141: count means the original full byte, not an Intel mask. */
     const lib_bool odd = memory && width == 2u && (address & 1u);
-    const lib_u64 clocks = segment ? 0u : (form == 0u ? (memory ? 16u : 2u) :
-        (memory ? 19u : 7u) + actual_count) + (odd ? 8u : 0u);
-    const lib_u32 key = clocks ? code[0] | (memory ? 0x100u : 0u) | ((lib_u32)operation << 9u) :
+    const lib_u64 clocks = (form == 0u ? (memory ? 16u : 2u) :
+        (memory ? 19u : 7u) + actual_count) + (odd ? 8u : 0u) + (segment ? 2u : 0u);
+    const lib_u32 key = clocks ? code[segment != 0u] | (memory ? 0x100u : 0u) | ((lib_u32)operation << 9u) :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    const lib_u32 inputs = clocks ? (form ? X86_CORE_CPU_TIMING_INPUT_SIZE : 0u) |
+    const lib_u32 inputs = clocks ? (segment ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) | (form ? X86_CORE_CPU_TIMING_INPUT_SIZE : 0u) |
         (memory ? X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS : 0u) |
         (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u;
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.instruction.execution);

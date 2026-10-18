@@ -113,29 +113,28 @@ static lib_i32 v30_entry_timing(const v30_memory_fixture *fixture, const v30_ent
     lib_u64 clocks = 0u;
     lib_u32 key = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs = 0u;
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
-    if (!item->prefix) {
-        const lib_bool stack_odd = (before->data.sp & 1u) != 0u;
-        key = opcodes[item->operation];
-        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
-        inputs = X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH;
-        if (taken || item->operation == V30_ENTRY_RETURN) inputs |= X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
-        if (item->operation == V30_ENTRY_BOUNDS) {
-            const lib_bool operand_odd = (v30_entry_address(before,item) & 1u) != 0u;
-            clocks = taken ? (operand_odd || stack_odd ? 76u : 56u) : operand_odd ? 26u : 18u;
-            key |= 0x100u;
-            inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
-            if (operand_odd || (taken && stack_odd)) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
-            origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
-        } else if (item->operation == V30_ENTRY_OVERFLOW && !taken) {
-            clocks = 3u;
-            origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
-        } else {
-            clocks = (item->operation == V30_ENTRY_RETURN ? 27u : item->operation == V30_ENTRY_OVERFLOW ? 40u : 38u) +
-                (stack_odd ? 12u : 0u);
-            if (stack_odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
-        }
-        if (item->operation != V30_ENTRY_OVERFLOW || taken) inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
+    const lib_bool stack_odd = (before->data.sp & 1u) != 0u;
+    key = opcodes[item->operation];
+    origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
+    inputs = X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH;
+    if (taken || item->operation == V30_ENTRY_RETURN) inputs |= X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
+    if (item->operation == V30_ENTRY_BOUNDS) {
+        const lib_bool operand_odd = (v30_entry_address(before,item) & 1u) != 0u;
+        clocks = taken ? (operand_odd || stack_odd ? 76u : 56u) : operand_odd ? 26u : 18u;
+        key |= 0x100u;
+        inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+        if (operand_odd || (taken && stack_odd)) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+    } else if (item->operation == V30_ENTRY_OVERFLOW && !taken) {
+        clocks = 3u;
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+    } else {
+        clocks = (item->operation == V30_ENTRY_RETURN ? 27u : item->operation == V30_ENTRY_OVERFLOW ? 40u : 38u) +
+            (stack_odd ? 12u : 0u);
+        if (stack_odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
     }
+    if (item->operation != V30_ENTRY_OVERFLOW || taken) inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
+    if (item->prefix) { clocks+=2u; inputs|=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE; }
     return v30_memory_check_nominal(fixture,clocks,key,inputs,origin);
 }
 

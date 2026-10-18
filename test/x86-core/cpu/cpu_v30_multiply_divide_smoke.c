@@ -144,7 +144,7 @@ static lib_i32 v30_multiply_timing(const v30_memory_fixture *fixture,
         {{0u,0u,0u},{34u,40u,44u}}, {{0u,0u,0u},{42u,48u,52u}}
     };
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->bus.execution);
-    const lib_bool allocated = !item->prefix && !trap;
+    const lib_bool allocated = !trap;
     const lib_bool memory = item->modrm < 0xc0u;
     const lib_bool odd = memory && item->width == 2u && (address & 1u);
     const lib_u8 opcode = item->operation >= V30_MULTIPLY_IMMEDIATE_BYTE ?
@@ -153,10 +153,12 @@ static lib_i32 v30_multiply_timing(const v30_memory_fixture *fixture,
     lib_u64 expected = 0u;
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
     if (allocated) {
-        expected = clocks[item->operation][item->width - 1u][memory ? (odd ? 2u : 1u) : 0u];
+        expected = clocks[item->operation][item->width - 1u][memory ? (odd ? 2u : 1u) : 0u] +
+            (item->prefix ? 2u : 0u);
         key = opcode | (memory ? 0x100u : 0u);
         if (item->operation < V30_MULTIPLY_IMMEDIATE_BYTE) key |= (lib_u32)(item->operation+4u) << 9u;
-        inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
+        inputs = X86_CORE_CPU_TIMING_INPUT_SIZE |
+            (item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u);
         if (memory) inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         if (odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
         origin = item->operation == V30_DIVIDE_UNSIGNED ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
