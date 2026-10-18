@@ -77,13 +77,16 @@ static lib_u64 v30_memory_cycle(void *opaque, x86_core_cpu_external_cycle_phase 
     return 0u;
 }
 
-static void v30_memory_prepare(v30_memory_fixture *fixture)
+/* Restart CPU/probes without clearing RAM. Reusing callers must initialize
+ * every code/operand byte; unexpected transfers remain visible in records. */
+static void v30_memory_restart(v30_memory_fixture *fixture)
 {
     static const x86_core_cpu_bus_provider provider = {
         .read_memory = v30_memory_read, .write_memory = v30_memory_write,
         .interrupt_pending = cpu_bus_pending
     };
-    lib_memory_set(fixture, 0, sizeof(*fixture));
+    lib_memory_set(&fixture->record_count, 0,
+        sizeof(*fixture) - lib_offsetof(v30_memory_fixture, record_count));
     cpu_bus_prepare(&fixture->bus, X86_CORE_CPU_PROFILE_V30);
     fixture->bus.execution.bus = &provider;
     fixture->bus.execution.bus_context = fixture;
@@ -98,6 +101,12 @@ static void v30_memory_prepare(v30_memory_fixture *fixture)
     fixture->bus.cpu.data.ax = 0x9a78u;
     x86_core_cpu_execution_context_bind_external_cycle_provider(&fixture->bus.execution,
         v30_memory_cycle, fixture);
+}
+
+static inline void v30_memory_prepare(v30_memory_fixture *fixture)
+{
+    lib_memory_set(fixture, 0, sizeof(*fixture));
+    v30_memory_restart(fixture);
 }
 
 #endif
