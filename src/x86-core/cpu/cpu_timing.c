@@ -185,26 +185,6 @@ static lib_i32 x86_core_cpu_timing_select_80286(x86_core_cpu_execution_context *
             x86_core_cpu_80286_source_instruction_cost);
 }
 
-static lib_i32 x86_core_cpu_timing_has_lock_prefix(
-    const t_cpuins_data *data)
-{
-    lib_u32 index = 0u;
-
-    if (data == LIB_NULL) return 0;
-    while (index < data->oplen) {
-        switch (data->opcodes[index]) {
-        case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
-        case 0xf0u: case 0xf2u: case 0xf3u:
-            if (data->opcodes[index] == 0xf0u) return 1;
-            ++index;
-            break;
-        default:
-            return 0;
-        }
-    }
-    return 0;
-}
-
 /* Intel's 8086/8088/80186 timing tables assign LOCK a two-clock prefix term. Its
  * applicability is a decoder/semantic question; once a valid instruction
  * has retired and one source row owns its base cost, this sole selector owns
@@ -219,7 +199,8 @@ static lib_i32 x86_core_cpu_timing_apply_8086_lock(x86_core_cpu_execution_contex
         context->cpu_profile != X86_CORE_CPU_PROFILE_8088 &&
         context->cpu_profile != X86_CORE_CPU_PROFILE_80186) return 1;
     data = &context->instructions->data;
-    if (!x86_core_cpu_timing_has_lock_prefix(data) ||
+    if (!x86_core_cpu_instruction_has_lock_prefix(data,
+            x86_core_cpu_instruction_prefix_count(data)) ||
         result->source_timing_unallocated) return 1;
     if (result->ticks > LIB_UINT64_MAX - 2u) return 0;
     result->ticks += 2u;
@@ -598,7 +579,7 @@ static void x86_core_cpu_timing_select_v30(
         /* Combined repeat-prefix phase placement is an explicit L2 policy. */
         if (!string || result->repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION)
             ticks += 2u * additional;
-        if (x86_core_cpu_timing_has_lock_prefix(data))
+        if (x86_core_cpu_instruction_has_lock_prefix(data,prefixes))
             result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_LOCK;
         /* An override selects one segment for both default-segment routes. */
         if (data->roverds == data->roverss)

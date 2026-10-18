@@ -7,6 +7,7 @@
 #include "x86-core/machine/machine.h"
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/attachment_interface.h"
+#include "x86-core/machine/port_interface.h"
 #include "support/memory_alias_fixture.h"
 
 static lib_bool executor_sx_fpu_interface(void)
@@ -919,6 +920,76 @@ static lib_bool executor_dma_hold(void)
     return LIB_TRUE;
 }
 
+typedef struct executor_locked_port_probe {
+    lib_u32 calls, fail, value;
+} executor_locked_port_probe;
+
+static lib_status executor_locked_port_read(void *opaque, lib_u16 port,
+    lib_u64 tick, lib_u32 *value)
+{
+    executor_locked_port_probe *probe=opaque;
+    (void)tick;
+    if (++probe->calls==probe->fail) return LIB_STATUS_IO_ERROR;
+    *value=0x11u*(port-0x1233u);
+    return LIB_STATUS_OK;
+}
+
+static lib_status executor_locked_port_write(void *opaque, lib_u16 port, lib_u32 value)
+{
+    executor_locked_port_probe *probe=opaque;
+    if (++probe->calls==probe->fail) return LIB_STATUS_IO_ERROR;
+    probe->value |= (value&0xffu) << (8u*(port-0x1234u));
+    return LIB_STATUS_OK;
+}
+
+static lib_bool executor_locked_ports(void)
+{
+    const x86_core_machine_executor_config config={.memory_bytes=2u*1024u*1024u,
+        .cpu_profile=X86_CORE_CPU_PROFILE_80386,.fpu_profile=X86_FPU_PROFILE_NONE};
+    for (lib_u8 locked=0u; locked<2u; ++locked)
+    for (lib_u8 write=0u; write<2u; ++write)
+    for (lib_u8 bytes=1u; bytes<=4u; bytes*=2u)
+    for (lib_u8 fail=0u; fail<=bytes; ++fail) {
+        x86_core_machine *machine=LIB_NULL;
+        executor_locked_port_probe probe={.fail=fail};
+        const x86_core_machine_port_route route={.address=0x1234u,
+            .read=executor_locked_port_read,.write=executor_locked_port_write,
+            .owner=&probe,.byte_lane_end=0x1238u};
+        if (x86_core_machine_neutral_create(&config,&machine)!=LIB_STATUS_OK) return LIB_FALSE;
+        lib_bool failed=x86_core_machine_install_port_routes(machine,&route,1u)!=LIB_STATUS_OK;
+        if (!failed && locked)
+            failed=x86_core_machine_cpu_bus.begin_memory_lock(machine)!=LIB_STATUS_OK;
+        const x86_core_machine_transaction_state before=machine->transaction;
+        lib_u32 value=0x44332211u;
+        if (!failed) {
+            const lib_status status=x86_core_machine_cpu_bus.transfer_port(machine,0x1234u,
+                bytes,write != 0u,&value);
+            failed=status!=(fail ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK);
+            if (status==LIB_STATUS_OK)
+                x86_core_machine_cpu_bus.complete_port(machine,0x1234u,bytes,write != 0u);
+            const lib_u8 accepted=fail ? fail-1u : bytes;
+            const lib_u32 mask=accepted==4u ? LIB_UINT32_MAX :
+                ((1u << (8u*accepted))-1u);
+            failed=failed || probe.calls!=(fail ? fail : bytes) ||
+                (write && probe.value!=(0x44332211u&mask)) ||
+                (!write && !fail && value!=(0x44332211u&mask));
+            if (locked) {
+                failed=failed || lib_memory_compare(&before,&machine->transaction,sizeof(before));
+                x86_core_machine_cpu_bus.complete_memory_lock(machine,fail==0u);
+            }
+            failed=failed || machine->transaction.owner!=X86_CORE_MACHINE_TRANSACTION_OWNER_NONE;
+        }
+        x86_core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("CORE:LOCKED-PORT:FAIL lock=%u write=%u bytes=%u fail=%u calls=%u\n",
+                locked,write,bytes,fail,probe.calls);
+            return LIB_FALSE;
+        }
+    }
+    lib_c_printf("CORE:LOCKED-PORT:OK\n");
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     x86_core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = 16u * 1024u * 1024u };
@@ -944,7 +1015,8 @@ lib_i32 main(void)
         {"sx-bounded-retirement",executor_sx_bounded_retirement},
         {"retired-before-entry-fault",executor_retired_before_entry_fault},
         {"sx-soft-reset",executor_sx_soft_reset}, {"sx-smm",executor_sx_smm},
-        {"sx-smm-fault",executor_sx_smm_fault}, {"dma-hold",executor_dma_hold}
+        {"sx-smm-fault",executor_sx_smm_fault}, {"dma-hold",executor_dma_hold},
+        {"locked-ports",executor_locked_ports}
     };
     lib_bool failed = LIB_FALSE;
 

@@ -34,16 +34,16 @@ lib_u32 x86_core_cpu_instruction_prefix_count(const t_cpuins_data *data)
     return count;
 }
 
-static lib_i32 x86_core_cpu_instruction_has_lock_prefix(const t_cpuins_data *data,
+lib_bool x86_core_cpu_instruction_has_lock_prefix(const t_cpuins_data *data,
     lib_u32 prefixes)
 {
     lib_u32 index;
 
-    if (data == LIB_NULL) return 0;
-    for (index = 0u; index < prefixes; ++index) {
-        if (data->opcodes[index] == 0xf0u) return 1;
+    if (data == LIB_NULL) return LIB_FALSE;
+    for (index = 0u; index < prefixes && index < sizeof(data->opcodes); ++index) {
+        if (data->opcodes[index] == 0xf0u) return LIB_TRUE;
     }
-    return 0;
+    return LIB_FALSE;
 }
 
 static lib_i32 x86_core_cpu_80386_timing_has_source_prefixes(

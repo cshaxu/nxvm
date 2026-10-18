@@ -134,22 +134,26 @@ static lib_status x86_core_machine_cpu_bus_transfer_port(void *opaque,
         default: return LIB_STATUS_INVALID_ARGUMENT;
         }
     }
-    status = x86_core_machine_transaction_begin(&machine->transaction,
-        X86_CORE_MACHINE_TRANSACTION_OWNER_CPU,
-        write ? X86_CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE :
-            X86_CORE_MACHINE_TRANSACTION_CPU_PORT_READ,
-        port, write ? *value : bytes, write ? bytes : 0u);
-    if (status != LIB_STATUS_OK) return status;
+    const lib_bool locked = machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        machine->transaction.kind == X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
+    if (!locked) {
+        status = x86_core_machine_transaction_begin(&machine->transaction,
+            X86_CORE_MACHINE_TRANSACTION_OWNER_CPU,
+            write ? X86_CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE :
+                X86_CORE_MACHINE_TRANSACTION_CPU_PORT_READ,
+            port, write ? *value : bytes, write ? bytes : 0u);
+        if (status != LIB_STATUS_OK) return status;
+    }
     status = write ? x86_core_machine_port_execute_write_width(ports, port, bytes) :
         x86_core_machine_port_execute_read_width(ports, port, bytes, machine->elapsed_ticks);
     if (status != LIB_STATUS_OK) {
-        x86_core_machine_transaction_cancel(&machine->transaction);
+        if (!locked) x86_core_machine_transaction_cancel(&machine->transaction);
         return status;
     }
     if (!write) {
         *value = bytes == 1u ? ports->data.ioByte :
             (bytes == 2u ? ports->data.ioWord : ports->data.ioDWord);
-        x86_core_machine_transaction_set_value(&machine->transaction, *value);
+        if (!locked) x86_core_machine_transaction_set_value(&machine->transaction, *value);
     }
     return LIB_STATUS_OK;
 }
@@ -159,7 +163,8 @@ static void x86_core_machine_cpu_bus_complete_port(void *opaque,
 {
     x86_core_machine *machine = (x86_core_machine *)opaque;
 
-    x86_core_machine_transaction_commit(&machine->transaction);
+    if (machine->transaction.kind != X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK)
+        x86_core_machine_transaction_commit(&machine->transaction);
     (void)port;
     (void)bytes;
     (void)write;
