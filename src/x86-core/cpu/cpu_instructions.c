@@ -19947,15 +19947,97 @@ static void ExecInit(x86_core_cpu_execution_context *context)
     }
 }
 
-/* Mode-specific control encodings share this admission owner with execution.
- * Ordinary 8080 slots remain diagnostic until their complete V12 batch. */
-static lib_u8 _kdf_emulation_control_length(const lib_u8 *bytes, lib_u8 count)
+typedef enum nec_emulation_form {
+    NEC_EMULATION_RESERVED, NEC_EMULATION_NOP, NEC_EMULATION_MOV,
+    NEC_EMULATION_MVI, NEC_EMULATION_LXI, NEC_EMULATION_STAX,
+    NEC_EMULATION_LDAX, NEC_EMULATION_INX, NEC_EMULATION_DCX,
+    NEC_EMULATION_DAD, NEC_EMULATION_INR, NEC_EMULATION_DCR,
+    NEC_EMULATION_ALU, NEC_EMULATION_ALUI, NEC_EMULATION_ROTATE,
+    NEC_EMULATION_DAA, NEC_EMULATION_CMA, NEC_EMULATION_STC,
+    NEC_EMULATION_CMC, NEC_EMULATION_SHLD, NEC_EMULATION_LHLD,
+    NEC_EMULATION_STA, NEC_EMULATION_LDA, NEC_EMULATION_JUMP,
+    NEC_EMULATION_CALL, NEC_EMULATION_RETURN, NEC_EMULATION_RST,
+    NEC_EMULATION_PUSH, NEC_EMULATION_POP, NEC_EMULATION_XTHL,
+    NEC_EMULATION_PCHL, NEC_EMULATION_XCHG, NEC_EMULATION_SPHL,
+    NEC_EMULATION_HLT, NEC_EMULATION_EI, NEC_EMULATION_DI,
+    NEC_EMULATION_PORT, NEC_EMULATION_ESCAPE
+} nec_emulation_form;
+
+/* One documented 8080AF format owner serves execution and context preview.
+ * Reserved 8080/8085/Z80 aliases are not native x86 prefixes or instructions. */
+static nec_emulation_form _kdf_emulation_form(lib_u8 opcode)
+{
+    if (opcode >= 0x40u && opcode < 0x80u)
+        return opcode == 0x76u ? NEC_EMULATION_HLT : NEC_EMULATION_MOV;
+    if (opcode >= 0x80u && opcode < 0xc0u) return NEC_EMULATION_ALU;
+    if (opcode < 0x40u) {
+        switch (opcode & 0xc7u) {
+        case 0x04u: return NEC_EMULATION_INR;
+        case 0x05u: return NEC_EMULATION_DCR;
+        case 0x06u: return NEC_EMULATION_MVI;
+        default: break;
+        }
+        switch (opcode & 0xcfu) {
+        case 0x01u: return NEC_EMULATION_LXI;
+        case 0x03u: return NEC_EMULATION_INX;
+        case 0x0bu: return NEC_EMULATION_DCX;
+        case 0x09u: return NEC_EMULATION_DAD;
+        default: break;
+        }
+        if ((opcode & 0xefu) == 0x02u) return NEC_EMULATION_STAX;
+        if ((opcode & 0xefu) == 0x0au) return NEC_EMULATION_LDAX;
+        if ((opcode & 0xe7u) == 0x07u) return NEC_EMULATION_ROTATE;
+    } else {
+        switch (opcode & 0xc7u) {
+        case 0xc0u: return NEC_EMULATION_RETURN;
+        case 0xc2u: return NEC_EMULATION_JUMP;
+        case 0xc4u: return NEC_EMULATION_CALL;
+        case 0xc6u: return NEC_EMULATION_ALUI;
+        case 0xc7u: return NEC_EMULATION_RST;
+        default: break;
+        }
+        if ((opcode & 0xcfu) == 0xc1u) return NEC_EMULATION_POP;
+        if ((opcode & 0xcfu) == 0xc5u) return NEC_EMULATION_PUSH;
+    }
+    switch (opcode) {
+    case 0x00u: return NEC_EMULATION_NOP;
+    case 0x27u: return NEC_EMULATION_DAA;
+    case 0x2fu: return NEC_EMULATION_CMA;
+    case 0x37u: return NEC_EMULATION_STC;
+    case 0x3fu: return NEC_EMULATION_CMC;
+    case 0x22u: return NEC_EMULATION_SHLD;
+    case 0x2au: return NEC_EMULATION_LHLD;
+    case 0x32u: return NEC_EMULATION_STA;
+    case 0x3au: return NEC_EMULATION_LDA;
+    case 0xc3u: return NEC_EMULATION_JUMP;
+    case 0xc9u: return NEC_EMULATION_RETURN;
+    case 0xcdu: return NEC_EMULATION_CALL;
+    case 0xd3u: case 0xdbu: return NEC_EMULATION_PORT;
+    case 0xe3u: return NEC_EMULATION_XTHL;
+    case 0xe9u: return NEC_EMULATION_PCHL;
+    case 0xebu: return NEC_EMULATION_XCHG;
+    case 0xedu: return NEC_EMULATION_ESCAPE;
+    case 0xf3u: return NEC_EMULATION_DI;
+    case 0xf9u: return NEC_EMULATION_SPHL;
+    case 0xfbu: return NEC_EMULATION_EI;
+    default: return NEC_EMULATION_RESERVED;
+    }
+}
+
+static lib_u8 _kdf_emulation_length(const lib_u8 *bytes, lib_u8 count)
 {
     if (count == 0u) return 0u;
-    if (bytes[0] == 0x00u) return 1u;
-    if (count < 2u || bytes[0] != 0xedu) return 0u;
-    if (bytes[1] == 0xfdu) return 2u;
-    return bytes[1] == 0xedu ? 3u : 0u;
+    switch (_kdf_emulation_form(bytes[0])) {
+    case NEC_EMULATION_RESERVED: return 0u;
+    case NEC_EMULATION_ESCAPE:
+        if (count < 2u) return 0u;
+        return bytes[1] == 0xfdu ? 2u : bytes[1] == 0xedu ? 3u : 0u;
+    case NEC_EMULATION_LXI: case NEC_EMULATION_SHLD: case NEC_EMULATION_LHLD:
+    case NEC_EMULATION_STA: case NEC_EMULATION_LDA:
+    case NEC_EMULATION_JUMP: case NEC_EMULATION_CALL: return 3u;
+    case NEC_EMULATION_MVI: case NEC_EMULATION_ALUI: case NEC_EMULATION_PORT: return 2u;
+    default: return 1u;
+    }
 }
 
 lib_u8 x86_core_cpu_execution_preview_lexeme(
@@ -20000,10 +20082,12 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
 
         if (preview.cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
             !(preview_cpu.data.eflags & X86_CPU_NEC_PSW_MD)) {
-            const lib_u8 length = _kdf_emulation_control_length(
+            const lib_u8 length = _kdf_emulation_length(
                 preview_instructions.data.opcodes, preview_instructions.data.oplen);
             if (length != 0u && preview_instructions.data.oplen >= length) {
-                *out_lexeme = (x86_core_cpu_instruction_lexeme){length, length, LIB_TRUE};
+                const lib_u8 components = length == 3u &&
+                    preview_instructions.data.opcodes[0] != 0xedu ? 2u : length;
+                *out_lexeme = (x86_core_cpu_instruction_lexeme){length, components, LIB_TRUE};
                 return LIB_TRUE;
             }
         } else if (x86_core_cpu_instruction_lexeme_scan_with_options(
@@ -20331,31 +20415,317 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
             context->diagnostic_context, &fault_cpu, &instruction_state);
     x86_core_cpu_execution_request_stop(context);
 }
-static void NEC_EMULATION_CONTROL(x86_core_cpu_execution_context *context)
+static lib_u8 *_nec_byte_register(x86_core_cpu_execution_context *context, lib_u8 reg)
+{
+    switch (reg) {
+    case 0u: return &cpu_state.data.ch;
+    case 1u: return &cpu_state.data.cl;
+    case 2u: return &cpu_state.data.dh;
+    case 3u: return &cpu_state.data.dl;
+    case 4u: return &cpu_state.data.bh;
+    case 5u: return &cpu_state.data.bl;
+    default: return &cpu_state.data.al;
+    }
+}
+
+static lib_u16 *_nec_pair_register(x86_core_cpu_execution_context *context, lib_u8 reg)
+{
+    switch (reg) {
+    case 0u: return &cpu_state.data.cx;
+    case 1u: return &cpu_state.data.dx;
+    case 2u: return &cpu_state.data.bx;
+    default: return &cpu_state.data.bp;
+    }
+}
+
+/* M uses the pre-operation HL, including MOV H,M and MOV M,L. All data,
+ * including the independent emulation stack, uses the existing DS bus. */
+static void _nec_read_operand(x86_core_cpu_execution_context *context,
+    lib_u8 reg, lib_u16 address, lib_u8 *value)
+{
+    if (reg == 6u)
+        _m_read_logical(context, &cpu_state.data.ds, address, (lib_uptr)value, 1u);
+    else *value = *_nec_byte_register(context, reg);
+}
+
+static void _nec_write_operand(x86_core_cpu_execution_context *context,
+    lib_u8 reg, lib_u16 address, lib_u8 value)
+{
+    if (reg == 6u)
+        _m_write_logical(context, &cpu_state.data.ds, address, (lib_uptr)&value, 1u);
+    else _kma_write_ref(context, (lib_uptr)_nec_byte_register(context, reg),
+        (lib_uptr)&value, 1u);
+}
+
+/* 8080 logical addresses wrap at 16 bits between the two byte operations.
+ * The physical lane/acceptance/failure owner remains _m_*_logical. */
+static void _nec_data_word(x86_core_cpu_execution_context *context,
+    lib_u16 address, lib_u16 *value, lib_bool write)
+{
+    lib_u8 low = (lib_u8)*value, high = (lib_u8)(*value >> 8u);
+    if (write) {
+        CPU_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ds,
+            address, (lib_uptr)&low, 1u));
+        CPU_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ds,
+            (lib_u16)(address + 1u), (lib_uptr)&high, 1u));
+    } else {
+        CPU_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ds,
+            address, (lib_uptr)&low, 1u));
+        CPU_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ds,
+            (lib_u16)(address + 1u), (lib_uptr)&high, 1u));
+        *value = (lib_u16)(low | ((lib_u16)high << 8u));
+    }
+}
+
+static void _nec_stack(x86_core_cpu_execution_context *context,
+    lib_u16 *value, lib_bool push)
+{
+    lib_u16 next;
+    if (push) {
+        const lib_u8 high = (lib_u8)(*value >> 8u), low = (lib_u8)*value;
+        CPU_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ds,
+            (lib_u16)(cpu_state.data.bp - 1u), (lib_uptr)&high, 1u));
+        CPU_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ds,
+            (lib_u16)(cpu_state.data.bp - 2u), (lib_uptr)&low, 1u));
+        next = (lib_u16)(cpu_state.data.bp - 2u);
+    } else {
+        CPU_TRACE_CHECK_RETURN(_nec_data_word(context, cpu_state.data.bp, value, LIB_FALSE));
+        next = (lib_u16)(cpu_state.data.bp + 2u);
+    }
+    _kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp),
+        (lib_uptr)&next, 2u);
+}
+
+static void _nec_commit_flags(x86_core_cpu_execution_context *context,
+    lib_u32 before, lib_u32 mask)
+{
+    cpu_state.data.eflags = (before & ~(mask | 0x2au)) |
+        (cpu_state.data.eflags & mask) | 2u;
+    instruction_state.data.udf &= ~mask;
+}
+
+static lib_bool _nec_condition(x86_core_cpu_execution_context *context, lib_u8 condition)
+{
+    static const lib_u16 flags[] = {VCPU_EFLAGS_ZF, VCPU_EFLAGS_CF,
+        VCPU_EFLAGS_PF, VCPU_EFLAGS_SF};
+    return !!(cpu_state.data.eflags & flags[condition >> 1u]) == !!(condition & 1u);
+}
+
+static void NEC_EMULATION(x86_core_cpu_execution_context *context)
 {
     lib_u8 code[3];
-    lib_u8 length;
-    CPU_TRACE_CALL_BEGIN("NEC_EMULATION_CONTROL");
+    lib_u8 length, value = 0u;
+    lib_u16 word = 0u;
+    CPU_TRACE_CALL_BEGIN("NEC_EMULATION");
     CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
         (lib_uptr)code, 1u));
     if (code[0] == 0xedu)
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 1u,
             (lib_uptr)(code + 1u), 1u));
-    length = _kdf_emulation_control_length(code, code[0] == 0xedu ? 2u : 1u);
+    length = _kdf_emulation_length(code, code[0] == 0xedu ? 2u : 1u);
     if (length == 0u) {
         UndefinedOpcode(context);
         CPU_TRACE_CALL_END;
         return;
     }
-    if (length == 3u)
-        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + 2u,
-            (lib_uptr)(code + 2u), 1u));
+    for (lib_u8 byte = code[0] == 0xedu ? 2u : 1u; byte < length; ++byte)
+        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip + byte,
+            (lib_uptr)(code + byte), 1u));
+    const nec_emulation_form form = _kdf_emulation_form(code[0]);
+    /* These existing instructions own their own one-byte advance and shared
+     * interrupt-shadow/standby behavior, in both CPU modes. */
+    if (form == NEC_EMULATION_HLT) { HLT(context); return; }
+    if (form == NEC_EMULATION_EI) { STI(context); return; }
+    if (form == NEC_EMULATION_DI) { CLI(context); return; }
     for (lib_u8 byte = 0u; byte < length; ++byte) _adv;
-    if (length == 3u) {
-        CPU_TRACE_CHECK_RETURN(_ser_int_real(context, code[2], 2u, LIB_FALSE));
-    } else if (length == 2u) {
-        CPU_TRACE_CHECK_RETURN(_e_iret(context, 2u));
-        context->nec_md_write_enabled = LIB_FALSE;
+    const lib_u32 before = cpu_state.data.eflags;
+    const lib_u16 address = cpu_state.data.bx;
+    const lib_u8 reg = (code[0] >> 3u) & 7u, pair = (code[0] >> 4u) & 3u;
+    if (length == 3u) word = (lib_u16)(code[1] | ((lib_u16)code[2] << 8u));
+    switch (form) {
+    case NEC_EMULATION_NOP: break;
+    case NEC_EMULATION_MOV:
+        CPU_TRACE_CHECK_RETURN(_nec_read_operand(context, code[0] & 7u, address, &value));
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, reg, address, value));
+        break;
+    case NEC_EMULATION_MVI:
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, reg, address, code[1]));
+        break;
+    case NEC_EMULATION_LXI:
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, (lib_uptr)_nec_pair_register(context, pair),
+            (lib_uptr)&word, 2u));
+        break;
+    case NEC_EMULATION_STAX:
+        CPU_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ds,
+            *_nec_pair_register(context, pair), X86_CPU_REFERENCE_OF(cpu_state.data.al), 1u));
+        break;
+    case NEC_EMULATION_LDAX:
+        CPU_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ds,
+            *_nec_pair_register(context, pair), (lib_uptr)&value, 1u));
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address, value));
+        break;
+    case NEC_EMULATION_INX: case NEC_EMULATION_DCX:
+        word = (lib_u16)(*_nec_pair_register(context, pair) +
+            (form == NEC_EMULATION_INX ? 1 : -1));
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, (lib_uptr)_nec_pair_register(context, pair),
+            (lib_uptr)&word, 2u));
+        break;
+    case NEC_EMULATION_DAD:
+        CPU_TRACE_CHECK_RETURN(_a_add(context, address, *_nec_pair_register(context, pair), 16u));
+        word = (lib_u16)instruction_state.data.result;
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx),
+            (lib_uptr)&word, 2u));
+        _nec_commit_flags(context, before, VCPU_EFLAGS_CF);
+        break;
+    case NEC_EMULATION_INR: case NEC_EMULATION_DCR:
+        CPU_TRACE_CHECK_RETURN(_nec_read_operand(context, reg, address, &value));
+        if (form == NEC_EMULATION_INR)
+            CPU_TRACE_CHECK_RETURN(_a_inc(context, value, 8u));
+        else {
+            CPU_TRACE_CHECK_RETURN(_a_dec(context, value, 8u));
+            cpu_state.data.eflags ^= VCPU_EFLAGS_AF;
+        }
+        _nec_commit_flags(context, before, 0xd4u);
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, reg, address,
+            (lib_u8)instruction_state.data.result));
+        break;
+    case NEC_EMULATION_ALU: case NEC_EMULATION_ALUI: {
+        static void (*const arithmetic[])(x86_core_cpu_execution_context *, lib_u64, lib_u64, lib_u8) = {
+            _a_add, _a_adc, _a_sub, _a_sbb, _a_and, _a_xor, _a_or, _a_cmp
+        };
+        const lib_u8 accumulator = cpu_state.data.al;
+        if (form == NEC_EMULATION_ALUI) value = code[1];
+        else CPU_TRACE_CHECK_RETURN(_nec_read_operand(context, code[0] & 7u, address, &value));
+        CPU_TRACE_CHECK_RETURN(arithmetic[reg](context, accumulator, value, 8u));
+        /* 8080 subtraction exposes nibble carry, not x86 auxiliary borrow.
+         * 8080 AND differs from both x86 and 8085. */
+        if (reg == 2u || reg == 3u || reg == 7u) cpu_state.data.eflags ^= VCPU_EFLAGS_AF;
+        else if (reg == 4u)
+            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_AF, (accumulator | value) & 8u);
+        else if (reg == 5u || reg == 6u) _ClrEFLAGS_AF;
+        _nec_commit_flags(context, before, 0xd5u);
+        if (reg != 7u)
+            CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address,
+                (lib_u8)instruction_state.data.result));
+        break;
+    }
+    case NEC_EMULATION_ROTATE:
+        switch ((code[0] >> 3u) & 3u) {
+        case 0u: _a_rol(context, cpu_state.data.al, 1u, 8u); break;
+        case 1u: _a_ror(context, cpu_state.data.al, 1u, 8u); break;
+        case 2u: _a_rcl(context, cpu_state.data.al, 1u, 8u); break;
+        default: _a_rcr(context, cpu_state.data.al, 1u, 8u); break;
+        }
+        if (instruction_state.data.except) return;
+        _nec_commit_flags(context, before, VCPU_EFLAGS_CF);
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address,
+            (lib_u8)instruction_state.data.result));
+        break;
+    case NEC_EMULATION_DAA: {
+        const lib_u8 accumulator = cpu_state.data.al;
+        const lib_u8 correction =
+            ((accumulator & 15u) > 9u || (before & VCPU_EFLAGS_AF) ? 6u : 0u) |
+            (accumulator > 0x99u || (before & VCPU_EFLAGS_CF) ? 0x60u : 0u);
+        CPU_TRACE_CHECK_RETURN(_a_add(context, accumulator, correction, 8u));
+        cpu_state.data.eflags |= before & VCPU_EFLAGS_CF;
+        _nec_commit_flags(context, before, 0xd5u);
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address,
+            (lib_u8)instruction_state.data.result));
+        break;
+    }
+    case NEC_EMULATION_CMA:
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address, (lib_u8)~cpu_state.data.al));
+        break;
+    case NEC_EMULATION_STC: _SetEFLAGS_CF; break;
+    case NEC_EMULATION_CMC: cpu_state.data.eflags ^= VCPU_EFLAGS_CF; break;
+    case NEC_EMULATION_SHLD:
+        {
+            lib_u16 data = address;
+            CPU_TRACE_CHECK_RETURN(_nec_data_word(context, word, &data, LIB_TRUE));
+        }
+        break;
+    case NEC_EMULATION_LHLD:
+        CPU_TRACE_CHECK_RETURN(_nec_data_word(context, word, &word, LIB_FALSE));
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx),
+            (lib_uptr)&word, 2u));
+        break;
+    case NEC_EMULATION_STA:
+        CPU_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ds, word,
+            X86_CPU_REFERENCE_OF(cpu_state.data.al), 1u));
+        break;
+    case NEC_EMULATION_LDA:
+        CPU_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ds, word, (lib_uptr)&value, 1u));
+        CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address, value));
+        break;
+    case NEC_EMULATION_JUMP: case NEC_EMULATION_CALL:
+        if (code[0] == 0xc3u || code[0] == 0xcdu || _nec_condition(context, reg)) {
+            if (form == NEC_EMULATION_CALL) {
+                lib_u16 next = (lib_u16)cpu_state.data.eip;
+                CPU_TRACE_CHECK_RETURN(_nec_stack(context, &next, LIB_TRUE));
+            }
+            cpu_state.data.eip = word;
+        }
+        break;
+    case NEC_EMULATION_RETURN:
+        if (code[0] == 0xc9u || _nec_condition(context, reg)) {
+            CPU_TRACE_CHECK_RETURN(_nec_stack(context, &word, LIB_FALSE));
+            cpu_state.data.eip = word;
+        }
+        break;
+    case NEC_EMULATION_RST:
+        word = (lib_u16)cpu_state.data.eip;
+        CPU_TRACE_CHECK_RETURN(_nec_stack(context, &word, LIB_TRUE));
+        cpu_state.data.eip = code[0] & 0x38u;
+        break;
+    case NEC_EMULATION_PUSH:
+        word = pair == 3u ? (lib_u16)(((lib_u16)cpu_state.data.al << 8u) |
+            (before & 0xd5u) | 2u) : *_nec_pair_register(context, pair);
+        CPU_TRACE_CHECK_RETURN(_nec_stack(context, &word, LIB_TRUE));
+        break;
+    case NEC_EMULATION_POP:
+        CPU_TRACE_CHECK_RETURN(_nec_stack(context, &word, LIB_FALSE));
+        if (pair == 3u) {
+            cpu_state.data.eflags = (before & ~0xffu) | (word & 0xd5u) | 2u;
+            instruction_state.data.udf &= ~0xd5u;
+            CPU_TRACE_CHECK_RETURN(_nec_write_operand(context, 7u, address, (lib_u8)(word >> 8u)));
+        } else CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, (lib_uptr)_nec_pair_register(context, pair),
+            (lib_uptr)&word, 2u));
+        break;
+    case NEC_EMULATION_XTHL:
+        CPU_TRACE_CHECK_RETURN(_nec_data_word(context, cpu_state.data.bp, &word, LIB_FALSE));
+        {
+            lib_u16 data = address;
+            CPU_TRACE_CHECK_RETURN(_nec_data_word(context, cpu_state.data.bp, &data, LIB_TRUE));
+        }
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx),
+            (lib_uptr)&word, 2u));
+        break;
+    case NEC_EMULATION_PCHL: cpu_state.data.eip = address; break;
+    case NEC_EMULATION_XCHG:
+        word = cpu_state.data.dx;
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx),
+            (lib_uptr)&address, 2u));
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx),
+            (lib_uptr)&word, 2u));
+        break;
+    case NEC_EMULATION_SPHL:
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp),
+            (lib_uptr)&address, 2u));
+        break;
+    case NEC_EMULATION_PORT:
+        if (code[0] == 0xdbu)
+            CPU_TRACE_CHECK_RETURN(_p_input(context, code[1], X86_CPU_REFERENCE_OF(cpu_state.data.al), 1u));
+        else CPU_TRACE_CHECK_RETURN(_p_output(context, code[1], X86_CPU_REFERENCE_OF(cpu_state.data.al), 1u));
+        break;
+    case NEC_EMULATION_ESCAPE:
+        if (length == 3u) {
+            CPU_TRACE_CHECK_RETURN(_ser_int_real(context, code[2], 2u, LIB_FALSE));
+        } else {
+            CPU_TRACE_CHECK_RETURN(_e_iret(context, 2u));
+            context->nec_md_write_enabled = LIB_FALSE;
+        }
+        break;
+    default: CPU_TRACE_IMPOSSIBLE_RETURN;
     }
     CPU_TRACE_CALL_END;
 }
@@ -20391,7 +20761,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
         CPU_TRACE_CALL_BEGIN("ExecIns");
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
             !(cpu_state.data.eflags & X86_CPU_NEC_PSW_MD)) {
-            NEC_EMULATION_CONTROL(context);
+            NEC_EMULATION(context);
             break;
         }
         CPU_TRACE_CHECK_BREAK(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(opcode), 1));
@@ -20478,7 +20848,8 @@ static void ExecInt(x86_core_cpu_execution_context *context)
             context->interrupt_shadow != CPU_INTERRUPT_SHADOW_SEGMENT &&
             !context->nmi_masked && !context->nmi_in_service && context->nmi_pending;
         const lib_bool intr_ready =
-            context->interrupt_shadow == CPU_INTERRUPT_SHADOW_NONE && _GetEFLAGS_IF &&
+            context->interrupt_shadow == CPU_INTERRUPT_SHADOW_NONE &&
+            (_GetEFLAGS_IF || context->cpu_profile == X86_CORE_CPU_PROFILE_V30) &&
             context->bus->interrupt_pending(context->bus_context);
         /* A queued step trap cannot wake HALT. Recheck delivery inputs after
          * the accepted wake, since handler entry can itself produce an edge. */

@@ -299,11 +299,12 @@ static lib_i32 v30_mode_guards(void)
     if (!fixture.bus.execution.stop_requested || !fixture.bus.execution.nec_md_write_enabled ||
         fixture.bus.delivered_exceptions || fixture.reads || fixture.writes ||
         lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) return 1;
-    for (lib_u16 byte = 1u; byte < 256u; ++byte) {
-        if (byte == 0xedu) continue;
+    static const lib_u8 reserved[] = {0x08u,0x10u,0x18u,0x20u,0x28u,0x30u,
+        0x38u,0xcbu,0xd9u,0xddu,0xfdu};
+    for (lib_u8 index = 0u; index < sizeof(reserved); ++index) {
         const v30_mode_case nop = {.operation=V30_MODE_NOP,.pc=0x100u,.sp=0x700u};
         if (v30_mode_prepare(&fixture,&nop)) return 1;
-        fixture.memory[0x80100u] = (lib_u8)byte;
+        fixture.memory[0x80100u] = reserved[index];
         const t_cpu unchanged = fixture.bus.cpu;
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
         if (!fixture.bus.execution.stop_requested || fixture.bus.delivered_exceptions ||

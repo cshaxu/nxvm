@@ -184,7 +184,7 @@ static lib_i32 v30_not_admitted(void)
     }
     cpu_bus_prepare(&fixture, X86_CORE_CPU_PROFILE_V30);
     fixture.cpu.data.eflags &= ~X86_CPU_NEC_PSW_MD;
-    fixture.memory[0x100u] = 0x90u;
+    fixture.memory[0x100u] = 0x08u;
     x86_core_cpu_execution_refresh(&fixture.execution);
     if (!fixture.execution.stop_requested || fixture.cpu.data.eip != 0x100u) return 1;
     x86_core_cpu_state_reset(&fixture.execution);
