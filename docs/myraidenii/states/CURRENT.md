@@ -2,34 +2,16 @@
 
 ## Current Work
 
-M1 T2 S36 is admitted after accepted S35 (`7d7eadf5f`). The coordinator
-freezes the complete ordinary string nominal-clock batch and existing repeat
-owner below; the executor confirms that boundary. T2/M1 remain open.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, MyRaidenII M1 T2 S36, next unused S after accepted S35. |
-| Admission And Approval | Owner's standing automatic single-person coordinator/executor MyRaidenII implementation approval; coordinator admits original V09/V15 complete ordinary string nominal family on 2026-10-18 at clean 7d7eadf5f. Targets Shared CPU/tests, NXVM eight receiving artifacts/status, MyRaidenII records; no Lib/Emulator/MyNES source or public contract change. |
-| Objective | Allocate documented nominal rows for all fourteen byte/word MOVS/CMPS/SCAS/LODS/STOS/INS/OUTS opcodes, primitive and canonical repetition with zero/first/continuation/terminal phases, parity and original count/index/port facts. Reuse existing repeat identity/state owner; retain complete result/bus/failure proof and source-unknown prefix dispositions. |
-| Non-goals | No execution/decoder semantics, physical elapsed-time/entry/bus/prefetch/extra-wait allocation, prefix-stream model, new state/queue/thread/framework, public API/enum/layout or Machine/board/game admission. Only source table aggregates, not adding a separately printed prefix row twice. Extra segment/redundant/LOCK and noncanonical repeat forms remain original V05/V15 receivers. |
-| Reference Baseline | 7d7eadf5f; pinned NEC October 1986 manual SHA FABBFCD19D4A2FCDAAC9F0BC06B00BF0A6A4BEEDAFBD3FF16ACCD075A374EA4C, printed 12-1..3,14..20,28..29 (PDF 46..48,59..65,73..74), twelve pages rendered/visually inspected. Existing S7/S9/S10/S25 semantic/failure/IRQ proof and sole source_timing_record_repeat owner. |
-| Candidate Proposal | proposals/m1-v30.md and original V05/V09/V14/V15 ledger. Primitive base MOVS/CMPS/SCAS/LODS/STOS/INS/OUTS=11/13/7/7/7/10/10. Repeat setup=11/7/7/7/7/9/9, iteration=8/14/10/9/4/8/8. Apply source parity rows: per odd endpoint +4 except repeated MOVS any odd uses 16 per iteration. Canonical F3 for data/I/O and F3/F2/65/64 for comparison. Source aggregate setup charged once via existing repeat phase; unknown prefix/electrical terms do not open eligibility. |
-| Files And ABI Surface | src/x86-core/cpu/cpu_timing.c, cpu_timing_model.c, private cpu_instructions.h and source manifest; existing block/conditional-repeat/port/nominal-transfer smoke C files, one CPU-local shared string timing assertion header and test manifest. Coordinator additionally includes one timing-identity clear in cpu_instructions.c at the existing successful V30 real-entry commit, with same-address NMI/INT handler regressions; no guest semantic or layout change. The first focused groups passed but actual review exposed this identity alias, so the still-live subsequent build was explicitly interrupted before source edits; it is not full qualification. Estimate production +70..100/-10..20; tests +145..235/-10..25. Existing repeat recorder loses static and gains one private declaration for actual same-component reuse; no interface.h or registration change. |
-| Applicable Rules | MyRaidenII guide/goal/proposal/ledger/design/queue/roadmap/source policy, shared Execution/Architecture/Coding/Documentation, architecture/coding governance and read-only PDF skills. Receiving NXVM guide/current/design/coding/source policy and X86 Core README. Unique execution/data/time/publication/repeat owner, Lib Types, frozen proof, target-separated Ps, actual committed-diff acceptance. |
-| Verification | Extend existing three actual string execution seams with independent row/phase/key/input/max/no-extra-observation oracles, both parity axes, zero/count/DF/prefix/termination, actual IRQ/RETI restart and failure no-completion proof; preserve 942920 comparison inputs and all original semantics/accepted-prefix effects. Nine transient units: block, conditional repeat, port, nominal transfer, memory transfer, interrupt, software arbitration, completion, form admission. Both original Ninja/ccache all-target builds -j8, full 678 repository units -j4, specialized gates/498 strict rows and Types, 14 selected PC receiving tests plus restored identity per width, ten PE/hashes, protected-input guards and docs. |
-| Expected Markers | Existing V30:BLOCK-TRANSFER:OK, V30:CONDITIONAL-REPEAT:OK, V30:PORT-TRANSFER:OK and comparison cases=942920 retained. Add V30:NOMINAL-STRING:OK at original three owners; all final focused/full suites zero failures/skips, source time unallocated/max0/Machine rejection preserved. |
-| Asset Needs | Synthetic ROM-free inputs, pinned manual and original reusable graphs only. Rebuild/deploy eight current PC 0564 EXEs; verify all ten identities and unchanged MyNES0044/INIs/media/snapshots. No new ROM, MyRaidenII EXE, external source or host native test requirement. |
-| Reporting Requirements | Report complete source/owner decision and estimates before code; progress and actual failed attempts; final added/deleted/net by production/test, shared helper responsibility and retained unknowns, measured verification/artifact/commit proof and whole-game boundary. |
-| Stop Conditions | New public/source-model need, semantic/Intel behavior change, source assumption presented as exact physical time, owner-input mutation or failed qualification prevents acceptance. No weakened tests/budgets, second repeat state, extra operand reads, per-callback source costs or eligibility promotion. |
-| Exit Criteria | Whole fourteen-opcode nominal batch has allocated source rows/aggregate phases or explicit original unknown dispositions, directly proved at actual execution including parity/zero/failure/IRQ restart; both widths full builds/units/gates/selected receiving/artifacts/docs pass, complete Ps pushed and coordinator actual committed-diff acceptance. Only S36 closes. |
-| Original Owner Request | Single-person two-role governed implementation of complete playable MyRaidenII, NEC V30 and needed facilities. Source clocks or CPU units cannot replace Machine, board, video/sound and complete gameplay outcome. |
-| Similar-Issue Sweep | All seven string families, canonical/noncanonical prefix identities, setup/continuation/termination/reset/IRQ boundaries, original count and endpoint parity, unknown timing placeholders, failure publication, no-observation and key collisions, existing Intel repeat consumers and maximum/Machine gates. Preserve extra prefixes, modes and physical accounting at original ledger receivers. |
+M1 T2 S36 is accepted and closed after actual committed-diff review.
+Shared implementation `4a8b42a56`, NXVM receiving releases `d46350c28`
+and MyRaidenII evidence `26585d8ad` are pushed. The complete admission packet
+is retained in the S36 evidence below; no S packet is active. T2/M1 remain open.
 
 ## Task Progress
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
-| T2 S36 | Ordinary string nominal clocks and qualified receiving releases delivered; coordinator actual committed-diff acceptance remains. Complete V30 timing, Machine, board and game remain open. |
+| T2 S36 | Accepted and closed: complete ordinary string nominal batch and qualified receiving releases, with actual committed-diff and frozen-proof reconciliation. Complete V30 timing, Machine, board and game remain open. |
 
 [S36 evidence](../etc/evidence/t2-s36-nominal-string.md),
 [results](../etc/evidence/t2-s36-results.json) and
