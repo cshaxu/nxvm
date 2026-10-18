@@ -339,11 +339,22 @@ static void x86_core_cpu_timing_select_v30(
             if (!digits || digits == 255u || (digits & 1u)) return;
             ticks = 7u + 19u * (digits / 2u);
             result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE;
+        } else if (suffix == 0x31u || suffix == 0x33u || suffix == 0x39u || suffix == 0x3bu) {
+            /* Conservative source-range endpoints, not an inferred microsequence.
+             * INS register's even upper bound really exceeds its odd row. */
+            static const lib_u8 upper[][2] = {{117u,113u},{55u,59u},{87u,103u},{44u,52u}};
+            const lib_bool extract = (suffix & 2u) != 0u;
+            const lib_u16 index = extract ? data->oldcpu.data.si : data->oldcpu.data.di;
+            const lib_u8 operation = ((suffix & 8u) ? 2u : 0u) + (extract ? 1u : 0u);
+            odd_word = (index & 1u) != 0u;
+            ticks = upper[operation][odd_word];
+            result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY;
+            origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
         } else if (suffix == 0xffu) {
             ticks = 38u;
             stack_penalty = 12u;
             control = LIB_TRUE;
-        } else return; /* Field ranges remain separately unallocated. */
+        } else return;
     } else if (scalar) {
         const lib_bool read_only = (opcode & 0x38u) == 0x38u || (opcode & 2u);
         ticks = !data->flagMem ? 2u : read_only ? 11u : 16u;
@@ -395,6 +406,11 @@ static void x86_core_cpu_timing_select_v30(
     case 0x37u: ticks = 3u; break;
     case 0x3fu: ticks = 7u; break;
     case 0x98u: ticks = 2u; break;
+    case 0x99u:
+        /* The source gives four or five according to data, without selection. */
+        ticks = 5u;
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
+        break;
     case 0xd4u: case 0xd5u:
         /* Only the encoded radix-ten forms have documented nominal rows. */
         if (data->opcodes[1] != 10u) return;

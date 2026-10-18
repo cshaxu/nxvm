@@ -88,11 +88,20 @@ static lib_i32 v30_field_run(cpu_bus_fixture *fixture, lib_u8 opcode,
         lexeme.byte_count != size || fixture->writes) return 1;
     fixture->observations = 0u;
     x86_core_cpu_execution_refresh(&fixture->execution);
-    /* All four source rows give ranges, not an exact input-to-clock formula. */
+    /* Independent parity rows from NEC 12-21..24; upper endpoints are L2. */
+    const lib_u64 clocks = prefix ? 0u : insert ?
+        (immediate_form ? ((index & 1u) ? 103u : 87u) : ((index & 1u) ? 113u : 117u)) :
+        immediate_form ? ((index & 1u) ? 52u : 44u) : ((index & 1u) ? 59u : 55u);
+    const lib_u32 key = prefix ? X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED :
+        0x0fu | ((lib_u32)opcode << 16u);
+    const lib_u32 inputs = prefix ? 0u : X86_CORE_CPU_TIMING_INPUT_MEMORY |
+        ((index & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
-    if (!timing.source_timing_unallocated || timing.ticks || timing.event_ticks || timing.formula_inputs ||
-        timing.form_id != X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED || timing.key_id != timing.form_id ||
-        timing.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED || fixture->observations)
+    if (!timing.source_timing_unallocated || timing.ticks != clocks || timing.event_ticks ||
+        timing.formula_inputs != inputs || timing.form_id != key || timing.key_id != key ||
+        timing.retirement_origin != (prefix ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) || fixture->observations ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL))
         return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||
         fixture->cpu.data.eip != 0x100u + size || fixture->cpu.data.eax != result.data.eax ||
@@ -111,26 +120,31 @@ static lib_i32 v30_field_run(cpu_bus_fixture *fixture, lib_u8 opcode,
         (fixture->cpu.data.eflags & ~undefined_flags) != (result.data.eflags & ~undefined_flags);
 }
 
-static lib_i32 v30_field_operands(void)
+static lib_i32 v30_field_operands(lib_u32 *cases)
 {
     static const lib_u8 opcodes[] = {0x31u,0x33u,0x39u,0x3bu};
     cpu_bus_fixture fixture;
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
-        for (lib_u8 offset = 0u; offset < 16u; ++offset)
-            for (lib_u8 length = 0u; length < 16u; ++length)
-                for (lib_u8 reg = 0u; reg < 8u; ++reg)
-                    for (lib_u8 length_reg = 0u; length_reg < 8u; ++length_reg) {
-                        if (op >= 2u && length_reg != 0u) continue;
-                        if (op < 2u && reg == length_reg && offset != length) continue;
-                        v30_field_prepare(&fixture, 0x400u);
-                        if (op < 2u) *v30_field_register(&fixture.cpu, length_reg) = length;
-                        *v30_field_register(&fixture.cpu, reg) = offset;
-                        if (v30_field_run(&fixture, opcodes[op], reg, length_reg, length, 0u)) {
-                            lib_c_printf("field op=%02X offset=%u length=%u registers=%u,%u\n",
-                                opcodes[op], offset, length + 1u, reg, length_reg);
-                            return 1;
+        for (lib_u8 parity = 0u; parity < 2u; ++parity)
+            for (lib_u8 offset = 0u; offset < 16u; ++offset)
+                for (lib_u8 length = 0u; length < 16u; ++length)
+                    for (lib_u8 reg = 0u; reg < 8u; ++reg)
+                        for (lib_u8 length_reg = 0u; length_reg < 8u; ++length_reg) {
+                            if (op >= 2u && length_reg != 0u) continue;
+                            if (op < 2u && reg == length_reg && offset != length) continue;
+                            v30_field_prepare(&fixture, 0x400u + parity);
+                            /* The unused index has opposite parity: the owner matters. */
+                            if (op & 1u) fixture.cpu.data.di ^= 1u;
+                            else fixture.cpu.data.si ^= 1u;
+                            if (op < 2u) *v30_field_register(&fixture.cpu, length_reg) = length;
+                            *v30_field_register(&fixture.cpu, reg) = offset;
+                            if (v30_field_run(&fixture, opcodes[op], reg, length_reg, length, 0u)) {
+                                lib_c_printf("field op=%02X offset=%u length=%u registers=%u,%u\n",
+                                    opcodes[op], offset, length + 1u, reg, length_reg);
+                                return 1;
+                            }
+                            ++*cases;
                         }
-                    }
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
         for (lib_u8 prefix_index = 0u; prefix_index < 5u; ++prefix_index)
             for (lib_u8 boundary = 0u; boundary < 3u; ++boundary) {
@@ -145,6 +159,7 @@ static lib_i32 v30_field_operands(void)
                         opcodes[op], prefixes[prefix_index], fixture.cpu.data.si);
                     return 1;
                 }
+                ++*cases;
             }
     return 0;
 }
@@ -291,10 +306,12 @@ static lib_i32 v30_field_failures(void)
 
 lib_i32 main(void)
 {
-    if (v30_field_operands()) { lib_c_printf("V30:BIT-FIELD-OPERANDS:FAIL\n"); return 1; }
+    lib_u32 cases = 0u;
+    if (v30_field_operands(&cases)) { lib_c_printf("V30:BIT-FIELD-OPERANDS:FAIL\n"); return 1; }
     if (v30_field_forms()) { lib_c_printf("V30:BIT-FIELD-FORMS:FAIL\n"); return 1; }
     if (v30_field_examples()) { lib_c_printf("V30:BIT-FIELD-EXAMPLES:FAIL\n"); return 1; }
     if (v30_field_failures()) { lib_c_printf("V30:BIT-FIELD-FAILURES:FAIL\n"); return 1; }
     lib_c_printf("V30:BIT-FIELD:OK\n");
+    lib_c_printf("V30:NOMINAL-FIELD:OK cases=%u\n",cases);
     return 0;
 }

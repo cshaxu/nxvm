@@ -169,16 +169,18 @@ static lib_i32 v30_alu_records(const v30_memory_fixture *fixture, lib_u32 addres
     return 0;
 }
 
-/* NEC 12-29..41, 12-47..49 and 12-65..81, selected by semantic test
+/* NEC 12-29..41, 12-47..49 and 12-64..81, selected by semantic test
  * operation/form, independently of the production opcode-based selector. */
 static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
     const v30_alu_case *item, lib_bool memory, lib_u32 address)
 {
     lib_u64 clocks = 0u;
     lib_u8 odd_cost = 0u;
+    x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
     if (!item->prefix && item->form == V30_ALU_EXTEND) {
-        /* CVTWL gives only a data-dependent range; CVTBW has a fixed row. */
-        if (item->operation == V30_ALU_CBW) clocks = 2u;
+        clocks = item->operation == V30_ALU_CBW ? 2u : 5u;
+        if (item->operation != V30_ALU_CBW)
+            origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
     } else if (!item->prefix) {
         if (!memory) clocks = item->form >= V30_ALU_ACC_IMMEDIATE &&
             item->form <= V30_ALU_GROUP_SIGNED ? 4u : 2u;
@@ -201,7 +203,7 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
     }
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->bus.execution);
     if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+        timing.retirement_origin != (clocks ? origin :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) ||
         timing.form_id != form || timing.key_id != form ||
         timing.formula_inputs != (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
@@ -344,8 +346,8 @@ lib_i32 main(void)
     static const lib_u8 unallocated[][4] = {
         {0x82u,0xc0u,0x01u}, {0xf6u,0xc8u,0x01u}, {0xf7u,0xc8u,0x01u,0x00u},
         {0x26u,0xf6u,0xe0u}, {0x26u,0xf7u,0xe0u}, {0x26u,0xf6u,0xf3u}, {0x26u,0xf7u,0xfbu},
-        {0xd0u,0xf0u}, {0xc1u,0xf0u,0x04u}, {0x0fu,0x39u,0xc1u,0u},
-        {0xffu,0xd8u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x2eu,0x98u}, {0x99u},
+        {0xd0u,0xf0u}, {0xc1u,0xf0u,0x04u}, {0x26u,0x0fu,0x10u,0xc0u},
+        {0xffu,0xd8u}, {0xf0u,0x01u,0x07u}, {0xf3u,0x04u,0x01u}, {0x2eu,0x98u}, {0x2eu,0x99u},
         {0xd4u,9u}, {0xd5u,9u}, {0x27u}, {0x2fu}
     };
     static v30_memory_fixture boundary;
