@@ -31,6 +31,7 @@
 - [T2 native PSW and flag control](evidence/t2-s21-flags.md).
 - [T2 native software entry and return](evidence/t2-s22-software-entry.md).
 - [T2 NEC mode transition](evidence/t2-s23-mode-transition.md).
+- [T2 ordinary 8080AF execution](evidence/t2-s24-emulation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
