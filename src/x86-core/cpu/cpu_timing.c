@@ -345,9 +345,10 @@ static void x86_core_cpu_timing_select_v30(
                 data->flagMem ? 33u : 29u;
         } else if (suffix == 0x20u || suffix == 0x22u || suffix == 0x26u) {
             const lib_u8 digits = data->oldcpu.data.cl;
-            /* The source does not specify rounding for odd digit counts. */
-            if (!digits || digits == 255u || (digits & 1u)) return;
-            ticks = 7u + 19u * (digits / 2u);
+            if (!digits || digits == 255u) return;
+            ticks = 7u + 19u * (((lib_u16)digits + 1u) / 2u);
+            /* Full-byte operation is documented; rounding the nominal row is L2. */
+            if (digits & 1u) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
             result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE;
         } else if (suffix == 0x31u || suffix == 0x33u || suffix == 0x39u || suffix == 0x3bu) {
             /* Conservative source-range endpoints, not an inferred microsequence.

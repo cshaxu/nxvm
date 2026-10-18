@@ -10153,12 +10153,7 @@ static void NEC_PACKED_BCD(x86_core_cpu_execution_context *context, lib_u8 opcod
             source_offset, X86_CPU_REFERENCE_OF(source), 1));
         CPU_TRACE_CHECK_RETURN(_s_read_es(context, destination_offset,
             X86_CPU_REFERENCE_OF(destination), 1));
-        if ((cpu_state.data.cl & 1u) && index + 1u == bytes)
-        {
-            /* The unused final nibble and odd-count flags are unspecified. */
-            source &= 0x0fu;
-            destination &= 0x0fu;
-        }
+        /* Odd digit counts still operate on both nibbles of the final byte. */
         if ((source & 0x0fu) > 9u || (source >> 4u) > 9u ||
             (destination & 0x0fu) > 9u || (destination >> 4u) > 9u)
         {
@@ -10190,8 +10185,6 @@ static void NEC_PACKED_BCD(x86_core_cpu_execution_context *context, lib_u8 opcod
     X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, carry);
     X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_ZF, zero);
     instruction_state.data.udf |= VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF;
-    if (cpu_state.data.cl & 1u)
-        instruction_state.data.udf |= VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
     CPU_TRACE_CALL_END;
 }
 static void NEC_BIT_FIELD(x86_core_cpu_execution_context *context,

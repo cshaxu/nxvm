@@ -67,9 +67,8 @@ static lib_i32 v30_bcd_run(cpu_bus_fixture *fixture, lib_u8 opcode, lib_u8 prefi
         lib_u8 result = 0u;
         /* Independent digit-at-a-time oracle, not the production base-100 algorithm. */
         for (lib_u8 nibble = 0u; nibble < 2u; ++nibble) {
-            const lib_bool unused = odd && index + 1u == bytes && nibble == 1u;
-            const lib_i32 a = unused ? 0 : (destination >> (nibble * 4u)) & 15u;
-            const lib_i32 b = unused ? 0 : (source >> (nibble * 4u)) & 15u;
+            const lib_i32 a = (destination >> (nibble * 4u)) & 15u;
+            const lib_i32 b = (source >> (nibble * 4u)) & 15u;
             lib_i32 value = opcode == 0x20u ? a + b + (carry ? 1 : 0) :
                 a - b - (carry ? 1 : 0);
             carry = opcode == 0x20u ? value >= 10 : value < 0;
@@ -88,7 +87,14 @@ static lib_i32 v30_bcd_run(cpu_bus_fixture *fixture, lib_u8 opcode, lib_u8 prefi
         lexeme.byte_count != size || fixture->writes != 0u) return 1;
     fixture->observations = 0u;
     x86_core_cpu_execution_refresh(&fixture->execution);
-    const lib_u64 clocks = odd ? 0u : 7u + 19u * (before.data.cl / 2u) + (prefix ? 2u : 0u);
+    t_cpu actual_cpu = fixture->cpu, expected_cpu = before;
+    expected_cpu.data.eip += size;
+    expected_cpu.data.eflags = (expected_cpu.data.eflags & ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF)) |
+        (carry ? VCPU_EFLAGS_CF : 0u) | (zero ? VCPU_EFLAGS_ZF : 0u);
+    const lib_u32 defined = ~(VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
+    actual_cpu.data.eflags &= defined;
+    expected_cpu.data.eflags &= defined;
+    const lib_u64 clocks = 7u + 19u * bytes + (prefix ? 2u : 0u);
     const lib_u32 key = clocks ? 0x0fu | ((lib_u32)opcode << 16u) :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
@@ -96,28 +102,16 @@ static lib_i32 v30_bcd_run(cpu_bus_fixture *fixture, lib_u8 opcode, lib_u8 prefi
         timing.form_id != key || timing.key_id != key || fixture->observations ||
         timing.formula_inputs != (clocks ? X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE |
             (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) : 0u) ||
-        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
+        timing.retirement_origin != (odd ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE)) return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||
-        fixture->cpu.data.eip != before.data.eip + size ||
-        fixture->cpu.data.eax != before.data.eax || fixture->cpu.data.ebx != before.data.ebx ||
-        fixture->cpu.data.ecx != before.data.ecx || fixture->cpu.data.edx != before.data.edx ||
-        fixture->cpu.data.esi != before.data.esi || fixture->cpu.data.edi != before.data.edi ||
-        fixture->cpu.data.ebp != before.data.ebp || fixture->cpu.data.esp != before.data.esp ||
+        lib_memory_compare(&actual_cpu,&expected_cpu,sizeof(expected_cpu)) ||
         fixture->writes != (opcode == 0x26u ? 0u : bytes) ||
         fixture->instructions.data.msize != bytes * (opcode == 0x26u ? 2u : 3u)) return 1;
-    if (odd && opcode != 0x26u) {
-        const lib_size last = v30_bcd_address(before.data.es.base,
-            (lib_u16)(before.data.di + bytes - 1u));
-        expected[last] = (expected[last] & 0x0fu) | (fixture->memory[last] & 0xf0u);
-    }
     if (lib_memory_compare(expected, fixture->memory, sizeof(expected)) != 0) return 1;
-    if (!odd && ((fixture->cpu.data.eflags & (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF)) !=
-        ((carry ? VCPU_EFLAGS_CF : 0u) | (zero ? VCPU_EFLAGS_ZF : 0u)))) return 1;
     return (fixture->instructions.data.udf & (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF |
-        VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | (odd ? VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF : 0u))) !=
-        (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF |
-            (odd ? VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF : 0u)) ||
+        VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF)) !=
+        (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF) ||
         (fixture->cpu.data.eflags & (X86_CPU_NEC_PSW_MD | VCPU_EFLAGS_DF | 2u)) !=
         (before.data.eflags & (X86_CPU_NEC_PSW_MD | VCPU_EFLAGS_DF | 2u));
 }
@@ -126,13 +120,16 @@ static lib_i32 v30_bcd_operands(void)
 {
     static const lib_u8 opcodes[] = {0x20u,0x22u,0x26u};
     cpu_bus_fixture fixture;
+    lib_u32 odd_cases = 0u;
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
         for (lib_u16 source = 0u; source < 100u; ++source)
-            for (lib_u16 destination = 0u; destination < 100u; ++destination) {
-                v30_bcd_prepare(&fixture, 2u, LIB_FALSE);
+            for (lib_u16 destination = 0u; destination < 100u; ++destination)
+            for (lib_u8 digits = 1u; digits <= 2u; ++digits) {
+                v30_bcd_prepare(&fixture, digits, LIB_FALSE);
                 v30_bcd_fill(&fixture, 0u, (lib_u8)(((source / 10u) << 4u) | (source % 10u)),
                     (lib_u8)(((destination / 10u) << 4u) | (destination % 10u)));
                 if (v30_bcd_run(&fixture, opcodes[op], 0u)) return 1;
+                if (digits == 1u) ++odd_cases;
             }
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
         for (lib_u16 digits = 1u; digits <= 254u; ++digits)
@@ -142,6 +139,34 @@ static lib_i32 v30_bcd_operands(void)
                     direction ? 0x99u : 0u);
                 if (v30_bcd_run(&fixture, opcodes[op], 0u)) return 1;
             }
+    lib_c_printf("V30:BCD-ODD-BYTES:OK cases=%u lengths=127\n",odd_cases);
+    return 0;
+}
+
+static lib_i32 v30_bcd_padding(void)
+{
+    static const struct { lib_u8 opcode, source, destination, result, flags; } cases[] = {
+        {0x20u,0x01u,0x09u,0x10u,0u}, {0x20u,0u,0u,0u,VCPU_EFLAGS_ZF},
+        {0x22u,0x01u,0u,0x99u,VCPU_EFLAGS_CF}, {0x26u,0x01u,0u,0u,VCPU_EFLAGS_CF},
+        {0x20u,0x90u,0x10u,0u,VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF},
+        {0x26u,0x10u,0x20u,0x20u,0u}, {0x22u,0x20u,0x10u,0x90u,VCPU_EFLAGS_CF},
+        {0x26u,0x90u,0x90u,0x90u,VCPU_EFLAGS_ZF}
+    };
+    static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
+    cpu_bus_fixture fixture;
+    lib_u32 count = 0u;
+    for (lib_size item = 0u; item < sizeof(cases)/sizeof(cases[0]); ++item)
+        for (lib_size prefix = 0u; prefix < sizeof(prefixes); ++prefix)
+            for (lib_u8 direction = 0u; direction < 2u; ++direction) {
+                v30_bcd_prepare(&fixture,1u,direction != 0u);
+                v30_bcd_fill(&fixture,prefixes[prefix],cases[item].source,cases[item].destination);
+                if (v30_bcd_run(&fixture,cases[item].opcode,prefixes[prefix]) ||
+                    fixture.memory[0x300u] != cases[item].result ||
+                    (fixture.cpu.data.eflags & (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF)) != cases[item].flags)
+                    return 1;
+                ++count;
+            }
+    lib_c_printf("V30:BCD-PADDING:OK cases=%u\n",count);
     return 0;
 }
 
@@ -159,9 +184,9 @@ static lib_i32 v30_bcd_addressing(void)
                 if (lengths[length] & 1u) {
                     const lib_u16 last = lengths[length] / 2u;
                     fixture.memory[v30_bcd_address(v30_bcd_source_base(&fixture, prefixes[prefix]),
-                        (lib_u16)(fixture.cpu.data.si + last))] = 0xf9u;
+                        (lib_u16)(fixture.cpu.data.si + last))] = 0x99u;
                     fixture.memory[v30_bcd_address(fixture.cpu.data.es.base,
-                        (lib_u16)(fixture.cpu.data.di + last))] = 0xe1u;
+                        (lib_u16)(fixture.cpu.data.di + last))] = 0x91u;
                 }
                 if (v30_bcd_run(&fixture, opcodes[op], prefixes[prefix])) return 1;
             }
@@ -235,6 +260,7 @@ static lib_i32 v30_bcd_failures(void)
 {
     static const lib_u8 opcodes[] = {0x20u,0x22u,0x26u};
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
+        for (lib_u8 odd = 0u; odd < 2u; ++odd)
         for (lib_u32 failure = 1u; failure <= (opcodes[op] == 0x26u ? 6u : 9u); ++failure) {
             v30_bcd_failure_fixture fixture = {0};
             x86_core_cpu_bus_provider provider = cpu_bus_provider;
@@ -243,7 +269,7 @@ static lib_i32 v30_bcd_failures(void)
                 failure <= 6u ? (failure - 1u) / 2u : failure - 7u;
             lib_u32 flags;
 
-            v30_bcd_prepare(&fixture.bus, 6u, LIB_FALSE);
+            v30_bcd_prepare(&fixture.bus, 6u-odd, LIB_FALSE);
             v30_bcd_fill(&fixture.bus, 0u, 0x01u, opcodes[op] == 0x20u ? 0x99u : 0u);
             fixture.fail_read = failure <= 6u ? failure : 0u;
             fixture.fail_write = failure > 6u ? failure - 6u : 0u;
@@ -252,13 +278,15 @@ static lib_i32 v30_bcd_failures(void)
             fixture.bus.execution.bus = &provider;
             fixture.bus.execution.bus_context = &fixture;
             flags = fixture.bus.cpu.data.eflags;
+            const t_cpu before = fixture.bus.cpu;
             lib_memory_copy(&fixture.bus.memory[0x100u], code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
                 fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
                 fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.delivered_exceptions || fixture.bus.writes != accepted ||
-                fixture.bus.cpu.data.eip != 0x100u || fixture.bus.cpu.data.cx != 0xa506u ||
+                lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
+                fixture.bus.cpu.data.eip != 0x100u || fixture.bus.cpu.data.cx != (0xa506u-odd) ||
                 fixture.bus.cpu.data.si != 0x500u || fixture.bus.cpu.data.di != 0x100u ||
                 fixture.bus.cpu.data.eflags != flags ||
                 (fixture.fail_read && fixture.reads != fixture.fail_read) ||
@@ -274,23 +302,24 @@ static lib_i32 v30_bcd_failures(void)
                 x86_core_cpu_execution_consume_stop_request(&fixture.bus.execution)) return 1;
         }
     for (lib_size op = 0u; op < sizeof(opcodes); ++op)
-        for (lib_u8 variant = 0u; variant < 3u; ++variant) {
+        for (lib_u8 variant = 0u; variant < 5u; ++variant) {
             v30_bcd_failure_fixture fixture = {0};
             x86_core_cpu_bus_provider provider = cpu_bus_provider;
             const lib_u8 code[] = {0x0fu,opcodes[op]};
-            v30_bcd_prepare(&fixture.bus, variant == 0u ? 0u : variant == 1u ? 255u : 2u,
+            v30_bcd_prepare(&fixture.bus, variant == 0u ? 0u : variant == 1u ? 255u : variant == 2u ? 2u : 1u,
                 LIB_FALSE);
             provider.read_memory = v30_bcd_read;
             fixture.bus.execution.bus = &provider;
             fixture.bus.execution.bus_context = &fixture;
-            fixture.bus.memory[0x600u] = 0xfau;
+            fixture.bus.memory[variant == 4u ? 0x300u : 0x600u] =
+                variant < 3u ? 0xfau : variant == 3u ? 0xf9u : 0xe1u;
             lib_memory_copy(&fixture.bus.memory[0x100u], code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.writes ||
                 fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
                 fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.cpu.data.eip != 0x100u || fixture.bus.delivered_exceptions ||
-                fixture.reads != (variant == 2u ? 2u : 0u)) return 1;
+                fixture.reads != (variant >= 2u ? 2u : 0u)) return 1;
         }
     return 0;
 }
@@ -298,6 +327,7 @@ static lib_i32 v30_bcd_failures(void)
 lib_i32 main(void)
 {
     if (v30_bcd_operands()) { lib_c_printf("V30:BCD-OPERANDS:FAIL\n"); return 1; }
+    if (v30_bcd_padding()) { lib_c_printf("V30:BCD-PADDING:FAIL\n"); return 1; }
     if (v30_bcd_addressing()) { lib_c_printf("V30:BCD-ADDRESSING:FAIL\n"); return 1; }
     if (v30_bcd_example()) { lib_c_printf("V30:BCD-EXAMPLE:FAIL\n"); return 1; }
     if (v30_bcd_failures()) { lib_c_printf("V30:BCD-FAILURE:FAIL\n"); return 1; }
