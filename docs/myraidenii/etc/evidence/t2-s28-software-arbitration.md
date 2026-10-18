@@ -74,7 +74,7 @@ Neither weakens the CPU/frame/pending/failure assertions.
 
 ## Similar-Issue Sweep
 
-Queries: `rg -n '_ser_int_real\\(|_e_intr_n\\(|_e_except_n\\('`
+Queries: `rg -n '_ser_int_real\(|_e_intr_n\(|_e_except_n\('`
 against CPU instructions, plus debug completion, ExecFinal, refresh, reset,
 mode owners, metadata and private/public CPU headers. Seven real-entry callers
 have one commit: native BRK3/BRKV/immediate BRK, external entry wrapper,

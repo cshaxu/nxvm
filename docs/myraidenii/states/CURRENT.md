@@ -2,35 +2,16 @@
 
 ## Current Work
 
-M1 T2 S28 implementation is delivered at Shared P1 `2a51bee0e` and
-NXVM receiving P2 `67b32dab5`; the complete evidence delivery precedes
-coordinator actual-change review. S28 remains active until that review.
-T2 and the full playable objective remain open.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, MyRaidenII M1 T2 S28; next unused S after accepted S27. |
-| Admission And Approval | Owner requests continuation implementing MyRaidenII's V30 and facilities; standing V30 implementation and enum approval, no Lib/Emulator modification. Coordinator admits the complete software-entry arbitration batch on 2026-10-18. Targets Shared CPU/tests, NXVM eight receiving EXEs/evidence, MyRaidenII governance/evidence. MyNES is unchanged. |
-| Objective | Consume V11 software-entry versus simultaneous NMI/INT/BRK arbitration: a successfully committed software entry wins this completion boundary, retains external requests, and admits them only after subsequent guest execution. Include BRK3/BRK/BRKV, DE/CHKIND and native/emulation mode calls at their existing entry owner. |
-| Non-goals | No new public API/enums/layout, Lib/Emulator changes, timing model, loaded-BRK sampling upgrade, Intel policy change, board/game execution or T closure. DE/BR retirement/timing classification remains V15; this batch fixes arbitration only. |
-| Reference Baseline | Clean pushed a50905530; original NEC October 1986 manual SHA FABBFCD19D4A2FCDAAC9F0BC06B00BF0A6A4BEEDAFBD3FF16ACCD075A374EA4C, Table 6-1 and mode-call flag tables; S22/S23/S27 entry proofs and complete T2 convergence ledger. |
-| Candidate Proposal | proposals/m1-v30.md; V10/V11 successful software-entry priority subfamily. Existing timing transfer metadata describes protected transfers, not software-entry acceptance; use one CPU-private per-refresh completion fact written only by successful real entry while an instruction is executing. No opcode shadow classifier. |
-| Files And ABI Surface | src/x86-core/cpu/cpu_instructions.c/.h, test/x86-core/cpu software arbitration unit and registration, both manifests; product-scoped receiving artifact/evidence and MyRaidenII records. Estimate production +15..25/-2..5, tests +250..400/-0..5. Private context bookkeeping only; public opaque interface unchanged. |
-| Applicable Rules | Read product guide/architecture/coding/roadmap/source policy, shared Execution/Architecture/Coding/Document, local architecture/coding skills and receiving NXVM guide/source/artifact authorities. One entry owner, Lib vocabulary, source-backed priority, synthetic units, explicit partial-write failure semantics, one-target P, reusable graphs/cache, actual-diff coordinator acceptance. |
-| Verification | Before-fix actual CPU witness; both original Release Ninja/ccache graphs -j8, affected units then complete repository unit suites -j4, specialized Types/dependency/manifest/strict gates, fourteen selected PC receiving integrations plus restored-default identity per width, all ten PE/hash identities; MyNES/INI/media/ROM unchanged. Documentation and diff checks. |
-| Expected Markers | V30:SOFTWARE-ARBITRATION:OK; complete units with zero failures/skips per width; existing strict rows retained; all receiving cases and identity checks pass. No timeout retry or partial-run pass claim. |
-| Asset Needs | No game input; pinned ignored primary manual only. Rebuild/deploy eight current PC 0564 EXEs; all ten identities, MyNES pair unchanged. No runnable MyRaidenII artifact exists yet. |
-| Reporting Requirements | Confirm mechanism/estimate, report reproduction and focused proof, then full qualification and actual added/removed/net source/test lines, helpers/state/API necessity, remaining timing/board/game obligations and unexecuted desktop/RDP/full external tests. |
-| Stop Conditions | Public contract expansion beyond approved boundary, new source/license/model necessity, unrelated dirty tree, regression or failed required release/gate prevents acceptance; diagnose in scope, never weaken assertion or silently transfer failure. |
-| Exit Criteria | Frozen software-entry mechanism and failure batch proven, external requests preserved, no same-boundary double entry, old Intel tests pass, full units/gates/receiving releases pass, manifests and evidence current, target-separated P commits pushed; coordinator actual-change review then pure governance closure. T remains open. |
-| Original Owner Request | Switch to MyRaidenII context and continue the next S implementing NEC V30 and required facilities; automatic sequential S execution under governance. |
-| Similar-Issue Sweep | Inspect every _ser_int_real caller, debug completion and ExecInt admission, exception/mode entry and halted/reset refresh. Fix at successful entry commit, retain distinct asynchronous/non-V30/failure contracts, document DE/BR retirement receiver rather than misusing fault flags or fabricating timing. |
+M1 T2 S28 is accepted and closed after coordinator actual-change review of
+Shared P1 `2a51bee0e`, NXVM receiving P2 `67b32dab5` and complete evidence
+P3 `9892288b8`. P3 preserves the full sixteen-field packet. No next S is
+active; T2 and the full playable objective remain open.
 
 ## Task Progress
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
-| T2 S28 | Software-entry arbitration delivered for coordinator review; original remaining CPU/Machine/board/game obligations remain open. |
+| T2 S28 | Accepted software-entry arbitration and receiving releases; original remaining CPU/Machine/board/game obligations remain open. |
 
 [S28 evidence](../etc/evidence/t2-s28-software-arbitration.md),
 [results](../etc/evidence/t2-s28-results.json) and
