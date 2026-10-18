@@ -153,3 +153,17 @@ shared CPU libraries are not regenerated in separate per-App build trees.
 This S does not create a MyRaidenII EXE or qualify a game path. No new physical
 audio, RDP, manual desktop, silicon timing or complete whole-repo integration
 claim follows from CPU vectors and selected automated receiving integrations.
+
+## Coordinator Acceptance
+
+Shared `a14736a15`, NXVM `b60a44c6d` and evidence `2c3b2cc3e` are accepted
+after single-session actual-change review. The complete original request and
+sixteen-field packet, full frozen V07 form/value/failure batch and bounded
+V11 receiver, primary prose versus undefined/model facts, sole production
+owners, actual complete test/fixture/registration/manifest, full unit and
+selected integration logs, source hash, all ten release identities and
+explicit residuals agree. Source/Types/dependency, no-new-state/API/path,
+target-scoped P and unchanged protected-input invariants hold. Initial
+failures and local harness corrections are retained, not broadened into
+unverified runtime or silicon claims. The final governance P closes S19;
+T2 and the full original MyRaidenII outcome remain open.
