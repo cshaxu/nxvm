@@ -51,6 +51,7 @@
 - [T2 V30 native non-string prefix nominal clocks](evidence/t2-s41-native-prefix-clocks.md).
 - [T2 V30 native string extra-prefix phases](evidence/t2-s42-string-prefix-phase.md).
 - [T2 V30 packed BCD full-byte semantics](evidence/t2-s43-packed-bcd-bytes.md).
+- [T2 V30 legal scalar packed-decimal qualification](evidence/t2-s44-packed-scalar.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

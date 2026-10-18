@@ -1,0 +1,44 @@
+{
+  "baseline": "7a6fe123b",
+  "source_test_sha256": "0CB1EE0598107EAE04585633119E8343E1E6AA5C568EB6F4C9A9832A57066DCF",
+  "production_changed": false,
+  "public_contract_changed": false,
+  "ten_releases_unchanged": true,
+  "release_baseline": "t2-s43-artifacts.json",
+  "fresh_external_integration": false,
+  "desktop_rdp_audio_gameplay_verified": false,
+  "results": [
+    {
+      "architecture": "x64",
+      "all_target_build": "passed",
+      "focused_tests": 5,
+      "unit_tests": 678,
+      "unit_failures": 0,
+      "unit_skips": 0,
+      "x86_core_units": 191,
+      "unit_wall_seconds": 112.83,
+      "decimal_seconds": 1.55464,
+      "original_decimal_vectors": 817152,
+      "valid_packed_operand_vectors": 40000,
+      "packed_context_vectors": 360,
+      "strict_rows": 498,
+      "types_inputs": 1389
+    },
+    {
+      "architecture": "x86",
+      "all_target_build": "passed",
+      "focused_tests": 5,
+      "unit_tests": 678,
+      "unit_failures": 0,
+      "unit_skips": 0,
+      "x86_core_units": 191,
+      "unit_wall_seconds": 121.18,
+      "decimal_seconds": 1.84476,
+      "original_decimal_vectors": 817152,
+      "valid_packed_operand_vectors": 40000,
+      "packed_context_vectors": 360,
+      "strict_rows": 498,
+      "types_inputs": 1389
+    }
+  ]
+}
