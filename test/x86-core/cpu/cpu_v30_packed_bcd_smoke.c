@@ -86,7 +86,17 @@ static lib_i32 v30_bcd_run(cpu_bus_fixture *fixture, lib_u8 opcode, lib_u8 prefi
             X86_CORE_CPU_PROFILE_V30, LIB_FALSE, &lexeme)) return 1;
     if (!x86_core_cpu_execution_preview_lexeme(&fixture->execution, &lexeme) ||
         lexeme.byte_count != size || fixture->writes != 0u) return 1;
+    fixture->observations = 0u;
     x86_core_cpu_execution_refresh(&fixture->execution);
+    const lib_u64 clocks = prefix || odd ? 0u : 7u + 19u * (before.data.cl / 2u);
+    const lib_u32 key = clocks ? 0x0fu | ((lib_u32)opcode << 16u) :
+        X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
+    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.form_id != key || timing.key_id != key || fixture->observations ||
+        timing.formula_inputs != (clocks ? X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE : 0u) ||
+        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||
         fixture->cpu.data.eip != before.data.eip + size ||
         fixture->cpu.data.eax != before.data.eax || fixture->cpu.data.ebx != before.data.ebx ||
@@ -244,6 +254,8 @@ static lib_i32 v30_bcd_failures(void)
             lib_memory_copy(&fixture.bus.memory[0x100u], code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.faults != 1u ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.delivered_exceptions || fixture.bus.writes != accepted ||
                 fixture.bus.cpu.data.eip != 0x100u || fixture.bus.cpu.data.cx != 0xa506u ||
                 fixture.bus.cpu.data.si != 0x500u || fixture.bus.cpu.data.di != 0x100u ||
@@ -274,6 +286,8 @@ static lib_i32 v30_bcd_failures(void)
             lib_memory_copy(&fixture.bus.memory[0x100u], code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.writes ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.cpu.data.eip != 0x100u || fixture.bus.delivered_exceptions ||
                 fixture.reads != (variant == 2u ? 2u : 0u)) return 1;
         }
@@ -287,5 +301,6 @@ lib_i32 main(void)
     if (v30_bcd_example()) { lib_c_printf("V30:BCD-EXAMPLE:FAIL\n"); return 1; }
     if (v30_bcd_failures()) { lib_c_printf("V30:BCD-FAILURE:FAIL\n"); return 1; }
     lib_c_printf("V30:PACKED-BCD:OK\n");
+    lib_c_printf("V30:NOMINAL-BCD:OK\n");
     return 0;
 }

@@ -326,6 +326,11 @@ static lib_i32 v30_memory_fetch_forms(void)
                     }
                     t_cpu expected = reference.bus.cpu;
                     expected.data.eip = (lib_u16)(starts[start] + bytes);
+                    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
+                    const x86_core_cpu_timing_result original = x86_core_cpu_capture_timing(&reference.bus.execution);
+                    if (timing.ticks != original.ticks || timing.form_id != original.form_id ||
+                        timing.key_id != original.key_id || timing.formula_inputs != original.formula_inputs ||
+                        timing.retirement_origin != original.retirement_origin || fixture.observations) return 1;
                     if (lib_memory_compare(&fixture.bus.cpu, &expected, sizeof(expected)) != 0 ||
                         lib_memory_compare(fixture.memory + 0x10000u, reference.memory + 0x10000u, 0x30000u) != 0 ||
                         fixture.memory[(bases[base] + 0x400u) % 0x100000u] !=
@@ -384,6 +389,8 @@ static lib_i32 v30_memory_fetch_cache_and_failures(void)
                     fixture.fail_fetch = part;
                     x86_core_cpu_execution_refresh(&fixture.bus.execution);
                     if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                        fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                        fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                         fixture.fetches != part) return 1;
                 }
                 if (fixture.reads || fixture.writes || fixture.bus.delivered_exceptions ||

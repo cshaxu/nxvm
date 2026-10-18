@@ -86,7 +86,14 @@ static lib_i32 v30_field_run(cpu_bus_fixture *fixture, lib_u8 opcode,
             X86_CORE_CPU_PROFILE_V30, LIB_FALSE, &lexeme)) return 1;
     if (!x86_core_cpu_execution_preview_lexeme(&fixture->execution, &lexeme) ||
         lexeme.byte_count != size || fixture->writes) return 1;
+    fixture->observations = 0u;
     x86_core_cpu_execution_refresh(&fixture->execution);
+    /* All four source rows give ranges, not an exact input-to-clock formula. */
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
+    if (!timing.source_timing_unallocated || timing.ticks || timing.event_ticks || timing.formula_inputs ||
+        timing.form_id != X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED || timing.key_id != timing.form_id ||
+        timing.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED || fixture->observations)
+        return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||
         fixture->cpu.data.eip != 0x100u + size || fixture->cpu.data.eax != result.data.eax ||
         fixture->cpu.data.ebx != result.data.ebx || fixture->cpu.data.ecx != result.data.ecx ||
@@ -264,6 +271,8 @@ static lib_i32 v30_field_failures(void)
             lib_memory_copy(&fixture.bus.memory[0x100u], code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.delivered_exceptions ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.cpu.data.eip != 0x100u || fixture.bus.cpu.data.ax != 0xa55bu ||
                 fixture.bus.cpu.data.si != 0x400u || fixture.bus.cpu.data.di != 0x400u ||
                 fixture.bus.cpu.data.cl != 15u || fixture.bus.cpu.data.eflags != flags ||

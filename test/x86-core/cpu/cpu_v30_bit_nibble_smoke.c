@@ -24,8 +24,24 @@ static lib_u8 *v30_byte_register(cpu_bus_fixture *fixture, lib_u8 index)
     return (lib_u8 *)v30_word_register(fixture, index & 3u) + (index >> 2u);
 }
 
+static lib_i32 v30_nec_nominal_result(const cpu_bus_fixture *fixture,
+    lib_u64 clocks, lib_u8 suffix, lib_bool memory, lib_bool odd)
+{
+    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
+    const lib_u32 form = clocks ? 0x0fu | ((lib_u32)suffix << 16u) | (memory ? 0x100u : 0u) :
+        X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    const lib_u32 inputs = clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
+        X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u;
+    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.form_id != form || timing.key_id != form || timing.formula_inputs != inputs ||
+        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture->observations ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) return 1;
+    return 0;
+}
+
 static lib_i32 v30_bit_case(lib_u8 opcode, lib_u8 mode, lib_u8 reg,
-    lib_u8 count, lib_u16 value, lib_bool override)
+    lib_u8 count, lib_u16 value, lib_bool override, lib_bool aligned)
 {
     cpu_bus_fixture fixture;
     lib_u8 code[8];
@@ -33,6 +49,7 @@ static lib_i32 v30_bit_case(lib_u8 opcode, lib_u8 mode, lib_u8 reg,
     const lib_u8 byte = (lib_u8)(1u + (opcode & 1u));
     const lib_u8 operation = (opcode >> 1u) & 3u;
     lib_u16 address = override ? 0x701u : mode == 2u ? 0x601u : 0x501u;
+    if (aligned && mode != 3u) --address;
     lib_u16 original;
     lib_u16 result;
     lib_u16 expected;
@@ -63,9 +80,9 @@ static lib_i32 v30_bit_case(lib_u8 opcode, lib_u8 mode, lib_u8 reg,
     code[size++] = opcode;
     code[size++] = mode == 3u ? (lib_u8)(0xc0u | reg) :
         mode == 0u ? 0x06u : mode == 1u ? 0x47u : 0x86u;
-    if (mode == 0u) { code[size++] = 0x01u; code[size++] = 0x05u; }
-    if (mode == 1u) code[size++] = 0x05u;
-    if (mode == 2u) { code[size++] = 0x01u; code[size++] = 0x01u; }
+    if (mode == 0u) { code[size++] = aligned ? 0u : 1u; code[size++] = 0x05u; }
+    if (mode == 1u) code[size++] = aligned ? 4u : 5u;
+    if (mode == 2u) { code[size++] = aligned ? 0u : 1u; code[size++] = 0x01u; }
     if (opcode >= 0x18u) code[size++] = count;
     else count = fixture.cpu.data.cl;
     mask = (lib_u16)(1u << (count & (byte * 8u - 1u)));
@@ -82,13 +99,21 @@ static lib_i32 v30_bit_case(lib_u8 opcode, lib_u8 mode, lib_u8 reg,
             X86_CORE_CPU_PROFILE_V30, LIB_FALSE, &lexeme)) return 1;
     if (!x86_core_cpu_execution_preview_lexeme(&fixture.execution, &lexeme) ||
         lexeme.byte_count != size || fixture.writes != 0u) return 1;
+    fixture.observations = 0u;
     x86_core_cpu_execution_refresh(&fixture.execution);
+    /* Source columns: register, byte/even memory, odd-word delta. */
+    static const lib_u8 nominal[][3] = {{3u,12u,4u},{5u,14u,8u},{4u,13u,8u},{4u,18u,8u}};
+    const lib_bool odd = mode != 3u && byte == 2u && (address & 1u);
+    const lib_u64 clocks = override ? 0u : nominal[operation][mode == 3u ? 0u : 1u] +
+        (opcode >= 0x18u) + (odd ? nominal[operation][2] : 0u);
+    if (v30_nec_nominal_result(&fixture,clocks,opcode,mode != 3u,odd)) return 1;
     result = mode == 3u ? (byte == 1u ? *v30_byte_register(&fixture, reg) :
         *v30_word_register(&fixture, reg)) : fixture.memory[address] |
         (byte == 1u ? 0u : (lib_u32)fixture.memory[address + 1u] << 8u);
     if (fixture.execution.stop_requested || fixture.faults ||
         fixture.delivered_exceptions || fixture.cpu.data.eip != 0x100u + size ||
-        result != expected || fixture.writes != (lib_u32)(mode != 3u && operation != 0u ? byte : 0u))
+        result != expected || fixture.writes != (lib_u32)(mode != 3u && operation != 0u ?
+            odd ? 2u : 1u : 0u))
         return 1;
     if (operation == 0u) {
         const lib_u32 defined = VCPU_EFLAGS_ZF | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
@@ -109,13 +134,14 @@ static lib_i32 v30_bits(void)
             for (lib_u8 reg = 0u; reg < (mode == 3u ? 8u : 1u); ++reg)
                 for (lib_size c = 0u; c < sizeof(counts); ++c)
                     for (lib_size v = 0u; v < sizeof(values) / sizeof(values[0]); ++v)
-                        if (v30_bit_case(opcode, mode, reg, counts[c], values[v], LIB_FALSE) ||
-                            (mode != 3u && v30_bit_case(opcode, mode, reg,
-                                counts[c], values[v], LIB_TRUE))) {
-                            lib_c_printf("V30:NEC-BIT:opcode=%02x mode=%u reg=%u count=%u value=%04x\n",
-                                opcode, mode, reg, counts[c], values[v]);
-                            return 1;
-                        }
+                        for (lib_u8 aligned = 0u; aligned < (mode == 3u ? 1u : 2u); ++aligned)
+                            if (v30_bit_case(opcode, mode, reg, counts[c], values[v], LIB_FALSE, aligned != 0u) ||
+                                (mode != 3u && v30_bit_case(opcode, mode, reg,
+                                    counts[c], values[v], LIB_TRUE, aligned != 0u))) {
+                                lib_c_printf("V30:NEC-BIT:opcode=%02x mode=%u reg=%u count=%u value=%04x\n",
+                                    opcode, mode, reg, counts[c], values[v]);
+                                return 1;
+                            }
     return 0;
 }
 
@@ -150,7 +176,10 @@ static lib_i32 v30_nibbles(void)
                 lib_memory_copy(&fixture.memory[0x100u], code, size);
                 if (!x86_core_cpu_execution_preview_lexeme(&fixture.execution, &lexeme) ||
                     lexeme.byte_count != size) return 1;
+                fixture.observations = 0u;
                 x86_core_cpu_execution_refresh(&fixture.execution);
+                const lib_u64 clocks = direction ? (reg < 8u ? 29u : 33u) : reg < 8u ? 25u : 28u;
+                if (v30_nec_nominal_result(&fixture,clocks,opcode,reg == 8u,LIB_FALSE)) return 1;
                 result = reg < 8u ? *v30_byte_register(&fixture, reg) : fixture.memory[0x501u];
                 /* AL's upper nibble is unspecified, including an AL destination. */
                 if (fixture.execution.stop_requested || fixture.faults ||
@@ -256,6 +285,9 @@ static lib_i32 v30_bus_failures(void)
             flags = fixture.bus.cpu.data.eflags;
             lib_memory_copy(&fixture.bus.memory[0x100u], code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            if (failed && (fixture.bus.execution.completed_observation_valid ||
+                fixture.bus.execution.timing_result.ticks || fixture.bus.execution.timing_result.retirement_origin !=
+                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
             if (!!fixture.bus.execution.stop_requested != failed || fixture.reads == 0u ||
                 fixture.bus.writes != 0u || fixture.bus.delivered_exceptions ||
                 fixture.bus.memory[0x500u] != 0x5au || fixture.bus.memory[0x501u] != 0xa5u ||
@@ -273,5 +305,6 @@ lib_i32 main(void)
     if (v30_invalid_forms()) { lib_c_printf("V30:NEC-FORMS:FAIL\n"); return 1; }
     if (v30_bus_failures()) { lib_c_printf("V30:NEC-BUS:FAIL\n"); return 1; }
     lib_c_printf("V30:NEC-BIT-NIBBLE:OK\n");
+    lib_c_printf("V30:NOMINAL-NEC-DATA:OK\n");
     return 0;
 }

@@ -239,8 +239,9 @@ static void x86_core_cpu_timing_select_v30(
         (opcode >= 0xd0u && opcode <= 0xd3u);
     const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u || opcode == 0x8fu ||
         opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu || shift;
-    const lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
+    lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
+    lib_u8 suffix = 0u;
     lib_u64 ticks;
     lib_u8 odd_penalty = 0u;
     lib_u32 stack_penalty = 0u;
@@ -253,7 +254,27 @@ static void x86_core_cpu_timing_select_v30(
         .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
     };
     if (data->oplen == 0u || !(data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD)) return;
-    if (scalar) {
+    if (opcode == 0x0fu) {
+        suffix = data->opcodes[1];
+        if (suffix >= 0x10u && suffix <= 0x1fu) {
+            static const lib_u8 registers[] = {3u,5u,4u,4u};
+            static const lib_u8 memory[] = {12u,14u,13u,18u};
+            const lib_u8 operation = (suffix >> 1u) & 3u;
+            modrm = LIB_TRUE;
+            ticks = (data->flagMem ? memory[operation] : registers[operation]) + (suffix >= 0x18u);
+            odd_penalty = !(suffix & 1u) ? 0u : operation ? 8u : 4u;
+        } else if (suffix == 0x28u || suffix == 0x2au) {
+            modrm = LIB_TRUE;
+            ticks = suffix == 0x28u ? (data->flagMem ? 28u : 25u) :
+                data->flagMem ? 33u : 29u;
+        } else if (suffix == 0x20u || suffix == 0x22u || suffix == 0x26u) {
+            const lib_u8 digits = data->oldcpu.data.cl;
+            /* The source does not specify rounding for odd digit counts. */
+            if (!digits || digits == 255u || (digits & 1u)) return;
+            ticks = 7u + 19u * (digits / 2u);
+            result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE;
+        } else return; /* Field ranges and entry timing remain separately unallocated. */
+    } else if (scalar) {
         const lib_bool read_only = (opcode & 0x38u) == 0x38u || (opcode & 2u);
         ticks = !data->flagMem ? 2u : read_only ? 11u : 16u;
         odd_penalty = !(opcode & 1u) ? 0u : read_only ? 4u : 8u;
@@ -429,7 +450,7 @@ static void x86_core_cpu_timing_select_v30(
         X86_CORE_CPU_TIMING_INPUT_BRANCH | (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u);
     result->ticks = ticks;
     result->retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
-    result->form_id = opcode | (modrm && data->flagMem ? 0x100u : 0u);
+    result->form_id = opcode | ((lib_u32)suffix << 16u) | (modrm && data->flagMem ? 0x100u : 0u);
     if (group) result->form_id |= ((lib_u32)(data->opcodes[1] >> 3u) & 7u) << 9u;
     result->key_id = result->form_id;
 }
