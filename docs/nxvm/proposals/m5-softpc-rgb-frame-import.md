@@ -36,3 +36,12 @@ output and whole guest GUI qualification are not inferred from automation.
 One bounded S owns import, receiver adaptation and qualification. Deliver
 complete target-scoped P commits after all cross-target proof is available.
 Leave T/S open for the requested owner testing; do not admit another task.
+
+## S1 Acceptance
+
+The owner accepted the complete S1 delivery on 2026-10-17 and requested S1
+closure. Coordinator review accepts Shared `d30b69b2a`, MyNES `906e61b0c`
+and NXVM `b9433b31d`, with the complete receiving proof indexed in the
+[task history](../history/M5-T564-softpc-rgb-frame-import.md). S1 is closed;
+T564 remains open without an active S. This acceptance changes no production,
+test, build, configuration or binary input and does not admit new work.

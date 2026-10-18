@@ -2,49 +2,33 @@
 
 ## Current Work
 
-M5 T564 S1 is admitted on 2026-10-17 for the owner-approved committed
-SoftPC eight-tree import and all ten receiving executables. T563 stays closed.
-Single-session coordinator/executor mode applies. Delivery awaits owner testing;
-neither S1 nor T564 is closed by a local test result.
+M5 T564 remains open. The owner accepted S1 on 2026-10-17 and explicitly
+requested its closure. S1 is closed after coordinator actual-change review
+of Shared `d30b69b2a`, MyNES `906e61b0c` and NXVM `b9433b31d`.
+There is no active S packet and no successor task is admitted.
 
-S1 qualification is complete: each width passes 666 whole-repository units,
-48 product integrations and four shared native integrations. Specialized
-gates and 498 strict rows pass on both widths. The eight canonical roots
-(297 files) match the frozen export and latest SoftPC 5e76dd49 unchanged.
-All eight PC 0564 and both MyNES 0044 releases are verified and deployed;
-only these ten EXEs remain. The [evidence](../etc/evidence/t564-s1-shared-frame-import.md),
-[results](../etc/evidence/t564-s1-results.json) and
-[artifact hashes](../etc/evidence/t564-s1-artifacts.json) retain failures,
-corrections, final proof and unexecuted manual/RDP checks. Target-scoped P
-subjects record delivery; owner acceptance is pending.
-
-## T564 S1 Packet
-
-| Field | Required record |
+| Task | Progress |
 | --- | --- |
-| Identifier Mode | New T564 S1 after owner-accepted T563 closure; explicit owner insertion ahead of the unchanged PC110 queue. |
-| Admission And Approval | Owner requests verbatim SoftPC public-eight import, receiver adaptation, ten EXEs, tests, commits and pushes, then owner acceptance. This approves the audited RGB32/four-slot contract and Shared, NXVM and MyNES receiving edits only. |
-| Objective | Import committed dfc85aac4387600033d3ed11d7fb26e74b9eb631 unchanged, adapt the sole PC/NES production frame paths, and qualify all ten releases. |
-| Non-goals | No sibling edits, X86 Core/V30/486 changes, MyRaidenII changes, firmware/hardware algorithms, user INI/media/snapshot changes, compatibility frame schema, extra renderer or transport cache. Root rules/README and stronger receiving test infrastructure remain unchanged. |
-| Reference Baseline | Clean local 71be4639d and audited SoftPC dfc85aac; export committed objects, not sibling working files. PC revision becomes 0564; MyNES retains 0044. |
-| Candidate Proposal | [Committed RGB frame import](../proposals/m5-softpc-rgb-frame-import.md). |
-| Files And ABI Surface | Exact src/test pairs lib, emulator, x86-debug, x86-ibmpc; PC adapter/frame and tests, NES driver/frame and tests, corresponding manifests, PC version/presets, product docs and ten EXEs. Imported frame ABI changes are approved; no additional public capability is planned. Imported delta approximately +2100/-1300; receivers initially +250..600/-350..750 C/H, refine against actual callers. |
-| Applicable Rules | NXVM/MyNES guides, Execution complete-P/cross-target/artifact rules, Architecture/Coding and their governance skills, Document, both product architecture/layout/UX and source policies. Existing MIT authorization/notices; no protected source/media import. |
-| Verification | Original x64/x86 Release Ninja/ccache graphs, parallel 8; complete repo units once per width after batch, four real PC profile integrations plus MyNES and shared native integrations, specialized gates, manifests/canonical byte equality, docs, actual-diff and ten PE/version/INI/hash checks. Preserve budgets and report native versus background proof separately. |
-| Expected Markers | Eight roots equal pinned Git objects; complete RGB pixels and text/Console mappings flow through one driver-to-exchange path; no obsolete envelope/cache or palette transport remains. All required qualification passes, ten current stripped Release EXEs deployed. |
-| Asset Needs | Existing BYOB firmware/media only, unchanged owner INIs and snapshots. Original build graphs/cache and bounded ignored logs remain until acceptance. |
-| Reporting Requirements | Record initial/actual per-owner line counts, hashes/provenance, retained/deleted paths, every failed attempt and final results, artifacts and unexecuted desktop/RDP/physical-audio verification. Commit one target per sequential P and push each immediately. |
-| Stop Conditions | New shared API beyond imported contract, incompatible source notice, missing protected input, or unproven public behavior change: report and revise scope before proceeding. No time-budget reduction or invented pass. |
-| Exit Criteria | All imported/receiving contracts and complete dual-width qualifications above pass, actual diff reviewed, ten EXEs and complete target-scoped P commits pushed, worktree clean; retain active delivery pending owner acceptance. |
-| Original Owner Request | Admit an NXVM MTSP S to import SoftPC eight trees verbatim, normally publish/test all ten EXEs, commit/push and wait for owner verification. |
-| Similar-Issue Sweep | Search all src/test and build consumers for emulator_machine_frame, old indexed graphics, frame callbacks and cached transport copies; migrate each actual caller including diagnostics. Keep guest video snapshots and explicit diagnostic copies distinct from transport. |
+| T564 | S1 accepted and closed: committed SoftPC eight-tree import, sole PC/NES RGB/text receiving paths, ten qualified releases. T-level closure has not been requested. |
 
-Final qualification also repairs the inherited NXVM legacy-profile metadata
-gate's stale lexical expectation after the already accepted V30 architecture
-helper migration. Only the gate follows the current LOCK branch; CPU source,
-metadata semantics and the eight imported trees remain unchanged. The PC
-dependency negative probe uses serial CTest scheduling with its existing
-30-second deadline, not a larger budget or weaker rejection.
+The complete S1 packet is retained in `b9433b31d`. The
+[proposal](../proposals/m5-softpc-rgb-frame-import.md),
+[task history](../history/M5-T564-softpc-rgb-frame-import.md) and
+[review evidence](../etc/evidence/t564-s1-shared-frame-import.md) retain the
+frozen scope, similar-issue sweep, initial failures and final proof.
+Each width passed 666 units, 48 product integrations, four shared native
+integrations, specialized gates and 498 strict rows. The accepted
+[results](../etc/evidence/t564-s1-results.json) and
+[ten artifact hashes](../etc/evidence/t564-s1-artifacts.json) remain unchanged:
+eight PC 0564 and both MyNES 0044 EXEs.
+
+Closure rechecked all ten deployed hashes and the 297 canonical imported files
+against the frozen export. The eight source/test roots match the reviewed
+SoftPC dfc85aac bytes, also unchanged at its 5e76dd49 closure baseline.
+No source, test, build, configuration or artifact input changes in this
+governance-only acceptance; no rebuild is required. Manual RDP, physical
+audio/controller and whole guest GUI proof remain unclaimed, with prior
+MyNES TODOs unchanged. The task queue is not advanced.
 
 The owner's subsequent selection of former queue entry 10 is governed by
 [MyRaidenII M0](../../myraidenii/states/CURRENT.md), not an admitted NXVM T.
@@ -68,7 +52,7 @@ S9/S10 opens/releases; reclassification alone is not treated as its resolution.
 
 [S10 results](../etc/evidence/t563-s10-results.json),
 [canonical inventory](../etc/evidence/t563-s10-canonical.json) and
-[ten artifact hashes](../etc/evidence/t563-s10-artifacts.json) are the current
+[ten artifact hashes](../etc/evidence/t563-s10-artifacts.json) are the accepted pre-T564
 receiving baseline: PC 0563 and MyNES 0044 pairs. Initial x64 timeout/native
 Console failures and unchanged successful full reruns remain explicit in
 [S10 evidence](../etc/evidence/t563-s10-shared-import.md) and existing TODOs.

@@ -5,7 +5,8 @@
 The owner admitted the complete import and ten receiving releases after T563
 closure. The [proposal](../../proposals/m5-softpc-rgb-frame-import.md) freezes
 the finite receiving universe; [Current](../../states/CURRENT.md) owns task
-state and owner acceptance. This report does not close T564 or S1.
+state and owner acceptance. The S1 acceptance addendum below records closure;
+this report does not close T564.
 
 The clean receiving baseline was `71be4639d`. The read-only SoftPC source is
 committed `dfc85aac4387600033d3ed11d7fb26e74b9eb631`, exported through Git
@@ -173,7 +174,7 @@ INIs, media, snapshots, external firmware and all MyRaidenII paths have no diff.
 Both product documentation governance checks and `git diff --check` pass.
 One target per P delivers Shared, MyNES, then NXVM. Coordinator actual-change
 review covers the complete three-target result, not merely the import hash or
-test counts. S1 and T564 remain open for the requested owner verification;
+test counts. At P3 delivery S1 and T564 remained open for owner verification;
 no assertion that the entire tree is defect-free or another task is admitted
 is made.
 
@@ -182,3 +183,17 @@ NXVM P3 carrying this evidence and the eight PC EXEs. The source baseline for
 all ten hashes is the complete locally reviewed S1 change set, not the
 temporarily incomplete intermediate cross-target commit. P3 completes that
 set; no unqualified intermediate commit is advertised as a runnable release.
+
+## Owner Acceptance And S1 Closure
+
+On 2026-10-17 the owner stated that verification was complete and requested S1
+closure. The coordinator reviewed the actual delivery commits `d30b69b2a`,
+`906e61b0c` and `b9433b31d`, mapped the original finite scope to the proof
+above, and rechecked all ten deployed hashes, 297 canonical files and both
+widths' result records. The complete pre-closure packet remains in P3.
+All S1 exit criteria are accepted; S1 is closed. T564 stays open, no active
+S packet remains, and no next task is admitted. Governance-only acceptance
+changes no executable input, so it reuses the qualified ten releases rather
+than recompiling them. Prior MyNES TODOs and unperformed manual verification
+are unchanged. This closure does not promote automated native tests into
+physical audible/RDP proof or claim the entire tree has no defects.
