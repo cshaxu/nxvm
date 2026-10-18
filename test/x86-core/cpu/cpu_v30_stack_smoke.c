@@ -190,6 +190,52 @@ static lib_i32 v30_stack_records(const v30_memory_fixture *fixture,
         lib_memory_compare(memory,fixture->memory,sizeof(fixture->memory))!=0;
 }
 
+/* Original NEC 12-146..153 rows, keyed by independent semantic input. */
+static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_stack_case *item)
+{
+    lib_u64 clocks=0u;
+    lib_u32 inputs=0u;
+    const lib_u8 opcode=item->code[0];
+    const lib_bool memory=item->operation==V30_STACK_PUSH_MEMORY || item->operation==V30_STACK_POP_MEMORY;
+    const lib_bool alias=!memory && (opcode==0xffu || opcode==0x8fu);
+    const lib_bool prefix=opcode==0x26u || opcode==0x2eu || opcode==0x36u || opcode==0x3eu;
+    const lib_bool odd=(item->operation==V30_STACK_LEAVE ? item->bp : item->sp) & 1u;
+    if (!prefix && !alias) switch (item->operation) {
+    case V30_STACK_PUSH_REG: case V30_STACK_PUSH_DECREMENTED_SP: case V30_STACK_POP_REG:
+        clocks=odd ? 12u : 8u; break;
+    case V30_STACK_PUSH_VALUE: clocks=(item->bytes==2u ? 7u : 8u)+(odd ? 4u : 0u); break;
+    case V30_STACK_PUSH_MEMORY: case V30_STACK_POP_MEMORY:
+        if ((item->address & 1u)!=(item->sp & 1u)) break;
+        clocks=(item->operation==V30_STACK_PUSH_MEMORY ? 18u : 17u)+(odd ? 8u : 0u);
+        inputs=X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+        break;
+    case V30_STACK_PUSH_ALL: clocks=odd ? 67u : 35u; break;
+    case V30_STACK_POP_ALL: clocks=odd ? 75u : 43u; break;
+    case V30_STACK_ENTER:
+        if (item->level==1u || (item->level && ((item->sp ^ item->bp) & 1u))) break;
+        clocks=item->level ? (odd ? 23u+16u*(item->level-1u) : 19u+8u*(item->level-1u)) : odd ? 16u : 12u;
+        inputs=X86_CORE_CPU_TIMING_INPUT_SIZE;
+        break;
+    case V30_STACK_LEAVE: clocks=odd ? 10u : 6u; break;
+    }
+    lib_u32 form=X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    if (clocks) {
+        inputs|=X86_CORE_CPU_TIMING_INPUT_MEMORY | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
+        form=opcode | (memory ? 0x100u : 0u);
+        if (memory) form|=((lib_u32)(item->code[1]>>3u) & 7u)<<9u;
+    }
+    const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
+    if (timing.ticks!=clocks || timing.formula_inputs!=inputs || timing.key_id!=form || timing.form_id!=form ||
+        !timing.source_timing_unallocated || timing.event_ticks ||
+        timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
+        lib_c_printf("V30:NOMINAL-STACK:FAIL op=%u sp=%04x bp=%04x level=%u ticks=%llu/%llu\n",
+            item->operation,item->sp,item->bp,item->level,timing.ticks,clocks);
+        return 1;
+    }
+    return 0;
+}
+
 static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
 {
     static v30_memory_fixture fixture;
@@ -210,6 +256,7 @@ static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
     lib_memory_copy(memory,fixture.memory,sizeof(memory));
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
+        v30_stack_timing(&fixture,item) ||
         lib_memory_compare(&fixture.bus.cpu,&model.cpu,sizeof(model.cpu))!=0 ||
         v30_stack_records(&fixture,&model,memory,LIB_FALSE) ||
         lib_memory_compare(model.memory,fixture.memory,sizeof(model.memory))!=0) {
@@ -217,7 +264,7 @@ static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
             item->operation,item->sp,item->level,fixture.reads,fixture.writes,fixture.bus.execution.stop_requested);
         return 1;
     }
-    const lib_u32 read_parts=fixture.reads, write_parts=fixture.writes;
+    const lib_u32 read_parts=fixture.reads, write_parts=fixture.writes, fetch_parts=fixture.fetches;
     if (!failures) return 0;
     for (lib_u8 write=0u; write<2u; ++write)
         for (lib_u32 part=1u; part<=(write ? write_parts : read_parts); ++part) {
@@ -227,6 +274,8 @@ static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
             else fixture.fail_read=part;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.bus.delivered_exceptions ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))!=0 ||
                 v30_stack_records(&fixture,&model,memory,LIB_TRUE)) {
                 lib_c_printf("V30:STACK-FAILURE:%u:%04x:%u:%u:%u\n",
@@ -234,6 +283,20 @@ static lib_i32 v30_stack_check(const v30_stack_case *item, lib_bool failures)
                 return 1;
             }
         }
+    for (lib_u32 fetch=1u; fetch<=fetch_parts; ++fetch) {
+        v30_stack_prepare(&fixture,item);
+        fixture.fail_fetch=fetch;
+        x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.reads || fixture.writes ||
+            fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+            fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
+            lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) {
+            lib_c_printf("V30:NOMINAL-STACK:FETCH op=%u opcode=%02x sp=%04x level=%u fetch=%u reads=%u writes=%u stop=%u\n",
+                item->operation,item->code[0],item->sp,item->level,fetch,fixture.reads,fixture.writes,
+                fixture.bus.execution.stop_requested);
+            return 1;
+        }
+    }
     return 0;
 }
 
@@ -344,5 +407,6 @@ lib_i32 main(void)
     if (v30_stack_scalars()) return 1;
     if (v30_stack_sets_and_frames()) return 1;
     lib_c_printf("V30:STACK:OK\n");
+    lib_c_printf("V30:NOMINAL-STACK:OK\n");
     return 0;
 }

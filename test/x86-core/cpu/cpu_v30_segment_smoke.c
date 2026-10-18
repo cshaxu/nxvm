@@ -149,6 +149,17 @@ static lib_i32 v30_segment_check(const v30_segment_case *item)
         lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))!=0) return 1;
     fixture.record_count=fixture.observations=0u;
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (item->operation==V30_SEGMENT_PUSH || item->operation==V30_SEGMENT_POP) {
+        const lib_bool unprefixed=item->bytes==1u;
+        const lib_u64 clocks=unprefixed ? 8u+4u*(item->sp & 1u) : 0u;
+        const lib_u32 form=clocks ? item->code[0] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+        const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
+        if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+            timing.key_id!=form || timing.form_id!=form || timing.formula_inputs!=(clocks ?
+                X86_CORE_CPU_TIMING_INPUT_MEMORY | ((item->sp & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u) ||
+            timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
+    }
     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
         lib_memory_compare(&fixture.bus.cpu,&after,sizeof(after))!=0 ||
         fixture.bus.execution.interrupt_shadow!=(v30_segment_inhibits(item) ?
@@ -166,6 +177,8 @@ static lib_i32 v30_segment_check(const v30_segment_case *item)
         else fixture.fail_read=part;
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
         if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.bus.delivered_exceptions ||
+            fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+            fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
             fixture.bus.execution.interrupt_shadow!=CPU_INTERRUPT_SHADOW_NONE ||
             lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))!=0 ||
             v30_segment_records(&fixture,memory,transfer.address,transfer.bytes,

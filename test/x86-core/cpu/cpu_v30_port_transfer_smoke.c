@@ -14,7 +14,7 @@ typedef struct v30_port_fixture {
     v30_port_record records[32];
     x86_core_cpu_external_cycle_phase phases[64];
     lib_u32 transfers, completions, phase_count, reads, writes;
-    lib_u32 fail_port, fail_read, fail_write;
+    lib_u32 fail_port, fail_read, fail_write, fail_fetch, fetches;
     lib_u32 last_read, last_write;
     lib_bool invalid;
 } v30_port_fixture;
@@ -28,6 +28,8 @@ static lib_status v30_port_read(void *opaque, lib_u32 address, void *data,
     (void)cache_control;
     if (address >= sizeof(fixture->memory) || bytes > sizeof(fixture->memory) - address)
         return LIB_STATUS_IO_ERROR;
+    if (!observe && provenance != X86_CORE_CPU_MEMORY_ACCESS_DATA &&
+        ++fixture->fetches == fixture->fail_fetch) return LIB_STATUS_IO_ERROR;
     if (!observe && provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA) {
         fixture->last_read = address;
         if (++fixture->reads == fixture->fail_read) return LIB_STATUS_IO_ERROR;
@@ -149,10 +151,15 @@ static lib_i32 v30_port_scalars(void)
 {
     static const lib_u8 opcodes[] = {0xe4u,0xe5u,0xe6u,0xe7u,0xecu,0xedu,0xeeu,0xefu};
     static const lib_u16 ports[] = {0x20u,0x21u,0xffu,0xffffu};
+    static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
     static v30_port_fixture fixture;
     for (lib_size form = 0u; form < sizeof(opcodes); ++form)
-        for (lib_size item = 0u; item < sizeof(ports) / sizeof(ports[0]); ++item) {
-            const lib_u8 code[] = {opcodes[form],(lib_u8)ports[item]};
+        for (lib_size item = 0u; item < sizeof(ports) / sizeof(ports[0]); ++item)
+        for (lib_size prefix = 0u; prefix < sizeof(prefixes); ++prefix) {
+            lib_u8 code[3], size=0u;
+            if (prefix) code[size++]=prefixes[prefix];
+            code[size++]=opcodes[form];
+            if (form<4u) code[size++]=(lib_u8)ports[item];
             const lib_u16 port = form < 4u ? (lib_u8)ports[item] : ports[item];
             const lib_u8 width = (form & 1u) + 1u;
             const lib_bool write = (form & 2u) != 0u;
@@ -162,13 +169,22 @@ static lib_i32 v30_port_scalars(void)
             const lib_u32 mask = width == 1u ? 0xffu : 0xffffu;
             const lib_u32 value = write ? before.data.eax & mask : fixture.ports[port] |
                 (width == 2u ? (lib_u32)fixture.ports[(lib_u16)(port + 1u)] << 8u : 0u);
-            lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
+            lib_memory_copy(fixture.memory + 0x100u, code, size);
             x86_core_cpu_instruction_lexeme lexeme;
             if (!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution, &lexeme) ||
-                lexeme.byte_count != (form < 4u ? 2u : 1u) || fixture.transfers ||
+                lexeme.byte_count != size || fixture.transfers || fixture.fetches ||
                 lib_memory_compare(&fixture.bus.cpu, &before, sizeof(before)) != 0) return 1;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
-            if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != (form < 4u ? 0x102u : 0x101u) ||
+            const lib_bool odd=width==2u && (port & 1u);
+            const lib_u64 clocks=prefix ? 0u : (form<2u ? 9u : 8u)+(odd ? 4u : 0u);
+            const lib_u32 key=clocks ? opcodes[form] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+            const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
+            if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
+                timing.key_id!=key || timing.form_id!=key ||
+                timing.formula_inputs!=(clocks && odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) ||
+                timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
+            if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x100u+size ||
                 fixture.bus.cpu.data.eax != (write ? before.data.eax : (before.data.eax & ~mask) | value) ||
                 fixture.bus.cpu.data.eflags != before.data.eflags || fixture.bus.cpu.data.edx != before.data.edx ||
                 fixture.bus.cpu.data.ecx != before.data.ecx || fixture.reads || fixture.writes ||
@@ -177,6 +193,18 @@ static lib_i32 v30_port_scalars(void)
             for (lib_u32 part = 0u; part < fixture.transfers; ++part)
                 actual |= fixture.records[part].value << (part * 8u);
             if (actual != value) return 1;
+            for (lib_u8 fetch=1u; fetch<=size; ++fetch) {
+                v30_port_prepare(&fixture);
+                fixture.bus.cpu.data.dx=ports[item];
+                const t_cpu initial=fixture.bus.cpu;
+                lib_memory_copy(fixture.memory+0x100u,code,size);
+                fixture.fail_fetch=fetch;
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.transfers ||
+                    fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                    fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
+                    lib_memory_compare(&fixture.bus.cpu,&initial,sizeof(initial))) return 1;
+            }
         }
     return 0;
 }
@@ -260,6 +288,8 @@ static lib_i32 v30_port_failures(void)
             lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             if (!fixture.bus.execution.stop_requested || fixture.bus.delivered_exceptions ||
+                fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                 fixture.bus.cpu.data.eip != before.data.eip || fixture.bus.cpu.data.eax != before.data.eax ||
                 fixture.bus.cpu.data.esi != before.data.esi || fixture.bus.cpu.data.edi != before.data.edi ||
                 fixture.bus.cpu.data.ecx != before.data.ecx || fixture.writes ||
@@ -378,5 +408,6 @@ lib_i32 main(void)
     if (v30_port_repeat_and_entry()) { lib_c_printf("V30:PORT-ENTRY:FAIL\n"); return 1; }
     if (v30_port_repeat_failure()) { lib_c_printf("V30:PORT-REPEAT-FAILURE:FAIL\n"); return 1; }
     lib_c_printf("V30:PORT-TRANSFER:OK\n");
+    lib_c_printf("V30:NOMINAL-PORT:OK cases=160\n");
     return 0;
 }

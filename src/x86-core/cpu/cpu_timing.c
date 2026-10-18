@@ -235,12 +235,13 @@ static void x86_core_cpu_timing_select_v30(
     const t_cpuins_data *data = &context->instructions->data;
     const lib_u8 opcode = data->opcodes[0];
     const lib_bool scalar = opcode < 0x40u && (opcode & 7u) < 4u;
-    const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u ||
+    const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u || opcode == 0x8fu ||
         opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu;
     const lib_bool modrm = scalar || group || (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
     lib_u64 ticks;
     lib_u8 odd_penalty = 0u;
+    lib_u32 stack_penalty = 0u;
     lib_bool odd_word = LIB_FALSE;
 
     *result = (x86_core_cpu_timing_result){
@@ -255,6 +256,7 @@ static void x86_core_cpu_timing_select_v30(
         odd_penalty = !(opcode & 1u) ? 0u : read_only ? 4u : 8u;
     } else if (opcode < 0x40u && (opcode & 7u) < 6u) ticks = 4u;
     else if (opcode >= 0x40u && opcode <= 0x4fu) ticks = 2u;
+    else if (opcode >= 0x50u && opcode <= 0x5fu) { ticks = 8u; stack_penalty = 4u; }
     else if (opcode >= 0xb0u && opcode <= 0xbfu) ticks = 4u;
     else if (opcode >= 0x90u && opcode <= 0x97u) ticks = 3u;
     else switch (opcode) {
@@ -279,10 +281,46 @@ static void x86_core_cpu_timing_select_v30(
         break;
     }
     case 0xfeu: case 0xffu:
-        if (((data->opcodes[1] >> 3u) & 7u) > 1u) return;
-        ticks = data->flagMem ? 16u : 2u;
-        odd_penalty = (opcode & 1u) ? 8u : 0u;
+        if (opcode == 0xffu && ((data->opcodes[1] >> 3u) & 7u) == 6u) {
+            /* Only all-even/all-odd source rows are documented for both addresses. */
+            if (!data->flagMem || ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
+            ticks = 18u;
+            stack_penalty = 8u;
+        } else {
+            if (((data->opcodes[1] >> 3u) & 7u) > 1u) return;
+            ticks = data->flagMem ? 16u : 2u;
+            odd_penalty = (opcode & 1u) ? 8u : 0u;
+        }
         break;
+    case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
+    case 0x07u: case 0x17u: case 0x1fu: case 0x68u: case 0x9cu: case 0x9du:
+        ticks = 8u; stack_penalty = 4u; break;
+    case 0x6au: ticks = 7u; stack_penalty = 4u; break;
+    case 0x60u: ticks = 35u; stack_penalty = 32u; break;
+    /* POPR's table has a 32-clock delta despite its seven data reads. */
+    case 0x61u: ticks = 43u; stack_penalty = 32u; break;
+    case 0x8fu:
+        if (!data->flagMem || ((data->mrm.offset ^ data->oldcpu.data.sp) & 1u)) return;
+        ticks = 17u;
+        stack_penalty = 8u;
+        break;
+    case 0xc8u: {
+        const lib_u8 level = data->opcodes[3];
+        /* The source omits level one and mixed stack/frame alignment. */
+        if (level == 1u || (level && ((data->oldcpu.data.sp ^ data->oldcpu.data.bp) & 1u))) return;
+        ticks = level ? 19u + 8u * (level - 1u) : 12u;
+        stack_penalty = level ? 4u + 8u * (level - 1u) : 4u;
+        result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
+        break;
+    }
+    case 0xc9u: ticks = 6u; stack_penalty = 4u; break;
+    case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
+    case 0xecu: case 0xedu: case 0xeeu: case 0xefu: {
+        const lib_u16 port = opcode < 0xecu ? data->opcodes[1] : data->oldcpu.data.dx;
+        ticks = opcode == 0xe4u || opcode == 0xe5u ? 9u : 8u;
+        if ((opcode & 1u) && (port & 1u)) { ticks += 4u; odd_word = LIB_TRUE; }
+        break;
+    }
     case 0xf5u: case 0xf8u: case 0xf9u: case 0xfau: case 0xfbu: case 0xfcu: case 0xfdu:
         ticks = 2u;
         break;
@@ -325,8 +363,13 @@ static void x86_core_cpu_timing_select_v30(
     case 0xd7u: ticks = 9u; break;
     default: return;
     }
+    if (stack_penalty) {
+        result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
+        const lib_u16 stack = opcode == 0xc9u ? data->oldcpu.data.bp : data->oldcpu.data.sp;
+        if (stack & 1u) { ticks += stack_penalty; odd_word = LIB_TRUE; }
+    }
     if (modrm && data->flagMem) {
-        result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MODRM |
+        result->formula_inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM |
             X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         if (odd_penalty && (data->mrm.offset & 1u)) {
             ticks += odd_penalty;
