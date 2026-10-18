@@ -49,6 +49,7 @@
 - [T2 V30 native data range nominal models](evidence/t2-s39-native-data-range-models.md).
 - [T2 V30 native stack/control nominal models](evidence/t2-s40-stack-control-models.md).
 - [T2 V30 native non-string prefix nominal clocks](evidence/t2-s41-native-prefix-clocks.md).
+- [T2 V30 native string extra-prefix phases](evidence/t2-s42-string-prefix-phase.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
