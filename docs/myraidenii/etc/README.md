@@ -43,6 +43,7 @@
 - [T2 V30 ordinary native control nominal clocks](evidence/t2-s33-nominal-control.md).
 - [T2 V30 native shift and conversion nominal clocks](evidence/t2-s34-nominal-shift-conversion.md).
 - [T2 V30 NEC extension data nominal clocks](evidence/t2-s35-nominal-nec-data.md).
+- [T2 V30 ordinary string nominal clocks](evidence/t2-s36-nominal-string.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
