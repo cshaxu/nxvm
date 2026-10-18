@@ -140,3 +140,15 @@ or gameplay verification is inferred from ROM-free CPU proof. Integration
 suites are not re-executed by this test-only S; the unchanged executable hashes
 retain T564's qualification rather than claiming a new game/integration run.
 T2's full original native/mode/time/Machine/board domain remains open.
+
+## Coordinator Acceptance
+
+Shared P1 `65c16fb0b` and MyRaidenII P2 `e11a919b3` are accepted after
+actual-change review. The coordinator reconciled the original request and
+sixteen-field packet, V07's complete admitted finite batch and deferred
+receivers, each helper/oracle/fixture caller, logs, manifests, unchanged
+production and all ten artifact identities. Scope and dependency ownership,
+source grades, single executor, Types vocabulary, original graphs/cache,
+verification-to-commit chronology and documentation authority are preserved.
+The final governance P closes S17 only. T2 and the full V30/game goal remain
+open; no next S is admitted by this acceptance.
