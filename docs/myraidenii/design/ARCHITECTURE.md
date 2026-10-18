@@ -23,9 +23,11 @@ machine data through Emulator's existing debug rendezvous, not private Core.
 ## Reuse Decisions And Real Gaps
 
 Reuse Lib Types/Base/Storage/PCM/KVM and Emulator Product/Session/UI/Machine
-where their existing contracts fit. T1 found the indexed graphics limit below;
-M0's unconditional unchanged-reuse assumption is withdrawn, not implemented
-as a Shared change. Product supplies the banner; Emulator owns Built on, fixed monitor
+where their existing contracts fit. T1 found an indexed graphics limit; the
+separately owner-approved NXVM T564 S1 import has now replaced that Shared
+contract with resolved RGB32 and four-slot publication. This task consumes
+that accepted capability without another Lib change. Product supplies the
+banner; Emulator owns Built on, fixed monitor
 grammar, help formatting, prompt and lifecycle. One provider/router is injected.
 Lib owns native handles, input decoding, presentation and actual audio output.
 
@@ -69,13 +71,15 @@ from a real failure. Portrait orientation is a bounded output transform, not
 a mutation of guest video RAM or forced Lib geometry. Reference native raster,
 rotation, pixel aspect and host scaling remain distinct qualified facts.
 
-Existing KVM graphics use 8-bit indices and 256 palette entries. The selected
-board's reference palette has 2048 entries; lossless full-frame compatibility
-is not established. The owner requires Lib unchanged and placed the proposed
-RGB publication change in [TODO](../states/TODO.md). Core video must retain
-correct board colours. Do not reduce colour fidelity, silently wrap indices or
-invent another display path to claim full-game release. This does not block
-independent CPU/board/sound work; full-colour presentation remains gated.
+KVM Window now receives numeric `lib_u32` 0x00RRGGBB pixels. The selected
+board's 2048-entry palette remains board state; Machine resolves complete
+images directly into Emulator's granted frame slot. KVM Console remains
+text-only. The previous host 256-entry transport limit is resolved by the
+accepted Shared import, not by this product adding a format or presenter.
+Actual board-colour/rotation/frame integration still belongs to the video
+receiver and remains unqualified. Do not reduce colour fidelity, silently wrap
+indices or claim a game frame has been tested merely because the host contract
+can represent it.
 
 PCM synthesis/mixing advances from guest clocks, with an explicit bounded
 sample queue and overflow/cancellation semantics. Lib's accepted-frame count

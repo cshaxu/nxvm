@@ -40,7 +40,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 | V04 | NEC extension slots 00--FF, bit test/set/clear/invert, packed BCD strings, nibble rotation, bit fields, mode-entry form | CPU NEC form owner; original section 12 encoding diagrams | S4 implements 10--1F/28/2A; S5 implements documented packed-BCD 20/22/26; S6 adds bit-field 31/33/39/3B through the same format/metadata/preview owner. Output-alias silicon, prefix/bus contexts, mode entry, undocumented inputs and full timing remain unqualified |
 | V05 | Segment, repeat/conditional-repeat and bus-lock prefixes, order/last override, interrupted restart and long malformed streams | CPU existing prefix/refresh owner; manual sections 6, 12 | S7 implements native carry comparison prefixes, one execution/preview recognizer, prefix-selection vectors and up-to-three-prefix interrupt restart; complete LOCK, long-stream and other mode/prefix qualification remains open |
 | V06 | MOV/exchange/address/stack, byte registers, segment loads, PUSH-SP and PUSHA/POPA/ENTER/LEAVE variants where defined | CPU existing transfer/stack handlers; manual section 12 | S14 qualifies native GP stack/register-set/frame forms and seven-transfer POPR; S15 qualifies segment transfer/results and associated external inhibition. S16 qualifies ordinary byte/word MOV, XCH, LEA and XLAT results, all memory ModRM/default/override, GP aliases, immediates, wrap/lane/tail and data failures through unchanged handlers. SP/data-tail and store-BRK L2 grades remain explicit. Physical LOCK/interoperation, complete prefix/mode contexts and PSW/control frames retain their original receivers; complete V06/T2 is not inferred from result tests |
-| V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | S11 fixes full eight-bit native shift/rotate counts and long-shift defined CF, with seven-operation byte/word one/CL/imm8, register/alias/memory/segment and provider-failure proofs. Other arithmetic/decimal/multiply/divide, mode, timing and undocumented contexts remain unqualified |
+| V07 | ALU, decimal adjust, multiply/divide, sign extension, shift/rotate count and flags | CPU existing arithmetic/rotate handlers; manual section 12 | S11 fixes native shift/rotate. S17 qualifies existing native scalar ADD/ADDC/SUB/SUBC, OR/AND/XOR/CMP/TEST, INC/DEC/NEG/NOT and CVTBW/CVTWL, with independent complete CPU/defined-flag, every byte-pair, full sign-extension input, encoding/alias/segment/lane/tail and provider-failure proof. Decimal adjustment, multiply/divide, mode, timing and undocumented contexts remain unqualified |
 | V08 | Near/far/conditional branches, loops, calls/returns, breakpoint/interrupt return | CPU control/entry helpers; manual sections 6, 12 | Taken/not-taken, stack frame, segment wrap and target-failure observations; not yet qualified |
 | V09 | Block transfers/comparisons, port strings, REP/REPC/REPNC zero/first/continuation/terminal and interrupts | CPU existing repeated instruction owner; manual sections 6, 12 | S7 implements four native CMPS/SCAS byte/word comparison forms with carry/zero conditions. S9 qualifies port-string transfers; S10 qualifies six MOVS/LODS/STOS forms, REP/DF/index/segment/overlap/tails, provider failures and NMI/INT-to-IRET continuation through existing handlers. Unqualified prefix, complete comparison-flag, electrical bus/timing and mode contexts remain open |
 | V10 | PSW fixed/writable bits and MD, flag load/image, debug patches/entry, native versus emulation flag meanings | CPU owned architectural register image; manual sections 3, 8, 12 | PUSHF/POPF/IRET/BRKEM/CALLN/RETEM transitions and safe debug writes; no second mode flag; not yet implemented |
@@ -238,6 +238,19 @@ exclusion or clocks. `_m_read_rmw`'s existing lock-signal admission is still
 486-only; native BUSLOCK/arbitration/prefetch remains the complete V05/V14/V15
 receiver, not an implicitly certified property of a successful XCH value.
 All original native/entry/mode/time/Machine/board requirements remain.
+
+S17 consumes the native scalar ALU/sign-extension subfamily through unchanged
+arithmetic/operand owners. [ALU evidence](evidence/t2-s17-alu.md) records
+917,460 success vectors plus every relevant provider failure, complete CPU and
+defined flags, all ordinary ModRM/segment/width/immediate forms and aliases.
+Exhaustive byte pairs and sign-extension domains complement independent word
+boundary inputs, not a copied production flag implementation. The CPU-local
+fixture can restart its CPU/probe state while retaining explicitly initialized
+RAM; original prepare callers still clear all storage. Production and all ten
+receiving EXEs are unchanged. Remaining decimal/multiply/divide, prefix/mode,
+physical clock/entry, Machine and board/game members are not retired by this
+result batch. The separately accepted T564 RGB import resolves only the old
+host palette-capacity TODO, not actual board-colour publication.
 
 Full V30 work is larger and estimates remain provisional until each S freezes
 its actual forms: native family/NEC forms about +900--2200 CPU source lines;

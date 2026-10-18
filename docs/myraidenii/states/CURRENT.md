@@ -2,8 +2,43 @@
 
 ## Current Work
 
-M1 T2 remains open after accepted S16. No S packet is active.
+M1 T2 S17 is admitted after accepted S16, at clean `53e1e775d`.
+The owner switched back to MyRaidenII and requested continued V30/facility
+implementation. NXVM T564 S1's accepted import is the receiving baseline:
+666 current whole-repository units and ten current PC 0564/MyNES 0044 EXEs.
 Single-session coordinator/executor mode remains in effect.
+
+S17 implementation is qualified and awaiting coordinator delivery review:
+917,460 independent successful ALU/sign-extension vectors plus refused data
+transfers; full x64/x86 suites each 667/667, including 180 X86 Core units.
+Both specialized gates pass all 498 strict rows. Final assertion/manifest
+rechecks pass 4/4 per width. Production and all ten current EXE hashes remain
+unchanged; there is no executable input requiring a new release. Shared
+tests/registration are +358/-2/net +356, excluding manifests and records.
+[S17 evidence](../etc/evidence/t2-s17-alu.md) retains the exact boundaries.
+
+## T2 S17 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, MyRaidenII M1 T2 S17; no NXVM or MyNES task allocation. |
+| Admission And Approval | Owner requests the next MyRaidenII S for NEC V30 and required facilities. Standing V30 Shared implementation authority applies to existing CPU contracts; Shared, MyRaidenII and conditionally NXVM receiving artifacts are declared targets. |
+| Objective | Consume V07 native scalar binary/unary arithmetic and sign-extension forms: ADD/ADDC/SUB/SUBC, OR/AND/XOR/CMP/TEST, INC/DEC/NEG/NOT and CBW/CWD; qualify encoding, defined flags, aliases, complete CPU results, storage/provider failure and preview at the sole existing executor. |
+| Non-goals | No decimal adjust, multiply/divide, PSW/control/entry, 8080 mode, prefix/LOCK/prefetch/timing model or Machine/board/game admission. No Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM production change, MyNES input or protected asset change. No new public API/layout/state or second executor. |
+| Reference Baseline | Clean 53e1e775d after accepted NXVM T564 S1; CPU source remains accepted MyRaidenII S16. NEC October 1986 manual pinned by T1, printed section 12 native arithmetic/logical/sign-extension pages; no external code derivation. |
+| Candidate Proposal | [V30 proposal](../proposals/m1-v30.md); [complete ledger](../etc/t2-v30-ledger.md), V07 scalar batch with V17 regressions. |
+| Files And ABI Surface | Existing CPU arithmetic handlers only if reproduced defect; test/x86-core/cpu/cpu_v30_alu_smoke.c, existing real-storage fixture, registration and test manifest; source manifest only if source changes. Product-local records also reconcile accepted RGB availability. Initially production +0..100/-0..100 and tests/registration approximately +450..650/-0..40; refine after actual review. Public ABI unchanged. |
+| Applicable Rules | MyRaidenII guide/architecture/layout/UX/source policy, shared Execution/Architecture/Coding/Document rules, architecture-governance then coding-governance skills; NXVM artifact identity rules only for affected PC receivers. |
+| Verification | Focused full-form ROM-free execution/preview/oracle and failure vectors first; original x64/x86 Release Ninja/ccache graphs, whole repo units and affected source/test gates; original timing/source grades retained. Inspect all ten hashes; if CPU production changes, rebuild/deploy eight current PC 0564 EXEs and run needed receiving integrations before delivery. No MyRaidenII EXE or manual/game proof is fabricated. |
+| Expected Markers | V30:ALU:OK and explicit finite case count; complete expected CPU and exact accepted storage-prefix comparison, no data access in pure preview; all existing Intel/V30 receivers pass. |
+| Asset Needs | Pinned local NEC manual text only; original synthetic vectors, no game/ROM/media input. Reuse current graphs and persistent ccache, -j8 build/-j4 units, unchanged test budgets. |
+| Reporting Requirements | Before/after per-owner counts, actual production defect or unchanged source proof, failure records and final dual-width results, source grade and remaining ledger members, current artifact identities. One complete target per sequential P, immediate push and coordinator actual-change review. |
+| Stop Conditions | New public interface, changed undocumented hardware/timing claim, external-code derivation or protected input need: report and revise authority first. Do not widen Lib/Emulator or hide failed assertions/timeouts. |
+| Exit Criteria | Entire frozen scalar-form batch has direct independent proof and both widths pass; similar-path audit, manifests/types/ownership/gates and records reviewed, all affected artifacts current, target P commits pushed. S17 does not close T2 or claim a playable game. |
+| Original Owner Request | Switch to MyRaidenII context and execute the next S implementing NEC V30 and required facilities. |
+| Similar-Issue Sweep | Enumerate scalar arithmetic primary/Group-1/Group-3/FE/FF encodings and existing helpers before changing them; use one flag/data oracle and existing storage callbacks. Preserve decimal/multiply/divide and physical-prefix/time receivers explicitly. Check current shared RGB capability rather than carrying the superseded indexed-colour blocker forward. |
+
+## Accepted Progress
 
 | Task progress | Accepted result / remaining work |
 | --- | --- |
@@ -25,7 +60,7 @@ Single-session coordinator/executor mode remains in effect.
 | T2 S16 | Accepted Shared 7c00ae072 and evidence 00368b9c9: 55,200 ordinary MOV/XCH/LEA/XLAT result/address/data-order witnesses plus provider failures through unchanged production; first dual-width 668/668 units and all eight PC artifact hashes retained. Actual-change review passed. |
 | T2 remaining | Complete native semantics and slot/form disposition, mode/8080/entry, unqualified block/port-prefix/LOCK/long-prefix contexts, physical prefetch/bus timing, source-graded timing/neutral Machine and real board proof remain. Bit-field AX/AL/AH output collision is not silicon-exact; S8 native data-tail behavior remains L2. |
 
-## Accepted Evidence And Review
+## S16 Accepted Evidence And Review
 
 [T2 history](../history/M1-T2-v30.md), [ledger](../etc/t2-v30-ledger.md) and
 [S16 delivery](../etc/evidence/t2-s16-transfer.md) retain source grades, finite
@@ -63,7 +98,9 @@ contexts, native slot/semantic completion, PSW/control/entry, mode/8080,
 Machine and board/game remain open. Earlier SP/data-tail and store-BRK L2
 grades are not promoted by these result tests. No external-ROM integration,
 manual desktop/RDP, physical audio or game run is claimed. No MyRaidenII EXE
-exists. The lossless-colour [High TODO](TODO.md) still gates final release.
+exists. The former lossless-colour host-contract TODO is resolved by the
+separately accepted NXVM T564 import; actual board-colour integration remains
+unqualified in the video receiver.
 
 ## Previous Work
 

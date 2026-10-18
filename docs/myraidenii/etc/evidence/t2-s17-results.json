@@ -1,0 +1,26 @@
+[
+    {
+        "arch":  "x64",
+        "units":  667,
+        "x86_core_units":  180,
+        "failures":  0,
+        "skipped":  0,
+        "suite_seconds":  106.49,
+        "junit_suite_seconds":  106,
+        "alu_seconds":  2.62406,
+        "success_vectors":  917460,
+        "log":  "build/myraidenii/t2-s17-unit-x64.log"
+    },
+    {
+        "arch":  "x86",
+        "units":  667,
+        "x86_core_units":  180,
+        "failures":  0,
+        "skipped":  0,
+        "suite_seconds":  110.29,
+        "junit_suite_seconds":  109,
+        "alu_seconds":  2.39364,
+        "success_vectors":  917460,
+        "log":  "build/myraidenii/t2-s17-unit-x86.log"
+    }
+]
