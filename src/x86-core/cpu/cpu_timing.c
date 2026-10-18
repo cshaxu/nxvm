@@ -242,7 +242,7 @@ static void x86_core_cpu_timing_select_v30(
         (opcode >= 0xd0u && opcode <= 0xd3u);
     const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u || opcode == 0x8fu ||
         opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu || shift;
-    lib_bool modrm = scalar || group || opcode == 0x69u || opcode == 0x6bu ||
+    lib_bool modrm = scalar || group || opcode == 0x62u || opcode == 0x69u || opcode == 0x6bu ||
         (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
@@ -252,13 +252,15 @@ static void x86_core_cpu_timing_select_v30(
     lib_u32 stack_penalty = 0u;
     lib_bool odd_word = LIB_FALSE;
     lib_bool control = LIB_FALSE, taken = LIB_TRUE;
+    const lib_bool native = (data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD) != 0u;
 
     *result = (x86_core_cpu_timing_result){
         .source_timing_unallocated = LIB_TRUE,
         .key_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED,
         .form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED
     };
-    if (prefixes >= data->oplen || !(data->oldcpu.data.eflags & X86_CPU_NEC_PSW_MD)) {
+    if (prefixes >= data->oplen || (!native && (opcode != 0xedu || data->oplen < 2u ||
+        (data->opcodes[1] != 0xedu && data->opcodes[1] != 0xfdu)))) {
         context->source_repeat_active = LIB_FALSE;
         return;
     }
@@ -266,7 +268,16 @@ static void x86_core_cpu_timing_select_v30(
         context->source_repeat_active = LIB_FALSE;
         if (prefixes) return;
     }
-    if (string) {
+    if (!native) {
+        form_extension = data->opcodes[1];
+        const lib_bool call = form_extension == 0xedu;
+        /* The capture may include lookahead beyond the completed instruction. */
+        if (data->oplen < (call ? 3u : 2u)) return;
+        ticks = call ? 38u : 27u;
+        /* CALLN's printed odd row differs from BRKEM despite the same frame. */
+        stack_penalty = call ? 20u : 12u;
+        control = LIB_TRUE;
+    } else if (string) {
         const lib_bool repeat = data->prefix_rep != PREFIX_REP_NONE;
         const lib_bool comparison = (opcode & 0xfeu) == 0xa6u || (opcode & 0xfeu) == 0xaeu;
         if (prefixes != (repeat ? 1u : 0u) || (repeat && data->opcodes[0] != 0xf3u &&
@@ -328,7 +339,11 @@ static void x86_core_cpu_timing_select_v30(
             if (!digits || digits == 255u || (digits & 1u)) return;
             ticks = 7u + 19u * (digits / 2u);
             result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE;
-        } else return; /* Field ranges and entry timing remain separately unallocated. */
+        } else if (suffix == 0xffu) {
+            ticks = 38u;
+            stack_penalty = 12u;
+            control = LIB_TRUE;
+        } else return; /* Field ranges remain separately unallocated. */
     } else if (scalar) {
         const lib_bool read_only = (opcode & 0x38u) == 0x38u || (opcode & 2u);
         ticks = !data->flagMem ? 2u : read_only ? 11u : 16u;
@@ -353,6 +368,30 @@ static void x86_core_cpu_timing_select_v30(
         if (!single) result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_SIZE;
     }
     else switch (opcode) {
+    case 0x62u: {
+        if (!data->flagMem) return;
+        taken = context->instruction_software_entry;
+        const lib_bool operand_odd = (data->mrm.offset & 1u) != 0u;
+        odd_word = operand_odd || (taken && (data->oldcpu.data.sp & 1u));
+        /* Conservative range/mixed-alignment model; the existing comparator
+         * and successful entry own the outcome, not another operand read. */
+        ticks = taken ? (odd_word ? 76u : 56u) : operand_odd ? 26u : 18u;
+        result->formula_inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY;
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+        control = LIB_TRUE;
+        break;
+    }
+    case 0xccu: case 0xcdu:
+        ticks = 38u; stack_penalty = 12u; control = LIB_TRUE; break;
+    case 0xceu:
+        taken = context->instruction_software_entry;
+        ticks = taken ? 40u : 3u;
+        stack_penalty = taken ? 12u : 0u;
+        if (!taken) origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+        control = LIB_TRUE;
+        break;
+    case 0xcfu:
+        ticks = 27u; stack_penalty = 12u; control = LIB_TRUE; break;
     case 0x37u: ticks = 3u; break;
     case 0x3fu: ticks = 7u; break;
     case 0x98u: ticks = 2u; break;

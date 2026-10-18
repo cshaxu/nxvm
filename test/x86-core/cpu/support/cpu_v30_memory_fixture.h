@@ -195,4 +195,25 @@ static inline lib_i32 v30_memory_check_completion(v30_memory_fixture *fixture,
     return 0;
 }
 
+/* Compare nominal facts at the actual execution seam; total time stays closed. */
+static inline lib_i32 v30_memory_check_nominal(const v30_memory_fixture *fixture,
+    lib_u64 ticks, lib_u32 key, lib_u32 inputs, x86_core_cpu_retirement_timing_origin origin)
+{
+    const x86_core_cpu_timing_result actual = x86_core_cpu_capture_timing(&fixture->bus.execution);
+    if (actual.ticks != ticks || actual.key_id != key || actual.form_id != key ||
+        actual.formula_inputs != inputs || actual.retirement_origin != origin ||
+        actual.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_NONE || actual.event_ticks ||
+        !actual.source_timing_unallocated || fixture->observations ||
+        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+        lib_c_printf("V30:NOMINAL-CONTROL:FAIL clocks=%llu/%llu key=%x/%x inputs=%x/%x origin=%u/%u\n",
+            actual.ticks,ticks,actual.key_id,key,actual.formula_inputs,inputs,actual.retirement_origin,origin);
+        lib_c_printf("V30:NOMINAL-CONTROL:DECODE bytes=%u opcode=%02x/%02x/%02x oldflags=%x\n",
+            fixture->bus.instructions.data.oplen,fixture->bus.instructions.data.opcodes[0],
+            fixture->bus.instructions.data.opcodes[1],fixture->bus.instructions.data.opcodes[2],
+            fixture->bus.instructions.data.oldcpu.data.eflags);
+        return 1;
+    }
+    return 0;
+}
+
 #endif

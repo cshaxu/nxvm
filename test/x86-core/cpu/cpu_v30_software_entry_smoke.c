@@ -19,7 +19,7 @@ static lib_u16 *v30_entry_register(t_cpu *cpu, lib_u8 reg)
     return registers[reg];
 }
 
-static lib_u32 v30_entry_address(t_cpu *cpu, const v30_entry_case *item)
+static lib_u32 v30_entry_address(const t_cpu *cpu, const v30_entry_case *item)
 {
     const lib_u8 mod = item->modrm >> 6u, rm = item->modrm & 7u;
     const lib_u16 offsets[] = {cpu->data.bx+cpu->data.si,cpu->data.bx+cpu->data.di,
@@ -106,6 +106,39 @@ static lib_u8 v30_entry_prepare(v30_memory_fixture *fixture, const v30_entry_cas
     return length;
 }
 
+static lib_i32 v30_entry_timing(const v30_memory_fixture *fixture, const v30_entry_case *item,
+    const t_cpu *before, lib_bool taken)
+{
+    static const lib_u8 opcodes[] = {0xccu,0xcdu,0xceu,0x62u,0xcfu};
+    lib_u64 clocks = 0u;
+    lib_u32 key = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs = 0u;
+    x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
+    if (!item->prefix) {
+        const lib_bool stack_odd = (before->data.sp & 1u) != 0u;
+        key = opcodes[item->operation];
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
+        inputs = X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH;
+        if (taken || item->operation == V30_ENTRY_RETURN) inputs |= X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
+        if (item->operation == V30_ENTRY_BOUNDS) {
+            const lib_bool operand_odd = (v30_entry_address(before,item) & 1u) != 0u;
+            clocks = taken ? (operand_odd || stack_odd ? 76u : 56u) : operand_odd ? 26u : 18u;
+            key |= 0x100u;
+            inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+            if (operand_odd || (taken && stack_odd)) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+            origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+        } else if (item->operation == V30_ENTRY_OVERFLOW && !taken) {
+            clocks = 3u;
+            origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+        } else {
+            clocks = (item->operation == V30_ENTRY_RETURN ? 27u : item->operation == V30_ENTRY_OVERFLOW ? 40u : 38u) +
+                (stack_odd ? 12u : 0u);
+            if (stack_odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+        }
+        if (item->operation != V30_ENTRY_OVERFLOW || taken) inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
+    }
+    return v30_memory_check_nominal(fixture,clocks,key,inputs,origin);
+}
+
 static lib_i32 v30_entry_check(const v30_entry_case *item, lib_bool deep)
 {
     static v30_memory_fixture fixture;
@@ -163,6 +196,7 @@ static lib_i32 v30_entry_check(const v30_entry_case *item, lib_bool deep)
         fixture.record_count = fixture.observations = 0u;
     }
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (v30_entry_timing(&fixture,item,&before,taken)) return 1;
     const lib_bool diagnostic = taken && item->operation == V30_ENTRY_BOUNDS;
     if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
         fixture.bus.delivered_exceptions != (lib_u32)diagnostic ||
@@ -199,6 +233,8 @@ static lib_i32 v30_entry_check(const v30_entry_case *item, lib_bool deep)
             } else {
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
                 if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                    fixture.bus.execution.timing_result.ticks ||
+                    fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
                     v30_memory_check_completion(&fixture,LIB_FALSE,LIB_FALSE)) return 1;
             }
             if (fixture.bus.delivered_exceptions || fixture.bus.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
@@ -254,5 +290,6 @@ lib_i32 main(void)
                                 ++cases;
                             }
     lib_c_printf("V30:SOFTWARE-ENTRY:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-SOFTWARE-CONTROL:OK\n");
     return 0;
 }

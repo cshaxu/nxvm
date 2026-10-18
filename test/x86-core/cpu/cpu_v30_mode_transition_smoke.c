@@ -107,6 +107,27 @@ static lib_i32 v30_mode_prepare(v30_memory_fixture *fixture, const v30_mode_case
     return 0;
 }
 
+static lib_i32 v30_mode_timing(const v30_memory_fixture *fixture, const v30_mode_case *item,
+    const t_cpu *before)
+{
+    static const lib_u32 keys[] = {0x00ff000fu,0x00ed00edu,0x00fd00edu,0xcfu,0x9du};
+    static const lib_u8 rows[][2] = {{38u,50u},{38u,58u},{27u,39u},{27u,39u},{8u,12u}};
+    lib_u64 clocks = 0u;
+    lib_u32 key = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs = 0u;
+    x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
+    if (item->operation != V30_MODE_NOP) {
+        const lib_bool odd = (before->data.sp & 1u) != 0u;
+        key = keys[item->operation];
+        clocks = rows[item->operation][odd];
+        inputs = X86_CORE_CPU_TIMING_INPUT_MEMORY;
+        if (item->operation != V30_MODE_POP_PSW) inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL |
+            X86_CORE_CPU_TIMING_INPUT_BRANCH | X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
+        if (odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
+        origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
+    }
+    return v30_memory_check_nominal(fixture,clocks,key,inputs,origin);
+}
+
 static lib_i32 v30_mode_check(const v30_mode_case *item, lib_bool deep)
 {
     static v30_memory_fixture fixture;
@@ -169,6 +190,7 @@ static lib_i32 v30_mode_check(const v30_mode_case *item, lib_bool deep)
         fixture.record_count = fixture.observations = 0u;
     }
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
+    if (v30_mode_timing(&fixture,item,&before)) return 1;
     const lib_bool latch_after = item->operation != V30_MODE_RETEM;
     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
         fixture.bus.instruction_count != 1u || fixture.bus.execution.nec_md_write_enabled != latch_after ||
@@ -193,7 +215,9 @@ static lib_i32 v30_mode_check(const v30_mode_case *item, lib_bool deep)
                     fixture.bus.execution.stop_requested || fixture.bus.faults) return 1;
             } else {
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
-                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults) return 1;
+                if (!fixture.bus.execution.stop_requested || !fixture.bus.faults ||
+                    fixture.bus.execution.timing_result.ticks ||
+                    fixture.bus.execution.timing_result.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) return 1;
             }
             if (fixture.bus.delivered_exceptions || fixture.bus.execution.nec_md_write_enabled != latch_before ||
                 lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
@@ -400,5 +424,6 @@ lib_i32 main(void)
         }
     if (v30_mode_guards()) return 1;
     lib_c_printf("V30:MODE-TRANSITION:OK cases=%u\n",cases);
+    lib_c_printf("V30:NOMINAL-SOFTWARE-CONTROL:OK\n");
     return 0;
 }
