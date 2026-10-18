@@ -34,6 +34,19 @@ The owner's subsequent selection of former queue entry 10 is governed by
 [MyRaidenII M0](../../myraidenii/states/CURRENT.md), not an admitted NXVM T.
 The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending.
 
+## Receiving Release Update From MyRaidenII
+
+MyRaidenII M1 T2 S19 refreshes the eight current 0564 PC EXEs after a narrowly
+scoped Shared V30 arithmetic/exception repair in `a14736a15`. It changes no NXVM source,
+configuration, firmware or media and allocates no NXVM task/S. MyNES 0044
+hashes remain unchanged. This receiving publication supersedes only the PC
+hashes in the historical T564 snapshot above; it does not rewrite T564's
+accepted evidence or its open task status. See the
+[current receiving evidence](../../myraidenii/etc/evidence/t2-s19-multiply-divide.md)
+and [ten release identities](../../myraidenii/etc/evidence/t2-s19-artifacts.json).
+Each width passes 669 units plus 14 selected PC receiving integrations and a
+post-restoration identity check, not a new full integration-suite claim.
+
 ## Latest Task Closure
 
 M5 T563 is closed after actual-change review of S10 Shared **a936e554b**,
