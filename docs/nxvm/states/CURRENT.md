@@ -36,15 +36,15 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
-MyRaidenII M1 T2 S23 refreshes the eight current 0564 PC EXEs after the
-scoped Shared V30 mode-transition implementation in `ad55ccf3f`. It changes no NXVM source,
+MyRaidenII M1 T2 S24 refreshes the eight current 0564 PC EXEs after the
+scoped Shared V30 ordinary 8080AF implementation in `ceab5712c`. It changes no NXVM source,
 configuration, firmware or media and allocates no NXVM task/S. MyNES 0044
 hashes remain unchanged. This receiving publication supersedes only the PC
 hashes in the historical T564 snapshot above; it does not rewrite T564's
 accepted evidence or its open task status. See the
-[current receiving evidence](../../myraidenii/etc/evidence/t2-s23-mode-transition.md)
-and [ten release identities](../../myraidenii/etc/evidence/t2-s23-artifacts.json).
-Each width passes 673 units plus 14 selected PC receiving integrations and a
+[current receiving evidence](../../myraidenii/etc/evidence/t2-s24-emulation.md)
+and [ten release identities](../../myraidenii/etc/evidence/t2-s24-artifacts.json).
+Each width passes 674 units plus 14 selected PC receiving integrations and a
 post-restoration identity check, not a new full integration-suite claim.
 
 ## Latest Task Closure
