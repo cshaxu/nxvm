@@ -41,3 +41,26 @@ implemented or qualified; their video task remains a required release gate.
 
 V30, COP, video/sound and host integration remain planned Queue work, not debt
 silently substituted for their implementation proposals.
+
+## Medium: Selected-SX System-Event Completion Metadata Review
+
+Owner: Shared X86 Core selected-80486 SMM/STPCLK event-prefix accounting.
+S29's completion sweep finds two different publishers in
+`cpu/cpu_instructions.c`: `_execution_refresh()` after `_smm_enter()` and
+`_system_boundary()` after interrupt arbitration during STOP-GRANT release.
+They can set the no-retirement delivery flag after an attempt which has also
+stopped CPU execution. Unlike ordinary HALT wake, these selected-SX paths own
+accepted-prefix/event_ticks accounting and existing source/L2 qualifications.
+
+Risk: the flag's successful-delivery meaning may diverge on these failed
+system-event paths. No current guest failure is established: Machine reports
+the fault before consulting that flag, and V30 cannot enter either SX-only
+path. Do not change their event time, accepted-prefix work or shutdown policy
+merely to make their Boolean resemble the ordinary HALT path.
+
+Admission: the next explicitly admitted Shared CPU completion/failure audit,
+or before an actual consumer relies on this flag after a failed SX system
+event. Reproduce failed SMI and STOP-GRANT interrupt entry through their real
+providers, pin existing failed-prefix/time expectations, then qualify the
+result contract on both widths. This is outside S29's ordinary V30/HALT
+result batch and is not a replacement for planned V30 physical timing work.
