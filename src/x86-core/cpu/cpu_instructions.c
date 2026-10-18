@@ -4675,6 +4675,8 @@ static void _ser_int_real(x86_core_cpu_execution_context *context, lib_u8 intid,
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(vector >> 16)));
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
         cpu_state.data.eflags |= X86_CPU_NEC_PSW_MD;
+        if (context->instruction_in_progress)
+            context->instruction_software_entry = LIB_TRUE;
         /* Accepted entry clears BRK; a lower-priority outgoing step cannot
          * immediately nest inside the newly entered handler. */
         if (disable_interrupts) {
@@ -20222,7 +20224,7 @@ static void _debug_complete_instruction(
     lib_u32 cause;
     lib_u32 matched = 0u;
 
-    if (instruction_state.data.except) return;
+    if (instruction_state.data.except || context->instruction_software_entry) return;
     cause = context->interrupt_shadow == CPU_INTERRUPT_SHADOW_SEGMENT ?
         0u : _debug_match_data_breakpoint(context, &matched);
     if (cause != 0u) cpu_state.data.dr6 |= matched;
@@ -21596,6 +21598,7 @@ void x86_core_cpu_execution_reset(
     context->wait_state = CPU_WAIT_STATE_NONE;
     context->wait_poll_remaining_ticks = 0u;
     context->nec_md_write_enabled = LIB_FALSE;
+    context->instruction_software_entry = LIB_FALSE;
 }
 static void _execution_refresh(
     x86_core_cpu_execution_context *context)
@@ -21607,6 +21610,7 @@ static void _execution_refresh(
     context->timing_result = (x86_core_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
+    context->instruction_software_entry = LIB_FALSE;
     if (_system_boundary(context)) {
         if (!context->instruction_fault_delivered) context->instruction_wait_stall = LIB_TRUE;
         return;
@@ -21699,7 +21703,8 @@ static void _execution_refresh(
         _system_poll_cycle(context);
     }
     const lib_bool dispatch_ready = context->special_cycle == X86_CORE_CPU_SPECIAL_NONE &&
-        !context->stop_requested && !context->debug_pause_requested;
+        !context->stop_requested && !context->debug_pause_requested &&
+        !context->instruction_software_entry;
     if (dispatch_ready) ExecInt(context);
     if (retired_sx) _e_end_access(context, &event_scope);
     if (dispatch_ready && !executed && !cpu_state.data.flagHalt)

@@ -289,6 +289,8 @@ struct x86_core_cpu_execution_context {
      * already halted CPU preserves entry but publishes no instruction tick. */
     lib_u8 instruction_in_progress;
     lib_u8 instruction_fault_delivered;
+    /* A committed NEC software entry wins this refresh's arbitration only. */
+    lib_bool instruction_software_entry;
     /* REP compare faults restore entry flags, not the last iteration's result. */
     lib_bool repeat_compare_flags_valid;
     lib_u32 repeat_compare_flags;
