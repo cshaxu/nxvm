@@ -17,6 +17,12 @@ bus or timing requirement is transferred from T2.
 
 ## Work And Verification
 
+On 2026-10-19 the owner approves bringing the Video-owned periodic-event
+prerequisite forward inside T3 and delegates routine S ordering. S8 implements
+only its explicitly L2 timing/IRQ receiver at the Video owner; rendering and
+other Video qualification remain with the queued Video task. T3's original
+COP/result/DMA and startup completion requirements remain in force.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free

@@ -1,9 +1,11 @@
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/cop.h"
+#include "myraidenii/core/video.h"
 
 struct myraidenii_core_board {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
+    myraidenii_core_video video;
     lib_u8 *program;
     lib_u8 bank_selected;
     lib_u8 main_interrupt_pending;
@@ -107,6 +109,24 @@ static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
     const myraidenii_core_board *board = owner;
 
     return board != LIB_NULL && board->main_interrupt_pending;
+}
+
+static void myraidenii_core_board_deadline(void *owner, lib_u64 now,
+    x86_core_machine_attachment_deadline_observation *out_observation)
+{
+    const myraidenii_core_board *board = owner;
+
+    (void)now;
+    out_observation->source_ticks = myraidenii_core_video_ticks_until_vblank(&board->video);
+}
+
+static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 due_tick)
+{
+    myraidenii_core_board *board = owner;
+
+    (void)due_tick;
+    if (myraidenii_core_video_advance(&board->video, ticks))
+        board->main_interrupt_pending = LIB_TRUE;
 }
 
 static lib_u8 myraidenii_core_board_interrupt_acknowledge(void *owner)
@@ -245,6 +265,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
         myraidenii_core_cop_reset(board->cop);
+        myraidenii_core_video_reset(&board->video);
     }
 }
 
@@ -258,9 +279,12 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
 {
     const x86_core_machine_executor_config machine_config = {
         .memory_bytes = 0x100000u,
-        .cpu_profile = X86_CORE_CPU_PROFILE_V30
+        .cpu_profile = X86_CORE_CPU_PROFILE_V30,
+        .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 16000000u}
     };
     x86_core_machine_attachment attachment = {
+        .deadline = myraidenii_core_board_deadline,
+        .before_internal_advance = myraidenii_core_board_advance,
         .interrupt_pending = myraidenii_core_board_interrupt_pending,
         .interrupt_acknowledge = myraidenii_core_board_interrupt_acknowledge,
         .reset_devices = myraidenii_core_board_reset,

@@ -66,6 +66,15 @@ sound CPU thread, independent host-time clock or frame-count timing shortcut.
 The shared executor callback is serviced at bounded safe points; callbacks
 never retain stale machine pointers across media/reset replacement.
 
+T3's brought-forward Video timing receiver owns one private raster phase. Its
+explicit L2 model uses 8 MHz pixels, 512 pixels/line and 282 lines/frame,
+with VBlank beginning after 240 visible lines. The Board's nominal CPU axis
+is 16 MHz (macro-proportional, never verified physical); the existing Core
+attachment deadline/advance integrates these ratios without another clock.
+Video reports an edge to the Board's single pending IRQ latch, and Core
+acknowledgement clears that latch. Reset restarts phase and clears the latch.
+Full rendering, video registers and DMA qualification remain queued work.
+
 Guest output flows from device state to complete copied Core output, Machine
 frame/PCM conversion, Emulator publication and Lib presentation. Failed
 conversion preserves the previous accepted frame; no ready output is distinct

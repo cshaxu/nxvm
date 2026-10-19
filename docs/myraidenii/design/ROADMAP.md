@@ -33,7 +33,10 @@ preserves its five delivered acceptance boundaries: residual semantics/forms,
 complete nominal timing, complete elapsed-time/bounds, real neutral Machine,
 and final CPU/receiving qualification.
 
-T3 now freezes and implements board/bus/COP. After T3, the
+T3 now freezes and implements board/bus/COP. The owner's 2026-10-19 ordering
+approval brings the prerequisite Video-owned periodic event into T3 S8;
+Video rendering and complete DMA/graphics qualification remain separate.
+After T3, the
 [Queue](../states/QUEUE.md) continues with video, sound, Product/Machine host
 integration and complete gameplay/release.
 Real ROM board checkpoints belong to board/COP, not to CPU qualification

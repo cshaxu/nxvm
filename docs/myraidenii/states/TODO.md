@@ -37,6 +37,25 @@ the existing registration owner, without duplicating source lists, adding a
 preset parser or pretending foreign tests were executed. Verify the aggregate
 against registered names with other products enabled before closure.
 
+## Medium: Repository Unit Build Does Not Include Every Enabled Product
+
+Owner: Shared root build aggregation and product test registration. T3 S8
+finds that the repository unit runner selects every unit label, while its
+build target did not depend on the later-registered MyRaidenII executable.
+S8 repairs its own local registration. The same read-only inspection finds
+MyNES has a separate mynes-unit-test-binaries target which is absent from the
+root build-unit-tests dependency line. No MyNES test source or behavior is
+changed by S8; existing binaries pass but cannot prove that a later aggregate
+will rebuild modified inputs.
+
+Admission: a Shared test-tooling task should align the enabled products'
+aggregate build dependencies with the executed unit inventory, using existing
+product-owned aggregates rather than duplicated source lists. Verify actual
+compile/link commands after an owned test input changes. Risk is stale unit
+EXEs giving misleading qualification; this is not an observed MyNES runtime
+failure. The current MyRaidenII registration is repaired locally without
+changing another product or Shared source.
+
 ## Medium: Shared Boundary Selftest Interrupted-Run Cleanup
 
 Owner: Shared test infrastructure, test/test_boundaries_selftest.cmake. S49's

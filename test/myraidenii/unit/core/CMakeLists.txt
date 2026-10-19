@@ -1,5 +1,8 @@
 add_executable(myraidenii-core-board-bus-smoke board_bus_smoke.c)
 target_link_libraries(myraidenii-core-board-bus-smoke PRIVATE myraidenii-core)
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests myraidenii-core-board-bus-smoke)
+endif()
 if(MSVC)
     target_compile_options(myraidenii-core-board-bus-smoke PRIVATE /UNDEBUG /W4 /WX)
 else()
