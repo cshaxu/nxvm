@@ -27,8 +27,11 @@ S17's dependency-led receiver implements only6200's independent integer
 angle-approach memory effects and target/step configuration from the complete
 [S12 numeric ledger](../etc/evidence/t3-s12-cop-geometry-contract.md). It does
 not require host math or arithmetic-result state. The other eight IDs retain
-their full numeric/result receiver and pending Shared vocabulary approval;
-arithmetic status/result publication also remains an explicit receiving gate
+their full numeric/result receiver; S18 now receives the explicitly approved
+six-file optional Shared vocabulary prerequisite, accepted as 9b41a82ca.
+It does not qualify any
+unfinished numerical algorithm. Arithmetic status/result publication remains
+an explicit receiving gate
 for6200 and all other macros before full T3 qualification. This is an
 implementation-order partition, not a reduced coverage universe or a complete
 numeric/hardware claim. The [S17 record](../etc/evidence/t3-s17-cop-angle-approach.md)

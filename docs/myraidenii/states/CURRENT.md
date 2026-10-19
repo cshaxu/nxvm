@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M1 T3 remains open after accepted S1--S17:
+M1 T3 remains open after accepted S1--S18:
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -23,6 +23,7 @@ M1 T3 remains open after accepted S1--S17:
 | S15 | Complete COP-owned register inventory, explicit unmodelled routes and shared stored DMA-mode readback | `fb5e14f7b` |
 | S16 | Complete low-control operational refusal, preserved valid/mixed routes and isolated actual-COP failure matrices | `acc9cc10c` |
 | S17 | Independent L2 angle-approach memory effect, target/step configuration and true-byte Core DMA transport | `b3a7cc0a6` |
+| S18 | Approved optional Types math declaration vocabulary, existing runtime contract and unchanged product linkage | `9b41a82ca` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -73,10 +74,11 @@ No production/test/build/manifest or artifact changes occurred. Ten release
 identities and protected inputs remain unchanged; document checks pass and
 build contains only persistent caches. No new unit or game run is claimed.
 
-The proposed four optional Lib Types mathematical names across six Shared
-files await explicit owner approval. General product approval does not
-approve that edit; no workaround, direct CRT access or private FPU dependency
-is introduced. The next implementation receiver must consume this complete
+The S12 proposal requested explicit owner approval for four optional Lib Types
+mathematical names across six Shared files. That specific approval has now
+been received and is being executed by S18; general product approval was not
+used as a substitute. No workaround, raw CRT consumer access or private FPU
+dependency is introduced. The next numerical receiver must consume this complete
 numeric/result ledger and its evidence choices, not one first-failing opcode.
 T3 and the full playable MyRaidenII goal remain open;
 2a05, numeric/unresolved/DMA/result and genuine startup retain their original
@@ -161,3 +163,20 @@ S17 is closed with no active packet; T3/M1 remain open. Common arithmetic
 status/results, eight other numeric IDs, the explicit Shared math approval,
 2a05/RNG/DMA/unresolved forms and genuine startup retain their full receivers.
 There is still no playable MyRaidenII or desktop/RDP qualification.
+
+Sequential coordinator actual-change review accepts S18 Shared P1 9b41a82ca.
+The [S18 record](../etc/evidence/t3-s18-types-math.md) retains explicit owner
+approval, the six-file scope, archived packet, exact aliases/link ownership,
+actual delta and dual-width log identities. The additive optional header
+provides no algorithm/state and leaves every existing interface unchanged.
+
+Final full repository units pass687/687 per width, zero failures/skips
+(x64 113.60s; x86 126.35s). Strict cached builds and subsequent no-work
+incremental builds pass. Ten existing releases,33 tracked asset guards and
+six media-role hashes remain unchanged; no existing product includes this
+header and no release rebuild is required. Owned runs have terminated and
+build contains only persistent caches. S18 is closed with no active packet.
+The complete nine-ID numerical/result receiver is now unblocked by the math
+vocabulary prerequisite, but remains unimplemented/unqualified as recorded
+in S12/S17. T3/M1,2a05/RNG/DMA/unresolved forms and genuine startup remain
+open; no desktop/RDP, external integration or playable-game pass is claimed.
