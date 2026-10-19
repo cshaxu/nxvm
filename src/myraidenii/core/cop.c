@@ -15,9 +15,10 @@ enum {
 typedef enum myraidenii_core_cop_register_role {
     MYRAIDENII_CORE_COP_CONFIG,
     MYRAIDENII_CORE_COP_DECIMAL_INPUT,
-    MYRAIDENII_CORE_COP_ADDRESS,
+    MYRAIDENII_CORE_COP_READ_WRITE,
     MYRAIDENII_CORE_COP_COMMAND,
-    MYRAIDENII_CORE_COP_RESULT
+    MYRAIDENII_CORE_COP_RESULT,
+    MYRAIDENII_CORE_COP_UNMODELLED_REGISTER
 } myraidenii_core_cop_register_role;
 
 typedef enum myraidenii_core_cop_command_kind {
@@ -60,18 +61,24 @@ struct myraidenii_core_cop {
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
+    {0x0041cu, 0x00004u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
     {0x00420u, 0x00004u, MYRAIDENII_CORE_COP_DECIMAL_INPUT},
     {0x00424u, 0x00002u, MYRAIDENII_CORE_COP_CONFIG},
     {0x00428u, 0x00006u, MYRAIDENII_CORE_COP_CONFIG},
     {0x00432u, 0x0000cu, MYRAIDENII_CORE_COP_CONFIG},
     {0x00444u, 0x00002u, MYRAIDENII_CORE_COP_CONFIG},
-    {0x00476u, 0x0000au, MYRAIDENII_CORE_COP_CONFIG},
-    {0x004a0u, 0x0000eu, MYRAIDENII_CORE_COP_ADDRESS},
-    {0x004c0u, 0x0000eu, MYRAIDENII_CORE_COP_ADDRESS},
+    {0x00450u, 0x0000eu, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
+    {0x00476u, 0x00008u, MYRAIDENII_CORE_COP_CONFIG},
+    {0x0047eu, 0x00002u, MYRAIDENII_CORE_COP_READ_WRITE},
+    {0x004a0u, 0x0000eu, MYRAIDENII_CORE_COP_READ_WRITE},
+    {0x004c0u, 0x0000eu, MYRAIDENII_CORE_COP_READ_WRITE},
     {0x00500u, 0x00006u, MYRAIDENII_CORE_COP_COMMAND},
     {MYRAIDENII_CORE_COP_COLLISION_RESULT, 10u, MYRAIDENII_CORE_COP_RESULT},
     {MYRAIDENII_CORE_COP_DECIMAL_RESULT,
-        MYRAIDENII_CORE_COP_DECIMAL_DIGITS + 1u, MYRAIDENII_CORE_COP_RESULT}
+        MYRAIDENII_CORE_COP_DECIMAL_DIGITS + 1u, MYRAIDENII_CORE_COP_RESULT},
+    {0x005a0u, 0x00008u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
+    {0x005b0u, 0x00006u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
+    {0x006fcu, 0x00004u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER}
 };
 
 static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 command)
@@ -157,13 +164,15 @@ static const myraidenii_core_cop_range *myraidenii_core_cop_range_find(lib_u32 p
 {
     lib_size index;
 
-    if (bytes == 0u || bytes > 2u) return LIB_NULL;
+    if (bytes == 0u) return LIB_NULL;
     for (index = 0u; index < sizeof(myraidenii_core_cop_ranges) /
         sizeof(myraidenii_core_cop_ranges[0]); ++index) {
         const myraidenii_core_cop_range *range = &myraidenii_core_cop_ranges[index];
 
         if (physical >= range->physical_start &&
-            (lib_u64)physical - range->physical_start + bytes <= range->bytes)
+            physical - range->physical_start < range->bytes &&
+            bytes <= range->bytes - (physical - range->physical_start) &&
+            (bytes <= 2u || range->role == MYRAIDENII_CORE_COP_UNMODELLED_REGISTER))
             return range;
     }
     return LIB_NULL;
@@ -189,7 +198,7 @@ static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
         return LIB_STATUS_INVALID_ARGUMENT;
     range = myraidenii_core_cop_range_find(physical, bytes);
     if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
-    if (range->role == MYRAIDENII_CORE_COP_ADDRESS) {
+    if (range->role == MYRAIDENII_CORE_COP_READ_WRITE) {
         lib_memory_copy((void *)destination,
             cop->registers + (physical - MYRAIDENII_CORE_COP_STORAGE_START), bytes);
         return LIB_STATUS_OK;
@@ -221,7 +230,9 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         return LIB_STATUS_INVALID_ARGUMENT;
     range = myraidenii_core_cop_range_find(physical, bytes);
     if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
-    if (range->role == MYRAIDENII_CORE_COP_RESULT) return LIB_STATUS_INVALID_STATE;
+    if (range->role == MYRAIDENII_CORE_COP_RESULT ||
+        range->role == MYRAIDENII_CORE_COP_UNMODELLED_REGISTER)
+        return LIB_STATUS_INVALID_STATE;
     if (cop->pending_command != 0u) return LIB_STATUS_INVALID_STATE;
     if (range->role == MYRAIDENII_CORE_COP_COMMAND) {
         const lib_u8 *data = (const lib_u8 *)source;

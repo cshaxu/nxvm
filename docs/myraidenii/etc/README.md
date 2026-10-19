@@ -78,6 +78,7 @@
 - [T3 complete COP geometry/numeric receiver](evidence/t3-s12-cop-geometry-contract.md).
 - [T3 complete COP collision receiver and status-contract correction](evidence/t3-s13-cop-collision.md).
 - [T3 complete COP decimal register receiver](evidence/t3-s14-cop-decimal.md).
+- [T3 complete COP register inventory and explicit unmodelled routes](evidence/t3-s15-cop-register-inventory.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

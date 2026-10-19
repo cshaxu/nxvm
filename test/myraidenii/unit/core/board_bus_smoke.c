@@ -350,11 +350,26 @@ static lib_i32 board_cop_routes(void)
         0x00428u, 0x0042cu, 0x00432u, 0x0043cu, 0x00444u, 0x00476u,
         0x0047eu, 0x004a0u, 0x004acu, 0x004c0u, 0x004ccu
     };
+    const struct {
+        lib_u32 first;
+        lib_u8 bytes;
+    } unmodelled[] = {
+        {0x41cu,4u}, {0x450u,14u}, {0x5a0u,8u}, {0x5b0u,6u}, {0x6fcu,4u}
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    const lib_u8 guest[] = {0xb8u,1u,0u,0xa3u,0xfcu,6u,0xf4u};
+    const lib_u8 mode_bytes[] = {0x11u,0x22u};
     const lib_u8 configuration_write[] = {0xa5u, 0x5au};
     const lib_u8 command_write[] = {0x96u, 0x69u};
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     x86_core_machine_memory_route route;
+    x86_core_machine_run_result result = {0};
+    x86_core_machine_lifecycle lifecycle;
     lib_u8 value[2] = {0u, 0u};
     lib_size index;
     lib_i32 failed = 1;
@@ -367,6 +382,9 @@ static lib_i32 board_cop_routes(void)
 
     for (index = 0u; index < sizeof(configuration_addresses) /
         sizeof(configuration_addresses[0]); ++index) {
+        const lib_bool readable = configuration_addresses[index] == 0x47eu ||
+            configuration_addresses[index] >= 0x4a0u;
+
         if (x86_core_machine_memory_query(machine, configuration_addresses[index],
                 sizeof(configuration_write), X86_CORE_MACHINE_MEMORY_ACCESS_WRITE,
                 &route) != LIB_STATUS_OK || route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
@@ -378,11 +396,66 @@ static lib_i32 board_cop_routes(void)
                 sizeof(value), X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
             route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
             x86_core_machine_memory_read(machine, configuration_addresses[index], value,
-                sizeof(value)) != (configuration_addresses[index] >= 0x4a0u ?
+                sizeof(value)) != (readable ?
                     LIB_STATUS_OK : LIB_STATUS_INVALID_STATE) ||
-            (configuration_addresses[index] >= 0x4a0u &&
+            (readable &&
                 (value[0] != 0xa5u || value[1] != 0x5au)))
             goto done;
+    }
+
+    if (x86_core_machine_memory_write(machine, 0x47eu, mode_bytes, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x47eu, value, 2u) != LIB_STATUS_OK ||
+        value[0] != 0x11u || value[1] != 0x5au ||
+        x86_core_machine_memory_write(machine, 0x47fu, mode_bytes + 1u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x47eu, value, 2u) != LIB_STATUS_OK ||
+        value[0] != 0x11u || value[1] != 0x22u ||
+        x86_core_machine_memory_inspect(machine, 0x47fu, value, 1u) != LIB_STATUS_OK ||
+        value[0] != 0x22u)
+        goto done;
+    for (lib_u8 phase = 0u; phase < 2u; ++phase) {
+        if (phase != 0u && (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x47eu, value, 2u) != LIB_STATUS_OK ||
+            value[0] != 0u || value[1] != 0u))
+            goto done;
+        for (index = 0u; index < sizeof(unmodelled) / sizeof(unmodelled[0]); ++index) {
+            lib_u8 bulk[14] = {0x55u,0xaau,0x33u};
+
+            for (lib_u8 lane = 0u; lane < unmodelled[index].bytes; ++lane) {
+                for (lib_u8 width = 1u; width <= 2u; ++width) {
+                    const lib_u32 address = unmodelled[index].first + lane;
+
+                    if (lane + width > unmodelled[index].bytes) continue;
+                    if (x86_core_machine_memory_query(machine, address, width,
+                            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+                        route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+                        x86_core_machine_memory_query(machine, address, width,
+                            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
+                        route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+                        x86_core_machine_memory_read(machine, address, value, width) !=
+                            LIB_STATUS_INVALID_STATE ||
+                        x86_core_machine_memory_inspect(machine, address, value, width) !=
+                            LIB_STATUS_INVALID_STATE ||
+                        x86_core_machine_memory_write(machine, address, configuration_write, width) !=
+                            LIB_STATUS_INVALID_STATE)
+                        goto done;
+                }
+            }
+            if (unmodelled[index].bytes > sizeof(bulk) ||
+                x86_core_machine_memory_query(machine, unmodelled[index].first,
+                    unmodelled[index].bytes, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
+                    LIB_STATUS_OK || route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+                x86_core_machine_memory_read(machine, unmodelled[index].first, bulk,
+                    unmodelled[index].bytes) != LIB_STATUS_INVALID_STATE ||
+                x86_core_machine_memory_inspect(machine, unmodelled[index].first, bulk,
+                    unmodelled[index].bytes) != LIB_STATUS_INVALID_STATE ||
+                x86_core_machine_memory_write(machine, unmodelled[index].first, bulk,
+                    unmodelled[index].bytes) != LIB_STATUS_INVALID_STATE ||
+                x86_core_machine_memory_write(machine, unmodelled[index].first - 1u, bulk, 3u) !=
+                    LIB_STATUS_INVALID_STATE ||
+                x86_core_machine_memory_inspect(machine, unmodelled[index].first - 1u,
+                    value, 1u) != LIB_STATUS_OK || value[0] != 0x55u)
+                goto done;
+        }
     }
 
     if (x86_core_machine_memory_query(machine, 0x00426u, 2u,
@@ -400,6 +473,13 @@ static lib_i32 board_cop_routes(void)
         x86_core_machine_memory_query(machine, 0x00428u, sizeof(value),
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER)
+        goto done;
+    if (x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) ==
+            LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+        x86_core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle != X86_CORE_MACHINE_FAULTED)
         goto done;
     failed = 0;
 done:
@@ -536,6 +616,7 @@ static lib_i32 board_cop_reset_and_admission(void)
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     lib_u8 data = 0xabu;
+    lib_u8 mode[2];
     lib_i32 failed = 1;
 
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
@@ -549,6 +630,9 @@ static lib_i32 board_cop_reset_and_admission(void)
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
         board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_word_write(machine, 0x47eu, 0xffffu) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x47eu, mode, 2u) != LIB_STATUS_OK ||
+        mode[0] != 0u || mode[1] != 0u ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
         board_cop_upload(machine, 0x5205u, 248u, 8u) != LIB_STATUS_OK ||
@@ -594,9 +678,9 @@ static lib_i32 board_cop_updates(void)
         /* Actual write-only COP routes refuse each source lane. */
         {0x0205u,0x424u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
         {0x0205u,0x422u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
-        {0x0205u,0x418u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
-        {0x0205u,0x416u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
-        {0x0205u,0x40au,0xffffu,1u,7u,0x10000u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x466u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x464u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x45eu,0xffffu,1u,7u,0x10000u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
         /* GPR readback is legal, but a pending operation cannot rewrite it. */
         {0x0205u,0x4a0u,0x1ffffu,1u,7u,0x1ffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
         {0x0205u,0x49au,0xffffu,1u,7u,0u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
@@ -641,8 +725,9 @@ static lib_i32 board_cop_updates(void)
                 cases[index].previous) != LIB_STATUS_OK ||
              board_cop_dword_write(machine, cases[index].base + increment + slot * 4u,
                 cases[index].increment) != LIB_STATUS_OK ||
-             board_cop_word_write(machine, cases[index].base + 30u + slot * 4u,
-                cases[index].coordinate) != LIB_STATUS_OK))
+             ((cases[index].command == 0x0205u || cases[index].inspect_coordinate) &&
+                board_cop_word_write(machine, cases[index].base + 30u + slot * 4u,
+                    cases[index].coordinate) != LIB_STATUS_OK)))
             goto done;
         if (!cases[index].failure && board_cop_word_write(machine,
                 cases[index].base + 32u + slot * 4u, 0x5aa5u) != LIB_STATUS_OK)

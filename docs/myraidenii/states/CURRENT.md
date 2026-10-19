@@ -105,6 +105,35 @@ Final frozen-source full units pass687/687 per width (x64 109.49s,
 x86 129.18s). Shared, other products, ten release identities and protected
 inputs remain unchanged. Owned processes are terminal and no disposable
 task root exists; build contains only persistent caches. S14 is closed with
-no active S packet. T3 and the complete playable MyRaidenII goal remain open;
+no active S packet at its acceptance. T3 and the complete playable MyRaidenII goal remain open;
 numeric/math authorization,2a05, unresolved operations, remaining COP/DMA
 decode and selected-set startup retain their required receivers.
+
+## Active S15 Packet
+
+Executor delivery: frozen-source full units pass687/687 per width (x64
+119.11s; x86 126.84s), documentation governance and whitespace checks pass.
+Ten releases,33 tracked assets and6 protected media-role hashes are unchanged.
+Owned processes are terminal; only persistent caches remain in build.
+Actual production delta+21/-10, existing test+92/-7. The complete evidence
+and packet are archived in the S15 record. Await coordinator actual-P review;
+this is not T3/M1 closure or real-game qualification.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T3 S15 after accepted S14 50b7cad23; single-session sequential coordinator/executor roles. |
+| Admission And Approval | Owner's standing complete MyRaidenII implementation approval and delegated same-T ordering. MyRaidenII Core/test/records only; no Shared math or other public capability approval is inferred. |
+| Objective | Reconcile the complete selected-board COP-owned register inventory against actual installed routes. Claim every known missing COP range and reject unmodelled reads/writes explicitly instead of RAM success. Qualify the existing DMA mode's raw16-bit readback through the same stored-word owner. |
+| Non-goals | No Shared/API/source import, geometry/PRNG/DMA/sort algorithm, open-bus guess, blanket COP ownership of Video/Board controls, full low-control-window fence or gameplay qualification. These mechanisms retain mandatory original receivers. |
+| Reference Baseline | Clean pushed 50b7cad23; actual current Board and COP decoder and accepted S10--S14 paths. Fixed MAME c1425a1af00b88aa07477b1b23a30ed5e5f856ff map/ownership/readback facts only. |
+| Candidate Proposal | ../proposals/m1-board-cop.md; ../etc/evidence/t3-s1-board-contract.md B02/B07/B08; S12 missing numeric routes and S14 alias/failure-stage review. |
+| Files And ABI Surface | Existing cop.c, existing Board unit, Current/evidence/index and directly discovered Shared query-classification debt in this product's TODO. Private range role only, no public header or state/storage expansion. Estimate production+20--40/-8--20; test+70--120/-10--25; documentation+120--190. Refine before material scope increase. |
+| Applicable Rules | Execution full finite-family disposition/actual review/P lifecycle and failure-stage sweep; Architecture COP-only ownership and one descriptor/route/read-write policy, no RAM fallback for a known unmodelled device; Coding reuse stored readback/private role and existing Board fixture, no generic decoder manager; source policy facts not reference implementation/table; Document explicit remaining Board/Video/control-hole boundaries and model grade. |
+| Verification | All bytes, within-range word lanes and full spans of missing41ch--41fh,450h--45dh,5a0h--5a7h,5b0h--5b5h,6fch--6ffh query as provider and reject operational/observational reads and writes; mixed RAM-prefix transfers also cannot bypass refusal. Preserve normal byte/word device widths while unmodelled negative-capability ranges claim their full span. Actual guest DMA-trigger write faults, never no-ops. Existing47eh/47fh word/byte/full-bit/read/inspect/reset/busy behavior is proved. Retarget three old state-update failure vectors to preserve their exact read stages. Both stable graphs build affected targets and run all687 units sequentially with four workers and600-second aggregate containment. Check docs/whitespace, artifact/input hashes and cleanup. |
+| Expected Markers | Five missing groups use one private unmodelled role in the sole COP descriptor list. Writes reject before indexing storage, including6fch outside the current byte store. GPR and DMA mode share plain stored read/write behavior. The guard is not an implemented algorithm or a claim of hardware open-bus behavior. |
+| Asset Needs | ROM-free tests and read-only fixed research responses. Owned build/myraidenii-t3-s15 only if necessary,32MiB/5-minute no-progress/60-minute phase budgets. No ROM or EXE needed; preserve ten current releases and protected inputs. |
+| Reporting Requirements | Before code report actual missing routes, owner distinctions and estimate. Preserve complete inventory/dispositions, precise failure-stage addresses, actual source/test delta and dual-width results/hashes; complete scoped P push, actual coordinator review and governance P. |
+| Stop Conditions | Shared/public capability, protected input, licensed reference body/table, per-game bypass, invented timing/open-bus value, or widening into unreviewed Board/Video algorithms. Keep full low-control decode gap as an explicit T3 B02 receiver, not an implicit completion claim. |
+| Exit Criteria | Every COP-owned address in the fixed selected-board map has an explicit route and capability disposition; new guards, existing paths and raw mode readback have actual-bus proof. Both final unit sets and scope/quality/cleanup checks pass and complete P delivery/review is pushed. S15 closes only this receiver, not T3/M1. |
+| Original Owner Request | Implement complete MyRaidenII using single-session dual-role governance, coherent batches and existing test reuse, while Shared changes require explicit review. |
+| Similar-Issue Sweep | Separate the inherited map's COP, Video and Board handlers by actual owner, not its function name. Audit every new role before register-store indexing, all read/write/inspection lanes and reset. Relocate old position/increment/coordinate failure vectors only where their accepted prefix changes; retain every independent assertion. Coordinate fixture writes are required only for0205 or an explicit coordinate-preservation assertion; do not write an unrelated0905 field into newly guarded device space during setup. |

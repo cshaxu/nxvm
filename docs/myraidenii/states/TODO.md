@@ -1,5 +1,27 @@
 # Unplanned Debt
 
+## Medium: Shared Complete-Span Memory Query Classification
+
+Owner: Shared X86 Core Machine memory query and entry-plan preflight. T3 S15's
+ROM-free actual Board probe writes GPR bytes3412 at4c0h: query size2 reports
+PROVIDER, size4 reports ORDINARY_RAM, while the actual size4 read returns
+34120000 through the device. memory_query_physical resolves only the complete
+span; actual read/write paths additionally inspect each byte when that span
+declines. Thus a provider whose declared data width is1/2 can disappear from
+the wider classification. Core's CPU cache-fill eligibility has its own
+per-byte scan, so this is not evidence of a current V30 cache/runtime fault.
+
+Risk: entry-plan preloads trust the complete-span classification to require
+ordinary RAM; misclassification may admit a device-containing preload, even
+though the subsequent data path still reaches its devices. Admission requires
+explicit Shared owner review: reconcile query with the existing bytewise
+route owner, preserving accepted-prefix semantics and proving entry preflight,
+mixed spans and every affected consumer. Do not duplicate a query workaround
+in each App or claim an actual preload corruption without a direct test.
+MyRaidenII's current COP uses1/2-byte DMA cycles and does not consume wide
+entry-plan preloads. S15's negative-capability ranges claim their full span
+locally, but do not repair this general Shared classification issue.
+
 ## Medium: Remaining Shared CPU Test Setup Duplication Review
 
 Owner: Shared X86 Core CPU-owned tests. S51's bounded test-growth audit removes
