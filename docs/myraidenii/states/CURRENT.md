@@ -125,3 +125,33 @@ S15 is closed with no active packet. T3, M1 and playable MyRaidenII remain
 open; the full low-control window, numeric/2a05/DMA/unresolved operations
 and genuine startup retain their mandatory receivers. The independent
 Shared complete-span query discrepancy is recorded in TODO, not repaired.
+
+## Active S16 Packet
+
+Executor delivery: strict cached dual-width builds and final full units pass
+687/687 per width (x64 122.30s; x86 133.90s), with zero failures/skips.
+The unchanged13/25/14-row COP matrices retain their exact vectors; actual
+Board positive transfer and unknown-control CPU fault also pass. Production
+adds38/removes3; existing test adds173/removes26. Documentation/whitespace,
+ten release hashes,33 assets and6 media-role guards pass. Owned sessions are
+terminal; build has only persistent caches. Evidence/packet are archived in
+the S16 record. Await coordinator actual-P review, not T3/M1 closure.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T3 S16 after accepted S15 04a378964; one session, sequential coordinator/executor. |
+| Admission And Approval | Owner's complete MyRaidenII implementation approval and delegated ordinary same-T ordering; MyRaidenII source/test/records only, no Shared change. |
+| Objective | Consume B02's remaining low-control data-route receiver: unknown400h--7ffh accesses must not read/write ordinary RAM. Preserve installed COP/input/sound/bank devices, actual CPU delivery, cross-boundary accepted-prefix behavior and ordinary RAM outside the window. |
+| Non-goals | No Shared/API change, hardware open-bus guess, Video/DMA/RNG/geometry algorithm, complete-span query repair, source import, real-set startup or gameplay qualification. T3's original outstanding receivers remain required. |
+| Reference Baseline | Clean pushed04a378964; current Board routes, COP device and Core fallback/byte-splitting implementation; fixed MAME c1425a1af00b88aa07477b1b23a30ed5e5f856ff selected-board map, SHA-256 FDDE57F6E9024657F2A9830864523305139562229750B87C967E597324CDB26A. |
+| Candidate Proposal | ../proposals/m1-board-cop.md; B02/B03/B07/B09 in ../etc/evidence/t3-s1-board-contract.md; S15 complete COP inventory and explicit low-control receiver. |
+| Files And ABI Surface | Board source, existing Board/COP unit and MyRaidenII evidence/index/Current. Private fallback callbacks only, no public header/state. Estimate production+30--50/-2--8; existing test+120--180/-20--40; records+160--240. |
+| Applicable Rules | Architecture Board owns undecoded physical windows, installed devices retain priority, one Core bus/scheduler; Coding bounded local callbacks and existing fixture reuse, no decoder duplication or test-only production entry; Source policy map facts only; Execution complete-window disposition, preserve failure stages, actual-P review and bounded cleanup; Documentation explicit query/model/startup limits. |
+| Verification | Every single byte in400h--7ffh queries as a provider for read/write before/after reset. Representative previously unclaimed and Video-owned ranges reject read/inspect/write at byte/word/wider sizes, never guessed data. Boundary3ffh accepted write prefix remains,7ffh rejection leaves800h unchanged. Existing input/sound/bank/COP/decimal and wider readable GPR data paths retain behavior. Keep all transfer/update/collision cases and exact failure stages on an isolated actual COP/Core fixture, not fake writable Board holes. Prove a real Board guest COP transfer and an actual CPU unknown-control fault. Strict cached x64/x86 builds and focused tests, then all687 units per width sequentially,4 workers/600-second aggregate. Docs/whitespace/input/release guards and cleanup. |
+| Expected Markers | One FALLBACK route uses byte-only query and terminal INVALID_STATE read/write, after real devices; Core's existing byte scan/split remains sole cross-range owner. No local wide-query workaround. Existing COP tests instantiate the actual private COP with neutral Core only where arbitrary memory/failure layouts are required; Board wiring remains directly tested. |
+| Asset Needs | Synthetic ROM-free tests only; no disposable task root planned. Persistent Ninja/ccache reused. Preserve ten releases,33 tracked assets and6 protected media-role hashes. |
+| Reporting Requirements | Report route-priority evidence and estimates before code, fixture ownership/failure-stage sweep, actual added/removed/net code, final qualification/remaining query debt, full P push and coordinator review. |
+| Stop Conditions | Shared/public capability, protected input, source copying, guessed hardware success/open-bus, duplicate dispatch, weakened original failure assertions or expansion into unrelated devices. |
+| Exit Criteria | The complete low-control window has an explicit operational non-RAM disposition, existing real devices and cross-lane access remain correct, all original failure-stage assertions survive in their proper fixture, dual-width proof/gates/guards pass, complete P and acceptance are pushed. Public wide-query classification and real startup remain explicitly unqualified. |
+| Original Owner Request | Implement playable MyRaidenII under single-session dual-role governance with coherent batches and reused tests; routine same-T planning delegated, Shared changes separately reviewed. |
+| Similar-Issue Sweep | Review read/write/inspection/CPU/cache behavior, fallback widths and exact overlap priority. Preserve a valid neighbouring provider instead of intercepting mixed spans. Do not seed isolated COP failure operands into actual Board control holes or duplicate Board timing merely to test COP effects. |

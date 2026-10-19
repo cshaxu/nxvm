@@ -1,10 +1,77 @@
 #include "myraidenii/core/board_interface.h"
+#include "myraidenii/core/cop.h"
 #include "myraidenii/core/video.h"
 #include "lib/types/file.h"
 #include "x86-core/machine/debug_interface.h"
 
 static lib_u8 program_even[MYRAIDENII_CORE_PROGRAM_LANE_BYTES];
 static lib_u8 program_odd[MYRAIDENII_CORE_PROGRAM_LANE_BYTES];
+
+/* COP failure matrices need arbitrary RAM beside its real register routes,
+ * not fictitious RAM inside the selected Board's control window. */
+typedef struct cop_fixture {
+    x86_core_machine *machine;
+    myraidenii_core_cop *cop;
+} cop_fixture;
+
+static void cop_fixture_advance(void *owner, lib_u64 ticks, lib_u64 due_tick)
+{
+    cop_fixture *fixture = owner;
+    lib_status status = myraidenii_core_cop_advance(fixture->cop);
+
+    (void)ticks;
+    (void)due_tick;
+    if (status != LIB_STATUS_OK)
+        (void)x86_core_machine_report_fault(fixture->machine, (lib_u32)status);
+}
+
+static void cop_fixture_reset(void *owner)
+{
+    cop_fixture *fixture = owner;
+
+    myraidenii_core_cop_reset(fixture->cop);
+}
+
+static void cop_fixture_finalize(void *owner)
+{
+    cop_fixture *fixture = owner;
+
+    myraidenii_core_cop_destroy(fixture->cop);
+    fixture->cop = LIB_NULL;
+}
+
+static void cop_fixture_destroy(cop_fixture *fixture)
+{
+    x86_core_machine_destroy(fixture->machine);
+    myraidenii_core_cop_destroy(fixture->cop);
+}
+
+static lib_status cop_fixture_create(cop_fixture *fixture)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 0x100000u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_V30,
+        .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 16000000u}
+    };
+    const x86_core_machine_attachment attachment = {
+        .context = fixture,
+        .before_internal_advance = cop_fixture_advance,
+        .reset_devices = cop_fixture_reset,
+        .finalize_devices = cop_fixture_finalize
+    };
+    lib_status status = x86_core_machine_neutral_create(&config, &fixture->machine);
+
+    if (status == LIB_STATUS_OK) status = myraidenii_core_cop_create(&fixture->cop);
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_bind_attachment(fixture->machine, &attachment);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_install(fixture->cop, fixture->machine);
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_freeze_execution_providers(fixture->machine);
+    if (status == LIB_STATUS_OK) status = x86_core_machine_reset(fixture->machine);
+    if (status != LIB_STATUS_OK) cop_fixture_destroy(fixture);
+    return status;
+}
 
 static lib_i32 board_invalid_arguments(void)
 {
@@ -101,6 +168,77 @@ static lib_i32 board_program_and_ram_routes(void)
     if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             value, sizeof(value)) != LIB_STATUS_OK || value[0] != 0x20u || value[1] != 0x21u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
+static lib_i32 board_control_window(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const lib_u32 unmodelled[] = {
+        0x400u,0x426u,0x470u,0x5ffu,0x600u,0x68eu,0x6cau,0x6ccu,0x762u,0x7ffu
+    };
+    const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    const lib_u8 guest[] = {0xb8u,1u,0u,0xa3u,0u,4u,0xf4u};
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_run_result result = {0};
+    x86_core_machine_memory_route route;
+    lib_u8 value[8];
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    for (lib_u8 phase = 0u; phase < 2u; ++phase) {
+        if (phase != 0u && x86_core_machine_reset(machine) != LIB_STATUS_OK) goto done;
+        for (lib_u32 address = 0x400u; address < 0x800u; ++address) {
+            if (x86_core_machine_memory_query(machine, address, 1u,
+                    X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+                route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+                x86_core_machine_memory_query(machine, address, 1u,
+                    X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
+                route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER)
+                goto done;
+        }
+        for (lib_size index = 0u; index < sizeof(unmodelled) / sizeof(unmodelled[0]); ++index)
+        for (lib_size width = 1u; width <= sizeof(value); width *= 2u) {
+            if (x86_core_machine_memory_read(machine, unmodelled[index], value, width) !=
+                    LIB_STATUS_INVALID_STATE ||
+                x86_core_machine_memory_inspect(machine, unmodelled[index], value, width) !=
+                    LIB_STATUS_INVALID_STATE ||
+                x86_core_machine_memory_write(machine, unmodelled[index], data, width) !=
+                    LIB_STATUS_INVALID_STATE)
+                goto done;
+        }
+        /* A broad fallback must not swallow two distinct valid register words. */
+        if (x86_core_machine_memory_write(machine, 0x4c0u, data, 4u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x4c0u, value, 4u) != LIB_STATUS_OK ||
+            lib_memory_compare(value, data, 4u) != 0 ||
+            x86_core_machine_memory_inspect(machine, 0x4c0u, value, 4u) != LIB_STATUS_OK ||
+            lib_memory_compare(value, data, 4u) != 0 ||
+            x86_core_machine_memory_write(machine, 0x3ffu, data, 2u) != LIB_STATUS_INVALID_STATE ||
+            x86_core_machine_memory_inspect(machine, 0x3ffu, value, 1u) != LIB_STATUS_OK ||
+            value[0] != data[0] ||
+            x86_core_machine_memory_write(machine, 0x800u, data + 2u, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x7ffu, data, 2u) != LIB_STATUS_INVALID_STATE ||
+            x86_core_machine_memory_inspect(machine, 0x800u, value, 1u) != LIB_STATUS_OK ||
+            value[0] != data[2])
+            goto done;
+    }
+    if (x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) ==
+            LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_FAULT)
         goto done;
     failed = 0;
 done:
@@ -453,14 +591,14 @@ static lib_i32 board_cop_routes(void)
                 x86_core_machine_memory_write(machine, unmodelled[index].first - 1u, bulk, 3u) !=
                     LIB_STATUS_INVALID_STATE ||
                 x86_core_machine_memory_inspect(machine, unmodelled[index].first - 1u,
-                    value, 1u) != LIB_STATUS_OK || value[0] != 0x55u)
+                    value, 1u) != LIB_STATUS_INVALID_STATE)
                 goto done;
         }
     }
 
-    if (x86_core_machine_memory_query(machine, 0x00426u, 2u,
+    if (x86_core_machine_memory_query(machine, 0x00426u, 1u,
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
-        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
         x86_core_machine_memory_query(machine, 0x00500u, sizeof(command_write),
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
@@ -535,9 +673,6 @@ static lib_i32 board_cop_transfers(void)
         {0x5205u, 0x102000u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
         {0xf205u, LIB_UINT32_MAX - 3u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE}
     };
-    const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
-    };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
@@ -548,7 +683,7 @@ static lib_i32 board_cop_transfers(void)
     lib_i32 failures = 0;
 
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
-        myraidenii_core_board *board = LIB_NULL;
+        cop_fixture fixture = {0};
         x86_core_machine *machine;
         x86_core_machine_run_result result = {0};
         lib_u8 guest[] = {0xb8u, (lib_u8)cases[index].command,
@@ -558,8 +693,8 @@ static lib_i32 board_cop_transfers(void)
         lib_status status;
         lib_i32 failed = 1;
 
-        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
-        machine = myraidenii_core_board_machine_get(board);
+        if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
+        machine = fixture.machine;
         if (x86_core_machine_memory_write(machine, 0x2000u, source_data,
                 sizeof(source_data)) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x3000u, sentinel,
@@ -602,7 +737,7 @@ static lib_i32 board_cop_transfers(void)
 done:
         if (failed) lib_c_printf("COP:TRANSFER:FAIL case=%u reason=%u detail=%u executed=%llu\n",
             (lib_u32)index, (lib_u32)result.reason, result.detail, result.executed);
-        myraidenii_core_board_destroy(board);
+        cop_fixture_destroy(&fixture);
         failures += failed;
     }
     return failures != 0;
@@ -613,10 +748,19 @@ static lib_i32 board_cop_reset_and_admission(void)
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    const lib_u8 guest[] = {0xb8u,0x05u,0x52u,0xa3u,4u,5u,0xf4u};
+    const lib_u8 source[] = {0x12u,0x34u,0x56u,0x78u};
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
+    x86_core_machine_run_result result = {0};
     lib_u8 data = 0xabu;
     lib_u8 mode[2];
+    lib_u8 actual[4];
     lib_i32 failed = 1;
 
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
@@ -636,7 +780,16 @@ static lib_i32 board_cop_reset_and_admission(void)
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
         board_cop_upload(machine, 0x5205u, 248u, 8u) != LIB_STATUS_OK ||
-        board_cop_word_write(machine, 0x504u, 0x5205u) != LIB_STATUS_OK)
+        board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x4c2u, 0x3000u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x2000u, source, sizeof(source)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) !=
+            LIB_STATUS_OK || result.executed != 3u ||
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_memory_inspect(machine, 0x3000u, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, source, sizeof(actual)) != 0)
         goto done;
     failed = 0;
 done:
@@ -695,9 +848,6 @@ static lib_i32 board_cop_updates(void)
         {0x0905u,0x102000u,0u,0u,0u,0u,0u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
         {0x2a05u,0x2000u,5u,1u,7u,5u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE}
     };
-    const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
-    };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
             X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
@@ -709,7 +859,7 @@ static lib_i32 board_cop_updates(void)
     for (lib_u8 slot = 0u; slot < (cases[index].failure ? 1u : 3u); ++slot) {
         const lib_u32 position = cases[index].command == 0x0905u ? 16u : 4u;
         const lib_u32 increment = cases[index].command == 0x0905u ? 40u : 16u;
-        myraidenii_core_board *board = LIB_NULL;
+        cop_fixture fixture = {0};
         x86_core_machine *machine;
         x86_core_machine_run_result result = {0};
         const lib_u8 guest[] = {0xb8u, (lib_u8)cases[index].command,
@@ -718,8 +868,8 @@ static lib_i32 board_cop_updates(void)
         lib_status status;
         lib_i32 failed = 1;
 
-        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
-        machine = myraidenii_core_board_machine_get(board);
+        if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
+        machine = fixture.machine;
         if (cases[index].base < 0x100000u &&
             (board_cop_dword_write(machine, cases[index].base + position + slot * 4u,
                 cases[index].previous) != LIB_STATUS_OK ||
@@ -769,7 +919,7 @@ static lib_i32 board_cop_updates(void)
 done:
         if (failed) lib_c_printf("COP:UPDATE:FAIL case=%u slot=%u reason=%u detail=%u\n",
             (lib_u32)index, (lib_u32)slot, (lib_u32)result.reason, result.detail);
-        myraidenii_core_board_destroy(board);
+        cop_fixture_destroy(&fixture);
         failures += failed;
     }
     return failures != 0;
@@ -843,9 +993,6 @@ static lib_i32 board_cop_collisions(void)
         {{0,0,0},{100,100,100},0xff80u,0x0100u,{0u,0xff9cu,0xff9cu,0xff9cu,0u}},
         {{-30,-30,-30},{-25,-25,-25},0x0a00u,0x0a00u,{0u,0xfffbu,0xfffbu,0xfffbu,0u}}
     };
-    const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
-    };
     const lib_u16 commands[] = {0xa100u,0xa900u,0xb100u,0xb900u};
     const lib_u16 reverse[] = {0xa900u,0xa100u,0xb900u,0xb100u};
     lib_i32 failures = 0;
@@ -855,14 +1002,14 @@ static lib_i32 board_cop_collisions(void)
         const lib_bool failure = index >= sizeof(cases) / sizeof(cases[0]);
         const lib_size vector = failure ? 0u : index;
         const lib_u32 high_base = index == 1u ? 0x10000u : 0u;
-        myraidenii_core_board *board = LIB_NULL;
+        cop_fixture fixture = {0};
         x86_core_machine *machine;
         x86_core_machine_run_result result = {0};
         lib_status status;
         lib_i32 failed = 1;
 
-        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
-        machine = myraidenii_core_board_machine_get(board);
+        if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
+        machine = fixture.machine;
         for (lib_u8 slot = 0u; slot < 4u; ++slot) {
             if (board_cop_upload(machine, commands[slot], slot * 8u, 8u) != LIB_STATUS_OK ||
                 board_cop_word_write(machine, 0x4c0u + slot * 2u,
@@ -964,7 +1111,7 @@ static lib_i32 board_cop_collisions(void)
 done:
         if (failed) lib_c_printf("COP:COLLISION:FAIL case=%u reason=%u detail=%u\n",
             (lib_u32)index, (lib_u32)result.reason, result.detail);
-        myraidenii_core_board_destroy(board);
+        cop_fixture_destroy(&fixture);
         failures += failed;
     }
     return failures != 0;
@@ -1105,7 +1252,7 @@ done:
 
 lib_i32 main(void)
 {
-    return board_invalid_arguments() || board_program_and_ram_routes() ||
+    return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_collisions() || board_cop_decimal();

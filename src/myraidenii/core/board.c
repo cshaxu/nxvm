@@ -104,6 +104,37 @@ static lib_status myraidenii_core_board_select_write(void *owner, lib_u32 physic
     return LIB_STATUS_OK;
 }
 
+static lib_status myraidenii_core_board_control_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)physical;
+    (void)access;
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    /* Wider mixed accesses must use Core's existing byte-route splitting. */
+    return bytes == 1u ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_control_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)owner;
+    (void)physical;
+    (void)destination;
+    (void)bytes;
+    (void)observe_only;
+    return LIB_STATUS_INVALID_STATE;
+}
+
+static lib_status myraidenii_core_board_control_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    (void)owner;
+    (void)physical;
+    (void)source;
+    (void)bytes;
+    return LIB_STATUS_INVALID_STATE;
+}
+
 static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
 {
     const myraidenii_core_board *board = owner;
@@ -311,7 +342,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sound_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[6] = {
+    x86_core_machine_memory_device_route routes[7] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -328,7 +359,11 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS,
             .bytes = 2u, .callbacks = input_callbacks,
-            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT}
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = 0x400u, .bytes = 0x400u,
+            .callbacks = {myraidenii_core_board_control_read,
+                myraidenii_core_board_control_write, myraidenii_core_board_control_query},
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK}
     };
     lib_size index;
     lib_status status;
@@ -360,7 +395,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         status = myraidenii_core_cop_create(&board->cop);
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_install_memory_device_routes(board->machine, routes,
-            6u, LIB_NULL, LIB_NULL, board);
+            sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, board);
     if (status == LIB_STATUS_OK)
         status = myraidenii_core_cop_install(board->cop, board->machine);
     if (status == LIB_STATUS_OK)
