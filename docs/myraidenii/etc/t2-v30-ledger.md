@@ -26,11 +26,39 @@ reviewed L2 model; they do not shrink the documented form/mode universe.
 Accept a row only with its source, implemented sole path and executed vectors
 in both widths. T2 exit requires no unimplemented documented row, a complete
 slot/form disposition, source-graded timing and neutral Machine admission,
-old Intel regressions, original board-path checkpoints and current affected
-PC artifacts. Instruction/time budgets never count as coverage. A diagnostic
+old Intel regressions, ROM-free public Machine/non-PC board-path checkpoints
+and current affected PC artifacts. The owner-approved 2026-10-18 replan below
+retains original real-ROM board checkpoints at the board/COP task, without
+moving any CPU requirement out of T2. Instruction/time budgets never count as coverage. A diagnostic
 which reaches further cannot substitute for the complete form/state ledger.
 
 ## Mechanism Batches And Proof Owners
+
+The owner approves bounded S46 stage closure and retention of all unfinished
+CPU work inside T2 on 2026-10-18. The finite successor plan is in the
+[T2 proposal](../proposals/m1-v30.md#owner-approved-remaining-s-plan);
+the original seventeen rows below are not deleted or marked complete by
+this replan. S46's implemented FPO/bus/nominal and copied-mode receiver batch
+has [direct evidence](evidence/t2-s46-time-accounting.md). Final stage proof
+passes680/680 repository units (193 X86 Core),498 strict rows and1391 Types
+inputs per width, eight refreshed PC releases,14 selected receiving
+integrations and a restored-default identity per width. This is not full
+V30 time/Machine/game qualification; Current records coordinator acceptance.
+
+Residual V01--V14 semantic/form/prefix/arrival obligations go to proposed S47;
+native/NEC/8080 nominal rows go to S48; full V14/V15 accounting, waits/entry/
+idle/preview/bounds go to S49; actual neutral Machine V16 goes to S50; complete
+V01--V17 reconciliation, final units/releases and CPU closure go to S51.
+S46 accounting classes A/D/I and nominal H/J map to S48 (semantic D to S47);
+E/F/G and total-time H/J/K map to S49; L maps to S50. B/C are implemented
+S46 prerequisites, not proof that the other accounting classes are complete.
+Every later S keeps its own full-unit and receiving-release obligations.
+
+The original real-ROM board checkpoints have an explicit owner-approved
+[board/COP receiver](../proposals/m1-board-cop.md), where their actual
+bus/protection prerequisites are implemented. T2 retains synthetic non-PC
+public Machine/attachment/vector proof. No unfinished CPU behavior or timing
+is transferred outside T2, and no game checkpoint is declared passed.
 
 S45 consumes native BUSLOCK lifetime at V05/V14 and its neutral port
 transaction receiver. The [mechanism evidence](evidence/t2-s45-bus-lock.md)
@@ -153,7 +181,7 @@ time remain their original unallocated receivers; maximum/Machine stay closed.
 | V13 | BRKEM, CALLN, RETEM, native IRET reentry, RESET abort and prohibited emulation nesting | CPU mode/entry owner; manual section 8 figures 8-4--8-7 and section 12 | S23 implements BRKEM/CALLN/RETEM and MD-write enable at existing entry/return/executor owners; every selector/PSW, code/native-stack wrap and observed host refusal is checked. NMI/INT/CALLN native RETI reentry, RETEM relock, reset and prohibited nesting pass. S24 adds actual BRKEM -> ordinary 8080 stack/ALU/port/call program -> CALLN/RETI -> RETEM and EI/HLT/RETI routes. General BRK/priority, full prefix/alias contexts and physical time remain original receivers; no Machine eligibility |
 | V14 | HLT/WAIT/LOCK, physical address wrapping, even/odd word lanes and split transfers, fetch versus observational reads | CPU bus/segment owner plus existing public provider; manual sections 4--6, 12 | S8 qualifies native lanes/20-bit width with a pinned-source L2 contiguous native data-tail model; S9 qualifies scalar/string I/O; S13 repairs actual fetch offsets at the common owner with preview/failure/wrap witnesses. S24 qualifies mapped 8080 byte/word address wrap, stack order, immediate-byte I/O and native/emulation HLT wake/entry/return, including disabled INT wake without acknowledgement. V30 electrical emulation microsequence/prefetch/standby hold time remains unqualified, not inferred from discrete 8080AF clocks. S26 corrects native POLL's inherited first deadline to 7 clocks (NEC 2 + 5n), retaining five-clock later samples at the existing wait owner; 35 pin/flags/preview/wrap/failure/reset/actual IRQ-RETI/8080-isolation cases pass both widths. S45 qualifies native instruction/block BUSLOCK callback lifetime and neutral Machine port preservation with actual CPU/route success/failure proof. Logical arbitration/sampling does not qualify electrical POLL/WAIT/LOCK/physical timing or the reserved-port provider model, which remain original receivers |
 | V15 | Prefetch-qualified instruction clocks, operand transfers, branch/repeat/entry terms, maximum bounded run and waits | CPU timing selector/model; manual section 12 introductory assumptions and individual forms | V30 source/L2 origins, actual-retirement/preview/max-query consistency; no inherited Intel fallback. S19/S22 qualify DE/BR frame results. S29 uses the existing accepted software-entry fact to restore completed-instruction observation instead of an unretired-fault marker; ordinary HALT-wake failure cannot publish a delivered event, with all-profile contrast and existing native/8080 success/failure vectors. S30 connects the complete native data-transfer nominal-clock source subfamily (NEC 12-4..12-13) at the sole selector with 24,160 actual-execution cases per width, appended nominal-source origin and no Intel fallback. S31 extends that sole selector with fixed scalar ALU/unary/CY-DIR-IE nominal rows, independently checked in the existing 917,460 ALU inputs and execution seam of 406,800 flag inputs; prefixes/conversions and fifteen adjacent exclusions remain non-eligible. No new interface/state or old Intel timing change. S32 adds original stack/scalar-port nominal rows, with 3,356 existing stack inputs, PSW/segment execution seams and 160 scalar-port cases; missing level-one/mixed-alignment/register-alias/prefix rows remain zero/unattributed at this same V15 receiver, not fabricated per-transfer slopes. S33 adds ordinary native branch/loop/JMP/CALL/RET nominal clocks through the existing pure decision and selector, with all 463,982 semantic inputs, no target observations, original rejection of far-register forms and retained unknown mixed/prefix timing. S34 adds all seven shift/rotate one/CL/immediate nominal rows and the source-known unpacked-decimal/radix-ten/CVTBW conversions, using original CL and decoded cimm rather than prefetch length. All 20356 shift, 817152 decimal, 917460 ALU and 24160 transfer inputs retain their proof; CVTWL and multiply/divide data-dependent ranges, packed semantic ambiguities, generalized radices and prefixes remain unknown. S35 adds every source-known ordinary NEC data nominal row: sixteen CL/immediate bit forms, ROL4/ROR4 and even-count BCD. The six existing proof units retain full semantics/failures and add 6720 bit, 4608 nibble, 31608 BCD seam and 5130 wrapped timing contrasts; all four field ranges and odd-count BCD rounding remain explicitly zero/unattributed. No executor/public/Intel path changes. S36 adds all fourteen ordinary string primitive/canonical-repeat nominal rows using the existing repeat phase recorder and original count/index/port parity. The three real string proof owners retain every old assertion, all 942920 comparison inputs and source-unknown extra-prefix dispositions; Block expands both endpoint parity axes and directly proves same-address NMI/INT reentry restarts setup at the sole successful V30 entry commit. No new public contract/state, Intel body or execution semantics. S37 gives all ten ordinary multiply/divide encodings source-graded nominal success rows: fixed DIVU uses the original NEC source, while MULU/MUL/DIV and immediate MUL use explicitly conservative documented range upper endpoints labeled existing L2_DYNAMIC_ARITHMETIC. The original real arithmetic test preserves all 1796404 inputs and adds twenty parity successes, independent row/key/origin/unknown/no-observation proof and refusal assertions; DE combined entry and extra-prefix costs retain V11/V15. Instruction semantics, interfaces and Intel evaluators are unchanged. All total-time eligibility/maxima remain unallocated and Machine stays gated; prefix/alias/8080/other families and full bus/prefetch/dynamic/entry/runtime/max accounting retain the original receiver; selected-SX system-event metadata candidates have a separate TODO/source-L2 receiver outside V30 |
-| V16 | Neutral Machine validation, one clock/attachment axis, physical retirement eligibility and board vector 0x30 | Machine configuration/scheduler/retirement; T1 public contract audit | Synthetic board public-route tests then original-set instruction checkpoints; not yet implemented |
+| V16 | Neutral Machine validation, one clock/attachment axis, physical retirement eligibility and board vector 0x30 | Machine configuration/scheduler/retirement; T1 public contract audit | Proposed S50 must execute the real public Machine route with a synthetic non-PC board/vector0x30, deadlines, entry and failure proof; not yet implemented. The owner's 2026-10-18 replan retains original-set real-ROM checkpoints at the following board/COP proposal, not as an unimplemented board prerequisite to CPU closure |
 | V17 | Old Intel 8086/8088/186/286/386/486 behavior and consumer deployment | Existing Shared units and four PC Apps | S45 final x64/x86 all-target builds and679/679 whole-repository units pass, including192 X86 Core, strict498 and Types1390 per width. Eight PC0564 EXEs refreshed, selected14 receiving integrations and restored-default identity pass per width; ten actual release identities and six media before/after guards match. MyNES/INIs unchanged. This is not full external/gameplay qualification |
 
 Unit locations remain inside `test/x86-core/cpu` and `test/x86-core/machine`,

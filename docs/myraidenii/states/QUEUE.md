@@ -6,6 +6,10 @@ receiver is now [M1 T2](../history/M1-T2-v30.md). The remaining
 candidates below are unadmitted; numeric T identifiers are allocated only on
 admission in MyRaidenII's independent sequence, not NXVM's sequence.
 
+The owner-approved remaining NEC CPU work stays inside T2, not as new queued
+T packages. Its [successor S plan](../proposals/m1-v30.md#owner-approved-remaining-s-plan)
+defines five acceptance batches; Current alone records admission and status.
+
 1. [Implement board bus, interrupts and Seibu COP](../proposals/m1-board-cop.md)
 2. [Implement and qualify video](../proposals/m1-video.md)
 3. [Implement and qualify sound](../proposals/m1-sound.md)

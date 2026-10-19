@@ -1,0 +1,56 @@
+[
+  {
+    "ini": "assets/nxvm/nxvm.ini",
+    "role": "floppy0",
+    "leaf": "fdd_1440k_msdos_500.img",
+    "mode": "overlay",
+    "bytes": 1474560,
+    "sha256": "FADEB3A27C6A0E1CF582DDE0B9AECB7E5D30678F2F967F2F4562F167CC0CB1D5",
+    "unchanged": true
+  },
+  {
+    "ini": "assets/nxvm/nxvm.ini",
+    "role": "fixed_disk0",
+    "leaf": "hdd_50m_win31.img",
+    "mode": "overlay",
+    "bytes": 51609600,
+    "sha256": "61E5CDC0B76151CC65B73EB44094738B9DE86052B1B07F20FC03205984CD77E1",
+    "unchanged": true
+  },
+  {
+    "ini": "assets/my5160/my5160.ini",
+    "role": "floppy0",
+    "leaf": "fdd_360k_msdos_500.img",
+    "mode": "overlay",
+    "bytes": 368640,
+    "sha256": "DE271368874209C07A2FC25C81C17529D4BDD7718B2731B86C49A2DA923A256E",
+    "unchanged": true
+  },
+  {
+    "ini": "assets/my5170/my5170.ini",
+    "role": "floppy0",
+    "leaf": "fdd_1200k_msdos_500a_01.img",
+    "mode": "overlay",
+    "bytes": 1228800,
+    "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE",
+    "unchanged": true
+  },
+  {
+    "ini": "assets/mydeskpro386/mydeskpro386.ini",
+    "role": "floppy0",
+    "leaf": "fdd_1200k_msdos_500a_01.img",
+    "mode": "overlay",
+    "bytes": 1228800,
+    "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE",
+    "unchanged": true
+  },
+  {
+    "ini": "assets/mydeskpro386/mydeskpro386.ini",
+    "role": "fixed_disk0",
+    "leaf": "hdd_40m_deskpro_386_blank.img",
+    "mode": "overlay",
+    "bytes": 40256000,
+    "sha256": "2BBC68E612A72290A5181E070494A7580CBECE1F528F92F009A269DC05819E73",
+    "unchanged": true
+  }
+]

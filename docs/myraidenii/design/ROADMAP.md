@@ -24,3 +24,19 @@ EXEs are committed/pushed and owner gameplay acceptance is recorded.
 Compile success, synthetic CPU tests or one title screen cannot close M1.
 Additional games, later boards and universal arcade abstractions require new
 owner admission, not a speculative M2 roadmap or accidental scope expansion.
+
+## Current Implementation Route
+
+Source/set freeze T1 is accepted. T2 is the NEC V30 CPU and neutral Machine
+qualification task, not the game implementation. Its owner-approved remaining
+[S plan](../proposals/m1-v30.md#owner-approved-remaining-s-plan) fixes five
+successive acceptance boundaries: residual semantics/forms, complete nominal
+timing, complete elapsed-time/bounds, real neutral Machine, and final CPU/
+receiving qualification. S46 closes only its implemented prerequisite batch
+after normal validation/publication; unfinished CPU work remains inside T2.
+
+After T2, the [Queue](../states/QUEUE.md) continues with board/bus/COP,
+video, sound, Product/Machine host integration and complete gameplay/release.
+Real ROM board checkpoints belong to board/COP, not to CPU qualification
+before that board exists. Earlier tasks may use headless/presentation probes;
+no current runnable MyRaidenII or gameplay readiness follows from CPU tests.

@@ -53,6 +53,10 @@
 - [T2 V30 packed BCD full-byte semantics](evidence/t2-s43-packed-bcd-bytes.md).
 - [T2 V30 legal scalar packed-decimal qualification](evidence/t2-s44-packed-scalar.md).
 - [T2 V30 BUSLOCK arbitration lifetime](evidence/t2-s45-bus-lock.md).
+- [T2 V30 escape/mode stage and remaining accounting plan](evidence/t2-s46-time-accounting.md).
+- [S46 final verification](evidence/t2-s46-results.json),
+  [ten release identities](evidence/t2-s46-artifacts.json) and
+  [six preserved media inputs](evidence/t2-s46-media-inputs.json).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

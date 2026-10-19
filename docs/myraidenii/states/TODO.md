@@ -83,3 +83,19 @@ contract, actual memory/port/DMA interleaving and existing source/time grades,
 then qualify all relevant profiles and receiving products on both widths.
 This is not a transfer of V30's original V05/V14/V15 obligations or a blocker
 for independent MyRaidenII work; its complete V30 time/Machine receivers remain.
+
+## Medium: Legacy Intel No-FPU Escape Bus-Effect Audit
+
+Owner: Shared X86 Core CPU/FPU escape and bus contracts. S46's complete
+escape sweep confirms older Intel profiles still use the common
+X86_FPU_ESCAPE_CONSUME_NONE path without a CPU dummy memory read. V30's
+original NEC FPO1/FPO2 memory effect is implemented independently in S46;
+that does not establish the exact Intel-generation bus contract.
+
+Risk: an absent coprocessor must not be assumed to erase CPU-owned address/
+read effects merely because its arithmetic is absent. No new Intel
+regression or current guest failure is established. Admission: a separate
+Intel-primary-source audit of8086/8088/186/286/386 ESC memory/register forms,
+FPU absent/present/unsupported actions and actual bus/failure callbacks,
+before changing those existing profiles or relying on their physical effects.
+This is not a V30 obligation transfer or a reason to add a second ESC path.
