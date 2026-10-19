@@ -75,6 +75,7 @@
 - [T3 COP transfer contract and Shared fault review](evidence/t3-s10-cop-transfer-review.md).
 - [S10 qualification and receiving release identities](evidence/t3-s10-results.json).
 - [T3 COP state-update family contract](evidence/t3-s11-cop-state-update.md).
+- [T3 complete COP geometry/numeric receiver](evidence/t3-s12-cop-geometry-contract.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
