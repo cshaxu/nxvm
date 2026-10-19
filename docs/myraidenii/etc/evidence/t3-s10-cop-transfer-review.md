@@ -4,8 +4,9 @@
 
 This is the implementation/review record; Current remains the active task
 authority. The owner approved the narrowly documented Shared fault-publication
-repair after the independent reproduction below. Full qualification and
-receiving publication are required before acceptance; S10 is not yet closed.
+repair after the independent reproduction below. Final qualification and
+receiving publication are complete; coordinator acceptance below closes S10,
+not T3 or M1.
 
 The three-member functional L2 transfer contract is:
 
@@ -243,6 +244,23 @@ Earlier four-file probe cleanup removed698653 bytes as recorded above. Build
 now contains only .ccache/.ninja; global/repository cache, ROM, media, user INI
 and unrelated work are retained. Coordinator acceptance follows actual review
 of the pushed target-scoped commits, not merely these summaries.
+
+## Coordinator Acceptance
+
+Sequential coordinator review reads the actual pushed P1 f2ca9ae01, P2
+990ff6eda and P3 af1649f60 source/test/header/manifest/doc/artifact changes,
+not merely executor summaries. The original transfer batch, approved Shared
+boundary and complete mechanism variants match the packet. Tests retain
+independent effects/failure expectations and exact budget edges. There is one
+CPU executor, Core timeline/fault owner and local COP service point, with no
+public API/state addition or prohibited reference-code/game-data import.
+
+Both manifests, release hashes and protected inputs are rechecked against
+committed results. Final full unit and selected receiving results, unchanged
+budgets, explicit incomplete attempt and unverified external/desktop/gameplay
+boundaries are retained truthfully. Necessary results precede preview/apply
+cleanup; only caches remain. This accepts and closes S10. The remaining whole
+B07/B08 classes and startup exits remain in T3, which is not closed.
 
 ## Archived S10 Admission Packet
 

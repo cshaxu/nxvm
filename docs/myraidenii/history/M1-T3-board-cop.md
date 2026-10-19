@@ -236,3 +236,36 @@ production/test baseline retains its 687/687 dual-width qualification; S9
 does not claim a new full unit, integration, EXE or game pass. S9 is accepted
 and closed. T3 remains open and ordinary next-S admission needs no new owner
 approval under the recorded delegation.
+
+## S10 Coordinator Acceptance
+
+Actual-change review accepts Shared P1 f2ca9ae01, NXVM receiving P2 990ff6eda
+and MyRaidenII P3 af1649f60. S10 implements the entire admitted upload/register
+and three-command L2 transfer batch, using existing public Core transactions
+at the one Board service point. Unknown/incomplete/busy commands still refuse;
+reset invalidates pending/upload state; two reads precede writes and a failed
+write retains its accepted prefix. It is not a generic COP interpreter.
+
+The owner's additional approval repairs the reproduced Core callback-fault
+publication mechanism at exact instruction/tick budgets. One public run
+boundary reports existing fault state consistently; no second executor,
+public API, Shared persistent state, Lib/Emulator/MyNES change is added.
+Production changes MyRaidenII +165/-7/net158 and Shared +28/-7/net21; existing
+owned tests change +160/-2/net158 and +74/-1/net73 respectively. Two manifests
+change +3/-3. The positive code owns transfer state and explicit boundary proof.
+
+Both final full unit runs pass687/687 with no failures/skips (x64 135.95s,
+x86 152.11s); an earlier x64 aggregate deadline remains an incomplete attempt,
+not a pass. Eight0564 PC EXEs are rebuilt/deployed/hash/PE verified;14 selected
+receiving integrations pass per width, with unchanged predicates/budgets and
+zero CPU recompilation during profile switches. MyNES,33 protected tracked
+inputs and six selected media-role hashes remain unchanged.
+
+The [review](../etc/evidence/t3-s10-cop-transfer-review.md) and
+[results](../etc/evidence/t3-s10-results.json) retain actual scope, model/source
+grade, failure variants, release identities, complete archived packet and
+cleanup proof. All owned processes exit before preview/apply cleanup of37
+files/55430 bytes; only persistent caches remain. Documentation gates and
+whitespace checks pass. S10 is accepted and closed. Other complete B07/B08
+families, selected-set startup and all gameplay remain unqualified; T3 stays
+open and no next S is admitted by this governance-only acceptance.
