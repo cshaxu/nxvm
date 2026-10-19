@@ -1,0 +1,336 @@
+{
+  "baseline": "d83d0b39a",
+  "receiving": {
+    "media": [
+      {
+        "role": "floppy0",
+        "ini": "assets/nxvm/nxvm.ini",
+        "leaf": "fdd_1440k_msdos_500.img",
+        "unchanged": true,
+        "sha256": "FADEB3A27C6A0E1CF582DDE0B9AECB7E5D30678F2F967F2F4562F167CC0CB1D5",
+        "mode": "overlay",
+        "bytes": 1474560
+      },
+      {
+        "role": "fixed_disk0",
+        "ini": "assets/nxvm/nxvm.ini",
+        "leaf": "hdd_50m_win31.img",
+        "unchanged": true,
+        "sha256": "61E5CDC0B76151CC65B73EB44094738B9DE86052B1B07F20FC03205984CD77E1",
+        "mode": "overlay",
+        "bytes": 51609600
+      },
+      {
+        "role": "floppy0",
+        "ini": "assets/my5160/my5160.ini",
+        "leaf": "fdd_360k_msdos_500.img",
+        "unchanged": true,
+        "sha256": "DE271368874209C07A2FC25C81C17529D4BDD7718B2731B86C49A2DA923A256E",
+        "mode": "overlay",
+        "bytes": 368640
+      },
+      {
+        "role": "floppy0",
+        "ini": "assets/my5170/my5170.ini",
+        "leaf": "fdd_1200k_msdos_500a_01.img",
+        "unchanged": true,
+        "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE",
+        "mode": "overlay",
+        "bytes": 1228800
+      },
+      {
+        "role": "floppy0",
+        "ini": "assets/mydeskpro386/mydeskpro386.ini",
+        "leaf": "fdd_1200k_msdos_500a_01.img",
+        "unchanged": true,
+        "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE",
+        "mode": "overlay",
+        "bytes": 1228800
+      },
+      {
+        "role": "fixed_disk0",
+        "ini": "assets/mydeskpro386/mydeskpro386.ini",
+        "leaf": "hdd_40m_deskpro_386_blank.img",
+        "unchanged": true,
+        "sha256": "2BBC68E612A72290A5181E070494A7580CBECE1F528F92F009A269DC05819E73",
+        "mode": "overlay",
+        "bytes": 40256000
+      }
+    ],
+    "protected_files": 13,
+    "production_and_test_freeze_unchanged": true,
+    "frozen_build_inputs": 1458,
+    "receivers": [
+      {
+        "bytes": 1532790,
+        "tests": 5,
+        "profile": "default-pc-at-80386-1440k-hdd",
+        "junit_sha256": "B10A05367932AAC6EF473BBD45EEC2893EC1493D2698D722DF24FF454C83111E",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini",
+          "vm-debug-pause-boundary-smoke",
+          "vm-control-lifecycle-smoke"
+        ],
+        "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+        "width": "x64",
+        "cpu_object_recompilations": 0,
+        "sha256": "A21F7A1FCD811B8E3C9ABFC39BBA4790D33CA3E6F8AECF25B35C4C87F57AF097"
+      },
+      {
+        "bytes": 1521582,
+        "tests": 3,
+        "profile": "ibm-5160-model-268-360k",
+        "junit_sha256": "D7F87576C495EACECCC595BA99BF1C2D10AFD51545255FBA26DE705AA2EDE1D7",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.ibm-5160-model-268-360k.ini"
+        ],
+        "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+        "width": "x64",
+        "cpu_object_recompilations": 0,
+        "sha256": "0289501A0E1275145F3D5A104BC0435113E7CDEE84E8DBE54BCC2F5440B68F59"
+      },
+      {
+        "bytes": 1533644,
+        "tests": 3,
+        "profile": "ibm-5170-model-339-1200k",
+        "junit_sha256": "1C21B90FC8C4978689D821DE6C3F8C2AFFDEF49AE4A5A366C4512998D4E7751E",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.ibm-5170-model-339-1200k.ini"
+        ],
+        "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+        "width": "x64",
+        "cpu_object_recompilations": 0,
+        "sha256": "2AD33EBC25DA7CF0EEB10AEA8D7FEF8A7B91F0D593BE8179D4FEC9DC6DBC76C3"
+      },
+      {
+        "bytes": 1521330,
+        "tests": 3,
+        "profile": "compaq-deskpro-386-model-40-1200k",
+        "junit_sha256": "B4FF62BD58635BBCD4D65A76CE2F03D4DB6AD490DE1ABED3D307445D5F6CD49F",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.compaq-deskpro-386-model-40-1200k.ini"
+        ],
+        "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+        "width": "x64",
+        "cpu_object_recompilations": 0,
+        "sha256": "80253EF69ACA4B924A5C1DB8E0A103D0801131CE6C286758527E0FE29201BDDD"
+      },
+      {
+        "bytes": 1671924,
+        "tests": 5,
+        "profile": "default-pc-at-80386-1440k-hdd",
+        "junit_sha256": "FE6D18E9794F33E1E2B80A4151195A017441AA808A0A7EEB666839C1CAC38F8F",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini",
+          "vm-debug-pause-boundary-smoke",
+          "vm-control-lifecycle-smoke"
+        ],
+        "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+        "width": "x86",
+        "cpu_object_recompilations": 0,
+        "sha256": "86518FB43AFF000EB05C91BBA70BE97690C9B7C992A216A143373AE1DE10BB8E"
+      },
+      {
+        "bytes": 1658745,
+        "tests": 3,
+        "profile": "ibm-5160-model-268-360k",
+        "junit_sha256": "1E0F7C008AC3EB8684380EFCECCE752ABE434D0DD8191A7CDFD955F7B7122471",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.ibm-5160-model-268-360k.ini"
+        ],
+        "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+        "width": "x86",
+        "cpu_object_recompilations": 0,
+        "sha256": "7F765043A1E8E69CCEC3881670448BD0A5E3F9E0230B69B6813CAAD9705EE6D1"
+      },
+      {
+        "bytes": 1673138,
+        "tests": 3,
+        "profile": "ibm-5170-model-339-1200k",
+        "junit_sha256": "D031359BA2C53862F42F3838E17CD27E3605A686B29D44142D476D9B65F0C9E4",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.ibm-5170-model-339-1200k.ini"
+        ],
+        "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+        "width": "x86",
+        "cpu_object_recompilations": 0,
+        "sha256": "C8DF419838A3790EDF311669D1264436B02CE1F0C8C3F488046B0E9BFDE94358"
+      },
+      {
+        "bytes": 1659343,
+        "tests": 3,
+        "profile": "compaq-deskpro-386-model-40-1200k",
+        "junit_sha256": "F91A04305E79C12FC5CF4A486FB9E1FA4E3094DAA5B6DEA8E1CFC10DCA98F655",
+        "cases": [
+          "pc-product-ini-identity-smoke",
+          "session-ini-status-smoke",
+          "vm-profile-floppy-boot-matrix.compaq-deskpro-386-model-40-1200k.ini"
+        ],
+        "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+        "width": "x86",
+        "cpu_object_recompilations": 0,
+        "sha256": "EC9BF1F3F857A9E381309BEA00667C50E6AA20FA8D743441105DE583BB6A4281"
+      }
+    ]
+  },
+  "specialized": [
+    {
+      "types_files": 1398,
+      "width": "x64",
+      "strict_rows": 498,
+      "deferred_rows": 0,
+      "log_sha256": "F810F6564571B8B1C1B5D89573D37909F152CD18FABF70F94278A3F040F85282"
+    },
+    {
+      "types_files": 1398,
+      "width": "x86",
+      "strict_rows": 498,
+      "deferred_rows": 0,
+      "log_sha256": "B573C63EA0E37AE47E8111E87DD22FC2D4E8DCFDC642B68E37D86964831697E0"
+    }
+  ],
+  "limitations": [
+    "No manual desktop/RDP, physical devices, fresh full external integrations or gameplay qualification.",
+    "V30 nominal/elapsed time, maximum bound and Machine eligibility remain S48-S51.",
+    "Initial sandbox junction creation failed; identical cleanup test passed outside sandbox.",
+    "One receiving linker failure was transient; cause not established; original log retained by digest."
+  ],
+  "units": [
+    {
+      "failed": 0,
+      "skipped": 0,
+      "passed": 682,
+      "tests": 682,
+      "sorted_names_sha256": "79F443C74C87DFDAFC6EC351BAFCA251D7A3FD9949C0193EDCC7FC44B8BB63C0",
+      "width": "x64",
+      "qualification": "Composite name-exact coverage; latest cleanup/software-entry results supersede earlier attempts.",
+      "proofs": [
+        {
+          "seconds": 72.0,
+          "tests": 193,
+          "sha256": "9F8E765D0305ABE0936ECD02B67EB859137A1188DF527ACB1220AF3E764BB381",
+          "file": "core-batch-x64.xml",
+          "failures": 0
+        },
+        {
+          "seconds": 273.0,
+          "tests": 489,
+          "sha256": "7D90B0F5921B5D3F530F8DB79B062CBFF952141040F6DB98D5B3719822285AD2",
+          "file": "repository-rest-x64.xml",
+          "failures": 1
+        },
+        {
+          "seconds": 1.0,
+          "tests": 1,
+          "sha256": "DD7C5FC8EB3D70ED5A17F335E456F8D822C4AD4CA84F289FAC6EC431BCCD1908",
+          "file": "cleanup-native-x64.xml",
+          "failures": 0
+        },
+        {
+          "seconds": 8.0,
+          "tests": 1,
+          "sha256": "33AD2B99720E66599773B0D10038A30523447DB18744847CB3B060C574D9215E",
+          "file": "chkind-final-x64.xml",
+          "failures": 0
+        }
+      ]
+    },
+    {
+      "failed": 0,
+      "skipped": 0,
+      "passed": 682,
+      "tests": 682,
+      "sorted_names_sha256": "79F443C74C87DFDAFC6EC351BAFCA251D7A3FD9949C0193EDCC7FC44B8BB63C0",
+      "width": "x86",
+      "qualification": "Composite name-exact coverage; latest cleanup/software-entry results supersede earlier attempts.",
+      "proofs": [
+        {
+          "seconds": 34.0,
+          "tests": 193,
+          "sha256": "5598B27664F551FCEC39E0DC359286307972C45787A6EB713B3E8F9F57B54F53",
+          "file": "core-batch-x86.xml",
+          "failures": 0
+        },
+        {
+          "seconds": 143.0,
+          "tests": 488,
+          "sha256": "DDDF6DD399609EE58F0C23417CDB14B5D1D6855E25CF37A2EF3367B1B9EBAD7B",
+          "file": "repository-rest-x86.xml",
+          "failures": 0
+        },
+        {
+          "seconds": 4.0,
+          "tests": 1,
+          "sha256": "B98D5E0D938043F5856B95E5149DAF662198857CD784443A8B46D07ECACD8DE9",
+          "file": "cleanup-native-x86.xml",
+          "failures": 0
+        },
+        {
+          "seconds": 10.0,
+          "tests": 1,
+          "sha256": "340B16250D2B78FD54E28F82A87A0D1339879FB2021EC73AE0D8BA33097925A4",
+          "file": "chkind-final-x86.xml",
+          "failures": 0
+        }
+      ]
+    }
+  ],
+  "test_manifest_sha256": "4E735CA337CDD10448C6AA5FC34155F84531D36EC85BBED98384D614F529B2A3",
+  "restores": [
+    {
+      "build_log_sha256": "B2E0AB24C9C053C7FE91484EABC31F3B719272C8A29AF435C87596F21CA348CE",
+      "disposition": "Restore relink changed deployment hash; final restored artifact requalified with all five default receiving cases.",
+      "width": "x64",
+      "cpu_object_recompilations": 0,
+      "identity_log_sha256": "FDB1CD3B463B3D1EFDCEE934DF251B46AE7D0D2CFEAE4183036656183C3370DD",
+      "final_five_case_junit_sha256": "78391EA61CECC04A5274BCF6502B75257C0546F6ACEAC6CB63BCC106AB44DD0A",
+      "final_five_case_tests": 5
+    },
+    {
+      "build_log_sha256": "26F4DF32519E2EB43F8D201AD98265D5DC4267D8B728CDD844E195D97EA5B8D4",
+      "disposition": "Restore relink changed deployment hash; final restored artifact requalified with all five default receiving cases.",
+      "width": "x86",
+      "cpu_object_recompilations": 0,
+      "identity_log_sha256": "7B8CF18ED7602E4E97F30721D11A7ED1B423B6580E6A52D3A5E0D79B975952B0",
+      "final_five_case_junit_sha256": "1FA892A3D39B6A09A7ACDB11975FF6EB7B60FDFE4C8B49322DA2E11DD0C98DCB",
+      "final_five_case_tests": 5
+    }
+  ],
+  "reviewed_attempt_logs": [
+    {
+      "bytes": 80393,
+      "sha256": "C1590F26C793AAD7B389B02C4F6AC446D29B72CC6D5802B1A6D14FDD8C52C62A",
+      "file": "repository-rest-build-x64-first-link-failure.log"
+    },
+    {
+      "bytes": 84656,
+      "sha256": "26F4F46EFD18E6AA6C34EDDF13FF152C45B34DE94E4127A38A5BE10DCDD512E9",
+      "file": "repository-rest-x64.log"
+    },
+    {
+      "bytes": 1089,
+      "sha256": "9657EDB60385859C7D43ADAD3ABB84D7F1BC1FDBD7F165E4F2AD6B67B77C2D7F",
+      "file": "cleanup-native-x64.log"
+    },
+    {
+      "bytes": 1089,
+      "sha256": "6370542F1FFE2A5CF532DD26B108BE3123494307D1A5BE208828B358ED06E220",
+      "file": "cleanup-native-x86.log"
+    }
+  ],
+  "source_manifest_sha256": "B27CE1FE60E980900EA28FBDCDE20007CA2FF646AD2FF625C99BA3DAF2A7760D"
+}

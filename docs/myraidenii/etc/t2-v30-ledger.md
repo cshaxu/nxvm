@@ -54,6 +54,26 @@ E/F/G and total-time H/J/K map to S49; L maps to S50. B/C are implemented
 S46 prerequisites, not proof that the other accounting classes are complete.
 Every later S keeps its own full-unit and receiving-release obligations.
 
+S47's [complete residual inventory](evidence/t2-s47-residual-semantics.md)
+partitions the semantic work into fourteen mechanisms. It repairs fixed NEC
+conversion literals, last-three interrupt restart beyond fifteen prefixes and
+partial BUSLOCK cancellation at serialized code replacement. Eight existing
+units extend alias, arbitrary-decimal, long/wrapped-prefix, accepted-failure,
+loaded-BRK and real callback-arrival/nesting proof. Owner-approved signed
+CHKIND L2 remains unchanged in production and now has discriminating negative
+intervals in the917409-case software_entry unit per width.
+
+Final S47 evidence qualifies682 exact repository unit names per width with
+explicit replacement of the sandbox cleanup failure and expanded software-entry
+checkpoint. Both specialized targets pass498 strict/1398 Types inputs. Eight
+current PC releases pass14 selected receiving integrations per width, followed
+by restore identity and five final-default checks;13 protected asset files and
+six selected media identities are unchanged. The linked evidence records the
+actual source/test delta, model/source distinctions and remaining limitations.
+Current alone records coordinator acceptance. This is the residual semantic
+stage, not a change to the original V01--V17 completion predicate or completion
+of time/bounds, real V30 Machine admission or gameplay. S48--S51 remain required.
+
 The original real-ROM board checkpoints have an explicit owner-approved
 [board/COP receiver](../proposals/m1-board-cop.md), where their actual
 bus/protection prerequisites are implemented. T2 retains synthetic non-PC
