@@ -151,8 +151,25 @@ macros, remaining registers/DMA and actual selected-set startup remain T3
 requirements. No real-ROM run, external integration suite, physical timing,
 desktop/RDP, rendered frame, audio or playable-game qualification is claimed.
 
-## Archived S14 Admission Packet
+## Coordinator Acceptance
 
+Actual pushed P1 c28a162d5 is reviewed across all five source/test/record
+files against the full packet, not accepted from a summary alone. The whole
+decimal register family has one input/mode/result owner and one accepted-write
+publication path; reads cannot recompute or alias collision state. Exact mode,
+padding, digit width, reset and pending behavior have direct independent
+proof, including the actual guest path. Earlier failure addresses preserve
+their intended read stages under the new decoder, not just an error return.
+Both pointer offsets are computed before pointer addition. No new public,
+platform, lifecycle, state-mirror, framework or imported-body dependency exists.
+
+The final strict frozen-source dual-width suites, hashes, scope and cleanup
+match the packet. Earlier pre-review tests are explicitly not the final source
+qualification. The complete original B07/B08/startup goal is unchanged; this
+family is not another implemented uploaded macro or a playable-game claim.
+Coordinator accepts S14 and closes it after the scoped pushed delivery.
+
+## Archived S14 Admission Packet
 
 | Field | Required record |
 | --- | --- |

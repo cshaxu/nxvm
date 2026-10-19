@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M1 T3 remains open after accepted S1--S13:
+M1 T3 remains open after accepted S1--S14:
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -19,6 +19,7 @@ M1 T3 remains open after accepted S1--S13:
 | S11 | L2 position/velocity updates and common COP memory transport; explicit 2a05 non-eligible disposition | `b977bfa48` |
 | S12 | Complete nine-ID geometry contract, result/config gaps and minimal Types review request; no code changes | `87a1ac547` |
 | S13 | Complete four-ID L2 collision/result receiver, bus/failure/latch/reset proof and S12 status-prefix correction | `b3098766d` |
+| S14 | Complete decimal register family, byte/mode/reset/guest proof, exact old failure-stage preservation and safe pointer offsets | `c28a162d5` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -92,35 +93,18 @@ other Apps, ten releases and protected inputs remain unchanged. All owned
 processes are terminal and build contains only persistent caches. S13 is
 closed; T3 and playable MyRaidenII remain open.
 The remaining numeric/2a05/unresolved/DMA/result/startup batches keep their
-mandatory receiving requirements. S14 is admitted below for the decimal family.
+mandatory receiving requirements; the accepted S14 decimal receipt follows.
 
-## Active S14 Packet
+Sequential coordinator actual-change review accepts S14 P1 c28a162d5.
+The full decimal input/mode/result family now has an explicit original L2
+implementation, independent literal oracles and actual V30/provider proof.
+The [S14 record](../etc/evidence/t3-s14-cop-decimal.md) retains its packet,
+failure-stage reconciliation, pointer review, actual delta and exact hashes.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: MyRaidenII M1 T3 S14 after accepted S13 d398e0ff5; one session performs coordinator/executor roles sequentially. |
-| Admission And Approval | Owner's standing MyRaidenII implementation approval and delegated ordinary same-T ordering. Only MyRaidenII local source/test/records; Shared math authorization remains separately requested, not inferred. |
-| Objective | Consume the entire B07 integer-to-decimal register family: input420h--423h, mode424h--425h and ten read-only result bytes590h--599h, with exact accepted-write, digit/padding, byte-order, reset and publication behavior under an explicit L2 contract. |
-| Non-goals | No Shared/math/API change, geometry, PRNG, unresolved macro guess, source/table import, new COP executor, display renderer, physical timing or game qualification. Other T3 obligations remain required. |
-| Reference Baseline | Clean pushed d398e0ff5; accepted S13 range/result/command owners and existing Board unit. Fixed MAME c1425a1af00b88aa07477b1b23a30ed5e5f856ff board map and decimal helper facts, research only. |
-| Candidate Proposal | ../proposals/m1-board-cop.md and ../etc/evidence/t3-s1-board-contract.md B07/B09; S13 result-register owner and original S11/S13 failure-prefix regressions. |
-| Files And ABI Surface | Existing local cop.c and Board unit plus Current/evidence/index. No public header or manifest changes. Estimate production+45--75/-5--15; tests+100--150/-5--10; records+100--170. Reconcile existing injected addresses which become real write-only decimal registers without dropping the intended failure-stage coverage. |
-| Applicable Rules | Execution complete family/actual-diff/P lifecycle and bounded testing; Architecture one input/mode/result store and accepted-write publication, no lazy-read second path; Coding private bounded conversion, Lib vocabulary and existing fixture reuse; source policy mathematical facts only, no reference body/table; Documentation explicit L2/source/verification limits and packet archival. |
-| Verification | Independently formatted literal vectors for zero, low/high halves, mixed/maximum32-bit values, nine-digit truncation, exact mode3 versus other16-bit modes, delayed mode effect, byte/unaligned writes, operational/observational result bytes/words, read-only results, pending rejection and reset. Preserve exact stage coverage of all earlier COP failure vectors at their newly accurate physical decode. Strict focused builds and complete687-name unit sets on both stable graphs, four workers,600-second aggregate containment. Scope, docs/whitespace, release/input hashes and cleanup checks. |
-| Expected Markers | Accepted input writes merge full bytes then publish bounded decimal output once. Mode writes alone do not recompute; reads never recompute. Nine least-significant digits appear least-significant first plus a zero sentinel; at least one ASCII zero, space padding except exact mode3. Reset clears the real result latches to zero. Collision aliases map only588h/589h, not new decimal results. |
-| Asset Needs | ROM-free vectors and read-only pinned research responses. Owned build/myraidenii-t3-s14 only if needed,32MiB/5-minute no-progress/60-minute phase budget. No game ROM or EXE needed; preserve ten current releases and protected inputs. |
-| Reporting Requirements | Confirm whole-family source/contract and refined estimate before code; report actual source/test delta and same-class failure/alias review. Preserve exact dual-width results and hashes; complete implementation P push, actual coordinator review and governance P. |
-| Stop Conditions | Shared/public capability, protected input modification, licensed source/body/table import, per-game condition, invented physical precision or material scope expansion. Unmodelled PRNG/macro/DMA behavior stays explicit, not guessed. |
-| Exit Criteria | Full decimal register family has original bounded L2 implementation and independent actual-bus proof; previous operation/failure/reset regressions and both complete unit suites pass. Actual-diff/packet review, release/input scope, cleanup and pushed delivery precede S14 acceptance; T3 remains open. |
-| Original Owner Request | Implement complete MyRaidenII under single-session dual-role governance, group coherent work efficiently, reuse existing tests and obtain explicit Shared review. |
-| Similar-Issue Sweep | All input lanes, modes, output lanes and reset/publication phases share the same owner. Check all RESULT reads for the old overly broad collision-alias predicate and all old failure vectors for incidental early faults after new register decode. Do not merely preserve a failure return while losing its intended stage. Local review also repairs both COP byte-store pointer expressions to compute integer displacement before pointer addition, without new state or API. |
-
-Executor S14 delivery is ready for actual coordinator review. The complete
-decimal input/mode/result family has an explicit L2 implementation and actual
-V30/bus proof. Final full units pass687/687 per width (x64 109.49s;
-x86 129.18s); the earlier pre-review x64 pass is not the final qualification.
-Production delta+32/-4/net28; existing test delta+143/-5/net138. Shared,
-other products, ten releases and protected inputs remain unchanged. The
-[S14 record](../etc/evidence/t3-s14-cop-decimal.md) preserves the full packet,
-review, hashes, limits and remaining B07/B08/startup obligations. No disposable
-task root was created. This delivery does not itself accept S14 or close T3.
+Final frozen-source full units pass687/687 per width (x64 109.49s,
+x86 129.18s). Shared, other products, ten release identities and protected
+inputs remain unchanged. Owned processes are terminal and no disposable
+task root exists; build contains only persistent caches. S14 is closed with
+no active S packet. T3 and the complete playable MyRaidenII goal remain open;
+numeric/math authorization,2a05, unresolved operations, remaining COP/DMA
+decode and selected-set startup retain their required receivers.
