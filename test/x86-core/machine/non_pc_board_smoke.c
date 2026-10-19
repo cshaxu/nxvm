@@ -94,7 +94,7 @@ static void board_finalize(void *owner)
     ++((non_pc_board *)owner)->finalized;
 }
 
-lib_i32 main(void)
+static lib_i32 non_pc_board_run(x86_core_cpu_profile profile, lib_u32 reset_address)
 {
     /* Project-authored reset jump, RAM/MMIO writes, HALT and IRQ return.
      * This is not a PC BIOS or an implementation of any commercial board. */
@@ -107,7 +107,7 @@ lib_i32 main(void)
     };
     const lib_u16 vector[] = {0x8040u, 0u};
     const x86_core_machine_executor_config configuration = {
-        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = 65536u, .cpu_profile = profile,
         .ticks_per_instruction = 1u
     };
     const x86_core_machine_memory_alias_config alias = {0x3000u, 0x2000u, 16u};
@@ -144,7 +144,7 @@ lib_i32 main(void)
         x86_core_machine_register_immutable_rom_mapping(machine, 0x8000u,
             rom, sizeof(rom)) != LIB_STATUS_OK ||
         x86_core_machine_register_immutable_rom_mapping_reset_alias(machine,
-            0x8000u, 0xfffffff0u, 16u) != LIB_STATUS_OK ||
+            0x8000u, reset_address, 16u) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK) goto done;
     phase = "reset and execution";
@@ -207,11 +207,18 @@ lib_i32 main(void)
         goto done;
     failed = 0;
 done:
-    if (failed) lib_c_printf("NON-PC-BOARD:%s:reason=%u:retired=%llu:value=%u:writes=%u:irq=%u\n",
-        phase, (lib_u32)result.reason, (unsigned long long)result.executed,
+    if (failed) lib_c_printf("NON-PC-BOARD:%s:profile=%u:reason=%u:retired=%llu:value=%u:writes=%u:irq=%u\n",
+        phase, (lib_u32)profile, (lib_u32)result.reason, result.executed,
         board.value, board.writes, board.acknowledgements);
     x86_core_machine_destroy(machine);
     if (board.finalized != 1u) failed = 1;
-    if (!failed) lib_c_printf("X86-CORE:NON-PC-BOARD:OK\n");
     return failed;
+}
+
+lib_i32 main(void)
+{
+    if (non_pc_board_run(X86_CORE_CPU_PROFILE_80386,0xfffffff0u) ||
+        non_pc_board_run(X86_CORE_CPU_PROFILE_V30,0xffff0u)) return 1;
+    lib_c_printf("X86-CORE:NON-PC-BOARD:OK\n");
+    return 0;
 }
