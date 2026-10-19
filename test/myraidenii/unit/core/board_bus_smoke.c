@@ -560,10 +560,140 @@ done:
     return failed;
 }
 
+static lib_status board_cop_dword_write(x86_core_machine *machine,
+    lib_u32 address, lib_u32 value)
+{
+    lib_status status = board_cop_word_write(machine, address, (lib_u16)value);
+
+    return status == LIB_STATUS_OK ?
+        board_cop_word_write(machine, address + 2u, (lib_u16)(value >> 16u)) : status;
+}
+
+static lib_i32 board_cop_updates(void)
+{
+    static const struct {
+        lib_u16 command;
+        lib_u32 base;
+        lib_u32 previous;
+        lib_u32 increment;
+        lib_u16 coordinate;
+        lib_u32 expected;
+        lib_u16 expected_coordinate;
+        lib_bool failure;
+        lib_bool inspect_position;
+        lib_bool inspect_coordinate;
+    } cases[] = {
+        {0x0205u,0x2000u,0x0001ffffu,1u,7u,0x00020000u,8u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0205u,0x2000u,0x00020000u,0xffffffffu,7u,0x0001ffffu,6u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0205u,0x2000u,0xffff8000u,0x10000u,0xffffu,0x8000u,0u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0205u,0x2000u,0x7fff0000u,0x10000u,0xffffu,0x80000000u,0u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0205u,0x2000u,0u,0xffff0000u,0u,0xffff0000u,0xffffu,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0905u,0x2000u,0xffffffffu,2u,7u,1u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0905u,0x2000u,0x80000000u,0x80000000u,7u,0u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0905u,0x2000u,5u,0xfffffffeu,7u,3u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        /* Actual write-only COP routes refuse each source lane. */
+        {0x0205u,0x424u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x0205u,0x422u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x0205u,0x418u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x416u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x40au,0xffffu,1u,7u,0x10000u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        /* GPR readback is legal, but a pending operation cannot rewrite it. */
+        {0x0205u,0x4a0u,0x1ffffu,1u,7u,0x1ffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x49au,0xffffu,1u,7u,0u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,0x486u,0x1ffffu,1u,7u,0x20000u,7u,LIB_TRUE,LIB_TRUE,LIB_TRUE},
+        {0x0905u,0x418u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x0905u,0x416u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x0905u,0x400u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0905u,0x3feu,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0905u,0x494u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0905u,0x48eu,0xffffu,1u,7u,0u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x0205u,LIB_UINT32_MAX-2u,0u,0u,0u,0u,0u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x0905u,0x102000u,0u,0u,0u,0u,0u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x2a05u,0x2000u,5u,1u,7u,5u,7u,LIB_TRUE,LIB_TRUE,LIB_FALSE}
+    };
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    lib_i32 failures = 0;
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+    for (lib_u8 slot = 0u; slot < (cases[index].failure ? 1u : 3u); ++slot) {
+        const lib_u32 position = cases[index].command == 0x0905u ? 16u : 4u;
+        const lib_u32 increment = cases[index].command == 0x0905u ? 40u : 16u;
+        myraidenii_core_board *board = LIB_NULL;
+        x86_core_machine *machine;
+        x86_core_machine_run_result result = {0};
+        const lib_u8 guest[] = {0xb8u, (lib_u8)cases[index].command,
+            (lib_u8)(cases[index].command >> 8u), 0xa3u, (lib_u8)(slot * 2u), 5u, 0xf4u};
+        lib_u8 data[4];
+        lib_status status;
+        lib_i32 failed = 1;
+
+        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+        machine = myraidenii_core_board_machine_get(board);
+        if (cases[index].base < 0x100000u &&
+            (board_cop_dword_write(machine, cases[index].base + position + slot * 4u,
+                cases[index].previous) != LIB_STATUS_OK ||
+             board_cop_dword_write(machine, cases[index].base + increment + slot * 4u,
+                cases[index].increment) != LIB_STATUS_OK ||
+             board_cop_word_write(machine, cases[index].base + 30u + slot * 4u,
+                cases[index].coordinate) != LIB_STATUS_OK))
+            goto done;
+        if (!cases[index].failure && board_cop_word_write(machine,
+                cases[index].base + 32u + slot * 4u, 0x5aa5u) != LIB_STATUS_OK)
+            goto done;
+        if (board_cop_upload(machine, cases[index].command, 0u, 8u) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].base >> 16u)) !=
+                LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4c0u, (lib_u16)cases[index].base) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+            x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK)
+            goto done;
+        status = x86_core_machine_debug_continue(machine,
+            (x86_core_machine_run_budget){cases[index].failure ? 2u : 3u, 0u}, &result);
+        if (cases[index].failure) {
+            x86_core_machine_lifecycle lifecycle;
+
+            if (status != LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+                x86_core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+                lifecycle != X86_CORE_MACHINE_FAULTED)
+                goto done;
+        } else if (status != LIB_STATUS_OK || result.executed != 3u ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            goto done;
+        }
+        if (cases[index].inspect_position &&
+            (x86_core_machine_memory_inspect(machine, cases[index].base + position + slot * 4u,
+                data, sizeof(data)) != LIB_STATUS_OK ||
+             ((lib_u32)data[0] | (lib_u32)data[1] << 8u | (lib_u32)data[2] << 16u |
+                (lib_u32)data[3] << 24u) != cases[index].expected))
+            goto done;
+        /* A refused auxiliary write must retain its old readback value. */
+        if (cases[index].inspect_coordinate &&
+            (x86_core_machine_memory_inspect(machine, cases[index].base + 30u + slot * 4u,
+                data, cases[index].failure ? 2u : 4u) != LIB_STATUS_OK ||
+             (lib_u16)(data[0] | (lib_u16)data[1] << 8u) != cases[index].expected_coordinate ||
+             (!cases[index].failure && (data[2] != 0xa5u || data[3] != 0x5au))))
+            goto done;
+        failed = 0;
+done:
+        if (failed) lib_c_printf("COP:UPDATE:FAIL case=%u slot=%u reason=%u detail=%u\n",
+            (lib_u32)index, (lib_u32)slot, (lib_u32)result.reason, result.detail);
+        myraidenii_core_board_destroy(board);
+        failures += failed;
+    }
+    return failures != 0;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
-        board_cop_transfers();
+        board_cop_transfers() || board_cop_updates();
 }

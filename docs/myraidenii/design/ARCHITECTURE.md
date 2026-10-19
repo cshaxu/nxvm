@@ -31,9 +31,10 @@ banner; Emulator owns Built on, fixed monitor
 grammar, help formatting, prompt and lifecycle. One provider/router is injected.
 Lib owns native handles, input decoding, presentation and actual audio output.
 
-X86 Core now has a separately approved, incremental V30 native CPU profile.
-S49 now includes the owner-approved minimum deterministic Machine construction
-and time/run receiver; complete Machine and board qualification remain open.
+X86 Core has the separately approved V30 native/emulation CPU profile and
+neutral Machine bus/time receiver qualified by accepted T2. Board-specific
+COP, video, sound and real-set startup qualification remain T3/later work;
+the historical partial S49 receiver is not the current qualification boundary.
 An 8086/386 profile is not a valid substitute. The existing shared CPU owner
 must qualify NEC instructions, flags, entry, mode/bus behavior and timing before
 board admission. The neutral X86 Core

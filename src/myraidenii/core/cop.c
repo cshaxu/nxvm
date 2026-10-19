@@ -30,6 +30,7 @@ struct myraidenii_core_cop {
     myraidenii_core_cop_program programs[MYRAIDENII_CORE_COP_PROGRAM_SLOTS];
     lib_u8 metadata_written;
     lib_u16 pending_command;
+    lib_u8 pending_slot;
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
@@ -60,7 +61,8 @@ static lib_u32 myraidenii_core_cop_address(const myraidenii_core_cop *cop,
 static lib_bool myraidenii_core_cop_command_ready(const myraidenii_core_cop *cop,
     lib_u16 command)
 {
-    if (command != 0x5205u && command != 0x5a05u && command != 0xf205u)
+    if (command != 0x0205u && command != 0x0905u &&
+        command != 0x5205u && command != 0x5a05u && command != 0xf205u)
         return LIB_FALSE;
     for (lib_size index = 0u; index < MYRAIDENII_CORE_COP_PROGRAM_SLOTS; ++index) {
         const myraidenii_core_cop_program *program = &cop->programs[index];
@@ -158,6 +160,7 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         if (!myraidenii_core_cop_command_ready(cop, command))
             return LIB_STATUS_INVALID_STATE;
         cop->pending_command = command;
+        cop->pending_slot = (lib_u8)((physical - 0x500u) / 2u);
         return LIB_STATUS_OK;
     }
     /* Validate the complete candidate address before changing either byte. */
@@ -211,18 +214,71 @@ void myraidenii_core_cop_reset(myraidenii_core_cop *cop)
         lib_memory_set(cop->programs, 0, sizeof(cop->programs));
         cop->metadata_written = 0u;
         cop->pending_command = 0u;
+        cop->pending_slot = 0u;
     }
+}
+
+static lib_status myraidenii_core_cop_memory(myraidenii_core_cop *cop,
+    lib_u32 base, lib_u32 displacement, lib_u8 bytes, lib_bool write, lib_u32 *value)
+{
+    lib_u32 address;
+    lib_u32 result = 0u;
+
+    if (base > LIB_UINT32_MAX - displacement) return LIB_STATUS_INVALID_ARGUMENT;
+    address = base + displacement;
+    for (lib_u8 index = 0u; index < bytes; index += 2u) {
+        lib_u16 lane = (lib_u16)(*value >> (index * 8u));
+        lib_status status;
+
+        if (address > LIB_UINT32_MAX - index) return LIB_STATUS_INVALID_ARGUMENT;
+        status = x86_core_machine_dma_memory_cycle(cop->machine, address + index,
+            2u, 0u, write ? X86_CORE_MACHINE_MEMORY_ACCESS_WRITE :
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, &lane, LIB_NULL, LIB_NULL, cop);
+        if (status != LIB_STATUS_OK) return status;
+        result |= (lib_u32)lane << (index * 8u);
+    }
+    if (!write) *value = result;
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_cop_update(myraidenii_core_cop *cop)
+{
+    const lib_u32 base = myraidenii_core_cop_address(cop, 0u);
+    const lib_u32 slot = cop->pending_slot * 4u;
+    const lib_u32 position_offset = cop->pending_command == 0x0205u ? 4u : 16u;
+    const lib_u32 increment_offset = cop->pending_command == 0x0205u ? 16u : 40u;
+    lib_u32 previous = 0u, increment = 0u, next, coordinate = 0u;
+    lib_status status = myraidenii_core_cop_memory(cop, base,
+        position_offset + slot, 4u, LIB_FALSE, &previous);
+
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, base,
+            increment_offset + slot, 4u, LIB_FALSE, &increment);
+    if (status != LIB_STATUS_OK) return status;
+    next = previous + increment;
+    status = myraidenii_core_cop_memory(cop, base,
+        position_offset + slot, 4u, LIB_TRUE, &next);
+    if (status != LIB_STATUS_OK || cop->pending_command != 0x0205u) return status;
+    status = myraidenii_core_cop_memory(cop, base, 30u + slot, 2u, LIB_FALSE, &coordinate);
+    if (status != LIB_STATUS_OK) return status;
+    coordinate = (lib_u16)(coordinate + (next >> 16u) - (previous >> 16u));
+    return myraidenii_core_cop_memory(cop, base, 30u + slot, 2u, LIB_TRUE, &coordinate);
 }
 
 lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
 {
-    lib_u16 words[2];
+    lib_u32 value = 0u;
     lib_u32 source;
     lib_u32 destination;
     lib_status status = LIB_STATUS_OK;
 
     if (cop == LIB_NULL || cop->machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (cop->pending_command == 0u) return LIB_STATUS_OK;
+    if (cop->pending_command == 0x0205u || cop->pending_command == 0x0905u) {
+        status = myraidenii_core_cop_update(cop);
+        cop->pending_command = 0u;
+        return status;
+    }
     source = myraidenii_core_cop_address(cop, 0u);
     destination = myraidenii_core_cop_address(cop, cop->pending_command == 0xf205u ? 2u : 1u);
     if (cop->pending_command == 0xf205u) {
@@ -231,22 +287,10 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
     }
     /* L2 transfer service at the first Core advance after the command
      * bus write has committed. No physical COP latency is asserted. */
-    for (lib_u32 index = 0u; index < 2u && status == LIB_STATUS_OK; ++index) {
-        if (source > LIB_UINT32_MAX - index * 2u) {
-            status = LIB_STATUS_INVALID_ARGUMENT;
-            break;
-        }
-        status = x86_core_machine_dma_memory_cycle(cop->machine, source + index * 2u,
-            2u, 0u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &words[index], LIB_NULL, LIB_NULL, cop);
-    }
-    for (lib_u32 index = 0u; index < 2u && status == LIB_STATUS_OK; ++index) {
-        if (destination > LIB_UINT32_MAX - index * 2u) {
-            status = LIB_STATUS_INVALID_ARGUMENT;
-            break;
-        }
-        status = x86_core_machine_dma_memory_cycle(cop->machine, destination + index * 2u,
-            2u, 0u, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &words[index], LIB_NULL, LIB_NULL, cop);
-    }
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, source, 0u, 4u, LIB_FALSE, &value);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, destination, 0u, 4u, LIB_TRUE, &value);
     cop->pending_command = 0u;
     return status;
 }
