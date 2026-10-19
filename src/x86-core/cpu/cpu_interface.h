@@ -669,6 +669,8 @@ void x86_core_cpu_execution_reserve_prefetch(
 void x86_core_cpu_execution_advance_prefetch_reservation(
     x86_core_cpu_execution_context *context);
 
+/* Serialized out-of-execution code replacement also abandons a partial
+ * block's bus lock. Instruction-internal and preview invalidation do not. */
 void x86_core_cpu_execution_invalidate_prefetch(
     x86_core_cpu_execution_context *context);
 

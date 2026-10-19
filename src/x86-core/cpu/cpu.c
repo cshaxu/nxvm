@@ -935,6 +935,9 @@ void x86_core_cpu_execution_invalidate_prefetch(
     x86_core_cpu_execution_context *context)
 {
     if (context == LIB_NULL) return;
+    if (!context->timing_bus_active && !context->preview_mode &&
+        context->instructions != LIB_NULL)
+        x86_core_cpu_bus_complete_memory_lock(context, LIB_FALSE);
     context->prefetch_count = 0u;
     context->prefetch_valid = LIB_FALSE;
     context->prefetch_expected_valid = LIB_FALSE;

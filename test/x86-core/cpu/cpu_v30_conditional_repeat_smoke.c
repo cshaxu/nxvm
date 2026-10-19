@@ -532,6 +532,113 @@ static lib_i32 v30_repeat_interrupts(void)
 }
 
 
+static lib_bool v30_repeat_long_prepare(v30_memory_fixture *fixture,
+    lib_u16 count, lib_u16 pc, lib_bool nmi)
+{
+    static const x86_core_cpu_bus_provider provider={
+        .read_memory=v30_memory_read,.write_memory=v30_memory_write,
+        .interrupt_pending=cpu_bus_pending,.acknowledge_interrupt=cpu_bus_acknowledge
+    };
+    v30_memory_restart(fixture);
+    fixture->bus.execution.bus=&provider;
+    fixture->bus.cpu.data.eip=pc;
+    fixture->bus.cpu.data.sp=0x700u;
+    fixture->bus.cpu.data.si=0x300u;
+    fixture->bus.cpu.data.di=0x400u;
+    fixture->bus.cpu.data.cx=2u;
+    fixture->bus.cpu.data.eflags |= VCPU_EFLAGS_IF;
+    for (lib_u16 byte=0u; byte<count; ++byte)
+        fixture->memory[0x80000u+(lib_u16)(pc+byte)]=byte+1u==count ? 0x65u : 0x26u;
+    fixture->memory[0x80000u+(lib_u16)(pc+count)]=0xa6u;
+    fixture->memory[0x30300u]=fixture->memory[0x30301u]=1u;
+    fixture->memory[0x30400u]=fixture->memory[0x30401u]=2u;
+    const lib_u8 vector=nmi ? 8u : 0xc0u;
+    lib_memory_copy(fixture->memory+vector,(const lib_u8[]){0xe0u,0u,0u,0x90u},4u);
+    fixture->memory[0x900e0u]=0xcfu;
+    fixture->bus.interrupt=!nmi;
+    return !nmi || x86_core_cpu_request_nmi(&fixture->bus.execution);
+}
+
+static lib_i32 v30_repeat_long_prefix_interrupts(void)
+{
+    static const lib_u16 counts[]={3u,4u,14u,15u,16u,31u,63u,127u,255u,256u};
+    static const lib_u16 pcs[]={0x100u,0xfff0u,0xffffu};
+    static v30_memory_fixture fixture;
+    lib_u32 cases=0u, failures=0u;
+
+    for (lib_size item=0u; item<sizeof(counts)/sizeof(counts[0]); ++item)
+      for (lib_size position=0u; position<sizeof(pcs)/sizeof(pcs[0]); ++position)
+        for (lib_u8 nmi=0u; nmi<2u; ++nmi) {
+            if (!v30_repeat_long_prepare(&fixture,counts[item],pcs[position],nmi!=0u)) return 1;
+            const t_cpu before=fixture.bus.cpu;
+            x86_core_cpu_instruction_lexeme lexeme;
+            const lib_bool previewable=counts[item]<X86_CORE_CPU_DIAGNOSTIC_BYTES;
+            if (!!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution,&lexeme)!=previewable ||
+                (previewable && lexeme.byte_count!=counts[item]+1u) || fixture.fetches ||
+                fixture.reads || fixture.writes || fixture.bus.acknowledgements ||
+                fixture.bus.execution.stop_requested ||
+                fixture.bus.execution.nmi_pending!=(nmi!=0u) ||
+                lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) return 1;
+            v30_compare_clear(&fixture);
+            t_cpu returned=before, entered;
+            returned.data.eip=(lib_u16)(pcs[position]+counts[item]-3u);
+            returned.data.cx=1u;
+            ++returned.data.si;
+            ++returned.data.di;
+            returned.data.flags=(lib_u16)((before.data.flags & ~0x8d5u) | v30_compare_flags(1u,2u,1u));
+            entered=returned;
+            entered.data.cs.selector=0x9000u;
+            entered.data.cs.base=0x90000u;
+            entered.data.eip=0xe0u;
+            entered.data.sp-=6u;
+            entered.data.flags &= ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF);
+            x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            lib_u16 saved_pc, saved_cs, saved_flags;
+            lib_memory_copy(&saved_pc,fixture.memory+0x206fau,2u);
+            lib_memory_copy(&saved_cs,fixture.memory+0x206fcu,2u);
+            lib_memory_copy(&saved_flags,fixture.memory+0x206feu,2u);
+            if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.invalid ||
+                lib_memory_compare(&fixture.bus.cpu,&entered,sizeof(entered)) ||
+                saved_pc!=returned.data.eip || saved_cs!=0x8000u ||
+                saved_flags!=(lib_u16)(returned.data.flags | 0x7000u) ||
+                fixture.bus.acknowledgements!=(lib_u32)!nmi) {
+                lib_c_printf("V30:LONG-PREFIX-INTERRUPT:%u:%04x:%u:%04x/%04x\n",
+                    counts[item],pcs[position],nmi,saved_pc,(lib_u16)returned.data.eip);
+                return 1;
+            }
+            lib_u32 prefix_fetches=0u;
+            for (lib_u32 record=0u; record<fixture.record_count; ++record) {
+                const v30_memory_record *access=&fixture.records[record];
+                if (access->provenance==X86_CORE_CPU_MEMORY_ACCESS_DATA) break;
+                if (!access->observe && !access->write) ++prefix_fetches;
+            }
+            x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            if (fixture.bus.execution.stop_requested ||
+                lib_memory_compare(&fixture.bus.cpu,&returned,sizeof(returned))) return 1;
+            returned.data.cx=0u;
+            ++returned.data.si;
+            ++returned.data.di;
+            returned.data.eip=(lib_u16)(pcs[position]+counts[item]+1u);
+            x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            if (fixture.bus.execution.stop_requested || fixture.invalid ||
+                lib_memory_compare(&fixture.bus.cpu,&returned,sizeof(returned))) return 1;
+            ++cases;
+            for (lib_u32 ordinal=1u; ordinal<=prefix_fetches; ++ordinal) {
+                if (!v30_repeat_long_prepare(&fixture,counts[item],pcs[position],nmi!=0u)) return 1;
+                fixture.fail_fetch=ordinal;
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                if (!fixture.bus.execution.stop_requested || fixture.bus.faults!=1u ||
+                    fixture.invalid || fixture.reads || fixture.writes || fixture.bus.acknowledgements ||
+                    fixture.bus.delivered_exceptions || fixture.fetches!=ordinal ||
+                    fixture.bus.execution.nmi_pending!=(nmi!=0u) ||
+                    lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before))) return 1;
+                ++failures;
+            }
+        }
+    lib_c_printf("V30:LONG-PREFIX-INTERRUPTS:OK cases=%u failures=%u\n",cases,failures);
+    return 0;
+}
+
 lib_i32 main(void)
 {
     if (v30_repeat_operands()) { lib_c_printf("V30:REPEAT-OPERANDS:FAIL\n"); return 1; }
@@ -540,6 +647,7 @@ lib_i32 main(void)
     if (v30_repeat_prefixes()) { lib_c_printf("V30:REPEAT-PREFIXES:FAIL\n"); return 1; }
     if (v30_repeat_intel_isolation()) { lib_c_printf("V30:REPEAT-INTEL:FAIL\n"); return 1; }
     if (v30_repeat_interrupts()) { lib_c_printf("V30:REPEAT-INTERRUPTS:FAIL\n"); return 1; }
+    if (v30_repeat_long_prefix_interrupts()) return 1;
     lib_c_printf("V30:CONDITIONAL-REPEAT:OK\n");
     lib_c_printf("V30:NOMINAL-STRING:OK\n");
     return 0;

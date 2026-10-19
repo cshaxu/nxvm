@@ -161,12 +161,24 @@ static lib_i32 v30_lock_repeat(void)
 {
     static const lib_u8 operations[] = {0xa4u,0xa5u,0xa6u,0xa7u,0xaau,0xabu,
         0xacu,0xadu,0xaeu,0xafu,0x6cu,0x6du,0x6eu,0x6fu};
+    static const lib_u8 prefixes[][4] = {
+        {0xf0u,0xf3u},
+        {0xf0u,0xf3u,0x3eu}, {0xf0u,0x3eu,0xf3u},
+        {0xf3u,0xf0u,0x3eu}, {0xf3u,0x3eu,0xf0u},
+        {0x3eu,0xf0u,0xf3u}, {0x3eu,0xf3u,0xf0u},
+        {0xf0u,0xf0u,0xf3u,0x3eu}, {0x3eu,0x3eu,0xf3u,0xf0u},
+        {0xf3u,0xf0u,0xf3u,0x3eu}
+    };
+    static const lib_u8 prefix_bytes[]={2u,3u,3u,3u,3u,3u,3u,4u,4u,4u};
     static v30_lock_fixture fixture;
     for (lib_u8 row=0u; row<sizeof(operations); ++row)
+      for (lib_size prefix=0u; prefix<sizeof(prefix_bytes); ++prefix)
         for (lib_u8 count=0u; count<4u; ++count)
         for (lib_u8 layout=0u; layout<4u; ++layout) {
-            const lib_u8 code[] = {0xf0u,0xf3u,operations[row]};
-            v30_lock_prepare(&fixture,code,sizeof(code),LIB_TRUE);
+            lib_u8 code[5]={0};
+            lib_memory_copy(code,prefixes[prefix],prefix_bytes[prefix]);
+            code[prefix_bytes[prefix]]=operations[row];
+            v30_lock_prepare(&fixture,code,prefix_bytes[prefix]+1u,LIB_TRUE);
             fixture.memory.bus.cpu.data.cx=count;
             fixture.memory.bus.cpu.data.si += (layout&1u) + (layout&2u ? 8u : 0u);
             fixture.memory.bus.cpu.data.di += (layout&1u) + (layout&2u ? 8u : 0u);
@@ -182,8 +194,9 @@ static lib_i32 v30_lock_repeat(void)
                     fixture.active != more || fixture.completions != !more ||
                     fixture.commits != !more || fixture.memory.bus.cpu.data.cx !=
                         (count ? count-part-1u : 0u)) {
-                    lib_c_printf("V30:BUSLOCK:REPEAT op=%02x count=%u part=%u begin=%u complete=%u active=%u bad=%u\n",
-                        operations[row],count,part,fixture.begins,fixture.completions,fixture.active,fixture.bad);
+                    lib_c_printf("V30:BUSLOCK:REPEAT op=%02x prefix=%u count=%u part=%u begin=%u complete=%u active=%u bad=%u\n",
+                        operations[row],(lib_u32)prefix,count,part,fixture.begins,
+                        fixture.completions,fixture.active,fixture.bad);
                     return 1;
                 }
                 if (more) {
@@ -259,12 +272,23 @@ static lib_i32 v30_lock_failures(void)
 static lib_i32 v30_lock_lifetime(void)
 {
     static v30_lock_fixture fixture;
-    const lib_u8 code[] = {0xf0u,0xf3u,0xa4u};
-    for (lib_u8 ending=0u; ending<7u; ++ending) {
-        v30_lock_prepare(&fixture,code,sizeof(code),LIB_TRUE);
+    static const lib_u8 padding[] = {0u,14u,30u};
+    for (lib_size prefix=0u; prefix<sizeof(padding); ++prefix) {
+      lib_u8 code[34];
+      lib_memory_set(code,0x3eu,sizeof(code));
+      code[0]=0xf0u;
+      code[padding[prefix]+1u]=0xf3u;
+      code[padding[prefix]+2u]=0xa4u;
+      for (lib_u8 ending=0u; ending<8u; ++ending) {
+        v30_lock_prepare(&fixture,code,padding[prefix]+3u,LIB_TRUE);
         fixture.memory.bus.cpu.data.cx=3u;
         x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
         if (!fixture.active || fixture.begins!=1u || fixture.completions) return 1;
+        const t_cpu before=fixture.memory.bus.cpu;
+        x86_core_cpu_instruction_lexeme lexeme;
+        if (x86_core_cpu_execution_preview_lexeme(&fixture.memory.bus.execution,&lexeme) ||
+            !fixture.active || fixture.begins!=1u || fixture.completions ||
+            lib_memory_compare(&before,&fixture.memory.bus.cpu,sizeof(before))) return 1;
         if (ending==0u) {
             x86_core_cpu_execution_finalize(&fixture.memory.bus.execution);
             x86_core_cpu_execution_finalize(&fixture.memory.bus.execution);
@@ -286,28 +310,34 @@ static lib_i32 v30_lock_lifetime(void)
                 fixture.memory.bus.faults || fixture.bad) return 1;
             fixture.expected=LIB_FALSE;
             x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
-            fixture.expected=LIB_TRUE;
+            /* A long interrupted stream retains only its last three prefixes. */
+            fixture.expected=padding[prefix]==0u;
             fixture.entry=LIB_FALSE;
             x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
-            if (fixture.active || fixture.begins!=2u || fixture.completions!=2u ||
-                fixture.commits!=2u || fixture.memory.bus.cpu.data.cx || fixture.bad) return 1;
+            const lib_u32 locks=padding[prefix]==0u ? 2u : 1u;
+            if (fixture.active || fixture.begins!=locks || fixture.completions!=locks ||
+                fixture.commits!=locks || fixture.memory.bus.cpu.data.cx || fixture.bad) return 1;
             continue;
         } else {
             /* Public debugger-style invalidation accompanies a code/context edit. */
-            fixture.memory.memory[0x80100u]=ending==4u ? 0x90u : 0xf0u;
-            fixture.memory.memory[0x80101u]=0x90u;
+            if (ending==7u) fixture.memory.memory[0x80102u+padding[prefix]]=0x90u;
+            else {
+                fixture.memory.memory[0x80100u]=ending==4u ? 0x90u : 0xf0u;
+                fixture.memory.memory[0x80101u]=0x90u;
+            }
             if (ending==6u) fixture.memory.bus.cpu.data.eip=0x101u;
-            fixture.expected=ending==5u;
+            fixture.expected=ending==5u || ending==7u;
             x86_core_cpu_execution_invalidate_prefetch(&fixture.memory.bus.execution);
             x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
         }
-        const lib_bool replacement=ending==5u;
+        const lib_bool replacement=ending==5u || ending==7u;
         if (fixture.active || fixture.begins!=1u+replacement ||
             fixture.completions!=fixture.begins || fixture.commits!=replacement || fixture.bad) {
-            lib_c_printf("V30:BUSLOCK:LIFETIME ending=%u begin=%u complete=%u commit=%u bad=%u\n",
-                ending,fixture.begins,fixture.completions,fixture.commits,fixture.bad);
+            lib_c_printf("V30:BUSLOCK:LIFETIME prefixes=%u ending=%u begin=%u complete=%u commit=%u bad=%u\n",
+                padding[prefix]+2u,ending,fixture.begins,fixture.completions,fixture.commits,fixture.bad);
             return 1;
         }
+      }
     }
     /* Zero/equal stop conditions do not retain a lock merely because CX remains. */
     for (lib_u8 opcode=0xa6u; opcode<=0xaeu; opcode+=8u) {

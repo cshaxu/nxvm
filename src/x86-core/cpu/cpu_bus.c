@@ -1,6 +1,16 @@
 #include "x86-core/cpu/cpu_instructions.h"
 #include "x86-core/cpu/cpu_timing.h"
 
+void x86_core_cpu_bus_complete_memory_lock(x86_core_cpu_execution_context *context,
+    lib_bool commit)
+{
+    if (!context->instructions->data.memory_lock_active) return;
+    x86_core_cpu_bus_drain(context, LIB_FALSE);
+    context->instructions->data.memory_lock_active = LIB_FALSE;
+    if (context->bus->complete_memory_lock != LIB_NULL)
+        context->bus->complete_memory_lock(context->bus_context, commit);
+}
+
 /* Intel 273021-001 3.1.4--3.1.6, with the explicit atomic L2 service model.
  * These slots contain latency/ordering only. Functional writes keep their
  * sole synchronous provider and are never replayed during advancement. */

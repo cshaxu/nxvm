@@ -193,6 +193,8 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
             clocks = 11u; odd_cost = 4u;
         } else { clocks = 16u; odd_cost = 8u; }
     }
+    /* The documented 82 alias still has no allocated nominal timing row. */
+    if (item->code[item->prefix != 0u]==0x82u) clocks=0u;
     const lib_bool odd = clocks && odd_cost && item->width == 2u && (address & 1u);
     if (odd) clocks += odd_cost;
     if (clocks && item->prefix) clocks += 2u;
@@ -372,8 +374,9 @@ lib_i32 main(void)
         lib_memory_copy(boundary.memory+0x80100u,boundaries[index],sizeof(boundaries[index]));
         x86_core_cpu_execution_refresh(&boundary.bus.execution);
         const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&boundary.bus.execution);
-        /* F6/F7 /1, group-2 /6 and far register CALL remain prohibited. */
-        const lib_bool rejected = index == 1u || index == 2u || index == 7u || index == 8u || index == 10u;
+        /* Reserved groups, far register CALL and non-0A NEC conversions stop. */
+        const lib_bool rejected = index == 1u || index == 2u || index == 7u ||
+            index == 8u || index == 10u || index == 15u || index == 16u;
         const x86_core_cpu_timing_result expected=allocated[index];
         const lib_u32 key=rejected ? 0u : expected.ticks ? expected.form_id :
             X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
@@ -388,7 +391,7 @@ lib_i32 main(void)
     }
     static const lib_u16 values[] = {0u,1u,15u,16u,127u,128u,255u,256u,
         0x7fffu,0x8000u,0xfffeu,0xffffu};
-    lib_u32 cases = 0u;
+    lib_u32 cases = 0u, aliases = 0u;
     for (lib_u8 operation = 0u; operation <= V30_ALU_TEST; ++operation)
         for (lib_u8 width = 1u; width <= 2u; ++width)
             for (lib_u8 form = 0u; form <= V30_ALU_GROUP_SIGNED; ++form) {
@@ -400,10 +403,15 @@ lib_i32 main(void)
                         (operation == V30_ALU_TEST ? 0u : operation)) continue;
                     for (lib_u8 prefix = 0u; prefix < 5u; ++prefix)
                         for (lib_u8 carry = 0u; carry < 2u; ++carry) {
-                            const v30_alu_case item = v30_alu_build((v30_alu_operation)operation,
+                            v30_alu_case item = v30_alu_build((v30_alu_operation)operation,
                                 width,form,(lib_u8)modrm,prefix,carry ? 0xffffu : 0x8001u,carry != 0u);
                             if (v30_alu_check(&item,LIB_TRUE)) return 1;
                             ++cases;
+                            if (form==V30_ALU_GROUP_IMMEDIATE && width==1u && operation<V30_ALU_TEST) {
+                                item.code[prefix!=0u]=0x82u;
+                                if (v30_alu_check(&item,LIB_TRUE)) return 1;
+                                ++aliases;
+                            }
                         }
                 }
             }
@@ -459,6 +467,7 @@ lib_i32 main(void)
             ++cases;
         }
     lib_c_printf("V30:ALU:OK cases=%u\n",cases);
+    lib_c_printf("V30:ALU-ALIAS:OK cases=%u\n",aliases);
     lib_c_printf("V30:NOMINAL-ALU:OK cases=%u\n",cases);
     lib_c_printf("V30:NOMINAL-ALU:BOUNDARIES:OK cases=%u\n",(lib_u32)(sizeof(boundaries)/sizeof(boundaries[0])));
     return 0;

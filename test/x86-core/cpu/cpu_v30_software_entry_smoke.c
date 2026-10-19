@@ -149,7 +149,7 @@ static lib_i32 v30_entry_check(const v30_entry_case *item, lib_bool deep)
     if (item->operation == V30_ENTRY_BOUNDS) {
         const lib_u32 address = v30_entry_address(&expected,item);
         const lib_u16 lower = v30_entry_word(&fixture,address), upper = v30_entry_word(&fixture,address+2u);
-        /* Retain the existing signed comparator model; entry is this batch's owner. */
+        /* Explicit signed-index L2 model for original V30 CHKIND. */
         taken = (lib_i16)item->index < (lib_i16)lower || (lib_i16)item->index > (lib_i16)upper;
         v30_memory_plan_transfer(&plan,&fixture,address,2u,LIB_FALSE,lower);
         v30_memory_plan_transfer(&plan,&fixture,address+2u,2u,LIB_FALSE,upper);
@@ -255,7 +255,10 @@ lib_i32 main(void)
     static const lib_u16 stacks[] = {0x700u,0x701u,0u,1u,0xffffu};
     static const lib_u16 values[] = {0u,1u,37u,0x8000u,0xffffu};
     static const lib_u16 segments[] = {0u,0x8000u,0x9000u,0xffffu};
-    static const lib_u16 bounds[][2] = {{0u,0u},{0u,0x7fffu},{5u,37u},{100u,99u}};
+    static const lib_u16 bounds[][2] = {
+        {0u,0u},{0u,0x7fffu},{5u,37u},{100u,99u},
+        {0u,0xffffu},{0x8000u,0x7fffu},{0x8000u,0xffffu},{0xffffu,0xffffu}
+    };
     lib_u32 cases = 0u;
     const v30_entry_case witness = {.operation=V30_ENTRY_BOUNDS,.pc=0x100u,.sp=0x701u,
         .index=87u,.lower=2u,.upper=80u,.modrm=0x06u,.flags=VCPU_EFLAGS_IF};
@@ -266,7 +269,8 @@ lib_i32 main(void)
             operation == V30_ENTRY_BOUNDS ? 1u : 256u); ++flags)
             for (lib_u32 value = 0u; value < (operation == V30_ENTRY_BOUNDS || operation == V30_ENTRY_RETURN ? 65536u :
                 operation == V30_ENTRY_SOFTWARE ? 256u : 1u); ++value)
-                for (lib_u8 bound = 0u; bound < (operation == V30_ENTRY_BOUNDS ? 4u : 1u); ++bound) {
+                for (lib_u8 bound = 0u; bound < (operation == V30_ENTRY_BOUNDS ?
+                    sizeof(bounds)/sizeof(bounds[0]) : 1u); ++bound) {
                     const v30_entry_case item = {.operation=(v30_entry_operation)operation,.pc=0x100u,.sp=0x701u,
                         .index=(lib_u16)value,.lower=bounds[bound][0],.upper=bounds[bound][1],.modrm=0x06u,
                         .flags=v30_entry_flags(operation == V30_ENTRY_RETURN ? 255u*flags : flags),

@@ -92,6 +92,8 @@ typedef struct {
     t_cpuins_data_prefix_rep  prefix_rep;
     t_cpuins_data_prefix      prefix_oprsize;
     t_cpuins_data_prefix      prefix_addrsize;
+    /* Actual NEC prefix bytes may exceed the bounded diagnostic capture. */
+    lib_u32 nec_prefix_bytes;
     t_cpu_data_sreg *roverds, *roverss, *rmovsreg;
 
     /* execution control */
@@ -364,6 +366,8 @@ lib_u32 x86_core_cpu_instruction_prefix_count(
     const x86_core_cpu_execution_context *context, const t_cpuins_data *data);
 lib_bool x86_core_cpu_instruction_has_lock_prefix(const t_cpuins_data *data,
     lib_u32 prefixes);
+void x86_core_cpu_bus_complete_memory_lock(x86_core_cpu_execution_context *context,
+    lib_bool commit);
 /* One repeat identity/phase owner for CPU-local nominal evaluators. */
 void x86_core_cpu_source_timing_record_repeat(
     x86_core_cpu_execution_context *context, const t_cpuins_data *data);

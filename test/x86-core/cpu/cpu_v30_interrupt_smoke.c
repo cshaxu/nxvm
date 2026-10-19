@@ -413,6 +413,244 @@ static lib_i32 v30_interrupt_step_refusals(void)
     return 0;
 }
 
+typedef struct v30_interrupt_arrival {
+    v30_memory_fixture memory;
+    lib_u8 point, events, injections;
+} v30_interrupt_arrival;
+
+static void v30_interrupt_inject(v30_interrupt_arrival *fixture, lib_u8 point)
+{
+    if (fixture->injections || fixture->point!=point) return;
+    ++fixture->injections;
+    if (fixture->events & 1u)
+        (void)x86_core_cpu_request_nmi(&fixture->memory.bus.execution);
+    if (fixture->events & 2u) fixture->memory.bus.interrupt=LIB_TRUE;
+}
+
+static lib_status v30_interrupt_arrival_read(void *opaque, lib_u32 address, void *destination,
+    lib_u8 bytes, x86_core_cpu_memory_access_provenance provenance,
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
+{
+    v30_interrupt_arrival *fixture=opaque;
+    const lib_status status=v30_memory_read(&fixture->memory,address,destination,bytes,
+        provenance,observe_only,reset_fetch,cache_control);
+    if (status==LIB_STATUS_OK && !observe_only) {
+        if (provenance!=X86_CORE_CPU_MEMORY_ACCESS_DATA) v30_interrupt_inject(fixture,0u);
+        else v30_interrupt_inject(fixture,address<0x400u ? 3u : 1u);
+    }
+    return status;
+}
+
+static lib_status v30_interrupt_arrival_write(void *opaque, lib_u32 address, const void *source,
+    lib_u8 bytes, x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
+{
+    v30_interrupt_arrival *fixture=opaque;
+    const lib_status status=v30_memory_write(&fixture->memory,address,source,bytes,
+        provenance,cache_control);
+    if (status==LIB_STATUS_OK) v30_interrupt_inject(fixture,2u);
+    return status;
+}
+
+static lib_status v30_interrupt_arrival_acknowledge(void *opaque, lib_u8 *vector)
+{
+    v30_interrupt_arrival *fixture=opaque;
+    const lib_status status=cpu_bus_acknowledge(&fixture->memory.bus,vector);
+    if (status==LIB_STATUS_OK) v30_interrupt_inject(fixture,4u);
+    return status;
+}
+
+static lib_i32 v30_interrupt_arrivals(void)
+{
+    static const x86_core_cpu_bus_provider provider={
+        .read_memory=v30_interrupt_arrival_read,.write_memory=v30_interrupt_arrival_write,
+        .interrupt_pending=cpu_bus_pending,.acknowledge_interrupt=v30_interrupt_arrival_acknowledge
+    };
+    static v30_interrupt_arrival fixture;
+    lib_u32 cases=0u;
+
+    for (lib_u8 emulation=0u; emulation<2u; ++emulation)
+      for (lib_u8 row=0u; row<9u; ++row)
+       for (lib_u8 events=1u; events<4u; ++events) {
+        if (emulation && row==1u) continue;
+        const lib_u8 initial=row<2u ? 0u : row==8u ? 2u : (lib_u8)((row-2u)%3u+1u);
+        const v30_interrupt_case item={
+            .operation=row==1u ? V30_INTERRUPT_COMPARE : V30_INTERRUPT_NOP,
+            .pc=0xffffu,.sp=0x701u,.flags=(lib_u16)(VCPU_EFLAGS_IF |
+                (initial==3u ? VCPU_EFLAGS_TF : 0u)),
+            .events=initial==3u ? 0u : initial,.emulation=emulation!=0u
+        };
+        const lib_u8 length=v30_interrupt_prepare(&fixture.memory,&item);
+        if (!length) return 1;
+        fixture.point=row<2u ? row : row<5u ? 2u : row<8u ? 3u : 4u;
+        fixture.events=events;
+        fixture.injections=0u;
+        fixture.memory.bus.execution.bus=&provider;
+        fixture.memory.bus.execution.bus_context=&fixture;
+        x86_core_cpu_execution_invalidate_prefetch(&fixture.memory.bus.execution);
+        t_cpu retired=fixture.memory.bus.cpu;
+        v30_memory_plan plan={0};
+        v30_interrupt_result(&fixture.memory,&item,length,&retired,&plan);
+        const lib_u8 first=initial==1u ? 2u : initial==2u ? 0x30u : initial==3u ? 1u :
+            events & 1u ? 2u : 0x30u;
+        t_cpu expected=retired;
+        v30_interrupt_entry(&fixture.memory,&expected,&plan,first);
+        x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
+        const lib_bool late=row>=2u;
+        const lib_bool pending_nmi=late && (events & 1u);
+        const lib_bool pending_irq=(events & 2u) && (late || first!=0x30u);
+        if (fixture.injections!=1u || fixture.memory.bus.execution.stop_requested ||
+            fixture.memory.bus.faults ||
+            fixture.memory.bus.execution.nmi_pending!=pending_nmi ||
+            fixture.memory.bus.interrupt!=pending_irq ||
+            fixture.memory.bus.acknowledgements!=(lib_u32)(first==0x30u) ||
+            fixture.memory.bus.delivered_exceptions!=(lib_u32)(first==1u) ||
+            lib_memory_compare(&fixture.memory.bus.cpu,&expected,sizeof(expected)) ||
+            v30_memory_check_plan(&fixture.memory,&plan,LIB_FALSE)) {
+            lib_c_printf("V30:ARRIVAL:ENTRY mode=%u row=%u events=%u\n",emulation,row,events);
+            return 1;
+        }
+        /* The selected entry completes before a newly arriving NMI can nest. */
+        v30_interrupt_clear(&fixture.memory);
+        plan=(v30_memory_plan){0};
+        ++expected.data.eip;
+        const t_cpu handler=expected;
+        if (pending_nmi) v30_interrupt_entry(&fixture.memory,&expected,&plan,2u);
+        x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
+        if (fixture.memory.bus.execution.stop_requested || fixture.memory.bus.faults ||
+            fixture.memory.bus.execution.nmi_pending || fixture.memory.bus.acknowledgements ||
+            fixture.memory.bus.interrupt!=pending_irq ||
+            lib_memory_compare(&fixture.memory.bus.cpu,&expected,sizeof(expected)) ||
+            v30_memory_check_plan(&fixture.memory,&plan,LIB_FALSE)) {
+            lib_c_printf("V30:ARRIVAL:NEST mode=%u row=%u events=%u\n",emulation,row,events);
+            return 1;
+        }
+        if (pending_nmi) {
+            v30_interrupt_clear(&fixture.memory);
+            ++expected.data.eip;
+            x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
+            if (lib_memory_compare(&fixture.memory.bus.cpu,&expected,sizeof(expected)) ||
+                fixture.memory.bus.faults || fixture.memory.bus.writes) return 1;
+            v30_interrupt_clear(&fixture.memory);
+            plan=(v30_memory_plan){0};
+            v30_interrupt_return_plan(&fixture.memory,&expected,&handler,&plan);
+            x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
+            if (fixture.memory.bus.execution.stop_requested || fixture.memory.bus.faults ||
+                lib_memory_compare(&fixture.memory.bus.cpu,&handler,sizeof(handler)) ||
+                v30_memory_check_plan(&fixture.memory,&plan,LIB_FALSE)) return 1;
+        }
+        v30_interrupt_clear(&fixture.memory);
+        plan=(v30_memory_plan){0};
+        v30_interrupt_return_plan(&fixture.memory,&handler,&retired,&plan);
+        expected=retired;
+        if (pending_irq) v30_interrupt_entry(&fixture.memory,&expected,&plan,0x30u);
+        x86_core_cpu_execution_refresh(&fixture.memory.bus.execution);
+        if (fixture.memory.bus.execution.stop_requested || fixture.memory.bus.faults ||
+            fixture.memory.bus.interrupt || fixture.memory.bus.execution.nmi_pending ||
+            fixture.memory.bus.acknowledgements!=(lib_u32)pending_irq ||
+            lib_memory_compare(&fixture.memory.bus.cpu,&expected,sizeof(expected)) ||
+            v30_memory_check_plan(&fixture.memory,&plan,LIB_FALSE)) {
+            lib_c_printf("V30:ARRIVAL:RETURN mode=%u row=%u events=%u\n",emulation,row,events);
+            return 1;
+        }
+        ++cases;
+       }
+    lib_c_printf("V30:ARRIVAL:OK cases=%u\n",cases);
+    return 0;
+}
+
+static lib_i32 v30_interrupt_loaded_brk(void)
+{
+    static const lib_u16 pcs[]={0x100u,0xffffu}, stacks[]={0x700u,0x701u,0xffffu};
+    static v30_memory_fixture fixture;
+    lib_u32 cases=0u;
+
+    for (lib_u8 mode=0u; mode<3u; ++mode)
+      for (lib_u8 transition=0u; transition<4u; ++transition)
+       for (lib_size position=0u; position<sizeof(pcs)/sizeof(pcs[0]); ++position)
+        for (lib_size stack=0u; stack<sizeof(stacks)/sizeof(stacks[0]); ++stack) {
+            const v30_interrupt_case initial={.operation=V30_INTERRUPT_NOP,
+                .pc=pcs[position],.sp=stacks[stack],.flags=VCPU_EFLAGS_IF,
+                .emulation=mode==2u,.events=mode==2u ? 1u : 0u};
+            if (!v30_interrupt_prepare(&fixture,&initial)) return 1;
+            if (mode==2u) {
+                /* Enter the native handler from a real emulation invocation/NMI. */
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                if (fixture.bus.execution.stop_requested ||
+                    fixture.bus.cpu.data.eip!=v30_interrupt_target(2u) ||
+                    !fixture.bus.execution.nec_md_write_enabled) return 1;
+            }
+            fixture.bus.cpu.data.eip=pcs[position];
+            fixture.bus.cpu.data.sp=stacks[stack];
+            X86_CPU_BIT_MAKE(fixture.bus.cpu.data.eflags,VCPU_EFLAGS_TF,transition & 2u);
+            const lib_u16 word=(lib_u16)(0x7247u | ((transition & 1u) ? VCPU_EFLAGS_TF : 0u));
+            const lib_u16 return_cs=mode==2u ? 0x9000u : 0x8000u;
+            const lib_u16 words[]={0x111u,return_cs,word};
+            const lib_u8 count=mode ? 3u : 1u;
+            for (lib_u8 part=0u; part<count; ++part)
+                v30_interrupt_word(&fixture,0x20000u+(lib_u16)(stacks[stack]+2u*part),
+                    mode ? words[part] : word);
+            fixture.memory[fixture.bus.cpu.data.cs.base+pcs[position]]=mode ? 0xcfu : 0x9du;
+            fixture.memory[0x90000u+v30_interrupt_target(1u)]=0xcfu;
+            x86_core_cpu_execution_invalidate_prefetch(&fixture.bus.execution);
+            v30_interrupt_clear(&fixture);
+            const t_cpu before=fixture.bus.cpu;
+            t_cpu retired=before;
+            retired.data.eip=mode ? 0x111u : (lib_u16)(pcs[position]+1u);
+            retired.data.cs.selector=return_cs;
+            retired.data.cs.base=(lib_u32)return_cs*16u;
+            retired.data.sp=(lib_u16)(retired.data.sp+2u*count);
+            retired.data.flags=(lib_u16)(2u | (word & 0x0fd5u) |
+                (mode==2u ? 0u : X86_CPU_NEC_PSW_MD));
+            const lib_bool outgoing=(transition & 2u)!=0u;
+            if (outgoing) retired.data.dr6 |= 0x4000u;
+            fixture.memory[retired.data.cs.base+retired.data.eip]=mode==2u ? 0x00u : 0x90u;
+            v30_memory_plan plan={0};
+            for (lib_u8 part=0u; part<count; ++part)
+                v30_memory_plan_transfer(&plan,&fixture,0x20000u+
+                    (lib_u16)(stacks[stack]+2u*part),2u,LIB_FALSE,mode ? words[part] : word);
+            t_cpu expected=retired;
+            if (outgoing) v30_interrupt_entry(&fixture,&expected,&plan,1u);
+            x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
+                fixture.bus.delivered_exceptions!=(lib_u32)outgoing ||
+                v30_memory_check_completion(&fixture,LIB_TRUE,LIB_FALSE) ||
+                lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
+                v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
+                lib_c_printf("V30:LOADED-BRK:LOAD mode=%u flags=%u pc=%04x sp=%04x\n",
+                    mode,transition,pcs[position],stacks[stack]);
+                return 1;
+            }
+            if (outgoing) {
+                v30_interrupt_clear(&fixture);
+                plan=(v30_memory_plan){0};
+                v30_interrupt_return_plan(&fixture,&expected,&retired,&plan);
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                if (fixture.bus.execution.stop_requested ||
+                    lib_memory_compare(&fixture.bus.cpu,&retired,sizeof(retired)) ||
+                    v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) return 1;
+            }
+            v30_interrupt_clear(&fixture);
+            plan=(v30_memory_plan){0};
+            ++retired.data.eip;
+            retired.data.eip=(lib_u16)retired.data.eip;
+            if (transition & 1u) retired.data.dr6 |= 0x4000u;
+            expected=retired;
+            if (transition & 1u) v30_interrupt_entry(&fixture,&expected,&plan,1u);
+            x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
+                fixture.bus.delivered_exceptions!=(lib_u32)(transition & 1u) ||
+                lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
+                v30_memory_check_plan(&fixture,&plan,LIB_FALSE)) {
+                lib_c_printf("V30:LOADED-BRK:NEXT mode=%u flags=%u pc=%04x sp=%04x\n",
+                    mode,transition,pcs[position],stacks[stack]);
+                return 1;
+            }
+            ++cases;
+        }
+    lib_c_printf("V30:LOADED-BRK:OK cases=%u\n",cases);
+    return 0;
+}
+
 lib_i32 main(void)
 {
     const v30_interrupt_case witness={.operation=V30_INTERRUPT_NOP,.pc=0x100u,.sp=0x701u,
@@ -437,6 +675,8 @@ lib_i32 main(void)
                             }
     if (v30_interrupt_refusals()) { lib_c_printf("V30:INTERRUPT:REFUSALS:FAIL\n"); return 1; }
     if (v30_interrupt_step_refusals()) { lib_c_printf("V30:INTERRUPT:STEP-REFUSALS:FAIL\n"); return 1; }
+    if (v30_interrupt_loaded_brk()) return 1;
+    if (v30_interrupt_arrivals()) return 1;
     lib_c_printf("V30:INTERRUPT:OK cases=%u\n",cases);
     return 0;
 }

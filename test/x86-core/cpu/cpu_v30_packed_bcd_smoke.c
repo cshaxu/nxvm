@@ -324,6 +324,60 @@ static lib_i32 v30_bcd_failures(void)
     return 0;
 }
 
+static lib_i32 v30_bcd_invalid_digits(void)
+{
+    static const lib_u8 opcodes[]={0x20u,0x22u,0x26u};
+    static const lib_u8 prefixes[]={0u,0x26u,0x2eu,0x36u,0x3eu};
+    lib_u32 cases=0u;
+    for (lib_size op=0u; op<sizeof(opcodes); ++op)
+      for (lib_size prefix=0u; prefix<sizeof(prefixes); ++prefix)
+       for (lib_u8 odd=0u; odd<2u; ++odd)
+        for (lib_u8 side=0u; side<2u; ++side)
+         for (lib_u8 position=0u; position<3u; ++position)
+          for (lib_u16 value=0u; value<256u; ++value) {
+            if ((value & 15u)<10u && (value >> 4u)<10u) continue;
+            v30_bcd_failure_fixture fixture={0};
+            x86_core_cpu_bus_provider provider=cpu_bus_provider;
+            lib_u8 expected[sizeof(fixture.bus.memory)];
+            v30_bcd_prepare(&fixture.bus,6u-odd,LIB_FALSE);
+            v30_bcd_fill(&fixture.bus,prefixes[prefix],0x01u,0x19u);
+            const lib_u32 base=side ? fixture.bus.cpu.data.es.base :
+                v30_bcd_source_base(&fixture.bus,prefixes[prefix]);
+            const lib_u16 offset=side ? fixture.bus.cpu.data.di : fixture.bus.cpu.data.si;
+            fixture.bus.memory[v30_bcd_address(base,(lib_u16)(offset+position))]=(lib_u8)value;
+            const lib_u8 code[]={prefixes[prefix] ? prefixes[prefix] : 0x0fu,
+                prefixes[prefix] ? 0x0fu : opcodes[op],opcodes[op]};
+            lib_memory_copy(fixture.bus.memory+0x100u,code,prefixes[prefix] ? 3u : 2u);
+            lib_memory_copy(expected,fixture.bus.memory,sizeof(expected));
+            if (opcodes[op]!=0x26u)
+                for (lib_u8 byte=0u; byte<position; ++byte)
+                    expected[v30_bcd_address(fixture.bus.cpu.data.es.base,
+                        (lib_u16)(fixture.bus.cpu.data.di+byte))]=opcodes[op]==0x20u ? 0x20u : 0x18u;
+            provider.read_memory=v30_bcd_read;
+            provider.write_memory=v30_bcd_write;
+            fixture.bus.execution.bus=&provider;
+            fixture.bus.execution.bus_context=&fixture;
+            const t_cpu before=fixture.bus.cpu;
+            x86_core_cpu_execution_refresh(&fixture.bus.execution);
+            if (!fixture.bus.execution.stop_requested || fixture.bus.faults!=1u ||
+                fixture.bus.delivered_exceptions || fixture.bus.execution.completed_observation_valid ||
+                fixture.bus.execution.timing_result.ticks ||
+                fixture.bus.execution.timing_result.retirement_origin!=
+                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
+                fixture.reads!=2u*(position+1u) ||
+                fixture.writes!=(opcodes[op]==0x26u ? 0u : position) ||
+                lib_memory_compare(&fixture.bus.cpu,&before,sizeof(before)) ||
+                lib_memory_compare(fixture.bus.memory,expected,sizeof(expected))) {
+                lib_c_printf("V30:BCD-INVALID:FAIL op=%02x prefix=%02x odd=%u side=%u position=%u byte=%02x\n",
+                    opcodes[op],prefixes[prefix],odd,side,position,value);
+                return 1;
+            }
+            ++cases;
+          }
+    lib_c_printf("V30:BCD-INVALID:OK cases=%u\n",cases);
+    return 0;
+}
+
 lib_i32 main(void)
 {
     if (v30_bcd_operands()) { lib_c_printf("V30:BCD-OPERANDS:FAIL\n"); return 1; }
@@ -331,6 +385,7 @@ lib_i32 main(void)
     if (v30_bcd_addressing()) { lib_c_printf("V30:BCD-ADDRESSING:FAIL\n"); return 1; }
     if (v30_bcd_example()) { lib_c_printf("V30:BCD-EXAMPLE:FAIL\n"); return 1; }
     if (v30_bcd_failures()) { lib_c_printf("V30:BCD-FAILURE:FAIL\n"); return 1; }
+    if (v30_bcd_invalid_digits()) return 1;
     lib_c_printf("V30:PACKED-BCD:OK\n");
     lib_c_printf("V30:NOMINAL-BCD:OK\n");
     return 0;

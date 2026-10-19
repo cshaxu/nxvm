@@ -344,16 +344,6 @@ static void _kma_begin_memory_lock(x86_core_cpu_execution_context *context)
     CPU_TRACE_CALL_END;
 }
 
-static void _kma_complete_memory_lock(x86_core_cpu_execution_context *context,
-    lib_bool commit)
-{
-    if (!instruction_state.data.memory_lock_active) return;
-    x86_core_cpu_bus_drain(context, LIB_FALSE);
-    instruction_state.data.memory_lock_active = LIB_FALSE;
-    if (context->bus->complete_memory_lock != LIB_NULL)
-        context->bus->complete_memory_lock(context->bus_context, commit);
-}
-
 /* A completed bus transfer is the sole external-read publication path. */
 static void _kma_read_bus(x86_core_cpu_execution_context *context,
     lib_u32 physical, lib_uptr rdata, lib_u8 byte,
@@ -875,7 +865,7 @@ static void _kma_update_page_entry(x86_core_cpu_execution_context *context,
             }
         }
     }
-    if (owns_lock) _kma_complete_memory_lock(context, instruction_state.data.except == 0u);
+    if (owns_lock) x86_core_cpu_bus_complete_memory_lock(context, instruction_state.data.except == 0u);
     if (!instruction_state.data.except) {
         if (directory) translation->cpde = entry;
         else translation->cpte = entry;
@@ -3070,6 +3060,12 @@ static lib_bool _kdf_is_nec_escape(x86_core_cpu_profile profile, lib_u8 opcode)
 {
     return profile == X86_CORE_CPU_PROFILE_V30 &&
         (opcode == 0x66u || opcode == 0x67u || (opcode >= 0xd8u && opcode <= 0xdfu));
+}
+
+static lib_bool _kdf_conversion_literal_valid(x86_core_cpu_profile profile,
+    lib_u8 literal)
+{
+    return profile != X86_CORE_CPU_PROFILE_V30 || literal == 0x0au;
 }
 
 lib_bool x86_core_cpu_instruction_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile)
@@ -9473,6 +9469,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
             extended, modrm, operand_bytes, address_bytes);
     if ((lib_u32)index + displacement + immediate > available_bytes ||
         (lib_u32)index + displacement + immediate > 15u) return LIB_FALSE;
+    if (!extended && !nec && (opcode == 0xd4u || opcode == 0xd5u) &&
+        !_kdf_conversion_literal_valid(profile,bytes[index])) return LIB_FALSE;
     if (displacement != 0u) {
         index = (lib_u8)(index + displacement);
         ++components;
@@ -16287,6 +16285,12 @@ static void AAM(x86_core_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
     base = X86_CPU_MASK_U8(instruction_state.data.cimm);
+    if (!_kdf_conversion_literal_valid(context->cpu_profile,base))
+    {
+        UndefinedOpcode(context);
+        CPU_TRACE_CALL_END;
+        return;
+    }
     if (base == 0)
     {
         CPU_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -16315,6 +16319,12 @@ static void AAD(x86_core_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
     base = X86_CPU_MASK_U8(instruction_state.data.cimm);
+    if (!_kdf_conversion_literal_valid(context->cpu_profile,base))
+    {
+        UndefinedOpcode(context);
+        CPU_TRACE_CALL_END;
+        return;
+    }
     _WriteGPR8(al) = X86_CPU_MASK_U8(cpu_state.data.al + (cpu_state.data.ah * base));
     _WriteGPR8(ah) = 0x00;
     instruction_state.data.bit = 0x08;
@@ -19274,6 +19284,7 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
     instruction_state.data.prefix_rep = PREFIX_REP_NONE;
     instruction_state.data.prefix_oprsize = LIB_FALSE;
     instruction_state.data.prefix_addrsize = LIB_FALSE;
+    instruction_state.data.nec_prefix_bytes = 0u;
     instruction_state.data.flagMem = LIB_FALSE;
     instruction_state.data.timing_ea_base_mask = 0u;
     instruction_state.data.timing_ea_indexed = LIB_FALSE;
@@ -19928,7 +19939,7 @@ static void ExecInit(x86_core_cpu_execution_context *context)
     /* Accepted asynchronous entry leaves a partially completed NEC block. */
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
         !context->preview_mode && !context->instruction_in_progress)
-        _kma_complete_memory_lock(context,LIB_TRUE);
+        x86_core_cpu_bus_complete_memory_lock(context,LIB_TRUE);
     ExecBoundary(context);
     if (context->prefetch_expected_valid && instruction_state.data.linear !=
         context->prefetch_expected_linear) x86_core_cpu_execution_invalidate_prefetch(context);
@@ -20351,7 +20362,7 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
     /* NEC BUSLOCK spans the whole repeated block, not a host execution slice. */
     if (context->cpu_profile != X86_CORE_CPU_PROFILE_V30 ||
         !instruction_state.data.flagInsLoop || instruction_state.data.except != 0u)
-        _kma_complete_memory_lock(context, instruction_state.data.except == 0u);
+        x86_core_cpu_bus_complete_memory_lock(context, instruction_state.data.except == 0u);
     if (instruction_state.data.flagInsLoop) {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
@@ -20787,7 +20798,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
     if (held_count) lib_memory_copy(held_bytes,instruction_state.data.opcodes,held_count);
     if (held_count && (!(cpu_state.data.eflags & X86_CPU_NEC_PSW_MD) ||
         held_cs != cpu_state.data.cs.base || held_eip != cpu_state.data.eip)) {
-        _kma_complete_memory_lock(context,LIB_FALSE);
+        x86_core_cpu_bus_complete_memory_lock(context,LIB_FALSE);
         held_count = 0u;
     }
 
@@ -20825,7 +20836,10 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             UndefinedOpcode(context);
             break;
         }
-        if (!x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile)) {
+        if (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile)) {
+            if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+                ++instruction_state.data.nec_prefix_bytes;
+        } else {
             if ((instruction_state.data.prefix_rep == PREFIX_REP_REPC ||
                 instruction_state.data.prefix_rep == PREFIX_REP_REPNC) &&
                 !_kdf_is_comparison_string(opcode)) {
@@ -20850,7 +20864,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
                 const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, &instruction_state.data);
                 if (held_count != prefixes+1u ||
                     lib_memory_compare(held_bytes,instruction_state.data.opcodes,held_count) != 0) {
-                    _kma_complete_memory_lock(context,LIB_FALSE);
+                    x86_core_cpu_bus_complete_memory_lock(context,LIB_FALSE);
                     if (x86_core_cpu_instruction_has_lock_prefix(&instruction_state.data,prefixes)) {
                         CPU_TRACE_CHECK_BREAK(_kma_begin_memory_lock(context));
                     }
@@ -20881,12 +20895,14 @@ static void ExecIns(x86_core_cpu_execution_context *context)
 static void x86_core_cpu_legacy_string_interrupt_resume(
     x86_core_cpu_execution_context *context)
 {
-    lib_u8 prefixes = 0u;
+    lib_u32 prefixes = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+        instruction_state.data.nec_prefix_bytes : 0u;
 
     if ((cpu_profile_has_186_integer(context->cpu_profile) &&
          context->cpu_profile != X86_CORE_CPU_PROFILE_V30) ||
         !instruction_state.data.flagInsLoop) return;
-    while (prefixes < instruction_state.data.oplen &&
+    while (context->cpu_profile != X86_CORE_CPU_PROFILE_V30 &&
+        prefixes < instruction_state.data.oplen &&
         x86_core_cpu_instruction_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile))
         ++prefixes;
     const lib_u8 retained = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? 3u : 1u;
@@ -20949,7 +20965,7 @@ static void ExecInt(x86_core_cpu_execution_context *context)
         context->bus->interrupt_pending(context->bus_context))
     {
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
-            _kma_complete_memory_lock(context,LIB_TRUE);
+            x86_core_cpu_bus_complete_memory_lock(context,LIB_TRUE);
         acknowledge_status = context->bus->acknowledge_interrupt(
             context->bus_context, &intr);
         if (acknowledge_status != LIB_STATUS_OK) {
@@ -21797,7 +21813,7 @@ void x86_core_cpu_execution_finalize(
 {
     if (context == LIB_NULL) return;
     if (context->instructions != LIB_NULL && context->bus != LIB_NULL)
-        _kma_complete_memory_lock(context,LIB_FALSE);
+        x86_core_cpu_bus_complete_memory_lock(context,LIB_FALSE);
     if (context->special_cycle != X86_CORE_CPU_SPECIAL_NONE) {
         if (context->bus->cancel_special_cycle != LIB_NULL)
             context->bus->cancel_special_cycle(context->bus_context, context->special_cycle);
