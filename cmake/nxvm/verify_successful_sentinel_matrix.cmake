@@ -26,7 +26,7 @@ foreach(token IN ITEMS
     "x86_core_cpu_timing_select"
     "x86_core_machine_publish_elapsed_ticks"
     "x86_core_cpu_source_timing_lookup"
-    "x86_core_cpu_instruction_prefix_count(data)"
+    "x86_core_cpu_instruction_prefix_count(context, data)"
     "x86_core_cpu_string_io_source_instruction_cost"
     "x86_core_cpu_80286_source_instruction_cost"
     "case 0x0fu:"

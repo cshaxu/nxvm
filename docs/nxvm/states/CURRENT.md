@@ -36,15 +36,18 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
-MyRaidenII M1 T2 S45 refreshes the eight current 0564 PC EXEs after
-Shared native V30 BUSLOCK lifetime P1 `5b963bb87`. It changes no NXVM
-source, configuration, firmware or media and allocates no NXVM task/S.
+MyRaidenII M1 T2 S46 refreshes the eight current 0564 PC EXEs after
+Shared V30 escape/bus and instruction-entry mode P1 `128204d91`.
+NXVM production source, configuration, firmware and media are unchanged;
+one receiving static assertion now checks the CPU-private prefix helper's
+actual context-bearing signature. No assertion is removed or weakened.
+This receiving update allocates no NXVM task/S.
 MyNES 0044 hashes remain unchanged. This receiving publication supersedes
 only the PC hashes in the historical T564 snapshot above; it does not rewrite
 T564's accepted evidence or open task status. See the
-[current receiving evidence](../../myraidenii/etc/evidence/t2-s45-bus-lock.md)
-and [ten release identities](../../myraidenii/etc/evidence/t2-s45-artifacts.json).
-Each width passes679 units (192 X86 Core),498 strict rows,1390 Types inputs
+[current receiving evidence](../../myraidenii/etc/evidence/t2-s46-time-accounting.md)
+and [ten release identities](../../myraidenii/etc/evidence/t2-s46-artifacts.json).
+Each width passes680 units (193 X86 Core),498 strict rows,1391 Types inputs
 and14 selected PC receiving integrations plus a restored-default identity,
 not a new full integration-suite claim. Both original Ninja/ccache Release
 graphs finish at default. Profile switches/restores recompile zero CPU
@@ -52,6 +55,8 @@ objects, verified with both Ninja path-separator spellings. INIs and MyNES
 assets are unchanged; six selected external media originals retain actual
 before/after SHA-256/size/access-mode identities, not an entire archive audit.
 Earlier receiving proof remains in MyRaidenII history, not rewritten.
+S46 is a bounded prerequisite stage, not complete V30 timing, Machine
+admission or MyRaidenII gameplay qualification.
 
 ## Latest Task Closure
 
