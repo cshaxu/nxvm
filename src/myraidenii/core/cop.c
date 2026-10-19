@@ -2,18 +2,40 @@
 
 enum {
     MYRAIDENII_CORE_COP_STORAGE_START = 0x00400u,
-    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x00106u,
+    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x00188u,
+    MYRAIDENII_CORE_COP_COLLISION_RESULT = 0x00580u,
     MYRAIDENII_CORE_COP_PROGRAM_WORDS = 256u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS = 8u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOTS =
         MYRAIDENII_CORE_COP_PROGRAM_WORDS / MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS
 };
 
+typedef enum myraidenii_core_cop_register_role {
+    MYRAIDENII_CORE_COP_CONFIG,
+    MYRAIDENII_CORE_COP_ADDRESS,
+    MYRAIDENII_CORE_COP_COMMAND,
+    MYRAIDENII_CORE_COP_RESULT
+} myraidenii_core_cop_register_role;
+
+typedef enum myraidenii_core_cop_command_kind {
+    MYRAIDENII_CORE_COP_UNSUPPORTED,
+    MYRAIDENII_CORE_COP_COPY,
+    MYRAIDENII_CORE_COP_UPDATE,
+    MYRAIDENII_CORE_COP_POSITION,
+    MYRAIDENII_CORE_COP_HITBOX
+} myraidenii_core_cop_command_kind;
+
 typedef struct myraidenii_core_cop_range {
     lib_u32 physical_start;
     lib_size bytes;
-    lib_bool command;
+    myraidenii_core_cop_register_role role;
 } myraidenii_core_cop_range;
+
+typedef struct myraidenii_core_cop_collision {
+    lib_i16 position[3];
+    lib_i16 lower[3];
+    lib_i16 upper[3];
+} myraidenii_core_cop_collision;
 
 typedef struct myraidenii_core_cop_program {
     lib_u16 words[MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS];
@@ -28,20 +50,33 @@ struct myraidenii_core_cop {
     x86_core_machine *machine;
     lib_u8 registers[MYRAIDENII_CORE_COP_STORAGE_BYTES];
     myraidenii_core_cop_program programs[MYRAIDENII_CORE_COP_PROGRAM_SLOTS];
+    myraidenii_core_cop_collision collision[2];
     lib_u8 metadata_written;
     lib_u16 pending_command;
     lib_u8 pending_slot;
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
-    {0x00428u, 0x00006u, LIB_FALSE},
-    {0x00432u, 0x0000cu, LIB_FALSE},
-    {0x00444u, 0x00002u, LIB_FALSE},
-    {0x00476u, 0x0000au, LIB_FALSE},
-    {0x004a0u, 0x0000eu, LIB_FALSE},
-    {0x004c0u, 0x0000eu, LIB_FALSE},
-    {0x00500u, 0x00006u, LIB_TRUE}
+    {0x00428u, 0x00006u, MYRAIDENII_CORE_COP_CONFIG},
+    {0x00432u, 0x0000cu, MYRAIDENII_CORE_COP_CONFIG},
+    {0x00444u, 0x00002u, MYRAIDENII_CORE_COP_CONFIG},
+    {0x00476u, 0x0000au, MYRAIDENII_CORE_COP_CONFIG},
+    {0x004a0u, 0x0000eu, MYRAIDENII_CORE_COP_ADDRESS},
+    {0x004c0u, 0x0000eu, MYRAIDENII_CORE_COP_ADDRESS},
+    {0x00500u, 0x00006u, MYRAIDENII_CORE_COP_COMMAND},
+    {MYRAIDENII_CORE_COP_COLLISION_RESULT, 10u, MYRAIDENII_CORE_COP_RESULT}
 };
+
+static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 command)
+{
+    switch (command) {
+    case 0x0205u: case 0x0905u: return MYRAIDENII_CORE_COP_UPDATE;
+    case 0x5205u: case 0x5a05u: case 0xf205u: return MYRAIDENII_CORE_COP_COPY;
+    case 0xa100u: case 0xa900u: return MYRAIDENII_CORE_COP_POSITION;
+    case 0xb100u: case 0xb900u: return MYRAIDENII_CORE_COP_HITBOX;
+    default: return MYRAIDENII_CORE_COP_UNSUPPORTED;
+    }
+}
 
 static lib_u16 myraidenii_core_cop_word(const myraidenii_core_cop *cop,
     lib_u32 physical)
@@ -61,8 +96,7 @@ static lib_u32 myraidenii_core_cop_address(const myraidenii_core_cop *cop,
 static lib_bool myraidenii_core_cop_command_ready(const myraidenii_core_cop *cop,
     lib_u16 command)
 {
-    if (command != 0x0205u && command != 0x0905u &&
-        command != 0x5205u && command != 0x5a05u && command != 0xf205u)
+    if (myraidenii_core_cop_classify(command) == MYRAIDENII_CORE_COP_UNSUPPORTED)
         return LIB_FALSE;
     for (lib_size index = 0u; index < MYRAIDENII_CORE_COP_PROGRAM_SLOTS; ++index) {
         const myraidenii_core_cop_program *program = &cop->programs[index];
@@ -123,20 +157,31 @@ static lib_status myraidenii_core_cop_query(void *owner, lib_u32 physical,
 static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
+    const myraidenii_core_cop *cop = owner;
+    const myraidenii_core_cop_range *range;
+
     (void)observe_only;
     if (owner == LIB_NULL || destination == 0u || bytes == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (myraidenii_core_cop_range_find(physical, bytes) == LIB_NULL)
-        return LIB_STATUS_UNSUPPORTED;
-    if ((physical >= 0x4a0u && physical + bytes <= 0x4aeu) ||
-        (physical >= 0x4c0u && physical + bytes <= 0x4ceu)) {
-        const myraidenii_core_cop *cop = owner;
-
+    range = myraidenii_core_cop_range_find(physical, bytes);
+    if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
+    if (range->role == MYRAIDENII_CORE_COP_ADDRESS) {
         lib_memory_copy((void *)destination,
             cop->registers + physical - MYRAIDENII_CORE_COP_STORAGE_START, bytes);
         return LIB_STATUS_OK;
     }
-    /* Result registers and write-only configuration still have no read model. */
+    if (range->role == MYRAIDENII_CORE_COP_RESULT) {
+        for (lib_uptr index = 0u; index < bytes; ++index) {
+            lib_u32 address = physical + (lib_u32)index;
+
+            /* 588h is a second view of the one L2 status word at 580h. */
+            if (address >= MYRAIDENII_CORE_COP_COLLISION_RESULT + 8u) address -= 8u;
+            ((lib_u8 *)destination)[index] =
+                cop->registers[address - MYRAIDENII_CORE_COP_STORAGE_START];
+        }
+        return LIB_STATUS_OK;
+    }
+    /* Unmodelled result/configuration reads remain explicit failures. */
     return LIB_STATUS_INVALID_STATE;
 }
 
@@ -150,8 +195,9 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         return LIB_STATUS_INVALID_ARGUMENT;
     range = myraidenii_core_cop_range_find(physical, bytes);
     if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
+    if (range->role == MYRAIDENII_CORE_COP_RESULT) return LIB_STATUS_INVALID_STATE;
     if (cop->pending_command != 0u) return LIB_STATUS_INVALID_STATE;
-    if (range->command) {
+    if (range->role == MYRAIDENII_CORE_COP_COMMAND) {
         const lib_u8 *data = (const lib_u8 *)source;
         lib_u16 command;
 
@@ -212,6 +258,7 @@ void myraidenii_core_cop_reset(myraidenii_core_cop *cop)
     if (cop != LIB_NULL) {
         lib_memory_set(cop->registers, 0, sizeof(cop->registers));
         lib_memory_set(cop->programs, 0, sizeof(cop->programs));
+        lib_memory_set(cop->collision, 0, sizeof(cop->collision));
         cop->metadata_written = 0u;
         cop->pending_command = 0u;
         cop->pending_slot = 0u;
@@ -265,8 +312,82 @@ static lib_status myraidenii_core_cop_update(myraidenii_core_cop *cop)
     return myraidenii_core_cop_memory(cop, base, 30u + slot, 2u, LIB_TRUE, &coordinate);
 }
 
+static lib_i16 myraidenii_core_cop_signed_word(lib_u32 value)
+{
+    lib_u16 word = (lib_u16)value;
+
+    return (lib_i16)((word & 0x8000u) != 0u ? (lib_i32)word - 0x10000 : (lib_i32)word);
+}
+
+static lib_status myraidenii_core_cop_capture_position(myraidenii_core_cop *cop)
+{
+    const lib_u8 slot = cop->pending_command == 0xa900u ? 1u : 0u;
+    const lib_u32 base = myraidenii_core_cop_address(cop, slot);
+    lib_i16 position[3];
+    lib_u32 word = 0u;
+    /* Selected non-flipping forms still consume the object's flags word. */
+    lib_status status = myraidenii_core_cop_memory(cop, base, 2u, 2u, LIB_FALSE, &word);
+
+    for (lib_u8 axis = 0u; axis < 3u && status == LIB_STATUS_OK; ++axis) {
+        status = myraidenii_core_cop_memory(cop, base, 6u + axis * 4u, 2u, LIB_FALSE, &word);
+        position[axis] = myraidenii_core_cop_signed_word(word);
+    }
+    if (status == LIB_STATUS_OK)
+        lib_memory_copy(cop->collision[slot].position, position, sizeof(position));
+    return status;
+}
+
+static void myraidenii_core_cop_store_word(myraidenii_core_cop *cop,
+    lib_u32 physical, lib_u16 word)
+{
+    const lib_size index = physical - MYRAIDENII_CORE_COP_STORAGE_START;
+
+    cop->registers[index] = (lib_u8)word;
+    cop->registers[index + 1u] = (lib_u8)(word >> 8u);
+}
+
+static lib_status myraidenii_core_cop_capture_hitbox(myraidenii_core_cop *cop)
+{
+    const lib_u8 slot = cop->pending_command == 0xb900u ? 1u : 0u;
+    myraidenii_core_cop_collision candidate = cop->collision[slot];
+    lib_u32 pointer = 0u;
+    lib_status status = myraidenii_core_cop_memory(cop,
+        myraidenii_core_cop_address(cop, (lib_u8)(2u + slot)), 0u, 2u, LIB_FALSE, &pointer);
+    lib_u16 separated = 7u;
+
+    if (status != LIB_STATUS_OK) return status;
+    pointer |= (lib_u32)myraidenii_core_cop_word(cop, 0x436u) << 16u;
+    for (lib_u8 axis = 0u; axis < 3u; ++axis) {
+        lib_u32 pair = 0u;
+        lib_i32 displacement, lower;
+
+        status = myraidenii_core_cop_memory(cop, pointer, axis * 2u, 2u, LIB_FALSE, &pair);
+        if (status != LIB_STATUS_OK) return status;
+        displacement = (lib_i32)(pair & 0xffu);
+        if (displacement >= 0x80) displacement -= 0x100;
+        lower = candidate.position[axis] + displacement;
+        candidate.lower[axis] = myraidenii_core_cop_signed_word((lib_u32)lower);
+        candidate.upper[axis] = myraidenii_core_cop_signed_word(
+            (lib_u32)(lower + (lib_i32)(pair >> 8u)));
+    }
+    cop->collision[slot] = candidate;
+    for (lib_u8 axis = 0u; axis < 3u; ++axis) {
+        const myraidenii_core_cop_collision *first = &cop->collision[0];
+        const myraidenii_core_cop_collision *second = &cop->collision[1];
+
+        if (first->upper[axis] > second->lower[axis] &&
+            first->lower[axis] < second->upper[axis])
+            separated &= (lib_u16)~(1u << axis);
+        myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_COLLISION_RESULT + 2u + axis * 2u,
+            (lib_u16)((lib_i32)first->position[axis] - second->position[axis]));
+    }
+    myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_COLLISION_RESULT, separated);
+    return LIB_STATUS_OK;
+}
+
 lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
 {
+    myraidenii_core_cop_command_kind kind;
     lib_u32 value = 0u;
     lib_u32 source;
     lib_u32 destination;
@@ -274,23 +395,27 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
 
     if (cop == LIB_NULL || cop->machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (cop->pending_command == 0u) return LIB_STATUS_OK;
-    if (cop->pending_command == 0x0205u || cop->pending_command == 0x0905u) {
+    kind = myraidenii_core_cop_classify(cop->pending_command);
+    if (kind == MYRAIDENII_CORE_COP_UPDATE) {
         status = myraidenii_core_cop_update(cop);
-        cop->pending_command = 0u;
-        return status;
+    } else if (kind == MYRAIDENII_CORE_COP_POSITION) {
+        status = myraidenii_core_cop_capture_position(cop);
+    } else if (kind == MYRAIDENII_CORE_COP_HITBOX) {
+        status = myraidenii_core_cop_capture_hitbox(cop);
+    } else if (kind == MYRAIDENII_CORE_COP_COPY) {
+        source = myraidenii_core_cop_address(cop, 0u);
+        destination = myraidenii_core_cop_address(cop, cop->pending_command == 0xf205u ? 2u : 1u);
+        if (cop->pending_command == 0xf205u) {
+            if (source > LIB_UINT32_MAX - 4u) status = LIB_STATUS_INVALID_ARGUMENT;
+            else source += 4u;
+        }
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_cop_memory(cop, source, 0u, 4u, LIB_FALSE, &value);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_cop_memory(cop, destination, 0u, 4u, LIB_TRUE, &value);
+    } else {
+        status = LIB_STATUS_UNSUPPORTED;
     }
-    source = myraidenii_core_cop_address(cop, 0u);
-    destination = myraidenii_core_cop_address(cop, cop->pending_command == 0xf205u ? 2u : 1u);
-    if (cop->pending_command == 0xf205u) {
-        if (source > LIB_UINT32_MAX - 4u) status = LIB_STATUS_INVALID_ARGUMENT;
-        else source += 4u;
-    }
-    /* L2 transfer service at the first Core advance after the command
-     * bus write has committed. No physical COP latency is asserted. */
-    if (status == LIB_STATUS_OK)
-        status = myraidenii_core_cop_memory(cop, source, 0u, 4u, LIB_FALSE, &value);
-    if (status == LIB_STATUS_OK)
-        status = myraidenii_core_cop_memory(cop, destination, 0u, 4u, LIB_TRUE, &value);
     cop->pending_command = 0u;
     return status;
 }

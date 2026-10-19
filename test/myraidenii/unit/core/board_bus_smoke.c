@@ -690,10 +690,200 @@ done:
     return failures != 0;
 }
 
+static lib_status board_cop_run_commands(x86_core_machine *machine,
+    const lib_u16 *commands, lib_u8 count, lib_u8 port,
+    x86_core_machine_run_result *result)
+{
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    lib_u8 guest[24];
+    lib_status status;
+
+    if (count == 0u || count > 4u || port > 2u) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_u8 index = 0u; index < count; ++index) {
+        const lib_u8 instruction[] = {0xb8u, (lib_u8)commands[index],
+            (lib_u8)(commands[index] >> 8u), 0xa3u, (lib_u8)(port * 2u), 5u};
+
+        lib_memory_copy(guest + index * 6u, instruction, sizeof(instruction));
+    }
+    status = x86_core_machine_memory_write(machine, 0x800u, guest, count * 6u);
+    if (status == LIB_STATUS_OK) status = x86_core_machine_debug_patch_registers(machine, &entry);
+    return status == LIB_STATUS_OK ? x86_core_machine_debug_continue(machine,
+        (x86_core_machine_run_budget){count * 2u, 0u}, result) : status;
+}
+
+static lib_i32 board_cop_collision_result(x86_core_machine *machine,
+    const lib_u16 expected[5])
+{
+    lib_u8 bytes[2];
+
+    for (lib_u8 index = 0u; index < 5u; ++index) {
+        if (x86_core_machine_memory_inspect(machine, 0x580u + index * 2u,
+                bytes, sizeof(bytes)) != LIB_STATUS_OK ||
+            (lib_u16)(bytes[0] | (lib_u16)bytes[1] << 8u) != expected[index])
+            return 1;
+    }
+    if (x86_core_machine_memory_inspect(machine, 0x589u, bytes, 1u) != LIB_STATUS_OK ||
+        bytes[0] != (lib_u8)(expected[0] >> 8u))
+        return 1;
+    return x86_core_machine_memory_inspect(machine, 0x587u, bytes, sizeof(bytes)) !=
+        LIB_STATUS_OK || bytes[0] != (lib_u8)(expected[3] >> 8u) ||
+        bytes[1] != (lib_u8)expected[0];
+}
+
+static lib_i32 board_cop_collisions(void)
+{
+    static const struct {
+        lib_i16 first[3], second[3];
+        lib_u16 pair_first, pair_second;
+        lib_u16 expected[5];
+    } cases[] = {
+        {{10,20,30},{15,25,35},0x0a00u,0x0a00u,{0u,0xfffbu,0xfffbu,0xfffbu,0u}},
+        {{10,20,30},{30,25,35},0x0a00u,0x0a00u,{1u,0xffecu,0xfffbu,0xfffbu,1u}},
+        {{10,20,30},{20,25,35},0x0a00u,0x0a00u,{1u,0xfff6u,0xfffbu,0xfffbu,1u}},
+        {{10,20,30},{15,40,35},0x0a00u,0x0a00u,{2u,0xfffbu,0xffecu,0xfffbu,2u}},
+        {{10,20,30},{15,25,60},0x0a00u,0x0a00u,{4u,0xfffbu,0xfffbu,0xffe2u,4u}},
+        {{10,20,30},{30,40,60},0x0a00u,0x0a00u,{7u,0xffecu,0xffecu,0xffe2u,7u}},
+        {{10,10,10},{5,5,5},0x0af6u,0x0a00u,{0u,5u,5u,5u,0u}},
+        {{10,10,10},{5,5,5},0u,0x0a00u,{0u,5u,5u,5u,0u}},
+        {{10,10,10},{10,10,10},0u,0u,{7u,0u,0u,0u,7u}},
+        {{5,5,5},{5,5,5},0u,0x0a00u,{7u,0u,0u,0u,7u}},
+        {{32767,32767,32767},{-32768,-32768,-32768},0x0a01u,0x0a00u,
+            {0u,0xffffu,0xffffu,0xffffu,0u}},
+        {{32760,32760,32760},{32765,32765,32765},0x1400u,0x0100u,
+            {7u,0xfffbu,0xfffbu,0xfffbu,7u}},
+        {{0,0,0},{100,100,100},0xff80u,0x0100u,{0u,0xff9cu,0xff9cu,0xff9cu,0u}},
+        {{-30,-30,-30},{-25,-25,-25},0x0a00u,0x0a00u,{0u,0xfffbu,0xfffbu,0xfffbu,0u}}
+    };
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const lib_u16 commands[] = {0xa100u,0xa900u,0xb100u,0xb900u};
+    const lib_u16 reverse[] = {0xa900u,0xa100u,0xb900u,0xb100u};
+    lib_i32 failures = 0;
+
+    /* Normal vectors plus each position flags/axis and pointer/box read failure. */
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]) + 17u; ++index) {
+        const lib_bool failure = index >= sizeof(cases) / sizeof(cases[0]);
+        const lib_size vector = failure ? 0u : index;
+        const lib_u32 high_base = index == 1u ? 0x10000u : 0u;
+        myraidenii_core_board *board = LIB_NULL;
+        x86_core_machine *machine;
+        x86_core_machine_run_result result = {0};
+        lib_status status;
+        lib_i32 failed = 1;
+
+        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+        machine = myraidenii_core_board_machine_get(board);
+        for (lib_u8 slot = 0u; slot < 4u; ++slot) {
+            if (board_cop_upload(machine, commands[slot], slot * 8u, 8u) != LIB_STATUS_OK ||
+                board_cop_word_write(machine, 0x4c0u + slot * 2u,
+                    (lib_u16)(slot < 2u ? 0x2000u + slot * 0x100u :
+                        0x3000u + (slot - 2u) * 2u)) != LIB_STATUS_OK)
+                goto done;
+        }
+        if (board_cop_word_write(machine, 0x436u, (lib_u16)(high_base >> 16u)) != LIB_STATUS_OK)
+            goto done;
+        for (lib_u8 slot = 0u; slot < 2u; ++slot) {
+            if (board_cop_word_write(machine, 0x2002u + slot * 0x100u, 0xffffu) != LIB_STATUS_OK ||
+                board_cop_word_write(machine, 0x3000u + slot * 2u,
+                    (lib_u16)(0x4000u + slot * 0x10u)) != LIB_STATUS_OK)
+                goto done;
+            for (lib_u8 axis = 0u; axis < 3u; ++axis) {
+                if (board_cop_word_write(machine, 0x2006u + slot * 0x100u + axis * 4u,
+                        (lib_u16)(slot == 0u ? cases[vector].first[axis] :
+                            cases[vector].second[axis])) != LIB_STATUS_OK ||
+                    board_cop_word_write(machine, high_base + 0x4000u + slot * 0x10u + axis * 2u,
+                        slot == 0u ? cases[vector].pair_first : cases[vector].pair_second) !=
+                            LIB_STATUS_OK)
+                    goto done;
+            }
+        }
+        if (board_cop_run_commands(machine, index % 2u == 0u ? commands : reverse,
+                4u, (lib_u8)(index % 3u), &result) != LIB_STATUS_OK || result.executed != 8u ||
+            board_cop_collision_result(machine, cases[vector].expected))
+            goto done;
+        if (failure) {
+            const lib_size fault = index - sizeof(cases) / sizeof(cases[0]);
+            const lib_u8 slot = (lib_u8)(fault < 8u ? fault / 4u : (fault - 8u) / 4u);
+            const lib_u16 command = commands[fault < 8u ? slot : 2u + (slot % 2u)];
+
+            if (fault < 8u) {
+                if (board_cop_word_write(machine, 0x4c0u + slot * 2u,
+                        (lib_u16)(0x426u - (fault % 4u) * 4u)) != LIB_STATUS_OK)
+                    goto done;
+            } else if (fault == 16u) {
+                if (board_cop_word_write(machine, 0x436u, 0x10u) != LIB_STATUS_OK) goto done;
+            } else if ((fault - 8u) % 4u == 0u) {
+                if (board_cop_word_write(machine, 0x4c4u + slot * 2u, 0x428u) != LIB_STATUS_OK)
+                    goto done;
+            } else if (board_cop_word_write(machine, 0x3000u + slot * 2u,
+                    (lib_u16)(0x428u - (((fault - 8u) % 4u) - 1u) * 2u)) != LIB_STATUS_OK) {
+                goto done;
+            }
+            status = board_cop_run_commands(machine, &command, 1u, 0u, &result);
+            if (status != LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+                board_cop_collision_result(machine, cases[0].expected))
+                goto done;
+        } else if (index == 0u) {
+            const lib_u16 zero[5] = {0};
+            const lib_u16 changed[5] = {1u,15u,0xfffbu,0xfffbu,1u};
+
+            if (board_cop_word_write(machine, 0x580u, 0xffffu) != LIB_STATUS_INVALID_STATE ||
+                board_cop_word_write(machine, 0x588u, 0xffffu) != LIB_STATUS_INVALID_STATE ||
+                board_cop_word_write(machine, 0x2006u, 30u) != LIB_STATUS_OK ||
+                board_cop_run_commands(machine, commands + 2u, 1u, 0u, &result) != LIB_STATUS_OK ||
+                board_cop_collision_result(machine, cases[0].expected) ||
+                board_cop_run_commands(machine, commands, 1u, 0u, &result) != LIB_STATUS_OK ||
+                board_cop_run_commands(machine, commands + 3u, 1u, 0u, &result) != LIB_STATUS_OK)
+                goto done;
+            /* Position reload changes differences, not the previously captured bounds. */
+            if (board_cop_collision_result(machine, (lib_u16[5]){0u,15u,0xfffbu,0xfffbu,0u}) ||
+                board_cop_run_commands(machine, commands + 2u, 1u, 0u, &result) != LIB_STATUS_OK ||
+                board_cop_collision_result(machine, changed) ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+                board_cop_collision_result(machine, zero) ||
+                board_cop_word_write(machine, 0x500u, commands[0]) != LIB_STATUS_INVALID_STATE)
+                goto done;
+            for (lib_u8 alternate = 0u; alternate < 3u; ++alternate) {
+                const lib_u16 unsupported[] = {0xa180u,0xa980u,0xb080u};
+
+                if (board_cop_upload(machine, unsupported[alternate], 0u, 8u) != LIB_STATUS_OK ||
+                    board_cop_word_write(machine, 0x500u, unsupported[alternate]) !=
+                        LIB_STATUS_INVALID_STATE)
+                    goto done;
+            }
+            /* Reset must clear latches, not merely the visible result words. */
+            for (lib_u8 slot = 0u; slot < 3u; ++slot) {
+                if (board_cop_upload(machine, commands[slot], slot * 8u, 8u) != LIB_STATUS_OK ||
+                    board_cop_word_write(machine, 0x4c0u + slot * 2u,
+                        slot == 2u ? 0x3000u : (lib_u16)(0x2000u + slot * 0x100u)) != LIB_STATUS_OK)
+                    goto done;
+                if (board_cop_word_write(machine, 0x2006u + slot * 4u, 20u) != LIB_STATUS_OK)
+                    goto done;
+            }
+            if (board_cop_run_commands(machine, commands, 1u, 0u, &result) != LIB_STATUS_OK ||
+                board_cop_run_commands(machine, commands + 2u, 1u, 0u, &result) != LIB_STATUS_OK ||
+                board_cop_collision_result(machine, (lib_u16[5]){7u,20u,20u,20u,7u}))
+                goto done;
+        }
+        failed = 0;
+done:
+        if (failed) lib_c_printf("COP:COLLISION:FAIL case=%u reason=%u detail=%u\n",
+            (lib_u32)index, (lib_u32)result.reason, result.detail);
+        myraidenii_core_board_destroy(board);
+        failures += failed;
+    }
+    return failures != 0;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
-        board_cop_transfers() || board_cop_updates();
+        board_cop_transfers() || board_cop_updates() || board_cop_collisions();
 }

@@ -28,6 +28,12 @@ TODOs and undefined host arithmetic are not physical-hardware specifications.
 
 ## Complete Nine-Member Contract Ledger
 
+Subsequent S13 review corrects the command-entry status prefix below: the
+dispatcher clears bit8000 before a handler. Handler-local preservation does
+not preserve that prior error bit across a complete admitted command. See
+[the explicit S13 correction](t3-s13-cop-collision.md#explicit-correction-to-the-s12-candidate-contract).
+This applies to the proposed status/failure rows, not a new Shared change.
+
 Let B0/B1 be the existing address registers, D the distance result, S the
 two-bit scale and A the angle result. Every row is a proposed explicit L2
 macro, not an implemented operation or bit-exact silicon claim.
