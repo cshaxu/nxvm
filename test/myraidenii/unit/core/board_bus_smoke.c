@@ -1,4 +1,5 @@
 #include "myraidenii/core/board_interface.h"
+#include "x86-core/machine/debug_interface.h"
 
 static lib_u8 program_even[MYRAIDENII_CORE_PROGRAM_LANE_BYTES];
 static lib_u8 program_odd[MYRAIDENII_CORE_PROGRAM_LANE_BYTES];
@@ -105,7 +106,133 @@ done:
     return failed;
 }
 
+static lib_i32 board_interrupt_input_and_sound_routes(void)
+{
+    const myraidenii_core_board_config config = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0x2000u,
+            [X86_CORE_CPU_DEBUG_EIP] = 0u, [X86_CORE_CPU_DEBUG_ESP] = 0x6000u}
+    };
+    const lib_u8 guest[] = {0xfbu, 0x90u, 0xf4u};
+    const lib_u8 handler[] = {0x46u, 0xcfu};
+    const lib_u8 vector[] = {0x00u, 0x02u, 0x00u, 0x20u};
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_run_result result = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu;
+    lib_u16 word = 0u;
+    lib_u8 byte = 0u;
+    lib_u8 coin = 0u;
+    lib_bool sound_interrupt = LIB_FALSE;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program_even, 0, sizeof(program_even));
+    lib_memory_set(program_odd, 0, sizeof(program_odd));
+    for (lib_size index = 0u; index < sizeof(guest); ++index)
+        (index & 1u ? program_odd : program_even)[0x10000u + index / 2u] = guest[index];
+    for (lib_size index = 0u; index < sizeof(handler); ++index)
+        (index & 1u ? program_odd : program_even)[0x10100u + index / 2u] = handler[index];
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, MYRAIDENII_CORE_MAIN_INTERRUPT_VECTOR * 4u,
+            vector, sizeof(vector)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine,
+            (x86_core_machine_run_budget){3u, 0u}, &result) != LIB_STATUS_OK ||
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || result.executed != 3u ||
+        myraidenii_core_board_request_main_interrupt(board) != LIB_STATUS_OK ||
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+            LIB_STATUS_OK || result.executed != 0u ||
+        x86_core_machine_debug_capture_cpu_snapshot(machine,
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
+        cpu.cs.selector != 0x2000u || cpu.eip != 0x200u ||
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){2u, 0u}, &result) !=
+            LIB_STATUS_OK || result.executed != 2u ||
+        x86_core_machine_debug_capture_cpu_snapshot(machine,
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK || cpu.esi != 1u)
+        goto done;
+
+    if (myraidenii_core_board_set_dip_switches(board, 0x5aa5u) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_UP,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_BUTTON_2,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_START_1,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_SERVICE,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_2,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_DIP_SWITCHES_ADDRESS, &word,
+            sizeof(word)) != LIB_STATUS_OK || word != 0x5aa5u ||
+        (word = 0u, x86_core_machine_memory_write(machine,
+            MYRAIDENII_CORE_DIP_SWITCHES_ADDRESS, &word, sizeof(word)) != LIB_STATUS_OK) ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_DIP_SWITCHES_ADDRESS, &word,
+            sizeof(word)) != LIB_STATUS_OK || word != 0x5aa5u ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_PLAYER_INPUTS_ADDRESS, &word,
+            sizeof(word)) != LIB_STATUS_OK || word != 0xdffeu ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS, &word,
+            sizeof(word)) != LIB_STATUS_OK || word != 0xfff6u ||
+        myraidenii_core_board_get_coin_inputs(board, &coin) != LIB_STATUS_OK || coin != 0xfdu)
+        goto done;
+
+    byte = 0x12u;
+    if (x86_core_machine_memory_write(machine, MYRAIDENII_CORE_SOUND_START, &byte, 1u) !=
+            LIB_STATUS_OK || (byte = 0x34u,
+            x86_core_machine_memory_write(machine, MYRAIDENII_CORE_SOUND_START + 2u, &byte, 1u) !=
+                LIB_STATUS_OK) || (byte = 0u,
+            x86_core_machine_memory_write(machine, MYRAIDENII_CORE_SOUND_START + 8u, &byte, 1u) !=
+                LIB_STATUS_OK) ||
+        myraidenii_core_board_sound_interrupt_is_pending(board, &sound_interrupt) != LIB_STATUS_OK ||
+        !sound_interrupt || myraidenii_core_board_sound_interrupt_acknowledge(board) != LIB_STATUS_OK ||
+        myraidenii_core_board_sound_interrupt_is_pending(board, &sound_interrupt) != LIB_STATUS_OK ||
+        sound_interrupt || (byte = 0u,
+            x86_core_machine_memory_write(machine, MYRAIDENII_CORE_SOUND_START + 12u, &byte, 1u) !=
+                LIB_STATUS_OK) ||
+        myraidenii_core_board_sound_command_get(board, 0u, &byte) != LIB_STATUS_OK ||
+        byte != 0x12u || myraidenii_core_board_sound_command_get(board, 1u, &byte) !=
+            LIB_STATUS_OK || byte != 0x34u ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SOUND_START + 10u, &byte, 1u) !=
+            LIB_STATUS_OK || byte != 1u ||
+        myraidenii_core_board_sound_command_acknowledge(board) != LIB_STATUS_OK ||
+        myraidenii_core_board_sound_response_set(board, 0u, 0x56u) != LIB_STATUS_OK ||
+        myraidenii_core_board_sound_response_set(board, 1u, 0x78u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SOUND_START + 4u, &byte, 1u) !=
+            LIB_STATUS_OK || byte != 0x56u ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SOUND_START + 6u, &byte, 1u) !=
+            LIB_STATUS_OK || byte != 0x78u ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SOUND_START + 1u, &byte, 1u) !=
+            LIB_STATUS_OK || byte != 0xffu ||
+        (byte = 0x9au, x86_core_machine_memory_write(machine,
+            MYRAIDENII_CORE_SOUND_START + 1u, &byte, 1u) != LIB_STATUS_OK) ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SOUND_START + 4u, &byte, 1u) !=
+            LIB_STATUS_OK || byte != 0x56u ||
+        myraidenii_core_board_request_main_interrupt(board) != LIB_STATUS_OK ||
+        myraidenii_core_board_sound_interrupt_is_pending(board, &sound_interrupt) != LIB_STATUS_OK ||
+        sound_interrupt ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        myraidenii_core_board_sound_interrupt_is_pending(board, &sound_interrupt) != LIB_STATUS_OK ||
+        sound_interrupt ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_SOUND_START + 10u, &byte, 1u) !=
+            LIB_STATUS_OK || byte != 0u ||
+        x86_core_machine_memory_read(machine, MYRAIDENII_CORE_PLAYER_INPUTS_ADDRESS, &word,
+            sizeof(word)) != LIB_STATUS_OK || word != 0xffffu)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 lib_i32 main(void)
 {
-    return board_invalid_arguments() || board_program_and_ram_routes();
+    return board_invalid_arguments() || board_program_and_ram_routes() ||
+        board_interrupt_input_and_sound_routes();
 }

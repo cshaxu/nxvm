@@ -4,6 +4,15 @@ struct myraidenii_core_board {
     x86_core_machine *machine;
     lib_u8 *program;
     lib_u8 bank_selected;
+    lib_u8 main_interrupt_pending;
+    lib_u8 sound_command[2];
+    lib_u8 sound_response[2];
+    lib_u8 sound_command_pending;
+    lib_u8 sound_interrupt_pending;
+    lib_u16 dip_switches;
+    lib_u16 player_inputs;
+    lib_u16 system_inputs;
+    lib_u8 coin_inputs;
 };
 
 static lib_bool myraidenii_core_board_range_contains(lib_u32 first,
@@ -91,11 +100,149 @@ static lib_status myraidenii_core_board_select_write(void *owner, lib_u32 physic
     return LIB_STATUS_OK;
 }
 
+static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
+{
+    const myraidenii_core_board *board = owner;
+
+    return board != LIB_NULL && board->main_interrupt_pending;
+}
+
+static lib_u8 myraidenii_core_board_interrupt_acknowledge(void *owner)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board != LIB_NULL) board->main_interrupt_pending = LIB_FALSE;
+    return MYRAIDENII_CORE_MAIN_INTERRUPT_VECTOR;
+}
+
+static lib_status myraidenii_core_board_input_value(const myraidenii_core_board *board,
+    lib_u32 physical, lib_u16 *out_value)
+{
+    if (board == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    switch (physical) {
+    case MYRAIDENII_CORE_DIP_SWITCHES_ADDRESS:
+        *out_value = board->dip_switches;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_PLAYER_INPUTS_ADDRESS:
+        *out_value = board->player_inputs;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS:
+        *out_value = board->system_inputs;
+        return LIB_STATUS_OK;
+    default:
+        return LIB_STATUS_UNSUPPORTED;
+    }
+}
+
+static lib_status myraidenii_core_board_input_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    lib_u16 value;
+    lib_u32 first = physical & ~1u;
+
+    (void)access;
+    if (bytes == 0u || bytes > 2u || physical + bytes > first + 2u)
+        return LIB_STATUS_UNSUPPORTED;
+    return myraidenii_core_board_input_value(owner, first, &value);
+}
+
+static lib_status myraidenii_core_board_input_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    lib_u16 value;
+    lib_u32 first = physical & ~1u;
+    lib_status status;
+
+    (void)observe_only;
+    if (destination == 0u || bytes == 0u || bytes > 2u || physical + bytes > first + 2u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = myraidenii_core_board_input_value(owner, first, &value);
+    if (status != LIB_STATUS_OK) return status;
+    for (lib_uptr index = 0u; index < bytes; ++index)
+        ((lib_u8 *)destination)[index] = (lib_u8)(value >> ((physical + index - first) * 8u));
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_input_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    (void)source;
+    return myraidenii_core_board_input_query(owner, physical, bytes,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE);
+}
+
+static lib_status myraidenii_core_board_sound_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)owner;
+    (void)access;
+    if (bytes == 0u || bytes > 2u || physical < MYRAIDENII_CORE_SOUND_START ||
+        physical >= MYRAIDENII_CORE_SOUND_START + MYRAIDENII_CORE_SOUND_BYTES ||
+        physical + bytes > MYRAIDENII_CORE_SOUND_START + MYRAIDENII_CORE_SOUND_BYTES)
+        return LIB_STATUS_UNSUPPORTED;
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_sound_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    const myraidenii_core_board *board = owner;
+
+    (void)observe_only;
+    if (board == LIB_NULL || destination == 0u ||
+        myraidenii_core_board_sound_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_uptr index = 0u; index < bytes; ++index) {
+        lib_u8 offset = (lib_u8)((physical + index - MYRAIDENII_CORE_SOUND_START) >> 1u);
+        lib_u8 value = 0xffu;
+
+        if (((physical + index) & 1u) == 0u) {
+            if (offset == 2u || offset == 3u) value = board->sound_response[offset - 2u];
+            else if (offset == 5u) value = board->sound_command_pending ? 1u : 0u;
+        }
+        ((lib_u8 *)destination)[index] = value;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_sound_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board == LIB_NULL || source == 0u ||
+        myraidenii_core_board_sound_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_uptr index = 0u; index < bytes; ++index) {
+        lib_u8 offset = (lib_u8)((physical + index - MYRAIDENII_CORE_SOUND_START) >> 1u);
+
+        if (((physical + index) & 1u) == 0u) {
+            if (offset < 2u) board->sound_command[offset] = ((const lib_u8 *)source)[index];
+            else if (offset == 4u) board->sound_interrupt_pending = LIB_TRUE;
+            else if (offset == 6u) board->sound_command_pending = LIB_TRUE;
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
 static void myraidenii_core_board_reset(void *owner)
 {
     myraidenii_core_board *board = owner;
 
-    if (board != LIB_NULL) board->bank_selected = LIB_FALSE;
+    if (board != LIB_NULL) {
+        board->bank_selected = LIB_FALSE;
+        board->main_interrupt_pending = LIB_FALSE;
+        board->sound_command[0] = 0u;
+        board->sound_command[1] = 0u;
+        board->sound_response[0] = 0u;
+        board->sound_response[1] = 0u;
+        board->sound_command_pending = LIB_FALSE;
+        board->sound_interrupt_pending = LIB_FALSE;
+        board->dip_switches = 0xffffu;
+        board->player_inputs = 0xffffu;
+        board->system_inputs = 0xffffu;
+        board->coin_inputs = 0xffu;
+    }
 }
 
 static void myraidenii_core_board_finalize(void *owner)
@@ -111,6 +258,8 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         .cpu_profile = X86_CORE_CPU_PROFILE_V30
     };
     x86_core_machine_attachment attachment = {
+        .interrupt_pending = myraidenii_core_board_interrupt_pending,
+        .interrupt_acknowledge = myraidenii_core_board_interrupt_acknowledge,
         .reset_devices = myraidenii_core_board_reset,
         .finalize_devices = myraidenii_core_board_finalize
     };
@@ -122,13 +271,33 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_select_read, myraidenii_core_board_select_write,
         myraidenii_core_board_select_query
     };
+    const x86_core_machine_memory_device_callbacks input_callbacks = {
+        myraidenii_core_board_input_read, myraidenii_core_board_input_write,
+        myraidenii_core_board_input_query
+    };
+    const x86_core_machine_memory_device_callbacks sound_callbacks = {
+        myraidenii_core_board_sound_read, myraidenii_core_board_sound_write,
+        myraidenii_core_board_sound_query
+    };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[2] = {
+    x86_core_machine_memory_device_route routes[6] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
         {.physical_start = MYRAIDENII_CORE_PROGRAM_BANK_SELECT_ADDRESS,
-            .bytes = 1u, .callbacks = select_callbacks}
+            .bytes = 1u, .callbacks = select_callbacks},
+        {.physical_start = MYRAIDENII_CORE_SOUND_START,
+            .bytes = MYRAIDENII_CORE_SOUND_BYTES, .callbacks = sound_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_DIP_SWITCHES_ADDRESS,
+            .bytes = 2u, .callbacks = input_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_PLAYER_INPUTS_ADDRESS,
+            .bytes = 2u, .callbacks = input_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS,
+            .bytes = 2u, .callbacks = input_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT}
     };
     lib_size index;
     lib_status status;
@@ -158,7 +327,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     }
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_install_memory_device_routes(board->machine, routes,
-            2u, LIB_NULL, LIB_NULL, board);
+            6u, LIB_NULL, LIB_NULL, board);
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_register_immutable_rom_mapping(board->machine,
             MYRAIDENII_CORE_STATIC_PROGRAM_START,
@@ -188,4 +357,97 @@ void myraidenii_core_board_destroy(myraidenii_core_board *board)
 x86_core_machine *myraidenii_core_board_machine_get(myraidenii_core_board *board)
 {
     return board == LIB_NULL ? LIB_NULL : board->machine;
+}
+
+lib_status myraidenii_core_board_set_control(myraidenii_core_board *board,
+    myraidenii_core_board_control control, lib_bool pressed)
+{
+    lib_u16 *register_value;
+    lib_u16 mask;
+
+    if (board == LIB_NULL || control >= MYRAIDENII_CORE_BOARD_CONTROL_COUNT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (control <= MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_2) {
+        register_value = &board->player_inputs;
+        mask = (lib_u16)(1u << control);
+    } else if (control <= MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_BUTTON_2) {
+        register_value = &board->player_inputs;
+        mask = (lib_u16)(1u << (control + 2u));
+    } else if (control <= MYRAIDENII_CORE_BOARD_CONTROL_SERVICE) {
+        register_value = &board->system_inputs;
+        mask = (lib_u16)(1u << (control == MYRAIDENII_CORE_BOARD_CONTROL_SERVICE ? 3u :
+            control - MYRAIDENII_CORE_BOARD_CONTROL_START_1));
+    } else {
+        lib_u8 coin_mask = (lib_u8)(1u <<
+            (control - MYRAIDENII_CORE_BOARD_CONTROL_COIN_1));
+
+        if (pressed) board->coin_inputs &= (lib_u8)~coin_mask;
+        else board->coin_inputs |= coin_mask;
+        return LIB_STATUS_OK;
+    }
+    if (pressed) *register_value &= (lib_u16)~mask;
+    else *register_value |= mask;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_set_dip_switches(myraidenii_core_board *board,
+    lib_u16 value)
+{
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    board->dip_switches = value;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_get_coin_inputs(const myraidenii_core_board *board,
+    lib_u8 *out_value)
+{
+    if (board == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_value = board->coin_inputs;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_request_main_interrupt(myraidenii_core_board *board)
+{
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    board->main_interrupt_pending = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_sound_command_get(const myraidenii_core_board *board,
+    lib_u8 index, lib_u8 *out_value)
+{
+    if (board == LIB_NULL || out_value == LIB_NULL || index >= 2u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_value = board->sound_command[index];
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_sound_command_acknowledge(myraidenii_core_board *board)
+{
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    board->sound_command_pending = LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_sound_interrupt_is_pending(
+    const myraidenii_core_board *board, lib_bool *out_pending)
+{
+    if (board == LIB_NULL || out_pending == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_pending = board->sound_interrupt_pending;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_sound_interrupt_acknowledge(myraidenii_core_board *board)
+{
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    board->sound_interrupt_pending = LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_sound_response_set(myraidenii_core_board *board,
+    lib_u8 index, lib_u8 value)
+{
+    if (board == LIB_NULL || index >= 2u) return LIB_STATUS_INVALID_ARGUMENT;
+    board->sound_response[index] = value;
+    return LIB_STATUS_OK;
 }

@@ -80,3 +80,15 @@ form/timing matrices, not because B01--B03 are already covered. S2 may add
 only one focused ROM-free board test family for new board routing. It must not
 retest CPU execution, generic immutable-ROM mapping, generic RAM access or
 generic Machine lifecycle; those retain their existing test owners.
+
+## S2 Coordinator Acceptance
+
+The owner accepted S2 on 2026-10-19. The coordinator reviewed P1--P3
+(`dd2611e1b`, `9f941ae69`, `f2c30a1e6`) against the B01--B03/B09 packet and
+its evidence. One MyRaidenII board owns the V30 construction, copied program
+lanes, dynamic bank and control write, while the existing immutable mapper owns
+the static upper image. The focused board route test covers only new board
+address/state behavior; it does not duplicate CPU, generic RAM, immutable-ROM
+or lifecycle tests. Required x64/x86 focused checks and the repository unit
+suite passed before delivery. B04--B06 remain explicitly unimplemented and are
+now the admitted S3 receiver.

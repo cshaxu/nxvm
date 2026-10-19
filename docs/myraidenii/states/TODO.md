@@ -49,6 +49,15 @@ interrupted run, with a seeded-abandoned-probe regression. Do not weaken the
 dependency checker or clear an entire reusable build tree. Risk is misleading
 subsequent gate failure, not an established production dependency violation.
 
+S3 independently reconfirmed the same ownership issue in the reusable Ninja
+tree: parallel verifier self-tests use overlapping generated fixture paths, so
+one interrupted/overlapping run can make a later negative expectation observe
+another probe instead. S3 therefore qualified its aggregate serially in each
+separate architecture tree; both complete passes are valid. The later Shared
+repair must give each concurrent probe a distinct owned fixture root, or
+otherwise serialize the fixture owner, then prove both clean and interrupted
+replays without deleting the broader cache tree.
+
 ## Resolved: Lossless Graphics Publication Contract
 
 ### Original T1 Finding And Disposition (Superseded)
