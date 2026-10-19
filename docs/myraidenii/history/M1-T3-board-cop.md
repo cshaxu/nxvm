@@ -210,3 +210,29 @@ owned session is terminal, with hashes and summaries retained. S8 is accepted
 and closed. T3 remains open; the next batch returns to the finite B07/B08 COP
 operation/evidence receiver. Full Video rendering and real-set/gameplay proof
 remain their separately recorded requirements.
+
+## S9 Coordinator Acceptance
+
+The coordinator independently reviewed P1 `456cde1fb`, the actual three-file
+documentation diff, bounded diagnostic method and retained input/probe/output
+identities. No tracked production, test, build, ABI or artifact change exists.
+The probe preserves the current command rejection and runs the configured
+Board/V30 route with S8 Video advancement; it neither scripts completion nor
+restores the old fallback. Ten temporary files, including both verified ROM
+lane copies, are removed after their process is terminal (1788292 bytes).
+
+The evidence adds a complete finite initial-upload inventory: 176 distinct
+upload addresses, 22 trigger identifiers and one actual rejected `0x5205`
+attempt after 68254 retired instructions. CPU IF is clear and no IRQ is
+acknowledged despite advancing Video time. The record correctly distinguishes
+these facts from a model of COP operation effects or S6's later stall cause.
+All original B07/B08 families remain accounted for; the 22 uploaded IDs are
+not relabelled the full game's execution universe. The next S10 receiver is
+the whole upload/register protocol and three-member memory-transfer family,
+with a safe Core transaction service point and explicit L2 functional grade.
+
+Documentation governance and whitespace checks pass. S8's unchanged exact
+production/test baseline retains its 687/687 dual-width qualification; S9
+does not claim a new full unit, integration, EXE or game pass. S9 is accepted
+and closed. T3 remains open and ordinary next-S admission needs no new owner
+approval under the recorded delegation.
