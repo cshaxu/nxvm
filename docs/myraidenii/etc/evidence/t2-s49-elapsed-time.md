@@ -330,6 +330,18 @@ files/3398492 bytes. The separately verified44-byte interrupted-test probe had
 already been removed. Final build contains only .ccache/.ninja; reusable cache,
 global cache, configuration, external research, firmware and media are retained.
 
+## Coordinator Acceptance
+
+Sequential coordinator review accepts pushed P1 `a07c37107`, P2 `98656815c` and
+P3 `cd8680dff` after reading their actual source/test/build/doc/artifact changes.
+The final manifest, model/ABI/boundary and retained/removed-path facts above
+match the committed implementation. Ten artifact identities,33 tracked guards
+and six media hashes/modes are rechecked from current files. Cleanup and
+process completion are verified, with only persistent caches remaining.
+Original request, class ledger, scope correction and remaining S50/S51 exits
+are reconciled; structural doc checks are not substituted for that review.
+This accepts S49 only, not complete Machine, T2 or playable M1.
+
 ## Archived S49 Admission Packet
 
 | Field | Required record |
