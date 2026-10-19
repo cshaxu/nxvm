@@ -990,6 +990,78 @@ static lib_bool executor_locked_ports(void)
     return LIB_TRUE;
 }
 
+typedef struct executor_callback_fault_probe {
+    x86_core_machine *machine;
+    lib_bool reported;
+    lib_u32 finalized;
+} executor_callback_fault_probe;
+
+static void executor_callback_fault_advance(void *owner, lib_u64 ticks, lib_u64 due)
+{
+    executor_callback_fault_probe *probe = owner;
+    (void)ticks;
+    (void)due;
+    if (!probe->reported) {
+        probe->reported = x86_core_machine_report_fault(probe->machine,
+            0x53524331u) == LIB_STATUS_OK;
+    }
+}
+
+static void executor_callback_fault_finalize(void *owner)
+{
+    ++((executor_callback_fault_probe *)owner)->finalized;
+}
+
+static lib_bool executor_callback_fault(void)
+{
+    const x86_core_machine_executor_config config = {.memory_bytes = 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_V30, .fpu_profile = X86_FPU_PROFILE_NONE};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x1000u}
+    };
+    const lib_u8 nop = 0x90u;
+
+    for (lib_u8 phase = 0u; phase < 2u; ++phase)
+    for (lib_u8 bounded = 0u; bounded < 2u; ++bounded) {
+        x86_core_machine *machine = LIB_NULL;
+        executor_callback_fault_probe probe = {0};
+        const x86_core_machine_attachment attachment = {.context = &probe,
+            .finalize_devices = executor_callback_fault_finalize,
+            .before_internal_advance = phase == 0u ? executor_callback_fault_advance : LIB_NULL,
+            .after_internal_advance = phase == 1u ? executor_callback_fault_advance : LIB_NULL};
+        x86_core_machine_run_result result = {0};
+        x86_core_machine_observation observation;
+        lib_bool failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+
+        probe.machine = machine;
+        if (!failed) {
+            failed = x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
+                x86_core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+                x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+                x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+                x86_core_machine_memory_write(machine, 0x1000u, &nop, sizeof(nop)) != LIB_STATUS_OK ||
+                x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, bounded ? 1u : 0u},
+                    &result) != LIB_STATUS_INTERNAL_ERROR || !probe.reported ||
+                x86_core_machine_capture_observation(machine, &observation) != LIB_STATUS_OK ||
+                observation.lifecycle != X86_CORE_MACHINE_FAULTED ||
+                result.reason != X86_CORE_MACHINE_STOP_FAULT || result.detail != 0x53524331u ||
+                result.ticks == 0u || result.elapsed_ticks != result.ticks ||
+                result.elapsed_ticks != observation.elapsed_ticks;
+        }
+        if (!failed) {
+            failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+                result.detail != 0x53524331u || result.ticks != 0u;
+        }
+        x86_core_machine_destroy(machine);
+        if (failed || probe.finalized != 1u) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     x86_core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = 16u * 1024u * 1024u };
@@ -1011,7 +1083,8 @@ lib_i32 main(void)
         const char *name;
         lib_bool (*run)(void);
     } cases[] = {
-        {"event-time",executor_event_time}, {"sx-fpu-interface",executor_sx_fpu_interface},
+        {"event-time",executor_event_time}, {"callback-fault",executor_callback_fault},
+        {"sx-fpu-interface",executor_sx_fpu_interface},
         {"sx-bounded-retirement",executor_sx_bounded_retirement},
         {"retired-before-entry-fault",executor_retired_before_entry_fault},
         {"sx-soft-reset",executor_sx_soft_reset}, {"sx-smm",executor_sx_smm},

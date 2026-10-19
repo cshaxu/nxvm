@@ -716,16 +716,11 @@ static lib_status x86_core_machine_complete_cpu_fault(x86_core_machine *machine,
     return status == LIB_STATUS_OK ? LIB_STATUS_INTERNAL_ERROR : status;
 }
 
-lib_status x86_core_machine_run(
+static lib_status x86_core_machine_execute_budget(
     x86_core_machine *machine,
     x86_core_machine_run_budget budget,
     x86_core_machine_run_result *result)
 {
-    if (machine == LIB_NULL || result == LIB_NULL ||
-        !x86_core_machine_mutable_operation_is_allowed(machine)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-
     result->reason = X86_CORE_MACHINE_STOP_NONE;
     result->executed = 0u;
     result->ticks = 0u;
@@ -1170,6 +1165,31 @@ retirement_complete:
         result->linear_pc = x86_core_machine_linear_pc(machine);
         return x86_core_machine_complete_run_boundary(machine, result);
     }
+}
+
+lib_status x86_core_machine_run(
+    x86_core_machine *machine,
+    x86_core_machine_run_budget budget,
+    x86_core_machine_run_result *result)
+{
+    lib_status status;
+    lib_u64 start_tick;
+
+    if (machine == LIB_NULL || result == LIB_NULL ||
+        !x86_core_machine_mutable_operation_is_allowed(machine)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    start_tick = machine->elapsed_ticks;
+    status = x86_core_machine_execute_budget(machine, budget, result);
+    if (machine->lifecycle == X86_CORE_MACHINE_FAULTED) {
+        result->reason = X86_CORE_MACHINE_STOP_FAULT;
+        result->detail = machine->fault_detail;
+        result->ticks = machine->elapsed_ticks - start_tick;
+        result->elapsed_ticks = machine->elapsed_ticks;
+        result->linear_pc = x86_core_machine_linear_pc(machine);
+        return LIB_STATUS_INTERNAL_ERROR;
+    }
+    return status;
 }
 
 lib_status x86_core_machine_advance_time(x86_core_machine *machine,

@@ -366,5 +366,6 @@ lib_status x86_core_machine_publish_elapsed_ticks(x86_core_machine *machine,
             0u, (lib_u32)elapsed_ticks, 0u);
     }
     x86_core_machine_advance_scheduler(machine, elapsed_ticks);
-    return LIB_STATUS_OK;
+    return machine->lifecycle == X86_CORE_MACHINE_FAULTED ?
+        LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
