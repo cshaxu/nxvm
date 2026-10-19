@@ -2,31 +2,7 @@
 
 ## Current Work
 
-## Active S20 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: MyRaidenII M1 T3 S20 after accepted S19 b2f8b9311; sequential coordinator/executor. |
-| Admission And Approval | Owner's full implementation goal and delegated same-T planning permit this bounded prerequisite research. MyRaidenII records only; no Shared or production edit is inferred. |
-| Objective | Reconcile the complete remaining initial-trigger and mapped COP capability batch: 2a05/1905/9100/9900, RNG, mode-banked DMA/fill/video/brightness, sorting and their Board/Video/time ownership, then freeze cohesive implementation receivers rather than successive first-fault patches. |
-| Non-goals | No imported reference body/table, production/test modification, guessed success for unknown macros, raw-ROM inspection/patch, clock mirror, Shared interface change, physical precision or full gameplay qualification. |
-| Reference Baseline | Clean pushed b2f8b9311; S1 B07/B08, S9 initial22 IDs, S15 whole map and S19 accepted18 initial IDs. Pinned MAME c1425a1af00b88aa07477b1b23a30ed5e5f856ff driver/COP/command/DMA facts; actual current Core time, memory and attachment interfaces. |
-| Candidate Proposal | ../proposals/m1-board-cop.md retains all original COP/DMA/startup gates. Research freezes the full residual domain, not another implementation T or reduced completion standard. |
-| Files And ABI Surface | Current, one indexed residual contract/evidence record, receiving proposal and necessary task history only. Source/test/ABI/artifact delta zero. Estimate records +130--210/-0--15, refine for exact complete packet/contract proof. |
-| Applicable Rules | Architecture governance: single banked-register/safe-point/time/Video state owners and explicit cross-boundary capability gaps. Coding governance: reuse actual transport/fixtures, no forwarding framework or guessed reference special case. Execution: full batch coverage ledger, bounded source research, complete P/actual-change review and no unnecessary rebuild for unchanged code. Source/document rules: fixed hashes, facts only, truthful qualifications and historical records retained. |
-| Verification | Fresh fixed-source map/functions/hashes; all four initial residual IDs and all mapped capability groups get dispositions, operands/state/publication/failure context and receivers. Inspect actual running-time query refusal, Core callback lifetime, DMA source anomaly, mode index bounds, sort widths/ties and existing test owners. Verify code/test unchanged, retained S19 dual-width687/687 identities, docs/whitespace, ten release/33 asset/six media-role hashes and build-only caches. No new dynamic pass is claimed. |
-| Expected Markers | Exact residual ledger and dependency-ordered batch plans; unresolved source behavior is not a no-op. RNG cannot use an external-only getter or mirrored clock; Video buffers have their real owner; raw16 DMA mode cannot index a512-slot array unchecked. |
-| Asset Needs | Reference text in memory only; no ROM, temporary tree, process or payload retained. Build contains only persistent .ninja/.ccache; ten current releases and protected inputs remain untouched. |
-| Reporting Requirements | Report actual architectural gaps, exact scope/estimate for any required Shared approval and local follow-on batches, before/after dispositions, source identities, unchanged qualification and complete delivery/review. |
-| Stop Conditions | Any production/Shared/API modification, source derivation/import, protected content, invented clock/algorithm/precision or silent transfer/drop of a T3 requirement. Ask only the required bounded Shared decision; continue independent reconciliation. |
-| Exit Criteria | Whole residual batch has a reviewable factual/L2/non-eligible contract and concrete receivers, minimal requested interface options and independent proof plans. Product-only complete P and coordinator acceptance pushed, worktree clean. T3 remains open; this design S does not implement RNG/DMA or qualify startup. |
-| Original Owner Request | Implement complete playable MyRaidenII under single-session dual-role governance; group coherent work, reuse tests and review Shared changes explicitly. |
-| Similar-Issue Sweep | All per-mode setup words, mapped triggers/results, runtime-time consumers and reference hard-coded cases, all four unresolved uploaded IDs versus current dispatch and legacy alternatives; preserve distinct Video/Board/COP owners and no copied algorithms/tables. |
-
-Executor confirms the prerequisite boundary. Existing S19 code/tests remain
-frozen; an interface need is a request for review, not permission to edit it.
-
-M1 T3 remains open after accepted S1--S19:
+M1 T3 remains open after accepted S1--S20:
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -49,6 +25,7 @@ M1 T3 remains open after accepted S1--S19:
 | S17 | Independent L2 angle-approach memory effect, target/step configuration and true-byte Core DMA transport | `b3a7cc0a6` |
 | S18 | Approved optional Types math declaration vocabulary, existing runtime contract and unchanged product linkage | `9b41a82ca` |
 | S19 | Complete nine-ID L2 numeric/result chain, common dispatch status, bounded arithmetic and failure-prefix proof | `02a72979a` |
+| S20 | Whole residual COP/RNG/DMA contract, existing live timeline capability and cohesive implementation receivers | `d20d65ee0` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -225,4 +202,10 @@ the [residual contract](../etc/evidence/t3-s20-residual-contract.md). Existing
 Core timeline observation removes the suspected RNG Shared-interface gap;
 mode-banked DMA, Video latches, both2a05 outputs and unknown macro semantics
 remain distinct required receivers. No source/test/artifact changes or new
-dynamic qualification occurred. Acceptance awaits coordinator actual review.
+dynamic qualification occurred. Sequential coordinator actual git show
+review accepts d20d65ee0's four-file209-line record against the complete
+residual ledger. Source/test delta remains zero and S19's exact687/687 dual
+qualification is retained, not rerun or relabelled. Ten releases and all
+protected guards are unchanged; no temporary work exists. S20 is closed with
+no active packet. Ordinary local RNG implementation is unblocked without a
+Shared edit; DMA, Video and residual/startup obligations keep T3/M1 open.
