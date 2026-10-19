@@ -23,6 +23,17 @@ only its explicitly L2 timing/IRQ receiver at the Video owner; rendering and
 other Video qualification remain with the queued Video task. T3's original
 COP/result/DMA and startup completion requirements remain in force.
 
+S17's dependency-led receiver implements only6200's independent integer
+angle-approach memory effects and target/step configuration from the complete
+[S12 numeric ledger](../etc/evidence/t3-s12-cop-geometry-contract.md). It does
+not require host math or arithmetic-result state. The other eight IDs retain
+their full numeric/result receiver and pending Shared vocabulary approval;
+arithmetic status/result publication also remains an explicit receiving gate
+for6200 and all other macros before full T3 qualification. This is an
+implementation-order partition, not a reduced coverage universe or a complete
+numeric/hardware claim. The [S17 record](../etc/evidence/t3-s17-cop-angle-approach.md)
+tracks all nine before/after dispositions and failure-order proof.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free

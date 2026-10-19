@@ -26,7 +26,8 @@ typedef enum myraidenii_core_cop_command_kind {
     MYRAIDENII_CORE_COP_COPY,
     MYRAIDENII_CORE_COP_UPDATE,
     MYRAIDENII_CORE_COP_POSITION,
-    MYRAIDENII_CORE_COP_HITBOX
+    MYRAIDENII_CORE_COP_HITBOX,
+    MYRAIDENII_CORE_COP_ANGLE_APPROACH
 } myraidenii_core_cop_command_kind;
 
 typedef struct myraidenii_core_cop_range {
@@ -61,7 +62,7 @@ struct myraidenii_core_cop {
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
-    {0x0041cu, 0x00004u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
+    {0x0041cu, 0x00004u, MYRAIDENII_CORE_COP_CONFIG},
     {0x00420u, 0x00004u, MYRAIDENII_CORE_COP_DECIMAL_INPUT},
     {0x00424u, 0x00002u, MYRAIDENII_CORE_COP_CONFIG},
     {0x00428u, 0x00006u, MYRAIDENII_CORE_COP_CONFIG},
@@ -88,6 +89,7 @@ static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 com
     case 0x5205u: case 0x5a05u: case 0xf205u: return MYRAIDENII_CORE_COP_COPY;
     case 0xa100u: case 0xa900u: return MYRAIDENII_CORE_COP_POSITION;
     case 0xb100u: case 0xb900u: return MYRAIDENII_CORE_COP_HITBOX;
+    case 0x6200u: return MYRAIDENII_CORE_COP_ANGLE_APPROACH;
     default: return MYRAIDENII_CORE_COP_UNSUPPORTED;
     }
 }
@@ -309,22 +311,49 @@ static lib_status myraidenii_core_cop_memory(myraidenii_core_cop *cop,
 {
     lib_u32 address;
     lib_u32 result = 0u;
+    const lib_u8 width = bytes == 1u ? 1u : 2u;
 
     if (base > LIB_UINT32_MAX - displacement) return LIB_STATUS_INVALID_ARGUMENT;
     address = base + displacement;
-    for (lib_u8 index = 0u; index < bytes; index += 2u) {
-        lib_u16 lane = (lib_u16)(*value >> (index * 8u));
+    for (lib_u8 index = 0u; index < bytes; index += width) {
+        lib_u16 lane = write ? (lib_u16)(*value >> (index * 8u)) : 0u;
         lib_status status;
 
         if (address > LIB_UINT32_MAX - index) return LIB_STATUS_INVALID_ARGUMENT;
         status = x86_core_machine_dma_memory_cycle(cop->machine, address + index,
-            2u, 0u, write ? X86_CORE_MACHINE_MEMORY_ACCESS_WRITE :
+            width, 0u, write ? X86_CORE_MACHINE_MEMORY_ACCESS_WRITE :
                 X86_CORE_MACHINE_MEMORY_ACCESS_READ, &lane, LIB_NULL, LIB_NULL, cop);
         if (status != LIB_STATUS_OK) return status;
         result |= (lib_u32)lane << (index * 8u);
     }
     if (!write) *value = result;
     return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_cop_approach_angle(myraidenii_core_cop *cop)
+{
+    const lib_u32 base = myraidenii_core_cop_address(cop, 0u);
+    const lib_u8 target = (lib_u8)myraidenii_core_cop_word(cop, 0x41cu);
+    const lib_u8 step = (lib_u8)myraidenii_core_cop_word(cop, 0x41eu);
+    lib_u32 angle = 0u, flags = 0u, forward, distance;
+    lib_status status = myraidenii_core_cop_memory(cop, base, 0x34u, 1u,
+        LIB_FALSE, &angle);
+
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, base, 0u, 2u, LIB_FALSE, &flags);
+    if (status != LIB_STATUS_OK) return status;
+    forward = (target + 256u - angle) & 0xffu;
+    distance = forward <= 128u ? forward : 256u - forward;
+    flags &= ~4u;
+    if (distance <= step) {
+        angle = target;
+        flags |= 4u;
+    } else {
+        angle = (angle + (forward <= 128u ? step : 256u - step)) & 0xffu;
+    }
+    status = myraidenii_core_cop_memory(cop, base, 0u, 2u, LIB_TRUE, &flags);
+    return status == LIB_STATUS_OK ?
+        myraidenii_core_cop_memory(cop, base, 0x34u, 1u, LIB_TRUE, &angle) : status;
 }
 
 static lib_status myraidenii_core_cop_update(myraidenii_core_cop *cop)
@@ -437,6 +466,8 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
     kind = myraidenii_core_cop_classify(cop->pending_command);
     if (kind == MYRAIDENII_CORE_COP_UPDATE) {
         status = myraidenii_core_cop_update(cop);
+    } else if (kind == MYRAIDENII_CORE_COP_ANGLE_APPROACH) {
+        status = myraidenii_core_cop_approach_angle(cop);
     } else if (kind == MYRAIDENII_CORE_COP_POSITION) {
         status = myraidenii_core_cop_capture_position(cop);
     } else if (kind == MYRAIDENII_CORE_COP_HITBOX) {

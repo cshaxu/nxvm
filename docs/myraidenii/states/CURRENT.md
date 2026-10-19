@@ -142,3 +142,35 @@ S16 is closed with no active packet. T3/M1 remain open: the Shared wide-query
 classification debt, numeric/math authorization,2a05, remaining algorithms
 and real-set startup retain their original receiving obligations. No desktop,
 RDP, integration-suite or playable-game qualification is inferred.
+
+## Active S17 Packet
+
+Executor delivery: strict dual-width cached builds and full suites pass
+687/687 each (x64 117.73s; x86 final129.64s). A final fixture-only flags-prefix
+row is added after x64's full run; its whole affected unit then passes x64
+1/1,0.22s, and x86's final full suite includes that row. No production or
+unaffected686 binary changes occur during that supplement. Evidence retains
+both test hashes, full/focused log hashes and all nine numeric dispositions.
+Actual source+36/-5, existing test+147/-3; Shared/public APIs and ten releases
+remain unchanged. Guard/docs/whitespace checks pass; owned work is terminal
+and build contains only caches. Await actual coordinator-P review, not T3
+or full numeric/result/game qualification.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T3 S17 after accepted S16 304881946; one-session sequential coordinator/executor. |
+| Admission And Approval | Owner's complete implementation approval and delegated same-T ordering. Only MyRaidenII Core/test/records; no inference of Shared math/API approval. |
+| Objective | Consume the independent6200 angle-approach memory-effect receiver from B07/S12: qualify target/step configuration, bounded circular motion, flags/byte output, all command ports and each memory-failure prefix on the sole actual COP/Core bus. |
+| Non-goals | No Shared/CRT math change, geometry approximation, remaining eight numeric operations, arithmetic result/status publication, generic uploaded microcode, physical timing, DMA/sort/2a05, ROM/startup/gameplay qualification or new production/test entry. Common arithmetic-result qualification remains with the full numeric receiver. |
+| Reference Baseline | Clean pushed304881946; S12 nine-operation dependency ledger and S13 status-prefix correction; pinned MAME c1425a1af00b88aa07477b1b23a30ed5e5f856ff seibucop_cmd.ipp hash B1E84AEF5BFDEBCA53D8F0AF0B1BE481B8218157BA460C1714853D322AC92EFC, factual current/legacy distinctions only. |
+| Candidate Proposal | ../proposals/m1-board-cop.md B07/B08; ../etc/evidence/t3-s12-cop-geometry-contract.md complete ledger. Partition its dependency-independent6200 memory effect, not a first-failing ROM repair; preserve all nine rows and whole numeric/result receiving gate. |
+| Files And ABI Surface | Existing cop.c, existing Board/COP unit, Current/evidence/index and receiving plan. No public headers/new state. Estimate production+40--65/-4--10; existing test+120--180/-5--15; records+170--240. |
+| Applicable Rules | Architecture sole COP config/pending command/Core DMA/safe-point owners, flags-before-angle publication; Coding one1/2/4-byte memory helper, checked arithmetic, low-byte effective config, existing fixture reuse; Source factual L2 contract and independently formulated circular-distance algorithm, no copied body/table; Execution dependency-led full finite batch disposition, exact failure stages, full P/review and cache reuse; Documentation explicit arithmetic-status/source/qualification limits. |
+| Verification | Literal circular-motion vectors cover both directions/wrap/ties, clamp/equality/zero/max step, preserve/clear/set flag4, high config masking and adjacent-byte preservation on each of three ports. Repeat250->254->2->5 and reset behavior. Target/step word/byte/upper-bit/busy/read denial use actual Board. Isolated actual COP/Core fixture covers angle read, flags read/write including its accepted low-byte prefix, late angle-write failure with flags prefix, overflow/out-of-range and last-RAM-byte operand, retaining every old matrix. Real Board CPU-issued6200 route also executes. Strict cached x64/x86 builds and focused unit, then all687 units sequentially4 workers/600-second aggregate. If final review adds only a fixture row after a full run, retain that full result plus a final whole affected-unit rerun; distinguish the two test hashes/results and unchanged unaffected686 binaries rather than claim the old full run used the new row. Docs/whitespace/frozen hashes/protected-input and ten-release guards. |
+| Expected Markers | One private angle kind/handler, target/step join existing config role; bytes1/2/4 use the same checked DMA helper. No result mirror, direct pointer, host math call or second evaluator. Remaining numeric result/status reads stay explicitly unmodelled. |
+| Asset Needs | ROM-free literals only; no disposable directory or external payload retained. Reuse .ninja/.ccache; preserve all ten release identities,33 tracked assets and6 media-role hashes. |
+| Reporting Requirements | Before code report dependency partition, source/model choices and estimates. Record whole nine-row before/after, exact effect/failure order, source/test actual delta, dual-width evidence, retained non-eligible obligations and complete P/actual coordinator review. |
+| Stop Conditions | Shared/public change, unapproved reference-code derivation, altered protected input, additional clock/state mirror, guessed arithmetic status or claim that this memory-effect receiver qualifies all6200 hardware/global results or the nine-member numeric batch. |
+| Exit Criteria | The independent circular-memory effect and complete target/step capability have direct actual-bus proof with stable old matrices, boundary/partial failure and both widths; scoped complete P and coordinator acceptance pushed. Full numeric status/results and eight remaining operations keep their original receiver before T3 closure. |
+| Original Owner Request | Implement complete playable MyRaidenII in single-session dual-role governance; same-T S sequencing delegated, Shared modifications require explicit review. |
+| Similar-Issue Sweep | Verify byte transport does not overread or overwrite neighbours, all displacement/physical limits and old2/4-byte paths remain unchanged; no signed-overflow or high-byte state mirror; all command slots select B0 for this form; accepted flags prefix survives late failure; source legacy other-game B1/0ch variant is not a second selected-board path. |

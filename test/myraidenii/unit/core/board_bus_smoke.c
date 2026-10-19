@@ -485,14 +485,14 @@ static lib_i32 board_cop_routes(void)
         .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 configuration_addresses[] = {
-        0x00428u, 0x0042cu, 0x00432u, 0x0043cu, 0x00444u, 0x00476u,
+        0x0041cu, 0x0041eu, 0x00428u, 0x0042cu, 0x00432u, 0x0043cu, 0x00444u, 0x00476u,
         0x0047eu, 0x004a0u, 0x004acu, 0x004c0u, 0x004ccu
     };
     const struct {
         lib_u32 first;
         lib_u8 bytes;
     } unmodelled[] = {
-        {0x41cu,4u}, {0x450u,14u}, {0x5a0u,8u}, {0x5b0u,6u}, {0x6fcu,4u}
+        {0x450u,14u}, {0x5a0u,8u}, {0x5b0u,6u}, {0x6fcu,4u}
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -950,6 +950,149 @@ static lib_status board_cop_run_commands(x86_core_machine *machine,
         (x86_core_machine_run_budget){count * 2u, 0u}, result) : status;
 }
 
+static lib_i32 board_cop_angle_approach(void)
+{
+    static const struct {
+        lib_u32 base;
+        lib_u16 flags;
+        lib_u8 angle, target, step, next;
+        lib_u16 expected_flags;
+        lib_bool failure, inspect_flags, inspect_angle;
+    } cases[] = {
+        {0x2000u,0xa5a5u,10u,20u,3u,13u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a5u,20u,10u,3u,17u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a1u,10u,13u,3u,13u,0xa5a5u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a1u,13u,10u,3u,10u,0xa5a5u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a5u,250u,5u,4u,254u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a5u,5u,250u,4u,1u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a5u,0u,128u,1u,1u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a5u,128u,0u,1u,129u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a1u,77u,77u,0u,77u,0xa5a5u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a5u,77u,78u,0u,77u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a1u,77u,78u,255u,78u,0xa5a5u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a1u,255u,0u,1u,0u,0xa5a5u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x2000u,0xa5a1u,0u,255u,1u,255u,0xa5a5u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        /* The last installed RAM byte cannot tolerate a word read or write. */
+        {0xfffcbu,0xa5a5u,10u,20u,3u,13u,0xa5a1u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        /* Angle read, flags read/write, then late angle-write failure. */
+        {0x3f8u,0xa5a5u,10u,20u,3u,10u,0xa5a5u,LIB_TRUE,LIB_TRUE,LIB_FALSE},
+        {0x434u,0x00a1u,10u,20u,3u,10u,0x00a1u,LIB_TRUE,LIB_FALSE,LIB_TRUE},
+        {0x4a2u,0xa5a5u,10u,20u,3u,10u,0xa5a5u,LIB_TRUE,LIB_TRUE,LIB_TRUE},
+        {0x4bfu,0xbfa5u,10u,20u,3u,10u,0xbfa1u,LIB_TRUE,LIB_TRUE,LIB_TRUE},
+        {0x499u,0xa5a5u,10u,20u,3u,10u,0xa5a1u,LIB_TRUE,LIB_TRUE,LIB_TRUE},
+        {LIB_UINT32_MAX-0x20u,0u,0u,0u,0u,0u,0u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
+        {0x102000u,0u,0u,0u,0u,0u,0u,LIB_TRUE,LIB_FALSE,LIB_FALSE}
+    };
+    const lib_u16 command = 0x6200u;
+    lib_i32 failures = 0;
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+    for (lib_u8 port = 0u; port < (cases[index].failure ? 1u : 3u); ++port) {
+        cop_fixture fixture = {0};
+        x86_core_machine *machine;
+        x86_core_machine_run_result result = {0};
+        lib_u8 angle[] = {cases[index].angle,0x5au};
+        const lib_size angle_bytes = cases[index].base == 0xfffcbu ? 1u : 2u;
+        lib_u8 actual[2];
+        lib_status status;
+        lib_i32 failed = 1;
+
+        if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
+        machine = fixture.machine;
+        if (board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].base >> 16u)) !=
+                LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4c0u, (lib_u16)cases[index].base) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x41cu, 0xab00u | cases[index].target) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x41eu, 0xcd00u | cases[index].step) != LIB_STATUS_OK)
+            goto done;
+        if (cases[index].base < 0x100000u &&
+            (board_cop_word_write(machine, cases[index].base, cases[index].flags) !=
+                LIB_STATUS_OK ||
+             x86_core_machine_memory_write(machine, cases[index].base + 0x34u,
+                angle, angle_bytes) != LIB_STATUS_OK))
+            goto done;
+        status = board_cop_run_commands(machine, &command, 1u, port, &result);
+        if (cases[index].failure) {
+            x86_core_machine_lifecycle lifecycle;
+
+            if (status == LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+                x86_core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+                lifecycle != X86_CORE_MACHINE_FAULTED)
+                goto done;
+        } else if (status != LIB_STATUS_OK || result.executed != 2u) {
+            goto done;
+        }
+        if (cases[index].inspect_flags &&
+            (x86_core_machine_memory_inspect(machine, cases[index].base, actual, 2u) !=
+                LIB_STATUS_OK ||
+             (lib_u16)(actual[0] | (lib_u16)actual[1] << 8u) != cases[index].expected_flags))
+            goto done;
+        if (cases[index].inspect_angle &&
+            (x86_core_machine_memory_inspect(machine, cases[index].base + 0x34u,
+                actual, angle_bytes) != LIB_STATUS_OK || actual[0] != cases[index].next ||
+             (angle_bytes == 2u && actual[1] != 0x5au)))
+            goto done;
+        failed = 0;
+done:
+        if (failed) lib_c_printf("COP:ANGLE-APPROACH:FAIL case=%u port=%u reason=%u detail=%u\n",
+            (lib_u32)index, (lib_u32)port, (lib_u32)result.reason, result.detail);
+        cop_fixture_destroy(&fixture);
+        failures += failed;
+    }
+    if (failures != 0) return 1;
+
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const lib_u8 next[] = {254u,2u,5u};
+    const lib_u8 angle[] = {250u,0x5au};
+    const lib_u8 target = 5u, step = 4u;
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_run_result result = {0};
+    lib_u8 actual[2];
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    if (board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x2000u, 0xa5a5u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x2034u, angle, sizeof(angle)) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x41cu, 0xabffu) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x41cu, &target, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x41eu, 0xcd00u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x41eu, &step, 1u) != LIB_STATUS_OK)
+        goto board_done;
+    for (lib_u8 port = 0u; port < 3u; ++port) {
+        if (board_cop_run_commands(machine, &command, 1u, port, &result) != LIB_STATUS_OK ||
+            x86_core_machine_memory_inspect(machine, 0x2034u, actual, 2u) != LIB_STATUS_OK ||
+            actual[0] != next[port] || actual[1] != 0x5au ||
+            x86_core_machine_memory_inspect(machine, 0x2000u, actual, 2u) != LIB_STATUS_OK ||
+            actual[0] != (port == 2u ? 0xa5u : 0xa1u) || actual[1] != 0xa5u)
+            goto board_done;
+    }
+    if (board_cop_word_write(machine, 0x500u, command) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x41cu, 0u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_word_write(machine, 0x41eu, 0u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x5b0u, actual, 2u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, command) != LIB_STATUS_INVALID_STATE ||
+        board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
+        board_cop_run_commands(machine, &command, 1u, 0u, &result) != LIB_STATUS_OK ||
+        x86_core_machine_memory_inspect(machine, 0x2000u, actual, 2u) != LIB_STATUS_OK ||
+        actual[0] != 4u || actual[1] != 0u ||
+        x86_core_machine_memory_inspect(machine, 0x2034u, actual, 1u) != LIB_STATUS_OK ||
+        actual[0] != 0u)
+        goto board_done;
+    failed = 0;
+board_done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 static lib_i32 board_cop_collision_result(x86_core_machine *machine,
     const lib_u16 expected[5])
 {
@@ -1255,5 +1398,6 @@ lib_i32 main(void)
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
-        board_cop_transfers() || board_cop_updates() || board_cop_collisions() || board_cop_decimal();
+        board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
+        board_cop_collisions() || board_cop_decimal();
 }

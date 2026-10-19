@@ -80,6 +80,7 @@
 - [T3 complete COP decimal register receiver](evidence/t3-s14-cop-decimal.md).
 - [T3 complete COP register inventory and explicit unmodelled routes](evidence/t3-s15-cop-register-inventory.md).
 - [T3 low-control data decode and isolated COP failure fixture](evidence/t3-s16-board-control-window.md).
+- [T3 integer angle-approach memory receiver and numeric dependency disposition](evidence/t3-s17-cop-angle-approach.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
