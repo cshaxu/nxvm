@@ -200,7 +200,7 @@ static lib_i32 x86_core_cpu_timing_apply_8086_lock(x86_core_cpu_execution_contex
         context->cpu_profile != X86_CORE_CPU_PROFILE_80186) return 1;
     data = &context->instructions->data;
     if (!x86_core_cpu_instruction_has_lock_prefix(data,
-            x86_core_cpu_instruction_prefix_count(data)) ||
+            x86_core_cpu_instruction_prefix_count(context, data)) ||
         result->source_timing_unallocated) return 1;
     if (result->ticks > LIB_UINT64_MAX - 2u) return 0;
     result->ticks += 2u;
@@ -214,7 +214,7 @@ static void x86_core_cpu_timing_select_v30(
     x86_core_cpu_execution_context *context, x86_core_cpu_timing_result *result)
 {
     const t_cpuins_data *data = &context->instructions->data;
-    const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(data);
+    const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     const lib_u8 *code = data->opcodes + prefixes;
     const lib_u8 opcode = prefixes < data->oplen ? code[0] : 0u;
     const lib_bool string = (opcode >= 0xa4u && opcode <= 0xafu &&
@@ -222,9 +222,11 @@ static void x86_core_cpu_timing_select_v30(
     const lib_bool scalar = opcode < 0x40u && (opcode & 7u) < 4u;
     const lib_bool shift = opcode == 0xc0u || opcode == 0xc1u ||
         (opcode >= 0xd0u && opcode <= 0xd3u);
+    const lib_bool escape = opcode == 0x66u || opcode == 0x67u ||
+        (opcode >= 0xd8u && opcode <= 0xdfu);
     const lib_bool group = opcode == 0x80u || opcode == 0x81u || opcode == 0x83u || opcode == 0x8fu ||
         opcode == 0xf6u || opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu || shift;
-    lib_bool modrm = scalar || group || opcode == 0x62u || opcode == 0x69u || opcode == 0x6bu ||
+    lib_bool modrm = scalar || group || escape || opcode == 0x62u || opcode == 0x69u || opcode == 0x6bu ||
         (opcode >= 0x84u && opcode <= 0x8eu) ||
         (opcode >= 0xc4u && opcode <= 0xc7u);
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
@@ -347,6 +349,9 @@ static void x86_core_cpu_timing_select_v30(
             stack_penalty = 12u;
             control = LIB_TRUE;
         } else return;
+    } else if (escape) {
+        ticks = data->flagMem ? 11u : 2u;
+        odd_penalty = 4u;
     } else if (scalar) {
         const lib_bool read_only = (opcode & 0x38u) == 0x38u || (opcode & 2u);
         ticks = !data->flagMem ? 2u : read_only ? 11u : 16u;
@@ -395,8 +400,9 @@ static void x86_core_cpu_timing_select_v30(
         break;
     case 0xcfu:
         ticks = 27u; stack_penalty = 12u; control = LIB_TRUE; break;
-    case 0x37u: ticks = 3u; break;
-    case 0x3fu: ticks = 7u; break;
+    case 0x27u: case 0x37u: ticks = 3u; break;
+    case 0x2fu: case 0x3fu: ticks = 7u; break;
+    case 0xf4u: ticks = 2u; break;
     case 0x98u: ticks = 2u; break;
     case 0x99u:
         /* The source gives four or five according to data, without selection. */

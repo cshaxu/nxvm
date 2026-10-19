@@ -545,8 +545,74 @@ static lib_i32 retirement_8088_string_case(const lib_u8 *program,
     return failed;
 }
 
+/* Receiver-format proof only: V30 runtime remains gated by its unfinished
+ * time contract. Borrow an Intel executor for the existing timing accessor;
+ * never execute it as V30 or modify its configured profile. */
+static lib_i32 retirement_nec_format_case(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
+    };
+    static const struct {
+        lib_u8 bytes[4];
+        lib_u8 modrm;
+        lib_u8 emulation_io;
+    } cases[] = {
+        {{0x66u,0x06u,0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_MEMORY, 0u},
+        {{0x67u,0xc0u,0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_REGISTER, 0u},
+        {{0x26u,0x66u,0xc0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_REGISTER, 0u},
+        {{0x64u,0xd8u,0xc0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_REGISTER, 0u},
+        {{0x0fu,0x10u,0xc0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_REGISTER, 0u},
+        {{0x0fu,0x20u,0xc0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE, 0u},
+        {{0xd3u,0x27u,0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_MEMORY,
+            X86_CORE_MACHINE_RETIREMENT_IO_WRITE},
+        {{0xdbu,0x27u,0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_MEMORY,
+            X86_CORE_MACHINE_RETIREMENT_IO_READ},
+        {{0xecu,0u,0u,0u}, X86_CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE, 0u}
+    };
+    x86_core_machine *owner = LIB_NULL;
+    static x86_core_machine receiver;
+    lib_i32 failed = 0;
+    if (x86_core_machine_neutral_create(&config, &owner) != LIB_STATUS_OK) return 1;
+    lib_memory_set(&receiver, 0, sizeof(receiver));
+    receiver.cpu_profile = X86_CORE_CPU_PROFILE_V30;
+    receiver.executor_cpu_execution = owner->executor_cpu_execution;
+    x86_core_cpu_instruction_observation intel = {0};
+    x86_core_cpu_execution_copy_observation(owner->executor_cpu_execution, &intel);
+    failed |= intel.nec_emulation_mode;
+    for (lib_size item = 0u; item < sizeof(cases)/sizeof(cases[0]); ++item)
+    for (lib_u8 emulation = 0u; emulation < 2u; ++emulation) {
+        x86_core_cpu_instruction_observation data = {0};
+        data.nec_emulation_mode = emulation != 0u;
+        data.point.byte_count = sizeof(cases[item].bytes);
+        lib_memory_copy(data.point.bytes, cases[item].bytes, sizeof(cases[item].bytes));
+        data.eax = 0x1234u;
+        data.dx = 0x40u;
+        x86_core_machine_retirement_observation_capture_instruction(&receiver, &data);
+        const x86_core_machine_retirement_observation *result =
+            &receiver.retirement_observation.pending_observation;
+        failed |= result->modrm_form != (emulation ?
+            X86_CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE : cases[item].modrm);
+        if (emulation) {
+            failed |= result->io_direction != cases[item].emulation_io;
+            if (cases[item].emulation_io != 0u) {
+                failed |= result->io_port != 0x27u || result->io_bytes != 1u;
+                if (result->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE)
+                    failed |= result->io_value != 0x34u;
+            }
+        } else {
+            failed |= result->io_direction != (cases[item].bytes[0] == 0xecu ?
+                X86_CORE_MACHINE_RETIREMENT_IO_READ : X86_CORE_MACHINE_RETIREMENT_IO_NONE);
+        }
+    }
+    x86_core_machine_destroy(owner);
+    return failed;
+}
+
 lib_i32 main(void)
 {
+    if (retirement_nec_format_case()) return 1;
     x86_core_machine *machine = LIB_NULL;
     x86_core_machine_executor_config deterministic = {
         .memory_bytes = 16u * 1024u * 1024u,

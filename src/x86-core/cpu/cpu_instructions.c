@@ -68,6 +68,8 @@ void x86_core_cpu_execution_copy_observation(
     lib_memory_copy(observation->point.bytes, instruction_state.data.opcodes,
         sizeof(observation->point.bytes));
     observation->old_eip = instruction_state.data.oldcpu.data.eip;
+    observation->nec_emulation_mode = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        (instruction_state.data.oldcpu.data.eflags & X86_CPU_NEC_PSW_MD) == 0u;
     observation->old_default_size_32 =
         instruction_state.data.oldcpu.data.cs.seg.exec.defsize != 0u;
     observation->eax = cpu_state.data.eax;
@@ -84,7 +86,7 @@ void x86_core_cpu_execution_copy_observation(
         (instruction_state.data.oldcpu.data.eflags & X86_CPU_NEC_PSW_MD))
         observation->lock_prefix = x86_core_cpu_instruction_has_lock_prefix(
             &instruction_state.data,
-            x86_core_cpu_instruction_prefix_count(&instruction_state.data)) != 0;
+            x86_core_cpu_instruction_prefix_count(context, &instruction_state.data)) != 0;
     observation->repeat_prefix = (lib_u8)instruction_state.data.prefix_rep;
 }
 
@@ -3036,7 +3038,7 @@ static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, l
         (cpu_state.data.cr0 & VCPU_CR0_CD) == 0u &&
         instruction_state.data.prefix_rep != PREFIX_REP_NONE) {
         const lib_u8 opcode = instruction_state.data.opcodes[
-            x86_core_cpu_instruction_prefix_count(&instruction_state.data)];
+            x86_core_cpu_instruction_prefix_count(context, &instruction_state.data)];
 
         buffered = opcode == 0x6eu || opcode == 0x6fu;
     }
@@ -3064,7 +3066,13 @@ static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, l
 
 /* decoding unit */
 /* kernel decoding function */
-static lib_u8 _kdf_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile)
+static lib_bool _kdf_is_nec_escape(x86_core_cpu_profile profile, lib_u8 opcode)
+{
+    return profile == X86_CORE_CPU_PROFILE_V30 &&
+        (opcode == 0x66u || opcode == 0x67u || (opcode >= 0xd8u && opcode <= 0xdfu));
+}
+
+lib_bool x86_core_cpu_instruction_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile)
 {
     switch (opcode)
     {
@@ -6028,7 +6036,7 @@ static void _e_push(x86_core_cpu_execution_context *context, lib_uptr rdata, lib
         lib_u8 index = 0u;
         lib_u8 opcode;
         while (index < instruction_state.data.oplen &&
-            _kdf_is_prefix(instruction_state.data.opcodes[index], context->cpu_profile)) ++index;
+            x86_core_cpu_instruction_is_prefix(instruction_state.data.opcodes[index], context->cpu_profile)) ++index;
         opcode = index < instruction_state.data.oplen ?
             instruction_state.data.opcodes[index] : 0u;
         if (opcode == 0x9cu || (cpu_profile_has_32bit_architecture(context->cpu_profile) &&
@@ -9221,8 +9229,9 @@ static lib_bool _e_compare_repeat_continues(x86_core_cpu_execution_context *cont
 }
 
 static lib_u8 _kdf_has_modrm(
-    lib_u8 opcode, lib_u8 extended)
+    lib_u8 opcode, lib_u8 extended, x86_core_cpu_profile profile)
 {
+    if (!extended && _kdf_is_nec_escape(profile, opcode)) return LIB_TRUE;
     if (extended) {
         return opcode <= 0x03u ||
             (opcode >= 0x10u && opcode <= 0x13u) ||
@@ -9367,7 +9376,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         !cpu_profile_allows_minimum(profile, X86_CORE_CPU_PROFILE_8086) ||
         (profile == X86_CORE_CPU_PROFILE_V30 && code_32)) return LIB_FALSE;
     while (index < available_bytes && index < 15u &&
-        _kdf_is_prefix(bytes[index], profile)) {
+        x86_core_cpu_instruction_is_prefix(bytes[index], profile)) {
         if (bytes[index] == 0xf0u) lock_prefix = LIB_TRUE;
         if (profile == X86_CORE_CPU_PROFILE_V30) {
             if (bytes[index] == 0x64u || bytes[index] == 0x65u) carry_repeat = LIB_TRUE;
@@ -9378,7 +9387,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     }
     if (index < available_bytes && !cpu_profile_has_32bit_architecture(profile) &&
         (bytes[index] == 0x64u || bytes[index] == 0x65u ||
-         bytes[index] == 0x66u || bytes[index] == 0x67u)) return LIB_FALSE;
+         bytes[index] == 0x66u || bytes[index] == 0x67u) &&
+        !_kdf_is_nec_escape(profile, bytes[index])) return LIB_FALSE;
     if (index >= available_bytes || index >= 15u) return LIB_FALSE;
     opcode = bytes[index++];
     if (carry_repeat && !_kdf_is_comparison_string(opcode))
@@ -9412,7 +9422,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     if (nec ? nec_format != X86_CPU_NEC_FORMAT_UNSUPPORTED &&
         nec_format != X86_CPU_NEC_FORMAT_IMPLICIT &&
         nec_format != X86_CPU_NEC_FORMAT_VECTOR :
-        _kdf_has_modrm(opcode, extended)) {
+        _kdf_has_modrm(opcode, extended, profile)) {
         lib_u8 mod;
         lib_u8 rm;
 
@@ -9452,7 +9462,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
         opcode, modrm);
     if (extended && opcode >= 0xc8u && opcode <= 0xcfu && operand_bytes != 4u)
         return LIB_FALSE;
-    if (!metadata.valid || !cpu_profile_allows_minimum(profile, metadata.minimum_cpu) || lock_prefix) {
+    if (((extended || !_kdf_is_nec_escape(profile, opcode)) &&
+        (!metadata.valid || !cpu_profile_allows_minimum(profile, metadata.minimum_cpu))) || lock_prefix) {
         return LIB_FALSE;
     }
     immediate = nec ? (nec_format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE ||
@@ -9641,7 +9652,8 @@ static lib_i32 x86_core_cpu_profile_allows_form(
         return 0;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
         space == X86_CORE_CPU_INSTRUCTION_PRIMARY &&
-        _kdf_is_prefix(opcode, context->cpu_profile)) return LIB_TRUE;
+        (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile) ||
+         _kdf_is_nec_escape(context->cpu_profile, opcode))) return LIB_TRUE;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
         space != X86_CORE_CPU_INSTRUCTION_PRIMARY &&
         space != X86_CORE_CPU_INSTRUCTION_NEC_0F) return 0;
@@ -9724,6 +9736,14 @@ static void FPU_ESCAPE(x86_core_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
                                        X86_CPU_REFERENCE_OF(modrm), 1));
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+    if (_kdf_is_nec_escape(context->cpu_profile, escape_opcode)) {
+        /* FPO1/FPO2 leave arithmetic to an external chip; the CPU still
+         * drives a word read for a memory form and ignores its value. */
+        if (instruction_state.data.flagMem)
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CALL_END;
+        return;
+    }
     metadata = x86_core_cpu_instruction_metadata_get(
         X86_CORE_CPU_INSTRUCTION_FPU_ESCAPE, escape_opcode, modrm);
     if (!metadata.valid)
@@ -16675,7 +16695,7 @@ static void PREFIX_LOCK(x86_core_cpu_execution_context *context)
         {
             CPU_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, X86_CPU_REFERENCE_OF(opcode), 1));
             ceip++;
-        } while (_kdf_is_prefix(opcode, context->cpu_profile));
+        } while (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile));
         switch (opcode)
         {
         case 0x00:
@@ -19224,7 +19244,7 @@ static void ExecBoundary(x86_core_cpu_execution_context *context)
         lib_u8 prefixes = 0u;
 
         while (prefixes < instruction_state.data.oplen &&
-            _kdf_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile)) ++prefixes;
+            x86_core_cpu_instruction_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile)) ++prefixes;
         instruction_state.data.timing_previous_opcode = prefixes < instruction_state.data.oplen ?
             instruction_state.data.opcodes[prefixes] : 0u;
         if (prefixes + 1u < instruction_state.data.oplen)
@@ -20759,7 +20779,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
     lib_u8 held_bytes[sizeof(instruction_state.data.opcodes)];
     lib_u32 held_count = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
         instruction_state.data.memory_lock_active ?
-        x86_core_cpu_instruction_prefix_count(&instruction_state.data)+1u : 0u;
+        x86_core_cpu_instruction_prefix_count(context, &instruction_state.data)+1u : 0u;
     const lib_u32 held_cs = instruction_state.data.oldcpu.data.cs.base;
     const lib_u32 held_eip = instruction_state.data.oldcpu.data.eip;
 
@@ -20805,7 +20825,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             UndefinedOpcode(context);
             break;
         }
-        if (!_kdf_is_prefix(opcode, context->cpu_profile)) {
+        if (!x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile)) {
             if ((instruction_state.data.prefix_rep == PREFIX_REP_REPC ||
                 instruction_state.data.prefix_rep == PREFIX_REP_REPNC) &&
                 !_kdf_is_comparison_string(opcode)) {
@@ -20813,7 +20833,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
                 break;
             }
             if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
-                _kdf_has_modrm(opcode, LIB_FALSE)) {
+                _kdf_has_modrm(opcode, LIB_FALSE, context->cpu_profile)) {
                 lib_u8 modrm;
                 CPU_TRACE_CHECK_BREAK(_s_read_cs(context,
                     cpu_state.data.eip + 1u, X86_CPU_REFERENCE_OF(modrm), 1));
@@ -20827,7 +20847,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             }
             /* A changed code/context is a new block, not a continuation of its lock. */
             if (held_count && instruction_state.data.memory_lock_active) {
-                const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(&instruction_state.data);
+                const lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, &instruction_state.data);
                 if (held_count != prefixes+1u ||
                     lib_memory_compare(held_bytes,instruction_state.data.opcodes,held_count) != 0) {
                     _kma_complete_memory_lock(context,LIB_FALSE);
@@ -20847,7 +20867,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
         }
         CPU_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
         CPU_TRACE_CALL_END;
-    } while (_kdf_is_prefix(opcode, context->cpu_profile));
+    } while (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile));
     if (instruction_state.data.except) context->io_restart_valid = LIB_FALSE;
     if (!smm_before || context->smm_active) _debug_complete_instruction(context, opcode);
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear)
@@ -20867,7 +20887,7 @@ static void x86_core_cpu_legacy_string_interrupt_resume(
          context->cpu_profile != X86_CORE_CPU_PROFILE_V30) ||
         !instruction_state.data.flagInsLoop) return;
     while (prefixes < instruction_state.data.oplen &&
-        _kdf_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile))
+        x86_core_cpu_instruction_is_prefix(instruction_state.data.opcodes[prefixes], context->cpu_profile))
         ++prefixes;
     const lib_u8 retained = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? 3u : 1u;
     if (prefixes > retained)
@@ -21095,8 +21115,10 @@ void x86_core_cpu_execution_initialize(
     instruction_state.connect.insTable[0x63] = (x86_core_cpu_instruction_handler)ARPL_RM16_R16;
     instruction_state.connect.insTable[0x64] = (x86_core_cpu_instruction_handler)PREFIX_FS;
     instruction_state.connect.insTable[0x65] = (x86_core_cpu_instruction_handler)PREFIX_GS;
-    instruction_state.connect.insTable[0x66] = (x86_core_cpu_instruction_handler)PREFIX_OprSize;
-    instruction_state.connect.insTable[0x67] = (x86_core_cpu_instruction_handler)PREFIX_AddrSize;
+    instruction_state.connect.insTable[0x66] = (x86_core_cpu_instruction_handler)(
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? FPU_ESCAPE : PREFIX_OprSize);
+    instruction_state.connect.insTable[0x67] = (x86_core_cpu_instruction_handler)(
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? FPU_ESCAPE : PREFIX_AddrSize);
     instruction_state.connect.insTable[0x68] = (x86_core_cpu_instruction_handler)PUSH_I32;
     instruction_state.connect.insTable[0x69] = (x86_core_cpu_instruction_handler)IMUL_R32_RM32_I32;
     instruction_state.connect.insTable[0x6a] = (x86_core_cpu_instruction_handler)PUSH_I8;

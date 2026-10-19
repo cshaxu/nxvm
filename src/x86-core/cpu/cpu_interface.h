@@ -263,6 +263,9 @@ typedef struct x86_core_cpu_instruction_observation {
     /* Target encoding components captured before asynchronous entry; zero
      * when no control target is applicable or its encoding is unavailable. */
     lib_u8 next_lexeme_components;
+    /* Mode at instruction entry, before mode-changing or asynchronous entry.
+     * Always false for Intel profiles. */
+    lib_bool nec_emulation_mode;
 } x86_core_cpu_instruction_observation;
 
 /* Bit masks reported by CPU fault snapshots, including non-deliverable stops. */

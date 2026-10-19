@@ -359,7 +359,9 @@ void x86_core_cpu_execution_reset(
     x86_core_cpu_execution_context *context);
 void x86_core_cpu_execution_invalidate_tlb(
     x86_core_cpu_execution_context *context);
-lib_u32 x86_core_cpu_instruction_prefix_count(const t_cpuins_data *data);
+lib_bool x86_core_cpu_instruction_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile);
+lib_u32 x86_core_cpu_instruction_prefix_count(
+    const x86_core_cpu_execution_context *context, const t_cpuins_data *data);
 lib_bool x86_core_cpu_instruction_has_lock_prefix(const t_cpuins_data *data,
     lib_u32 prefixes);
 /* One repeat identity/phase owner for CPU-local nominal evaluators. */

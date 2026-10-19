@@ -43,12 +43,15 @@ lib_status x86_core_machine_set_retirement_observation_provider(
 }
 
 static lib_u8 x86_core_machine_retirement_observation_prefix_count(
-    const x86_core_cpu_instruction_observation *data)
+    const x86_core_cpu_instruction_observation *data, x86_core_cpu_profile profile)
 {
     lib_u8 count = 0u;
 
-    if (data == LIB_NULL) return 0u;
+    if (data == LIB_NULL || data->nec_emulation_mode) return 0u;
     while (count < data->point.byte_count) {
+        if (profile == X86_CORE_CPU_PROFILE_V30 &&
+            (data->point.bytes[count] == 0x66u || data->point.bytes[count] == 0x67u))
+            return count;
         switch (data->point.bytes[count]) {
         case 0x26u: case 0x2eu: case 0x36u: case 0x3eu: case 0x64u: case 0x65u:
         case 0x66u: case 0x67u: case 0xf0u: case 0xf2u: case 0xf3u:
@@ -63,16 +66,28 @@ static lib_u8 x86_core_machine_retirement_observation_prefix_count(
 
 static lib_i32 x86_core_machine_retirement_observation_modrm_index(
     const x86_core_cpu_instruction_observation *data, lib_u8 opcode_index,
-    lib_u8 *out_index)
+    lib_u8 *out_index, x86_core_cpu_profile profile)
 {
     lib_u8 opcode;
 
-    if (data == LIB_NULL || out_index == LIB_NULL || opcode_index >= data->point.byte_count) {
+    if (data == LIB_NULL || out_index == LIB_NULL || data->nec_emulation_mode ||
+        opcode_index >= data->point.byte_count) {
         return 0;
     }
     opcode = data->point.bytes[opcode_index];
     if (opcode == 0x0fu) {
         if (opcode_index + 2u >= data->point.byte_count) return 0;
+        if (profile == X86_CORE_CPU_PROFILE_V30) {
+            const lib_u8 extension = data->point.bytes[opcode_index + 1u];
+            if ((extension >= 0x10u && extension <= 0x1fu) ||
+                extension == 0x28u || extension == 0x2au ||
+                extension == 0x31u || extension == 0x33u ||
+                extension == 0x39u || extension == 0x3bu) {
+                *out_index = (lib_u8)(opcode_index + 2u);
+                return 1;
+            }
+            return 0;
+        }
         switch (data->point.bytes[opcode_index + 1u]) {
         case 0x01u: case 0x20u: case 0x22u:
             *out_index = (lib_u8)(opcode_index + 2u);
@@ -81,7 +96,10 @@ static lib_i32 x86_core_machine_retirement_observation_modrm_index(
             return 0;
         }
     }
-    if ((opcode <= 0x3bu && (opcode & 7u) <= 3u) ||
+    if ((profile == X86_CORE_CPU_PROFILE_V30 &&
+            (opcode == 0x66u || opcode == 0x67u ||
+                (opcode >= 0xd8u && opcode <= 0xdfu))) ||
+        (opcode <= 0x3bu && (opcode & 7u) <= 3u) ||
         (opcode >= 0x80u && opcode <= 0x83u) ||
         (opcode >= 0x84u && opcode <= 0x8fu) || opcode == 0xc4u ||
         opcode == 0xc5u || opcode == 0xc6u || opcode == 0xc7u ||
@@ -107,10 +125,10 @@ static void x86_core_machine_retirement_observation_capture_context(
     observation->control_outcome = X86_CORE_MACHINE_RETIREMENT_CONTROL_NONE;
     observation->next_lexeme_components = X86_CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
     observation->repeat_phase = X86_CORE_CPU_RETIREMENT_REPEAT_NONE;
-    opcode_index = x86_core_machine_retirement_observation_prefix_count(data);
+    opcode_index = x86_core_machine_retirement_observation_prefix_count(data, machine->cpu_profile);
     if (opcode_index >= data->point.byte_count) return;
     if (x86_core_machine_retirement_observation_modrm_index(data, opcode_index,
-            &modrm_index)) {
+            &modrm_index, machine->cpu_profile)) {
         observation->modrm_form = (data->point.bytes[modrm_index] & 0xc0u) == 0xc0u ?
             X86_CORE_MACHINE_RETIREMENT_MODRM_REGISTER :
             X86_CORE_MACHINE_RETIREMENT_MODRM_MEMORY;
@@ -129,7 +147,7 @@ static void x86_core_machine_retirement_observation_capture_context(
 
 static void x86_core_machine_retirement_observation_capture_io(
     x86_core_machine_retirement_observation *observation,
-    const x86_core_cpu_instruction_observation *data)
+    const x86_core_cpu_instruction_observation *data, x86_core_cpu_profile profile)
 {
     lib_u8 opcode_index;
     lib_u8 opcode;
@@ -139,9 +157,18 @@ static void x86_core_machine_retirement_observation_capture_io(
     observation->io_port = 0u;
     observation->io_bytes = 0u;
     observation->io_value = 0u;
-    opcode_index = x86_core_machine_retirement_observation_prefix_count(data);
+    opcode_index = x86_core_machine_retirement_observation_prefix_count(data, profile);
     if (opcode_index >= data->point.byte_count) return;
     opcode = data->point.bytes[opcode_index];
+    if (data->nec_emulation_mode) {
+        if ((opcode != 0xd3u && opcode != 0xdbu) || data->point.byte_count < 2u) return;
+        observation->io_direction = opcode == 0xdbu ?
+            X86_CORE_MACHINE_RETIREMENT_IO_READ : X86_CORE_MACHINE_RETIREMENT_IO_WRITE;
+        observation->io_port = data->point.bytes[1];
+        observation->io_bytes = 1u;
+        if (opcode == 0xd3u) observation->io_value = data->eax & 0xffu;
+        return;
+    }
     switch (opcode) {
     case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
         if (opcode_index + 1u >= data->point.byte_count) return;
@@ -186,7 +213,7 @@ void x86_core_machine_retirement_observation_capture_instruction(x86_core_machin
     observation->lock_prefix = data->lock_prefix;
     observation->repeat_prefix = data->repeat_prefix;
     x86_core_machine_retirement_observation_capture_context(machine, data, observation);
-    x86_core_machine_retirement_observation_capture_io(observation, data);
+    x86_core_machine_retirement_observation_capture_io(observation, data, machine->cpu_profile);
     machine->retirement_observation.pending =
         machine->retirement_observation.provider.callback != LIB_NULL;
     if (machine->retirement_observation.pending)
@@ -217,10 +244,10 @@ void x86_core_machine_retirement_observation_capture_eligibility_key(
         &data, observation);
     observation->repeat_phase = timing.repeat_phase;
     opcode_index = x86_core_machine_retirement_observation_prefix_count(
-        &data);
+        &data, machine->cpu_profile);
     if (opcode_index < data.point.byte_count) {
         opcode = data.point.bytes[opcode_index];
-        if (opcode == 0x0fu && opcode_index + 1u <
+        if (!data.nec_emulation_mode && opcode == 0x0fu && opcode_index + 1u <
             data.point.byte_count) {
             escape_opcode = data.point.bytes[
                 opcode_index + 1u];

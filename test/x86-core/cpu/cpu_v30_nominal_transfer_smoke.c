@@ -145,17 +145,17 @@ static lib_i32 v30_nominal_direct(lib_u32 *count)
 static lib_i32 v30_nominal_boundaries(lib_u32 *count)
 {
     static v30_memory_fixture fixture;
-    static const lib_u8 code[][5]={
-        {0xf2u,0x89u,0xc0u}, {0xf3u,0x90u},
-        {0x26u,0x27u}, {0x26u,0x2fu}
+    static const struct {lib_u8 code[5], ticks;} cases[]={
+        {{0xf2u,0x89u,0xc0u},0u}, {{0xf3u,0x90u},0u},
+        {{0x26u,0x27u},5u}, {{0x26u,0x2fu},9u}
     };
     v30_memory_prepare(&fixture);
-    for (lib_size item=0u; item < sizeof(code)/sizeof(code[0]); ++item) {
+    for (lib_size item=0u; item < sizeof(cases)/sizeof(cases[0]); ++item) {
         v30_nominal_prepare(&fixture);
-        lib_memory_copy(fixture.memory+0x80100u,code[item],sizeof(code[item]));
+        lib_memory_copy(fixture.memory+0x80100u,cases[item].code,sizeof(cases[item].code));
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
         if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
-            v30_nominal_result(&fixture,0u,0u,LIB_FALSE)) {
+            v30_nominal_result(&fixture,cases[item].ticks,cases[item].code[1],LIB_FALSE)) {
             lib_c_printf("V30:NOMINAL-TRANSFER:EXCLUDED item=%u stop=%u faults=%u\n",
                 (lib_u32)item,fixture.bus.execution.stop_requested,fixture.bus.faults);
             return 1;

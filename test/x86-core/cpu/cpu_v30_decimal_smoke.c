@@ -100,8 +100,7 @@ static lib_i32 v30_decimal_check(lib_u8 operation, lib_u16 input, lib_u8 seed,
     t_cpu actual = fixture.bus.cpu;
     actual.data.eflags &= defined;
     expected.data.eflags &= defined;
-    /* Packed-adjust clock/source reconciliation is separate from result proof. */
-    static const lib_u8 nominal[] = {3u,7u,15u,7u,0u,0u};
+    static const lib_u8 nominal[] = {3u,7u,15u,7u,3u,7u};
     const lib_u64 clocks = nominal[operation] ? nominal[operation] + (prefix ? 2u : 0u) : 0u;
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
     const lib_u32 form = clocks ? fixture.memory[0x80000u+(lib_u16)(before.data.eip+(prefix != 0u))] :

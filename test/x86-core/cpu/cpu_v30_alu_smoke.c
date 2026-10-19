@@ -359,7 +359,9 @@ lib_i32 main(void)
         [9] = {.ticks=5u,.form_id=0x10000fu,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
         [11] = {.ticks=26u,.form_id=0x101u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | X86_CORE_CPU_TIMING_INPUT_ODD_WORD | X86_CORE_CPU_TIMING_INPUT_LOCK,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
         [13] = {.ticks=4u,.form_id=0x98u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
-        [14] = {.ticks=7u,.form_id=0x99u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC}
+        [14] = {.ticks=7u,.form_id=0x99u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC},
+        [17] = {.ticks=3u,.form_id=0x27u,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [18] = {.ticks=7u,.form_id=0x2fu,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE}
     };
     static v30_memory_fixture boundary;
     v30_memory_prepare(&boundary);

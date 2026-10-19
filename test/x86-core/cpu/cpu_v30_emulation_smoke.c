@@ -384,6 +384,9 @@ static lib_i32 emulation_check(emulation_fixture *fixture, lib_u8 opcode,
         fixture->ram.record_count=fixture->ram.observations=0u;
     }
     x86_core_cpu_execution_refresh(&fixture->ram.bus.execution);
+    x86_core_cpu_instruction_observation observation;
+    x86_core_cpu_execution_copy_observation(&fixture->ram.bus.execution,&observation);
+    if (!unsupported && !observation.nec_emulation_mode) return 1;
     if (fixture->ram.bus.execution.stop_requested != unsupported ||
         fixture->ram.bus.faults != (lib_u32)unsupported || fixture->ram.bus.delivered_exceptions ||
         lib_memory_compare(&fixture->ram.bus.cpu,&expected,sizeof(expected)) ||
@@ -445,7 +448,10 @@ static lib_i32 emulation_enter(emulation_fixture *fixture)
     fixture->ram.bus.cpu.data.eip=0x500u;
     fixture->ram.bus.cpu.data.eflags |= X86_CPU_NEC_PSW_MD;
     x86_core_cpu_execution_refresh(&fixture->ram.bus.execution);
+    x86_core_cpu_instruction_observation observation;
+    x86_core_cpu_execution_copy_observation(&fixture->ram.bus.execution,&observation);
     return fixture->ram.bus.execution.stop_requested ||
+        observation.nec_emulation_mode ||
         !fixture->ram.bus.execution.nec_md_write_enabled ||
         (fixture->ram.bus.cpu.data.flags & X86_CPU_NEC_PSW_MD) ||
         fixture->ram.bus.cpu.data.eip != pc;
@@ -485,7 +491,11 @@ static lib_i32 emulation_program(void)
             fixture.port_write=LIB_FALSE;
             fixture.port_phases=0u;
         }
+        const lib_bool emulation=(fixture.ram.bus.cpu.data.flags & X86_CPU_NEC_PSW_MD)==0u;
         x86_core_cpu_execution_refresh(&fixture.ram.bus.execution);
+        x86_core_cpu_instruction_observation observation;
+        x86_core_cpu_execution_copy_observation(&fixture.ram.bus.execution,&observation);
+        if (observation.nec_emulation_mode!=emulation) return 1;
         if (fixture.ram.bus.execution.stop_requested || fixture.ram.invalid) return 1;
         if (++retired > 32u) return 1;
     } while (!(fixture.ram.bus.cpu.data.flags & X86_CPU_NEC_PSW_MD) ||
@@ -519,6 +529,9 @@ static lib_i32 emulation_interrupts(void)
     if (fixture.ram.bus.cpu.data.cs.base != 0x90000u || fixture.ram.bus.cpu.data.eip != 0x200u ||
         fixture.ram.bus.acknowledgements != 1u ||
         !(fixture.ram.bus.cpu.data.flags & X86_CPU_NEC_PSW_MD)) return 1;
+    x86_core_cpu_instruction_observation observation;
+    x86_core_cpu_execution_copy_observation(&fixture.ram.bus.execution,&observation);
+    if (!observation.nec_emulation_mode) return 1;
     x86_core_cpu_execution_refresh(&fixture.ram.bus.execution);
     if (fixture.ram.bus.cpu.data.cs.base != 0x80000u || fixture.ram.bus.cpu.data.eip != 0x102u ||
         (fixture.ram.bus.cpu.data.flags & X86_CPU_NEC_PSW_MD) ||
