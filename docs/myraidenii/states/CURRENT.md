@@ -1,25 +1,21 @@
 # MyRaidenII Status
 
-## Active S7 Packet
+## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: MyRaidenII M1 T3 S7. One session performs sequential coordinator and executor roles. |
-| Admission And Approval | S6 is accepted at `e84ce8020`. The owner has standing approval for bounded in-scope MyRaidenII work; S7 consumes S6's explicit operation-model receiver. |
-| Objective | Establish the source-grade/L2 boundary for the remaining COP command/result/DMA model and its relation to missing periodic board events, then either admit one finite implementation batch or explicitly transfer the prerequisite to its true owner. |
-| Non-goals | No copied/transliterated MAME/FPGA code or tables, production COP command algorithm, video renderer, periodic event implementation, Shared API, ROM commit, executable/gameplay claim or unbounded execution retry. |
-| Reference Baseline | Accepted S4/S5/S6 evidence; B01--B09 ledger; `docs/myraidenii/proposals/m1-board-cop.md`; `docs/myraidenii/proposals/m1-video.md`; source policy. |
-| Candidate Proposal | ../proposals/m1-board-cop.md; ../proposals/m1-video.md; ../history/M1-T3-board-cop.md; ../etc/evidence/t3-s6-cop-command-receiver.md. |
-| Files And ABI Surface | MyRaidenII evidence/current/history and disposable task-owned research artifacts only. No production/test/Shared/asset changes unless the evidence establishes a separately bounded owner-local S8 model. |
-| Applicable Rules | Execution convergence/transfer/temporary-artifact rules; Architecture single timeline and Video ownership; Coding no speculative compatibility path; source policy MAME/third-party research only. |
-| Verification | Record exact source identities, grades and independent neutral facts; distinguish static map facts, reference-model facts and hardware proof. Map each missing COP/result/DMA/event prerequisite to one owner with a stated implementation receiver or a documented unavailable-evidence transfer. Documentation governance and whitespace checks pass before P. |
-| Expected Markers | One finite operation ledger, no imported code/table, no claim that a reference implementation proves silicon behavior, and no T3 model that secretly absorbs Video's periodic-event owner. |
-| Asset Needs | Research references only under an owned disposable `build/` root if needed. Owner ROM remains external/read-only and is not required unless a bounded neutral probe is justified. |
-| Reporting Requirements | Report source grade per inferred fact, source identity/hash, the exact S8 or Video receiver, every unresolved command/result/DMA member and cleanup result. |
-| Stop Conditions | Stop before translating implementation code/table, publishing protected values/trace, declaring reference behavior hardware exact, implementing a timer/video path under T3 or widening runtime budgets. |
-| Exit Criteria | The entire S6 ledger has a source-grade disposition and exactly one next owner per unresolved operation/event; temporary research is removed and the documentation gates pass. |
-| Original Owner Request | Implement MyRaidenII under single-session dual-role governance; preserve real hardware ownership, avoid test bloat and do not import MAME behavior. |
-| Similar-Issue Sweep | Review command/result/DMA and periodic-event assumptions together: no COP model may compensate for a missing VBlank/board event, and no Video receiver may silently fabricate a COP result. |
+No MyRaidenII S is active. M1 T3 remains open after accepted S1--S7:
 
-T3 S1--S6 are accepted in [history](../history/M1-T3-board-cop.md). S7 is a
-bounded ownership/evidence decision, not a command implementation.
+| S | Delivered scope | Receipt |
+| --- | --- | --- |
+| S1 | B01--B09 board/COP contract and source-grade ledger | `e83f186a8`, `86c634958` |
+| S2 | V30 construction, static program lanes, dynamic bank and board RAM/control routes | `dd2611e1b`, `9f941ae69`, `f2c30a1e6` |
+| S3 | Main IRQ acknowledgement, active-low inputs and main/sound latches | `4d340ce41`, `d7b2c32b1` |
+| S4 | Bounded owner-ROM COP/DMA address observation and receiving ledger | `da6d9d3a5`, `77110cf04` |
+| S5 | Local COP configuration/register boundary and explicit unmodelled command failure | `e284fb386`, `5079476c4` |
+| S6 | Bounded command/result/DMA receiver ledger and cleanup | `38e778ea8`, `e84ce8020` |
+| S7 | COP evidence-grade decision and Video-owner transfer | `4cb7776f1` |
+
+S7 found no source-grade COP command/result/DMA model. T3 retains the future
+bus-model owner but may not invent it; the periodic VBlank/video-DMA discovery
+receiver is the later M1 Video task. The next implementation step requires an
+owner decision to advance that Video task before resuming T3, or source-grade
+COP evidence that admits a finite local model.

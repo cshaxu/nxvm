@@ -163,3 +163,22 @@ does not identify a command, result, timing or stall cause. S6 is accepted and
 closed. S7 receives the complete finite B07 operation ledger and may implement
 only operation behavior supported by a separate source-grade model and direct
 receiver proof; otherwise it must transfer the missing evidence explicitly.
+
+## S7 Coordinator Acceptance
+
+The coordinator independently reviewed P1 `4cb7776f1`, the exact external
+reference identities, the source-policy boundary and the final tracked diff.
+S7 does not add production source, tests, ROM data, generated payloads or a
+Shared contract. Its evidence correctly classifies the inspected MAME
+materials as L2 only: their own incomplete/guesswork annotations prevent them
+from proving a RAIDEN II COP command, result, DMA or timing implementation.
+
+The complete unresolved S6 receiver is now explicit. T3 retains ownership of
+any eventual COP command/result/DMA bus behavior, but may not invent it. The
+periodic event and video-owned DMA discovery transfer to the later M1 Video
+task, where one deterministic Video-owned event contract must be established
+without fabricating a COP result. The task-owned three-file, 245,735-byte
+research root was removed through `Clear-Build.ps1`; only neutral identities
+and conclusions remain. Documentation governance and whitespace checks pass.
+S7 is accepted and closed. T3 remains open pending owner-approved ordering of
+the Video receiver or source-grade COP evidence; it has no active S.
