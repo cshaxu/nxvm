@@ -39,3 +39,16 @@ directly affected governance tests and all product documentation checks. Do
 not regenerate release binaries or run native devices for a tooling-only task.
 Record actual script/docs deltas, bytes removed, preserved inputs and all
 unverified boundaries. Commit/push complete target-scoped delivery for review.
+
+## Owner-Approved Follow-Up
+
+Continue the unaccepted S181 delivery from b85336f39 with sequential P5 onward.
+Retain every cleanup refusal and final postcondition, but check target metadata
+once and enumerate unrelated root children only for RequireClean. Inherit the
+five ccache preset directories instead of repeating them. Let CMake create its
+standalone build directory and retain only options consumed by the actual
+component owner. Cache proof uses a unique disposable invocation statistics log,
+not shared cumulative counters; native successful calls use checked Run-Cmake.
+Repeat the two real governance tests per width, actual preset configuration and
+incremental builds, standalone configuration and unchanged-artifact checks.
+No shared corpus, product binary or runtime test expansion is required.

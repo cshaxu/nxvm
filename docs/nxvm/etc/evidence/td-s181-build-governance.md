@@ -201,3 +201,60 @@ NXVM T564 and MyRaidenII T2 are not closed or advanced.
 Pushed delivery: Shared P1 `25e828def`, MyNES P2 `51a28e226` and MyRaidenII
 P3 `8f0245cff`; the NXVM P4 receipt carries this complete audit and actual
 cleanup/result records. Each P has one target and is pushed immediately.
+
+## Owner-Approved Tooling Follow-Up From b85336f39
+
+The initial delivery was awaiting acceptance. The owner authorized continuation
+of S181 with P5 onward, not a new implementation task or artifact revision.
+Four reviewed changes keep the existing owners and contracts:
+
+- Clear-Build checks the target during its one tree walk, leaving ancestor
+  junction checks intact. Root coverage enumeration now runs only when requested;
+  the separate post-deletion RequireClean check remains.
+- Five ccache presets inherit their existing binaryDir unchanged.
+- MyNES standalone configuration lets CMake create its directory and removes
+  LIB_ROOT options which the two actual test owners already derive themselves.
+  The consumed EMULATOR_LIB_ROOT option and native-command exit checks remain.
+- The cache test uses its unique invocation's disposable statistics log instead
+  of shared cumulative counters. Ninja command inspection and statistics use
+  checked Run-Cmake; the deliberate failed outside-directory configuration still
+  checks its nonzero exit explicitly. The original compile/off/on/hostile-cache,
+  no-op/object timestamp and safety-refusal proof remains, not mock substitutes.
+
+Actual scripts/configuration deltas against b85336f39: CMakePresets +0/-5;
+Clear-Build +7/-6; build_environment +20/-16; MyNES standalone +0/-4.
+Total +27/-31/net-4. The positive test delta strengthens isolation rather than
+adding a helper, framework, persistent state or another build-policy owner.
+Documentation and evidence deltas are reported separately in the delivery.
+
+Both widths pass repository.build-cleanup and repository.build-environment:
+x64 2/2 in12.36 seconds, x86 2/2 in20.33 seconds. Each private statistics log
+reports2 cache hits; hostile caller cache/temp directories are not created.
+JUnit SHA256: x64 EC55CC7C1EE86DB6563C0CC77772E35B35C75A65E4EECD0896C956A98CDB8BA9;
+x86 621D92A01962A27AFC9EBDEF1015CC2D4C7B8C41E1DDBA1701306309071E6456.
+The real junction refusal tests execute, not sandbox-skipped approximations.
+Four Lib/Emulator standalone x64 entries configure without the deleted options.
+All three changed PowerShell files parse; three product documentation gates
+and the1398-input Types gate pass. All ten deployed SHA256/size identities
+still match the accepted MyRaidenII S46 inventory. No INI/media/ROM, shared
+corpus/manifest or product executable changes occur.
+
+This remains tooling qualification only: full runtime/native standalone suites,
+desktop/RDP, physical devices and other compilers are not rerun or claimed.
+
+Both ordinary/cache Release presets configure their original .ninja trees.
+The x64 unit-binary build is already current; x86 performs1493 build steps
+after compiler configuration, then both explicit increments report `ninja:
+no work to do.` Build log SHA256 A4E7793BD16E5A14A76C19040B4ABF45B7CBD0962B123B57BEE61B3248187AE9;
+each increment log SHA256 71AA391EC7D7E291B419A7F40FBA91919E14AC2394AB4E8B66ED126E267D70F6.
+No cache tree is moved or cleared and no product deployment target is run.
+The final process query finds no compiler, Ninja, CTest or cache worker.
+The real tool previews then removes only td-s181:16 files /171030 bytes;
+RequireClean leaves exactly the two persistent roots. This follow-up does
+not repeat the original5.21GiB cleanup or touch the23 preserved inputs.
+
+Coordinator actual-change review retains every safety boundary and the real
+production configuration owner. Shared P5 f15f5a77b and MyNES P6 31c1c3ca1
+are independently scoped and pushed; the NXVM P7 receipt completes this
+follow-up for owner review. T564 and MyRaidenII T2 remain unchanged/open.
+Documentation/records:79 added /8 removed /net71 across three files.
