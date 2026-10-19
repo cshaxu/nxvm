@@ -2,6 +2,8 @@ if(NOT DEFINED TEST_WORK_DIR)
     message(FATAL_ERROR "TEST_WORK_DIR required")
 endif()
 set(probe "${TEST_WORK_DIR}/test-boundary-probe")
+# A rejected negative probe can bypass individual cleanup; reset this test-owned tree.
+file(REMOVE_RECURSE "${probe}")
 file(MAKE_DIRECTORY "${probe}")
 function(check layer source build expected)
     file(WRITE "${probe}/probe.c" "${source}\n")
