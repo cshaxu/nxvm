@@ -108,3 +108,18 @@ repository unit suite pass on both x64 and x86 (`687/687` each); documentation
 governance and whitespace checks pass. No runnable MyRaidenII executable is
 claimed because B04--B06 are a ROM-free Core delivery. S3 is accepted and
 closed; B07--B08 remain the next unadmitted T3 receivers.
+
+## S4 Coordinator Acceptance
+
+The coordinator independently reviewed P1 `da6d9d3a5`, its source-policy
+limits, the actual documentation diff and its focused dual-width Board proof.
+S4 changes no production source, shared contract, test, asset or third-party
+payload.  The owner-ROM probe used the existing observable transaction surface,
+observed only neutral address/category facts, and removed its two owned
+temporary roots after recording their hashes and sizes.  It reached multiple
+COP configuration, register, command and DMA-configuration families through
+the real V30 bus, proving that their present ordinary-RAM fallback is a missing
+device boundary.  It did not falsely claim a boot, a COP result read, a DMA
+trigger or a hardware-exact MAME-derived model.  The finite receiving split is
+accepted: the next bounded S establishes explicit local COP register ownership;
+decoded command/DMA semantics remain a later S.
