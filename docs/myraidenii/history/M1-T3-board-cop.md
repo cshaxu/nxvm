@@ -269,3 +269,29 @@ files/55430 bytes; only persistent caches remain. Documentation gates and
 whitespace checks pass. S10 is accepted and closed. Other complete B07/B08
 families, selected-set startup and all gameplay remain unqualified; T3 stays
 open and no next S is admitted by this governance-only acceptance.
+
+## S11 Coordinator Acceptance
+
+Actual-change review accepts P1 b977bfa48. The complete0205/0905/2a05 family
+is reconciled: two explicit L2 fixed-point position/velocity updates are
+implemented;2a05 remains non-eligible until the same-T semantic receiver
+establishes its output width/neighbour preservation. It still rejects after
+a complete synthetic upload. This is not full-family or game qualification.
+
+One bounded COP memory helper replaces old copy-only loops and is shared by
+all five admitted macros; one private request-slot field preserves command
+address meaning. Source changes +62/-18/net44; the existing Board unit changes
++131/-1/net130 with41 data-driven actual guest cases and independent literal
+oracles. Source ownership, modular arithmetic, accepted-prefix failures and
+neighbour-word preservation are reviewed, with no Shared/public API change,
+copied reference body/table, new test executable or alternate path.
+
+Both full repository unit runs pass687/687, zero failures/skips: x64 106.12s,
+x86 126.27s. All ten release hashes,33 tracked guards and six selected media
+roles remain unchanged. No disposable output is persisted; only both caches
+remain. The directly stale partial-S49 architecture statement is corrected
+to accepted T2, not used to rewrite historical evidence. The
+[S11 record](../etc/evidence/t3-s11-cop-state-update.md) preserves source/model
+identities, packet, complete family dispositions, actual delta and proof.
+Documentation governance/whitespace checks pass. S11 is accepted and closed;
+remaining COP, DMA/result and selected-set startup requirements keep T3 open.
