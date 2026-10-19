@@ -72,6 +72,8 @@
 - [T3 COP command evidence and Video-owner transfer](evidence/t3-s7-cop-owner-transfer.md).
 - [T3 Video periodic-event receiver](evidence/t3-s8-video-periodic-event.md).
 - [T3 selected-set COP initialization protocol](evidence/t3-s9-cop-initialization-protocol.md).
+- [T3 COP transfer contract and Shared fault review](evidence/t3-s10-cop-transfer-review.md).
+- [S10 qualification and receiving release identities](evidence/t3-s10-results.json).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

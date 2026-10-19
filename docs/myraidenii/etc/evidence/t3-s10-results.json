@@ -1,0 +1,175 @@
+{
+  "baseline": "574b92492",
+  "shared_commit": "f2ca9ae01",
+  "receiving_commit": "990ff6eda",
+  "cleanup": {
+    "targets": ["myraidenii-t3-s10", "myraidenii", "test-boundary-trace"],
+    "files": 37,
+    "bytes": 55430,
+    "task_inventory_sha256": "C5B36EFCDF2BBC5515ED5E20F93241D1708AA5BFDB762DE1E69DC24C04B938C4",
+    "temporary_receiving_script_sha256": "144841593084DE741441F44277AC3E10115C330BB5FCA0E537F312F43B4E19D2",
+    "preview_and_process_exit_verified": true,
+    "earlier_probe_files": 4,
+    "earlier_probe_bytes": 698653
+  },
+  "units": [
+    {
+      "seconds": 135.95,
+      "tests": 687,
+      "failed": 0,
+      "width": "x64",
+      "skipped": 0
+    },
+    {
+      "seconds": 152.11,
+      "tests": 687,
+      "failed": 0,
+      "width": "x86",
+      "skipped": 0
+    }
+  ],
+  "incomplete_attempts": [
+    {
+      "accepted_as_pass": false,
+      "completed": 482,
+      "deadline_seconds": 300,
+      "width": "x64"
+    }
+  ],
+  "receiving": [
+    {
+      "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+      "profile": "ibm-5160-model-268-360k",
+      "bytes": 1524921,
+      "sha256": "6BEA14F0BC473CB3F13B331A8E6BFBB8C295E093EC962B6DB241A84017C45024",
+      "pe_machine": "8664",
+      "tests": 3,
+      "seconds": 35,
+      "junit_sha256": "5F56F9C5423044465288AF003C2930B94511FFD01B05B1ADDCC398723284DB5D"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+      "profile": "ibm-5170-model-339-1200k",
+      "bytes": 1536983,
+      "sha256": "9AD5D76EAAA484EE925E1856C8E94F88F8162AEA815660749514FE55AF2FCB45",
+      "pe_machine": "8664",
+      "tests": 3,
+      "seconds": 53,
+      "junit_sha256": "5C5C2882D7879224152BB18738F08A88ACE575E0EA242468E05524042F3F6930"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "bytes": 1524669,
+      "sha256": "E8E7E8CC432C157F9B1E5B7D336CCC484DAAA8024B8F56F47B9734E6594A6B33",
+      "pe_machine": "8664",
+      "tests": 3,
+      "seconds": 146,
+      "junit_sha256": "AF1223E7FD9C3BFC8C51786B91A537E79176C39542734D6D5B3200EA61D592A6"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "bytes": 1536129,
+      "sha256": "B73CE4B2B0B5F8D86BF8E46DB5CCA59E199A7B55ECEB8B045F07BF86C191C79D",
+      "pe_machine": "8664",
+      "tests": 5,
+      "seconds": 11,
+      "junit_sha256": "78874A22B9ED7DB677A4B095B04519AB5136D7076B9A5A471CF9D005C342A1A0"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+      "profile": "ibm-5160-model-268-360k",
+      "bytes": 1663112,
+      "sha256": "09622DD1A44EECECD5BA96AC85E51827CE4A28F9778A667D2939A0D9D6A308CC",
+      "pe_machine": "014C",
+      "tests": 3,
+      "seconds": 39,
+      "junit_sha256": "CDEBA09EC9CB1D049C78F911398EC9737770A28B6A759A07627ABAAB8A897E30"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+      "profile": "ibm-5170-model-339-1200k",
+      "bytes": 1676993,
+      "sha256": "E9F9B670C1C8425B811122C34F5DACD7EA63F7805DD4E033B460B93C240C8696",
+      "pe_machine": "014C",
+      "tests": 3,
+      "seconds": 63,
+      "junit_sha256": "18E786B0324BACA8D2C97938C0950DB5403F987722180DF8946E81FBBE6A1127"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "bytes": 1663710,
+      "sha256": "065A1210B577946E15CB68A0F3C3D21C9E86BFA8A14E518DF78B88C12E4F9E44",
+      "pe_machine": "014C",
+      "tests": 3,
+      "seconds": 191,
+      "junit_sha256": "8D7B4EBD3DA504EB53541C4A9BAE12CDD51B7C126B8D2F9A0C1ED2CC1D9222A6"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "bytes": 1676291,
+      "sha256": "90CD45661BBD28C2E24147F02C63334DEE713EE60F2DD39724ED9C0537DD6EDC",
+      "pe_machine": "014C",
+      "tests": 5,
+      "seconds": 14,
+      "junit_sha256": "CEA5AE67565A8B824E9BD84EA41F28D861F37A3D69B8769CF134F33889E8ACE8"
+    }
+  ],
+  "receiving_tests_per_width": 14,
+  "receiving_cpu_recompiles": 0,
+  "protected_tracked_files": 33,
+  "protected_selected_media_roles": 6,
+  "protected_inputs_unchanged": true,
+  "unchanged_mynes": [
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+      "bytes": 263694,
+      "sha256": "94F889447DF29B7C26CB99D93EC89DC52FCE2A62B01537B3D0C9D118F2484BF6"
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+      "bytes": 262670,
+      "sha256": "0B3947144DFBC5A18D81F8D2DF47DEC88A55C9927738EF06F37B07406A9263BF"
+    }
+  ],
+  "source_manifest_sha256": "A374ED4A500DADA2E812A0FDE7052FA25D4DBB3EA29C50BE310B793FD0A3BD53",
+  "test_manifest_sha256": "4A8247AF877988CD4093340F26950D858D52789EBBA7301A987EF947F8A258E5",
+  "delta": {
+    "shared_production": {
+      "added": 28,
+      "net": 21,
+      "deleted": 7
+    },
+    "shared_tests": {
+      "added": 74,
+      "net": 73,
+      "deleted": 1
+    },
+    "manifests": {
+      "added": 3,
+      "net": 0,
+      "deleted": 3
+    },
+    "myraidenii_production": {
+      "added": 165,
+      "net": 158,
+      "deleted": 7
+    },
+    "myraidenii_tests": {
+      "added": 160,
+      "net": 158,
+      "deleted": 2
+    }
+  },
+  "unverified": [
+    "S10 real-set execution",
+    "full external integration suite",
+    "desktop/RDP",
+    "physical timing",
+    "full COP instruction universe",
+    "gameplay"
+  ]
+}

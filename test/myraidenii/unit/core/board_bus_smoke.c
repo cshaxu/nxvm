@@ -1,5 +1,6 @@
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/video.h"
+#include "lib/types/file.h"
 #include "x86-core/machine/debug_interface.h"
 
 static lib_u8 program_even[MYRAIDENII_CORE_PROGRAM_LANE_BYTES];
@@ -377,7 +378,10 @@ static lib_i32 board_cop_routes(void)
                 sizeof(value), X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
             route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
             x86_core_machine_memory_read(machine, configuration_addresses[index], value,
-                sizeof(value)) != LIB_STATUS_INVALID_STATE)
+                sizeof(value)) != (configuration_addresses[index] >= 0x4a0u ?
+                    LIB_STATUS_OK : LIB_STATUS_INVALID_STATE) ||
+            (configuration_addresses[index] >= 0x4a0u &&
+                (value[0] != 0xa5u || value[1] != 0x5au)))
             goto done;
     }
 
@@ -403,9 +407,163 @@ done:
     return failed;
 }
 
+static lib_status board_cop_word_write(x86_core_machine *machine,
+    lib_u32 address, lib_u16 value)
+{
+    const lib_u8 bytes[2] = {(lib_u8)value, (lib_u8)(value >> 8u)};
+
+    return x86_core_machine_memory_write(machine, address, bytes, sizeof(bytes));
+}
+
+static lib_status board_cop_upload(x86_core_machine *machine, lib_u16 command,
+    lib_u16 base, lib_u8 words)
+{
+    lib_status status = board_cop_word_write(machine, 0x438u, 0x1234u);
+
+    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x43au, 0xffffu);
+    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x43cu, command);
+    for (lib_u8 index = 0u; index < words && status == LIB_STATUS_OK; ++index) {
+        status = board_cop_word_write(machine, 0x434u, (lib_u16)(base + index));
+        if (status == LIB_STATUS_OK)
+            status = board_cop_word_write(machine, 0x432u, (lib_u16)(0x6000u + index));
+    }
+    return status;
+}
+
+static lib_i32 board_cop_transfers(void)
+{
+    static const struct {
+        lib_u16 command;
+        lib_u32 source;
+        lib_u32 destination;
+        lib_u16 upload_base;
+        lib_u8 upload_words;
+        lib_bool failure;
+        lib_bool accepted_write_prefix;
+    } cases[] = {
+        {0x5205u, 0x2000u, 0x3000u, 0u, 8u, LIB_FALSE, LIB_FALSE},
+        {0x5a05u, 0x2000u, 0x3000u, 0u, 8u, LIB_FALSE, LIB_FALSE},
+        {0xf205u, 0x2000u, 0x3000u, 0u, 8u, LIB_FALSE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x2002u, 248u, 8u, LIB_FALSE, LIB_FALSE},
+        {0x5205u, 0x428u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x426u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x428u, 0u, 8u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x426u, 0u, 8u, LIB_TRUE, LIB_TRUE},
+        {0x5205u, 0x2000u, 0x3000u, 0u, 7u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x3000u, 0u, 0u, LIB_TRUE, LIB_FALSE},
+        {0x6105u, 0x2000u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x102000u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
+        {0xf205u, LIB_UINT32_MAX - 3u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE}
+    };
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    const lib_u8 source_data[] = {0x11u, 0x22u, 0x33u, 0x44u, 0x55u, 0x66u, 0x77u, 0x88u};
+    const lib_u8 sentinel[] = {0xaau, 0xbbu, 0xccu, 0xddu};
+    lib_i32 failures = 0;
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        myraidenii_core_board *board = LIB_NULL;
+        x86_core_machine *machine;
+        x86_core_machine_run_result result = {0};
+        lib_u8 guest[] = {0xb8u, (lib_u8)cases[index].command,
+            (lib_u8)(cases[index].command >> 8u), 0xa3u,
+            (lib_u8)((index % 3u) * 2u), 0x05u, 0xf4u};
+        lib_u8 actual[4];
+        lib_status status;
+        lib_i32 failed = 1;
+
+        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+        machine = myraidenii_core_board_machine_get(board);
+        if (x86_core_machine_memory_write(machine, 0x2000u, source_data,
+                sizeof(source_data)) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x3000u, sentinel,
+                sizeof(sentinel)) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+            x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+            board_cop_upload(machine, cases[index].command, cases[index].upload_base,
+                cases[index].upload_words) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4c0u, (lib_u16)cases[index].source) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].source >> 16u)) !=
+                LIB_STATUS_OK ||
+            board_cop_word_write(machine, cases[index].command == 0xf205u ? 0x4c4u : 0x4c2u,
+                (lib_u16)cases[index].destination) != LIB_STATUS_OK)
+            goto done;
+        status = x86_core_machine_debug_continue(machine,
+            (x86_core_machine_run_budget){cases[index].failure ? 2u : 3u, 0u}, &result);
+        if (cases[index].failure) {
+            x86_core_machine_lifecycle lifecycle;
+
+            if (status == LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+                x86_core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+                lifecycle != X86_CORE_MACHINE_FAULTED)
+                goto done;
+            if (x86_core_machine_memory_inspect(machine, 0x3000u, actual, sizeof(actual)) !=
+                    LIB_STATUS_OK || lib_memory_compare(actual, sentinel, sizeof(actual)) != 0)
+                goto done;
+            if (cases[index].accepted_write_prefix &&
+                (x86_core_machine_memory_inspect(machine, 0x426u, actual, 2u) !=
+                    LIB_STATUS_OK || actual[0] != 0x11u || actual[1] != 0x22u))
+                goto done;
+        } else if (status != LIB_STATUS_OK || result.executed != 3u ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_memory_inspect(machine, cases[index].destination,
+                actual, sizeof(actual)) != LIB_STATUS_OK ||
+            lib_memory_compare(actual, source_data + (cases[index].command == 0xf205u ? 4u : 0u),
+                sizeof(actual)) != 0) {
+            goto done;
+        }
+        failed = 0;
+done:
+        if (failed) lib_c_printf("COP:TRANSFER:FAIL case=%u reason=%u detail=%u executed=%llu\n",
+            (lib_u32)index, (lib_u32)result.reason, result.detail, result.executed);
+        myraidenii_core_board_destroy(board);
+        failures += failed;
+    }
+    return failures != 0;
+}
+
+static lib_i32 board_cop_reset_and_admission(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    lib_u8 data = 0xabu;
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    if (board_cop_word_write(machine, 0x434u, 256u) != LIB_STATUS_INVALID_ARGUMENT ||
+        board_cop_upload(machine, 0x5205u, 0u, 7u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x434u, 7u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x432u, &data, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x433u, &data, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_upload(machine, 0x5205u, 248u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x504u, 0x5205u) != LIB_STATUS_OK)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() ||
-        board_video_interrupts() || board_cop_routes();
+        board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
+        board_cop_transfers();
 }

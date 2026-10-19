@@ -2,7 +2,11 @@
 
 enum {
     MYRAIDENII_CORE_COP_STORAGE_START = 0x00400u,
-    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x00106u
+    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x00106u,
+    MYRAIDENII_CORE_COP_PROGRAM_WORDS = 256u,
+    MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS = 8u,
+    MYRAIDENII_CORE_COP_PROGRAM_SLOTS =
+        MYRAIDENII_CORE_COP_PROGRAM_WORDS / MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS
 };
 
 typedef struct myraidenii_core_cop_range {
@@ -11,8 +15,21 @@ typedef struct myraidenii_core_cop_range {
     lib_bool command;
 } myraidenii_core_cop_range;
 
+typedef struct myraidenii_core_cop_program {
+    lib_u16 words[MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS];
+    lib_u16 value;
+    lib_u16 mask;
+    lib_u16 trigger;
+    lib_u16 written;
+    lib_u8 metadata_written;
+} myraidenii_core_cop_program;
+
 struct myraidenii_core_cop {
+    x86_core_machine *machine;
     lib_u8 registers[MYRAIDENII_CORE_COP_STORAGE_BYTES];
+    myraidenii_core_cop_program programs[MYRAIDENII_CORE_COP_PROGRAM_SLOTS];
+    lib_u8 metadata_written;
+    lib_u16 pending_command;
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
@@ -24,6 +41,56 @@ static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
     {0x004c0u, 0x0000eu, LIB_FALSE},
     {0x00500u, 0x00006u, LIB_TRUE}
 };
+
+static lib_u16 myraidenii_core_cop_word(const myraidenii_core_cop *cop,
+    lib_u32 physical)
+{
+    lib_size index = physical - MYRAIDENII_CORE_COP_STORAGE_START;
+
+    return (lib_u16)(cop->registers[index] | (lib_u16)cop->registers[index + 1u] << 8u);
+}
+
+static lib_u32 myraidenii_core_cop_address(const myraidenii_core_cop *cop,
+    lib_u8 index)
+{
+    return (lib_u32)myraidenii_core_cop_word(cop, 0x4a0u + index * 2u) << 16u |
+        myraidenii_core_cop_word(cop, 0x4c0u + index * 2u);
+}
+
+static lib_bool myraidenii_core_cop_command_ready(const myraidenii_core_cop *cop,
+    lib_u16 command)
+{
+    if (command != 0x5205u && command != 0x5a05u && command != 0xf205u)
+        return LIB_FALSE;
+    for (lib_size index = 0u; index < MYRAIDENII_CORE_COP_PROGRAM_SLOTS; ++index) {
+        const myraidenii_core_cop_program *program = &cop->programs[index];
+
+        if (program->written == 0xffffu && program->metadata_written == 0x3fu &&
+            program->trigger == command)
+            return LIB_TRUE;
+    }
+    return LIB_FALSE;
+}
+
+static void myraidenii_core_cop_register_written(myraidenii_core_cop *cop,
+    lib_u32 physical)
+{
+    if (physical >= 0x438u && physical <= 0x43du)
+        cop->metadata_written |= (lib_u8)(1u << (physical - 0x438u));
+    if ((physical & ~1u) == 0x432u) {
+        lib_u16 address = myraidenii_core_cop_word(cop, 0x434u);
+        lib_u16 word = address % MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS;
+        myraidenii_core_cop_program *program =
+            &cop->programs[address / MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS];
+
+        program->words[word] = myraidenii_core_cop_word(cop, 0x432u);
+        program->written |= (lib_u16)(1u << (word * 2u + (physical & 1u)));
+        program->value = myraidenii_core_cop_word(cop, 0x438u);
+        program->mask = myraidenii_core_cop_word(cop, 0x43au);
+        program->trigger = myraidenii_core_cop_word(cop, 0x43cu);
+        program->metadata_written = cop->metadata_written;
+    }
+}
 
 static const myraidenii_core_cop_range *myraidenii_core_cop_range_find(lib_u32 physical,
     lib_uptr bytes)
@@ -59,7 +126,15 @@ static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
         return LIB_STATUS_INVALID_ARGUMENT;
     if (myraidenii_core_cop_range_find(physical, bytes) == LIB_NULL)
         return LIB_STATUS_UNSUPPORTED;
-    /* S5 owns route decoding, not undocumented COP result/readback semantics. */
+    if ((physical >= 0x4a0u && physical + bytes <= 0x4aeu) ||
+        (physical >= 0x4c0u && physical + bytes <= 0x4ceu)) {
+        const myraidenii_core_cop *cop = owner;
+
+        lib_memory_copy((void *)destination,
+            cop->registers + physical - MYRAIDENII_CORE_COP_STORAGE_START, bytes);
+        return LIB_STATUS_OK;
+    }
+    /* Result registers and write-only configuration still have no read model. */
     return LIB_STATUS_INVALID_STATE;
 }
 
@@ -73,9 +148,42 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         return LIB_STATUS_INVALID_ARGUMENT;
     range = myraidenii_core_cop_range_find(physical, bytes);
     if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
-    if (range->command) return LIB_STATUS_INVALID_STATE;
-    lib_memory_copy(cop->registers + physical - MYRAIDENII_CORE_COP_STORAGE_START,
-        (const void *)source, bytes);
+    if (cop->pending_command != 0u) return LIB_STATUS_INVALID_STATE;
+    if (range->command) {
+        const lib_u8 *data = (const lib_u8 *)source;
+        lib_u16 command;
+
+        if (bytes != 2u || (physical & 1u) != 0u) return LIB_STATUS_INVALID_STATE;
+        command = (lib_u16)(data[0] | (lib_u16)data[1] << 8u);
+        if (!myraidenii_core_cop_command_ready(cop, command))
+            return LIB_STATUS_INVALID_STATE;
+        cop->pending_command = command;
+        return LIB_STATUS_OK;
+    }
+    /* Validate the complete candidate address before changing either byte. */
+    if (physical <= 0x435u && physical + bytes > 0x434u) {
+        lib_u16 address = myraidenii_core_cop_word(cop, 0x434u);
+
+        for (lib_uptr index = 0u; index < bytes; ++index) {
+            lib_u32 current = physical + (lib_u32)index;
+
+            if (current == 0x434u || current == 0x435u) {
+                lib_u16 shift = (lib_u16)((current - 0x434u) * 8u);
+
+                address = (lib_u16)((address & ~(0xffu << shift)) |
+                    (lib_u16)((const lib_u8 *)source)[index] << shift);
+            }
+        }
+        if (address >= MYRAIDENII_CORE_COP_PROGRAM_WORDS)
+            return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    for (lib_uptr index = 0u; index < bytes; ++index) {
+        lib_u32 current = physical + (lib_u32)index;
+
+        cop->registers[current - MYRAIDENII_CORE_COP_STORAGE_START] =
+            ((const lib_u8 *)source)[index];
+        myraidenii_core_cop_register_written(cop, current);
+    }
     return LIB_STATUS_OK;
 }
 
@@ -98,7 +206,49 @@ void myraidenii_core_cop_destroy(myraidenii_core_cop *cop)
 
 void myraidenii_core_cop_reset(myraidenii_core_cop *cop)
 {
-    if (cop != LIB_NULL) lib_memory_set(cop->registers, 0, sizeof(cop->registers));
+    if (cop != LIB_NULL) {
+        lib_memory_set(cop->registers, 0, sizeof(cop->registers));
+        lib_memory_set(cop->programs, 0, sizeof(cop->programs));
+        cop->metadata_written = 0u;
+        cop->pending_command = 0u;
+    }
+}
+
+lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
+{
+    lib_u16 words[2];
+    lib_u32 source;
+    lib_u32 destination;
+    lib_status status = LIB_STATUS_OK;
+
+    if (cop == LIB_NULL || cop->machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (cop->pending_command == 0u) return LIB_STATUS_OK;
+    source = myraidenii_core_cop_address(cop, 0u);
+    destination = myraidenii_core_cop_address(cop, cop->pending_command == 0xf205u ? 2u : 1u);
+    if (cop->pending_command == 0xf205u) {
+        if (source > LIB_UINT32_MAX - 4u) status = LIB_STATUS_INVALID_ARGUMENT;
+        else source += 4u;
+    }
+    /* L2 transfer service at the first Core advance after the command
+     * bus write has committed. No physical COP latency is asserted. */
+    for (lib_u32 index = 0u; index < 2u && status == LIB_STATUS_OK; ++index) {
+        if (source > LIB_UINT32_MAX - index * 2u) {
+            status = LIB_STATUS_INVALID_ARGUMENT;
+            break;
+        }
+        status = x86_core_machine_dma_memory_cycle(cop->machine, source + index * 2u,
+            2u, 0u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &words[index], LIB_NULL, LIB_NULL, cop);
+    }
+    for (lib_u32 index = 0u; index < 2u && status == LIB_STATUS_OK; ++index) {
+        if (destination > LIB_UINT32_MAX - index * 2u) {
+            status = LIB_STATUS_INVALID_ARGUMENT;
+            break;
+        }
+        status = x86_core_machine_dma_memory_cycle(cop->machine, destination + index * 2u,
+            2u, 0u, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &words[index], LIB_NULL, LIB_NULL, cop);
+    }
+    cop->pending_command = 0u;
+    return status;
 }
 
 lib_status myraidenii_core_cop_install(myraidenii_core_cop *cop,
@@ -120,6 +270,9 @@ lib_status myraidenii_core_cop_install(myraidenii_core_cop *cop,
         routes[index].callbacks = callbacks;
         routes[index].mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT;
     }
-    return x86_core_machine_install_memory_device_routes(machine, routes,
+    lib_status status = x86_core_machine_install_memory_device_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, cop);
+
+    if (status == LIB_STATUS_OK) cop->machine = machine;
+    return status;
 }

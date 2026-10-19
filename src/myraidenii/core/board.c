@@ -127,6 +127,10 @@ static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 du
     (void)due_tick;
     if (myraidenii_core_video_advance(&board->video, ticks))
         board->main_interrupt_pending = LIB_TRUE;
+    lib_status status = myraidenii_core_cop_advance(board->cop);
+
+    if (status != LIB_STATUS_OK)
+        (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
 }
 
 static lib_u8 myraidenii_core_board_interrupt_acknowledge(void *owner)
