@@ -52,6 +52,11 @@ and complete selected-set startup. Neither a reference magic-address patch
 nor unimplemented/no-op macros qualify those gates. No Shared time extension
 is needed: the existing public timeline observation supplies the actual owner.
 
+S21 implements that complete nominal L2 RNG register receiver without Shared
+changes or a clock mirror. Its [proof and packet](../etc/evidence/t3-s21-cop-rng.md)
+reuse the existing real Board/raster boundary and guest MMIO tests. This does
+not qualify mode-banked DMA, Video latches, sorting, residual macros or startup.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free

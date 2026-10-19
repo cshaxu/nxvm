@@ -396,6 +396,31 @@ static lib_i32 board_video_phase(void)
     return myraidenii_core_video_ticks_until_vblank(&sliced) != 245760u;
 }
 
+static lib_i32 board_cop_random_result(x86_core_machine *machine, lib_u16 expected)
+{
+    x86_core_machine_timeline_observation before, after;
+    lib_u8 value[2];
+
+    if (x86_core_machine_get_timeline_observation(machine, &before) != LIB_STATUS_OK)
+        return 1;
+    for (lib_u32 address = 0x5a0u; address < 0x5a8u; ++address) {
+        const lib_u8 byte = (lib_u8)(expected >> ((address & 1u) * 8u));
+
+        if (x86_core_machine_memory_read(machine, address, value, 1u) != LIB_STATUS_OK ||
+            value[0] != byte ||
+            x86_core_machine_memory_inspect(machine, address, value, 1u) != LIB_STATUS_OK ||
+            value[0] != byte)
+            return 1;
+        if (address < 0x5a7u &&
+            (x86_core_machine_memory_read(machine, address, value, 2u) != LIB_STATUS_OK ||
+             value[0] != byte || value[1] !=
+                (lib_u8)(expected >> (((address + 1u) & 1u) * 8u))))
+            return 1;
+    }
+    return x86_core_machine_get_timeline_observation(machine, &after) != LIB_STATUS_OK ||
+        before.now != after.now;
+}
+
 static lib_i32 board_video_interrupts(void)
 {
     const myraidenii_core_board_config config = {
@@ -413,6 +438,12 @@ static lib_i32 board_video_interrupts(void)
     const lib_u8 guest[] = {0xfbu, 0xf4u, 0xebu, 0xfdu};
     const lib_u8 handler[] = {0xffu, 0x06u, 0x00u, 0x10u, 0xcfu};
     const lib_u8 vector[] = {0x00u, 0x09u, 0x00u, 0x00u};
+    const lib_u16 limits[] = {65535u, 256u, 250u, 0u, 1u};
+    const lib_u16 random_results[3][5] = {
+        {49152u,68u,31u,0u,0u},
+        {10240u,225u,149u,0u,0u},
+        {36864u,125u,16u,0u,0u}
+    };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     x86_core_machine_run_result result;
@@ -449,8 +480,17 @@ static lib_i32 board_video_interrupts(void)
             x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
             !advanced ||
             x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
-            time.elapsed_ticks != edge || time.next_deadline_tick != edge + 288768u ||
-            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+            time.elapsed_ticks != edge || time.next_deadline_tick != edge + 288768u)
+            goto done;
+        /* Literal RNG oracles at the existing three independently scheduled edges. */
+        for (lib_size index = 0u; index < sizeof(limits) / sizeof(limits[0]); ++index) {
+            const lib_u8 bytes[2] = {(lib_u8)limits[index], (lib_u8)(limits[index] >> 8u)};
+
+            if (x86_core_machine_memory_write(machine, 0x42cu, bytes, sizeof(bytes)) !=
+                    LIB_STATUS_OK || board_cop_random_result(machine, random_results[frame][index]))
+                goto done;
+        }
+        if (x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
                 LIB_STATUS_OK || result.executed != 0u ||
             x86_core_machine_run(machine, (x86_core_machine_run_budget){2u, 0u}, &result) !=
                 LIB_STATUS_OK || result.executed != 2u ||
@@ -492,7 +532,7 @@ static lib_i32 board_cop_routes(void)
         lib_u32 first;
         lib_u8 bytes;
     } unmodelled[] = {
-        {0x450u,14u}, {0x5a0u,8u}, {0x6fcu,4u}
+        {0x450u,14u}, {0x6fcu,4u}
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -1723,6 +1763,83 @@ done:
     return failed;
 }
 
+static lib_i32 board_cop_random(void)
+{
+    const myraidenii_core_board_config config = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    const lib_u8 guest[] = {0x90u, 0x90u, 0xa1u, 0xa4u, 0x05u, 0xa3u, 0x00u, 0x30u};
+    const lib_u8 low = 0u, high = 1u;
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_run_result result = {0};
+    x86_core_machine_timeline_observation before;
+    lib_u8 value[2];
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
+        board_cop_random_result(machine, 0u) ||
+        board_cop_word_write(machine, 0x42cu, 65535u) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine,
+            (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+        result.executed != 2u ||
+        x86_core_machine_get_timeline_observation(machine, &before) != LIB_STATUS_OK ||
+        before.now == 0u ||
+        x86_core_machine_debug_continue(machine,
+            (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+        result.executed != 2u ||
+        x86_core_machine_memory_read(machine, 0x3000u, value, sizeof(value)) != LIB_STATUS_OK ||
+        (lib_u16)(value[0] | (lib_u16)value[1] << 8u) != (lib_u16)before.now)
+        goto done;
+
+    if (x86_core_machine_memory_write(machine, 0x42cu, &low, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x42du, &high, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_get_timeline_observation(machine, &before) != LIB_STATUS_OK ||
+        board_cop_random_result(machine, (lib_u16)(before.now % 257u)) ||
+        x86_core_machine_memory_read(machine, 0x42cu, value, sizeof(value)) !=
+            LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x42cu, value, sizeof(value)) !=
+            LIB_STATUS_INVALID_STATE)
+        goto done;
+    for (lib_u32 address = 0x5a0u; address < 0x5a8u; ++address) {
+        if (x86_core_machine_memory_write(machine, address, &high, 1u) !=
+                LIB_STATUS_INVALID_STATE ||
+            ((address & 1u) == 0u && board_cop_word_write(machine, address, 1u) !=
+                LIB_STATUS_INVALID_STATE))
+            goto done;
+    }
+    if (board_cop_upload(machine, 0x5205u, 0u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x42cu, 0u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x42du, &low, 1u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_random_result(machine, (lib_u16)(before.now % 257u)) ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine,
+            (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+        result.executed != 2u ||
+        x86_core_machine_get_timeline_observation(machine, &before) != LIB_STATUS_OK ||
+        before.now == 0u ||
+        board_cop_random_result(machine, 0u))
+        goto done;
+    failed = 0;
+done:
+    if (failed) lib_c_printf("COP:RANDOM:FAIL reason=%u detail=%u\n",
+        (lib_u32)result.reason, result.detail);
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
@@ -1730,5 +1847,5 @@ lib_i32 main(void)
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_numeric_vectors() || board_cop_numeric_failures() || board_cop_numeric_chain() ||
-        board_cop_collisions() || board_cop_decimal();
+        board_cop_collisions() || board_cop_decimal() || board_cop_random();
 }

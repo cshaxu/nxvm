@@ -1,5 +1,6 @@
 #include "myraidenii/core/cop.h"
 #include "lib/types/math.h"
+#include "x86-core/machine/machine_interface.h"
 
 #define MYRAIDENII_CORE_COP_PI 3.14159265358979323846
 
@@ -24,6 +25,7 @@ typedef enum myraidenii_core_cop_register_role {
     MYRAIDENII_CORE_COP_READ_WRITE,
     MYRAIDENII_CORE_COP_COMMAND,
     MYRAIDENII_CORE_COP_RESULT,
+    MYRAIDENII_CORE_COP_RANDOM,
     MYRAIDENII_CORE_COP_UNMODELLED_REGISTER
 } myraidenii_core_cop_register_role;
 
@@ -84,7 +86,7 @@ static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
     {MYRAIDENII_CORE_COP_COLLISION_RESULT, 10u, MYRAIDENII_CORE_COP_RESULT},
     {MYRAIDENII_CORE_COP_DECIMAL_RESULT,
         MYRAIDENII_CORE_COP_DECIMAL_DIGITS + 1u, MYRAIDENII_CORE_COP_RESULT},
-    {0x005a0u, 0x00008u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
+    {0x005a0u, 0x00008u, MYRAIDENII_CORE_COP_RANDOM},
     {MYRAIDENII_CORE_COP_STATUS, 6u, MYRAIDENII_CORE_COP_RESULT},
     {0x006fcu, 0x00004u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER}
 };
@@ -215,6 +217,20 @@ static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
             cop->registers + (physical - MYRAIDENII_CORE_COP_STORAGE_START), bytes);
         return LIB_STATUS_OK;
     }
+    if (range->role == MYRAIDENII_CORE_COP_RANDOM) {
+        x86_core_machine_timeline_observation time;
+        lib_status status = x86_core_machine_get_timeline_observation(cop->machine, &time);
+        lib_u32 divisor = (lib_u32)myraidenii_core_cop_word(cop, 0x42cu) + 1u;
+        lib_u16 value;
+
+        if (status != LIB_STATUS_OK) return status;
+        /* Nominal L2 RNG: observe the one guest timeline without advancing it. */
+        value = (lib_u16)(time.now % divisor);
+        for (lib_uptr index = 0u; index < bytes; ++index)
+            ((lib_u8 *)destination)[index] =
+                (lib_u8)(value >> (((physical + (lib_u32)index) & 1u) * 8u));
+        return LIB_STATUS_OK;
+    }
     if (range->role == MYRAIDENII_CORE_COP_RESULT) {
         for (lib_uptr index = 0u; index < bytes; ++index) {
             lib_u32 address = physical + (lib_u32)index;
@@ -243,6 +259,7 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
     range = myraidenii_core_cop_range_find(physical, bytes);
     if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
     if (range->role == MYRAIDENII_CORE_COP_RESULT ||
+        range->role == MYRAIDENII_CORE_COP_RANDOM ||
         range->role == MYRAIDENII_CORE_COP_UNMODELLED_REGISTER)
         return LIB_STATUS_INVALID_STATE;
     if (cop->pending_command != 0u) return LIB_STATUS_INVALID_STATE;
