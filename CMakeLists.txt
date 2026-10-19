@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
+include(cmake/BuildEnvironment.cmake)
+
 # The root owns only the toolchain contract and neutral shared corpora.
 # Products select their own CMake graph below; no product cache setting is a
 # prerequisite for another product's configure path.
@@ -32,6 +34,7 @@ endif()
 set(PROJECT_ARTIFACT_ARCHITECTURE "${project_artifact_architecture}")
 
 find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh)
+add_subdirectory(test/tools)
 if(NOT WIN32)
     add_compile_definitions(_POSIX_C_SOURCE=200809L _DEFAULT_SOURCE=1)
 endif()

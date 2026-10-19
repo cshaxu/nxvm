@@ -36,3 +36,5 @@ not replace the required review record.
 Use the identifier, commit-subject, artifact, cleanup, and closure rules in
 [Execution Rules](docs/rules/EXECUTION.md). Do not allocate a task identifier
 or treat a local developer artifact as release evidence outside that policy.
+Stable Ninja/cache directories and preview-first cleanup follow its
+[Build Tree Hygiene](docs/rules/EXECUTION.md#build-tree-hygiene) section.

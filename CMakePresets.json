@@ -10,11 +10,12 @@
       "name": "mingw-gcc-x64",
       "displayName": "MinGW-w64 GCC x64",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/mingw-gcc-x64",
+      "binaryDir": "${sourceDir}/build/.ninja/gcc-x64-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
+        "REPOSITORY_USE_CCACHE": "OFF",
+        "CMAKE_C_COMPILER_LAUNCHER": "",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x64",
         "REPOSITORY_BUILD_MYNES": "OFF",
         "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
@@ -24,14 +25,16 @@
       "name": "mingw-gcc-x64-ccache",
       "displayName": "MinGW-w64 GCC x64 with ccache",
       "inherits": "mingw-gcc-x64",
-      "binaryDir": "${sourceDir}/build/mingw-gcc-x64-ccache",
-      "cacheVariables": {}
+      "binaryDir": "${sourceDir}/build/.ninja/gcc-x64-debug",
+      "cacheVariables": {
+        "REPOSITORY_USE_CCACHE": "ON"
+      }
     },
     {
       "name": "mingw-gcc-x64-release",
       "displayName": "MinGW-w64 GCC x64 optimized release",
       "inherits": "mingw-gcc-x64",
-      "binaryDir": "${sourceDir}/build/mingw-gcc-x64-release",
+      "binaryDir": "${sourceDir}/build/.ninja/gcc-x64-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -40,18 +43,21 @@
       "name": "mingw-gcc-x64-release-ccache",
       "displayName": "MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mingw-gcc-x64-release",
-      "binaryDir": "${sourceDir}/build/mingw-gcc-x64-release-ccache",
-      "cacheVariables": {}
+      "binaryDir": "${sourceDir}/build/.ninja/gcc-x64-release",
+      "cacheVariables": {
+        "REPOSITORY_USE_CCACHE": "ON"
+      }
     },
     {
       "name": "mingw-gcc-x86-release",
       "displayName": "MinGW-w64 GCC x86 optimized release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/mingw-gcc-x86-release",
+      "binaryDir": "${sourceDir}/build/.ninja/gcc-x86-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "$env{NXVM_I686_GCC}",
-        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
+        "REPOSITORY_USE_CCACHE": "OFF",
+        "CMAKE_C_COMPILER_LAUNCHER": "",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
         "REPOSITORY_BUILD_MYNES": "OFF",
@@ -62,18 +68,21 @@
       "name": "mingw-gcc-x86-release-ccache",
       "displayName": "MinGW-w64 GCC x86 optimized release with ccache",
       "inherits": "mingw-gcc-x86-release",
-      "binaryDir": "${sourceDir}/build/mingw-gcc-x86-release-ccache",
-      "cacheVariables": {}
+      "binaryDir": "${sourceDir}/build/.ninja/gcc-x86-release",
+      "cacheVariables": {
+        "REPOSITORY_USE_CCACHE": "ON"
+      }
     },
     {
       "name": "mingw-clang-x86-release",
       "displayName": "LLVM Clang MinGW x86 optimized release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/mingw-clang-x86-release",
+      "binaryDir": "${sourceDir}/build/.ninja/clang-x86-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "$env{NXVM_I686_CLANG}",
-        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
+        "REPOSITORY_USE_CCACHE": "OFF",
+        "CMAKE_C_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER_TARGET": "i686-w64-windows-gnu",
         "CMAKE_SYSROOT": "$env{NXVM_I686_SYSROOT}",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
@@ -85,11 +94,12 @@
       "name": "mynes-gcc-x64-release",
       "displayName": "MyNES MinGW-w64 GCC x64 optimized release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/mynes-gcc-x64-release",
+      "binaryDir": "${sourceDir}/build/.ninja/mynes-gcc-x64-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
+        "REPOSITORY_USE_CCACHE": "OFF",
+        "CMAKE_C_COMPILER_LAUNCHER": "",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "8",
@@ -101,11 +111,12 @@
       "name": "mynes-gcc-x86-release",
       "displayName": "MyNES MinGW-w64 GCC x86 optimized release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/mynes-gcc-x86-release",
+      "binaryDir": "${sourceDir}/build/.ninja/mynes-gcc-x86-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "i686-w64-mingw32-gcc",
-        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
+        "REPOSITORY_USE_CCACHE": "OFF",
+        "CMAKE_C_COMPILER_LAUNCHER": "",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "4",
@@ -117,36 +128,44 @@
       "name": "mynes-gcc-x64-release-ccache",
       "displayName": "MyNES MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mynes-gcc-x64-release",
-      "binaryDir": "${sourceDir}/build/mynes-gcc-x64-release-ccache",
-      "cacheVariables": {}
+      "binaryDir": "${sourceDir}/build/.ninja/mynes-gcc-x64-release",
+      "cacheVariables": {
+        "REPOSITORY_USE_CCACHE": "ON"
+      }
     },
     {
       "name": "mynes-gcc-x86-release-ccache",
       "displayName": "MyNES MinGW-w64 GCC x86 optimized release with ccache",
       "inherits": "mynes-gcc-x86-release",
-      "binaryDir": "${sourceDir}/build/mynes-gcc-x86-release-ccache",
-      "cacheVariables": {}
+      "binaryDir": "${sourceDir}/build/.ninja/mynes-gcc-x86-release",
+      "cacheVariables": {
+        "REPOSITORY_USE_CCACHE": "ON"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64-release",
+      "jobs": 8,
       "targets": ["vm-0-5-0564"]
     },
     {
       "name": "current-gcc-ccache",
       "configurePreset": "mingw-gcc-x64-release-ccache",
+      "jobs": 8,
       "targets": ["vm-0-5-0564"]
     },
     {
       "name": "current-gcc-x86",
       "configurePreset": "mingw-gcc-x86-release",
+      "jobs": 8,
       "targets": ["vm-0-5-0564"]
     },
     {
       "name": "unit-tests-gcc",
       "configurePreset": "mingw-gcc-x64-release-ccache",
+      "jobs": 8,
       "targets": [
         "run-unit-tests",
         "verify-current-specialized-gates"
@@ -155,46 +174,55 @@
     {
       "name": "unit-build-gcc",
       "configurePreset": "mingw-gcc-x64-release-ccache",
+      "jobs": 8,
       "targets": ["build-unit-tests"]
     },
     {
       "name": "unit-build-gcc-x86",
       "configurePreset": "mingw-gcc-x86-release-ccache",
+      "jobs": 8,
       "targets": ["build-unit-tests"]
     },
     {
       "name": "integration-tests-gcc",
       "configurePreset": "mingw-gcc-x64",
+      "jobs": 8,
       "targets": ["run-integration-tests"]
     },
     {
       "name": "mynes-current-x64",
       "configurePreset": "mynes-gcc-x64-release",
+      "jobs": 8,
       "targets": ["mynes-0-0-0044"]
     },
     {
       "name": "mynes-current-x86",
       "configurePreset": "mynes-gcc-x86-release",
+      "jobs": 8,
       "targets": ["mynes-0-0-0044"]
     },
     {
       "name": "mynes-current-x64-ccache",
       "configurePreset": "mynes-gcc-x64-release-ccache",
+      "jobs": 8,
       "targets": ["mynes-0-0-0044"]
     },
     {
       "name": "mynes-current-x86-ccache",
       "configurePreset": "mynes-gcc-x86-release-ccache",
+      "jobs": 8,
       "targets": ["mynes-0-0-0044"]
     },
     {
       "name": "mynes-tests-x64",
       "configurePreset": "mynes-gcc-x64-release",
+      "jobs": 8,
       "targets": ["run-mynes-tests"]
     },
     {
       "name": "mynes-tests-x86",
       "configurePreset": "mynes-gcc-x86-release",
+      "jobs": 8,
       "targets": ["run-mynes-tests"]
     }
   ],

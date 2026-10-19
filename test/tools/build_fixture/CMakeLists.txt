@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.23)
+include("${CMAKE_CURRENT_LIST_DIR}/../../../cmake/BuildEnvironment.cmake")
+project(build_contract C)
+add_library(build_probe OBJECT probe.c)
+target_include_directories(build_probe PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../../../src")
+target_compile_features(build_probe PRIVATE c_std_11)

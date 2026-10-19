@@ -570,15 +570,46 @@ the NXVM App, not a separately branded default-at product.
 
 ## Build Tree Hygiene
 
-After every build, test, smoke, sanitizer, or failed verification, remove owned
-temporary products once the active or immediately next subtask no longer needs
-them. `assets/<product>/` is the product executable deployment target;
-only its latest verified pairs remain there under the retention rule above.
-Historical task artifacts are never regenerated as a product route. Configuration
-trees, objects, generated tests, logs, traces, sanitizer trees, and stale
-CMake/Ninja state are disposable unless the active subtask records a need.
-Before recursive cleanup, verify the resolved target is below `build/`, exclude
-`assets/nxvm/`, and stop every owned process using it.
+Only `build/.ccache/` and `build/.ninja/` are reusable across tasks. Optional
+ccache uses the repository cache, `build/.ccache/tmp` and a5G maximum, fixed
+in generated compiler commands even for direct `cmake --build`. Disabled
+configurations clear old launchers. Never delete or relocate a user's global
+cache; explicitly select the repository cache when querying statistics.
+
+Root CMake owns Ninja directory validation and cache routing through
+`cmake/BuildEnvironment.cmake`. Stable compiler/architecture/configuration
+trees live below `.ninja`, for example `gcc-x64-release` and `gcc-x86-release`.
+Enabling/disabling ccache does not create a second tree. Other genuinely
+distinct configurations may have stable names there, never M/T/S/P-keyed
+copies. Reconfigure old trees at the new location; never move their absolute
+CMake metadata. Objects, libraries, generated compiler inputs, CMake metadata
+and Ninja dependency logs stay in their owning build tree. Preserve valid
+cache state across commits and task switches.
+
+Everything else below `build/` is disposable task output, not a third cache.
+Each active packet names its temporary directory, owner, time/size/no-progress
+budgets and cleanup. Do not hide task logs, probes, screenshots, copied media
+or research in either cache. Reusable tooling belongs in tracked tools/test.
+Before task/phase cleanup, stop and wait for owned background work, retain
+necessary results/hashes in task records and then remove obsolete output.
+Never kill unrelated work for cleanup or delete the entire build root.
+
+`tools/shared/Clear-Build.ps1` is the one cleanup safety owner: explicit
+build-relative targets, preview by default, `-Apply` to remove. It checks every
+target before any deletion, rejects links/junctions, traversal, Git data and
+persistent cache paths, and requires exact reviewed hashes for sensitive
+config/media/research/archive files. A hash pins reviewed bytes, not their
+ownership/disposability; the caller must establish that separately.
+`-TasksExited` is an acknowledgement, not process detection: the caller must
+actually verify no task uses the targets.
+Unknown ownership stops deletion. An old Git checkout requires independent
+origin/status/local-commit review, not a blanket generated-file exemption.
+Use `-RequireClean` to require no disposable children after a reviewed batch.
+Cleanup tests invoke the real tool; configuration tests invoke real CMake.
+Documentation checks inspect documentation only, not duplicate cleanup policy
+or preset parsers. Tooling-only governance does not refresh unaffected product
+binaries or require real-device tests. Product artifacts remain under assets
+according to their separate retention/identity contract.
 
 Runnable evidence records the emitted identity/banner and version. Changing
 identity, version, or cutover state requires an approved subtask and regression
