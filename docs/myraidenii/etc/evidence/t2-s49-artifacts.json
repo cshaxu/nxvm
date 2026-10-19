@@ -1,0 +1,101 @@
+{
+  "baseline": "a1f9829f9",
+  "source_commit": "a07c371073ab70061d11e6f2dc0d8b147e3edbe4",
+  "receiving_commit": "98656815cf7f369e2dc04cbf5b5d4e675c997e6e",
+  "receiving_version": "0.5.0564",
+  "rebuilt": [
+    {
+      "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+      "profile": "ibm-5160-model-268-360k",
+      "bytes": 1525505,
+      "sha256": "5272454E82F9B9A0A44AAA5E75787A61946FFAE9495F780EF522505927655E3D",
+      "pe_machine": "8664",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "FEE56B12F62D9450D33013BDC6354D6CAC2CB83BB5D1A05955962C2BC1BA2F66"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+      "profile": "ibm-5170-model-339-1200k",
+      "bytes": 1538079,
+      "sha256": "1042424DEFA55AE2C508892C3872F1FA21FF27F538A0A1DA704E495DFCC30877",
+      "pe_machine": "8664",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "77D3A10DF76136A4007BAAB2AD7B49C33D7F92F94045A73DB0934D118CDCDFC2"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "bytes": 1525253,
+      "sha256": "EB6E631163735ADA8D3E07E84E3C8090F839FC17202DA7CD29F4C1D28594B0C2",
+      "pe_machine": "8664",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "E5534DB7CC1B736C177F7EF1AC7165F78291F5F64BBA64C6A7DCD9382BD19157"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "bytes": 1536201,
+      "sha256": "763C631810DBBBFB84B3791B37969025E3E3F85DDE11E629E537FB27E573C899",
+      "pe_machine": "8664",
+      "tests": 5,
+      "cpu_recompiles": 0,
+      "junit_sha256": "6A81E056F9BF179316D12CFBB814F20F431F25283B948DD2FEB1DA5D8776B295"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+      "profile": "ibm-5160-model-268-360k",
+      "bytes": 1662673,
+      "sha256": "AC81E69A232DFA9887396CC012F2EFC918B6A6DE3520E598C11FCD0726B00E24",
+      "pe_machine": "014C",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "6693DE8BCE32507EE936AB094509099C643F5A7015286D66CA71C8F3DBCDD367"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+      "profile": "ibm-5170-model-339-1200k",
+      "bytes": 1677066,
+      "sha256": "F1897D67CA63A7050CCA52980C68F323C1428A3470F6FD27B18E051581880E86",
+      "pe_machine": "014C",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "11A44E2EF5282D38F9547E6F40FE2350435AFD2D0774DFF61BCFFC6FEB7D00DC"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "bytes": 1663783,
+      "sha256": "E49445F019CE8763C196F455CD4696BA76D21432C3A1F85348E888C044107427",
+      "pe_machine": "014C",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "CE33238A139FC43ED1037A681B169D764B5D5C1FFF18C351A95F460271ACDDE0"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "bytes": 1675852,
+      "sha256": "CDE224680139EDEC6D98D954DBE62F5B676864EF24C7C96A3E2FB79CAD3D40E8",
+      "pe_machine": "014C",
+      "tests": 5,
+      "cpu_recompiles": 0,
+      "junit_sha256": "23A24A2C0F883F4FAEB9DB0F96967285CE7B5786008DDE76B116E295128AB717"
+    }
+  ],
+  "unchanged_mynes": [
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+      "bytes": 263694,
+      "sha256": "94F889447DF29B7C26CB99D93EC89DC52FCE2A62B01537B3D0C9D118F2484BF6"
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+      "bytes": 262670,
+      "sha256": "0B3947144DFBC5A18D81F8D2DF47DEC88A55C9927738EF06F37B07406A9263BF"
+    }
+  ],
+  "qualification": "Eight affected PC releases rebuilt. MyNES has no X86 Core dependency and its two current EXEs remain byte-identical. PE widths and deployed/built hashes match; no compiler debug sections in the eight rebuilt releases."
+}

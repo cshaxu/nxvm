@@ -61,6 +61,11 @@
   [ten release identities](evidence/t2-s46-artifacts.json) and
   [six preserved media inputs](evidence/t2-s46-media-inputs.json).
 - [T2 V30 residual semantic/form reconciliation](evidence/t2-s47-residual-semantics.md).
+- [T2 V30 complete nominal timing](evidence/t2-s48-nominal-timing.md).
+- [T2 V30 elapsed-time ownership and bounds](evidence/t2-s49-elapsed-time.md).
+- [S49 measured qualification](evidence/t2-s49-results.json),
+  [ten release identities](evidence/t2-s49-artifacts.json) and
+  [protected inputs](evidence/t2-s49-media-inputs.json).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

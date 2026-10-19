@@ -32,9 +32,11 @@ grammar, help formatting, prompt and lifecycle. One provider/router is injected.
 Lib owns native handles, input decoding, presentation and actual audio output.
 
 X86 Core now has a separately approved, incremental V30 native CPU profile.
-It is not yet eligible for Machine or board execution; an 8086/386 profile is
-not a valid substitute. The existing shared CPU owner must qualify NEC instructions, flags, entry,
-mode/bus behavior and timing before board admission. The neutral X86 Core
+S49 now includes the owner-approved minimum deterministic Machine construction
+and time/run receiver; complete Machine and board qualification remain open.
+An 8086/386 profile is not a valid substitute. The existing shared CPU owner
+must qualify NEC instructions, flags, entry, mode/bus behavior and timing before
+board admission. The neutral X86 Core
 Machine may supply execution/time only if its public bus/scheduler contract
 fits this board without PC dependencies. If it does not, revise the design
 before coding; do not add a second x86 interpreter or copy Core internals.

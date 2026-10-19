@@ -54,6 +54,12 @@ E/F/G and total-time H/J/K map to S49; L maps to S50. B/C are implemented
 S46 prerequisites, not proof that the other accounting classes are complete.
 Every later S keeps its own full-unit and receiving-release obligations.
 
+On2026-10-19 the owner approves bringing the minimum genuine configured V30
+Machine construction/time receiver forward into S49 to remove the verification
+ordering conflict. S50 retains complete V16 runtime/deadline/entry qualification,
+and S51 retains final reconciliation. This correction does not accept a partial
+fixture, weaken the chip boundary or qualify a physical time axis.
+
 S47's [complete residual inventory](evidence/t2-s47-residual-semantics.md)
 partitions the semantic work into fourteen mechanisms. It repairs fixed NEC
 conversion literals, last-three interrupt restart beyond fifteen prefixes and

@@ -1,5 +1,17 @@
 # Unplanned Debt
 
+## Medium: Shared Boundary Selftest Interrupted-Run Cleanup
+
+Owner: Shared test infrastructure, test/test_boundaries_selftest.cmake. S49's
+x64 timeout left its44-byte audio/midi/probe.c negative input behind; the next
+run rejected a legal owner because it also saw that abandoned input. No process
+still owned the probe; only that verified generated file was removed. No Lib
+or shared-test implementation change is admitted by this CPU S. A later Shared
+test-governance batch should make its owned probe lifecycle safe across an
+interrupted run, with a seeded-abandoned-probe regression. Do not weaken the
+dependency checker or clear an entire reusable build tree. Risk is misleading
+subsequent gate failure, not an established production dependency violation.
+
 ## Resolved: Lossless Graphics Publication Contract
 
 ### Original T1 Finding And Disposition (Superseded)

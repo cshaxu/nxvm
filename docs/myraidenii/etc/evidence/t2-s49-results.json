@@ -1,0 +1,617 @@
+{
+  "baseline": "a1f9829f9",
+  "source_commit": "a07c371073ab70061d11e6f2dc0d8b147e3edbe4",
+  "receiving_commit": "98656815cf7f369e2dc04cbf5b5d4e675c997e6e",
+  "cleanup": {
+    "target": "build/myraidenii-t2-s49",
+    "files": 105,
+    "bytes": 3398492,
+    "separate_abandoned_probe_bytes": 44,
+    "preview_and_apply_verified": true,
+    "remaining_build_children": [".ccache", ".ninja"]
+  },
+  "source_manifest_sha256": "FECA5A9FC08D6F9B454C31C6F8B3A5BE272BDAB5F33AB952AFB16F2DAD1C7AC9",
+  "test_manifest_sha256": "86F98127F31A9447BCE2CA5676312A129B3624B9A9E51B742AEB0396DE05D8E0",
+  "units": [
+    {
+      "width": "x64",
+      "tests": 684,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 133.86,
+      "sorted_names_sha256": "59248BC6DCC1CAA878851F46C00E64CA20AA74AE4FAEA2A1320656B3DEA62758",
+      "junit_sha256": "E4152DB6D1A19F9F759E753D46058312C924A202C4BAF4FF1E393C865EF67DE2"
+    },
+    {
+      "width": "x86",
+      "tests": 684,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 161.44,
+      "sorted_names_sha256": "59248BC6DCC1CAA878851F46C00E64CA20AA74AE4FAEA2A1320656B3DEA62758",
+      "junit_sha256": "8C0FBF3812BC7AEB87E4FB64B6A791B47FE9390B9A75C7DB249B605F560A5D34"
+    }
+  ],
+  "final_style_replacements": {
+    "test_files": 6,
+    "indent_lines": 10,
+    "object_comparisons": [
+      {
+        "path": "build/.ninja/gcc-x64-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_alu.dir/cpu/cpu_v30_alu_smoke.c.obj",
+        "before": "9BF9031E3B7DC15FCB7378B2FA20ED58A0D75552E41ECF5D0108F9EE042C53C2",
+        "after": "9BF9031E3B7DC15FCB7378B2FA20ED58A0D75552E41ECF5D0108F9EE042C53C2"
+      },
+      {
+        "path": "build/.ninja/gcc-x64-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_block_transfer.dir/cpu/cpu_v30_block_transfer_smoke.c.obj",
+        "before": "B9D028DA299F08CE666DCAB1F48ED97CD550D67D99912492CC9CA7706D4945A2",
+        "after": "B9D028DA299F08CE666DCAB1F48ED97CD550D67D99912492CC9CA7706D4945A2"
+      },
+      {
+        "path": "build/.ninja/gcc-x64-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_conditional_repeat.dir/cpu/cpu_v30_conditional_repeat_smoke.c.obj",
+        "before": "DA22D66B1C3EB08325CC7867360A57893DB4867D7FEEADB0561988F019F43A1E",
+        "after": "DA22D66B1C3EB08325CC7867360A57893DB4867D7FEEADB0561988F019F43A1E"
+      },
+      {
+        "path": "build/.ninja/gcc-x64-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_nominal_transfer.dir/cpu/cpu_v30_nominal_transfer_smoke.c.obj",
+        "before": "D2A66EF80A4C8DCF30D09ADCA41317540201097F2C38081C876B9ECC9A6AE0A7",
+        "after": "D2A66EF80A4C8DCF30D09ADCA41317540201097F2C38081C876B9ECC9A6AE0A7"
+      },
+      {
+        "path": "build/.ninja/gcc-x64-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_port_transfer.dir/cpu/cpu_v30_port_transfer_smoke.c.obj",
+        "before": "644E6F39F3F233E3971386CA55683523486F1B432AF064280A84EADC2A672AC1",
+        "after": "644E6F39F3F233E3971386CA55683523486F1B432AF064280A84EADC2A672AC1"
+      },
+      {
+        "path": "build/.ninja/gcc-x64-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_segment.dir/cpu/cpu_v30_segment_smoke.c.obj",
+        "before": "B4906A5F6E198F4A6A14B6A5DDFA43D0016181E4D5FB56C8CAEA1E54175F1002",
+        "after": "B4906A5F6E198F4A6A14B6A5DDFA43D0016181E4D5FB56C8CAEA1E54175F1002"
+      },
+      {
+        "path": "build/.ninja/gcc-x86-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_alu.dir/cpu/cpu_v30_alu_smoke.c.obj",
+        "before": "B247F597E6A44A5F28DAF3C2EC794A0C51B39C9D9F44B67990CAAE24FDE8552A",
+        "after": "B247F597E6A44A5F28DAF3C2EC794A0C51B39C9D9F44B67990CAAE24FDE8552A"
+      },
+      {
+        "path": "build/.ninja/gcc-x86-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_block_transfer.dir/cpu/cpu_v30_block_transfer_smoke.c.obj",
+        "before": "70D19B7EEB2893AADF18F8006CA0ABB89880193CEADFE16A8CEDF3F2AE8B5D20",
+        "after": "70D19B7EEB2893AADF18F8006CA0ABB89880193CEADFE16A8CEDF3F2AE8B5D20"
+      },
+      {
+        "path": "build/.ninja/gcc-x86-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_conditional_repeat.dir/cpu/cpu_v30_conditional_repeat_smoke.c.obj",
+        "before": "E87FF63A01EB11A629A4E2DB4F6F3881DAE81A6DFC55F85A70B70EBFC9221FD9",
+        "after": "E87FF63A01EB11A629A4E2DB4F6F3881DAE81A6DFC55F85A70B70EBFC9221FD9"
+      },
+      {
+        "path": "build/.ninja/gcc-x86-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_nominal_transfer.dir/cpu/cpu_v30_nominal_transfer_smoke.c.obj",
+        "before": "840FA817631CDA90B119030D57D39FF3DCE15751864AC371DAC58CBBB39A9167",
+        "after": "840FA817631CDA90B119030D57D39FF3DCE15751864AC371DAC58CBBB39A9167"
+      },
+      {
+        "path": "build/.ninja/gcc-x86-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_port_transfer.dir/cpu/cpu_v30_port_transfer_smoke.c.obj",
+        "before": "E956009D7D2D2FE3180183EA608C6F2B2E8F71EB3802363287D9E20039129395",
+        "after": "E956009D7D2D2FE3180183EA608C6F2B2E8F71EB3802363287D9E20039129395"
+      },
+      {
+        "path": "build/.ninja/gcc-x86-release/test/x86-core/CMakeFiles/x86-core-test-cpu-cpu_v30_segment.dir/cpu/cpu_v30_segment_smoke.c.obj",
+        "before": "CD91B2D2360E0B06C65549D609C3A80D394D08FEEACA9EE48FB4F8DAE3D2C54D",
+        "after": "CD91B2D2360E0B06C65549D609C3A80D394D08FEEACA9EE48FB4F8DAE3D2C54D"
+      }
+    ],
+    "qualification": "Both full 684-name suites passed. The subsequent indentation-only replacements produced twelve byte-identical objects; final 30-case V30/test-boundary executions also passed per width."
+  },
+  "gates": {
+    "architectures": [
+      "x64",
+      "x86"
+    ],
+    "strict_rows": 498,
+    "cpu_compile_commands": 44,
+    "unique_declarations": 536,
+    "deferred_ownership_rows": 150,
+    "types_inputs": 1401,
+    "legacy_warning_exceptions_unchanged": true
+  },
+  "receiving": [
+    {
+      "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+      "profile": "ibm-5160-model-268-360k",
+      "bytes": 1525505,
+      "sha256": "5272454E82F9B9A0A44AAA5E75787A61946FFAE9495F780EF522505927655E3D",
+      "pe_machine": "8664",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "FEE56B12F62D9450D33013BDC6354D6CAC2CB83BB5D1A05955962C2BC1BA2F66"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+      "profile": "ibm-5170-model-339-1200k",
+      "bytes": 1538079,
+      "sha256": "1042424DEFA55AE2C508892C3872F1FA21FF27F538A0A1DA704E495DFCC30877",
+      "pe_machine": "8664",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "77D3A10DF76136A4007BAAB2AD7B49C33D7F92F94045A73DB0934D118CDCDFC2"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "bytes": 1525253,
+      "sha256": "EB6E631163735ADA8D3E07E84E3C8090F839FC17202DA7CD29F4C1D28594B0C2",
+      "pe_machine": "8664",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "E5534DB7CC1B736C177F7EF1AC7165F78291F5F64BBA64C6A7DCD9382BD19157"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "bytes": 1536201,
+      "sha256": "763C631810DBBBFB84B3791B37969025E3E3F85DDE11E629E537FB27E573C899",
+      "pe_machine": "8664",
+      "tests": 5,
+      "cpu_recompiles": 0,
+      "junit_sha256": "6A81E056F9BF179316D12CFBB814F20F431F25283B948DD2FEB1DA5D8776B295"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+      "profile": "ibm-5160-model-268-360k",
+      "bytes": 1662673,
+      "sha256": "AC81E69A232DFA9887396CC012F2EFC918B6A6DE3520E598C11FCD0726B00E24",
+      "pe_machine": "014C",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "6693DE8BCE32507EE936AB094509099C643F5A7015286D66CA71C8F3DBCDD367"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+      "profile": "ibm-5170-model-339-1200k",
+      "bytes": 1677066,
+      "sha256": "F1897D67CA63A7050CCA52980C68F323C1428A3470F6FD27B18E051581880E86",
+      "pe_machine": "014C",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "11A44E2EF5282D38F9547E6F40FE2350435AFD2D0774DFF61BCFFC6FEB7D00DC"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "bytes": 1663783,
+      "sha256": "E49445F019CE8763C196F455CD4696BA76D21432C3A1F85348E888C044107427",
+      "pe_machine": "014C",
+      "tests": 3,
+      "cpu_recompiles": 0,
+      "junit_sha256": "CE33238A139FC43ED1037A681B169D764B5D5C1FFF18C351A95F460271ACDDE0"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "bytes": 1675852,
+      "sha256": "CDE224680139EDEC6D98D954DBE62F5B676864EF24C7C96A3E2FB79CAD3D40E8",
+      "pe_machine": "014C",
+      "tests": 5,
+      "cpu_recompiles": 0,
+      "junit_sha256": "23A24A2C0F883F4FAEB9DB0F96967285CE7B5786008DDE76B116E295128AB717"
+    }
+  ],
+  "protected_inputs": {
+    "tracked_files": 33,
+    "external_media_roles": 6,
+    "all_unchanged": true
+  },
+  "delta": {
+    "production": {
+      "files": 6,
+      "added": 129,
+      "deleted": 39,
+      "net": 90
+    },
+    "tests": {
+      "files": 27,
+      "added": 623,
+      "deleted": 117,
+      "net": 506
+    },
+    "manifests": {
+      "files": 2,
+      "added": 33,
+      "deleted": 30,
+      "net": 3
+    },
+    "paths": [
+      {
+        "path": "src/x86-core/MANIFEST.sha256",
+        "added": 6,
+        "deleted": 6
+      },
+      {
+        "path": "src/x86-core/cpu/cpu_instructions.c",
+        "added": 80,
+        "deleted": 21
+      },
+      {
+        "path": "src/x86-core/cpu/cpu_instructions.h",
+        "added": 6,
+        "deleted": 3
+      },
+      {
+        "path": "src/x86-core/cpu/cpu_interface.h",
+        "added": 7,
+        "deleted": 4
+      },
+      {
+        "path": "src/x86-core/cpu/cpu_timing.c",
+        "added": 12,
+        "deleted": 2
+      },
+      {
+        "path": "src/x86-core/machine/machine.c",
+        "added": 11,
+        "deleted": 4
+      },
+      {
+        "path": "src/x86-core/machine/machine_scheduler.c",
+        "added": 13,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/CMakeLists.txt",
+        "added": 1,
+        "deleted": 0
+      },
+      {
+        "path": "test/x86-core/MANIFEST.sha256",
+        "added": 27,
+        "deleted": 24
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_alu_smoke.c",
+        "added": 13,
+        "deleted": 10
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_bit_field_smoke.c",
+        "added": 5,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_bit_nibble_smoke.c",
+        "added": 6,
+        "deleted": 6
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_block_transfer_smoke.c",
+        "added": 10,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_conditional_repeat_smoke.c",
+        "added": 4,
+        "deleted": 2
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_control_flow_smoke.c",
+        "added": 5,
+        "deleted": 4
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_decimal_smoke.c",
+        "added": 6,
+        "deleted": 7
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_flags_smoke.c",
+        "added": 7,
+        "deleted": 7
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_memory_transfer_smoke.c",
+        "added": 6,
+        "deleted": 1
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_multiply_divide_smoke.c",
+        "added": 4,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_native_smoke.c",
+        "added": 12,
+        "deleted": 10
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_nominal_transfer_smoke.c",
+        "added": 8,
+        "deleted": 6
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_packed_bcd_smoke.c",
+        "added": 8,
+        "deleted": 7
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_port_transfer_smoke.c",
+        "added": 11,
+        "deleted": 8
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_segment_smoke.c",
+        "added": 7,
+        "deleted": 6
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_shift_rotate_smoke.c",
+        "added": 6,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_software_arbitration_smoke.c",
+        "added": 8,
+        "deleted": 3
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_stack_smoke.c",
+        "added": 5,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/cpu/support/cpu_v30_memory_fixture.h",
+        "added": 6,
+        "deleted": 6
+      },
+      {
+        "path": "test/x86-core/cpu/support/cpu_v30_string_timing.h",
+        "added": 6,
+        "deleted": 5
+      },
+      {
+        "path": "test/x86-core/machine/machine_cpu_profile_gate_smoke.c",
+        "added": 15,
+        "deleted": 3
+      },
+      {
+        "path": "test/x86-core/machine/neutral_link.c",
+        "added": 1,
+        "deleted": 1
+      },
+      {
+        "path": "test/x86-core/machine/tests.cmake",
+        "added": 1,
+        "deleted": 0
+      },
+      {
+        "path": "test/x86-core/cpu/cpu_v30_elapsed_smoke.c",
+        "added": 263,
+        "deleted": 0
+      },
+      {
+        "path": "test/x86-core/cpu/support/cpu_v30_timing.h",
+        "added": 35,
+        "deleted": 0
+      },
+      {
+        "path": "test/x86-core/machine/machine_v30_time_smoke.c",
+        "added": 164,
+        "deleted": 0
+      }
+    ]
+  },
+  "proofs": [
+    {
+      "file": "elapsed-first-x64.xml",
+      "tests": 1,
+      "failed": 1,
+      "skipped": 0,
+      "sha256": "410B40F9EE417CD9476B9783402114F89986F133AF479E9A8F78AA140EE63F70"
+    },
+    {
+      "file": "elapsed-second-x64.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "FF0E4C7EE0D254D8909FA4A129FB8F6D05DB2578D09B686ADFE03E8E1249A74E"
+    },
+    {
+      "file": "emulator-recheck-x86.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "F42B52628E94ADF2F5E2A02BA983022C3A51523C5ABEF729DBF47E1306208C10"
+    },
+    {
+      "file": "machine-budget-x64.xml",
+      "tests": 3,
+      "failed": 1,
+      "skipped": 0,
+      "sha256": "E4E441E70788D5AE81CBBAA8385EE64FE83D596827E6BE175E0ACE895E5A47B4"
+    },
+    {
+      "file": "machine-budget-x86.xml",
+      "tests": 3,
+      "failed": 1,
+      "skipped": 0,
+      "sha256": "A30DE3AACF65152BD552808B2104836556891EED969B507C7BF98205FFA7EB6D"
+    },
+    {
+      "file": "machine-freeze-x64.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "6396ACDDCA86DD85C1B29A32E00B8838E5B20D42FA932BDE2138D6FFC80B70EE"
+    },
+    {
+      "file": "machine-freeze-x86.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "AC17077587DF41886DB00E952F305168AB981C12B4BE01EEC8EF7D23D006CE42"
+    },
+    {
+      "file": "machine-idle-x64.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "1AFA57BF1B829A32875400E77DF2B5ED36E1555EBB73E893C2D3A8337F791442"
+    },
+    {
+      "file": "machine-idle-x86.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "4E3FF7EA600CE24014631AC370E23C9C45142B216914B769591CDBA8A1842ADE"
+    },
+    {
+      "file": "machine-real-x64.xml",
+      "tests": 3,
+      "failed": 1,
+      "skipped": 0,
+      "sha256": "5C41A57307701617A8F49E3C9774E8C346891A69BB431596D00FAF1D3429A6D5"
+    },
+    {
+      "file": "machine-real-x86.xml",
+      "tests": 3,
+      "failed": 1,
+      "skipped": 0,
+      "sha256": "C5238EFC9D1F346E2B3E0751BFE080D70A23C0C88D538FCEC9BB3D0A916A056B"
+    },
+    {
+      "file": "my5160-x64.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "FEE56B12F62D9450D33013BDC6354D6CAC2CB83BB5D1A05955962C2BC1BA2F66"
+    },
+    {
+      "file": "my5160-x86.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "6693DE8BCE32507EE936AB094509099C643F5A7015286D66CA71C8F3DBCDD367"
+    },
+    {
+      "file": "my5170-x64.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "77D3A10DF76136A4007BAAB2AD7B49C33D7F92F94045A73DB0934D118CDCDFC2"
+    },
+    {
+      "file": "my5170-x86.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "11A44E2EF5282D38F9547E6F40FE2350435AFD2D0774DFF61BCFFC6FEB7D00DC"
+    },
+    {
+      "file": "mydeskpro386-x64.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "E5534DB7CC1B736C177F7EF1AC7165F78291F5F64BBA64C6A7DCD9382BD19157"
+    },
+    {
+      "file": "mydeskpro386-x86.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "CE33238A139FC43ED1037A681B169D764B5D5C1FFF18C351A95F460271ACDDE0"
+    },
+    {
+      "file": "neutral-final-x64.xml",
+      "tests": 3,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "9743D025EF9E9891D8E72AAA20CD0B6B51C76D5D72456842FA34DDAD4E027193"
+    },
+    {
+      "file": "nxvm-x64.xml",
+      "tests": 5,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "6A81E056F9BF179316D12CFBB814F20F431F25283B948DD2FEB1DA5D8776B295"
+    },
+    {
+      "file": "nxvm-x86.xml",
+      "tests": 5,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "23A24A2C0F883F4FAEB9DB0F96967285CE7B5786008DDE76B116E295128AB717"
+    },
+    {
+      "file": "style-final-x64.xml",
+      "tests": 30,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "B8FBF05F316D02FF74C3073FBDC14546D8DB7046FC48353B5D93EA536189D00B"
+    },
+    {
+      "file": "style-final-x86.xml",
+      "tests": 30,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "E6DB4FF68F5E0EABAEE44524621B7E89A0B3EF120A106E8916B7A7892A881A47"
+    },
+    {
+      "file": "time-receiver-first-x64.xml",
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "F02B6608D8AFBC6CBB604EC4D074BA5E4DAFC86FB64E4A8122D3B9E661B4DBE4"
+    },
+    {
+      "file": "units-frozen-x64.xml",
+      "tests": 684,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "E4152DB6D1A19F9F759E753D46058312C924A202C4BAF4FF1E393C865EF67DE2"
+    },
+    {
+      "file": "units-frozen-x86.xml",
+      "tests": 684,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "8C0FBF3812BC7AEB87E4FB64B6A791B47FE9390B9A75C7DB249B605F560A5D34"
+    },
+    {
+      "file": "units-full-x64.xml",
+      "tests": 684,
+      "failed": 3,
+      "skipped": 0,
+      "sha256": "46D60EF95C1B457621EA73F695A26AAA377CB412FB7C2403A3C4EFB82257D147"
+    },
+    {
+      "file": "units-full-x86.xml",
+      "tests": 684,
+      "failed": 2,
+      "skipped": 0,
+      "sha256": "1F738697B421B4BBB555B2AE5FADC7D0029B9D78F63360B8A6F1A378881CD57C"
+    },
+    {
+      "file": "units-qualified-x64.xml",
+      "tests": 684,
+      "failed": 3,
+      "skipped": 0,
+      "sha256": "9881CC72159FD3613B94BAB3585436E2FA5C3661E5F61B93F43E900DB1BA42ED"
+    },
+    {
+      "file": "v30-correction-x64.xml",
+      "tests": 5,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "568E2C10183ED8D6729BF5FA1AB0097E1C3CB0319CD5E21AFBEA7305D32C8B01"
+    },
+    {
+      "file": "v30-first-x64.xml",
+      "tests": 27,
+      "failed": 4,
+      "skipped": 0,
+      "sha256": "80D306365445B90DBBF0EEDC82DEBA52A0396B36DE4301D03556C62FEFEF9B3C"
+    }
+  ],
+  "not_qualified": [
+    "silicon-exact V30 timing",
+    "complete S50 Machine qualification",
+    "whole external integration suite",
+    "manual desktop/RDP and physical audio",
+    "playable RAIDEN II"
+  ]
+}

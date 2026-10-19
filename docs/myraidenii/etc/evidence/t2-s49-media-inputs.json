@@ -1,0 +1,219 @@
+{
+  "assets": [
+    {
+      "path": "assets/my5160/README.md",
+      "bytes": 494,
+      "sha256": "BFFAC87AB107EE902683F63D80AF191FB7E539B3C04710D940DC22793AF6A5C1"
+    },
+    {
+      "path": "assets/my5160/my5160.ini",
+      "bytes": 144,
+      "sha256": "EC2AFB0E89421ED4BDA95D8B1797864D19EC360A3AD57237D2256DCE78950338"
+    },
+    {
+      "path": "assets/my5170/README.md",
+      "bytes": 494,
+      "sha256": "C8F72F53C4CCAC880F9C5552916C4B3709DE072151629477DBF4A57FF81D5CEF"
+    },
+    {
+      "path": "assets/my5170/my5170.ini",
+      "bytes": 149,
+      "sha256": "F4D85EE2E7BFF403F8C19588DA8416CC96FE5AC72FE7A1764817EDDDC9B76F19"
+    },
+    {
+      "path": "assets/mydeskpro386/README.md",
+      "bytes": 518,
+      "sha256": "65D8714A1738838720958F3DF450CDFD2BE48ACBE2EA1E448830CE6AA3B704AA"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386.ini",
+      "bytes": 231,
+      "sha256": "C812A0C99D258C19CA8BB4BED584617DF2F4D25F17372583EB58BBD71D378599"
+    },
+    {
+      "path": "assets/mynes/README.md",
+      "bytes": 528,
+      "sha256": "411B1BA9B827A650F4D868D9C72F5CFB3D6E9B66042E6C2127E0F04081A4DCCE"
+    },
+    {
+      "path": "assets/mynes/mynes.ini",
+      "bytes": 156,
+      "sha256": "30128FED601567505F6FE0E4756A21604F7AB107780B97F03A0918D45E4B77F8"
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+      "bytes": 263694,
+      "sha256": "94F889447DF29B7C26CB99D93EC89DC52FCE2A62B01537B3D0C9D118F2484BF6"
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+      "bytes": 262670,
+      "sha256": "0B3947144DFBC5A18D81F8D2DF47DEC88A55C9927738EF06F37B07406A9263BF"
+    },
+    {
+      "path": "assets/mynes/snapshot",
+      "bytes": 136007,
+      "sha256": "B68F9CE4BC41BBD447DB68832128B266D7D503A0971D4A9C66B6D30FD53EBEBD"
+    },
+    {
+      "path": "assets/myraidenii/README.md",
+      "bytes": 489,
+      "sha256": "648CF443F38EFABA6E2E47B24B80040A58BD45A4092D7ABFE1FD45A1478E0881"
+    },
+    {
+      "path": "assets/nxvm/README.md",
+      "bytes": 958,
+      "sha256": "51020592E9C4D94580A16453F729253A2AB5A12E0D4FDA5273F52275EF4D205F"
+    },
+    {
+      "path": "assets/nxvm/nxvm.ini",
+      "bytes": 208,
+      "sha256": "FEEFDF82F40A8C7C1CD96C130BBEC4B5C41E099E194FA955AD42B99F35E8FC4F"
+    },
+    {
+      "path": "assets/readme/debugger_w32c.jpg",
+      "bytes": 106740,
+      "sha256": "75DE47340F7767065B08C38E8E68D64BB47A095D3CBA3768D63EDD9AAA5C1D8E"
+    },
+    {
+      "path": "assets/readme/defrag_w32c.jpg",
+      "bytes": 102655,
+      "sha256": "F448F221402B31D04138F8A512473D9D027180188D6847ED92F8AF1C2FEF15DC"
+    },
+    {
+      "path": "assets/readme/edit95_w32c.jpg",
+      "bytes": 37383,
+      "sha256": "28B61C584177889BF670E0148A3EC29390DFBA43461ACD91EB9B22F4AD69AB0D"
+    },
+    {
+      "path": "assets/readme/edit_linux.jpg",
+      "bytes": 70101,
+      "sha256": "249805F61335CCD42D5CE513280C02C9063A7D68627C950A1D87253423C11040"
+    },
+    {
+      "path": "assets/readme/edit_w32a.jpg",
+      "bytes": 46661,
+      "sha256": "F55BA843F67940CB8F05D1F72293E4A8797EF15B9F314F73FEC5D6CE09BACEC6"
+    },
+    {
+      "path": "assets/readme/msav_w32c.jpg",
+      "bytes": 64949,
+      "sha256": "E98D6A2841EF58A951A425EDF1FC13E3198D5F30B2B0F70BBF99DBFA2ABA4A32"
+    },
+    {
+      "path": "assets/readme/msdos_hma_w32c.jpg",
+      "bytes": 55936,
+      "sha256": "C27C922474B35A83BCAE639BDF28C2C4AD9F15C9C685EF5776A8EFC67A1C351E"
+    },
+    {
+      "path": "assets/readme/msdos_linux.jpg",
+      "bytes": 29969,
+      "sha256": "03646972A41D8295C8E41DA3855F01AFDEB59A4FBC1B31133A466CC34A6D46F7"
+    },
+    {
+      "path": "assets/readme/msdos_uma_w32c.jpg",
+      "bytes": 55375,
+      "sha256": "1D41D9F5DCB997EC27A87ADE350A497CF8CCC61C1B9A24A0BD5868C66444E32E"
+    },
+    {
+      "path": "assets/readme/msdos_w32c.jpg",
+      "bytes": 35075,
+      "sha256": "226D39E5A029BCBEF5FE1162FA94F10815077BCAC3F8E48AE8A95B5EA7BAF21F"
+    },
+    {
+      "path": "assets/readme/nxvm_on_surface_rt_arm.jpg",
+      "bytes": 257057,
+      "sha256": "5E692BB2393AFC8C310C5ED58D57C4E92C1E0F2946E0A0BB9B65A481CE5743F7"
+    },
+    {
+      "path": "assets/readme/nyet_exec_w32c.jpg",
+      "bytes": 48294,
+      "sha256": "CCF4DA736C225D061D63F26F6620E0A6D31E31C06ADEC36A6E1DB7B701037B01"
+    },
+    {
+      "path": "assets/readme/nyet_start_w32c.jpg",
+      "bytes": 43611,
+      "sha256": "DE2A97C291BCE86F0D4AEF38E66C7F4E2CED93F250F06E89A399427280C6ABAB"
+    },
+    {
+      "path": "assets/readme/pv12_w32a.jpg",
+      "bytes": 128531,
+      "sha256": "5C689F9F6B03502A0251A1ACF21297C6823F36B929D6C179FC400687AE1D9C11"
+    },
+    {
+      "path": "assets/readme/qbasic_w32c.jpg",
+      "bytes": 60547,
+      "sha256": "D83EC675EFA21FC02CC89AB15FD2153FC7367ACEAD7FAE27F2048E854DF38F97"
+    },
+    {
+      "path": "assets/readme/tc2_w32c.jpg",
+      "bytes": 44869,
+      "sha256": "B48BBCE7B4A4049CA7BD21C6B3F0AA8DBB084716F4EACF8434108E19C46B772B"
+    },
+    {
+      "path": "assets/readme/tt_exec_w32c.jpg",
+      "bytes": 48215,
+      "sha256": "D9570892CFCA310EA18EB1E8AD8A68F282E175E8ED4566A6D8BA92EAF8FD3CD7"
+    },
+    {
+      "path": "assets/readme/tt_start_w32c.jpg",
+      "bytes": 66477,
+      "sha256": "2BAB4ED28BDBFC607593C5876FE4D92C0DB29F4A00B0551CB9BF0D33E03E536E"
+    },
+    {
+      "path": "assets/readme/vminfo_w32c.jpg",
+      "bytes": 56244,
+      "sha256": "BCBC27E1D2A08BE2F52AA676FBB783CD5F26CB0B6FF92BDE0FE57909160E0F91"
+    }
+  ],
+  "media": [
+    {
+      "app": "my5160",
+      "role": "floppy0",
+      "file": "fdd_360k_msdos_500.img",
+      "mode": "overlay",
+      "bytes": 368640,
+      "sha256": "DE271368874209C07A2FC25C81C17529D4BDD7718B2731B86C49A2DA923A256E"
+    },
+    {
+      "app": "my5170",
+      "role": "floppy0",
+      "file": "fdd_1200k_msdos_500a_01.img",
+      "mode": "overlay",
+      "bytes": 1228800,
+      "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE"
+    },
+    {
+      "app": "mydeskpro386",
+      "role": "floppy0",
+      "file": "fdd_1200k_msdos_500a_01.img",
+      "mode": "overlay",
+      "bytes": 1228800,
+      "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE"
+    },
+    {
+      "app": "mydeskpro386",
+      "role": "fixed_disk0",
+      "file": "hdd_40m_deskpro_386_blank.img",
+      "mode": "overlay",
+      "bytes": 40256000,
+      "sha256": "2BBC68E612A72290A5181E070494A7580CBECE1F528F92F009A269DC05819E73"
+    },
+    {
+      "app": "nxvm",
+      "role": "floppy0",
+      "file": "fdd_1440k_msdos_500.img",
+      "mode": "overlay",
+      "bytes": 1474560,
+      "sha256": "FADEB3A27C6A0E1CF582DDE0B9AECB7E5D30678F2F967F2F4562F167CC0CB1D5"
+    },
+    {
+      "app": "nxvm",
+      "role": "fixed_disk0",
+      "file": "hdd_50m_win31.img",
+      "mode": "overlay",
+      "bytes": 51609600,
+      "sha256": "61E5CDC0B76151CC65B73EB44094738B9DE86052B1B07F20FC03205984CD77E1"
+    }
+  ]
+}
