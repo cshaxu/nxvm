@@ -320,3 +320,23 @@ proof matrix and archived packet. S12 is accepted and closed as research,
 not geometry implementation. Explicit owner approval remains required before
 the proposed Shared edit. All original T3 startup/COP/DMA and M1 playable-game
 requirements remain open; no S13 is admitted by this governance acceptance.
+
+## S19 Coordinator Acceptance
+
+Actual-change review accepts P1 02a72979a's complete nine-ID L2 numeric/result
+receiver. The [S19 record](../etc/evidence/t3-s19-cop-numeric.md) preserves its
+packet, all before/after dispositions, source/model and failure boundaries,
+independent oracles, x87 correction, exact hashes and code-size review. S18's
+explicitly approved optional Types math supplies declarations only; S19 edits
+no Shared source/API, other product or protected input. One COP register store
+and existing Core DMA/dispatch remain the sole owners. All old literal
+transfer/update/collision/approach matrices are preserved.
+
+Strict cached builds and full repository units pass687/687 per width, zero
+failures/skips (x64 116.99s; x86 130.43s). Production/build delta+136/-3 and
+existing-test delta+333/-2 implement and prove the whole admitted receiver
+without another executable/framework. Ten releases,33 assets and six media
+roles remain unchanged; no unrelated release rebuild is warranted. Both
+runners are terminal and only persistent caches remain. S19 closes, not T3:
+2a05, RNG, sorting/DMA, unresolved operations and selected-set startup remain
+required. No full game/render/audio/desktop/RDP or silicon-exact pass follows.
