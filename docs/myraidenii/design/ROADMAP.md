@@ -27,13 +27,11 @@ owner admission, not a speculative M2 roadmap or accidental scope expansion.
 
 ## Current Implementation Route
 
-Source/set freeze T1 is accepted. T2 is the NEC V30 CPU and neutral Machine
-qualification task, not the game implementation. Its owner-approved remaining
-[S plan](../proposals/m1-v30.md#owner-approved-remaining-s-plan) fixes five
-successive acceptance boundaries: residual semantics/forms, complete nominal
-timing, complete elapsed-time/bounds, real neutral Machine, and final CPU/
-receiving qualification. S46 closes only its implemented prerequisite batch
-after normal validation/publication; unfinished CPU work remains inside T2.
+Source/set freeze T1 and NEC V30/neutral Machine qualification T2 are accepted
+and closed. The [archived T2 proposal](../history/M1-T2-v30-proposal.md)
+preserves its five delivered acceptance boundaries: residual semantics/forms,
+complete nominal timing, complete elapsed-time/bounds, real neutral Machine,
+and final CPU/receiving qualification.
 
 After T2, the [Queue](../states/QUEUE.md) continues with board/bus/COP,
 video, sound, Product/Machine host integration and complete gameplay/release.

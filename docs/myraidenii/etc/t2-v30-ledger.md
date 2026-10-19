@@ -36,7 +36,7 @@ which reaches further cannot substitute for the complete form/state ledger.
 
 The owner approves bounded S46 stage closure and retention of all unfinished
 CPU work inside T2 on 2026-10-18. The finite successor plan is in the
-[T2 proposal](../proposals/m1-v30.md#owner-approved-remaining-s-plan);
+[archived T2 proposal](../history/M1-T2-v30-proposal.md#owner-approved-remaining-s-plan);
 the original seventeen rows below are not deleted or marked complete by
 this replan. S46's implemented FPO/bus/nominal and copied-mode receiver batch
 has [direct evidence](evidence/t2-s46-time-accounting.md). Final stage proof

@@ -236,7 +236,7 @@ rows and approved copied-mode receiver are the implementation delivery.
 Full units, manifests/gates, eight affected PC releases, preserved inputs,
 actual review and pushed target commits remain S46 closure requirements.
 
-The [proposal](../../proposals/m1-v30.md#owner-approved-remaining-s-plan)
+The [proposal](../../history/M1-T2-v30-proposal.md#owner-approved-remaining-s-plan)
 owns the intended next five batches, not already active packets: S47 residual
 semantics/forms/prefix/arrival dispositions; S48 complete native/NEC/8080
 nominal timing; S49 full fetch/bus/wait/entry/idle time and runtime/preview/

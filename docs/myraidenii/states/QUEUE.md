@@ -1,14 +1,12 @@
 # Queue
 
 M0 is owner-accepted and closed. [M1 T1](../history/M1-T1-board-and-source-freeze.md)
-closed the source/board/set and CPU integration-contract freeze. The V30
-receiver is now [M1 T2](../history/M1-T2-v30.md). The remaining
-candidates below are unadmitted; numeric T identifiers are allocated only on
-admission in MyRaidenII's independent sequence, not NXVM's sequence.
-
-The owner-approved remaining NEC CPU work stays inside T2, not as new queued
-T packages. Its [successor S plan](../proposals/m1-v30.md#owner-approved-remaining-s-plan)
-defines five acceptance batches; Current alone records admission and status.
+closed the source/board/set and CPU integration-contract freeze.
+[M1 T2](../history/M1-T2-v30.md) closes the V30 CPU and neutral Machine
+qualification; its [archived proposal](../history/M1-T2-v30-proposal.md)
+preserves the five delivered acceptance batches. The candidates below are
+unadmitted; numeric T identifiers are allocated only on admission in
+MyRaidenII's independent sequence, not NXVM's sequence.
 
 1. [Implement board bus, interrupts and Seibu COP](../proposals/m1-board-cop.md)
 2. [Implement and qualify video](../proposals/m1-video.md)

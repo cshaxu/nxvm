@@ -2,9 +2,12 @@
 
 ## Current Work
 
-M1 T2 remains open pending its separate task-level closure review.
-S51 is accepted and closed after sequential coordinator actual-change review.
-No new S or T is admitted by this closure. Playable MyRaidenII remains unfinished.
+| Task | Status | Closure record |
+| --- | --- | --- |
+| T2 | Closed | NEC V30 CPU and neutral Machine qualification accepted at S51. |
+
+No successor T is admitted. The next queue candidate is board bus, interrupts
+and Seibu COP. Playable MyRaidenII remains unfinished.
 
 ## Accepted S51 Delivery
 
@@ -32,7 +35,8 @@ The [complete evidence](../etc/evidence/t2-s51-final-qualification.md) retains
 the sixteen-field packet, original V01--V17/A--L reconciliation, reuse mapping,
 limits and failed collector attempts.
 The [receipt](../etc/evidence/t2-s51-results.json) preserves exact proof hashes.
-The [history](../history/M1-T2-v30.md) retains earlier stage decisions.
+The [history](../history/M1-T2-v30.md) and
+[archived proposal](../history/M1-T2-v30-proposal.md) retain the complete task decision.
 
 ## Test Growth Follow-up
 
