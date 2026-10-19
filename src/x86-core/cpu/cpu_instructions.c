@@ -252,6 +252,22 @@ static lib_u64 _kma_publish_external_cycle(
     lib_u8 byte, lib_u8 write,
     x86_core_cpu_memory_access_provenance provenance)
 {
+    if (context != LIB_NULL && !context->preview_mode && context->timing_bus_active &&
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        phase == X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT) {
+        /* One accepted V30 byte/even-word bus cycle. Successful nominal rows
+         * already include operands; failure uses the complete accepted prefix. */
+        if (instruction_state.data.timing_transfer_ticks > LIB_UINT64_MAX - 4u) {
+            _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        } else instruction_state.data.timing_transfer_ticks += 4u;
+        if (space == X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+            (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+             provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH)) {
+            if (instruction_state.data.timing_fetch_bus_ticks > LIB_UINT32_MAX - 4u)
+                _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+            else instruction_state.data.timing_fetch_bus_ticks += 4u;
+        }
+    }
     if (context != LIB_NULL && !context->preview_mode &&
         context->external_cycle_provider != LIB_NULL) {
         const lib_u64 ticks = context->external_cycle_provider(
@@ -6231,9 +6247,15 @@ static void _e_timing_failed_prefix(x86_core_cpu_execution_context *context)
     const lib_u64 allocated = instruction_state.data.timing_entry_transfer_ticks;
     lib_u64 ticks;
 
-    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
-    if (allocated > accepted ||
-        !x86_core_cpu_80486_bus_scope_cost(context, accepted - allocated, &ticks)) {
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX &&
+        context->cpu_profile != X86_CORE_CPU_PROFILE_V30) return;
+    if (allocated > accepted) {
+        _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+        return;
+    }
+    ticks = accepted - allocated;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
+        !x86_core_cpu_80486_bus_scope_cost(context, ticks, &ticks)) {
         _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
         return;
     }
@@ -6339,7 +6361,8 @@ static void _e_timing_entry(x86_core_cpu_execution_context *context,
     const lib_u64 allocated = instruction_state.data.timing_entry_transfer_ticks;
     lib_u64 own;
 
-    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX &&
+        context->cpu_profile != X86_CORE_CPU_PROFILE_V30) return;
     if (context->bus_timing.invalid || allocated_before > before ||
         accepted < before || allocated < allocated_before ||
         allocated - allocated_before > accepted - before) {
@@ -6353,10 +6376,12 @@ static void _e_timing_entry(x86_core_cpu_execution_context *context,
         else own = base;
     }
     if (own > LIB_UINT64_MAX - setup ||
-        !x86_core_cpu_80486_bus_scope_cost(context, setup + own, &own)) {
+        (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX &&
+         !x86_core_cpu_80486_bus_scope_cost(context, setup + own, &own))) {
         _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
         return;
     }
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) own += setup;
     (void)_e_timing_charge(context, own);
 }
 
@@ -6377,6 +6402,7 @@ _______todo _e_intr_n(x86_core_cpu_execution_context *context,
     const lib_u8 entry_cpl = _GetCPL;
     const lib_u64 before = instruction_state.data.timing_transfer_ticks;
     const lib_u64 allocated_before = instruction_state.data.timing_entry_transfer_ticks;
+    const lib_bool odd_stack = (cpu_state.data.sp & 1u) != 0u;
     lib_bool task_entry = LIB_FALSE;
     const cpu_entry_access access = _e_begin_access(context);
 
@@ -6402,6 +6428,9 @@ _______todo _e_intr_n(x86_core_cpu_execution_context *context,
         _e_timing_entry(context, before, allocated_before, nmi ? 3u : 11u,
             x86_core_cpu_80486_interrupt_entry_cost(context,
                 entry_cr0, entry_flags, entry_cpl, task_entry));
+    } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        _e_timing_entry(context, before, allocated_before, 0u,
+            (nmi ? 38u : 49u) + (odd_stack ? 12u : 0u));
     }
     _e_end_access(context, &access);
     CPU_TRACE_CALL_END;
@@ -6419,6 +6448,7 @@ _______todo _e_except_n(x86_core_cpu_execution_context *context, lib_u8 exid, li
     const lib_u8 entry_cpl = _GetCPL;
     const lib_u64 before = instruction_state.data.timing_transfer_ticks;
     const lib_u64 allocated_before = instruction_state.data.timing_entry_transfer_ticks;
+    const lib_bool odd_stack = (cpu_state.data.sp & 1u) != 0u;
     const lib_u64 setup_ticks = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
         x86_core_cpu_80486_exception_setup_cost(context, exid) : 0u;
     lib_bool task_entry = LIB_FALSE;
@@ -6456,6 +6486,13 @@ _______todo _e_except_n(x86_core_cpu_execution_context *context, lib_u8 exid, li
         _e_timing_entry(context, before, allocated_before, setup_ticks,
             x86_core_cpu_80486_interrupt_entry_cost(context,
                 entry_cr0, oldflags, entry_cpl, task_entry));
+    } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        /* Divide/CHKIND own combined successful nominal rows. Only the
+         * independently delivered step trap needs a separate entry floor. */
+        if (exid == 1u)
+            _e_timing_entry(context, before, allocated_before, 0u,
+                38u + (odd_stack ? 12u : 0u));
+        else if (instruction_state.data.except) _e_timing_failed_prefix(context);
     }
     _e_end_access(context, &access);
     CPU_TRACE_CALL_END;
@@ -9709,11 +9746,12 @@ static void x86_core_cpu_begin_wait(
      * re-sample is five clocks after that row, yielding the 3/6 + 5n source
      * formulas for 8086/8088 and 80186.  ESC restart has no retired WAIT row,
      * so it starts at the bounded five-clock L2 control cadence instead.
-     * NEC POLL uses 2 + 5n instead. Later Intel profiles retain the existing
-     * cadence until a board gives a stronger contract. */
-    context->wait_poll_remaining_ticks = state == CPU_WAIT_STATE_ESC_RESTART ?
-        5u : (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ? 2u :
-            context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ? 6u :
+     * NEC nominal already includes its first sample. Its five-clock countdown
+     * starts after initial retirement, not during Core's completion interval.
+     * Later Intel profiles retain the existing cadence. */
+    context->wait_poll_remaining_ticks = state == CPU_WAIT_STATE_ESC_RESTART ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+        5u : (context->cpu_profile == X86_CORE_CPU_PROFILE_80186 ? 6u :
             cpu_profile_has_32bit_architecture(context->cpu_profile) ? 7u : 3u) + 5u;
     cpu_state.data.flagHalt = LIB_TRUE;
 }
@@ -19251,6 +19289,11 @@ static void POP_GS(x86_core_cpu_execution_context *context)
  * An interrupt must not depend on fetching the interrupted next instruction. */
 static void ExecBoundary(x86_core_cpu_execution_context *context)
 {
+    /* Accepted asynchronous entry releases an interrupted NEC block before
+     * reusing its decoder. Ordinary execution and preview retain the lock. */
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+        !context->preview_mode && !context->instruction_in_progress)
+        x86_core_cpu_bus_complete_memory_lock(context,LIB_TRUE);
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         lib_u8 prefixes = 0u;
 
@@ -19942,10 +19985,6 @@ static void MOVSX_R32_RM16(x86_core_cpu_execution_context *context)
 
 static void ExecInit(x86_core_cpu_execution_context *context)
 {
-    /* Accepted asynchronous entry leaves a partially completed NEC block. */
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
-        !context->preview_mode && !context->instruction_in_progress)
-        x86_core_cpu_bus_complete_memory_lock(context,LIB_TRUE);
     ExecBoundary(context);
     if (context->prefetch_expected_valid && instruction_state.data.linear !=
         context->prefetch_expected_linear) x86_core_cpu_execution_invalidate_prefetch(context);
@@ -20279,7 +20318,8 @@ static void _debug_deliver_trap(x86_core_cpu_execution_context *context)
     context->debug_trap_cause = 0u;
     trap_cpu = cpu_state;
     /* PRM Table 9-2: this trap precedes a fault fetching the next instruction. */
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30) ExecBoundary(context);
     else ExecInit(context);
     /* The completed instruction's size does not select an exception frame. */
     _e_except_n(context, 0x01u, 2u);
@@ -20362,7 +20402,12 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
             context->repeat_compare_flags_valid = LIB_FALSE;
         return;
     }
-    _e_timing_failed_prefix(context);
+    /* NEC synchronous divide/index entry may still complete its combined
+     * instruction row; only a failed delivery owns an accepted-work prefix. */
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_V30 ||
+        (instruction_state.data.except != VCPUINS_EXCEPT_DE &&
+         instruction_state.data.except != VCPUINS_EXCEPT_BR))
+        _e_timing_failed_prefix(context);
     fault_cpu = context->instruction_task_switched ?
         context->instruction_task_checkpoint : instruction_state.data.oldcpu;
     if (context->repeat_compare_flags_valid &&
@@ -20446,6 +20491,8 @@ static void ExecFinal(x86_core_cpu_execution_context *context)
             code = secondary_code;
         }
     }
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
+        _e_timing_failed_prefix(context);
     cpu_state = fault_cpu;
     instruction_state.data.except = active;
     instruction_state.data.excode = code;
@@ -20877,6 +20924,15 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             } else if (!comparing) context->repeat_compare_flags_valid = LIB_FALSE;
         }
         CPU_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            x86_core_cpu_instruction_is_prefix(opcode,context->cpu_profile)) {
+            /* Successful nominal rows already contain this decode term.
+             * Failed work consumes it through the same accepted-work owner. */
+            if (!x86_core_cpu_timing_add_ticks(&instruction_state.data.timing_transfer_ticks,2u)) {
+                _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
+                break;
+            }
+        }
         CPU_TRACE_CALL_END;
     } while (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile));
     if (instruction_state.data.except) context->io_restart_valid = LIB_FALSE;
@@ -20946,9 +21002,10 @@ static void ExecInt(x86_core_cpu_execution_context *context)
         context->nmi_in_service =
             cpu_profile_has_protected_architecture(context->cpu_profile);
         x86_core_cpu_legacy_string_interrupt_resume(context);
-        /* SX checkpoints the accepted entry without fetching an interrupted
-         * next instruction. Older-family prefetch behavior remains intact. */
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+        /* SX/NEC entry does not fetch an interrupted next instruction.
+         * The other existing Intel prefetch paths remain unchanged. */
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+            context->cpu_profile == X86_CORE_CPU_PROFILE_V30) ExecBoundary(context);
         else ExecInit(context);
         _e_intr_n(context, 0x02, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
@@ -20966,14 +21023,16 @@ static void ExecInt(x86_core_cpu_execution_context *context)
         acknowledge_status = context->bus->acknowledge_interrupt(
             context->bus_context, &intr);
         if (acknowledge_status != LIB_STATUS_OK) {
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+                context->cpu_profile == X86_CORE_CPU_PROFILE_V30) ExecBoundary(context);
             else ExecInit(context);
             _SetExcept_CE((lib_u32)acknowledge_status);
             ExecFinal(context);
             return;
         }
         x86_core_cpu_legacy_string_interrupt_resume(context);
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) ExecBoundary(context);
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+            context->cpu_profile == X86_CORE_CPU_PROFILE_V30) ExecBoundary(context);
         else ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize, LIB_FALSE);
         if (!instruction_state.data.except) {

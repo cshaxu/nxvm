@@ -177,11 +177,10 @@ static lib_i32 v30_multiply_timing(const v30_memory_fixture *fixture,
         origin = item->operation == V30_DIVIDE_UNSIGNED ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
     }
-    if (timing.ticks != expected || timing.key_id != key || timing.form_id != key ||
-        timing.formula_inputs != inputs || timing.retirement_origin != origin ||
-        timing.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_NONE || timing.event_ticks ||
-        !timing.source_timing_unallocated || fixture->observations ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+    if (v30_timing_check(&fixture->bus.execution,(x86_core_cpu_timing_result){
+        .ticks=expected,.key_id=key,.form_id=key,.formula_inputs=inputs,
+        .retirement_origin=origin},
+        fixture->bus.instructions.data.timing_fetch_bus_ticks) || fixture->observations) {
         lib_c_printf("V30:NOMINAL-MULTIPLY-DIVIDE:FAIL op=%u width=%u modrm=%02x prefix=%u trap=%u clocks=%llu/%llu origin=%u/%u\n",
             item->operation,item->width,item->modrm,item->prefix,trap,
             timing.ticks,expected,timing.retirement_origin,origin);

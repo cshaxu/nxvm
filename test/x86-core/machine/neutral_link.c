@@ -446,7 +446,7 @@ static lib_i32 neutral_construction_rejects_invalid_input(void)
     const x86_core_machine_executor_config invalid[] = {
         {.memory_bytes = 65536u, .cpu_profile = (x86_core_cpu_profile)-1},
         {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_DEFAULT},
-        {.memory_bytes = 65536u, .cpu_profile = (x86_core_cpu_profile)(X86_CORE_CPU_PROFILE_80486SX + 1u)},
+        {.memory_bytes = 65536u, .cpu_profile = (x86_core_cpu_profile)(X86_CORE_CPU_PROFILE_V30 + 1u)},
         {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
             .fpu_profile = X86_FPU_PROFILE_8087},
         {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,

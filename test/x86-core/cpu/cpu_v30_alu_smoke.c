@@ -203,14 +203,13 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
             item->form == V30_ALU_UNARY_GROUP) form |= ((lib_u32)(item->modrm >> 3u) & 7u) << 9u;
     }
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->bus.execution);
-    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.retirement_origin != (clocks ? origin :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) ||
-        timing.form_id != form || timing.key_id != form ||
-        timing.formula_inputs != ((clocks && item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+    if (v30_timing_check(&fixture->bus.execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=form,.key_id=form,
+        .retirement_origin=clocks ? origin : X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED,
+        .formula_inputs=(clocks && item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
             (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
-            X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u)) ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+            X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u)},
+        fixture->bus.instructions.data.timing_fetch_bus_ticks)) {
         lib_c_printf("V30:NOMINAL-ALU:FAIL op=%u form=%u opcode=%02x modrm=%02x prefix=%u ticks=%llu/%llu key=%x/%x\n",
             item->operation,item->form,item->code[0],item->modrm,item->prefix,timing.ticks,clocks,timing.form_id,form);
         return 1;
@@ -382,9 +381,13 @@ lib_i32 main(void)
         const lib_u32 key=rejected ? 0u : expected.ticks ? expected.form_id :
             X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
         if (boundary.bus.execution.stop_requested != rejected || boundary.bus.faults != (lib_u32)rejected ||
-            (rejected && boundary.bus.execution.completed_observation_valid) || timing.ticks!=expected.ticks ||
-            (!rejected && !timing.source_timing_unallocated) || timing.key_id!=key || timing.form_id!=key ||
-            timing.formula_inputs!=expected.formula_inputs || timing.retirement_origin!=expected.retirement_origin) {
+            (rejected && (boundary.bus.execution.completed_observation_valid || timing.ticks ||
+                timing.key_id || timing.form_id || timing.formula_inputs ||
+                timing.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) ||
+            (!rejected && v30_timing_check(&boundary.bus.execution,(x86_core_cpu_timing_result){
+                .ticks=expected.ticks,.key_id=key,.form_id=key,
+                .formula_inputs=expected.formula_inputs,.retirement_origin=expected.retirement_origin},
+                boundary.bus.instructions.data.timing_fetch_bus_ticks))) {
             lib_c_printf("V30:NOMINAL-ALU:EXCLUDED index=%u stop=%u ticks=%llu\n",
                 (lib_u32)index,boundary.bus.execution.stop_requested,timing.ticks);
             return 1;

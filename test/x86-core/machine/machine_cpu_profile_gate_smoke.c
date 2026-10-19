@@ -196,13 +196,24 @@ lib_i32 main(void)
     static const lib_u8 shift_rm16_imm8[] = { 0xc1u, 0xeau, 0x04u };
     lib_i32 failed = 0;
 
-    /* CPU-native development is not complete Machine/time qualification. */
-    const x86_core_machine_executor_config unqualified = {
+    /* The explicit V30 L2 aggregate admits deterministic execution only. */
+    x86_core_machine_executor_config unqualified = {
         .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_V30,
-        .fpu_profile = X86_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_8087
     };
     x86_core_machine *candidate = LIB_NULL;
+    failed |= x86_core_machine_neutral_config_is_valid(&unqualified) ||
+        x86_core_machine_neutral_create(&unqualified, &candidate) != LIB_STATUS_INVALID_ARGUMENT ||
+        candidate != LIB_NULL;
+    unqualified.fpu_profile = X86_FPU_PROFILE_NONE;
+    unqualified.time_axis = (x86_core_machine_time_axis){
+        X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u};
+    failed |= x86_core_machine_neutral_config_is_valid(&unqualified) ||
+        x86_core_machine_neutral_create(&unqualified, &candidate) != LIB_STATUS_INVALID_ARGUMENT ||
+        candidate != LIB_NULL;
+    unqualified.time_axis = (x86_core_machine_time_axis){0};
+    unqualified.retirement_time_contract = X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
     failed |= x86_core_machine_neutral_config_is_valid(&unqualified) ||
         x86_core_machine_neutral_create(&unqualified, &candidate) != LIB_STATUS_INVALID_ARGUMENT ||
         candidate != LIB_NULL;
@@ -211,6 +222,7 @@ lib_i32 main(void)
 
     failed |= run_case(X86_CORE_CPU_PROFILE_8086, nop, sizeof(nop), 0);
     failed |= run_case(X86_CORE_CPU_PROFILE_8088, nop, sizeof(nop), 0);
+    failed |= run_case(X86_CORE_CPU_PROFILE_V30, nop, sizeof(nop), 0);
     failed |= run_pop_cs_8086();
     failed |= run_mov_rm8_imm8_8086();
     failed |= run_case(X86_CORE_CPU_PROFILE_8086, pusha, sizeof(pusha), 1);

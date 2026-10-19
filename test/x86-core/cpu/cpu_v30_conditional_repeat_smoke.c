@@ -205,7 +205,8 @@ static lib_i32 v30_compare_check(const v30_compare_case *item, lib_bool deep)
         if (v30_string_timing(&fixture.bus.execution,&before,item->opcode,item->repeat,
             iteration,(lib_u8)((item->source != 0u)+item->locked),
             (item->source ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
-            (item->locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u)) || fixture.observations) return 1;
+            (item->locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u),
+            fixture.bus.instructions.data.timing_fetch_bus_ticks,0u) || fixture.observations) return 1;
         if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.bus.delivered_exceptions ||
             fixture.bus.execution.nec_md_write_enabled || fixture.writes ||
             lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
@@ -704,7 +705,8 @@ static lib_i32 v30_repeat_nominal_prefixes(void)
                     v30_string_timing(&fixture.bus.execution,&before,item.opcode,item.repeat,
                         iteration==1u && mutation>=2u ? 0u : iteration,
                         length-1u,X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
-                            (locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u))) {
+                            (locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u),
+                        fixture.bus.instructions.data.timing_fetch_bus_ticks,0u)) {
                     lib_c_printf("V30:REPEAT-NOMINAL-PREFIX:FAIL length=%u repeat=%02x count=%u locked=%u step=%u mutation=%u\n",
                         length,item.repeat,item.count,locked,iteration,mutation);
                     return 1;

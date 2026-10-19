@@ -1,4 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
+#include "support/cpu_v30_timing.h"
 #include "lib/types/file.h"
 
 typedef struct v30_shift_fixture {
@@ -171,11 +172,11 @@ static lib_i32 v30_shift_case(lib_u8 operation, lib_u8 width, lib_u8 form,
         (memory ? X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS : 0u) |
         (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u;
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.instruction.execution);
-    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.form_id != key || timing.key_id != key || timing.formula_inputs != inputs || fixture.observations ||
-        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+    if (v30_timing_check(&fixture.instruction.execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=key,.key_id=key,.formula_inputs=inputs,
+        .retirement_origin=clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED},
+        fixture.instruction.instructions.data.timing_fetch_bus_ticks) || fixture.observations) {
         lib_c_printf("V30:NOMINAL-SHIFT:FAIL op=%u form=%u width=%u dest=%u count=%u/%u segment=%u ticks=%llu/%llu\n",
             operation,form,width,destination,count,actual_count,segment,timing.ticks,clocks);
         return 1;

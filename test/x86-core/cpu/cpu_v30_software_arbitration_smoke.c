@@ -123,7 +123,8 @@ static void v30_software_operands(v30_memory_fixture *fixture,
     }
 }
 
-static lib_i32 v30_software_nominal(const v30_memory_fixture *fixture, const v30_software_case *item)
+static lib_i32 v30_software_nominal(const v30_memory_fixture *fixture,
+    const v30_software_case *item, lib_u8 winner)
 {
     static const lib_u8 clocks[] = {38u,38u,40u,45u,56u,38u,38u,3u,18u};
     static const lib_u32 keys[] = {0xccu,0xcdu,0xceu,
@@ -147,7 +148,11 @@ static lib_i32 v30_software_nominal(const v30_memory_fixture *fixture, const v30
             item->operation >= V30_SOFTWARE_OVERFLOW_CLEAR ?
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL : X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
     }
-    return v30_memory_check_nominal(fixture,ticks,keys[item->operation],inputs,origin);
+    return v30_timing_check(&fixture->bus.execution,(x86_core_cpu_timing_result){
+        .ticks=ticks,.key_id=keys[item->operation],.form_id=keys[item->operation],
+        .formula_inputs=inputs,.retirement_origin=origin,
+        .event_ticks=winner ? (winner==0x30u ? 49u : 38u)+12u*(item->sp & 1u) : 0u},
+        4u*fixture->fetches);
 }
 
 static lib_i32 v30_software_check(const v30_software_case *item)
@@ -172,7 +177,7 @@ static lib_i32 v30_software_check(const v30_software_case *item)
         if (winner) v30_software_entry(&fixture,&expected,&plan,winner,LIB_FALSE);
     }
     x86_core_cpu_execution_refresh(&fixture.bus.execution);
-    if (v30_software_nominal(&fixture,item)) return 1;
+    if (v30_software_nominal(&fixture,item,winner)) return 1;
     if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
         fixture.bus.execution.nmi_pending != ((item->events & 1u) && winner != 2u) ||
         fixture.bus.interrupt != ((item->events & 2u) && winner != 0x30u) ||

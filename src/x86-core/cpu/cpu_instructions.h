@@ -144,15 +144,18 @@ typedef struct {
     /* Actual completed access facts, not a second cache/TLB state. The walk
      * histogram is indexed by zero, one or two attempted A/D updates in a
      * completed walk. Writes also retain the accepted prefix of failed walks. */
-    lib_u32 timing_fetch_bus_ticks; /* L2 serialized 2-1 burst baseline; waits are external. */
+    /* Accepted fetch service: SX2-1 burst or V30 four-clock serialized cycles.
+     * Configured external waits remain outside this baseline. */
+    lib_u32 timing_fetch_bus_ticks;
     lib_u64 timing_external_wait_ticks;
     lib_bool timing_external_wait_overflow;
     lib_u64 timing_bus_service_ticks;
     lib_u64 timing_bus_stall_ticks;
     lib_u64 timing_bus_wait_ticks;
     lib_u64 timing_bus_invalidation_ticks;
-    /* Accepted physical work, excluding Core waits; entry allocation prevents
-     * nested handlers from charging the same prefix twice. Not a clock. */
+    /* Accepted service, excluding Core waits: physical transfers and V30
+     * completed prefix decode. Allocation prevents nested failure double charge.
+     * Successful nominal rows already contain operand/decode work. Not a clock. */
     lib_u64 timing_transfer_ticks;
     lib_u64 timing_entry_transfer_ticks;
     lib_bool timing_cache_used;

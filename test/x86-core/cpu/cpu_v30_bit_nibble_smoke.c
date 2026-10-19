@@ -1,4 +1,5 @@
 #include "support/cpu_bus_fixture.h"
+#include "support/cpu_v30_timing.h"
 #include "lib/types/file.h"
 
 _Static_assert(X86_CORE_CPU_INSTRUCTION_PRIMARY == 0 &&
@@ -27,17 +28,16 @@ static lib_u8 *v30_byte_register(cpu_bus_fixture *fixture, lib_u8 index)
 static lib_i32 v30_nec_nominal_result(const cpu_bus_fixture *fixture,
     lib_u64 clocks, lib_u8 suffix, lib_bool memory, lib_bool odd, lib_bool prefix)
 {
-    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
     const lib_u32 form = clocks ? 0x0fu | ((lib_u32)suffix << 16u) | (memory ? 0x100u : 0u) :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     const lib_u32 inputs = (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
         (clocks && memory ? X86_CORE_CPU_TIMING_INPUT_MODRM |
         X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u);
-    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.form_id != form || timing.key_id != form || timing.formula_inputs != inputs ||
-        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture->observations ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) return 1;
+    if (v30_timing_check(&fixture->execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=form,.key_id=form,.formula_inputs=inputs,
+        .retirement_origin=clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED},
+        fixture->instructions.data.timing_fetch_bus_ticks) || fixture->observations) return 1;
     return 0;
 }
 

@@ -188,12 +188,13 @@ static lib_i32 v30_port_scalars(void)
             const lib_u64 clocks=(form<2u ? 9u : 8u)+(odd ? 4u : 0u)+2u*lengths[prefix];
             const lib_u32 key=clocks ? opcodes[form] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
             const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
-            if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-                timing.key_id!=key || timing.form_id!=key ||
-                timing.formula_inputs!=((prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
-                    (clocks && odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u)) ||
-                timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
+            if (v30_timing_check(&fixture.bus.execution,(x86_core_cpu_timing_result){
+                .ticks=clocks,.form_id=key,.key_id=key,
+                .formula_inputs=(prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+                    (clocks && odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u),
+                .retirement_origin=clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED},
+                fixture.bus.instructions.data.timing_fetch_bus_ticks)) {
                 lib_c_printf("V30:PORT-NOMINAL:op=%02x prefix=%u port=%04x clocks=%llu/%llu inputs=%x\n",
                     opcodes[form],(lib_u32)prefix,port,timing.ticks,clocks,timing.formula_inputs);
                 return 1;
@@ -282,7 +283,8 @@ static lib_i32 v30_port_strings(void)
                         const t_cpu retiring = fixture.bus.cpu;
                         x86_core_cpu_execution_refresh(&fixture.bus.execution);
                         if (v30_string_timing(&fixture.bus.execution,&retiring,opcode,prefixes[repeat_index],
-                            (lib_u8)iteration,(lib_u8)((segment != 0u)+locked),inputs) || fixture.bus.observations) return 1;
+                            (lib_u8)iteration,(lib_u8)((segment != 0u)+locked),inputs,
+                            fixture.bus.instructions.data.timing_fetch_bus_ticks,0u) || fixture.bus.observations) return 1;
                         const lib_u16 next = index + (direction ? 0u - (iteration + 1u) * width : (iteration + 1u) * width);
                         lib_u16 actual = 0u;
                         lib_memory_copy(&actual, fixture.memory + base + offset, width);
@@ -376,7 +378,8 @@ static lib_i32 v30_port_repeat_and_entry(void)
         lib_memory_copy(fixture.memory + 0x100u,code+(additional ? 0u : 2u),bytes);
         const t_cpu zero = fixture.bus.cpu;
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
-        if (v30_string_timing(&fixture.bus.execution,&zero,opcode,0xf3u,0u,additional ? 2u : 0u,inputs)) return 1;
+        if (v30_string_timing(&fixture.bus.execution,&zero,opcode,0xf3u,0u,additional ? 2u : 0u,inputs,
+            fixture.bus.instructions.data.timing_fetch_bus_ticks,0u)) return 1;
         if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x100u+bytes ||
             fixture.transfers || fixture.reads || fixture.writes || fixture.bus.cpu.data.si != 0x400u ||
             fixture.bus.cpu.data.di != 0x500u) return 1;

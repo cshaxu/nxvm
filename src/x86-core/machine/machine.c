@@ -122,6 +122,7 @@ static lib_i32 x86_core_machine_valid_cpu_profile(x86_core_cpu_profile profile)
     case X86_CORE_CPU_PROFILE_80286:
     case X86_CORE_CPU_PROFILE_80386:
     case X86_CORE_CPU_PROFILE_80486SX:
+    case X86_CORE_CPU_PROFILE_V30:
         return LIB_TRUE;
     default:
         /* New CPU families need complete runtime/time qualification first. */
@@ -377,6 +378,10 @@ lib_i32 x86_core_machine_neutral_config_is_valid(
         x86_core_machine_valid_fpu_profile(config->fpu_profile) &&
         (config->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
          config->fpu_profile == X86_FPU_PROFILE_NONE) &&
+        (config->cpu_profile != X86_CORE_CPU_PROFILE_V30 ||
+         (config->fpu_profile == X86_FPU_PROFILE_NONE &&
+          config->retirement_time_contract == X86_CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC &&
+          config->time_axis.kind != X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) &&
         (!config->cpu_80386_cr_mov_ignores_mod ||
          config->cpu_profile == X86_CORE_CPU_PROFILE_80386) &&
         config->address_decode.first <= config->address_decode.last &&
@@ -891,7 +896,8 @@ lib_status x86_core_machine_run(
                             X86_CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT) !=
                         LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
                     result->elapsed_ticks = machine->elapsed_ticks;
-                    if (machine->cpu_retirement_wait_retires &&
+                    if (machine->cpu_profile != X86_CORE_CPU_PROFILE_V30 &&
+                        machine->cpu_retirement_wait_retires &&
                         x86_core_cpu_is_halted(machine->executor_cpu_execution)) {
                         machine->lifecycle = X86_CORE_MACHINE_PAUSED;
                         result->reason = X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -913,7 +919,8 @@ lib_status x86_core_machine_run(
                 }
                 if (machine->cpu_retirement_wait_retires && budget.ticks != 0u &&
                     retiring_ticks > budget.ticks - result->ticks) {
-                    if (machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
+                    if (machine->maximum_instruction_ticks == 0u &&
+                        result->ticks < budget.ticks) {
                         const lib_u64 ticks = budget.ticks - result->ticks;
 
                         if (x86_core_machine_publish_elapsed_ticks(machine, ticks,
@@ -1105,12 +1112,12 @@ lib_status x86_core_machine_run(
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
                 x86_core_machine_retirement_observation_capture_eligibility_key(machine);
-                if (machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+                if (machine->maximum_instruction_ticks == 0u ||
                     machine->external_cycle_round_ticks != 0u || timing_result.event_ticks != 0u) {
                     x86_core_machine_begin_retirement_wait(machine,
                         machine->external_cycle_round_ticks,
                         instruction_ticks - machine->external_cycle_round_ticks,
-                        machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
+                        machine->maximum_instruction_ticks == 0u ?
                             timing_result.ticks : instruction_ticks, LIB_TRUE);
                     continue;
                 }

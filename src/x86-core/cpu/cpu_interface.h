@@ -188,7 +188,9 @@ typedef enum x86_core_cpu_retirement_timing_origin {
     /* NEC section 12 prefetched, zero-wait subtotal, not complete elapsed time. */
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE,
     /* Compatibility aggregate based on8080AF, not measured V30 clocks. */
-    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_EMULATION_L2
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_EMULATION_L2,
+    /* Nominal plus accepted serialized fetch; Core adds configured waits. */
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_ELAPSED_L2
 } x86_core_cpu_retirement_timing_origin;
 
 typedef enum x86_core_cpu_retirement_repeat_phase {
@@ -212,8 +214,8 @@ typedef struct x86_core_cpu_timing_result {
     lib_u32 key_id;
     lib_u32 formula_inputs;
     x86_core_cpu_retirement_timing_origin retirement_origin;
-    /* V30 may expose a nominal subtotal in ticks/origin while total time is
-     * unallocated; that partial result cannot qualify its Machine admission. */
+    /* Allocation is not a silicon-accuracy claim: an explicit L2 aggregate
+     * retains its model origin and cannot establish a physical time axis. */
     lib_u8 source_timing_unallocated;
     lib_u32 form_id;
     x86_core_cpu_retirement_repeat_phase repeat_phase;
@@ -728,7 +730,8 @@ x86_core_cpu_timing_result x86_core_cpu_capture_timing(
 /* Shared checked accumulation for timing selection and the retained run loop. */
 lib_i32 x86_core_cpu_timing_add_ticks(lib_u64 *value,
     lib_u64 delta);
-/* Zero means no finite static bound, including SX provider/FIFO latency.
+/* Zero means no finite static bound, including SX provider/FIFO latency and
+ * V30's unrestricted prefix stream and external waiting.
  * The executor must transport actual completion through its budget owner. */
 lib_u64 x86_core_cpu_timing_maximum_ticks(
     x86_core_cpu_profile profile,

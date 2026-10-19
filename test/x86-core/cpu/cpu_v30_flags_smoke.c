@@ -106,14 +106,14 @@ static lib_i32 v30_flags_check(const v30_flags_case *item, lib_bool deep)
         item->operation == V30_FLAGS_FROM_AH ? 3u : 2u) + (item->prefix ? 2u : 0u);
     const lib_u32 form = clocks ? fixture.memory[0x80000u+(lib_u16)(item->pc+(item->prefix != 0u))] :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
-    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.formula_inputs != ((item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+    if (v30_timing_check(&fixture.bus.execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=form,.key_id=form,
+        .formula_inputs=(item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
             (clocks && stack ? X86_CORE_CPU_TIMING_INPUT_MEMORY |
-            ((item->sp & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u)) ||
-        timing.form_id != form || timing.key_id != form ||
-        timing.retirement_origin != (clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
+            ((item->sp & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u) : 0u),
+        .retirement_origin=clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED},
+        fixture.bus.instructions.data.timing_fetch_bus_ticks)) return 1;
     t_cpu actual = fixture.bus.cpu;
     /* NEC leaves AH bits 5,3,1 undefined for MOV AH,PSW. */
     if (item->operation == V30_FLAGS_TO_AH) actual.data.ah &= 0xd5u;

@@ -97,6 +97,7 @@ foreach(core_case IN ITEMS
 endforeach()
 
 shared_register_test(x86-core machine/system_power x86-core-machine)
+shared_register_test(x86-core machine/machine_v30_time x86-core-machine)
 shared_register_test(x86-core machine/timeline x86-core-machine)
 add_executable(x86-core-machine-fpu-interface-smoke ${CMAKE_CURRENT_LIST_DIR}/machine_fpu_interface_smoke.c)
 target_link_libraries(x86-core-machine-fpu-interface-smoke PRIVATE x86-core-machine)

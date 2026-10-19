@@ -31,9 +31,11 @@ static lib_i32 v30_nominal_result(const v30_memory_fixture *fixture,
     const x86_core_cpu_timing_result result=x86_core_cpu_capture_timing(&fixture->bus.execution);
     const lib_bool allocated=ticks != 0u;
     const lib_u32 expected_form=allocated ? form : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    if (!result.source_timing_unallocated || result.ticks != ticks || result.event_ticks ||
+    const lib_u32 fetch=fixture->bus.instructions.data.timing_fetch_bus_ticks;
+    if (result.source_timing_unallocated || result.ticks != ticks+fetch || result.event_ticks ||
         result.key_id != expected_form || result.form_id != expected_form ||
-        result.retirement_origin != origin ||
+        result.retirement_origin != (fetch ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_ELAPSED_L2 : origin) ||
+        ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_FETCH)!=0u)!=(fetch!=0u) ||
         ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_ODD_WORD) != 0u) != odd ||
         ((result.formula_inputs & X86_CORE_CPU_TIMING_INPUT_MODRM) != 0u) !=
             (allocated && (form & 0x100u) != 0u) ||
@@ -318,10 +320,10 @@ static lib_i32 v30_nominal_prefixes(void)
                     const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
                     if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.invalid ||
                         fixture.observations || !fixture.bus.execution.completed_observation_valid ||
-                        timing.ticks!=rows[row].clocks+2u*length || timing.key_id!=rows[row].key ||
-                        timing.form_id!=rows[row].key || timing.formula_inputs!=inputs ||
-                        timing.retirement_origin!=origin || !timing.source_timing_unallocated ||
-                        timing.event_ticks || x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+                        v30_timing_check(&fixture.bus.execution,(x86_core_cpu_timing_result){
+                            .ticks=rows[row].clocks+2u*length,.key_id=rows[row].key,
+                            .form_id=rows[row].key,.formula_inputs=inputs,.retirement_origin=origin},
+                            fixture.bus.instructions.data.timing_fetch_bus_ticks)) {
                         lib_c_printf("V30:NOMINAL-PREFIX:FAIL row=%u length=%u sequence=%u wrap=%u ticks=%llu inputs=%x\n",
                             (lib_u32)row,length,sequence,wrap,timing.ticks,timing.formula_inputs);
                         return 1;

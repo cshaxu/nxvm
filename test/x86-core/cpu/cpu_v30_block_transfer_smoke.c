@@ -191,7 +191,8 @@ static lib_i32 v30_block_cases(void)
                             expected.data.eip = repeat && expected.data.cx ? 0x100u : 0x100u + size;
                             x86_core_cpu_execution_refresh(&fixture.bus.execution);
                             if (v30_string_timing(&fixture.bus.execution,&before,opcodes[form],
-                                repeat ? repeat_opcode : 0u,(lib_u8)item,prefixes[pattern].bytes,inputs) || fixture.bus.observations)
+                                repeat ? repeat_opcode : 0u,(lib_u8)item,prefixes[pattern].bytes,inputs,
+                                fixture.bus.instructions.data.timing_fetch_bus_ticks,0u) || fixture.bus.observations)
                                 return 1;
                             if (fixture.bus.execution.stop_requested || fixture.bus.delivered_exceptions ||
                                 lib_memory_compare(&fixture.bus.cpu, &expected, sizeof(expected)) != 0 ||
@@ -304,7 +305,8 @@ static lib_i32 v30_block_interrupts(void)
             else fixture.bus.interrupt = LIB_TRUE;
             const t_cpu before = fixture.bus.cpu;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
-            if (v30_string_timing(&fixture.bus.execution,&before,opcodes[form],0xf3u,0u,additional ? 2u : 0u,inputs)) return 1;
+            if (v30_string_timing(&fixture.bus.execution,&before,opcodes[form],0xf3u,0u,additional ? 2u : 0u,inputs,
+                12u,(nmi ? 38u : 49u))) return 1;
             lib_u16 saved_ip = 0u;
             lib_memory_copy(&saved_ip, fixture.memory + 0x206fau, 2u);
             if (fixture.bus.execution.stop_requested || saved_ip != 0x100u || fixture.bus.cpu.data.cx != 1u ||
@@ -314,7 +316,8 @@ static lib_i32 v30_block_interrupts(void)
                 /* Entry restarts setup even when the handler has the same code identity. */
                 const t_cpu handler = fixture.bus.cpu;
                 x86_core_cpu_execution_refresh(&fixture.bus.execution);
-                if (v30_string_timing(&fixture.bus.execution,&handler,opcodes[form],0xf3u,0u,additional ? 2u : 0u,inputs) ||
+                if (v30_string_timing(&fixture.bus.execution,&handler,opcodes[form],0xf3u,0u,additional ? 2u : 0u,inputs,
+                    fixture.bus.instructions.data.timing_fetch_bus_ticks,0u) ||
                     fixture.bus.execution.stop_requested || fixture.bus.cpu.data.cx ||
                     fixture.bus.cpu.data.eip != 0x100u+bytes || fixture.bus.cpu.data.sp != 0x6fau) return 1;
                 continue;
@@ -327,7 +330,8 @@ static lib_i32 v30_block_interrupts(void)
             if (returning != first + 3u) return 1;
             const t_cpu resumed = fixture.bus.cpu;
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
-            if (v30_string_timing(&fixture.bus.execution,&resumed,opcodes[form],0xf3u,0u,additional ? 2u : 0u,inputs)) return 1;
+            if (v30_string_timing(&fixture.bus.execution,&resumed,opcodes[form],0xf3u,0u,additional ? 2u : 0u,inputs,
+                fixture.bus.instructions.data.timing_fetch_bus_ticks,0u)) return 1;
             const lib_u8 width = (opcodes[form] & 1u) + 1u;
             if (fixture.bus.execution.stop_requested || fixture.invalid || fixture.bus.cpu.data.cx ||
                 fixture.bus.cpu.data.eip != 0x100u+bytes ||
@@ -367,7 +371,8 @@ static lib_i32 v30_block_restart(void)
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
         /* A prefix permutation with identical effective facts continues the L2 block. */
         if (v30_string_timing(&fixture.bus.execution,&before,opcode,0xf3u,
-            step==1u || step==4u || step==6u ? 1u : 0u,additional,inputs) ||
+            step==1u || step==4u || step==6u ? 1u : 0u,additional,inputs,
+            fixture.bus.instructions.data.timing_fetch_bus_ticks,0u) ||
             fixture.bus.execution.stop_requested || fixture.invalid ||
             lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
             lib_memory_compare(fixture.memory,fixture.expected,sizeof(fixture.memory))) return 1;

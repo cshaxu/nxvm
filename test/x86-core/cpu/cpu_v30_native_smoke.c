@@ -1,4 +1,5 @@
 #include "support/cpu_bus_fixture.h"
+#include "support/cpu_v30_timing.h"
 #include "lib/types/file.h"
 
 _Static_assert(X86_CORE_CPU_PROFILE_DEFAULT == 0 &&
@@ -90,12 +91,13 @@ static lib_i32 v30_native_program(void)
     for (lib_u32 step = 0u; step < 40u && !fixture.cpu.data.flagHalt; ++step) {
         x86_core_cpu_execution_refresh(&fixture.execution);
         if (fixture.execution.stop_requested || fixture.faults ||
-            fixture.delivered_exceptions || !x86_core_cpu_capture_timing(
+            fixture.delivered_exceptions || x86_core_cpu_capture_timing(
                 &fixture.execution).source_timing_unallocated) return 1;
     }
-    const x86_core_cpu_timing_result halt=x86_core_cpu_capture_timing(&fixture.execution);
-    if (halt.ticks!=2u || halt.key_id!=0xf4u || halt.form_id!=0xf4u || halt.formula_inputs ||
-        halt.event_ticks || halt.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE)
+    if (v30_timing_check(&fixture.execution,(x86_core_cpu_timing_result){
+        .ticks=2u,.key_id=0xf4u,.form_id=0xf4u,
+        .retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        fixture.instructions.data.timing_fetch_bus_ticks))
         return 1;
     return !fixture.cpu.data.flagHalt || fixture.failed || fixture.port_active ||
         fixture.completions != 2u || fixture.cpu.data.cs.selector != 0u ||
@@ -248,10 +250,10 @@ static lib_i32 v30_poll(void)
                 if (fixture.bus.execution.stop_requested || fixture.bus.faults ||
                     fixture.bus.delivered_exceptions || fixture.bus.writes || fixture.bus.completions ||
                     fixture.samples != 1u || lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
-                const x86_core_cpu_timing_result nominal=x86_core_cpu_capture_timing(&fixture.bus.execution);
-                if (nominal.ticks!=7u || nominal.form_id!=0x9bu || nominal.key_id!=0x9bu ||
-                    nominal.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE ||
-                    !nominal.source_timing_unallocated || nominal.event_ticks || nominal.formula_inputs)
+                if (v30_timing_check(&fixture.bus.execution,(x86_core_cpu_timing_result){
+                    .ticks=7u,.form_id=0x9bu,.key_id=0x9bu,
+                    .retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        fixture.bus.instructions.data.timing_fetch_bus_ticks))
                     return 1;
                 if (!blocked) {
                     if (x86_core_cpu_execution_wait_poll_ticks(&fixture.bus.execution,&ticks) !=
@@ -260,7 +262,7 @@ static lib_i32 v30_poll(void)
                     continue;
                 }
                 if (x86_core_cpu_execution_wait_poll_ticks(&fixture.bus.execution,&ticks) != LIB_STATUS_OK ||
-                    ticks != 7u) {
+                    ticks != 5u) {
                     lib_c_printf("V30:POLL:FIRST-SAMPLE ticks=%llu\n",(lib_u64)ticks);
                     return 1;
                 }
@@ -269,7 +271,7 @@ static lib_i32 v30_poll(void)
                 x86_core_cpu_execution_advance_wait(&fixture.bus.execution,0u);
                 if (fixture.samples != 1u || fixture.bus.instruction_count != instructions ||
                     lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected))) return 1;
-                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,6u);
+                x86_core_cpu_execution_advance_wait(&fixture.bus.execution,4u);
                 if (fixture.samples != 1u || x86_core_cpu_execution_wait_poll_ticks(
                     &fixture.bus.execution,&ticks) != LIB_STATUS_OK || ticks != 1u) return 1;
                 x86_core_cpu_execution_advance_wait(&fixture.bus.execution,1u);

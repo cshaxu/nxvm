@@ -230,12 +230,12 @@ static lib_i32 v30_stack_timing(const v30_memory_fixture *fixture, const v30_sta
         if (memory || alias) form|=((lib_u32)(item->code[1u+prefix]>>3u) & 7u)<<9u;
     }
     const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
-    if (timing.ticks!=clocks || timing.formula_inputs!=inputs || timing.key_id!=form || timing.form_id!=form ||
-        !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.retirement_origin!=(clocks ? (modeled ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
+    if (v30_timing_check(&fixture->bus.execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=form,.key_id=form,.formula_inputs=inputs,
+        .retirement_origin=clocks ? (modeled ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE) :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) || fixture->observations ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL)) {
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED},
+        fixture->bus.instructions.data.timing_fetch_bus_ticks) || fixture->observations) {
         lib_c_printf("V30:NOMINAL-STACK:FAIL op=%u sp=%04x bp=%04x level=%u ticks=%llu/%llu\n",
             item->operation,item->sp,item->bp,item->level,timing.ticks,clocks);
         return 1;

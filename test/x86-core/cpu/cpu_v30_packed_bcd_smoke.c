@@ -1,4 +1,5 @@
 #include "support/cpu_bus_fixture.h"
+#include "support/cpu_v30_timing.h"
 #include "lib/types/file.h"
 
 static lib_u32 v30_bcd_source_base(const cpu_bus_fixture *fixture, lib_u8 prefix)
@@ -97,13 +98,13 @@ static lib_i32 v30_bcd_run(cpu_bus_fixture *fixture, lib_u8 opcode, lib_u8 prefi
     const lib_u64 clocks = 7u + 19u * bytes + (prefix ? 2u : 0u);
     const lib_u32 key = clocks ? 0x0fu | ((lib_u32)opcode << 16u) :
         X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
-    if (timing.ticks != clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.form_id != key || timing.key_id != key || fixture->observations ||
-        timing.formula_inputs != (clocks ? X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE |
-            (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) : 0u) ||
-        timing.retirement_origin != (odd ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE)) return 1;
+    if (v30_timing_check(&fixture->execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=key,.key_id=key,
+        .formula_inputs=clocks ? X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_SIZE |
+            (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) : 0u,
+        .retirement_origin=odd ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        fixture->instructions.data.timing_fetch_bus_ticks) || fixture->observations) return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||
         lib_memory_compare(&actual_cpu,&expected_cpu,sizeof(expected_cpu)) ||
         fixture->writes != (opcode == 0x26u ? 0u : bytes) ||

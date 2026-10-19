@@ -1,4 +1,5 @@
 #include "support/cpu_bus_fixture.h"
+#include "support/cpu_v30_timing.h"
 #include "lib/types/file.h"
 
 static lib_u8 *v30_field_register(t_cpu *cpu, lib_u8 reg)
@@ -96,11 +97,10 @@ static lib_i32 v30_field_run(cpu_bus_fixture *fixture, lib_u8 opcode,
     const lib_u32 inputs = (prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
         X86_CORE_CPU_TIMING_INPUT_MEMORY |
         ((index & 1u) ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
-    const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->execution);
-    if (!timing.source_timing_unallocated || timing.ticks != clocks || timing.event_ticks ||
-        timing.formula_inputs != inputs || timing.form_id != key || timing.key_id != key ||
-        timing.retirement_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC || fixture->observations ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30,LIB_NULL))
+    if (v30_timing_check(&fixture->execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.formula_inputs=inputs,.form_id=key,.key_id=key,
+        .retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC},
+        fixture->instructions.data.timing_fetch_bus_ticks) || fixture->observations)
         return 1;
     if (fixture->execution.stop_requested || fixture->faults || fixture->delivered_exceptions ||
         fixture->cpu.data.eip != 0x100u + size || fixture->cpu.data.eax != result.data.eax ||

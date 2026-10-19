@@ -77,7 +77,12 @@ static void x86_core_machine_capture_time_with_board(const x86_core_machine *mac
             immediate_due = LIB_TRUE;
         }
     }
-    if (x86_core_cpu_execution_wait_poll_ticks(
+    /* NEC's initial POLL sample belongs to the completing instruction; its
+     * next idle deadline starts only after that retirement is published. */
+    if (!(machine->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+          (machine->cpu_retirement_source_ticks != 0u ||
+           machine->cpu_retirement_wait_pending)) &&
+        x86_core_cpu_execution_wait_poll_ticks(
             machine->executor_cpu_execution, &device_ticks) == LIB_STATUS_OK) {
         if (device_ticks <= LIB_UINT64_MAX - machine->elapsed_ticks &&
             x86_core_machine_deadline_consider_absolute(machine,
@@ -276,8 +281,11 @@ static void x86_core_machine_internal_advance(x86_core_machine *machine,
 {
     if (machine == LIB_NULL || source_ticks == 0u) return;
     x86_fpu_advance(machine->fpu, source_ticks);
-    x86_core_cpu_execution_advance_wait(machine->executor_cpu_execution,
-        source_ticks);
+    if (machine->cpu_profile != X86_CORE_CPU_PROFILE_V30 ||
+        (machine->cpu_retirement_source_ticks == 0u &&
+         !machine->cpu_retirement_wait_pending))
+        x86_core_cpu_execution_advance_wait(machine->executor_cpu_execution,
+            source_ticks);
 }
 
 static void x86_core_machine_advance_scheduler(x86_core_machine *machine,
@@ -350,8 +358,8 @@ lib_status x86_core_machine_publish_elapsed_ticks(x86_core_machine *machine,
     }
     if (origin == X86_CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) {
         x86_core_machine_trace_record(machine, X86_CORE_MACHINE_TRACE_CPU_RETIRE,
-            x86_core_machine_linear_pc(machine), (lib_u32)(machine->cpu_profile ==
-                X86_CORE_CPU_PROFILE_80486SX ? machine->cpu_retirement_source_ticks :
+            x86_core_machine_linear_pc(machine), (lib_u32)(machine->maximum_instruction_ticks ==
+                0u ? machine->cpu_retirement_source_ticks :
                 elapsed_ticks), 0u);
     } else {
         x86_core_machine_trace_record(machine, X86_CORE_MACHINE_TRACE_EXTERNAL_TIME,

@@ -328,7 +328,12 @@ static lib_i32 v30_memory_fetch_forms(void)
                     expected.data.eip = (lib_u16)(starts[start] + bytes);
                     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture.bus.execution);
                     const x86_core_cpu_timing_result original = x86_core_cpu_capture_timing(&reference.bus.execution);
-                    if (timing.ticks != original.ticks || timing.form_id != original.form_id ||
+                    const lib_u64 fetch=4u*fixture.fetches, original_fetch=4u*reference.fetches;
+                    if (timing.ticks<fetch || original.ticks<original_fetch ||
+                        timing.ticks-fetch != original.ticks-original_fetch ||
+                        fixture.bus.instructions.data.timing_fetch_bus_ticks!=fetch ||
+                        reference.bus.instructions.data.timing_fetch_bus_ticks!=original_fetch ||
+                        timing.form_id != original.form_id ||
                         timing.key_id != original.key_id || timing.formula_inputs != original.formula_inputs ||
                         timing.retirement_origin != original.retirement_origin || fixture.observations) return 1;
                     if (lib_memory_compare(&fixture.bus.cpu, &expected, sizeof(expected)) != 0 ||

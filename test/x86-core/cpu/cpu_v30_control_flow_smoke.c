@@ -173,11 +173,12 @@ static lib_i32 v30_control_timing(const v30_memory_fixture *fixture,
             (odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
     }
     const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture->bus.execution);
-    if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
-        timing.form_id!=form || timing.key_id!=form || timing.formula_inputs!=inputs ||
-        timing.retirement_origin!=(clocks ? (mixed ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
+    if (v30_timing_check(&fixture->bus.execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=form,.key_id=form,.formula_inputs=inputs,
+        .retirement_origin=clocks ? (mixed ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE) :
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED},
+        fixture->bus.instructions.data.timing_fetch_bus_ticks)) {
         lib_c_printf("V30:NOMINAL-CONTROL:FAIL form=%u modrm=%02x prefix=%u taken=%u ticks=%llu/%llu inputs=%x/%x\n",
             item->form,item->modrm,item->prefix,taken,timing.ticks,clocks,timing.formula_inputs,inputs);
         return 1;

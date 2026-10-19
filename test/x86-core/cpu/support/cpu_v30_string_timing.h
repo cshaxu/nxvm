@@ -4,12 +4,14 @@
 #include "lib/types/file.h"
 #include "x86-core/cpu/cpu.h"
 #include "x86-core/cpu/cpu_instructions.h"
+#include "cpu_v30_timing.h"
 
 /* Independent NEC section 12 rows: even, one odd endpoint, two odd endpoints.
  * MOVBK's printed repeat row deliberately differs from its primitive row. */
 static lib_i32 v30_string_timing(const x86_core_cpu_execution_context *execution,
     const t_cpu *before, lib_u8 opcode, lib_u8 prefix, lib_u8 ordinal,
-    lib_u32 additional_prefixes, lib_u32 prefix_inputs)
+    lib_u32 additional_prefixes, lib_u32 prefix_inputs,
+    lib_u32 fetch, lib_u64 events)
 {
     static const struct {
         lib_u8 opcode, setup, primitive[3], iteration[3];
@@ -56,10 +58,9 @@ static lib_i32 v30_string_timing(const x86_core_cpu_execution_context *execution
         (prefix==0xf2u && row!=1u && row!=2u)) ?
         X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL :
         X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
-    if (actual.ticks != clocks || actual.form_id != key || actual.key_id != key ||
-        actual.formula_inputs != inputs || actual.repeat_phase != phase || actual.event_ticks ||
-        !actual.source_timing_unallocated || actual.retirement_origin != origin ||
-        x86_core_cpu_timing_maximum_ticks(X86_CORE_CPU_PROFILE_V30, LIB_NULL)) {
+    if (v30_timing_check(execution,(x86_core_cpu_timing_result){
+        .ticks=clocks,.form_id=key,.key_id=key,.formula_inputs=inputs,
+        .repeat_phase=phase,.retirement_origin=origin,.event_ticks=events},fetch)) {
         lib_c_printf("V30:NOMINAL-STRING:op=%02x prefix=%02x step=%u clocks=%llu/%llu phase=%u/%u\n",
             opcode,prefix,ordinal,(lib_u64)actual.ticks,(lib_u64)clocks,
             actual.repeat_phase,phase);

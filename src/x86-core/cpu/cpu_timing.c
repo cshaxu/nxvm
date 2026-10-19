@@ -266,7 +266,7 @@ static void x86_core_cpu_timing_emulation_l2(const t_cpuins_data *data,
 
 /* NEC October 1986 section 12 nominal rows. Operand/EA work is already included;
  * do not add the Intel EA recipe or count each byte callback as another cost.
- * Fetch starvation, prefixes and extra waits still need their own allocation. */
+ * The sole selector adds accepted fetch service; Core owns configured waits. */
 static void x86_core_cpu_timing_select_v30(
     x86_core_cpu_execution_context *context, x86_core_cpu_timing_result *result)
 {
@@ -668,7 +668,17 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
 
     if (context == LIB_NULL || out_result == LIB_NULL) return 0;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
-        x86_core_cpu_timing_select_v30(context, out_result);
+        const lib_u32 fetch = context->instructions->data.timing_fetch_bus_ticks;
+        x86_core_cpu_timing_select_v30(context, &result);
+        if (result.ticks == 0u || !x86_core_cpu_timing_add_ticks(&result.ticks, fetch)) return 0;
+        /* Explicit atomic L2: actual queue-fill service is serialized beside
+         * the nominal row. Operand baseline and Core waits are not added here. */
+        if (fetch != 0u) {
+            result.retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_ELAPSED_L2;
+            result.formula_inputs |= X86_CORE_CPU_TIMING_INPUT_FETCH;
+        }
+        result.source_timing_unallocated = LIB_FALSE;
+        *out_result = result;
         return 1;
     }
     context->timing_result.source_timing_unallocated = LIB_FALSE;
