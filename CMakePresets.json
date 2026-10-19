@@ -25,7 +25,6 @@
       "name": "mingw-gcc-x64-ccache",
       "displayName": "MinGW-w64 GCC x64 with ccache",
       "inherits": "mingw-gcc-x64",
-      "binaryDir": "${sourceDir}/build/.ninja/gcc-x64-debug",
       "cacheVariables": {
         "REPOSITORY_USE_CCACHE": "ON"
       }
@@ -43,7 +42,6 @@
       "name": "mingw-gcc-x64-release-ccache",
       "displayName": "MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mingw-gcc-x64-release",
-      "binaryDir": "${sourceDir}/build/.ninja/gcc-x64-release",
       "cacheVariables": {
         "REPOSITORY_USE_CCACHE": "ON"
       }
@@ -68,7 +66,6 @@
       "name": "mingw-gcc-x86-release-ccache",
       "displayName": "MinGW-w64 GCC x86 optimized release with ccache",
       "inherits": "mingw-gcc-x86-release",
-      "binaryDir": "${sourceDir}/build/.ninja/gcc-x86-release",
       "cacheVariables": {
         "REPOSITORY_USE_CCACHE": "ON"
       }
@@ -128,7 +125,6 @@
       "name": "mynes-gcc-x64-release-ccache",
       "displayName": "MyNES MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mynes-gcc-x64-release",
-      "binaryDir": "${sourceDir}/build/.ninja/mynes-gcc-x64-release",
       "cacheVariables": {
         "REPOSITORY_USE_CCACHE": "ON"
       }
@@ -137,7 +133,6 @@
       "name": "mynes-gcc-x86-release-ccache",
       "displayName": "MyNES MinGW-w64 GCC x86 optimized release with ccache",
       "inherits": "mynes-gcc-x86-release",
-      "binaryDir": "${sourceDir}/build/.ninja/mynes-gcc-x86-release",
       "cacheVariables": {
         "REPOSITORY_USE_CCACHE": "ON"
       }

@@ -47,12 +47,11 @@ foreach ($target in $Targets) {
     if (-not $path.StartsWith($prefix, $comparison)) { throw "Target escapes build: $target" }
     $relative = $path.Substring($prefix.Length).Replace('\', '/')
     if ($relative -match '^(\.ccache|\.ninja)(/|$)') { throw "Refusing persistent cache: $target" }
-    $ancestor = $path
+    $ancestor = [IO.Path]::GetDirectoryName($path)
     while ($ancestor -ne $build) {
         if (Test-Path -LiteralPath $ancestor) { Assert-NotLink (Get-Item -LiteralPath $ancestor -Force) }
         $ancestor = [IO.Path]::GetDirectoryName($ancestor)
     }
-    if (-not (Test-Path -LiteralPath $path)) { throw "Missing target: $target" }
     if (-not $paths.Add($path)) { throw "Overlapping targets: $target" }
     $pending = [Collections.Generic.Stack[IO.FileSystemInfo]]::new()
     $pending.Push((Get-Item -LiteralPath $path -Force))
@@ -95,10 +94,12 @@ foreach ($plan in $plans) {
 
 # Every candidate has been checked before the first removal. The caller owns
 # exclusion of concurrent writers; TasksExited is not a process detector.
-$remaining = @(Get-ChildItem -LiteralPath $build -Force | Where-Object {
-    $_.Name -notin @('.ccache', '.ninja') -and -not $paths.Contains($_.FullName)
-})
-if ($RequireClean -and $remaining.Count) { throw 'Targets do not cover all disposable build children.' }
+if ($RequireClean) {
+    $remaining = @(Get-ChildItem -LiteralPath $build -Force | Where-Object {
+        $_.Name -notin @('.ccache', '.ninja') -and -not $paths.Contains($_.FullName)
+    })
+    if ($remaining.Count) { throw 'Targets do not cover all disposable build children.' }
+}
 foreach ($plan in $plans) {
     if ($Apply) {
         Remove-Item -LiteralPath $plan.Path -Recurse -Force
