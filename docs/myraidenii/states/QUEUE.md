@@ -8,11 +8,10 @@ preserves the five delivered acceptance batches. The candidates below are
 unadmitted; numeric T identifiers are allocated only on admission in
 MyRaidenII's independent sequence, not NXVM's sequence.
 
-1. [Implement board bus, interrupts and Seibu COP](../proposals/m1-board-cop.md)
-2. [Implement and qualify video](../proposals/m1-video.md)
-3. [Implement and qualify sound](../proposals/m1-sound.md)
-4. [Connect Machine, Product, configuration and controls](../proposals/m1-product.md)
-5. [Qualify complete gameplay and release](../proposals/m1-qualification.md)
+1. [Implement and qualify video](../proposals/m1-video.md)
+2. [Implement and qualify sound](../proposals/m1-sound.md)
+3. [Connect Machine, Product, configuration and controls](../proposals/m1-product.md)
+4. [Qualify complete gameplay and release](../proposals/m1-qualification.md)
 
 These are receiving boundaries, not already admitted implementations.
 Each admission freezes bounded S batches and a finite verification ledger.

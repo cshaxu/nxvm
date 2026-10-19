@@ -1,51 +1,25 @@
 # MyRaidenII Status
 
-## Current Work
+## Active S1 Packet
 
-| Task | Status | Closure record |
-| --- | --- | --- |
-| T2 | Closed | NEC V30 CPU and neutral Machine qualification accepted at S51. |
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: MyRaidenII M1 T3 S1. One session performs sequential coordinator and executor roles. |
+| Admission And Approval | T2 closed at `18eb3fd6d`; the owner-approved MyRaidenII objective and queued board/COP candidate admit the next numeric task. This S is a bounded planning/freeze batch only. |
+| Objective | Freeze the complete board/COP implementation ledger: selected board ranges, byte lanes, ROM/RAM/bank behavior, interrupt/vector/acknowledgement, input edges, sound latches, COP/DMA operations, public Machine seams and finite proofs. |
+| Non-goals | No production C/CMake, Shared/API change, ROM extraction/import, MAME code/table reuse, game bypass, video/audio/Product implementation, executable or gameplay qualification. |
+| Reference Baseline | Clean `18eb3fd6d`; T1 F01--F13 source/set freeze, archived T2 public V30/Machine qualification, current X86 Core interfaces and the selected MAME reference only as L2 research. |
+| Candidate Proposal | ../proposals/m1-board-cop.md; ../history/M1-T3-board-cop.md; ../etc/evidence/t3-s1-board-contract.md; ../etc/t1-freeze-ledger.md; ../etc/research/references.md. |
+| Files And ABI Surface | MyRaidenII task records and a new evidence ledger only. Expected production/test/CMake/artifact delta0; expected documentation/evidence +120--260 lines. No ABI surface. |
+| Applicable Rules | Execution task-scale ledger and active-packet requirements; Architecture Product->Machine->Core and sole X86 Core timeline; Coding source/test ownership; source policy prohibits game/third-party import. |
+| Verification | Read actual public memory/ROM/port/attachment interfaces and existing owner tests; validate every required board category has one owner and named proof; documentation/links/whitespace checks. No runtime build or ROM test is claimed by this planning S. |
+| Expected Markers | A finite B01+ board ledger, explicit source grades, no unknown map/COP operation silently omitted, and a subsequent implementation S plan whose tests refine existing fixtures where responsibilities overlap. |
+| Asset Needs | Existing read-only metadata and pinned source records only. No access, copy, extraction or change to external game assets. |
+| Reporting Requirements | Record the map/operation universe, source confidence, exact public seams, unresolved contract gaps, S sequencing and test-reuse decision. Distinguish observed fact from L2 model. |
+| Stop Conditions | Stop for a required Shared public-contract expansion, missing lawful source, ambiguity that cannot be modeled honestly, or any need to import/alter ROM data. Do not invent a hardware map or COP result. |
+| Exit Criteria | A complete finite T3 ledger and follow-on S plan exist; every task boundary has an owner and proof receiver; no source/API/asset change occurred; records pass documentation governance and actual diff review. |
+| Original Owner Request | Implement MyRaidenII under single-session dual-role governance; reuse existing coverage where it owns the same responsibility and do not inflate tests through redundant copies. |
+| Similar-Issue Sweep | Compare all board categories against existing neutral Machine memory/port/attachment contracts and current test fixtures; record true contract gaps once rather than creating a board-specific parallel runner or duplicate fixture family. |
 
-No successor T is admitted. The next queue candidate is board bus, interrupts
-and Seibu COP. Playable MyRaidenII remains unfinished.
-
-## Accepted S51 Delivery
-
-Shared P1 `2255ca3f6`, NXVM receiving P2 `3d47ddec7` and MyRaidenII evidence
-P3 `17236a97f` are pushed. The coordinator rechecks the actual fixture/caller
-diffs, retained neutral registry owner, unchanged registrations and direct
-qualification receipts rather than accepting the pass count alone.
-
-- Existing CPU fixture owns the identical four-way protected bootstrap and
-  nine-way segment comparison. All56 call sites reuse it; the nine callers'
-  remaining scenario bodies are unchanged.
-- Test C/H+107/-320/net-213; manifest+11/-11. Production0. No new test file,
-  target, framework, public API, state or timing model.
-- Both stable Ninja/ccache graphs pass685/685 repository units and36/36
-  registered PC receiving integrations per width; no failures/skips.
-- Eight0564 PC EXEs are deployed, PE-width/hash verified and pushed. Their
-  rebuilt binary differences are timestamp/checksum metadata only. MyNES,
-  INIs,33 protected tracked assets and six media roles remain unchanged.
-- All42 owned temporary files/758673 bytes are removed after process exit,
-  proof retention and formal preview/apply. Only .ccache and .ninja remain.
-- No desktop/RDP, physical V30, unrelated MyNES integration or gameplay
-  validation is implied. Existing warning exceptions remain explicit.
-
-The [complete evidence](../etc/evidence/t2-s51-final-qualification.md) retains
-the sixteen-field packet, original V01--V17/A--L reconciliation, reuse mapping,
-limits and failed collector attempts.
-The [receipt](../etc/evidence/t2-s51-results.json) preserves exact proof hashes.
-The [history](../history/M1-T2-v30.md) and
-[archived proposal](../history/M1-T2-v30-proposal.md) retain the complete task decision.
-
-## Test Growth Follow-up
-
-Before adding a test, map the missing behavior to existing owner tests.
-Refine existing fixtures/cases first; add a separate test only for a genuinely
-distinct responsibility or missing observable contract, not another copy of setup.
-Preserve independent semantic oracles and actual receiver coverage.
-
-[TODO](TODO.md) records remaining duplicate setup candidates and the PC aggregate
-owner-selection issue. S51 does not claim a complete manual audit of every Core
-test line or zero remaining redundancy. [Queue](QUEUE.md) retains the unadmitted
-board/COP and later gameplay tasks; no runnable MyRaidenII EXE exists.
+M1 T1 and T2 are closed in [history](../history/). T3 is active at its planning
+S1 only; no runnable MyRaidenII executable or gameplay result is claimed.

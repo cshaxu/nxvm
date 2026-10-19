@@ -33,8 +33,9 @@ preserves its five delivered acceptance boundaries: residual semantics/forms,
 complete nominal timing, complete elapsed-time/bounds, real neutral Machine,
 and final CPU/receiving qualification.
 
-After T2, the [Queue](../states/QUEUE.md) continues with board/bus/COP,
-video, sound, Product/Machine host integration and complete gameplay/release.
+T3 now freezes and implements board/bus/COP. After T3, the
+[Queue](../states/QUEUE.md) continues with video, sound, Product/Machine host
+integration and complete gameplay/release.
 Real ROM board checkpoints belong to board/COP, not to CPU qualification
 before that board exists. Earlier tasks may use headless/presentation probes;
 no current runnable MyRaidenII or gameplay readiness follows from CPU tests.
