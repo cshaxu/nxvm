@@ -2,31 +2,7 @@
 
 ## Current Work
 
-### Active S21 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | MyRaidenII M1 T3 S21; sequential coordinator/executor |
-| Admission And Approval | Owner delegates ordinary same-T ordering; S20's existing Core timeline removes the suspected Shared gap |
-| Objective | Complete the four RNG word aliases and byte views from the one Core timeline and existing maximum register |
-| Non-goals | No DMA/sort, Video latch, residual macro, Shared edit, new clock/seed/state or playable-game claim |
-| Reference Baseline | Clean pushed 6d7fad708; S20 residual contract and its fixed research identities |
-| Candidate Proposal | proposals/m1-board-cop.md; complete B07 RNG receiver, not completion of all residual B07/B08 |
-| Files And ABI Surface | Local core/cop.c and existing unit/core/board_bus_smoke.c plus product records; no public ABI; estimated source +20--40, test +80--140 lines |
-| Applicable Rules | Product guide, source policy, design Architecture/Coding, shared Execution/Architecture/Coding/Document and Contributing; architecture/coding governance skills |
-| Verification | Strict cached x64/x86 builds, affected actual Board unit, full repository units, protected hashes, documentation and diff review |
-| Expected Markers | Affected unit and complete suites pass; literal timeline-edge RNG vectors, aliases, bytes, guest MMIO, reset and read-only constraints |
-| Asset Needs | No ROM/media import, new frontend or affected existing EXE; retain ten published identities and protected inputs |
-| Reporting Requirements | Archive packet, exact source/test delta and qualification; distinguish nominal L2 guest timeline from physical RNG/timing |
-| Stop Conditions | Need for Shared/API change, unknown ownership, protected-input mutation or evidence contradicting the frozen RNG contract |
-| Exit Criteria | Complete local RNG family and finite proof; coordinator actual-change review, committed/pushed complete P, clean worktree |
-| Original Owner Request | Continue the admitted MyRaidenII implementation, conserving existing test coverage and using cohesive same-T batches |
-| Similar-Issue Sweep | Four aliases, odd/even byte views, widened maximum+1, observational non-advance, execution-owner MMIO and unchanged unmodelled-register refusals |
-
-Executor confirms the packet before source changes. The existing runtime-safe
-timeline observation is borrowed on the execution owner, not a cross-thread lease.
-
-M1 T3 remains open after accepted S1--S20 and delivered S21:
+M1 T3 remains open after accepted S1--S21:
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -50,7 +26,7 @@ M1 T3 remains open after accepted S1--S20 and delivered S21:
 | S18 | Approved optional Types math declaration vocabulary, existing runtime contract and unchanged product linkage | `9b41a82ca` |
 | S19 | Complete nine-ID L2 numeric/result chain, common dispatch status, bounded arithmetic and failure-prefix proof | `02a72979a` |
 | S20 | Whole residual COP/RNG/DMA contract, existing live timeline capability and cohesive implementation receivers | `d20d65ee0` |
-| S21 | Complete nominal L2 RNG aliases, existing timeline observation and actual Board/guest/reset proof | Executor delivery; review pending |
+| S21 | Complete nominal L2 RNG aliases, existing timeline observation and actual Board/guest/reset proof | `bede72c2a` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -243,6 +219,8 @@ oracles and runtime guest MMIO. Final full units pass687/687 per width,
 zero failures/skips (x64 387.69s; x86 171.12s). Strict cached and no-work
 incremental builds pass. Ten existing releases and all protected guards are
 unchanged; no affected existing EXE requires rebuilding. Owned runs are
-terminal and build contains only persistent caches. Coordinator actual-change
-review remains required before this packet closes. DMA, Video latches,
-remaining macros and real selected-set startup keep T3/M1 open.
+terminal and build contains only persistent caches. Sequential coordinator
+actual git show review accepts bede72c2a's six-file+298/-6 delivery against
+the full RNG contract, archived packet and frozen qualification identities.
+S21 is closed with no active packet. DMA, Video latches, remaining macros
+and real selected-set startup keep T3/M1 open.
