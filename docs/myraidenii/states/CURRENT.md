@@ -1,25 +1,26 @@
 # MyRaidenII Status
 
-## Active S1 Packet
+## Active S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: MyRaidenII M1 T3 S1. One session performs sequential coordinator and executor roles. |
-| Admission And Approval | T2 closed at `18eb3fd6d`; the owner-approved MyRaidenII objective and queued board/COP candidate admit the next numeric task. This S is a bounded planning/freeze batch only. |
-| Objective | Freeze the complete board/COP implementation ledger: selected board ranges, byte lanes, ROM/RAM/bank behavior, interrupt/vector/acknowledgement, input edges, sound latches, COP/DMA operations, public Machine seams and finite proofs. |
-| Non-goals | No production C/CMake, Shared/API change, ROM extraction/import, MAME code/table reuse, game bypass, video/audio/Product implementation, executable or gameplay qualification. |
-| Reference Baseline | Clean `18eb3fd6d`; T1 F01--F13 source/set freeze, archived T2 public V30/Machine qualification, current X86 Core interfaces and the selected MAME reference only as L2 research. |
-| Candidate Proposal | ../proposals/m1-board-cop.md; ../history/M1-T3-board-cop.md; ../etc/evidence/t3-s1-board-contract.md; ../etc/t1-freeze-ledger.md; ../etc/research/references.md. |
-| Files And ABI Surface | MyRaidenII task records and a new evidence ledger only. Expected production/test/CMake/artifact delta0; expected documentation/evidence +120--260 lines. No ABI surface. |
-| Applicable Rules | Execution task-scale ledger and active-packet requirements; Architecture Product->Machine->Core and sole X86 Core timeline; Coding source/test ownership; source policy prohibits game/third-party import. |
-| Verification | Read actual public memory/ROM/port/attachment interfaces and existing owner tests; validate every required board category has one owner and named proof; documentation/links/whitespace checks. No runtime build or ROM test is claimed by this planning S. |
-| Expected Markers | A finite B01+ board ledger, explicit source grades, no unknown map/COP operation silently omitted, and a subsequent implementation S plan whose tests refine existing fixtures where responsibilities overlap. |
-| Asset Needs | Existing read-only metadata and pinned source records only. No access, copy, extraction or change to external game assets. |
-| Reporting Requirements | Record the map/operation universe, source confidence, exact public seams, unresolved contract gaps, S sequencing and test-reuse decision. Distinguish observed fact from L2 model. |
-| Stop Conditions | Stop for a required Shared public-contract expansion, missing lawful source, ambiguity that cannot be modeled honestly, or any need to import/alter ROM data. Do not invent a hardware map or COP result. |
-| Exit Criteria | A complete finite T3 ledger and follow-on S plan exist; every task boundary has an owner and proof receiver; no source/API/asset change occurred; records pass documentation governance and actual diff review. |
+| Identifier Mode | Continuation: MyRaidenII M1 T3 S2. One session performs sequential coordinator and executor roles. |
+| Admission And Approval | S1 P1 `e83f186a8` is independently accepted in the T3 history; the owner-approved MyRaidenII implementation objective and frozen B01--B09 ledger admit this next bounded batch. |
+| Objective | Implement the MyRaidenII-local Core board construction, V30 configuration, static program lanes, dynamic program bank and B02 board RAM/control decoding for B01--B03/B09. |
+| Non-goals | No Shared public API change, external ROM bytes, MAME code/table import, COP behavior, board IRQ/input/sound latch behavior, video/audio/Product implementation, game bypass, executable or gameplay claim. |
+| Reference Baseline | Clean `e83f186a8`; accepted T3 S1 ledger/evidence; archived T2 V30 and neutral Machine public qualification; current X86 Core public memory/immutable-ROM/attachment interfaces. |
+| Candidate Proposal | ../proposals/m1-board-cop.md; ../history/M1-T3-board-cop.md; ../etc/evidence/t3-s1-board-contract.md; ../etc/t1-freeze-ledger.md; ../etc/research/t1-integration-contract.md. |
+| Files And ABI Surface | New MyRaidenII-local Core board source/header, matching MyRaidenII-local ROM-free tests and minimal product build registration if required. No Lib/Emulator/X86-Core public interface or asset ABI. Root build registration, if required, is a separately reviewed Shared P only. |
+| Applicable Rules | Execution packet/test-closure and one-target P rules; Architecture Product->Machine->Core, sole X86 Core timeline and public bus routes; Coding test-owner/Types rules; source policy prohibits game/third-party import; build hygiene. |
+| Verification | Inspect existing Core test and CMake ownership before adding tests; run focused board vectors on x64/x86 plus the complete repository-only unit suite before S closure. Run corpus/manifest/dependency gates for touched owners. No external-ROM startup or desktop/gameplay test is claimed. |
+| Expected Markers | One board owner; static lanes use immutable mapping; dynamic bank is one board memory-device provider; B02 routes have defined lane/hole/read-only behavior; reset/teardown clears only board-owned mutable state. |
+| Asset Needs | ROM-free byte fixtures only. External owner-ROM inventory metadata is read-only; no ROM copy, extraction or repository asset change. |
+| Reporting Requirements | Record actual map/byte-lane/bank behavior, every added/extended test and why it cannot reuse an existing owner test, line delta, public-interface decision, x64/x86 verification and deferred B04--B08 receivers. |
+| Stop Conditions | Stop before any Shared contract expansion, unclear bank/source fact that cannot be honestly modeled, required external-ROM data copy, or a need for a second bus/timeline. |
+| Exit Criteria | B01--B03/B09 code and focused ROM-free vectors are complete; no duplicate CPU/generic-Core test path is added; required x64/x86 focused and repository-only unit checks pass; documentation/evidence/manifest checks pass; one-target commits are pushed. |
 | Original Owner Request | Implement MyRaidenII under single-session dual-role governance; reuse existing coverage where it owns the same responsibility and do not inflate tests through redundant copies. |
-| Similar-Issue Sweep | Compare all board categories against existing neutral Machine memory/port/attachment contracts and current test fixtures; record true contract gaps once rather than creating a board-specific parallel runner or duplicate fixture family. |
+| Similar-Issue Sweep | Inspect all MyRaidenII-local board routes for duplicate mappers/byte-lane implementations; compare added tests against existing CPU, immutable-ROM, RAM and Machine lifecycle owners, retaining only genuine board-specific coverage. |
 
-M1 T1 and T2 are closed in [history](../history/). T3 is active at its planning
-S1 only; no runnable MyRaidenII executable or gameplay result is claimed.
+M1 T1 and T2 are closed in [history](../history/). T3 S1 is accepted and S2 is
+active for board construction only; no runnable MyRaidenII executable or
+gameplay result is claimed.

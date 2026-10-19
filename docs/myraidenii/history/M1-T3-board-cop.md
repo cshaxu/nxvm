@@ -60,3 +60,23 @@ classified without source/table import, and the 184646-byte temporary payload
 is deleted using the governed cleanup tool. Actual tracked source/test/CMake/
 manifest/artifact delta is zero; task records/evidence establish the follow-on
 S2--S5 boundaries. Documentation governance and whitespace checks pass.
+
+## S1 Coordinator Acceptance
+
+The sequential coordinator inspected actual committed P1 `e83f186a8`, the
+complete B01--B09 ledger, the public X86 Core seams and the cleanup record; it
+did not rely only on the executor summary. The diff is limited to MyRaidenII
+roadmap/status/history/evidence records: it contains no production source,
+build registration, test target, asset bytes or external source/table import.
+The static upper-ROM versus dynamic-bank distinction is correctly assigned to
+the existing immutable mapper and one App-owned memory route respectively.
+Every later board category has one named owner and a receiving proof, while
+video, sound, Product and gameplay remain explicit non-goals.
+
+Before S2, the coordinator also audits the current `x86-core` test corpus for
+test bloat. It finds no exact duplicate C tests; the earlier fixture
+consolidation removed 213 net lines. The corpus is large because it owns CPU
+form/timing matrices, not because B01--B03 are already covered. S2 may add
+only one focused ROM-free board test family for new board routing. It must not
+retest CPU execution, generic immutable-ROM mapping, generic RAM access or
+generic Machine lifecycle; those retain their existing test owners.
