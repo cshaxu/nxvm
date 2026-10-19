@@ -92,3 +92,19 @@ address/state behavior; it does not duplicate CPU, generic RAM, immutable-ROM
 or lifecycle tests. Required x64/x86 focused checks and the repository unit
 suite passed before delivery. B04--B06 remain explicitly unimplemented and are
 now the admitted S3 receiver.
+
+## S3 Coordinator Acceptance
+
+The coordinator independently reviewed delivered P1 `4d340ce41`, rather than
+relying on its implementation summary. The only production change is the
+MyRaidenII-local Board's one pending/acknowledged main interrupt, active-low
+input words and low-byte main/sound latches. It uses the existing X86 Core
+Machine attachment and replacement memory routes; no Shared interface, second
+clock, sound worker, external-ROM byte or imported MAME code/table was added.
+The extended Board smoke owns only the new Board-facing bus behavior and a
+real V30 interrupt route, leaving generic CPU, attachment, RAM and immutable
+ROM coverage with their existing owners. Focused Board tests and the complete
+repository unit suite pass on both x64 and x86 (`687/687` each); documentation
+governance and whitespace checks pass. No runnable MyRaidenII executable is
+claimed because B04--B06 are a ROM-free Core delivery. S3 is accepted and
+closed; B07--B08 remain the next unadmitted T3 receivers.
