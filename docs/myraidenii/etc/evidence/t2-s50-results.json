@@ -1,0 +1,173 @@
+{
+  "source_manifest_sha256": "FECA5A9FC08D6F9B454C31C6F8B3A5BE272BDAB5F33AB952AFB16F2DAD1C7AC9",
+  "gates": {
+    "cpu_recompiles_x86": 0,
+    "types_inputs": 1402,
+    "strict_rows": 498,
+    "unique_declarations": 536,
+    "deferred_rows": 150,
+    "cpu_commands": 44,
+    "cpu_recompiles_x64": 0
+  },
+  "actual_delta": {
+    "production_added": 0,
+    "tests_net": 480,
+    "manifest_added": 3,
+    "manifest_deleted": 2,
+    "production_deleted": 0,
+    "tests_deleted": 6,
+    "tests_added": 486
+  },
+  "test_manifest_sha256": "2EC2F58EC59A2D5DE279AD7A9AE5A37BBD1C4E85E3CEF273CC22824F55EA46CE",
+  "baseline": "64b17b8ed",
+  "unverified": [
+    "Receiving integrations not rerun in this test-only S; S51 retains final receiving qualification.",
+    "Desktop/RDP, external suites, silicon-exact V30 timing and gameplay not qualified."
+  ],
+  "artifacts": {
+    "protected_assets_unchanged": 33,
+    "receipt": "t2-s49-artifacts.json",
+    "unchanged": 10,
+    "rebuilt": 0,
+    "reason": "Only owned tests and documentation changed; production inputs and ten release hashes are unchanged."
+  },
+  "units": [
+    {
+      "skipped": 0,
+      "sorted_names_sha256": "7E752320B3700CDA734E53870104614C831CE282B84335590A00ED993C085662",
+      "seconds": 138.52,
+      "width": "x64",
+      "failed": 0,
+      "tests": 685,
+      "junit_sha256": "BE74483E2B13AFCF2FAA2D5CF76F18FCA966793B72814AEA470F858417FA122C"
+    },
+    {
+      "skipped": 0,
+      "sorted_names_sha256": "7E752320B3700CDA734E53870104614C831CE282B84335590A00ED993C085662",
+      "seconds": 150.67,
+      "width": "x86",
+      "failed": 0,
+      "tests": 685,
+      "junit_sha256": "CFC1348C233B4407059795CC426B7198771B60F39FBDB293CC38C4703FD67D27"
+    }
+  ],
+  "proof_files": [
+    {
+      "bytes": 489,
+      "sha256": "4DDAF997FAB4541EC3A82324B9BF60E75726EF134A0C9F58977B6050BEBDBBDC",
+      "name": "execution-boundaries-x64.xml"
+    },
+    {
+      "bytes": 230,
+      "sha256": "C67965AF6C9134BBF397DD1B99AE1B6B3492DD1CFD50621D6B7F69655C0377E0",
+      "name": "execution-build-x64.log"
+    },
+    {
+      "bytes": 567,
+      "sha256": "323346E53A3C60D60EA886A2354404D0AE5C807BDD78FEC1A0D7CFE626F01892",
+      "name": "execution-first-x64.xml"
+    },
+    {
+      "bytes": 488,
+      "sha256": "64AA995B9743D54F8734016512F0B1D0CB8DEB7B9D0375AE47C89F201690B5CE",
+      "name": "execution-interrupt-x64.xml"
+    },
+    {
+      "bytes": 488,
+      "sha256": "820517AF19C313379C6E1183AFEC8092009190C7C2F41C00AB6D41C72BC24B44",
+      "name": "execution-refusal-second-x64.xml"
+    },
+    {
+      "bytes": 602,
+      "sha256": "703A9E94BD4DDA778EC43939DCC51670DD81B8AD821C9EF0ECDB82E11EE36922",
+      "name": "execution-refusal-x64.xml"
+    },
+    {
+      "bytes": 489,
+      "sha256": "EDCB3B3BC29719C3A30DD1C36F911B3CF27AC1BFEEE5DD57965F6EDABE4A22A9",
+      "name": "execution-second-x64.xml"
+    },
+    {
+      "bytes": 230,
+      "sha256": "C67965AF6C9134BBF397DD1B99AE1B6B3492DD1CFD50621D6B7F69655C0377E0",
+      "name": "final-build-x64.log"
+    },
+    {
+      "bytes": 230,
+      "sha256": "C67965AF6C9134BBF397DD1B99AE1B6B3492DD1CFD50621D6B7F69655C0377E0",
+      "name": "final-build-x86.log"
+    },
+    {
+      "bytes": 783,
+      "sha256": "CA54511D1049979066935CEC24512FC1BF406B5C9FEA11BD2A868FF688F1FEEE",
+      "name": "final-route-x64.xml"
+    },
+    {
+      "bytes": 783,
+      "sha256": "8BE67EB1A6FF600D82E67624AE17681EB2F88FA9D131C14124782E3DA81C5B4A",
+      "name": "final-route-x86.xml"
+    },
+    {
+      "bytes": 183,
+      "sha256": "DC61B2FF51113AC1B2DAE84CB492C891266C26BAE2BCF4375DE7B52EB3A929F5",
+      "name": "final-types-x64.log"
+    },
+    {
+      "bytes": 117114,
+      "sha256": "C78E64208FF1DF76E9E5D7A537F091E77291B27691B656EE801480B7AE820557",
+      "name": "full-units-x64.log"
+    },
+    {
+      "bytes": 206480,
+      "sha256": "BE74483E2B13AFCF2FAA2D5CF76F18FCA966793B72814AEA470F858417FA122C",
+      "name": "full-units-x64.xml"
+    },
+    {
+      "bytes": 117114,
+      "sha256": "7E78FDCA3B92672E747C7A93446CD4E250CE5A72720331D0E61628221A31B987",
+      "name": "full-units-x86.log"
+    },
+    {
+      "bytes": 206524,
+      "sha256": "CFC1348C233B4407059795CC426B7198771B60F39FBDB293CC38C4703FD67D27",
+      "name": "full-units-x86.xml"
+    },
+    {
+      "bytes": 205,
+      "sha256": "B28415AAE841468237F74C09F81CBE4494370A307A22C6643BC9350BA8ED7486",
+      "name": "non-pc-first-build-x64.log"
+    },
+    {
+      "bytes": 380,
+      "sha256": "9148F55D64EAE3334D5AE64AFC860DD6AC7BC55B0814B09C82DC744E2B4BAE4B",
+      "name": "non-pc-first-x64.log"
+    },
+    {
+      "bytes": 493,
+      "sha256": "F9BFE6550DC35A837ED1425A03175578FE9CDFC929B5152CFFEAD06B61D799CC",
+      "name": "non-pc-first-x64.xml"
+    },
+    {
+      "bytes": 831,
+      "sha256": "77B3CCDD88A1843A80D2F458C62285201D604083FEDB22341A2DF93BF7C66AA3",
+      "name": "qualification-build-x64.log"
+    },
+    {
+      "bytes": 1819,
+      "sha256": "1340536269AD8079CE392EDD0BF708BBC1D20F0E3EC861FEA1826CE13B28CFF7",
+      "name": "qualification-build-x86.log"
+    }
+  ],
+  "cleanup": {
+    "target": "build/myraidenii-t2-s50",
+    "files": 21,
+    "bytes": 656522,
+    "preview_verified": true,
+    "apply_verified": true,
+    "remaining_build_children": [
+      ".ccache",
+      ".ninja"
+    ]
+  },
+  "test_commit": "140898826"
+}
