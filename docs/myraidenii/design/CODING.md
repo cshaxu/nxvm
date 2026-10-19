@@ -10,9 +10,11 @@ assets/myraidenii/
 docs/myraidenii/{design,states,proposals,history,etc}/
 ```
 
-Only root README files exist in src/test/assets during M0. Create subdirectories
-with real cohesive code, not empty future chips or CMake stubs. Unit tests
-mirror actual source owners below `unit/{product,machine,core}`. Setup holds
+Create subdirectories only with real cohesive code, not empty future chips or
+CMake stubs. M1 T3 currently owns `src/myraidenii/core/` and its corresponding
+`test/myraidenii/unit/core/` Board route unit; there is still no Product or
+Machine implementation. Unit tests mirror actual source owners below
+`unit/{product,machine,core}`. Setup holds
 only real shared integration/diagnostic harnesses; diagnostics are opt-in and
 are never silently counted as integration. External game tests are integration,
 not units. No tests under src and no fixture borrowing from another App.

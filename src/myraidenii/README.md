@@ -1,8 +1,9 @@
 # MyRaidenII Source
 
-This is the owner-selected product root, without an app- prefix.
-M0 contains no runtime implementation or CMake target. See the
+This is the owner-selected product root, without an app- prefix. M1 T3 S2
+contains the ROM-free Board Core construction for the program address routes;
+it is not a runnable product or a game implementation. See the
 [architecture](../../docs/myraidenii/design/ARCHITECTURE.md) and
-[source map](../../docs/myraidenii/design/CODING.md) before adding real
-product, machine and deterministic core components under an admitted M1 task.
-Do not place game ROMs, reference code or generated embedding here.
+[source map](../../docs/myraidenii/design/CODING.md) before adding Product,
+Machine or further deterministic Core components under an admitted task. Do
+not place game ROMs, reference code or generated embedding here.

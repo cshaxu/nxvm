@@ -1,0 +1,8 @@
+add_library(myraidenii-core STATIC board.c)
+target_include_directories(myraidenii-core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+target_link_libraries(myraidenii-core PUBLIC types x86-core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(myraidenii-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
+elseif(MSVC)
+    target_compile_options(myraidenii-core PRIVATE /W4 /WX)
+endif()

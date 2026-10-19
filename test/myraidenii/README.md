@@ -1,12 +1,13 @@
 # MyRaidenII Tests
 
-M1 T1 provides a ROM-free unit for the actual inventory verification tool.
-It checks synthetic accepted data and isolated failures, never the game ROM.
-Run the product-owned registration without changing a Shared build graph:
+M1 T1 provides a ROM-free unit for the inventory verification tool, and M1 T3
+adds a Board-Core route unit with synthetic program lanes. Neither uses the
+game ROM. The product is registered in the repository build graph; its
+standalone CMake entry remains available for focused development:
 
 ```powershell
-cmake -S test/myraidenii -B build/myraidenii/tool-tests -G Ninja
-ctest --test-dir build/myraidenii/tool-tests --output-on-failure --no-tests=error
+cmake -S test/myraidenii -B build/.ninja/gcc-x64-release -G Ninja
+ctest --test-dir build/.ninja/gcc-x64-release --output-on-failure --no-tests=error -L myraidenii
 ```
 
 Runtime units will mirror real source owners. Shared external harnesses belong to setup,
