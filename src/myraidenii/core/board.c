@@ -1,7 +1,9 @@
 #include "myraidenii/core/board_interface.h"
+#include "myraidenii/core/cop.h"
 
 struct myraidenii_core_board {
     x86_core_machine *machine;
+    myraidenii_core_cop *cop;
     lib_u8 *program;
     lib_u8 bank_selected;
     lib_u8 main_interrupt_pending;
@@ -242,6 +244,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->player_inputs = 0xffffu;
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
+        myraidenii_core_cop_reset(board->cop);
     }
 }
 
@@ -326,8 +329,12 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         status = x86_core_machine_bind_attachment(board->machine, &attachment);
     }
     if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_create(&board->cop);
+    if (status == LIB_STATUS_OK)
         status = x86_core_machine_install_memory_device_routes(board->machine, routes,
             6u, LIB_NULL, LIB_NULL, board);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_install(board->cop, board->machine);
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_register_immutable_rom_mapping(board->machine,
             MYRAIDENII_CORE_STATIC_PROGRAM_START,
@@ -338,6 +345,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     if (status == LIB_STATUS_OK) status = x86_core_machine_reset(board->machine);
     if (status != LIB_STATUS_OK) {
         x86_core_machine_destroy(board->machine);
+        myraidenii_core_cop_destroy(board->cop);
         lib_release(board->program);
         lib_release(board);
         return status;
@@ -350,6 +358,7 @@ void myraidenii_core_board_destroy(myraidenii_core_board *board)
 {
     if (board == LIB_NULL) return;
     x86_core_machine_destroy(board->machine);
+    myraidenii_core_cop_destroy(board->cop);
     lib_release(board->program);
     lib_release(board);
 }

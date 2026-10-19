@@ -231,8 +231,73 @@ done:
     return failed;
 }
 
+static lib_i32 board_cop_routes(void)
+{
+    const myraidenii_core_board_config config = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const lib_u32 configuration_addresses[] = {
+        0x00428u, 0x0042cu, 0x00432u, 0x0043cu, 0x00444u, 0x00476u,
+        0x0047eu, 0x004a0u, 0x004acu, 0x004c0u, 0x004ccu
+    };
+    const lib_u8 configuration_write[] = {0xa5u, 0x5au};
+    const lib_u8 command_write[] = {0x96u, 0x69u};
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_memory_route route;
+    lib_u8 value[2] = {0u, 0u};
+    lib_size index;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program_even, 0, sizeof(program_even));
+    lib_memory_set(program_odd, 0, sizeof(program_odd));
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL)
+        goto done;
+
+    for (index = 0u; index < sizeof(configuration_addresses) /
+        sizeof(configuration_addresses[0]); ++index) {
+        if (x86_core_machine_memory_query(machine, configuration_addresses[index],
+                sizeof(configuration_write), X86_CORE_MACHINE_MEMORY_ACCESS_WRITE,
+                &route) != LIB_STATUS_OK || route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+            x86_core_machine_memory_write(machine, configuration_addresses[index],
+                configuration_write, sizeof(configuration_write)) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, configuration_addresses[index],
+                configuration_write, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_query(machine, configuration_addresses[index],
+                sizeof(value), X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+            route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+            x86_core_machine_memory_read(machine, configuration_addresses[index], value,
+                sizeof(value)) != LIB_STATUS_INVALID_STATE)
+            goto done;
+    }
+
+    if (x86_core_machine_memory_query(machine, 0x00426u, 2u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+        x86_core_machine_memory_query(machine, 0x00500u, sizeof(command_write),
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+        x86_core_machine_memory_write(machine, 0x00500u, command_write,
+            sizeof(command_write)) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x00500u, command_write, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x00500u, value, sizeof(value)) !=
+            LIB_STATUS_INVALID_STATE || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_query(machine, 0x00428u, sizeof(value),
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() ||
-        board_interrupt_input_and_sound_routes();
+        board_interrupt_input_and_sound_routes() || board_cop_routes();
 }
