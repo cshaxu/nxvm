@@ -24,18 +24,22 @@ cmake --preset mingw-gcc-x64-release
 cmake --build --preset current-gcc
 ```
 
-The configure preset creates `build/mingw-gcc-x64-release`; the `current-gcc`
-build preset builds the current developer artifact. The top-level `build/` directory
-is a container, not a build directory. Run current gates through the separate
-`current-gates-gcc` build preset. Other compilers or temporary build trees are
-task-specific verification inputs, not supported development commands.
+The configure preset creates `build/.ninja/gcc-x64-release`; `current-gcc`
+builds the current developer artifact with Ninja parallelism8. `build/` itself
+is not a build tree. Run `verify-current-specialized-gates` in that same tree.
+The x86 equivalent is `build/.ninja/gcc-x86-release`.
 
-Every Ninja preset invokes `ccache` through the stable, Git-ignored
-`build/.ccache` directory. This avoids host-specific temporary profile paths
-and permits repeat builds to reuse the same cache. `ccache` is therefore part
-of the supported Ninja development environment; the legacy `*-ccache` presets
-retain their separate binary directories for compatibility but use the same
-launcher and cache.
+ccache is optional: plain presets disable it and clear any previous launcher;
+the corresponding `*-ccache` preset enables it in the same directory. Real
+CMake configuration fixes its cache/temp/capacity in each compile command,
+including direct builds. Directory retention, cleanup, task budgets and safety
+have one authority:
+[Build Tree Hygiene](../../../../rules/EXECUTION.md#build-tree-hygiene).
+Query only this repository's cache, for example:
+
+```powershell
+cmake -E env "CCACHE_DIR=$PWD/build/.ccache" ccache --show-stats
+```
 
 Every implementation-task closure also builds the same product target for
 32-bit Windows. Set `NXVM_I686_GCC` to an i686 MinGW-w64 `gcc.exe` and place
@@ -43,10 +47,6 @@ that compiler's `bin` directory first on `PATH`, then use
 `mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
 configuration, not a second source or product route.
 
-The checked-in INI templates in `assets/nxvm/<profile>/` name fixed-product runtime
-media, access mode, memory and presentation settings (for example,
-`default-pc-at-80386-1440k-hdd.ini`). Integration registrations use those
-exact templates as input; a generated adjacent INI is the deployed product
-configuration. No YAML compatibility route remains. Release builds deploy the
-EXE and its generated adjacent INI only to
-`assets/nxvm/<profile>/`.
+Each fixed App's owner INI sits beside its EXE under `assets/<app>/`, not a
+profile subdirectory. Product builds never rewrite it; media paths resolve
+from that INI. No YAML compatibility route or generated replacement INI exists.

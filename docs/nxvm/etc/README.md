@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+Td S181: [Build/cache governance](evidence/td-s181-build-governance.md)
+records the repository-wide audit, safe cleanup and actual build/cache proof.
+
 T564 S1: [Committed RGB frame import](evidence/t564-s1-shared-frame-import.md)
 records the frozen upstream baseline, receiving ownership and qualification.
 

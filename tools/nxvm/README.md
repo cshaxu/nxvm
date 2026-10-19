@@ -10,19 +10,26 @@ is `O:/repos.hobby/nxvm-assets/profiles-nxvm`.  A product-only configuration
 keeps MyNES targets out of the generated build graph:
 
 ```powershell
-cmake -S . -B build/nxvm-x64 -G Ninja `
+cmake -S . -B build/.ninja/gcc-x64-release -G Ninja `
   -DCMAKE_BUILD_TYPE=Release `
   -DREPOSITORY_BUILD_MYNES=OFF `
   -DNXVM_PROFILE_ASSETS_ROOT=O:/repos.hobby/nxvm-assets/profiles-nxvm `
   -DNXVM_PRODUCT_PROFILE=default-pc-at-80386-1440k-hdd
-cmake --build build/nxvm-x64 --target run-unit-tests
-cmake --build build/nxvm-x64 --target run-integration-tests
+cmake --build build/.ninja/gcc-x64-release --target run-unit-tests --parallel 8
+cmake --build build/.ninja/gcc-x64-release --target run-integration-tests --parallel 8
 ```
 
-For x86, configure a separate build directory with the supported x86 compiler
+For x86, use `build/.ninja/gcc-x86-release` with the supported x86 compiler
 and `-DPROJECT_ARTIFACT_ARCHITECTURE=x86`.  Select exactly one of the four
 documented fixed profiles through `NXVM_PRODUCT_PROFILE`; CMake validates the
 matching manifest, hashes and firmware slots before it builds.
+
+Cache and temporary-output ownership follow
+[Build Tree Hygiene](../../docs/rules/EXECUTION.md#build-tree-hygiene).
+Enable optional ccache with `-DREPOSITORY_USE_CCACHE=ON` or a cache-enabled
+preset; disabled presets clear the launcher in the same build tree.
+The obsolete T196-only POSIX script has no current targets and is retired;
+historical task records are not supported build instructions.
 
 The four PC Apps deploy directly in `assets/my5160/`, `assets/my5170/`,
 `assets/mydeskpro386/` and `assets/nxvm/`, without profile subdirectories.

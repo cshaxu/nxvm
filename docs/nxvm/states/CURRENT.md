@@ -2,6 +2,31 @@
 
 ## Current Work
 
+M5 Td S181 is delivered for owner review after repository-wide build/cache and
+temporary-output governance. This standalone Shared task does not advance
+T564, MyNES or MyRaidenII T2. Existing product work and artifacts stay intact.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Governance: M5 Td S181 follows latest NXVM Td S180; one session performs coordinator/executor roles. No implementation T/S or artifact revision is allocated. |
+| Admission And Approval | Owner's 2026-10-18 request authorizes root CMake/presets, shared cleanup tool/tests/rules and directly affected product tool/docs adaptations, plus reviewed generated build cleanup. All three products receive the same policy; no sibling repository import. |
+| Objective | One real CMake owner for stable Ninja trees and optional repository-local ccache; one preview-first cleanup owner. Audit, preserve ambiguous inputs, safely remove obsolete build contents and prove build reuse and refusal contracts. |
+| Non-goals | No emulator behavior, Shared corpus source/API/manifest, ROM/media/INI mutation, global-cache deletion, product binary refresh, device qualification, new parser/service/manager or copied SoftPC implementation. |
+| Reference Baseline | Clean17af5609a; actual presets, root graph and all60 build child directories plus3187 root files,6056038291 bytes. Process query found no build/test user; no Git data or reparse entries found. Recheck before Apply. |
+| Candidate Proposal | ../proposals/m5-build-cache-governance.md; audit/evidence ../etc/evidence/td-s181-build-governance.md. |
+| Files And ABI Surface | Root CMake/presets; cmake/BuildEnvironment.cmake; tools/shared/Clear-Build.ps1; test/tools cleanup/configuration proof; affected tools and current operational docs; shared Execution authority. Initial scripts/checks estimate+300--450/-40--90; actual+383/-47/net336, docs/evidence separate. No C ABI or product input change. |
+| Applicable Rules | Guides and Execution/Architecture/Coding/Document authorities; architecture/coding governance skills. CMake owns configuration, cleanup tool owns safety, tests call actual owners, documentation gate stays documentation-only. Owner explicitly replaces old cross-task build-tree retention policy. |
+| Verification | Real x64/x86 stable Ninja builds, optional launcher off/on, direct build under hostile cache environment, no-op increment, actual local cache stats; reject outside Ninja trees; preview/apply/traversal/link/Git/cache/protected-file/all-before-delete safety tests. Applicable three product doc gates, actual diff and artifact hashes unchanged. No physical/native-device tests required. |
+| Expected Markers | Stable .ninja trees, fixed three CCACHE variables, no repeated compile on unchanged build, default preview does not delete, dangerous targets refuse before any deletion; final build contains only .ccache/.ninja or explicitly reported protected exceptions. |
+| Asset Needs | Existing external lawful build inputs read-only. Preserve ambiguous generated configs/media copies and nine research PDFs externally with actual hashes before deletion. Do not touch assets or global ccache. Temporary owner: this Td session, build/td-s181; total2 hours, no progress5 minutes, diagnostic output128 MiB. Cleanup fixtures build/cleanup-contract-PID and build/build-contract-width have180-second and8 MiB budgets and self-clean. Stable build metadata/objects stay only in .ninja. |
+| Reporting Requirements | Initial brief and diff estimate before implementation; concrete cleanup list before Apply; actual code/docs counts, bytes freed, retained files, cache/increment/safety proof, failures and unexecuted checks; pushed complete target-scoped delivery awaiting owner review. |
+| Stop Conditions | Live unrelated process, unchecked Git data, ambiguous/protected input without preservation/identity, path/link escape or source/behavior scope expansion. Resolve or retain explicitly; never recursively delete build root. |
+| Exit Criteria | All seven owner verification conditions have direct evidence: dual real builds/increments and2/2 governance tests per width, actual cache hit/hostile-environment proof and safe cleanup. Only .ccache/.ninja remain after5597462347-byte removal;23 preserved inputs retain hashes externally. Actual diff/doc/Types/unchanged-artifact checks pass. Shared P1 25e828def, MyNES P2 51a28e226 and MyRaidenII P3 8f0245cff are pushed; this NXVM receipt completes delivery for owner acceptance, not numeric task closure. |
+| Original Owner Request | Uniform optional ccache/Ninja and temporary-output lifecycle with safe existing build cleanup, minimal single-owner tooling and no unnecessary EXE refresh. |
+| Similar-Issue Sweep | Search tracked presets/tools/current operational docs for old tree paths/launchers, task-keyed build roots and duplicated cleanup ownership. Historical evidence remains historical; stale product-only script contracts are repaired or explicitly retired. |
+
+## Retained Numeric Task
+
 M5 T564 remains open. The owner accepted S1 on 2026-10-17 and explicitly
 requested its closure. S1 is closed after coordinator actual-change review
 of Shared `d30b69b2a`, MyNES `906e61b0c` and NXVM `b9433b31d`.
