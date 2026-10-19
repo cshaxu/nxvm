@@ -41,6 +41,7 @@ endif()
 
 option(REPOSITORY_BUILD_NXVM "Configure NXVM product targets" ON)
 option(REPOSITORY_BUILD_MYNES "Configure MyNES product targets" ON)
+option(REPOSITORY_BUILD_MYRAIDENII "Configure MyRaidenII product targets" ON)
 
 add_subdirectory(src/lib)
 add_subdirectory(src/emulator)
@@ -69,4 +70,9 @@ endif()
 
 if(REPOSITORY_BUILD_MYNES)
     include(cmake/mynes/MyNesProduct.cmake)
+endif()
+
+if(REPOSITORY_BUILD_MYRAIDENII)
+    add_subdirectory(src/myraidenii)
+    add_subdirectory(test/myraidenii)
 endif()
