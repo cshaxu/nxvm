@@ -159,6 +159,23 @@ No cleanup operation, external input change, Shared or other-App mutation
 occurred. Full unit success does not qualify the explicitly unexecuted
 integrations, desktop/RDP or playable game, nor close T3/M1.
 
+## Coordinator Acceptance
+
+Sequential coordinator git show review of acc9cc10c accepts all five changed
+files against the original packet. The fallback has one range owner, runs
+after installed devices, refuses data without storage and delegates mixed
+accesses to the existing Core splitter. The actual COP fixture owns no second
+CPU loop or implementation; its binding/finalization lifetime is valid and
+all original matrix rows/assertions survive. Production Board guest success
+and failure proof remain present. No public interface, Shared change, source
+import, artifact or protected-input alteration is hidden in the delivery.
+
+P1 totals423 additions/29 removals/net394: production38/3/net35,
+existing test173/26/net147 and records212/0/net212. All are within the
+admitted estimates. This acceptance changes only governance, not the frozen
+source/test qualification. S16 closes its operational receiver, not all of
+B02, T3 or M1; all stated query/algorithm/startup limits remain explicit.
+
 ## Archived S16 Packet
 
 | Field | Required record |
