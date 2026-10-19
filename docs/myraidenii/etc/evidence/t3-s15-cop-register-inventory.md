@@ -201,6 +201,18 @@ are not executed or claimed. Full unit success does not close T3 or M1.
 
 ## Archived S15 Packet
 
+Coordinator acceptance follows actual git show review of P1 fb5e14f7b:
+all six changed files match the scoped receiver. The decoder has one owner;
+read/write refusal precedes storage access, mode uses existing storage, and
+all retained failure vectors reach the declared stages. Tests reuse the real
+Board/Core route, not a new production path. No algorithm completion, full
+integration or game qualification is inferred from the unit results.
+P1 totals387 additions/18 removals/net369: production21/10, test92/7 and
+records274/1. Documentation exceeds the initial120--190 estimate because it
+archives the complete16-field packet, fixed inventory and newly discovered
+Shared query evidence/receiving obligation; executable scope did not expand.
+This governance acceptance changes no source, tests, binaries or inputs.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation: MyRaidenII M1 T3 S15 after accepted S14 50b7cad23; single-session sequential coordinator/executor roles. |
