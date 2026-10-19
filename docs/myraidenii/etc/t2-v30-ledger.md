@@ -74,6 +74,20 @@ Current alone records coordinator acceptance. This is the residual semantic
 stage, not a change to the original V01--V17 completion predicate or completion
 of time/bounds, real V30 Machine admission or gameplay. S48--S51 remain required.
 
+S48 is admitted after clean f1ece95f8. Its
+[nominal inventory](evidence/t2-s48-nominal-timing.md) freezes N01--N10 and
+records the explicitly approved ordinary8080 compatibility L2/origin extension.
+The existing complete emulation unit checks4328948 semantic/timing inputs;
+the82 immediate alias consumes its actual source row through the same ALU
+owner. N01--N10 now map to positive source/explicit L2 nominal rows or justified
+nonretirement dispositions in that evidence: native aliases, actual long-prefix
+facts, repeat phases, initial POLL/HALT and combined divide error are covered.
+Qualification proves682 exact current unit names per width using the full run
+and final port/test-manifest replacements; eight0564 PC receiving EXEs pass14
+selected integrations per width. Current alone records pushed delivery and
+coordinator acceptance. Total time/max0 and Machine gates remain closed;
+S49--S51 and every original CPU completion predicate are still required.
+
 The original real-ROM board checkpoints have an explicit owner-approved
 [board/COP receiver](../proposals/m1-board-cop.md), where their actual
 bus/protection prerequisites are implemented. T2 retains synthetic non-PC

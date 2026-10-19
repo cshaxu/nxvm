@@ -11,6 +11,9 @@
 - [T1 repeatable inventory and contract delivery](evidence/t1-s2-inventory-and-contracts.md).
 - [T1 complete freeze review](evidence/t1-s3-freeze-review.md).
 - [T2 V30 convergence and admission audit](t2-v30-ledger.md).
+- [T2 complete nominal timing inventory](evidence/t2-s48-nominal-timing.md).
+- [S48 exact verification collection](evidence/t2-s48-results.json) and
+  [ten actual release identities](evidence/t2-s48-artifacts.json).
 - [T2 CPU advancement consolidation](evidence/t2-s2-advancement-consolidation.md).
 - [T2 native family delivery](evidence/t2-s3-native-progress.md).
 - [T2 NEC bit and nibble family](evidence/t2-s4-nec-bit-nibble.md).
