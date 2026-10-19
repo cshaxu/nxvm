@@ -27,7 +27,6 @@ try {
     foreach ($entry in @('lib', 'emulator', 'test/lib', 'test/emulator')) {
         $name = $entry.Replace('/', '-')
         $build = Join-Path $repository "build/.ninja/standalone-$Architecture-$name"
-        New-Item -ItemType Directory -Force -Path $build | Out-Null
         $log = Join-Path $output "$name.log"
         $source = if ($entry.StartsWith('test/')) {
             Join-Path $repository $entry
@@ -43,9 +42,6 @@ try {
             "-DREPOSITORY_USE_CCACHE=$([int][bool]$UseCcache)")
         if ($entry -eq 'emulator') {
             $options += "-DEMULATOR_LIB_ROOT=$repository/src/lib"
-        }
-        if ($entry.StartsWith('test/')) {
-            $options += "-DLIB_ROOT=$repository/src/lib"
         }
         & $cmake @options *> $log
         if ($LASTEXITCODE -ne 0) { Get-Content $log -Tail 50; throw "$entry configure failed" }
