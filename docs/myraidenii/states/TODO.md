@@ -1,5 +1,42 @@
 # Unplanned Debt
 
+## Medium: Remaining Shared CPU Test Setup Duplication Review
+
+Owner: Shared X86 Core CPU-owned tests. S51's bounded test-growth audit removes
+the confirmed four-way protected-stack bootstrap and nine-way segment compare
+copies, but does not claim every84k test line has been manually reconciled.
+Further normalized-body candidates include three identical GPR lookup functions
+in cmpxchg/bswap/xadd, three matching seeds in gpr_push_pop/pusha_popa/
+push_immediate, and matching protected-state setup in control_state/debug_state.
+These affect test maintenance, not an established CPU runtime fault.
+
+Admission: a later explicitly bounded Shared test-maintenance batch, or when
+one of these owners next needs modification. Read each use and its oracle
+role, reuse the existing CPU fixture only when responsibility is genuinely
+identical, and preserve every independent case/assertion. Do not add a generic
+test framework, move CPU-private fixtures outward, merge distinct GDT/VM86
+handlers or delete receiver tests based on opcode-name overlap. The V30
+transfer/nominal-transfer domains are distinct and remain intentionally kept.
+
+## Medium: PC Integration Aggregate Selects Other Owners
+
+Owner: Shared root test registration and NXVM aggregate runner. During S51,
+CTest's complete integration inventory contains PC integration.* plus Lib
+native-device rows and MyNES integration rows. The PC run-integration-tests
+target depends only on PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS, but
+RunTestAggregate.ps1 selects the integration label without an owner filter.
+Consequently an aggregate invocation can pick unrelated native requirements
+or MyNES binaries which this PC target did not build. No production fault or
+failure of those unrelated tests is inferred from a CTest listing.
+
+S51 executes all registered integration.* PC rows directly for each fixed
+profile, preserving the real owner suites and excluding unrelated Lib/MyNES
+requirements. Admission: a later explicit Shared/NXVM test-tooling batch must
+align aggregate execution selection with its actual build dependencies using
+the existing registration owner, without duplicating source lists, adding a
+preset parser or pretending foreign tests were executed. Verify the aggregate
+against registered names with other products enabled before closure.
+
 ## Medium: Shared Boundary Selftest Interrupted-Run Cleanup
 
 Owner: Shared test infrastructure, test/test_boundaries_selftest.cmake. S49's

@@ -460,3 +460,14 @@ source/L2 accounting model, not charging the same fetch twice. REPC/REPNC
 must inspect comparison results rather than a copied Intel ZF predicate.
 Native return from emulation restores the architectural MD from the saved
 frame; an App-owned parallel mode flag would be a second owner.
+
+## S51 Final Reconciliation Receipt
+
+The [complete S51 qualification](evidence/t2-s51-final-qualification.md)
+reconciles every original V01--V17 row and A--L accounting domain to its current
+owner and direct proof. Earlier stage dispositions above remain historical.
+Both widths pass685 repository units and36 actual PC receiving integrations;
+the receipt states accepted L2 and physical/gameplay limits explicitly.
+The owner-requested test-growth review removes213 net C/H lines without a
+new test file/target or production change. Further maintenance candidates are
+bounded in TODO rather than treated as silently completed.

@@ -1,0 +1,629 @@
+{
+  "actual_delta": {
+    "production_added": 0,
+    "manifest_added": 11,
+    "tests_added": 107,
+    "tests_deleted": 320,
+    "manifest_deleted": 11,
+    "production_deleted": 0,
+    "tests_net": -213
+  },
+  "receiving": [
+    {
+      "bytes": 1525505,
+      "width": "x64",
+      "app": "my5160",
+      "tests": 3,
+      "profile": "ibm-5160-model-268-360k",
+      "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+      "junit_sha256": "6E144A71D5B2B818EF118273999424C5FE720E8B0834ED5206FE14DFAA107D4C",
+      "cpu_recompiles": 0,
+      "sha256": "04D7436DAE290E541BEC2F6C4B46000F5087ECEDB8D25AB4122F82425F97BF95",
+      "pe_machine": "8664",
+      "sorted_names_sha256": "84023304B672165FD7E59C11BFD874CD55B42CB6F5C8ABC7E14A30B5B2D01787"
+    },
+    {
+      "bytes": 1538079,
+      "width": "x64",
+      "app": "my5170",
+      "tests": 5,
+      "profile": "ibm-5170-model-339-1200k",
+      "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+      "junit_sha256": "091C25E230E6D48F7F310720FD629624898477563C4B215DE50B1623B3629635",
+      "cpu_recompiles": 0,
+      "sha256": "336856FE048F67E34D843DE9F4FE9361664E8F8606003303913CD7F8B7DC1ECA",
+      "pe_machine": "8664",
+      "sorted_names_sha256": "B0138C4E385072F8B3149508B4F8749129441AC5E9AF610C7C2461FD53781FC2"
+    },
+    {
+      "bytes": 1525253,
+      "width": "x64",
+      "app": "mydeskpro386",
+      "tests": 5,
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+      "junit_sha256": "BBB9F183247782F202734297B921B5643FD016AD1C1D0C3469696BCAEE66363D",
+      "cpu_recompiles": 0,
+      "sha256": "216267D9C81DC07059DD03DCEEB83A1C99EC77575E991F7D2223F6648C2D9D43",
+      "pe_machine": "8664",
+      "sorted_names_sha256": "7CBB85C7B02A6C8526B81DEE7A4CB480C38E502BF8ABD2ABA72CACF6133CC975"
+    },
+    {
+      "bytes": 1536201,
+      "width": "x64",
+      "app": "nxvm",
+      "tests": 23,
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+      "junit_sha256": "4F294B88A8E22114F10BE1987992A6A73FE3BAE3B7C3C962BB1325E75DD78F7B",
+      "cpu_recompiles": 0,
+      "sha256": "193F5746382ECF0A916573038608756ED9A7543C942E6A049B2A94814B276FE7",
+      "pe_machine": "8664",
+      "sorted_names_sha256": "59E51448835F7221E57C382DA181A2FD72DA680E5C8627AE7504F3B62DEA2383"
+    },
+    {
+      "junit_sha256": "2E67C079B07D52AF88905DACA1C076ECCA094FC439D061CBD9ECCD2C94922B41",
+      "tests": 3,
+      "app": "my5160",
+      "profile": "ibm-5160-model-268-360k",
+      "cpu_recompiles": 0,
+      "bytes": 1662673,
+      "sha256": "3C423C419C807F06C4F72212B039909C2478D59077377714A0A3F8F984975E52",
+      "pe_machine": "014C",
+      "width": "x86",
+      "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+      "sorted_names_sha256": "84023304B672165FD7E59C11BFD874CD55B42CB6F5C8ABC7E14A30B5B2D01787"
+    },
+    {
+      "junit_sha256": "086071D8EDAE6CE2FFBAEA987FBB54361383B34CCFE0B95B5620EC2E0300F489",
+      "tests": 5,
+      "app": "my5170",
+      "profile": "ibm-5170-model-339-1200k",
+      "cpu_recompiles": 0,
+      "bytes": 1677066,
+      "sha256": "16CB4C0504F4A91237798AAD9C5D7B97541A10EA602C9A5793E51C09A1BFF701",
+      "pe_machine": "014C",
+      "width": "x86",
+      "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+      "sorted_names_sha256": "B0138C4E385072F8B3149508B4F8749129441AC5E9AF610C7C2461FD53781FC2"
+    },
+    {
+      "junit_sha256": "9DA0FA4D65880BDEC7586250DE9474CC804BA18A150EA48C5A8F26A21A01F428",
+      "tests": 5,
+      "app": "mydeskpro386",
+      "profile": "compaq-deskpro-386-model-40-1200k",
+      "cpu_recompiles": 0,
+      "bytes": 1663783,
+      "sha256": "64969057E3EF65A200D5EEC6C8F920472D181076D71DBD0E5F92100777FBE4B7",
+      "pe_machine": "014C",
+      "width": "x86",
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+      "sorted_names_sha256": "7CBB85C7B02A6C8526B81DEE7A4CB480C38E502BF8ABD2ABA72CACF6133CC975"
+    },
+    {
+      "junit_sha256": "B2BED9900DF163440D37F582124DAA6F9E232FE8137DA284355130E2E8DD07ED",
+      "tests": 23,
+      "app": "nxvm",
+      "profile": "default-pc-at-80386-1440k-hdd",
+      "cpu_recompiles": 0,
+      "bytes": 1675852,
+      "sha256": "0B1AC18634BA536D8FB4D31433E465CF2B919EA7956CAD1B4FE9402467E8F287",
+      "pe_machine": "014C",
+      "width": "x86",
+      "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+      "sorted_names_sha256": "59E51448835F7221E57C382DA181A2FD72DA680E5C8627AE7504F3B62DEA2383"
+    }
+  ],
+  "test_manifest_sha256": "D2DC191A018DBA11EF0BB39346E10651522AB7D5668277FAD7F154452E082FE1",
+  "whole_T2_C_H_delta": {
+    "tests_deleted": 318,
+    "production_added": 2198,
+    "production_deleted": 1143,
+    "tests_added": 12002
+  },
+  "baseline": "d033af600",
+  "source_manifest_sha256": "FECA5A9FC08D6F9B454C31C6F8B3A5BE272BDAB5F33AB952AFB16F2DAD1C7AC9",
+  "unverified": [
+    "Lib physical-device and MyNES integration suites were not executed: neither production owner changed or depends on X86 Core.",
+    "Manual desktop/RDP, external V30 hardware suites, electrical/silicon-exact timing and RAIDEN II gameplay are not qualified.",
+    "The Windows31 named checkpoint proves DOS C-drive access/directory only, not execution of Windows 3.1."
+  ],
+  "gates": {
+    "deferred_ownership_rows": 150,
+    "unique_declarations": 536,
+    "strict_rows": 498,
+    "types_inputs": 1402,
+    "cpu_commands": 44
+  },
+  "binary_metadata": [
+    {
+      "normalized_payload_sha256": "CF3B3E4980F55BEDAC8BBC4B0C8A4BD895945E4A29827675B430B2A5AB59082E",
+      "bytes": 1525505,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "04D7436DAE290E541BEC2F6C4B46000F5087ECEDB8D25AB4122F82425F97BF95",
+      "path": "assets/my5160/my5160_0_5_0564_x64.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "0E8732EBA8591B04ED4B9DB1A9405136E3F23BCD497A949041A9034534B9DF02",
+      "bytes": 1662673,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "3C423C419C807F06C4F72212B039909C2478D59077377714A0A3F8F984975E52",
+      "path": "assets/my5160/my5160_0_5_0564_x86.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "BB5F8992DA6372404572D4C9C0B9019E798B2E85C4A2458628FEA8D925C33E11",
+      "bytes": 1538079,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "336856FE048F67E34D843DE9F4FE9361664E8F8606003303913CD7F8B7DC1ECA",
+      "path": "assets/my5170/my5170_0_5_0564_x64.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "4C9F89211672A81185B2736A76CC1CD3C9A53DC5704F76CEACED181AE3ADA2A9",
+      "bytes": 1677066,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "16CB4C0504F4A91237798AAD9C5D7B97541A10EA602C9A5793E51C09A1BFF701",
+      "path": "assets/my5170/my5170_0_5_0564_x86.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "A0B92FB85BB10A405AE7BF1EB4F62CEABD2A0FB05B0953D74936D9C7E2D6FD8F",
+      "bytes": 1525253,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "216267D9C81DC07059DD03DCEEB83A1C99EC77575E991F7D2223F6648C2D9D43",
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x64.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "66CC3620A63B68F34DD8BE170F94263E688EFD4BE44128229BD7169BB23D5656",
+      "bytes": 1663783,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "64969057E3EF65A200D5EEC6C8F920472D181076D71DBD0E5F92100777FBE4B7",
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0564_x86.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "62560A8AB0717084E19B8EB7F39A45F61493579C4CA70B57A88936ADD22ECD5A",
+      "bytes": 1536201,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "193F5746382ECF0A916573038608756ED9A7543C942E6A049B2A94814B276FE7",
+      "path": "assets/nxvm/nxvm_0_5_0564_x64.exe",
+      "changed_bytes": 4
+    },
+    {
+      "normalized_payload_sha256": "5BCF34BBC170F2B153DEEC0B9518D70E056EDD33D9F36DCC5B32345364F20582",
+      "bytes": 1675852,
+      "outside_PE_timestamp_and_checksum": 0,
+      "sha256": "0B1AC18634BA536D8FB4D31433E465CF2B919EA7956CAD1B4FE9402467E8F287",
+      "path": "assets/nxvm/nxvm_0_5_0564_x86.exe",
+      "changed_bytes": 5
+    }
+  ],
+  "units": [
+    {
+      "junit_sha256": "BD248DF17D529E8D9432D0CC4B11FB48BB835B894F2F1EFD84F39E36DE0FF226",
+      "seconds": 140.22,
+      "width": "x64",
+      "failed": 0,
+      "sorted_names_sha256": "7E752320B3700CDA734E53870104614C831CE282B84335590A00ED993C085662",
+      "skipped": 0,
+      "tests": 685
+    },
+    {
+      "junit_sha256": "A5DACD05FB95E89E007AD0D10DAC147A43DF7758FDE70F4B7C6E4792ED08D508",
+      "seconds": 150.58,
+      "width": "x86",
+      "failed": 0,
+      "sorted_names_sha256": "7E752320B3700CDA734E53870104614C831CE282B84335590A00ED993C085662",
+      "skipped": 0,
+      "tests": 685
+    }
+  ],
+  "helper_extraction": [
+    {
+      "path": "test/x86-core/cpu/cpu_enter_leave_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 7
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_gpr_push_pop_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 8
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_pusha_popa_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 7
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_push_immediate_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 3
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_imul_immediate_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 7
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_legacy_lock_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 1
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_legacy_sreg_stack_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 6
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_prefix_attributes_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 13
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_pushf_popf_smoke.c",
+      "scenario_text_unchanged_outside_helper_extraction": true,
+      "call_sites": 4
+    }
+  ],
+  "helper_calls": [
+    {
+      "path": "test/x86-core/cpu/cpu_enter_leave_smoke.c",
+      "removed": "enter_leave_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 4
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_enter_leave_smoke.c",
+      "removed": "enter_leave_boot_protected",
+      "owner": "cpu_instruction_boot_protected",
+      "calls": 3
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_gpr_push_pop_smoke.c",
+      "removed": "gpr_push_pop_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 6
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_gpr_push_pop_smoke.c",
+      "removed": "gpr_push_pop_boot_protected",
+      "owner": "cpu_instruction_boot_protected",
+      "calls": 2
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_pusha_popa_smoke.c",
+      "removed": "pusha_popa_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 5
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_pusha_popa_smoke.c",
+      "removed": "pusha_popa_boot_protected",
+      "owner": "cpu_instruction_boot_protected",
+      "calls": 2
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_push_immediate_smoke.c",
+      "removed": "push_immediate_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 2
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_push_immediate_smoke.c",
+      "removed": "push_immediate_boot_protected",
+      "owner": "cpu_instruction_boot_protected",
+      "calls": 1
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_imul_immediate_smoke.c",
+      "removed": "imul_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 7
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_legacy_lock_smoke.c",
+      "removed": "legacy_lock_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 1
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_legacy_sreg_stack_smoke.c",
+      "removed": "legacy_sreg_stack_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 6
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_prefix_attributes_smoke.c",
+      "removed": "prefix_attributes_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 13
+    },
+    {
+      "path": "test/x86-core/cpu/cpu_pushf_popf_smoke.c",
+      "removed": "pushf_sregs_same",
+      "owner": "cpu_instruction_segments_same",
+      "calls": 4
+    }
+  ],
+  "protected_media": [
+    {
+      "bytes": 368640,
+      "sha256": "DE271368874209C07A2FC25C81C17529D4BDD7718B2731B86C49A2DA923A256E",
+      "app": "my5160",
+      "role": "floppy0",
+      "mode": "overlay",
+      "file": "fdd_360k_msdos_500.img"
+    },
+    {
+      "bytes": 1228800,
+      "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE",
+      "app": "my5170",
+      "role": "floppy0",
+      "mode": "overlay",
+      "file": "fdd_1200k_msdos_500a_01.img"
+    },
+    {
+      "bytes": 1228800,
+      "sha256": "0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE",
+      "app": "mydeskpro386",
+      "role": "floppy0",
+      "mode": "overlay",
+      "file": "fdd_1200k_msdos_500a_01.img"
+    },
+    {
+      "bytes": 40256000,
+      "sha256": "2BBC68E612A72290A5181E070494A7580CBECE1F528F92F009A269DC05819E73",
+      "app": "mydeskpro386",
+      "role": "fixed_disk0",
+      "mode": "overlay",
+      "file": "hdd_40m_deskpro_386_blank.img"
+    },
+    {
+      "bytes": 1474560,
+      "sha256": "FADEB3A27C6A0E1CF582DDE0B9AECB7E5D30678F2F967F2F4562F167CC0CB1D5",
+      "app": "nxvm",
+      "role": "floppy0",
+      "mode": "overlay",
+      "file": "fdd_1440k_msdos_500.img"
+    },
+    {
+      "bytes": 51609600,
+      "sha256": "61E5CDC0B76151CC65B73EB44094738B9DE86052B1B07F20FC03205984CD77E1",
+      "app": "nxvm",
+      "role": "fixed_disk0",
+      "mode": "overlay",
+      "file": "hdd_50m_win31.img"
+    }
+  ],
+  "protected_assets": {
+    "receipt": "t2-s49-media-inputs.json",
+    "unchanged_tracked_assets": 33,
+    "unchanged_media_roles": 6
+  },
+  "proof_files": [
+    {
+      "path": "binary-metadata.json",
+      "bytes": 2757,
+      "sha256": "6ABA781946523D95A3E54356EF53B290DA111A319457E2DBB453F0A772B330B2"
+    },
+    {
+      "path": "build-x64.log",
+      "bytes": 19573,
+      "sha256": "7059FDBDE8104B28EC2167F383BE814FB55C991C4FC238AD4828688EFDB60DB3"
+    },
+    {
+      "path": "build-x86.log",
+      "bytes": 19573,
+      "sha256": "2F5414500615859DCE354679E686EE7415FDF0D35F8BD43C9566307F8F4796FA"
+    },
+    {
+      "path": "full-units-x64.log",
+      "bytes": 117114,
+      "sha256": "5096FC1F2C5AD8C3DC7A29A9E542477A9297A67A77F51AEAAB627644139AEC2F"
+    },
+    {
+      "path": "full-units-x64.xml",
+      "bytes": 206443,
+      "sha256": "BD248DF17D529E8D9432D0CC4B11FB48BB835B894F2F1EFD84F39E36DE0FF226"
+    },
+    {
+      "path": "full-units-x86.log",
+      "bytes": 117114,
+      "sha256": "8B7F4B7A679D36AD0A98A52F90C12035FAC2E6A173464222363312868CDB9757"
+    },
+    {
+      "path": "full-units-x86.xml",
+      "bytes": 206394,
+      "sha256": "A5DACD05FB95E89E007AD0D10DAC147A43DF7758FDE70F4B7C6E4792ED08D508"
+    },
+    {
+      "path": "receive.ps1",
+      "bytes": 3879,
+      "sha256": "279646D39B0542113B8108FA24E4F6804E30686FBABD88186D3A7DBBFC157EF2"
+    },
+    {
+      "path": "receiving-x64.json",
+      "bytes": 3660,
+      "sha256": "093D0DE6450586427BE17632B2147F1F1002A0AB279A56C991962A057DF23815"
+    },
+    {
+      "path": "receiving-x86.json",
+      "bytes": 3660,
+      "sha256": "7A5CDE5C4CEE994BCD7F1DDC721C661B7FB1B5EB6FFE9D39F7614DD8408B0A90"
+    },
+    {
+      "path": "x64-my5160-build.log",
+      "bytes": 877,
+      "sha256": "DFF9C997A868AEF983539BB2A963CE016483AC16FE990D042729A70731868E65"
+    },
+    {
+      "path": "x64-my5160-config.log",
+      "bytes": 512,
+      "sha256": "D303A68DFC0E2132C1CA0775E7CF834C9B30FB024E9F02DB8E3CD631549C52CF"
+    },
+    {
+      "path": "x64-my5160-tests.log",
+      "bytes": 789,
+      "sha256": "75AB9D761E96C60B520709F2A89C9742E4EE1E6219C80FA1CBC871CF831A1BA8"
+    },
+    {
+      "path": "x64-my5160.xml",
+      "bytes": 1238,
+      "sha256": "6E144A71D5B2B818EF118273999424C5FE720E8B0834ED5206FE14DFAA107D4C"
+    },
+    {
+      "path": "x64-my5170-build.log",
+      "bytes": 1505,
+      "sha256": "EFE27E29F9A6C8575CA58DE8E6410C08A1EF6B00C832CEA0A778372C06EEC710"
+    },
+    {
+      "path": "x64-my5170-config.log",
+      "bytes": 512,
+      "sha256": "5FFF6CA5827CE05C22AA015C3F256A64B2A76E7390276D28EF4C80BAB8C03D78"
+    },
+    {
+      "path": "x64-my5170-tests.log",
+      "bytes": 1213,
+      "sha256": "CE27CF7994C4759750612EAB8EC6622E0FBCF876C00D01F72CFB53BBC667FFCA"
+    },
+    {
+      "path": "x64-my5170.xml",
+      "bytes": 1858,
+      "sha256": "091C25E230E6D48F7F310720FD629624898477563C4B215DE50B1623B3629635"
+    },
+    {
+      "path": "x64-mydeskpro386-build.log",
+      "bytes": 1511,
+      "sha256": "16C1539E035EBEE8279764070E9C9CC42B9C6F3DB23739531A0186307AF6EF45"
+    },
+    {
+      "path": "x64-mydeskpro386-config.log",
+      "bytes": 517,
+      "sha256": "AD8F0B0520297BAA7CB6E156D4DC0A61E7933F52A05E402024DAA4C774260863"
+    },
+    {
+      "path": "x64-mydeskpro386-tests.log",
+      "bytes": 1285,
+      "sha256": "F7EA4BEEA183254E1184F64454AEDD318966942BB3AE8ADEE62649D5946331B4"
+    },
+    {
+      "path": "x64-mydeskpro386.xml",
+      "bytes": 1890,
+      "sha256": "BBB9F183247782F202734297B921B5643FD016AD1C1D0C3469696BCAEE66363D"
+    },
+    {
+      "path": "x64-nxvm-build.log",
+      "bytes": 2063,
+      "sha256": "1A3DAF2AE195A42F3E2AA189D4A0B0F4EF0D87471D608CE6948B12D750A843F4"
+    },
+    {
+      "path": "x64-nxvm-config.log",
+      "bytes": 517,
+      "sha256": "E1181285EF648342027E3863E1E34097BCA1BF858008C75F1D07FDC333BB4F16"
+    },
+    {
+      "path": "x64-nxvm-tests.log",
+      "bytes": 4358,
+      "sha256": "2E0372E32418CB8F937E1C5DDA56786BA83BFD16B4BDB3032B16A736122B24BD"
+    },
+    {
+      "path": "x64-nxvm.xml",
+      "bytes": 8608,
+      "sha256": "4F294B88A8E22114F10BE1987992A6A73FE3BAE3B7C3C962BB1325E75DD78F7B"
+    },
+    {
+      "path": "x86-my5160-build.log",
+      "bytes": 877,
+      "sha256": "EA84FB8377C067131B4E965BB884A1AB30B41CD8C9048E66C5D8D48BD9321C87"
+    },
+    {
+      "path": "x86-my5160-config.log",
+      "bytes": 512,
+      "sha256": "6BD837CE91F4D7B134D58935A4C0EA16E98C6D36DAC91D882F1DFAE7E7DE1288"
+    },
+    {
+      "path": "x86-my5160-tests.log",
+      "bytes": 789,
+      "sha256": "DE4555E0743AC4F06EE7B12BB5EB3CF9C49F15D19D603BAFE01068916814D70F"
+    },
+    {
+      "path": "x86-my5160.xml",
+      "bytes": 1238,
+      "sha256": "2E67C079B07D52AF88905DACA1C076ECCA094FC439D061CBD9ECCD2C94922B41"
+    },
+    {
+      "path": "x86-my5170-build.log",
+      "bytes": 1505,
+      "sha256": "9F04BAD3560040A0E514CDBDA0055FDA4683919AC2E85AEF1180F94DE63F820A"
+    },
+    {
+      "path": "x86-my5170-config.log",
+      "bytes": 512,
+      "sha256": "1222EC4792B7FFD700DC9BE963C99F9423EAAEB90E650787C515DF3903FD66DD"
+    },
+    {
+      "path": "x86-my5170-tests.log",
+      "bytes": 1213,
+      "sha256": "ADFA183565001229E480E85BBC55D9D09F47A0DE814A6A3F7A73AE94557E27A5"
+    },
+    {
+      "path": "x86-my5170.xml",
+      "bytes": 1858,
+      "sha256": "086071D8EDAE6CE2FFBAEA987FBB54361383B34CCFE0B95B5620EC2E0300F489"
+    },
+    {
+      "path": "x86-mydeskpro386-build.log",
+      "bytes": 1511,
+      "sha256": "B88474EF9DE36DB4BA993E414412672AAAF091BD02469F396562E0CD5EF5E2FB"
+    },
+    {
+      "path": "x86-mydeskpro386-config.log",
+      "bytes": 517,
+      "sha256": "93CE42B08B21A6B46CB189E39097673CAB5B4994B7492C111EA87B2D4E2DE375"
+    },
+    {
+      "path": "x86-mydeskpro386-tests.log",
+      "bytes": 1285,
+      "sha256": "A780F18B0C0CE0EA79799AC77349202591C18AE4F6C1349DBC5B22244E6BE3BF"
+    },
+    {
+      "path": "x86-mydeskpro386.xml",
+      "bytes": 1890,
+      "sha256": "9DA0FA4D65880BDEC7586250DE9474CC804BA18A150EA48C5A8F26A21A01F428"
+    },
+    {
+      "path": "x86-nxvm-build.log",
+      "bytes": 2063,
+      "sha256": "73EB93390C2201396EA5D082BD1B6F537031DB53454E8408EAB816A1C5E9315D"
+    },
+    {
+      "path": "x86-nxvm-config.log",
+      "bytes": 517,
+      "sha256": "7D5776507EC05A367D4EC01542EC8F5B6766AB534EB2D9C785D23C716F2E261D"
+    },
+    {
+      "path": "x86-nxvm-tests.log",
+      "bytes": 4358,
+      "sha256": "A576C2F5A307B838C4F7A3DB95EE3A7D1F0B943FF49004644F1EA108A3B7FFE0"
+    },
+    {
+      "path": "x86-nxvm.xml",
+      "bytes": 8608,
+      "sha256": "B2BED9900DF163440D37F582124DAA6F9E232FE8137DA284355130E2E8DD07ED"
+    }
+  ],
+  "commits": {
+    "shared": "2255ca3f6",
+    "receiving": "3d47ddec7"
+  },
+  "cleanup": {
+    "target": "build/myraidenii-t2-s51",
+    "files": 42,
+    "bytes": 758673,
+    "preview_verified": true,
+    "apply_verified": true
+  }
+}
