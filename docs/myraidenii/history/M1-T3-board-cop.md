@@ -145,3 +145,21 @@ repository unit qualification passed `687/687` on x64 and x86; MyRaidenII
 documentation governance and whitespace checks pass. S5 is accepted and
 closed. COP command/result/DMA semantics remain the finite S6 receiver, and
 the observed video/bank families remain outside the COP owner.
+
+## S6 Coordinator Acceptance
+
+The coordinator independently reviewed evidence P1 `38e778ea8`, its exact
+temporary-root cleanup and its source-policy boundary. The probe intentionally
+uses accepted pre-S5 `77110cf04` only as a disposable old-fallback baseline;
+it changes no tracked source and cannot restore that behavior to the product.
+It verifies both extracted lane hashes, retains only neutral aggregate access
+counts and sequences, and deletes the entire 58,710,039-byte probe root after
+review. No ROM byte, command value, raw trace, MAME source/table or production
+model is committed.
+
+Both fixed budgets reach the same finite fact: command writes occur, while
+result reads and DMA triggers do not. The delivery correctly records that this
+does not identify a command, result, timing or stall cause. S6 is accepted and
+closed. S7 receives the complete finite B07 operation ledger and may implement
+only operation behavior supported by a separate source-grade model and direct
+receiver proof; otherwise it must transfer the missing evidence explicitly.
