@@ -62,27 +62,29 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
-MyRaidenII M1 T2 S47 refreshes the eight0564 PC EXEs after Shared P1
-`6d4ed7fe8` semantic/form/prefix/lock-lifecycle delivery. No NXVM source, configuration,
-firmware or media is changed, and no NXVM task/S is allocated. Both MyNES
-0044 EXEs and all13 protected asset files remain unchanged.
+MyRaidenII M1 T2 S48 refreshes the eight0564 PC EXEs after Shared P1
+`1ea7733d3` nominal timing delivery. No NXVM source, configuration, firmware or
+media changes, and no NXVM task/S is allocated. Both MyNES0044 EXEs and
+all33 protected tracked asset files remain unchanged.
 
-Current receiving proof passes682 exact repository unit names per width,
-498 retained strict rows and1398 Types inputs. Four PC receivers each pass
-their selected configuration/boot cases:14 integrations per width, followed
-by restore identity. Default restore relinks the final EXE, so all five default
-receiving cases additionally pass on that final deployment. Eight PE widths,
-stripped sections and final hashes are verified; profile switches/restores
-compile zero CPU objects. Both cached Ninja graphs finish at default; six
-selected external media identities retain before/after size/SHA/access mode.
+Current receiving proof qualifies682 exact current unit names per width:
+the complete run plus latest strengthened port/test-manifest replacements.
+Each width passes498 retained strict rows/zero deferred,44 CPU smoke command
+checks and1398 Types inputs. Four PC receivers pass14 selected configuration,
+boot and lifecycle integrations per width. Default is restored and its final
+deployment is tested last. Eight PE widths/stripped sections and deployed/build
+hashes match; all profile switches compile zero CPU objects. Both original
+Ninja/ccache graphs finish at default; six selected external media preserve
+their size/SHA/access mode. Owned84 temporary files are removed, not caches.
 
-The [S47 evidence](../../myraidenii/etc/evidence/t2-s47-residual-semantics.md),
-[results](../../myraidenii/etc/evidence/t2-s47-results.json) and
-[final ten release identities](../../myraidenii/etc/evidence/t2-s47-artifacts.json)
-supersede only the prior receiving PC hashes. They do not rewrite T564 or Td
-S181 status, qualify the whole external suite/desktop/RDP, or complete V30
-timing/Machine admission or MyRaidenII gameplay. The one sandbox cleanup
-failure and unchanged native-permission replacement proof are recorded.
+The [S48 evidence](../../myraidenii/etc/evidence/t2-s48-nominal-timing.md),
+[results](../../myraidenii/etc/evidence/t2-s48-results.json) and
+[ten release identities](../../myraidenii/etc/evidence/t2-s48-artifacts.json)
+supersede the PC hashes in the prior
+[S47 receipt](../../myraidenii/etc/evidence/t2-s47-artifacts.json).
+They do not rewrite T564/Td S181, qualify the complete external suite or manual
+desktop/RDP/physical devices, or complete V30 elapsed time, bounds, real Machine
+admission or gameplay. S49--S51 remain in the same open MyRaidenII T2.
 
 ### Prior S46 Receiving Update
 
