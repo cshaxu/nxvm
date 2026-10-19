@@ -182,3 +182,31 @@ research root was removed through `Clear-Build.ps1`; only neutral identities
 and conclusions remain. Documentation governance and whitespace checks pass.
 S7 is accepted and closed. T3 remains open pending owner-approved ordering of
 the Video receiver or source-grade COP evidence; it has no active S.
+
+## S8 Coordinator Acceptance
+
+The owner approved advancing Video's periodic-event prerequisite within T3
+and delegated routine S ordering on 2026-10-19. The coordinator independently
+reviewed pushed P1 `34e22a100`: the complete source/header/CMake/test diff,
+the packet and the result/provenance/cleanup evidence. The changed surface
+matches B04's formerly missing periodic receiver. B07/B08 and the original
+real-set startup exits remain open rather than being reassigned or waived.
+
+One private Video phase now produces an explicitly L2 VBlank event on the
+existing Core timeline; Board's existing IRQ latch and acknowledgement remain
+the sole interrupt route. The nominal 16 MHz axis stays macro-proportional,
+with no physical-time promotion. The local test build dependency is repaired
+so the aggregate compiles the actual updated test before executing it. Source
+and tests change only MyRaidenII, with +71/-2 production and +112/-1 test lines
+including local CMake. No Shared API, copied reference implementation, ROM,
+host timer, second execution path or receiving App artifact is added.
+
+Both final complete repository unit runs pass 687/687 with zero failures/skips:
+x64 128.82 seconds, x86 125.44 seconds. Earlier sandbox and stale-test attempts
+are retained distinctly in evidence, not relabelled as final qualification.
+Follow-up builds have no work; documentation governance and whitespace checks
+pass. Six temporary files totalling 775,694 bytes are removed after every
+owned session is terminal, with hashes and summaries retained. S8 is accepted
+and closed. T3 remains open; the next batch returns to the finite B07/B08 COP
+operation/evidence receiver. Full Video rendering and real-set/gameplay proof
+remain their separately recorded requirements.
