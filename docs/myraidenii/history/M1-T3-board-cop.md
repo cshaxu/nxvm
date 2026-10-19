@@ -295,3 +295,28 @@ to accepted T2, not used to rewrite historical evidence. The
 identities, packet, complete family dispositions, actual delta and proof.
 Documentation governance/whitespace checks pass. S11 is accepted and closed;
 remaining COP, DMA/result and selected-set startup requirements keep T3 open.
+
+## S12 Coordinator Acceptance
+
+Actual-change review accepts research P1 87a1ac547. The complete nine-member
+geometric/numeric batch is reconciled before implementation: operands,
+results/configuration, status distinctions, field widths/signedness, source
+limitations, bus-prefix order, independent arithmetic vectors and the next
+cohesive receiver. Fresh fixed-source hashes support L2 leads only; neither
+reference bodies/tables nor protected content is imported.
+
+The review finds real missing COP result/target/step routes and absent standard
+math vocabulary. It proposes four optional Lib Types aliases, six Shared
+files approximately+30--40/-3--5, for explicit owner review. No Shared or
+production/test/build/manifest/artifact change is made. P1 documentation is
++251/-2; unchanged source/test hashes retain S11's actual dual-width687/687
+qualification, not a newly executed pass. Ten releases,33 tracked guards and
+six selected external media-role hashes remain unchanged. Document/whitespace
+checks pass and no temporary output is created; only both caches remain.
+
+The [complete review](../etc/evidence/t3-s12-cop-geometry-contract.md) retains
+all nine dispositions, the exact prerequisite request, follow-on estimates,
+proof matrix and archived packet. S12 is accepted and closed as research,
+not geometry implementation. Explicit owner approval remains required before
+the proposed Shared edit. All original T3 startup/COP/DMA and M1 playable-game
+requirements remain open; no S13 is admitted by this governance acceptance.
