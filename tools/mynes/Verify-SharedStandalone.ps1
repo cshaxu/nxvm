@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [ValidateSet('x64', 'x86')]
-    [string]$Architecture
+    [string]$Architecture,
+    [switch]$UseCcache
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,11 +22,13 @@ $ctest = (Get-Command ctest -ErrorAction Stop).Source
 $ninja = (Get-Command ninja -ErrorAction Stop).Source
 try {
     $env:PATH = (Split-Path -Parent $compiler) + ';' + $originalPath
-    foreach ($entry in @('lib', 'common', 'test/lib', 'test/common')) {
+    $output = Join-Path $repository "build/standalone-verification-$Architecture"
+    New-Item -ItemType Directory -Force -Path $output | Out-Null
+    foreach ($entry in @('lib', 'emulator', 'test/lib', 'test/emulator')) {
         $name = $entry.Replace('/', '-')
-        $build = Join-Path $repository "build/standalone-$Architecture-$name"
+        $build = Join-Path $repository "build/.ninja/standalone-$Architecture-$name"
         New-Item -ItemType Directory -Force -Path $build | Out-Null
-        $log = Join-Path $build 'verification.log'
+        $log = Join-Path $output "$name.log"
         $source = if ($entry.StartsWith('test/')) {
             Join-Path $repository $entry
         }
@@ -36,15 +39,13 @@ try {
             '-G', 'Ninja', "-DCMAKE_MAKE_PROGRAM=$ninja", "-DCMAKE_C_COMPILER=$compiler",
             '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
             '-DCMAKE_EXE_LINKER_FLAGS=-static -static-libgcc',
-            '-DLIBRARY_STRICT_WARNINGS=ON')
-        if ($entry -eq 'common') {
-            $options += "-DCOMMON_LIB_ROOT=$repository/src/lib"
+            "-DCMAKE_PROJECT_INCLUDE_BEFORE=$repository/cmake/BuildEnvironment.cmake",
+            "-DREPOSITORY_USE_CCACHE=$([int][bool]$UseCcache)")
+        if ($entry -eq 'emulator') {
+            $options += "-DEMULATOR_LIB_ROOT=$repository/src/lib"
         }
         if ($entry.StartsWith('test/')) {
             $options += "-DLIB_ROOT=$repository/src/lib"
-        }
-        if ($entry -eq 'test/common') {
-            $options += "-DCOMMON_ROOT=$repository/src/common"
         }
         & $cmake @options *> $log
         if ($LASTEXITCODE -ne 0) { Get-Content $log -Tail 50; throw "$entry configure failed" }
@@ -66,7 +67,7 @@ try {
         }
         if ($entry.StartsWith('test/')) {
             & $ctest --test-dir $build --output-on-failure --timeout 30 --no-tests=error -j 1 `
-                -E 'types-layout-selftest' --output-junit (Join-Path $build 'results.xml') *>> $log
+                -E 'types-layout-selftest' --output-junit (Join-Path $output "$name.xml") *>> $log
             if ($LASTEXITCODE -ne 0) { Get-Content $log -Tail 50; throw "$entry tests failed" }
             if ($entry -eq 'test/lib') {
                 & $ctest --test-dir $build --output-on-failure --timeout 180 --no-tests=error -j 1 `
