@@ -65,23 +65,6 @@ static lib_i32 prefix_attributes_run(prefix_attributes_machine *state,
     return 1;
 }
 
-static lib_i32 prefix_attributes_sregs_same(const t_cpu *before,
-    const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.cs, &after->data.cs,
-        sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-        sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-        sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs,
-        sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 prefix_attributes_cpu_same(const t_cpu *before,
     const t_cpu *after)
 {
@@ -95,7 +78,7 @@ static lib_i32 prefix_attributes_cpu_same(const t_cpu *before,
         before->data.edi == after->data.edi &&
         before->data.eip == after->data.eip &&
         before->data.eflags == after->data.eflags &&
-        prefix_attributes_sregs_same(before, after);
+        cpu_instruction_segments_same(before, after);
 }
 
 static lib_i32 prefix_attributes_gprs_same_except_eax(const t_cpu *before,
@@ -176,7 +159,7 @@ static lib_i32 prefix_attributes_test_segments(x86_core_cpu_profile cpu_profile)
                 after.data.eax != (0xaabbcc00u | source) ||
                 after.data.eflags != before.data.eflags ||
                 !prefix_attributes_gprs_same_except_eax(&before, &after) ||
-                !prefix_attributes_sregs_same(&before, &after);
+                !cpu_instruction_segments_same(&before, &after);
         }
 
         if (failed) {
@@ -251,7 +234,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(x86_core_cpu_profile c
             after.data.eip != sizeof(read32) || after.data.eax != image ||
             after.data.eflags != before.data.eflags ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
-            !prefix_attributes_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
     }
 
     if (failed) {
@@ -273,7 +256,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(x86_core_cpu_profile c
             after.data.eax != image ||
             after.data.eflags != before.data.eflags ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
-            !prefix_attributes_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
     }
 
     if (failed) {
@@ -293,7 +276,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(x86_core_cpu_profile c
             after.data.eax != before.data.eax ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
             after.data.eflags != before.data.eflags ||
-            !prefix_attributes_sregs_same(&before, &after) ||
+            !cpu_instruction_segments_same(&before, &after) ||
             prefix_attributes_read(&state, 0x0100u, &other_image,
                 sizeof(other_image)) != LIB_STATUS_OK || other_image != image;
     }
@@ -323,7 +306,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(x86_core_cpu_profile c
             after.data.eax != 0xaabbcc6du ||
             after.data.eflags != before.data.eflags ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
-            !prefix_attributes_sregs_same(&before, &after) ||
+            !cpu_instruction_segments_same(&before, &after) ||
             prefix_attributes_read(&state, 0x00010100u,
                 &observed_byte,
                 sizeof(byte_image)) != LIB_STATUS_OK ||
@@ -357,7 +340,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(x86_core_cpu_profile c
             after.data.eax != before.data.eax ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
             after.data.eflags != before.data.eflags ||
-            !prefix_attributes_sregs_same(&before, &after) ||
+            !cpu_instruction_segments_same(&before, &after) ||
             prefix_attributes_read(&state, 0x00010100u, &byte_image,
                 sizeof(byte_image)) != LIB_STATUS_OK || byte_image != 0x6du ||
             prefix_attributes_read(&state, 0x0100u, &other_byte,
@@ -381,7 +364,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(x86_core_cpu_profile c
             after.data.eax != before.data.eax ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
             after.data.eflags != before.data.eflags ||
-            !prefix_attributes_sregs_same(&before, &after) ||
+            !cpu_instruction_segments_same(&before, &after) ||
             prefix_attributes_read(&state, 0x0100u, &image,
                 sizeof(image)) != LIB_STATUS_OK || image != 0x11223344u;
     }
@@ -566,7 +549,7 @@ static lib_i32 prefix_attributes_test_lock_group_writes(x86_core_cpu_profile cpu
                 status != LIB_STATUS_OK || diagnostic.valid ||
                 after.data.eip != sizeof(forms[form]) ||
                 !prefix_attributes_gprs_same(&before, &after) ||
-                !prefix_attributes_sregs_same(&before, &after) ||
+                !cpu_instruction_segments_same(&before, &after) ||
                 prefix_attributes_read(&state, 0x0100u, &image, sizeof(image)) !=
                     LIB_STATUS_OK || image != expected[form];
         }
@@ -605,7 +588,7 @@ static lib_i32 prefix_attributes_test_repeated_width_prefixes(x86_core_cpu_profi
             after.data.eax != 0x12345678u ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
             after.data.eflags != before.data.eflags ||
-            !prefix_attributes_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
     }
 
     if (failed) {
@@ -630,7 +613,7 @@ static lib_i32 prefix_attributes_test_repeated_width_prefixes(x86_core_cpu_profi
             after.data.eax != 0xaabbcc5au ||
             !prefix_attributes_gprs_same_except_eax(&before, &after) ||
             after.data.eflags != before.data.eflags ||
-            !prefix_attributes_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
     }
 
     return !failed;
@@ -688,7 +671,7 @@ static lib_i32 prefix_attributes_test_fixed_segment_and_register(x86_core_cpu_pr
             after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi ||
             after.data.eflags != before.data.eflags ||
-            !prefix_attributes_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
     }
 
     return !failed;
@@ -842,7 +825,7 @@ static lib_i32 prefix_attributes_test_mixed_repeat_last_wins(x86_core_cpu_profil
                     (before.data.eflags & ~PREFIX_ATTRIBUTES_CMP_FLAGS) ||
                 (after.data.eflags & PREFIX_ATTRIBUTES_CMP_FLAGS) !=
                     (VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
-                !prefix_attributes_sregs_same(&before, &after) ||
+                !cpu_instruction_segments_same(&before, &after) ||
                 prefix_attributes_read(&state, 0x0200u, observed,
                     sizeof(observed)) != LIB_STATUS_OK ||
                 lib_memory_compare(image, observed, sizeof(image)) != 0;

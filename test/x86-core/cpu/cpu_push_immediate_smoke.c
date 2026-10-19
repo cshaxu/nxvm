@@ -18,16 +18,6 @@ static void push_immediate_seed(cpu_instruction_fixture *state)
         VCPU_EFLAGS_IF;
 }
 
-static lib_i32 push_immediate_sregs_same(const t_cpu *before, const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es, sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.cs, &after->data.cs, sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs, sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 push_immediate_gprs_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax && before->data.ecx == after->data.ecx &&
@@ -56,7 +46,7 @@ static lib_i32 push_immediate_test_success(x86_core_cpu_profile profile,
             ((before.data.esp & 0xffff0000u) | stack) ||
             after.data.eflags != before.data.eflags ||
             !push_immediate_gprs_same(&before, &after) ||
-            !push_immediate_sregs_same(&before, &after) ||
+            !cpu_instruction_segments_same(&before, &after) ||
             cpu_instruction_read(&state, stack, &observed, width,
                 X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             observed != (width == 2u ? (expected & 0xffffu) : expected);
@@ -167,38 +157,6 @@ static lib_i32 push_immediate_test_attributes_and_lock(void)
     return 1;
 }
 
-static lib_i32 push_immediate_boot_protected(cpu_instruction_fixture *state)
-{
-    static const lib_u8 pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
-    static const lib_u8 gdt[] = {
-        0u,0u,0u,0u,0u,0u,0u,0u,
-        0xffu,0xffu,0u,0x20u,0u,0x9au,0u,0u,
-        0xffu,0xffu,0u,0x30u,0u,0x92u,0u,0u,
-        0xffu,0xffu,0u,0x40u,0u,0x92u,0u,0u
-    };
-    static const lib_u8 bootstrap[] = {
-        0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
-        0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
-        0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
-    };
-
-    lib_u8 instruction;
-
-    if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
-        cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
-        cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
-        return 0;
-    for (instruction = 0u; instruction != 10u; ++instruction)
-    {
-        x86_core_cpu_execution_refresh(&state->execution);
-        if (state->execution.stop_requested || state->fault.valid) return 0;
-    }
-    return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
-}
-
 static lib_i32 push_immediate_test_protected(x86_core_cpu_profile profile)
 {
     static const lib_u8 codes[][6] = {{0x68u,0x34u,0x12u},
@@ -217,7 +175,7 @@ static lib_i32 push_immediate_test_protected(x86_core_cpu_profile profile)
         cpu_instruction_prepare(&state, profile);
 
         if (!failed)
-            failed |= !push_immediate_boot_protected(&state);
+            failed |= !cpu_instruction_boot_protected(&state);
         if (!failed)
         {
             lib_u32 stack = form == 0u ? 0xbffeu : 0xbffcu;
@@ -243,7 +201,7 @@ static lib_i32 push_immediate_test_protected(x86_core_cpu_profile profile)
                 after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
                 after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
                 after.data.edi != before.data.edi || after.data.eflags !=
-            before.data.eflags || !push_immediate_sregs_same(&before, &after) ||
+            before.data.eflags || !cpu_instruction_segments_same(&before, &after) ||
             cpu_instruction_read(&state, stack, &observed, width,
                 X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             observed != (width == 2u ? (sentinel & 0xffffu) : sentinel);

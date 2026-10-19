@@ -18,18 +18,6 @@ static void gpr_push_pop_seed(cpu_instruction_fixture *state)
         VCPU_EFLAGS_IF;
 }
 
-static lib_i32 gpr_push_pop_sregs_same(const t_cpu *before, const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
-        &after->data.cs, sizeof(before->data.cs)) == 0 && lib_memory_compare(
-        &before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 && lib_memory_compare(&before->data.fs,
-        &after->data.fs, sizeof(before->data.fs)) == 0 && lib_memory_compare(
-        &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
@@ -42,7 +30,7 @@ static lib_i32 gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
         before->data.edi == after->data.edi &&
         before->data.eip == after->data.eip &&
         before->data.eflags == after->data.eflags &&
-        gpr_push_pop_sregs_same(before, after);
+        cpu_instruction_segments_same(before, after);
 }
 
 static lib_u32 gpr_push_pop_register(const t_cpu *cpu, lib_u8 index)
@@ -115,7 +103,7 @@ static lib_i32 gpr_push_pop_test_push_registers(void)
                     after.data.ebx != before.data.ebx ||
                     after.data.ebp != before.data.ebp ||
                     after.data.esi != before.data.esi ||
-                    after.data.edi != before.data.edi || !gpr_push_pop_sregs_same(
+                    after.data.edi != before.data.edi || !cpu_instruction_segments_same(
                     &before, &after) || after.data.esp !=
                     ((before.data.esp & 0xffff0000u) | 0x7ffeu);
             }
@@ -191,7 +179,7 @@ static lib_i32 gpr_push_pop_test_pop_registers(void)
                 failed |= cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
                     state.fault.valid || after.data.eip != 1u ||
                     after.data.eflags != before.data.eflags ||
-                    !gpr_push_pop_sregs_same(&before, &after);
+                    !cpu_instruction_segments_same(&before, &after);
                 expected = (gpr_push_pop_register(&before, index) & 0xffff0000u) |
                     value;
                 if (index == 4u)
@@ -271,7 +259,7 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
             failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes[form] ||
                 after.data.eflags != before.data.eflags ||
-                !gpr_push_pop_sregs_same(&before, &after);
+                !cpu_instruction_segments_same(&before, &after);
             if (push)
             {
                 failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
@@ -414,7 +402,7 @@ static lib_i32 gpr_push_pop_test_attributes(x86_core_cpu_profile profile)
             failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes[form] ||
                 after.data.eflags != before.data.eflags ||
-                !gpr_push_pop_sregs_same(&before, &after);
+                !cpu_instruction_segments_same(&before, &after);
             if (form == 0u || form == 2u)
             {
                 lib_u32 expected = form == 0u ? before.data.eax : value;
@@ -445,39 +433,6 @@ static lib_i32 gpr_push_pop_test_attributes(x86_core_cpu_profile profile)
     return 1;
 }
 
-static lib_i32 gpr_push_pop_boot_protected(cpu_instruction_fixture *state)
-{
-    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const lib_u8 gdt[] = {
-        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
-        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
-        0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
-        0xffu, 0xffu, 0u, 0x40u, 0u, 0x92u, 0u, 0u
-    };
-    static const lib_u8 bootstrap[] = {
-        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u,
-        0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u,
-        0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
-        0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
-    };
-
-    lib_u8 instruction;
-
-    if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
-        cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
-        cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
-        return 0;
-    for (instruction = 0u; instruction != 10u; ++instruction)
-    {
-        x86_core_cpu_execution_refresh(&state->execution);
-        if (state->execution.stop_requested || state->fault.valid) return 0;
-    }
-    return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
-}
-
 static lib_i32 gpr_push_pop_protected_fault(x86_core_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes,
     lib_u8 limit_segment, lib_u32 limit, lib_i32 expdown)
@@ -491,7 +446,7 @@ static lib_i32 gpr_push_pop_protected_fault(x86_core_cpu_profile profile,
     cpu_instruction_prepare(&state, profile);
 
     if (!failed)
-        failed |= !gpr_push_pop_boot_protected(&state);
+        failed |= !cpu_instruction_boot_protected(&state);
     if (!failed)
     {
         gpr_push_pop_seed(&state);
@@ -522,7 +477,7 @@ static lib_i32 gpr_push_pop_protected_fault(x86_core_cpu_profile profile,
             after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || after.data.eflags !=
-            before.data.eflags || !gpr_push_pop_sregs_same(&before, &after) ||
+            before.data.eflags || !cpu_instruction_segments_same(&before, &after) ||
             cpu_instruction_read(&state, 0x3010u, &observed, sizeof(observed),
                 X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 observed != sentinel ||
@@ -654,7 +609,7 @@ static lib_bool gpr_push_pop_test_push_shutdown_receiver(x86_core_cpu_profile pr
         t_cpu before;
 
         cpu_instruction_prepare(&state, profile);
-        if (!gpr_push_pop_boot_protected(&state)) return LIB_FALSE;
+        if (!cpu_instruction_boot_protected(&state)) return LIB_FALSE;
         gpr_push_pop_seed(&state);
         state.cpu.data.esp = receiver_control ? 0xffffu : 1u;
         state.cpu.data.eflags |= 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL;

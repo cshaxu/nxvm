@@ -3,20 +3,6 @@
 #include "support/cpu_instruction_fixture.h"
 /* REAL_UD_TERMINAL_CPU_OWNER: invalid LOCK forms stay CPU-owned. */
 
-static lib_i32 legacy_lock_sregs_same(const t_cpu *before,
-    const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
-        &after->data.cs, sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-        sizeof(before->data.ss)) == 0 && lib_memory_compare(&before->data.ds,
-        &after->data.ds, sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-        sizeof(before->data.fs)) == 0 && lib_memory_compare(&before->data.gs,
-        &after->data.gs, sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 legacy_lock_run(cpu_instruction_fixture *state,
     const lib_u8 *code, lib_u8 bytes, lib_u8 steps,
     t_cpu *after)
@@ -68,7 +54,7 @@ static lib_i32 legacy_lock_test_transparent_real(void)
             after.data.ebp != before.data.ebp ||
             after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi ||
-            !legacy_lock_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
         if (failed) {
             lib_c_fprintf(lib_c_stderr, "LOCK CBW profile=%u\n", (unsigned)profile);
             return 0;

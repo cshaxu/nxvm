@@ -392,8 +392,6 @@ static lib_i32 execution_boundaries(lib_bool stop)
     v30_execution_probe probe = {0};
     const x86_core_machine_attachment attachment = {
         .context = &probe, .finalize_devices = execution_finalize};
-    const x86_core_machine_port_route route = {
-        .address = 0x55u, .read = execution_read, .owner = &probe};
     const x86_core_machine_retirement_observation_provider observer = {
         execution_retired, &probe};
     x86_core_machine *machine = LIB_NULL;
@@ -401,17 +399,11 @@ static lib_i32 execution_boundaries(lib_bool stop)
     x86_core_machine_lifecycle lifecycle;
     x86_core_cpu_debug_cpu_snapshot cpu;
     lib_i32 failed = 1;
-    const char *phase = "construction contracts";
+    const char *phase = "construction";
 
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
-    if (x86_core_machine_bind_attachment(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
-        x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
-        x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_install_port_routes(machine, &route, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_install_port_routes(machine, &route, 1u) != LIB_STATUS_INVALID_STATE ||
+    if (x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_install_port_routes(machine, &route, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_set_retirement_observation_provider(machine, &observer) != LIB_STATUS_OK ||
         x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||

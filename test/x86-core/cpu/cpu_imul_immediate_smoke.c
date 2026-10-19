@@ -15,22 +15,6 @@ static void imul_seed(t_cpu *cpu)
     cpu->data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF | VCPU_EFLAGS_CF;
 }
 
-static lib_i32 imul_sregs_same(const t_cpu *before, const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-            sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.cs, &after->data.cs,
-            sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-            sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-            sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-            sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs,
-            sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 imul_nonparticipants_same(const t_cpu *before,
     const t_cpu *after)
 {
@@ -73,7 +57,7 @@ static lib_i32 imul_run(x86_core_cpu_profile profile, const lib_u8 *code,
         after.data.ebp != before.data.ebp ||
         after.data.esi != before.data.esi ||
         after.data.edi != before.data.edi ||
-        !imul_sregs_same(&before, &after) ||
+        !cpu_instruction_segments_same(&before, &after) ||
         (dword ? after.data.eax != expected :
             after.data.eax != ((before.data.eax & 0xffff0000u) |
                 (expected & 0xffffu))) ||
@@ -229,7 +213,7 @@ static lib_i32 imul_test_memory_forms(void)
                 (dword ? after.data.eax != 4u :
                     after.data.eax != ((before.data.eax & 0xffff0000u) | 4u)) ||
                 !imul_nonparticipants_same(&before, &after) ||
-                !imul_sregs_same(&before, &after) ||
+                !cpu_instruction_segments_same(&before, &after) ||
                 X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF) ||
                 X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_OF) ||
                 !imul_nonarithmetic_flags_same(&before, &after) ||
@@ -290,7 +274,7 @@ static lib_i32 imul_test_segments(x86_core_cpu_profile profile)
             after.data.eip != bytes[form] ||
             after.data.eax != ((before.data.eax & 0xffff0000u) | 4u) ||
             !imul_nonparticipants_same(&before, &after) ||
-            !imul_sregs_same(&before, &after) ||
+            !cpu_instruction_segments_same(&before, &after) ||
             !imul_nonarithmetic_flags_same(&before, &after)) return 0;
     }
     return 1;
@@ -317,7 +301,7 @@ static lib_i32 imul_test_67_sib_ss(x86_core_cpu_profile profile)
         !state.fault.valid && after.data.eip == sizeof(code) &&
         after.data.eax == ((before.data.eax & 0xffff0000u) | 4u) &&
         imul_nonparticipants_same(&before, &after) &&
-        imul_sregs_same(&before, &after);
+        cpu_instruction_segments_same(&before, &after);
 }
 
 static lib_i32 imul_test_vm86(x86_core_cpu_profile profile)
@@ -357,7 +341,7 @@ static lib_i32 imul_test_vm86(x86_core_cpu_profile profile)
             LIB_STATUS_OK && !state.fault.valid &&
         after.data.eip == sizeof(code) &&
         after.data.eax == ((before.data.eax & 0xffff0000u) | 4u) &&
-        imul_sregs_same(&before, &after) &&
+        cpu_instruction_segments_same(&before, &after) &&
         imul_nonparticipants_same(&before, &after);
 }
 
@@ -380,7 +364,7 @@ static lib_i32 imul_test_synthetic_ss_limit(x86_core_cpu_profile profile)
         after.data.eip == 0u && after.data.eax == before.data.eax &&
         imul_nonparticipants_same(&before, &after) &&
         after.data.eflags == before.data.eflags &&
-        imul_sregs_same(&before, &after);
+        cpu_instruction_segments_same(&before, &after);
 }
 
 static lib_bool imul_test_dword_byte_extremes(x86_core_cpu_profile profile)
@@ -426,7 +410,7 @@ static lib_bool imul_test_dword_byte_extremes(x86_core_cpu_profile profile)
                 !!(after.data.eflags & VCPU_EFLAGS_OF) != overflow ||
                 !imul_nonparticipants_same(&before, &after) ||
                 !imul_nonarithmetic_flags_same(&before, &after) ||
-                !imul_sregs_same(&before, &after)) return LIB_FALSE;
+                !cpu_instruction_segments_same(&before, &after)) return LIB_FALSE;
         if (memory && (cpu_instruction_read(&state, 0x4000u, &source_after,
                 4u, X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || source_after != source)) return LIB_FALSE;

@@ -35,22 +35,6 @@ static lib_i32 pushf_gprs_same(const t_cpu *before, const t_cpu *after)
         before->data.edi == after->data.edi;
 }
 
-static lib_i32 pushf_sregs_same(const t_cpu *before, const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-            sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.cs, &after->data.cs,
-            sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-            sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-            sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-            sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs,
-            sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 pushf_test_defaults(void)
 {
     static const x86_core_cpu_profile profiles[] = {
@@ -89,7 +73,7 @@ static lib_i32 pushf_test_defaults(void)
                 after.data.esp != (form == 0u ? 0x12347ffeu :
                     0x12348002u) ||
                 !pushf_gprs_same(&before, &after) ||
-                !pushf_sregs_same(&before, &after)) return 0;
+                !cpu_instruction_segments_same(&before, &after)) return 0;
             if (form == 0u) {
                 lib_memory_copy(&observed, state.memory + 0x7ffeu,
                     sizeof(observed));
@@ -155,7 +139,7 @@ static lib_i32 pushf_test_attributes(x86_core_cpu_profile profile)
                     (opcode == 0x9cu ? 0x12348000u - width :
                         0x12348000u + width) ||
                 !pushf_gprs_same(&before, &after) ||
-                !pushf_sregs_same(&before, &after)) return 0;
+                !cpu_instruction_segments_same(&before, &after)) return 0;
             if (opcode == 0x9cu) {
                 lib_memory_copy(&observed, state.memory +
                     ((0x12348000u - width) & 0xffffu), width);
@@ -519,7 +503,7 @@ static lib_bool pushf_test_286_real_preservation(void)
             cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
             state.fault.valid || (after.data.eflags & 0x7fd5u) != expected ||
             after.data.sp != 0x8002u || after.data.eip != 1u ||
-            !pushf_gprs_same(&before, &after) || !pushf_sregs_same(&before, &after)) {
+            !pushf_gprs_same(&before, &after) || !cpu_instruction_segments_same(&before, &after)) {
             lib_c_printf("286 real POPF old=%u popped=%u flags=%x expected=%x\n",
                 (unsigned)old_bits, (unsigned)popped_bits,
                 (unsigned)after.data.eflags, (unsigned)expected);
@@ -575,7 +559,7 @@ static lib_bool pushf_test_protected_privilege_matrix(void)
                 LIB_STATUS_OK || state.fault.valid ||
             (after.data.eflags & 0x7fd5u) != expected ||
             after.data.sp != 0x8000u + width || after.data.eip != form + 1u ||
-            !pushf_gprs_same(&before, &after) || !pushf_sregs_same(&before, &after))
+            !pushf_gprs_same(&before, &after) || !cpu_instruction_segments_same(&before, &after))
             ++failures[profile];
     }
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {

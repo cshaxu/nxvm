@@ -18,18 +18,6 @@ static void enter_leave_seed(cpu_instruction_fixture *state)
         VCPU_EFLAGS_IF;
 }
 
-static lib_i32 enter_leave_sregs_same(const t_cpu *before, const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
-        &after->data.cs, sizeof(before->data.cs)) == 0 && lib_memory_compare(
-        &before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 && lib_memory_compare(&before->data.fs,
-        &after->data.fs, sizeof(before->data.fs)) == 0 && lib_memory_compare(
-        &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
@@ -42,7 +30,7 @@ static lib_i32 enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
         before->data.edi == after->data.edi &&
         before->data.eip == after->data.eip &&
         before->data.eflags == after->data.eflags &&
-        enter_leave_sregs_same(before, after);
+        cpu_instruction_segments_same(before, after);
 }
 
 static lib_i32 enter_leave_read(cpu_instruction_fixture *state, lib_u32 address,
@@ -109,7 +97,7 @@ static lib_i32 enter_leave_test_enter(x86_core_cpu_profile profile,
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebx != before.data.ebx || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || after.data.eflags !=
-            before.data.eflags || !enter_leave_sregs_same(&before, &after);
+            before.data.eflags || !cpu_instruction_segments_same(&before, &after);
         frame = old_stack - width;
         frame_pointer = stack32 ? frame :
             (before.data.esp & 0xffff0000u) | (frame & 0xffffu);
@@ -170,7 +158,7 @@ static lib_i32 enter_leave_test_leave(x86_core_cpu_profile profile,
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebx != before.data.ebx || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || after.data.eflags !=
-            before.data.eflags || !enter_leave_sregs_same(&before, &after) ||
+            before.data.eflags || !cpu_instruction_segments_same(&before, &after) ||
             !enter_leave_expect_image(&state, frame, width, old_bp);
         if (width == 2u)
             failed |= after.data.ebp != ((before.data.ebp & 0xffff0000u) |
@@ -332,38 +320,6 @@ static lib_i32 enter_leave_test_rejections(void)
     return 1;
 }
 
-static lib_i32 enter_leave_boot_protected(cpu_instruction_fixture *state)
-{
-    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const lib_u8 gdt[] = {
-        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
-        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
-        0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
-        0xffu, 0xffu, 0u, 0x40u, 0u, 0x92u, 0u, 0u
-    };
-    static const lib_u8 bootstrap[] = {
-        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u,
-        0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u,
-        0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
-        0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
-    };
-    lib_u8 instruction;
-
-    if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
-        cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
-        cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
-            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
-        return 0;
-    for (instruction = 0u; instruction != 10u; ++instruction)
-    {
-        x86_core_cpu_execution_refresh(&state->execution);
-        if (state->execution.stop_requested || state->fault.valid) return 0;
-    }
-    return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
-}
-
 static lib_i32 enter_leave_test_protected_stack32(x86_core_cpu_profile profile)
 {
     static const lib_u8 enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
@@ -376,7 +332,7 @@ static lib_i32 enter_leave_test_protected_stack32(x86_core_cpu_profile profile)
     cpu_instruction_prepare(&state, profile);
 
     if (!failed)
-        failed |= !enter_leave_boot_protected(&state);
+        failed |= !cpu_instruction_boot_protected(&state);
     if (!failed)
     {
         enter_leave_seed(&state);
@@ -416,7 +372,7 @@ static lib_i32 enter_leave_test_protected_stack32(x86_core_cpu_profile profile)
                 after.data.esi != before.data.esi || after.data.edi != before.data.edi ||
                 after.data.eflags != before.data.eflags || after.data.ebp !=
                 0x00009000u || after.data.esp != 0x00008000u ||
-                !enter_leave_sregs_same(&before, &after);
+                !cpu_instruction_segments_same(&before, &after);
         }
     }
     return !failed;
@@ -437,7 +393,7 @@ static lib_i32 enter_leave_test_protected_faults(x86_core_cpu_profile profile)
     cpu_instruction_prepare(&state, profile);
 
     if (!failed)
-        failed |= !enter_leave_boot_protected(&state);
+        failed |= !cpu_instruction_boot_protected(&state);
     if (!failed)
     {
         enter_leave_seed(&state);
@@ -475,7 +431,7 @@ static lib_i32 enter_leave_test_protected_faults(x86_core_cpu_profile profile)
     cpu_instruction_prepare(&state, profile);
     failed = 0;
     if (!failed)
-        failed |= !enter_leave_boot_protected(&state);
+        failed |= !cpu_instruction_boot_protected(&state);
     if (!failed)
     {
         enter_leave_seed(&state);

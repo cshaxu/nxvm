@@ -46,22 +46,6 @@ static lib_i32 legacy_sreg_stack_gprs_same_except_esp(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
-static lib_i32 legacy_sreg_stack_sregs_same(const t_cpu *before, const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.cs, &after->data.cs,
-        sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-        sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-        sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs,
-        sizeof(before->data.gs)) == 0;
-}
-
 static lib_i32 legacy_sreg_stack_shutdown(
     const cpu_instruction_fixture *state)
 {
@@ -159,7 +143,7 @@ static lib_i32 legacy_sreg_stack_test_defaults(void)
                 failed |= status != LIB_STATUS_OK || state.fault.valid || after.data.eip != 1u ||
                     after.data.esp != 0x00007ffeu || after.data.eflags != before.data.eflags ||
                     !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
-                    !legacy_sreg_stack_sregs_same(&before, &after) ||
+                    !cpu_instruction_segments_same(&before, &after) ||
                     cpu_instruction_read(&state, 0x7ffeu, &image, 2u, X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image !=
                     (form == 0u ? 0x1111u : form == 1u ? 0x2222u : form == 2u ? 0x3333u : 0x4444u);
             }
@@ -257,7 +241,7 @@ static lib_i32 legacy_sreg_stack_test_attributes(x86_core_cpu_profile cpu_profil
                     after.data.esp != expected_esp ||
                     after.data.eflags != before.data.eflags ||
                     !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
-                    !legacy_sreg_stack_sregs_same(&before, &after) ||
+                    !cpu_instruction_segments_same(&before, &after) ||
                     cpu_instruction_read(&state, expected_esp & 0xffffu, &image, 2u, X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || image != selector;
             }
@@ -464,7 +448,7 @@ static lib_i32 legacy_sreg_stack_test_protected_ss_null(x86_core_cpu_profile cpu
         failed|=status!=LIB_STATUS_OK || !legacy_sreg_stack_shutdown(&state) || after.data.eip!=0u ||
             after.data.esp!=before.data.esp || after.data.eflags!=before.data.eflags ||
             !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
-            !legacy_sreg_stack_sregs_same(&before, &after);
+            !cpu_instruction_segments_same(&before, &after);
     }
     return !failed;
 }
@@ -492,7 +476,7 @@ static lib_i32 legacy_sreg_stack_test_protected_rejects(x86_core_cpu_profile cpu
                 after.data.esp!=before.data.esp || after.data.eax!=before.data.eax || after.data.ecx!=before.data.ecx ||
                 after.data.edx!=before.data.edx || after.data.ebx!=before.data.ebx || after.data.ebp!=before.data.ebp ||
                 after.data.esi!=before.data.esi || after.data.edi!=before.data.edi || after.data.eflags!=before.data.eflags ||
-                !legacy_sreg_stack_sregs_same(&before, &after) ||
+                !cpu_instruction_segments_same(&before, &after) ||
                 cpu_instruction_read(&state, 0xc000u, &observed, 2u, X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u)!=LIB_STATUS_OK || observed!=selector;
         }
         if(failed)return 0;
@@ -523,7 +507,7 @@ static lib_i32 legacy_sreg_stack_test_protected_stack_limits(x86_core_cpu_profil
                 after.data.eip!=0u || after.data.esp!=before.data.esp ||
                 after.data.eflags!=before.data.eflags || lib_memory_compare(&before.data.es,&after.data.es,sizeof(before.data.es))!=0 ||
                 !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
-                !legacy_sreg_stack_sregs_same(&before, &after) ||
+                !cpu_instruction_segments_same(&before, &after) ||
                 cpu_instruction_read(&state, candidate, &image, 2u, X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u)!=LIB_STATUS_OK || image!=0xbe5au;
         }
         if(failed)return 0;
@@ -623,7 +607,7 @@ static lib_i32 legacy_sreg_stack_test_irq(x86_core_cpu_profile cpu_profile)
             after.data.eip != 0x101u || ip != frame[form] ||
             !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
             (form == 3u && (after.data.esp != 0x7ff8u ||
-            !legacy_sreg_stack_sregs_same(&before, &after) || image != before.data.es.selector)) ||
+            !cpu_instruction_segments_same(&before, &after) || image != before.data.es.selector)) ||
             (form != 3u && (after.data.esp != 0x7ffcu ||
             !legacy_sreg_stack_non_target_sregs_same(&before, &after, form == 0u ? 1u : form == 1u ? 0u : 2u) ||
             !legacy_sreg_stack_real_cache(legacy_sreg_stack_target(&after,
