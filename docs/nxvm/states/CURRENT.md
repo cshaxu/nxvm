@@ -62,6 +62,19 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
+MyRaidenII M1 T3 S10 refreshes the eight current0564 PC EXEs after Shared
+`f2ca9ae01` fixes callback-fault publication at exact run budgets. Both full
+repository unit suites pass687/687, and14 selected PC receiving integrations
+per width pass with the original predicates/budgets. Eight built/deployed
+hashes and PE widths are checked; all profile switches reuse CPU objects.
+Both MyNES0044 EXEs,33 protected tracked asset files and six selected external
+media-role identities remain unchanged. No NXVM source, INI, firmware or media
+change and no new NXVM task/S is allocated; the active Td S181 is untouched.
+The [S10 result/identity record](../../myraidenii/etc/evidence/t3-s10-results.json)
+and [scope/review](../../myraidenii/etc/evidence/t3-s10-cop-transfer-review.md)
+distinguish the first incomplete x64 unit attempt from final qualification.
+No complete external integration, desktop/RDP or gameplay pass is claimed.
+
 MyRaidenII M1 T2 S49 refreshes the eight0564 PC EXEs after Shared P1
 `a07c37107` elapsed-time and genuine minimum Machine receiver delivery. No NXVM
 source, configuration, firmware or media changes, and no NXVM task/S is
