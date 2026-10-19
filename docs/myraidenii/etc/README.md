@@ -69,6 +69,7 @@
 - [T3 bounded COP/DMA address observation](evidence/t3-s4-cop-observation.md).
 - [T3 COP register boundary](evidence/t3-s5-cop-register-boundary.md).
 - [T3 COP command/result/DMA receiver](evidence/t3-s6-cop-command-receiver.md).
+- [T3 COP command evidence and Video-owner transfer](evidence/t3-s7-cop-owner-transfer.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
