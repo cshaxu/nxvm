@@ -77,7 +77,8 @@ void x86_core_cpu_finish_entry(x86_core_cpu_prepared_entry *entry,
     if (commit) {
         *entry->owner->cpu = entry->cpu;
         entry->owner->repeat_compare_flags_valid = LIB_FALSE;
-        if (entry->owner->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+        if (entry->owner->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+            entry->owner->cpu_profile == X86_CORE_CPU_PROFILE_V30)
             entry->owner->source_repeat_active = LIB_FALSE;
         if (entry->owner->instructions != LIB_NULL) {
             entry->owner->instructions->data.timing_gpr_writes = 0u;
@@ -566,7 +567,8 @@ lib_status x86_core_cpu_debug_patch_registers(x86_core_cpu_execution_context *co
     status = x86_core_cpu_prepare_patch(context, patch, LIB_FALSE, context->cpu);
     if (status != LIB_STATUS_OK) return status;
     context->repeat_compare_flags_valid = LIB_FALSE;
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_V30)
         context->source_repeat_active = LIB_FALSE;
     if (context->instructions != LIB_NULL) {
         instruction_state.data.timing_gpr_writes = 0u;

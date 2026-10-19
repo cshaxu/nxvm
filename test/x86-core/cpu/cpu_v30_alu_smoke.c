@@ -193,8 +193,6 @@ static lib_i32 v30_alu_timing(const v30_memory_fixture *fixture,
             clocks = 11u; odd_cost = 4u;
         } else { clocks = 16u; odd_cost = 8u; }
     }
-    /* The documented 82 alias still has no allocated nominal timing row. */
-    if (item->code[item->prefix != 0u]==0x82u) clocks=0u;
     const lib_bool odd = clocks && odd_cost && item->width == 2u && (address & 1u);
     if (odd) clocks += odd_cost;
     if (clocks && item->prefix) clocks += 2u;
@@ -355,9 +353,12 @@ lib_i32 main(void)
         {0xd4u,9u}, {0xd5u,9u}, {0x27u}, {0x2fu}
     };
     static const x86_core_cpu_timing_result allocated[19] = {
+        [0] = {.ticks=4u,.form_id=0x82u,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [12] = {.ticks=6u,.form_id=0x04u,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL},
         [3] = {.ticks=24u,.form_id=0x8f6u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC},
         [4] = {.ticks=32u,.form_id=0x8f7u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC},
         [5] = {.ticks=21u,.form_id=0xcf6u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
+        [6] = {.ticks=57u,.form_id=0xef7u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_MEMORY | X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH | X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN | X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL},
         [9] = {.ticks=5u,.form_id=0x10000fu,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
         [11] = {.ticks=26u,.form_id=0x101u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS | X86_CORE_CPU_TIMING_INPUT_ODD_WORD | X86_CORE_CPU_TIMING_INPUT_LOCK,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},
         [13] = {.ticks=4u,.form_id=0x98u,.formula_inputs=X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,.retirement_origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE},

@@ -116,7 +116,7 @@ static lib_u32 v30_compare_flags(lib_u16 left, lib_u16 right, lib_u8 width)
 }
 
 static lib_bool v30_compare_expected(v30_memory_fixture *fixture,
-    const v30_compare_case *item, lib_u8 length, t_cpu *expected, v30_memory_plan *plan)
+    const v30_compare_case *item, lib_u32 length, t_cpu *expected, v30_memory_plan *plan)
 {
     const lib_u8 width=(item->opcode & 1u)+1u;
     const lib_bool scan=(item->opcode & 0xfeu) == 0xaeu;
@@ -639,6 +639,84 @@ static lib_i32 v30_repeat_long_prefix_interrupts(void)
     return 0;
 }
 
+static lib_i32 v30_repeat_nominal_prefixes(void)
+{
+    static const lib_u16 lengths[]={2u,3u,14u,15u,16u,31u,255u,256u};
+    static const lib_u8 repeats[]={0xf2u,0xf3u,0x64u,0x65u};
+    static const lib_u16 counts[]={0u,1u,3u};
+    static v30_memory_fixture fixture;
+    lib_u32 cases=0u;
+
+    for (lib_size extent=0u; extent<sizeof(lengths)/sizeof(lengths[0]); ++extent)
+      for (lib_size repeat=0u; repeat<sizeof(repeats); ++repeat)
+        for (lib_size count=0u; count<sizeof(counts)/sizeof(counts[0]); ++count)
+          for (lib_u8 locked=0u; locked<2u; ++locked)
+           for (lib_u8 mutation=0u; mutation<4u; ++mutation) {
+            const lib_u16 length=lengths[extent];
+            if ((locked && length<3u) || (mutation && counts[count]!=3u)) continue;
+            const v30_compare_case item={.opcode=0xa6u,.repeat=repeats[repeat],.source=0x36u,
+                .count=counts[count],.si=0x300u,.di=0x400u,.pc=0xfff0u,
+                .left=2u,.right=repeats[repeat]==0xf2u || repeats[repeat]==0x65u ? 3u : 2u,
+                .locked=locked!=0u};
+            v30_compare_prepare(&fixture,&item);
+            for (lib_u16 index=0u; index<length; ++index) {
+                const lib_u8 byte=index+1u==length ? item.repeat : index+2u==length ? item.source :
+                    locked && index+3u==length ? 0xf0u : repeats[index%sizeof(repeats)];
+                fixture.memory[0x80000u+(lib_u16)(item.pc+index)]=byte;
+            }
+            fixture.memory[0x80000u+(lib_u16)(item.pc+length)]=item.opcode;
+            for (lib_u8 iteration=0u; iteration<3u; ++iteration) {
+                if (iteration==1u && mutation) {
+                    const t_cpu original=fixture.bus.cpu;
+                    if (mutation<3u) {
+                        x86_core_cpu_debug_register_patch patch={0};
+                        if (mutation==2u) {
+                            patch.mask=X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX);
+                            patch.values[X86_CORE_CPU_DEBUG_EAX]=original.data.eax;
+                        }
+                        if (x86_core_cpu_debug_patch_registers(&fixture.bus.execution,&patch)!=
+                            (mutation==1u ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK) ||
+                            lib_memory_compare(&fixture.bus.cpu,&original,sizeof(original))) return 1;
+                    } else {
+                        const x86_core_cpu_entry_plan_state state={.cs=original.data.cs.selector,
+                            .ds=original.data.ds.selector,.es=original.data.es.selector,.ss=original.data.ss.selector,
+                            .ip=(lib_u16)original.data.eip,.sp=original.data.sp,.eax=original.data.eax,
+                            .ebx=original.data.ebx,.ecx=original.data.ecx,.edx=original.data.edx,
+                            .esi=original.data.esi,.edi=original.data.edi,.ebp=original.data.ebp,
+                            .eflags=original.data.eflags & 0xfd5u};
+                        x86_core_cpu_prepared_entry *entry=LIB_NULL;
+                        if (x86_core_cpu_prepare_entry(&fixture.bus.execution,&state,&entry)!=LIB_STATUS_OK)
+                            return 1;
+                        x86_core_cpu_finish_entry(entry,LIB_TRUE);
+                    }
+                }
+                const t_cpu before=fixture.bus.cpu;
+                t_cpu expected=before;
+                v30_memory_plan plan={0};
+                const lib_bool continuing=v30_compare_expected(&fixture,&item,length+1u,&expected,&plan);
+                v30_compare_clear(&fixture);
+                x86_core_cpu_execution_refresh(&fixture.bus.execution);
+                x86_core_cpu_instruction_observation observation;
+                x86_core_cpu_execution_copy_observation(&fixture.bus.execution,&observation);
+                if (fixture.bus.execution.stop_requested || fixture.bus.faults || fixture.observations ||
+                    lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
+                    v30_memory_check_plan(&fixture,&plan,LIB_FALSE) || observation.lock_prefix!=(locked!=0u) ||
+                    v30_string_timing(&fixture.bus.execution,&before,item.opcode,item.repeat,
+                        iteration==1u && mutation>=2u ? 0u : iteration,
+                        length-1u,X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+                            (locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u))) {
+                    lib_c_printf("V30:REPEAT-NOMINAL-PREFIX:FAIL length=%u repeat=%02x count=%u locked=%u step=%u mutation=%u\n",
+                        length,item.repeat,item.count,locked,iteration,mutation);
+                    return 1;
+                }
+                ++cases;
+                if (!continuing) break;
+            }
+          }
+    lib_c_printf("V30:REPEAT-NOMINAL-PREFIX:OK cases=%u\n",cases);
+    return 0;
+}
+
 lib_i32 main(void)
 {
     if (v30_repeat_operands()) { lib_c_printf("V30:REPEAT-OPERANDS:FAIL\n"); return 1; }
@@ -648,6 +726,7 @@ lib_i32 main(void)
     if (v30_repeat_intel_isolation()) { lib_c_printf("V30:REPEAT-INTEL:FAIL\n"); return 1; }
     if (v30_repeat_interrupts()) { lib_c_printf("V30:REPEAT-INTERRUPTS:FAIL\n"); return 1; }
     if (v30_repeat_long_prefix_interrupts()) return 1;
+    if (v30_repeat_nominal_prefixes()) return 1;
     lib_c_printf("V30:CONDITIONAL-REPEAT:OK\n");
     lib_c_printf("V30:NOMINAL-STRING:OK\n");
     return 0;

@@ -58,6 +58,25 @@ typedef enum cpu_wait_state {
     CPU_WAIT_STATE_ESC_RESTART
 } cpu_wait_state;
 
+typedef enum nec_emulation_form {
+    NEC_EMULATION_RESERVED, NEC_EMULATION_NOP, NEC_EMULATION_MOV,
+    NEC_EMULATION_MVI, NEC_EMULATION_LXI, NEC_EMULATION_STAX,
+    NEC_EMULATION_LDAX, NEC_EMULATION_INX, NEC_EMULATION_DCX,
+    NEC_EMULATION_DAD, NEC_EMULATION_INR, NEC_EMULATION_DCR,
+    NEC_EMULATION_ALU, NEC_EMULATION_ALUI, NEC_EMULATION_ROTATE,
+    NEC_EMULATION_DAA, NEC_EMULATION_CMA, NEC_EMULATION_STC,
+    NEC_EMULATION_CMC, NEC_EMULATION_SHLD, NEC_EMULATION_LHLD,
+    NEC_EMULATION_STA, NEC_EMULATION_LDA, NEC_EMULATION_JUMP,
+    NEC_EMULATION_CALL, NEC_EMULATION_RETURN, NEC_EMULATION_RST,
+    NEC_EMULATION_PUSH, NEC_EMULATION_POP, NEC_EMULATION_XTHL,
+    NEC_EMULATION_PCHL, NEC_EMULATION_XCHG, NEC_EMULATION_SPHL,
+    NEC_EMULATION_HLT, NEC_EMULATION_EI, NEC_EMULATION_DI,
+    NEC_EMULATION_PORT, NEC_EMULATION_ESCAPE
+} nec_emulation_form;
+
+nec_emulation_form x86_core_cpu_emulation_form(lib_u8 opcode);
+lib_bool x86_core_cpu_emulation_condition(lib_u32 flags, lib_u8 condition);
+
 /* Architectural masks only: provider/internal failures are not fault pairs. */
 static inline lib_bool cpu_exception_requires_double_fault(
     x86_core_cpu_profile profile, lib_u32 first, lib_u32 second)
@@ -94,6 +113,8 @@ typedef struct {
     t_cpuins_data_prefix      prefix_addrsize;
     /* Actual NEC prefix bytes may exceed the bounded diagnostic capture. */
     lib_u32 nec_prefix_bytes;
+    lib_u8 nec_opcode, nec_suffix, nec_modrm, nec_repeat_opcode;
+    lib_bool nec_lock_prefix;
     t_cpu_data_sreg *roverds, *roverss, *rmovsreg;
 
     /* execution control */
@@ -255,6 +276,10 @@ struct x86_core_cpu_execution_context {
      * repeat lifecycle. Older profiles retain their existing identity. */
     lib_u8 source_repeat_byte_count;
     lib_u8 source_repeat_bytes[15];
+    /* V30 continuation uses effective decode facts, not a bounded byte dump. */
+    lib_u32 source_repeat_nec_prefix_bytes;
+    t_cpu_data_sreg *source_repeat_nec_segment;
+    lib_bool source_repeat_nec_lock_prefix;
     lib_u32 source_repeat_data_misses;
     cpu_bus_timing bus_timing;
     lib_bool timing_bus_active;

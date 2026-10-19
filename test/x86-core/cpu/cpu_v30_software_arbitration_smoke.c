@@ -125,9 +125,9 @@ static void v30_software_operands(v30_memory_fixture *fixture,
 
 static lib_i32 v30_software_nominal(const v30_memory_fixture *fixture, const v30_software_case *item)
 {
-    static const lib_u8 clocks[] = {38u,38u,40u,0u,56u,38u,38u,3u,18u};
+    static const lib_u8 clocks[] = {38u,38u,40u,45u,56u,38u,38u,3u,18u};
     static const lib_u32 keys[] = {0xccu,0xcdu,0xceu,
-        X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED,0x162u,0xff000fu,0xed00edu,0xceu,0x162u};
+        0xcf6u,0x162u,0xff000fu,0xed00edu,0xceu,0x162u};
     lib_u64 ticks = clocks[item->operation];
     lib_u32 inputs = 0u;
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
@@ -136,13 +136,15 @@ static lib_i32 v30_software_nominal(const v30_memory_fixture *fixture, const v30
         inputs = X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH;
         if (taken) inputs |= X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
         if (item->operation != V30_SOFTWARE_OVERFLOW_CLEAR) inputs |= X86_CORE_CPU_TIMING_INPUT_MEMORY;
+        if (item->operation == V30_SOFTWARE_DIVIDE) inputs |= X86_CORE_CPU_TIMING_INPUT_SIZE;
         if (item->operation == V30_SOFTWARE_INDEX || item->operation == V30_SOFTWARE_INDEX_VALID)
             inputs |= X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         if (taken && (item->sp & 1u)) {
             ticks += item->operation == V30_SOFTWARE_CALLN || item->operation == V30_SOFTWARE_INDEX ? 20u : 12u;
             inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
         }
-        origin = item->operation == V30_SOFTWARE_INDEX || item->operation >= V30_SOFTWARE_OVERFLOW_CLEAR ?
+        origin = item->operation == V30_SOFTWARE_DIVIDE || item->operation == V30_SOFTWARE_INDEX ||
+            item->operation >= V30_SOFTWARE_OVERFLOW_CLEAR ?
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL : X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
     }
     return v30_memory_check_nominal(fixture,ticks,keys[item->operation],inputs,origin);

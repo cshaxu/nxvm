@@ -608,18 +608,23 @@ static lib_bool x86_core_cpu_source_timing_repeat_continuing(
     const x86_core_cpu_execution_context *context, const t_cpuins_data *data)
 {
     if (!context->source_repeat_active) return LIB_FALSE;
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
-        context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        if (context->source_repeat_nec_prefix_bytes != data->nec_prefix_bytes ||
+            context->source_repeat_nec_segment != data->roverds ||
+            context->source_repeat_nec_lock_prefix != data->nec_lock_prefix)
+            return LIB_FALSE;
+    } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         const lib_u32 bytes = x86_core_cpu_instruction_prefix_count(context, data) + 1u;
 
-        if (bytes != context->source_repeat_byte_count ||
+        if (bytes > sizeof(context->source_repeat_bytes) ||
+            bytes != context->source_repeat_byte_count ||
             lib_memory_compare(data->opcodes, context->source_repeat_bytes, bytes) != 0)
             return LIB_FALSE;
     }
     return context->source_repeat_cs == data->oldcpu.data.cs.selector &&
         context->source_repeat_eip == data->oldcpu.data.eip &&
-        context->source_repeat_opcode == data->opcodes[
-            x86_core_cpu_instruction_prefix_count(context, data)] &&
+        context->source_repeat_opcode == (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+            data->nec_opcode : data->opcodes[x86_core_cpu_instruction_prefix_count(context, data)]) &&
         context->source_repeat_prefix == (lib_u8)data->prefix_rep &&
         context->source_repeat_operand_size ==
             (data->oldcpu.data.cs.seg.exec.defsize != (data->prefix_oprsize != LIB_FALSE)) &&
@@ -1027,13 +1032,16 @@ void x86_core_cpu_source_timing_record_repeat(
     if (context->source_repeat_active) {
         context->source_repeat_cs = data->oldcpu.data.cs.selector;
         context->source_repeat_eip = data->oldcpu.data.eip;
-        context->source_repeat_opcode = data->opcodes[
-            x86_core_cpu_instruction_prefix_count(context, data)];
+        context->source_repeat_opcode = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+            data->nec_opcode : data->opcodes[x86_core_cpu_instruction_prefix_count(context, data)];
         context->source_repeat_prefix = (lib_u8)data->prefix_rep;
         context->source_repeat_operand_size = operand_size;
         context->source_repeat_address_size = address_size;
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
-            context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+        if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+            context->source_repeat_nec_prefix_bytes = data->nec_prefix_bytes;
+            context->source_repeat_nec_segment = data->roverds;
+            context->source_repeat_nec_lock_prefix = data->nec_lock_prefix;
+        } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
             context->source_repeat_byte_count = (lib_u8)(x86_core_cpu_instruction_prefix_count(context, data) + 1u);
             lib_memory_copy(context->source_repeat_bytes, data->opcodes,
                 context->source_repeat_byte_count);
@@ -2958,8 +2966,9 @@ static lib_i32 x86_core_cpu_control_stack_short_branch_taken(
     lib_u32 count;
 
     if (data == LIB_NULL || context == LIB_NULL || out_taken == LIB_NULL ||
-        prefixes >= data->oplen) return 0;
-    opcode = data->opcodes[prefixes];
+        (context->cpu_profile != X86_CORE_CPU_PROFILE_V30 && prefixes >= data->oplen)) return 0;
+    opcode = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+        data->nec_opcode : data->opcodes[prefixes];
     if (opcode >= 0x70u && opcode <= 0x7fu) {
         return x86_core_cpu_control_stack_condition_taken(data->oldcpu.data.eflags,
             opcode, out_taken);
@@ -2983,9 +2992,11 @@ lib_bool x86_core_cpu_timing_branch_taken(
     if (context == LIB_NULL || context->instructions == LIB_NULL || out_taken == LIB_NULL)
         return LIB_FALSE;
     const t_cpuins_data *data = &context->instructions->data;
-    if (opcode_index >= data->oplen) return LIB_FALSE;
-    const lib_u8 opcode = data->opcodes[opcode_index];
-    const lib_u8 next = opcode_index + 1u < data->oplen ? data->opcodes[opcode_index + 1u] : 0u;
+    const lib_bool nec = context->cpu_profile == X86_CORE_CPU_PROFILE_V30;
+    if (!nec && opcode_index >= data->oplen) return LIB_FALSE;
+    const lib_u8 opcode = nec ? data->nec_opcode : data->opcodes[opcode_index];
+    const lib_u8 next = nec ? (opcode == 0x0fu ? data->nec_suffix : data->nec_modrm) :
+        opcode_index + 1u < data->oplen ? data->opcodes[opcode_index + 1u] : 0u;
     const lib_u8 extension = (next >> 3u) & 7u;
     lib_i32 taken;
 

@@ -186,7 +186,9 @@ typedef enum x86_core_cpu_retirement_timing_origin {
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80486_SOURCE,
     X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_80486_MODEL,
     /* NEC section 12 prefetched, zero-wait subtotal, not complete elapsed time. */
-    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE,
+    /* Compatibility aggregate based on8080AF, not measured V30 clocks. */
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_EMULATION_L2
 } x86_core_cpu_retirement_timing_origin;
 
 typedef enum x86_core_cpu_retirement_repeat_phase {

@@ -145,16 +145,18 @@ static lib_i32 v30_block_cases(void)
     for (lib_size form = 0u; form < sizeof(opcodes); ++form)
         for (lib_size pattern=0u; pattern<sizeof(prefixes)/sizeof(prefixes[0]); ++pattern)
             for (lib_u8 mode = 0u; mode < 16u; ++mode)
-                for (lib_u8 count = 0u; count < 4u; ++count)
+                for (lib_u8 count = 0u; count < 7u; ++count)
                     for (lib_u8 position=0u; position<(count ? prefixes[pattern].bytes+1u : 1u); ++position) {
                         const lib_u8 segment=prefixes[pattern].segment;
                         const lib_u32 inputs=(segment ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
                             (prefixes[pattern].lock ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u);
                         const lib_bool repeat = count != 0u;
-                        const lib_u16 iterations = count == 0u ? 1u : count == 1u ? 0u : count == 2u ? 1u : 3u;
+                        const lib_u8 repeat_opcode=count>=4u ? 0xf2u : 0xf3u;
+                        const lib_u16 iterations = count == 0u ? 1u : count == 1u || count == 4u ? 0u :
+                            count == 2u || count == 5u ? 1u : 3u;
                         lib_u8 code[4], size = 0u;
                         for (lib_u8 index=0u; index<=prefixes[pattern].bytes; ++index) {
-                            if (repeat && index==position) code[size++]=0xf3u;
+                            if (repeat && index==position) code[size++]=repeat_opcode;
                             if (index<prefixes[pattern].bytes) code[size++]=prefixes[pattern].code[index];
                         }
                         code[size++] = opcodes[form];
@@ -189,7 +191,7 @@ static lib_i32 v30_block_cases(void)
                             expected.data.eip = repeat && expected.data.cx ? 0x100u : 0x100u + size;
                             x86_core_cpu_execution_refresh(&fixture.bus.execution);
                             if (v30_string_timing(&fixture.bus.execution,&before,opcodes[form],
-                                repeat ? 0xf3u : 0u,(lib_u8)item,prefixes[pattern].bytes,inputs) || fixture.bus.observations)
+                                repeat ? repeat_opcode : 0u,(lib_u8)item,prefixes[pattern].bytes,inputs) || fixture.bus.observations)
                                 return 1;
                             if (fixture.bus.execution.stop_requested || fixture.bus.delivered_exceptions ||
                                 lib_memory_compare(&fixture.bus.cpu, &expected, sizeof(expected)) != 0 ||
@@ -363,8 +365,9 @@ static lib_i32 v30_block_restart(void)
         --expected.data.cx;
         expected.data.eip=expected.data.cx ? 0x100u : 0x100u+bytes;
         x86_core_cpu_execution_refresh(&fixture.bus.execution);
+        /* A prefix permutation with identical effective facts continues the L2 block. */
         if (v30_string_timing(&fixture.bus.execution,&before,opcode,0xf3u,
-            step==4u || step==6u ? 1u : 0u,additional,inputs) ||
+            step==1u || step==4u || step==6u ? 1u : 0u,additional,inputs) ||
             fixture.bus.execution.stop_requested || fixture.invalid ||
             lib_memory_compare(&fixture.bus.cpu,&expected,sizeof(expected)) ||
             lib_memory_compare(fixture.memory,fixture.expected,sizeof(fixture.memory))) return 1;

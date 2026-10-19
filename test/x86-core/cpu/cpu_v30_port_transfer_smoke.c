@@ -153,13 +153,15 @@ static lib_i32 v30_port_scalars(void)
 {
     static const lib_u8 opcodes[] = {0xe4u,0xe5u,0xe6u,0xe7u,0xecu,0xedu,0xeeu,0xefu};
     static const lib_u16 ports[] = {0x20u,0x21u,0xffu,0xffffu};
-    static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
+    static const lib_u8 prefixes[] = {0u,0x26u,0x2eu,0x36u,0x3eu,0x26u,0x26u};
+    static const lib_u16 lengths[] = {0u,1u,1u,1u,1u,16u,256u};
     static v30_port_fixture fixture;
     for (lib_size form = 0u; form < sizeof(opcodes); ++form)
         for (lib_size item = 0u; item < sizeof(ports) / sizeof(ports[0]); ++item)
         for (lib_size prefix = 0u; prefix < sizeof(prefixes); ++prefix) {
-            lib_u8 code[3], size=0u;
-            if (prefix) code[size++]=prefixes[prefix];
+            lib_u8 code[258];
+            lib_u16 size=lengths[prefix];
+            lib_memory_set(code,prefixes[prefix],size);
             code[size++]=opcodes[form];
             if (form<4u) code[size++]=(lib_u8)ports[item];
             const lib_u16 port = form < 4u ? (lib_u8)ports[item] : ports[item];
@@ -173,12 +175,17 @@ static lib_i32 v30_port_scalars(void)
                 (width == 2u ? (lib_u32)fixture.ports[(lib_u16)(port + 1u)] << 8u : 0u);
             lib_memory_copy(fixture.memory + 0x100u, code, size);
             x86_core_cpu_instruction_lexeme lexeme;
-            if (!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution, &lexeme) ||
-                lexeme.byte_count != size || fixture.transfers || fixture.fetches ||
-                lib_memory_compare(&fixture.bus.cpu, &before, sizeof(before)) != 0) return 1;
+            const lib_bool previewable=size<=X86_CORE_CPU_DIAGNOSTIC_BYTES;
+            if (!!x86_core_cpu_execution_preview_lexeme(&fixture.bus.execution, &lexeme)!=previewable ||
+                lexeme.byte_count != (previewable ? size : 0u) || fixture.transfers || fixture.fetches ||
+                lib_memory_compare(&fixture.bus.cpu, &before, sizeof(before)) != 0) {
+                lib_c_printf("V30:PORT-PREVIEW:op=%02x prefix=%u bytes=%u/%u available=%u\n",
+                    opcodes[form],(lib_u32)prefix,lexeme.byte_count,size,lexeme.available);
+                return 1;
+            }
             x86_core_cpu_execution_refresh(&fixture.bus.execution);
             const lib_bool odd=width==2u && (port & 1u);
-            const lib_u64 clocks=(form<2u ? 9u : 8u)+(odd ? 4u : 0u)+(prefix ? 2u : 0u);
+            const lib_u64 clocks=(form<2u ? 9u : 8u)+(odd ? 4u : 0u)+2u*lengths[prefix];
             const lib_u32 key=clocks ? opcodes[form] : X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
             const x86_core_cpu_timing_result timing=x86_core_cpu_capture_timing(&fixture.bus.execution);
             if (timing.ticks!=clocks || !timing.source_timing_unallocated || timing.event_ticks ||
@@ -186,17 +193,31 @@ static lib_i32 v30_port_scalars(void)
                 timing.formula_inputs!=((prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
                     (clocks && odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u)) ||
                 timing.retirement_origin!=(clocks ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE :
-                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) return 1;
+                    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED)) {
+                lib_c_printf("V30:PORT-NOMINAL:op=%02x prefix=%u port=%04x clocks=%llu/%llu inputs=%x\n",
+                    opcodes[form],(lib_u32)prefix,port,timing.ticks,clocks,timing.formula_inputs);
+                return 1;
+            }
             if (fixture.bus.execution.stop_requested || fixture.bus.cpu.data.eip != 0x100u+size ||
                 fixture.bus.cpu.data.eax != (write ? before.data.eax : (before.data.eax & ~mask) | value) ||
                 fixture.bus.cpu.data.eflags != before.data.eflags || fixture.bus.cpu.data.edx != before.data.edx ||
                 fixture.bus.cpu.data.ecx != before.data.ecx || fixture.reads || fixture.writes ||
-                v30_port_records(&fixture, port, width, write, 1u, 0u)) return 1;
+                v30_port_records(&fixture, port, width, write, 1u, 0u)) {
+                lib_c_printf("V30:PORT-STATE:op=%02x prefix=%u port=%04x stop=%u pc=%x\n",
+                    opcodes[form],(lib_u32)prefix,port,fixture.bus.execution.stop_requested,fixture.bus.cpu.data.eip);
+                return 1;
+            }
             lib_u32 actual = 0u;
             for (lib_u32 part = 0u; part < fixture.transfers; ++part)
                 actual |= fixture.records[part].value << (part * 8u);
-            if (actual != value) return 1;
-            for (lib_u8 fetch=1u; fetch<=size; ++fetch) {
+            if (actual != value) {
+                lib_c_printf("V30:PORT-VALUE:op=%02x prefix=%u value=%x/%x\n",
+                    opcodes[form],(lib_u32)prefix,actual,value);
+                return 1;
+            }
+            const lib_u32 fetches=fixture.fetches;
+            for (lib_u32 fetch=1u; fetch<=fetches; ++fetch) {
+                if (prefix>=5u && fetch!=1u && fetch!=fetches) continue;
                 v30_port_prepare(&fixture);
                 fixture.bus.cpu.data.dx=ports[item];
                 const t_cpu initial=fixture.bus.cpu;
@@ -206,7 +227,11 @@ static lib_i32 v30_port_scalars(void)
                 if (!fixture.bus.execution.stop_requested || !fixture.bus.faults || fixture.transfers ||
                     fixture.bus.execution.completed_observation_valid || fixture.bus.execution.timing_result.ticks ||
                     fixture.bus.execution.timing_result.retirement_origin!=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
-                    lib_memory_compare(&fixture.bus.cpu,&initial,sizeof(initial))) return 1;
+                    lib_memory_compare(&fixture.bus.cpu,&initial,sizeof(initial))) {
+                    lib_c_printf("V30:PORT-FETCH:op=%02x prefix=%u fetch=%u/%u actual=%u stop=%u\n",
+                        opcodes[form],(lib_u32)prefix,fetch,fetches,fixture.fetches,fixture.bus.execution.stop_requested);
+                    return 1;
+                }
             }
         }
     return 0;
@@ -214,16 +239,18 @@ static lib_i32 v30_port_scalars(void)
 
 static lib_i32 v30_port_strings(void)
 {
-    static const lib_u8 prefixes[] = {0u,0xf3u};
+    static const lib_u8 prefixes[] = {0u,0xf3u,0xf2u};
     static const lib_u8 segments[] = {0u,0x26u,0x2eu,0x36u,0x3eu};
     static const lib_u32 bases[] = {0x10000u,0x30000u,0u,0x20000u,0x10000u};
     static v30_port_fixture fixture;
     lib_u32 cases=0u;
     for (lib_u8 opcode = 0x6cu; opcode <= 0x6fu; ++opcode)
-        for (lib_u8 control = 0u; control < 4u; ++control)
+        for (lib_u8 control = 0u; control < 6u; ++control)
             for (lib_u8 segment = 0u; segment < 5u; ++segment)
                 for (lib_u8 mode = 0u; mode < 8u; ++mode) {
-                    const lib_bool repeat=(control & 1u)!=0u, locked=(control & 2u)!=0u;
+                    const lib_bool repeat=control>=4u || (control & 1u)!=0u;
+                    const lib_bool locked=control>=4u ? control==5u : (control & 2u)!=0u;
+                    const lib_u8 repeat_index=control>=4u ? 2u : (lib_u8)repeat;
                     const lib_u32 inputs=(segment ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
                         (locked ? X86_CORE_CPU_TIMING_INPUT_LOCK : 0u);
                     const lib_bool write = (opcode & 2u) != 0u;
@@ -235,7 +262,7 @@ static lib_i32 v30_port_strings(void)
                     const lib_u16 count = repeat ? 3u : 1u;
                     lib_u8 code[4], size = 0u;
                     if (locked) code[size++]=0xf0u;
-                    if (prefixes[repeat]) code[size++] = prefixes[repeat];
+                    if (prefixes[repeat_index]) code[size++] = prefixes[repeat_index];
                     if (segments[segment]) code[size++] = segments[segment];
                     code[size++] = opcode;
                     v30_port_prepare(&fixture);
@@ -254,7 +281,7 @@ static lib_i32 v30_port_strings(void)
                         const lib_u16 offset = index + (direction ? 0u - iteration * width : iteration * width);
                         const t_cpu retiring = fixture.bus.cpu;
                         x86_core_cpu_execution_refresh(&fixture.bus.execution);
-                        if (v30_string_timing(&fixture.bus.execution,&retiring,opcode,prefixes[repeat],
+                        if (v30_string_timing(&fixture.bus.execution,&retiring,opcode,prefixes[repeat_index],
                             (lib_u8)iteration,(lib_u8)((segment != 0u)+locked),inputs) || fixture.bus.observations) return 1;
                         const lib_u16 next = index + (direction ? 0u - (iteration + 1u) * width : (iteration + 1u) * width);
                         lib_u16 actual = 0u;

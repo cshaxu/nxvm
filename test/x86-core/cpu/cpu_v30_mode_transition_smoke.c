@@ -124,6 +124,11 @@ static lib_i32 v30_mode_timing(const v30_memory_fixture *fixture, const v30_mode
             X86_CORE_CPU_TIMING_INPUT_BRANCH | X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN;
         if (odd) inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
         origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE;
+    } else {
+        clocks=4u;
+        key=0x01000000u;
+        inputs=X86_CORE_CPU_TIMING_INPUT_MODE;
+        origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_EMULATION_L2;
     }
     return v30_memory_check_nominal(fixture,clocks,key,inputs,origin);
 }

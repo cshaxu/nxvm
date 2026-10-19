@@ -12,7 +12,7 @@ typedef struct v30_multiply_case {
     lib_u32 dividend;
     lib_u16 operand, immediate;
     lib_u8 width, modrm, prefix;
-    lib_bool flags;
+    lib_bool flags, aligned_stack;
 } v30_multiply_case;
 
 static lib_u32 *v30_multiply_word(t_cpu *cpu, lib_u8 reg)
@@ -50,6 +50,7 @@ static lib_u8 v30_multiply_prepare(v30_memory_fixture *fixture, const v30_multip
         *v30_multiply_word(&fixture->bus.cpu,reg) = 0x12340000u + reg * 0x1100u + 0x701u;
     fixture->bus.cpu.data.ax = (lib_u16)item->dividend;
     fixture->bus.cpu.data.dx = (lib_u16)(item->dividend >> 16u);
+    if (item->aligned_stack) fixture->bus.cpu.data.sp &= 0xfffeu;
     fixture->bus.cpu.data.eflags |= VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
     if (item->flags) fixture->bus.cpu.data.eflags |= VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
         VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
@@ -144,7 +145,6 @@ static lib_i32 v30_multiply_timing(const v30_memory_fixture *fixture,
         {{0u,0u,0u},{34u,40u,44u}}, {{0u,0u,0u},{42u,48u,52u}}
     };
     const x86_core_cpu_timing_result timing = x86_core_cpu_capture_timing(&fixture->bus.execution);
-    const lib_bool allocated = !trap;
     const lib_bool memory = item->modrm < 0xc0u;
     const lib_bool odd = memory && item->width == 2u && (address & 1u);
     const lib_u8 opcode = item->operation >= V30_MULTIPLY_IMMEDIATE_BYTE ?
@@ -152,7 +152,20 @@ static lib_i32 v30_multiply_timing(const v30_memory_fixture *fixture,
     lib_u32 key = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED, inputs = 0u;
     lib_u64 expected = 0u;
     x86_core_cpu_retirement_timing_origin origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
-    if (allocated) {
+    if (trap) {
+        const lib_bool stack_odd=(fixture->bus.instructions.data.oldcpu.data.sp & 1u)!=0u;
+        expected=(item->operation==V30_DIVIDE_UNSIGNED ? 45u : 55u) +
+            (memory ? 6u : 0u) + (odd ? 4u : 0u) + (stack_odd ? 12u : 0u) +
+            (item->prefix ? 2u : 0u);
+        key=opcode | (memory ? 0x100u : 0u) | ((lib_u32)(item->operation+4u) << 9u);
+        inputs=X86_CORE_CPU_TIMING_INPUT_SIZE | X86_CORE_CPU_TIMING_INPUT_MEMORY |
+            X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH |
+            X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN |
+            (item->prefix ? X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u) |
+            (memory ? X86_CORE_CPU_TIMING_INPUT_MODRM | X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS : 0u) |
+            (odd || stack_odd ? X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u);
+        origin=X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL;
+    } else {
         expected = clocks[item->operation][item->width - 1u][memory ? (odd ? 2u : 1u) : 0u] +
             (item->prefix ? 2u : 0u);
         key = opcode | (memory ? 0x100u : 0u);
@@ -285,6 +298,18 @@ lib_i32 main(void)
     static const lib_u16 values[] = {0u,1u,2u,127u,128u,255u,256u,0x7fffu,0x8000u,0xfffeu,0xffffu};
     static const lib_u8 divisors[] = {0u,1u,2u,127u,128u,129u,254u,255u};
     lib_u32 cases = 0u;
+    /* Divide-error aggregates cover independent operand/stack alignments. */
+    static const lib_u8 error_forms[]={0xc3u,0x00u,0x07u};
+    for (lib_u8 operation=V30_DIVIDE_UNSIGNED; operation<=V30_DIVIDE_SIGNED; ++operation)
+        for (lib_u8 width=1u; width<=2u; ++width)
+            for (lib_size form=0u; form<sizeof(error_forms); ++form)
+                for (lib_u8 aligned=0u; aligned<2u; ++aligned) {
+                    const v30_multiply_case item={.operation=(v30_multiply_operation)operation,
+                        .width=width,.modrm=(lib_u8)(error_forms[form] | ((operation+4u) << 3u)),
+                        .dividend=0x12345678u,.operand=0u,.aligned_stack=aligned!=0u};
+                    if (v30_multiply_check(&item,LIB_TRUE)) return 1;
+                    ++cases;
+                }
     /* BX+SI is even and BX is odd in the prepared register image; every
      * source family reaches both memory timing rows with successful arithmetic. */
     for (lib_u8 operation = 0u; operation < 6u; ++operation)

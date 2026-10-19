@@ -1,6 +1,10 @@
 #include "support/cpu_v30_memory_fixture.h"
 #include "lib/types/file.h"
 
+_Static_assert(X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_NOMINAL_SOURCE==15 &&
+    X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_EMULATION_L2==16,
+    "Append the compatibility model without moving existing origins");
+
 typedef enum emulation_operation {
     BAD, NOP, LXI, STAX, INX, INR, DCR, MVI, RLC, DAD, LDAX, DCX, RRC,
     RAL, RAR, SHLD, DAA, LHLD, CMA, STA, STC, LDA, CMC, MOV, HALT,
@@ -365,6 +369,43 @@ static void emulation_expected(emulation_fixture *fixture, lib_u8 opcode,
     }
 }
 
+static lib_i32 emulation_nominal(const emulation_fixture *fixture, const t_cpu *before,
+    lib_u8 opcode, const v30_memory_plan *plan)
+{
+    /* NEC8080AF printed194: independent operation table, not CPU dispatch. */
+    static const lib_u8 base[]={
+        [NOP]=4u,[LXI]=10u,[STAX]=7u,[INX]=5u,[INR]=5u,[DCR]=5u,[MVI]=7u,
+        [RLC]=4u,[DAD]=10u,[LDAX]=7u,[DCX]=5u,[RRC]=4u,[RAL]=4u,[RAR]=4u,
+        [SHLD]=16u,[DAA]=4u,[LHLD]=16u,[CMA]=4u,[STA]=13u,[STC]=4u,[LDA]=13u,
+        [CMC]=4u,[MOV]=5u,[HALT]=7u,[ADD]=4u,[ADC]=4u,[SUB]=4u,[SBB]=4u,
+        [ANA]=4u,[XRA]=4u,[ORA]=4u,[CMP]=4u,[RET]=10u,[POP]=10u,[JMP]=10u,
+        [CALL]=17u,[PUSH]=11u,[ALUI]=7u,[RST]=11u,[OUT]=10u,[IN]=10u,
+        [XTHL]=18u,[PCHL]=5u,[XCHG]=4u,[DI]=4u,[SPHL]=5u,[EI]=4u
+    };
+    const emulation_operation operation=operations[opcode];
+    const lib_bool control=operation==RET || operation==JMP || operation==CALL ||
+        operation==RST || operation==PCHL;
+    const lib_bool taken=control && (operation==RST || operation==PCHL ||
+        opcode==0xc9u || opcode==0xc3u || opcode==0xcdu ||
+        emulation_condition(before->data.eflags,(opcode >> 3u) & 7u));
+    lib_u64 clocks=base[operation];
+    if (plan->count) {
+        if (operation==MOV || operation==ADD || operation==ADC || operation==SUB ||
+            operation==SBB || operation==ANA || operation==XRA || operation==ORA ||
+            operation==CMP || operation==MVI) clocks=operation==MOV ? 7u :
+                operation==MVI ? 10u : 7u;
+        if (operation==INR || operation==DCR) clocks=10u;
+    }
+    if (operation==RET && opcode!=0xc9u) clocks=taken ? 11u : 5u;
+    if (operation==CALL && !taken) clocks=11u;
+    return v30_memory_check_nominal(&fixture->ram,clocks,0x01000000u | opcode,
+        X86_CORE_CPU_TIMING_INPUT_MODE |
+        (plan->count ? X86_CORE_CPU_TIMING_INPUT_MEMORY : 0u) |
+        (control ? X86_CORE_CPU_TIMING_INPUT_CONTROL | X86_CORE_CPU_TIMING_INPUT_BRANCH : 0u) |
+        (taken ? X86_CORE_CPU_TIMING_INPUT_BRANCH_TAKEN : 0u),
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_V30_EMULATION_L2);
+}
+
 static lib_i32 emulation_check(emulation_fixture *fixture, lib_u8 opcode,
     lib_u16 immediate, lib_bool deep)
 {
@@ -401,6 +442,7 @@ static lib_i32 emulation_check(emulation_fixture *fixture, lib_u8 opcode,
     if (fixture->port_calls != (lib_u32)port || fixture->port_completions != (lib_u32)port ||
         fixture->port_phases != 2u*(lib_u32)port || fixture->port_active ||
         (operations[opcode] == OUT && fixture->port_seen != before.data.al)) return 1;
+    if (!unsupported && emulation_nominal(fixture,&before,opcode,&plan)) return 1;
     if (!deep || unsupported) return 0;
     const lib_u32 reads=fixture->ram.reads, writes=fixture->ram.writes,
         fetches=fixture->ram.fetches;
@@ -419,6 +461,8 @@ static lib_i32 emulation_check(emulation_fixture *fixture, lib_u8 opcode,
             else retry->port_failed=LIB_TRUE;
             x86_core_cpu_execution_refresh(&retry->ram.bus.execution);
             if (!retry->ram.bus.execution.stop_requested || retry->ram.bus.faults != 1u ||
+                x86_core_cpu_capture_timing(&retry->ram.bus.execution).ticks ||
+                retry->ram.bus.execution.completed_observation_valid ||
                 retry->ram.bus.delivered_exceptions || retry->ram.invalid ||
                 lib_memory_compare(&retry->ram.bus.cpu,&before,sizeof(before)) ||
                 retry->port_active || retry->port_completions ||
@@ -655,5 +699,6 @@ lib_i32 main(void)
     if (emulation_program()) { lib_c_printf("V30:EMULATION:PROGRAM:FAIL\n"); return 1; }
     if (emulation_interrupts()) { lib_c_printf("V30:EMULATION:INTERRUPT:FAIL\n"); return 1; }
     lib_c_printf("V30:EMULATION:OK slots=%u cases=%u\n",admitted,cases);
+    lib_c_printf("V30:EMULATION-NOMINAL-L2:OK\n");
     return 0;
 }
