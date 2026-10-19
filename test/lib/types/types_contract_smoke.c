@@ -1,4 +1,5 @@
 #include "lib/types/test.h"
+#include "lib/types/math.h"
 #include "lib/types/types_interface.h"
 
 _Static_assert(sizeof(lib_i8) == 1u, "lib_i8 must remain one byte");
@@ -22,6 +23,15 @@ int main(void)
     lib_uptr expected_token;
     char bytes[4];
     char *copy = lib_allocate_zero(4u, 1u);
+    double (* volatile sine)(double) = lib_c_sin;
+    double (* volatile cosine)(double) = lib_c_cos;
+    double (* volatile arctangent)(double) = lib_c_atan;
+    double (* volatile square_root)(double) = lib_c_sqrt;
+
+    CHECK(sine(0.0) == 0.0);
+    CHECK(cosine(0.0) == 1.0);
+    CHECK(arctangent(0.0) == 0.0);
+    CHECK(square_root(4.0) == 2.0);
 
     CHECK(copy != LIB_NULL);
     lib_memory_copy(bytes, "abc", 4u);

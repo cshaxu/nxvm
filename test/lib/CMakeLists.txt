@@ -40,6 +40,9 @@ add_test(NAME lib.test-registration COMMAND "${CMAKE_COMMAND}"
 
 shared_register_test(lib console/lib_console console)
 shared_register_test(lib types/types_contract types)
+if(UNIX)
+    target_link_libraries(lib-test-types-types_contract PRIVATE m)
+endif()
 shared_register_test(lib base/clock base)
 shared_register_test(lib base/process_directory base)
 shared_register_test(lib base/base_text base)

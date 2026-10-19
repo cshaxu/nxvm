@@ -76,3 +76,8 @@ vocabulary. `file.h` owns ISO C streams and formatted-output vocabulary.
 These wrappers preserve C runtime behavior, including the unsigned-character
 precondition for character classification; they do not add validation or
 ownership rules.
+
+`math.h` optionally exports `lib_c_sin`, `lib_c_cos`, `lib_c_atan` and
+`lib_c_sqrt`. Their ISO C domain and error behavior remain unchanged.
+Consumers include it explicitly and supply any platform-required math link;
+neither the Types umbrella nor its interface target adds that dependency.
