@@ -190,6 +190,26 @@ media-role guards remain unchanged. Only persistent caches exist in build,
 with no owned temporary process or disposable directory. No cleanup deletion
 or unaffected release rebuild is required.
 
+## Coordinator Acceptance
+
+Sequential coordinator actual git show review of b3a7cc0a6 accepts all six
+changed files against the packet. The dependency partition preserves every
+numeric row and result/status gate; it is not an opcode-selected closure
+of the nine-operation batch. The local circular algorithm is bounded,
+configuration remains single-owned, and true byte transport preserves
+neighbours/physical limits through the original DMA route. Actual flags
+read/write and accepted-prefix failure stages, Board delivery/reset and all
+old matrices remain proved without a new test executable or production path.
+
+P1 totals439 additions/8 removals/net431: production36/5/net31,
+existing test147/3/net144 and records256/0/net256. The records exceed the
+initial upper estimate by16 lines because they retain the extra fixture-only
+qualification identities and explicit whole-ledger dependency disposition;
+implementation scope does not expand. Source is below its estimate because
+existing storage and one helper suffice. Governance acceptance changes no
+frozen source/test/artifact. S17 closes its memory-effect receiver only;
+common arithmetic-status and every original T3/M1 remainder remain required.
+
 ## Archived S17 Packet
 
 | Field | Required record |
