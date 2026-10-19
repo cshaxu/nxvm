@@ -44,6 +44,14 @@ policies, axial quirks, common status prefix, result ownership and each
 failure stage. This closes neither2a05/unresolved/RNG/DMA nor genuine selected-set
 startup; all retain their original receivers before T3 can close.
 
+The [S20 residual contract](../etc/evidence/t3-s20-residual-contract.md) reconciles
+all four remaining initial IDs and every mapped RNG/DMA/sort group before
+further implementation. Its named receivers use the existing Core timeline,
+mode-banked setup and one pending-operation owner, then Video-owned latches
+and complete selected-set startup. Neither a reference magic-address patch
+nor unimplemented/no-op macros qualify those gates. No Shared time extension
+is needed: the existing public timeline observation supplies the actual owner.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free
