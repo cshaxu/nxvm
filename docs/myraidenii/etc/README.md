@@ -71,6 +71,7 @@
 - [T3 COP command/result/DMA receiver](evidence/t3-s6-cop-command-receiver.md).
 - [T3 COP command evidence and Video-owner transfer](evidence/t3-s7-cop-owner-transfer.md).
 - [T3 Video periodic-event receiver](evidence/t3-s8-video-periodic-event.md).
+- [T3 selected-set COP initialization protocol](evidence/t3-s9-cop-initialization-protocol.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
