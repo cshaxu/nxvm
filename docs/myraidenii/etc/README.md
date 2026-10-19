@@ -82,6 +82,7 @@
 - [T3 low-control data decode and isolated COP failure fixture](evidence/t3-s16-board-control-window.md).
 - [T3 integer angle-approach memory receiver and numeric dependency disposition](evidence/t3-s17-cop-angle-approach.md).
 - [T3 approved optional Types math vocabulary prerequisite](evidence/t3-s18-types-math.md).
+- [T3 complete nine-ID L2 numeric/result receiver](evidence/t3-s19-cop-numeric.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

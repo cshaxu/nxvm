@@ -2,6 +2,30 @@
 
 ## Current Work
 
+## Active S19 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: MyRaidenII M1 T3 S19 after accepted S18 e7de691e0; one-session sequential coordinator/executor. |
+| Admission And Approval | Owner's complete MyRaidenII implementation approval and delegated ordinary same-T planning. Use the explicitly approved S18 math vocabulary; no further Shared edit is admitted. |
+| Objective | Consume the full S12 nine-ID numeric ledger: 130e/2208/338e/3bb0/42c2/4aa0/6200/8100/8900, arithmetic status/distance/angle results and full chains/failure/reset/admission proof. |
+| Non-goals | No physical COP timing claim, uploaded microcode interpreter, copied reference implementation/table, Shared API change, RNG/DMA/2a05/unresolved algorithm repair, game startup or playable qualification. |
+| Reference Baseline | Clean pushed e7de691e0; S12 complete ledger, S13 common entry-status correction, S17 angle approach and S18 four math aliases. Fixed MAME c1425a1af00b88aa07477b1b23a30ed5e5f856ff cmd.ipp SHA B1E84AEF5BFDEBCA53D8F0AF0B1BE481B8218157BA460C1714853D322AC92EFC, factual L2 research only. |
+| Candidate Proposal | ../proposals/m1-board-cop.md B07/B08; ../etc/evidence/t3-s12-cop-geometry-contract.md complete nine-member receiver, superseded only by explicit S13 correction and S19 documented arithmetic choices. |
+| Files And ABI Surface | Existing src/myraidenii/core/cop.c and its CMakeLists.txt; existing test/myraidenii/unit/core/board_bus_smoke.c; product records only. No public API/state mirror. Existing register store grows28 bytes through5b5h, not S12's historical176-byte arithmetic estimate. Production +150--220/-5--15; existing test +220--320/-5--15. |
+| Applicable Rules | Architecture sole COP register/result/admission owner and existing Core DMA/safe point; Coding bounded conversions, unsigned modulo differences, no negative shifts, existing table-driven test reuse and optional Types math only; Source original implementation from declared mathematical contracts, no reference body/table import; Execution full batch before/after, exact proof, cached build, complete P and actual coordinator review; Documentation L2/latency and live-read uncertainty explicit. |
+| Verification | Independent literal quadrants/wrap/word sign/distance extremes/division zero and scales/trig cardinals and neighbours; all three ports. Actual Board chain, byte/word/result read-only/observe/reset/busy/upload behavior. Existing isolated actual COP fixture covers each operand read and late/partial output failure with old/new result publication and common error-bit clearing. Reuse old transfer/update/collision matrices. Stable x64/x86 strict builds and focused test, then full687 units sequentially four workers/600-second aggregate; docs/whitespace/protected inputs/ten release guards. |
+| Expected Markers | One numeric dispatch family shares coordinates/checked DMA/result store. Common status error clearing happens once on admitted service. Result words5b0/5b2/5b4 have one read-only owner; reset zeroes them. No live-memory mirror or duplicate math-library implementation. |
+| Asset Needs | ROM-free literals only, no task temporary root. Fixed reference responses in memory only. Reuse .ninja/.ccache, preserve all ten current product EXEs and protected inputs; no MyRaidenII frontend exists yet. |
+| Reporting Requirements | Before code report complete batch, selected L2 choices and estimates; record actual delta and full failure/publication order, independent oracles, dual-width proof, retained T3 gates, source hashes and actual-change review. |
+| Stop Conditions | Shared/public extension, undefined arithmetic or unbounded floating conversion, copied reference source/table, altered protected input, another execution/time/result owner or unsupported physical/gameplay claim. |
+| Exit Criteria | All nine ledger members and common results have direct actual-bus proof with correct byte/partial failure/reset/status chains; old regressions and full dual-width units pass. Complete implementation P pushed, coordinator actual-change acceptance and governance P pushed; T3 remains open for its other obligations. |
+| Original Owner Request | Implement complete playable MyRaidenII, single-session dual-role governance, coherent batch implementation and reuse/extend existing tests rather than repeated per-opcode tests. |
+| Similar-Issue Sweep | All arithmetic result stores/conversions and angle/distance/division/trig variants, all command ports, existing handler dispatch error clearing and read/write boundary prefixes; no duplicate angle calculator or legacy branch. Inspect retained unmodelled routes and any changed rejection expectations rather than weaken old tests. |
+
+Executor confirms the complete receiver and its explicit L2 boundary before
+implementation. The S18 math approval changes no precision claim.
+
 M1 T3 remains open after accepted S1--S18:
 
 | S | Delivered scope | Receipt |
@@ -180,3 +204,11 @@ The complete nine-ID numerical/result receiver is now unblocked by the math
 vocabulary prerequisite, but remains unimplemented/unqualified as recorded
 in S12/S17. T3/M1,2a05/RNG/DMA/unresolved forms and genuine startup remain
 open; no desktop/RDP, external integration or playable-game pass is claimed.
+
+S19 executor delivery completes the full nine-ID L2 numeric/result receiver.
+The [S19 record](../etc/evidence/t3-s19-cop-numeric.md) retains all dispositions,
+actual-bus/failure proof, the x87 truncation correction, frozen identities and
+actual production+136/-3, test+333/-2 delta. Final complete units pass687/687
+per width (x64 116.99s; x86 130.43s), zero failures/skips. Shared, ten release
+identities and protected inputs remain unchanged. The active packet remains
+pending coordinator actual-change acceptance; T3/M1 remain open.

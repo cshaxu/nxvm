@@ -1,11 +1,17 @@
 #include "myraidenii/core/cop.h"
+#include "lib/types/math.h"
+
+#define MYRAIDENII_CORE_COP_PI 3.14159265358979323846
 
 enum {
     MYRAIDENII_CORE_COP_STORAGE_START = 0x00400u,
-    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x0019au,
+    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x001b6u,
     MYRAIDENII_CORE_COP_COLLISION_RESULT = 0x00580u,
     MYRAIDENII_CORE_COP_DECIMAL_RESULT = 0x00590u,
     MYRAIDENII_CORE_COP_DECIMAL_DIGITS = 9u,
+    MYRAIDENII_CORE_COP_STATUS = 0x005b0u,
+    MYRAIDENII_CORE_COP_DISTANCE = 0x005b2u,
+    MYRAIDENII_CORE_COP_ANGLE = 0x005b4u,
     MYRAIDENII_CORE_COP_PROGRAM_WORDS = 256u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS = 8u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOTS =
@@ -27,7 +33,8 @@ typedef enum myraidenii_core_cop_command_kind {
     MYRAIDENII_CORE_COP_UPDATE,
     MYRAIDENII_CORE_COP_POSITION,
     MYRAIDENII_CORE_COP_HITBOX,
-    MYRAIDENII_CORE_COP_ANGLE_APPROACH
+    MYRAIDENII_CORE_COP_ANGLE_APPROACH,
+    MYRAIDENII_CORE_COP_NUMERIC
 } myraidenii_core_cop_command_kind;
 
 typedef struct myraidenii_core_cop_range {
@@ -78,7 +85,7 @@ static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
     {MYRAIDENII_CORE_COP_DECIMAL_RESULT,
         MYRAIDENII_CORE_COP_DECIMAL_DIGITS + 1u, MYRAIDENII_CORE_COP_RESULT},
     {0x005a0u, 0x00008u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
-    {0x005b0u, 0x00006u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER},
+    {MYRAIDENII_CORE_COP_STATUS, 6u, MYRAIDENII_CORE_COP_RESULT},
     {0x006fcu, 0x00004u, MYRAIDENII_CORE_COP_UNMODELLED_REGISTER}
 };
 
@@ -90,6 +97,9 @@ static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 com
     case 0xa100u: case 0xa900u: return MYRAIDENII_CORE_COP_POSITION;
     case 0xb100u: case 0xb900u: return MYRAIDENII_CORE_COP_HITBOX;
     case 0x6200u: return MYRAIDENII_CORE_COP_ANGLE_APPROACH;
+    case 0x130eu: case 0x2208u: case 0x338eu: case 0x3bb0u:
+    case 0x42c2u: case 0x4aa0u: case 0x8100u: case 0x8900u:
+        return MYRAIDENII_CORE_COP_NUMERIC;
     default: return MYRAIDENII_CORE_COP_UNSUPPORTED;
     }
 }
@@ -414,6 +424,122 @@ static void myraidenii_core_cop_store_word(myraidenii_core_cop *cop,
     cop->registers[index + 1u] = (lib_u8)(word >> 8u);
 }
 
+static lib_status myraidenii_core_cop_coordinates(myraidenii_core_cop *cop,
+    lib_u32 difference[2])
+{
+    for (lib_u8 axis = 0u; axis < 2u; ++axis) {
+        lib_u32 first = 0u, second = 0u;
+        lib_status status = myraidenii_core_cop_memory(cop,
+            myraidenii_core_cop_address(cop, 1u), 4u + axis * 4u, 4u, LIB_FALSE, &second);
+
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_cop_memory(cop,
+                myraidenii_core_cop_address(cop, 0u), 4u + axis * 4u, 4u, LIB_FALSE, &first);
+        if (status != LIB_STATUS_OK) return status;
+        difference[axis] = second - first;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_cop_numeric(myraidenii_core_cop *cop)
+{
+    const lib_u16 command = cop->pending_command;
+    const lib_u32 base = myraidenii_core_cop_address(cop, 0u);
+    const lib_u8 scale = (lib_u8)(myraidenii_core_cop_word(cop, 0x444u) & 3u);
+    lib_u32 value = 0u, output = 0u;
+    lib_status status;
+
+    if (command == 0x130eu || command == 0x338eu || command == 0x2208u) {
+        lib_i64 x, y;
+        lib_u32 operands[2] = {0u, 0u};
+        lib_u16 result_status = command == 0x2208u ?
+            myraidenii_core_cop_word(cop, MYRAIDENII_CORE_COP_STATUS) : 7u;
+
+        if (command == 0x2208u) {
+            status = myraidenii_core_cop_memory(cop, base, 0x12u, 2u,
+                LIB_FALSE, &operands[0]);
+            if (status == LIB_STATUS_OK)
+                status = myraidenii_core_cop_memory(cop, base, 0x16u, 2u,
+                    LIB_FALSE, &operands[1]);
+            x = operands[0];
+            y = operands[1];
+        } else {
+            status = myraidenii_core_cop_coordinates(cop, operands);
+            /* Explicit L2 modulo32 subtraction and signed interpretation. */
+            x = operands[0] <= LIB_INT32_MAX ? (lib_i64)operands[0] :
+                (lib_i64)operands[0] - 0x100000000LL;
+            y = operands[1] <= LIB_INT32_MAX ? (lib_i64)operands[1] :
+                (lib_i64)operands[1] - 0x100000000LL;
+        }
+        if (status != LIB_STATUS_OK) return status;
+        if (y == 0) {
+            result_status |= 0x8000u;
+        } else {
+            /* Commit to double before integer truncation on x87 as well as SSE. */
+            volatile double units = lib_c_atan((double)x / (double)y) *
+                128.0 / MYRAIDENII_CORE_COP_PI;
+            lib_i32 angle = (lib_i32)units;
+
+            if (y < 0) angle += 128;
+            value = (lib_u8)angle;
+        }
+        myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_STATUS, result_status);
+        myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_ANGLE, (lib_u16)value);
+        return command == 0x338eu ?
+            myraidenii_core_cop_memory(cop, base, 0x34u, 1u, LIB_TRUE, &value) : LIB_STATUS_OK;
+    }
+    if (command == 0x3bb0u) {
+        lib_u32 difference[2] = {0u, 0u};
+
+        status = myraidenii_core_cop_coordinates(cop, difference);
+        if (status != LIB_STATUS_OK) return status;
+        /* Live-read L2 integer parts, with wide squares instead of signed overflow. */
+        const lib_i64 x = myraidenii_core_cop_signed_word(difference[0] >> 16u);
+        const lib_i64 y = myraidenii_core_cop_signed_word(difference[1] >> 16u);
+
+        value = (lib_u16)lib_c_sqrt((double)(x * x + y * y));
+        myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_DISTANCE, (lib_u16)value);
+        return myraidenii_core_cop_memory(cop, base, 0x3au, 2u, LIB_TRUE, &value);
+    }
+    if (command == 0x42c2u || command == 0x4aa0u) {
+        const lib_bool forward = command == 0x42c2u;
+
+        status = myraidenii_core_cop_memory(cop, base, forward ? 0x36u : 0x38u,
+            2u, LIB_FALSE, &value);
+        if (status != LIB_STATUS_OK) return status;
+        if (value == 0u && forward) {
+            myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_STATUS,
+                myraidenii_core_cop_word(cop, MYRAIDENII_CORE_COP_STATUS) | 0x8000u);
+        } else {
+            if (value == 0u) value = 1u;
+            output = ((lib_u32)myraidenii_core_cop_word(cop,
+                MYRAIDENII_CORE_COP_DISTANCE) << (5u - scale)) / value;
+            myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_STATUS, 7u);
+        }
+        return myraidenii_core_cop_memory(cop, base, forward ? 0x38u : 0x36u,
+            2u, LIB_TRUE, &output);
+    }
+    lib_u32 amplitude = 0u;
+
+    status = myraidenii_core_cop_memory(cop, base, 0x34u, 2u, LIB_FALSE, &value);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, base, 0x36u, 2u, LIB_FALSE, &amplitude);
+    if (status != LIB_STATUS_OK) return status;
+    const lib_u8 angle = (lib_u8)value;
+    const double radians = angle * MYRAIDENII_CORE_COP_PI / 128.0;
+    const lib_bool sine = command == 0x8100u;
+    lib_i32 magnitude = (lib_i32)(amplitude & 0xffu) * 2048;
+
+    /* Reference-derived axial quirks are explicit L2, not sine/cosine identities. */
+    if (angle == (sine ? 0xc0u : 0x80u)) magnitude *= 2;
+    volatile double units = magnitude * (sine ? lib_c_sin(radians) : lib_c_cos(radians));
+    const lib_i32 component = (lib_i32)units;
+
+    output = (lib_u32)(component * (1 << scale));
+    return myraidenii_core_cop_memory(cop, base, sine ? 0x10u : 0x14u,
+        4u, LIB_TRUE, &output);
+}
+
 static lib_status myraidenii_core_cop_capture_hitbox(myraidenii_core_cop *cop)
 {
     const lib_u8 slot = cop->pending_command == 0xb900u ? 1u : 0u;
@@ -464,10 +590,14 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
     if (cop == LIB_NULL || cop->machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (cop->pending_command == 0u) return LIB_STATUS_OK;
     kind = myraidenii_core_cop_classify(cop->pending_command);
+    myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_STATUS,
+        myraidenii_core_cop_word(cop, MYRAIDENII_CORE_COP_STATUS) & 0x7fffu);
     if (kind == MYRAIDENII_CORE_COP_UPDATE) {
         status = myraidenii_core_cop_update(cop);
     } else if (kind == MYRAIDENII_CORE_COP_ANGLE_APPROACH) {
         status = myraidenii_core_cop_approach_angle(cop);
+    } else if (kind == MYRAIDENII_CORE_COP_NUMERIC) {
+        status = myraidenii_core_cop_numeric(cop);
     } else if (kind == MYRAIDENII_CORE_COP_POSITION) {
         status = myraidenii_core_cop_capture_position(cop);
     } else if (kind == MYRAIDENII_CORE_COP_HITBOX) {

@@ -37,6 +37,13 @@ implementation-order partition, not a reduced coverage universe or a complete
 numeric/hardware claim. The [S17 record](../etc/evidence/t3-s17-cop-angle-approach.md)
 tracks all nine before/after dispositions and failure-order proof.
 
+S19 consumes the full nine-ID numeric/result receiver using S18's approved
+optional Types math. Its [complete ledger and proof](../etc/evidence/t3-s19-cop-numeric.md)
+records explicit L2 signedness, live-read distance, distinct zero-divisor
+policies, axial quirks, common status prefix, result ownership and each
+failure stage. This closes neither2a05/unresolved/RNG/DMA nor genuine selected-set
+startup; all retain their original receivers before T3 can close.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free
