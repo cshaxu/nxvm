@@ -812,17 +812,22 @@ static lib_i32 board_cop_collisions(void)
             const lib_u16 command = commands[fault < 8u ? slot : 2u + (slot % 2u)];
 
             if (fault < 8u) {
+                const lib_u16 position_base[] = {0x426u,0x42cu,0x46cu,0x468u};
+
                 if (board_cop_word_write(machine, 0x4c0u + slot * 2u,
-                        (lib_u16)(0x426u - (fault % 4u) * 4u)) != LIB_STATUS_OK)
+                        position_base[fault % 4u]) != LIB_STATUS_OK)
                     goto done;
             } else if (fault == 16u) {
                 if (board_cop_word_write(machine, 0x436u, 0x10u) != LIB_STATUS_OK) goto done;
             } else if ((fault - 8u) % 4u == 0u) {
                 if (board_cop_word_write(machine, 0x4c4u + slot * 2u, 0x428u) != LIB_STATUS_OK)
                     goto done;
-            } else if (board_cop_word_write(machine, 0x3000u + slot * 2u,
-                    (lib_u16)(0x428u - (((fault - 8u) % 4u) - 1u) * 2u)) != LIB_STATUS_OK) {
-                goto done;
+            } else {
+                const lib_u16 box_pointer[] = {0x428u,0x426u,0x42eu};
+
+                if (board_cop_word_write(machine, 0x3000u + slot * 2u,
+                        box_pointer[((fault - 8u) % 4u) - 1u]) != LIB_STATUS_OK)
+                    goto done;
             }
             status = board_cop_run_commands(machine, &command, 1u, 0u, &result);
             if (status != LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
@@ -880,10 +885,143 @@ done:
     return failures != 0;
 }
 
+static lib_i32 board_cop_decimal_result(x86_core_machine *machine, const char expected[10])
+{
+    lib_u8 actual[2];
+
+    for (lib_u8 index = 0u; index < 10u; ++index) {
+        if (x86_core_machine_memory_read(machine, 0x590u + index, actual, 1u) != LIB_STATUS_OK ||
+            actual[0] != (lib_u8)expected[index])
+            return 1;
+        if (index < 9u && (x86_core_machine_memory_inspect(machine, 0x590u + index,
+                actual, 2u) != LIB_STATUS_OK || actual[0] != (lib_u8)expected[index] ||
+                actual[1] != (lib_u8)expected[index + 1u]))
+            return 1;
+    }
+    return 0;
+}
+
+static lib_i32 board_cop_decimal(void)
+{
+    static const struct {
+        lib_u32 number;
+        lib_u16 mode;
+        char expected[10];
+    } cases[] = {
+        {0u,0u,"0        "}, {1u,0u,"1        "}, {65535u,1u,"53556    "},
+        {65536u,2u,"63556    "}, {123456789u,0u,"987654321"},
+        {999999999u,0u,"999999999"}, {1000000000u,0u,"000000000"},
+        {LIB_UINT32_MAX,0u,"592769492"}, {0x12345678u,0u,"698914503"},
+        {0u,3u,"000000000"}, {42u,3u,"240000000"},
+        {1u,0x103u,"1        "}, {1u,0xffffu,"1        "}
+    };
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    const lib_u8 guest[] = {
+        0xb8u,3u,0u, 0xa3u,0x24u,4u, 0xb8u,0x78u,0x56u, 0xa3u,0x20u,4u,
+        0xb8u,0x34u,0x12u, 0xa3u,0x22u,4u, 0xa1u,0x90u,5u,
+        0xa3u,0u,0x30u, 0xf4u
+    };
+    const char empty[10] = {0};
+    const lib_u16 collision_empty[5] = {0};
+    const lib_u8 lanes[] = {0x78u,0x56u,0x34u,0x12u};
+    const lib_u8 mode_bytes[] = {3u,0u,1u};
+    const char lane_digits[][10] = {"021      ","63122    ","8000343  ","698914503"};
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_run_result result = {0};
+    lib_u8 actual[2];
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    if (board_cop_decimal_result(machine, empty)) goto done;
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        if (board_cop_word_write(machine, 0x424u, cases[index].mode) != LIB_STATUS_OK ||
+            board_cop_dword_write(machine, 0x420u, cases[index].number) != LIB_STATUS_OK ||
+            board_cop_decimal_result(machine, cases[index].expected)) {
+            lib_c_printf("COP:DECIMAL:VECTOR:FAIL case=%u\n", (lib_u32)index);
+            goto done;
+        }
+    }
+    /* Mode changes alone preserve the completed bytes, including padding. */
+    if (board_cop_word_write(machine, 0x424u, 3u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "1        ") ||
+        board_cop_word_write(machine, 0x420u, 1u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "100000000") ||
+        board_cop_word_write(machine, 0x424u, 0x103u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "100000000") ||
+        board_cop_word_write(machine, 0x422u, 0u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "1        ") ||
+        x86_core_machine_memory_write(machine, 0x424u, mode_bytes, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x425u, mode_bytes + 1u, 1u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "1        ") ||
+        board_cop_word_write(machine, 0x420u, 1u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "100000000") ||
+        x86_core_machine_memory_write(machine, 0x425u, mode_bytes + 2u, 1u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "100000000") ||
+        board_cop_word_write(machine, 0x422u, 0u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "1        ") ||
+        board_cop_dword_write(machine, 0x420u, 0u) != LIB_STATUS_OK)
+        goto done;
+    for (lib_u8 index = 0u; index < sizeof(lanes); ++index) {
+        if (x86_core_machine_memory_write(machine, 0x420u + index, &lanes[index], 1u) !=
+                LIB_STATUS_OK || board_cop_decimal_result(machine, lane_digits[index]))
+            goto done;
+    }
+    if (board_cop_word_write(machine, 0x421u, 0xcdabu) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "466864513") ||
+        board_cop_collision_result(machine, collision_empty))
+        goto done;
+    for (lib_u8 index = 0u; index < 3u; ++index) {
+        if (x86_core_machine_memory_read(machine, 0x420u + index * 2u, actual, 2u) !=
+                LIB_STATUS_INVALID_STATE ||
+            x86_core_machine_memory_inspect(machine, 0x420u + index * 2u, actual, 2u) !=
+                LIB_STATUS_INVALID_STATE)
+            goto done;
+    }
+    for (lib_u8 index = 0u; index < 5u; ++index) {
+        if (board_cop_word_write(machine, 0x590u + index * 2u, 0xffffu) != LIB_STATUS_INVALID_STATE)
+            goto done;
+    }
+    if (x86_core_machine_memory_write(machine, 0x599u, lanes, 1u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_decimal_result(machine, "466864513") ||
+        x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){9u,0u}, &result) !=
+            LIB_STATUS_OK || result.executed != 9u ||
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        board_cop_decimal_result(machine, "698914503") ||
+        x86_core_machine_memory_inspect(machine, 0x3000u, actual, 2u) != LIB_STATUS_OK ||
+        actual[0] != '6' || actual[1] != '9' ||
+        board_cop_upload(machine, 0x5205u, 0u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x420u, 1u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_word_write(machine, 0x424u, 0u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_decimal_result(machine, "698914503") ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, empty) ||
+        board_cop_word_write(machine, 0x420u, 0u) != LIB_STATUS_OK ||
+        board_cop_decimal_result(machine, "0        "))
+        goto done;
+    failed = 0;
+done:
+    if (failed) lib_c_printf("COP:DECIMAL:FAIL reason=%u detail=%u\n",
+        (lib_u32)result.reason, result.detail);
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
-        board_cop_transfers() || board_cop_updates() || board_cop_collisions();
+        board_cop_transfers() || board_cop_updates() || board_cop_collisions() || board_cop_decimal();
 }

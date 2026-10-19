@@ -2,8 +2,10 @@
 
 enum {
     MYRAIDENII_CORE_COP_STORAGE_START = 0x00400u,
-    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x00188u,
+    MYRAIDENII_CORE_COP_STORAGE_BYTES = 0x0019au,
     MYRAIDENII_CORE_COP_COLLISION_RESULT = 0x00580u,
+    MYRAIDENII_CORE_COP_DECIMAL_RESULT = 0x00590u,
+    MYRAIDENII_CORE_COP_DECIMAL_DIGITS = 9u,
     MYRAIDENII_CORE_COP_PROGRAM_WORDS = 256u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS = 8u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOTS =
@@ -12,6 +14,7 @@ enum {
 
 typedef enum myraidenii_core_cop_register_role {
     MYRAIDENII_CORE_COP_CONFIG,
+    MYRAIDENII_CORE_COP_DECIMAL_INPUT,
     MYRAIDENII_CORE_COP_ADDRESS,
     MYRAIDENII_CORE_COP_COMMAND,
     MYRAIDENII_CORE_COP_RESULT
@@ -57,6 +60,8 @@ struct myraidenii_core_cop {
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
+    {0x00420u, 0x00004u, MYRAIDENII_CORE_COP_DECIMAL_INPUT},
+    {0x00424u, 0x00002u, MYRAIDENII_CORE_COP_CONFIG},
     {0x00428u, 0x00006u, MYRAIDENII_CORE_COP_CONFIG},
     {0x00432u, 0x0000cu, MYRAIDENII_CORE_COP_CONFIG},
     {0x00444u, 0x00002u, MYRAIDENII_CORE_COP_CONFIG},
@@ -64,7 +69,9 @@ static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
     {0x004a0u, 0x0000eu, MYRAIDENII_CORE_COP_ADDRESS},
     {0x004c0u, 0x0000eu, MYRAIDENII_CORE_COP_ADDRESS},
     {0x00500u, 0x00006u, MYRAIDENII_CORE_COP_COMMAND},
-    {MYRAIDENII_CORE_COP_COLLISION_RESULT, 10u, MYRAIDENII_CORE_COP_RESULT}
+    {MYRAIDENII_CORE_COP_COLLISION_RESULT, 10u, MYRAIDENII_CORE_COP_RESULT},
+    {MYRAIDENII_CORE_COP_DECIMAL_RESULT,
+        MYRAIDENII_CORE_COP_DECIMAL_DIGITS + 1u, MYRAIDENII_CORE_COP_RESULT}
 };
 
 static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 command)
@@ -91,6 +98,23 @@ static lib_u32 myraidenii_core_cop_address(const myraidenii_core_cop *cop,
 {
     return (lib_u32)myraidenii_core_cop_word(cop, 0x4a0u + index * 2u) << 16u |
         myraidenii_core_cop_word(cop, 0x4c0u + index * 2u);
+}
+
+static void myraidenii_core_cop_decimal_update(myraidenii_core_cop *cop)
+{
+    lib_u32 number = myraidenii_core_cop_word(cop, 0x420u) |
+        (lib_u32)myraidenii_core_cop_word(cop, 0x422u) << 16u;
+    lib_u8 *digits = cop->registers +
+        (MYRAIDENII_CORE_COP_DECIMAL_RESULT - MYRAIDENII_CORE_COP_STORAGE_START);
+    lib_size used = 0u;
+
+    do {
+        digits[used++] = (lib_u8)('0' + number % 10u);
+        number /= 10u;
+    } while (number != 0u && used < MYRAIDENII_CORE_COP_DECIMAL_DIGITS);
+    lib_memory_set(digits + used, myraidenii_core_cop_word(cop, 0x424u) == 3u ? '0' : ' ',
+        MYRAIDENII_CORE_COP_DECIMAL_DIGITS - used);
+    digits[MYRAIDENII_CORE_COP_DECIMAL_DIGITS] = 0u;
 }
 
 static lib_bool myraidenii_core_cop_command_ready(const myraidenii_core_cop *cop,
@@ -167,7 +191,7 @@ static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
     if (range == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
     if (range->role == MYRAIDENII_CORE_COP_ADDRESS) {
         lib_memory_copy((void *)destination,
-            cop->registers + physical - MYRAIDENII_CORE_COP_STORAGE_START, bytes);
+            cop->registers + (physical - MYRAIDENII_CORE_COP_STORAGE_START), bytes);
         return LIB_STATUS_OK;
     }
     if (range->role == MYRAIDENII_CORE_COP_RESULT) {
@@ -175,7 +199,9 @@ static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
             lib_u32 address = physical + (lib_u32)index;
 
             /* 588h is a second view of the one L2 status word at 580h. */
-            if (address >= MYRAIDENII_CORE_COP_COLLISION_RESULT + 8u) address -= 8u;
+            if (address >= MYRAIDENII_CORE_COP_COLLISION_RESULT + 8u &&
+                address < MYRAIDENII_CORE_COP_COLLISION_RESULT + 10u)
+                address -= 8u;
             ((lib_u8 *)destination)[index] =
                 cop->registers[address - MYRAIDENII_CORE_COP_STORAGE_START];
         }
@@ -233,6 +259,8 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
             ((const lib_u8 *)source)[index];
         myraidenii_core_cop_register_written(cop, current);
     }
+    if (range->role == MYRAIDENII_CORE_COP_DECIMAL_INPUT)
+        myraidenii_core_cop_decimal_update(cop);
     return LIB_STATUS_OK;
 }
 
