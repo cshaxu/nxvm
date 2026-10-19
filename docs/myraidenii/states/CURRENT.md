@@ -34,6 +34,10 @@ sixteen-field packet, sources, failure review, similar-issue sweep and diff.
 
 ## Remaining T2 Work
 
+Repository-wide [Td S181](../../nxvm/etc/evidence/td-s181-build-governance.md)
+reconfigures stable Ninja trees and safely retires old build outputs. Accepted
+S46 proof remains unchanged; its research PDFs are hash-preserved externally.
+
 The [owner-approved successor plan](../proposals/m1-v30.md#owner-approved-remaining-s-plan)
 keeps all unfinished CPU work in this same open NEC CPU T2:
 
