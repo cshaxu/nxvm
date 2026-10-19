@@ -62,6 +62,30 @@ The [NXVM Queue](QUEUE.md) records the transfer; other candidates remain pending
 
 ## Receiving Release Update From MyRaidenII
 
+MyRaidenII M1 T2 S47 refreshes the eight0564 PC EXEs after Shared P1
+`6d4ed7fe8` semantic/form/prefix/lock-lifecycle delivery. No NXVM source, configuration,
+firmware or media is changed, and no NXVM task/S is allocated. Both MyNES
+0044 EXEs and all13 protected asset files remain unchanged.
+
+Current receiving proof passes682 exact repository unit names per width,
+498 retained strict rows and1398 Types inputs. Four PC receivers each pass
+their selected configuration/boot cases:14 integrations per width, followed
+by restore identity. Default restore relinks the final EXE, so all five default
+receiving cases additionally pass on that final deployment. Eight PE widths,
+stripped sections and final hashes are verified; profile switches/restores
+compile zero CPU objects. Both cached Ninja graphs finish at default; six
+selected external media identities retain before/after size/SHA/access mode.
+
+The [S47 evidence](../../myraidenii/etc/evidence/t2-s47-residual-semantics.md),
+[results](../../myraidenii/etc/evidence/t2-s47-results.json) and
+[final ten release identities](../../myraidenii/etc/evidence/t2-s47-artifacts.json)
+supersede only the prior receiving PC hashes. They do not rewrite T564 or Td
+S181 status, qualify the whole external suite/desktop/RDP, or complete V30
+timing/Machine admission or MyRaidenII gameplay. The one sandbox cleanup
+failure and unchanged native-permission replacement proof are recorded.
+
+### Prior S46 Receiving Update
+
 MyRaidenII M1 T2 S46 refreshes the eight current 0564 PC EXEs after
 Shared V30 escape/bus and instruction-entry mode P1 `128204d91`.
 NXVM production source, configuration, firmware and media are unchanged;
