@@ -123,3 +123,25 @@ device boundary.  It did not falsely claim a boot, a COP result read, a DMA
 trigger or a hardware-exact MAME-derived model.  The finite receiving split is
 accepted: the next bounded S establishes explicit local COP register ownership;
 decoded command/DMA semantics remain a later S.
+
+## S5 Coordinator Acceptance
+
+The coordinator independently reviewed the committed implementation P1
+`e284fb386` against the admitted S5 packet, S4 B07 evidence and the actual
+source/test diff. One private MyRaidenII Core COP owner now installs every S4
+observed configuration/register family and the observed command family as
+replacement routes. The Board remains the sole composer; no Shared contract,
+second bus, clock, scheduler, ROM payload, external source/table or generic
+device framework was introduced.
+
+Configuration writes accept the Core's existing byte/word dispatch and remain
+private COP state. Reads and the unmodelled command range explicitly return
+`LIB_STATUS_INVALID_STATE`, rather than `LIB_STATUS_UNSUPPORTED`, so a known
+COP address cannot silently decline and fall back to ordinary RAM. The
+expanded existing Board unit proves each configured route, byte/word dispatch,
+the explicit command failure, an adjacent RAM boundary and reset route
+retention without creating test-only readback or a parallel harness. Final
+repository unit qualification passed `687/687` on x64 and x86; MyRaidenII
+documentation governance and whitespace checks pass. S5 is accepted and
+closed. COP command/result/DMA semantics remain the finite S6 receiver, and
+the observed video/bank families remain outside the COP owner.
