@@ -191,3 +191,26 @@ This delivers the entire frozen S50 L01--L12/V16 public receiver scope. It does
 not close T2, qualify a physical V30, run an external/desktop/RDP suite or claim
 gameplay. S51 retains original V01--V17 and A--L reconciliation plus final
 receiving qualification and publication obligations before CPU-task closure.
+
+## Coordinator Acceptance
+
+The same-session coordinator reads actual Shared P1 `140898826` and MyRaidenII
+P2 `0e4a5cf11`, including the complete new test, retained80386 assertions,
+registration, manifest and documentation/proof diff. L01--L12/V16 dispositions
+match real public-route inputs and outcomes, without private CPU access, a
+test-only production entry, relaxed guard or a new model. Copied mode counts
+are independent guest facts, not an App mode mirror. Production is unchanged.
+
+Direct fault-state destruction remains additionally covered by existing
+executor_run_smoke: it proves terminal fault, no replay on another run, then
+destroy/finalize exactly once. Actual Machine destruction has no profile or
+lifecycle branch. S50's V30 refusal/reset/lifetime tests therefore complement,
+not duplicate or replace, that shared owner proof. This is the justified
+L11 reuse, not a claim that the new recovery cases destroy before their reset.
+
+The coordinator rechecks both current manifests, exact test registration,
+ten current artifact hashes and33 protected asset guards against the committed
+receipts. Original T2 V01--V17/A--L obligations and S51 receiving exits are not
+removed. Semantic record/scope/identifier review and structural documentation
+checks pass separately. Owned processes are finished and only persistent build
+caches remain. S50 is accepted and closed; T2 and playable M1 remain open.
