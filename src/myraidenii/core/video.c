@@ -33,6 +33,22 @@ static lib_bool myraidenii_core_video_layer_is_enabled(const myraidenii_core_vid
         MYRAIDENII_CORE_VIDEO_CRTC_LAYER_ENABLE_OFFSET) & (lib_u16)(1u << layer_bit)) == 0u;
 }
 
+static void myraidenii_core_video_sprite_words_load(lib_u8 *destination,
+    const lib_u8 *first, const lib_u8 *second)
+{
+    lib_size source_offset;
+
+    for (source_offset = 0u; source_offset < MYRAIDENII_CORE_SPRITE_IMAGE_BYTES;
+            source_offset += 2u) {
+        lib_size destination_offset = source_offset * 2u;
+
+        destination[destination_offset] = first[source_offset];
+        destination[destination_offset + 1u] = first[source_offset + 1u];
+        destination[destination_offset + 2u] = second[source_offset];
+        destination[destination_offset + 3u] = second[source_offset + 1u];
+    }
+}
+
 void myraidenii_core_video_reset(myraidenii_core_video *video)
 {
     video->raster_tick = 0u;
@@ -150,14 +166,11 @@ lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *vid
         MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES);
     lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET, background_2,
         MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES);
-    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET, sprites_1,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
-    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET, sprites_2,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
-    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET, sprites_3,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
-    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET, sprites_4,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
+    myraidenii_core_video_sprite_words_load(images +
+        MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET, sprites_1, sprites_2);
+    myraidenii_core_video_sprite_words_load(images +
+        MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
+        MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u, sprites_3, sprites_4);
     video->graphics_images = images;
     return LIB_STATUS_OK;
 }

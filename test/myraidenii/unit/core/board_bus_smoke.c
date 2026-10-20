@@ -108,10 +108,10 @@ static lib_i32 board_video_graphics_images(void)
         .characters = source,
         .background_1 = source + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET,
         .background_2 = source + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET,
-        .sprites_1 = source + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET,
-        .sprites_2 = source + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET,
-        .sprites_3 = source + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET,
-        .sprites_4 = source + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET
+        .sprites_1 = source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET,
+        .sprites_2 = source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET,
+        .sprites_3 = source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET,
+        .sprites_4 = source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET
     };
     const myraidenii_core_board_config config = {
         .program_even = program_even,
@@ -129,10 +129,14 @@ static lib_i32 board_video_graphics_images(void)
     source[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x11u;
     source[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] = 0x22u;
     source[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0x33u;
-    source[MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET] = 0x44u;
-    source[MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET] = 0x55u;
-    source[MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET] = 0x66u;
-    source[MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET] = 0x77u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET] = 0x44u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET + 1u] = 0x45u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET] = 0x55u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET + 1u] = 0x56u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET] = 0x66u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET + 1u] = 0x67u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET] = 0x77u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET + 1u] = 0x78u;
     if (myraidenii_core_video_graphics_images_load(LIB_NULL, source, source, source,
             source, source, source, source) != LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_video_graphics_images_load(&video, LIB_NULL, source, source,
@@ -141,20 +145,28 @@ static lib_i32 board_video_graphics_images(void)
             source + MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET,
             source + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET,
             source + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET,
-            source + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET,
-            source + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET,
-            source + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET,
-            source + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET) != LIB_STATUS_OK ||
+            source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET) != LIB_STATUS_OK ||
         video.graphics_images == LIB_NULL)
         goto done;
     lib_memory_set(source, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     if (video.graphics_images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] != 0x11u ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] != 0x22u ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] != 0x33u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET] != 0x44u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET] != 0x55u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET] != 0x66u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET] != 0x77u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET] != 0x44u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 1u] != 0x45u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 2u] != 0x55u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 3u] != 0x56u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u] != 0x66u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 1u] != 0x67u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 2u] != 0x77u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 3u] != 0x78u ||
         myraidenii_core_video_graphics_images_load(&video, source, source, source,
             source, source, source, source) != LIB_STATUS_INVALID_ARGUMENT)
         goto done;

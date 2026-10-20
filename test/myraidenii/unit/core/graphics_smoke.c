@@ -57,10 +57,55 @@ static lib_status graphics_images_load(myraidenii_core_video *video, const lib_u
         images + MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET,
         images + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET,
         images + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET,
-        images + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET,
-        images + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET,
-        images + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET,
-        images + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET);
+        images + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET,
+        images + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET,
+        images + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET,
+        images + MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET);
+}
+
+static lib_i32 graphics_sprite_word_lanes(void)
+{
+    myraidenii_core_video video = {0};
+    lib_u8 *images = lib_allocate(MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
+    lib_u8 *stream;
+    lib_i32 result = 1;
+
+    if (images == LIB_NULL) return 1;
+    lib_memory_set(images, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET] = 0x10u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET + 1u] = 0x11u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET + 2u] = 0x12u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET + 3u] = 0x13u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET] = 0x20u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET + 1u] = 0x21u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET + 2u] = 0x22u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_2_OFFSET + 3u] = 0x23u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET] = 0x30u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET + 1u] = 0x31u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET + 2u] = 0x32u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_3_OFFSET + 3u] = 0x33u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET] = 0x40u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET + 1u] = 0x41u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET + 2u] = 0x42u;
+    images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET + 3u] = 0x43u;
+    if (graphics_images_load(&video, images) != LIB_STATUS_OK) goto done;
+    stream = video.graphics_images + MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET;
+    if (stream[0u] != 0x10u || stream[1u] != 0x11u || stream[2u] != 0x20u ||
+        stream[3u] != 0x21u || stream[4u] != 0x12u || stream[5u] != 0x13u ||
+        stream[6u] != 0x22u || stream[7u] != 0x23u) {
+        goto done;
+    }
+    stream += MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u;
+    if (stream[0u] != 0x30u || stream[1u] != 0x31u || stream[2u] != 0x40u ||
+        stream[3u] != 0x41u || stream[4u] != 0x32u || stream[5u] != 0x33u ||
+        stream[6u] != 0x42u || stream[7u] != 0x43u) {
+        goto done;
+    }
+    result = 0;
+done:
+    myraidenii_core_video_graphics_images_release(&video);
+    lib_release(images);
+    return result;
 }
 
 static void graphics_background_pixel_one_set(lib_u8 *image, lib_u32 tile)
@@ -246,6 +291,6 @@ done:
 
 int main(void)
 {
-    return graphics_character_pixels() || graphics_background_pixels() || graphics_tile_layers() ||
-        graphics_crtc_layers();
+    return graphics_character_pixels() || graphics_background_pixels() ||
+        graphics_sprite_word_lanes() || graphics_tile_layers() || graphics_crtc_layers();
 }

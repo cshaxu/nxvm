@@ -2,13 +2,12 @@
 
 ## Current Work
 
-M1 T4 remains open after coordinator acceptance of S43. The single Video owner
-now composes the bounded L2 tiles with CRTC active-low layer enable and three
-scroll pairs. Sprite decryption/drawing, sprite control, base/text scroll,
-priority/blend behavior, and Machine frame publication remain explicitly
-deferred. The owner has admitted published MAME/other emulator implementations
-as L2 layout/behavior evidence; source, tables, ROM data, and decryption
-material remain prohibited from import or transliteration.
+M1 T4's active S44 corrects the sole Video ingress layout for the four selected
+sprite image lanes. It makes a 32-bit little-endian sprite stream available to
+the later one-owner decrypt/draw path, without implementing either behavior.
+The owner has admitted published MAME/other emulator implementations as L2
+layout/behavior evidence; source, tables, ROM data, and decryption material
+remain prohibited from import or transliteration.
 
 S43 was accepted after actual-change review of `6b5def499`: two owner-local
 helpers read only safe CRTC word pairs and apply them to the existing layer
@@ -17,6 +16,27 @@ modulo-512 source behavior; Board regression retains its public byte-route and
 reset proof. Both cached widths passed all three MyRaidenII unit entries and
 documentation governance. No external media, artifact, desktop or playable
 game claim is made.
+
+## Active Packet — M1 T4 S44
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S44 follows coordinator-accepted S43 P2 `9468f4cca`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner explicitly directs continued implementation using external emulator behavior/layout as L2 without further authority churn, 2026-10-20. |
+| Objective | Correct the one Video graphics ingress so four immutable 2 MiB sprite lanes become their selected 32-bit little-endian 8 MiB stream for a later sprite owner. |
+| Non-goals | No sprite decryption, object decode/draw, Board object semantics, priority/blending, Sprite flags interpretation, Shared change, real media read, or external source/table/ROM import. |
+| Reference Baseline | Video currently copies the four sprite inputs consecutively into an 8 MiB allocation, while inspected L2 board layout establishes a four-lane 32-bit little-endian sprite region. No current reader depends on their incorrect contiguous-per-file arrangement. |
+| Candidate Proposal | Retain one graphics allocation and one loader; interleave the four owned input lanes into the existing sprite-region capacity, name the stream layout explicitly, and extend the existing synthetic graphics smoke with a finite lane-order proof. |
+| Files And ABI Surface | `src/myraidenii/core/{video.c,video.h}`, `test/myraidenii/unit/core/graphics_smoke.c`, L2 evidence and task record only; no external function/type ABI change. |
+| Applicable Rules | MyRaidenII guide, architecture, coding, documentation and source policy; execution rules. Video retains sole graphics-copy ownership; synthetic tests use no external payload; L2 records only the finite lane organization. |
+| Verification | Run focused graphics/Board smoke on x64/x86, then cached MyRaidenII unit labels on both widths, documentation governance and `git diff --check`. |
+| Expected Markers | Every four-byte synthetic stream group preserves lane order and repeated source indices; character/background layouts remain unchanged; loader failure/release behavior remains one allocation/owner. |
+| Asset Needs | None; tests allocate synthetic bytes only and do not access external ROM/media. |
+| Reporting Requirements | Report source/test/doc added/removed/net lines, the finite L2 lane fact, verification per width, and deferred decrypt/object/render work. |
+| Stop Conditions | Any needed decryption table/algorithm, actual sprite object protocol, Board API, Shared change, or external payload is deferred rather than guessed. |
+| Exit Criteria | The only sprite ingress is explicitly lane-interleaved and regression rejects the former file-concatenation layout; prior graphics ownership and all tests remain intact. |
+| Original Owner Request | Continue implementing MyRaidenII toward RAIDEN II using external implementations as L2 rather than treating absent physical L3 sources as a repeated blocker. |
+| Similar-Issue Sweep | Recheck all seven graphics-role offsets, allocation size/overflow, loader/release failures and consumers for duplicate sprite ingress or accidental interpretation. |
 
 ## Archived Packet — M1 T4 S43
 
