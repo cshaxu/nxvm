@@ -24,9 +24,9 @@ M1 T4 remains open after accepted S18:
 | S16 | Exact selected-set word-write receiver at `0x65a--0x65b`, separately owned from CRTC and S15. | P1 `84f3023fb` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only either exact word span, reject the cross-pair without RAM fallback, then reach the same independent next byte-write stop at `0x65c`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s16-object-write-sink-l2.md). |
 | S17 | Exact selected-set word-write receiver at `0x65c--0x65d`, separately owned from CRTC and S15--S16. | P1 `a815a6a0a` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the three exact word pairs, reject cross-pairs without RAM fallback, then reach the same independent next byte-write stop at `0x65e`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s17-object-write-sink-l2.md). |
 | S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 `cdd761ac0`; x64/x86 Board smoke and selected-set probes pass; complete repository unit suites pass 642/642 per width when the temporary-output-sensitive DAG negative case is executed separately. [Evidence](../etc/evidence/t4-s18-object-aperture-l2.md). |
-| S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 pending focused dual-width proof: Board smoke passes and probes advance to `0x6cc`; full qualification pending. |
+| S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 `7258833b8`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6cc`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s19-tile-bank-2-l2.md). |
 
-## Active Packet — M1 T4 S19
+## Retained Packet — M1 T4 S19
 
 | Field | Required record |
 | --- | --- |
@@ -46,6 +46,13 @@ M1 T4 remains open after accepted S18:
 | Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
 | Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
 | Similar-Issue Sweep | Test full/byte lanes, initial/reset state, read/inspect, neighbours and control-failure ownership; verify no duplicate tile-bank or generic register path exists. |
+
+S19 is closed.  The local L2 register accepts only `0x470--0x471`, preserves
+its two byte lanes, and resets to zero without claiming a tile-rendering
+effect.  Both selected-set probes advance to the identical next unowned Board
+write at `0x6cc`; that endpoint remains a separate ownership obligation.
+No Shared component, public API, ROM/media payload, desktop/RDP validation, or
+playable-game claim changed.
 
 ## Retained Packet — M1 T4 S18
 
