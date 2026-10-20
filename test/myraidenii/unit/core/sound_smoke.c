@@ -319,6 +319,62 @@ done:
     return failed;
 }
 
+static lib_i32 sound_publishes_bounded_pcm(void)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    lib_i16 frames[32u * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_u32 copied = 0u;
+    lib_u64 dropped = 0u;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+    lib_bool non_silent = LIB_FALSE;
+
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples_1, 0, sizeof(samples_1));
+    samples_1[10u] = 0x20u;
+    samples_1[13u] = 0x21u;
+    samples_1[0x20u] = 0xf1u;
+    samples_1[0x21u] = 0x23u;
+    program[at++] = 0x3eu; program[at++] = 0x81u;
+    program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0x3eu; program[at++] = 0x10u;
+    program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0x3eu; program[at++] = 0x08u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x78u;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    program[at++] = 0x76u;
+    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped) !=
+            LIB_STATUS_OK || copied == 0u || dropped != 0u)
+        goto done;
+    for (lib_u32 index = 0u; index < copied; ++index) {
+        if (frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] !=
+            frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u])
+            goto done;
+        if (frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] != 0)
+            non_silent = LIB_TRUE;
+    }
+    if (!non_silent || myraidenii_core_sound_advance(sound,
+            MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND) != LIB_STATUS_OK ||
+        myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped) !=
+            LIB_STATUS_OK || copied != 32u || dropped == 0u)
+        goto done;
+    myraidenii_core_sound_reset(sound);
+    if (myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped) !=
+            LIB_STATUS_OK || copied != 0u || dropped != 0u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 int main(void)
 {
     return sound_executes_fixed_transport() != 0 ||
@@ -326,5 +382,6 @@ int main(void)
         sound_switches_fixed_bank() != 0 ||
         sound_executes_bootstrap_control_flow() != 0 ||
         sound_executes_device_map() != 0 ||
-        sound_delivers_ym_timer_interrupt() != 0 ? 1 : 0;
+        sound_delivers_ym_timer_interrupt() != 0 ||
+        sound_publishes_bounded_pcm() != 0 ? 1 : 0;
 }

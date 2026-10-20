@@ -18,7 +18,31 @@ the implementation remains independent, deterministic and Core-local. S2
 closed the single Core-owned transport/time seam. S3 closed the bounded private
 Z80 bootstrap, fixed map and bank route. S4 now closes the local YM2151 and
 dual-OKI register/status/timer/sample boundary; deterministic mixing and host
-PCM delivery remain later bounded Sound receivers.
+PCM delivery remain later bounded Sound receivers. S5 now closes the first
+Core-only PCM publication seam: guest time produces a bounded copied queue,
+but the L1 diagnostic mixer is not a real-chip claim and Machine/Lib delivery
+is still deferred.
+
+## Archived Packet — M1 T5 S5
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S5 follows accepted S4 delivery `db8f88167`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved the finite T5 Sound sequence, authorized external emulator behavior as L2 when primary material is unavailable, and clarified the L3/L2/L1 classification on 2026-10-20. This packet consumes that approval only. |
+| Objective | Add one Core-local, bounded PCM publication seam driven exclusively by the existing Board guest-tick axis, then establish a deterministic mixing proof for the existing local YM/OKI ownership without host delivery. |
+| Non-goals | No Lib/Emulator change, host audio stream, thread, second clock, generic audio framework, imported source/table/ROM, physical-chip fidelity claim, desktop playback or playable-game claim. |
+| Reference Baseline | S4 has one local Sound owner with Z80, YM register/timer state and two OKI channel/sample-address states. The current `advance()` is called only by Board attachment time. Architecture reserves Core PCM creation before later Machine-to-Lib adaptation. The supplied OKI manual establishes the device class and channel role but does not supply a directly reusable decoder formula in the inspected material; any decoder/mix approximation must be L1 unless separately backed by a specific eligible reference. |
+| Candidate Proposal | Extend the existing local Sound owner with one fixed-rate bounded PCM queue and one copied, read-only Core output operation. Advance converts only Board ticks to output frames, creates samples through the current device state and defines explicit overflow/drop accounting. Board exposes that existing Sound output without duplicating state. A local synthetic vector proves deterministic non-silent command-triggered output, queue order, reset and bounded overflow behavior. |
+| Files And ABI Surface | Expected MyRaidenII-only paths: `src/myraidenii/core/{sound.c,sound.h,board.c,board_interface.h}`, existing Core Sound/Board tests, evidence, Current and manifests. Any additive API is Core-local and uses copied bounded samples. No Shared, Product, Machine, ROM/media or artifact change. |
+| Applicable Rules | MyRaidenII guide; Architecture, Coding, source policy and repository execution/architecture/coding/documentation rules. Board remains the one Core composition/API root; Sound remains the sole local audio state/mix owner; no external payload is retained outside existing copied role inputs. |
+| Verification | Met: cached x64/x86 focused Sound/Board tests pass; the complete six-row MyRaidenII unit selection passes on both widths; `git diff --check` passes. No external set, host audio or desktop result is counted. |
+| Expected Markers | Board time is the only producer clock; a device state transition yields deterministic copied PCM in FIFO order; reset discards unconsumed samples; overflow has one stated outcome and does not silently duplicate frames; Board output observes exactly the Sound-owned queue. |
+| Asset Needs | No additional asset. Existing owner-supplied archive stays read-only and is not opened by unit vectors. |
+| Reporting Requirements | Record every adopted audio fact with explicit L3/L2/L1 grade, source/edition where applicable, actual code/test deltas, queue ownership/overflow semantics, x64/x86 results and the absence of host/real-game qualification. |
+| Stop Conditions | A needed Shared contract, imported algorithm/table, second time owner, retained external payload, generic framework, or a demand for physical audio fidelity stops and transfers the gap. |
+| Exit Criteria | Met: one local Sound PCM queue has a single guest-time producer and copied Board consumer; the retained existing Sound smoke covers output/order/reset/overflow; no second audio/timing path exists. The evidence record names the L3/L2/L1 basis and the deferred host/real-chip work. |
+| Original Owner Request | Continue MyRaidenII sound work using manuals only for explicit L3 facts, external references only as L2, and unsupported approximations only as L1. |
+| Similar-Issue Sweep | Inspect every Sound time/state/output path, Board callback, reset/destroy path and existing test for duplicate frame ownership, host-time use, silent overflow or an ungraded evidence claim. |
 
 ## Archived Packet — M1 T5 S4
 

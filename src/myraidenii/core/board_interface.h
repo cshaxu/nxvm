@@ -119,6 +119,12 @@ lib_status myraidenii_core_board_request_main_interrupt(myraidenii_core_board *b
 lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
     lib_u32 *out_pixels, lib_size pixel_count);
 
+/* The Board only forwards the one Sound-owned, copied PCM queue. A later
+ * Machine is responsible for adapting these frames to the host stream. */
+lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
+    lib_i16 *out_samples, lib_u32 out_frame_capacity, lib_u32 *out_frames,
+    lib_u64 *out_dropped_frames);
+
 /* These are the board-owned sides of the future sound-CPU handoff. They do not
  * instantiate or schedule a sound CPU. */
 lib_status myraidenii_core_board_sound_command_get(const myraidenii_core_board *board,

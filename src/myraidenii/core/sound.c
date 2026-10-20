@@ -42,6 +42,7 @@ typedef struct myraidenii_core_sound_ym {
     lib_u64 timer_a_phase;
     lib_u64 timer_b_phase;
     lib_bool channel_key_on[8u];
+    lib_u32 output_phase[8u];
 } myraidenii_core_sound_ym;
 
 typedef struct myraidenii_core_sound_oki_voice {
@@ -49,6 +50,7 @@ typedef struct myraidenii_core_sound_oki_voice {
     lib_u32 end;
     lib_bool high_nibble;
     lib_bool active;
+    lib_u8 volume;
 } myraidenii_core_sound_oki_voice;
 
 typedef struct myraidenii_core_sound_oki {
@@ -69,6 +71,12 @@ struct myraidenii_core_sound {
     lib_u64 z80_ticks;
     lib_u64 z80_phase;
     lib_u64 available_ticks;
+    lib_u64 pcm_phase;
+    lib_u64 pcm_dropped_frames;
+    lib_u32 pcm_read;
+    lib_u32 pcm_count;
+    lib_i16 pcm_samples[MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY *
+        MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
     lib_u16 pc;
     lib_u16 sp;
     lib_u8 a;
@@ -270,6 +278,7 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki
             oki->voices[index].end = end;
             oki->voices[index].high_nibble = LIB_TRUE;
             oki->voices[index].active = LIB_TRUE;
+            oki->voices[index].volume = value & 0x0fu;
         }
     }
     oki->has_pending_sample = LIB_FALSE;
@@ -312,6 +321,109 @@ static void myraidenii_core_sound_devices_advance(myraidenii_core_sound *sound,
     myraidenii_core_sound_ym_advance(&sound->ym, ticks);
     myraidenii_core_sound_oki_advance(&sound->oki[0u], ticks);
     myraidenii_core_sound_oki_advance(&sound->oki[1u], ticks);
+}
+
+static void myraidenii_core_sound_pcm_drop(myraidenii_core_sound *sound,
+    lib_u64 frames)
+{
+    if (LIB_UINT64_MAX - sound->pcm_dropped_frames < frames)
+        sound->pcm_dropped_frames = LIB_UINT64_MAX;
+    else sound->pcm_dropped_frames += frames;
+}
+
+/* This first local mixer is deliberately an L1 diagnostic waveform, not a
+ * reproduction of either chip's analogue path. Its sole contract is stable
+ * PCM publication from the already-owned register/channel state. */
+static lib_i16 myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound)
+{
+    lib_i32 mixed = 0;
+
+    for (lib_u8 index = 0u; index < 8u; ++index) {
+        myraidenii_core_sound_ym *ym = &sound->ym;
+
+        if (!ym->channel_key_on[index]) continue;
+        ym->output_phase[index] += 1u +
+            ((lib_u32)(ym->registers[0x28u + index] & 0x7fu) << 4u);
+        mixed += (ym->output_phase[index] & 0x8000u) == 0u ? 192 : -192;
+    }
+    for (lib_u8 device = 0u; device < 2u; ++device) {
+        const myraidenii_core_sound_oki *oki = &sound->oki[device];
+
+        for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT;
+            ++index) {
+            const myraidenii_core_sound_oki_voice *voice = &oki->voices[index];
+            lib_u8 nibble;
+
+            if (!voice->active || voice->position >= oki->samples_bytes) continue;
+            nibble = oki->samples[voice->position];
+            nibble = voice->high_nibble ? nibble >> 4u : nibble & 0x0fu;
+            mixed += ((lib_i32)nibble - 8) *
+                (lib_i32)(16u - voice->volume) * 64;
+        }
+    }
+    if (mixed > 32767) return 32767;
+    if (mixed < -32768) return -32768;
+    return (lib_i16)mixed;
+}
+
+static void myraidenii_core_sound_pcm_enqueue(myraidenii_core_sound *sound,
+    lib_i16 sample)
+{
+    lib_u32 write;
+
+    if (sound->pcm_count == MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY) {
+        sound->pcm_read = (sound->pcm_read + 1u) %
+            MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
+        myraidenii_core_sound_pcm_drop(sound, 1u);
+    } else ++sound->pcm_count;
+    write = (sound->pcm_read + sound->pcm_count - 1u) %
+        MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
+    sound->pcm_samples[write * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] = sample;
+    sound->pcm_samples[write * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u] = sample;
+}
+
+static void myraidenii_core_sound_pcm_skip(myraidenii_core_sound *sound,
+    lib_u64 frames)
+{
+    for (lib_u8 index = 0u; index < 8u; ++index) {
+        const lib_u32 frequency = 1u +
+            ((lib_u32)(sound->ym.registers[0x28u + index] & 0x7fu) << 4u);
+
+        sound->ym.output_phase[index] += (lib_u32)(frames * frequency);
+    }
+}
+
+static lib_status myraidenii_core_sound_pcm_advance(myraidenii_core_sound *sound,
+    lib_u64 board_ticks)
+{
+    lib_u64 whole = board_ticks / MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
+    lib_u64 remainder = board_ticks % MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
+    lib_u64 frames;
+    lib_u64 phase;
+
+    if (whole > LIB_UINT64_MAX / MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    frames = whole * MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE;
+    phase = remainder * MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE + sound->pcm_phase;
+    if (frames > LIB_UINT64_MAX -
+            phase / MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    frames += phase / MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
+    sound->pcm_phase = phase % MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
+    if (frames > MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY) {
+        myraidenii_core_sound_pcm_drop(sound, sound->pcm_count +
+            frames - MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY);
+        sound->pcm_read = 0u;
+        sound->pcm_count = 0u;
+        myraidenii_core_sound_pcm_skip(sound,
+            frames - MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY);
+        frames = MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
+    }
+    while (frames != 0u) {
+        myraidenii_core_sound_pcm_enqueue(sound, myraidenii_core_sound_pcm_mix(sound));
+        --frames;
+    }
+    return LIB_STATUS_OK;
 }
 
 static lib_u16 myraidenii_core_sound_hl(const myraidenii_core_sound *sound)
@@ -1461,6 +1573,10 @@ void myraidenii_core_sound_reset(myraidenii_core_sound *sound)
         sound->z80_ticks = 0u;
         sound->z80_phase = 0u;
         sound->available_ticks = 0u;
+        sound->pcm_phase = 0u;
+        sound->pcm_dropped_frames = 0u;
+        sound->pcm_read = 0u;
+        sound->pcm_count = 0u;
         sound->pc = 0u;
         sound->sp = 0xffffu;
         sound->a = 0u;
@@ -1515,7 +1631,7 @@ lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
     sound->z80_phase = phase % MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR;
     if (sound->program == LIB_NULL) {
         myraidenii_core_sound_devices_advance(sound, delivered);
-        return LIB_STATUS_OK;
+        return myraidenii_core_sound_pcm_advance(sound, board_ticks);
     }
     while (sound->available_ticks >= MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS) {
         lib_u8 ticks;
@@ -1525,5 +1641,34 @@ lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
         sound->available_ticks -= ticks;
         myraidenii_core_sound_devices_advance(sound, ticks);
     }
+    return myraidenii_core_sound_pcm_advance(sound, board_ticks);
+}
+
+lib_status myraidenii_core_sound_pcm_copy(myraidenii_core_sound *sound,
+    lib_i16 *out_samples, lib_u32 out_frame_capacity, lib_u32 *out_frames,
+    lib_u64 *out_dropped_frames)
+{
+    lib_u32 frames;
+
+    if (sound == LIB_NULL || out_frames == LIB_NULL || out_dropped_frames == LIB_NULL ||
+        (out_samples == LIB_NULL && out_frame_capacity != 0u))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    frames = sound->pcm_count < out_frame_capacity ? sound->pcm_count :
+        out_frame_capacity;
+    for (lib_u32 index = 0u; index < frames; ++index) {
+        const lib_u32 source = (sound->pcm_read + index) %
+            MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
+
+        out_samples[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] =
+            sound->pcm_samples[source * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+        out_samples[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u] =
+            sound->pcm_samples[source * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u];
+    }
+    sound->pcm_read = (sound->pcm_read + frames) %
+        MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
+    sound->pcm_count -= frames;
+    *out_frames = frames;
+    *out_dropped_frames = sound->pcm_dropped_frames;
+    sound->pcm_dropped_frames = 0u;
     return LIB_STATUS_OK;
 }

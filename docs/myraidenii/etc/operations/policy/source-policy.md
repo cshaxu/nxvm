@@ -36,6 +36,21 @@ Reference-derived timing/protection remains L2 rather than a silicon-exact claim
 Keep acquired source/manual payloads outside tracked product source; records
 pin revision/edition/hash and describe what was actually inspected.
 
+## Evidence Grades
+
+- **L3** requires an explicit formula, constant, timing value, register rule or
+  other directly applicable fact in an inspected primary manual PDF. A broad
+  range, feature list or family description is not sufficient.
+- **L2** covers a bounded behavior inferred from a secondary publication,
+  board observation or independently inspected external emulator. It remains
+  a model even when several such references agree.
+- **L1** covers a local engineering approximation with no direct supporting
+  manual fact or external behavior reference. It must be named as such and
+  cannot be promoted by successful execution alone.
+
+Every evidence record identifies the individual adopted fact and its grade.
+No grade authorizes source, table, ROM, firmware or generated-output import.
+
 Game/program/sound/graphics/protection ROMs are owner-supplied external inputs
 in the nxvm-assets archive. Do not download games, commit raw dumps, embed them
 in EXEs, or borrow the PC firmware embedding exception. A filename or possession

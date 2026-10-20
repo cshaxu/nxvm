@@ -92,7 +92,9 @@ static lib_i32 board_invalid_arguments(void)
             .characters = program_even}
     };
 
-    return myraidenii_core_board_create(LIB_NULL, &board) != LIB_STATUS_INVALID_ARGUMENT ||
+    return myraidenii_core_board_pcm_copy(LIB_NULL, LIB_NULL, 0u, LIB_NULL,
+        LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_board_create(LIB_NULL, &board) != LIB_STATUS_INVALID_ARGUMENT ||
         board != LIB_NULL || myraidenii_core_board_create(&config, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL ||
         myraidenii_core_board_create(&partial_graphics, &board) != LIB_STATUS_INVALID_ARGUMENT ||

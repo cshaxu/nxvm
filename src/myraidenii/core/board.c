@@ -1393,6 +1393,15 @@ lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
         board->tile_bank_2, board->sprite_buffer, out_pixels, pixel_count);
 }
 
+lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
+    lib_i16 *out_samples, lib_u32 out_frame_capacity, lib_u32 *out_frames,
+    lib_u64 *out_dropped_frames)
+{
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return myraidenii_core_sound_pcm_copy(board->sound, out_samples,
+        out_frame_capacity, out_frames, out_dropped_frames);
+}
+
 lib_status myraidenii_core_board_sound_command_get(const myraidenii_core_board *board,
     lib_u8 index, lib_u8 *out_value)
 {
