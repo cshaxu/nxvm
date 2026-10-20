@@ -2,7 +2,8 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S26.
+M1 T4 remains open after accepted S27. The selected mode-`0x0014` raw tilemap
+receiver is complete; tile decoding and frame rendering remain outside it.
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -32,6 +33,7 @@ M1 T4 remains open after accepted S26.
 | S24 | Record the selected DMA context in the existing COP failure observation. | P1 `bf3e3f396`; x64/x86 probes identify source `0x07c0`, size `0x00ff` and destination `0x0000` for rejected mode `0x0015`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s24-cop-dma-context-attribution.md). |
 | S25 | L2 fixed mode-`0x0015` palette receiver from permitted research and the bounded owner-set descriptor. | P1 `f96557a77`; x64/x86 probes advance to separate mode `0x0014`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s25-palette-dma-l2.md). |
 | S26 | Capture the selected mode-`0x0014` relative-address setup in the existing COP failure observation. | P1 `0c692e3b5`; x64/x86 probes identify `relative=0`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s26-tilemap-dma-context-attribution.md). |
+| S27 | L2 fixed mode-`0x0014` tilemap receiver from its selected bounded descriptor. | P1 `63b7c68bc`; x64/x86 Board smokes and owner-set probes advance to an independent Board-control stop; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s27-tilemap-dma-l2.md). |
 
 ## Active Packet — M1 T4 S23
 
@@ -143,6 +145,32 @@ second diagnostic route.  The selected descriptor has `relative=0` on both
 host widths and remains rejected with no pending operation.  No mode behavior,
 Shared component, product artifact, ROM/media payload or playable-game claim
 changed.
+
+## Active Packet — M1 T4 S27
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S27 follows S26 P2 `5fbf826b9`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner permits an L2 model based on bounded selected-set observation and permitted external-emulator research. The source policy still forbids importing code, tables, algorithms or protected media. |
+| Objective | Admit only the selected mode-`0x0014` fixed private tilemap DMA receiver. |
+| Non-goals | No tile format/decode, scroll/bank behavior, renderer/frame, destination generalization, generic DMA framework, new Shared API, ROM inspection, artifact or playable-game claim. |
+| Reference Baseline | S26 fixes the descriptor at `source=0x033f`, `size=0x027b`, `destination=0xfffe`, `relative=0`; permitted L2 research identifies a private 0x2800-byte tilemap transfer for mode `0x0014`. |
+| Candidate Proposal | COP accepts exactly that descriptor at its existing safe point, reads 0x1400 words at `0x0cfc0` through the existing checked Core-memory owner, then atomically passes them to Video. Video retains reset-zero raw tilemap words only. |
+| Files And ABI Surface | MyRaidenII `core/cop.c`, `core/video.h`, `core/video.c`, existing Board smoke, startup probe, CURRENT and one evidence record. No Shared component, new generic interface, ROM or asset change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. This is L2 and does not claim original tile/pixel semantics or timing. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | The exact descriptor atomically publishes 0x1400 words; altered fields and partial Video input retain prior data; reset clears it; both probes advance past the prior mode-`0x0014` refusal. |
+| Stop Conditions | The implementation needs a generic DMA/Video API, source readback, Shared change, protected-data exposure, host-width divergence or an unbounded receiver. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer if the finite receiver cannot be made at the stated owners. |
+| Similar-Issue Sweep | Check the existing palette path, mode selection, source failure, reset and pending clearing so neither exact receiver becomes a generic DMA fallback. |
+
+S27 is closed. Its exact raw receiver retains one trigger-time relative value
+so a later register write cannot alter an accepted pending transfer, and uses
+the existing checked memory route for all source words before one Video commit.
+Both widths advance through mode `0x0014` to a new independent Board-control
+write at `0x6ca`; complete repository unit qualification passes 642/642 on
+each width, documentation governance passes, and transient probe staging was
+removed. No decode, frame or generic DMA behavior was admitted.
 
 ## Active Packet — M1 T4 S22
 
