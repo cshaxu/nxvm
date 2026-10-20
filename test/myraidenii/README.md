@@ -15,3 +15,8 @@ owner-ROM cases to integration, opt-in probes to diagnostic. Introduce each
 directory with actual tests. Use [the source map](../../docs/myraidenii/design/CODING.md),
 ROM-free owned fixtures and the existing common registration helper for C tests;
 never borrow private App fixtures or count an unexecuted diagnostic as a pass.
+
+`integration/selected_set_startup_probe.c` is an explicitly invoked owner-ROM
+diagnostic, not a CTest case. Its wrapper validates the archive and removes its
+temporary lanes after each run; its output contains only stop/checkpoint
+metadata, never ROM bytes, register values or a raw trace.

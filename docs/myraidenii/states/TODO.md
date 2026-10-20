@@ -1,5 +1,26 @@
 # Unplanned Debt
 
+## High: Selected-Set V30 Control-Window Write Fault
+
+Owner: Shared X86 Core V30 execution and effective-address semantics. T3 S25
+ran the verified owner-selected program lanes through the real MyRaidenII
+Board on both host widths. Both runs stop after 65,587 instructions with the
+same CPU-internal case fault whose code is physical address `0x43e`; a
+disposable Debug observation classifies it as a CPU memory write. The Board's
+explicit control window currently rejects the address, and the existing longer
+selected-set observation plus pinned L2 navigation do not establish `0x43e` as
+a COP register.
+
+Risk: widening the COP route or converting the control-window failure into RAM
+or a no-op would hide an unqualified CPU/board discrepancy and invalidate the
+single-owner map. Admission requires a bounded Shared V30 diagnosis that
+identifies the executed instruction/effective-address path without retaining
+protected ROM bytes, registers, PC, or raw trace; it must then either repair
+the CPU path with profile regressions or establish an independently evidenced
+Board owner. Rerun the two-width selected-set probe only after that bounded
+decision. This blocks T3's genuine selected-set startup gate but does not
+assert that the V30 is generally unqualified.
+
 ## Medium: Shared Complete-Span Memory Query Classification
 
 Owner: Shared X86 Core Machine memory query and entry-plan preflight. T3 S15's

@@ -23,3 +23,10 @@ Only structured metadata is printed on success; errors terminate the command.
 
 ROM-free synthetic unit coverage lives in test/myraidenii/unit/tools. Actual
 owner-ROM execution will belong to integration, not this metadata check.
+
+`Invoke-SelectedSetStartupProbe.ps1` is the opt-in, bounded selected-set
+startup diagnostic. It first invokes the verifier, stages only the verified
+even/odd program lanes in a caller-owned disposable directory, runs the
+specified probe executable, and removes that generated child directory. It
+does not extract graphics/sound data, commit a payload, or turn a diagnostic
+result into a release qualification.
