@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S24:
+M1 T4 remains open after accepted S25.
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -30,6 +30,7 @@ M1 T4 remains open after accepted S24:
 | S22 | Bounded sprite-protection register group at `0x6c0--0x6c3` and `0x6c6--0x6c7`. | P1 `6d0246f46`; x64/x86 Board smokes and selected-set probes pass; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s22-sprite-protection-registers-l2.md). |
 | S23 | Attribute the selected-set's rejected COP DMA trigger before considering any new DMA mode. | P1 `bcbaeeeac`; x64/x86 probes identify rejected raw mode `0x0015` at `0x6fc`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s23-cop-dma-trigger-attribution.md). |
 | S24 | Record the selected DMA context in the existing COP failure observation. | P1 `bf3e3f396`; x64/x86 probes identify source `0x07c0`, size `0x00ff` and destination `0x0000` for rejected mode `0x0015`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s24-cop-dma-context-attribution.md). |
+| S25 | L2 fixed mode-`0x0015` palette receiver from permitted research and the bounded owner-set descriptor. | P1 `f96557a77`; x64/x86 probes advance to separate mode `0x0014`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s25-palette-dma-l2.md). |
 
 ## Active Packet — M1 T4 S23
 
@@ -88,6 +89,35 @@ size `0x00ff` and destination `0x0000`; those values do not establish palette
 semantics or authorize DMA acceptance. The complete x64/x86 unit qualification
 passes 642/642 per width. No Shared component, product artifact, ROM/media
 payload or playable-game claim changed.
+
+## Active Packet — M1 T4 S25
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S25 follows S24 P2 `6e322a604`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner permits an L2 model informed by other emulators where L3 material is unavailable. The source policy still forbids importing code, tables, algorithms or protected media. |
+| Objective | Admit only the selected mode-`0x0015` fixed palette DMA receiver, using the S24 descriptor as its exact eligibility gate. |
+| Non-goals | No RGB conversion, renderer/frame, tile/sprite DMA, brightness mode, generic DMA framework, new Shared API, ROM inspection, artifact or playable-game claim. |
+| Reference Baseline | S24 observes mode `0x0015`, source `0x07c0`, size `0x00ff`, destination `0`; permitted L2 research identifies the corresponding Raiden II palette aperture as 2048 16-bit entries at `0x1f000--0x1ffff`. |
+| Candidate Proposal | Board constructs the existing private Video object before COP. COP accepts exactly that descriptor at its existing safe point, reads 2048 words through the existing checked Core-memory owner, then atomically passes those raw words to Video. Video retains reset-zero palette words only. Any descriptor or source-read failure retains the old palette. |
+| Files And ABI Surface | MyRaidenII `core/cop.h`, `core/cop.c`, `core/video.h`, `core/video.c`, `core/board.c`, existing Board smoke, selected-set probe, CURRENT and one evidence record. No Shared component or external-code import. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The palette receiver is L2 and does not claim original board timing or colour interpretation. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | The exact descriptor accepts and publishes all 2048 words atomically; altered source/size/destination refuses without publication; source failure preserves the prior palette; reset clears it; both selected-set probes advance past the former rejection. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient startup staging only, with no retained payload, raw trace or screenshot. |
+| Reporting Requirements | Record the precise L2 eligibility contract, the source-policy boundary, failure/reset semantics, next probe stop and dual-width proof. |
+| Stop Conditions | The implementation requires a generic DMA/Video API, source readback, a Shared change, protected-data exposure, host-width divergence or an unbounded receiver. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer if the finite receiver cannot be made at the stated owners. |
+| Similar-Issue Sweep | Check existing DMA source failure, pending clearing, reset, supported modes and every mode-`0x0015` descriptor field so no alternate path accepts the palette receiver. |
+
+S25 is closed.  The precise selected descriptor now reaches a private,
+reset-zero 2048-word Video palette through the existing COP safe point and
+checked Core memory path.  It has no RGB decoder, renderer, public readback or
+general DMA rule.  Altered descriptor fields and partial Video input leave the
+previous palette intact.  The owner-set probes agree on the next separate
+mode-`0x0014` rejection; it is not admitted by this receiver.  Complete
+repository unit suites pass 642/642 on each width.  No Shared component,
+product artifact, ROM/media payload or playable-game claim changed.
 
 ## Active Packet — M1 T4 S22
 
