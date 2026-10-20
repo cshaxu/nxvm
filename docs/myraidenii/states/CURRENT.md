@@ -17,9 +17,31 @@ M1 T4 remains open after accepted S1:
 | S9 | Exact selected-set-observed `0x690--0x691` Board-local write-only L2 hole. | P1 `b576fcae5` accepted by coordinator review; x64/x86 focused Board and selected-set probes reach the separate COP-owned `INVALID_STATE` boundary; [L2 evidence](../etc/evidence/t4-s9-selected-control-hole-l2.md). |
 | S10 | Bounded Board-owned COP failure attribution for the selected set. | P1 `6a79f1102`; x64/x86 probes both identify command `0x5205`, first failed DMA address `0x6a0`, and existing `INVALID_STATE`; complete repository-only units pass 642/642 on each width. [Evidence](../etc/evidence/t4-s10-cop-failure-attribution.md). |
 | S11 | L2 sprite-protection upload aperture from independently observed reference address ownership. | P1 `a9c048fd9`; x64/x86 focused Board and selected-set probes reach the separate Video/CRTC receiver at `0x600`; complete repository units pass 642/642 per width. [Evidence](../etc/evidence/t4-s11-sprite-protection-upload-l2.md). |
-| S12 | L2 Video-owned CRTC register aperture from independently observed reference address ownership. | Active: investigate and, only if the bounded read/write contract is confirmed, admit `0x600--0x63f` through the existing Video owner. |
+| S12 | L2 Video-owned CRTC register aperture from independently observed reference address ownership. | P1 `9042cdd35`; x64/x86 Board and selected-set probes advance from `0x600` to `0x640`; complete repository units pass 642/642 per width. [Evidence](../etc/evidence/t4-s12-crtc-register-aperture-l2.md). |
+| S13 | L2 CRTC write-only extension at the exact next selected-set stop. | Active: reconcile the narrow `0x600--0x63f` read/write contract with independent `0x600--0x64f` write behavior; do not invent extension readback. |
 
-## Active Packet — M1 T4 S12
+## Active Packet — M1 T4 S13
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S13 follows accepted S12 P1 `9042cdd35`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's 2026-10-19 authorization permits an external-emulator behavioral L2 model when physical L3 material is absent. The owner additionally directs use of other emulator behavior as clearly labeled L2 when L3 is unavailable. It permits behavior only; no source, table, ROM, trace or algorithm import. |
+| Objective | Establish the smallest Video-owned receiver for the selected set's exact next stop at `0x640`, preserving the existing CRTC state owner without treating the Video area as generic Board RAM. |
+| Non-goals | No physical CRTC timing claim, rendering/decryption/palette implementation, generic control RAM, unproven extension readback, new executor, Shared/API change, source translation, protected-ROM inspection, trace retention, desktop qualification or playable-game claim. |
+| Reference Baseline | `9042cdd35`; both selected-set probes advance through the S12 CRTC read/write aperture then fault at `0x640`. MAME establishes read/write ownership only through `0x63f`; an independent FBNeo driver routes CRTC writes through `0x64f`. The two sources do not establish extension read behavior. |
+| Candidate Proposal | Extend the reset-cleared Video CRTC storage from 64 to 80 bytes. Board retains `0x600--0x63f` read/write behavior and accepts only writes at `0x640--0x64f`; reads/inspection in the extension and all accesses at immediate neighbours remain refused. |
+| Files And ABI Surface | MyRaidenII `core/video.[ch]`, `core/board.c`, existing Board smoke, CURRENT and one evidence record. No Shared component, public cross-component ABI, product, ROM, asset or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The address/ownership fact is L2 behavioral context only. |
+| Verification | Focused x64/x86 Board test; x64/x86 selected-set startup probe with transient staging/cleanup; complete repository dual-width unit suites after production change; manifest, documentation-governance and `git diff --check`. |
+| Expected Markers | The original aperture preserves read/write/reset behavior; the exact extension preserves byte write order/reset, refuses read/inspect and immediate neighbours, and both widths advance past the prior `0x640` stop to one same next independently owned boundary. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; probe stages only transient program lanes and retains no payload, screenshot or raw trace. |
+| Reporting Requirements | Record local stop and external ownership separately; state the L2 limitation; report exact accepted/rejected range, dual-width results, next stop and no playable-game claim. |
+| Stop Conditions | Required algorithmic behavior, non-byte width semantics that Core cannot lawfully split, contradictory reference/runtime evidence, Shared change, protected-data exposure, divergent host-width result or cleanup failure. |
+| Exit Criteria | The bounded Video receiver has focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or a conflicting contract is refused and transferred. |
+| Original Owner Request | Do not require physical-level material; use other emulator observable behavior as clearly labeled L2 where L3 is unavailable. |
+| Similar-Issue Sweep | Check all `0x600--0x64f` bytes, surrounding `0x5ff`/`0x650`, original versus extension read ownership, reset, and ensure Board has no duplicate Video state or generic fallback acceptance. |
+
+## Retained Packet — M1 T4 S12
 
 | Field | Required record |
 | --- | --- |

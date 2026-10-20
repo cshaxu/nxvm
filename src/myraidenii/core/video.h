@@ -3,12 +3,17 @@
 
 #include "lib/types/types_interface.h"
 
+enum {
+    MYRAIDENII_CORE_VIDEO_CRTC_BYTES = 0x50u,
+    MYRAIDENII_CORE_VIDEO_CRTC_READABLE_BYTES = 0x40u
+};
+
 /* L2 raster: 8 MHz pixels, 512 pixels/line, 282 lines/frame and
  * 240 visible lines, on the Board's nominal 16 MHz CPU tick axis. */
 typedef struct myraidenii_core_video {
     lib_u32 raster_tick;
     lib_u16 sprite_flags;
-    lib_u8 crtc_registers[0x40u];
+    lib_u8 crtc_registers[MYRAIDENII_CORE_VIDEO_CRTC_BYTES];
 } myraidenii_core_video;
 
 void myraidenii_core_video_reset(myraidenii_core_video *video);
@@ -20,7 +25,8 @@ lib_bool myraidenii_core_video_advance(myraidenii_core_video *video, lib_u64 tic
 lib_status myraidenii_core_video_sprite_flags_write(myraidenii_core_video *video,
     lib_u8 byte_offset, lib_u8 value);
 
-/* L2 CRTC register file. The Board maps byte offsets 0x00--0x3f at 600h. */
+/* L2 CRTC register file. The Board maps byte offsets 0x00--0x4f at 600h;
+ * its first 0x40 bytes alone are readable through the Board bus. */
 lib_status myraidenii_core_video_crtc_read(const myraidenii_core_video *video,
     lib_u8 byte_offset, lib_u8 *out_value);
 lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,

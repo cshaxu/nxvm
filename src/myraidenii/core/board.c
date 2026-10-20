@@ -35,7 +35,8 @@ enum {
     MYRAIDENII_CORE_SPRITE_FLAGS_START = 0x6ceu,
     MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u,
     MYRAIDENII_CORE_CRTC_START = 0x600u,
-    MYRAIDENII_CORE_CRTC_BYTES = 0x40u,
+    MYRAIDENII_CORE_CRTC_BYTES = MYRAIDENII_CORE_VIDEO_CRTC_BYTES,
+    MYRAIDENII_CORE_CRTC_READABLE_BYTES = MYRAIDENII_CORE_VIDEO_CRTC_READABLE_BYTES,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START = 0x6a0u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES = 0x20u
 };
@@ -233,10 +234,17 @@ static lib_status myraidenii_core_board_sprite_flags_write(void *owner, lib_u32 
 static lib_status myraidenii_core_board_crtc_query(void *owner, lib_u32 physical,
     lib_uptr bytes, x86_core_machine_memory_access access)
 {
-    (void)access;
     if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
-    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_CRTC_START,
-        MYRAIDENII_CORE_CRTC_BYTES, physical, bytes) ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+    if (!myraidenii_core_board_range_contains(MYRAIDENII_CORE_CRTC_START,
+            MYRAIDENII_CORE_CRTC_BYTES, physical, bytes)) {
+        return LIB_STATUS_UNSUPPORTED;
+    }
+    if (access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
+        !myraidenii_core_board_range_contains(MYRAIDENII_CORE_CRTC_START,
+            MYRAIDENII_CORE_CRTC_READABLE_BYTES, physical, bytes)) {
+        return LIB_STATUS_UNSUPPORTED;
+    }
+    return LIB_STATUS_OK;
 }
 
 static lib_status myraidenii_core_board_crtc_read(void *owner, lib_u32 physical,

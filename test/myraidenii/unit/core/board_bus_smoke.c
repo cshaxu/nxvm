@@ -529,12 +529,21 @@ static lib_i32 board_video_crtc(void)
     if (myraidenii_core_video_crtc_read(LIB_NULL, 0u, actual) != LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_video_crtc_read(&video, 0u, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_video_crtc_write(LIB_NULL, 0u, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
-        myraidenii_core_video_crtc_write(&video, 0x40u, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_crtc_write(&video, MYRAIDENII_CORE_VIDEO_CRTC_BYTES, 0u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_video_crtc_write(&video, 0u, 0xa5u) != LIB_STATUS_OK ||
         myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0xa5u)
         return 1;
     myraidenii_core_video_reset(&video);
     if (myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0u ||
+        myraidenii_core_video_crtc_write(&video,
+            MYRAIDENII_CORE_VIDEO_CRTC_BYTES - 1u, 0x5au) != LIB_STATUS_OK ||
+        myraidenii_core_video_crtc_read(&video,
+            MYRAIDENII_CORE_VIDEO_CRTC_BYTES - 1u, actual) != LIB_STATUS_OK || actual[0] != 0x5au)
+        return 1;
+    myraidenii_core_video_reset(&video);
+    if (myraidenii_core_video_crtc_read(&video,
+            MYRAIDENII_CORE_VIDEO_CRTC_BYTES - 1u, actual) != LIB_STATUS_OK || actual[0] != 0u ||
         myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK)
         return 1;
     machine = myraidenii_core_board_machine_get(board);
@@ -544,8 +553,13 @@ static lib_i32 board_video_crtc(void)
         x86_core_machine_memory_write(machine, 0x63fu, values, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x63fu, actual, 1u) != LIB_STATUS_OK ||
         actual[0] != values[0] ||
-        x86_core_machine_memory_write(machine, 0x640u, values, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x640u, values, sizeof(values)) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x640u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x640u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x64fu, values, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x64fu, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x650u, values, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x650u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x600u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u || actual[2] != 0u || actual[3] != 0u)
