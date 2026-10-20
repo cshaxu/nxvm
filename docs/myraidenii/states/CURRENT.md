@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S25.
+M1 T4 remains open after accepted S26.
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -31,6 +31,7 @@ M1 T4 remains open after accepted S25.
 | S23 | Attribute the selected-set's rejected COP DMA trigger before considering any new DMA mode. | P1 `bcbaeeeac`; x64/x86 probes identify rejected raw mode `0x0015` at `0x6fc`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s23-cop-dma-trigger-attribution.md). |
 | S24 | Record the selected DMA context in the existing COP failure observation. | P1 `bf3e3f396`; x64/x86 probes identify source `0x07c0`, size `0x00ff` and destination `0x0000` for rejected mode `0x0015`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s24-cop-dma-context-attribution.md). |
 | S25 | L2 fixed mode-`0x0015` palette receiver from permitted research and the bounded owner-set descriptor. | P1 `f96557a77`; x64/x86 probes advance to separate mode `0x0014`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s25-palette-dma-l2.md). |
+| S26 | Capture the selected mode-`0x0014` relative-address setup in the existing COP failure observation. | P1 `0c692e3b5`; x64/x86 probes identify `relative=0`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s26-tilemap-dma-context-attribution.md). |
 
 ## Active Packet — M1 T4 S23
 
@@ -118,6 +119,30 @@ previous palette intact.  The owner-set probes agree on the next separate
 mode-`0x0014` rejection; it is not admitted by this receiver.  Complete
 repository unit suites pass 642/642 on each width.  No Shared component,
 product artifact, ROM/media payload or playable-game claim changed.
+
+## Active Packet — M1 T4 S26
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S26 follows S25 P2 `f6269721e`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner's standing approval permits bounded diagnostics and L2 work under the MyRaidenII source policy. No mode implementation, Shared change or protected-data capture is admitted. |
+| Objective | Capture the selected rejected mode-`0x0014` DMA context's existing relative-address word alongside the S24 descriptor fields. |
+| Non-goals | No tilemap transfer, destination interpretation, renderer, generic trace, new function/callback, Shared API, ROM inspection, artifact or playable-game claim. |
+| Reference Baseline | S25 advances to mode `0x0014` with source `0x033f`, size `0x027b` and destination `0xfffe`; existing register `0x476` is part of the selected DMA configuration but has not been retained in the failure observation. |
+| Candidate Proposal | Add one reset-zero `lib_u16` field to the existing COP-owned first-failure record. Populate it only at the existing immediate rejected-DMA trigger from the already-selected `0x476` configuration word. Existing Board getter and startup probe consume it. |
+| Files And ABI Surface | MyRaidenII `core/cop.h`, `core/cop.c`, existing Board smoke, existing startup probe, CURRENT and one evidence record. The existing internal diagnostic record gains one field; no new function, callback, Shared component, ROM or asset change. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Rejected mode remains rejected/no-pending; the captured relative word agrees across widths and reset clears it; the existing mode-`0x0015` palette route remains unchanged. |
+| Stop Conditions | Capturing it needs bus readback, a generic trace/API, a Shared change, protected-data exposure or host-width divergence. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer if a bounded observation cannot be made. |
+| Similar-Issue Sweep | Check each immediate unsupported-DMA rejection, accepted-DMA failure and reset path so the first-failure record remains single-owner and no rejected request gains a pending operation. |
+
+S26 is closed.  The existing COP-owned record now captures the reset-zero
+relative-address word at rejected DMA admission without adding readback or a
+second diagnostic route.  The selected descriptor has `relative=0` on both
+host widths and remains rejected with no pending operation.  No mode behavior,
+Shared component, product artifact, ROM/media payload or playable-game claim
+changed.
 
 ## Active Packet — M1 T4 S22
 
