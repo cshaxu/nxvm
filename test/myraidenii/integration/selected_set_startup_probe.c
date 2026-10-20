@@ -7,6 +7,12 @@
 
 #define MYRAIDENII_STARTUP_INSTRUCTION_BUDGET 2000000u
 
+static lib_bool myraidenii_startup_controls_requested(lib_i32 argument_count,
+    char **arguments)
+{
+    return argument_count == 14 && lib_text_compare(arguments[13], "--coin-start-held") == 0;
+}
+
 static lib_status myraidenii_startup_read_image(const char *path, lib_size expected_bytes,
     lib_u8 **out_bytes)
 {
@@ -110,12 +116,16 @@ int main(int argument_count, char **arguments)
     lib_u64 dropped_pcm_frames = 0u;
     lib_u32 pcm_frames = 0u;
     lib_size index;
+    lib_bool coin_start_held;
     int exit_code = 1;
 
-    if (argument_count != 13) {
+    if ((argument_count != 13 && argument_count != 14) ||
+        (argument_count == 14 && !myraidenii_startup_controls_requested(argument_count,
+            arguments))) {
         lib_c_printf("MYRAIDENII:STARTUP-PROBE:USAGE\n");
         return 2;
     }
+    coin_start_held = myraidenii_startup_controls_requested(argument_count, arguments);
     status = LIB_STATUS_OK;
     for (index = 0u; index < 9u && status == LIB_STATUS_OK; ++index)
         status = myraidenii_startup_read_image(arguments[index + 1u], image_sizes[index],
@@ -152,6 +162,13 @@ int main(int argument_count, char **arguments)
     lib_release(sound_program);
     lib_release(sound_samples_1);
     lib_release(sound_samples_2);
+    if (status == LIB_STATUS_OK && coin_start_held) {
+        status = myraidenii_core_board_set_control(board,
+            MYRAIDENII_CORE_BOARD_CONTROL_COIN_1, LIB_TRUE);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_board_set_control(board,
+                MYRAIDENII_CORE_BOARD_CONTROL_START_1, LIB_TRUE);
+    }
     machine = myraidenii_core_board_machine_get(board);
     while (status == LIB_STATUS_OK && remaining != 0u) {
         const lib_u64 quantum = remaining < 4096u ? remaining : 4096u;
@@ -212,6 +229,7 @@ int main(int argument_count, char **arguments)
             "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
             "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
+            "coin-start-held=%u "
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
             "frame-digest=%016llx pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
             "pcm-digest=%016llx\n",
@@ -224,6 +242,7 @@ int main(int argument_count, char **arguments)
             (lib_u32)cop_failure.status,
             (lib_u32)control_failure.valid, control_failure.physical,
             (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,
+            (lib_u32)coin_start_held,
             (unsigned long long)(MYRAIDENII_STARTUP_INSTRUCTION_BUDGET - remaining),
             (unsigned long long)result.elapsed_ticks, MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH,
             MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT, (unsigned long long)nonblack_pixels,

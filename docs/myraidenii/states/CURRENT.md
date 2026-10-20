@@ -159,6 +159,32 @@ retaining program bytes, opcode/address/PC output, trace, frame or PCM payload.
 S13 is closed; M1 T5 remains open for Product composition and qualified real
 command-path work.
 
+Sequential coordinator actual-change review accepts S14's bounded diagnostic.
+The public Board control route remains the only control owner, and the normal
+selected-set probe is unchanged unless explicitly given its diagnostic option.
+Holding Coin 1 and Start 1 through the fixed budget is explicitly L1; the
+existing active-low mapping is L2. Both widths reached the same budget with no
+CPU/COP/control failure and zero nonzero PCM frames. This is not an audio,
+startup, input, desktop or gameplay result. S14 is closed; M1 T5 remains open
+for later qualified Sound work, while Product/Machine configuration and the
+real user-input route remain the queued receiving task.
+
+## Archived Packet — M1 T5 S14
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S14 follows accepted S13 closure `f0034a7a6`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs continued MyRaidenII work and clarifies the source-grade rule: only an inspected primary manual PDF's explicit applicable formula or constant is L3; external/reference behavior or a range-only fact is L2; an otherwise unsupported local model is L1. No source, table, ROM, firmware or generated-output import is authorized. |
+| Objective | Establish the next bounded receiver for the selected-set sound path without conflating a budget-limited, zero-PCM observation with a sound-chip or product failure. |
+| Reference Baseline | S13 removed the two observed fixed-map refusals. The external-set probe now reaches its declared instruction budget on both widths, with no unsupported decoder result and with zero-valued PCM observation. Current product composition and real input/control routing are still absent. |
+| Candidate Proposal | Audit the sole existing Board-to-Sound command origin and the private Z80/device advance route. Adopt only a finite fact supported by the approved L3/L2/L1 ladder; if no receiver can be isolated without a Product control path or protected payload observation, record the transfer rather than widening an unproven device model. |
+| Files And ABI Surface | Initially read-only research/evidence and Current. Any later source/test delta must stay within MyRaidenII Core Sound/Board and its existing owning unit tests, unless a separately demonstrated Product dependency is needed. No Shared, external media or artifact change is in scope. |
+| Applicable Rules | MyRaidenII guide; source policy; Architecture, Coding, Documentation and Execution rules. Board remains the only guest-time and command transport owner; Sound remains the sole decoder/device/PCM owner. |
+| Verification | Met: cached x64/x86 probe builds and one bounded held-control diagnostic per width completed; repository-only MyRaidenII units pass 8/8 on both widths; documentation governance and whitespace checks pass. |
+| Stop Conditions | Need for a Product input route, a second execution path, protected payload/trace retention, external-source/table import, Shared API change, or an unsupported timing/decode assertion stops and transfers the gap. |
+| Exit Criteria | Met: the held-control experiment is explicitly L1 and leaves the normal probe unchanged. It isolates no further Sound decoder receiver; the required real Product/Machine input route is precisely transferred without speculative Sound behavior. |
+| Original Owner Request | Continue under the strict L3/L2/L1 classification: explicit applicable manual-PDF formulas/constants only for L3; external/range-only references L2; unsupported local engineering L1. |
+
 
 ## Archived Packet — M1 T5 S6
 

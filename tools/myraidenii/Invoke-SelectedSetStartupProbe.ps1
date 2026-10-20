@@ -6,7 +6,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Probe,
     [Parameter(Mandatory = $true)]
-    [string]$TemporaryRoot
+    [string]$TemporaryRoot,
+    [switch]$CoinStartHeld
 )
 
 $ErrorActionPreference = 'Stop'
@@ -77,10 +78,12 @@ try {
         finally { $zip.Dispose() }
     }
     finally { $archiveStream.Dispose() }
-    & $probePath $images['program-even'] $images['program-odd'] $images['characters'] `
-        $images['background-1'] $images['background-2'] $images['sprites-1'] `
-        $images['sprites-2'] $images['sprites-3'] $images['sprites-4'] `
-        $images['sound-program'] $images['samples-1'] $images['samples-2']
+    $probeArguments = @($images['program-even'], $images['program-odd'], $images['characters'], `
+        $images['background-1'], $images['background-2'], $images['sprites-1'], `
+        $images['sprites-2'], $images['sprites-3'], $images['sprites-4'], `
+        $images['sound-program'], $images['samples-1'], $images['samples-2'])
+    if ($CoinStartHeld) { $probeArguments += '--coin-start-held' }
+    & $probePath @probeArguments
     if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
 }
 finally {
