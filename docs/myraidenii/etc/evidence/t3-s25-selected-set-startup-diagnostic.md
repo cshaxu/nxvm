@@ -25,6 +25,12 @@ A disposable Debug-only transaction observation classified the faulting
 `0x43e` access as a CPU memory write. It retained no values, program counter,
 instruction bytes, register state, raw trace, or staged input.
 
+A second Debug-only stack observation reaches the existing V30 16-bit branch
+of `MOV moffs, AX`; the legacy helper's `32`/`EAX` spelling is not the selected
+operand width for this profile. It records no guest values, PC, instruction
+bytes, register state, or raw trace. This rules out assigning the failure to a
+V30 32-bit effective-address path.
+
 The existing S4 retained address summary covered a longer five-million-
 instruction run and lists `0x432--0x43c`, not `0x43e`. The already-pinned
 reference mapping used only as L2 navigation likewise does not assign a COP
@@ -36,11 +42,11 @@ from this one terminal observation.
 
 No Board, COP, Shared CPU, or public-interface change is made in S25. The
 Board must not widen the `0x432--0x43d` register route merely to conceal this
-CPU fault. The observed cross-width-stable write is recorded as a Shared X86
-Core V30 execution prerequisite: reconcile the effective-address/instruction
-path that emits the write against the selected-set run before admitting a
-Board mapping change. This preserves S16's explicit control-window ownership
-instead of reverting unknown accesses to RAM or a no-op fallback.
+control-window write. The observed cross-width-stable write is recorded as a
+MyRaidenII Board/COP register-map prerequisite: establish the owner and its
+direction semantics before admitting a Board mapping change. This preserves
+S16's explicit control-window ownership instead of reverting unknown accesses
+to RAM or a no-op fallback.
 
 The selected-set startup and remaining COP/Video obligations remain open in
 T3. This diagnostic is neither a game run nor an integration qualification.
