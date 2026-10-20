@@ -23,6 +23,17 @@ Core-only PCM publication seam: guest time produces a bounded copied queue,
 but the L1 diagnostic mixer is not a real-chip claim and Machine/Lib delivery
 is still deferred.
 
+Sequential coordinator actual-change review accepts S5 P1 `f5b9f0a23`.
+The local Sound owner is the sole PCM queue/mix owner; Board has only the
+one forwarding operation. The committed evidence records the L3/L2/L1
+classification, bounded oldest-frame drop semantics and the retained limits.
+Cached x64/x86 MyRaidenII unit selections each pass 6/6; focused Core
+Sound/Board rows, documentation governance and `git diff --check` pass.
+No external ROM was opened, no Shared component or release artifact changed,
+and no host audio, desktop or playable-game conclusion is claimed. S5 is
+closed; M1 T5 remains open for a separately admitted Machine/Lib delivery and
+real-set qualification receiver.
+
 ## Archived Packet — M1 T5 S5
 
 | Field | Required record |
