@@ -3,8 +3,8 @@
 typedef struct sound_fixture {
     lib_u8 command[2];
     lib_u8 response[2];
-    lib_u8 pending;
-    lib_u8 interrupt;
+    lib_bool pending;
+    lib_bool interrupt;
     lib_u8 coin;
     lib_u8 acknowledgements;
 } sound_fixture;
@@ -178,9 +178,14 @@ static lib_i32 sound_executes_bootstrap_control_flow(void)
     program[18u] = 0x34u; program[19u] = 0x12u;
     program[20u] = 0xddu; program[21u] = 0xe5u;
     program[22u] = 0xddu; program[23u] = 0xe1u;
-    program[24u] = 0x3eu; program[25u] = 0x4au;
-    program[26u] = 0x32u; program[27u] = 0x18u; program[28u] = 0x40u;
-    program[29u] = 0xc9u;
+    program[24u] = 0x21u; program[25u] = 0u; program[26u] = 0x20u;
+    program[27u] = 0x11u; program[28u] = 0x10u; program[29u] = 0x20u;
+    program[30u] = 0x01u; program[31u] = 1u; program[32u] = 0u;
+    program[33u] = 0x36u; program[34u] = 0x4au;
+    program[35u] = 0xedu; program[36u] = 0xb0u;
+    program[37u] = 0x3au; program[38u] = 0x10u; program[39u] = 0x20u;
+    program[40u] = 0x32u; program[41u] = 0x18u; program[42u] = 0x40u;
+    program[43u] = 0xc9u;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound,
             MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR) != LIB_STATUS_OK ||
