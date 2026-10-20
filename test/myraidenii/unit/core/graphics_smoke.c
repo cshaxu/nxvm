@@ -72,6 +72,7 @@ static lib_i32 graphics_sprite_word_lanes(void)
     lib_i32 result = 1;
 
     if (images == LIB_NULL) return 1;
+    result = 1;
     lib_memory_set(images, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET] = 0x10u;
     images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET + 1u] = 0x11u;
@@ -225,8 +226,8 @@ done:
     return result;
 }
 
-static void graphics_sprite_descriptor_set(lib_u8 *destination, lib_u8 color,
-    lib_u8 priority, lib_bool flip_x, lib_bool flip_y)
+static void graphics_sprite_descriptor_set(lib_u8 *destination, lib_u16 tile,
+    lib_u8 color, lib_u8 priority, lib_bool flip_x, lib_bool flip_y)
 {
     lib_u16 attributes = color | (lib_u16)priority << 6u;
 
@@ -234,6 +235,8 @@ static void graphics_sprite_descriptor_set(lib_u8 *destination, lib_u8 color,
     if (flip_y) attributes |= 0x8000u;
     destination[0u] = (lib_u8)attributes;
     destination[1u] = (lib_u8)(attributes >> 8u);
+    destination[2u] = (lib_u8)tile;
+    destination[3u] = (lib_u8)(tile >> 8u);
 }
 
 static lib_i32 graphics_sprite_layers(void)
@@ -256,6 +259,7 @@ static lib_i32 graphics_sprite_layers(void)
     palette[0x411u] = 0x7c00u;
     palette[0x012u] = 0x001fu;
     palette[0x013u] = 0x03e0u;
+    palette[0x022u] = 0x03e0u;
     if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
         myraidenii_core_video_palette_load(&video, palette,
             MYRAIDENII_CORE_VIDEO_PALETTE_WORDS) != LIB_STATUS_OK ||
@@ -267,9 +271,9 @@ static lib_i32 graphics_sprite_layers(void)
     }
     stream = video.graphics_images + MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET;
     lib_memory_set(stream, 0xff, MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES);
-    stream[0u] = 0xf2u;
-    stream[MYRAIDENII_CORE_SPRITE_BYTES - 1u] = 0x3fu;
-    graphics_sprite_descriptor_set(descriptor, 1u, 0u, LIB_FALSE, LIB_FALSE);
+    stream[MYRAIDENII_CORE_SPRITE_BYTES] = 0xf2u;
+    stream[2u * MYRAIDENII_CORE_SPRITE_BYTES - 1u] = 0x3fu;
+    graphics_sprite_descriptor_set(descriptor, 1u, 1u, 0u, LIB_FALSE, LIB_FALSE);
     if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
@@ -278,7 +282,7 @@ static lib_i32 graphics_sprite_layers(void)
         pixels[0u] != 0x000000ffu) {
         goto done;
     }
-    graphics_sprite_descriptor_set(descriptor, 2u, 1u, LIB_FALSE, LIB_FALSE);
+    graphics_sprite_descriptor_set(descriptor, 1u, 2u, 1u, LIB_FALSE, LIB_FALSE);
     if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
             LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
@@ -286,7 +290,7 @@ static lib_i32 graphics_sprite_layers(void)
         pixels[0u] != 0x000000ffu) {
         goto done;
     }
-    graphics_sprite_descriptor_set(descriptor, 1u, 1u, LIB_TRUE, LIB_TRUE);
+    graphics_sprite_descriptor_set(descriptor, 1u, 1u, 1u, LIB_TRUE, LIB_TRUE);
     if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
@@ -298,7 +302,7 @@ static lib_i32 graphics_sprite_layers(void)
         goto done;
     }
     for (priority = 2u; priority < 4u; ++priority) {
-        graphics_sprite_descriptor_set(descriptor, 1u, priority, LIB_FALSE, LIB_FALSE);
+        graphics_sprite_descriptor_set(descriptor, 1u, 1u, priority, LIB_FALSE, LIB_FALSE);
         if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor,
                 sizeof(descriptor)) != LIB_STATUS_OK ||
             myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
@@ -308,11 +312,41 @@ static lib_i32 graphics_sprite_layers(void)
             goto done;
         }
     }
-    stream[0u] = 0x22u;
-    graphics_sprite_descriptor_set(descriptor, 1u, 1u, LIB_FALSE, LIB_FALSE);
+    stream[MYRAIDENII_CORE_SPRITE_BYTES] = 0x22u;
+    graphics_sprite_descriptor_set(descriptor, 1u, 1u, 1u, LIB_FALSE, LIB_FALSE);
     descriptor[4u] = 0xffu;
     descriptor[5u] = 0x01u;
     if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
+        myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
+            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+        pixels[0u] != 0x00ff0000u) {
+        goto done;
+    }
+    graphics_sprite_descriptor_set(descriptor, 0u, 1u, 1u, LIB_FALSE, LIB_FALSE);
+    if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
+            LIB_STATUS_OK) {
+        goto done;
+    }
+    lib_memory_set(descriptor, 0, sizeof(descriptor));
+    if (myraidenii_core_sprite_buffer_write(sprites,
+            MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES, descriptor, sizeof(descriptor)) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
+        myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
+            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+        pixels[0u] != 0x000000ffu) {
+        goto done;
+    }
+    graphics_sprite_descriptor_set(descriptor, 1u, 1u, 1u, LIB_FALSE, LIB_FALSE);
+    if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
+            LIB_STATUS_OK) {
+        goto done;
+    }
+    graphics_sprite_descriptor_set(descriptor, 1u, 2u, 1u, LIB_FALSE, LIB_FALSE);
+    if (myraidenii_core_sprite_buffer_write(sprites,
+            MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES, descriptor, sizeof(descriptor)) !=
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,

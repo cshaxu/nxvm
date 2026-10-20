@@ -271,15 +271,21 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
 {
     lib_size descriptor_offset;
 
-    for (descriptor_offset = 0u; descriptor_offset < MYRAIDENII_CORE_SPRITE_BUFFER_BYTES;
-            descriptor_offset += MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES) {
+    /* The selected SEI25X-compatible L2 renderer scans the object image from
+     * its final entry down.  Keep that ordering here so the lower-addressed
+     * descriptor is the later (frontmost) write within one priority phase. */
+    for (descriptor_offset = MYRAIDENII_CORE_SPRITE_BUFFER_BYTES;
+            descriptor_offset != 0u;
+            descriptor_offset -= MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES) {
         myraidenii_core_sprite_descriptor descriptor;
-        lib_status status = myraidenii_core_sprite_descriptor_decode(sprite_bytes +
-            descriptor_offset, MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES, &descriptor);
+        const lib_u8 *source = sprite_bytes + descriptor_offset -
+            MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES;
+        lib_status status = myraidenii_core_sprite_descriptor_decode(source,
+            MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES, &descriptor);
         lib_u8 tile_y;
 
         if (status != LIB_STATUS_OK) return status;
-        if (myraidenii_core_video_sprite_entry_is_empty(sprite_bytes + descriptor_offset))
+        if (myraidenii_core_video_sprite_entry_is_empty(source) || descriptor.tile_index == 0u)
             continue;
         if (descriptor.priority != priority) continue;
         for (tile_y = 0u; tile_y < descriptor.height_tiles; ++tile_y) {
