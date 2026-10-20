@@ -1,6 +1,7 @@
 #include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
 #include "myraidenii/core/board_interface.h"
+#include "myraidenii/core/sound.h"
 #include "myraidenii/core/video.h"
 #include "x86-core/machine/machine_interface.h"
 
@@ -68,6 +69,7 @@ int main(int argument_count, char **arguments)
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     lib_u8 *images[9] = {LIB_NULL};
+    lib_u8 *sound_program = LIB_NULL;
     lib_u32 *pixels = LIB_NULL;
     lib_u64 remaining = MYRAIDENII_STARTUP_INSTRUCTION_BUDGET;
     x86_core_machine_run_result result = {0};
@@ -81,7 +83,7 @@ int main(int argument_count, char **arguments)
     lib_size index;
     int exit_code = 1;
 
-    if (argument_count != 10) {
+    if (argument_count != 11) {
         lib_c_printf("MYRAIDENII:STARTUP-PROBE:USAGE\n");
         return 2;
     }
@@ -89,6 +91,9 @@ int main(int argument_count, char **arguments)
     for (index = 0u; index < 9u && status == LIB_STATUS_OK; ++index)
         status = myraidenii_startup_read_image(arguments[index + 1u], image_sizes[index],
             &images[index]);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_startup_read_image(arguments[10],
+            MYRAIDENII_CORE_SOUND_PROGRAM_BYTES, &sound_program);
     if (status == LIB_STATUS_OK) {
         const myraidenii_core_board_graphics_images graphics = {
             .characters = images[2], .background_1 = images[3], .background_2 = images[4],
@@ -100,9 +105,12 @@ int main(int argument_count, char **arguments)
         mutable_config.program_even = images[0];
         mutable_config.program_odd = images[1];
         mutable_config.graphics_images = &graphics;
+        mutable_config.sound_program = sound_program;
+        mutable_config.sound_program_bytes = MYRAIDENII_CORE_SOUND_PROGRAM_BYTES;
         status = myraidenii_core_board_create(&mutable_config, &board);
     }
     myraidenii_startup_images_release(images, 9u);
+    lib_release(sound_program);
     machine = myraidenii_core_board_machine_get(board);
     while (status == LIB_STATUS_OK && remaining != 0u) {
         const lib_u64 quantum = remaining < 4096u ? remaining : 4096u;

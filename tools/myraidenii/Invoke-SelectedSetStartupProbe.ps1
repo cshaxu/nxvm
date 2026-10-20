@@ -31,10 +31,16 @@ Require (Test-Path -LiteralPath $probePath -PathType Leaf) 'Startup probe execut
 & $verifier -Inventory $inventoryPath -Archive $archivePath | Out-Null
 
 $manifest = Get-Content -Raw -LiteralPath $inventoryPath | ConvertFrom-Json
-$required = @($manifest.runtime_images | Where-Object {
-    $_.role -ceq 'program-even' -or $_.role -ceq 'program-odd'
-})
-Require ($required.Count -eq 2) 'Inventory does not define exactly two program lanes'
+$requiredRoles = @(
+    'program-even', 'program-odd', 'characters', 'background-1', 'background-2',
+    'sprites-1', 'sprites-2', 'sprites-3', 'sprites-4', 'sound-program'
+)
+$required = @()
+foreach ($role in $requiredRoles) {
+    $matches = @($manifest.runtime_images | Where-Object { $_.role -ceq $role })
+    Require ($matches.Count -eq 1) "Inventory does not define exactly one $role image"
+    $required += $matches[0]
+}
 [System.IO.Directory]::CreateDirectory($rootPath) | Out-Null
 $stageName = 'selected-set-startup-' + [Guid]::NewGuid().ToString('N')
 $stagePath = [System.IO.Path]::Combine($rootPath, $stageName)
@@ -49,7 +55,7 @@ try {
         $zip = [System.IO.Compression.ZipArchive]::new($archiveStream,
             [System.IO.Compression.ZipArchiveMode]::Read, $true)
         try {
-            $lanes = @{}
+            $images = @{}
             foreach ($image in $required) {
                 $entry = $zip.GetEntry([string]$image.name)
                 Require ($null -ne $entry -and $entry.FullName -ceq $image.name) `
@@ -64,13 +70,16 @@ try {
                 finally { $input.Dispose() }
                 Require ((Get-Item -LiteralPath $destination).Length -eq $image.bytes) `
                     "Staged image length mismatch: $($image.name)"
-                $lanes[$image.role] = $destination
+                $images[$image.role] = $destination
             }
         }
         finally { $zip.Dispose() }
     }
     finally { $archiveStream.Dispose() }
-    & $probePath $lanes['program-even'] $lanes['program-odd']
+    & $probePath $images['program-even'] $images['program-odd'] $images['characters'] `
+        $images['background-1'] $images['background-2'] $images['sprites-1'] `
+        $images['sprites-2'] $images['sprites-3'] $images['sprites-4'] `
+        $images['sound-program']
     if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
 }
 finally {

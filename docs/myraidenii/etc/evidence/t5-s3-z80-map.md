@@ -44,3 +44,11 @@ main-side handoff. Cached x64/x86 builds and the complete six-test MyRaidenII
 unit selection pass. A supplied external sound image was inspected only to
 confirm that the real bootstrap needs a later instruction-set batch; no
 protected asset, bytes, table or generated output is retained or committed.
+
+The existing opt-in selected-set probe now stages exactly the two program
+lanes, seven graphics images and the one sound-program image it passes to
+Board. On the owner-supplied set, both x64 and x86 reach the same existing
+terminal main-machine observation after 12,721 V30 instructions and 205,420
+elapsed ticks. This is an ingress/ownership check only: it neither proves
+complete Z80 execution nor interprets the terminal main-machine observation as
+sound, rendering or playable-game qualification.
