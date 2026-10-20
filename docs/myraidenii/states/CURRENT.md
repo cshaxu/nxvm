@@ -34,6 +34,27 @@ and no host audio, desktop or playable-game conclusion is claimed. S5 is
 closed; M1 T5 remains open for a separately admitted Machine/Lib delivery and
 real-set qualification receiver.
 
+## Archived Packet — M1 T5 S6
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S6 follows accepted S5 closure `6c2efe7a5`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 Sound work and explicitly permits bounded external-reference use as L2 while retaining the L3/L2/L1 distinction. No Shared or media import is authorized. |
+| Objective | Extend the existing selected-set startup diagnostic to observe the sole Board PCM output once after bounded real V30 execution, recording only neutral aggregate facts. |
+| Non-goals | No production Sound/Board change, decoder change, host PCM delivery, Machine/Product implementation, ROM retention, PCM dump, new renderer, timing claim, audible/playable claim or Shared change. |
+| Reference Baseline | S5 owns the only local bounded PCM queue; Board has one forwarding operation. The existing startup probe already stages fixed external input roles transiently, runs a bounded V30 budget and reports neutral frame facts. |
+| Candidate Proposal | Reuse that probe and its one Board instance. After execution, copy at most the fixed queue capacity via `myraidenii_core_board_pcm_copy()`, compute only frame count, cumulative dropped count, nonzero-frame count and a deterministic digest, then release the local copy. A zero/nonzero result is observation, not pass/fail evidence of audio fidelity. |
+| Files And ABI Surface | Expected only `test/myraidenii/integration/selected_set_startup_probe.c`, its existing launcher/evidence/Current and no source ABI change. No Shared, Core production, ROM/media, artifact or app file changes. |
+| Applicable Rules | MyRaidenII guide; source policy, Architecture, Coding, Execution and Documentation rules. Existing probe remains the one external-set diagnostic owner; Board/Sound remain the only Core route. |
+| Verification | Met: cached x64/x86 probe builds and the external selected-set launcher both complete with identical neutral output. The closing source will also run the complete MyRaidenII unit selection on both widths plus documentation and whitespace checks. |
+| Expected Markers | Probe calls exactly one Board PCM copy after bounded execution, emits no sample payload, releases copied storage, and returns successful diagnostic completion regardless of zero/nonzero PCM content unless the existing Core route actually fails. |
+| Asset Needs | The owner-supplied external archive remains read-only. Existing temporary staging is deleted by the current launcher. No protected bytes, hashes, sample data or trace enter tracked files. |
+| Reporting Requirements | Record command/result by width, the observed neutral PCM fields, source/test delta, and explicit distinction between a transport observation and audio fidelity/host delivery. |
+| Stop Conditions | Need for a second audio path, retained external payload, raw audio dump, host output, timing workaround, external-source import or a changed Board contract stops and transfers the gap. |
+| Exit Criteria | Met: the existing external-set probe has one safe PCM observation on both widths. It reports 616 copied frames, zero drops and zero nonzero frames at the existing early stop; no protected payload, production change or component boundary change occurred. |
+| Original Owner Request | Continue using direct manual facts only as L3, external behavior as L2 and unsupported local mechanisms as L1. |
+| Similar-Issue Sweep | Inspect all external-set diagnostic output/staging/cleanup fields for protected payload leakage, duplicate Board routes, hidden host-output behavior or a pass predicate based on observed audio content. |
+
 ## Archived Packet — M1 T5 S5
 
 | Field | Required record |
