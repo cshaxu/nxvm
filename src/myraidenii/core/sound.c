@@ -30,6 +30,8 @@ enum {
     MYRAIDENII_CORE_SOUND_OKI_VOLUME_SCALE = 4096u,
     MYRAIDENII_CORE_SOUND_OKI_VOLUME_RATIO = 181u,
     MYRAIDENII_CORE_SOUND_OKI_ADPCM_MAX_STEP = 48u,
+    MYRAIDENII_CORE_SOUND_PCM_TICKS_NUMERATOR =
+        8u * MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE,
     MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS = 23u,
     MYRAIDENII_CORE_SOUND_FLAG_CARRY = 0x01u,
     MYRAIDENII_CORE_SOUND_FLAG_SUBTRACT = 0x02u,
@@ -448,22 +450,22 @@ static void myraidenii_core_sound_pcm_skip(myraidenii_core_sound *sound,
 }
 
 static lib_status myraidenii_core_sound_pcm_advance(myraidenii_core_sound *sound,
-    lib_u64 board_ticks)
+    lib_u64 z80_ticks)
 {
-    lib_u64 whole = board_ticks / MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
-    lib_u64 remainder = board_ticks % MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
+    lib_u64 whole = z80_ticks / MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR;
+    lib_u64 remainder = z80_ticks % MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR;
     lib_u64 frames;
     lib_u64 phase;
 
-    if (whole > LIB_UINT64_MAX / MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE)
+    if (whole > LIB_UINT64_MAX / MYRAIDENII_CORE_SOUND_PCM_TICKS_NUMERATOR)
         return LIB_STATUS_LIMIT_EXCEEDED;
-    frames = whole * MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE;
-    phase = remainder * MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE + sound->pcm_phase;
+    frames = whole * MYRAIDENII_CORE_SOUND_PCM_TICKS_NUMERATOR;
+    phase = remainder * MYRAIDENII_CORE_SOUND_PCM_TICKS_NUMERATOR + sound->pcm_phase;
     if (frames > LIB_UINT64_MAX -
-            phase / MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND)
+            phase / MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR)
         return LIB_STATUS_LIMIT_EXCEEDED;
-    frames += phase / MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
-    sound->pcm_phase = phase % MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND;
+    frames += phase / MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR;
+    sound->pcm_phase = phase % MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR;
     if (frames > MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY) {
         myraidenii_core_sound_pcm_drop(sound, sound->pcm_count +
             frames - MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY);
@@ -478,6 +480,13 @@ static lib_status myraidenii_core_sound_pcm_advance(myraidenii_core_sound *sound
         --frames;
     }
     return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_sound_time_advance(myraidenii_core_sound *sound,
+    lib_u64 z80_ticks)
+{
+    myraidenii_core_sound_devices_advance(sound, z80_ticks);
+    return myraidenii_core_sound_pcm_advance(sound, z80_ticks);
 }
 
 static lib_u16 myraidenii_core_sound_hl(const myraidenii_core_sound *sound)
@@ -1684,8 +1693,7 @@ lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
     sound->available_ticks += delivered;
     sound->z80_phase = phase % MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR;
     if (sound->program == LIB_NULL) {
-        myraidenii_core_sound_devices_advance(sound, delivered);
-        return myraidenii_core_sound_pcm_advance(sound, board_ticks);
+        return myraidenii_core_sound_time_advance(sound, delivered);
     }
     while (sound->available_ticks >= MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS) {
         lib_u8 ticks;
@@ -1693,9 +1701,10 @@ lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
         status = myraidenii_core_sound_execute(sound, &ticks);
         if (status != LIB_STATUS_OK) return status;
         sound->available_ticks -= ticks;
-        myraidenii_core_sound_devices_advance(sound, ticks);
+        status = myraidenii_core_sound_time_advance(sound, ticks);
+        if (status != LIB_STATUS_OK) return status;
     }
-    return myraidenii_core_sound_pcm_advance(sound, board_ticks);
+    return LIB_STATUS_OK;
 }
 
 lib_status myraidenii_core_sound_pcm_copy(myraidenii_core_sound *sound,

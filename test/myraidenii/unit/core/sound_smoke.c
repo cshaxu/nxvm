@@ -453,7 +453,7 @@ static lib_status sound_first_oki_pcm(lib_u8 first_sample_byte,
 {
     static lib_u8 program[0x2000u];
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
-    lib_i16 frames[MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+    lib_i16 frames[32u * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
     lib_u32 copied = 0u;
@@ -474,10 +474,19 @@ static lib_status sound_first_oki_pcm(lib_u8 first_sample_byte,
     if (status == LIB_STATUS_OK)
         status = myraidenii_core_sound_advance(sound, 10000u);
     if (status == LIB_STATUS_OK)
-        status = myraidenii_core_sound_pcm_copy(sound, frames, 1u, &copied, &dropped);
-    if (status == LIB_STATUS_OK && (copied != 1u || dropped != 0u))
+        status = myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped);
+    if (status == LIB_STATUS_OK && (copied == 0u || dropped != 0u))
         status = LIB_STATUS_INTERNAL_ERROR;
-    if (status == LIB_STATUS_OK) *out_sample = frames[0u];
+    if (status == LIB_STATUS_OK) {
+        *out_sample = 0;
+        for (lib_u32 index = 0u; index < copied; ++index) {
+            if (frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] != 0) {
+                *out_sample = frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+                break;
+            }
+        }
+        if (*out_sample == 0) status = LIB_STATUS_INTERNAL_ERROR;
+    }
     myraidenii_core_sound_destroy(sound);
     return status;
 }
