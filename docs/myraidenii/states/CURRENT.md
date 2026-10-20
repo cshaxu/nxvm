@@ -8,6 +8,7 @@ M1 T4 remains open after accepted S1:
 | --- | --- | --- |
 | S1 | Finite Video/Sprite convergence ledger; no invented receiver admitted without a lawful flag-family consumer contract. | P1 `ac0872270`; coordinator review: documentation governance and `git diff --check` passed. |
 | S2 | Lawful-source disposition: existing sources cannot establish the sprite-control consumer contract, so code remains correctly blocked. | P1 `f67876e8e`; coordinator review: documentation governance and `git diff --check` passed. |
+| S3 | Public FPGA implementation provenance review; it is MAME-derived/GPL and supplies no independent Video/Sprite contract. | P1 `ec71c2227`; coordinator review: documentation governance and `git diff --check` passed. |
 
 M1 T3 remains open after accepted S1--S25:
 
