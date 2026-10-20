@@ -71,8 +71,8 @@ void myraidenii_core_board_destroy(myraidenii_core_board *board);
 /* Composition-time borrowed Core executor. The board retains ownership. */
 x86_core_machine *myraidenii_core_board_machine_get(myraidenii_core_board *board);
 
-/* Reset clears this Board-owned copy. The observation describes one failed COP
- * operation without exposing guest payload or execution internals. */
+/* Reset clears this COP-owned observation. Board exposes it for integration
+ * diagnostics without exposing guest payload or execution internals. */
 lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *board,
     myraidenii_core_cop_failure_observation *out_observation);
 
