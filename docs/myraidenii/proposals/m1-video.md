@@ -37,6 +37,12 @@ priority, scroll or decryption rule. Decoder admission therefore requires
 original board documentation/measurement or a separately approved, stable
 black-box isolation method.
 
+S39's bounded original-document search found no provenance-qualified graphics
+contract in accessible operation-manual/catalog material. Its
+[disposition](../etc/evidence/t4-s39-original-graphics-source-search.md)
+confirms that the current evidence gap remains; it does not turn a missing
+source into an implementation license.
+
 ## Work And Verification
 
 T3 S8 brings forward the Video-owned L2 raster phase/VBlank-to-Board receiver

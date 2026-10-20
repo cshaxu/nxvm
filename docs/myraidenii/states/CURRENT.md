@@ -2,12 +2,12 @@
 
 ## Current Work
 
-M1 T4 S39 is active. S38 shows that the currently contained MAME black-box
-method cannot isolate an element layout. S39 now performs a bounded
-original-board documentation search before any decoder claim; Core still has no
-graphics decode, composition or frame publication path.
+M1 T4 remains open after accepted S39. S38 shows that the currently contained
+MAME black-box method cannot isolate an element layout, and S39 found no
+provenance-qualified original graphics contract in its bounded search. Core
+still has no graphics decode, composition or frame publication path.
 
-## Active Packet — M1 T4 S39
+## Archived Packet — M1 T4 S39
 
 | Field | Required record |
 | --- | --- |
