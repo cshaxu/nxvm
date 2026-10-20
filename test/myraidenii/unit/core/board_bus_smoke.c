@@ -386,7 +386,7 @@ static lib_i32 board_control_failure_observation(void)
     return 0;
 }
 
-static lib_i32 board_sprite_object_write_sink(void)
+static lib_i32 board_sprite_object_write_sinks(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
@@ -403,6 +403,9 @@ static lib_i32 board_sprite_object_write_sink(void)
         x86_core_machine_memory_write(machine, 0x658u, &value, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x659u, &value, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x658u, word, sizeof(word)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65au, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65bu, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65au, word, sizeof(word)) != LIB_STATUS_OK ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
         x86_core_machine_memory_read(machine, 0x658u, &observation, 1u) !=
@@ -411,16 +414,20 @@ static lib_i32 board_sprite_object_write_sink(void)
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x659u, &observation, 1u) !=
             LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x65au, &observation, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
         x86_core_machine_memory_write(machine, 0x657u, &value, 1u) !=
             LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x65au, &value, 1u) !=
+        x86_core_machine_memory_write(machine, 0x65cu, &value, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x657u, &value, 2u) !=
             LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x659u, word, sizeof(word)) !=
+            LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x658u, &value, 1u) != LIB_STATUS_OK) {
+        x86_core_machine_memory_write(machine, 0x65au, &value, 1u) != LIB_STATUS_OK) {
         myraidenii_core_board_destroy(board);
         return 1;
     }
@@ -2434,7 +2441,7 @@ lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_control_failure_observation() ||
-        board_sprite_object_write_sink() ||
+        board_sprite_object_write_sinks() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
         board_video_crtc() ||
         board_sprite_protection_upload() ||

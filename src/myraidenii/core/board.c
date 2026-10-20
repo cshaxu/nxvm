@@ -40,6 +40,8 @@ enum {
     MYRAIDENII_CORE_CRTC_READABLE_BYTES = MYRAIDENII_CORE_VIDEO_CRTC_READABLE_BYTES,
     MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START = 0x658u,
     MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES = 2u,
+    MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_SECONDARY_START = 0x65au,
+    MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_WINDOW_BYTES = 4u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START = 0x6a0u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES = 0x20u
 };
@@ -228,9 +230,18 @@ static lib_status myraidenii_core_board_sprite_object_query(void *owner,
 {
     if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     return myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START,
-        MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES, physical, bytes) &&
+        MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_WINDOW_BYTES, physical, bytes) &&
         (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
          access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_bool myraidenii_core_board_sprite_object_write_contains(lib_u32 physical,
+    lib_uptr bytes)
+{
+    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START,
+        MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES, physical, bytes) ||
+        myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_SECONDARY_START,
+            MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES, physical, bytes);
 }
 
 static lib_status myraidenii_core_board_sprite_object_read(void *owner, lib_u32 physical,
@@ -253,7 +264,8 @@ static lib_status myraidenii_core_board_sprite_object_write(void *owner,
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return LIB_STATUS_OK;
+    return myraidenii_core_board_sprite_object_write_contains(physical, bytes) ?
+        LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 
 static lib_status myraidenii_core_board_sprite_flags_read(void *owner, lib_u32 physical,
@@ -658,7 +670,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .callbacks = sprite_flags_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START,
-            .bytes = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES,
+            .bytes = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_WINDOW_BYTES,
             .callbacks = sprite_object_write_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_CRTC_START,
