@@ -11,25 +11,33 @@ Machine/Window publication to the later Product/Machine task; unqualified
 sprite blend fidelity remains a separately named TODO rather than a false T4
 blocker.
 
-M1 T5 Sound is active. S1 maps the Seibu Z80, command/response latch,
+M1 T5 Sound is active. S1 mapped the Seibu Z80, command/response latch,
 interrupt, YM2151 and dual-OKI ownership against the existing Board wiring.
 Published emulator behavior is accepted as L2 where primary material is absent;
-the implementation remains independent, deterministic and Core-local.
+the implementation remains independent, deterministic and Core-local. S2 now
+creates the single Core-owned transport/time seam before CPU or chip execution.
 
-## Active Packet — M1 T5 S1
+## Active Packet — M1 T5 S2
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New task after closed M1 T4; one session performs coordinator and executor roles. |
-| Objective | Freeze the finite Sound ownership/model ledger and identify the smallest first Core receiver for the real Board sound command route. |
-| Non-goals | No copied emulator source/table, ROM/PAL retention, host audio worker, second guest clock, generic chip framework, Machine/Product executable or playable-game claim. |
-| Reference Baseline | T3 Board owns main/sound command latches; T4 establishes the single Board timeline and frame path. Local Core has no Z80, YM2151 or OKI implementation. |
-| Candidate Proposal | Inspect existing Board routes and approved external L2 implementations; classify clocks, maps, latch/IRQ direction and device ownership. Write a bounded S2--S5 implementation plan before changing production source. |
-| Files And ABI Surface | MyRaidenII proposal/current/evidence only. No source, test, shared API, asset or artifact change. |
+| Identifier Mode | Follows documented S1 ledger `67420101d`; one session performs coordinator and executor roles. |
+| Objective | Establish one private Core Sound transport owner and advance it only from the existing Board elapsed-tick callback. |
+| Non-goals | No Z80 instruction execution, YM/OKI synthesis, host PCM, second clock/thread, generic device framework, Shared API, ROM/PAL retention or playable-game claim. |
+| Reference Baseline | Board owns the main-V30 command/response/pending registers; S1 fixes the L2 sound-side map and rational clock facts. |
+| Candidate Proposal | Add one private Sound object to Board. It consumes the existing Board-owned command/interrupt operations and records deterministic rational elapsed sound ticks without inventing a CPU or accepting a false command completion. |
+| Files And ABI Surface | MyRaidenII Core Board/local Sound source and its existing Board-owned unit family only. No Lib, Emulator, Shared or public Board API change. |
 | Applicable Rules | MyRaidenII guide; architecture, coding, documentation, execution and source-policy rules. |
-| Verification | Documentation governance, link/whitespace review, and a source-policy review of each L2 fact. No runtime pass is claimed by this research S. |
-| Stop Conditions | A required imported unit, protected data, incompatible license, Shared public-contract gap or second time owner stops implementation planning and records a bounded receiver. |
-| Exit Criteria | A complete sound ledger gives every selected subsystem one owner, source grade, Core route and synthetic proof owner; it names the bounded implementation S sequence without transferring host audio or Product work into Core. |
+| Verification | Synthetic Board tests prove command/interrupt consumption, rational tick accumulation, reset and failure preservation; run affected cached x64/x86 tests, repository units, manifests/dependency gates and documentation governance. |
+| Stop Conditions | A required public contract, ROM retention, host-time callback, second clock or silent completion path stops and records the gap. |
+| Exit Criteria | One private Sound owner is advanced through the sole Board timeline, receives each existing latch state exactly once, never claims Z80/chip execution, and passes the named regressions. |
+
+## Archived Packet — M1 T5 S1
+
+| Field | Required record |
+| --- | --- |
+| Delivery | `67420101d` closes T4 Video, corrects the active-packet record, and records the finite S1 sound contract. |
+| Exit Criteria | Met: every Sound subsystem has one owner, grade, route and synthetic proof owner; S2--S5 are explicit with no source/table/media import or second time owner. |
 
 ## Archived Packet — M1 T4 S50
 
