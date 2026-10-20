@@ -2,6 +2,35 @@
 
 ## Current Work
 
+## Archived Packet — M1 T5 S16
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S16 follows accepted S15 closure `aca35192d`. One session performs coordinator and executor roles. |
+| Objective | Establish MyRaidenII's sole App-owned `myraidenii.ini` grammar and its complete runtime-image role contract, without creating a second machine, session, execution loop, archive reader or media path. |
+| Reference Baseline | Core Board already accepts one complete copied image bundle; Machine now exposes its one Emulator driver and input adapter. No Product source, configuration parser or executable target currently exists. |
+| Candidate Proposal | Add Product-local configuration parsing for the fixed twelve runtime image roles plus `display=window|console` and `console_control=0|1`. Resolve the adjacent lower-case INI through Lib Base/Storage. Require every role, reject duplicates and unknown keys, and leave file opening, relative-path resolution and content validation to the next composition transaction. |
+| Evidence Grades | This parser has no hardware model claim. The fixed role list is an audited selected-set asset contract; it is not promoted to L3. The user-approved ladder applies to all later device facts: only an inspected primary manual PDF's explicit applicable formula/constant/rule is L3; external/reference or range-only evidence is L2; unsupported local engineering is L1. |
+| Files And ABI Surface | `src/myraidenii/product/config_interface.h`, `config.c`, Product CMake registration and matching `test/myraidenii/unit/product/` only, plus Current. No Shared component, Core/Machine ABI, archive support, external media, ROM, Product executable or asset is changed. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI, Source Policy and shared Execution/Architecture/Coding/Document rules. Product remains the only configuration owner; Core stays platform/media-free; Machine remains the one Board-to-Emulator adapter. |
+| Verification | Met: focused Product configuration test and complete repository-only MyRaidenII unit selection pass 9/9 on x64 and x86; documentation-governance and whitespace checks pass. No external-ROM, desktop, endpoint, integration or EXE claim applies because no runnable Product target exists. |
+| Stop Conditions | Need for ZIP decoding, runtime ROM-name guessing, Shared API change, machine/session construction, a second command route, protected payload retention, or a source-grade claim beyond the stated ladder stops and transfers the gap. |
+| Exit Criteria | Met: one strict, test-covered grammar owns all twelve roles and UI options; loading finds only adjacent `myraidenii.ini`; no production route loads a file yet; scoped gates and diff review pass. |
+| Temporary Artifacts | None. Existing Ninja/ccache trees are reused. |
+| Original Owner Request | Continue implementation while preserving the explicit L3/L2/L1 definition. |
+
+Sequential coordinator actual-change review accepts S16's Product configuration
+foundation. The sole parser owns the lower-case adjacent `myraidenii.ini`, the
+twelve fixed selected-set image roles and the two shared presentation options.
+It rejects missing, duplicate and unknown assignments without guessing a role
+or opening any external input. File opening, relative-path resolution,
+size/hash validation, Board construction and Emulator composition remain a
+separate receiving increment; no archive reader, protected payload, Product
+executable or Shared route was introduced. Both cached widths pass the complete
+MyRaidenII repository-only selection 9/9, with documentation governance and
+whitespace checks passing. S16 is closed; M1 T5 remains open for the
+transactional image loader and one Product/Machine composition route.
+
 M1 T4 Video is closed. S50 verifies that the selected-set probe loads the
 complete external graphics-role bundle through the sole Core Board API,
 executes the real V30 path, and reports one bounded neutral native frame
