@@ -31,7 +31,7 @@ M1 T3 remains open after accepted S1--S25:
 | S23 | Complete Video-DMA/palette/brightness receiving-evidence gate; no invented implementation | `c48f9e02c` |
 | S24 | Complete COP 2a05 offset-add receiver and bounded actual-bus proof | `7d37760f7` |
 | S25 | Bounded selected-set startup diagnostic and explicit Board/COP-owner transfer | P1 `c75a016d0`; P2 state receipt; P3 owner correction |
-| S26 | Selected-set `0x43e` write-only Board hole and bounded next-stop transfer | pending |
+| S26 | Selected-set `0x43e` write-only Board hole and bounded next-stop transfer | P1 `42845208d` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
