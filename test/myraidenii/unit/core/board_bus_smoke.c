@@ -184,7 +184,7 @@ static lib_i32 board_control_window(void)
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 unmodelled[] = {
-        0x400u,0x426u,0x5ffu,0x6cau,0x762u,0x7ffu
+        0x400u,0x426u,0x5ffu,0x762u,0x7ffu
     };
     const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -263,9 +263,13 @@ static lib_i32 board_control_window(void)
         x86_core_machine_memory_write(machine, 0x6c8u, data, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6c8u, data, 2u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6c9u, data, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x6c9u, data, 2u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6c9u, data, 2u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6c8u, value, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x6c8u, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6cau, data, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6cau, data, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6cau, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6cau, value, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x696u, data, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x696u, data, 2u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x697u, data, 1u) != LIB_STATUS_OK ||
@@ -1017,7 +1021,7 @@ static lib_i32 board_cop_routes(void)
         goto done;
     if (x86_core_machine_memory_write(machine, 0x476u, (lib_u8[]){0xadu,0xdeu}, 2u) !=
             LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x47eu, (lib_u8[]){0x14u,0u}, 2u) !=
+        x86_core_machine_memory_write(machine, 0x47eu, (lib_u8[]){0x16u,0u}, 2u) !=
             LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x478u, (lib_u8[]){0x34u,0x12u}, 2u) !=
             LIB_STATUS_OK ||
@@ -1029,7 +1033,7 @@ static lib_i32 board_cop_routes(void)
             LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
         !cop_failure.valid || cop_failure.operation != MYRAIDENII_CORE_COP_OPERATION_DMA ||
-        cop_failure.operation_value != 0x014u || cop_failure.physical != 0x6fcu ||
+        cop_failure.operation_value != 0x016u || cop_failure.physical != 0x6fcu ||
         cop_failure.status != LIB_STATUS_INVALID_STATE || cop_failure.dma_source != 0x1234u ||
         cop_failure.dma_size != 0x5678u || cop_failure.dma_destination != 0x9abcu ||
         cop_failure.dma_relative != 0xdeadu ||
