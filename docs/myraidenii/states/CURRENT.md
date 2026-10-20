@@ -249,3 +249,17 @@ exist; no unqualified mode is reported as a no-op or a RAM copy.  Documentation
 governance and `git diff --check` pass.  S23 is closed with no active packet;
 T3/M1 remain open for residual macros and genuine selected-set startup, while
 the queued Video task owns later rendering/DMA qualification.
+
+Sequential coordinator actual-change review accepts S24 after the final frozen
+two-width qualification.  `2a05` now uses the one existing uploaded-command,
+pending-operation and checked Core DMA route: for each slot it reads the
+unsigned delta at `B1+1e+4i`, then writes widened sums at `B0+6+4i` and
+`B0+1e+4i` in that order.  The existing Board executable proves all three
+slots, carry, input/output ordering, pending/reset, source failure and late
+DMA-lane prefix behavior.  Final full repository-only units pass687/687 per
+width (x64 106.24s; x86 125.78s).  No Shared/public ABI, external source,
+ROM/media, artifact, integration, desktop/RDP or playable-game claim changed.
+The [S24 record](../etc/evidence/t3-s24-cop-offset-add.md) retains the
+complete bounded model and frozen hashes.  S24 is closed.  T3/M1 remains open
+for unresolved `1905`/`9100`/`9900`, Video qualification and genuine
+selected-set startup.

@@ -73,6 +73,16 @@ evidence required before any mode can be admitted.  It does not treat a
 reference-specific address, comment, screenshot, or ordinary RAM copy as a
 Video contract.
 
+S24 completes the separately evidenced `2a05` receiver.  For command slot
+`i`, it reads the unsigned word at `B1 + 1e + 4i`, adds it to the word at
+`B0 + 6 + 4i` and commits the widened result as a dword at that first output;
+it then independently reads `B0 + 1e + 4i` and commits the second widened
+result there.  The implementation uses the existing uploaded-command,
+single-pending-operation and checked Core DMA path.  Read failure publishes no
+output; a late dword lane failure preserves the already accepted prefix.  This
+is a source-grade functional L2 model, not a claim about hardware timing or
+unqualified remaining macros `1905`, `9100` and `9900`.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free

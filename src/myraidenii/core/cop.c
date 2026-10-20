@@ -41,7 +41,8 @@ typedef enum myraidenii_core_cop_command_kind {
     MYRAIDENII_CORE_COP_POSITION,
     MYRAIDENII_CORE_COP_HITBOX,
     MYRAIDENII_CORE_COP_ANGLE_APPROACH,
-    MYRAIDENII_CORE_COP_NUMERIC
+    MYRAIDENII_CORE_COP_NUMERIC,
+    MYRAIDENII_CORE_COP_OFFSET_ADD
 } myraidenii_core_cop_command_kind;
 
 typedef struct myraidenii_core_cop_range {
@@ -128,6 +129,7 @@ static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 com
 {
     switch (command) {
     case 0x0205u: case 0x0905u: return MYRAIDENII_CORE_COP_UPDATE;
+    case 0x2a05u: return MYRAIDENII_CORE_COP_OFFSET_ADD;
     case 0x5205u: case 0x5a05u: case 0xf205u: return MYRAIDENII_CORE_COP_COPY;
     case 0xa100u: case 0xa900u: return MYRAIDENII_CORE_COP_POSITION;
     case 0xb100u: case 0xb900u: return MYRAIDENII_CORE_COP_HITBOX;
@@ -519,6 +521,34 @@ static lib_status myraidenii_core_cop_update(myraidenii_core_cop *cop)
     return myraidenii_core_cop_memory(cop, base, 30u + slot, 2u, LIB_TRUE, &coordinate);
 }
 
+static lib_status myraidenii_core_cop_offset_add(myraidenii_core_cop *cop)
+{
+    const lib_u32 primary = myraidenii_core_cop_address(cop, 0u);
+    const lib_u32 secondary = myraidenii_core_cop_address(cop, 1u);
+    const lib_u32 slot = cop->pending.slot * 4u;
+    lib_u32 delta = 0u, value = 0u;
+
+    lib_status status = myraidenii_core_cop_memory(cop, secondary, 0x1eu + slot,
+        2u, LIB_FALSE, &delta);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, primary, 6u + slot, 2u,
+            LIB_FALSE, &value);
+    if (status == LIB_STATUS_OK) {
+        value += delta;
+        status = myraidenii_core_cop_memory(cop, primary, 6u + slot, 4u,
+            LIB_TRUE, &value);
+    }
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_memory(cop, primary, 0x1eu + slot, 2u,
+            LIB_FALSE, &value);
+    if (status == LIB_STATUS_OK) {
+        value += delta;
+        status = myraidenii_core_cop_memory(cop, primary, 0x1eu + slot, 4u,
+            LIB_TRUE, &value);
+    }
+    return status;
+}
+
 static lib_i16 myraidenii_core_cop_signed_word(lib_u32 value)
 {
     lib_u16 word = (lib_u16)value;
@@ -848,6 +878,8 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
             myraidenii_core_cop_word(cop, MYRAIDENII_CORE_COP_STATUS) & 0x7fffu);
         if (kind == MYRAIDENII_CORE_COP_UPDATE) {
             status = myraidenii_core_cop_update(cop);
+        } else if (kind == MYRAIDENII_CORE_COP_OFFSET_ADD) {
+            status = myraidenii_core_cop_offset_add(cop);
         } else if (kind == MYRAIDENII_CORE_COP_ANGLE_APPROACH) {
             status = myraidenii_core_cop_approach_angle(cop);
         } else if (kind == MYRAIDENII_CORE_COP_NUMERIC) {
