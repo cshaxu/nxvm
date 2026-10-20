@@ -5,8 +5,21 @@
 M1 T4 remains open after accepted S40. The paused repaint path does not consume
 the synthetic graphics write, while advancing mutation/control trials are
 identical and therefore time-confounded. S39 found no qualifying original
-graphics contract. Core still has no graphics decode, composition or frame
-publication path.
+graphics contract. The owner has now explicitly admitted published MAME/other
+emulator implementation inspection as an L2 layout/behavior reference under
+the MyRaidenII source policy; Core still has no graphics decode, composition
+or frame publication path.
+
+## Active Packet — M1 T4 S41
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S41 follows accepted S40 P2 `91f7f76fa`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner explicitly authorizes MAME/other emulator implementations as L2 references. Source policy forbids copying/transliterating their source, tables, ROM data or decryption material. |
+| Objective | Derive and independently implement the first bounded Core graphics decode/composition contract from recorded L2 source facts, then qualify it with synthetic ROM-free vectors. |
+| Files And ABI Surface | MyRaidenII Core video/graphics, its owning unit test, evidence, manifest and task records only. No Shared, Product, external asset or ROM change. |
+| Verification | Record source revision/path and adopted finite facts; run x64/x86 focused Core video tests plus the complete repository-only unit suite before S closure. |
+| Exit Criteria | Independently implemented, bounded graphics path passes synthetic regression and records its L2 scope; no reference source/table/ROM payload enters the repository. |
 
 ## Archived Packet — M1 T4 S40
 

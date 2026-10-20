@@ -1,4 +1,4 @@
-add_library(myraidenii-core STATIC board.c cop.c video.c)
+add_library(myraidenii-core STATIC board.c cop.c graphics.c video.c)
 target_include_directories(myraidenii-core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 target_link_libraries(myraidenii-core PUBLIC types x86-core-machine)
 if(UNIX)

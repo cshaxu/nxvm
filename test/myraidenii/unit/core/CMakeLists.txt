@@ -11,3 +11,17 @@ endif()
 add_test(NAME myraidenii.core/board-bus-smoke COMMAND myraidenii-core-board-bus-smoke)
 set_tests_properties(myraidenii.core/board-bus-smoke PROPERTIES
     LABELS "unit;myraidenii" TIMEOUT 30)
+
+add_executable(myraidenii-core-graphics-smoke graphics_smoke.c)
+target_link_libraries(myraidenii-core-graphics-smoke PRIVATE myraidenii-core)
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests myraidenii-core-graphics-smoke)
+endif()
+if(MSVC)
+    target_compile_options(myraidenii-core-graphics-smoke PRIVATE /UNDEBUG /W4 /WX)
+else()
+    target_compile_options(myraidenii-core-graphics-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_test(NAME myraidenii.core/graphics-smoke COMMAND myraidenii-core-graphics-smoke)
+set_tests_properties(myraidenii.core/graphics-smoke PROPERTIES
+    LABELS "unit;myraidenii" TIMEOUT 30)

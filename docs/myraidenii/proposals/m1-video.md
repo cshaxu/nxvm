@@ -36,9 +36,11 @@ masks any finite element coordinate/value result. See the
 [S40 control](../etc/evidence/t4-s40-paused-graphics-control.md) and
 [S38 boundary](../etc/evidence/t4-s38-synthetic-graphics-oracle.md). Neither
 is authority to guess a tile layout, bitplane order, attributes, priority,
-scroll or decryption rule. Decoder admission therefore requires original board
-documentation/measurement or a separately approved, stable black-box isolation
-method.
+scroll or decryption rule. Decoder admission now uses the owner-approved L2
+source-reference path in the source policy: published MAME/other-emulator
+behavior and layout may be inspected, recorded by upstream revision and
+independently implemented. It does not permit copied/transliterated source or
+tables, imported decryption, or a claim of original-hardware accuracy.
 
 S39's bounded original-document search found no provenance-qualified graphics
 contract in accessible operation-manual/catalog material. Its
