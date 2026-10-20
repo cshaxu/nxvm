@@ -232,6 +232,31 @@ done:
     return failed;
 }
 
+static lib_i32 sound_allows_no_device_map_slot(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[0u] = 0x3au; program[1u] = 0x04u; program[2u] = 0x40u;
+    program[3u] = 0x32u; program[4u] = 0x18u; program[5u] = 0x40u;
+    program[6u] = 0x3eu; program[7u] = 0x5au;
+    program[8u] = 0x32u; program[9u] = 0x04u; program[10u] = 0x40u;
+    program[11u] = 0x3au; program[12u] = 0x04u; program[13u] = 0x40u;
+    program[14u] = 0x32u; program[15u] = 0x19u; program[16u] = 0x40u;
+    program[17u] = 0x76u;
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 0xffu || fixture.response[1] != 0xffu)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 static lib_i32 sound_executes_device_map(void)
 {
     static lib_u8 program[0x2000u];
@@ -258,7 +283,7 @@ static lib_i32 sound_executes_device_map(void)
     program[at++] = 0x3eu; program[at++] = 0x01u;
     program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
     for (lib_u8 index = 0u; index < 20u; ++index) program[at++] = 0x00u;
-    program[at++] = 0x3au; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3au; program[at++] = 0x09u; program[at++] = 0x40u;
     program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
     program[at++] = 0x3eu; program[at++] = 0x81u;
     program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
@@ -507,6 +532,7 @@ int main(void)
         sound_rejects_invalid_configuration() != 0 ||
         sound_switches_fixed_bank() != 0 ||
         sound_executes_bootstrap_control_flow() != 0 ||
+        sound_allows_no_device_map_slot() != 0 ||
         sound_executes_device_map() != 0 ||
         sound_delivers_ym_timer_interrupt() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||

@@ -140,6 +140,28 @@ output, startup, graphics, input, desktop or gameplay qualification is
 claimed. S12 is closed; M1 T5 remains open for the decoder receiver, Product
 composition and qualified real command-path work.
 
+## Active Packet — M1 T5 S13
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S13 follows accepted S12 P2 `3cac26ae3`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work and reaffirmed that only an inspected primary manual PDF's explicit applicable fact is L3; an external implementation or broad/range-only source is L2; an unsupported engineering approximation is L1. Existing source policy authorizes external emulator inspection solely as L2 research, never source/table/ROM import. |
+| Objective | Remove the currently observed local Z80 Sound decoder refusal through one independently implemented, evidence-graded receiver, while retaining the existing Board-first route and preserving all unimplemented forms as explicit errors. |
+| Non-goals | No Product/UI/INI/controls, Shared edit, new CPU framework, second sound route, ROM/table/source import, opcode/trace payload logging, timing/silicon claim beyond evidence, host endpoint, desktop or playable-game claim. |
+| Reference Baseline | S12 establishes the only observed terminal: both widths reach Core `STOP_FAULT` with `LIB_STATUS_UNSUPPORTED`, no CPU fault and no COP failure. Board calls Sound before COP, making Sound the earliest owner. |
+| Candidate Proposal | Inspect the already recorded Z80 manual as the primary source and, only when needed, bounded external behavior as L2. Reconcile the local decoder's missing legal Z80 families against that evidence; implement the smallest coherent receiver in existing `sound.c`, extending the existing `sound_smoke.c` actual route rather than adding an opcode test framework. If exact observed-form attribution would require retaining protected bytes or a new public diagnostic, stop and leave it explicit rather than exposing data. |
+| Files And ABI Surface | Expected MyRaidenII Core Sound source/tests, CURRENT, evidence and manifests only. No public API/ABI change is planned. Any changed statement must name its L3/L2/L1 basis. |
+| Applicable Rules | MyRaidenII README, architecture, coding, source policy, Execution and Documentation. Sound remains one Core-local owner; Board remains the sole time/transport owner; all guest progress remains through its existing path. |
+| Verification | Focused existing Sound/Board routes and complete MyRaidenII unit selection on cached x64/x86; source/manifest/doc/whitespace gates; rerun the existing bounded selected-set probe only if the receiver is implemented. Do not count a nonterminal probe as gameplay qualification. |
+| Expected Markers | No raw protected payload is retained; selected-set terminal either advances through the existing route or names a new bounded, non-masked owner. Synthetic actual-route vectors cover each newly accepted family plus state/error preservation. |
+| Asset Needs | Existing owner-supplied external archive is read only and accessed only via the existing staging tool if rerun. No asset change or repository media write is admitted. |
+| Reporting Requirements | Record exact manual/external reference and adopted finite facts, grades, source/test delta, both-width result and every unperformed timing/audio/desktop/gameplay qualification. |
+| Stop Conditions | Missing applicable manual/external evidence, a needed source/table import, payload exposure, public/Shared contract need, width divergence, a second execution path or an attempt to hide the refusal stops implementation and transfers the gap. |
+| Exit Criteria | The smallest receiver is independently implemented and tested through the real Sound route, with every behavioral claim correctly graded; all named verification passes and the bounded real-set probe is rerun when production behavior changes. |
+| Original Owner Request | Continue under the clarified L3/L2/L1 definition: only explicit inspected manual-PDF formulas/constants/rules are L3; range/external-reference facts are L2; unsupported borrowed mechanisms are L1. |
+| Similar-Issue Sweep | For each newly admitted decoder family, inspect base, CB, ED and index-prefix dispatch plus error/rollback behavior so no duplicate decode path, silent fallback or inconsistent tick source is introduced. |
+
+
 ## Archived Packet — M1 T5 S6
 
 | Field | Required record |

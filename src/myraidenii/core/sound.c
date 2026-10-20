@@ -10,6 +10,7 @@ enum {
     MYRAIDENII_CORE_SOUND_INTERRUPT_ACKNOWLEDGE = 0x4001u,
     MYRAIDENII_CORE_SOUND_RST10_ACKNOWLEDGE = 0x4002u,
     MYRAIDENII_CORE_SOUND_RST18_ACKNOWLEDGE = 0x4003u,
+    MYRAIDENII_CORE_SOUND_NO_DEVICE = 0x4004u,
     MYRAIDENII_CORE_SOUND_COMMAND_0 = 0x4010u,
     MYRAIDENII_CORE_SOUND_COMMAND_1 = 0x4011u,
     MYRAIDENII_CORE_SOUND_COMMAND_PENDING = 0x4012u,
@@ -220,7 +221,9 @@ static lib_status myraidenii_core_sound_ym_read(const myraidenii_core_sound *sou
     lib_u16 address, lib_u8 *out_value)
 {
     if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (address != MYRAIDENII_CORE_SOUND_YM_ADDRESS) return LIB_STATUS_UNSUPPORTED;
+    if (address != MYRAIDENII_CORE_SOUND_YM_ADDRESS &&
+        address != MYRAIDENII_CORE_SOUND_YM_DATA)
+        return LIB_STATUS_UNSUPPORTED;
     *out_value = sound->ym.status;
     return LIB_STATUS_OK;
 }
@@ -634,6 +637,10 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
         *out_value = myraidenii_core_sound_oki_status(&sound->oki[1u]);
         return LIB_STATUS_OK;
     }
+    if (address == MYRAIDENII_CORE_SOUND_NO_DEVICE) {
+        *out_value = 0xffu;
+        return LIB_STATUS_OK;
+    }
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_0:
         return sound->transport.command_get(sound->transport.context, 0u, out_value);
@@ -670,6 +677,7 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
         return myraidenii_core_sound_oki_write(&sound->oki[0u], value);
     if (address == MYRAIDENII_CORE_SOUND_OKI_2)
         return myraidenii_core_sound_oki_write(&sound->oki[1u], value);
+    if (address == MYRAIDENII_CORE_SOUND_NO_DEVICE) return LIB_STATUS_OK;
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_ACKNOWLEDGE:
         return sound->transport.command_acknowledge(sound->transport.context);
