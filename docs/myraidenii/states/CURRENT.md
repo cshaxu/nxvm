@@ -2,11 +2,12 @@
 
 ## Current Work
 
-M1 T4 S49 is active. It corrects the one compositor's selected SEI25X L2
-object-order and zero-code behavior without changing the component graph,
-object layout, Board map or any Shared component. The evidence is the current
-BSD-3-Clause MAME SEI25X/RISE1X device's documented format and bounded
-draw-loop behavior; NXVM retains an independently-written implementation.
+M1 T4 remains open. S49 P1 `2535e748f` is verified: Video now uses the
+selected SEI25X L2 descending object order and ignores zero-code descriptors.
+Cached x64/x86 MyRaidenII units and documentation governance pass. No
+Product/Machine executable exists yet.
+
+## Archived Packet — M1 T4 S49
 
 | Field | Required record |
 | --- | --- |
@@ -15,8 +16,8 @@ draw-loop behavior; NXVM retains an independently-written implementation.
 | Non-goals | No external source/table import, ROM/media, sprite-bank callback, blend/shadow, protection behavior, Board-map change, Machine/Product work, Shared change or physical-hardware claim. |
 | Reference Baseline | The MAME BSD-3-Clause `sei25x_rise1x_spr.cpp` documents the compatible eight-byte layout and scans object entries downward; its loop skips zero tile code. The existing decoder already represents this layout, while S48's initial painter used ascending order and only skipped all-zero descriptors. |
 | Files And ABI Surface | `src/myraidenii/core/video.c`, its existing Core graphics smoke, L2 evidence and task record only. No declaration, public API, allocation, component boundary or mutable state changes. |
-| Verification | Extend the existing synthetic graphics smoke so it rejects ascending same-priority order and a visible non-zero-attribute/zero-code object; run focused Core x64/x86 tests, cached MyRaidenII selection, applicable manifest/docs checks and `git diff --check`. |
-| Exit Criteria | The sole compositor has one bounded descending scan, tile code zero preserves the previous pixel, lower-address descriptors win within a priority phase, and named verification passes. |
+| Verification | Passed: focused Core tests plus all five MyRaidenII units on cached x64/x86 Ninja trees, documentation governance and `git diff --check`. |
+| Exit Criteria | Met: the sole compositor has one bounded descending scan, tile code zero preserves the previous pixel, lower-address descriptors win within a priority phase, and named verification passes. |
 
 ## Archived Packet — M1 T4 S48
 

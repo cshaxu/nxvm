@@ -72,7 +72,6 @@ static lib_i32 graphics_sprite_word_lanes(void)
     lib_i32 result = 1;
 
     if (images == LIB_NULL) return 1;
-    result = 1;
     lib_memory_set(images, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET] = 0x10u;
     images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_1_OFFSET + 1u] = 0x11u;
