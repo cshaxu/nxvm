@@ -15,6 +15,9 @@ struct myraidenii_core_board {
     lib_u8 sound_response[2];
     lib_u8 sprite_protection_upload[0x20u];
     lib_u8 tile_bank_01;
+    lib_u16 sprite_protection_offset;
+    lib_u16 sprite_protection_source_segment;
+    lib_u16 sprite_protection_destination;
     lib_u8 sound_command_pending;
     lib_u8 sound_interrupt_pending;
     lib_u16 tile_bank_2;
@@ -29,6 +32,10 @@ enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES = 2u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_CONSTANT_START = 0x6c4u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_CONSTANT_BYTES = 2u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_OFFSET_START = 0x6c0u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_START = 0x6c2u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_START = 0x6c6u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES = 2u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START = 0x6c8u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES = 2u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0690 = 0x690u,
@@ -375,6 +382,99 @@ static lib_status myraidenii_core_board_tile_bank_01_noop_write(void *owner,
     return LIB_STATUS_OK;
 }
 
+static lib_status myraidenii_core_board_sprite_protection_latch_get(
+    myraidenii_core_board *board, lib_u32 physical, lib_u16 **out_value,
+    lib_bool *out_readable)
+{
+    lib_u32 first = physical & ~1u;
+
+    if (board == LIB_NULL || out_value == LIB_NULL || out_readable == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    switch (first) {
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_OFFSET_START:
+        *out_value = &board->sprite_protection_offset;
+        *out_readable = LIB_TRUE;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_START:
+        *out_value = &board->sprite_protection_source_segment;
+        *out_readable = LIB_TRUE;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_START:
+        *out_value = &board->sprite_protection_destination;
+        *out_readable = LIB_FALSE;
+        return LIB_STATUS_OK;
+    default:
+        return LIB_STATUS_UNSUPPORTED;
+    }
+}
+
+static lib_status myraidenii_core_board_sprite_protection_latch_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    myraidenii_core_board *board = owner;
+    lib_u16 *value;
+    lib_bool readable;
+    lib_u32 first = physical & ~1u;
+
+    if (board == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    if (myraidenii_core_board_sprite_protection_latch_get(board, physical, &value, &readable) !=
+            LIB_STATUS_OK ||
+        !myraidenii_core_board_range_contains(first,
+            MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES, physical, bytes) ||
+        (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ && !readable)) {
+        return LIB_STATUS_UNSUPPORTED;
+    }
+    (void)value;
+    return access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_sprite_protection_latch_read(void *owner,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    myraidenii_core_board *board = owner;
+    lib_u16 *value;
+    lib_bool readable;
+    lib_u32 first = physical & ~1u;
+
+    (void)observe_only;
+    if (destination == 0u ||
+        myraidenii_core_board_sprite_protection_latch_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK ||
+        myraidenii_core_board_sprite_protection_latch_get(board, physical, &value, &readable) !=
+            LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    for (lib_uptr index = 0u; index < bytes; ++index)
+        ((lib_u8 *)destination)[index] = (lib_u8)(*value >> ((physical + index - first) * 8u));
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_sprite_protection_latch_write(void *owner,
+    lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+    lib_u16 *value;
+    lib_bool readable;
+    lib_u32 first = physical & ~1u;
+
+    if (source == 0u ||
+        myraidenii_core_board_sprite_protection_latch_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK ||
+        myraidenii_core_board_sprite_protection_latch_get(board, physical, &value, &readable) !=
+            LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    for (lib_uptr index = 0u; index < bytes; ++index) {
+        lib_u16 shift = (lib_u16)((physical + index - first) * 8u);
+        lib_u16 mask = (lib_u16)(0xffu << shift);
+
+        *value = (lib_u16)((*value & (lib_u16)~mask) |
+            ((lib_u16)((const lib_u8 *)source)[index] << shift));
+    }
+    return LIB_STATUS_OK;
+}
+
 /* L2 object ownership at the exact selected-set write. No object register
  * meaning, readback or frame effect is established yet. */
 static lib_status myraidenii_core_board_sprite_object_query(void *owner,
@@ -692,6 +792,9 @@ static void myraidenii_core_board_reset(void *owner)
         board->sound_response[0] = 0u;
         board->sound_response[1] = 0u;
         board->tile_bank_01 = 0u;
+        board->sprite_protection_offset = 0u;
+        board->sprite_protection_source_segment = 0u;
+        board->sprite_protection_destination = 0u;
         board->sound_command_pending = LIB_FALSE;
         board->sound_interrupt_pending = LIB_FALSE;
         board->tile_bank_2 = 0u;
@@ -765,6 +868,11 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_tile_bank_01_noop_write,
         myraidenii_core_board_tile_bank_01_noop_query
     };
+    const x86_core_machine_memory_device_callbacks sprite_protection_latch_callbacks = {
+        myraidenii_core_board_sprite_protection_latch_read,
+        myraidenii_core_board_sprite_protection_latch_write,
+        myraidenii_core_board_sprite_protection_latch_query
+    };
     const x86_core_machine_memory_device_callbacks sprite_object_write_callbacks = {
         myraidenii_core_board_sprite_object_read, myraidenii_core_board_sprite_object_write,
         myraidenii_core_board_sprite_object_query
@@ -779,7 +887,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[22] = {
+    x86_core_machine_memory_device_route routes[25] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -807,6 +915,18 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_CONSTANT_START,
             .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_CONSTANT_BYTES,
             .callbacks = selected_control_write_noop_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_OFFSET_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0690,
             .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES,

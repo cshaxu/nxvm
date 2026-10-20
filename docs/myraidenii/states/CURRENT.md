@@ -27,6 +27,28 @@ M1 T4 remains open after accepted S18:
 | S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 `7258833b8`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6cc`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s19-tile-bank-2-l2.md). |
 | S20 | Selected-set-observed tile-bank-01 latch at `0x6cc` plus adjacent `0x6cd` no-op. | P1 `229b564bb`; P3 `8ad61e876` corrects the overwide latch. x64/x86 Board smoke passes, both selected-set probes advance to `0x6c4`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s20-tile-bank-01-l2.md). |
 | S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 `448691874`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6c0`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s21-sprite-protection-constant-l2.md). |
+| S22 | Bounded sprite-protection register group at `0x6c0--0x6c3` and `0x6c6--0x6c7`. | P1 pending. |
+
+## Active Packet — M1 T4 S22
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S22 follows S21 P2 `e007e826d`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's standing approval permits bounded L2 behavior from external address-map evidence where physical L3 material is unavailable; source policy forbids importing code, tables, algorithms, or protected media. |
+| Objective | Establish complete Board ownership for the adjacent sprite-protection register group: reset-zero read/write word latches at `0x6c0--0x6c1` and `0x6c2--0x6c3`, plus a reset-zero write-only word latch at `0x6c6--0x6c7`. |
+| Non-goals | No protection algorithm, sprite decryption, destination interpretation, frame effect, generic register framework, public API, Shared change, reference implementation translation, ROM inspection, or playable-game claim. |
+| Reference Baseline | S21's x64/x86 probes stop on a byte write at `0x6c0`. The selected Raiden II inherited map gives named read/write ownership to `0x6c0--0x6c3`, write-only ownership to `0x6c6--0x6c7`, and independently assigns the intervening `0x6c4--0x6c5` no-op to S21. |
+| Candidate Proposal | Add three exact Board routes and three `lib_u16` reset-zero latches. Byte and contained word lanes use explicit little-endian handling. Readable latches expose stored bytes; the destination latch rejects read/inspect. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, selected-set probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset, or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. Address ownership and local latching are L2 behavior, not a hardware-accuracy claim. |
+| Verification | Focused x64/x86 Board test; x64/x86 selected-set startup probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Read/write latch lane round-trips and reset are verified; destination writes and reads fail as mapped; S21 no-op remains independent; a wider access keeps Core's established byte-route splitting; both probes report the same next terminal. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient startup staging only, with no retained payload or raw trace. |
+| Reporting Requirements | Record the endpoint group, L2 limits, lane/reset behavior, next probe stop, dual-width result and remaining non-goals. |
+| Stop Conditions | Required protection behavior beyond latching, conflicting endpoint evidence, Shared/public API change, divergent host widths, protected-data exposure, or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Test every group endpoint, byte/word lanes, readable versus write-only distinction, reset, adjacent S21 no-op, wider accesses through Core's byte-route split and duplicate owner paths. |
 
 ## Retained Packet — M1 T4 S21
 
