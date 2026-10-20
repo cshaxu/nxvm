@@ -60,13 +60,16 @@ typedef struct myraidenii_core_board_graphics_images {
 } myraidenii_core_board_graphics_images;
 
 /* Program lanes are required and copied while the board is created. Graphics
- * are optional only for headless Core diagnostics; a supplied bundle must be
- * complete. The caller may release all input buffers after success. */
+ * and the sound program are optional only for bounded Core diagnostics; a
+ * supplied graphics bundle must be complete. The caller may release all input
+ * buffers after success. */
 typedef struct myraidenii_core_board_config {
     const lib_u8 *program_even;
     const lib_u8 *program_odd;
     lib_size program_lane_bytes;
     const myraidenii_core_board_graphics_images *graphics_images;
+    const lib_u8 *sound_program;
+    lib_size sound_program_bytes;
 } myraidenii_core_board_config;
 
 /* Reset clears this bounded fallback observation. It reports only how an

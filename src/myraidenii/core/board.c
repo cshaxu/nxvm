@@ -8,7 +8,7 @@ struct myraidenii_core_board {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
     myraidenii_core_sprite_buffer *sprite_buffer;
-    myraidenii_core_sound sound;
+    myraidenii_core_sound *sound;
     myraidenii_core_board_control_failure_observation control_failure;
     myraidenii_core_video video;
     lib_u8 *program;
@@ -33,6 +33,47 @@ struct myraidenii_core_board {
     lib_u16 system_inputs;
     lib_u8 coin_inputs;
 };
+
+static lib_status myraidenii_core_board_sound_transport_command_get(void *context,
+    lib_u8 index, lib_u8 *out_value)
+{
+    return myraidenii_core_board_sound_command_get(context, index, out_value);
+}
+
+static lib_status myraidenii_core_board_sound_transport_command_is_pending(
+    void *context, lib_bool *out_pending)
+{
+    const myraidenii_core_board *board = context;
+
+    if (board == LIB_NULL || out_pending == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_pending = board->sound_command_pending;
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_sound_transport_command_acknowledge(
+    void *context)
+{
+    return myraidenii_core_board_sound_command_acknowledge(context);
+}
+
+static lib_status myraidenii_core_board_sound_transport_interrupt_acknowledge(
+    void *context)
+{
+    return myraidenii_core_board_sound_interrupt_acknowledge(context);
+}
+
+static lib_status myraidenii_core_board_sound_transport_response_set(void *context,
+    lib_u8 index, lib_u8 value)
+{
+    return myraidenii_core_board_sound_response_set(context, index, value);
+}
+
+static lib_status myraidenii_core_board_sound_transport_coin_get(void *context,
+    lib_u8 *out_value)
+{
+    return myraidenii_core_board_get_coin_inputs(context, out_value);
+}
 
 enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START = 0x43eu,
@@ -788,7 +829,7 @@ static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 du
     lib_status status;
 
     (void)due_tick;
-    status = myraidenii_core_sound_advance(&board->sound, ticks);
+    status = myraidenii_core_sound_advance(board->sound, ticks);
     if (status != LIB_STATUS_OK) {
         (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
         return;
@@ -946,7 +987,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->player_inputs = 0xffffu;
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
-        myraidenii_core_sound_reset(&board->sound);
+        myraidenii_core_sound_reset(board->sound);
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
         myraidenii_core_sprite_buffer_reset(board->sprite_buffer);
@@ -1041,6 +1082,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
+    myraidenii_core_sound_config sound_config;
     x86_core_machine_memory_device_route routes[33] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
@@ -1170,6 +1212,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     if (config == LIB_NULL || config->program_even == LIB_NULL ||
         config->program_odd == LIB_NULL ||
         config->program_lane_bytes != MYRAIDENII_CORE_PROGRAM_LANE_BYTES ||
+        (config->sound_program == LIB_NULL && config->sound_program_bytes != 0u) ||
         (config->graphics_images != LIB_NULL &&
             !myraidenii_core_board_graphics_images_complete(config->graphics_images))) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -1185,7 +1228,25 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         board->program[index * 2u] = config->program_even[index];
         board->program[index * 2u + 1u] = config->program_odd[index];
     }
-    status = myraidenii_core_sprite_buffer_create(&board->sprite_buffer);
+    sound_config = (myraidenii_core_sound_config){
+        .program = config->sound_program,
+        .program_bytes = config->sound_program_bytes,
+        .transport = {
+            .context = board,
+            .command_get = myraidenii_core_board_sound_transport_command_get,
+            .command_is_pending =
+                myraidenii_core_board_sound_transport_command_is_pending,
+            .command_acknowledge =
+                myraidenii_core_board_sound_transport_command_acknowledge,
+            .interrupt_acknowledge =
+                myraidenii_core_board_sound_transport_interrupt_acknowledge,
+            .response_set = myraidenii_core_board_sound_transport_response_set,
+            .coin_get = myraidenii_core_board_sound_transport_coin_get
+        }
+    };
+    status = myraidenii_core_sound_create(&sound_config, &board->sound);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_sprite_buffer_create(&board->sprite_buffer);
     if (status == LIB_STATUS_OK && config->graphics_images != LIB_NULL) {
         status = myraidenii_core_video_graphics_images_load(&board->video,
             config->graphics_images->characters, config->graphics_images->background_1,
@@ -1221,6 +1282,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_cop_destroy(board->cop);
         myraidenii_core_video_graphics_images_release(&board->video);
         myraidenii_core_sprite_buffer_destroy(board->sprite_buffer);
+        myraidenii_core_sound_destroy(board->sound);
         lib_release(board->program);
         lib_release(board);
         return status;
@@ -1236,6 +1298,7 @@ void myraidenii_core_board_destroy(myraidenii_core_board *board)
     myraidenii_core_cop_destroy(board->cop);
     myraidenii_core_video_graphics_images_release(&board->video);
     myraidenii_core_sprite_buffer_destroy(board->sprite_buffer);
+    myraidenii_core_sound_destroy(board->sound);
     lib_release(board->program);
     lib_release(board);
 }

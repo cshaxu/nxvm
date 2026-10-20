@@ -13,11 +13,29 @@ enum {
         8u * MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND
 };
 
-typedef struct myraidenii_core_sound {
-    lib_u64 z80_ticks;
-    lib_u64 z80_phase;
-} myraidenii_core_sound;
+typedef struct myraidenii_core_sound myraidenii_core_sound;
 
+/* These are the Board-owned sides of the fixed Seibu handoff. Sound does not
+ * retain a Board pointer outside this explicitly supplied local contract. */
+typedef struct myraidenii_core_sound_transport {
+    void *context;
+    lib_status (*command_get)(void *context, lib_u8 index, lib_u8 *out_value);
+    lib_status (*command_is_pending)(void *context, lib_bool *out_pending);
+    lib_status (*command_acknowledge)(void *context);
+    lib_status (*interrupt_acknowledge)(void *context);
+    lib_status (*response_set)(void *context, lib_u8 index, lib_u8 value);
+    lib_status (*coin_get)(void *context, lib_u8 *out_value);
+} myraidenii_core_sound_transport;
+
+typedef struct myraidenii_core_sound_config {
+    const lib_u8 *program;
+    lib_size program_bytes;
+    myraidenii_core_sound_transport transport;
+} myraidenii_core_sound_config;
+
+lib_status myraidenii_core_sound_create(
+    const myraidenii_core_sound_config *config, myraidenii_core_sound **out_sound);
+void myraidenii_core_sound_destroy(myraidenii_core_sound *sound);
 void myraidenii_core_sound_reset(myraidenii_core_sound *sound);
 lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
     lib_u64 board_ticks);

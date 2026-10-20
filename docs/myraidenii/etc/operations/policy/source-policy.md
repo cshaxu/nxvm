@@ -13,12 +13,13 @@ implementation or tables. Hardware facts and independently reproduced behavior
 inform project contracts with explicit source grades. A necessary code import
 requires separate per-unit license/architecture review before implementation.
 
-For M1 T4 graphics only, the owner explicitly authorizes inspection of the
-published MAME/other-emulator implementations as an L2 behavior and layout
-reference. The implementation remains independently written: it must not copy
-or transliterate source, data tables, ROM data, or decryption material. The
-evidence records the exact upstream revision/path inspected, the finite facts
-adopted, and the resulting L2 limitation.
+For M1 implementation work, the owner explicitly authorizes inspection of the
+published MAME/other-emulator implementations as L2 behavior and layout
+references when a primary board-integration source is unavailable. The
+implementation remains independently written: it must not copy or transliterate
+source, data tables, ROM data, or decryption material. The evidence records the
+exact upstream revision/path inspected, the finite facts adopted, and the
+resulting L2 limitation.
 
 M1 T4 S47 is the one recorded exception for the selected Raiden II sprite
 transform constants. The owner authorized this bounded BSD-3-Clause data
