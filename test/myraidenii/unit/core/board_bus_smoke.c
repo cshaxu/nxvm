@@ -84,11 +84,88 @@ static lib_i32 board_invalid_arguments(void)
         .program_odd = program_odd,
         .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES - 1u
     };
+    const myraidenii_core_board_config partial_graphics = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES,
+        .graphics_images = &(const myraidenii_core_board_graphics_images){
+            .characters = program_even}
+    };
 
     return myraidenii_core_board_create(LIB_NULL, &board) != LIB_STATUS_INVALID_ARGUMENT ||
         board != LIB_NULL || myraidenii_core_board_create(&config, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL ||
+        myraidenii_core_board_create(&partial_graphics, &board) != LIB_STATUS_INVALID_ARGUMENT ||
+        board != LIB_NULL ||
         myraidenii_core_board_create(&config, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
+}
+
+static lib_i32 board_video_graphics_images(void)
+{
+    myraidenii_core_video video = {0};
+    lib_u8 *source = lib_allocate(MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
+    const myraidenii_core_board_graphics_images graphics = {
+        .characters = source,
+        .background_1 = source + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET,
+        .background_2 = source + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET,
+        .sprites_1 = source + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET,
+        .sprites_2 = source + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET,
+        .sprites_3 = source + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET,
+        .sprites_4 = source + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET
+    };
+    const myraidenii_core_board_config config = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES,
+        .graphics_images = &graphics
+    };
+    myraidenii_core_board *board = LIB_NULL;
+    lib_i32 failed = 1;
+
+    if (source == LIB_NULL) return 1;
+    source[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x11u;
+    source[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] = 0x22u;
+    source[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0x33u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET] = 0x44u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET] = 0x55u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET] = 0x66u;
+    source[MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET] = 0x77u;
+    if (myraidenii_core_video_graphics_images_load(LIB_NULL, source, source, source,
+            source, source, source, source) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_graphics_images_load(&video, LIB_NULL, source, source,
+            source, source, source, source) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_graphics_images_load(&video,
+            source + MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET,
+            source + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET) != LIB_STATUS_OK ||
+        video.graphics_images == LIB_NULL)
+        goto done;
+    lib_memory_set(source, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
+    if (video.graphics_images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] != 0x11u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] != 0x22u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] != 0x33u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET] != 0x44u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET] != 0x55u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET] != 0x66u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET] != 0x77u ||
+        myraidenii_core_video_graphics_images_load(&video, source, source, source,
+            source, source, source, source) != LIB_STATUS_INVALID_ARGUMENT)
+        goto done;
+    myraidenii_core_video_graphics_images_release(&video);
+    if (video.graphics_images != LIB_NULL) goto done;
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) goto done;
+    myraidenii_core_board_destroy(board);
+    board = LIB_NULL;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    myraidenii_core_video_graphics_images_release(&video);
+    lib_release(source);
+    return failed;
 }
 
 static lib_i32 board_program_and_ram_routes(void)
@@ -181,7 +258,7 @@ done:
 static lib_i32 board_control_window(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     const lib_u32 unmodelled[] = {
         0x400u,0x426u,0x5ffu,0x7ffu
@@ -356,7 +433,7 @@ done:
 static lib_i32 board_control_failure_observation(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_board *board = LIB_NULL;
     myraidenii_core_board_control_failure_observation observation = {0};
@@ -396,7 +473,7 @@ static lib_i32 board_control_failure_observation(void)
 static lib_i32 board_tile_bank_2(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -432,7 +509,7 @@ done:
 static lib_i32 board_tile_bank_01(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -461,7 +538,7 @@ done:
 static lib_i32 board_sprite_protection_constant(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -489,7 +566,7 @@ done:
 static lib_i32 board_sprite_protection_latches(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -560,7 +637,7 @@ done:
 static lib_i32 board_sprite_object_write_aperture(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_board *board = LIB_NULL;
     myraidenii_core_board_control_failure_observation observation = {0};
@@ -765,7 +842,7 @@ static lib_i32 board_video_sprite_flags(void)
 static lib_i32 board_video_crtc(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     myraidenii_core_video video = {0};
     const lib_u8 values[] = {0x12u,0x34u,0x56u,0x78u};
@@ -819,7 +896,7 @@ done:
 static lib_i32 board_sprite_protection_upload(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     const lib_u8 value[] = {0x11u,0x22u,0x33u,0x44u};
     myraidenii_core_board *board = LIB_NULL;
@@ -1272,7 +1349,7 @@ done:
 static lib_i32 board_cop_reset_and_admission(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -1689,7 +1766,7 @@ done:
     if (failures != 0) return 1;
 
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     const lib_u8 next[] = {254u,2u,5u};
     const lib_u8 angle[] = {250u,0x5au};
@@ -1992,7 +2069,7 @@ done:
 static lib_i32 board_cop_numeric_chain(void)
 {
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     const lib_u16 chain[] = {0x42c2u,0x2208u,0x42c2u,0x6200u,0x42c2u,0x5205u};
     const lib_u8 guest_results[] = {0xa1u,0xb0u,5u,0xa3u,0u,0x30u,
@@ -2267,7 +2344,7 @@ static lib_i32 board_cop_decimal(void)
         {1u,0x103u,"1        "}, {1u,0xffffu,"1        "}
     };
     const myraidenii_core_board_config config = {
-        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -2676,7 +2753,8 @@ done:
 
 lib_i32 main(void)
 {
-    return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
+    return board_invalid_arguments() || board_video_graphics_images() ||
+        board_program_and_ram_routes() || board_control_window() ||
         board_tile_bank_2() || board_tile_bank_01() || board_sprite_protection_constant() ||
         board_sprite_protection_latches() || board_control_failure_observation() ||
         board_sprite_object_write_aperture() || board_interrupt_input_and_sound_routes() ||

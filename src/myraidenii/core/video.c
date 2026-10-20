@@ -86,3 +86,42 @@ lib_status myraidenii_core_video_tilemap_load(myraidenii_core_video *video,
     lib_memory_copy(video->tilemap, words, sizeof(video->tilemap));
     return LIB_STATUS_OK;
 }
+
+lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *video,
+    const lib_u8 *characters, const lib_u8 *background_1, const lib_u8 *background_2,
+    const lib_u8 *sprites_1, const lib_u8 *sprites_2, const lib_u8 *sprites_3,
+    const lib_u8 *sprites_4)
+{
+    lib_u8 *images;
+
+    if (video == LIB_NULL || video->graphics_images != LIB_NULL || characters == LIB_NULL ||
+        background_1 == LIB_NULL || background_2 == LIB_NULL || sprites_1 == LIB_NULL ||
+        sprites_2 == LIB_NULL || sprites_3 == LIB_NULL || sprites_4 == LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    images = lib_allocate(MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
+    if (images == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET, characters,
+        MYRAIDENII_CORE_CHARACTER_IMAGE_BYTES);
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET, background_1,
+        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES);
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET, background_2,
+        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES);
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET, sprites_1,
+        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET, sprites_2,
+        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET, sprites_3,
+        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
+    lib_memory_copy(images + MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET, sprites_4,
+        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES);
+    video->graphics_images = images;
+    return LIB_STATUS_OK;
+}
+
+void myraidenii_core_video_graphics_images_release(myraidenii_core_video *video)
+{
+    if (video == LIB_NULL) return;
+    lib_release(video->graphics_images);
+    video->graphics_images = LIB_NULL;
+}

@@ -77,6 +77,15 @@ static lib_bool myraidenii_core_board_range_contains(lib_u32 first,
         (lib_u64)physical - first + bytes <= capacity;
 }
 
+static lib_bool myraidenii_core_board_graphics_images_complete(
+    const myraidenii_core_board_graphics_images *images)
+{
+    return images != LIB_NULL && images->characters != LIB_NULL &&
+        images->background_1 != LIB_NULL && images->background_2 != LIB_NULL &&
+        images->sprites_1 != LIB_NULL && images->sprites_2 != LIB_NULL &&
+        images->sprites_3 != LIB_NULL && images->sprites_4 != LIB_NULL;
+}
+
 static lib_status myraidenii_core_board_bank_query(void *owner,
     lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
 {
@@ -1054,7 +1063,9 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     *out_board = LIB_NULL;
     if (config == LIB_NULL || config->program_even == LIB_NULL ||
         config->program_odd == LIB_NULL ||
-        config->program_lane_bytes != MYRAIDENII_CORE_PROGRAM_LANE_BYTES) {
+        config->program_lane_bytes != MYRAIDENII_CORE_PROGRAM_LANE_BYTES ||
+        (config->graphics_images != LIB_NULL &&
+            !myraidenii_core_board_graphics_images_complete(config->graphics_images))) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     board = lib_allocate_zero(1u, sizeof(*board));
@@ -1068,7 +1079,17 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         board->program[index * 2u] = config->program_even[index];
         board->program[index * 2u + 1u] = config->program_odd[index];
     }
-    status = x86_core_machine_neutral_create(&machine_config, &board->machine);
+    if (config->graphics_images != LIB_NULL) {
+        status = myraidenii_core_video_graphics_images_load(&board->video,
+            config->graphics_images->characters, config->graphics_images->background_1,
+            config->graphics_images->background_2, config->graphics_images->sprites_1,
+            config->graphics_images->sprites_2, config->graphics_images->sprites_3,
+            config->graphics_images->sprites_4);
+    } else {
+        status = LIB_STATUS_OK;
+    }
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_neutral_create(&machine_config, &board->machine);
     if (status == LIB_STATUS_OK) {
         attachment.context = board;
         status = x86_core_machine_bind_attachment(board->machine, &attachment);
@@ -1091,6 +1112,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     if (status != LIB_STATUS_OK) {
         x86_core_machine_destroy(board->machine);
         myraidenii_core_cop_destroy(board->cop);
+        myraidenii_core_video_graphics_images_release(&board->video);
         lib_release(board->program);
         lib_release(board);
         return status;
@@ -1104,6 +1126,7 @@ void myraidenii_core_board_destroy(myraidenii_core_board *board)
     if (board == LIB_NULL) return;
     x86_core_machine_destroy(board->machine);
     myraidenii_core_cop_destroy(board->cop);
+    myraidenii_core_video_graphics_images_release(&board->video);
     lib_release(board->program);
     lib_release(board);
 }

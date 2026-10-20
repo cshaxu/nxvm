@@ -3,6 +3,7 @@
 
 #include "lib/types/types_interface.h"
 #include "myraidenii/core/cop.h"
+#include "myraidenii/core/graphics_interface.h"
 #include "x86-core/machine/machine_interface.h"
 
 #ifdef __cplusplus
@@ -47,12 +48,25 @@ typedef enum myraidenii_core_board_control {
     MYRAIDENII_CORE_BOARD_CONTROL_COUNT
 } myraidenii_core_board_control;
 
-/* The two immutable V30 program lanes are copied while the board is created.
- * The caller may release its input after a successful return. */
+/* All seven selected-set graphics roles are one immutable input bundle. */
+typedef struct myraidenii_core_board_graphics_images {
+    const lib_u8 *characters;
+    const lib_u8 *background_1;
+    const lib_u8 *background_2;
+    const lib_u8 *sprites_1;
+    const lib_u8 *sprites_2;
+    const lib_u8 *sprites_3;
+    const lib_u8 *sprites_4;
+} myraidenii_core_board_graphics_images;
+
+/* Program lanes are required and copied while the board is created. Graphics
+ * are optional only for headless Core diagnostics; a supplied bundle must be
+ * complete. The caller may release all input buffers after success. */
 typedef struct myraidenii_core_board_config {
     const lib_u8 *program_even;
     const lib_u8 *program_odd;
     lib_size program_lane_bytes;
+    const myraidenii_core_board_graphics_images *graphics_images;
 } myraidenii_core_board_config;
 
 /* Reset clears this bounded fallback observation. It reports only how an

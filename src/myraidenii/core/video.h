@@ -2,12 +2,28 @@
 #define MYRAIDENII_CORE_VIDEO_H
 
 #include "lib/types/types_interface.h"
+#include "myraidenii/core/graphics_interface.h"
 
 enum {
     MYRAIDENII_CORE_VIDEO_CRTC_BYTES = 0x50u,
     MYRAIDENII_CORE_VIDEO_CRTC_READABLE_BYTES = 0x40u,
     MYRAIDENII_CORE_VIDEO_PALETTE_WORDS = 2048u,
-    MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS = 0x1400u
+    MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS = 0x1400u,
+    MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET = 0u,
+    MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET =
+        MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + MYRAIDENII_CORE_CHARACTER_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET =
+        MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET + MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET =
+        MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET + MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET =
+        MYRAIDENII_CORE_VIDEO_SPRITES_1_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET =
+        MYRAIDENII_CORE_VIDEO_SPRITES_2_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET =
+        MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES =
+        MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES
 };
 
 /* L2 raster: 8 MHz pixels, 512 pixels/line, 282 lines/frame and
@@ -18,6 +34,7 @@ typedef struct myraidenii_core_video {
     lib_u8 crtc_registers[MYRAIDENII_CORE_VIDEO_CRTC_BYTES];
     lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS];
     lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS];
+    lib_u8 *graphics_images;
 } myraidenii_core_video;
 
 void myraidenii_core_video_reset(myraidenii_core_video *video);
@@ -46,5 +63,11 @@ lib_status myraidenii_core_video_palette_load(myraidenii_core_video *video,
  * Video retains it unchanged until a later tile decoder owns interpretation. */
 lib_status myraidenii_core_video_tilemap_load(myraidenii_core_video *video,
     const lib_u16 *words, lib_size word_count);
+
+lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *video,
+    const lib_u8 *characters, const lib_u8 *background_1, const lib_u8 *background_2,
+    const lib_u8 *sprites_1, const lib_u8 *sprites_2, const lib_u8 *sprites_3,
+    const lib_u8 *sprites_4);
+void myraidenii_core_video_graphics_images_release(myraidenii_core_video *video);
 
 #endif
