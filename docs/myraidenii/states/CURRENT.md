@@ -2,6 +2,31 @@
 
 ## Current Work
 
+### Active S22 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | MyRaidenII M1 T3 S22; sequential coordinator/executor |
+| Admission And Approval | Owner delegated ordinary same-T planning; S20 explicitly freezes this complete mode-banked DMA/fill/sort receiver |
+| Objective | Complete the one COP mode-bank setup owner, one pending-operation owner, memory copy/fill modes and stable lookup-table sort |
+| Non-goals | No Shared edit, Video/palette/brightness DMA, 2a05/1905/9100/9900, ROM startup, rendering, sound, host thread or generic device framework |
+| Reference Baseline | Clean pushed 930075de1; S20 residual contract, S21 complete RNG receiver and fixed source-grade facts |
+| Candidate Proposal | proposals/m1-board-cop.md; consume dependency receiver 2 as one complete local batch |
+| Files And ABI Surface | Local core/cop.c and existing unit/core/board_bus_smoke.c plus product records; no public ABI; estimated production +180--280/-25--55 and test +180--280/-10--25 |
+| Applicable Rules | Product guide/source policy/Architecture/Coding; shared Execution/Architecture/Coding/Document/Contributing; architecture/coding governance skills |
+| Verification | Strict cached x64/x86 builds, actual Board unit, full repository units, protected hash guards, documentation/diff review |
+| Expected Markers | 512-bank isolation, raw-mode full bounds, byte lanes, one pending operation, copy/fill/sort success and prefix-failure/reset/overlap/stability proof |
+| Asset Needs | No ROM/media import, new executable or published-PC artifact change; retain protected inputs and ten existing releases |
+| Reporting Requirements | Archive packet, exact source/test delta, retained owner paths, L2 limits and all unimplemented residual capabilities |
+| Stop Conditions | Need for Shared/API change, contract conflict, unknown configuration units, protected-input mutation or source evidence invalidating the frozen ledger |
+| Exit Criteria | Complete bounded local receiver with full proof, coordinator actual-diff review, committed/pushed delivery and clean worktree |
+| Original Owner Request | Continue MyRaidenII under governing rules with cohesive implementation batches and no per-mode patch accumulation |
+| Similar-Issue Sweep | All 512 modes, all setup byte lanes, copied-operation busy/reset, source/destination overflow, copy overlap, both fill units, sort direction/ties/unknown parameter and failure prefixes |
+
+Executor confirms this packet before source changes. Architecture review keeps
+all mutable configuration and queued work in COP; Board remains its existing
+single caller and Core DMA remains its existing sole bus path.
+
 M1 T3 remains open after accepted S1--S21:
 
 | S | Delivered scope | Receipt |

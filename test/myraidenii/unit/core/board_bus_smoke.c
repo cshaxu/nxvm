@@ -532,7 +532,7 @@ static lib_i32 board_cop_routes(void)
         lib_u32 first;
         lib_u8 bytes;
     } unmodelled[] = {
-        {0x450u,14u}, {0x6fcu,4u}
+        {0x45au,4u}
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -1840,6 +1840,170 @@ done:
     return failed;
 }
 
+static lib_status board_cop_dma_context_write(x86_core_machine *machine, lib_u16 mode,
+    lib_u16 source, lib_u16 size, lib_u16 destination)
+{
+    lib_status status = board_cop_word_write(machine, 0x47eu, mode);
+
+    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x478u, source);
+    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x47au, size);
+    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x47cu, destination);
+    return status;
+}
+
+static lib_i32 board_cop_dma_and_sort(void)
+{
+    cop_fixture fixture = {0};
+    x86_core_machine *machine;
+    lib_u8 source[224];
+    lib_u8 actual[224];
+    const lib_u8 fill[] = {0x44u,0x33u,0x22u,0x11u};
+    const lib_u16 offsets[] = {0x10u,0x04u,0x18u,0x0cu};
+    const lib_u16 ascending[] = {0x10u,0x0cu,0x04u,0x18u};
+    const lib_u16 descending[] = {0x04u,0x18u,0x0cu,0x10u};
+    const lib_i32 keys[] = {-1,5,5,0};
+    lib_u8 value[4] = {0u};
+    lib_i32 failed = 1;
+
+    for (lib_size index = 0u; index < sizeof(source); ++index)
+        source[index] = (lib_u8)index;
+    if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
+    machine = fixture.machine;
+
+    /* Each mode owns its own byte-merged setup, not a flat register mirror. */
+    if (board_cop_word_write(machine, 0x47eu, 0x009u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x478u, (lib_u8[]){0x80u}, 1u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x479u, (lib_u8[]){0u}, 1u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x47au, 0x201u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x47cu, 0x100u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x2000u, source, 64u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x4000u, (lib_u8[64]){0}, 64u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x478u, 0u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x4000u, actual, 64u) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, source, 64u) != 0)
+        goto done;
+
+    if (board_cop_dma_context_write(machine, 0x00eu, 0x081u, 0x206u, 0x102u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x2040u, source + 64u, 128u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x4080u, actual, 96u) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, source + 64u, 96u) != 0 ||
+        board_cop_word_write(machine, 0x47eu, 0x009u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x4000u, actual, 64u) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, source, 64u) != 0)
+        goto done;
+
+    if (board_cop_word_write(machine, 0x47eu, 0x200u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x478u, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6fcu, (lib_u8[]){0u}, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_INVALID_STATE ||
+        board_cop_dma_context_write(machine, 0x009u, 0x080u, 1u, 1u) != LIB_STATUS_OK ||
+        value[0] != 0u || x86_core_machine_memory_write(machine, 0x40u,
+            (lib_u8[]){0xa5u}, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x40u, value, 1u) != LIB_STATUS_OK ||
+        value[0] != 0xa5u ||
+        board_cop_dma_context_write(machine, 0x009u, 0u, 0u, 0x100u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x4000u, (lib_u8[]){0xa5u}, 1u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x4000u, actual, 1u) != LIB_STATUS_OK ||
+        actual[0] != 0xa5u)
+        goto done;
+
+    if (board_cop_dma_context_write(machine, 0x009u, 0x080u, 260u, 0x081u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x2000u, source, 96u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x2040u, actual, 96u) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, source, 64u) != 0 ||
+        lib_memory_compare(actual + 64u, source, 32u) != 0)
+        goto done;
+
+    if (board_cop_word_write(machine, 0x428u, 0x3344u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x42au, 0x1122u) != LIB_STATUS_OK ||
+        board_cop_dma_context_write(machine, 0x116u, 0x120u, 1u, 0x777u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x4800u, actual, 32u) != LIB_STATUS_OK)
+        goto done;
+    for (lib_size index = 0u; index < 32u; ++index)
+        if (actual[index] != fill[index % sizeof(fill)]) goto done;
+    if (board_cop_dma_context_write(machine, 0x118u, 0x140u, 0u, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x5000u, actual, 32u) != LIB_STATUS_OK)
+        goto done;
+    for (lib_size index = 0u; index < 32u; ++index)
+        if (actual[index] != fill[index % sizeof(fill)]) goto done;
+    if (board_cop_dma_context_write(machine, 0x118u, 0x140u, 0u, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK)
+        goto done;
+
+    if (board_cop_word_write(machine, 0x450u, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x452u, 0x3000u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x454u, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x456u, 0x3200u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x3200u, offsets, sizeof(offsets)) !=
+            LIB_STATUS_OK)
+        goto done;
+    for (lib_size index = 0u; index < sizeof(offsets) / sizeof(offsets[0]); ++index) {
+        const lib_u32 key_value = (lib_u32)keys[index];
+        const lib_u8 key[4] = {(lib_u8)key_value, (lib_u8)(key_value >> 8u),
+            (lib_u8)(key_value >> 16u), (lib_u8)(key_value >> 24u)};
+
+        if (x86_core_machine_memory_write(machine, 0x3000u + offsets[index], key,
+                sizeof(key)) != LIB_STATUS_OK)
+            goto done;
+    }
+    if (board_cop_word_write(machine, 0x458u, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6feu, 4u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x450u, 1u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x3200u, actual, sizeof(offsets)) !=
+            LIB_STATUS_OK || lib_memory_compare(actual, ascending, sizeof(ascending)) != 0 ||
+        board_cop_word_write(machine, 0x458u, 2u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6feu, 4u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x3200u, actual, sizeof(offsets)) !=
+            LIB_STATUS_OK || lib_memory_compare(actual, descending, sizeof(descending)) != 0 ||
+        board_cop_word_write(machine, 0x458u, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6feu, 4u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x3200u, actual, sizeof(offsets)) !=
+            LIB_STATUS_OK || lib_memory_compare(actual, descending, sizeof(descending)) != 0 ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        board_cop_dma_context_write(machine, 0x00eu, 0xffffu, 0u, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x47eu, 0x00eu) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK)
+        goto done;
+    failed = 0;
+done:
+    if (failed) lib_c_printf("COP:DMA-SORT:FAIL\n");
+    cop_fixture_destroy(&fixture);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
@@ -1847,5 +2011,6 @@ lib_i32 main(void)
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_numeric_vectors() || board_cop_numeric_failures() || board_cop_numeric_chain() ||
-        board_cop_collisions() || board_cop_decimal() || board_cop_random();
+        board_cop_collisions() || board_cop_decimal() || board_cop_random() ||
+        board_cop_dma_and_sort();
 }

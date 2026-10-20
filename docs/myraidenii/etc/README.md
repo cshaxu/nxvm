@@ -85,6 +85,7 @@
 - [T3 complete nine-ID L2 numeric/result receiver](evidence/t3-s19-cop-numeric.md).
 - [T3 complete residual COP/RNG/DMA contracts and implementation receivers](evidence/t3-s20-residual-contract.md).
 - [T3 complete nominal L2 RNG register receiver and actual Board proof](evidence/t3-s21-cop-rng.md).
+- [T3 complete mode-banked COP DMA/fill/sort receiver](evidence/t3-s22-cop-dma-sort.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

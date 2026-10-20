@@ -57,6 +57,14 @@ changes or a clock mirror. Its [proof and packet](../etc/evidence/t3-s21-cop-rng
 reuse the existing real Board/raster boundary and guest MMIO tests. This does
 not qualify mode-banked DMA, Video latches, sorting, residual macros or startup.
 
+S22 completes S20 receiver 2: the COP's bounded 512-bank setup state, one
+pending-operation owner, `009`/`00e` copy, `116`/`118--11f` fill and `6fe`
+stable lookup-table sort. Its [record](../etc/evidence/t3-s22-cop-dma-sort.md)
+keeps all accesses on the existing checked Core DMA path and explicitly leaves
+Video/palette/brightness modes, residual macros, and real-set startup for
+their own receivers. This is a complete local functional L2 batch, not a
+physical COP timing or playable-game claim.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free
