@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M1 T4 remains open. M1 T4 S34 is active: historical MAME 0.182 corrects S33's black-box premise
+M1 T4 remains open after accepted S34. Historical MAME 0.182 corrects S33's black-box premise
 without importing an emulator implementation or downloading protected PAL/ROM
 data. Historical official MAME 0.182 accepts the owner archive with the absent
 `jj4b02` PAL explicitly marked `NO GOOD DUMP KNOWN` and can execute it under a
@@ -10,7 +10,7 @@ bounded headless run. Core still has only copied fixed-role graphics ingress
 and a bounded L2 RGB555 lookup; graphics decode, composition and frame
 publication remain open.
 
-## Active Packet — M1 T4 S34
+## Archived Packet — M1 T4 S34
 
 | Field | Required record |
 | --- | --- |
@@ -125,6 +125,7 @@ publication remain open.
 | S31 | Fixed-role graphics image ingress, lifetime and creation validation. | P1 `197ec9b3c`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s31-graphics-image-ingress.md). |
 | S32 | Bounded Video-owned RGB555 to `0x00RRGGBB` palette lookup. | P1 `822f76ba5`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s32-palette-rgb555-l2.md). |
 | S33 | Recorded the current-MAME verifier limitation without source import or retained media output. | P1 `9b179c83d`; current MAME rejects the supplied archive for PAL blobs. [Evidence](../etc/evidence/t4-s33-black-box-oracle-disposition.md). |
+| S34 | Corrected the black-box baseline with historical official MAME; no PAL/ROM was acquired. | P1 `c895eaca0`; the bounded historical run executes the supplied archive with the absent PAL marked no-good-dump. [Evidence](../etc/evidence/t4-s34-historical-mame-oracle.md). |
 
 ## Archived Packet — M1 T4 S30
 
