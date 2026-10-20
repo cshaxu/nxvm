@@ -9,6 +9,7 @@ enum {
 void myraidenii_core_video_reset(myraidenii_core_video *video)
 {
     video->raster_tick = 0u;
+    video->sprite_flags = 0u;
 }
 
 lib_u64 myraidenii_core_video_ticks_until_vblank(const myraidenii_core_video *video)
@@ -26,4 +27,17 @@ lib_bool myraidenii_core_video_advance(myraidenii_core_video *video, lib_u64 tic
     video->raster_tick = (lib_u32)((video->raster_tick +
         ticks % MYRAIDENII_CORE_VIDEO_FRAME_TICKS) % MYRAIDENII_CORE_VIDEO_FRAME_TICKS);
     return vblank;
+}
+
+lib_status myraidenii_core_video_sprite_flags_write(myraidenii_core_video *video,
+    lib_u8 byte_offset, lib_u8 value)
+{
+    lib_u16 mask;
+
+    if (video == LIB_NULL || byte_offset >= sizeof(video->sprite_flags))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    mask = (lib_u16)0xffu << (byte_offset * 8u);
+    video->sprite_flags = (video->sprite_flags & (lib_u16)~mask) |
+        ((lib_u16)value << (byte_offset * 8u));
+    return LIB_STATUS_OK;
 }

@@ -23,7 +23,9 @@ enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START = 0x43eu,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES = 2u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START = 0x6c8u,
-    MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES = 2u
+    MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES = 2u,
+    MYRAIDENII_CORE_SPRITE_FLAGS_START = 0x6ceu,
+    MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u
 };
 
 static lib_bool myraidenii_core_board_range_contains(lib_u32 first,
@@ -169,6 +171,41 @@ static lib_status myraidenii_core_board_selected_control_write_noop_write(void *
     }
     /* Selected no-op writes have no state or readback. */
     return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_sprite_flags_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
+        myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_FLAGS_START,
+            MYRAIDENII_CORE_SPRITE_FLAGS_BYTES, physical, bytes) && bytes == 1u ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_sprite_flags_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)owner;
+    (void)physical;
+    (void)destination;
+    (void)bytes;
+    (void)observe_only;
+    return LIB_STATUS_INVALID_STATE;
+}
+
+static lib_status myraidenii_core_board_sprite_flags_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board == LIB_NULL || source == 0u || bytes != 1u ||
+        !myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_FLAGS_START,
+            MYRAIDENII_CORE_SPRITE_FLAGS_BYTES, physical, bytes)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    return myraidenii_core_video_sprite_flags_write(&board->video,
+        (lib_u8)(physical - MYRAIDENII_CORE_SPRITE_FLAGS_START), *(const lib_u8 *)source);
 }
 
 static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
@@ -381,8 +418,12 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_control_read, myraidenii_core_board_selected_control_write_noop_write,
         myraidenii_core_board_selected_control_write_noop_query
     };
+    const x86_core_machine_memory_device_callbacks sprite_flags_callbacks = {
+        myraidenii_core_board_sprite_flags_read, myraidenii_core_board_sprite_flags_write,
+        myraidenii_core_board_sprite_flags_query
+    };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[9] = {
+    x86_core_machine_memory_device_route routes[10] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -407,6 +448,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START,
             .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES,
             .callbacks = selected_control_write_noop_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_FLAGS_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_FLAGS_BYTES,
+            .callbacks = sprite_flags_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = 0x400u, .bytes = 0x400u,
             .callbacks = {myraidenii_core_board_control_read,

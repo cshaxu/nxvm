@@ -9,17 +9,18 @@ existing Emulator/Lib path, not a new renderer or window owner.
 
 T4 S1 has completed the initial convergence review in the
 [Video/Sprite ledger](../etc/evidence/t4-s1-video-sprite-convergence.md).
-It establishes that the next selected-set stop, `0x6ce--0x6cf`, has an L2
-address/direction fact but no lawful implementable flag contract.  The first
-later implementation packet must therefore establish the complete
-sprite-control consumer contract before it admits any receiver.  No generic
-no-op, RAM fallback, copied reference algorithm or Shared workaround is an
-eligible substitute.
+The owner subsequently approved a bounded L2 model derived from other
+emulators' observable behavior, without importing their code, tables or
+decryption implementation. T4 S4 therefore admits only the write-only
+`0x6ce--0x6cf` 16-bit sprite-flags latch, its V30 byte order and reset state.
+It does not claim sprite decoding, decryption, buffering, palette, layers or
+frame publication.
 
 T4 S2's [source disposition](../etc/evidence/t4-s2-video-source-disposition.md)
 confirms that the currently available original/operator material and permitted
-external asset metadata do not fill that contract.  Video receiver code remains
-blocked until a source covers the complete flag-family consumer boundary.
+external asset metadata do not independently fill that contract. Its source
+grade remains recorded; the owner's later L2 authorization is narrow and does
+not upgrade it to an original-hardware claim.
 
 T4 S3 separately rejects a publicly available FPGA implementation as that
 source: its own [provenance record](../etc/evidence/t4-s3-third-party-provenance.md)

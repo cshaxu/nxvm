@@ -257,7 +257,11 @@ static lib_i32 board_control_window(void)
         x86_core_machine_memory_write(machine, 0x6c9u, data, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6c9u, data, 2u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x6c8u, value, 1u) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_inspect(machine, 0x6c8u, value, 1u) != LIB_STATUS_INVALID_STATE)
+        x86_core_machine_memory_inspect(machine, 0x6c8u, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6ceu, data, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6cfu, data, 2u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x6ceu, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6ceu, value, 1u) != LIB_STATUS_INVALID_STATE)
         goto done;
     if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x800u, unused_write_word_guest,
@@ -420,6 +424,24 @@ static lib_i32 board_video_phase(void)
         myraidenii_core_video_ticks_until_vblank(&whole)) return 1;
     myraidenii_core_video_reset(&sliced);
     return myraidenii_core_video_ticks_until_vblank(&sliced) != 245760u;
+}
+
+static lib_i32 board_video_sprite_flags(void)
+{
+    myraidenii_core_video video = {0};
+
+    if (myraidenii_core_video_sprite_flags_write(LIB_NULL, 0u, 0u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_sprite_flags_write(&video, 2u, 0u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_sprite_flags_write(&video, 0u, 0x34u) != LIB_STATUS_OK ||
+        video.sprite_flags != 0x0034u ||
+        myraidenii_core_video_sprite_flags_write(&video, 1u, 0x80u) != LIB_STATUS_OK ||
+        video.sprite_flags != 0x8034u) {
+        return 1;
+    }
+    myraidenii_core_video_reset(&video);
+    return video.sprite_flags == 0u ? 0 : 1;
 }
 
 static lib_i32 board_cop_random_result(x86_core_machine *machine, lib_u16 expected)
@@ -2153,7 +2175,7 @@ done:
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
-        board_interrupt_input_and_sound_routes() || board_video_phase() ||
+        board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_offset_add() ||
