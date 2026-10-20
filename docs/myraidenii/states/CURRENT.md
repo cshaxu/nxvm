@@ -28,6 +28,7 @@ M1 T3 remains open after accepted S1--S22:
 | S20 | Whole residual COP/RNG/DMA contract, existing live timeline capability and cohesive implementation receivers | `d20d65ee0` |
 | S21 | Complete nominal L2 RNG aliases, existing timeline observation and actual Board/guest/reset proof | `bede72c2a` |
 | S22 | Complete mode-banked DMA/copy/fill/sort receiver, one pending owner, and actual Board proof | `52fc45e98` |
+| S23 | Complete Video-DMA/palette/brightness receiving-evidence gate; no invented implementation | `c48f9e02c` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -239,23 +240,12 @@ archives exact hashes, L2 limits and remaining receiver boundaries. S22 is
 closed with no active packet; T3/M1 remain open for Video-owned DMA, residual
 macros and real selected-set startup.
 
-## Active Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: MyRaidenII M1 T3 S23 after accepted S22 P1 `52fc45e98`; single-session coordinator/executor. |
-| Admission And Approval | The owner-approved T3 objective and retained S20/S22 Video receiver authorize this evidence-first prerequisite. CURRENT delegates ordinary same-T ordering; this S does not admit guessed Video, palette, brightness, rendering or Shared behavior. |
-| Objective | Freeze a bounded Video-DMA receiving contract for COP modes `14`, `15`, and `80`--`87`: factual descriptor facts, ownership, reset/failure/publication boundaries, selected-set applicability and exact evidence still required before implementation. |
-| Non-goals | No production/test implementation; no MAME code/table import; no ROM acquisition or inspection; no magic source address; no brightness algorithm; no renderer, host-frame, Shared, ABI, artifact or executable change. |
-| Reference Baseline | Clean pushed S22 `52fc45e98`; T3 S20 residual contract; pinned MAME revision `c1425a1af00b88aa07477b1b23a30ed5e5f856ff` and source identities in `docs/myraidenii/etc/research/references.md`; current local COP/Video/Board interfaces. |
-| Candidate Proposal | `docs/myraidenii/proposals/m1-board-cop.md`, S20 receiver 3; `docs/myraidenii/proposals/m1-video.md`. |
-| Files And ABI Surface | MyRaidenII CURRENT, one S23 evidence record and the T3 proposal only. Production/test/ABI/manifest/artifact delta is zero. |
-| Applicable Rules | Execution: bounded evidence and truthful dispositions. Architecture: one COP pending owner, one checked Core DMA route, Video-owned receiver state and one guest timeline. Coding/source: no copied LGPL implementation, special-case address patch or invented brightness arithmetic. Documentation: retain reference identity without protected payload. |
-| Verification | Re-read S20's 21-mode ledger; inspect current COP/Board/Video and reset path; verify pinned-reference identity already recorded; classify every `14`, `15`, `80`--`87` mode as factual, L2-eligible or blocked; verify source/test/artifact unchanged and run documentation governance plus `git diff --check`. |
-| Expected Markers | A receiver ledger names destination owner, accepted input, failure publication, reset behavior and missing oracle for every mode; no fixed reference address or unknown brightness behavior becomes local contract. |
-| Asset Needs | No asset, ROM, media, firmware, source checkout, executable, temporary research payload or background process. |
-| Reporting Requirements | Report evidence grade and implementation eligibility for all ten modes, the minimal later receiver boundary and every blocker. Do not represent source-grade facts as hardware proof. |
-| Stop Conditions | Any need to import/copy third-party code, inspect protected ROM data, implement without a complete receiver contract, change Shared, invent brightness arithmetic or claim selected-set execution from comments. |
-| Exit Criteria | One reviewable evidence record covers modes `14`, `15`, `80`--`87` and common configuration lanes; it identifies a cohesive next implementation S only where evidence permits, otherwise transfers a bounded blocker. Documentation checks and clean worktree pass. T3 remains open. |
-| Original Owner Request | Complete playable MyRaidenII under single-session dual-role governance while grouping coherent work, reusing owner tests and keeping source research lawful. |
-| Similar-Issue Sweep | Raw modes `14`, `15`, `80`--`87`; registers `45a`, `45c`, `476`, `478`, `47a`, `47c`, trigger `6fc`; tilemap/palette/brightness ownership; reset/pending/failure delivery; selected-set versus other-game evidence. |
+Sequential coordinator actual-change review accepts S23 P1 `c48f9e02c`.
+The receiver-3 evidence gate covers all ten modes (`14`, `15`, `80`--`87`),
+their common registers and their private Video ownership without source import,
+ROM inspection, special-case address, API or code change.  It correctly blocks
+implementation until selected-set descriptor and palette/brightness oracles
+exist; no unqualified mode is reported as a no-op or a RAM copy.  Documentation
+governance and `git diff --check` pass.  S23 is closed with no active packet;
+T3/M1 remain open for residual macros and genuine selected-set startup, while
+the queued Video task owns later rendering/DMA qualification.
