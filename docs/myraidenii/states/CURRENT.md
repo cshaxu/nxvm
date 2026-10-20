@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S27. The selected mode-`0x0014` raw tilemap
-receiver is complete; tile decoding and frame rendering remain outside it.
+M1 T4 remains open after accepted S28. The selected `0x6ca` write is complete;
+tile decoding and frame rendering remain outside the admitted scope.
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -34,6 +34,36 @@ receiver is complete; tile decoding and frame rendering remain outside it.
 | S25 | L2 fixed mode-`0x0015` palette receiver from permitted research and the bounded owner-set descriptor. | P1 `f96557a77`; x64/x86 probes advance to separate mode `0x0014`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s25-palette-dma-l2.md). |
 | S26 | Capture the selected mode-`0x0014` relative-address setup in the existing COP failure observation. | P1 `0c692e3b5`; x64/x86 probes identify `relative=0`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s26-tilemap-dma-context-attribution.md). |
 | S27 | L2 fixed mode-`0x0014` tilemap receiver from its selected bounded descriptor. | P1 `63b7c68bc`; x64/x86 Board smokes and owner-set probes advance to an independent Board-control stop; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s27-tilemap-dma-l2.md). |
+| S28 | L2 exact selected-set `0x6ca` write-only no-op. | P1 `d62e0deee`; P2 `7efca76c0`; x64/x86 Board smoke and selected-set probes advance to `0x6d8`; full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s28-control-noop-l2.md). |
+
+## Archived Packet — M1 T4 S28
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S28 follows accepted S27 P2 `58a038ff4`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner's standing L2 authorization permits this bounded address-owner model; the source policy continues to forbid importing code, tables, algorithms or protected media. |
+| Objective | Receive only the selected program's exact one-byte write at `0x6ca` as a write-only no-op. |
+| Non-goals | No `0x6cb` ROM bank, readback, retained register state, generic control window, tile/sprite semantics, Shared change, ROM inspection or playable-game claim. |
+| Reference Baseline | S27's x64/x86 probes agree on a byte write at `0x6ca`. Permitted L2 map research distinguishes that byte as a no-op from the adjacent `0x6cb` Raiden II program-ROM bank endpoint. |
+| Candidate Proposal | Add one exact Board replacement route that reuses the existing selected-control no-op owner; read and inspect remain refused. A wider access is left to the existing Core byte splitter, whose adjacent `0x6cb` lane already has its independent bank owner. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, startup probe, CURRENT and one evidence record. No Shared/public API, media, asset or product artifact change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The address model is L2 only. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | `0x6ca` write succeeds without state/readback; adjacent `0x6cb` remains owned by its existing bank route; both probes advance to the next independent stop. |
+| Stop Conditions | Any need to combine the byte with `0x6cb`, retain behavior, add a generic route, change Shared, inspect ROM payload or diverge by width. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer if the boundary cannot stay exact. |
+| Original Owner Request | Continue MyRaidenII under permitted L2 evidence without fabricating a full hardware model. |
+| Similar-Issue Sweep | Check existing no-op route boundaries, wider-write splitting, sprite-object overlap and reset so this byte cannot silently widen a neighboring owner. |
+
+S28 is closed. The Board receives only the exact selected one-byte `0x6ca`
+write as a state-free, write-only no-op. The existing Core byte splitter keeps
+the adjacent `0x6cb` bank route independent. The old unsupported-DMA Board
+smoke row now uses still-unimplemented `0x0016`: S27 made `0x0014` a legal
+tilemap mode, so retaining it as the failure row would test stale behavior.
+The dual-width focused Board smokes, selected-set probes and complete 642-case
+unit qualifications pass; the dependency-DAG negative case is executed
+separately because its probe creates an isolated temporary tree. No Shared
+source/API, ROM/media payload or product artifact changed.
 
 ## Active Packet — M1 T4 S23
 
