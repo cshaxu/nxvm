@@ -1,4 +1,4 @@
-add_library(myraidenii-machine STATIC audio.c driver.c)
+add_library(myraidenii-machine STATIC audio.c driver.c image_hash.c)
 target_include_directories(myraidenii-machine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 target_link_libraries(myraidenii-machine PUBLIC myraidenii-core audio-pcm emulator-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
