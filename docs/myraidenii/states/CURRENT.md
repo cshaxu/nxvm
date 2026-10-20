@@ -2,13 +2,37 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S34. Historical MAME 0.182 corrects S33's black-box premise
+M1 T4 remains open. M1 T4 S35 is active under the owner's explicit BYOB
+exception: it obtains only the two MAME-required PAL images outside Git,
+verifies them by MAME's published hashes and reconnects the current black-box
+runner. Historical MAME 0.182 corrects S33's black-box premise
 without importing an emulator implementation or downloading protected PAL/ROM
 data. Historical official MAME 0.182 accepts the owner archive with the absent
 `jj4b02` PAL explicitly marked `NO GOOD DUMP KNOWN` and can execute it under a
 bounded headless run. Core still has only copied fixed-role graphics ingress
 and a bounded L2 RGB555 lookup; graphics decode, composition and frame
 publication remain open.
+
+## Active Packet — M1 T4 S35
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S35 follows accepted S34 P2 `bce13d2b8`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner explicitly authorizes downloading the two required PAL images as external BYOB inputs, placing them only under `O:\repos.hobby\nxvm-assets`, without Git/manifest/EXE inclusion. This is a recorded exception to the default MyRaidenII source-policy acquisition restriction. |
+| Objective | Acquire, hash-verify and stage only the PAL images required by current MAME's Raiden II verifier, then prove the current black-box runner accepts the existing owner archive plus those external inputs. |
+| Non-goals | No source import, decoder/renderer/frame implementation, ROM/archive commit, asset manifest inclusion, EXE embedding, modification of existing owner archive, screenshot/trace retention, or playable-game claim. |
+| Reference Baseline | Current MAME 0.289 requests `jj4b02__ami18cv8-15.u0342` (341 bytes, SHA-1 `8b46f6673ddf11efbc3394ae423ec89d4a1283bf`) and `jj4b01__mmipal16l8bcn.u0341` (279 bytes, SHA-1 `95ce9cfbfb280dfc6a326e378684eff3c6f54701`). S34 established that historical MAME can execute without the first dump. |
+| Candidate Proposal | Download a published split-set archive to a temporary external staging path, extract exactly the two named PAL files, verify their size/SHA-1, delete the temporary archive, then run current MAME verification and one bounded headless launch with the existing archive plus the staged PAL directory. |
+| Files And ABI Surface | External BYOB assets under `O:\repos.hobby\nxvm-assets\media-myraidenii\raiden2\pals`; repository documentation/evidence only. No source, test, manifest, API, asset archive or executable changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy, with the owner-approved external BYOB acquisition exception recorded above. Inputs remain external and untracked. |
+| Verification | Verify exact filenames, sizes and SHA-1; confirm the staging archive is deleted; run current MAME `-verifyroms` and one bounded headless launch against combined external paths; run documentation governance and `git diff --check`. |
+| Expected Markers | Both exact hashes match; current MAME no longer reports missing PALs; headless process terminates within budget; Git has no PAL/ROM additions. |
+| Asset Needs | Owner-approved external PAL inputs only; the existing archive stays read-only and unmodified. |
+| Reporting Requirements | Record source URL, exact hashes, external location, verifier/launch result and cleanup. Do not retain or report protected payload content. |
+| Stop Conditions | Hash/size mismatch, extra extracted media, need to modify the owner archive, a request to commit/embed inputs, or evidence that current MAME cannot combine the staged files with the archive. |
+| Exit Criteria | Current MAME accepts the two external PALs and completes its bounded black-box launch, or the exact combined-path limitation is documented without a repository workaround. |
+| Original Owner Request | Download the PAL into nxvm-assets as BYOB, then compile/connect it. |
+| Similar-Issue Sweep | Verify no temporary archive remains, no PAL/ROM is staged under the repository, no existing asset is overwritten and no protected input is added to Git. |
 
 ## Archived Packet — M1 T4 S34
 
