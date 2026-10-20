@@ -7,6 +7,15 @@ scroll/raster behavior and complete native frames in MyRaidenII Core. Requires
 the selected graphics inventory and board bus; presentation remains the
 existing Emulator/Lib path, not a new renderer or window owner.
 
+T4 S1 has completed the initial convergence review in the
+[Video/Sprite ledger](../etc/evidence/t4-s1-video-sprite-convergence.md).
+It establishes that the next selected-set stop, `0x6ce--0x6cf`, has an L2
+address/direction fact but no lawful implementable flag contract.  The first
+later implementation packet must therefore establish the complete
+sprite-control consumer contract before it admits any receiver.  No generic
+no-op, RAM fallback, copied reference algorithm or Shared workaround is an
+eligible substitute.
+
 ## Work And Verification
 
 T3 S8 brings forward the Video-owned L2 raster phase/VBlank-to-Board receiver

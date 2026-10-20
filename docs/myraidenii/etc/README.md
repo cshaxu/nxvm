@@ -91,6 +91,7 @@
 - [T3 selected control no-op span](evidence/t3-s27-selected-control-noop.md).
 - [T3 Sprite/Video flags receiver boundary](evidence/t3-s28-sprite-flags-boundary.md).
 - [T3 unresolved COP command boundary](evidence/t3-s29-unresolved-command-boundary.md).
+- [T4 initial Video/Sprite convergence ledger](evidence/t4-s1-video-sprite-convergence.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
