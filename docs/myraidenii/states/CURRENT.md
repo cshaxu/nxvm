@@ -2,13 +2,32 @@
 
 ## Current Work
 
-M1 T4 remains open after S45 P1: one bounded, L2-qualified sprite-RAM
-publication boundary now owns a 4 KiB live Board RAM region and its latched
-display snapshot. The Board routes `0xC000–0xCFFF` to live RAM and treats a
-write at either byte of `0x68E–0x68F` as the latch trigger. No decrypt,
-interpretation, drawing or frame publication has been added. Both cached
-widths passed all four MyRaidenII unit entries and documentation governance;
-this Core-only tranche has no Product/Machine EXE to publish.
+M1 T4 remains open after S46 P1: one stateless Core descriptor decoder now
+maps a single eight-byte latched object entry to copied tile, color, priority,
+position, span and flip values. It does not decrypt or render sprites. Both
+cached widths passed all five MyRaidenII unit entries and documentation
+governance; no Product/Machine executable exists yet.
+
+## Archived Packet — M1 T4 S46
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S46 follows S45 P1 `328e760bf`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed use of external mature emulator implementations as L2 without repeated L3 approval churn, 2026-10-20. |
+| Objective | Give one MyRaidenII Core sprite component a bounded decoder for an eight-byte latched sprite descriptor, including tile index, palette/color index, priority, position, dimensions and both flip bits. |
+| Non-goals | No graphics decrypt, sprite pixel decode/draw, bank behavior, blending, frame priority composition, Board-map change, ROM read, Shared change, external payload or source/table import. |
+| Reference Baseline | S45 now makes the complete 4 KiB latched object RAM available to the later Video owner, but no Core component can yet name or validate a descriptor's fields. |
+| Candidate Proposal | Add one independent Core sprite descriptor function that accepts exactly eight little-endian V30 bytes and emits a copied value object. It validates only the bounded input/output contract; later rendering owns object iteration and visibility. |
+| Files And ABI Surface | `src/myraidenii/core/{sprite.c,sprite_interface.h,CMakeLists.txt}`, matching Core unit test, evidence and Current only. This adds a Core-local copied descriptor API, with no Board or Shared public interface change. |
+| Applicable Rules | MyRaidenII guide, architecture, coding, documentation, source policy and execution rules. Sprite-buffer remains sole RAM owner; the decoder owns only field extraction; tests retain no external bytes. |
+| Verification | Passed focused descriptor test x64/x86; complete five-entry MyRaidenII unit selection x64/x86; documentation governance and `git diff --check`. No runnable Product/Machine EXE exists. |
+| Expected Markers | Valid synthetic descriptors preserve all named fields; signed 9-bit coordinate boundaries, one-to-eight tile spans, flip bits and input-size failures are explicit; no mutable descriptor or graphics state is retained. |
+| Asset Needs | None. Synthetic eight-byte vectors only. |
+| Reporting Requirements | Report source/test/doc added/removed/net lines, finite L2 layout facts, width-by-width verification, public API scope and deferred decrypt/draw behavior. |
+| Stop Conditions | Any needed decryption table, real ROM content, board-specific sprite bank, priority algorithm, renderer/frame change, Shared API or copied/transliterated source transfers to a later S. |
+| Exit Criteria | Met: one Core decoder exposes the finite descriptor fields from exactly eight bytes; synthetic regression covers bit-field/sign/size boundaries; no duplicate parser or rendering path exists. |
+| Original Owner Request | Continue implementation toward RAIDEN II using external implementations as L2 instead of treating absent physical L3 evidence as a recurring blocker. |
+| Similar-Issue Sweep | Recheck endianness, coordinate sign-extension, all descriptor bit fields, mutable-layout exposure, duplicate field extraction and accidental graphics/buffer ownership overlap. |
 
 ## Archived Packet — M1 T4 S45
 
