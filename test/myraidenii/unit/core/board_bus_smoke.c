@@ -184,7 +184,7 @@ static lib_i32 board_control_window(void)
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 unmodelled[] = {
-        0x400u,0x426u,0x5ffu,0x762u,0x7ffu
+        0x400u,0x426u,0x5ffu,0x7ffu
     };
     const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -518,6 +518,12 @@ static lib_i32 board_sprite_protection_latches(void)
             LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6c6u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x6c7u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x762u, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        actual[0] != destination[0] || actual[1] != destination[1] ||
+        x86_core_machine_memory_inspect(machine, 0x763u, actual, 1u) != LIB_STATUS_OK ||
+        actual[0] != destination[1] ||
+        x86_core_machine_memory_write(machine, 0x762u, sprite_x, sizeof(sprite_x)) !=
+            LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x6d8u, sprite_x, sizeof(sprite_x)) !=
             LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6dau, sprite_y, sizeof(sprite_y)) !=
@@ -540,6 +546,8 @@ static lib_i32 board_sprite_protection_latches(void)
         x86_core_machine_memory_read(machine, 0x6c2u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u ||
         x86_core_machine_memory_read(machine, 0x6dcu, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        actual[0] != 0u || actual[1] != 0u ||
+        x86_core_machine_memory_read(machine, 0x762u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u) {
         goto done;
     }

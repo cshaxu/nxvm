@@ -45,6 +45,7 @@ enum {
     MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_LATCH_START = 0x6deu,
     MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_START = 0x6d8u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_BYTES = 8u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_OUTPUT_START = 0x762u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START = 0x6c8u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES = 2u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_06CA = 0x6cau,
@@ -439,6 +440,10 @@ static lib_status myraidenii_core_board_sprite_protection_latch_get(
         *out_value = &board->sprite_protection_source;
         *out_readable = LIB_FALSE;
         return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_OUTPUT_START:
+        *out_value = &board->sprite_protection_destination;
+        *out_readable = LIB_TRUE;
+        return LIB_STATUS_OK;
     default:
         return LIB_STATUS_UNSUPPORTED;
     }
@@ -457,6 +462,8 @@ static lib_status myraidenii_core_board_sprite_protection_latch_query(void *owne
             LIB_STATUS_OK ||
         !myraidenii_core_board_range_contains(first,
             MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES, physical, bytes) ||
+        (first == MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_OUTPUT_START &&
+         access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) ||
         (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ && !readable)) {
         return LIB_STATUS_UNSUPPORTED;
     }
@@ -926,7 +933,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[30] = {
+    x86_core_machine_memory_device_route routes[31] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -980,6 +987,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .callbacks = sprite_protection_latch_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_LATCH_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_OUTPUT_START,
             .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
             .callbacks = sprite_protection_latch_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
