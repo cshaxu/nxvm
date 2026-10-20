@@ -2,7 +2,11 @@
 
 ## Current Work
 
-## Active Packet — M1 T5 S17
+No S packet is active. M1 T5 remains open for its remaining Sound receivers;
+the separately queued Product/Machine integration task owns runnable product
+composition and release qualification.
+
+## Archived Packet — M1 T5 S17
 
 | Field | Required record |
 | --- | --- |
@@ -13,11 +17,22 @@
 | Evidence Grades | Hashes/sizes are audited asset identity metadata, not CPU/device evidence. Any later model fact follows the user-approved ladder: inspected primary-manual PDF explicit applicable formula/constant/rule is L3; external/reference or range-only evidence is L2; unsupported local engineering is L1. |
 | Files And ABI Surface | Product configuration maps keys to the Machine-owned role enum; Machine-local materialization and matching owner tests, Current and S evidence may change. No Shared component, Core ABI, external asset, ROM payload or product artifact is changed. |
 | Applicable Rules | MyRaidenII guide, Architecture, Coding, UI, Source Policy and shared Execution/Architecture/Coding/Document rules. One transaction owns candidate lifetime; later Composition remains the sole Board/Machine/Session owner. |
-| Verification | Required: dual-width focused loader tests using synthetic image data, including a wrong size/digest and all-or-nothing cleanup; complete repository-only MyRaidenII unit selection; documentation/whitespace checks. No external-set integration, desktop, host audio or EXE claim until the composition/app target exists. |
+| Verification | Met: dual-width focused wrong-size/digest loader checks, complete repository-only MyRaidenII unit selection (11/11 per width), documentation/whitespace checks, and an owner-supplied selected-set probe through the production Machine transaction. The probe does not claim desktop, host-audio, gameplay, Product composition, or EXE qualification. |
 | Stop Conditions | Need for external archive decoding, protected payload retention, altered Shared hashing API, a Board public file API, unapproved asset/source import, or a second composition/session route stops and transfers the gap. |
 | Exit Criteria | A complete candidate is either available or no candidate survives; every configured path is relative to the single INI directory unless explicitly absolute; all records are verified against one code-owned contract; no later owner needs to reopen or guess an image. |
 | Temporary Artifacts | None. Synthetic test inputs live only within the test process. Existing Ninja/ccache trees are reused. |
 | Original Owner Request | Continue implementation while preserving the explicit L3/L2/L1 definition. |
+
+Sequential coordinator actual-change review accepts S17's Machine-only image
+materialization. The existing selected-set probe no longer has a test-only
+image reader or direct Core configuration route: its controlled temporary
+staging supplies ordinary paths to the one production transaction. Both
+widths pass the same bounded external-set run, while all 11 repository-only
+MyRaidenII units per width, documentation governance and whitespace checks
+pass. The run retained no protected payload and its staging root was removed.
+This closes S17; M1 T5 remains open for its explicit remaining Sound work, and
+the queued Product task remains the sole receiver for runnable composition.
+See [S17 evidence](../etc/evidence/t5-s17-machine-image-materialization.md).
 
 ## Archived Packet — M1 T5 S16
 

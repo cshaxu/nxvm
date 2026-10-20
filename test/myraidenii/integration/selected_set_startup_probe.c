@@ -1,8 +1,8 @@
-#include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/sound.h"
 #include "myraidenii/core/video.h"
+#include "myraidenii/machine/configuration_interface.h"
 #include "x86-core/machine/machine_interface.h"
 
 #define MYRAIDENII_STARTUP_INSTRUCTION_BUDGET 2000000u
@@ -11,33 +11,6 @@ static lib_bool myraidenii_startup_controls_requested(lib_i32 argument_count,
     char **arguments)
 {
     return argument_count == 14 && lib_text_compare(arguments[13], "--coin-start-held") == 0;
-}
-
-static lib_status myraidenii_startup_read_image(const char *path, lib_size expected_bytes,
-    lib_u8 **out_bytes)
-{
-    void *bytes = LIB_NULL;
-    lib_size byte_count = 0u;
-    lib_status status;
-
-    if (path == LIB_NULL || expected_bytes == 0u || out_bytes == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    *out_bytes = LIB_NULL;
-    status = lib_storage_file_read_owned(path, expected_bytes, &bytes, &byte_count);
-    if (status != LIB_STATUS_OK) return status;
-    if (byte_count != expected_bytes) {
-        lib_release(bytes);
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    *out_bytes = bytes;
-    return LIB_STATUS_OK;
-}
-
-static void myraidenii_startup_images_release(lib_u8 **images, lib_size image_count)
-{
-    lib_size index;
-
-    for (index = 0u; index < image_count; ++index) lib_release(images[index]);
 }
 
 static void myraidenii_startup_frame_observe(const lib_u32 *pixels, lib_size pixel_count,
@@ -80,26 +53,11 @@ static void myraidenii_startup_pcm_observe(const lib_i16 *samples, lib_u32 frame
 
 int main(int argument_count, char **arguments)
 {
-    const myraidenii_core_board_config config = {
-        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
-    };
-    const lib_size image_sizes[9] = {
-        MYRAIDENII_CORE_PROGRAM_LANE_BYTES,
-        MYRAIDENII_CORE_PROGRAM_LANE_BYTES,
-        MYRAIDENII_CORE_CHARACTER_IMAGE_BYTES,
-        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES,
-        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
-        MYRAIDENII_CORE_SPRITE_IMAGE_BYTES
-    };
+    const char *image_paths[MYRAIDENII_MACHINE_IMAGE_COUNT];
+    myraidenii_machine_images *images = LIB_NULL;
+    myraidenii_core_board_config config;
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
-    lib_u8 *images[9] = {LIB_NULL};
-    lib_u8 *sound_program = LIB_NULL;
-    lib_u8 *sound_samples_1 = LIB_NULL;
-    lib_u8 *sound_samples_2 = LIB_NULL;
     lib_u32 *pixels = LIB_NULL;
     lib_i16 *pcm_samples = LIB_NULL;
     lib_u64 remaining = MYRAIDENII_STARTUP_INSTRUCTION_BUDGET;
@@ -115,7 +73,6 @@ int main(int argument_count, char **arguments)
     lib_u64 nonzero_pcm_frames = 0u;
     lib_u64 dropped_pcm_frames = 0u;
     lib_u32 pcm_frames = 0u;
-    lib_size index;
     lib_bool coin_start_held;
     int exit_code = 1;
 
@@ -126,42 +83,14 @@ int main(int argument_count, char **arguments)
         return 2;
     }
     coin_start_held = myraidenii_startup_controls_requested(argument_count, arguments);
-    status = LIB_STATUS_OK;
-    for (index = 0u; index < 9u && status == LIB_STATUS_OK; ++index)
-        status = myraidenii_startup_read_image(arguments[index + 1u], image_sizes[index],
-            &images[index]);
-    if (status == LIB_STATUS_OK)
-        status = myraidenii_startup_read_image(arguments[10],
-            MYRAIDENII_CORE_SOUND_PROGRAM_BYTES, &sound_program);
-    if (status == LIB_STATUS_OK)
-        status = myraidenii_startup_read_image(arguments[11],
-            MYRAIDENII_CORE_SOUND_SAMPLE_BYTES, &sound_samples_1);
-    if (status == LIB_STATUS_OK)
-        status = myraidenii_startup_read_image(arguments[12],
-            MYRAIDENII_CORE_SOUND_SAMPLE_BYTES, &sound_samples_2);
+    for (lib_size index = 0u; index < MYRAIDENII_MACHINE_IMAGE_COUNT; ++index)
+        image_paths[index] = arguments[index + 1u];
+    status = myraidenii_machine_images_load(".", image_paths, &images);
     if (status == LIB_STATUS_OK) {
-        const myraidenii_core_board_graphics_images graphics = {
-            .characters = images[2], .background_1 = images[3], .background_2 = images[4],
-            .sprites_1 = images[5], .sprites_2 = images[6], .sprites_3 = images[7],
-            .sprites_4 = images[8]
-        };
-        myraidenii_core_board_config mutable_config = config;
-
-        mutable_config.program_even = images[0];
-        mutable_config.program_odd = images[1];
-        mutable_config.graphics_images = &graphics;
-        mutable_config.sound_program = sound_program;
-        mutable_config.sound_program_bytes = MYRAIDENII_CORE_SOUND_PROGRAM_BYTES;
-        mutable_config.sound_samples_1 = sound_samples_1;
-        mutable_config.sound_samples_1_bytes = MYRAIDENII_CORE_SOUND_SAMPLE_BYTES;
-        mutable_config.sound_samples_2 = sound_samples_2;
-        mutable_config.sound_samples_2_bytes = MYRAIDENII_CORE_SOUND_SAMPLE_BYTES;
-        status = myraidenii_core_board_create(&mutable_config, &board);
+        status = myraidenii_machine_images_board_config(images, &config);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_board_create(&config, &board);
     }
-    myraidenii_startup_images_release(images, 9u);
-    lib_release(sound_program);
-    lib_release(sound_samples_1);
-    lib_release(sound_samples_2);
     if (status == LIB_STATUS_OK && coin_start_held) {
         status = myraidenii_core_board_set_control(board,
             MYRAIDENII_CORE_BOARD_CONTROL_COIN_1, LIB_TRUE);
@@ -256,5 +185,6 @@ int main(int argument_count, char **arguments)
     lib_release(pixels);
     lib_release(pcm_samples);
     myraidenii_core_board_destroy(board);
+    myraidenii_machine_images_destroy(images);
     return exit_code;
 }
