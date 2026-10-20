@@ -93,6 +93,7 @@
 - [T3 unresolved COP command boundary](evidence/t3-s29-unresolved-command-boundary.md).
 - [T4 initial Video/Sprite convergence ledger](evidence/t4-s1-video-sprite-convergence.md).
 - [T4 Video/Sprite source disposition](evidence/t4-s2-video-source-disposition.md).
+- [T4 third-party Video-reference provenance](evidence/t4-s3-third-party-provenance.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

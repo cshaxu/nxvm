@@ -21,6 +21,11 @@ confirms that the currently available original/operator material and permitted
 external asset metadata do not fill that contract.  Video receiver code remains
 blocked until a source covers the complete flag-family consumer boundary.
 
+T4 S3 separately rejects a publicly available FPGA implementation as that
+source: its own [provenance record](../etc/evidence/t4-s3-third-party-provenance.md)
+states that it derives the relevant behavior from MAME source and it is not an
+independent hardware oracle or import candidate.
+
 ## Work And Verification
 
 T3 S8 brings forward the Video-owned L2 raster phase/VBlank-to-Board receiver
