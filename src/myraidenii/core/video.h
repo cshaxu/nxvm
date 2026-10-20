@@ -78,9 +78,10 @@ lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *vid
     const lib_u8 *sprites_4);
 void myraidenii_core_video_graphics_images_release(myraidenii_core_video *video);
 
-/* L2 initial renderer: composes the four tile layers without CRTC scrolling,
- * layer-enable, sprite, blending or rotation behavior. The caller owns the
- * exactly-sized RGB32 destination. */
+/* L2 renderer: composes four tile layers with CRTC active-low layer enables
+ * and Background/Midground/Foreground scroll. Sprite, base-scroll, text
+ * scroll, blending and rotation behavior remain unmodeled. The caller owns
+ * the exactly-sized RGB32 destination. */
 lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
     lib_u8 tile_bank_01, lib_u16 tile_bank_2, lib_u32 *out_pixels,
     lib_size pixel_count);

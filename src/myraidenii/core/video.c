@@ -3,12 +3,34 @@
 enum {
     MYRAIDENII_CORE_VIDEO_LINE_TICKS = 512u * 2u,
     MYRAIDENII_CORE_VIDEO_FRAME_TICKS = MYRAIDENII_CORE_VIDEO_LINE_TICKS * 282u,
-    MYRAIDENII_CORE_VIDEO_VBLANK_TICK = MYRAIDENII_CORE_VIDEO_LINE_TICKS * 240u
+    MYRAIDENII_CORE_VIDEO_VBLANK_TICK = MYRAIDENII_CORE_VIDEO_LINE_TICKS * 240u,
+    MYRAIDENII_CORE_VIDEO_CRTC_LAYER_ENABLE_OFFSET = 0x1cu,
+    MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_X_OFFSET = 0x20u,
+    MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_Y_OFFSET = 0x22u,
+    MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_X_OFFSET = 0x24u,
+    MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_Y_OFFSET = 0x26u,
+    MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_X_OFFSET = 0x28u,
+    MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_Y_OFFSET = 0x2au,
+    MYRAIDENII_CORE_VIDEO_TILE_LAYER_SIZE = 512u
 };
 
 static lib_u8 myraidenii_core_video_color_expand_5bit(lib_u16 value)
 {
     return (lib_u8)((value << 3u) | (value >> 2u));
+}
+
+static lib_u16 myraidenii_core_video_crtc_word(const myraidenii_core_video *video,
+    lib_u8 byte_offset)
+{
+    return (lib_u16)video->crtc_registers[byte_offset] |
+        (lib_u16)video->crtc_registers[byte_offset + 1u] << 8u;
+}
+
+static lib_bool myraidenii_core_video_layer_is_enabled(const myraidenii_core_video *video,
+    lib_u8 layer_bit)
+{
+    return (myraidenii_core_video_crtc_word(video,
+        MYRAIDENII_CORE_VIDEO_CRTC_LAYER_ENABLE_OFFSET) & (lib_u16)(1u << layer_bit)) == 0u;
 }
 
 void myraidenii_core_video_reset(myraidenii_core_video *video)
@@ -184,7 +206,7 @@ static lib_status myraidenii_core_video_layer_pixel(const myraidenii_core_video 
 
 static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *video,
     lib_u16 tilemap_offset, lib_u8 tile_width, lib_u8 tile_height, lib_u8 bank,
-    lib_u16 palette_base, lib_u32 *pixels)
+    lib_u16 palette_base, lib_u16 scroll_x, lib_u16 scroll_y, lib_u32 *pixels)
 {
     lib_u16 y;
 
@@ -197,7 +219,10 @@ static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *
             lib_status status;
 
             status = myraidenii_core_video_layer_pixel(video, tilemap_offset, tile_width,
-                tile_height, bank, palette_base, x, y, &color, &visible);
+                tile_height, bank, palette_base,
+                (lib_u16)(x + scroll_x) & (MYRAIDENII_CORE_VIDEO_TILE_LAYER_SIZE - 1u),
+                (lib_u16)(y + scroll_y) & (MYRAIDENII_CORE_VIDEO_TILE_LAYER_SIZE - 1u),
+                &color, &visible);
             if (status != LIB_STATUS_OK) return status;
             if (visible) {
                 pixels[(lib_size)y * MYRAIDENII_CORE_VIDEO_FRAME_WIDTH + x] = color;
@@ -218,19 +243,38 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_set(out_pixels, 0, MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*out_pixels));
-    status = myraidenii_core_video_layer_draw(video, 0u,
-        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
-        (tile_bank_01 & 1u) << 1u, 0x400u, out_pixels);
-    if (status != LIB_STATUS_OK) return status;
-    status = myraidenii_core_video_layer_draw(video, 0x800u,
-        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
-        1u | (tile_bank_01 & 2u), 0x420u, out_pixels);
-    if (status != LIB_STATUS_OK) return status;
-    status = myraidenii_core_video_layer_draw(video, 0x400u,
-        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
-        4u | (tile_bank_2 >> 14u), 0x410u, out_pixels);
-    if (status != LIB_STATUS_OK) return status;
+    if (myraidenii_core_video_layer_is_enabled(video, 0u)) {
+        status = myraidenii_core_video_layer_draw(video, 0u,
+            MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+            (tile_bank_01 & 1u) << 1u, 0x400u,
+            myraidenii_core_video_crtc_word(video,
+                MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_X_OFFSET),
+            myraidenii_core_video_crtc_word(video,
+                MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_Y_OFFSET), out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (myraidenii_core_video_layer_is_enabled(video, 1u)) {
+        status = myraidenii_core_video_layer_draw(video, 0x800u,
+            MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+            1u | (tile_bank_01 & 2u), 0x420u,
+            myraidenii_core_video_crtc_word(video,
+                MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_X_OFFSET),
+            myraidenii_core_video_crtc_word(video,
+                MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_Y_OFFSET), out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (myraidenii_core_video_layer_is_enabled(video, 2u)) {
+        status = myraidenii_core_video_layer_draw(video, 0x400u,
+            MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+            4u | (tile_bank_2 >> 14u), 0x410u,
+            myraidenii_core_video_crtc_word(video,
+                MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_X_OFFSET),
+            myraidenii_core_video_crtc_word(video,
+                MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_Y_OFFSET), out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (!myraidenii_core_video_layer_is_enabled(video, 3u)) return LIB_STATUS_OK;
     return myraidenii_core_video_layer_draw(video, 0xc00u,
         MYRAIDENII_CORE_CHARACTER_WIDTH, MYRAIDENII_CORE_CHARACTER_HEIGHT,
-        0u, 0x700u, out_pixels);
+        0u, 0x700u, 0u, 0u, out_pixels);
 }

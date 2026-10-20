@@ -31,11 +31,12 @@ format exists.
 
 ## Deliberate Limits
 
-Sprites remain encrypted and are not decoded or drawn. This packet also does
-not model scrolling, layer enable bits, brightness, blending, rotation,
-raster-side timing, Machine publication or host presentation. A frame is only
-returned after complete bounded composition; an invalid source reports the
-existing status and does not publish a partial result.
+Sprites remain encrypted and are not decoded or drawn. S43 later adds the
+named CRTC layer-enable and three scroll pairs; this S42 record still does not
+model sprite control, brightness, blending, rotation, raster-side timing,
+Machine publication or host presentation. A frame is only returned after
+complete bounded composition; an invalid source reports the existing status
+and does not publish a partial result.
 
 ## Regression
 

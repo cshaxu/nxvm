@@ -2,20 +2,34 @@
 
 ## Current Work
 
-M1 T4 remains open after coordinator acceptance of S42. Core owns a bounded L2
-character/background decoder and static four-tile-layer composition. Sprite
-decryption/drawing, CRTC layer enable/scroll, and Machine frame publication
-remain explicitly outside that delivered slice. The owner has admitted published
-MAME/other emulator implementations as L2 layout/behavior evidence under the
-MyRaidenII source policy; that authority does not permit imported or
-transliterated source, tables, ROM data, or decryption material.
+M1 T4's active S43 extends the existing Video owner with the approved finite
+L2 CRTC tile-layer enable and scroll facts. It consumes accepted S42's static
+composition instead of creating another renderer. Sprite decryption/drawing,
+base-scroll behavior, and Machine frame publication remain outside this slice.
+The owner has admitted published MAME/other emulator implementations as L2
+layout/behavior evidence; source, tables, ROM data, and decryption material
+remain prohibited from import or transliteration.
 
-S42 was accepted after actual-change review of `6944777f4` and `37cba797a`:
-the sole Video compositor now has the recorded Background/Midground/Foreground/
-Text map and palette ownership, while synthetic tests reject the earlier swap.
-Both widths passed their focused and complete repository unit selections; the
-documented sandbox junction exception was separately re-run in its required
-Windows context.
+## Active Packet — M1 T4 S43
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S43 follows coordinator-accepted S42 P3 `b1dd46f0f`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner explicitly directed continued MyRaidenII implementation under external emulator L2 evidence without back-and-forth on 2026-10-20. |
+| Objective | Make the existing Video composition path consume the finite CRTC active-low Background/Midground/Foreground/Text enables and three tile-layer scroll pairs. |
+| Non-goals | No sprite decode/decryption/drawing, base-scroll behavior, text scroll, blend/priority behavior, Machine publication, Shared change, ROM/media input, or copied/transliterated source/table. |
+| Reference Baseline | S42 P2 `37cba797a` establishes correct static map/palette/order ownership, while the existing CRTC register file is routed through Board but has no frame effect. |
+| Candidate Proposal | Add owner-local CRTC word and enabled helpers; conditionally draw the four existing layers and apply modulo-512 source coordinates for the three 16 by 16 tile layers. Reuse the sole compositor, Board CRTC route, and existing smoke files. |
+| Files And ABI Surface | `src/myraidenii/core/video.c`, its public comment only if required, `test/myraidenii/unit/core/{graphics_smoke.c,board_bus_smoke.c}`, L2 evidence, manifests and task record; no function/type ABI change. |
+| Applicable Rules | MyRaidenII guide, architecture, coding, documentation and source policy; execution rules. Video remains the single raster/composition owner, Board remains the one CRTC route, and external evidence supplies only finite L2 behavior/layout facts. |
+| Verification | Run focused graphics and Board tests on x64/x86; then cached x64/x86 MyRaidenII unit selections, manifests/dependency gates, documentation governance and `git diff --check`. |
+| Expected Markers | Active-low layer masking leaves the frame clear when all tiles are disabled; each three scroll pairs shifts only its own layer; a Board bus write changes the same sole Video frame output. |
+| Asset Needs | None; all regressions use synthetic buffers and do not read or modify external ROM/media. |
+| Reporting Requirements | Report source/test/doc added/removed/net lines, the exact adopted L2 facts, verification per width, and deferred sprite/base-scroll/text-scroll/Machine work. |
+| Stop Conditions | Any needed sprite/decryption/base-scroll contract, Shared API, new renderer, external data payload, or behavior beyond the named finite CRTC fields is transferred rather than guessed. |
+| Exit Criteria | One Video owner demonstrably consumes the named enables/scroll pairs through the actual Board route; synthetic regression proves the previous inert-register behavior cannot recur; evidence/manifests are updated. |
+| Original Owner Request | Continue implementation toward RAIDEN II with external implementations admitted as L2, without treating the lack of a physical L3 source as a blocker. |
+| Similar-Issue Sweep | Recheck all existing CRTC frame-affecting fields, Video/Board ownership, source-coordinate bounds, layer order/transparency, and public API changes for a second route or unapproved behavior. |
 
 ## Archived Packet — M1 T4 S42
 
