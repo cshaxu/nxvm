@@ -20,27 +20,40 @@ M1 T4 remains open after accepted S1:
 | S12 | L2 Video-owned CRTC register aperture from independently observed reference address ownership. | P1 `9042cdd35`; x64/x86 Board and selected-set probes advance from `0x600` to `0x640`; complete repository units pass 642/642 per width. [Evidence](../etc/evidence/t4-s12-crtc-register-aperture-l2.md). |
 | S13 | L2 CRTC write-only extension at the exact next selected-set stop. | P1 `22d47c4b0`; P2 `24546816b`; x64/x86 focused Board tests and selected-set probes advance from `0x640` to the next independent stop `0x658`; complete repository-only units pass 669/669 on each width. [Evidence](../etc/evidence/t4-s13-crtc-write-extension-l2.md). |
 | S14 | Bounded attribution of the selected set's first unowned control-window access at `0x658`. | P1 `f8fc5f867` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes identify the same one-byte write while preserving `INVALID_STATE`; all 642 repository unit cases pass per width when the known temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s14-control-fallback-attribution.md). |
+| S15 | Exact selected-set word-write receiver at `0x658--0x659`, separately owned from CRTC. | P1 pending: x64/x86 focused Board tests and probes accept only the complete word span, then reach the same independent next byte-write stop at `0x65a`; full repository unit qualification and review remain. [Evidence](../etc/evidence/t4-s15-object-write-sink-l2.md). |
 
-## Active Packet — M1 T4 S14
+## Active Packet — M1 T4 S15
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S15 follows coordinator-accepted S14 P1 `f8fc5f867`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner authorizes an external-emulator behavioral L2 model when physical L3 material is unavailable. This model uses only independently stated address ownership and the selected-set's bounded runtime access; no implementation/source/table import is permitted. |
+| Objective | Establish the smallest write-only receiver for the exact selected-set word write at `0x658--0x659`, separate from Video CRTC ownership. |
+| Non-goals | No full object/sprite interface, readback, generic RAM, rendering/decryption/palette behavior, physical-hardware claim, Shared change, source translation, protected-ROM inspection, raw trace retention, desktop qualification or playable-game claim. |
+| Reference Baseline | `f8fc5f867`; both widths report first fallback write `0x658`, one byte. FBNeo routes only `0x600--0x64f` writes to its CRTC helper; MAME documents a commented OBJ aperture `0x640--0x6bf`. Neither source establishes object contents or readback. |
+| Candidate Proposal | One stateless Board-owned two-byte, write-only L2 object sink at exact `0x658--0x659`. It accepts either contained byte lane or the contained word through the existing Core route, refuses reads/inspection/mixed widths/neighbours, exposes no getter and has no frame effect. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, selected-set integration probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The address ownership is L2 behavioral context only. |
+| Verification | Focused x64/x86 Board test through the real Core route; x64/x86 selected-set startup probe with transient staging/cleanup; complete repository dual-width unit suites after production change; documentation-governance and `git diff --check`. |
+| Expected Markers | The exact byte lanes and contained word are accepted; read/inspect, mixed accesses and immediate neighbours remain refused; both probes advance past `0x659` to the same independent next stop. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; the probe stages only transient program lanes and retains no payload, screenshot or raw trace. |
+| Reporting Requirements | Record runtime write fact and external ownership separately; state the L2 limitation; report exact accepted/rejected boundaries, dual-width results, next stop and no playable-game claim. |
+| Stop Conditions | Need for access beyond the observed two-byte word span, readback, algorithmic behavior, Shared change, contradictory runtime evidence, divergent host-width result, protected-data exposure or cleanup failure. |
+| Exit Criteria | The exact receiver has focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or it is refused/transferred because the bounded assumptions fail. |
+| Original Owner Request | Do not require physical-level material; use other emulator observable behavior as clearly labeled L2 where L3 is unavailable. |
+| Similar-Issue Sweep | Check both `0x658--0x659` lanes, immediate neighbours, read/inspect, widths, reset and no overlap with CRTC; ensure no fallback widening or duplicate Video state. |
+
+## Retained Packet — M1 T4 S14
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation: M1 T4 S14 follows coordinator-accepted S13 P2 `24546816b`; one session performs coordinator and executor roles. |
-| Admission And Approval | Owner's 2026-10-19 authorization permits a bounded L2 model from external behavior when physical L3 material is unavailable, but requires it to be labeled L2 and not derived from external source implementation. This S admits only neutral runtime attribution, not a receiver model. |
+| Admission And Approval | Owner permits a bounded L2 model from external behavior when physical L3 material is unavailable, but requires it to be labeled L2 and not derived from external source implementation. This S admitted only neutral runtime attribution, not a receiver model. |
 | Objective | Determine whether the selected set's exact next stop at `0x658` reaches the Board fallback as a read or write and with what byte width, without accepting or altering that access. |
-| Non-goals | No receiver, no physical control-hardware claim, no fallback widening, generic RAM, new executor, Shared change, source translation, protected-ROM inspection, PC/register/payload capture, raw trace retention, desktop qualification or playable-game claim. |
-| Reference Baseline | `24546816b`; both selected-set probes pass the bounded CRTC extension and stop at CPU fault code `0x658`. MAME/FBNeo source research has not established an independent legal receiver contract at that address. |
+| Non-goals | No receiver, physical control-hardware claim, fallback widening, generic RAM, new executor, Shared change, source translation, protected-ROM inspection, PC/register/payload capture, raw trace retention, desktop qualification or playable-game claim. |
 | Candidate Proposal | Board keeps one reset-cleared first-failure observation containing only valid, physical address, byte width and Core access direction. Existing fallback callbacks record it once then return their unchanged `LIB_STATUS_INVALID_STATE`; they do not inspect source/destination data. |
-| Files And ABI Surface | MyRaidenII `core/board_interface.h`, `core/board.c`, existing Board smoke, selected-set integration probe, CURRENT and one evidence record. The getter is MyRaidenII Core-only; no Shared component, cross-product ABI, product, ROM, asset or external-code change. |
-| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The address/ownership fact is L2 behavioral context only. |
 | Verification | Focused x64/x86 Board test through the real Core memory route; x64/x86 selected-set startup probe with transient staging/cleanup; complete repository dual-width unit suites after production change; documentation-governance and `git diff --check`. |
-| Expected Markers | Synthetic fallback read/write access records only its first direction/address/byte width and reset clears it. The selected-set probes report the same bounded metadata on both widths while preserving the existing refusal and stop. |
-| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; probe stages only transient program lanes and retains no payload, screenshot or raw trace. |
-| Reporting Requirements | Report only direction/address/width and existing status, separately from any later L2 ownership model; state that no payload, PC/register trace or receiver behavior was retained; report dual-width results and no playable-game claim. |
-| Stop Conditions | Observation would need payload, PC/register trace, a changed fallback result, ambiguous multi-width semantics, Shared change, divergent host-width result, protected-data exposure or cleanup failure. |
 | Exit Criteria | The bounded observation has focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or the access does not reach a lawful Board fallback and is transferred. |
-| Original Owner Request | Do not require physical-level material; use other emulator observable behavior as clearly labeled L2 where L3 is unavailable. |
-| Similar-Issue Sweep | Check read/write direction, byte width, first-failure retention, reset, direct synthetic path and selected-set output; ensure no fallback address becomes accepted and no duplicate diagnostic state exists. |
 
 ## Retained Packet — M1 T4 S13
 
