@@ -2,11 +2,30 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S32. Core now has a copied, fixed-role
+M1 T4 remains open after accepted S33. Core now has a copied, fixed-role
 graphics-image ingress and one bounded palette RGB32 lookup for a later Video
 frame owner, while existing program-only Core diagnostics remain explicit. The
-selected-set probe still reaches its containment budget without a new
+attempted independent black-box oracle is blocked by two absent PAL images in
+the owner archive; no third-party source, table or implementation was imported.
+The selected-set probe still reaches its containment budget without a new
 control-window fault; decoding, composition and frame publication remain open.
+
+## Archived Packet — M1 T4 S33
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S33 follows accepted S32 P2 `fb7c3f5a4`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized L2 behavior modeling when L3 primary hardware detail is unavailable. This packet permits an external emulator only as a transient black-box reference; it does not authorize source/table/handler import. |
+| Objective | Establish whether a lawful, reproducible behavioral-oracle workflow can qualify later graphics layout/decryption work without exposing protected game bytes or copying third-party implementation. |
+| Non-goals | No MyRaidenII production/test change, graphics decode, decryption, renderer/frame, shared change, ROM commit, screenshot/trace retention or playable-game claim. |
+| Candidate Proposal | Obtain one official upstream emulator binary outside the repository, pin its release identity/hash, run it only against the owner-supplied archive with a bounded controlled launch, and retain only neutral observations/checkpoints. If its behavior cannot produce an independent layout contract, record that exact stop rather than invent a decoder. |
+| Files And ABI Surface | `docs/myraidenii/{states/CURRENT.md,etc/evidence/}` only. No source/API/manifest/asset/product artifact change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. External emulator remains research-only, all protected media read-only, and neither bytes nor derived decode tables are retained. |
+| Verification | Verify source identity/hash, bounded-process cleanup, no retained protected outputs, documentation governance and `git diff --check`. No claim that reference execution proves hardware accuracy. |
+| Stop Conditions | Need to inspect/copy/provide third-party implementation or ROM bytes, make a decoder claim from a source table, commit the external tool/output, or change production code without a separately reviewed contract. |
+| Exit Criteria | A recorded, reproducible black-box workflow with a clear next contract or a documented insufficiency that leaves production unchanged. |
+| Original Owner Request | Continue MyRaidenII under the authorized L2 model boundary rather than require unavailable L3 proof. |
+| Similar-Issue Sweep | Check output retention, archive write access, process/temporary cleanup, output paths, license/source identity and whether any proposed fact is actually independent behavior rather than a copied source assertion. |
 
 ## Archived Packet — M1 T4 S32
 
@@ -84,6 +103,7 @@ control-window fault; decoding, composition and frame publication remain open.
 | S30 | L2 Sprite-protection destination read endpoint. | P1 `532ef5a8f`; x64/x86 Board smoke and selected-set probes pass the former `0x762` stop; probes end only at their existing containment budget, and full 668-case qualification plus the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s30-sprite-protection-destination-output-l2.md). |
 | S31 | Fixed-role graphics image ingress, lifetime and creation validation. | P1 `197ec9b3c`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s31-graphics-image-ingress.md). |
 | S32 | Bounded Video-owned RGB555 to `0x00RRGGBB` palette lookup. | P1 `822f76ba5`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s32-palette-rgb555-l2.md). |
+| S33 | Disposed the external black-box graphics oracle without source import or retained media output. | P1 `9b179c83d`; the supplied archive lacks two PAL images required by the reference release. [Evidence](../etc/evidence/t4-s33-black-box-oracle-disposition.md). |
 
 ## Archived Packet — M1 T4 S30
 
