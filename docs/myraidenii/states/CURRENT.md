@@ -2,15 +2,23 @@
 
 ## Current Work
 
-M1 T4's active S43 extends the existing Video owner with the approved finite
-L2 CRTC tile-layer enable and scroll facts. It consumes accepted S42's static
-composition instead of creating another renderer. Sprite decryption/drawing,
-base-scroll behavior, and Machine frame publication remain outside this slice.
-The owner has admitted published MAME/other emulator implementations as L2
-layout/behavior evidence; source, tables, ROM data, and decryption material
-remain prohibited from import or transliteration.
+M1 T4 remains open after coordinator acceptance of S43. The single Video owner
+now composes the bounded L2 tiles with CRTC active-low layer enable and three
+scroll pairs. Sprite decryption/drawing, sprite control, base/text scroll,
+priority/blend behavior, and Machine frame publication remain explicitly
+deferred. The owner has admitted published MAME/other emulator implementations
+as L2 layout/behavior evidence; source, tables, ROM data, and decryption
+material remain prohibited from import or transliteration.
 
-## Active Packet — M1 T4 S43
+S43 was accepted after actual-change review of `6b5def499`: two owner-local
+helpers read only safe CRTC word pairs and apply them to the existing layer
+draw path. Synthetic regression proves enable, per-layer X/Y scroll and
+modulo-512 source behavior; Board regression retains its public byte-route and
+reset proof. Both cached widths passed all three MyRaidenII unit entries and
+documentation governance. No external media, artifact, desktop or playable
+game claim is made.
+
+## Archived Packet — M1 T4 S43
 
 | Field | Required record |
 | --- | --- |
@@ -27,7 +35,7 @@ remain prohibited from import or transliteration.
 | Asset Needs | None; all regressions use synthetic buffers and do not read or modify external ROM/media. |
 | Reporting Requirements | Report source/test/doc added/removed/net lines, the exact adopted L2 facts, verification per width, and deferred sprite/base-scroll/text-scroll/Machine work. |
 | Stop Conditions | Any needed sprite/decryption/base-scroll contract, Shared API, new renderer, external data payload, or behavior beyond the named finite CRTC fields is transferred rather than guessed. |
-| Exit Criteria | One Video owner demonstrably consumes the named enables/scroll pairs through the actual Board route; synthetic regression proves the previous inert-register behavior cannot recur; evidence/manifests are updated. |
+| Exit Criteria | Met: one Video owner consumes the named enables/scroll pairs, Board retains the only public CRTC route, and synthetic regression proves the previous inert-register behavior cannot recur. Evidence is updated; this product has no file manifest. |
 | Original Owner Request | Continue implementation toward RAIDEN II with external implementations admitted as L2, without treating the lack of a physical L3 source as a blocker. |
 | Similar-Issue Sweep | Recheck all existing CRTC frame-affecting fields, Video/Board ownership, source-coordinate bounds, layer order/transparency, and public API changes for a second route or unapproved behavior. |
 
