@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S29. The selected Sprite-protection endpoint
-group at `0x6d8--0x6df` is now a finite Board latch contract; its tile decoding
-and frame-rendering meanings remain outside it. The next selected-set boundary
-is the separate read pair at `0x762--0x763`.
+M1 T4 remains open after accepted S30. The selected Sprite-protection read pair
+at `0x762--0x763` is now a bounded L2 mirror of the existing Board destination
+latch. The selected-set probe reaches its containment budget without a new
+control-window fault; tile decoding and frame-rendering meanings remain open.
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -38,6 +38,28 @@ is the separate read pair at `0x762--0x763`.
 | S27 | L2 fixed mode-`0x0014` tilemap receiver from its selected bounded descriptor. | P1 `63b7c68bc`; x64/x86 Board smokes and owner-set probes advance to an independent Board-control stop; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s27-tilemap-dma-l2.md). |
 | S28 | L2 exact selected-set `0x6ca` write-only no-op. | P1 `d62e0deee`; P2 `7efca76c0`; x64/x86 Board smoke and selected-set probes advance to `0x6d8`; full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s28-control-noop-l2.md). |
 | S29 | L2 Sprite-protection X/Y/max-X/source endpoint group. | P1 `6ebe6cd9c`; x64/x86 Board smoke and selected-set probes pass the former `0x6d8` stop and reach `0x762`; full 668-case qualification and the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s29-sprite-protection-latches-l2.md). |
+| S30 | L2 Sprite-protection destination read endpoint. | P1 `532ef5a8f`; x64/x86 Board smoke and selected-set probes pass the former `0x762` stop; probes end only at their existing containment budget, and full 668-case qualification plus the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s30-sprite-protection-destination-output-l2.md). |
+
+## Archived Packet — M1 T4 S30
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S30 follows accepted S29 P2 `6e1b1b5ee`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continuing MyRaidenII and L2 models derived from external emulator research without source import; this packet changes only MyRaidenII. |
+| Objective | Receive exactly the selected program's read pair `0x762--0x763` as a Board-owned L2 Sprite-protection destination-output endpoint, so it no longer falls through the unmapped control window. |
+| Non-goals | No Sprite-protection algorithm, decryption, object transfer, new output state, write access, timing claim, rendering/frame effect, Shared/public API, ROM inspection, asset change or playable-game claim. |
+| Reference Baseline | S29's dual-width probes next stop at a one-word read `0x762`. Permitted L2 map research identifies the pair as a Sprite-protection destination output. Existing Board route `0x6c6--0x6c7` is the sole private destination latch in the same bounded mechanism. |
+| Candidate Proposal | Add one exact read-only replacement route that returns the existing reset-zero destination latch; reuse its current byte/word lane callbacks, retain the `0x6c6` write-only ingress and add no storage or helper. This is a declared L2 mirror, not a claim that all protection semantics are modeled. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, existing selected-set startup probe, CURRENT and one L2 evidence record. No Shared/public header, media, asset or product artifact change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The model is L2 only; one Board state owner, `lib_bool`/LIB_NULL/lib_status and inward dependencies remain required. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | The exact pair reads the existing destination latch through both byte lanes; writes remain rejected; reset returns zero; both probes pass the former `0x762` boundary without a widened fallback. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient program-lane staging only, no content dump, raw trace or screenshot retention. |
+| Reporting Requirements | Record L2 basis/limit, single-owner/no-second-state proof, exact access contract, verification result, diff size, next stop and remaining non-goals. |
+| Stop Conditions | Any need to infer a protection algorithm, attach a Sprite/Video consumer, add new mutable state or Shared API, accept write access, inspect protected ROM content, diverge by width or retain media. |
+| Exit Criteria | One reviewed MyRaidenII P with exact endpoint proof/evidence, dual-width qualification and cleanup; otherwise transfer/refuse the whole endpoint without widening a fallback. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Check all existing Sprite-protection queries and routes, byte/word splitting, read/write directions and reset so the new read endpoint neither adds state nor changes existing route ownership. |
 
 ## Archived Packet — M1 T4 S29
 
