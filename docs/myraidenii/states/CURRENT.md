@@ -121,6 +121,27 @@ pass. No endpoint, desktop, Product/Session, control, ROM, audible-output or
 playable-game verification occurred. S11 is closed; M1 T5 remains open for
 Product composition and qualified real command-path work.
 
+## Active Packet — M1 T5 S12
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S12 follows accepted S11 P2 `613e34b77`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner requested continued MyRaidenII implementation and reaffirmed the L3/L2/L1 evidence rule. This packet admits only a bounded external-set diagnostic through the existing source-policy-approved probe; it authorizes no imported source, ROM, firmware, table or new runtime path. |
+| Objective | Reconcile the current selected-set startup terminal with the completed Board/Sound/Machine foundations, so the next receiving implementation has one exact, evidence-backed owner rather than a speculative Product workaround. |
+| Non-goals | No Product/Session/UI composition, INI loader, controls, Shared edit, external-source import, ROM/media retention, audio/frame dump, terminal workaround, fake success, desktop run or playable claim. |
+| Reference Baseline | S11 supplies the only Machine driver foundation. The existing `myraidenii-selected-set-startup-probe` remains the sole approved external-set diagnostic and stops at a bounded first terminal without retaining protected bytes. |
+| Candidate Proposal | Rebuild and run the existing probe through the established external inventory/staging tool on both host widths. The first observation is a matching Core `STOP_FAULT`, not `WAITING_FOR_INTERRUPT`; retain only its neutral aggregate line and compare its existing CPU diagnostic against Board/COP/Video/Sound ownership. If additional non-payload diagnostic fields are required to name the earliest owner, extend only the existing probe's neutral output and rerun it. If it exposes an unimplemented receiver, record the complete affected owner/boundary for later admission; do not repair that receiver in this diagnostic S. |
+| Files And ABI Surface | Expected only `test/myraidenii/integration/selected_set_startup_probe.c` if its existing neutral diagnostic needs extension, `tools/myraidenii/README.md` if its staging description is stale, plus CMake/evidence/CURRENT records and disposable task output under `build/`. No production/API/manifest/asset/artifact or Shared change is authorized. |
+| Applicable Rules | MyRaidenII README, architecture, source policy, Execution, Coding and Documentation. L3 requires an inspected manual PDF formula/constant/rule; external observation is L2; unsupported local inference is L1. The existing probe is the only external-set reader and its staging cleanup remains mandatory. |
+| Verification | Rebuild existing probe on cached x64/x86 Ninja trees; invoke the existing staging tool once per width; confirm staging cleanup and no tracked/external protected payload mutation; run documentation governance and whitespace checks. |
+| Expected Markers | One neutral result per width names the same bounded terminal or a factual divergence; no raw bytes, ROM names/content, trace or invented hardware conclusion enters tracked evidence; any next implementation owner is named explicitly. |
+| Asset Needs | Owner-supplied external archive only through the pre-existing read-only inventory tool. No asset is opened manually, copied into the repository or committed. |
+| Reporting Requirements | Record exact command/result, terminal disposition, source/test delta, L3/L2/L1 status and every unperformed Product/Machine/desktop/gameplay verification. |
+| Stop Conditions | Missing/invalid external inventory, a new protected-input requirement, divergent width result, need for a second runner/path, source/table import or any Shared/API change stops the diagnostic and transfers the gap. |
+| Exit Criteria | Both widths complete the existing bounded diagnostic with a recorded neutral terminal and cleanup; any unimplemented receiver is transferred without being masked, modeled as a no-op or claimed as gameplay/audio qualification. |
+| Original Owner Request | Continue MyRaidenII; only direct manual PDF formulas/constants/rules may be L3, external/reference facts are L2 and unsupported engineering mechanisms are L1. |
+| Similar-Issue Sweep | Compare all existing external-set tools/probes for duplicate staging, unbounded output, retained protected content, competing Board execution routes or a terminal classified by an outer Product instead of its earliest Core owner. |
+
 ## Archived Packet — M1 T5 S6
 
 | Field | Required record |

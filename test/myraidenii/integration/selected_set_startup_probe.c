@@ -193,23 +193,30 @@ int main(int argument_count, char **arguments)
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
-        const lib_u32 fault_code = terminal_fault &&
-            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK &&
-            diagnostic.first_fault.valid ? diagnostic.first_fault.exception_code : 0u;
+        const lib_bool has_diagnostic = terminal_fault &&
+            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK;
+        const lib_bool fault_valid = has_diagnostic && diagnostic.first_fault.valid;
+        const lib_u32 fault_code = fault_valid ? diagnostic.first_fault.exception_code : 0u;
+        const lib_u32 fault_mask = fault_valid ? diagnostic.first_fault.exception_mask : 0u;
+        const lib_u32 fault_linear = fault_valid ? diagnostic.first_fault.point.linear_pc : 0u;
+        const lib_u32 delivered_exceptions = has_diagnostic ?
+            diagnostic.delivered_exception_count : 0u;
 
         if (terminal_fault) {
             (void)myraidenii_core_board_cop_failure_get(board, &cop_failure);
             (void)myraidenii_core_board_control_failure_get(board, &control_failure);
         }
 
-        lib_c_printf("MYRAIDENII:STARTUP-PROBE:OK reason=%u detail=%u fault-code=%u "
+        lib_c_printf("MYRAIDENII:STARTUP-PROBE:OK reason=%u detail=%u fault-valid=%u "
+            "fault-code=%u fault-mask=%u fault-linear=%u delivered-exceptions=%u "
             "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
             "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
             "frame-digest=%016llx pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
             "pcm-digest=%016llx\n",
-            (lib_u32)result.reason, result.detail, fault_code, (lib_u32)cop_failure.operation,
+            (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
+            fault_linear, delivered_exceptions, (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
             (lib_u32)cop_failure.dma_size, (lib_u32)cop_failure.dma_destination,
             (lib_u32)cop_failure.dma_relative,
