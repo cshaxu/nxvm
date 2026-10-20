@@ -39,10 +39,22 @@ lib_status myraidenii_core_graphics_character_pixel(const lib_u8 *image,
         MYRAIDENII_CORE_CHARACTER_HEIGHT, x, y, out_pixel);
 }
 
-lib_status myraidenii_core_graphics_background_pixel(const lib_u8 *image,
-    lib_u32 tile, lib_u8 x, lib_u8 y, lib_u8 *out_pixel)
+lib_status myraidenii_core_graphics_background_pixel(const lib_u8 *image_1,
+    const lib_u8 *image_2, lib_u32 tile, lib_u8 x, lib_u8 y, lib_u8 *out_pixel)
 {
-    return myraidenii_core_graphics_pixel(image, MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES,
-        tile, MYRAIDENII_CORE_BACKGROUND_BYTES, MYRAIDENII_CORE_BACKGROUND_WIDTH,
+    if (image_1 == LIB_NULL || image_2 == LIB_NULL ||
+        tile >= MYRAIDENII_CORE_BACKGROUND_IMAGE_TILE_COUNT * 2u) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (tile < MYRAIDENII_CORE_BACKGROUND_IMAGE_TILE_COUNT) {
+        return myraidenii_core_graphics_pixel(image_1,
+            MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES, tile,
+            MYRAIDENII_CORE_BACKGROUND_BYTES, MYRAIDENII_CORE_BACKGROUND_WIDTH,
+            MYRAIDENII_CORE_BACKGROUND_HEIGHT, x, y, out_pixel);
+    }
+    return myraidenii_core_graphics_pixel(image_2,
+        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES,
+        tile - MYRAIDENII_CORE_BACKGROUND_IMAGE_TILE_COUNT,
+        MYRAIDENII_CORE_BACKGROUND_BYTES, MYRAIDENII_CORE_BACKGROUND_WIDTH,
         MYRAIDENII_CORE_BACKGROUND_HEIGHT, x, y, out_pixel);
 }

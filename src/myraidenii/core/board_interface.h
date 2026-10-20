@@ -107,6 +107,11 @@ lib_status myraidenii_core_board_get_coin_inputs(const myraidenii_core_board *bo
  * raster source. The existing Core attachment performs delivery and acknowledgement. */
 lib_status myraidenii_core_board_request_main_interrupt(myraidenii_core_board *board);
 
+/* Copies the bounded native frame. It is a read-only Board operation; later
+ * Machine presentation owns conversion and publication. */
+lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
+    lib_u32 *out_pixels, lib_size pixel_count);
+
 /* These are the board-owned sides of the future sound-CPU handoff. They do not
  * instantiate or schedule a sound CPU. */
 lib_status myraidenii_core_board_sound_command_get(const myraidenii_core_board *board,

@@ -146,3 +146,91 @@ void myraidenii_core_video_graphics_images_release(myraidenii_core_video *video)
     lib_release(video->graphics_images);
     video->graphics_images = LIB_NULL;
 }
+
+static lib_status myraidenii_core_video_layer_pixel(const myraidenii_core_video *video,
+    lib_u16 tilemap_offset, lib_u8 tile_width, lib_u8 tile_height, lib_u8 bank,
+    lib_u16 palette_base, lib_u16 x, lib_u16 y, lib_u32 *out_color,
+    lib_bool *out_visible)
+{
+    lib_u16 tile_x = x / tile_width;
+    lib_u16 tile_y = y / tile_height;
+    lib_u16 entry = video->tilemap[tilemap_offset + tile_y *
+        (tile_width == MYRAIDENII_CORE_CHARACTER_WIDTH ? 64u : 32u) + tile_x];
+    lib_u32 tile = (entry & 0x0fffu) | ((lib_u32)bank << 12u);
+    lib_u8 pixel;
+    lib_status status;
+
+    if (tile_width == MYRAIDENII_CORE_CHARACTER_WIDTH) {
+        status = myraidenii_core_graphics_character_pixel(video->graphics_images +
+            MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET, tile, x % tile_width,
+            y % tile_height, &pixel);
+    }
+    else {
+        status = myraidenii_core_graphics_background_pixel(video->graphics_images +
+            MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET, video->graphics_images +
+            MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET, tile, x % tile_width,
+            y % tile_height, &pixel);
+    }
+    if (status != LIB_STATUS_OK) return status;
+    if (pixel == 15u) {
+        *out_visible = LIB_FALSE;
+        return LIB_STATUS_OK;
+    }
+    status = myraidenii_core_video_palette_color(video,
+        (lib_u16)(palette_base + ((entry >> 12u) & 0x0fu) * 16u + pixel), out_color);
+    if (status == LIB_STATUS_OK) *out_visible = LIB_TRUE;
+    return status;
+}
+
+static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *video,
+    lib_u16 tilemap_offset, lib_u8 tile_width, lib_u8 tile_height, lib_u8 bank,
+    lib_u16 palette_base, lib_u32 *pixels)
+{
+    lib_u16 y;
+
+    for (y = 0u; y < MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT; ++y) {
+        lib_u16 x;
+
+        for (x = 0u; x < MYRAIDENII_CORE_VIDEO_FRAME_WIDTH; ++x) {
+            lib_u32 color;
+            lib_bool visible;
+            lib_status status;
+
+            status = myraidenii_core_video_layer_pixel(video, tilemap_offset, tile_width,
+                tile_height, bank, palette_base, x, y, &color, &visible);
+            if (status != LIB_STATUS_OK) return status;
+            if (visible) {
+                pixels[(lib_size)y * MYRAIDENII_CORE_VIDEO_FRAME_WIDTH + x] = color;
+            }
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
+    lib_u8 tile_bank_01, lib_u16 tile_bank_2, lib_u32 *out_pixels,
+    lib_size pixel_count)
+{
+    lib_status status;
+
+    if (video == LIB_NULL || video->graphics_images == LIB_NULL || out_pixels == LIB_NULL ||
+        pixel_count != MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    lib_memory_set(out_pixels, 0, MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*out_pixels));
+    status = myraidenii_core_video_layer_draw(video, 0u,
+        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+        (tile_bank_01 & 1u) << 1u, 0x400u, out_pixels);
+    if (status != LIB_STATUS_OK) return status;
+    status = myraidenii_core_video_layer_draw(video, 0x400u,
+        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+        1u | (tile_bank_01 & 2u), 0x600u, out_pixels);
+    if (status != LIB_STATUS_OK) return status;
+    status = myraidenii_core_video_layer_draw(video, 0x800u,
+        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+        4u | (tile_bank_2 >> 14u), 0x500u, out_pixels);
+    if (status != LIB_STATUS_OK) return status;
+    return myraidenii_core_video_layer_draw(video, 0xc00u,
+        MYRAIDENII_CORE_CHARACTER_WIDTH, MYRAIDENII_CORE_CHARACTER_HEIGHT,
+        0u, 0x700u, out_pixels);
+}

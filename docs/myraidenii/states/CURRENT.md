@@ -8,8 +8,24 @@ identical and therefore time-confounded. S39 found no qualifying original
 graphics contract. The owner has now explicitly admitted published MAME/other
 emulator implementation inspection as an L2 layout/behavior reference under
 the MyRaidenII source policy; Core now has a bounded L2 character/background
-decoder primitive, but no layer composition, sprite decryption or
-frame-publication path.
+decoder and initial four-tile-layer composition, but no sprite decryption,
+scroll/enable behavior or Machine frame-publication path.
+
+S42 is delivered for owner review: it consumes the owner-approved L2 tile-layout
+facts and adds a bounded four-layer native-frame composition path. Its evidence
+is [t4-s42-tile-composition-l2.md](../etc/evidence/t4-s42-tile-composition-l2.md).
+
+## Active Packet — M1 T4 S42
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S42 follows accepted S41 P2 `7fa6debcc`; one session performs coordinator and executor roles. |
+| Admission And Approval | Use the documented owner-approved MAME/other-emulator L2 source-reference path; independently implement only finite layout/composition facts. |
+| Objective | Compose the four non-sprite tile layers into a bounded native 320 by 240 RGB32 image from the existing Video image, tilemap, palette and Board bank latches. |
+| Non-goals | No sprite decryption/composition, CRTC scrolling/enable behavior, blending, rotation, Machine frame publication, external ROM data or Shared change. |
+| Files And ABI Surface | MyRaidenII Core video/graphics/Board-private route, the owning Core unit test, evidence and task records only. |
+| Verification | Synthetic ROM-free layer/transparent-pixel/bank/palette regressions on x64/x86; then the complete repository-only unit selections under the documented junction execution context. |
+| Exit Criteria | A complete synthetic four-layer image is deterministic and bounded; deferred controls and sprites are explicitly recorded rather than emulated by guesses. |
 
 ## Archived Packet — M1 T4 S41
 

@@ -23,7 +23,11 @@ enum {
     MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET =
         MYRAIDENII_CORE_VIDEO_SPRITES_3_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
     MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES =
-        MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES
+        MYRAIDENII_CORE_VIDEO_SPRITES_4_OFFSET + MYRAIDENII_CORE_SPRITE_IMAGE_BYTES,
+    MYRAIDENII_CORE_VIDEO_FRAME_WIDTH = 320u,
+    MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT = 240u,
+    MYRAIDENII_CORE_VIDEO_FRAME_PIXELS =
+        MYRAIDENII_CORE_VIDEO_FRAME_WIDTH * MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT
 };
 
 /* L2 raster: 8 MHz pixels, 512 pixels/line, 282 lines/frame and
@@ -73,5 +77,12 @@ lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *vid
     const lib_u8 *sprites_1, const lib_u8 *sprites_2, const lib_u8 *sprites_3,
     const lib_u8 *sprites_4);
 void myraidenii_core_video_graphics_images_release(myraidenii_core_video *video);
+
+/* L2 initial renderer: composes the four tile layers without CRTC scrolling,
+ * layer-enable, sprite, blending or rotation behavior. The caller owns the
+ * exactly-sized RGB32 destination. */
+lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
+    lib_u8 tile_bank_01, lib_u16 tile_bank_2, lib_u32 *out_pixels,
+    lib_size pixel_count);
 
 #endif
