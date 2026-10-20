@@ -181,7 +181,7 @@ static lib_i32 board_control_window(void)
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 unmodelled[] = {
-        0x400u,0x426u,0x470u,0x5ffu,0x600u,0x68eu,0x690u,0x698u,0x69bu,0x69eu,0x6cau,0x6ccu,0x762u,0x7ffu
+        0x400u,0x426u,0x470u,0x5ffu,0x600u,0x68eu,0x690u,0x691u,0x694u,0x698u,0x69bu,0x69eu,0x6cau,0x6ccu,0x762u,0x7ffu
     };
     const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -193,6 +193,7 @@ static lib_i32 board_control_window(void)
     const lib_u8 unused_write_guest[] = {0xb8u,1u,0u,0xa3u,0x3eu,4u,0xf4u};
     const lib_u8 unused_write_word_guest[] = {0xb8u,1u,0u,0xa3u,0xc8u,6u,0xf4u};
     const lib_u8 unused_write_696_guest[] = {0xb8u,1u,0u,0xa3u,0x96u,6u,0xf4u};
+    const lib_u8 unused_write_692_guest[] = {0xb8u,1u,0u,0xa3u,0x92u,6u,0xf4u};
     const lib_u8 unused_write_69c_guest[] = {0xb8u,1u,0u,0xa3u,0x9cu,6u,0xf4u};
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -266,6 +267,12 @@ static lib_i32 board_control_window(void)
         x86_core_machine_memory_write(machine, 0x697u, data, 2u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x696u, value, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x696u, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x692u, data, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x692u, data, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x693u, data, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x693u, data, 2u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x692u, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x692u, value, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x69cu, data, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x69cu, data, 2u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x69du, data, 1u) != LIB_STATUS_OK ||
@@ -287,6 +294,13 @@ static lib_i32 board_control_window(void)
     if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x800u, unused_write_696_guest,
             sizeof(unused_write_696_guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) !=
+            LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
+        goto done;
+    if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x800u, unused_write_692_guest,
+            sizeof(unused_write_692_guest)) != LIB_STATUS_OK ||
         x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
         x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) !=
             LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
