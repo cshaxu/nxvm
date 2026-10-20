@@ -6,7 +6,8 @@
 enum {
     MYRAIDENII_CORE_VIDEO_CRTC_BYTES = 0x50u,
     MYRAIDENII_CORE_VIDEO_CRTC_READABLE_BYTES = 0x40u,
-    MYRAIDENII_CORE_VIDEO_PALETTE_WORDS = 2048u
+    MYRAIDENII_CORE_VIDEO_PALETTE_WORDS = 2048u,
+    MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS = 0x1400u
 };
 
 /* L2 raster: 8 MHz pixels, 512 pixels/line, 282 lines/frame and
@@ -16,6 +17,7 @@ typedef struct myraidenii_core_video {
     lib_u16 sprite_flags;
     lib_u8 crtc_registers[MYRAIDENII_CORE_VIDEO_CRTC_BYTES];
     lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS];
+    lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS];
 } myraidenii_core_video;
 
 void myraidenii_core_video_reset(myraidenii_core_video *video);
@@ -38,6 +40,11 @@ lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,
  * palette image. Video owns the committed image and publishes no colour
  * interpretation until a later renderer contract exists. */
 lib_status myraidenii_core_video_palette_load(myraidenii_core_video *video,
+    const lib_u16 *words, lib_size word_count);
+
+/* The selected COP mode supplies exactly one complete raw tilemap image.
+ * Video retains it unchanged until a later tile decoder owns interpretation. */
+lib_status myraidenii_core_video_tilemap_load(myraidenii_core_video *video,
     const lib_u16 *words, lib_size word_count);
 
 #endif

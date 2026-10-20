@@ -2435,6 +2435,7 @@ static lib_i32 board_cop_dma_and_sort(void)
     const lib_u16 descending[] = {0x04u,0x18u,0x0cu,0x10u};
     const lib_i32 keys[] = {-1,5,5,0};
     lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS];
+    lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS];
     lib_u8 value[4] = {0u};
     myraidenii_core_cop_failure_observation failure = {0};
     lib_i32 failed = 1;
@@ -2475,6 +2476,36 @@ static lib_i32 board_cop_dma_and_sort(void)
         myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x4000u, actual, 64u) != LIB_STATUS_OK ||
         lib_memory_compare(actual, source, 64u) != 0)
+        goto done;
+
+    for (lib_size index = 0u; index < MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS; ++index)
+        tilemap[index] = (lib_u16)(index ^ 0x3c3cu);
+    if (x86_core_machine_memory_write(machine, 0x0cfc0u, (const lib_u8 *)tilemap,
+            sizeof(tilemap)) != LIB_STATUS_OK ||
+        board_cop_dma_context_write(machine, 0x014u, 0x033fu, 0x027bu, 0xfffeu) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x476u, 0u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        fixture.video.tilemap[0u] != tilemap[0u] ||
+        fixture.video.tilemap[1u] != tilemap[1u] ||
+        fixture.video.tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS - 1u] !=
+            tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS - 1u] ||
+        myraidenii_core_video_tilemap_load(&fixture.video, tilemap, 1u) !=
+            LIB_STATUS_INVALID_ARGUMENT || fixture.video.tilemap[1u] != tilemap[1u] ||
+        board_cop_dma_context_write(machine, 0x014u, 0x033fu, 0x027bu, 0u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK ||
+        fixture.video.tilemap[1u] != tilemap[1u] ||
+        board_cop_dma_context_write(machine, 0x014u, 0x033fu, 0x027bu, 0xfffeu) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x476u, 1u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK ||
+        fixture.video.tilemap[1u] != tilemap[1u] ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK || fixture.video.tilemap[0u] != 0u ||
+        fixture.video.tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS - 1u] != 0u)
         goto done;
 
     for (lib_size index = 0u; index < MYRAIDENII_CORE_VIDEO_PALETTE_WORDS; ++index)
