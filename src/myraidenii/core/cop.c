@@ -173,6 +173,9 @@ static lib_bool myraidenii_core_cop_dma_mode_supported(lib_u16 mode)
         (mode >= 0x118u && mode <= 0x11fu);
 }
 
+static void myraidenii_core_cop_note_failure(myraidenii_core_cop *cop,
+    lib_status status, lib_u32 physical);
+
 static void myraidenii_core_cop_pending_clear(myraidenii_core_cop *cop)
 {
     cop->pending = (myraidenii_core_cop_pending){0};
@@ -378,7 +381,14 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         if (range->role == MYRAIDENII_CORE_COP_DMA_TRIGGER) {
             const lib_u16 mode = myraidenii_core_cop_word(cop, 0x47eu);
 
-            if (!myraidenii_core_cop_dma_mode_supported(mode)) return LIB_STATUS_INVALID_STATE;
+            if (!myraidenii_core_cop_dma_mode_supported(mode)) {
+                if (!cop->failure.valid) {
+                    cop->failure.operation = MYRAIDENII_CORE_COP_OPERATION_DMA;
+                    cop->failure.operation_value = mode;
+                    myraidenii_core_cop_note_failure(cop, LIB_STATUS_INVALID_STATE, physical);
+                }
+                return LIB_STATUS_INVALID_STATE;
+            }
             cop->pending.kind = MYRAIDENII_CORE_COP_PENDING_DMA;
             cop->pending.mode = mode;
         } else {

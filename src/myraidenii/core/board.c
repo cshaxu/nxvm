@@ -5,7 +5,6 @@
 struct myraidenii_core_board {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
-    myraidenii_core_cop_failure_observation cop_failure;
     myraidenii_core_board_control_failure_observation control_failure;
     myraidenii_core_video video;
     lib_u8 *program;
@@ -657,7 +656,6 @@ static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 du
     lib_status status = myraidenii_core_cop_advance(board->cop);
 
     if (status != LIB_STATUS_OK) {
-        (void)myraidenii_core_cop_failure_get(board->cop, &board->cop_failure);
         (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
     }
 }
@@ -803,7 +801,6 @@ static void myraidenii_core_board_reset(void *owner)
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
-        lib_memory_set(&board->cop_failure, 0, sizeof(board->cop_failure));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
         myraidenii_core_cop_reset(board->cop);
         myraidenii_core_video_reset(&board->video);
@@ -1048,8 +1045,7 @@ lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *bo
     myraidenii_core_cop_failure_observation *out_observation)
 {
     if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_observation = board->cop_failure;
-    return LIB_STATUS_OK;
+    return myraidenii_core_cop_failure_get(board->cop, out_observation);
 }
 
 lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board *board,

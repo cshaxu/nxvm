@@ -28,6 +28,28 @@ M1 T4 remains open after accepted S18:
 | S20 | Selected-set-observed tile-bank-01 latch at `0x6cc` plus adjacent `0x6cd` no-op. | P1 `229b564bb`; P3 `8ad61e876` corrects the overwide latch. x64/x86 Board smoke passes, both selected-set probes advance to `0x6c4`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s20-tile-bank-01-l2.md). |
 | S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 `448691874`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6c0`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s21-sprite-protection-constant-l2.md). |
 | S22 | Bounded sprite-protection register group at `0x6c0--0x6c3` and `0x6c6--0x6c7`. | P1 `6d0246f46`; x64/x86 Board smokes and selected-set probes pass; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s22-sprite-protection-registers-l2.md). |
+| S23 | Attribute the selected-set's rejected COP DMA trigger before considering any new DMA mode. | P1 pending. |
+
+## Active Packet — M1 T4 S23
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S23 follows accepted S22 P2 `c39d84c04`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's standing approval permits bounded diagnostic and L2 work under the MyRaidenII source policy. The source policy still forbids importing code, tables, algorithms or protected media. |
+| Objective | Record the existing COP DMA trigger rejection through the existing bounded failure observation, including its raw mode, so the selected-set probe can attribute `0x6fc` without guessing a receiver. |
+| Non-goals | No DMA mode acceptance, Video/Palette implementation, new public API, new failure type, generic trace system, Shared change, ROM inspection, or playable-game claim. |
+| Reference Baseline | S22's x64/x86 probe reaches a terminal CPU fault at `0x6fc`; `cop.c` already identifies that exact pair as the DMA trigger and rejects unsupported raw modes. The existing failure summary only records failures after an accepted pending operation. |
+| Candidate Proposal | Reuse the existing private COP failure observation: before returning the existing invalid-state result for an unsupported DMA mode, fill its existing operation/value/physical/status fields once. Remove Board's redundant snapshot so its existing getter reads the COP owner directly. Existing reset clears it; the probe already prints the existing status fields. |
+| Files And ABI Surface | MyRaidenII `core/cop.c`, `core/board.c`, existing Board smoke, selected-set probe, CURRENT and one evidence record. No Shared component, public interface, product, ROM, asset or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. Attribution is not a DMA implementation or a hardware-accuracy claim. |
+| Verification | Focused x64/x86 Board test; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Unsupported mode leaves no pending operation, yields existing invalid-state behavior, records only existing bounded fields, clears on reset and produces identical x64/x86 probe attribution. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient startup staging only, with no retained payload or raw trace. |
+| Reporting Requirements | Record the raw mode, source boundary, unchanged refusal behavior, next ownership decision and remaining non-goals. |
+| Stop Conditions | The selected trigger is not the documented DMA trigger, the diagnostic requires a new public/shared contract, host widths diverge, protected-data exposure, or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded attribution fails. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Check every existing early DMA-trigger refusal, accepted DMA failure, pending-state guard and reset path so attribution does not overwrite an earlier failure or change acceptance. |
 
 ## Active Packet — M1 T4 S22
 
