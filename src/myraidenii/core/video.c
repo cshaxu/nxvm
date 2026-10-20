@@ -1,5 +1,6 @@
 #include "myraidenii/core/video.h"
 #include "myraidenii/core/graphics.h"
+#include "myraidenii/core/sprite_interface.h"
 
 enum {
     MYRAIDENII_CORE_VIDEO_LINE_TICKS = 512u * 2u,
@@ -254,17 +255,101 @@ static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *
     return LIB_STATUS_OK;
 }
 
+static lib_bool myraidenii_core_video_sprite_entry_is_empty(const lib_u8 *source)
+{
+    lib_u8 value = 0u;
+    lib_u8 index;
+
+    for (index = 0u; index < MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES; ++index) {
+        value |= source[index];
+    }
+    return value == 0u ? LIB_TRUE : LIB_FALSE;
+}
+
+static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video *video,
+    const lib_u8 *sprite_bytes, lib_u8 priority, lib_u32 *pixels)
+{
+    lib_size descriptor_offset;
+
+    for (descriptor_offset = 0u; descriptor_offset < MYRAIDENII_CORE_SPRITE_BUFFER_BYTES;
+            descriptor_offset += MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES) {
+        myraidenii_core_sprite_descriptor descriptor;
+        lib_status status = myraidenii_core_sprite_descriptor_decode(sprite_bytes +
+            descriptor_offset, MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES, &descriptor);
+        lib_u8 tile_y;
+
+        if (status != LIB_STATUS_OK) return status;
+        if (myraidenii_core_video_sprite_entry_is_empty(sprite_bytes + descriptor_offset))
+            continue;
+        if (descriptor.priority != priority) continue;
+        for (tile_y = 0u; tile_y < descriptor.height_tiles; ++tile_y) {
+            lib_u8 tile_x;
+
+            for (tile_x = 0u; tile_x < descriptor.width_tiles; ++tile_x) {
+                lib_u8 source_tile_x = descriptor.flip_x ?
+                    descriptor.width_tiles - 1u - tile_x : tile_x;
+                lib_u8 source_tile_y = descriptor.flip_y ?
+                    descriptor.height_tiles - 1u - tile_y : tile_y;
+                lib_u32 tile = descriptor.tile_index +
+                    (lib_u32)source_tile_y * descriptor.width_tiles + source_tile_x;
+                lib_u8 pixel_y;
+
+                for (pixel_y = 0u; pixel_y < MYRAIDENII_CORE_SPRITE_HEIGHT; ++pixel_y) {
+                    lib_i32 y = (lib_i32)descriptor.y +
+                        (lib_i32)tile_y * MYRAIDENII_CORE_SPRITE_HEIGHT + pixel_y;
+                    lib_u8 source_y = descriptor.flip_y ?
+                        MYRAIDENII_CORE_SPRITE_HEIGHT - 1u - pixel_y : pixel_y;
+                    lib_u8 pixel_x;
+
+                    if (y < 0 || y >= MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT) continue;
+                    for (pixel_x = 0u; pixel_x < MYRAIDENII_CORE_SPRITE_WIDTH; ++pixel_x) {
+                        lib_i32 x = (lib_i32)descriptor.x +
+                            (lib_i32)tile_x * MYRAIDENII_CORE_SPRITE_WIDTH + pixel_x;
+                        lib_u8 source_x = descriptor.flip_x ?
+                            MYRAIDENII_CORE_SPRITE_WIDTH - 1u - pixel_x : pixel_x;
+                        lib_u8 pixel;
+
+                        if (x < 0 || x >= MYRAIDENII_CORE_VIDEO_FRAME_WIDTH) continue;
+                        status = myraidenii_core_graphics_sprite_pixel(video->graphics_images +
+                            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET, tile,
+                            source_x, source_y, &pixel);
+                        if (status != LIB_STATUS_OK) return status;
+                        if (pixel != 15u) {
+                            status = myraidenii_core_video_palette_color(video,
+                                (lib_u16)(descriptor.color_index * 16u + pixel),
+                                &pixels[(lib_size)y * MYRAIDENII_CORE_VIDEO_FRAME_WIDTH + x]);
+                            if (status != LIB_STATUS_OK) return status;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
 lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
-    lib_u8 tile_bank_01, lib_u16 tile_bank_2, lib_u32 *out_pixels,
+    lib_u8 tile_bank_01, lib_u16 tile_bank_2,
+    const myraidenii_core_sprite_buffer *sprite_buffer, lib_u32 *out_pixels,
     lib_size pixel_count)
 {
+    lib_u8 sprite_bytes[MYRAIDENII_CORE_SPRITE_BUFFER_BYTES];
     lib_status status;
 
     if (video == LIB_NULL || video->graphics_images == LIB_NULL || out_pixels == LIB_NULL ||
         pixel_count != MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    if (sprite_buffer != LIB_NULL) {
+        status = myraidenii_core_sprite_buffer_latched_copy(sprite_buffer, 0u,
+            sprite_bytes, sizeof(sprite_bytes));
+        if (status != LIB_STATUS_OK) return status;
+    }
     lib_memory_set(out_pixels, 0, MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*out_pixels));
+    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
+        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 0u, out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (myraidenii_core_video_layer_is_enabled(video, 0u)) {
         status = myraidenii_core_video_layer_draw(video, 0u,
             MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
@@ -273,6 +358,10 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
                 MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_X_OFFSET),
             myraidenii_core_video_crtc_word(video,
                 MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_Y_OFFSET), out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
+        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 1u, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
     if (myraidenii_core_video_layer_is_enabled(video, 1u)) {
@@ -285,6 +374,10 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
                 MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_Y_OFFSET), out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
+    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
+        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 2u, out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (myraidenii_core_video_layer_is_enabled(video, 2u)) {
         status = myraidenii_core_video_layer_draw(video, 0x400u,
             MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
@@ -293,6 +386,10 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
                 MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_X_OFFSET),
             myraidenii_core_video_crtc_word(video,
                 MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_Y_OFFSET), out_pixels);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
+        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 3u, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
     if (!myraidenii_core_video_layer_is_enabled(video, 3u)) return LIB_STATUS_OK;

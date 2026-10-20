@@ -2,10 +2,30 @@
 
 ## Current Work
 
-M1 T4 remains open. S47 delivers one Core-owned L2 decrypt owner for the
-selected Raiden II sprite stream and a bounded packed-pixel reader. The later
-sprite compositor, priority behavior and runnable Product/Machine remain
-separate work; there is no MyRaidenII executable yet.
+M1 T4 remains open. S48 is active: it consumes the now-decoded private sprite
+stream and the existing latched object RAM in the sole Video compositor. No
+Product/Machine executable exists yet.
+
+## Active Packet — M1 T4 S48
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S48 follows accepted S47 P1 `0cd527357`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs continued MyRaidenII implementation using external mature emulator behavior as explicit L2, without recurring L3 back-and-forth. Existing source policy permits independently written behavior derived from the inspected reference. |
+| Objective | Add one Video-owned compositor path that copies only latched Sprite Buffer entries, decodes existing copied descriptors and already-decoded pixels, and merges their non-transparent RGB32 output at the selected five priority phases. |
+| Non-goals | No MAME source import/transliteration, ROM/media payload, sprite-protection emulation, blend/shadow behavior, tile extension/banking interpretation beyond the existing copied descriptor, board-map change, Machine/Product work, Shared change or physical-hardware claim. |
+| Reference Baseline | S45 owns live/latched object RAM, S46 owns the eight-byte descriptor and S47 owns one decrypted packed sprite stream. Existing Video owns the only RGB32 tile compositor; Board owns the only frame API. |
+| Candidate Proposal | Video receives the opaque Sprite Buffer only for `frame_copy`, reads one copied eight-byte latched entry at a time through its existing bounded API, and paints decoded 16-by-16 tiles in descriptor order. Four descriptor priorities are inserted before background, between Background/Midground/Foreground, and before Text; pen 15 stays transparent and Sprite palette groups use the existing 0x000 palette region. |
+| Files And ABI Surface | `src/myraidenii/core/{video.c,video.h,board.c}` and focused Core unit tests/evidence/Current only. Core-local `video_frame_copy` gains an opaque read-only Sprite Buffer input; Board adapts its existing owned buffer. Lib, Emulator, other X86, Machine, Product and App code stay unchanged. |
+| Applicable Rules | MyRaidenII guide; architecture, coding, documentation, execution and source-policy rules. Video is the sole pixel/composition owner; Sprite Buffer remains the sole mutable/latched RAM owner; Board remains the sole composition/API root. |
+| Verification | Add synthetic tests for latched-not-live source, descriptor tile extent and flips, transparent pen, palette group, priority phases, clipping and error preservation. Run focused x64/x86 Core tests, cached complete MyRaidenII selection and repository units, documentation governance and `git diff --check`. No protected ROM or desktop result is claimed. |
+| Expected Markers | A live post-latch mutation cannot alter the copied frame; all four priority values have one defined phase; out-of-frame tiles clip; invalid Sprite Buffer reads fail without publishing a partial destination; existing tile-only frame remains unchanged. |
+| Asset Needs | Read-only inspected MAME behavior/reference facts only. No ROM, PAL, media, screenshot, trace or external generated data enters the repository. |
+| Reporting Requirements | Record the L2 facts, single retained compositor path, interface delta, source/test/doc line totals, verification by width and deferred blend/bank/protection/real-game work. |
+| Stop Conditions | A required unresolved bank/extension, blend/shadow algorithm, protected payload, Shared contract, second render path or Board/Machine/Product expansion transfers to a later packet rather than being guessed. |
+| Exit Criteria | One Video path consumes only the Sprite Buffer snapshot and existing Graphics/Palette owners; synthetic tests reject wrong phase, live-RAM use, pen visibility, flip/clip and partial publication; named verification passes. |
+| Original Owner Request | Use external implementations as L2 evidence and proceed toward a running Raiden II without treating unavailable physical documentation as a repeated blocker. |
+| Similar-Issue Sweep | Inspect all frame callers, descriptor consumers, sprite-buffer reads, tile palette bases, output/error paths and any duplicated object-pixel paths. |
 
 ## Archived Packet — M1 T4 S47
 

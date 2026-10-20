@@ -3,6 +3,7 @@
 
 #include "lib/types/types_interface.h"
 #include "myraidenii/core/graphics_interface.h"
+#include "myraidenii/core/sprite_buffer_interface.h"
 
 enum {
     MYRAIDENII_CORE_VIDEO_CRTC_BYTES = 0x50u,
@@ -84,12 +85,13 @@ lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *vid
     const lib_u8 *sprites_4);
 void myraidenii_core_video_graphics_images_release(myraidenii_core_video *video);
 
-/* L2 renderer: composes four tile layers with CRTC active-low layer enables
- * and Background/Midground/Foreground scroll. Sprite, base-scroll, text
- * scroll, blending and rotation behavior remain unmodeled. The caller owns
- * the exactly-sized RGB32 destination. */
+/* L2 renderer: composes active-low CRTC tile layers and the optional latched
+ * sprite source. The Sprite Buffer remains the only object-RAM owner; NULL
+ * selects the existing tile-only Core test path. The caller owns the
+ * exactly-sized RGB32 destination. */
 lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
-    lib_u8 tile_bank_01, lib_u16 tile_bank_2, lib_u32 *out_pixels,
+    lib_u8 tile_bank_01, lib_u16 tile_bank_2,
+    const myraidenii_core_sprite_buffer *sprite_buffer, lib_u32 *out_pixels,
     lib_size pixel_count);
 
 #endif

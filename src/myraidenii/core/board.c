@@ -1310,7 +1310,7 @@ lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
 {
     if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     return myraidenii_core_video_frame_copy(&board->video, board->tile_bank_01,
-        board->tile_bank_2, out_pixels, pixel_count);
+        board->tile_bank_2, board->sprite_buffer, out_pixels, pixel_count);
 }
 
 lib_status myraidenii_core_board_sound_command_get(const myraidenii_core_board *board,
