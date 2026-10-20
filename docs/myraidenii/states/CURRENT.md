@@ -2,13 +2,13 @@
 
 ## Current Work
 
-M1 T4 remains open. M1 T4 S36 is active: the owner-approved external PAL
-inputs make current MAME execution available, so this S obtains only neutral
-screen dimensions and a reproducible checksum from an ephemeral black-box Lua
-probe. Core still has only copied fixed-role graphics ingress and a bounded L2
-RGB555 lookup; graphics decode, composition and frame publication remain open.
+M1 T4 remains open after accepted S36. The owner-approved external PAL inputs
+make current MAME execution available, and a neutral black-box Lua probe now
+establishes a repeatable 320×240 checkpoint. Core still has only copied
+fixed-role graphics ingress and a bounded L2 RGB555 lookup; graphics decode,
+composition and frame publication remain open.
 
-## Active Packet — M1 T4 S36
+## Archived Packet — M1 T4 S36
 
 | Field | Required record |
 | --- | --- |
@@ -167,6 +167,7 @@ RGB555 lookup; graphics decode, composition and frame publication remain open.
 | S33 | Recorded the current-MAME verifier limitation without source import or retained media output. | P1 `9b179c83d`; current MAME rejects the supplied archive for PAL blobs. [Evidence](../etc/evidence/t4-s33-black-box-oracle-disposition.md). |
 | S34 | Corrected the black-box baseline with historical official MAME; no PAL/ROM was acquired. | P1 `c895eaca0`; the bounded historical run executes the supplied archive with the absent PAL marked no-good-dump. [Evidence](../etc/evidence/t4-s34-historical-mame-oracle.md). |
 | S35 | Connected owner-approved external PAL BYOB inputs to current-MAME verification. | P1 `2ea80ac66`; both hashes match and current MAME verifies/runs the combined inputs. [Evidence](../etc/evidence/t4-s35-external-pal-byob.md). |
+| S36 | Established a repeatable, neutral current-MAME screen checkpoint. | P1 `ded2d0a81`; two bounded runs agree on 320×240 at frame 600 without retained pixel output. [Evidence](../etc/evidence/t4-s36-mame-screen-checkpoint.md). |
 
 ## Archived Packet — M1 T4 S30
 
