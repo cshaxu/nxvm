@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S23:
+M1 T4 remains open after accepted S24:
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ M1 T4 remains open after accepted S23:
 | S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 `448691874`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6c0`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s21-sprite-protection-constant-l2.md). |
 | S22 | Bounded sprite-protection register group at `0x6c0--0x6c3` and `0x6c6--0x6c7`. | P1 `6d0246f46`; x64/x86 Board smokes and selected-set probes pass; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s22-sprite-protection-registers-l2.md). |
 | S23 | Attribute the selected-set's rejected COP DMA trigger before considering any new DMA mode. | P1 `bcbaeeeac`; x64/x86 probes identify rejected raw mode `0x0015` at `0x6fc`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s23-cop-dma-trigger-attribution.md). |
-| S24 | Record the selected DMA context in the existing COP failure observation. | P1 pending. |
+| S24 | Record the selected DMA context in the existing COP failure observation. | P1 `bf3e3f396`; x64/x86 probes identify source `0x07c0`, size `0x00ff` and destination `0x0000` for rejected mode `0x0015`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s24-cop-dma-context-attribution.md). |
 
 ## Active Packet — M1 T4 S23
 
@@ -80,6 +80,14 @@ claim changed.
 | Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer if bounded observation cannot be made. |
 | Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
 | Similar-Issue Sweep | Check each existing DMA-trigger refusal, reset, accepted DMA advance failure and Board diagnostic getter so one first-failure owner remains. |
+
+S24 is closed. The existing COP-owned failure record now supplies the selected
+DMA context at an immediate rejection without creating bus readback or a second
+diagnostic path. Both owner-set probes agree on mode `0x0015`, source `0x07c0`,
+size `0x00ff` and destination `0x0000`; those values do not establish palette
+semantics or authorize DMA acceptance. The complete x64/x86 unit qualification
+passes 642/642 per width. No Shared component, product artifact, ROM/media
+payload or playable-game claim changed.
 
 ## Active Packet — M1 T4 S22
 
