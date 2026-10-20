@@ -496,6 +496,10 @@ static lib_i32 board_sprite_protection_latches(void)
     const lib_u8 offset[2] = {0x34u,0x12u};
     const lib_u8 source[2] = {0x78u,0x56u};
     const lib_u8 destination[2] = {0xbcu,0x9au};
+    const lib_u8 sprite_x[2] = {0x21u,0x43u};
+    const lib_u8 sprite_y[2] = {0x65u,0x87u};
+    const lib_u8 sprite_max_x[2] = {0xa9u,0xcbu};
+    const lib_u8 sprite_source[2] = {0xedu,0x0fu};
     const lib_u8 high = 0xabu;
     lib_u8 actual[2] = {0u,0u};
     lib_i32 failed = 1;
@@ -514,10 +518,28 @@ static lib_i32 board_sprite_protection_latches(void)
             LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6c6u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x6c7u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6d8u, sprite_x, sizeof(sprite_x)) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6dau, sprite_y, sizeof(sprite_y)) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6dcu, sprite_max_x,
+            sizeof(sprite_max_x)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6dcu, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        actual[0] != sprite_max_x[0] || actual[1] != sprite_max_x[1] ||
+        x86_core_machine_memory_inspect(machine, 0x6ddu, actual, 1u) != LIB_STATUS_OK ||
+        actual[0] != sprite_max_x[1] ||
+        x86_core_machine_memory_write(machine, 0x6deu, sprite_source,
+            sizeof(sprite_source)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6d8u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6dbu, actual, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x6deu, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6c0u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u ||
         x86_core_machine_memory_read(machine, 0x6c2u, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        actual[0] != 0u || actual[1] != 0u ||
+        x86_core_machine_memory_read(machine, 0x6dcu, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u) {
         goto done;
     }

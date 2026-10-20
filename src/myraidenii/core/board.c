@@ -17,6 +17,10 @@ struct myraidenii_core_board {
     lib_u16 sprite_protection_offset;
     lib_u16 sprite_protection_source_segment;
     lib_u16 sprite_protection_destination;
+    lib_u16 sprite_protection_x;
+    lib_u16 sprite_protection_y;
+    lib_u16 sprite_protection_max_x;
+    lib_u16 sprite_protection_source;
     lib_u8 sound_command_pending;
     lib_u8 sound_interrupt_pending;
     lib_u16 tile_bank_2;
@@ -35,6 +39,12 @@ enum {
     MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_START = 0x6c2u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_START = 0x6c6u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES = 2u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_X_START = 0x6d8u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_Y_START = 0x6dau,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_MAX_X_START = 0x6dcu,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_LATCH_START = 0x6deu,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_START = 0x6d8u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_BYTES = 8u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START = 0x6c8u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES = 2u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_06CA = 0x6cau,
@@ -321,6 +331,14 @@ static lib_bool myraidenii_core_board_tile_bank_01_overlaps(lib_u32 physical,
         MYRAIDENII_CORE_TILE_BANK_01_ADDRESS;
 }
 
+static lib_bool myraidenii_core_board_sprite_protection_window_overlaps(
+    lib_u32 physical, lib_uptr bytes)
+{
+    return bytes != 0u && physical < MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_START +
+        MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_BYTES && (lib_u64)physical + bytes >
+        MYRAIDENII_CORE_SPRITE_PROTECTION_WINDOW_START;
+}
+
 static lib_status myraidenii_core_board_tile_bank_01_query(void *owner,
     lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
 {
@@ -405,6 +423,22 @@ static lib_status myraidenii_core_board_sprite_protection_latch_get(
         *out_value = &board->sprite_protection_destination;
         *out_readable = LIB_FALSE;
         return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_X_START:
+        *out_value = &board->sprite_protection_x;
+        *out_readable = LIB_FALSE;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_Y_START:
+        *out_value = &board->sprite_protection_y;
+        *out_readable = LIB_FALSE;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_MAX_X_START:
+        *out_value = &board->sprite_protection_max_x;
+        *out_readable = LIB_TRUE;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_LATCH_START:
+        *out_value = &board->sprite_protection_source;
+        *out_readable = LIB_FALSE;
+        return LIB_STATUS_OK;
     default:
         return LIB_STATUS_UNSUPPORTED;
     }
@@ -487,6 +521,7 @@ static lib_status myraidenii_core_board_sprite_object_query(void *owner,
         MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES, physical, bytes) &&
         !myraidenii_core_board_selected_control_write_noop_covers(physical, bytes) &&
         !myraidenii_core_board_tile_bank_01_overlaps(physical, bytes) &&
+        !myraidenii_core_board_sprite_protection_window_overlaps(physical, bytes) &&
         (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
          access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
@@ -796,6 +831,10 @@ static void myraidenii_core_board_reset(void *owner)
         board->sprite_protection_offset = 0u;
         board->sprite_protection_source_segment = 0u;
         board->sprite_protection_destination = 0u;
+        board->sprite_protection_x = 0u;
+        board->sprite_protection_y = 0u;
+        board->sprite_protection_max_x = 0u;
+        board->sprite_protection_source = 0u;
         board->sound_command_pending = LIB_FALSE;
         board->sound_interrupt_pending = LIB_FALSE;
         board->tile_bank_2 = 0u;
@@ -887,7 +926,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[26] = {
+    x86_core_machine_memory_device_route routes[30] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -925,6 +964,22 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .callbacks = sprite_protection_latch_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_DESTINATION_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_X_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_Y_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_MAX_X_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
+            .callbacks = sprite_protection_latch_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_LATCH_START,
             .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_LATCH_BYTES,
             .callbacks = sprite_protection_latch_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
