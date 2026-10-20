@@ -126,7 +126,7 @@ static lib_i32 board_video_graphics_images(void)
     lib_i32 failed = 1;
 
     if (source == LIB_NULL) return 1;
-    pixels = lib_allocate(MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*pixels));
+    pixels = lib_allocate(MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS * sizeof(*pixels));
     if (pixels == LIB_NULL) goto done;
     lib_memory_set(source, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     source[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x11u;
@@ -177,7 +177,7 @@ static lib_i32 board_video_graphics_images(void)
     if (video.graphics_images != LIB_NULL) goto done;
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
         myraidenii_core_board_frame_copy(board, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK) {
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK) {
         goto done;
     }
     myraidenii_core_board_destroy(board);

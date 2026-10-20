@@ -169,14 +169,14 @@ int main(int argument_count, char **arguments)
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
-        pixels = lib_allocate(MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*pixels));
+        pixels = lib_allocate(MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS * sizeof(*pixels));
         if (pixels == LIB_NULL) status = LIB_STATUS_NO_MEMORY;
         if (status == LIB_STATUS_OK || terminal_fault) {
             status = myraidenii_core_board_frame_copy(board, pixels,
-                MYRAIDENII_CORE_VIDEO_FRAME_PIXELS);
+                MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS);
             if (status == LIB_STATUS_OK)
                 myraidenii_startup_frame_observe(pixels,
-                    MYRAIDENII_CORE_VIDEO_FRAME_PIXELS, &frame_digest, &nonblack_pixels);
+                    MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS, &frame_digest, &nonblack_pixels);
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
@@ -218,8 +218,8 @@ int main(int argument_count, char **arguments)
             (lib_u32)control_failure.valid, control_failure.physical,
             (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,
             (unsigned long long)(MYRAIDENII_STARTUP_INSTRUCTION_BUDGET - remaining),
-            (unsigned long long)result.elapsed_ticks, MYRAIDENII_CORE_VIDEO_FRAME_WIDTH,
-            MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT, (unsigned long long)nonblack_pixels,
+            (unsigned long long)result.elapsed_ticks, MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH,
+            MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT, (unsigned long long)nonblack_pixels,
             (unsigned long long)frame_digest, pcm_frames,
             (unsigned long long)dropped_pcm_frames,
             (unsigned long long)nonzero_pcm_frames, (unsigned long long)pcm_digest);

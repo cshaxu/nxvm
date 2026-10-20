@@ -12,9 +12,10 @@ docs/myraidenii/{design,states,proposals,history,etc}/
 
 Create subdirectories only with real cohesive code, not empty future chips or
 CMake stubs. M1 T3 owns `src/myraidenii/core/` and its corresponding
-`test/myraidenii/unit/core/` Board route unit. M1 T5 S10 adds the first real
-Machine unit: the sole Board-to-Lib PCM bridge. Product and the Emulator driver
-remain unimplemented. Unit tests mirror actual source owners below
+`test/myraidenii/unit/core/` Board route unit. M1 T5 adds the first real
+Machine units: the Board-to-Lib PCM bridge and one Emulator driver foundation.
+Product composition, configuration and controls remain unimplemented. Unit
+tests mirror actual source owners below
 `unit/{product,machine,core}`. Setup holds
 only real shared integration/diagnostic harnesses; diagnostics are opt-in and
 are never silently counted as integration. External game tests are integration,

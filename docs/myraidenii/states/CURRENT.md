@@ -101,6 +101,27 @@ playable-game qualification is claimed. The later Machine driver must bind this
 adapter as the sole live Board-to-Lib route. S10 is closed; M1 T5 remains open
 for that driver and genuine real-command-path qualification.
 
+## Active Packet — M1 T5 S11
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S11 follows accepted S10 P1 `80ac9c652`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner continues MyRaidenII implementation and has approved the existing Machine/Lib delivery seam. This packet consumes only the lower driver foundation: no Shared API change, ROM import, App Product, input policy, configuration grammar or release artifact is authorized. |
+| Objective | Turn the existing Board, RGB32 frame copy and Machine PCM bridge into one MyRaidenII-owned `emulator_machine_driver` adapter, with bounded Core work and ordinary reset/stop/wake/heartbeat/teardown ownership. |
+| Non-goals | No Product/Session/UI composition, INI or ROM loader, controls mapping, Debug/snapshot/media support, new guest clock, worker, renderer, Shared edit, real game run, desktop assertion or playable claim. |
+| Reference Baseline | Core Board owns the sole V30 executor, copied RGB32 frame and PCM output. Emulator Machine owns the worker/control queue and requires one callback driver. S10 owns the only existing Board-to-Lib PCM adapter. |
+| Candidate Proposal | Add one opaque MyRaidenII Machine driver that borrows a constructed Board, owns one Lib PCM stream plus S10 bridge, runs the Board's existing `x86_core_machine` in a fixed host-control quantum, copies complete Board RGB32 frames into the granted Emulator frame, and uses Lib's existing cancelable writable wait for both stop and ordinary control wake. The output geometry moves from Core-private Video to the public Graphics output contract because Machine must name the exact Board result without depending on a private header. |
+| Files And ABI Surface | Expected `src/myraidenii/machine/`, the Core-local `graphics_interface.h`/`video.h` output-geometry ownership move, matching `test/myraidenii/unit/{machine,core}` and integration consumers, MyRaidenII CMake, CURRENT/evidence and manifests if present. The Machine-private public interface may add create/destroy and driver-descriptor access. No Lib, Emulator, Product or other-App interface changes. |
+| Applicable Rules | MyRaidenII README, Architecture, Coding, source policy, UI, Execution and Documentation; Machine is the only Core-to-Emulator adaptation owner, has no private guest clock, and may not add a second worker, output path or PC/App dependency. L3 requires an inspected manual PDF fact; reference-only behavior is L2; local control mechanics are L1. |
+| Verification | Build the new Machine target and its actual-route unit on cached x64/x86 Ninja trees; run complete MyRaidenII repository-only units per width, documentation governance and whitespace checks. Native endpoint and desktop runs are separately reported, never inferred. |
+| Expected Markers | One driver descriptor meets Emulator's mandatory callback contract; reset/run/stop use only the Board's existing Core executor; heartbeat owns existing stream activation/clear behavior; a cancelable audio wait releases for a normal wake as well as stop; one successful frame copy has RGB32 geometry and no retained granted frame pointer; no direct Core-to-UI or Core-to-Lib call bypasses Machine. |
+| Asset Needs | None. External ROM/PAL/media remain unopened and unmodified. Task logs use a disposable declared build directory and are removed after evidence capture. |
+| Reporting Requirements | Record exact source/test delta, ownership and teardown order, the host-control quantum as L1, every L3/L2 fact if any, dual-width result and all unperformed endpoint/product/ROM verification. |
+| Stop Conditions | Need for a Shared contract change, control mapping evidence, ROM/config loader, second timing owner, direct imported source/table, retained protected asset, or desktop/audio fidelity claim stops and transfers the gap. |
+| Exit Criteria | One MyRaidenII Machine driver compiles and is proven through actual registered callbacks to execute/reset/stop/wake, drain the existing bridge and copy a complete RGB32 frame without an extra owner or route. It makes no Product, external-ROM, controls, desktop, audible-output or playable-game claim. |
+| Original Owner Request | Continue MyRaidenII implementation with only directly inspected manual rules as L3, external/reference evidence as L2, and unsupported local mechanisms as L1. |
+| Similar-Issue Sweep | Inspect all existing MyRaidenII Board output consumers and all Emulator driver callbacks for duplicate execution loops, second PCM/frame routes, retained frame pointers, unbounded stop/wake handling, host-clock guest-time creation or reverse dependencies. |
+
 ## Archived Packet — M1 T5 S6
 
 | Field | Required record |

@@ -3,9 +3,14 @@
 
 #include "lib/types/types_interface.h"
 
-/* Immutable selected-set graphics role sizes. They describe host-provided
- * image inputs, not a decoded tile, sprite, palette or frame format. */
+/* Immutable selected-set graphics role sizes and the complete RGB32 Board
+ * output geometry. They do not describe a decoded tile or palette format. */
 enum {
+    /* Complete RGB32 Board output geometry for Machine frame adaptation. */
+    MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH = 320u,
+    MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT = 240u,
+    MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS =
+        MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH * MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT,
     MYRAIDENII_CORE_CHARACTER_IMAGE_BYTES = 0x20000u,
     MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES = 0x200000u,
     MYRAIDENII_CORE_SPRITE_IMAGE_BYTES = 0x200000u,

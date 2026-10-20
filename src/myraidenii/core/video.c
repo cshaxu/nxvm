@@ -233,10 +233,10 @@ static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *
 {
     lib_u16 y;
 
-    for (y = 0u; y < MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT; ++y) {
+    for (y = 0u; y < MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT; ++y) {
         lib_u16 x;
 
-        for (x = 0u; x < MYRAIDENII_CORE_VIDEO_FRAME_WIDTH; ++x) {
+        for (x = 0u; x < MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH; ++x) {
             lib_u32 color;
             lib_bool visible;
             lib_status status;
@@ -248,7 +248,7 @@ static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *
                 &color, &visible);
             if (status != LIB_STATUS_OK) return status;
             if (visible) {
-                pixels[(lib_size)y * MYRAIDENII_CORE_VIDEO_FRAME_WIDTH + x] = color;
+                pixels[(lib_size)y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x] = color;
             }
         }
     }
@@ -307,7 +307,7 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
                         MYRAIDENII_CORE_SPRITE_HEIGHT - 1u - pixel_y : pixel_y;
                     lib_u8 pixel_x;
 
-                    if (y < 0 || y >= MYRAIDENII_CORE_VIDEO_FRAME_HEIGHT) continue;
+                    if (y < 0 || y >= MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT) continue;
                     for (pixel_x = 0u; pixel_x < MYRAIDENII_CORE_SPRITE_WIDTH; ++pixel_x) {
                         lib_i32 x = (lib_i32)descriptor.x +
                             (lib_i32)tile_x * MYRAIDENII_CORE_SPRITE_WIDTH + pixel_x;
@@ -315,7 +315,7 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
                             MYRAIDENII_CORE_SPRITE_WIDTH - 1u - pixel_x : pixel_x;
                         lib_u8 pixel;
 
-                        if (x < 0 || x >= MYRAIDENII_CORE_VIDEO_FRAME_WIDTH) continue;
+                        if (x < 0 || x >= MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH) continue;
                         status = myraidenii_core_graphics_sprite_pixel(video->graphics_images +
                             MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET, tile,
                             source_x, source_y, &pixel);
@@ -323,7 +323,7 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
                         if (pixel != 15u) {
                             status = myraidenii_core_video_palette_color(video,
                                 (lib_u16)(descriptor.color_index * 16u + pixel),
-                                &pixels[(lib_size)y * MYRAIDENII_CORE_VIDEO_FRAME_WIDTH + x]);
+                                &pixels[(lib_size)y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x]);
                             if (status != LIB_STATUS_OK) return status;
                         }
                     }
@@ -343,7 +343,7 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
     lib_status status;
 
     if (video == LIB_NULL || video->graphics_images == LIB_NULL || out_pixels == LIB_NULL ||
-        pixel_count != MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) {
+        pixel_count != MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (sprite_buffer != LIB_NULL) {
@@ -351,7 +351,7 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
             sprite_bytes, sizeof(sprite_bytes));
         if (status != LIB_STATUS_OK) return status;
     }
-    lib_memory_set(out_pixels, 0, MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*out_pixels));
+    lib_memory_set(out_pixels, 0, MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS * sizeof(*out_pixels));
     if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
         status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 0u, out_pixels);
         if (status != LIB_STATUS_OK) return status;

@@ -1,6 +1,6 @@
-add_library(myraidenii-machine STATIC audio.c)
+add_library(myraidenii-machine STATIC audio.c driver.c)
 target_include_directories(myraidenii-machine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-target_link_libraries(myraidenii-machine PUBLIC myraidenii-core audio-pcm)
+target_link_libraries(myraidenii-machine PUBLIC myraidenii-core audio-pcm emulator-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(myraidenii-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
 elseif(MSVC)

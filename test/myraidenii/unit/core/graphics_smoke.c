@@ -149,7 +149,7 @@ static lib_i32 graphics_tile_layers(void)
     lib_u8 *images = lib_allocate(MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS] = {0};
     lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS] = {0};
-    lib_u32 pixels[MYRAIDENII_CORE_VIDEO_FRAME_PIXELS];
+    lib_u32 pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS];
     lib_i32 result = 1;
 
     if (images == LIB_NULL) return 1;
@@ -177,7 +177,7 @@ static lib_i32 graphics_tile_layers(void)
         myraidenii_core_video_tilemap_load(&video, tilemap,
             MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x848484u || pixels[1u] != 0u) {
         goto done;
     }
@@ -186,7 +186,7 @@ static lib_i32 graphics_tile_layers(void)
     myraidenii_core_video_graphics_images_release(&video);
     if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x0000ffu) {
         goto done;
     }
@@ -195,7 +195,7 @@ static lib_i32 graphics_tile_layers(void)
     myraidenii_core_video_graphics_images_release(&video);
     if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x00ff00u) {
         goto done;
     }
@@ -206,7 +206,7 @@ static lib_i32 graphics_tile_layers(void)
     myraidenii_core_video_graphics_images_release(&video);
     if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0xff0000u) {
         goto done;
     }
@@ -215,7 +215,7 @@ static lib_i32 graphics_tile_layers(void)
     myraidenii_core_video_graphics_images_release(&video);
     if (graphics_images_load(&video, images) == LIB_STATUS_OK &&
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) == LIB_STATUS_OK &&
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) == LIB_STATUS_OK &&
         pixels[0u] == 0u) {
         result = 0;
     }
@@ -247,7 +247,7 @@ static lib_i32 graphics_sprite_layers(void)
     lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS] = {0};
     lib_u8 descriptor[MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES] = {0};
     lib_u8 *stream;
-    lib_u32 pixels[MYRAIDENII_CORE_VIDEO_FRAME_PIXELS];
+    lib_u32 pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS];
     lib_i32 result = 1;
     lib_u8 priority;
 
@@ -277,7 +277,7 @@ static lib_i32 graphics_sprite_layers(void)
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x000000ffu) {
         goto done;
     }
@@ -285,7 +285,7 @@ static lib_i32 graphics_sprite_layers(void)
     if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
             LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x000000ffu) {
         goto done;
     }
@@ -294,7 +294,7 @@ static lib_i32 graphics_sprite_layers(void)
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK) {
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK) {
         goto done;
     }
     if (pixels[0u] != 0x0000ff00u || pixels[1u] != 0u) {
@@ -306,7 +306,7 @@ static lib_i32 graphics_sprite_layers(void)
                 sizeof(descriptor)) != LIB_STATUS_OK ||
             myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
             myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-                MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+                MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
             pixels[0u] != 0x00ff0000u) {
             goto done;
         }
@@ -319,7 +319,7 @@ static lib_i32 graphics_sprite_layers(void)
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x00ff0000u) {
         goto done;
     }
@@ -334,7 +334,7 @@ static lib_i32 graphics_sprite_layers(void)
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x000000ffu) {
         goto done;
     }
@@ -349,13 +349,13 @@ static lib_i32 graphics_sprite_layers(void)
             LIB_STATUS_OK ||
         myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x00ff0000u) {
         goto done;
     }
     pixels[0u] = 0x00123456u;
     if (myraidenii_core_video_frame_copy(LIB_NULL, 0u, 0u, sprites, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_INVALID_ARGUMENT ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_INVALID_ARGUMENT ||
         pixels[0u] != 0x00123456u) {
         goto done;
     }
@@ -381,7 +381,7 @@ static lib_i32 graphics_crtc_layers(void)
     lib_u8 *images = lib_allocate(MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS] = {0};
     lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS] = {0};
-    lib_u32 pixels[MYRAIDENII_CORE_VIDEO_FRAME_PIXELS];
+    lib_u32 pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS];
     lib_i32 result = 1;
     lib_size layer;
 
@@ -420,22 +420,22 @@ static lib_i32 graphics_crtc_layers(void)
         lib_memory_set(video.crtc_registers, 0, sizeof(video.crtc_registers));
         if (myraidenii_core_video_crtc_write(&video, 0x1cu, enabled) != LIB_STATUS_OK ||
             myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-                MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+                MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
             pixels[0u] != expected[layer][0u] ||
             myraidenii_core_video_crtc_write(&video, scroll_x_offsets[layer], 16u) !=
                 LIB_STATUS_OK ||
             myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-                MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+                MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
             pixels[0u] != expected[layer][1u] ||
             myraidenii_core_video_crtc_write(&video, scroll_x_offsets[layer] + 1u, 2u) !=
                 LIB_STATUS_OK ||
             myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-                MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+                MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
             pixels[0u] != expected[layer][1u] ||
             myraidenii_core_video_crtc_write(&video, scroll_y_offsets[layer], 16u) !=
                 LIB_STATUS_OK ||
             myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-                MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+                MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
             pixels[0u] != expected[layer][2u]) {
             goto done;
         }
@@ -443,11 +443,11 @@ static lib_i32 graphics_crtc_layers(void)
     lib_memory_set(video.crtc_registers, 0, sizeof(video.crtc_registers));
     if (myraidenii_core_video_crtc_write(&video, 0x1cu, 0x07u) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0x00848484u ||
         myraidenii_core_video_crtc_write(&video, 0x1cu, 0x0fu) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, LIB_NULL, pixels,
-            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
         pixels[0u] != 0u) {
         goto done;
     }
