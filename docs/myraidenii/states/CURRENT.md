@@ -2,13 +2,13 @@
 
 ## Current Work
 
-M1 T4 S40 is active. S38 could not isolate a synthetic element while the
-reference advanced, and S39 found no qualifying original graphics contract.
-S40 tests MAME's documented pause plus explicit frame-update path to determine
-whether a frozen synthetic experiment can do so without exporting game data.
-Core still has no graphics decode, composition or frame publication path.
+M1 T4 remains open after accepted S40. The paused repaint path does not consume
+the synthetic graphics write, while advancing mutation/control trials are
+identical and therefore time-confounded. S39 found no qualifying original
+graphics contract. Core still has no graphics decode, composition or frame
+publication path.
 
-## Active Packet — M1 T4 S40
+## Archived Packet — M1 T4 S40
 
 | Field | Required record |
 | --- | --- |
