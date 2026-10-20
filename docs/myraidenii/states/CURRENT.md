@@ -9,7 +9,29 @@ M1 T4 remains open after accepted S1:
 | S1 | Finite Video/Sprite convergence ledger; no invented receiver admitted without a lawful flag-family consumer contract. | P1 `ac0872270`; coordinator review: documentation governance and `git diff --check` passed. |
 | S2 | Lawful-source disposition: existing sources cannot establish the sprite-control consumer contract, so code remains correctly blocked. | P1 `f67876e8e`; coordinator review: documentation governance and `git diff --check` passed. |
 | S3 | Public FPGA implementation provenance review; it is MAME-derived/GPL and supplies no independent Video/Sprite contract. | P1 `ec71c2227`; coordinator review: documentation governance and `git diff --check` passed. |
-| S4 | Active: owner-authorized L2 sprite-flags latch from reference-observed behavior; no imported implementation or claimed decode/render effect. | Packet: [T4 S4 L2 contract](../etc/evidence/t4-s4-sprite-flags-l2.md); selected-set x64/x86 both advance past the prior flags stop. |
+| S4 | Owner-authorized L2 sprite-flags latch from reference-observed behavior; no imported implementation or claimed decode/render effect. | P1 `2276bbe2c`; selected-set x64/x86 both advance past the prior flags stop; complete repository units pass 669/669 on x64 and x86. |
+| S5 | Selected-set-observed `0x696--0x697` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `bc67b7bbc`; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s5-selected-control-hole-l2.md). |
+
+## Retained Packet — M1 T4 S5
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S5 follows accepted S4 P1 `2276bbe2c`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized L2 behavioral models from other emulators when L3 material is unavailable on 2026-10-19; no external source import, translation, algorithm/table reuse or protected ROM retention is authorized. |
+| Objective | Establish the exact selected-set-observed `0x696--0x697` V30 control write as a Board-local, write-only, no-state L2 hole, then prove that the real program advances past it on both host widths. |
+| Non-goals | No Video/Sprite register, RAM, decoder, decryption, palette, renderer, Shared API, Core CPU change, generic control-window acceptance, or claim of original-hardware accuracy. |
+| Reference Baseline | `2276bbe2c`; the bounded selected-set probe reaches a terminal fault with code `0x696` only after the completed `0x6ce--0x6cf` sprite-flags route. Current MAME RAIDEN II map is an L2 behavioral reference and does not assign this span a device receiver. |
+| Candidate Proposal | Add one two-byte replacement route to the existing selected-control write-only hole owner; retain explicit rejection for all reads, inspection, adjacent bytes and wider mixed accesses. |
+| Files And ABI Surface | `src/myraidenii/core/board.c`, its existing Board unit smoke, S5 evidence and CURRENT only. No public API or ABI changes. Expected production +5--10/-0--3; test +12--24/-0--4; refine after actual change review. |
+| Applicable Rules | MyRaidenII guide, architecture/coding/source policy, execution and documentation rules; source policy permits L2 behavioral contracts but prohibits external implementation import. |
+| Verification | Focused x64/x86 Board smoke; bounded selected-set probe on x64/x86 with transient staged lanes and cleanup; documentation governance, manifest if applicable and `git diff --check`; complete repository units per width before S closure. |
+| Expected Markers | Synthetic actual Board writes accept only the exact two bytes and preserve no readback; selected set advances beyond `0x696`; all unrelated control addresses still reject. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only and staged transiently by the existing probe; no bytes, screenshots or traces retained. |
+| Reporting Requirements | Record exact route, L2 limitation, reference distinction, actual diff, synthetic/selected-set results, cleanup and any next stop without claiming playable output. |
+| Stop Conditions | A read, stateful consumer, width other than the bounded word, contradictory reference behavior, required Shared/API change, protected-source exposure or probe cleanup failure. |
+| Exit Criteria | Exact Board-only route, tests and evidence are complete; dual-width complete units pass; actual change review and one MyRaidenII P are committed/pushed. |
+| Original Owner Request | When no physical-level evidence is available, use other simulators as L2 references rather than blocking progress; do not require the owner to supply more detailed materials. |
+| Similar-Issue Sweep | Recheck the complete `0x400--0x7ff` control route table for accidental widening, duplicate device ownership, readback or generic-RAM fallback; classify every hit. |
 
 M1 T3 remains open after accepted S1--S25:
 
