@@ -70,6 +70,10 @@ typedef struct myraidenii_core_board_config {
     const myraidenii_core_board_graphics_images *graphics_images;
     const lib_u8 *sound_program;
     lib_size sound_program_bytes;
+    const lib_u8 *sound_samples_1;
+    lib_size sound_samples_1_bytes;
+    const lib_u8 *sound_samples_2;
+    lib_size sound_samples_2_bytes;
 } myraidenii_core_board_config;
 
 /* Reset clears this bounded fallback observation. It reports only how an

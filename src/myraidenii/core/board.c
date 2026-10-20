@@ -1213,6 +1213,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         config->program_odd == LIB_NULL ||
         config->program_lane_bytes != MYRAIDENII_CORE_PROGRAM_LANE_BYTES ||
         (config->sound_program == LIB_NULL && config->sound_program_bytes != 0u) ||
+        (config->sound_samples_1 == LIB_NULL &&
+            config->sound_samples_1_bytes != 0u) ||
+        (config->sound_samples_2 == LIB_NULL &&
+            config->sound_samples_2_bytes != 0u) ||
         (config->graphics_images != LIB_NULL &&
             !myraidenii_core_board_graphics_images_complete(config->graphics_images))) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -1231,6 +1235,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     sound_config = (myraidenii_core_sound_config){
         .program = config->sound_program,
         .program_bytes = config->sound_program_bytes,
+        .samples_1 = config->sound_samples_1,
+        .samples_1_bytes = config->sound_samples_1_bytes,
+        .samples_2 = config->sound_samples_2,
+        .samples_2_bytes = config->sound_samples_2_bytes,
         .transport = {
             .context = board,
             .command_get = myraidenii_core_board_sound_transport_command_get,

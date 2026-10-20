@@ -280,7 +280,7 @@ static lib_i32 board_control_window(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     const lib_u32 unmodelled[] = {
         0x400u,0x426u,0x5ffu,0x7ffu
@@ -456,7 +456,7 @@ static lib_i32 board_control_failure_observation(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     myraidenii_core_board_control_failure_observation observation = {0};
@@ -497,7 +497,7 @@ static lib_i32 board_tile_bank_2(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -534,7 +534,7 @@ static lib_i32 board_tile_bank_01(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -564,7 +564,7 @@ static lib_i32 board_sprite_protection_constant(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -593,7 +593,7 @@ static lib_i32 board_sprite_protection_latches(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -665,7 +665,7 @@ static lib_i32 board_sprite_object_write_aperture(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     myraidenii_core_board_control_failure_observation observation = {0};
@@ -703,7 +703,7 @@ static lib_i32 board_sprite_ram_and_latch_route(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
@@ -942,7 +942,7 @@ static lib_i32 board_video_crtc(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     myraidenii_core_video video = {0};
     const lib_u8 values[] = {0x12u,0x34u,0x56u,0x78u};
@@ -997,7 +997,7 @@ static lib_i32 board_sprite_protection_upload(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     const lib_u8 value[] = {0x11u,0x22u,0x33u,0x44u};
     myraidenii_core_board *board = LIB_NULL;
@@ -1451,7 +1451,7 @@ static lib_i32 board_cop_reset_and_admission(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -1869,7 +1869,7 @@ done:
 
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     const lib_u8 next[] = {254u,2u,5u};
     const lib_u8 angle[] = {250u,0x5au};
@@ -2173,7 +2173,7 @@ static lib_i32 board_cop_numeric_chain(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     const lib_u16 chain[] = {0x42c2u,0x2208u,0x42c2u,0x6200u,0x42c2u,0x5205u};
     const lib_u8 guest_results[] = {0xa1u,0xb0u,5u,0xa3u,0u,0x30u,
@@ -2449,7 +2449,7 @@ static lib_i32 board_cop_decimal(void)
     };
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES, LIB_NULL,
-        LIB_NULL, 0u
+        LIB_NULL, 0u, LIB_NULL, 0u, LIB_NULL, 0u
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |

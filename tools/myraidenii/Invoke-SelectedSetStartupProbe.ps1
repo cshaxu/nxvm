@@ -33,7 +33,8 @@ Require (Test-Path -LiteralPath $probePath -PathType Leaf) 'Startup probe execut
 $manifest = Get-Content -Raw -LiteralPath $inventoryPath | ConvertFrom-Json
 $requiredRoles = @(
     'program-even', 'program-odd', 'characters', 'background-1', 'background-2',
-    'sprites-1', 'sprites-2', 'sprites-3', 'sprites-4', 'sound-program'
+    'sprites-1', 'sprites-2', 'sprites-3', 'sprites-4', 'sound-program',
+    'samples-1', 'samples-2'
 )
 $required = @()
 foreach ($role in $requiredRoles) {
@@ -79,7 +80,7 @@ try {
     & $probePath $images['program-even'] $images['program-odd'] $images['characters'] `
         $images['background-1'] $images['background-2'] $images['sprites-1'] `
         $images['sprites-2'] $images['sprites-3'] $images['sprites-4'] `
-        $images['sound-program']
+        $images['sound-program'] $images['samples-1'] $images['samples-2']
     if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
 }
 finally {

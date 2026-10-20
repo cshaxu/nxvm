@@ -16,8 +16,30 @@ interrupt, YM2151 and dual-OKI ownership against the existing Board wiring.
 Published emulator behavior is accepted as L2 where primary material is absent;
 the implementation remains independent, deterministic and Core-local. S2
 closed the single Core-owned transport/time seam. S3 closed the bounded private
-Z80 bootstrap, fixed map and bank route. YM2151/OKI semantics, deterministic
-mixing and real command-triggered PCM remain the next bounded Sound receivers.
+Z80 bootstrap, fixed map and bank route. S4 now closes the local YM2151 and
+dual-OKI register/status/timer/sample boundary; deterministic mixing and host
+PCM delivery remain later bounded Sound receivers.
+
+## Archived Packet — M1 T5 S4
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S4 follows accepted S3 closure `95df75bbe`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved the finite T5 Sound sequence and repeatedly authorized mature external emulator behavior/layout as L2 evidence when primary board material is unavailable, most recently 2026-10-20. This packet consumes that approval; no source, ROM, table or generated-output import is permitted. |
+| Objective | Give the existing private Sound owner deterministic, local YM2151 and two MSM6295 register/status/channel models at their one fixed mapped addresses, including their bounded timer/interrupt and sample-address behavior. |
+| Non-goals | No MAME/source import or transliteration, ROM/sample retention, host PCM delivery, mixing, second guest clock/thread, Shared API, generic chip framework, physical-silicon claim or playable-game claim. |
+| Reference Baseline | S3 owns the copied Z80 program, sole Board-derived tick axis, fixed 0000--ffff map and transport. YM/OKI map addresses currently reject. Published Raiden II board wiring identifies YM at 4008--4009, OKI devices at 6000/6002, YM at Z80 clock and each OKI at 28.636363 MHz/28 with pin 7 high; these facts are L2 only. |
+| Candidate Proposal | Extend the one local Sound object—not Board, Lib or a new device framework—with private YM and two OKI state. Map accesses through the existing sole Z80 read/write switch; drive all device time from already delivered Z80 ticks; expose only map-visible status/IRQ effects to the existing local CPU/transport path. Copy supplied sample images only if the Board config later admits their fixed role/size contract; otherwise preserve explicit unavailable behavior. |
+| Files And ABI Surface | Expected: `src/myraidenii/core/{sound.c,sound.h,board.c,board_interface.h}`, the existing Sound/Board test families, selected-set probe/staging only if sample-role ingress is needed, evidence and Current. Any additive Board config roles remain Core-local and copied. No Lib, Emulator, other Shared or runnable App changes. |
+| Applicable Rules | MyRaidenII guide; Goal, Architecture, Coding, source policy; repository architecture/coding/documentation/execution rules. Sound remains one Core-local owner; Board remains the only main-side transport/time source. |
+| Verification | Met: focused synthetic register/timer/status/channel vectors, mapped transport paths and reset/bounds proof pass on x64/x86. All six MyRaidenII unit tests pass on both widths. The selected external archive probe supplies both sample roles through Board, releases its buffers after creation and completes on both widths without retaining payload. |
+| Expected Markers | Reads/writes at 4008--4009, 6000 and 6002 reach exactly one local owner; device time changes only from the Board-to-Z80 timeline; channel/status/IRQ outputs are deterministic; invalid forms fail without mutating accepted state; missing sample inputs cannot look like successful playback. |
+| Asset Needs | The owner-supplied external `O:\assets\raidenii\raiden2.zip`, read-only, only if fixed sample-role ingress is admitted. Temporary unpacking is under ignored `build/`, deleted after execution; no protected media, bytes or hashes enter tracked source. |
+| Reporting Requirements | Record L2 sources/facts, actual source/test line delta, retained owners/routes, width-by-width verification, and the distinction between register semantics and deferred mixing/host PCM/real-game audio. |
+| Stop Conditions | A necessary Shared contract, unresolved fixed sample role/size, need to retain external payload, conflicting route, second clock/thread, source-license issue or behavior requiring a generic framework stops and transfers the bounded gap. |
+| Exit Criteria | Met: one local Sound owner implements the fixed YM/two-OKI map and deterministic guest-time semantics with synthetic proof; no duplicate device/timing path remains. The L2 facts, caller-buffer ownership and width evidence are recorded in `docs/myraidenii/etc/evidence/t5-s4-local-sound-devices.md`. Mixing, Lib PCM delivery and qualified selected-game sound are explicitly deferred. |
+| Original Owner Request | Implement MyRaidenII under governance; use external emulator implementations as L2 where required, without repeated L3 back-and-forth. |
+| Similar-Issue Sweep | Inspect all Sound map reads/writes, reset/destroy paths, Board time consumers, transport acknowledgements, tests and selected-set staging for duplicate device state, unowned success paths or hidden host-time dependence. |
 
 ## Archived Packet — M1 T5 S3
 

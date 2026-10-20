@@ -56,12 +56,19 @@ static lib_status sound_coin_get(void *context, lib_u8 *out_value)
     return LIB_STATUS_OK;
 }
 
-static lib_status sound_create(const lib_u8 *program, sound_fixture *fixture,
+static lib_status sound_create_with_samples(const lib_u8 *program,
+    const lib_u8 *samples_1, const lib_u8 *samples_2, sound_fixture *fixture,
     myraidenii_core_sound **out_sound)
 {
     const myraidenii_core_sound_config config = {
         .program = program,
         .program_bytes = 0x2000u,
+        .samples_1 = samples_1,
+        .samples_1_bytes = samples_1 == LIB_NULL ? 0u :
+            MYRAIDENII_CORE_SOUND_SAMPLE_BYTES,
+        .samples_2 = samples_2,
+        .samples_2_bytes = samples_2 == LIB_NULL ? 0u :
+            MYRAIDENII_CORE_SOUND_SAMPLE_BYTES,
         .transport = {
             .context = fixture,
             .command_get = sound_command_get,
@@ -74,6 +81,12 @@ static lib_status sound_create(const lib_u8 *program, sound_fixture *fixture,
     };
 
     return myraidenii_core_sound_create(&config, out_sound);
+}
+
+static lib_status sound_create(const lib_u8 *program, sound_fixture *fixture,
+    myraidenii_core_sound **out_sound)
+{
+    return sound_create_with_samples(program, LIB_NULL, LIB_NULL, fixture, out_sound);
 }
 
 static lib_i32 sound_executes_fixed_transport(void)
@@ -206,8 +219,112 @@ done:
     return failed;
 }
 
+static lib_i32 sound_executes_device_map(void)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples_1, 0, sizeof(samples_1));
+    samples_1[10u] = 0x20u;
+    samples_1[13u] = 0x21u;
+    program[at++] = 0x3eu; program[at++] = 0x10u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0xffu;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x11u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x03u;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x14u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x01u;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    for (lib_u8 index = 0u; index < 20u; ++index) program[at++] = 0x00u;
+    program[at++] = 0x3au; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x81u;
+    program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0x3eu; program[at++] = 0x10u;
+    program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0x3au; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0xe6u; program[at++] = 0x01u;
+    program[at++] = 0x21u; program[at++] = 0x00u; program[at++] = 0x20u;
+    program[at++] = 0x77u;
+    program[at++] = 0x3eu; program[at++] = 0x08u;
+    program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0x3au; program[at++] = 0x00u; program[at++] = 0x60u;
+    program[at++] = 0xb6u;
+    program[at++] = 0x32u; program[at++] = 0x19u; program[at++] = 0x40u;
+    program[at++] = 0x76u;
+    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 1u || fixture.response[1] != 1u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
+static lib_i32 sound_delivers_ym_timer_interrupt(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[at++] = 0x31u; program[at++] = 0xffu; program[at++] = 0x27u;
+    program[at++] = 0x3eu; program[at++] = 0x10u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0xffu;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x11u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x03u;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x14u;
+    program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x05u;
+    program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
+    program[at++] = 0xedu; program[at++] = 0x56u;
+    program[at++] = 0xfbu;
+    program[at++] = 0x00u;
+    program[at++] = 0x76u;
+    program[at++] = 0xc3u; program[at++] = 0x25u; program[at++] = 0x00u;
+    program[0x38u] = 0x3eu; program[0x39u] = 0x14u;
+    program[0x3au] = 0x32u; program[0x3bu] = 0x08u; program[0x3cu] = 0x40u;
+    program[0x3du] = 0x3eu; program[0x3eu] = 0x10u;
+    program[0x3fu] = 0x32u; program[0x40u] = 0x09u; program[0x41u] = 0x40u;
+    program[0x42u] = 0x3eu; program[0x43u] = 0x5au;
+    program[0x44u] = 0x32u; program[0x45u] = 0x18u; program[0x46u] = 0x40u;
+    program[0x47u] = 0xedu; program[0x48u] = 0x4du;
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK)
+        goto done;
+    if (fixture.response[0] != 0x5au) {
+        failed = 4;
+        goto done;
+    }
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 int main(void)
 {
-    return sound_executes_fixed_transport() || sound_rejects_invalid_configuration() ||
-        sound_switches_fixed_bank() || sound_executes_bootstrap_control_flow() ? 1 : 0;
+    return sound_executes_fixed_transport() != 0 ||
+        sound_rejects_invalid_configuration() != 0 ||
+        sound_switches_fixed_bank() != 0 ||
+        sound_executes_bootstrap_control_flow() != 0 ||
+        sound_executes_device_map() != 0 ||
+        sound_delivers_ym_timer_interrupt() != 0 ? 1 : 0;
 }

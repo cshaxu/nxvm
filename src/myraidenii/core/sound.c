@@ -18,6 +18,14 @@ enum {
     MYRAIDENII_CORE_SOUND_RESPONSE_1 = 0x4019u,
     MYRAIDENII_CORE_SOUND_BANK = 0x401au,
     MYRAIDENII_CORE_SOUND_COIN_OUTPUT = 0x401bu,
+    MYRAIDENII_CORE_SOUND_YM_ADDRESS = 0x4008u,
+    MYRAIDENII_CORE_SOUND_YM_DATA = 0x4009u,
+    MYRAIDENII_CORE_SOUND_OKI_1 = 0x6000u,
+    MYRAIDENII_CORE_SOUND_OKI_2 = 0x6002u,
+    MYRAIDENII_CORE_SOUND_YM_TIMER_A_TICKS = 64u,
+    MYRAIDENII_CORE_SOUND_YM_TIMER_B_TICKS = 1024u,
+    MYRAIDENII_CORE_SOUND_OKI_NIBBLE_TICKS = 462u,
+    MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT = 4u,
     MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS = 23u,
     MYRAIDENII_CORE_SOUND_FLAG_CARRY = 0x01u,
     MYRAIDENII_CORE_SOUND_FLAG_SUBTRACT = 0x02u,
@@ -27,10 +35,37 @@ enum {
     MYRAIDENII_CORE_SOUND_FLAG_SIGN = 0x80u
 };
 
+typedef struct myraidenii_core_sound_ym {
+    lib_u8 address;
+    lib_u8 registers[256u];
+    lib_u8 status;
+    lib_u64 timer_a_phase;
+    lib_u64 timer_b_phase;
+    lib_bool channel_key_on[8u];
+} myraidenii_core_sound_ym;
+
+typedef struct myraidenii_core_sound_oki_voice {
+    lib_u32 position;
+    lib_u32 end;
+    lib_bool high_nibble;
+    lib_bool active;
+} myraidenii_core_sound_oki_voice;
+
+typedef struct myraidenii_core_sound_oki {
+    lib_u8 *samples;
+    lib_size samples_bytes;
+    lib_u8 pending_sample;
+    lib_u64 nibble_phase;
+    lib_bool has_pending_sample;
+    myraidenii_core_sound_oki_voice voices[MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT];
+} myraidenii_core_sound_oki;
+
 struct myraidenii_core_sound {
     myraidenii_core_sound_transport transport;
     lib_u8 *program;
     lib_size program_bytes;
+    myraidenii_core_sound_ym ym;
+    myraidenii_core_sound_oki oki[2u];
     lib_u64 z80_ticks;
     lib_u64 z80_phase;
     lib_u64 available_ticks;
@@ -55,6 +90,9 @@ struct myraidenii_core_sound {
     lib_u16 ix;
     lib_u16 iy;
     lib_u8 bank;
+    lib_u8 interrupt_mode;
+    lib_u8 interrupt_enable_delay;
+    lib_bool interrupt_enable;
     lib_bool halted;
     lib_u8 ram[MYRAIDENII_CORE_SOUND_RAM_BYTES];
 };
@@ -67,6 +105,213 @@ static lib_bool myraidenii_core_sound_transport_valid(
         transport->command_acknowledge != LIB_NULL &&
         transport->interrupt_acknowledge != LIB_NULL &&
         transport->response_set != LIB_NULL && transport->coin_get != LIB_NULL;
+}
+
+static lib_bool myraidenii_core_sound_image_valid(const lib_u8 *image,
+    lib_size image_bytes)
+{
+    return (image == LIB_NULL && image_bytes == 0u) ||
+        (image != LIB_NULL && image_bytes == MYRAIDENII_CORE_SOUND_SAMPLE_BYTES);
+}
+
+static lib_status myraidenii_core_sound_image_copy(const lib_u8 *source,
+    lib_size source_bytes, lib_u8 **out_copy)
+{
+    lib_u8 *copy;
+
+    if (out_copy == LIB_NULL || !myraidenii_core_sound_image_valid(source, source_bytes))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_copy = LIB_NULL;
+    if (source_bytes == 0u) return LIB_STATUS_OK;
+    copy = lib_allocate(source_bytes);
+    if (copy == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    lib_memory_copy(copy, source, source_bytes);
+    *out_copy = copy;
+    return LIB_STATUS_OK;
+}
+
+static lib_u32 myraidenii_core_sound_ym_timer_a_period(
+    const myraidenii_core_sound_ym *ym)
+{
+    const lib_u16 value = (lib_u16)(((lib_u16)ym->registers[0x10u] << 2u) |
+        (ym->registers[0x11u] & 3u));
+
+    return (1024u - value) * MYRAIDENII_CORE_SOUND_YM_TIMER_A_TICKS;
+}
+
+static lib_u32 myraidenii_core_sound_ym_timer_b_period(
+    const myraidenii_core_sound_ym *ym)
+{
+    return (256u - ym->registers[0x12u]) * MYRAIDENII_CORE_SOUND_YM_TIMER_B_TICKS;
+}
+
+static lib_bool myraidenii_core_sound_ym_irq_pending(
+    const myraidenii_core_sound_ym *ym)
+{
+    const lib_u8 control = ym->registers[0x14u];
+
+    return ((ym->status & 1u) != 0u && (control & 4u) != 0u) ||
+        ((ym->status & 2u) != 0u && (control & 8u) != 0u);
+}
+
+static void myraidenii_core_sound_ym_advance(myraidenii_core_sound_ym *ym,
+    lib_u64 ticks)
+{
+    const lib_u8 control = ym->registers[0x14u];
+    lib_u32 period;
+
+    if ((control & 1u) != 0u) {
+        period = myraidenii_core_sound_ym_timer_a_period(ym);
+        ym->timer_a_phase += ticks;
+        if (ym->timer_a_phase >= period) {
+            ym->timer_a_phase %= period;
+            ym->status |= 1u;
+        }
+    }
+    if ((control & 2u) != 0u) {
+        period = myraidenii_core_sound_ym_timer_b_period(ym);
+        ym->timer_b_phase += ticks;
+        if (ym->timer_b_phase >= period) {
+            ym->timer_b_phase %= period;
+            ym->status |= 2u;
+        }
+    }
+}
+
+static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
+    lib_u16 address, lib_u8 value)
+{
+    myraidenii_core_sound_ym *ym = &sound->ym;
+
+    if (address == MYRAIDENII_CORE_SOUND_YM_ADDRESS) {
+        ym->address = value;
+        return LIB_STATUS_OK;
+    }
+    if (address != MYRAIDENII_CORE_SOUND_YM_DATA) return LIB_STATUS_UNSUPPORTED;
+    ym->registers[ym->address] = value;
+    if (ym->address == 8u) {
+        ym->channel_key_on[value & 7u] = (value & 0x78u) != 0u;
+    } else if (ym->address == 0x14u) {
+        if ((value & 0x10u) != 0u) ym->status &= (lib_u8)~1u;
+        if ((value & 0x20u) != 0u) ym->status &= (lib_u8)~2u;
+        if ((value & 1u) == 0u) ym->timer_a_phase = 0u;
+        if ((value & 2u) == 0u) ym->timer_b_phase = 0u;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_sound_ym_read(const myraidenii_core_sound *sound,
+    lib_u16 address, lib_u8 *out_value)
+{
+    if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (address != MYRAIDENII_CORE_SOUND_YM_ADDRESS) return LIB_STATUS_UNSUPPORTED;
+    *out_value = sound->ym.status;
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_sound_oki_sample_bounds(
+    const myraidenii_core_sound_oki *oki, lib_u8 sample, lib_u32 *out_start,
+    lib_u32 *out_end)
+{
+    const lib_size table = (lib_size)sample * 8u;
+    lib_u32 start;
+    lib_u32 end;
+
+    if (oki->samples == LIB_NULL || table + 5u >= oki->samples_bytes ||
+        out_start == LIB_NULL || out_end == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    start = (lib_u32)((lib_u32)oki->samples[table] << 16u |
+        (lib_u32)oki->samples[table + 1u] << 8u | oki->samples[table + 2u]);
+    end = (lib_u32)((lib_u32)oki->samples[table + 3u] << 16u |
+        (lib_u32)oki->samples[table + 4u] << 8u | oki->samples[table + 5u]);
+    if (start > end || end >= oki->samples_bytes) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_start = start;
+    *out_end = end;
+    return LIB_STATUS_OK;
+}
+
+static lib_u8 myraidenii_core_sound_oki_status(
+    const myraidenii_core_sound_oki *oki)
+{
+    lib_u8 status = 0u;
+
+    for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
+        if (oki->voices[index].active) status |= (lib_u8)(1u << index);
+    }
+    return status;
+}
+
+static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki,
+    lib_u8 value)
+{
+    lib_u32 start;
+    lib_u32 end;
+    lib_status status;
+
+    if ((value & 0x80u) != 0u) {
+        oki->pending_sample = value & 0x7fu;
+        oki->has_pending_sample = LIB_TRUE;
+        return LIB_STATUS_OK;
+    }
+    if ((value & 0x08u) != 0u) {
+        for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
+            if ((value & (lib_u8)(0x08u << index)) != 0u)
+                oki->voices[index].active = LIB_FALSE;
+        }
+        return LIB_STATUS_OK;
+    }
+    if (!oki->has_pending_sample) return LIB_STATUS_INVALID_STATE;
+    status = myraidenii_core_sound_oki_sample_bounds(oki, oki->pending_sample,
+        &start, &end);
+    if (status != LIB_STATUS_OK) return status;
+    for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
+        if ((value & (lib_u8)(0x10u << index)) != 0u) {
+            oki->voices[index].position = start;
+            oki->voices[index].end = end;
+            oki->voices[index].high_nibble = LIB_TRUE;
+            oki->voices[index].active = LIB_TRUE;
+        }
+    }
+    oki->has_pending_sample = LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
+static void myraidenii_core_sound_oki_advance(myraidenii_core_sound_oki *oki,
+    lib_u64 ticks)
+{
+    lib_u64 nibbles;
+
+    oki->nibble_phase += ticks;
+    nibbles = oki->nibble_phase / MYRAIDENII_CORE_SOUND_OKI_NIBBLE_TICKS;
+    oki->nibble_phase %= MYRAIDENII_CORE_SOUND_OKI_NIBBLE_TICKS;
+    for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
+        myraidenii_core_sound_oki_voice *voice = &oki->voices[index];
+        lib_u64 remaining;
+
+        if (!voice->active || nibbles == 0u) continue;
+        remaining = ((lib_u64)voice->end - voice->position + 1u) * 2u -
+            (voice->high_nibble ? 0u : 1u);
+        if (nibbles >= remaining) {
+            voice->position = voice->end;
+            voice->high_nibble = LIB_FALSE;
+            voice->active = LIB_FALSE;
+            continue;
+        }
+        {
+            const lib_u64 consumed = (voice->high_nibble ? 0u : 1u) + nibbles;
+
+            voice->position += (lib_u32)(consumed / 2u);
+            voice->high_nibble = (consumed & 1u) == 0u;
+        }
+    }
+}
+
+static void myraidenii_core_sound_devices_advance(myraidenii_core_sound *sound,
+    lib_u64 ticks)
+{
+    myraidenii_core_sound_ym_advance(&sound->ym, ticks);
+    myraidenii_core_sound_oki_advance(&sound->oki[0u], ticks);
+    myraidenii_core_sound_oki_advance(&sound->oki[1u], ticks);
 }
 
 static lib_u16 myraidenii_core_sound_hl(const myraidenii_core_sound *sound)
@@ -202,6 +447,18 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
         *out_value = index < sound->program_bytes ? sound->program[index] : 0xffu;
         return LIB_STATUS_OK;
     }
+    if (address == MYRAIDENII_CORE_SOUND_YM_ADDRESS ||
+        address == MYRAIDENII_CORE_SOUND_YM_DATA)
+        return myraidenii_core_sound_ym_read(sound, address, out_value);
+    if (address == MYRAIDENII_CORE_SOUND_OKI_1)
+    {
+        *out_value = myraidenii_core_sound_oki_status(&sound->oki[0u]);
+        return LIB_STATUS_OK;
+    }
+    if (address == MYRAIDENII_CORE_SOUND_OKI_2) {
+        *out_value = myraidenii_core_sound_oki_status(&sound->oki[1u]);
+        return LIB_STATUS_OK;
+    }
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_0:
         return sound->transport.command_get(sound->transport.context, 0u, out_value);
@@ -231,6 +488,13 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
         sound->ram[address - MYRAIDENII_CORE_SOUND_RAM_START] = value;
         return LIB_STATUS_OK;
     }
+    if (address == MYRAIDENII_CORE_SOUND_YM_ADDRESS ||
+        address == MYRAIDENII_CORE_SOUND_YM_DATA)
+        return myraidenii_core_sound_ym_write(sound, address, value);
+    if (address == MYRAIDENII_CORE_SOUND_OKI_1)
+        return myraidenii_core_sound_oki_write(&sound->oki[0u], value);
+    if (address == MYRAIDENII_CORE_SOUND_OKI_2)
+        return myraidenii_core_sound_oki_write(&sound->oki[1u], value);
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_ACKNOWLEDGE:
         return sound->transport.command_acknowledge(sound->transport.context);
@@ -572,6 +836,29 @@ static lib_status myraidenii_core_sound_execute_extended(myraidenii_core_sound *
 
     if (status != LIB_STATUS_OK) return status;
     switch (opcode) {
+    case 0x46u:
+    case 0x4eu:
+    case 0x66u:
+    case 0x6eu:
+        sound->interrupt_mode = 0u;
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
+    case 0x56u:
+    case 0x76u:
+        sound->interrupt_mode = 1u;
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
+    case 0x5eu:
+    case 0x7eu:
+        sound->interrupt_mode = 2u;
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
+    case 0x45u:
+    case 0x4du:
+        status = myraidenii_core_sound_pop(sound, &sound->pc);
+        if (status == LIB_STATUS_OK) sound->interrupt_enable = LIB_TRUE;
+        *out_ticks = 14u;
+        return status;
     case 0x52u:
         myraidenii_core_sound_hl_set(sound,
             myraidenii_core_sound_add16(sound, myraidenii_core_sound_hl(sound),
@@ -671,6 +958,22 @@ static lib_status myraidenii_core_sound_execute_bit(myraidenii_core_sound *sound
     return status;
 }
 
+static lib_status myraidenii_core_sound_interrupt_accept(
+    myraidenii_core_sound *sound, lib_u8 *out_ticks)
+{
+    lib_status status;
+
+    if (!sound->interrupt_enable || sound->interrupt_mode != 1u ||
+        !myraidenii_core_sound_ym_irq_pending(&sound->ym))
+        return LIB_STATUS_UNSUPPORTED;
+    sound->halted = LIB_FALSE;
+    sound->interrupt_enable = LIB_FALSE;
+    status = myraidenii_core_sound_push(sound, sound->pc);
+    if (status == LIB_STATUS_OK) sound->pc = 0x0038u;
+    *out_ticks = 13u;
+    return status;
+}
+
 static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
     lib_u8 *out_ticks)
 {
@@ -679,6 +982,12 @@ static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
     lib_u16 word;
     lib_status status;
 
+    status = myraidenii_core_sound_interrupt_accept(sound, out_ticks);
+    if (status != LIB_STATUS_UNSUPPORTED) return status;
+    if (sound->interrupt_enable_delay != 0u) {
+        --sound->interrupt_enable_delay;
+        if (sound->interrupt_enable_delay == 0u) sound->interrupt_enable = LIB_TRUE;
+    }
     if (sound->halted) {
         *out_ticks = 4u;
         return LIB_STATUS_OK;
@@ -996,7 +1305,12 @@ static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
         *out_ticks = 4u;
         return LIB_STATUS_OK;
     case 0xf3u:
+        sound->interrupt_enable = LIB_FALSE;
+        sound->interrupt_enable_delay = 0u;
+        *out_ticks = 4u;
+        return LIB_STATUS_OK;
     case 0xfbu:
+        sound->interrupt_enable_delay = 2u;
         *out_ticks = 4u;
         return LIB_STATUS_OK;
     case 0x7eu:
@@ -1088,12 +1402,17 @@ lib_status myraidenii_core_sound_create(
     const myraidenii_core_sound_config *config, myraidenii_core_sound **out_sound)
 {
     myraidenii_core_sound *sound;
+    lib_status status;
 
     if (out_sound == LIB_NULL || config == LIB_NULL ||
         !myraidenii_core_sound_transport_valid(&config->transport) ||
         (config->program == LIB_NULL && config->program_bytes != 0u) ||
         (config->program != LIB_NULL &&
-            config->program_bytes < MYRAIDENII_CORE_SOUND_FIXED_ROM_BYTES))
+            config->program_bytes < MYRAIDENII_CORE_SOUND_FIXED_ROM_BYTES) ||
+        !myraidenii_core_sound_image_valid(config->samples_1,
+            config->samples_1_bytes) ||
+        !myraidenii_core_sound_image_valid(config->samples_2,
+            config->samples_2_bytes))
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_sound = LIB_NULL;
     sound = lib_allocate_zero(1u, sizeof(*sound));
@@ -1108,6 +1427,20 @@ lib_status myraidenii_core_sound_create(
         }
         lib_memory_copy(sound->program, config->program, sound->program_bytes);
     }
+    status = myraidenii_core_sound_image_copy(config->samples_1,
+        config->samples_1_bytes, &sound->oki[0u].samples);
+    if (status == LIB_STATUS_OK) {
+        sound->oki[0u].samples_bytes = config->samples_1_bytes;
+        status = myraidenii_core_sound_image_copy(config->samples_2,
+            config->samples_2_bytes, &sound->oki[1u].samples);
+        sound->oki[1u].samples_bytes = config->samples_2_bytes;
+    }
+    if (status != LIB_STATUS_OK) {
+        lib_release(sound->oki[0u].samples);
+        lib_release(sound->program);
+        lib_release(sound);
+        return status;
+    }
     myraidenii_core_sound_reset(sound);
     *out_sound = sound;
     return LIB_STATUS_OK;
@@ -1116,6 +1449,8 @@ lib_status myraidenii_core_sound_create(
 void myraidenii_core_sound_destroy(myraidenii_core_sound *sound)
 {
     if (sound == LIB_NULL) return;
+    lib_release(sound->oki[0u].samples);
+    lib_release(sound->oki[1u].samples);
     lib_release(sound->program);
     lib_release(sound);
 }
@@ -1136,8 +1471,19 @@ void myraidenii_core_sound_reset(myraidenii_core_sound *sound)
         sound->h = 0u;
         sound->l = 0u;
         sound->bank = 0u;
+        sound->interrupt_mode = 0u;
+        sound->interrupt_enable_delay = 0u;
+        sound->interrupt_enable = LIB_FALSE;
         sound->halted = LIB_FALSE;
         lib_memory_set(sound->ram, 0, sizeof(sound->ram));
+        lib_memory_set(&sound->ym, 0, sizeof(sound->ym));
+        for (lib_u8 index = 0u; index < 2u; ++index) {
+            sound->oki[index].pending_sample = 0u;
+            sound->oki[index].nibble_phase = 0u;
+            sound->oki[index].has_pending_sample = LIB_FALSE;
+            lib_memory_set(sound->oki[index].voices, 0,
+                sizeof(sound->oki[index].voices));
+        }
     }
 }
 
@@ -1167,13 +1513,17 @@ lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
     sound->z80_ticks += delivered;
     sound->available_ticks += delivered;
     sound->z80_phase = phase % MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR;
-    if (sound->program == LIB_NULL) return LIB_STATUS_OK;
+    if (sound->program == LIB_NULL) {
+        myraidenii_core_sound_devices_advance(sound, delivered);
+        return LIB_STATUS_OK;
+    }
     while (sound->available_ticks >= MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS) {
         lib_u8 ticks;
 
         status = myraidenii_core_sound_execute(sound, &ticks);
         if (status != LIB_STATUS_OK) return status;
         sound->available_ticks -= ticks;
+        myraidenii_core_sound_devices_advance(sound, ticks);
     }
     return LIB_STATUS_OK;
 }

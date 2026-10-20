@@ -9,6 +9,7 @@
 enum {
     MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND = 16000000u,
     MYRAIDENII_CORE_SOUND_PROGRAM_BYTES = 65536u,
+    MYRAIDENII_CORE_SOUND_SAMPLE_BYTES = 0x40000u,
     MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR = 28636363u,
     MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR =
         8u * MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND
@@ -31,6 +32,10 @@ typedef struct myraidenii_core_sound_transport {
 typedef struct myraidenii_core_sound_config {
     const lib_u8 *program;
     lib_size program_bytes;
+    const lib_u8 *samples_1;
+    lib_size samples_1_bytes;
+    const lib_u8 *samples_2;
+    lib_size samples_2_bytes;
     myraidenii_core_sound_transport transport;
 } myraidenii_core_sound_config;
 
