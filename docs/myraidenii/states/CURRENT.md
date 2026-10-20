@@ -21,9 +21,9 @@ M1 T4 remains open after accepted S1:
 | S13 | L2 CRTC write-only extension at the exact next selected-set stop. | P1 `22d47c4b0`; P2 `24546816b`; x64/x86 focused Board tests and selected-set probes advance from `0x640` to the next independent stop `0x658`; complete repository-only units pass 669/669 on each width. [Evidence](../etc/evidence/t4-s13-crtc-write-extension-l2.md). |
 | S14 | Bounded attribution of the selected set's first unowned control-window access at `0x658`. | P1 `f8fc5f867` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes identify the same one-byte write while preserving `INVALID_STATE`; all 642 repository unit cases pass per width when the known temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s14-control-fallback-attribution.md). |
 | S15 | Exact selected-set word-write receiver at `0x658--0x659`, separately owned from CRTC. | P1 `0392b97e2` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the complete word span, then reach the same independent next byte-write stop at `0x65a`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s15-object-write-sink-l2.md). |
-| S16 | Exact selected-set word-write receiver at `0x65a--0x65b`, separately owned from CRTC and S15. | P1 pending. |
+| S16 | Exact selected-set word-write receiver at `0x65a--0x65b`, separately owned from CRTC and S15. | P1 `84f3023fb` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only either exact word span, reject the cross-pair without RAM fallback, then reach the same independent next byte-write stop at `0x65c`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s16-object-write-sink-l2.md). |
 
-## Active Packet — M1 T4 S16
+## Retained Packet — M1 T4 S16
 
 | Field | Required record |
 | --- | --- |
@@ -42,6 +42,11 @@ M1 T4 remains open after accepted S1:
 | Stop Conditions | Need for access outside the observed span, readback, algorithmic behavior, Shared change, contradictory runtime evidence, divergent host widths, protected-data exposure or cleanup failure. |
 | Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
 | Similar-Issue Sweep | Check `0x65a--0x65b`, immediate neighbours, read/inspect, widths, reset and no overlap with CRTC or S15; no fallback widening or duplicate Video state. |
+
+S16 is closed. The bounded L2 receiver owns only the proven adjacent pair and
+the selected-set probe's next independent unowned access is a one-byte write
+at `0x65c`. M1 T4 remains open; any receiver for that new stop requires a
+separately admitted packet.
 
 ## Retained Packet — M1 T4 S15
 
