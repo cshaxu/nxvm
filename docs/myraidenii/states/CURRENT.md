@@ -1,26 +1,5 @@
 # MyRaidenII Status
 
-## Active Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, MyRaidenII M1 T3 S27. |
-| Admission And Approval | Owner-directed continuation on 2026-10-19; T3's existing same-task S planning delegation applies. No Shared change is admitted. |
-| Objective | Give the selected-set-observed `0x6c8--0x6c9` word-write span its narrowest Board-local L2 disposition and prove the next bounded startup stop on both widths. |
-| Non-goals | No generic control fallback, RAM mapping, COP/Video model, Shared/Core/API change, protected payload retention, executable publication, or claim of startup/playability qualification. |
-| Reference Baseline | Clean pushed S26 P2 `af654d6c8`; current two-width selected-set probe stops at `0x6c8` after the accepted `0x43e--0x43f` write-only route. MAME's Raiden II map leaves `0x6c8--0x6c9` unmapped between named `0x6c6--0x6c7` and `0x6ca--0x6cb` receivers. |
-| Candidate Proposal | Extend the existing exact selected-control write-no-op owner with only `0x6c8--0x6c9`, accepting byte or word writes wholly inside that span and retaining no state/readback. All neighbouring accesses continue through their existing receivers or explicit refusal. |
-| Files And ABI Surface | `src/myraidenii/core/board.c`, existing Board bus unit, MyRaidenII T3 evidence/status/proposal indexes. No public interface or component dependency changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`; MyRaidenII architecture/coding/source policy. Board is the sole local owner; source is research only, not imported. |
-| Verification | Targeted Board unit x64/x86; complete repository-only unit suite x64/x86; bounded selected-set probe x64/x86 with transient lanes removed afterward; manifest/static/document checks applicable to changed paths. |
-| Expected Markers | Board unit success; selected probes report a deterministic next stop or budget result, never retain ROM bytes/registers/PC/instruction data. |
-| Asset Needs | Existing owner-supplied external archive only, staged below a unique ignored task path and deleted after each probe. |
-| Reporting Requirements | Record model, MAME map evidence, actual next-stop observations, source/test line delta, test boundary and unresolved receiver. |
-| Stop Conditions | Stop before broadening past `0x6c9`, accepting reads, modeling COP/Video behavior, or making any Shared change; transfer any such need to the correct owner. |
-| Exit Criteria | Exact write route/test/evidence are committed; both widths pass focused and complete unit suites; selected probe advances or documents its next bounded stop; temporary media is gone and worktree is clean. |
-| Original Owner Request | Continue T3 Board/COP execution to the next correct receiver without absorbing an unproven route. |
-| Similar-Issue Sweep | Review the adjacent `0x6c0--0x6cf` map and existing write-hole owner; retain named receivers and explicit rejections rather than collapsing them into a broad no-op. |
-
 ## Current Work
 
 M1 T3 remains open after accepted S1--S25:
@@ -53,6 +32,7 @@ M1 T3 remains open after accepted S1--S25:
 | S24 | Complete COP 2a05 offset-add receiver and bounded actual-bus proof | `7d37760f7` |
 | S25 | Bounded selected-set startup diagnostic and explicit Board/COP-owner transfer | P1 `c75a016d0`; P2 state receipt; P3 owner correction |
 | S26 | Selected-set `0x43e` write-only Board hole and bounded next-stop transfer | P1 `42845208d` |
+| S27 | Exact `0x6c8--0x6c9` selected write-only span and bounded Sprite/Video transfer | P1 `f792feffa` |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -313,3 +293,11 @@ then advances from the prior stop by two instructions to the same new `0x6c8`
 write on both widths. That later address is explicitly not absorbed: its
 Board/Video receiver remains open, along with the existing COP, Video, and
 startup requirements. See the [S26 record](../etc/evidence/t3-s26-control-write-hole.md).
+
+S27 accepts only the independently evidenced `0x6c8--0x6c9` write-only span;
+the real V30 word store reaches its two byte lanes and retains no state or
+readback. Both selected-set probes next stop at the named `0x6ce--0x6cf`
+Sprite/Video flags receiver. The [S27 record](../etc/evidence/t3-s27-selected-control-noop.md)
+retains its exact boundary, cleanup and final 687/687 dual-width qualification.
+S27 is closed; T3/M1 remain open for the receiver and genuine selected-set
+startup, without any playable-game claim.
