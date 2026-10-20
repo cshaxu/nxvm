@@ -29,6 +29,7 @@ enum {
     MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS = 9u,
     MYRAIDENII_CORE_SOUND_OKI_VOLUME_SCALE = 4096u,
     MYRAIDENII_CORE_SOUND_OKI_VOLUME_RATIO = 181u,
+    MYRAIDENII_CORE_SOUND_OKI_ADPCM_MAX_STEP = 48u,
     MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS = 23u,
     MYRAIDENII_CORE_SOUND_FLAG_CARRY = 0x01u,
     MYRAIDENII_CORE_SOUND_FLAG_SUBTRACT = 0x02u,
@@ -54,6 +55,8 @@ typedef struct myraidenii_core_sound_oki_voice {
     lib_bool high_nibble;
     lib_bool active;
     lib_u8 volume;
+    lib_u8 step;
+    lib_i16 signal;
 } myraidenii_core_sound_oki_voice;
 
 typedef struct myraidenii_core_sound_oki {
@@ -298,10 +301,47 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki
             oki->voices[index].high_nibble = LIB_TRUE;
             oki->voices[index].active = LIB_TRUE;
             oki->voices[index].volume = value & 0x0fu;
+            oki->voices[index].step = 0u;
+            oki->voices[index].signal = 0;
         }
     }
     oki->has_pending_sample = LIB_FALSE;
     return LIB_STATUS_OK;
+}
+
+/* This is an independently written L2 state model of the published OKI ADPCM
+ * behavior. It derives its magnitude instead of retaining an imported table. */
+static lib_u32 myraidenii_core_sound_oki_step_magnitude(lib_u8 step)
+{
+    lib_u64 magnitude = (lib_u64)16u << 32u;
+
+    for (lib_u8 index = 0u; index < step; ++index)
+        magnitude = magnitude * 11u / 10u;
+    return (lib_u32)(magnitude >> 32u);
+}
+
+static void myraidenii_core_sound_oki_decode(myraidenii_core_sound_oki_voice *voice,
+    lib_u8 nibble)
+{
+    const lib_u32 magnitude = myraidenii_core_sound_oki_step_magnitude(voice->step);
+    lib_i32 difference = (lib_i32)(magnitude >> 3u);
+    lib_i32 signal;
+    lib_u8 low = nibble & 7u;
+
+    if ((low & 1u) != 0u) difference += (lib_i32)(magnitude >> 2u);
+    if ((low & 2u) != 0u) difference += (lib_i32)(magnitude >> 1u);
+    if ((low & 4u) != 0u) difference += (lib_i32)magnitude;
+    signal = voice->signal + ((nibble & 8u) != 0u ? -difference : difference);
+    if (signal > 2047) signal = 2047;
+    if (signal < -2048) signal = -2048;
+    voice->signal = (lib_i16)signal;
+    if (low < 4u) {
+        if (voice->step != 0u) --voice->step;
+    } else {
+        voice->step = (lib_u8)(voice->step + 2u * (low - 3u));
+        if (voice->step > MYRAIDENII_CORE_SOUND_OKI_ADPCM_MAX_STEP)
+            voice->step = MYRAIDENII_CORE_SOUND_OKI_ADPCM_MAX_STEP;
+    }
 }
 
 static void myraidenii_core_sound_oki_advance(myraidenii_core_sound_oki *oki,
@@ -314,22 +354,21 @@ static void myraidenii_core_sound_oki_advance(myraidenii_core_sound_oki *oki,
     oki->nibble_phase %= MYRAIDENII_CORE_SOUND_OKI_NIBBLE_TICKS;
     for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
         myraidenii_core_sound_oki_voice *voice = &oki->voices[index];
-        lib_u64 remaining;
 
         if (!voice->active || nibbles == 0u) continue;
-        remaining = ((lib_u64)voice->end - voice->position + 1u) * 2u -
-            (voice->high_nibble ? 0u : 1u);
-        if (nibbles >= remaining) {
-            voice->position = voice->end;
-            voice->high_nibble = LIB_FALSE;
-            voice->active = LIB_FALSE;
-            continue;
-        }
-        {
-            const lib_u64 consumed = (voice->high_nibble ? 0u : 1u) + nibbles;
+        for (lib_u64 consumed = 0u; consumed < nibbles && voice->active; ++consumed) {
+            const lib_u8 byte = oki->samples[voice->position];
+            const lib_u8 nibble = voice->high_nibble ? byte >> 4u : byte & 0x0fu;
 
-            voice->position += (lib_u32)(consumed / 2u);
-            voice->high_nibble = (consumed & 1u) == 0u;
+            myraidenii_core_sound_oki_decode(voice, nibble);
+            if (voice->high_nibble) {
+                voice->high_nibble = LIB_FALSE;
+            } else if (voice->position == voice->end) {
+                voice->active = LIB_FALSE;
+            } else {
+                ++voice->position;
+                voice->high_nibble = LIB_TRUE;
+            }
         }
     }
 }
@@ -371,12 +410,8 @@ static lib_i16 myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound)
         for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT;
             ++index) {
             const myraidenii_core_sound_oki_voice *voice = &oki->voices[index];
-            lib_u8 nibble;
-
             if (!voice->active || voice->position >= oki->samples_bytes) continue;
-            nibble = oki->samples[voice->position];
-            nibble = voice->high_nibble ? nibble >> 4u : nibble & 0x0fu;
-            mixed += ((lib_i32)nibble - 8) *
+            mixed += (lib_i32)voice->signal *
                 (lib_i32)myraidenii_core_sound_oki_volume_scale(voice->volume) / 8;
         }
     }

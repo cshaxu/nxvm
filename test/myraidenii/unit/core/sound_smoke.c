@@ -448,6 +448,50 @@ done:
     return failed;
 }
 
+static lib_status sound_first_oki_pcm(lib_u8 first_sample_byte,
+    lib_i16 *out_sample)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    lib_i16 frames[MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_u32 copied = 0u;
+    lib_u64 dropped = 0u;
+    lib_size at = 0u;
+    lib_status status;
+
+    if (out_sample == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples_1, 0, sizeof(samples_1));
+    samples_1[10u] = 0x20u;
+    samples_1[13u] = 0x2fu;
+    samples_1[0x20u] = first_sample_byte;
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x10u);
+    program[at] = 0x76u;
+    status = sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_sound_advance(sound, 10000u);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_sound_pcm_copy(sound, frames, 1u, &copied, &dropped);
+    if (status == LIB_STATUS_OK && (copied != 1u || dropped != 0u))
+        status = LIB_STATUS_INTERNAL_ERROR;
+    if (status == LIB_STATUS_OK) *out_sample = frames[0u];
+    myraidenii_core_sound_destroy(sound);
+    return status;
+}
+
+static lib_i32 sound_decodes_oki_nibble_sign(void)
+{
+    lib_i16 positive = 0;
+    lib_i16 negative = 0;
+
+    return sound_first_oki_pcm(0x70u, &positive) != LIB_STATUS_OK ||
+        sound_first_oki_pcm(0xf0u, &negative) != LIB_STATUS_OK ||
+        positive <= 0 || negative >= 0;
+}
+
 int main(void)
 {
     return sound_executes_fixed_transport() != 0 ||
@@ -458,5 +502,6 @@ int main(void)
         sound_delivers_ym_timer_interrupt() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
-        sound_stops_selected_oki_channel() != 0 ? 1 : 0;
+        sound_stops_selected_oki_channel() != 0 ||
+        sound_decodes_oki_nibble_sign() != 0 ? 1 : 0;
 }
