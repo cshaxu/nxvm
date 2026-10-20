@@ -29,3 +29,8 @@ to test/myraidenii/integration with bounded checkpoints and cleanup. Logs do not
 dump protected content; raw traces have hard byte/time budgets and are discarded
 after retaining neutral observations. Microsoft binaries are not required or
 distributed. Sibling repositories are read-only absent explicit import approval.
+
+External research tools must direct generated configuration, NVRAM, snapshots
+and logs to an owner-managed location under `nxvm-assets/media-myraidenii/`.
+They must not create repository-root configuration directories or become a
+tracked/runtime product dependency.

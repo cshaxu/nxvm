@@ -27,8 +27,12 @@ filesystem, host clock or worker dependency. Public component headers end in
 for example `myraidenii_machine_*` and `myraidenii_core_*`; game register
 constants retain meaningful hardware names rather than task numbers.
 
-The future `product/version.h` owns product/version/banner strings. A numeric
-implementation T selects its four-digit revision, not an S or compiler option.
+The future `product/version_interface.h` follows MyNES's product-local pattern:
+it owns `APP_PRODUCT_NAME`, `APP_PRODUCT_VERSION` and the two-line
+`APP_PRODUCT_BANNER`. A numeric implementation T selects its four-digit
+revision, not an S or compiler option. The banner is passed to Emulator
+Product, which alone adds the shared Built on framing; the App does not format
+that line itself.
 Initial release format is `myraidenii_0_0_NNNN_{x64,x86}.exe`, alongside the
 lowercase INI. M0 creates neither version header nor EXE. Only the latest
 verified pair is retained/committed; no ROM bytes or generated embedded source.
@@ -38,3 +42,7 @@ builds, one source list per owner and existing Ninja/ccache graphs. Libraries
 are built once per architecture and reused by tests/App targets. Shared build
 edits have Shared commits; product commits cannot mutate other products.
 Tools are introduced under tools/myraidenii only when a real tool exists.
+External research-tool configuration is not repository source: it belongs under
+the owner-managed `nxvm-assets/media-myraidenii/` tree and commands must select
+that location explicitly. No tool may create a repository-root `cfg/` (or
+another product-unowned root directory).

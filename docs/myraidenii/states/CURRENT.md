@@ -2,10 +2,31 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S37. The owner-approved external PAL inputs
-make current MAME execution available. S37 establishes a reproducible synthetic
-graphics-region mutation observation but not a graphics-element layout; Core
-still has no graphics decode, composition or frame publication path.
+M1 T4 S38 is active. The owner-approved external PAL inputs make current MAME
+execution available. S37 establishes a reproducible synthetic graphics-region
+mutation observation but not a graphics-element layout; S38 now tries to
+isolate a finite coordinate/value oracle without reading or retaining game data.
+
+## Active Packet — M1 T4 S38
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S38 follows accepted S37 P2 `6eb554da4`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized M1/T4 L2 behavioural modeling and external MAME as a black-box research reference. This is a same-T bounded continuation; existing source-policy prohibitions remain in force. |
+| Objective | Determine whether controlled synthetic tilemap, palette and graphics mutations can establish a finite coordinate/value graphics-element oracle sufficient to specify one initial Core decoder contract. |
+| Non-goals | No MAME source/table/handler import, reading/dumping/retaining ROM or memory content, screenshots, raw traces, production/test/API/artifact change, layer/sprite composition, decryption or playable-game claim. |
+| Reference Baseline | S31 fixed the seven image roles; S32 established L2 RGB555 lookup; S36 fixes 320×240; S37 proves a graphics-region mutation changes later visible output reproducibly. |
+| Candidate Proposal | In a transient MAME Lua run, install only synthetic in-process graphics state and one known graphics-bit pattern, then retain only a bounded set of pixel coordinates/colours or an all-screen neutral summary. Repeat each admitted observation twice and delete all script/output files. MAME uses the external `nxvm-assets/media-myraidenii/raiden2/mame-config/` directory explicitly; it must not create repository-root configuration. |
+| Files And ABI Surface | Documentation/evidence only; one ignored temporary script under a unique `build/` path. No repository production/test/manifest/API/shared/artifact or external media changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. MAME is black-box only; all mutations occur in its process and no protected bytes or pixel payload leave it. |
+| Verification | Prove synthetic isolation by repeatable observations with and without the selected mutation; verify only declared coordinates/colours/checksums are printed; delete all temporary data; run documentation governance and `git diff --check`. |
+| Expected Markers | Either a finite replicated element-layout fact table, or an exact reason a coordinate oracle cannot be obtained under containment rules. |
+| Asset Needs | Existing owner-supplied external archive and S35 external PALs, read-only; generated external MAME configuration is stored only under `nxvm-assets/media-myraidenii/raiden2/mame-config/`. |
+| Reporting Requirements | Record only MAME version/API class, synthetic state classes, neutral coordinates/colours/checksums, repeatability and cleanup. No raw address-to-content dump, image, ROM byte, memory dump or MAME implementation detail. |
+| Stop Conditions | The experiment needs source inspection, protected payload retention, an archive change, an unbounded observation, a MAME modification/plugin or non-repeatable output. |
+| Exit Criteria | A complete bounded element contract is documented for a decoder S, or a truthful blocked field set is transferred without any production source claim. |
+| Original Owner Request | Continue MyRaidenII under the approved L2 model and external BYOB assets until RAIDEN II can be run, rather than stopping after a planning-only result. |
+| Similar-Issue Sweep | Confirm no temporary script/log/NVRAM/snapshot persists and no second graphics owner, decoder implementation, MAME-derived source/table or protected payload reaches repository state. |
 
 ## Archived Packet — M1 T4 S37
 
