@@ -169,6 +169,32 @@ startup, input, desktop or gameplay result. S14 is closed; M1 T5 remains open
 for later qualified Sound work, while Product/Machine configuration and the
 real user-input route remain the queued receiving task.
 
+## Archived Packet — M1 T5 S15
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S15 follows accepted S14 closure `eb440284a`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs continued implementation under the explicit L3/L2/L1 source ladder. Product-visible host key bindings are a local L1 policy unless separately supported; the Board's semantic JAMMA controls remain the previously recorded L2 board contract. |
+| Objective | Replace the Machine driver's current input discard with its one required KVM-to-Board control adapter, including release/reset hygiene. |
+| Reference Baseline | `myraidenii_machine_deliver_input()` currently ignores every KVM event despite the Board already owning active-low semantic controls. No Product path is created by this S. |
+| Candidate Proposal | Map a finite L1 host default (arrows, Z/X, 1/5 and F2) to existing Player 1 direction/button, Start 1, Coin 1 and Service controls. Forward only KVM key transitions. Emulator Session already turns INPUT_RESET/SOURCE_RETIRED into source-owned key releases, so the driver creates no second held-key ledger. No second queue, product parser or public interface is added. |
+| Files And ABI Surface | `src/myraidenii/machine/driver.c`, its existing Machine-driver unit, evidence and Current only. No Shared, Product, Core ABI, ROM/media or artifact change. |
+| Applicable Rules | MyRaidenII guide; source policy; Architecture, Coding, Documentation and Execution rules. Machine remains the sole KVM-to-Board adapter; Board remains sole electrical/polarity owner. |
+| Verification | Met: focused Machine-driver and complete MyRaidenII unit suites pass 8/8 on x64 and x86; documentation governance and whitespace checks pass. |
+| Stop Conditions | Need for a configurable binding registry, product/session parser, additional input source, unavailable KVM event fact, external payload, Shared API change or nonlocal key policy stops and transfers the gap. |
+| Exit Criteria | Met: actual Machine-driver tests prove every listed make, a break, unrelated-event ignore and no reset/retirement-ledger duplication. |
+| Original Owner Request | Continue toward MyRaidenII under strict evidence grades without promoting an external/reference or local policy to manual-backed L3. |
+
+Sequential coordinator actual-change review accepts S15's Machine-only input
+adapter. It recognizes a finite L1 host policy and delegates all recognized
+make/break transitions to the existing Board semantic-control owner. Emulator
+Session remains the sole source-reset/release ledger; no second held-key state
+or input route was added. Both cached widths pass focused Machine-driver and
+complete MyRaidenII 8/8 unit selections, documentation governance and
+whitespace checks. There is no Product executable, desktop input or gameplay
+claim. S15 is closed; M1 T5 remains open for qualified Sound work and queued
+Product/Machine configuration.
+
 ## Archived Packet — M1 T5 S14
 
 | Field | Required record |

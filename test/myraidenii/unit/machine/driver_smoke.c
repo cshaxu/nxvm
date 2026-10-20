@@ -14,6 +14,20 @@ static lib_i32 callback_count;
 static lib_status destroy_status = LIB_STATUS_OK;
 static lib_u32 audio_frames;
 static lib_u32 audio_accepted;
+static lib_i32 control_count;
+static myraidenii_core_board_control control_last;
+static lib_bool control_pressed;
+
+lib_status myraidenii_core_board_set_control(myraidenii_core_board *board,
+    myraidenii_core_board_control control, lib_bool pressed)
+{
+    if (board == LIB_NULL || control >= MYRAIDENII_CORE_BOARD_CONTROL_COUNT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    ++control_count;
+    control_last = control;
+    control_pressed = pressed;
+    return LIB_STATUS_OK;
+}
 
 x86_core_machine *myraidenii_core_board_machine_get(myraidenii_core_board *board)
 {
@@ -139,6 +153,21 @@ int main(void)
     static kvm_window_frame_storage frame;
     lib_audio_pcm_stream *stream = (lib_audio_pcm_stream *)(lib_uptr)3u;
     lib_bool produced = LIB_FALSE;
+    kvm_input_event event = {0};
+    const struct {
+        base_key key;
+        myraidenii_core_board_control control;
+    } mappings[] = {
+        {BASE_KEY_UP, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_UP},
+        {BASE_KEY_DOWN, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_DOWN},
+        {BASE_KEY_LEFT, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_LEFT},
+        {BASE_KEY_RIGHT, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_RIGHT},
+        {'Z', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1},
+        {'X', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_2},
+        {'1', MYRAIDENII_CORE_BOARD_CONTROL_START_1},
+        {'5', MYRAIDENII_CORE_BOARD_CONTROL_COIN_1},
+        {BASE_KEY_F2, MYRAIDENII_CORE_BOARD_CONTROL_SERVICE}
+    };
     const myraidenii_core_board *board = (const myraidenii_core_board *)(lib_uptr)1u;
 
     if (myraidenii_machine_create(LIB_NULL, stream, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -159,6 +188,26 @@ int main(void)
         frame.frame.graphics->height != MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT ||
         frame.frame.graphics->stride != MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH ||
         frame.frame.graphics->pixels[0u] != 0x00112233u || frame_copy_count != 1) return 1;
+    event.type = KVM_EVENT_KEY;
+    for (lib_size index = 0u; index < sizeof(mappings) / sizeof(mappings[0]); ++index) {
+        event.data.key.key = mappings[index].key;
+        event.data.key.pressed = LIB_TRUE;
+        driver.deliver_input(driver.context, &event);
+        if (control_count != (lib_i32)(index + 1u) || control_last != mappings[index].control ||
+            control_pressed != LIB_TRUE) return 1;
+    }
+    event.data.key.key = 'Z';
+    event.data.key.pressed = LIB_FALSE;
+    driver.deliver_input(driver.context, &event);
+    if (control_count != 10 || control_last != MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1 ||
+        control_pressed != LIB_FALSE) return 1;
+    event.data.key.key = 'Q';
+    driver.deliver_input(driver.context, &event);
+    event.type = KVM_EVENT_INPUT_RESET;
+    driver.deliver_input(driver.context, &event);
+    event.type = KVM_EVENT_SOURCE_RETIRED;
+    driver.deliver_input(driver.context, &event);
+    if (control_count != 10) return 1;
     driver.set_heartbeat(driver.context, LIB_FALSE);
     driver.set_heartbeat(driver.context, LIB_TRUE);
     audio_frames = 1u;

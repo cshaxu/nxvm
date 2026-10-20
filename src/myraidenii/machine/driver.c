@@ -137,10 +137,36 @@ static void myraidenii_machine_set_executor_callback(void *context,
     machine->executor_context = callback_context;
 }
 
+static lib_bool myraidenii_machine_control_for_key(base_key key,
+    myraidenii_core_board_control *out_control)
+{
+    /* This is the initial host-key policy (L1), not a board wiring fact. */
+    if (out_control == LIB_NULL) return LIB_FALSE;
+    switch (key) {
+    case BASE_KEY_UP: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_UP; break;
+    case BASE_KEY_DOWN: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_DOWN; break;
+    case BASE_KEY_LEFT: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_LEFT; break;
+    case BASE_KEY_RIGHT: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_RIGHT; break;
+    case 'Z': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1; break;
+    case 'X': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_2; break;
+    case '1': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_START_1; break;
+    case '5': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_COIN_1; break;
+    case BASE_KEY_F2: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_SERVICE; break;
+    default: return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static void myraidenii_machine_deliver_input(void *context, const kvm_input_event *event)
 {
-    (void)context;
-    (void)event;
+    myraidenii_machine *machine = context;
+    myraidenii_core_board_control control;
+
+    if (machine == LIB_NULL || event == LIB_NULL || event->type != KVM_EVENT_KEY ||
+        !myraidenii_machine_control_for_key(event->data.key.key, &control)) return;
+    if (myraidenii_core_board_set_control(machine->board, control,
+        event->data.key.pressed) != LIB_STATUS_OK)
+        myraidenii_machine_fail(machine);
 }
 
 static lib_status myraidenii_machine_copy_frame(void *context,
