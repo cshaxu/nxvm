@@ -83,11 +83,14 @@ int main(int argument_count, char **arguments)
         }
 
         lib_c_printf("MYRAIDENII:STARTUP-PROBE:OK reason=%u detail=%u fault-code=%u "
-            "cop-operation=%u cop-value=%u cop-physical=%u cop-status=%u "
+            "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
+            "cop-destination=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
             "executed=%llu ticks=%llu\n",
             (lib_u32)result.reason, result.detail, fault_code, (lib_u32)cop_failure.operation,
-            (lib_u32)cop_failure.operation_value, cop_failure.physical,
+            (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
+            (lib_u32)cop_failure.dma_size, (lib_u32)cop_failure.dma_destination,
+            cop_failure.physical,
             (lib_u32)cop_failure.status,
             (lib_u32)control_failure.valid, control_failure.physical,
             (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,

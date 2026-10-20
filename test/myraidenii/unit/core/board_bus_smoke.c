@@ -1014,19 +1014,27 @@ static lib_i32 board_cop_routes(void)
         goto done;
     if (x86_core_machine_memory_write(machine, 0x47eu, (lib_u8[]){0x14u,0u}, 2u) !=
             LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x478u, (lib_u8[]){0x34u,0x12u}, 2u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x47au, (lib_u8[]){0x78u,0x56u}, 2u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x47cu, (lib_u8[]){0xbcu,0x9au}, 2u) !=
+            LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6fcu, (lib_u8[]){0u,0u}, 2u) !=
             LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
         !cop_failure.valid || cop_failure.operation != MYRAIDENII_CORE_COP_OPERATION_DMA ||
         cop_failure.operation_value != 0x014u || cop_failure.physical != 0x6fcu ||
-        cop_failure.status != LIB_STATUS_INVALID_STATE ||
+        cop_failure.status != LIB_STATUS_INVALID_STATE || cop_failure.dma_source != 0x1234u ||
+        cop_failure.dma_size != 0x5678u || cop_failure.dma_destination != 0x9abcu ||
         x86_core_machine_memory_write(machine, 0x47eu, (lib_u8[]){0x09u,0u}, 2u) !=
             LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6fcu, (lib_u8[]){0u,0u}, 2u) !=
             LIB_STATUS_OK || x86_core_machine_reset(machine) !=
             LIB_STATUS_OK ||
         myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
-        cop_failure.valid)
+        cop_failure.valid || cop_failure.dma_source != 0u || cop_failure.dma_size != 0u ||
+        cop_failure.dma_destination != 0u)
         goto done;
     for (lib_u8 phase = 0u; phase < 2u; ++phase) {
         if (phase != 0u && (x86_core_machine_reset(machine) != LIB_STATUS_OK ||

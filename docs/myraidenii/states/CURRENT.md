@@ -29,6 +29,7 @@ M1 T4 remains open after accepted S23:
 | S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 `448691874`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6c0`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s21-sprite-protection-constant-l2.md). |
 | S22 | Bounded sprite-protection register group at `0x6c0--0x6c3` and `0x6c6--0x6c7`. | P1 `6d0246f46`; x64/x86 Board smokes and selected-set probes pass; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s22-sprite-protection-registers-l2.md). |
 | S23 | Attribute the selected-set's rejected COP DMA trigger before considering any new DMA mode. | P1 `bcbaeeeac`; x64/x86 probes identify rejected raw mode `0x0015` at `0x6fc`; final complete units pass 642/642 per width. [Evidence](../etc/evidence/t4-s23-cop-dma-trigger-attribution.md). |
+| S24 | Record the selected DMA context in the existing COP failure observation. | P1 pending. |
 
 ## Active Packet — M1 T4 S23
 
@@ -58,6 +59,27 @@ and the unimplemented Video-DMA modes retain their pre-existing behavior. The
 complete x64/x86 unit qualification passes 642/642 per width. No Shared
 component, public API, ROM/media payload, product artifact or playable-game
 claim changed.
+
+## Active Packet — M1 T4 S24
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S24 follows S23 P3 `282ba4a29`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's standing approval permits bounded diagnostic work under the MyRaidenII source policy. No Shared component, external code, protected payload or mode implementation is admitted. |
+| Objective | Capture the already-selected DMA context's source, size and destination when the existing trigger rejection occurs, so the selected-set probe can establish a finite descriptor without violating the write-only context contract. |
+| Non-goals | No mode acceptance, DMA transfer, Video/Palette implementation, register readback, generic trace, new function/callback, Shared API, ROM inspection, artifact or playable-game claim. |
+| Reference Baseline | S23 identifies raw mode `0x0015` at `0x6fc`; its context registers `0x478--0x47d` are intentionally write-only and cannot lawfully be read back through the Board bus. |
+| Candidate Proposal | Extend the existing bounded COP failure observation with the three reset-zero `lib_u16` values from the already-selected private DMA context. Populate them only with the first rejected DMA trigger alongside its existing fields; reset clears all fields. The existing Board getter and selected-set probe consume that observation without adding a second diagnostic route. |
+| Files And ABI Surface | MyRaidenII `core/cop.h`, `core/cop.c`, existing Board smoke, existing selected-set probe, CURRENT and one evidence record. The existing diagnostic record gains three fields; no Shared component, new function, callback, platform code, ROM, asset or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. This is a bounded runtime observation, not a source of hardware timing or palette semantics. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Rejected mode preserves existing invalid-state behavior and no pending operation; observation contains the exact selected descriptor on both widths; reset clears it; the write-only bus reads remain refused. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient staging only, with no retained payload, raw trace or screenshot. |
+| Reporting Requirements | Record descriptor values, source boundary, reset/failure behavior, dual-width probe result and remaining mode-15/Video non-goals. |
+| Stop Conditions | Capturing the context requires exposing a write-only bus read, a new generic trace/API, host widths diverge, protected data exposure, or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer if bounded observation cannot be made. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Check each existing DMA-trigger refusal, reset, accepted DMA advance failure and Board diagnostic getter so one first-failure owner remains. |
 
 ## Active Packet — M1 T4 S22
 

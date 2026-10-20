@@ -383,8 +383,15 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
 
             if (!myraidenii_core_cop_dma_mode_supported(mode)) {
                 if (!cop->failure.valid) {
+                    myraidenii_core_cop_dma_context *context = LIB_NULL;
+
                     cop->failure.operation = MYRAIDENII_CORE_COP_OPERATION_DMA;
                     cop->failure.operation_value = mode;
+                    if (myraidenii_core_cop_dma_context_get(cop, &context) == LIB_STATUS_OK) {
+                        cop->failure.dma_source = context->source;
+                        cop->failure.dma_size = context->size;
+                        cop->failure.dma_destination = context->destination;
+                    }
                     myraidenii_core_cop_note_failure(cop, LIB_STATUS_INVALID_STATE, physical);
                 }
                 return LIB_STATUS_INVALID_STATE;

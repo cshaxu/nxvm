@@ -14,11 +14,15 @@ typedef enum myraidenii_core_cop_operation {
 } myraidenii_core_cop_operation;
 
 /* This is a bounded failure summary for the Board diagnostic only. It never
- * retains guest payload, execution position, or register state. */
+ * retains guest payload or execution position. Rejected DMA triggers retain
+ * only their selected source, size and destination descriptor values. */
 typedef struct myraidenii_core_cop_failure_observation {
     lib_bool valid;
     myraidenii_core_cop_operation operation;
     lib_u16 operation_value;
+    lib_u16 dma_source;
+    lib_u16 dma_size;
+    lib_u16 dma_destination;
     lib_u32 physical;
     lib_status status;
 } myraidenii_core_cop_failure_observation;
