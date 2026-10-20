@@ -1,26 +1,5 @@
 # MyRaidenII Status
 
-## Active Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, MyRaidenII M1 T3 S28. |
-| Admission And Approval | Owner-directed continuation on 2026-10-19; T3's existing same-task S planning delegation applies. No Shared change is admitted. |
-| Objective | Establish the owner, access shape and admissible evidence boundary for the selected-set-observed `0x6ce--0x6cf` Sprite/Video flags receiver. |
-| Non-goals | No copied or transliterated MAME implementation, no inferred flag algorithm, no generic control fallback/RAM, no COP behavior, no Shared/Core/API change, no protected payload retention, executable publication or playable-game claim. |
-| Reference Baseline | Clean pushed S27 P2 `335be4465`; x64/x86 selected-set probes stop at write fault `0x6ce` after exact write-only spans at `0x43e--0x43f` and `0x6c8--0x6c9`. MAME names `0x6ce--0x6cf` a sprite-protection flags write receiver. |
-| Candidate Proposal | Record source-grade map facts and perform only a bounded access-shape observation through the existing Board route. Admit a local model only if independent evidence establishes its reset/state/failure contract; otherwise transfer the receiver to the queued Video owner. |
-| Files And ABI Surface | MyRaidenII T3 evidence/status/proposal indexes; temporary ignored diagnostic only if needed. No production/test/API change is presumed. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`; MyRaidenII architecture/coding/source policy. External emulator source is research-only. |
-| Verification | Source-policy compliance; current map/local-owner review; bounded two-width selected-set observation without protected payload retention; documentation governance. If code is admitted, run focused plus complete repository-only units on both widths. |
-| Expected Markers | A documented byte/word access shape and one explicit disposition: independently modeled local receiver, or transfer to Video/Sprite with named missing evidence. |
-| Asset Needs | Existing owner-supplied external archive only, staged below a unique ignored task path and deleted after the observation. |
-| Reporting Requirements | Record source grade, local ownership, observation schema, exact disposition, retained boundary, and no imported source/algorithm. |
-| Stop Conditions | Stop before encoding flag bits, reset behavior, sprite decryption, rendering, DMA, or another map receiver from source-only evidence. |
-| Exit Criteria | The receiver has a correctly bounded owner/evidence disposition; temporary data is gone; documentation checks pass; any admitted code receives required dual-width qualification; worktree is clean. |
-| Original Owner Request | Continue T3 Board/COP execution to the next correct receiver without absorbing unproven behavior. |
-| Similar-Issue Sweep | Review adjacent `0x6c0--0x6df` map ownership and Video's existing raster-only scope; preserve distinct named receivers rather than collapsing the block into Board fallback. |
-
 ## Current Work
 
 M1 T3 remains open after accepted S1--S25:
@@ -54,6 +33,7 @@ M1 T3 remains open after accepted S1--S25:
 | S25 | Bounded selected-set startup diagnostic and explicit Board/COP-owner transfer | P1 `c75a016d0`; P2 state receipt; P3 owner correction |
 | S26 | Selected-set `0x43e` write-only Board hole and bounded next-stop transfer | P1 `42845208d` |
 | S27 | Exact `0x6c8--0x6c9` selected write-only span and bounded Sprite/Video transfer | P1 `f792feffa` |
+| S28 | Sprite-flags receiver boundary and transfer to queued Video work | P1 `b2a2d00d5`; P2 closure receipt |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -322,3 +302,15 @@ Sprite/Video flags receiver. The [S27 record](../etc/evidence/t3-s27-selected-co
 retains its exact boundary, cleanup and final 687/687 dual-width qualification.
 S27 is closed; T3/M1 remain open for the receiver and genuine selected-set
 startup, without any playable-game claim.
+
+Sequential coordinator review accepts S28's source-policy-bounded disposition:
+the selected write at `0x6ce--0x6cf` has a named Sprite/Video owner but no
+independently qualified state, reset, decryption or frame contract. The
+existing `0x6cb` program-bank receiver remains correct despite the older
+reference-file comment naming `0x6c9`: the same fixed Raiden II map explicitly
+maps the bank byte at `0x6cb` and leaves `0x6c8--0x6c9` unassigned. S28
+therefore leaves S27's narrow no-op intact, imports no reference algorithm,
+and transfers the flags receiver to the queued Video task. Documentation-only
+checks pass; no source, test, ABI, ROM/media or executable changed. S28 is
+closed with no active packet. T3/M1 remains open for Video, sound, Product and
+genuine selected-set startup qualification.
