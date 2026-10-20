@@ -16,6 +16,11 @@ sprite-control consumer contract before it admits any receiver.  No generic
 no-op, RAM fallback, copied reference algorithm or Shared workaround is an
 eligible substitute.
 
+T4 S2's [source disposition](../etc/evidence/t4-s2-video-source-disposition.md)
+confirms that the currently available original/operator material and permitted
+external asset metadata do not fill that contract.  Video receiver code remains
+blocked until a source covers the complete flag-family consumer boundary.
+
 ## Work And Verification
 
 T3 S8 brings forward the Video-owned L2 raster phase/VBlank-to-Board receiver
