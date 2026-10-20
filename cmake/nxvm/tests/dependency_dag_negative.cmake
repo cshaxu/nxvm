@@ -22,9 +22,11 @@ execute_process(
     ERROR_VARIABLE error)
 file(REMOVE_RECURSE "${WORK}")
 if(result EQUAL 0 OR NOT "${output}${error}" MATCHES
-        "src/x86-nxvm/chips/probe/outer.c\\|app/probe" OR
+        "src/x86-nxvm/chips/probe/outer.c" OR
+        NOT "${output}${error}" MATCHES "app/probe" OR
         NOT "${output}${error}" MATCHES
-        "src/x86-nxvm/chips/probe/reverse.c\\|x86-nxvm/machine")
+        "src/x86-nxvm/chips/probe/reverse.c" OR
+        NOT "${output}${error}" MATCHES "x86-nxvm/machine")
     message(FATAL_ERROR
         "Dependency DAG probe did not reject outer and reverse edges: ${result}: ${output}${error}")
 endif()
