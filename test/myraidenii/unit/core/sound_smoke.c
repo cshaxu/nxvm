@@ -178,18 +178,27 @@ static lib_i32 sound_executes_bootstrap_control_flow(void)
     program[18u] = 0x34u; program[19u] = 0x12u;
     program[20u] = 0xddu; program[21u] = 0xe5u;
     program[22u] = 0xddu; program[23u] = 0xe1u;
-    program[24u] = 0x21u; program[25u] = 0u; program[26u] = 0x20u;
-    program[27u] = 0x11u; program[28u] = 0x10u; program[29u] = 0x20u;
-    program[30u] = 0x01u; program[31u] = 1u; program[32u] = 0u;
-    program[33u] = 0x36u; program[34u] = 0x4au;
-    program[35u] = 0xedu; program[36u] = 0xb0u;
-    program[37u] = 0x3au; program[38u] = 0x10u; program[39u] = 0x20u;
+    program[24u] = 0xddu; program[25u] = 0x21u;
+    program[26u] = 0u; program[27u] = 0x20u;
+    program[28u] = 0xddu; program[29u] = 0x36u;
+    program[30u] = 1u; program[31u] = 0x4au;
+    program[32u] = 0xddu; program[33u] = 0xcbu;
+    program[34u] = 1u; program[35u] = 0x46u;
+    program[36u] = 0xddu; program[37u] = 0x6eu; program[38u] = 1u;
+    program[39u] = 0x7du;
     program[40u] = 0x32u; program[41u] = 0x18u; program[42u] = 0x40u;
-    program[43u] = 0xc9u;
+    program[43u] = 0x21u; program[44u] = 0u; program[45u] = 0x20u;
+    program[46u] = 0x11u; program[47u] = 0x10u; program[48u] = 0x20u;
+    program[49u] = 0x01u; program[50u] = 1u; program[51u] = 0u;
+    program[52u] = 0x36u; program[53u] = 0x3cu;
+    program[54u] = 0xedu; program[55u] = 0xb0u;
+    program[56u] = 0x3au; program[57u] = 0x10u; program[58u] = 0x20u;
+    program[59u] = 0x32u; program[60u] = 0x19u; program[61u] = 0x40u;
+    program[62u] = 0xc9u;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound,
             MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR) != LIB_STATUS_OK ||
-        fixture.response[0] != 0x4au)
+        fixture.response[0] != 0x4au || fixture.response[1] != 0x3cu)
         goto done;
     failed = 0;
 done:
