@@ -451,6 +451,35 @@ done:
     return failed;
 }
 
+static lib_i32 board_sprite_protection_constant(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    const lib_u8 value = 0x5au;
+    const lib_u8 word[2] = {0x5au,0xa5u};
+    lib_u8 actual = 0u;
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
+        x86_core_machine_memory_write(machine, 0x6c4u, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6c4u, word, sizeof(word)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6c5u, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6c4u, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6c5u, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6c5u, word, sizeof(word)) !=
+            LIB_STATUS_INVALID_STATE) {
+        goto done;
+    }
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 static lib_i32 board_sprite_object_write_aperture(void)
 {
     const myraidenii_core_board_config config = {
@@ -2494,6 +2523,7 @@ lib_i32 main(void)
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_tile_bank_2() ||
         board_tile_bank_01() ||
+        board_sprite_protection_constant() ||
         board_control_failure_observation() ||
         board_sprite_object_write_aperture() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||

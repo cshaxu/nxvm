@@ -26,6 +26,28 @@ M1 T4 remains open after accepted S18:
 | S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 `cdd761ac0`; x64/x86 Board smoke and selected-set probes pass; complete repository unit suites pass 642/642 per width when the temporary-output-sensitive DAG negative case is executed separately. [Evidence](../etc/evidence/t4-s18-object-aperture-l2.md). |
 | S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 `7258833b8`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6cc`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s19-tile-bank-2-l2.md). |
 | S20 | Selected-set-observed tile-bank-01 latch at `0x6cc` plus adjacent `0x6cd` no-op. | P1 `229b564bb`; P3 `8ad61e876` corrects the overwide latch. x64/x86 Board smoke passes, both selected-set probes advance to `0x6c4`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s20-tile-bank-01-l2.md). |
+| S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 pending focused dual-width proof: Board smoke passes and probes advance to `0x6c0`; full qualification pending. |
+
+## Active Packet — M1 T4 S21
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S21 follows S20 P4 `91c97c436`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's standing approval permits bounded L2 behavior from external address-map evidence where L3 material is unavailable; source policy forbids importing code, tables, algorithms, or protected media. |
+| Objective | Model the selected-set-observed `0x6c4--0x6c5` sprite-protection constant write span as a stateless Board-owned no-op. |
+| Non-goals | No readback, constant interpretation, sprite-protection implementation, generic register framework, public API, Shared change, reference implementation translation, ROM inspection, or playable-game claim. |
+| Reference Baseline | S20's x64/x86 probes stop on a one-byte write at `0x6c4`. The selected Raiden II inherited map marks `0x6c4--0x6c5` write-only and states that a constant is written alongside the separate `0x6c0` receiver. |
+| Candidate Proposal | Add the exact two-byte span to the existing Board no-op owner. It accepts contained writes only, retains no state and leaves reads/inspection on the existing refusal path. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, selected-set probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset, or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. Address ownership is L2 behavior, not a hardware-accuracy claim. |
+| Verification | Focused x64/x86 Board test; x64/x86 selected-set startup probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Contained byte and word writes are accepted, reads/inspection remain refused, a crossing write is rejected, and both probes report the same next terminal. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient startup staging only, with no retained payload or raw trace. |
+| Reporting Requirements | Record L2 source boundary, stateless behavior, next probe stop, dual-width result and remaining non-goals. |
+| Stop Conditions | Required protection behavior, conflicting endpoint evidence, Shared/public API change, divergent host widths, protected-data exposure, or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Check only the exact pair, byte/word containment, read/inspect refusal, cross-pair behavior and duplicate owner paths. |
 
 ## Retained Packet — M1 T4 S20
 
