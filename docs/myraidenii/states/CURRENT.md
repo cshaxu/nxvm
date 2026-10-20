@@ -2,12 +2,12 @@
 
 ## Current Work
 
-M1 T4 S37 is active. The owner-approved external PAL inputs make current MAME
-execution available. The admitted black-box experiment has a reproducible
-synthetic graphics-region mutation observation, but production graphics decode,
-composition and frame publication remain open.
+M1 T4 remains open after accepted S37. The owner-approved external PAL inputs
+make current MAME execution available. S37 establishes a reproducible synthetic
+graphics-region mutation observation but not a graphics-element layout; Core
+still has no graphics decode, composition or frame publication path.
 
-## Active Packet — M1 T4 S37
+## Archived Packet — M1 T4 S37
 
 | Field | Required record |
 | --- | --- |

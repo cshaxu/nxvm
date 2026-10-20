@@ -66,4 +66,3 @@ The next decoder S therefore needs one of the following admissible inputs:
 Until then, the existing Video owner correctly retains graphics images,
 palette and tilemap without claiming it can render them.  No decoder, renderer,
 frame publisher or shared-component change is admitted by this evidence.
-
