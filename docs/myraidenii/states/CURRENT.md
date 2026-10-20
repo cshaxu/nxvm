@@ -2,12 +2,13 @@
 
 ## Current Work
 
-M1 T4 S38 is active. The owner-approved external PAL inputs make current MAME
-execution available. S37 establishes a reproducible synthetic graphics-region
-mutation observation but not a graphics-element layout; S38 now tries to
-isolate a finite coordinate/value oracle without reading or retaining game data.
+M1 T4 remains open after accepted S38. The owner-approved external PAL inputs
+make current MAME execution available. S37 establishes a reproducible
+graphics-region mutation observation, while S38 establishes that the currently
+contained black-box experiment cannot isolate an element layout. Core still has
+no graphics decode, composition or frame publication path.
 
-## Active Packet — M1 T4 S38
+## Archived Packet — M1 T4 S38
 
 | Field | Required record |
 | --- | --- |

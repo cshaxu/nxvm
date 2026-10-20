@@ -27,6 +27,16 @@ source: its own [provenance record](../etc/evidence/t4-s3-third-party-provenance
 states that it derives the relevant behavior from MAME source and it is not an
 independent hardware oracle or import candidate.
 
+S37 proves only that one synthetic graphics-region mutation affects a later
+reference presentation. S38's paired synthetic/control experiment establishes
+that, under the current no-payload black-box containment, a full-screen
+time-advancing difference masks any finite element coordinate/value result.
+See the [S38 boundary](../etc/evidence/t4-s38-synthetic-graphics-oracle.md).
+It is not authority to guess a tile layout, bitplane order, attributes,
+priority, scroll or decryption rule. Decoder admission therefore requires
+original board documentation/measurement or a separately approved, stable
+black-box isolation method.
+
 ## Work And Verification
 
 T3 S8 brings forward the Video-owned L2 raster phase/VBlank-to-Board receiver
