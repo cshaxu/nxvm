@@ -26,9 +26,9 @@ M1 T4 remains open after accepted S18:
 | S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 `cdd761ac0`; x64/x86 Board smoke and selected-set probes pass; complete repository unit suites pass 642/642 per width when the temporary-output-sensitive DAG negative case is executed separately. [Evidence](../etc/evidence/t4-s18-object-aperture-l2.md). |
 | S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 `7258833b8`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6cc`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s19-tile-bank-2-l2.md). |
 | S20 | Selected-set-observed tile-bank-01 latch at `0x6cc` plus adjacent `0x6cd` no-op. | P1 `229b564bb`; P3 `8ad61e876` corrects the overwide latch. x64/x86 Board smoke passes, both selected-set probes advance to `0x6c4`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s20-tile-bank-01-l2.md). |
-| S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 pending focused dual-width proof: Board smoke passes and probes advance to `0x6c0`; full qualification pending. |
+| S21 | Selected-set-observed sprite-protection constant write span at `0x6c4--0x6c5`. | P1 `448691874`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6c0`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s21-sprite-protection-constant-l2.md). |
 
-## Active Packet — M1 T4 S21
+## Retained Packet — M1 T4 S21
 
 | Field | Required record |
 | --- | --- |
@@ -48,6 +48,12 @@ M1 T4 remains open after accepted S18:
 | Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
 | Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
 | Similar-Issue Sweep | Check only the exact pair, byte/word containment, read/inspect refusal, cross-pair behavior and duplicate owner paths. |
+
+S21 is closed.  The stateless constant sink preserves the explicit boundary
+between it and the `0x6c0--0x6c3` sprite-protection read/write group.  Both
+probes now stop at the same `0x6c0` write; that stateful group remains a
+separate ownership obligation.  No Shared component, public API, ROM/media
+payload, desktop/RDP validation, or playable-game claim changed.
 
 ## Retained Packet — M1 T4 S20
 
