@@ -2,11 +2,31 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S36. The owner-approved external PAL inputs
-make current MAME execution available, and a neutral black-box Lua probe now
-establishes a repeatable 320×240 checkpoint. Core still has only copied
-fixed-role graphics ingress and a bounded L2 RGB555 lookup; graphics decode,
+M1 T4 S37 is active. The owner-approved external PAL inputs make current MAME
+execution available. The admitted black-box experiment has a reproducible
+synthetic graphics-region mutation observation, but production graphics decode,
 composition and frame publication remain open.
+
+## Active Packet — M1 T4 S37
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S37 follows accepted S36 P2 `b6b80ccda`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved continued M1/T4 implementation under L2 behavioural evidence, MAME as a black-box reference only, and external BYOB PAL inputs. |
+| Objective | Derive a bounded reproducible L2 graphics-element contract from controlled external MAME runtime mutation, or record the exact missing element without guessing a decoder. |
+| Non-goals | No MAME source/table/handler import, ROM/image dump or retained payload, screenshot, raw trace, source/test/API/artifact change, renderer/frame publication, decryption claim or playable-game claim. |
+| Reference Baseline | S31 owns fixed-role image ingress; S32 owns RGB555 lookup; S36 fixes the external 320×240 screen checkpoint. MAME's published Lua interface exposes memory-region writing and screen observation. |
+| Candidate Proposal | Mutate only synthetic in-process bytes in an external reference and retain only neutral dimensions/checksums; use the result to decide whether a decoder contract is actually established. |
+| Files And ABI Surface | `docs/myraidenii/{states/CURRENT.md,etc/evidence/}` plus a transient ignored build script only. No source, test, manifest, shared component, asset or executable changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. MAME remains research-only, external inputs read-only, and protected payload is never retained. |
+| Verification | Run two identical bounded trials, verify official Lua API capability, remove the transient script/output, run documentation governance and `git diff --check`. |
+| Expected Markers | A finite L2 fact table or a precise missing-contract transfer; no production-behaviour claim. |
+| Asset Needs | Existing owner archive and S35's external PAL files, read-only and untracked. |
+| Reporting Requirements | Record tool/API class, synthetic mutation class, neutral repeatability and cleanup; never record raw memory/pixel/ROM content. |
+| Stop Conditions | Source inspection, retained protected data, archive mutation, non-repeatability, unbounded trace, or a claim stronger than L2 is required. |
+| Exit Criteria | Evidence establishes a complete bounded graphics-element contract, or truthfully records the exact unresolved element with all transient data removed. |
+| Original Owner Request | Continue MyRaidenII under owner-approved L2 evidence and external BYOB PAL setup toward running RAIDEN II. |
+| Similar-Issue Sweep | Confirm no MAME configuration/NVRAM/snapshot/log/script survives and no second graphics owner, renderer or source-derived layout enters the repository. |
 
 ## Archived Packet — M1 T4 S36
 
