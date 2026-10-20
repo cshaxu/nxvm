@@ -90,15 +90,15 @@ static lib_i32 graphics_sprite_word_lanes(void)
     images[MYRAIDENII_CORE_VIDEO_SPRITE_SOURCE_4_OFFSET + 3u] = 0x43u;
     if (graphics_images_load(&video, images) != LIB_STATUS_OK) goto done;
     stream = video.graphics_images + MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET;
-    if (stream[0u] != 0x10u || stream[1u] != 0x11u || stream[2u] != 0x20u ||
-        stream[3u] != 0x21u || stream[4u] != 0x12u || stream[5u] != 0x13u ||
-        stream[6u] != 0x22u || stream[7u] != 0x23u) {
+    if (stream[0u] != 0x42u || stream[1u] != 0x93u || stream[2u] != 0xc2u ||
+        stream[3u] != 0x1fu || stream[4u] != 0x1fu || stream[5u] != 0x43u ||
+        stream[6u] != 0xdau || stream[7u] != 0xbfu) {
         goto done;
     }
     stream += MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u;
-    if (stream[0u] != 0x30u || stream[1u] != 0x31u || stream[2u] != 0x40u ||
-        stream[3u] != 0x41u || stream[4u] != 0x32u || stream[5u] != 0x33u ||
-        stream[6u] != 0x42u || stream[7u] != 0x43u) {
+    if (stream[0u] != 0x15u || stream[1u] != 0x8bu || stream[2u] != 0xf2u ||
+        stream[3u] != 0x95u || stream[4u] != 0x5au || stream[5u] != 0xe9u ||
+        stream[6u] != 0x5eu || stream[7u] != 0x9fu) {
         goto done;
     }
     result = 0;
@@ -106,6 +106,32 @@ done:
     myraidenii_core_video_graphics_images_release(&video);
     lib_release(images);
     return result;
+}
+
+static lib_i32 graphics_sprite_pixels(void)
+{
+    lib_u8 tile[MYRAIDENII_CORE_SPRITE_BYTES] = {0};
+    lib_u8 pixel = 0u;
+
+    tile[0u] = 0x21u;
+    tile[MYRAIDENII_CORE_SPRITE_BYTES - 1u] = 0xfeu;
+    if (myraidenii_core_graphics_sprite_pixel(tile, 0u, 0u, 0u, &pixel) !=
+            LIB_STATUS_OK || pixel != 1u ||
+        myraidenii_core_graphics_sprite_pixel(tile, 0u, 1u, 0u, &pixel) !=
+            LIB_STATUS_OK || pixel != 2u ||
+        myraidenii_core_graphics_sprite_pixel(tile, 0u, 14u, 15u, &pixel) !=
+            LIB_STATUS_OK || pixel != 14u ||
+        myraidenii_core_graphics_sprite_pixel(tile, 0u, 15u, 15u, &pixel) !=
+            LIB_STATUS_OK || pixel != 15u) {
+        return 1;
+    }
+    return myraidenii_core_graphics_sprite_pixel(LIB_NULL, 0u, 0u, 0u, &pixel) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_graphics_sprite_pixel(tile,
+            MYRAIDENII_CORE_SPRITE_STREAM_TILE_COUNT, 0u, 0u, &pixel) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_graphics_sprite_pixel(tile, 0u,
+            MYRAIDENII_CORE_SPRITE_WIDTH, 0u, &pixel) != LIB_STATUS_INVALID_ARGUMENT;
 }
 
 static void graphics_background_pixel_one_set(lib_u8 *image, lib_u32 tile)
@@ -292,5 +318,6 @@ done:
 int main(void)
 {
     return graphics_character_pixels() || graphics_background_pixels() ||
-        graphics_sprite_word_lanes() || graphics_tile_layers() || graphics_crtc_layers();
+        graphics_sprite_word_lanes() || graphics_sprite_pixels() || graphics_tile_layers() ||
+        graphics_crtc_layers();
 }

@@ -1,4 +1,5 @@
 #include "myraidenii/core/video.h"
+#include "myraidenii/core/graphics.h"
 
 enum {
     MYRAIDENII_CORE_VIDEO_LINE_TICKS = 512u * 2u,
@@ -152,6 +153,7 @@ lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *vid
     const lib_u8 *sprites_4)
 {
     lib_u8 *images;
+    lib_status status;
 
     if (video == LIB_NULL || video->graphics_images != LIB_NULL || characters == LIB_NULL ||
         background_1 == LIB_NULL || background_2 == LIB_NULL || sprites_1 == LIB_NULL ||
@@ -171,6 +173,13 @@ lib_status myraidenii_core_video_graphics_images_load(myraidenii_core_video *vid
     myraidenii_core_video_sprite_words_load(images +
         MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
         MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u, sprites_3, sprites_4);
+    status = myraidenii_core_graphics_sprite_stream_decrypt(images +
+        MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET,
+        MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES);
+    if (status != LIB_STATUS_OK) {
+        lib_release(images);
+        return status;
+    }
     video->graphics_images = images;
     return LIB_STATUS_OK;
 }

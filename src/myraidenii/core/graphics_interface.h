@@ -15,16 +15,23 @@ enum {
     MYRAIDENII_CORE_BACKGROUND_WIDTH = 16u,
     MYRAIDENII_CORE_BACKGROUND_HEIGHT = 16u,
     MYRAIDENII_CORE_BACKGROUND_BYTES = 128u,
+    MYRAIDENII_CORE_SPRITE_WIDTH = 16u,
+    MYRAIDENII_CORE_SPRITE_HEIGHT = 16u,
+    MYRAIDENII_CORE_SPRITE_BYTES = 128u,
     MYRAIDENII_CORE_BACKGROUND_IMAGE_TILE_COUNT =
-        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES / MYRAIDENII_CORE_BACKGROUND_BYTES
+        MYRAIDENII_CORE_BACKGROUND_IMAGE_BYTES / MYRAIDENII_CORE_BACKGROUND_BYTES,
+    MYRAIDENII_CORE_SPRITE_STREAM_TILE_COUNT =
+        (4u * MYRAIDENII_CORE_SPRITE_IMAGE_BYTES) / MYRAIDENII_CORE_SPRITE_BYTES
 };
 
 /* L2 graphics layout: character and background images are independently
- * decoded 4bpp images. Sprite image data remains encrypted and deliberately
- * has no decoder until its separate COP/protection contract is qualified. */
+ * decoded 4bpp images. The selected sprite stream is decrypted once by Video
+ * and then read as packed low-nibble-first 16 by 16 four-bit tiles. */
 lib_status myraidenii_core_graphics_character_pixel(const lib_u8 *image,
     lib_u32 character, lib_u8 x, lib_u8 y, lib_u8 *out_pixel);
 lib_status myraidenii_core_graphics_background_pixel(const lib_u8 *image_1,
     const lib_u8 *image_2, lib_u32 tile, lib_u8 x, lib_u8 y, lib_u8 *out_pixel);
+lib_status myraidenii_core_graphics_sprite_pixel(const lib_u8 *stream,
+    lib_u32 tile, lib_u8 x, lib_u8 y, lib_u8 *out_pixel);
 
 #endif

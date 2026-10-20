@@ -2,11 +2,31 @@
 
 ## Current Work
 
-M1 T4 remains open after S46 P1: one stateless Core descriptor decoder now
-maps a single eight-byte latched object entry to copied tile, color, priority,
-position, span and flip values. It does not decrypt or render sprites. Both
-cached widths passed all five MyRaidenII unit entries and documentation
-governance; no Product/Machine executable exists yet.
+M1 T4 remains open. S47 delivers one Core-owned L2 decrypt owner for the
+selected Raiden II sprite stream and a bounded packed-pixel reader. The later
+sprite compositor, priority behavior and runnable Product/Machine remain
+separate work; there is no MyRaidenII executable yet.
+
+## Archived Packet — M1 T4 S47
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S47 follows S46 P1 `a79641f64`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner reiterated on 2026-10-20 that external mature emulator implementations are approved L2 evidence and directed progress without repeated L3 back-and-forth. This packet uses the separately licensed BSD-3-Clause Raiden II sprite-decrypt unit as a narrowly recorded L2 model; exact provenance and notice are reviewed before any retained constants enter the repository. |
+| Objective | Add one Core-owned, deterministic decryption transform for the selected Raiden II sprite stream so a later Video compositor receives decoded four-bit sprite pixels rather than encrypted words. |
+| Non-goals | No MAME runtime dependency, ROM/media import, executable, new Shared API, second renderer, generic crypto framework, physical-hardware accuracy claim, sprite priority/composition, Board-map change, or host presentation work. |
+| Reference Baseline | S44 owns the 32-bit lane-interleaved 8 MiB private sprite stream; S45 owns latched object RAM; S46 owns descriptor decoding. `graphics_interface.h` deliberately has no sprite pixel decoder because its source bytes remain encrypted. |
+| Candidate Proposal | Add one private Core decrypt implementation and one public Core sprite-pixel reader. It transforms the existing private stream once after ingress using the finite Raiden II L2 model, preserves all other graphics ingress, and exposes packed 16-by-16 four-bit pixels through the existing Graphics owner. No caller retains or mutates a decoded stream. |
+| Files And ABI Surface | `src/myraidenii/core/{graphics.c,graphics.h,graphics_interface.h,sprite_decrypt_data.h,video.c,video.h,CMakeLists.txt}`, owning Core graphics unit, MyRaidenII source-policy/evidence and exact third-party notice only. The additive Core sprite-pixel declaration is the sole public surface; Lib, Emulator, X86 and Board interfaces remain unchanged. |
+| Applicable Rules | MyRaidenII guide, architecture, coding, documentation, execution and source policy. Video remains the sole graphics-stream owner; Graphics remains the sole pixel-decoder owner. BSD-3-Clause provenance is retained without linking to, vendoring, or executing MAME. |
+| Verification | Met: synthetic known-answer vectors cover word transform, nibble order and bounds; focused graphics/Board tests, complete MyRaidenII selection and complete repository unit selection pass on cached x64/x86 Ninja trees. The restricted runner cannot create the cleanup-test junction; that exact test passes under normal Windows execution on both widths. Documentation governance and `git diff --check` pass. No external ROM or desktop run is claimed. |
+| Expected Markers | Every transformed 32-bit word follows the one L2 model; every sprite tile has 16 by 16 four-bit pixels; invalid pointers/index/coordinates reject; release/reset remain one allocation path; no live object RAM access occurs from Graphics. |
+| Asset Needs | Read-only local MAME reference checkout only. No ROM, PAL, media or external generated payload enters the repository. |
+| Reporting Requirements | Record exact revision/path/license, the L2 limitation, source/test/document delta, public surface, x64/x86 results and deferred sprite compositing/priority/real-game verification. |
+| Stop Conditions | A need for an LGPL unit, unreviewed license, ROM contents, a second data path, Board/Shared change, priority/blending semantics or Product/Machine work transfers to a later S. |
+| Exit Criteria | Met: one Video-owned private stream is transformed once, Graphics has one bounded sprite-pixel reader, synthetic vectors reject a wrong transform/nibble order/boundary, existing graphics paths stay valid, and all named checks pass. |
+| Original Owner Request | External implementations are usable as L2; do not repeatedly block progress by demanding unavailable hardware-level evidence. |
+| Similar-Issue Sweep | Inspect all selected graphic ingress/stream consumers, ownership/release paths, table provenance/license, byte order, error returns and duplicate decrypt/pixel paths. |
 
 ## Archived Packet — M1 T4 S46
 

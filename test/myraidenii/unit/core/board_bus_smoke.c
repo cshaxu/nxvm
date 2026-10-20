@@ -126,6 +126,7 @@ static lib_i32 board_video_graphics_images(void)
     if (source == LIB_NULL) return 1;
     pixels = lib_allocate(MYRAIDENII_CORE_VIDEO_FRAME_PIXELS * sizeof(*pixels));
     if (pixels == LIB_NULL) goto done;
+    lib_memory_set(source, 0, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
     source[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x11u;
     source[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] = 0x22u;
     source[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0x33u;
@@ -155,18 +156,18 @@ static lib_i32 board_video_graphics_images(void)
     if (video.graphics_images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] != 0x11u ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] != 0x22u ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] != 0x33u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET] != 0x44u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 1u] != 0x45u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 2u] != 0x55u ||
-        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 3u] != 0x56u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET] != 0xe7u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 1u] != 0x68u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 2u] != 0x06u ||
+        video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET + 3u] != 0x05u ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
-            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u] != 0x66u ||
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u] != 0x1fu ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
-            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 1u] != 0x67u ||
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 1u] != 0x6eu ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
-            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 2u] != 0x77u ||
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 2u] != 0x57u ||
         video.graphics_images[MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_OFFSET +
-            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 3u] != 0x78u ||
+            MYRAIDENII_CORE_VIDEO_SPRITE_STREAM_BYTES / 2u + 3u] != 0xe8u ||
         myraidenii_core_video_graphics_images_load(&video, source, source, source,
             source, source, source, source) != LIB_STATUS_INVALID_ARGUMENT)
         goto done;

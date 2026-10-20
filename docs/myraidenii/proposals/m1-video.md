@@ -40,7 +40,11 @@ scroll or decryption rule. Decoder admission now uses the owner-approved L2
 source-reference path in the source policy: published MAME/other-emulator
 behavior and layout may be inspected, recorded by upstream revision and
 independently implemented. It does not permit copied/transliterated source or
-tables, imported decryption, or a claim of original-hardware accuracy.
+tables, imported decryption, or a claim of original-hardware accuracy. The
+subsequent owner-approved S47 BSD-3-Clause exception is deliberately narrower:
+it retains only audited finite Raiden II transform constants and an
+independently written implementation, with notice and limitation in
+`etc/evidence/t4-s47-sprite-transform-l2.md`.
 
 S39's bounded original-document search found no provenance-qualified graphics
 contract in accessible operation-manual/catalog material. Its

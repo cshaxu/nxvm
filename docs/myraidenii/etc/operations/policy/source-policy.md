@@ -20,6 +20,16 @@ or transliterate source, data tables, ROM data, or decryption material. The
 evidence records the exact upstream revision/path inspected, the finite facts
 adopted, and the resulting L2 limitation.
 
+M1 T4 S47 is the one recorded exception for the selected Raiden II sprite
+transform constants. The owner authorized this bounded BSD-3-Clause data
+derivation on 2026-10-20 after repeated direction to treat external emulator
+implementations as L2 rather than an unavailable physical-source blocker. It
+may retain only the audited finite constants and an independently written
+transform; it must retain the exact upstream revision, paths, copyright
+holders and BSD notice in the evidence and root third-party notice. It does
+not authorize any LGPL MAME unit, MAME runtime dependency, driver code,
+protected ROM bytes, or a general table-import policy.
+
 Use original NEC/Zilog/Yamaha/OKI manuals and board observations where available.
 Reference-derived timing/protection remains L2 rather than a silicon-exact claim.
 Keep acquired source/manual payloads outside tracked product source; records
