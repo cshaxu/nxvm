@@ -15,4 +15,5 @@ add_test(NAME myraidenii.unit.tools.rom-inventory
 set_tests_properties(myraidenii.unit.tools.rom-inventory PROPERTIES
     LABELS "unit;myraidenii" TIMEOUT 60)
 add_subdirectory(unit/core)
+add_subdirectory(unit/machine)
 add_subdirectory(integration)

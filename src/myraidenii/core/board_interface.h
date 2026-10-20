@@ -2,6 +2,7 @@
 #define MYRAIDENII_CORE_BOARD_INTERFACE_H
 
 #include "lib/types/types_interface.h"
+#include "myraidenii/core/audio_interface.h"
 #include "myraidenii/core/cop.h"
 #include "myraidenii/core/graphics_interface.h"
 #include "x86-core/machine/machine_interface.h"

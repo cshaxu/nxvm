@@ -31,7 +31,7 @@ enum {
     MYRAIDENII_CORE_SOUND_OKI_VOLUME_RATIO = 181u,
     MYRAIDENII_CORE_SOUND_OKI_ADPCM_MAX_STEP = 48u,
     MYRAIDENII_CORE_SOUND_PCM_TICKS_NUMERATOR =
-        8u * MYRAIDENII_CORE_SOUND_PCM_SAMPLE_RATE,
+        8u * MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE,
     MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS = 23u,
     MYRAIDENII_CORE_SOUND_FLAG_CARRY = 0x01u,
     MYRAIDENII_CORE_SOUND_FLAG_SUBTRACT = 0x02u,
@@ -84,7 +84,7 @@ struct myraidenii_core_sound {
     lib_u32 pcm_read;
     lib_u32 pcm_count;
     lib_i16 pcm_samples[MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY *
-        MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+        MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
     lib_u16 pc;
     lib_u16 sp;
     lib_u8 a;
@@ -434,8 +434,8 @@ static void myraidenii_core_sound_pcm_enqueue(myraidenii_core_sound *sound,
     } else ++sound->pcm_count;
     write = (sound->pcm_read + sound->pcm_count - 1u) %
         MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
-    sound->pcm_samples[write * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] = sample;
-    sound->pcm_samples[write * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u] = sample;
+    sound->pcm_samples[write * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] = sample;
+    sound->pcm_samples[write * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u] = sample;
 }
 
 static void myraidenii_core_sound_pcm_skip(myraidenii_core_sound *sound,
@@ -1722,10 +1722,10 @@ lib_status myraidenii_core_sound_pcm_copy(myraidenii_core_sound *sound,
         const lib_u32 source = (sound->pcm_read + index) %
             MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
 
-        out_samples[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] =
-            sound->pcm_samples[source * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
-        out_samples[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u] =
-            sound->pcm_samples[source * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u];
+        out_samples[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] =
+            sound->pcm_samples[source * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+        out_samples[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u] =
+            sound->pcm_samples[source * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u];
     }
     sound->pcm_read = (sound->pcm_read + frames) %
         MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;

@@ -58,9 +58,9 @@ static void myraidenii_startup_pcm_observe(const lib_i16 *samples, lib_u32 frame
 
     for (lib_u32 index = 0u; index < frame_count; ++index) {
         const lib_u16 left = (lib_u16)samples[index *
-            MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+            MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
         const lib_u16 right = (lib_u16)samples[index *
-            MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u];
+            MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u];
 
         digest ^= left;
         digest *= 1099511628211ull;
@@ -181,7 +181,7 @@ int main(int argument_count, char **arguments)
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
         pcm_samples = lib_allocate(MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY *
-            MYRAIDENII_CORE_SOUND_PCM_CHANNELS * sizeof(*pcm_samples));
+            MYRAIDENII_CORE_AUDIO_PCM_CHANNELS * sizeof(*pcm_samples));
         if (pcm_samples == LIB_NULL) status = LIB_STATUS_NO_MEMORY;
         if (status == LIB_STATUS_OK || terminal_fault) {
             status = myraidenii_core_board_pcm_copy(board, pcm_samples,

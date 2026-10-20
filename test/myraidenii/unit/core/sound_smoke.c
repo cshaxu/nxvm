@@ -336,7 +336,7 @@ static lib_i32 sound_publishes_bounded_pcm(void)
 {
     static lib_u8 program[0x2000u];
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
-    lib_i16 frames[32u * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+    lib_i16 frames[32u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
     lib_u32 copied = 0u;
@@ -367,10 +367,10 @@ static lib_i32 sound_publishes_bounded_pcm(void)
             LIB_STATUS_OK || copied == 0u || dropped != 0u)
         goto done;
     for (lib_u32 index = 0u; index < copied; ++index) {
-        if (frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] !=
-            frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS + 1u])
+        if (frames[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] !=
+            frames[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u])
             goto done;
-        if (frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] != 0)
+        if (frames[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] != 0)
             non_silent = LIB_TRUE;
     }
     if (!non_silent || myraidenii_core_sound_advance(sound,
@@ -453,7 +453,7 @@ static lib_status sound_first_oki_pcm(lib_u8 first_sample_byte,
 {
     static lib_u8 program[0x2000u];
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
-    lib_i16 frames[32u * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+    lib_i16 frames[32u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
     lib_u32 copied = 0u;
@@ -480,8 +480,8 @@ static lib_status sound_first_oki_pcm(lib_u8 first_sample_byte,
     if (status == LIB_STATUS_OK) {
         *out_sample = 0;
         for (lib_u32 index = 0u; index < copied; ++index) {
-            if (frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS] != 0) {
-                *out_sample = frames[index * MYRAIDENII_CORE_SOUND_PCM_CHANNELS];
+            if (frames[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] != 0) {
+                *out_sample = frames[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
                 break;
             }
         }

@@ -81,6 +81,26 @@ change, external-set run, host delivery, desktop result, physical timing or
 playable-game qualification is claimed. S9 is closed; M1 T5 remains open for
 Machine/Lib delivery and qualified real command-path receivers.
 
+Sequential coordinator actual-change review accepts S10 P1 after dual-width
+qualification. The first MyRaidenII Machine component is a bounded PCM bridge:
+it borrows the sole copied Board PCM consumer and the existing Lib stream,
+stages one ordered suffix, and retires exactly the prefix Lib accepted. It has
+no guest clock, worker, callback, mixer, alternate output route, Shared change
+or imported material. `core/audio_interface.h` now names the pre-existing
+48 kHz, interleaved stereo boundary once, so the Machine does not borrow a
+Sound-private format declaration.
+
+The retained FIFO/retry behavior is L1 local engineering; S10 adopts no manual
+formula (therefore no L3 fact) and no external emulator behavior (therefore no
+L2 fact). Its focused actual-route unit proves partial-prefix retirement and
+failed-clear retention. Cached x64 and x86 builds pass the Machine target and
+the complete MyRaidenII repository-only unit selection, 7/7 each; documentation
+governance and whitespace checks pass. The owned temporary logs are removed.
+No native endpoint, desktop, external-ROM, audible-output, Product-driver or
+playable-game qualification is claimed. The later Machine driver must bind this
+adapter as the sole live Board-to-Lib route. S10 is closed; M1 T5 remains open
+for that driver and genuine real-command-path qualification.
+
 ## Archived Packet — M1 T5 S6
 
 | Field | Required record |
