@@ -2,12 +2,32 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S35. Under the owner's explicit BYOB
-exception, the two MAME-required PAL images are external to Git, hash-verified
-and connected to the current MAME black-box runner. Historical MAME 0.182 also
-accepts the owner archive with the absent `jj4b02` PAL marked `NO GOOD DUMP
-KNOWN`. Core still has only copied fixed-role graphics ingress and a bounded L2
+M1 T4 remains open. M1 T4 S36 is active: the owner-approved external PAL
+inputs make current MAME execution available, so this S obtains only neutral
+screen dimensions and a reproducible checksum from an ephemeral black-box Lua
+probe. Core still has only copied fixed-role graphics ingress and a bounded L2
 RGB555 lookup; graphics decode, composition and frame publication remain open.
+
+## Active Packet — M1 T4 S36
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S36 follows accepted S35 P2 `4744a53e4`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved continuing implementation under L2 behavioral evidence and explicitly authorized external BYOB PAL inputs. This packet uses MAME's documented Lua black-box API only; it imports no source, table, handler or protected payload. |
+| Objective | Establish one reproducible, neutral selected-set screen checkpoint: visible dimensions plus a non-reversible byte-stream checksum at a declared emulated frame. |
+| Non-goals | No screenshot, pixel dump, raw trace, ROM/memory/register capture, decoder/layout/decryption implementation, renderer/frame, shared change, product artifact or playable-game claim. |
+| Reference Baseline | S35 makes current MAME 0.289 accept the owner archive plus the two external PAL files. MAME documents `-autoboot_script`, `screen:pixels()` and `machine:exit()` as public scripting facilities. |
+| Candidate Proposal | Create one transient Lua file outside the repository, wait for a fixed video-frame count, compute Adler-32 over the returned visible-pixel bytes, print only tag/width/height/checksum/frame count, schedule exit, retain those neutral values and delete the script. |
+| Files And ABI Surface | `docs/myraidenii/{states/CURRENT.md,etc/evidence/}` only. No source, test, manifest, API, asset, archive or executable changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. The probe is black-box, bounded and deletes all transient output; BYOB PALs remain external/untracked. |
+| Verification | Run the probe twice with identical current-MAME options and external paths; require same dimensions/checksum and a bounded clean exit each time. Confirm the Lua file/output are deleted; run documentation governance and `git diff --check`. |
+| Expected Markers | A stable selected screen tag, dimensions and checksum at the exact declared frame; no retained pixel data and no repository asset changes. |
+| Asset Needs | Existing owner archive plus S35's owner-approved external PAL files, all read-only. |
+| Reporting Requirements | Record MAME version, command class, frame number, neutral metadata/checksum, repeatability, cleanup and limitations. Do not retain payload, pixels, screenshots or memory state. |
+| Stop Conditions | Lua API cannot yield a stable visible frame, output differs between identical runs, probe needs protected content capture, or any proposed decoder/layout claim would exceed neutral black-box evidence. |
+| Exit Criteria | A repeatable, cleaned-up neutral screen checkpoint or an exact documented failure with no code changes; any decoder work remains a separate reviewed S. |
+| Original Owner Request | Continue MyRaidenII after PAL acquisition and connect it through compilation/runtime evidence. |
+| Similar-Issue Sweep | Confirm no MAME config/NVRAM/snapshot/log or script remains in repository/assets; verify MAME reads both external roots only and no raw data enters task evidence. |
 
 ## Archived Packet — M1 T4 S35
 
