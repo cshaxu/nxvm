@@ -1,26 +1,22 @@
 # Unplanned Debt
 
-## High: Selected-Set Control-Window Write Owner
+## High: Selected-Set Sprite-Flags Receiver
 
-Owner: MyRaidenII Board/Video register-map evidence. T3 S26 ran the verified
+Owner: MyRaidenII Video/Sprite register-map evidence. T3 S27 ran the verified
 owner-selected program lanes through the real MyRaidenII Board on both host
-widths after admitting the previously observed `0x43e--0x43f` write-only hole.
-Both runs now stop after 65,589 instructions with the same CPU-internal case
-fault whose code is physical address `0x6c8`. The prior disposable Debug
-observation established the V30's existing 16-bit `MOV moffs, AX` path; no
-later CPU regression is inferred from this Board rejection. The fixed L2 map
-assigns nearby `0x6c0--0x6c7`, `0x6cb`, and `0x6cc` receivers but does not
-assign `0x6c8`.
+widths after admitting the independently evidenced `0x6c8--0x6c9` write-only
+span. Both runs now stop after 65,624 instructions with the same CPU-internal
+case fault whose code is physical address `0x6ce`. The fixed L2 reference map
+names `0x6ce--0x6cf` as a sprite-flags receiver.
 
-Risk: widening the COP or Board route, or converting the control-window failure
-into RAM or a generic no-op, would hide an unqualified map and invalidate the
+Risk: treating this named receiver as another no-op, RAM, or generic control
+fallback would hide unqualified Sprite/Video behavior and violate the
 single-owner boundary. Admission requires bounded source-grade or independently
-observed Board evidence that identifies the `0x6c8` owner and direction
-semantics without retaining protected ROM bytes, registers, PC, or raw trace.
-Only then may a Board/Video receiver model the register or explicitly preserve
-its refusal. Rerun the two-width selected-set probe after that decision. This
-blocks T3's genuine selected-set startup gate but does not assert that the V30
-is generally unqualified.
+observed evidence for direction and flags semantics without retaining protected
+ROM bytes, registers, PC, or raw trace. Only then may the Video/Sprite owner
+model the receiver or preserve its refusal. Rerun the two-width selected-set
+probe after that decision. This blocks T3's genuine selected-set startup gate
+but does not assert that the V30 is generally unqualified.
 
 ## Medium: Shared Complete-Span Memory Query Classification
 

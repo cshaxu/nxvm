@@ -1,5 +1,26 @@
 # MyRaidenII Status
 
+## Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, MyRaidenII M1 T3 S27. |
+| Admission And Approval | Owner-directed continuation on 2026-10-19; T3's existing same-task S planning delegation applies. No Shared change is admitted. |
+| Objective | Give the selected-set-observed `0x6c8--0x6c9` word-write span its narrowest Board-local L2 disposition and prove the next bounded startup stop on both widths. |
+| Non-goals | No generic control fallback, RAM mapping, COP/Video model, Shared/Core/API change, protected payload retention, executable publication, or claim of startup/playability qualification. |
+| Reference Baseline | Clean pushed S26 P2 `af654d6c8`; current two-width selected-set probe stops at `0x6c8` after the accepted `0x43e--0x43f` write-only route. MAME's Raiden II map leaves `0x6c8--0x6c9` unmapped between named `0x6c6--0x6c7` and `0x6ca--0x6cb` receivers. |
+| Candidate Proposal | Extend the existing exact selected-control write-no-op owner with only `0x6c8--0x6c9`, accepting byte or word writes wholly inside that span and retaining no state/readback. All neighbouring accesses continue through their existing receivers or explicit refusal. |
+| Files And ABI Surface | `src/myraidenii/core/board.c`, existing Board bus unit, MyRaidenII T3 evidence/status/proposal indexes. No public interface or component dependency changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`; MyRaidenII architecture/coding/source policy. Board is the sole local owner; source is research only, not imported. |
+| Verification | Targeted Board unit x64/x86; complete repository-only unit suite x64/x86; bounded selected-set probe x64/x86 with transient lanes removed afterward; manifest/static/document checks applicable to changed paths. |
+| Expected Markers | Board unit success; selected probes report a deterministic next stop or budget result, never retain ROM bytes/registers/PC/instruction data. |
+| Asset Needs | Existing owner-supplied external archive only, staged below a unique ignored task path and deleted after each probe. |
+| Reporting Requirements | Record model, MAME map evidence, actual next-stop observations, source/test line delta, test boundary and unresolved receiver. |
+| Stop Conditions | Stop before broadening past `0x6c9`, accepting reads, modeling COP/Video behavior, or making any Shared change; transfer any such need to the correct owner. |
+| Exit Criteria | Exact write route/test/evidence are committed; both widths pass focused and complete unit suites; selected probe advances or documents its next bounded stop; temporary media is gone and worktree is clean. |
+| Original Owner Request | Continue T3 Board/COP execution to the next correct receiver without absorbing an unproven route. |
+| Similar-Issue Sweep | Review the adjacent `0x6c0--0x6cf` map and existing write-hole owner; retain named receivers and explicit rejections rather than collapsing them into a broad no-op. |
+
 ## Current Work
 
 M1 T3 remains open after accepted S1--S25:

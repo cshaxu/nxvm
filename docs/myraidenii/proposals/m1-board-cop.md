@@ -88,6 +88,13 @@ write-only hole. It neither expands the neighbouring COP route nor weakens
 the explicit control-window refusal. The following two-width startup stop at
 `0x6c8` is a separate Board/Video evidence receiver.
 
+S27 separately admits only the observed `0x6c8--0x6c9` word-write span as the
+same narrow write-only Board no-op owner. Actual provider observation proves
+that the V30 word access reaches the two byte lanes; no read, state, generic
+fallback, COP or Video behavior is admitted. The two-width selected probe then
+stops at `0x6ce`, which is a named sprite-flags receiver and remains a distinct
+Video/Sprite receiving obligation.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free
