@@ -181,7 +181,7 @@ static lib_i32 board_control_window(void)
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 unmodelled[] = {
-        0x400u,0x426u,0x470u,0x5ffu,0x600u,0x68eu,0x694u,0x698u,0x699u,0x69eu,0x6cau,0x6ccu,0x762u,0x7ffu
+        0x400u,0x426u,0x470u,0x5ffu,0x68eu,0x694u,0x698u,0x699u,0x69eu,0x6cau,0x6ccu,0x762u,0x7ffu
     };
     const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -512,6 +512,48 @@ static lib_i32 board_video_sprite_flags(void)
     }
     myraidenii_core_video_reset(&video);
     return video.sprite_flags == 0u ? 0 : 1;
+}
+
+static lib_i32 board_video_crtc(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    myraidenii_core_video video = {0};
+    const lib_u8 values[] = {0x12u,0x34u,0x56u,0x78u};
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    lib_u8 actual[sizeof(values)];
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_video_crtc_read(LIB_NULL, 0u, actual) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_crtc_read(&video, 0u, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_crtc_write(LIB_NULL, 0u, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_crtc_write(&video, 0x40u, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_video_crtc_write(&video, 0u, 0xa5u) != LIB_STATUS_OK ||
+        myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0xa5u)
+        return 1;
+    myraidenii_core_video_reset(&video);
+    if (myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0u ||
+        myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK)
+        return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    if (x86_core_machine_memory_write(machine, 0x600u, values, sizeof(values)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x600u, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, values, sizeof(values)) != 0 ||
+        x86_core_machine_memory_write(machine, 0x63fu, values, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x63fu, actual, 1u) != LIB_STATUS_OK ||
+        actual[0] != values[0] ||
+        x86_core_machine_memory_write(machine, 0x640u, values, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x640u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x600u, actual, sizeof(actual)) != LIB_STATUS_OK ||
+        actual[0] != 0u || actual[1] != 0u || actual[2] != 0u || actual[3] != 0u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
 }
 
 static lib_i32 board_sprite_protection_upload(void)
@@ -2296,6 +2338,7 @@ lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
+        board_video_crtc() ||
         board_sprite_protection_upload() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||

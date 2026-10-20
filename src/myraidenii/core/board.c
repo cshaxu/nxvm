@@ -34,6 +34,8 @@ enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES = 2u,
     MYRAIDENII_CORE_SPRITE_FLAGS_START = 0x6ceu,
     MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u,
+    MYRAIDENII_CORE_CRTC_START = 0x600u,
+    MYRAIDENII_CORE_CRTC_BYTES = 0x40u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START = 0x6a0u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES = 0x20u
 };
@@ -226,6 +228,56 @@ static lib_status myraidenii_core_board_sprite_flags_write(void *owner, lib_u32 
     }
     return myraidenii_core_video_sprite_flags_write(&board->video,
         (lib_u8)(physical - MYRAIDENII_CORE_SPRITE_FLAGS_START), *(const lib_u8 *)source);
+}
+
+static lib_status myraidenii_core_board_crtc_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)access;
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_CRTC_START,
+        MYRAIDENII_CORE_CRTC_BYTES, physical, bytes) ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_crtc_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    const myraidenii_core_board *board = owner;
+
+    (void)observe_only;
+    if (board == LIB_NULL || destination == 0u ||
+        myraidenii_core_board_crtc_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    for (lib_uptr index = 0u; index < bytes; ++index) {
+        lib_status status = myraidenii_core_video_crtc_read(&board->video,
+            (lib_u8)(physical + index - MYRAIDENII_CORE_CRTC_START),
+            (lib_u8 *)destination + index);
+
+        if (status != LIB_STATUS_OK) return status;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_crtc_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board == LIB_NULL || source == 0u ||
+        myraidenii_core_board_crtc_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    for (lib_uptr index = 0u; index < bytes; ++index) {
+        lib_status status = myraidenii_core_video_crtc_write(&board->video,
+            (lib_u8)(physical + index - MYRAIDENII_CORE_CRTC_START),
+            ((const lib_u8 *)source)[index]);
+
+        if (status != LIB_STATUS_OK) return status;
+    }
+    return LIB_STATUS_OK;
 }
 
 static lib_status myraidenii_core_board_sprite_protection_upload_query(void *owner,
@@ -482,13 +534,17 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_flags_read, myraidenii_core_board_sprite_flags_write,
         myraidenii_core_board_sprite_flags_query
     };
+    const x86_core_machine_memory_device_callbacks crtc_callbacks = {
+        myraidenii_core_board_crtc_read, myraidenii_core_board_crtc_write,
+        myraidenii_core_board_crtc_query
+    };
     const x86_core_machine_memory_device_callbacks sprite_protection_upload_callbacks = {
         myraidenii_core_board_sprite_protection_upload_read,
         myraidenii_core_board_sprite_protection_upload_write,
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[16] = {
+    x86_core_machine_memory_device_route routes[17] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -537,6 +593,9 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         {.physical_start = MYRAIDENII_CORE_SPRITE_FLAGS_START,
             .bytes = MYRAIDENII_CORE_SPRITE_FLAGS_BYTES,
             .callbacks = sprite_flags_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_CRTC_START,
+            .bytes = MYRAIDENII_CORE_CRTC_BYTES, .callbacks = crtc_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START,
             .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES,

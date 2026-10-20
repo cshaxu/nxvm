@@ -8,6 +8,7 @@
 typedef struct myraidenii_core_video {
     lib_u32 raster_tick;
     lib_u16 sprite_flags;
+    lib_u8 crtc_registers[0x40u];
 } myraidenii_core_video;
 
 void myraidenii_core_video_reset(myraidenii_core_video *video);
@@ -17,6 +18,12 @@ lib_bool myraidenii_core_video_advance(myraidenii_core_video *video, lib_u64 tic
 /* L2 sprite-control latch: byte offset 0 is the low V30 byte and offset 1
  * is the high byte. Bit 15 is retained for the later decoder boundary. */
 lib_status myraidenii_core_video_sprite_flags_write(myraidenii_core_video *video,
+    lib_u8 byte_offset, lib_u8 value);
+
+/* L2 CRTC register file. The Board maps byte offsets 0x00--0x3f at 600h. */
+lib_status myraidenii_core_video_crtc_read(const myraidenii_core_video *video,
+    lib_u8 byte_offset, lib_u8 *out_value);
+lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,
     lib_u8 byte_offset, lib_u8 value);
 
 #endif

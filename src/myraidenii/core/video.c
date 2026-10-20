@@ -10,6 +10,7 @@ void myraidenii_core_video_reset(myraidenii_core_video *video)
 {
     video->raster_tick = 0u;
     video->sprite_flags = 0u;
+    lib_memory_set(video->crtc_registers, 0, sizeof(video->crtc_registers));
 }
 
 lib_u64 myraidenii_core_video_ticks_until_vblank(const myraidenii_core_video *video)
@@ -39,5 +40,25 @@ lib_status myraidenii_core_video_sprite_flags_write(myraidenii_core_video *video
     mask = (lib_u16)0xffu << (byte_offset * 8u);
     video->sprite_flags = (video->sprite_flags & (lib_u16)~mask) |
         ((lib_u16)value << (byte_offset * 8u));
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_video_crtc_read(const myraidenii_core_video *video,
+    lib_u8 byte_offset, lib_u8 *out_value)
+{
+    if (video == LIB_NULL || out_value == LIB_NULL ||
+        byte_offset >= sizeof(video->crtc_registers)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    *out_value = video->crtc_registers[byte_offset];
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,
+    lib_u8 byte_offset, lib_u8 value)
+{
+    if (video == LIB_NULL || byte_offset >= sizeof(video->crtc_registers))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    video->crtc_registers[byte_offset] = value;
     return LIB_STATUS_OK;
 }
