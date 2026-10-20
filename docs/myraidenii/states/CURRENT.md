@@ -2,13 +2,34 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S33. Core now has a copied, fixed-role
-graphics-image ingress and one bounded palette RGB32 lookup for a later Video
-frame owner, while existing program-only Core diagnostics remain explicit. The
-attempted independent black-box oracle is blocked by two absent PAL images in
-the owner archive; no third-party source, table or implementation was imported.
-The selected-set probe still reaches its containment budget without a new
-control-window fault; decoding, composition and frame publication remain open.
+M1 T4 remains open. M1 T4 S34 is active: historical MAME 0.182 corrects S33's black-box premise
+without importing an emulator implementation or downloading protected PAL/ROM
+data. Historical official MAME 0.182 accepts the owner archive with the absent
+`jj4b02` PAL explicitly marked `NO GOOD DUMP KNOWN` and can execute it under a
+bounded headless run. Core still has only copied fixed-role graphics ingress
+and a bounded L2 RGB555 lookup; graphics decode, composition and frame
+publication remain open.
+
+## Active Packet — M1 T4 S34
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S34 follows accepted S33 P2 `3e708f2af`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner asked to source the missing PAL from MAME and continue. Source policy forbids downloading protected game/PAL data, so this packet uses only an official historical MAME binary as a transient black-box research tool. |
+| Objective | Establish whether the existing owner archive can supply a lawful executable black-box baseline without obtaining either missing PAL dump. |
+| Non-goals | No PAL/ROM download, archive mutation, source/table/handler import, graphics decoder, renderer/frame, shared change, screenshot/trace retention, playable-game claim or product artifact. |
+| Reference Baseline | S33 used current MAME 0.289, whose strict verifier rejected two PAL blobs. The owner archive remains read-only at its recorded identity. |
+| Candidate Proposal | Download the official MAME 0.182 Windows binary outside the repository; verify its identity, run `-verifyroms` and one bounded headless launch against the existing archive; retain only neutral status/speed observations. |
+| Files And ABI Surface | `docs/myraidenii/{states/CURRENT.md,etc/evidence/}` only. No source, test, manifest, API, asset or executable changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. MAME is research-only; protected inputs are read-only and no output payload is retained. |
+| Verification | Verify the downloaded file is a PE, record its SHA-256, run official MAME `-verifyroms` and one ten-second headless launch, then remove the external tool directory after retaining neutral evidence. Run documentation governance and `git diff --check`. |
+| Expected Markers | Historical verifier calls the set `best available` despite the no-good PAL; headless process terminates within its ten-second budget; no PAL is acquired. |
+| Asset Needs | Existing owner-supplied external archive only; no new asset is accepted or stored. |
+| Reporting Requirements | Record source, tool hash, commands, neutral outcome, cleanup and precise limit: executable behavior does not establish a decoder/layout contract. |
+| Stop Conditions | Any need to download or preserve PAL/ROM data, inspect/copy third-party implementation, retain protected video/audio output, make decode claims from a source table, or modify production code without a separate contract. |
+| Exit Criteria | A reproducible lawful black-box baseline or documented failure; archive S34 with the correction and transfer only the still-needed layout/behavior contract to later Video work. |
+| Original Owner Request | Search/download missing PAL into external assets and compile/connect it. |
+| Similar-Issue Sweep | Check that no tool, temporary configuration, archive output, screenshot, trace or downloaded protected media remains under the repository or external asset root. |
 
 ## Archived Packet — M1 T4 S33
 
@@ -103,7 +124,7 @@ control-window fault; decoding, composition and frame publication remain open.
 | S30 | L2 Sprite-protection destination read endpoint. | P1 `532ef5a8f`; x64/x86 Board smoke and selected-set probes pass the former `0x762` stop; probes end only at their existing containment budget, and full 668-case qualification plus the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s30-sprite-protection-destination-output-l2.md). |
 | S31 | Fixed-role graphics image ingress, lifetime and creation validation. | P1 `197ec9b3c`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s31-graphics-image-ingress.md). |
 | S32 | Bounded Video-owned RGB555 to `0x00RRGGBB` palette lookup. | P1 `822f76ba5`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s32-palette-rgb555-l2.md). |
-| S33 | Disposed the external black-box graphics oracle without source import or retained media output. | P1 `9b179c83d`; the supplied archive lacks two PAL images required by the reference release. [Evidence](../etc/evidence/t4-s33-black-box-oracle-disposition.md). |
+| S33 | Recorded the current-MAME verifier limitation without source import or retained media output. | P1 `9b179c83d`; current MAME rejects the supplied archive for PAL blobs. [Evidence](../etc/evidence/t4-s33-black-box-oracle-disposition.md). |
 
 ## Archived Packet — M1 T4 S30
 
