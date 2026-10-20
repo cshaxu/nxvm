@@ -2,10 +2,29 @@
 
 ## Current Work
 
-M1 T4 remains open. S49 P1 `2535e748f` is verified: Video now uses the
-selected SEI25X L2 descending object order and ignores zero-code descriptors.
-Cached x64/x86 MyRaidenII units and documentation governance pass. No
-Product/Machine executable exists yet.
+M1 T4 remains open. S50 is verified: the selected-set integration probe now
+loads the complete external graphics-role bundle through the existing Core
+Board API, executes the real V30 path, and reports only bounded neutral frame
+observations. It retained no ROM bytes and created no second renderer,
+Machine, Product or Shared path.
+
+## Archived Packet — M1 T4 S50
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: follows accepted S49 P2 `571e03f9e`; one session performs coordinator and executor roles. |
+| Objective | Extend the existing selected-set startup integration probe so it validates the complete immutable graphics input bundle and one Board-owned native RGB32 frame after bounded real V30 execution. |
+| Non-goals | No production behavior/API change, shared change, new renderer, Machine/Product executable, external payload retention, ROM dump, screenshot, raw trace, sound/protection completion or claim of playable qualification. |
+| Reference Baseline | S44--S49 establish one copied graphics ingress, sprite decrypt/pixel reader, latched object RAM and Video compositor. The existing program-only probe already reaches two million real V30 instructions on both widths without CPU/COP/control fault. |
+| Candidate Proposal | The probe accepts the two program lanes plus the seven fixed-role graphics files, validates exact existing sizes through Board creation, runs its existing budget, calls the existing Board frame-copy API once, and emits only dimension, non-black count and a deterministic frame digest. It stages inputs transiently outside the repository. |
+| Files And ABI Surface | `test/myraidenii/integration/selected_set_startup_probe.c` and MyRaidenII evidence/current only. No production file, declaration, manifest, shared component or artifact changes. |
+| Applicable Rules | MyRaidenII guide; architecture, coding, documentation, execution and source-policy rules. Board remains the only graphics ownership/API root; Video remains the only compositor. |
+| Verification | Passed: cached x64/x86 probe builds; selected external set on both widths through two million instructions; complete five-entry MyRaidenII unit suite on both widths; one wrong-size graphics-role negative run; documentation governance and `git diff --check`. No desktop/RDP/gameplay result is claimed. |
+| Expected Markers | Missing/wrong graphics role rejects before Board execution; correct role bundle survives caller-buffer release; both widths complete bounded execution without a terminal CPU/COP/control fault; a complete sized frame is copied through Board once without retaining protected pixels. |
+| Asset Needs | The owner-supplied external `O:\\assets\\raidenii\\raiden2.zip`, read-only. Temporary unpacked lanes/images live under ignored `build/`, are deleted after each run, and no payload/hash is committed. |
+| Reporting Requirements | Record exact command form without raw paths where unnecessary, neutral width-by-width observations, changed source/test/doc totals, and the limitation that this is Board/Core integration rather than product/window/gameplay evidence. |
+| Stop Conditions | A missing/incorrect role size, terminal Board fault, need for a second frame path, or need to retain payload stops and becomes a bounded follow-up; it is not papered over with fallback graphics. |
+| Exit Criteria | Met: the only Board frame path accepts the complete selected image bundle and returns a sized RGB32 frame after real selected-set execution on both widths; no protected media is retained; named tests and governance checks pass. |
 
 ## Archived Packet — M1 T4 S49
 

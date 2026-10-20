@@ -17,6 +17,8 @@ ROM-free owned fixtures and the existing common registration helper for C tests;
 never borrow private App fixtures or count an unexecuted diagnostic as a pass.
 
 `integration/selected_set_startup_probe.c` is an explicitly invoked owner-ROM
-diagnostic, not a CTest case. Its wrapper validates the archive and removes its
-temporary lanes after each run; its output contains only stop/checkpoint
-metadata, never ROM bytes, register values or a raw trace.
+diagnostic, not a CTest case. It accepts two program lanes and seven prepared
+graphics-role files of the existing fixed sizes; the external staging wrapper
+owns archive validation and cleanup. Its output contains only stop/checkpoint
+metadata and neutral frame statistics, never ROM bytes, pixels, register values
+or a raw trace.
