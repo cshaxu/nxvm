@@ -89,6 +89,7 @@
 - [T3 COP 2a05 offset-add receiver](evidence/t3-s24-cop-offset-add.md).
 - [T3 selected control write-hole receiver](evidence/t3-s26-control-write-hole.md).
 - [T3 selected control no-op span](evidence/t3-s27-selected-control-noop.md).
+- [T3 Sprite/Video flags receiver boundary](evidence/t3-s28-sprite-flags-boundary.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

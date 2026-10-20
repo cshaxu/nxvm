@@ -95,6 +95,14 @@ fallback, COP or Video behavior is admitted. The two-width selected probe then
 stops at `0x6ce`, which is a named sprite-flags receiver and remains a distinct
 Video/Sprite receiving obligation.
 
+S28 establishes that receiver's correct owner without inventing behavior. The
+pinned research map names `0x6ce--0x6cf` a sprite-protection flags write
+receiver, while the selected set reaches it through the Board route. Neither
+fact establishes a state layout, bit semantics, reset/decryption behavior or
+frame consequence, and reference implementation may not be copied or
+transliterated. Its implementation is transferred to the queued Video task;
+T3 does not absorb it as a Board no-op, RAM route or COP mirror.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free
