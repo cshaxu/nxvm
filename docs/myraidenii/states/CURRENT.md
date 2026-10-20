@@ -25,6 +25,28 @@ M1 T4 remains open after accepted S18:
 | S17 | Exact selected-set word-write receiver at `0x65c--0x65d`, separately owned from CRTC and S15--S16. | P1 `a815a6a0a` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the three exact word pairs, reject cross-pairs without RAM fallback, then reach the same independent next byte-write stop at `0x65e`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s17-object-write-sink-l2.md). |
 | S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 `cdd761ac0`; x64/x86 Board smoke and selected-set probes pass; complete repository unit suites pass 642/642 per width when the temporary-output-sensitive DAG negative case is executed separately. [Evidence](../etc/evidence/t4-s18-object-aperture-l2.md). |
 | S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 `7258833b8`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6cc`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s19-tile-bank-2-l2.md). |
+| S20 | Selected-set-observed tile-bank-01 Board write latch at `0x6cc--0x6cd`. | P1 pending focused dual-width proof: Board smoke passes and probes advance to `0x6c4`; full qualification pending. |
+
+## Active Packet — M1 T4 S20
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S20 follows S19 P2 `ee5a5c514`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's standing approval permits bounded L2 behavior from external address-map evidence where L3 material is unavailable; source policy forbids importing code, tables, algorithms, or protected media. |
+| Objective | Model the selected-set-observed two-byte tile-bank-01 write endpoint at `0x6cc--0x6cd` as reset-zero Board state. |
+| Non-goals | No readback, renderer, layer selection, palette, generic register framework, public API, Shared change, reference implementation translation, ROM inspection, or playable-game claim. |
+| Reference Baseline | S19's x64/x86 probes first stop on a one-byte write at `0x6cc`; the temporary bounded receiver advances both to a one-byte `0x6cd` write. The selected Raiden II reference map assigns the write-only tile-bank-01 endpoint over `0x6cc--0x6cd`; S28 already records this range as a distinct established owner. |
+| Candidate Proposal | Add one Board-owned two-byte replacement route, one `lib_u16` reset-zero latch and no read route. The latch retains both admitted byte lanes for a later evidenced Video consumer but has no current frame effect. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, selected-set probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset, or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. Address ownership and retention are L2 behavior, not a hardware-accuracy claim. |
+| Verification | Focused x64/x86 Board test; x64/x86 selected-set startup probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Byte writes at both lanes and a complete word write succeed, reads/inspection remain refused, nearby `0x6ca` and `0x6ce` retain their existing refusal, and both probes report the same next terminal. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient startup staging only, with no retained payload or raw trace. |
+| Reporting Requirements | Record L2 source boundary, reset/write-only behavior, next probe stop, dual-width result and remaining non-goals. |
+| Stop Conditions | Need for tile/render semantics, conflicting endpoint evidence, Shared/public API change, divergent host widths, protected-data exposure, or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Test the exact byte ownership, read/inspect refusal, adjacent fallback ownership and reset lifecycle; verify no second tile-bank-01 or generic register path exists. |
 
 ## Retained Packet — M1 T4 S19
 

@@ -181,7 +181,7 @@ static lib_i32 board_control_window(void)
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 unmodelled[] = {
-        0x400u,0x426u,0x5ffu,0x6cau,0x6ccu,0x762u,0x7ffu
+        0x400u,0x426u,0x5ffu,0x6cau,0x762u,0x7ffu
     };
     const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -414,6 +414,38 @@ static lib_i32 board_tile_bank_2(void)
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x470u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u) {
+        goto done;
+    }
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
+static lib_i32 board_tile_bank_01(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    const lib_u8 low = 0x5au;
+    const lib_u8 high = 0xa5u;
+    const lib_u8 word[2] = {0x34u,0x12u};
+    lib_u8 actual = 0u;
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
+        x86_core_machine_memory_write(machine, 0x6ccu, &low, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6cdu, &high, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6ccu, word, sizeof(word)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6ccu, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6cdu, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x6cau, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x6ceu, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6cdu, &high, 1u) != LIB_STATUS_OK) {
         goto done;
     }
     failed = 0;
@@ -2464,6 +2496,7 @@ lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_tile_bank_2() ||
+        board_tile_bank_01() ||
         board_control_failure_observation() ||
         board_sprite_object_write_aperture() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
