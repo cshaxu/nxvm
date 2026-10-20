@@ -49,8 +49,11 @@ probe advances identically on x64 and x86 from `0x640` to `0x658` after
 71,404 executed instructions and 1,132,130 nominal ticks.  Its only retained
 output is the neutral next fault address; it retains no program payload.
 
-Complete repository suites execute all 669 registered tests on both widths,
-with no failures or skips.  Documentation governance and `git diff --check`
+After the semantic implementation, complete repository suites executed all
+669 registered tests on both widths, with no failures or skips.  A subsequent
+equivalent simplification rewrote the CRTC query from a conditional expression
+to an early-return branch without changing that contract; its affected Board
+test passed on both widths.  Documentation governance and `git diff --check`
 pass.  The transient probe staging and CTest logs were removed afterward;
 only the persistent build caches remain.  This result validates the narrow
 write receiver only.  It does not qualify the next receiver, CRTC rendering,
