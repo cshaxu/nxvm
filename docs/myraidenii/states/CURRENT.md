@@ -11,27 +11,28 @@ Machine/Window publication to the later Product/Machine task; unqualified
 sprite blend fidelity remains a separately named TODO rather than a false T4
 blocker.
 
-M1 T5 Sound is active. S1 mapped the Seibu Z80, command/response latch,
+M1 T5 Sound remains active. S1 mapped the Seibu Z80, command/response latch,
 interrupt, YM2151 and dual-OKI ownership against the existing Board wiring.
 Published emulator behavior is accepted as L2 where primary material is absent;
-the implementation remains independent, deterministic and Core-local. S2 closes
-the single Core-owned transport/time seam. S3 now owns the local Z80 execution,
-fixed map and bank route.
+the implementation remains independent, deterministic and Core-local. S2
+closed the single Core-owned transport/time seam. S3 closed the bounded private
+Z80 bootstrap, fixed map and bank route. YM2151/OKI semantics, deterministic
+mixing and real command-triggered PCM remain the next bounded Sound receivers.
 
-## Active Packet — M1 T5 S3
+## Archived Packet — M1 T5 S3
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Follows S2 delivery `e011c6998`; one session performs coordinator and executor roles. |
+| Identifier Mode | Continuation; follows S2 delivery `e011c6998`; one session performed coordinator and executor roles. |
 | Objective | Add the first bounded, private Z80 execution owner to the existing Core Sound seam and connect the fixed L2 sound-side address map without creating a second command/clock path. |
 | Non-goals | No copied external CPU source, generic Z80 framework, YM/OKI synthesis, host PCM, second clock/thread, Shared API, ROM/PAL retention or playable-game claim. |
 | Reference Baseline | Board owns the main-V30 command/response/pending registers; S2 owns deterministic rational Z80 elapsed ticks but deliberately does not consume them or alter latch state. |
 | Candidate Proposal | Independently implement the minimum local Z80 state/fetch/execute/map owner needed to consume S2 ticks. It alone acknowledges commands/interrupts when its mapped Z80-side operations execute; bank mapping remains private and follows accepted L2 map facts. |
 | Files And ABI Surface | MyRaidenII Core Board/local Sound source and its existing Board-owned unit family only. No Lib, Emulator, Shared or public Board API change. |
 | Applicable Rules | MyRaidenII guide; architecture, coding, documentation, execution and source-policy rules. |
-| Verification | Unit vectors cover reset, fetch/decode, bounded elapsed execution, fixed map/bank routing and command/interrupt acknowledgement only at the correct mapped operation. Run affected cached x64/x86 tests, repository units, manifests/dependency gates and documentation governance. |
+| Verification | Met: the existing Sound/Board synthetic vectors cover reset, fetch/decode, bounded elapsed execution, fixed map/bank routing and mapped transport operations. The selected external archive ingress probe ran in both widths without retaining payload. Complete repository unit suites passed x64/x86; each restricted run had only the deliberate Junction-fixture sandbox failure, and `repository.build-cleanup` was then rerun successfully under normal Windows permissions on both widths. |
 | Stop Conditions | A required Shared contract, ROM retention, host-time callback, second clock, copied source/table or silent latch completion stops and records the gap. |
-| Exit Criteria | One private Z80 owner consumes S2 ticks through the sole Board timeline, has one fixed L2 map/bank route, and cannot acknowledge a command or interrupt outside its actual mapped execution path. |
+| Exit Criteria | Met: one private Z80 owner consumes S2 ticks through the sole Board timeline, has one fixed L2 map/bank route, and cannot acknowledge a command or interrupt outside its actual mapped execution path. This is not a claim that the selected sound ROM, YM2151, either OKI, PCM delivery, or game audio is complete. |
 
 ## Archived Packet — M1 T5 S2
 

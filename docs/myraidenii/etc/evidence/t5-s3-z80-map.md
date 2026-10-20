@@ -26,29 +26,31 @@ transport is a narrow private contract: a mapped operation is the only route
 which can acknowledge a command, observe pending state, update a response or
 read coin input.
 
-## Initial Execution Boundary
+## Execution Boundary
 
-The current decoder covers the reset/bootstrap load, memory-transfer, direct
-jump, halt and simple register-transfer forms exercised by the synthetic map
-programs. Unimplemented Z80 instructions return `LIB_STATUS_UNSUPPORTED`; they
-are not silently treated as NOPs. YM2151/OKI addresses likewise remain rejected
-until S4 owns their real register semantics. Consequently this record makes no
-selected-ROM, sound-output or playable-game claim.
+The local decoder now covers the bounded bootstrap/control, register, stack,
+index, prefix, CB and selected ED forms needed by the synthetic programs. An
+unimplemented Z80 instruction returns `LIB_STATUS_UNSUPPORTED`; it is never
+silently treated as a NOP. YM2151/OKI addresses remain rejected until the next
+Sound receiver owns their register semantics. Consequently this record makes no
+complete selected-ROM execution, sound-output or playable-game claim.
 
 ## Verification
 
-The existing Sound unit now executes synthetic Z80 programs proving command
-read, pending observation, response write, acknowledgement, reset and banked
-ROM transfer. The existing Board bus test continues to prove the independent
-main-side handoff. Cached x64/x86 builds and the complete six-test MyRaidenII
-unit selection pass. A supplied external sound image was inspected only to
-confirm that the real bootstrap needs a later instruction-set batch; no
+The existing Sound unit executes synthetic Z80 programs proving command read,
+pending observation, response write, acknowledgement, reset, banked ROM
+transfer, control flow, stack, indexed and selected block-transfer behavior.
+The existing Board bus test continues to prove the independent main-side
+handoff. Cached x64/x86 MyRaidenII selections pass. A supplied external sound
+image was inspected only to determine the bounded bootstrap family; no
 protected asset, bytes, table or generated output is retained or committed.
 
 The existing opt-in selected-set probe now stages exactly the two program
 lanes, seven graphics images and the one sound-program image it passes to
 Board. On the owner-supplied set, both x64 and x86 reach the same existing
 terminal main-machine observation after 12,721 V30 instructions and 205,420
-elapsed ticks. This is an ingress/ownership check only: it neither proves
-complete Z80 execution nor interprets the terminal main-machine observation as
-sound, rendering or playable-game qualification.
+elapsed ticks. The complete repository unit suite also passed on each width;
+the one Junction-safety fixture was rerun outside the restricted sandbox and
+passed on each width. These are ingress/ownership and regression checks only:
+they neither prove complete Z80 execution nor interpret the terminal
+main-machine observation as sound, rendering or playable-game qualification.
