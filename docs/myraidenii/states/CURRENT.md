@@ -2,15 +2,16 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S40. The paused repaint path does not consume
+M1 T4 remains open after accepted S41. The paused repaint path does not consume
 the synthetic graphics write, while advancing mutation/control trials are
 identical and therefore time-confounded. S39 found no qualifying original
 graphics contract. The owner has now explicitly admitted published MAME/other
 emulator implementation inspection as an L2 layout/behavior reference under
-the MyRaidenII source policy; Core still has no graphics decode, composition
-or frame publication path.
+the MyRaidenII source policy; Core now has a bounded L2 character/background
+decoder primitive, but no layer composition, sprite decryption or
+frame-publication path.
 
-## Active Packet — M1 T4 S41
+## Archived Packet — M1 T4 S41
 
 | Field | Required record |
 | --- | --- |
@@ -19,7 +20,7 @@ or frame publication path.
 | Objective | Derive and independently implement the first bounded Core graphics decode/composition contract from recorded L2 source facts, then qualify it with synthetic ROM-free vectors. |
 | Files And ABI Surface | MyRaidenII Core video/graphics, its owning unit test, evidence, manifest and task records only. No Shared, Product, external asset or ROM change. |
 | Verification | Record source revision/path and adopted finite facts; run x64/x86 focused Core video tests plus the complete repository-only unit suite before S closure. |
-| Exit Criteria | Independently implemented, bounded graphics path passes synthetic regression and records its L2 scope; no reference source/table/ROM payload enters the repository. |
+| Exit Criteria | Met: the independently implemented character/background decoder passes synthetic regression and records its L2 scope; no reference source/table/ROM payload entered the repository. |
 
 ## Archived Packet — M1 T4 S40
 
@@ -266,6 +267,7 @@ or frame publication path.
 | S34 | Corrected the black-box baseline with historical official MAME; no PAL/ROM was acquired. | P1 `c895eaca0`; the bounded historical run executes the supplied archive with the absent PAL marked no-good-dump. [Evidence](../etc/evidence/t4-s34-historical-mame-oracle.md). |
 | S35 | Connected owner-approved external PAL BYOB inputs to current-MAME verification. | P1 `2ea80ac66`; both hashes match and current MAME verifies/runs the combined inputs. [Evidence](../etc/evidence/t4-s35-external-pal-byob.md). |
 | S36 | Established a repeatable, neutral current-MAME screen checkpoint. | P1 `ded2d0a81`; two bounded runs agree on 320×240 at frame 600 without retained pixel output. [Evidence](../etc/evidence/t4-s36-mame-screen-checkpoint.md). |
+| S41 | Owner-authorized L2 character/background graphics decoder primitive. | P1 `b15bf1768`; x64/x86 focused and MyRaidenII unit groups pass. Both full 643-case repository unit selections complete; the controlled junction-only cleanup case requires the authorized execution context and passes separately on both widths. [Evidence](../etc/evidence/t4-s41-l2-graphics-layout.md). |
 
 ## Archived Packet — M1 T4 S30
 
