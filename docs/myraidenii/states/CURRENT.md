@@ -2,11 +2,32 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S31. Core now has one copied, fixed-role
-graphics-image ingress for later Video decoding, while existing program-only
-Core diagnostics remain explicit. The selected-set probe still reaches its
-containment budget without a new control-window fault; decoding, composition
-and frame publication remain open.
+M1 T4 remains open after accepted S32. Core now has a copied, fixed-role
+graphics-image ingress and one bounded palette RGB32 lookup for a later Video
+frame owner, while existing program-only Core diagnostics remain explicit. The
+selected-set probe still reaches its containment budget without a new
+control-window fault; decoding, composition and frame publication remain open.
+
+## Archived Packet — M1 T4 S32
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S32 follows accepted S31 P2 `97361495e`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation and L2 models where primary hardware detail is unavailable. This packet changes only MyRaidenII Core/tests/documentation. |
+| Objective | Give the existing 2048-word private Video palette one bounded RGB32 interpretation for a later native-frame owner. |
+| Non-goals | No graphics ROM decode, tile/sprite layout, decryption, brightness, priority, scroll, frame publication, Machine/Product route, Shared change or playable-game claim. |
+| Reference Baseline | S25 admits a complete 2048-word palette image without channel interpretation. Shared accepts 0x00RRGGBB frames, but MyRaidenII has no native frame yet. |
+| Candidate Proposal | Add one Video-local checked palette lookup that interprets the stored 15 low bits as L2 RGB555, expands each 5-bit component to 8 bits and returns 0x00RRGGBB. Keep raw palette ownership and failed-load preservation unchanged. |
+| Files And ABI Surface | `src/myraidenii/core/{video.c,video.h}`, existing Board smoke, CURRENT and one evidence record. No Shared/public component API, asset, ROM, Product or Machine change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The mapping remains L2, one Video owner and no imported source/table/algorithm. |
+| Verification | Focused x64/x86 Board smoke with synthetic palette vectors and bounds/argument failure; existing selected-set probe; documentation governance and `git diff --check`. |
+| Expected Markers | Zero, individual primary extremes and a mixed synthetic RGB555 word produce exact RGB32 values; invalid index/pointer leaves caller output unchanged; no frame is published. |
+| Asset Needs | None. Tests use synthetic palette words only; no external archive access, extraction or content observation. |
+| Reporting Requirements | Record the L2 source/limits, exact bit/expansion rule, failed-input behavior, actual diff and verification; state that this does not establish selected-board palette hardware accuracy. |
+| Stop Conditions | Need to import a reference layout/table/handler, infer brightness/alpha, touch Shared, create a renderer/frame path, inspect protected media or claim exact board colour. |
+| Exit Criteria | One reviewed MyRaidenII P with bounded conversion proof, dual-width focused qualification, evidence and cleanup; otherwise revert the whole interpretation rather than add alternate color paths. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Check raw palette load/reset, all color extraction shifts, output alpha, index bounds, caller output preservation and existing RGB32 frame conventions so no duplicate palette converter or format appears. |
 
 ## Archived Packet — M1 T4 S31
 
@@ -62,6 +83,7 @@ and frame publication remain open.
 | S29 | L2 Sprite-protection X/Y/max-X/source endpoint group. | P1 `6ebe6cd9c`; x64/x86 Board smoke and selected-set probes pass the former `0x6d8` stop and reach `0x762`; full 668-case qualification and the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s29-sprite-protection-latches-l2.md). |
 | S30 | L2 Sprite-protection destination read endpoint. | P1 `532ef5a8f`; x64/x86 Board smoke and selected-set probes pass the former `0x762` stop; probes end only at their existing containment budget, and full 668-case qualification plus the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s30-sprite-protection-destination-output-l2.md). |
 | S31 | Fixed-role graphics image ingress, lifetime and creation validation. | P1 `197ec9b3c`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s31-graphics-image-ingress.md). |
+| S32 | Bounded Video-owned RGB555 to `0x00RRGGBB` palette lookup. | P1 `822f76ba5`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s32-palette-rgb555-l2.md). |
 
 ## Archived Packet — M1 T4 S30
 
