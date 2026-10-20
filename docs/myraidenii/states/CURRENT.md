@@ -22,7 +22,7 @@ M1 T4 remains open after accepted S1:
 | S14 | Bounded attribution of the selected set's first unowned control-window access at `0x658`. | P1 `f8fc5f867` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes identify the same one-byte write while preserving `INVALID_STATE`; all 642 repository unit cases pass per width when the known temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s14-control-fallback-attribution.md). |
 | S15 | Exact selected-set word-write receiver at `0x658--0x659`, separately owned from CRTC. | P1 `0392b97e2` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the complete word span, then reach the same independent next byte-write stop at `0x65a`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s15-object-write-sink-l2.md). |
 
-## Active Packet — M1 T4 S15
+## Retained Packet — M1 T4 S15
 
 | Field | Required record |
 | --- | --- |
@@ -42,6 +42,11 @@ M1 T4 remains open after accepted S1:
 | Exit Criteria | The exact receiver has focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or it is refused/transferred because the bounded assumptions fail. |
 | Original Owner Request | Do not require physical-level material; use other emulator observable behavior as clearly labeled L2 where L3 is unavailable. |
 | Similar-Issue Sweep | Check both `0x658--0x659` lanes, immediate neighbours, read/inspect, widths, reset and no overlap with CRTC; ensure no fallback widening or duplicate Video state. |
+
+S15 is closed. The bounded L2 receiver accepts only the observed word span and
+the selected-set probe's next independent unowned access is a one-byte write
+at `0x65a`. M1 T4 remains open; that next stop requires a separately admitted
+packet rather than widening this receiver.
 
 ## Retained Packet — M1 T4 S14
 
