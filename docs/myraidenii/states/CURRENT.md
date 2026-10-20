@@ -24,6 +24,28 @@ M1 T4 remains open after accepted S18:
 | S16 | Exact selected-set word-write receiver at `0x65a--0x65b`, separately owned from CRTC and S15. | P1 `84f3023fb` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only either exact word span, reject the cross-pair without RAM fallback, then reach the same independent next byte-write stop at `0x65c`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s16-object-write-sink-l2.md). |
 | S17 | Exact selected-set word-write receiver at `0x65c--0x65d`, separately owned from CRTC and S15--S16. | P1 `a815a6a0a` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the three exact word pairs, reject cross-pairs without RAM fallback, then reach the same independent next byte-write stop at `0x65e`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s17-object-write-sink-l2.md). |
 | S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 `cdd761ac0`; x64/x86 Board smoke and selected-set probes pass; complete repository unit suites pass 642/642 per width when the temporary-output-sensitive DAG negative case is executed separately. [Evidence](../etc/evidence/t4-s18-object-aperture-l2.md). |
+| S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 pending focused dual-width proof: Board smoke passes and probes advance to `0x6cc`; full qualification pending. |
+
+## Active Packet — M1 T4 S19
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S19 follows coordinator-accepted S18 P1 `cdd761ac0`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's standing approval permits bounded L2 behavior from external emulator evidence where physical L3 material is unavailable; source policy forbids importing code, tables, algorithms, or protected media. |
+| Objective | Model the selected-set-observed Board tile-bank-2 endpoint at `0x470--0x471` as one reset-zero, byte-addressable 16-bit local register. |
+| Non-goals | No tile renderer, layer selection, palette, CRTC change, generic register framework, public API, Shared change, reference implementation translation, ROM inspection, or playable-game claim. |
+| Reference Baseline | S18 probes reach a one-byte Board read at `0x470` on both widths. The selected Raiden II reference map declares a read/write `0x470--0x471` tile-bank endpoint; earlier internal B07 inventory assigns tile-bank behavior to Board/Video, not COP. |
+| Candidate Proposal | Add one Board-owned two-byte replacement route and one `lib_u16` reset-zero field. Reads, inspection and byte/word writes use explicit little-endian lane handling; it retains values locally only for this endpoint. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, selected-set probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset, or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. L2 address/behavior evidence is not a hardware-accuracy claim. |
+| Verification | Focused x64/x86 Board test; x64/x86 selected-set startup probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | Initial read returns zero; byte lanes and complete word round-trip; reset clears value; neighbouring access remains refused; both probes pass `0x470` and report the same next terminal. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient startup staging only, with no retained payload or raw trace. |
+| Reporting Requirements | Record L2 source boundary, exact lane/reset behavior, next probe stop, dual-width result and remaining non-goals. |
+| Stop Conditions | Need for tile/render semantics, conflicting endpoint evidence, Shared/public API change, divergent host widths, protected-data exposure, or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Test full/byte lanes, initial/reset state, read/inspect, neighbours and control-failure ownership; verify no duplicate tile-bank or generic register path exists. |
 
 ## Retained Packet — M1 T4 S18
 

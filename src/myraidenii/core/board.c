@@ -16,6 +16,7 @@ struct myraidenii_core_board {
     lib_u8 sprite_protection_upload[0x20u];
     lib_u8 sound_command_pending;
     lib_u8 sound_interrupt_pending;
+    lib_u16 tile_bank_2;
     lib_u16 dip_switches;
     lib_u16 player_inputs;
     lib_u16 system_inputs;
@@ -33,6 +34,8 @@ enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_069A = 0x69au,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_069C = 0x69cu,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES = 2u,
+    MYRAIDENII_CORE_TILE_BANK_2_ADDRESS = 0x470u,
+    MYRAIDENII_CORE_TILE_BANK_2_BYTES = 2u,
     MYRAIDENII_CORE_SPRITE_FLAGS_START = 0x6ceu,
     MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u,
     MYRAIDENII_CORE_CRTC_START = 0x600u,
@@ -238,6 +241,60 @@ static lib_status myraidenii_core_board_sprite_flags_query(void *owner,
         myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_FLAGS_START,
             MYRAIDENII_CORE_SPRITE_FLAGS_BYTES, physical, bytes) && bytes == 1u ?
         LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+/* L2 Board ownership of the mapped tile-bank-2 register.  Rendering meaning
+ * remains a future Video concern; this endpoint only preserves bus state. */
+static lib_status myraidenii_core_board_tile_bank_2_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_TILE_BANK_2_ADDRESS,
+        MYRAIDENII_CORE_TILE_BANK_2_BYTES, physical, bytes) &&
+        (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+         access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_tile_bank_2_read(void *owner,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    const myraidenii_core_board *board = owner;
+    lib_u8 *out = (lib_u8 *)destination;
+    lib_size offset;
+
+    (void)observe_only;
+    if (board == LIB_NULL || destination == 0u ||
+        myraidenii_core_board_tile_bank_2_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    offset = (lib_size)(physical - MYRAIDENII_CORE_TILE_BANK_2_ADDRESS);
+    for (lib_size index = 0u; index < bytes; ++index)
+        out[index] = (lib_u8)(board->tile_bank_2 >> ((offset + index) * 8u));
+    return LIB_STATUS_OK;
+}
+
+static lib_status myraidenii_core_board_tile_bank_2_write(void *owner,
+    lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+    const lib_u8 *in = (const lib_u8 *)source;
+    lib_size offset;
+
+    if (board == LIB_NULL || source == 0u ||
+        myraidenii_core_board_tile_bank_2_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    offset = (lib_size)(physical - MYRAIDENII_CORE_TILE_BANK_2_ADDRESS);
+    for (lib_size index = 0u; index < bytes; ++index) {
+        lib_u16 shift = (lib_u16)((offset + index) * 8u);
+        lib_u16 mask = (lib_u16)(0xffu << shift);
+
+        board->tile_bank_2 = (lib_u16)((board->tile_bank_2 & (lib_u16)~mask) |
+            ((lib_u16)in[index] << shift));
+    }
+    return LIB_STATUS_OK;
 }
 
 /* L2 object ownership at the exact selected-set write. No object register
@@ -557,6 +614,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->sound_response[1] = 0u;
         board->sound_command_pending = LIB_FALSE;
         board->sound_interrupt_pending = LIB_FALSE;
+        board->tile_bank_2 = 0u;
         board->dip_switches = 0xffffu;
         board->player_inputs = 0xffffu;
         board->system_inputs = 0xffffu;
@@ -614,6 +672,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_flags_read, myraidenii_core_board_sprite_flags_write,
         myraidenii_core_board_sprite_flags_query
     };
+    const x86_core_machine_memory_device_callbacks tile_bank_2_callbacks = {
+        myraidenii_core_board_tile_bank_2_read, myraidenii_core_board_tile_bank_2_write,
+        myraidenii_core_board_tile_bank_2_query
+    };
     const x86_core_machine_memory_device_callbacks sprite_object_write_callbacks = {
         myraidenii_core_board_sprite_object_read, myraidenii_core_board_sprite_object_write,
         myraidenii_core_board_sprite_object_query
@@ -628,7 +690,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[18] = {
+    x86_core_machine_memory_device_route routes[19] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -645,6 +707,9 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS,
             .bytes = 2u, .callbacks = input_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_TILE_BANK_2_ADDRESS,
+            .bytes = MYRAIDENII_CORE_TILE_BANK_2_BYTES, .callbacks = tile_bank_2_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START,
             .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES,
