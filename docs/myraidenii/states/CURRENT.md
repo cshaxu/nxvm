@@ -2,11 +2,34 @@
 
 ## Current Work
 
-M1 T4 remains open. S50 is verified: the selected-set integration probe now
-loads the complete external graphics-role bundle through the existing Core
-Board API, executes the real V30 path, and reports only bounded neutral frame
-observations. It retained no ROM bytes and created no second renderer,
-Machine, Product or Shared path.
+M1 T4 Video is closed. S50 verifies that the selected-set probe loads the
+complete external graphics-role bundle through the sole Core Board API,
+executes the real V30 path, and reports one bounded neutral native frame
+observation. It retains no ROM bytes and creates no second renderer, Machine,
+Product or Shared path. The revised Video proposal explicitly leaves
+Machine/Window publication to the later Product/Machine task; unqualified
+sprite blend fidelity remains a separately named TODO rather than a false T4
+blocker.
+
+M1 T5 Sound is active. S1 maps the Seibu Z80, command/response latch,
+interrupt, YM2151 and dual-OKI ownership against the existing Board wiring.
+Published emulator behavior is accepted as L2 where primary material is absent;
+the implementation remains independent, deterministic and Core-local.
+
+## Active Packet — M1 T5 S1
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed M1 T4; one session performs coordinator and executor roles. |
+| Objective | Freeze the finite Sound ownership/model ledger and identify the smallest first Core receiver for the real Board sound command route. |
+| Non-goals | No copied emulator source/table, ROM/PAL retention, host audio worker, second guest clock, generic chip framework, Machine/Product executable or playable-game claim. |
+| Reference Baseline | T3 Board owns main/sound command latches; T4 establishes the single Board timeline and frame path. Local Core has no Z80, YM2151 or OKI implementation. |
+| Candidate Proposal | Inspect existing Board routes and approved external L2 implementations; classify clocks, maps, latch/IRQ direction and device ownership. Write a bounded S2--S5 implementation plan before changing production source. |
+| Files And ABI Surface | MyRaidenII proposal/current/evidence only. No source, test, shared API, asset or artifact change. |
+| Applicable Rules | MyRaidenII guide; architecture, coding, documentation, execution and source-policy rules. |
+| Verification | Documentation governance, link/whitespace review, and a source-policy review of each L2 fact. No runtime pass is claimed by this research S. |
+| Stop Conditions | A required imported unit, protected data, incompatible license, Shared public-contract gap or second time owner stops implementation planning and records a bounded receiver. |
+| Exit Criteria | A complete sound ledger gives every selected subsystem one owner, source grade, Core route and synthetic proof owner; it names the bounded implementation S sequence without transferring host audio or Product work into Core. |
 
 ## Archived Packet — M1 T4 S50
 
@@ -522,7 +545,7 @@ unit qualifications pass; the dependency-DAG negative case is executed
 separately because its probe creates an isolated temporary tree. No Shared
 source/API, ROM/media payload or product artifact changed.
 
-## Active Packet — M1 T4 S23
+## Archived Packet — M1 T4 S23
 
 | Field | Required record |
 | --- | --- |
@@ -551,7 +574,7 @@ complete x64/x86 unit qualification passes 642/642 per width. No Shared
 component, public API, ROM/media payload, product artifact or playable-game
 claim changed.
 
-## Active Packet — M1 T4 S24
+## Archived Packet — M1 T4 S24
 
 | Field | Required record |
 | --- | --- |
@@ -580,7 +603,7 @@ semantics or authorize DMA acceptance. The complete x64/x86 unit qualification
 passes 642/642 per width. No Shared component, product artifact, ROM/media
 payload or playable-game claim changed.
 
-## Active Packet — M1 T4 S25
+## Archived Packet — M1 T4 S25
 
 | Field | Required record |
 | --- | --- |
@@ -609,7 +632,7 @@ mode-`0x0014` rejection; it is not admitted by this receiver.  Complete
 repository unit suites pass 642/642 on each width.  No Shared component,
 product artifact, ROM/media payload or playable-game claim changed.
 
-## Active Packet — M1 T4 S26
+## Archived Packet — M1 T4 S26
 
 | Field | Required record |
 | --- | --- |
@@ -633,7 +656,7 @@ host widths and remains rejected with no pending operation.  No mode behavior,
 Shared component, product artifact, ROM/media payload or playable-game claim
 changed.
 
-## Active Packet — M1 T4 S27
+## Archived Packet — M1 T4 S27
 
 | Field | Required record |
 | --- | --- |
@@ -659,7 +682,7 @@ write at `0x6ca`; complete repository unit qualification passes 642/642 on
 each width, documentation governance passes, and transient probe staging was
 removed. No decode, frame or generic DMA behavior was admitted.
 
-## Active Packet — M1 T4 S22
+## Archived Packet — M1 T4 S22
 
 | Field | Required record |
 | --- | --- |

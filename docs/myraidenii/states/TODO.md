@@ -1,22 +1,19 @@
 # Unplanned Debt
 
-## High: Selected-Set Sprite-Flags Receiver
+## Medium: Selected-Set Sprite Blend Fidelity
 
-Owner: MyRaidenII Video/Sprite register-map evidence. T3 S27 ran the verified
-owner-selected program lanes through the real MyRaidenII Board on both host
-widths after admitting the independently evidenced `0x6c8--0x6c9` write-only
-span. Both runs now stop after 65,624 instructions with the same CPU-internal
-case fault whose code is physical address `0x6ce`. The fixed L2 reference map
-names `0x6ce--0x6cf` as a sprite-flags receiver.
+Owner: MyRaidenII Video. The Board now owns the `0x6ce--0x6cf` sprite-flags
+latch and the selected set executes through the frame-copy path on both host
+widths. The current compositor deliberately has no flag-dependent blend or
+shadow behavior. L2 external implementations demonstrate that some sprite
+colours need special compositing, but their table data is not copied into this
+repository.
 
-Risk: treating this named receiver as another no-op, RAM, or generic control
-fallback would hide unqualified Sprite/Video behavior and violate the
-single-owner boundary. Admission requires bounded source-grade or independently
-observed evidence for direction and flags semantics without retaining protected
-ROM bytes, registers, PC, or raw trace. Only then may the Video/Sprite owner
-model the receiver or preserve its refusal. Rerun the two-width selected-set
-probe after that decision. This blocks T3's genuine selected-set startup gate
-but does not assert that the V30 is generally unqualified.
+Risk: a normal native frame does not prove blend/shadow pixels are faithful.
+A later bounded Video-fidelity task may independently model the behavior from
+approved L2 observations, with synthetic pixel oracles and no imported source,
+table or protected media. This does not block the completed Board/Core frame
+qualification or authorize a second renderer.
 
 ## Medium: Shared Complete-Span Memory Query Classification
 

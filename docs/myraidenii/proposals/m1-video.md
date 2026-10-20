@@ -67,7 +67,11 @@ small presentation probe as needed without inventing a second host loop.
 
 ## Exit And Stops
 
-Complete-frame output and failure/no-new-frame contracts agree through the
-Machine adapter and real Window. No stale/partially converted frame is published.
-Do not substitute a screenshot or disable encryption/priority effects. Hardware
-timing derived from a hand-tuned reference remains explicitly L2.
+T4 closes when the sole Core Board frame path accepts the complete immutable
+graphics-role bundle, produces a bounded native RGB32 frame after real selected
+set execution on both host widths, and preserves the prior frame on failure.
+Machine-to-Emulator publication, portrait presentation, Window evidence and
+input belong to the later Product/Machine task; they are not a second Video
+completion path. Do not substitute a screenshot or disable
+encryption/priority effects. Hardware timing derived from a reference remains
+explicitly L2.
