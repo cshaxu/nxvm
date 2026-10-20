@@ -2,6 +2,12 @@
 
 ## Current Work
 
+M1 T4 remains open after accepted S1:
+
+| S | Delivered scope | Receipt |
+| --- | --- | --- |
+| S1 | Finite Video/Sprite convergence ledger; no invented receiver admitted without a lawful flag-family consumer contract. | P1 `ac0872270`; coordinator review: documentation governance and `git diff --check` passed. |
+
 M1 T3 remains open after accepted S1--S25:
 
 | S | Delivered scope | Receipt |
