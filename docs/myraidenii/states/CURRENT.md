@@ -25,7 +25,7 @@ M1 T4 remains open after accepted S18:
 | S17 | Exact selected-set word-write receiver at `0x65c--0x65d`, separately owned from CRTC and S15--S16. | P1 `a815a6a0a` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the three exact word pairs, reject cross-pairs without RAM fallback, then reach the same independent next byte-write stop at `0x65e`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s17-object-write-sink-l2.md). |
 | S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 `cdd761ac0`; x64/x86 Board smoke and selected-set probes pass; complete repository unit suites pass 642/642 per width when the temporary-output-sensitive DAG negative case is executed separately. [Evidence](../etc/evidence/t4-s18-object-aperture-l2.md). |
 | S19 | Selected-set-observed tile-bank-2 Board register at `0x470--0x471`. | P1 `7258833b8`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6cc`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s19-tile-bank-2-l2.md). |
-| S20 | Selected-set-observed tile-bank-01 Board write latch at `0x6cc--0x6cd`. | P1 `229b564bb`; x64/x86 Board smoke passes, both selected-set probes advance to `0x6c4`, and the full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s20-tile-bank-01-l2.md). |
+| S20 | Selected-set-observed tile-bank-01 latch at `0x6cc` plus adjacent `0x6cd` no-op. | P1 `229b564bb`; P3 correction pending: exact map ownership narrows the latch to `0x6cc` and retains `0x6cd` as a separate no-op; focused dual-width proof passes and full requalification is pending. [Evidence](../etc/evidence/t4-s20-tile-bank-01-l2.md). |
 
 ## Retained Packet — M1 T4 S20
 
@@ -48,13 +48,12 @@ M1 T4 remains open after accepted S18:
 | Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
 | Similar-Issue Sweep | Test the exact byte ownership, read/inspect refusal, adjacent fallback ownership and reset lifecycle; verify no second tile-bank-01 or generic register path exists. |
 
-S20 is closed.  The initial one-byte observation was expanded only after both
-selected-set probes reached the adjacent `0x6cd` byte and the reference map
-confirmed the combined two-byte endpoint.  The Board latch has no readback or
-frame effect.  Both probes now stop at the same unowned `0x6c4` write; that
-endpoint remains a separate ownership obligation.  No Shared component,
-public API, ROM/media payload, desktop/RDP validation, or playable-game claim
-changed.
+S20 P2's combined-latch conclusion was reopened by the map recheck.  S20 P3
+narrows `0x6cc` to its actual tile-bank latch and retains `0x6cd` as the
+separate mapped no-op; closure awaits repeated complete dual-width
+qualification.  Neither endpoint has readback or a frame effect.  The next
+stop remains the unowned `0x6c4` write.  No Shared component, public API,
+ROM/media payload, desktop/RDP validation, or playable-game claim changed.
 
 ## Retained Packet — M1 T4 S19
 

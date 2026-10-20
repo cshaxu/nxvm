@@ -14,7 +14,7 @@ struct myraidenii_core_board {
     lib_u8 sound_command[2];
     lib_u8 sound_response[2];
     lib_u8 sprite_protection_upload[0x20u];
-    lib_u16 tile_bank_01;
+    lib_u8 tile_bank_01;
     lib_u8 sound_command_pending;
     lib_u8 sound_interrupt_pending;
     lib_u16 tile_bank_2;
@@ -38,7 +38,7 @@ enum {
     MYRAIDENII_CORE_TILE_BANK_2_ADDRESS = 0x470u,
     MYRAIDENII_CORE_TILE_BANK_2_BYTES = 2u,
     MYRAIDENII_CORE_TILE_BANK_01_ADDRESS = 0x6ccu,
-    MYRAIDENII_CORE_TILE_BANK_01_BYTES = 2u,
+    MYRAIDENII_CORE_TILE_BANK_01_NOOP_ADDRESS = 0x6cdu,
     MYRAIDENII_CORE_SPRITE_FLAGS_START = 0x6ceu,
     MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u,
     MYRAIDENII_CORE_CRTC_START = 0x600u,
@@ -303,8 +303,8 @@ static lib_status myraidenii_core_board_tile_bank_2_write(void *owner,
 static lib_bool myraidenii_core_board_tile_bank_01_overlaps(lib_u32 physical,
     lib_uptr bytes)
 {
-    return bytes != 0u && physical < MYRAIDENII_CORE_TILE_BANK_01_ADDRESS +
-        MYRAIDENII_CORE_TILE_BANK_01_BYTES && (lib_u64)physical + bytes >
+    return bytes != 0u && physical <= MYRAIDENII_CORE_TILE_BANK_01_NOOP_ADDRESS &&
+        (lib_u64)physical + bytes >
         MYRAIDENII_CORE_TILE_BANK_01_ADDRESS;
 }
 
@@ -312,8 +312,7 @@ static lib_status myraidenii_core_board_tile_bank_01_query(void *owner,
     lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
 {
     if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
-    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_TILE_BANK_01_ADDRESS,
-        MYRAIDENII_CORE_TILE_BANK_01_BYTES, physical, bytes) &&
+    return physical == MYRAIDENII_CORE_TILE_BANK_01_ADDRESS && bytes == 1u &&
         access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
 
@@ -332,21 +331,42 @@ static lib_status myraidenii_core_board_tile_bank_01_write(void *owner,
     lib_u32 physical, lib_uptr source, lib_uptr bytes)
 {
     myraidenii_core_board *board = owner;
-    const lib_u8 *in = (const lib_u8 *)source;
-    lib_size offset;
 
     if (board == LIB_NULL || source == 0u ||
         myraidenii_core_board_tile_bank_01_query(owner, physical, bytes,
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    offset = (lib_size)(physical - MYRAIDENII_CORE_TILE_BANK_01_ADDRESS);
-    for (lib_size index = 0u; index < bytes; ++index) {
-        lib_u16 shift = (lib_u16)((offset + index) * 8u);
-        lib_u16 mask = (lib_u16)(0xffu << shift);
+    board->tile_bank_01 = *(const lib_u8 *)source;
+    return LIB_STATUS_OK;
+}
 
-        board->tile_bank_01 = (lib_u16)((board->tile_bank_01 & (lib_u16)~mask) |
-            ((lib_u16)in[index] << shift));
+static lib_status myraidenii_core_board_tile_bank_01_noop_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return physical == MYRAIDENII_CORE_TILE_BANK_01_NOOP_ADDRESS && bytes == 1u &&
+        access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_tile_bank_01_noop_read(void *owner,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)owner;
+    (void)physical;
+    (void)destination;
+    (void)bytes;
+    (void)observe_only;
+    return LIB_STATUS_INVALID_STATE;
+}
+
+static lib_status myraidenii_core_board_tile_bank_01_noop_write(void *owner,
+    lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    if (owner == LIB_NULL || source == 0u ||
+        myraidenii_core_board_tile_bank_01_noop_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     return LIB_STATUS_OK;
 }
@@ -736,6 +756,11 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_tile_bank_01_read, myraidenii_core_board_tile_bank_01_write,
         myraidenii_core_board_tile_bank_01_query
     };
+    const x86_core_machine_memory_device_callbacks tile_bank_01_noop_callbacks = {
+        myraidenii_core_board_tile_bank_01_noop_read,
+        myraidenii_core_board_tile_bank_01_noop_write,
+        myraidenii_core_board_tile_bank_01_noop_query
+    };
     const x86_core_machine_memory_device_callbacks sprite_object_write_callbacks = {
         myraidenii_core_board_sprite_object_read, myraidenii_core_board_sprite_object_write,
         myraidenii_core_board_sprite_object_query
@@ -750,7 +775,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[20] = {
+    x86_core_machine_memory_device_route routes[21] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -804,7 +829,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .callbacks = sprite_flags_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_TILE_BANK_01_ADDRESS,
-            .bytes = MYRAIDENII_CORE_TILE_BANK_01_BYTES, .callbacks = tile_bank_01_callbacks,
+            .bytes = 1u, .callbacks = tile_bank_01_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_TILE_BANK_01_NOOP_ADDRESS,
+            .bytes = 1u, .callbacks = tile_bank_01_noop_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START,
             .bytes = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES,

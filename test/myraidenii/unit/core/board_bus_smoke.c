@@ -429,23 +429,20 @@ static lib_i32 board_tile_bank_01(void)
     };
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
-    const lib_u8 low = 0x5au;
-    const lib_u8 high = 0xa5u;
-    const lib_u8 word[2] = {0x34u,0x12u};
+    const lib_u8 value = 0x5au;
     lib_u8 actual = 0u;
     lib_i32 failed = 1;
 
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
         (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
-        x86_core_machine_memory_write(machine, 0x6ccu, &low, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x6cdu, &high, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x6ccu, word, sizeof(word)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6ccu, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6cdu, &value, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6ccu, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x6cdu, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x6cau, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x6ceu, &actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x6cdu, &high, 1u) != LIB_STATUS_OK) {
+        x86_core_machine_memory_write(machine, 0x6ccu, &value, 1u) != LIB_STATUS_OK) {
         goto done;
     }
     failed = 0;
