@@ -6,6 +6,7 @@ struct myraidenii_core_board {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
     myraidenii_core_cop_failure_observation cop_failure;
+    myraidenii_core_board_control_failure_observation control_failure;
     myraidenii_core_video video;
     lib_u8 *program;
     lib_u8 bank_selected;
@@ -136,13 +137,24 @@ static lib_status myraidenii_core_board_control_query(void *owner,
     return bytes == 1u ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
 
+static void myraidenii_core_board_control_failure_note(myraidenii_core_board *board,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    if (board == LIB_NULL || board->control_failure.valid) return;
+    board->control_failure.valid = LIB_TRUE;
+    board->control_failure.physical = physical;
+    board->control_failure.bytes = (lib_u8)bytes;
+    board->control_failure.access = access;
+}
+
 static lib_status myraidenii_core_board_control_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    (void)owner;
-    (void)physical;
+    myraidenii_core_board *board = owner;
+
+    myraidenii_core_board_control_failure_note(board, physical, bytes,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ);
     (void)destination;
-    (void)bytes;
     (void)observe_only;
     return LIB_STATUS_INVALID_STATE;
 }
@@ -150,10 +162,11 @@ static lib_status myraidenii_core_board_control_read(void *owner, lib_u32 physic
 static lib_status myraidenii_core_board_control_write(void *owner, lib_u32 physical,
     lib_uptr source, lib_uptr bytes)
 {
-    (void)owner;
-    (void)physical;
+    myraidenii_core_board *board = owner;
+
+    myraidenii_core_board_control_failure_note(board, physical, bytes,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE);
     (void)source;
-    (void)bytes;
     return LIB_STATUS_INVALID_STATE;
 }
 
@@ -492,6 +505,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->coin_inputs = 0xffu;
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->cop_failure, 0, sizeof(board->cop_failure));
+        lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
         myraidenii_core_cop_reset(board->cop);
         myraidenii_core_video_reset(&board->video);
     }
@@ -685,6 +699,14 @@ lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *bo
 {
     if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_observation = board->cop_failure;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board *board,
+    myraidenii_core_board_control_failure_observation *out_observation)
+{
+    if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = board->control_failure;
     return LIB_STATUS_OK;
 }
 

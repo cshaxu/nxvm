@@ -37,6 +37,7 @@ int main(int argument_count, char **arguments)
     x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     myraidenii_core_cop_failure_observation cop_failure = {0};
+    myraidenii_core_board_control_failure_observation control_failure = {0};
     lib_status status;
     lib_bool terminal_fault = LIB_FALSE;
     int exit_code = 1;
@@ -76,14 +77,20 @@ int main(int argument_count, char **arguments)
             x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK &&
             diagnostic.first_fault.valid ? diagnostic.first_fault.exception_code : 0u;
 
-        if (terminal_fault)
+        if (terminal_fault) {
             (void)myraidenii_core_board_cop_failure_get(board, &cop_failure);
+            (void)myraidenii_core_board_control_failure_get(board, &control_failure);
+        }
 
         lib_c_printf("MYRAIDENII:STARTUP-PROBE:OK reason=%u detail=%u fault-code=%u "
-            "cop-operation=%u cop-value=%u cop-physical=%u cop-status=%u executed=%llu ticks=%llu\n",
+            "cop-operation=%u cop-value=%u cop-physical=%u cop-status=%u "
+            "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
+            "executed=%llu ticks=%llu\n",
             (lib_u32)result.reason, result.detail, fault_code, (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, cop_failure.physical,
             (lib_u32)cop_failure.status,
+            (lib_u32)control_failure.valid, control_failure.physical,
+            (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,
             (unsigned long long)(MYRAIDENII_STARTUP_INSTRUCTION_BUDGET - remaining),
             (unsigned long long)result.elapsed_ticks);
         exit_code = 0;

@@ -55,6 +55,15 @@ typedef struct myraidenii_core_board_config {
     lib_size program_lane_bytes;
 } myraidenii_core_board_config;
 
+/* Reset clears this bounded fallback observation. It reports only how an
+ * unowned Board control-window access arrived; it never retains guest data. */
+typedef struct myraidenii_core_board_control_failure_observation {
+    lib_bool valid;
+    lib_u32 physical;
+    lib_u8 bytes;
+    x86_core_machine_memory_access access;
+} myraidenii_core_board_control_failure_observation;
+
 lib_status myraidenii_core_board_create(const myraidenii_core_board_config *config,
     myraidenii_core_board **out_board);
 void myraidenii_core_board_destroy(myraidenii_core_board *board);
@@ -66,6 +75,9 @@ x86_core_machine *myraidenii_core_board_machine_get(myraidenii_core_board *board
  * operation without exposing guest payload or execution internals. */
 lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *board,
     myraidenii_core_cop_failure_observation *out_observation);
+
+lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board *board,
+    myraidenii_core_board_control_failure_observation *out_observation);
 
 /* Board controls are active-low electrical inputs. The caller supplies a
  * semantic pressed state; this component alone owns the register polarity. */

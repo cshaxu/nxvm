@@ -346,6 +346,46 @@ done:
     return failed;
 }
 
+static lib_i32 board_control_failure_observation(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    myraidenii_core_board *board = LIB_NULL;
+    myraidenii_core_board_control_failure_observation observation = {0};
+    x86_core_machine *machine;
+    lib_u8 value = 0u;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    if (machine == LIB_NULL ||
+        myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
+        observation.valid ||
+        x86_core_machine_memory_read(machine, 0x658u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
+        !observation.valid || observation.physical != 0x658u || observation.bytes != 1u ||
+        observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        x86_core_machine_memory_write(machine, 0x659u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
+        observation.physical != 0x658u || observation.bytes != 1u ||
+        observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
+        observation.valid ||
+        x86_core_machine_memory_write(machine, 0x658u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
+        !observation.valid || observation.physical != 0x658u || observation.bytes != 1u ||
+        observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
+        observation.valid) {
+        myraidenii_core_board_destroy(board);
+        return 1;
+    }
+    myraidenii_core_board_destroy(board);
+    return 0;
+}
+
 static lib_i32 board_interrupt_input_and_sound_routes(void)
 {
     const myraidenii_core_board_config config = {
@@ -2351,6 +2391,7 @@ done:
 lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
+        board_control_failure_observation() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
         board_video_crtc() ||
         board_sprite_protection_upload() ||
