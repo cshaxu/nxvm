@@ -2,11 +2,14 @@
 
 ## Current Work
 
-M1 T4 remains open. S48 is active: it consumes the now-decoded private sprite
-stream and the existing latched object RAM in the sole Video compositor. No
+M1 T4 remains open. S48 is accepted after review of implementation P1
+`4dd3017db`: Video now has the one latched-sprite compositor path. Cached
+x64/x86 MyRaidenII units pass; the complete 672-case repository run on both
+widths has no code failure, and its sandbox-only cleanup-junction denial was
+separately rerun under normal Windows permissions on both widths. No
 Product/Machine executable exists yet.
 
-## Active Packet — M1 T4 S48
+## Archived Packet — M1 T4 S48
 
 | Field | Required record |
 | --- | --- |
