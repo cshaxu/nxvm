@@ -82,10 +82,15 @@ static lib_i32 graphics_tile_layers(void)
         4096u * MYRAIDENII_CORE_BACKGROUND_BYTES + 1u] = 0x80u;
     images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0u;
     images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET + 1u] = 0x88u;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x08u;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0u;
+    tilemap[0x400u] = 0x1000u;
+    tilemap[0x800u] = 0x2000u;
+    tilemap[0xc00u] = 0x3000u;
     palette[0x401u] = 0x001fu;
-    palette[0x602u] = 0x03e0u;
-    palette[0x503u] = 0x7c00u;
-    palette[0x704u] = 0x4210u;
+    palette[0x442u] = 0x03e0u;
+    palette[0x423u] = 0x7c00u;
+    palette[0x734u] = 0x4210u;
     if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
         myraidenii_core_video_palette_load(&video, palette,
             MYRAIDENII_CORE_VIDEO_PALETTE_WORDS) != LIB_STATUS_OK ||
@@ -93,7 +98,16 @@ static lib_i32 graphics_tile_layers(void)
             MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS) != LIB_STATUS_OK ||
         myraidenii_core_video_frame_copy(&video, 0u, 0u, pixels,
             MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
-        pixels[0u] != 0x0000ffu || pixels[1u] != 0u) {
+        pixels[0u] != 0x848484u || pixels[1u] != 0u) {
+        goto done;
+    }
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0xffu;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0xffu;
+    myraidenii_core_video_graphics_images_release(&video);
+    if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
+        myraidenii_core_video_frame_copy(&video, 0u, 0u, pixels,
+            MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) != LIB_STATUS_OK ||
+        pixels[0u] != 0x0000ffu) {
         goto done;
     }
     images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0xffu;
@@ -116,13 +130,13 @@ static lib_i32 graphics_tile_layers(void)
         pixels[0u] != 0xff0000u) {
         goto done;
     }
-    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x08u;
-    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0u;
+    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] = 0xffu;
+    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET + 1u] = 0xffu;
     myraidenii_core_video_graphics_images_release(&video);
     if (graphics_images_load(&video, images) == LIB_STATUS_OK &&
         myraidenii_core_video_frame_copy(&video, 0u, 0u, pixels,
             MYRAIDENII_CORE_VIDEO_FRAME_PIXELS) == LIB_STATUS_OK &&
-        pixels[0u] == 0x848484u) {
+        pixels[0u] == 0u) {
         result = 0;
     }
 done:

@@ -19,13 +19,22 @@ is [t4-s42-tile-composition-l2.md](../etc/evidence/t4-s42-tile-composition-l2.md
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: M1 T4 S42 follows accepted S41 P2 `7fa6debcc`; one session performs coordinator and executor roles. |
-| Admission And Approval | Use the documented owner-approved MAME/other-emulator L2 source-reference path; independently implement only finite layout/composition facts. |
-| Objective | Compose the four non-sprite tile layers into a bounded native 320 by 240 RGB32 image from the existing Video image, tilemap, palette and Board bank latches. |
-| Non-goals | No sprite decryption/composition, CRTC scrolling/enable behavior, blending, rotation, Machine frame publication, external ROM data or Shared change. |
-| Files And ABI Surface | MyRaidenII Core video/graphics/Board-private route, the owning Core unit test, evidence and task records only. |
-| Verification | Synthetic ROM-free layer/transparent-pixel/bank/palette regressions on x64/x86; then the complete repository-only unit selections under the documented junction execution context. |
-| Exit Criteria | A complete synthetic four-layer image is deterministic and bounded; deferred controls and sprites are explicitly recorded rather than emulated by guesses. |
+| Identifier Mode | Corrective continuation: M1 T4 S42 P2 corrects the unaccepted P1 tilemap/palette L2 mapping; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved MAME/other emulator implementations as L2 evidence and explicitly directed continued use without further back-and-forth on 2026-10-20. |
+| Objective | Correct the four non-sprite tile-layer RAM ordering and palette bases in the sole MyRaidenII Video composition path, and make its owning smoke reject the former swapped mapping. |
+| Non-goals | No sprite decoding/decryption, scroll/enable behavior, blending, rotation, Machine frame publication, external ROM data, copied reference source/table, or Shared change. |
+| Reference Baseline | S42 P1 `6944777f4` publishes an initial 320 by 240 frame, but its Mid/Foreground tilemap offsets and palette bases disagree with the recorded L2 source layout. |
+| Candidate Proposal | Retain one Video compositor; draw Background from 000h/400h palette, Midground from 800h/420h palette, Foreground from 400h/410h palette, and Text from c00h/700h palette. Strengthen the existing synthetic smoke with distinct entries/colours and transparent peel-down checks. |
+| Files And ABI Surface | `src/myraidenii/core/video.c`, `test/myraidenii/unit/core/graphics_smoke.c`, S42 evidence and task record only; no public API/ABI changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. The L2 implementation is independent, records revision/path facts only, and does not import or transliterate source, tables, ROM data or decryption material. |
+| Verification | Run the owning Core graphics and Board tests x64/x86, static/manifest checks, then the required repository unit selections under the documented junction execution context. |
+| Expected Markers | Distinct foreground/midground offsets and palette groups are exercised; transparent layers reveal the correct lower layer in the correct order; no alternative composition owner exists. |
+| Asset Needs | None; tests use synthetic buffers only and external ROM/media remain untouched. |
+| Reporting Requirements | Report source/test added/removed/net lines, exact L2 limitation, verification by width, and all deferred sprite/scroll/frame-publication work. |
+| Stop Conditions | Any needed sprite decrypt source/table, ROM extraction, Shared API change, or behavior beyond finite L2 layer mapping is transferred rather than guessed. |
+| Exit Criteria | The sole tile composition path conforms to the recorded L2 map/order/palette facts; the regression rejects the former swap; evidence and manifests are updated. |
+| Original Owner Request | Continue MyRaidenII implementation with external emulator behavior/layout as approved L2, without repeatedly requesting that authority. |
+| Similar-Issue Sweep | Recheck all four tile layers for one owner, source/test mapping agreement, bounds, transparent-pen behavior and absence of copied source/table/decryption material. |
 
 ## Archived Packet — M1 T4 S41
 

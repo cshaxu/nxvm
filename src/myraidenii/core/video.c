@@ -222,13 +222,13 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
         MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
         (tile_bank_01 & 1u) << 1u, 0x400u, out_pixels);
     if (status != LIB_STATUS_OK) return status;
-    status = myraidenii_core_video_layer_draw(video, 0x400u,
-        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
-        1u | (tile_bank_01 & 2u), 0x600u, out_pixels);
-    if (status != LIB_STATUS_OK) return status;
     status = myraidenii_core_video_layer_draw(video, 0x800u,
         MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
-        4u | (tile_bank_2 >> 14u), 0x500u, out_pixels);
+        1u | (tile_bank_01 & 2u), 0x420u, out_pixels);
+    if (status != LIB_STATUS_OK) return status;
+    status = myraidenii_core_video_layer_draw(video, 0x400u,
+        MYRAIDENII_CORE_BACKGROUND_WIDTH, MYRAIDENII_CORE_BACKGROUND_HEIGHT,
+        4u | (tile_bank_2 >> 14u), 0x410u, out_pixels);
     if (status != LIB_STATUS_OK) return status;
     return myraidenii_core_video_layer_draw(video, 0xc00u,
         MYRAIDENII_CORE_CHARACTER_WIDTH, MYRAIDENII_CORE_CHARACTER_HEIGHT,
