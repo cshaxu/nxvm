@@ -1,0 +1,25 @@
+#ifndef MYRAIDENII_MACHINE_CONFIGURATION_INTERFACE_H
+#define MYRAIDENII_MACHINE_CONFIGURATION_INTERFACE_H
+
+#include "lib/types/types_interface.h"
+
+/* Ordered inputs consumed by the one Machine-owned Board materialization
+ * transaction. Product configuration maps named INI keys onto these roles;
+ * Core never sees paths or external-file identity. */
+typedef enum myraidenii_machine_image {
+    MYRAIDENII_MACHINE_IMAGE_PROGRAM_EVEN = 0,
+    MYRAIDENII_MACHINE_IMAGE_PROGRAM_ODD,
+    MYRAIDENII_MACHINE_IMAGE_SOUND_PROGRAM,
+    MYRAIDENII_MACHINE_IMAGE_CHARACTERS,
+    MYRAIDENII_MACHINE_IMAGE_BACKGROUND_1,
+    MYRAIDENII_MACHINE_IMAGE_BACKGROUND_2,
+    MYRAIDENII_MACHINE_IMAGE_SPRITES_1,
+    MYRAIDENII_MACHINE_IMAGE_SPRITES_2,
+    MYRAIDENII_MACHINE_IMAGE_SPRITES_3,
+    MYRAIDENII_MACHINE_IMAGE_SPRITES_4,
+    MYRAIDENII_MACHINE_IMAGE_SAMPLES_1,
+    MYRAIDENII_MACHINE_IMAGE_SAMPLES_2,
+    MYRAIDENII_MACHINE_IMAGE_COUNT
+} myraidenii_machine_image;
+
+#endif

@@ -2,6 +2,23 @@
 
 ## Current Work
 
+## Active Packet — M1 T5 S17
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S17 follows accepted S16 closure `22b59920d`. One session performs coordinator and executor roles. |
+| Objective | Design and implement the single transactional runtime-image materialization boundary that consumes S16 configuration, validates the fixed selected-set images, and hands a complete owned bundle to later Board composition. |
+| Reference Baseline | S16 owns strict adjacent-INI parsing but deliberately neither resolves paths nor opens inputs. Core Board copies a complete supplied bundle and exposes no external-file contract. |
+| Candidate Proposal | Keep configuration syntax in Product, but move the fixed image-role enum and materialization transaction to Machine, where external-resource lifetime and later Board construction belong. Product maps named INI keys to the Machine request only. Machine resolves each configured path against the INI directory, opens all twelve individual external files read-only, checks the audited fixed byte count and code-owned SHA-256 digest, and destroys the entire candidate bundle on any failure. It exposes only a complete opaque bundle to later composition. No ZIP reader, fallback filename, archive path, partial Board replacement, payload logging or Shared checksum API is introduced. |
+| Evidence Grades | Hashes/sizes are audited asset identity metadata, not CPU/device evidence. Any later model fact follows the user-approved ladder: inspected primary-manual PDF explicit applicable formula/constant/rule is L3; external/reference or range-only evidence is L2; unsupported local engineering is L1. |
+| Files And ABI Surface | Product configuration maps keys to the Machine-owned role enum; Machine-local materialization and matching owner tests, Current and S evidence may change. No Shared component, Core ABI, external asset, ROM payload or product artifact is changed. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI, Source Policy and shared Execution/Architecture/Coding/Document rules. One transaction owns candidate lifetime; later Composition remains the sole Board/Machine/Session owner. |
+| Verification | Required: dual-width focused loader tests using synthetic image data, including a wrong size/digest and all-or-nothing cleanup; complete repository-only MyRaidenII unit selection; documentation/whitespace checks. No external-set integration, desktop, host audio or EXE claim until the composition/app target exists. |
+| Stop Conditions | Need for external archive decoding, protected payload retention, altered Shared hashing API, a Board public file API, unapproved asset/source import, or a second composition/session route stops and transfers the gap. |
+| Exit Criteria | A complete candidate is either available or no candidate survives; every configured path is relative to the single INI directory unless explicitly absolute; all records are verified against one code-owned contract; no later owner needs to reopen or guess an image. |
+| Temporary Artifacts | None. Synthetic test inputs live only within the test process. Existing Ninja/ccache trees are reused. |
+| Original Owner Request | Continue implementation while preserving the explicit L3/L2/L1 definition. |
+
 ## Archived Packet — M1 T5 S16
 
 | Field | Required record |

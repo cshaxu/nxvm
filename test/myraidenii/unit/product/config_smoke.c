@@ -62,7 +62,7 @@ int main(void)
     assert(config.display == EMULATOR_SESSION_DISPLAY_CONSOLE &&
         config.console_control == LIB_FALSE);
     assert(lib_text_compare((const char *)config.image_paths[
-        MYRAIDENII_PRODUCT_IMAGE_SPRITES_4], "spr4.bin") == 0);
+        MYRAIDENII_MACHINE_IMAGE_SPRITES_4], "spr4.bin") == 0);
     assert(!myraidenii_product_config_load_text(missing_image, sizeof(missing_image) - 1u,
         &config));
     assert(!myraidenii_product_config_load_text(duplicate_image,

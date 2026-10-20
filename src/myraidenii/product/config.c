@@ -5,22 +5,22 @@
 
 typedef struct myraidenii_product_image_key {
     const char *name;
-    myraidenii_product_image image;
+    myraidenii_machine_image image;
 } myraidenii_product_image_key;
 
 static const myraidenii_product_image_key myraidenii_product_image_keys[] = {
-    {"program_even", MYRAIDENII_PRODUCT_IMAGE_PROGRAM_EVEN},
-    {"program_odd", MYRAIDENII_PRODUCT_IMAGE_PROGRAM_ODD},
-    {"sound_program", MYRAIDENII_PRODUCT_IMAGE_SOUND_PROGRAM},
-    {"characters", MYRAIDENII_PRODUCT_IMAGE_CHARACTERS},
-    {"background_1", MYRAIDENII_PRODUCT_IMAGE_BACKGROUND_1},
-    {"background_2", MYRAIDENII_PRODUCT_IMAGE_BACKGROUND_2},
-    {"sprites_1", MYRAIDENII_PRODUCT_IMAGE_SPRITES_1},
-    {"sprites_2", MYRAIDENII_PRODUCT_IMAGE_SPRITES_2},
-    {"sprites_3", MYRAIDENII_PRODUCT_IMAGE_SPRITES_3},
-    {"sprites_4", MYRAIDENII_PRODUCT_IMAGE_SPRITES_4},
-    {"samples_1", MYRAIDENII_PRODUCT_IMAGE_SAMPLES_1},
-    {"samples_2", MYRAIDENII_PRODUCT_IMAGE_SAMPLES_2}
+    {"program_even", MYRAIDENII_MACHINE_IMAGE_PROGRAM_EVEN},
+    {"program_odd", MYRAIDENII_MACHINE_IMAGE_PROGRAM_ODD},
+    {"sound_program", MYRAIDENII_MACHINE_IMAGE_SOUND_PROGRAM},
+    {"characters", MYRAIDENII_MACHINE_IMAGE_CHARACTERS},
+    {"background_1", MYRAIDENII_MACHINE_IMAGE_BACKGROUND_1},
+    {"background_2", MYRAIDENII_MACHINE_IMAGE_BACKGROUND_2},
+    {"sprites_1", MYRAIDENII_MACHINE_IMAGE_SPRITES_1},
+    {"sprites_2", MYRAIDENII_MACHINE_IMAGE_SPRITES_2},
+    {"sprites_3", MYRAIDENII_MACHINE_IMAGE_SPRITES_3},
+    {"sprites_4", MYRAIDENII_MACHINE_IMAGE_SPRITES_4},
+    {"samples_1", MYRAIDENII_MACHINE_IMAGE_SAMPLES_1},
+    {"samples_2", MYRAIDENII_MACHINE_IMAGE_SAMPLES_2}
 };
 
 static lib_bool myraidenii_product_config_space(lib_u8 value)
@@ -63,7 +63,7 @@ static lib_bool myraidenii_product_config_copy(lib_u8 *target, lib_size capacity
 }
 
 static lib_bool myraidenii_product_config_image(const lib_u8 *start, const lib_u8 *end,
-    myraidenii_product_image *out_image)
+    myraidenii_machine_image *out_image)
 {
     for (lib_size index = 0u; index < sizeof(myraidenii_product_image_keys) /
             sizeof(myraidenii_product_image_keys[0]); ++index) {
@@ -78,7 +78,7 @@ static lib_bool myraidenii_product_config_image(const lib_u8 *start, const lib_u
 
 static lib_bool myraidenii_product_config_complete(const myraidenii_product_config *config)
 {
-    for (lib_size image = 0u; image < MYRAIDENII_PRODUCT_IMAGE_COUNT; ++image) {
+    for (lib_size image = 0u; image < MYRAIDENII_MACHINE_IMAGE_COUNT; ++image) {
         if (config->image_paths[image][0] == '\0') return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -107,7 +107,7 @@ lib_bool myraidenii_product_config_load_text(const lib_u8 *text, lib_size text_l
         const lib_u8 *value_end;
         const lib_u8 *equals;
         const lib_u8 *next_line;
-        myraidenii_product_image image;
+        myraidenii_machine_image image;
 
         while (line_end != limit && *line_end != '\n') ++line_end;
         next_line = line_end;
