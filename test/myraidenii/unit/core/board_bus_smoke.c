@@ -514,6 +514,44 @@ static lib_i32 board_video_sprite_flags(void)
     return video.sprite_flags == 0u ? 0 : 1;
 }
 
+static lib_i32 board_sprite_protection_upload(void)
+{
+    const myraidenii_core_board_config config = {
+        program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const lib_u8 value[] = {0x11u,0x22u,0x33u,0x44u};
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    lib_u8 byte = 0u;
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
+    machine = myraidenii_core_board_machine_get(board);
+    if (x86_core_machine_memory_write(machine, 0x6a0u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6a0u, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6a0u, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x69fu, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6a4u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6acu, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x6acu, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x6acu, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6a8u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6b0u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6b4u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6b8u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6bcu, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6c0u, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6a0u, value, sizeof(value)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6acu, value, sizeof(value)) != LIB_STATUS_OK) {
+        goto done;
+    }
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 static lib_i32 board_cop_random_result(x86_core_machine *machine, lib_u16 expected)
 {
     x86_core_machine_timeline_observation before, after;
@@ -2258,6 +2296,7 @@ lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
+        board_sprite_protection_upload() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_offset_add() ||

@@ -12,6 +12,7 @@ struct myraidenii_core_board {
     lib_u8 main_interrupt_pending;
     lib_u8 sound_command[2];
     lib_u8 sound_response[2];
+    lib_u8 sprite_protection_upload[0x20u];
     lib_u8 sound_command_pending;
     lib_u8 sound_interrupt_pending;
     lib_u16 dip_switches;
@@ -32,7 +33,9 @@ enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_069C = 0x69cu,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES = 2u,
     MYRAIDENII_CORE_SPRITE_FLAGS_START = 0x6ceu,
-    MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u
+    MYRAIDENII_CORE_SPRITE_FLAGS_BYTES = 2u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START = 0x6a0u,
+    MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES = 0x20u
 };
 
 static lib_bool myraidenii_core_board_range_contains(lib_u32 first,
@@ -225,6 +228,42 @@ static lib_status myraidenii_core_board_sprite_flags_write(void *owner, lib_u32 
         (lib_u8)(physical - MYRAIDENII_CORE_SPRITE_FLAGS_START), *(const lib_u8 *)source);
 }
 
+static lib_status myraidenii_core_board_sprite_protection_upload_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
+        myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START,
+            MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES, physical, bytes) ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_sprite_protection_upload_read(void *owner,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)owner;
+    (void)physical;
+    (void)destination;
+    (void)bytes;
+    (void)observe_only;
+    return LIB_STATUS_INVALID_STATE;
+}
+
+static lib_status myraidenii_core_board_sprite_protection_upload_write(void *owner,
+    lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board == LIB_NULL || source == 0u ||
+        !myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START,
+            MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES, physical, bytes)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    lib_memory_copy(board->sprite_protection_upload +
+        physical - MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START, (const void *)source, bytes);
+    return LIB_STATUS_OK;
+}
+
 static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
 {
     const myraidenii_core_board *board = owner;
@@ -391,6 +430,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->player_inputs = 0xffffu;
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
+        lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->cop_failure, 0, sizeof(board->cop_failure));
         myraidenii_core_cop_reset(board->cop);
         myraidenii_core_video_reset(&board->video);
@@ -442,8 +482,13 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_flags_read, myraidenii_core_board_sprite_flags_write,
         myraidenii_core_board_sprite_flags_query
     };
+    const x86_core_machine_memory_device_callbacks sprite_protection_upload_callbacks = {
+        myraidenii_core_board_sprite_protection_upload_read,
+        myraidenii_core_board_sprite_protection_upload_write,
+        myraidenii_core_board_sprite_protection_upload_query
+    };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[15] = {
+    x86_core_machine_memory_device_route routes[16] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -492,6 +537,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         {.physical_start = MYRAIDENII_CORE_SPRITE_FLAGS_START,
             .bytes = MYRAIDENII_CORE_SPRITE_FLAGS_BYTES,
             .callbacks = sprite_flags_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_BYTES,
+            .callbacks = sprite_protection_upload_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = 0x400u, .bytes = 0x400u,
             .callbacks = {myraidenii_core_board_control_read,

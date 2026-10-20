@@ -15,9 +15,23 @@ M1 T4 remains open after accepted S1:
 | S7 | Selected-set-observed `0x692--0x693` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `f4ebdcf4f` accepted by coordinator review; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s7-selected-control-hole-l2.md). |
 | S8 | Exact selected-set-observed `0x69a--0x69b` Board-local write-only L2 hole. | P1 `fa34720df` accepted by coordinator review; x64/x86 focused Board and selected-set probes advance to the independent next stop `0x690`; [L2 evidence](../etc/evidence/t4-s8-selected-control-hole-l2.md). |
 | S9 | Exact selected-set-observed `0x690--0x691` Board-local write-only L2 hole. | P1 `b576fcae5` accepted by coordinator review; x64/x86 focused Board and selected-set probes reach the separate COP-owned `INVALID_STATE` boundary; [L2 evidence](../etc/evidence/t4-s9-selected-control-hole-l2.md). |
-| S10 | Bounded Board-owned COP failure attribution for the selected set. | P1 pending; x64/x86 probes both identify command `0x5205`, first failed DMA address `0x6a0`, and existing `INVALID_STATE`; complete repository-only units pass 642/642 on each width. [Evidence](../etc/evidence/t4-s10-cop-failure-attribution.md). |
+| S10 | Bounded Board-owned COP failure attribution for the selected set. | P1 `6a79f1102`; x64/x86 probes both identify command `0x5205`, first failed DMA address `0x6a0`, and existing `INVALID_STATE`; complete repository-only units pass 642/642 on each width. [Evidence](../etc/evidence/t4-s10-cop-failure-attribution.md). |
+| S11 | L2 sprite-protection upload aperture from independently observed reference address ownership. | Active: `0x6a0--0x6bf` is a bounded, write-only Board aperture; next selected-set stop is independent Video/CRTC address `0x600`. |
 
-## Active Packet — M1 T4 S10
+## Active Packet — M1 T4 S11
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S11 follows accepted S10 P1 `6a79f1102`; one session performs coordinator and executor roles. |
+| Objective | Admit the smallest L2 Board receiver for the selected set's COP `0x5205` destination `0x6a0`, based on independently observed emulator address ownership, and prove bounded forward progress without importing external implementation. |
+| Non-goals | No emulation of external sprite-protection algorithms, CRTC/Video behavior, generic control RAM, Shared/API change, protected ROM inspection, trace capture, playable-game claim, or physical-hardware-accuracy claim. |
+| Candidate | One reset-cleared, write-only, Board-owned `0x6a0--0x6bf` sprite-protection upload aperture. It accepts only contained writes, rejects reads and inspection, and preserves no public readback contract. |
+| Source Policy | MAME address ownership is behavioral L2 context only. No source code, tables, ROM content, payload, PC/register data or external algorithm is imported. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set startup probe with transient staged program lanes; complete repository dual-width unit suites after production change; documentation governance and `git diff --check`. |
+| Exit Criteria | The aperture's contained-write/read-refusal contract is covered; both widths advance beyond the prior COP stop to the same independent next receiver; reviewed evidence and one MyRaidenII P are committed/pushed. |
+| Stop Conditions | The aperture needs readback, algorithmic behavior, an external source translation, a Shared change, ambiguous width semantics, divergent host-width result, protected-data exposure or staging cleanup failure. |
+
+## Retained Packet — M1 T4 S10
 
 | Field | Required record |
 | --- | --- |
