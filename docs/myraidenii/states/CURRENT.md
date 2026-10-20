@@ -22,6 +22,27 @@ M1 T4 remains open after accepted S1:
 | S14 | Bounded attribution of the selected set's first unowned control-window access at `0x658`. | P1 `f8fc5f867` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes identify the same one-byte write while preserving `INVALID_STATE`; all 642 repository unit cases pass per width when the known temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s14-control-fallback-attribution.md). |
 | S15 | Exact selected-set word-write receiver at `0x658--0x659`, separately owned from CRTC. | P1 `0392b97e2` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the complete word span, then reach the same independent next byte-write stop at `0x65a`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s15-object-write-sink-l2.md). |
 | S16 | Exact selected-set word-write receiver at `0x65a--0x65b`, separately owned from CRTC and S15. | P1 `84f3023fb` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only either exact word span, reject the cross-pair without RAM fallback, then reach the same independent next byte-write stop at `0x65c`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s16-object-write-sink-l2.md). |
+| S17 | Exact selected-set word-write receiver at `0x65c--0x65d`, separately owned from CRTC and S15--S16. | P1 pending. |
+
+## Active Packet — M1 T4 S17
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S17 follows coordinator-accepted S16 P1 `84f3023fb`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner authorizes a bounded behavioral L2 model from external emulator behavior when L3 material is unavailable. The exact two-byte span is inferred only from existing Core byte/word routing and the first post-S16 selected-set byte write; no external code, table or algorithm is imported. |
+| Objective | Establish the smallest write-only receiver for the selected set's adjacent word span at `0x65c--0x65d`, separate from Video CRTC and prior object pairs. |
+| Non-goals | No object register semantics, readback, generic RAM, rendering, decryption, palette behavior, physical-hardware claim, Shared change, source translation, protected-ROM inspection, raw trace retention, desktop qualification or playable-game claim. |
+| Reference Baseline | `84f3023fb`; both widths accept the two prior word pairs and then report first unowned access as a one-byte write at `0x65c`. FBNeo's CRTC path ends at `0x64f`; MAME's commented OBJ aperture surrounds the area without defining contents or readback. |
+| Candidate Proposal | Extend the existing Board-owned object write route over exactly the new adjacent pair and permit that pair only through the existing stateless callback. The route continues to prevent unsupported within-window accesses from falling through to ordinary RAM. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, selected-set integration probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset or external-code change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. Address ownership is L2 behavioral context only. |
+| Verification | Focused x64/x86 Board route test; x64/x86 selected-set startup probe with transient staging/cleanup; complete repository dual-width unit suites after production change; documentation-governance and `git diff --check`. |
+| Expected Markers | Each exact byte lane and word pair are accepted; reads, inspection, cross-pair writes and immediate neighbours remain refused; both probes advance past `0x65d` to the same independent next stop. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; probe stages only transient program lanes and retains no payload, screenshot or raw trace. |
+| Reporting Requirements | State L2 limitation; report exact accepted/rejected boundaries, dual-width result, next stop and no playable-game claim. |
+| Stop Conditions | Need for access outside the observed span, readback, algorithmic behavior, Shared change, contradictory runtime evidence, divergent host widths, protected-data exposure or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
+| Similar-Issue Sweep | Check `0x65c--0x65d`, immediate neighbours, read/inspect, widths, reset and no overlap with CRTC or prior object pairs; no fallback widening or duplicate Video state. |
 
 ## Retained Packet — M1 T4 S16
 

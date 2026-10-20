@@ -406,6 +406,9 @@ static lib_i32 board_sprite_object_write_sinks(void)
         x86_core_machine_memory_write(machine, 0x65au, &value, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x65bu, &value, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x65au, word, sizeof(word)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65cu, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65du, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65cu, word, sizeof(word)) != LIB_STATUS_OK ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
         x86_core_machine_memory_read(machine, 0x658u, &observation, 1u) !=
@@ -416,18 +419,22 @@ static lib_i32 board_sprite_object_write_sinks(void)
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x65au, &observation, 1u) !=
             LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x65cu, &observation, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
         x86_core_machine_memory_write(machine, 0x657u, &value, 1u) !=
             LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x65cu, &value, 1u) !=
+        x86_core_machine_memory_write(machine, 0x65eu, &value, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x657u, &value, 2u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x659u, word, sizeof(word)) !=
             LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x65bu, word, sizeof(word)) !=
+            LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65au, &value, 1u) != LIB_STATUS_OK) {
+        x86_core_machine_memory_write(machine, 0x65cu, &value, 1u) != LIB_STATUS_OK) {
         myraidenii_core_board_destroy(board);
         return 1;
     }
