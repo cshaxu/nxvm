@@ -30,7 +30,7 @@ M1 T3 remains open after accepted S1--S25:
 | S22 | Complete mode-banked DMA/copy/fill/sort receiver, one pending owner, and actual Board proof | `52fc45e98` |
 | S23 | Complete Video-DMA/palette/brightness receiving-evidence gate; no invented implementation | `c48f9e02c` |
 | S24 | Complete COP 2a05 offset-add receiver and bounded actual-bus proof | `7d37760f7` |
-| S25 | Bounded selected-set startup diagnostic and explicit V30-fault transfer | `945cb1956` |
+| S25 | Bounded selected-set startup diagnostic and explicit V30-fault transfer | P1 `c75a016d0`; P2 state receipt |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
