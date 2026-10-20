@@ -2,20 +2,22 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S41. The paused repaint path does not consume
-the synthetic graphics write, while advancing mutation/control trials are
-identical and therefore time-confounded. S39 found no qualifying original
-graphics contract. The owner has now explicitly admitted published MAME/other
-emulator implementation inspection as an L2 layout/behavior reference under
-the MyRaidenII source policy; Core now has a bounded L2 character/background
-decoder and initial four-tile-layer composition, but no sprite decryption,
-scroll/enable behavior or Machine frame-publication path.
+M1 T4 remains open after coordinator acceptance of S42. Core owns a bounded L2
+character/background decoder and static four-tile-layer composition. Sprite
+decryption/drawing, CRTC layer enable/scroll, and Machine frame publication
+remain explicitly outside that delivered slice. The owner has admitted published
+MAME/other emulator implementations as L2 layout/behavior evidence under the
+MyRaidenII source policy; that authority does not permit imported or
+transliterated source, tables, ROM data, or decryption material.
 
-S42 is delivered for owner review: it consumes the owner-approved L2 tile-layout
-facts and adds a bounded four-layer native-frame composition path. Its evidence
-is [t4-s42-tile-composition-l2.md](../etc/evidence/t4-s42-tile-composition-l2.md).
+S42 was accepted after actual-change review of `6944777f4` and `37cba797a`:
+the sole Video compositor now has the recorded Background/Midground/Foreground/
+Text map and palette ownership, while synthetic tests reject the earlier swap.
+Both widths passed their focused and complete repository unit selections; the
+documented sandbox junction exception was separately re-run in its required
+Windows context.
 
-## Active Packet — M1 T4 S42
+## Archived Packet — M1 T4 S42
 
 | Field | Required record |
 | --- | --- |
@@ -32,7 +34,7 @@ is [t4-s42-tile-composition-l2.md](../etc/evidence/t4-s42-tile-composition-l2.md
 | Asset Needs | None; tests use synthetic buffers only and external ROM/media remain untouched. |
 | Reporting Requirements | Report source/test added/removed/net lines, exact L2 limitation, verification by width, and all deferred sprite/scroll/frame-publication work. |
 | Stop Conditions | Any needed sprite decrypt source/table, ROM extraction, Shared API change, or behavior beyond finite L2 layer mapping is transferred rather than guessed. |
-| Exit Criteria | The sole tile composition path conforms to the recorded L2 map/order/palette facts; the regression rejects the former swap; evidence and manifests are updated. |
+| Exit Criteria | Met: the sole tile composition path conforms to the recorded L2 map/order/palette facts; the regression rejects the former swap; evidence and manifests are updated. |
 | Original Owner Request | Continue MyRaidenII implementation with external emulator behavior/layout as approved L2, without repeatedly requesting that authority. |
 | Similar-Issue Sweep | Recheck all four tile layers for one owner, source/test mapping agreement, bounds, transparent-pen behavior and absence of copied source/table/decryption material. |
 
