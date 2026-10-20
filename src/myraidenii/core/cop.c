@@ -397,6 +397,7 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
                         cop->failure.dma_source = context->source;
                         cop->failure.dma_size = context->size;
                         cop->failure.dma_destination = context->destination;
+                        cop->failure.dma_relative = myraidenii_core_cop_word(cop, 0x476u);
                     }
                     myraidenii_core_cop_note_failure(cop, LIB_STATUS_INVALID_STATE, physical);
                 }
