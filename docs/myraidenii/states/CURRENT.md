@@ -14,6 +14,28 @@ M1 T4 remains open after accepted S1:
 | S6 | Selected-set-observed `0x69c--0x69d` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `e317a10b8` accepted by coordinator review; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s6-selected-control-hole-l2.md). |
 | S7 | Selected-set-observed `0x692--0x693` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `f4ebdcf4f` accepted by coordinator review; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s7-selected-control-hole-l2.md). |
 | S8 | Exact selected-set-observed `0x69a--0x69b` Board-local write-only L2 hole. | P1 `fa34720df` accepted by coordinator review; x64/x86 focused Board and selected-set probes advance to the independent next stop `0x690`; [L2 evidence](../etc/evidence/t4-s8-selected-control-hole-l2.md). |
+| S9 | Exact selected-set-observed `0x690--0x691` Board-local write-only L2 hole. | P1 pending; x64/x86 focused Board and selected-set probes reach the separate COP-owned `INVALID_STATE` boundary; [L2 evidence](../etc/evidence/t4-s9-selected-control-hole-l2.md). |
+
+## Retained Packet — M1 T4 S9
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S9 follows accepted S8 P1 `fa34720df`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's 2026-10-19 authorization permits bounded L2 behavioral models from other emulators when L3 material is unavailable. No external code, tables, ROM content or protected trace may be imported. |
+| Objective | Use the exact selected-set stop at `0x690`, current reference-map-gap context and actual forward-progress replay to admit only the smallest stateless Board operation that advances the existing selected program. |
+| Non-goals | No blanket `0x690--0x69f` acceptance, Video/Sprite/COP state, generic RAM, Shared/Core API change, source translation, ROM retention, physical-hardware claim or playable-game claim. |
+| Reference Baseline | `fa34720df`; after exact routes at `0x692`, `0x696`, `0x69a` and `0x69c`, both widths fault at `0x690`. The current reference map leaves the local `0x690--0x69f` interval unassigned between named receivers. |
+| Candidate Proposal | Extend the existing selected-control write-only no-state callback only by the exact smallest route if replay advances and local reads, inspection, mixed widths and neighbours remain rejected; otherwise retain/refine refusal. |
+| Files And ABI Surface | `src/myraidenii/core/board.c`, its existing Board smoke, CURRENT and S9 evidence only if accepted. No public API or ABI change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. External behavior is L2 context only. |
+| Verification | x64/x86 focused Board test and selected-set probe with existing transient staging/cleanup; complete repository-only dual-width unit suites after production change; documentation governance and `git diff --check`. |
+| Expected Markers | Exact two-byte route accepts only byte lanes or contained word writes, rejects reads/inspection/mixed widths/neighbours, and advances both selected-set probes beyond `0x690`; otherwise report retained stop. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; existing probe stages only program lanes transiently and retains no payload, trace or screenshots. |
+| Reporting Requirements | Record local stop and reference-map facts separately, L2 limitation, exact accepted/rejected boundaries, dual-width results, next stop and no playable-game claim. |
+| Stop Conditions | Contradictory replay, stateful/read access, inaccessible exact width, required new owner/API, protected-data exposure or probe cleanup failure. |
+| Exit Criteria | A bounded L2 disposition is complete: accepted Board-only route has focused/full dual-width proof and evidence, or refusal is retained/transferred. One reviewed MyRaidenII P is committed/pushed. |
+| Original Owner Request | Do not require the owner to supply physical-level detail when a bounded other-emulator L2 model can make correct progress. |
+| Similar-Issue Sweep | Recheck existing selected write-only routes and every immediately adjacent byte for accidental widening, duplicate ownership, readback or generic-RAM fallback. |
 
 ## Retained Packet — M1 T4 S8
 

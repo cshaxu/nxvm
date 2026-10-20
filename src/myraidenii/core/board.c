@@ -24,6 +24,7 @@ enum {
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES = 2u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START = 0x6c8u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES = 2u,
+    MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0690 = 0x690u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0692 = 0x692u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0696 = 0x696u,
     MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_069A = 0x69au,
@@ -156,6 +157,8 @@ static lib_bool myraidenii_core_board_selected_control_write_noop_contains(
         MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES, physical, bytes) ||
         myraidenii_core_board_range_contains(MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_START,
             MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_NOOP_BYTES, physical, bytes) ||
+        myraidenii_core_board_range_contains(MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0690,
+            MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES, physical, bytes) ||
         myraidenii_core_board_range_contains(MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0692,
             MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES, physical, bytes) ||
         myraidenii_core_board_range_contains(MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0696,
@@ -436,7 +439,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_flags_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[14] = {
+    x86_core_machine_memory_device_route routes[15] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -456,6 +459,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START,
             .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES,
+            .callbacks = selected_control_write_noop_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0690,
+            .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_BYTES,
             .callbacks = selected_control_write_noop_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_ADDRESS_0692,
