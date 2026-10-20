@@ -11,6 +11,28 @@ M1 T4 remains open after accepted S1:
 | S3 | Public FPGA implementation provenance review; it is MAME-derived/GPL and supplies no independent Video/Sprite contract. | P1 `ec71c2227`; coordinator review: documentation governance and `git diff --check` passed. |
 | S4 | Owner-authorized L2 sprite-flags latch from reference-observed behavior; no imported implementation or claimed decode/render effect. | P1 `2276bbe2c`; selected-set x64/x86 both advance past the prior flags stop; complete repository units pass 669/669 on x64 and x86. |
 | S5 | Selected-set-observed `0x696--0x697` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `bc67b7bbc`; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s5-selected-control-hole-l2.md). |
+| S6 | Selected-set-observed `0x69c--0x69d` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `6d588d1d0`; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s6-selected-control-hole-l2.md). |
+
+## Retained Packet — M1 T4 S6
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S6 follows accepted S5 P1 `bc67b7bbc`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's 2026-10-19 authorization permits a bounded L2 model from other emulators where L3 material is unavailable. It permits behavioral facts only, not source/code/table/ROM import. |
+| Objective | Use the exact selected-set fault point at `0x69c`, the current reference-map gap and actual forward-progress replay to admit only the smallest state-free Board operation that makes the existing program advance. |
+| Non-goals | No blanket `0x690--0x69f` acceptance, Video/Sprite/COP state, generic RAM, reference implementation translation, Shared/Core API change, ROM retention, or physical-hardware-accuracy claim. |
+| Reference Baseline | `bc67b7bbc`; dual-width bounded probe passes `0x696` then faults at `0x69c`. Current MAME RAIDEN II map has a gap between its sprite-buffer trigger at `0x68e--0x68f` and next receiver at `0x6a0`, providing L2 map-disposition context only. |
+| Candidate Proposal | Extend the existing selected-control write-only no-state callback by one exact two-byte route only if the selected-set replay advances and all local read/inspection/neighbour/boundary tests retain refusal; otherwise retain refusal and record/transfer the result. |
+| Files And ABI Surface | `test/myraidenii/integration/selected_set_startup_probe.c` for bounded diagnostic evidence; if proven, `src/myraidenii/core/board.c`, its existing Board smoke, CURRENT and S6 evidence. No public API or ABI change. |
+| Applicable Rules | MyRaidenII guide, execution, architecture, coding, documentation and source-policy rules. The precise reference fact is L2; local program behavior is a bounded external integration observation. |
+| Verification | x64/x86 selected-set probe with existing transient staging/cleanup; focused Board x64/x86 test; complete repository-only unit suites per width after production change; documentation governance and `git diff --check`. |
+| Expected Markers | Both widths stop at the same named address before the change; a state-free exact route accepts only its two byte lanes and retains reads, inspection, mixed widths and neighbours as errors; the probe advances beyond `0x69c` or the refusal is retained with a justified record. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; existing probe stages only program lanes transiently and retains no payload, trace or screenshots. |
+| Reporting Requirements | Record the selected-set fault fact separately from the reference-map fact, L2 limitation, exact accepted/rejected range, dual-width results, next stop and no playable-game claim. |
+| Stop Conditions | Read/stateful access, access width not representable by existing callback contract, reference contradiction, required new owner/API, protected-data exposure, or failed staging cleanup. |
+| Exit Criteria | A bounded L2 disposition resolves the operation; any accepted Board-only route has focused and full dual-width proof/evidence, or an incompatible operation is explicitly retained/refused and transferred. One reviewed MyRaidenII P is committed/pushed. |
+| Original Owner Request | Do not require physical-level details from the owner; use other emulator observable behavior as an L2 reference when L3 material is absent. |
+| Similar-Issue Sweep | Review each existing selected write-only route and the immediate `0x690--0x69f` neighbours for accidental widening, duplicate ownership, readback or generic-RAM fallback. |
 
 ## Retained Packet — M1 T4 S5
 
