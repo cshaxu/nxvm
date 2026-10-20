@@ -2,8 +2,10 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S28. The selected `0x6ca` write is complete;
-tile decoding and frame rendering remain outside the admitted scope.
+M1 T4 remains open after accepted S29. The selected Sprite-protection endpoint
+group at `0x6d8--0x6df` is now a finite Board latch contract; its tile decoding
+and frame-rendering meanings remain outside it. The next selected-set boundary
+is the separate read pair at `0x762--0x763`.
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -35,6 +37,28 @@ tile decoding and frame rendering remain outside the admitted scope.
 | S26 | Capture the selected mode-`0x0014` relative-address setup in the existing COP failure observation. | P1 `0c692e3b5`; x64/x86 probes identify `relative=0`; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s26-tilemap-dma-context-attribution.md). |
 | S27 | L2 fixed mode-`0x0014` tilemap receiver from its selected bounded descriptor. | P1 `63b7c68bc`; x64/x86 Board smokes and owner-set probes advance to an independent Board-control stop; complete repository unit suites pass 642/642 per width. [Evidence](../etc/evidence/t4-s27-tilemap-dma-l2.md). |
 | S28 | L2 exact selected-set `0x6ca` write-only no-op. | P1 `d62e0deee`; P2 `7efca76c0`; x64/x86 Board smoke and selected-set probes advance to `0x6d8`; full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s28-control-noop-l2.md). |
+| S29 | L2 Sprite-protection X/Y/max-X/source endpoint group. | P1 `6ebe6cd9c`; x64/x86 Board smoke and selected-set probes pass the former `0x6d8` stop and reach `0x762`; full 668-case qualification and the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s29-sprite-protection-latches-l2.md). |
+
+## Archived Packet — M1 T4 S29
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S29 follows accepted S28 P3 `f871e1185`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continuing MyRaidenII and standing L2 models using external emulator research while source-policy restrictions remain in force; this packet changes only MyRaidenII. |
+| Objective | Receive the complete selected Sprite-protection endpoint group `0x6d8--0x6df` with its map-established byte/word access directions, so the selected program can pass its current `0x6d8` write without a generic control fallback. |
+| Non-goals | No sprite decryption, object transfer, frame/render effect, protection algorithm, register readback beyond the mapped max-X pair, timing claim, Shared/public API, ROM inspection, asset change or playable-game claim. |
+| Reference Baseline | S28's dual-width selected-set probes stop at one-byte write `0x6d8`. Permitted L2 map research identifies pairs `0x6d8/0x6da/0x6dc/0x6de` as Sprite-protection X, Y, max-X and source respectively; only max-X is mapped readable. |
+| Candidate Proposal | Extend the existing private Board Sprite-protection latch owner with four reset-zero `lib_u16` pairs. Preserve existing Core byte splitting and little-endian lanes; X, Y and source are write-only, max-X is readable/writeable. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board smoke, existing selected-set startup probe, CURRENT and one L2 evidence record. No Shared/public header, media, asset or product artifact change. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. The model is L2 only; `lib_bool`/LIB_NULL/lib_status and inward dependencies remain required. |
+| Verification | Focused x64/x86 Board smoke; x64/x86 selected-set probe; complete repository dual-width unit suites; documentation governance and `git diff --check`. |
+| Expected Markers | All four pairs accept contained byte/word writes; only max-X read/inspect succeeds; reset clears readable max-X; both probes advance beyond `0x6d8` with no retained protected payload. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; transient program-lane staging only, no content dump, raw trace or screenshot retention. |
+| Reporting Requirements | Record source grade, exact access contract, local state/no-effect boundary, verification result, diff size, next stop and remaining non-goals. |
+| Stop Conditions | Any need to infer protection/render/decryption semantics, add a generic register framework or Shared API, accept a different access contract, inspect protected ROM content, diverge by width or retain media. |
+| Exit Criteria | One reviewed MyRaidenII P with exact endpoint proof/evidence, dual-width qualification and cleanup; otherwise transfer/refuse the whole group without widening a fallback. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Check existing Sprite-protection latch fields, byte/word lane handling, query/read/write directions, reset and nearby `0x6ce` flags/`0x6fc` DMA routes so no duplicate state owner or widened control path remains. |
 
 ## Archived Packet — M1 T4 S28
 
