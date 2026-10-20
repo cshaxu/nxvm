@@ -2,10 +2,32 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S39. S38 shows that the currently contained
-MAME black-box method cannot isolate an element layout, and S39 found no
-provenance-qualified original graphics contract in its bounded search. Core
-still has no graphics decode, composition or frame publication path.
+M1 T4 S40 is active. S38 could not isolate a synthetic element while the
+reference advanced, and S39 found no qualifying original graphics contract.
+S40 tests MAME's documented pause plus explicit frame-update path to determine
+whether a frozen synthetic experiment can do so without exporting game data.
+Core still has no graphics decode, composition or frame publication path.
+
+## Active Packet — M1 T4 S40
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S40 follows accepted S39 P2 `9add13000`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved bounded L2 behavioral modeling with MAME as a black-box reference. MAME's public Lua documentation identifies `emu.pause()` and video frame updates as session control; no reference implementation/source is read. |
+| Objective | Determine whether a paused external reference can render two synthetic graphics states without CPU/frame animation, yielding a finite repeatable element coordinate/value observation. |
+| Non-goals | No MAME/FPGA source or debugger-memory inspection, no ROM/RAM/register/pixel payload retention, screenshot, trace, decoder/render/API/test/artifact change, decryption claim or playable-game claim. |
+| Reference Baseline | S40's initial paused repaint produced no byte effect; its advancing mutation/control pair proves the earlier S37 screen difference was time advancement. S39 leaves no original layout source. MAME documents public pause/session and screen/video Lua capabilities. |
+| Candidate Proposal | At a bounded post-startup frame, pause the reference, replace only its external tile region with a synthetic state, call the public video update, hold the baseline only in process, toggle one synthetic byte, call video update again, and print only dimensions, difference count/bounds and a checksum. |
+| Files And ABI Surface | Documentation/evidence only; one ignored temporary script under a unique `build/` path. No repository production/test/manifest/API/shared/artifact or external media changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. MAME stays black-box only; all mutations occur in its process and no protected payload leaves it. |
+| Verification | Run two identical paused-mutation trials and one no-mutation control; prove the callback/termination remains bounded; retain only declared neutral summary; delete all temporary script/output; run documentation governance and `git diff --check`. |
+| Expected Markers | Either a finite stable element coordinate/value fact or an exact documented reason pause/frame-update cannot yield one under containment. |
+| Asset Needs | Existing owner-supplied external archive and S35 external PALs, read-only; generated MAME configuration remains only under `nxvm-assets/media-myraidenii/raiden2/mame-config/`. |
+| Reporting Requirements | Record MAME version/API class, pause/update outcome, neutral dimensions/checksum/bounds, repeatability and cleanup only. No raw pixel, ROM, RAM, register, trace or implementation content. |
+| Stop Conditions | Pause/update needs debugger/source inspection, a saved state, protected payload retention, MAME modification/plugin, archive change, unbounded run, or non-repeatable output. |
+| Exit Criteria | A complete bounded element contract is documented for a decoder S, or a truthful blocked field set is transferred without any production source claim. |
+| Original Owner Request | Continue MyRaidenII under the approved L2 model and external BYOB assets until RAIDEN II can be run, rather than stopping after a planning-only result. |
+| Similar-Issue Sweep | Confirm no temporary script/log/NVRAM/snapshot persists and no second graphics owner, decoder implementation, MAME-derived source/table or protected payload reaches repository state. |
 
 ## Archived Packet — M1 T4 S39
 
@@ -15,7 +37,7 @@ still has no graphics decode, composition or frame publication path.
 | Admission And Approval | The product source policy permits original NEC/Zilog/Yamaha/OKI manuals and board observations as research. This packet does not import, download, commit or derive executable source from any reference. |
 | Objective | Locate original/vendor board documentation or independently recorded physical measurement that specifies a finite Raiden II graphics-element layout/attribute contract suitable for an L2 Core decoder admission. |
 | Non-goals | No MAME/FPGA/reference-source inspection, no decoder/render implementation, no third-party code import, no ROM/manual payload retention, no source/test/API/artifact change and no playable-game claim. |
-| Reference Baseline | S37 proves graphics-region sensitivity; S38 proves the existing no-payload MAME black-box method cannot isolate a finite element coordinate result. |
+| Reference Baseline | S38 proves the existing no-payload MAME black-box method cannot isolate a finite element coordinate result. S40 later corrects S37's unpaired causal attribution. |
 | Candidate Proposal | Search only primary/archival metadata and public original-board documentation indexes. Retain URLs, publisher/holder, document identity, license/access facts and only the finite hardware facts directly needed for a later proposal. |
 | Files And ABI Surface | `docs/myraidenii/{states,etc/evidence}` only. No product, Core, shared, asset, test, API, manifest or external-media changes. |
 | Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. Original documentation remains external research unless an independent acquisition/usage decision is later approved. |
@@ -48,6 +70,7 @@ still has no graphics decode, composition or frame publication path.
 | Exit Criteria | A complete bounded element contract is documented for a decoder S, or a truthful blocked field set is transferred without any production source claim. |
 | Original Owner Request | Continue MyRaidenII under the approved L2 model and external BYOB assets until RAIDEN II can be run, rather than stopping after a planning-only result. |
 | Similar-Issue Sweep | Confirm no temporary script/log/NVRAM/snapshot persists and no second graphics owner, decoder implementation, MAME-derived source/table or protected payload reaches repository state. |
+| Later Correction | S40's repeated no-mutation control proves that S37's later checksum difference was ordinary reference-frame advancement, not established graphics-region sensitivity. |
 
 ## Archived Packet — M1 T4 S37
 

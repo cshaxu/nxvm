@@ -1,5 +1,11 @@
 # M1 T4 S37 — Black-Box Graphics Mutation Boundary
 
+> **Superseded causal conclusion:** S40 added the missing no-mutation control
+> and found the same two-frame checksum/difference summary with and without the
+> selected write. The observation below remains an accurate record of S37's
+> unpaired run, but it does not establish that the synthetic byte caused the
+> later screen change. See the [S40 control](t4-s40-paused-graphics-control.md).
+
 ## Purpose
 
 This packet tested whether the current external MAME reference can provide a

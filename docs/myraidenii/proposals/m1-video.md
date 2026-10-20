@@ -27,15 +27,18 @@ source: its own [provenance record](../etc/evidence/t4-s3-third-party-provenance
 states that it derives the relevant behavior from MAME source and it is not an
 independent hardware oracle or import candidate.
 
-S37 proves only that one synthetic graphics-region mutation affects a later
-reference presentation. S38's paired synthetic/control experiment establishes
-that, under the current no-payload black-box containment, a full-screen
-time-advancing difference masks any finite element coordinate/value result.
-See the [S38 boundary](../etc/evidence/t4-s38-synthetic-graphics-oracle.md).
-It is not authority to guess a tile layout, bitplane order, attributes,
-priority, scroll or decryption rule. Decoder admission therefore requires
-original board documentation/measurement or a separately approved, stable
-black-box isolation method.
+S37 recorded an unpaired graphics-region mutation, but S40's repeated
+no-mutation controls establish that its later screen difference was ordinary
+frame advancement rather than demonstrated byte sensitivity. S38's paired
+synthetic/control experiment separately establishes that, under the current
+no-payload black-box containment, a full-screen time-advancing difference
+masks any finite element coordinate/value result. See the
+[S40 control](../etc/evidence/t4-s40-paused-graphics-control.md) and
+[S38 boundary](../etc/evidence/t4-s38-synthetic-graphics-oracle.md). Neither
+is authority to guess a tile layout, bitplane order, attributes, priority,
+scroll or decryption rule. Decoder admission therefore requires original board
+documentation/measurement or a separately approved, stable black-box isolation
+method.
 
 S39's bounded original-document search found no provenance-qualified graphics
 contract in accessible operation-manual/catalog material. Its

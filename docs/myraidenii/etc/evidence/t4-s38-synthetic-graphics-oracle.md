@@ -5,7 +5,9 @@
 S38 tested whether the owner-approved external MAME black-box route can isolate
 a finite graphics-element coordinate/value contract without reading, recording
 or importing game data. It did not inspect reference source, retain a screen,
-RAM or ROM payload, or add a decoder.
+RAM or ROM payload, or add a decoder. S40 later supplied the missing control
+and showed that the S37 unpaired change was ordinary frame advancement; this
+packet's negative layout conclusion remains unchanged.
 
 ## Method
 
