@@ -181,7 +181,7 @@ static lib_i32 board_control_window(void)
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
     };
     const lib_u32 unmodelled[] = {
-        0x400u,0x426u,0x470u,0x5ffu,0x68eu,0x694u,0x698u,0x699u,0x69eu,0x6cau,0x6ccu,0x762u,0x7ffu
+        0x400u,0x426u,0x470u,0x5ffu,0x6cau,0x6ccu,0x762u,0x7ffu
     };
     const lib_u8 data[8] = {0x11u,0x22u,0x33u,0x44u};
     const x86_core_cpu_debug_register_patch entry = {
@@ -361,20 +361,20 @@ static lib_i32 board_control_failure_observation(void)
     if (machine == LIB_NULL ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
-        x86_core_machine_memory_read(machine, 0x657u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_read(machine, 0x6c0u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
-        !observation.valid || observation.physical != 0x657u || observation.bytes != 1u ||
+        !observation.valid || observation.physical != 0x6c0u || observation.bytes != 1u ||
         observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
-        x86_core_machine_memory_write(machine, 0x656u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6c1u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
-        observation.physical != 0x657u || observation.bytes != 1u ||
+        observation.physical != 0x6c0u || observation.bytes != 1u ||
         observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
-        x86_core_machine_memory_write(machine, 0x657u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_write(machine, 0x6c0u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
-        !observation.valid || observation.physical != 0x657u || observation.bytes != 1u ||
+        !observation.valid || observation.physical != 0x6c0u || observation.bytes != 1u ||
         observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
@@ -386,7 +386,7 @@ static lib_i32 board_control_failure_observation(void)
     return 0;
 }
 
-static lib_i32 board_sprite_object_write_sinks(void)
+static lib_i32 board_sprite_object_write_aperture(void)
 {
     const myraidenii_core_board_config config = {
         program_even, program_odd, MYRAIDENII_CORE_PROGRAM_LANE_BYTES
@@ -400,41 +400,24 @@ static lib_i32 board_sprite_object_write_sinks(void)
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
     machine = myraidenii_core_board_machine_get(board);
     if (machine == LIB_NULL ||
-        x86_core_machine_memory_write(machine, 0x658u, &value, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x659u, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x650u, &value, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x658u, word, sizeof(word)) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65au, &value, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65bu, &value, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65au, word, sizeof(word)) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65cu, &value, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65du, &value, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65cu, word, sizeof(word)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x65eu, &value, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x69eu, word, sizeof(word)) != LIB_STATUS_OK ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
-        x86_core_machine_memory_read(machine, 0x658u, &observation, 1u) !=
+        x86_core_machine_memory_read(machine, 0x650u, &observation, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x658u, &observation, 1u) !=
             LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_read(machine, 0x659u, &observation, 1u) !=
-            LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_read(machine, 0x65au, &observation, 1u) !=
-            LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_read(machine, 0x65cu, &observation, 1u) !=
+        x86_core_machine_memory_read(machine, 0x69fu, &observation, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
-        x86_core_machine_memory_write(machine, 0x657u, &value, 1u) !=
-            LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x65eu, &value, 1u) !=
-            LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x657u, &value, 2u) !=
-            LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x659u, word, sizeof(word)) !=
-            LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x65bu, word, sizeof(word)) !=
+        x86_core_machine_memory_write(machine, 0x6c0u, &value, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        x86_core_machine_memory_write(machine, 0x65cu, &value, 1u) != LIB_STATUS_OK) {
+        x86_core_machine_memory_write(machine, 0x69fu, &value, 1u) != LIB_STATUS_OK) {
         myraidenii_core_board_destroy(board);
         return 1;
     }
@@ -654,8 +637,6 @@ static lib_i32 board_video_crtc(void)
         x86_core_machine_memory_inspect(machine, 0x640u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x64fu, values, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x64fu, actual, 1u) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x650u, values, 1u) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_read(machine, 0x650u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x600u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u || actual[2] != 0u || actual[3] != 0u)
@@ -682,7 +663,6 @@ static lib_i32 board_sprite_protection_upload(void)
     if (x86_core_machine_memory_write(machine, 0x6a0u, value, sizeof(value)) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6a0u, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_inspect(machine, 0x6a0u, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x69fu, value, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x6a4u, value, sizeof(value)) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x6acu, value, sizeof(value)) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x6acu, &byte, 1u) != LIB_STATUS_INVALID_STATE ||
@@ -2448,7 +2428,7 @@ lib_i32 main(void)
 {
     return board_invalid_arguments() || board_program_and_ram_routes() || board_control_window() ||
         board_control_failure_observation() ||
-        board_sprite_object_write_sinks() ||
+        board_sprite_object_write_aperture() ||
         board_interrupt_input_and_sound_routes() || board_video_phase() || board_video_sprite_flags() ||
         board_video_crtc() ||
         board_sprite_protection_upload() ||

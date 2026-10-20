@@ -23,6 +23,24 @@ M1 T4 remains open after accepted S1:
 | S15 | Exact selected-set word-write receiver at `0x658--0x659`, separately owned from CRTC. | P1 `0392b97e2` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the complete word span, then reach the same independent next byte-write stop at `0x65a`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s15-object-write-sink-l2.md). |
 | S16 | Exact selected-set word-write receiver at `0x65a--0x65b`, separately owned from CRTC and S15. | P1 `84f3023fb` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only either exact word span, reject the cross-pair without RAM fallback, then reach the same independent next byte-write stop at `0x65c`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s16-object-write-sink-l2.md). |
 | S17 | Exact selected-set word-write receiver at `0x65c--0x65d`, separately owned from CRTC and S15--S16. | P1 `a815a6a0a` accepted by coordinator review: x64/x86 focused Board tests and selected-set probes accept only the three exact word pairs, reject cross-pairs without RAM fallback, then reach the same independent next byte-write stop at `0x65e`; all 642 repository unit cases pass per width when the temporary-output-sensitive DAG negative case is executed separately from the other 641 cases. [Evidence](../etc/evidence/t4-s17-object-write-sink-l2.md). |
+| S18 | Source-bounded L2 replacement of the incremental pairs with the complete unowned object write aperture `0x650--0x69f`. | P1 pending. |
+
+## Active Packet — M1 T4 S18
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S18 follows coordinator-accepted S17 P1 `a815a6a0a`; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner authorizes behavioral L2 models from external emulator behavior when L3 is unavailable and explicitly asks to avoid inefficient one-address-at-a-time work. The source-policy boundary remains: no implementation, table, algorithm or ROM bytes are imported. |
+| Objective | Replace S15--S17's incremental adjacent pairs with one stateless, write-only Board aperture at the complete currently unowned portion of the externally documented OBJ range: `0x650--0x69f`. |
+| Reference Baseline | `42b5e6a54`; both widths reach the next byte write at `0x65e`. MAME's address map identifies `0x640--0x6bf` as an OBJ interface but leaves it commented; this repository already has CRTC ownership through `0x64f` and protection-upload ownership from `0x6a0` through `0x6bf`. Thus `0x650--0x69f` is the exact remaining contiguous aperture. |
+| Candidate Proposal | One existing Board route covers `0x650--0x69f`; contained writes are accepted as stateless L2 ownership except mixed-width accesses that straddle an existing selected-control receiver. Reads and inspection remain refused, source bytes are not retained, and no object/decryption/rendering semantics are added. Existing CRTC, protection and selected-control receivers retain their ranges and Core's existing byte-splitting behavior. |
+| Non-goals | No generic RAM, object register meanings, readback, renderer, decryption, palette behavior, physical claim, Shared change, external source translation, protected-ROM inspection, raw trace retention, desktop qualification or playable-game claim. |
+| Files And ABI Surface | MyRaidenII `core/board.c`, existing Board/CRTC/protection tests, selected-set integration probe, CURRENT and one evidence record. No public interface, Shared component, product, ROM, asset or external-code change. |
+| Verification | Focused x64/x86 Board route test; x64/x86 selected-set startup probe; complete repository dual-width unit suites after production change; documentation-governance and `git diff --check`. |
+| Expected Markers | Writes at both aperture bounds and representative former gaps are accepted; reads/inspection remain refused; CRTC/protection boundary tests continue to own their ranges; both probes pass the previous `0x65e` stop and report one identical next stop. |
+| Stop Conditions | Required object behavior beyond write acceptance, evidence contradicting aperture ownership, Shared change, divergent host widths, protected-data exposure or cleanup failure. |
+| Exit Criteria | Focused/full dual-width proof, evidence and one reviewed MyRaidenII P, or refusal/transfer because bounded assumptions fail. |
+| Similar-Issue Sweep | Remove stale “unmodelled” expectations in the new aperture, retain CRTC/protection tests as their own owners, test lower/upper bounds/read/inspect/reset, and prove no object data persists. |
 
 ## Retained Packet — M1 T4 S17
 
