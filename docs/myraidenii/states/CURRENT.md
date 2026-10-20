@@ -2,10 +2,32 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S30. The selected Sprite-protection read pair
-at `0x762--0x763` is now a bounded L2 mirror of the existing Board destination
-latch. The selected-set probe reaches its containment budget without a new
-control-window fault; tile decoding and frame-rendering meanings remain open.
+M1 T4 remains open after accepted S31. Core now has one copied, fixed-role
+graphics-image ingress for later Video decoding, while existing program-only
+Core diagnostics remain explicit. The selected-set probe still reaches its
+containment budget without a new control-window fault; decoding, composition
+and frame publication remain open.
+
+## Archived Packet — M1 T4 S31
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S31 follows accepted S30 P2 `0860cdeee`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation and bounded L2 models without source import. This packet changes only MyRaidenII Core and its owned unit tests/documentation. |
+| Objective | Establish the one Board-to-Video ingress for the selected set's immutable character, background and sprite image roles, with exact owner-supplied inventory sizes and lifetime rules. |
+| Non-goals | No ROM extraction, protected media commit, decoder/decryption algorithm, tile/sprite semantics, frame publication, Machine/Product implementation, Shared change, renderer, or playable-game claim. |
+| Reference Baseline | S30 reaches its containment budget with no remaining selected control-window fault. The audited inventory identifies one 128 KiB character image, two 2 MiB background images and four 2 MiB sprite images; Core currently accepts only program lanes. |
+| Candidate Proposal | Extend the existing Board creation config with one fixed-role immutable image bundle. Validate a supplied bundle is complete; Video privately copies the roles so the caller may release staging data after creation, matching the existing program-lane lifetime. |
+| Files And ABI Surface | `src/myraidenii/core/{board.c,board_interface.h,graphics_interface.h,video.c,video.h}`, existing Core Board smoke, CURRENT and one evidence record. This is an App-owned Core API extension only; no Shared API, asset, external archive or product artifact changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source-policy rules. Preserve Core's inward dependencies, one Video asset owner, copied/lifetime-safe public input and `lib_status` failures. |
+| Verification | x64/x86 Board smoke for exact input validation and copy/lifetime; existing selected-set probe to prove no program/control regression; documentation governance and `git diff --check`. |
+| Expected Markers | Missing, mismatched or partial image roles reject creation without a Board; accepted synthetic role images remain owned by Video after caller staging is changed/released; no frame, decoder or external media is retained. |
+| Asset Needs | Existing inventory metadata only. Tests create synthetic in-memory role images and never open, extract, retain or inspect the owner-supplied archive. |
+| Reporting Requirements | Record the role/size/lifetime contract, one-owner proof, model grade/limits, actual diff and verification; explicitly state that asset ingress is not graphics decoding or output. |
+| Stop Conditions | Need to inspect/copy protected ROM content, infer graphics layout/decryption, add a generic asset registry, create a second state owner, touch Shared, or publish an incomplete frame. |
+| Exit Criteria | One reviewed MyRaidenII P with exact role validation and copied-lifetime proof, dual-width focused qualification, evidence and cleanup; otherwise abandon the whole ingress change without placeholder compatibility. |
+| Original Owner Request | Continue implementing MyRaidenII under the repository governance and permitted L2 source boundary. |
+| Similar-Issue Sweep | Board creation rollback, program/image role validation, Video reset/destroy, caller lifetime, every role's exact size and test fixtures were checked; no raw external asset is retained or another owner is introduced. |
 
 | S | Delivered scope | Receipt |
 | --- | --- | --- |
@@ -39,6 +61,7 @@ control-window fault; tile decoding and frame-rendering meanings remain open.
 | S28 | L2 exact selected-set `0x6ca` write-only no-op. | P1 `d62e0deee`; P2 `7efca76c0`; x64/x86 Board smoke and selected-set probes advance to `0x6d8`; full 642-case unit qualification passes per width. [Evidence](../etc/evidence/t4-s28-control-noop-l2.md). |
 | S29 | L2 Sprite-protection X/Y/max-X/source endpoint group. | P1 `6ebe6cd9c`; x64/x86 Board smoke and selected-set probes pass the former `0x6d8` stop and reach `0x762`; full 668-case qualification and the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s29-sprite-protection-latches-l2.md). |
 | S30 | L2 Sprite-protection destination read endpoint. | P1 `532ef5a8f`; x64/x86 Board smoke and selected-set probes pass the former `0x762` stop; probes end only at their existing containment budget, and full 668-case qualification plus the separately run dependency-DAG negative pass per width. [Evidence](../etc/evidence/t4-s30-sprite-protection-destination-output-l2.md). |
+| S31 | Fixed-role graphics image ingress, lifetime and creation validation. | P1 `197ec9b3c`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s31-graphics-image-ingress.md). |
 
 ## Archived Packet — M1 T4 S30
 
