@@ -1,5 +1,6 @@
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/cop.h"
+#include "myraidenii/core/sound.h"
 #include "myraidenii/core/sprite_buffer_interface.h"
 #include "myraidenii/core/video.h"
 
@@ -7,6 +8,7 @@ struct myraidenii_core_board {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
     myraidenii_core_sprite_buffer *sprite_buffer;
+    myraidenii_core_sound sound;
     myraidenii_core_board_control_failure_observation control_failure;
     myraidenii_core_video video;
     lib_u8 *program;
@@ -783,11 +785,17 @@ static void myraidenii_core_board_deadline(void *owner, lib_u64 now,
 static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 due_tick)
 {
     myraidenii_core_board *board = owner;
+    lib_status status;
 
     (void)due_tick;
+    status = myraidenii_core_sound_advance(&board->sound, ticks);
+    if (status != LIB_STATUS_OK) {
+        (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
+        return;
+    }
     if (myraidenii_core_video_advance(&board->video, ticks))
         board->main_interrupt_pending = LIB_TRUE;
-    lib_status status = myraidenii_core_cop_advance(board->cop);
+    status = myraidenii_core_cop_advance(board->cop);
 
     if (status != LIB_STATUS_OK) {
         (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
@@ -938,6 +946,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->player_inputs = 0xffffu;
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
+        myraidenii_core_sound_reset(&board->sound);
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
         myraidenii_core_sprite_buffer_reset(board->sprite_buffer);

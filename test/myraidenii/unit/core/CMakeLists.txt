@@ -53,3 +53,17 @@ endif()
 add_test(NAME myraidenii.core/sprite-smoke COMMAND myraidenii-core-sprite-smoke)
 set_tests_properties(myraidenii.core/sprite-smoke PROPERTIES
     LABELS "unit;myraidenii" TIMEOUT 30)
+
+add_executable(myraidenii-core-sound-smoke sound_smoke.c)
+target_link_libraries(myraidenii-core-sound-smoke PRIVATE myraidenii-core)
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests myraidenii-core-sound-smoke)
+endif()
+if(MSVC)
+    target_compile_options(myraidenii-core-sound-smoke PRIVATE /UNDEBUG /W4 /WX)
+else()
+    target_compile_options(myraidenii-core-sound-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_test(NAME myraidenii.core/sound-smoke COMMAND myraidenii-core-sound-smoke)
+set_tests_properties(myraidenii.core/sound-smoke PROPERTIES
+    LABELS "unit;myraidenii" TIMEOUT 30)

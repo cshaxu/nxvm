@@ -25,12 +25,12 @@ creates the single Core-owned transport/time seam before CPU or chip execution.
 | Objective | Establish one private Core Sound transport owner and advance it only from the existing Board elapsed-tick callback. |
 | Non-goals | No Z80 instruction execution, YM/OKI synthesis, host PCM, second clock/thread, generic device framework, Shared API, ROM/PAL retention or playable-game claim. |
 | Reference Baseline | Board owns the main-V30 command/response/pending registers; S1 fixes the L2 sound-side map and rational clock facts. |
-| Candidate Proposal | Add one private Sound object to Board. It consumes the existing Board-owned command/interrupt operations and records deterministic rational elapsed sound ticks without inventing a CPU or accepting a false command completion. |
+| Candidate Proposal | Add one private Sound object to Board. It records deterministic rational elapsed sound ticks without reading, acknowledging or completing a command before the future Z80 owner executes it. |
 | Files And ABI Surface | MyRaidenII Core Board/local Sound source and its existing Board-owned unit family only. No Lib, Emulator, Shared or public Board API change. |
 | Applicable Rules | MyRaidenII guide; architecture, coding, documentation, execution and source-policy rules. |
-| Verification | Synthetic Board tests prove command/interrupt consumption, rational tick accumulation, reset and failure preservation; run affected cached x64/x86 tests, repository units, manifests/dependency gates and documentation governance. |
+| Verification | The local Sound unit proves rational tick accumulation, reset and failure bounds; the existing Board unit retains command/interrupt transport coverage. Run affected cached x64/x86 tests, repository units, manifests/dependency gates and documentation governance. |
 | Stop Conditions | A required public contract, ROM retention, host-time callback, second clock or silent completion path stops and records the gap. |
-| Exit Criteria | One private Sound owner is advanced through the sole Board timeline, receives each existing latch state exactly once, never claims Z80/chip execution, and passes the named regressions. |
+| Exit Criteria | One private Sound owner is advanced through the sole Board timeline, leaves Board command/interrupt state untouched until the future Z80 owner exists, never claims Z80/chip execution, and passes the named regressions. |
 
 ## Archived Packet — M1 T5 S1
 
