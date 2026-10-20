@@ -2,11 +2,31 @@
 
 ## Current Work
 
-M1 T4 remains open after accepted S38. The owner-approved external PAL inputs
-make current MAME execution available. S37 establishes a reproducible
-graphics-region mutation observation, while S38 establishes that the currently
-contained black-box experiment cannot isolate an element layout. Core still has
-no graphics decode, composition or frame publication path.
+M1 T4 S39 is active. S38 shows that the currently contained MAME black-box
+method cannot isolate an element layout. S39 now performs a bounded
+original-board documentation search before any decoder claim; Core still has no
+graphics decode, composition or frame publication path.
+
+## Active Packet — M1 T4 S39
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S39 follows accepted S38 P2 `b32ce2ed9`; one session performs coordinator and executor roles. |
+| Admission And Approval | The product source policy permits original NEC/Zilog/Yamaha/OKI manuals and board observations as research. This packet does not import, download, commit or derive executable source from any reference. |
+| Objective | Locate original/vendor board documentation or independently recorded physical measurement that specifies a finite Raiden II graphics-element layout/attribute contract suitable for an L2 Core decoder admission. |
+| Non-goals | No MAME/FPGA/reference-source inspection, no decoder/render implementation, no third-party code import, no ROM/manual payload retention, no source/test/API/artifact change and no playable-game claim. |
+| Reference Baseline | S37 proves graphics-region sensitivity; S38 proves the existing no-payload MAME black-box method cannot isolate a finite element coordinate result. |
+| Candidate Proposal | Search only primary/archival metadata and public original-board documentation indexes. Retain URLs, publisher/holder, document identity, license/access facts and only the finite hardware facts directly needed for a later proposal. |
+| Files And ABI Surface | `docs/myraidenii/{states,etc/evidence}` only. No product, Core, shared, asset, test, API, manifest or external-media changes. |
+| Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy. Original documentation remains external research unless an independent acquisition/usage decision is later approved. |
+| Verification | Recheck provenance and whether each result is original/vendor material rather than derived emulator material; record positive evidence or the exact evidence gap; run documentation governance and `git diff --check`. |
+| Expected Markers | A finite provenance-qualified graphics contract, or a documented lack of one and explicit transfer boundary. |
+| Asset Needs | None. Existing external game/PAL inputs are out of scope and untouched. |
+| Reporting Requirements | Record only source identity, ownership/provenance, URL/access, permitted factual scope and limitations. Do not retain a copyrighted manual, screenshots, ROM content, MAME/FPGA implementation detail or raw game data. |
+| Stop Conditions | A candidate is derivative/emulator-source based, access requires acquisition without policy approval, the document lacks element-layout facts, or a result would require source/table/transliteration. |
+| Exit Criteria | A finite independently sourced contract is ready for a later decoder S, or the unresolved evidence field is transferred without a production claim. |
+| Original Owner Request | Continue MyRaidenII under the approved L2 model and external BYOB assets until RAIDEN II can be run, rather than stopping after a planning-only result. |
+| Similar-Issue Sweep | Confirm no local research payload, external tool configuration, MAME artifact, decoder implementation, second graphics owner or non-approved reference-derived content is introduced. |
 
 ## Archived Packet — M1 T4 S38
 
