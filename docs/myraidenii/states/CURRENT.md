@@ -2,18 +2,14 @@
 
 ## Current Work
 
-M1 T4 remains open. M1 T4 S35 is active under the owner's explicit BYOB
-exception: it obtains only the two MAME-required PAL images outside Git,
-verifies them by MAME's published hashes and reconnects the current black-box
-runner. Historical MAME 0.182 corrects S33's black-box premise
-without importing an emulator implementation or downloading protected PAL/ROM
-data. Historical official MAME 0.182 accepts the owner archive with the absent
-`jj4b02` PAL explicitly marked `NO GOOD DUMP KNOWN` and can execute it under a
-bounded headless run. Core still has only copied fixed-role graphics ingress
-and a bounded L2 RGB555 lookup; graphics decode, composition and frame
-publication remain open.
+M1 T4 remains open after accepted S35. Under the owner's explicit BYOB
+exception, the two MAME-required PAL images are external to Git, hash-verified
+and connected to the current MAME black-box runner. Historical MAME 0.182 also
+accepts the owner archive with the absent `jj4b02` PAL marked `NO GOOD DUMP
+KNOWN`. Core still has only copied fixed-role graphics ingress and a bounded L2
+RGB555 lookup; graphics decode, composition and frame publication remain open.
 
-## Active Packet — M1 T4 S35
+## Archived Packet — M1 T4 S35
 
 | Field | Required record |
 | --- | --- |
@@ -23,7 +19,7 @@ publication remain open.
 | Non-goals | No source import, decoder/renderer/frame implementation, ROM/archive commit, asset manifest inclusion, EXE embedding, modification of existing owner archive, screenshot/trace retention, or playable-game claim. |
 | Reference Baseline | Current MAME 0.289 requests `jj4b02__ami18cv8-15.u0342` (341 bytes, SHA-1 `8b46f6673ddf11efbc3394ae423ec89d4a1283bf`) and `jj4b01__mmipal16l8bcn.u0341` (279 bytes, SHA-1 `95ce9cfbfb280dfc6a326e378684eff3c6f54701`). S34 established that historical MAME can execute without the first dump. |
 | Candidate Proposal | Download a published split-set archive to a temporary external staging path, extract exactly the two named PAL files, verify their size/SHA-1, delete the temporary archive, then run current MAME verification and one bounded headless launch with the existing archive plus the staged PAL directory. |
-| Files And ABI Surface | External BYOB assets under `O:\repos.hobby\nxvm-assets\media-myraidenii\raiden2\pals`; repository documentation/evidence only. No source, test, manifest, API, asset archive or executable changes. |
+| Files And ABI Surface | External BYOB assets under `O:\repos.hobby\nxvm-assets\media-myraidenii\raiden2\roms\raiden2`; repository documentation/evidence only. No source, test, manifest, API, asset archive or executable changes. |
 | Applicable Rules | MyRaidenII guide; execution, architecture, coding, documentation and source policy, with the owner-approved external BYOB acquisition exception recorded above. Inputs remain external and untracked. |
 | Verification | Verify exact filenames, sizes and SHA-1; confirm the staging archive is deleted; run current MAME `-verifyroms` and one bounded headless launch against combined external paths; run documentation governance and `git diff --check`. |
 | Expected Markers | Both exact hashes match; current MAME no longer reports missing PALs; headless process terminates within budget; Git has no PAL/ROM additions. |
@@ -150,6 +146,7 @@ publication remain open.
 | S32 | Bounded Video-owned RGB555 to `0x00RRGGBB` palette lookup. | P1 `822f76ba5`; x64/x86 Board smoke and selected-set startup probes pass. [Evidence](../etc/evidence/t4-s32-palette-rgb555-l2.md). |
 | S33 | Recorded the current-MAME verifier limitation without source import or retained media output. | P1 `9b179c83d`; current MAME rejects the supplied archive for PAL blobs. [Evidence](../etc/evidence/t4-s33-black-box-oracle-disposition.md). |
 | S34 | Corrected the black-box baseline with historical official MAME; no PAL/ROM was acquired. | P1 `c895eaca0`; the bounded historical run executes the supplied archive with the absent PAL marked no-good-dump. [Evidence](../etc/evidence/t4-s34-historical-mame-oracle.md). |
+| S35 | Connected owner-approved external PAL BYOB inputs to current-MAME verification. | P1 `2ea80ac66`; both hashes match and current MAME verifies/runs the combined inputs. [Evidence](../etc/evidence/t4-s35-external-pal-byob.md). |
 
 ## Archived Packet — M1 T4 S30
 
