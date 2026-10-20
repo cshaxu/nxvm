@@ -44,6 +44,27 @@ pass 6/6 and documentation/whitespace checks pass. S6 is closed. M1 T5
 remains open for the later Machine/Lib delivery and qualified real command
 path; neither is silently implied by this diagnostic.
 
+## Active Packet — M1 T5 S7
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S7 follows accepted S6 closure `00d0df0c9`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 Sound work and on 2026-10-20 defined evidence grades: only an explicit rule, formula or constant in an inspected manual PDF is L3; external emulator behavior is L2; unsupported local approximations are L1. No Shared change or media import is authorized. |
+| Objective | Replace the current arbitrary 16-level OKI PCM gain with the inspected MSM6295 nine-step attenuation rule, and apply the independently inspected L2 field-code/reserved-code disposition. Keep the existing bounded synthetic decoder/mixer boundary explicit. |
+| Non-goals | No ADPCM decoder claim, copied table/source, host PCM delivery, Machine/Product work, extra clock/thread, Shared API, ROM retention, real-set qualification or physical-chip/audio-fidelity claim. |
+| Reference Baseline | S5's mixer is intentionally L1 and currently derives a gain from `16 - volume`, allowing all sixteen values. The inspected 1994 OKI MSM6295 manual PDF, page 71, explicitly assigns D0--D3 attenuation from 0 dB through -24 dB in -3 dB steps. The silent disposition for the remaining codes is an independently inspected external-emulator L2 behavior, not a manual claim. |
+| Candidate Proposal | Preserve Sound as the single state/mix owner. Validate the voice volume field at the existing second command byte; the L2 code mapping uses 0--8 for the manual's nine levels and 9--15 for the L2 silent disposition. Represent the nine gain levels through one local helper. The manual's attenuation rule is L3; code mapping/reserved-code behavior is L2; any fixed-point mapping chosen for the existing L1 diagnostic waveform remains L1. |
+| Files And ABI Surface | MyRaidenII-only: `src/myraidenii/core/sound.c`, existing `test/myraidenii/unit/core/sound_smoke.c`, MyRaidenII manifest/evidence/Current. No public API or Shared/Core Board contract changes. |
+| Applicable Rules | MyRaidenII guide; product Architecture, Coding and source policy; repository Architecture, Coding, Documentation and Execution rules. Sound remains the sole state/mix owner; Board retains only its established forwarding route. |
+| Verification | Run focused Sound and Board unit rows on cached x64/x86, then the complete MyRaidenII unit selection per width; run manifest/document/whitespace gates. No external set or host/desktop result counts as proof. |
+| Expected Markers | A valid volume value creates a bounded active voice and deterministic non-silent diagnostic PCM; every reserved volume code remains inactive with silent PCM; existing start/stop/status/reset/queue behavior remains intact. |
+| Asset Needs | The manual remains untracked external research. No ROM/archive is opened or retained. The temporary rendered manual pages under `build/myraidenii-s7-research/` are task-owned and removed after the cited fact is recorded. |
+| Reporting Requirements | Record the exact PDF page and individual L3 fact; label fixed-point waveform scaling L1; report actual source/test line delta, test results by width, cleanup and the retained host/real-game limits. |
+| Stop Conditions | A required decoder table/formula not explicit in the manual, Shared contract, external-source import, retained payload, second timing owner or request for physical fidelity stops and transfers the gap. |
+| Exit Criteria | The nine-level command acceptance is Core-local, independently tested, accurately graded and documented; all stated focused/full MyRaidenII unit checks pass on both widths; no external payload, Shared edit or host-delivery claim enters the result. |
+| Original Owner Request | Continue under the explicit rule: manual PDF facts alone are L3; external references are L2; local unsupported models are L1. |
+| Similar-Issue Sweep | Inspect all OKI command handling and PCM gain consumers for other unvalidated volume assumptions, and inspect evidence text so no observed result promotes a model's grade. |
+
 ## Archived Packet — M1 T5 S6
 
 | Field | Required record |

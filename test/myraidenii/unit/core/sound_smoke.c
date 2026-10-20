@@ -89,6 +89,19 @@ static lib_status sound_create(const lib_u8 *program, sound_fixture *fixture,
     return sound_create_with_samples(program, LIB_NULL, LIB_NULL, fixture, out_sound);
 }
 
+static void sound_program_write_oki(lib_u8 *program, lib_size *at, lib_u8 value)
+{
+    program[(*at)++] = 0x3eu; program[(*at)++] = value;
+    program[(*at)++] = 0x32u; program[(*at)++] = 0x00u; program[(*at)++] = 0x60u;
+}
+
+static void sound_program_read_oki_response(lib_u8 *program, lib_size *at,
+    lib_u8 response)
+{
+    program[(*at)++] = 0x3au; program[(*at)++] = 0x00u; program[(*at)++] = 0x60u;
+    program[(*at)++] = 0x32u; program[(*at)++] = response; program[(*at)++] = 0x40u;
+}
+
 static lib_i32 sound_executes_fixed_transport(void)
 {
     static lib_u8 program[0x2000u];
@@ -375,6 +388,66 @@ done:
     return failed;
 }
 
+static lib_i32 sound_validates_oki_attenuation_field(void)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples_1, 0, sizeof(samples_1));
+    samples_1[10u] = 0x20u;
+    samples_1[13u] = 0x21u;
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x19u);
+    sound_program_read_oki_response(program, &at, 0x18u);
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x18u);
+    sound_program_read_oki_response(program, &at, 0x19u);
+    program[at++] = 0x76u;
+    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 0u || fixture.response[1] != 1u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
+static lib_i32 sound_stops_selected_oki_channel(void)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples_1, 0, sizeof(samples_1));
+    samples_1[10u] = 0x20u;
+    samples_1[13u] = 0x21u;
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x20u);
+    sound_program_write_oki(program, &at, 0x0au);
+    sound_program_read_oki_response(program, &at, 0x18u);
+    program[at++] = 0x76u;
+    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 0u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 int main(void)
 {
     return sound_executes_fixed_transport() != 0 ||
@@ -383,5 +456,7 @@ int main(void)
         sound_executes_bootstrap_control_flow() != 0 ||
         sound_executes_device_map() != 0 ||
         sound_delivers_ym_timer_interrupt() != 0 ||
-        sound_publishes_bounded_pcm() != 0 ? 1 : 0;
+        sound_publishes_bounded_pcm() != 0 ||
+        sound_validates_oki_attenuation_field() != 0 ||
+        sound_stops_selected_oki_channel() != 0 ? 1 : 0;
 }

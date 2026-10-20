@@ -26,6 +26,9 @@ enum {
     MYRAIDENII_CORE_SOUND_YM_TIMER_B_TICKS = 1024u,
     MYRAIDENII_CORE_SOUND_OKI_NIBBLE_TICKS = 462u,
     MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT = 4u,
+    MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS = 9u,
+    MYRAIDENII_CORE_SOUND_OKI_VOLUME_SCALE = 4096u,
+    MYRAIDENII_CORE_SOUND_OKI_VOLUME_RATIO = 181u,
     MYRAIDENII_CORE_SOUND_MAX_IMPLEMENTED_TICKS = 23u,
     MYRAIDENII_CORE_SOUND_FLAG_CARRY = 0x01u,
     MYRAIDENII_CORE_SOUND_FLAG_SUBTRACT = 0x02u,
@@ -249,6 +252,18 @@ static lib_u8 myraidenii_core_sound_oki_status(
     return status;
 }
 
+/* The MSM6295 manual gives D0--D3 as nine 3 dB attenuation steps, from
+ * 0 dB through -24 dB. This local fixed-point ratio is only an L1 mapping for
+ * the existing diagnostic waveform; it is not a chip decoder table. */
+static lib_u32 myraidenii_core_sound_oki_volume_scale(lib_u8 volume)
+{
+    lib_u32 scale = MYRAIDENII_CORE_SOUND_OKI_VOLUME_SCALE;
+
+    for (lib_u8 index = 0u; index < volume; ++index)
+        scale = (scale * MYRAIDENII_CORE_SOUND_OKI_VOLUME_RATIO + 128u) / 256u;
+    return scale;
+}
+
 static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki,
     lib_u8 value)
 {
@@ -261,14 +276,18 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki
         oki->has_pending_sample = LIB_TRUE;
         return LIB_STATUS_OK;
     }
-    if ((value & 0x08u) != 0u) {
+    if (!oki->has_pending_sample && (value & 0x08u) != 0u) {
         for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
-            if ((value & (lib_u8)(0x08u << index)) != 0u)
+            if ((value & (lib_u8)(1u << index)) != 0u)
                 oki->voices[index].active = LIB_FALSE;
         }
         return LIB_STATUS_OK;
     }
     if (!oki->has_pending_sample) return LIB_STATUS_INVALID_STATE;
+    if ((value & 0x0fu) >= MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS) {
+        oki->has_pending_sample = LIB_FALSE;
+        return LIB_STATUS_OK;
+    }
     status = myraidenii_core_sound_oki_sample_bounds(oki, oki->pending_sample,
         &start, &end);
     if (status != LIB_STATUS_OK) return status;
@@ -358,7 +377,7 @@ static lib_i16 myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound)
             nibble = oki->samples[voice->position];
             nibble = voice->high_nibble ? nibble >> 4u : nibble & 0x0fu;
             mixed += ((lib_i32)nibble - 8) *
-                (lib_i32)(16u - voice->volume) * 64;
+                (lib_i32)myraidenii_core_sound_oki_volume_scale(voice->volume) / 8;
         }
     }
     if (mixed > 32767) return 32767;
