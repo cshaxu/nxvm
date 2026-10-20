@@ -1002,7 +1002,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         status = x86_core_machine_bind_attachment(board->machine, &attachment);
     }
     if (status == LIB_STATUS_OK)
-        status = myraidenii_core_cop_create(&board->cop);
+        status = myraidenii_core_cop_create(&board->video, &board->cop);
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_install_memory_device_routes(board->machine, routes,
             sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, board);

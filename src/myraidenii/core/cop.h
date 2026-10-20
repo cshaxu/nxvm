@@ -5,6 +5,7 @@
 #include "x86-core/machine/memory_interface.h"
 
 typedef struct myraidenii_core_cop myraidenii_core_cop;
+typedef struct myraidenii_core_video myraidenii_core_video;
 
 typedef enum myraidenii_core_cop_operation {
     MYRAIDENII_CORE_COP_OPERATION_NONE,
@@ -27,7 +28,8 @@ typedef struct myraidenii_core_cop_failure_observation {
     lib_status status;
 } myraidenii_core_cop_failure_observation;
 
-lib_status myraidenii_core_cop_create(myraidenii_core_cop **out_cop);
+lib_status myraidenii_core_cop_create(myraidenii_core_video *video,
+    myraidenii_core_cop **out_cop);
 void myraidenii_core_cop_destroy(myraidenii_core_cop *cop);
 void myraidenii_core_cop_reset(myraidenii_core_cop *cop);
 lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop);

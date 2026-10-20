@@ -12,6 +12,7 @@ static lib_u8 program_odd[MYRAIDENII_CORE_PROGRAM_LANE_BYTES];
 typedef struct cop_fixture {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
+    myraidenii_core_video video;
 } cop_fixture;
 
 static void cop_fixture_advance(void *owner, lib_u64 ticks, lib_u64 due_tick)
@@ -30,6 +31,7 @@ static void cop_fixture_reset(void *owner)
     cop_fixture *fixture = owner;
 
     myraidenii_core_cop_reset(fixture->cop);
+    myraidenii_core_video_reset(&fixture->video);
 }
 
 static void cop_fixture_finalize(void *owner)
@@ -61,7 +63,8 @@ static lib_status cop_fixture_create(cop_fixture *fixture)
     };
     lib_status status = x86_core_machine_neutral_create(&config, &fixture->machine);
 
-    if (status == LIB_STATUS_OK) status = myraidenii_core_cop_create(&fixture->cop);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_cop_create(&fixture->video, &fixture->cop);
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_bind_attachment(fixture->machine, &attachment);
     if (status == LIB_STATUS_OK)
@@ -2428,6 +2431,7 @@ static lib_i32 board_cop_dma_and_sort(void)
     const lib_u16 ascending[] = {0x10u,0x0cu,0x04u,0x18u};
     const lib_u16 descending[] = {0x04u,0x18u,0x0cu,0x10u};
     const lib_i32 keys[] = {-1,5,5,0};
+    lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS];
     lib_u8 value[4] = {0u};
     myraidenii_core_cop_failure_observation failure = {0};
     lib_i32 failed = 1;
@@ -2468,6 +2472,29 @@ static lib_i32 board_cop_dma_and_sort(void)
         myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x4000u, actual, 64u) != LIB_STATUS_OK ||
         lib_memory_compare(actual, source, 64u) != 0)
+        goto done;
+
+    for (lib_size index = 0u; index < MYRAIDENII_CORE_VIDEO_PALETTE_WORDS; ++index)
+        palette[index] = (lib_u16)(index ^ 0x5a5au);
+    if (x86_core_machine_memory_write(machine, 0x1f000u, (const lib_u8 *)palette,
+            sizeof(palette)) != LIB_STATUS_OK ||
+        board_cop_dma_context_write(machine, 0x015u, 0x07c0u, 0x00ffu, 0u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        fixture.video.palette[0u] != palette[0u] ||
+        fixture.video.palette[1u] != palette[1u] ||
+        fixture.video.palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS - 1u] !=
+            palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS - 1u] ||
+        myraidenii_core_video_palette_load(&fixture.video, palette, 1u) !=
+            LIB_STATUS_INVALID_ARGUMENT || fixture.video.palette[1u] != palette[1u] ||
+        board_cop_dma_context_write(machine, 0x015u, 0x07c0u, 0x00ffu, 1u) !=
+            LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
+        myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK ||
+        fixture.video.palette[1u] != palette[1u] ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK || fixture.video.palette[0u] != 0u ||
+        fixture.video.palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS - 1u] != 0u)
         goto done;
 
     if (board_cop_word_write(machine, 0x47eu, 0x200u) != LIB_STATUS_OK ||

@@ -1,4 +1,5 @@
 #include "myraidenii/core/cop.h"
+#include "myraidenii/core/video.h"
 #include "lib/types/math.h"
 #include "x86-core/machine/machine_interface.h"
 
@@ -17,7 +18,10 @@ enum {
     MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS = 8u,
     MYRAIDENII_CORE_COP_PROGRAM_SLOTS =
         MYRAIDENII_CORE_COP_PROGRAM_WORDS / MYRAIDENII_CORE_COP_PROGRAM_SLOT_WORDS,
-    MYRAIDENII_CORE_COP_DMA_CONTEXTS = 512u
+    MYRAIDENII_CORE_COP_DMA_CONTEXTS = 512u,
+    MYRAIDENII_CORE_COP_DMA_PALETTE_MODE = 0x0015u,
+    MYRAIDENII_CORE_COP_DMA_PALETTE_SOURCE = 0x07c0u,
+    MYRAIDENII_CORE_COP_DMA_PALETTE_SIZE = 0x00ffu
 };
 
 typedef enum myraidenii_core_cop_register_role {
@@ -94,6 +98,7 @@ typedef struct myraidenii_core_cop_sort_entry {
 
 struct myraidenii_core_cop {
     x86_core_machine *machine;
+    myraidenii_core_video *video;
     lib_u8 registers[MYRAIDENII_CORE_COP_STORAGE_BYTES];
     myraidenii_core_cop_program programs[MYRAIDENII_CORE_COP_PROGRAM_SLOTS];
     myraidenii_core_cop_collision collision[2];
@@ -169,7 +174,8 @@ static lib_status myraidenii_core_cop_dma_context_get(myraidenii_core_cop *cop,
 
 static lib_bool myraidenii_core_cop_dma_mode_supported(lib_u16 mode)
 {
-    return mode == 0x009u || mode == 0x00eu || mode == 0x116u ||
+    return mode == 0x009u || mode == 0x00eu ||
+        mode == MYRAIDENII_CORE_COP_DMA_PALETTE_MODE || mode == 0x116u ||
         (mode >= 0x118u && mode <= 0x11fu);
 }
 
@@ -436,14 +442,16 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
     return LIB_STATUS_OK;
 }
 
-lib_status myraidenii_core_cop_create(myraidenii_core_cop **out_cop)
+lib_status myraidenii_core_cop_create(myraidenii_core_video *video,
+    myraidenii_core_cop **out_cop)
 {
     myraidenii_core_cop *cop;
 
-    if (out_cop == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (video == LIB_NULL || out_cop == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_cop = LIB_NULL;
     cop = lib_allocate_zero(1u, sizeof(*cop));
     if (cop == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    cop->video = video;
     *out_cop = cop;
     return LIB_STATUS_OK;
 }
@@ -824,6 +832,29 @@ static lib_status myraidenii_core_cop_dma_fill(myraidenii_core_cop *cop,
     return LIB_STATUS_OK;
 }
 
+static lib_status myraidenii_core_cop_dma_palette(myraidenii_core_cop *cop,
+    const myraidenii_core_cop_dma_context *context)
+{
+    lib_u16 words[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS];
+    const lib_u32 source = (lib_u32)context->source * 64u;
+
+    if (context->source != MYRAIDENII_CORE_COP_DMA_PALETTE_SOURCE ||
+        context->size != MYRAIDENII_CORE_COP_DMA_PALETTE_SIZE ||
+        context->destination != 0u) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    for (lib_size index = 0u; index < MYRAIDENII_CORE_VIDEO_PALETTE_WORDS; ++index) {
+        lib_u32 value = 0u;
+        lib_status status = myraidenii_core_cop_memory(cop, source, (lib_u32)index * 2u,
+            2u, LIB_FALSE, &value);
+
+        if (status != LIB_STATUS_OK) return status;
+        words[index] = (lib_u16)value;
+    }
+    return myraidenii_core_video_palette_load(cop->video, words,
+        MYRAIDENII_CORE_VIDEO_PALETTE_WORDS);
+}
+
 static lib_status myraidenii_core_cop_dma(myraidenii_core_cop *cop)
 {
     const myraidenii_core_cop_dma_context *context =
@@ -831,6 +862,8 @@ static lib_status myraidenii_core_cop_dma(myraidenii_core_cop *cop)
 
     if (cop->pending.mode == 0x009u || cop->pending.mode == 0x00eu)
         return myraidenii_core_cop_dma_copy(cop, context);
+    if (cop->pending.mode == MYRAIDENII_CORE_COP_DMA_PALETTE_MODE)
+        return myraidenii_core_cop_dma_palette(cop, context);
     return myraidenii_core_cop_dma_fill(cop, context, cop->pending.mode);
 }
 

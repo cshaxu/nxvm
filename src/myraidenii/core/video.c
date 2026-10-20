@@ -11,6 +11,7 @@ void myraidenii_core_video_reset(myraidenii_core_video *video)
     video->raster_tick = 0u;
     video->sprite_flags = 0u;
     lib_memory_set(video->crtc_registers, 0, sizeof(video->crtc_registers));
+    lib_memory_set(video->palette, 0, sizeof(video->palette));
 }
 
 lib_u64 myraidenii_core_video_ticks_until_vblank(const myraidenii_core_video *video)
@@ -60,5 +61,16 @@ lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,
     if (video == LIB_NULL || byte_offset >= sizeof(video->crtc_registers))
         return LIB_STATUS_INVALID_ARGUMENT;
     video->crtc_registers[byte_offset] = value;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_video_palette_load(myraidenii_core_video *video,
+    const lib_u16 *words, lib_size word_count)
+{
+    if (video == LIB_NULL || words == LIB_NULL ||
+        word_count != MYRAIDENII_CORE_VIDEO_PALETTE_WORDS) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    lib_memory_copy(video->palette, words, sizeof(video->palette));
     return LIB_STATUS_OK;
 }
