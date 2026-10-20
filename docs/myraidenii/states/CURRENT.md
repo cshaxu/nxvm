@@ -57,26 +57,18 @@ external payload, host delivery, desktop result or real-game audio claim is
 implied. S7 is closed; M1 T5 remains open for qualified decoder, Machine/Lib
 delivery and real command-path receivers.
 
-## Active Packet — M1 T5 S8
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; S8 follows accepted S7 closure `63df6ebcc`. One session performs coordinator and executor roles. |
-| Admission And Approval | The owner authorized continued M1 Sound work and requires direct manual PDF rules/constants only as L3, external emulator behavior as L2, and unsupported approximations as L1. This Core-only packet consumes no Shared, source-import or media authority. |
-| Objective | Replace the current direct nibble-as-amplitude diagnostic path with a bounded per-voice OKI ADPCM signal/step state model, independently written from the inspected external behavior and explicitly graded L2. |
-| Non-goals | No imported source/table, exact silicon/audio claim, host PCM delivery, Machine/Product work, second clock/thread, Shared API, ROM retention, selected-set run or temporal resampling claim. |
-| Reference Baseline | S7 leaves one Core-local Sound owner and one Board guest-time source. The inspected OKI manual supports command/attenuation facts but does not expose the decoder algorithm. The published MAME OKI ADPCM behavior supplies an L2 finite signal clamp, 49-step adaptation and nibble-transition model; no MAME source or data table may enter this repository. |
-| Candidate Proposal | Add signal and step fields to each existing private voice. Generate step magnitude algorithmically through local fixed-point recurrence, derive nibble contribution through bit arithmetic, clamp signal and step, and decode exactly once per consumed nibble in the existing `oki_advance()` owner. PCM reads the current decoded signal with the existing local volume mapping. No precomputed decoder table, second output path or timing owner is added. |
-| Files And ABI Surface | MyRaidenII-only: `src/myraidenii/core/sound.c`, existing `test/myraidenii/unit/core/sound_smoke.c`, MyRaidenII evidence/Current. No public interface, Board contract, Shared component or artifact change. |
-| Applicable Rules | MyRaidenII guide; Architecture, Coding, source policy and repository execution rules. Sound owns all local voice/decoder state; Board remains the sole guest-time source and sole forwarding route. |
-| Verification | Run focused Sound/Board rows x64/x86, then complete MyRaidenII unit selection x64/x86, documentation governance and whitespace gates. Test opposite nibble signs through the actual Z80/map/PCM route; do not add a duplicate decoder oracle. |
-| Expected Markers | A voice resets its decoder state on start/reset; positive and negative selected nibble streams yield deterministic opposite-signed PCM; sound status, stop, attenuation, FIFO and Board forwarding retain their existing routes. |
-| Asset Needs | No external ROM/archive access. External research remains untracked. No rendered manual or downloaded payload is retained. |
-| Reporting Requirements | Record individual L2 decoder facts separately from S7's L3 manual facts, actual source/test delta, verification by width and the explicitly retained time-resampling/host/real-game limits. |
-| Stop Conditions | A need for copied source/table, Shared API, retained external payload, second clock/output route, physical-fidelity claim or a contradiction in the one-owner path stops and transfers the gap. |
-| Exit Criteria | The sole Core Sound owner has a bounded independently written L2 decoder state path, actual-route sign/reset proof, and all stated MyRaidenII tests pass on both widths; no unauthorized component, payload or fidelity claim is introduced. |
-| Original Owner Request | Continue implementation while using only explicit manual facts for L3, external references for L2 and local unsupported mechanisms for L1. |
-| Similar-Issue Sweep | Inspect every voice start/reset/stop/end/advance/mix path for raw-nibble amplitude use, duplicated decode state, invalid volume coupling or an ungraded source claim. |
+Sequential coordinator actual-change review accepts S8 P1 `822b15f24`. The
+sole Core Sound owner now owns per-voice decoded signal and adaptation step
+state; it consumes nibbles exactly once in its existing advance path and PCM
+uses that state rather than raw nibble amplitude. The inspected MAME behavior
+is explicitly L2, while the local fixed-point implementation is L1; neither
+is presented as manual or silicon proof. The existing actual-route smoke now
+shows opposite PCM signs for opposite synthetic nibble streams. Cached focused
+Board/Sound rows pass 2/2 per width; complete MyRaidenII units pass 6/6 per
+width, and documentation/whitespace gates pass. No Shared/API/media/artifact
+change, external-set run, host delivery, desktop result or temporal-resampling
+qualification occurred. S8 is closed; M1 T5 remains open for resampling
+alignment, Machine/Lib delivery and real command-path receivers.
 
 ## Archived Packet — M1 T5 S6
 
