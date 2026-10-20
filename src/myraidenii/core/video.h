@@ -54,10 +54,14 @@ lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,
     lib_u8 byte_offset, lib_u8 value);
 
 /* The selected COP mode supplies exactly one complete 2048-word private
- * palette image. Video owns the committed image and publishes no colour
- * interpretation until a later renderer contract exists. */
+ * palette image. Video owns the committed image. */
 lib_status myraidenii_core_video_palette_load(myraidenii_core_video *video,
     const lib_u16 *words, lib_size word_count);
+
+/* L2 RGB555 interpretation for the later native-frame owner. This lookup
+ * does not establish the selected board's physical palette accuracy. */
+lib_status myraidenii_core_video_palette_color(const myraidenii_core_video *video,
+    lib_u16 index, lib_u32 *out_color);
 
 /* The selected COP mode supplies exactly one complete raw tilemap image.
  * Video retains it unchanged until a later tile decoder owns interpretation. */

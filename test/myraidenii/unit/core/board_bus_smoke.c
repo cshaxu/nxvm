@@ -839,6 +839,35 @@ static lib_i32 board_video_sprite_flags(void)
     return video.sprite_flags == 0u ? 0 : 1;
 }
 
+static lib_i32 board_video_palette_colors(void)
+{
+    myraidenii_core_video video = {0};
+    lib_u32 color = 0xdeadbeefu;
+
+    video.palette[0u] = 0u;
+    video.palette[1u] = 0x001fu;
+    video.palette[2u] = 0x03e0u;
+    video.palette[3u] = 0x7c00u;
+    video.palette[4u] = 0x4210u;
+    if (myraidenii_core_video_palette_color(&video, 0u, &color) != LIB_STATUS_OK ||
+        color != 0x00000000u ||
+        myraidenii_core_video_palette_color(&video, 1u, &color) != LIB_STATUS_OK ||
+        color != 0x00ff0000u ||
+        myraidenii_core_video_palette_color(&video, 2u, &color) != LIB_STATUS_OK ||
+        color != 0x0000ff00u ||
+        myraidenii_core_video_palette_color(&video, 3u, &color) != LIB_STATUS_OK ||
+        color != 0x000000ffu ||
+        myraidenii_core_video_palette_color(&video, 4u, &color) != LIB_STATUS_OK ||
+        color != 0x00848484u)
+        return 1;
+    color = 0xdeadbeefu;
+    return myraidenii_core_video_palette_color(LIB_NULL, 0u, &color) !=
+            LIB_STATUS_INVALID_ARGUMENT || color != 0xdeadbeefu ||
+        myraidenii_core_video_palette_color(&video, MYRAIDENII_CORE_VIDEO_PALETTE_WORDS,
+            &color) != LIB_STATUS_INVALID_ARGUMENT || color != 0xdeadbeefu ||
+        myraidenii_core_video_palette_color(&video, 0u, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
+}
+
 static lib_i32 board_video_crtc(void)
 {
     const myraidenii_core_board_config config = {
@@ -2758,7 +2787,7 @@ lib_i32 main(void)
         board_tile_bank_2() || board_tile_bank_01() || board_sprite_protection_constant() ||
         board_sprite_protection_latches() || board_control_failure_observation() ||
         board_sprite_object_write_aperture() || board_interrupt_input_and_sound_routes() ||
-        board_video_phase() || board_video_sprite_flags() ||
+        board_video_phase() || board_video_sprite_flags() || board_video_palette_colors() ||
         board_video_crtc() ||
         board_sprite_protection_upload() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||

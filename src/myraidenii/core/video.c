@@ -6,6 +6,11 @@ enum {
     MYRAIDENII_CORE_VIDEO_VBLANK_TICK = MYRAIDENII_CORE_VIDEO_LINE_TICKS * 240u
 };
 
+static lib_u8 myraidenii_core_video_color_expand_5bit(lib_u16 value)
+{
+    return (lib_u8)((value << 3u) | (value >> 2u));
+}
+
 void myraidenii_core_video_reset(myraidenii_core_video *video)
 {
     video->raster_tick = 0u;
@@ -73,6 +78,22 @@ lib_status myraidenii_core_video_palette_load(myraidenii_core_video *video,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_copy(video->palette, words, sizeof(video->palette));
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_video_palette_color(const myraidenii_core_video *video,
+    lib_u16 index, lib_u32 *out_color)
+{
+    lib_u16 word;
+
+    if (video == LIB_NULL || out_color == LIB_NULL ||
+        index >= MYRAIDENII_CORE_VIDEO_PALETTE_WORDS) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    word = video->palette[index];
+    *out_color = (lib_u32)myraidenii_core_video_color_expand_5bit(word & 0x1fu) << 16u |
+        (lib_u32)myraidenii_core_video_color_expand_5bit((word >> 5u) & 0x1fu) << 8u |
+        myraidenii_core_video_color_expand_5bit((word >> 10u) & 0x1fu);
     return LIB_STATUS_OK;
 }
 
