@@ -65,6 +65,14 @@ Video/palette/brightness modes, residual macros, and real-set startup for
 their own receivers. This is a complete local functional L2 batch, not a
 physical COP timing or playable-game claim.
 
+S23 completes the required evidence gate for receiver 3 without inventing an
+implementation: [its Video-DMA contract](../etc/evidence/t3-s23-video-dma-receiver.md)
+keeps modes `14`, `15`, and `80`--`87` explicit, freezes the COP/Board/Video
+ownership boundary, and records the selected-set descriptor and colour-oracle
+evidence required before any mode can be admitted.  It does not treat a
+reference-specific address, comment, screenshot, or ordinary RAM copy as a
+Video contract.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free
