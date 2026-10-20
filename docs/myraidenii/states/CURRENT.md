@@ -70,26 +70,16 @@ change, external-set run, host delivery, desktop result or temporal-resampling
 qualification occurred. S8 is closed; M1 T5 remains open for resampling
 alignment, Machine/Lib delivery and real command-path receivers.
 
-## Active Packet — M1 T5 S9
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; S9 follows accepted S8 closure `24fddbf40`. One session performs coordinator and executor roles. |
-| Admission And Approval | The owner authorized continued Core-local MyRaidenII sound work and the established L3/L2/L1 evidence discipline. No Shared, Machine, Product, source-import or media authority is consumed. |
-| Objective | Make the existing bounded Core PCM publication advance with each existing delivered Z80/device time slice instead of sampling only once after a complete Board advance. |
-| Non-goals | No second clock, thread, scheduler, host stream, Shared API, CPU timing change, exact bus-write phase claim, physical audio claim, external media access or selected-set qualification. |
-| Reference Baseline | S8 decodes voice state at the sole existing `oki_advance()` site, but the old PCM conversion accepted whole Board intervals only after device advancement. Existing exact L2 Board-to-Z80 ratio is `28636363 / (8 * 16000000)` and existing PCM rate is 48000 Hz. |
-| Candidate Proposal | Retain Board as the sole source of elapsed time and retain Z80 delivered ticks as its existing derived quantity. Convert delivered Z80 ticks to 48 kHz frames with one rational phase accumulator using `48000 * 8 / 28636363`, invoke that conversion from the existing device-advance owner, and delete the stale Board-interval PCM path. No second time owner or public state is introduced. |
-| Files And ABI Surface | MyRaidenII-only `src/myraidenii/core/sound.[ch]` if a private constant is needed, existing `test/myraidenii/unit/core/sound_smoke.c`, MyRaidenII evidence/Current. No public function/type/Board/Shared change. |
-| Applicable Rules | MyRaidenII Architecture, Coding and source policy; repository Architecture, Coding and Execution rules. The Board-derived Z80 timeline and Sound PCM queue remain each singly owned. |
-| Verification | Run focused Sound/Board rows x64/x86 and full MyRaidenII unit selection x64/x86. Add an actual-route regression proving a phrase that begins during a bounded execution interval appears in that interval's copied PCM, not only a later call. Run documentation/whitespace gates. |
-| Expected Markers | The old board-tick PCM conversion is absent; all emitted frames derive only from delivered Z80 ticks; existing fractional continuity, FIFO/drop/reset and no-program path remain valid. |
-| Asset Needs | No external ROM/archive or downloaded material. |
-| Reporting Requirements | Record the rational derivation as an L2 composition of existing accepted clocks, exact delta, width results and the remaining instruction-phase/host/audio limitations. |
-| Stop Conditions | A needed independent time source, Shared contract, source import, retained payload, public ABI or required claim of cycle-exact write phase stops and transfers the gap. |
-| Exit Criteria | PCM has one guest-derived rational phase owner aligned to device advancement, no Board-interval duplicate path remains, actual-route timing regression and stated unit tests pass on both widths, and no unauthorized surface changes. |
-| Original Owner Request | Continue implementation under the stated L3/L2/L1 definition without blocking on unavailable physical-level evidence. |
-| Similar-Issue Sweep | Inspect all Sound frame generation, overflow skip, reset and no-program routes for stale Board-rate conversion, duplicate phase state or an unowned output path. |
+Sequential coordinator actual-change review accepts S9 P1 `4da7a5ecd`. PCM frame
+conversion now consumes each existing delivered Z80/device slice through one
+rational phase; the old whole-Board-interval path is gone. Board remains the
+only elapsed-time source. The existing actual-route phrase smoke now confirms
+that PCM arrives in the same bounded advance that executes the phrase start.
+Focused Board/Sound rows pass 2/2 and complete MyRaidenII units pass 6/6 on
+each width; documentation/whitespace gates pass. No Shared/API/media/artifact
+change, external-set run, host delivery, desktop result, physical timing or
+playable-game qualification is claimed. S9 is closed; M1 T5 remains open for
+Machine/Lib delivery and qualified real command-path receivers.
 
 ## Archived Packet — M1 T5 S6
 
