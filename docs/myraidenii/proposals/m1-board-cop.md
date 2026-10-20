@@ -103,6 +103,14 @@ frame consequence, and reference implementation may not be copied or
 transliterated. Its implementation is transferred to the queued Video task;
 T3 does not absorb it as a Board no-op, RAM route or COP mirror.
 
+S29 rechecks the remaining explicit command refusals `1905`, `9100` and
+`9900`. Its [boundary record](../etc/evidence/t3-s29-unresolved-command-boundary.md)
+confirms that current lawful evidence does not establish any form's operands,
+outputs, reset, failure prefix or selected-set eligibility. They retain the
+single existing COP refusal path; no numeric-command alias, no-op or Video/Sound
+transfer is permitted. These remain T3 blockers until an eligible receiver is
+admitted.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free

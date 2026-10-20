@@ -1,5 +1,26 @@
 # MyRaidenII Status
 
+## Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, MyRaidenII M1 T3 S29. |
+| Admission And Approval | Owner-directed continuation on 2026-10-19; the accepted T3 proposal delegates ordinary same-task S planning. No Shared change is admitted. |
+| Objective | Reconcile the remaining explicit COP refusals `1905`, `9100` and `9900` against lawful independent evidence and actual local ownership, so their disposition is either a bounded L2 model with a complete contract or a named T3 blocker. |
+| Non-goals | No MAME code/table import or transliteration; no guessed alias to another macro; no generic success/no-op; no Video/Sound transfer merely to close T3; no protected-ROM payload retention; no Shared/API/source/test/artifact change unless an independent complete contract first exists. |
+| Reference Baseline | Clean pushed S28 P2 `51698d4ec`; S20 residual ledger and S24 preserve the three command refusals because the pinned reference comments do not establish executable selected-set behavior. |
+| Candidate Proposal | Inspect original hardware/manual availability, reference facts only as L2 research, current dispatcher and bounded selected-set checkpoint ownership. Admit code only if the whole form's input, output, reset, failure and timing/publication contract is independently sufficient; otherwise record why it remains refused and what evidence is required. |
+| Files And ABI Surface | MyRaidenII status/evidence/proposal indexes only unless a complete independent contract changes the disposition. No public interface is presumed. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; MyRaidenII architecture/coding/source policy; T3 coverage ledger. |
+| Verification | Reconcile all three IDs with current local dispatch and fixed source facts; inspect known selected-set progress without retaining protected contents; source-policy and documentation governance checks; `git diff --check`. If code is admitted, run focused and complete dual-width repository units. |
+| Expected Markers | A three-ID disposition table with exact missing evidence/owner, or a complete bounded implementation contract and proof plan. |
+| Asset Needs | Existing owner-supplied archive only if a bounded neutral observation is required; no download, content dump or retained payload. |
+| Reporting Requirements | Record source grades, local owner, every rejected shortcut, whether T3's startup blocker changes, and any remaining evidence prerequisite. |
+| Stop Conditions | Stop before encoding an algorithm from a reference comment, reusing another macro as an alias, exposing a test-only route, or moving an unresolved COP responsibility out of T3. |
+| Exit Criteria | Each of the three forms has an honest full disposition; documentation checks pass; no temporary protected material remains; any admitted code receives its required two-width qualification; worktree is clean. |
+| Original Owner Request | Continue T3 Board/COP work through the next correct bounded receiver without fabricating behavior. |
+| Similar-Issue Sweep | Compare all unimplemented uploaded command IDs and their result/publication paths; confirm that another reference-only comment or current first fault does not silently become a model. |
+
 ## Current Work
 
 M1 T3 remains open after accepted S1--S25:
