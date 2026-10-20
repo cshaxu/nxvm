@@ -83,6 +83,11 @@ output; a late dword lane failure preserves the already accepted prefix.  This
 is a source-grade functional L2 model, not a claim about hardware timing or
 unqualified remaining macros `1905`, `9100` and `9900`.
 
+S26 admits only the selected-set-observed `0x43e--0x43f` Board-local,
+write-only hole. It neither expands the neighbouring COP route nor weakens
+the explicit control-window refusal. The following two-width startup stop at
+`0x6c8` is a separate Board/Video evidence receiver.
+
 One guest timeline owns CPU/device advancement and stable event ordering.
 Test bank boundaries, byte ordering, IRQ/vector acknowledgement, COP/DMA effects,
 input edges and sound latches through the real bus interface. Use ROM-free

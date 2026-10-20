@@ -31,6 +31,7 @@ M1 T3 remains open after accepted S1--S25:
 | S23 | Complete Video-DMA/palette/brightness receiving-evidence gate; no invented implementation | `c48f9e02c` |
 | S24 | Complete COP 2a05 offset-add receiver and bounded actual-bus proof | `7d37760f7` |
 | S25 | Bounded selected-set startup diagnostic and explicit Board/COP-owner transfer | P1 `c75a016d0`; P2 state receipt; P3 owner correction |
+| S26 | Selected-set `0x43e` write-only Board hole and bounded next-stop transfer | pending |
 
 The owner approved advancing Video's prerequisite inside T3 and delegates
 routine same-T S planning. B04 now has an actual modeled periodic receiver;
@@ -38,6 +39,14 @@ full Video rendering and DMA qualification remain queued work. The next S
 receives B07/B08 COP operation contracts/evidence and real-set startup proof.
 It may not copy reference code, fabricate results or silently close unresolved
 COP obligations. No further approval is needed for ordinary same-T ordering.
+
+S26 admits the selected-set-observed `0x43e--0x43f` write-only hole as a
+Board-local L2 route. The previous CPU fault is a correct V30 16-bit
+`MOV moffs, AX` write, while the pinned reference map assigns no receiver to
+that word. The route stores no state and has no readback; all other unknown
+control addresses remain explicitly refused. The same two-width probe now
+passes that point and reaches a new `0x6c8` write. That later address is not
+absorbed by S26 and remains the next Board/Video map-evidence receiver.
 
 Sequential coordinator actual-change review
 accepts S10's Shared P1 f2ca9ae01, NXVM receiving P2 990ff6eda and MyRaidenII
@@ -275,3 +284,11 @@ This address is not established as a Board/COP register, so S25 does not widen
 a route or weaken the explicit control window. Its owner is an open
 MyRaidenII Board/COP mapping prerequisite; T3 remains open for that and its
 existing COP/Video/startup receivers.
+
+S26 accepts only the narrow selected-set `0x43e--0x43f` write-only Board
+route. The existing Board executable proves that it does not supply readback
+or weaken any other control-window rejection. The two-width selected-set probe
+then advances from the prior stop by two instructions to the same new `0x6c8`
+write on both widths. That later address is explicitly not absorbed: its
+Board/Video receiver remains open, along with the existing COP, Video, and
+startup requirements. See the [S26 record](../etc/evidence/t3-s26-control-write-hole.md).

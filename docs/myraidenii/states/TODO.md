@@ -2,24 +2,23 @@
 
 ## High: Selected-Set Control-Window Write Owner
 
-Owner: MyRaidenII Board/COP register-map evidence. T3 S25 ran the verified
+Owner: MyRaidenII Board/Video register-map evidence. T3 S26 ran the verified
 owner-selected program lanes through the real MyRaidenII Board on both host
-widths. Both runs stop after 65,587 instructions with the same CPU-internal
-case fault whose code is physical address `0x43e`; a disposable Debug
-observation classifies it as a CPU memory write. The V30 executes its existing
-16-bit `MOV moffs, AX` branch at that point, so this is not evidence of a
-32-bit operand/address-size or effective-address CPU defect. The Board's
-explicit control window currently rejects the address, and the existing longer
-selected-set observation plus pinned L2 navigation do not establish `0x43e` as
-a COP register.
+widths after admitting the previously observed `0x43e--0x43f` write-only hole.
+Both runs now stop after 65,589 instructions with the same CPU-internal case
+fault whose code is physical address `0x6c8`. The prior disposable Debug
+observation established the V30's existing 16-bit `MOV moffs, AX` path; no
+later CPU regression is inferred from this Board rejection. The fixed L2 map
+assigns nearby `0x6c0--0x6c7`, `0x6cb`, and `0x6cc` receivers but does not
+assign `0x6c8`.
 
-Risk: widening the COP route or converting the control-window failure into RAM
-or a no-op would hide an unqualified Board/COP mapping and invalidate the
-single-owner map. Admission requires bounded source-grade or independently
-observed Board evidence that identifies the `0x43e` owner and direction
+Risk: widening the COP or Board route, or converting the control-window failure
+into RAM or a generic no-op, would hide an unqualified map and invalidate the
+single-owner boundary. Admission requires bounded source-grade or independently
+observed Board evidence that identifies the `0x6c8` owner and direction
 semantics without retaining protected ROM bytes, registers, PC, or raw trace.
-Only then may a Board receiver model the register or explicitly preserve its
-refusal. Rerun the two-width selected-set probe after that decision. This
+Only then may a Board/Video receiver model the register or explicitly preserve
+its refusal. Rerun the two-width selected-set probe after that decision. This
 blocks T3's genuine selected-set startup gate but does not assert that the V30
 is generally unqualified.
 

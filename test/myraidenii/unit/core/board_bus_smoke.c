@@ -190,6 +190,7 @@ static lib_i32 board_control_window(void)
         .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
     };
     const lib_u8 guest[] = {0xb8u,1u,0u,0xa3u,0u,4u,0xf4u};
+    const lib_u8 unused_write_guest[] = {0xb8u,1u,0u,0xa3u,0x3eu,4u,0xf4u};
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     x86_core_machine_run_result result = {0};
@@ -239,6 +240,17 @@ static lib_i32 board_control_window(void)
         x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
         x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) ==
             LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_FAULT)
+        goto done;
+    if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x800u, unused_write_guest,
+            sizeof(unused_write_guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){3u,0u}, &result) !=
+            LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_memory_write(machine, 0x43eu, data, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x43eu, data, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x43eu, value, 1u) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_memory_inspect(machine, 0x43eu, value, 1u) != LIB_STATUS_INVALID_STATE)
         goto done;
     failed = 0;
 done:

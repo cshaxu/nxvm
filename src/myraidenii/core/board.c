@@ -19,6 +19,11 @@ struct myraidenii_core_board {
     lib_u8 coin_inputs;
 };
 
+enum {
+    MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START = 0x43eu,
+    MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES = 2u
+};
+
 static lib_bool myraidenii_core_board_range_contains(lib_u32 first,
     lib_size capacity, lib_u32 physical, lib_uptr bytes)
 {
@@ -133,6 +138,28 @@ static lib_status myraidenii_core_board_control_write(void *owner, lib_u32 physi
     (void)source;
     (void)bytes;
     return LIB_STATUS_INVALID_STATE;
+}
+
+static lib_status myraidenii_core_board_selected_control_write_hole_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
+        myraidenii_core_board_range_contains(MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START,
+            MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES, physical, bytes) ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_selected_control_write_hole_write(void *owner,
+    lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    if (owner == LIB_NULL || source == 0u ||
+        !myraidenii_core_board_range_contains(MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START,
+            MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES, physical, bytes)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    /* This selected-board write hole is consumed without storage or readback. */
+    return LIB_STATUS_OK;
 }
 
 static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
@@ -341,8 +368,12 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sound_read, myraidenii_core_board_sound_write,
         myraidenii_core_board_sound_query
     };
+    const x86_core_machine_memory_device_callbacks selected_control_write_hole_callbacks = {
+        myraidenii_core_board_control_read, myraidenii_core_board_selected_control_write_hole_write,
+        myraidenii_core_board_selected_control_write_hole_query
+    };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[7] = {
+    x86_core_machine_memory_device_route routes[8] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -359,6 +390,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS,
             .bytes = 2u, .callbacks = input_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START,
+            .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES,
+            .callbacks = selected_control_write_hole_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = 0x400u, .bytes = 0x400u,
             .callbacks = {myraidenii_core_board_control_read,

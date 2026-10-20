@@ -87,6 +87,7 @@
 - [T3 complete nominal L2 RNG register receiver and actual Board proof](evidence/t3-s21-cop-rng.md).
 - [T3 complete mode-banked COP DMA/fill/sort receiver](evidence/t3-s22-cop-dma-sort.md).
 - [T3 COP 2a05 offset-add receiver](evidence/t3-s24-cop-offset-add.md).
+- [T3 selected control write-hole receiver](evidence/t3-s26-control-write-hole.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
