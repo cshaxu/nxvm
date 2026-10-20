@@ -1,10 +1,12 @@
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/cop.h"
+#include "myraidenii/core/sprite_buffer_interface.h"
 #include "myraidenii/core/video.h"
 
 struct myraidenii_core_board {
     x86_core_machine *machine;
     myraidenii_core_cop *cop;
+    myraidenii_core_sprite_buffer *sprite_buffer;
     myraidenii_core_board_control_failure_observation control_failure;
     myraidenii_core_video video;
     lib_u8 *program;
@@ -64,6 +66,9 @@ enum {
     MYRAIDENII_CORE_CRTC_START = 0x600u,
     MYRAIDENII_CORE_CRTC_BYTES = MYRAIDENII_CORE_VIDEO_CRTC_BYTES,
     MYRAIDENII_CORE_CRTC_READABLE_BYTES = MYRAIDENII_CORE_VIDEO_CRTC_READABLE_BYTES,
+    MYRAIDENII_CORE_SPRITE_RAM_START = 0x0c000u,
+    MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_START = 0x068eu,
+    MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_BYTES = 2u,
     MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START = 0x650u,
     MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES = 0x50u,
     MYRAIDENII_CORE_SPRITE_PROTECTION_UPLOAD_START = 0x6a0u,
@@ -527,6 +532,79 @@ static lib_status myraidenii_core_board_sprite_protection_latch_write(void *owne
     return LIB_STATUS_OK;
 }
 
+static lib_status myraidenii_core_board_sprite_ram_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)access;
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_RAM_START,
+        MYRAIDENII_CORE_SPRITE_BUFFER_BYTES, physical, bytes) ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_sprite_ram_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    const myraidenii_core_board *board = owner;
+
+    (void)observe_only;
+    if (board == LIB_NULL || destination == 0u ||
+        myraidenii_core_board_sprite_ram_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    return myraidenii_core_sprite_buffer_read(board->sprite_buffer,
+        (lib_size)(physical - MYRAIDENII_CORE_SPRITE_RAM_START), (void *)destination, bytes);
+}
+
+static lib_status myraidenii_core_board_sprite_ram_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board == LIB_NULL || source == 0u ||
+        myraidenii_core_board_sprite_ram_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    return myraidenii_core_sprite_buffer_write(board->sprite_buffer,
+        (lib_size)(physical - MYRAIDENII_CORE_SPRITE_RAM_START), (const void *)source, bytes);
+}
+
+static lib_status myraidenii_core_board_sprite_latch_trigger_query(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)access;
+    if (owner == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    return myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_START,
+        MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_BYTES, physical, bytes) ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status myraidenii_core_board_sprite_latch_trigger_read(void *owner,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)owner;
+    (void)physical;
+    (void)destination;
+    (void)bytes;
+    (void)observe_only;
+    return LIB_STATUS_INVALID_STATE;
+}
+
+static lib_status myraidenii_core_board_sprite_latch_trigger_write(void *owner,
+    lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    myraidenii_core_board *board = owner;
+
+    if (board == LIB_NULL || source == 0u ||
+        myraidenii_core_board_sprite_latch_trigger_query(owner, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    return myraidenii_core_sprite_buffer_latch(board->sprite_buffer);
+}
+
 /* L2 object ownership at the exact selected-set write. No object register
  * meaning, readback or frame effect is established yet. */
 static lib_status myraidenii_core_board_sprite_object_query(void *owner,
@@ -537,6 +615,8 @@ static lib_status myraidenii_core_board_sprite_object_query(void *owner,
         MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES, physical, bytes) &&
         !myraidenii_core_board_selected_control_write_noop_covers(physical, bytes) &&
         !myraidenii_core_board_tile_bank_01_overlaps(physical, bytes) &&
+        !myraidenii_core_board_range_contains(MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_START,
+            MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_BYTES, physical, bytes) &&
         !myraidenii_core_board_sprite_protection_window_overlaps(physical, bytes) &&
         (access == X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
          access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
@@ -860,6 +940,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->coin_inputs = 0xffu;
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
+        myraidenii_core_sprite_buffer_reset(board->sprite_buffer);
         myraidenii_core_cop_reset(board->cop);
         myraidenii_core_video_reset(&board->video);
     }
@@ -932,6 +1013,15 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_object_read, myraidenii_core_board_sprite_object_write,
         myraidenii_core_board_sprite_object_query
     };
+    const x86_core_machine_memory_device_callbacks sprite_ram_callbacks = {
+        myraidenii_core_board_sprite_ram_read, myraidenii_core_board_sprite_ram_write,
+        myraidenii_core_board_sprite_ram_query
+    };
+    const x86_core_machine_memory_device_callbacks sprite_latch_trigger_callbacks = {
+        myraidenii_core_board_sprite_latch_trigger_read,
+        myraidenii_core_board_sprite_latch_trigger_write,
+        myraidenii_core_board_sprite_latch_trigger_query
+    };
     const x86_core_machine_memory_device_callbacks crtc_callbacks = {
         myraidenii_core_board_crtc_read, myraidenii_core_board_crtc_write,
         myraidenii_core_board_crtc_query
@@ -942,7 +1032,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         myraidenii_core_board_sprite_protection_upload_query
     };
     myraidenii_core_board *board;
-    x86_core_machine_memory_device_route routes[31] = {
+    x86_core_machine_memory_device_route routes[33] = {
         {.physical_start = MYRAIDENII_CORE_PROGRAM_WINDOW_START,
             .bytes = MYRAIDENII_CORE_PROGRAM_WINDOW_BYTES,
             .callbacks = bank_callbacks},
@@ -962,6 +1052,9 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_TILE_BANK_2_ADDRESS,
             .bytes = MYRAIDENII_CORE_TILE_BANK_2_BYTES, .callbacks = tile_bank_2_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_RAM_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_BUFFER_BYTES, .callbacks = sprite_ram_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_START,
             .bytes = MYRAIDENII_CORE_SELECTED_CONTROL_WRITE_HOLE_BYTES,
@@ -1040,6 +1133,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         {.physical_start = MYRAIDENII_CORE_TILE_BANK_01_NOOP_ADDRESS,
             .bytes = 1u, .callbacks = tile_bank_01_noop_callbacks,
             .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+        {.physical_start = MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_START,
+            .bytes = MYRAIDENII_CORE_SPRITE_LATCH_TRIGGER_BYTES,
+            .callbacks = sprite_latch_trigger_callbacks,
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
         {.physical_start = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_START,
             .bytes = MYRAIDENII_CORE_SPRITE_OBJECT_WRITE_BYTES,
             .callbacks = sprite_object_write_callbacks,
@@ -1079,13 +1176,14 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         board->program[index * 2u] = config->program_even[index];
         board->program[index * 2u + 1u] = config->program_odd[index];
     }
-    if (config->graphics_images != LIB_NULL) {
+    status = myraidenii_core_sprite_buffer_create(&board->sprite_buffer);
+    if (status == LIB_STATUS_OK && config->graphics_images != LIB_NULL) {
         status = myraidenii_core_video_graphics_images_load(&board->video,
             config->graphics_images->characters, config->graphics_images->background_1,
             config->graphics_images->background_2, config->graphics_images->sprites_1,
             config->graphics_images->sprites_2, config->graphics_images->sprites_3,
             config->graphics_images->sprites_4);
-    } else {
+    } else if (status == LIB_STATUS_OK) {
         status = LIB_STATUS_OK;
     }
     if (status == LIB_STATUS_OK)
@@ -1113,6 +1211,7 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         x86_core_machine_destroy(board->machine);
         myraidenii_core_cop_destroy(board->cop);
         myraidenii_core_video_graphics_images_release(&board->video);
+        myraidenii_core_sprite_buffer_destroy(board->sprite_buffer);
         lib_release(board->program);
         lib_release(board);
         return status;
@@ -1127,6 +1226,7 @@ void myraidenii_core_board_destroy(myraidenii_core_board *board)
     x86_core_machine_destroy(board->machine);
     myraidenii_core_cop_destroy(board->cop);
     myraidenii_core_video_graphics_images_release(&board->video);
+    myraidenii_core_sprite_buffer_destroy(board->sprite_buffer);
     lib_release(board->program);
     lib_release(board);
 }

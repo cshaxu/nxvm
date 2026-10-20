@@ -2,13 +2,34 @@
 
 ## Current Work
 
-M1 T4 remains open after S44 P1 `1b34c4155`: Video now converts the four
-selected sprite image lanes into two 32-bit little-endian word-lane regions.
-The result is available to the later one-owner decrypt/draw path without
-implementing either behavior.
-The owner has admitted published MAME/other emulator implementations as L2
-layout/behavior evidence; source, tables, ROM data, and decryption material
-remain prohibited from import or transliteration.
+M1 T4 remains open after S45 P1: one bounded, L2-qualified sprite-RAM
+publication boundary now owns a 4 KiB live Board RAM region and its latched
+display snapshot. The Board routes `0xC000–0xCFFF` to live RAM and treats a
+write at either byte of `0x68E–0x68F` as the latch trigger. No decrypt,
+interpretation, drawing or frame publication has been added. Both cached
+widths passed all four MyRaidenII unit entries and documentation governance;
+this Core-only tranche has no Product/Machine EXE to publish.
+
+## Archived Packet — M1 T4 S45
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S45 follows S44 P2 `a238d3a84`; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued implementation with external emulator behavior/layout accepted as L2 on 2026-10-20, without repeated approval churn for absent L3 sources. |
+| Objective | Establish one MyRaidenII Core owner for the selected board's 4 KiB live sprite RAM and its display-latched snapshot, then wire the real Board address and latch trigger to it. |
+| Non-goals | No sprite decrypt/decode/draw, object attribute semantics, priority, frame publication, Shared change, ROM import, external payload, second memory path or generic device framework. |
+| Reference Baseline | The Board currently leaves `0xC000–0xCFFF` as generic RAM and swallows `0x68E–0x68F` inside a stateless object-write aperture. Accepted L2 references describe sprite RAM and a buffer trigger at those ranges. |
+| Candidate Proposal | Add one opaque Core sprite-buffer owner with live/latched storage, bounded read/write/latch/reset operations and a future-consumer snapshot copy. Board replaces the generic RAM range, routes the trigger, resets the owner and removes the trigger from its former stateless aperture. |
+| Files And ABI Surface | `src/myraidenii/core/{sprite_buffer.c,sprite_buffer_interface.h,board.c,CMakeLists.txt}`, matching Core unit tests, evidence, Current and no Shared/App files. The Core-local opaque sprite-buffer interface is the only new API. |
+| Applicable Rules | MyRaidenII guide, architecture, coding, documentation, source policy and execution rules. Board remains the sole bus owner; sprite buffer remains the sole live/latched data owner; tests use synthetic bytes only. |
+| Verification | Passed focused sprite-buffer and Board bus smokes on x64/x86, then the complete four-entry MyRaidenII unit selection on both widths, documentation governance and `git diff --check`. No product EXE exists yet. |
+| Expected Markers | Guest writes/readbacks at `0xC000–0xCFFF` use the Board-owned live RAM; a write at either byte of `0x68E–0x68F` copies live into the snapshot; later live writes do not mutate the snapshot; reset clears both. |
+| Asset Needs | None. Tests allocate synthetic data only; external game media remains read-only and untouched. |
+| Reporting Requirements | Report source/test/doc added/removed/net lines, the two adopted L2 facts, verification by width, Core-local API scope and deferred sprite work. |
+| Stop Conditions | Required decrypt tables, object interpretation, source/table import, Shared API, real-ROM read or any independent rendering path transfers to a later bounded S. |
+| Exit Criteria | Met: one owner retains both buffers; Board has one live-RAM route and one trigger route; prior stateless trigger handling is removed; unit regression proves copy isolation/reset and the two L2 map facts. |
+| Original Owner Request | Continue MyRaidenII toward RAIDEN II using external implementations as L2 rather than treating absent physical L3 material as a recurring blocker. |
+| Similar-Issue Sweep | Recheck Board route precedence/overlap, byte/word handling, reset/destruction, RAM fallback removal, snapshot lifetime and all former `0x68E` aperture claims. |
 
 S43 was accepted after actual-change review of `6b5def499`: two owner-local
 helpers read only safe CRTC word pairs and apply them to the existing layer

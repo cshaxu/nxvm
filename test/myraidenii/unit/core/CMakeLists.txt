@@ -25,3 +25,17 @@ endif()
 add_test(NAME myraidenii.core/graphics-smoke COMMAND myraidenii-core-graphics-smoke)
 set_tests_properties(myraidenii.core/graphics-smoke PROPERTIES
     LABELS "unit;myraidenii" TIMEOUT 30)
+
+add_executable(myraidenii-core-sprite-buffer-smoke sprite_buffer_smoke.c)
+target_link_libraries(myraidenii-core-sprite-buffer-smoke PRIVATE myraidenii-core)
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests myraidenii-core-sprite-buffer-smoke)
+endif()
+if(MSVC)
+    target_compile_options(myraidenii-core-sprite-buffer-smoke PRIVATE /UNDEBUG /W4 /WX)
+else()
+    target_compile_options(myraidenii-core-sprite-buffer-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_test(NAME myraidenii.core/sprite-buffer-smoke COMMAND myraidenii-core-sprite-buffer-smoke)
+set_tests_properties(myraidenii.core/sprite-buffer-smoke PROPERTIES
+    LABELS "unit;myraidenii" TIMEOUT 30)
