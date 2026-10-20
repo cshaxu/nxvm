@@ -100,6 +100,7 @@ struct myraidenii_core_cop {
     myraidenii_core_cop_dma_context dma_contexts[MYRAIDENII_CORE_COP_DMA_CONTEXTS];
     lib_u8 metadata_written;
     myraidenii_core_cop_pending pending;
+    myraidenii_core_cop_failure_observation failure;
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
@@ -442,8 +443,19 @@ void myraidenii_core_cop_reset(myraidenii_core_cop *cop)
         lib_memory_set(cop->programs, 0, sizeof(cop->programs));
         lib_memory_set(cop->collision, 0, sizeof(cop->collision));
         lib_memory_set(cop->dma_contexts, 0, sizeof(cop->dma_contexts));
+        lib_memory_set(&cop->failure, 0, sizeof(cop->failure));
         cop->metadata_written = 0u;
         myraidenii_core_cop_pending_clear(cop);
+    }
+}
+
+static void myraidenii_core_cop_note_failure(myraidenii_core_cop *cop,
+    lib_status status, lib_u32 physical)
+{
+    if (!cop->failure.valid) {
+        cop->failure.valid = LIB_TRUE;
+        cop->failure.status = status;
+        cop->failure.physical = physical;
     }
 }
 
@@ -454,17 +466,26 @@ static lib_status myraidenii_core_cop_memory(myraidenii_core_cop *cop,
     lib_u32 result = 0u;
     const lib_u8 width = bytes == 1u ? 1u : 2u;
 
-    if (base > LIB_UINT32_MAX - displacement) return LIB_STATUS_INVALID_ARGUMENT;
+    if (base > LIB_UINT32_MAX - displacement) {
+        myraidenii_core_cop_note_failure(cop, LIB_STATUS_INVALID_ARGUMENT, base);
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
     address = base + displacement;
     for (lib_u8 index = 0u; index < bytes; index += width) {
         lib_u16 lane = write ? (lib_u16)(*value >> (index * 8u)) : 0u;
         lib_status status;
 
-        if (address > LIB_UINT32_MAX - index) return LIB_STATUS_INVALID_ARGUMENT;
+        if (address > LIB_UINT32_MAX - index) {
+            myraidenii_core_cop_note_failure(cop, LIB_STATUS_INVALID_ARGUMENT, address);
+            return LIB_STATUS_INVALID_ARGUMENT;
+        }
         status = x86_core_machine_dma_memory_cycle(cop->machine, address + index,
             width, 0u, write ? X86_CORE_MACHINE_MEMORY_ACCESS_WRITE :
                 X86_CORE_MACHINE_MEMORY_ACCESS_READ, &lane, LIB_NULL, LIB_NULL, cop);
-        if (status != LIB_STATUS_OK) return status;
+        if (status != LIB_STATUS_OK) {
+            myraidenii_core_cop_note_failure(cop, status, address + index);
+            return status;
+        }
         result |= (lib_u32)lane << (index * 8u);
     }
     if (!write) *value = result;
@@ -868,6 +889,17 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
 
     if (cop == LIB_NULL || cop->machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (cop->pending.kind == MYRAIDENII_CORE_COP_PENDING_NONE) return LIB_STATUS_OK;
+    lib_memory_set(&cop->failure, 0, sizeof(cop->failure));
+    if (cop->pending.kind == MYRAIDENII_CORE_COP_PENDING_COMMAND) {
+        cop->failure.operation = MYRAIDENII_CORE_COP_OPERATION_COMMAND;
+        cop->failure.operation_value = cop->pending.command;
+    } else if (cop->pending.kind == MYRAIDENII_CORE_COP_PENDING_DMA) {
+        cop->failure.operation = MYRAIDENII_CORE_COP_OPERATION_DMA;
+        cop->failure.operation_value = cop->pending.mode;
+    } else {
+        cop->failure.operation = MYRAIDENII_CORE_COP_OPERATION_SORT;
+        cop->failure.operation_value = cop->pending.count;
+    }
     if (cop->pending.kind == MYRAIDENII_CORE_COP_PENDING_DMA) {
         status = myraidenii_core_cop_dma(cop);
     } else if (cop->pending.kind == MYRAIDENII_CORE_COP_PENDING_SORT) {
@@ -906,8 +938,17 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
             status = LIB_STATUS_UNSUPPORTED;
         }
     }
+    if (status != LIB_STATUS_OK) myraidenii_core_cop_note_failure(cop, status, 0u);
     myraidenii_core_cop_pending_clear(cop);
     return status;
+}
+
+lib_status myraidenii_core_cop_failure_get(const myraidenii_core_cop *cop,
+    myraidenii_core_cop_failure_observation *out_observation)
+{
+    if (cop == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = cop->failure;
+    return LIB_STATUS_OK;
 }
 
 lib_status myraidenii_core_cop_install(myraidenii_core_cop *cop,

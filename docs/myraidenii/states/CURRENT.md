@@ -15,6 +15,21 @@ M1 T4 remains open after accepted S1:
 | S7 | Selected-set-observed `0x692--0x693` Board-local write-only L2 hole, independently bounded from Video/Sprite state. | P1 `f4ebdcf4f` accepted by coordinator review; x64/x86 Board and selected-set probes pass; post-change repository-only units pass 642/642 per width; [L2 evidence](../etc/evidence/t4-s7-selected-control-hole-l2.md). |
 | S8 | Exact selected-set-observed `0x69a--0x69b` Board-local write-only L2 hole. | P1 `fa34720df` accepted by coordinator review; x64/x86 focused Board and selected-set probes advance to the independent next stop `0x690`; [L2 evidence](../etc/evidence/t4-s8-selected-control-hole-l2.md). |
 | S9 | Exact selected-set-observed `0x690--0x691` Board-local write-only L2 hole. | P1 `b576fcae5` accepted by coordinator review; x64/x86 focused Board and selected-set probes reach the separate COP-owned `INVALID_STATE` boundary; [L2 evidence](../etc/evidence/t4-s9-selected-control-hole-l2.md). |
+| S10 | Bounded Board-owned COP failure attribution for the selected set. | P1 pending; x64/x86 probes both identify command `0x5205`, first failed DMA address `0x6a0`, and existing `INVALID_STATE`; complete repository-only units pass 642/642 on each width. [Evidence](../etc/evidence/t4-s10-cop-failure-attribution.md). |
+
+## Active Packet — M1 T4 S10
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M1 T4 S10 follows accepted S9 P1 `b576fcae5`; one session performs coordinator and executor roles. |
+| Objective | Attribute the selected-set COP `INVALID_STATE` to the existing pending operation and first failing Core DMA address without logging protected payload or inventing a receiver. |
+| Non-goals | No COP algorithm/mapping acceptance, generic trace recorder, second execution path, Shared/Core API, ROM dump, full instruction trace, Board fallback route, or playable-game claim. |
+| Candidate | One reset-cleared, Board-owned copy of the immediate COP failure observation; a read-only MyRaidenII Board getter for the existing bounded integration probe. COP records only operation discriminator, command/mode value, first failed bus address and existing status. |
+| Files And ABI Surface | MyRaidenII Core private COP header/source, Board interface/source, existing Board unit and selected-set integration probe only. No Shared ABI change. |
+| Source Policy | The observation is neutral runtime metadata under the existing owner-supplied opt-in probe. It must not print or retain ROM bytes, PCs, register dumps or raw trace. |
+| Verification | Focused x64/x86 Core Board smoke and selected-set probe; complete dual-width repository unit suites after production change; documentation governance and `git diff --check`. |
+| Exit Criteria | The probe emits a bounded, stable fault attribution on both widths, synthetic failure/reset coverage proves no stale diagnostic state, and one reviewed MyRaidenII P is committed/pushed. |
+| Stop Conditions | Observation would require protected payload, ambiguous multiple failures, a Shared change, a new execution path, or contradictory dual-width result. |
 
 ## Retained Packet — M1 T4 S9
 

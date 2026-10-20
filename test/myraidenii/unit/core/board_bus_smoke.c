@@ -666,6 +666,7 @@ static lib_i32 board_cop_routes(void)
     x86_core_machine_memory_route route;
     x86_core_machine_run_result result = {0};
     x86_core_machine_lifecycle lifecycle;
+    myraidenii_core_cop_failure_observation cop_failure = {0};
     lib_u8 value[2] = {0u, 0u};
     lib_size index;
     lib_i32 failed = 1;
@@ -673,7 +674,9 @@ static lib_i32 board_cop_routes(void)
     lib_memory_set(program_even, 0, sizeof(program_even));
     lib_memory_set(program_odd, 0, sizeof(program_odd));
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
-        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL)
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
+        myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
+        cop_failure.valid)
         goto done;
 
     for (index = 0u; index < sizeof(configuration_addresses) /
@@ -2101,6 +2104,7 @@ static lib_i32 board_cop_dma_and_sort(void)
     const lib_u16 descending[] = {0x04u,0x18u,0x0cu,0x10u};
     const lib_i32 keys[] = {-1,5,5,0};
     lib_u8 value[4] = {0u};
+    myraidenii_core_cop_failure_observation failure = {0};
     lib_i32 failed = 1;
 
     for (lib_size index = 0u; index < sizeof(source); ++index)
@@ -2193,6 +2197,14 @@ static lib_i32 board_cop_dma_and_sort(void)
     if (board_cop_dma_context_write(machine, 0x118u, 0x140u, 0u, 1u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
         myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK)
+        goto done;
+    if (myraidenii_core_cop_failure_get(fixture.cop, &failure) != LIB_STATUS_OK ||
+        !failure.valid || failure.operation != MYRAIDENII_CORE_COP_OPERATION_DMA ||
+        failure.operation_value != 0x118u || failure.status == LIB_STATUS_OK) {
+        goto done;
+    }
+    myraidenii_core_cop_reset(fixture.cop);
+    if (myraidenii_core_cop_failure_get(fixture.cop, &failure) != LIB_STATUS_OK || failure.valid)
         goto done;
 
     if (board_cop_word_write(machine, 0x450u, 0u) != LIB_STATUS_OK ||
