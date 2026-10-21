@@ -6,7 +6,28 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S31
+## Active Packet — M1 T7 S32
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S31; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII qualification and explicitly permits external emulator behavior as L2. This packet is a bounded MyRaidenII evidence correction, not an external-source import. |
+| Objective | Reconcile the local Coin1/Coin2 electrical polarity with the publicly inspected Seibu Sound input declaration, so the ordered Coin/Start result has no unresolved host-to-Board polarity ambiguity. |
+| Non-goals | No production/test/CMake/API/ROM/PAL/media change; no MAME source/data import; no raw trace, guest-state capture, host automation, gameplay, title, sound-fidelity or release claim. |
+| Reference Baseline | S28/S31 establish that the local active-low Coin edge sequence reaches the Board and Sound transport. The sole remaining route-level question is the polarity implied by the external Seibu definition. |
+| Candidate Proposal | Inspect the exact public MAME `SEIBU_COIN_INPUTS_INVERT` macro and compare only its Coin1/Coin2 active-level facts with the existing local Board reset and press/release logic. Record the disposition; change local code only if a concrete mismatch is proved. |
+| Files And ABI Surface | Current, one MyRaidenII evidence record and the supporting index only unless the comparison proves a local Board mismatch. No Shared/public interface or executable/artifact change is expected. |
+| Applicable Rules | MyRaidenII guide, source policy, shared Execution/Documentation rules, Coding layout and T7 qualification proposal. The external fact is L2 and cannot authorize source or table import. |
+| Verification | Pin public revision/blob/content hash; inspect local Board owner and existing Board input tests; run documentation governance and whitespace checks. If no code changes are justified, do not manufacture builds or test runs. |
+| Expected Markers | A named equality or mismatch for both Coin inputs, with active/inactive values, evidence grade and a clear next receiver. |
+| Asset Needs | None. No owner archive, ROM, PAL, external tool configuration or staging is used. |
+| Reporting Requirements | Exact reference identity, local value mapping, conclusion, whether code changed, and the retained qualification boundary. |
+| Stop Conditions | Ambiguous external definition, a required source import, a nonlocal/shared fix, conflicting evidence or any claim beyond electrical polarity stops and records the gap. |
+| Exit Criteria | The finite polarity comparison is independently reviewable, documented, indexed, documentation checks pass, and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII qualification using external emulator implementations only as L2 evidence and do not block on unavailable physical hardware. |
+| Similar-Issue Sweep | Coin1/Coin2 reset, press, release, local active-low Player/System conventions, reference macro scope and all callers of the local coin callback. |
+
+## Archived Packet — M1 T7 S31
 
 | Field | Required record |
 | --- | --- |
