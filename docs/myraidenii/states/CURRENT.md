@@ -877,6 +877,28 @@ evidence/current record; no source, test, API, build, artifact or media file
 changed.  The next receiver is controlled Product monitor/UI start
 qualification, not automatic startup or a guessed hardware workaround.
 
+## M1 T7 S68 — Evidence-Grade Admission Alignment
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S67; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner explicitly directs that absent physical-hardware evidence is not a blocker: L3 is original fact, external implementation behavior is L2, and a bounded explicit L1 model may proceed when neither exists. |
+| Objective | Align MyRaidenII's goal, roadmap and existing COPX debt admission text with that approved evidence-grade policy. |
+| Non-goals | No production/test/API/build/manifest/artifact/ROM/media change; no source import, derived lookup/table, automatic start, or claim that any existing L1 behavior is hardware-accurate. |
+| Files And ABI Surface | Goal, roadmap, TODO and Current only. Estimated documents +12..30/-4..16. |
+| Verification | Documentation-link, whitespace and actual-diff review. |
+| Exit Criteria | The three authorities consistently allow owner-bounded L1 only when L3/L2 do not provide a complete contract, while preserving the requirement for declared behavior and a synthetic oracle. |
+
+## M1 T7 S68 Closure
+
+The goal, roadmap and COPX debt now agree that evidence grade controls the
+accuracy claim rather than whether an owner-valid receiver may proceed.  L3
+uses original facts, L2 uses independently implemented observable reference
+behavior, and L1 remains permitted only with declared input/output/reset/
+failure behavior plus a local synthetic oracle.  Documentation links and
+whitespace pass; no source, test, API, build, artifact, ROM or media file
+changed.
+
 ## Active Packet
 
 No S packet is active.

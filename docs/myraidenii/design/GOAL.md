@@ -23,3 +23,11 @@ extend to game content. Runtime input comes from the external owner archive.
 Accuracy is stated per mechanism: original-source facts and exact formulas
 are distinguished from reference-derived L2 models and unresolved evidence.
 Playable does not mean cycle-exact, all variants or all physical effects.
+
+Missing physical-hardware evidence does not by itself block an owner-valid
+implementation.  Use directly applicable original facts as L3; use observable
+external-emulator behavior as L2 without copying its source or tables; when
+neither establishes a complete rule, an explicitly bounded L1 model is
+permitted.  An L1 receiver still states its inputs, outputs, reset and failure
+behavior and has a local synthetic oracle.  Its grade is not upgraded merely
+because it allows the selected set to proceed.

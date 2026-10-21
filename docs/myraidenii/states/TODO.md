@@ -12,14 +12,15 @@ purpose tentatively.
 Risk: the bounded twelve-image startup route cannot qualify COPX-dependent
 game behavior, including any effect such as the externally reported first-boss
 issue. Adding a configuration key with no Board consumer would be false
-support; inventing a lookup rule would be unqualified L1 behavior.
+support; any fallback lookup requires an explicitly admitted, bounded L1
+contract rather than an implicit guess.
 
-Admission: a later MyRaidenII Board/COP receiver task must first obtain either
-an inspected primary-manual PDF rule (L3) or a bounded L2 behavior contract
-that can be independently implemented without copied code/tables. It must pin
-the request/index/result semantics, attach the image only at the existing
-Machine-to-Board transaction, prove synthetic non-ROM cases and then re-run
-the owner-ROM checkpoint. No external payload enters the repository.
+Admission: a later MyRaidenII Board/COP receiver must use an inspected
+primary-manual rule (L3) or bounded external behavior contract (L2) when one
+exists. If neither can establish the complete contract, it may instead admit
+an explicit L1 model with stated request/index/result/reset/failure semantics
+and synthetic non-ROM proof. In every case it attaches an image only at the
+existing Machine-to-Board transaction and never commits external payload.
 
 ## Medium: Selected-Set Sprite Blend Fidelity
 

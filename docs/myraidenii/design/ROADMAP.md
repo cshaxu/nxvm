@@ -35,5 +35,7 @@ receiver and evidence grade; they do not prove the game result.
 T7 is the active gameplay and release qualification task. It owns bounded
 external-ROM startup/attract/control/stage/end/restart evidence, host lifecycle
 and cleanup, and final owner acceptance. Current explicit receivers include
-the unresolved COPX-D2 contract and sprite blend fidelity; neither may be
-silently replaced by a path-only asset or guessed renderer behavior.
+the unresolved COPX-D2 contract and sprite blend fidelity. They may receive a
+bounded L1 model when no L3 fact or complete L2 behavior contract exists, but
+may not be silently replaced by a path-only asset, copied reference material
+or an unlabeled guessed renderer behavior.
