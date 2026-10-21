@@ -6,6 +6,36 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S11 Closure
+
+S11 is closed with no source change.  The single bounded external MAME
+reference launch stopped before game execution because the owner archive lacks
+two MAME-required binary PAL dumps.  The archive's JED is not a substitute and
+was not used as one.  This L2 asset prerequisite neither proves a local defect
+nor changes the selected Board contract; its owned external output was removed.
+See [S11 evidence](../etc/evidence/t7-s11-mame-reference-prerequisite.md).
+
+## Archived Packet — M1 T7 S11
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S11 follows closed S10. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation and restated the evidence rule: only a directly applicable explicit formula, constant or rule from an inspected primary manual PDF is L3; external implementations, board observations and ranges are L2; unsupported local choices are L1. The owner permits MAME as an external L2 runtime reference only. |
+| Objective | Run the owner-supplied selected archive once through the already-present external MAME binary in a finite isolated observation, to distinguish a local early-startup limitation from a reference startup/environment result without importing code or protected payload. |
+| Non-goals | No MAME code/table/data import, no ROM extraction retained in the repository, no source-model change, no claimed gameplay qualification, no screenshot/audio dump, no Shared change and no reference-run dependency. |
+| Reference Baseline | The local selected-set Probe reaches its bounded 20M-instruction budget without a terminal CPU/COP/control error but cannot label a guest checkpoint. MAME's current Raiden II driver is an allowed L2 external reference, not an L3 hardware authority. |
+| Candidate Proposal | Launch the existing external MAME executable with `O:\\assets\\raidenii\\raiden2.zip` available only through its ROM search path; direct all MAME configuration, NVRAM, snapshots and logs to a fresh owner-managed directory below `O:\\assets\\media-myraidenii\\`; use a finite wall-clock budget and remove generated data afterward. Record only neutral process/window/exit facts. |
+| Files And ABI Surface | Expected only Current and one evidence record. No source, test, public API, build, executable or shared-component change is admitted. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. Every reference-run observation is L2. |
+| Verification | Verify the selected archive identity before launch; verify the MAME executable identity/version; make one bounded run; wait for owned process exit; confirm all generated output remained below the declared external root; remove it; run documentation governance, whitespace and diff checks. |
+| Expected Markers | A finite MAME process result or concrete owned startup error, with no repository files or protected payload retained. The result may establish only that this external reference did or did not remain alive during the finite observation. |
+| Asset Needs | Read-only `O:\\assets\\raidenii\\raiden2.zip`; owned temporary MAME output only below `O:\\assets\\media-myraidenii\\t7-s11-mame\\`, removed before closure. |
+| Reporting Requirements | State exact external executable/version, archive identity, elapsed budget and process result; do not log ROM bytes, infer a hardware timing fact, or conflate an external result with local qualification. |
+| Stop Conditions | Any need to copy/provide MAME source, retain a ROM/config/snapshot outside the owned external root, alter local production behavior, add an unbounded trace, or claim title/gameplay from process survival stops this packet. |
+| Exit Criteria | One finite reference observation is recorded or a concrete owned prerequisite failure is documented; all generated external data is removed and no runnable source claim is changed. |
+| Original Owner Request | Continue under the strict L3/L2/L1 definition: only an inspected primary manual PDF's explicit applicable formula/constant/rule is L3; external references, ranges and runtime observations are L2; unsupported local borrowing is L1. |
+| Similar-Issue Sweep | Check that configuration/log/snapshot paths are all external and owned, that no reference result enters source behavior, and that archive contents are never printed or retained. |
+
 ## M1 T7 S10 Closure
 
 S10 is closed with no source change.  Video has one existing sprite-flags owner
