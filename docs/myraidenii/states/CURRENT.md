@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S47
+## Archived Packet — M1 T7 S47
 
 | Field | Required record |
 | --- | --- |
@@ -23,6 +23,13 @@ It does not redefine unimplemented Board behavior as a release result.
 | Stop Conditions | A needed port/device contract, Shared/public API, new state owner, conflict with the manual, non-finite behavior or failing unchanged ordinary-add regression stops and transfers the issue. |
 | Exit Criteria | All sixteen forms are present at one owner; focused semantic/error paths and complete dual-width unit labels pass; source-grade evidence and correction are indexed; actual diff review finds no duplicate map or arithmetic path. |
 | Original Owner Request | Continue MyRaidenII under governance, use L3 only for directly sourced manual facts, retain external behavior as L2 when needed, and run long work in background sessions. |
+
+S47 closes after one source-local decoder extension: all four pair selectors of
+`ADC HL,ss`, `SBC HL,ss`, `LD (nn),dd`, and `LD dd,(nn)` now use the existing
+Sound pair and memory owners.  Focused Sound/Board tests and all twelve
+MyRaidenII unit tests pass on both x64 and x86.  The receiving evidence records
+the corrected S46 opcode name and the remaining ED families; no release,
+selected-ROM, gameplay, timing-accuracy, or Shared-component claim is made.
 
 ## Archived Packet — M1 T7 S46
 
