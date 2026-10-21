@@ -2,9 +2,40 @@
 
 ## Current Work
 
-No S packet is active. M1 T5 remains open for its remaining Sound receivers;
-the separately queued Product/Machine integration task owns runnable product
-composition and release qualification.
+M1 T5 is closed. Its finite Sound/PCM/driver ledger is complete; the queued
+Product task is the sole receiver for runnable composition, real monitor/input
+qualification and release artifacts.
+
+| T5 | Closed by S18 ledger review; see [history](../history/M1-T5-sound.md) and [closure evidence](../etc/evidence/t5-s18-ledger-closure.md). |
+
+## Archived Packet — M1 T5 S18
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S18 follows accepted S17 closure `4c45e54f5`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner’s standing MyRaidenII implementation direction and latest “continue” instruction admit this final bounded T5 closure audit. No source-grade exception is requested. |
+| Objective | Reconcile the finite T5 Sound ledger against current source and regressions, close every in-scope Sound/Machine receiver, and explicitly transfer the real user-command qualification to the queued Product task. |
+| Non-goals | No new decoder, chip, clock, Product composition, executable, external payload, Shared change, timing-grade upgrade, or playable-game claim. |
+| Reference Baseline | S1--S15 implement the one Board transport/time seam, local Z80/device/PCM path, Machine PCM bridge/driver/input adapter, and S16--S17 add strict Product config plus Machine-owned image materialization. |
+| Candidate Proposal | Audit the production route and existing tests against the four accepted Sound receivers. Retain one Core Sound owner and one Machine-to-Lib bridge. Transfer only the missing real monitor/input-to-command qualification to the existing Product proposal because no Product composition exists. |
+| Files And ABI Surface | Evidence, Current, T5 history/proposal/queue references as needed. No production/test/build/API/asset file is expected to change. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI, Source Policy and shared Execution/Architecture/Coding/Document rules. L3 requires an inspected primary-manual PDF explicit applicable rule; external/reference facts remain L2; unsupported local mechanisms remain L1. |
+| Verification | Met: both cached unit targets had no work; full repository-only units pass 651/651 on x64 and x86; selected-set probe passes through the Machine transaction on both widths; documentation governance and whitespace checks pass. |
+| Expected Markers | One production Sound owner, one Board transport/time route, one Machine PCM bridge/driver, no direct Product/Core file route, and one named transfer of real command-path qualification to `m1-product.md`. |
+| Asset Needs | Existing owner-supplied external `O:\assets\raidenii\raiden2.zip` is read-only, transiently staged only by the existing verified tool, and never committed. |
+| Reporting Requirements | Record a finite receiver/disposition ledger, actual run results, retained production route, source grades and explicit Product transfer. |
+| Stop Conditions | Need for a new sound contract, Shared change, protected payload, source import, new execution route, or evidence-grade escalation stops and transfers the gap. |
+| Exit Criteria | Met: every finite T5 receiver is proven by its owner regression or explicitly transferred to Product; full repository-only dual-width units and the owner-input probe pass; no T5 Sound obligation remains implicit. |
+| Original Owner Request | Continue MyRaidenII under the strict L3/L2/L1 definition, without treating external implementations as L3. |
+| Similar-Issue Sweep | Review all MyRaidenII Core Sound, Board sound transport, Machine audio/driver and associated tests for duplicate routes or untracked residual Sound receivers. |
+
+Sequential coordinator closure review accepts S18. The production scan retains
+one Core Sound owner, one Board transport/time route and one Machine-to-Lib
+PCM bridge. The sole unresolved real command-path qualification is transferred
+to the queued Product proposal, which must consume this driver rather than add
+a second execution or audio route. Full repository-only units pass 651/651 on
+both widths; the owner-input selected-set probe passes on both widths through
+the Machine transaction. M1 T5 is closed. See [closure evidence](../etc/evidence/t5-s18-ledger-closure.md).
 
 ## Archived Packet — M1 T5 S17
 
