@@ -111,6 +111,7 @@
 - [T7 ordered Coin/Start probe](evidence/t7-s28-ordered-input-probe.md).
 - [T7 OKI write-disposition observation](evidence/t7-s29-oki-write-disposition.md).
 - [T7 Sound transport observation](evidence/t7-s30-sound-transport-observation.md).
+- [T7 ordered-input Sound observation](evidence/t7-s31-ordered-input-sound-observation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

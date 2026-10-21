@@ -6,7 +6,43 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S30
+## Active Packet — M1 T7 S31
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S30; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII qualification. This packet reuses the existing S28 ordered input route and S30 aggregate Probe output without source changes. |
+| Objective | Determine whether the existing ordered Coin then Start delivery changes the fully observed Sound transport or OKI disposition during the bounded selected-set startup window. |
+| Non-goals | No production/test/CMake/API change, input schedule change, guest-state mirror, payload capture, external-source import, ROM/PAL change, host automation, gameplay claim or release. |
+| Reference Baseline | S28 proves the four ordered edges are delivered by the existing Machine driver. S30 proves the no-input bounded run services Sound transport but emits only OKI stops. |
+| Candidate Proposal | Run the unchanged selected-set Probe once per host width with its existing `--coin-start-sequence` option and 20,000,000-instruction containment budget. Retain only its existing aggregate neutral output and compare it to the S28/S30 baselines. |
+| Files And ABI Surface | Current, one evidence record and the supporting index only. Temporary owner staging is external and deleted. No source, test, CMake, manifest, interface, executable or asset change. |
+| Applicable Rules | MyRaidenII guide, source policy, shared Execution/Documentation rules and T7 qualification proposal. Observations are L2. |
+| Verification | Pin existing Probe identity; run once per width; compare neutral summaries and four delivery markers; verify stage cleanup and documentation/whitespace checks. |
+| Expected Markers | Both widths deliver Coin press/release and Start press/release once and either show a finite aggregate difference or a neutral no-change result. Neither outcome proves accepted credits, title/gameplay or audible audio. |
+| Asset Needs | Read-only owner archive through the existing wrapper only; no acquisition or persistence. |
+| Reporting Requirements | Exact pre-existing schedule, dual-width aggregate comparison, cleanup and retained qualification gap. |
+| Stop Conditions | A need for input-route modification, raw guest-state capture, unbounded run, host automation, source import, staging failure or nondeterministic width results stops and records the gap. |
+| Exit Criteria | Both bounded widths complete through the existing route; all four edges and aggregate results are recorded; external stages are removed; documentation checks pass and a complete P is pushed. |
+| Original Owner Request | Continue independently using bounded probes and external emulators as L2 references rather than waiting for physical hardware. |
+| Similar-Issue Sweep | Existing mode exclusivity, all four delivery edges, output framing, width equality, stage cleanup and comparison against S28/S30. |
+
+## M1 T7 S31 Closure
+
+S31 is closed after reviewing the unchanged ordered Coin/Start route against
+the S30 aggregate.  All four existing edges were delivered on both widths, and
+the real Sound program continued to read, acknowledge and accept transport
+requests.  It nevertheless emitted only OKI stop commands, with zero sample
+commands, selections, starts and generated nonzero PCM.  See [S31 evidence](../etc/evidence/t7-s31-ordered-input-sound-observation.md).
+
+The conclusion is bounded: local input delivery and the already-active Sound
+transport are not an evidenced audio repair target.  It does not prove title,
+credit acceptance, gameplay or hardware audio.  All owned stages and logs
+were removed.  No source, Shared component, executable, protected media or
+Assets file changed.  T7 remains active; no successor S is admitted by this
+closure.
+
+## Archived Packet — M1 T7 S30
 
 | Field | Required record |
 | --- | --- |
