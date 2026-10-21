@@ -652,6 +652,38 @@ only, not a desktop, audio, gameplay, timing-fidelity or release result.  No
 production, test, Shared, asset or artifact file changed.  T7 remains open for
 a separately admitted qualification question.
 
+## Archived Packet — M1 T7 S61
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S60; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation under the existing source policy and requires long operations to use persistent background sessions. |
+| Objective | Qualify the existing Product→Machine→Core composition launch with the reviewed external selected set once per supported width. |
+| Non-goals | No release deployment, product/UI behavior change, Shared change, asset/media commit, gameplay/title/audio claim, raw guest output retention, extra lifecycle route, manual UI interaction or compatibility fallback. |
+| Reference Baseline | S60 proves the selected Board/Machine path reaches its bounded budget in both widths. The existing wrapper can generate a temporary adjacent INI, launch the actual Product and terminate its owned process after a fixed observation period. |
+| Candidate Proposal | Build the existing Product executable in each stable Ninja tree. Invoke the current archive-verifying wrapper once per width in Product mode, with its existing window configuration and bounded observation. Record only launch disposition, width and staging cleanup. |
+| Files And ABI Surface | Current, one evidence record/index only unless a real launch failure identifies one existing owner. No production/test/build/manifest/public interface/artifact/media change. |
+| Applicable Rules | MyRaidenII product/UI/source policy and Shared execution/documentation rules. External stages remain wrapper-owned; each observed process runs under a persistent background PTY session. |
+| Verification | Build Product x64/x86; one Product-mode wrapper run per width; verify generated staging children are absent afterward; documentation governance and whitespace checks. |
+| Expected Markers | Each process remains alive for its bounded observation or returns an explicit wrapper failure; no unowned process or external staging remains. |
+| Asset Needs | Read-only `O:\assets\raidenii\raiden2.zip`, verified by the existing inventory; temporary staging only below `O:\assets\raidenii\myraidenii-diagnostics\`. |
+| Reporting Requirements | Record only width, bounded launch result, cleanup and unexecuted interactive desktop/gameplay/audio validation. Do not retain raw guest/media data, screenshots or external implementation. |
+| Stop Conditions | Build failure, asset mismatch, early Product exit, wrapper/staging failure, divergent width result, unowned child process or any need to alter UI/control behavior stops selection without speculative repair. |
+| Exit Criteria | Both Product executables build, one bounded wrapper observation per width completes with cleanup verified, evidence/index/current are updated, checks pass and a reviewed P is pushed. |
+| Original Owner Request | Continue toward a real MyRaidenII executable using existing composition and external assets under explicit governance. |
+| Similar-Issue Sweep | Product configuration load, adjacent INI/media resolution, composition startup, UI/session ownership, process exit/cleanup and width parity. |
+
+## M1 T7 S61 Closure
+
+The existing Product executables built in the stable x64 and x86 Ninja trees.
+One wrapper-owned Product-mode launch per width remained alive for its complete
+bounded observation period and then cleaned up normally.  The external
+diagnostics root is empty and no Product child process remains.  This proves
+composition startup only; it does not claim interactive desktop, controls,
+graphics, audio, gameplay or release readiness.  No production, test, Shared,
+asset or artifact file changed.  T7 remains open for a separately admitted
+user-visible qualification.
+
 ## Active Packet
 
 No S packet is active.
