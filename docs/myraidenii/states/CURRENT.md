@@ -6,6 +6,36 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S19
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S19 follows closed S18. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation under the L3/L2/L1 rule and delegated ordinary same-T packet planning. |
+| Objective | Replace the existing held Coin/Start-only selected-set diagnostic with one bounded scheduled press/release diagnostic, so the real Board input route can be observed without treating a continuously asserted electrical input as an accepted gameplay action. |
+| Non-goals | No Core, Machine, Product, Shared, ROM/PAL, source/table import, longer instruction cap, host-window input, sound-fidelity, title, gameplay or release claim. |
+| Reference Baseline | S4 only asserted Coin 1 and Start 1 before execution and held them through the fixed budget. S18 now proves Board-to-Sound IM0 transport acceptance, but command bytes and copied PCM remain zero. The Board already has a public active-low `set_control()` API. |
+| Candidate Proposal | Add one mutually exclusive Probe mode that presses Coin 1 and Start 1 at the first quarter of the unchanged budget, releases them at the second quarter, and reports the named schedule alongside existing neutral output. Reuse the existing run loop and Board control API; do not create a guest-input path, scheduler, trace, or state mirror. |
+| Files And ABI Surface | Test-only `selected_set_startup_probe.c`, its wrapper option, Current and one evidence record. No production ABI, CMake, manifest, asset or artifact change. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Documentation rules. The scheduled selected-set observation is L2 runtime evidence; the budget is L1 containment only. |
+| Verification | Extend existing argument validation and synthetic Probe argument coverage if present; build the existing Probe x64/x86; run it once per width with the unchanged 20M cap and scheduled mode; run complete MyRaidenII units x64/x86, documentation governance and whitespace checks. |
+| Expected Markers | Both widths produce the same finite output and report exactly one press/release schedule. Any visual, command or PCM change is recorded as L2 observation only; unchanged output remains a valid result. |
+| Asset Needs | Read-only owner archive only for the final bounded Probe; wrapper-owned staging remains transient and is removed on exit. |
+| Reporting Requirements | Record schedule, exact host-width output comparison, code/test delta, cleanup and the distinction between an electrical-edge diagnostic and actual Window/RDP/gameplay input qualification. |
+| Stop Conditions | Any need for guest-state inspection, raw trace/payload retention, a new input API, host automation, source/table import, timing-grade escalation or production behavior change stops and transfers the gap. |
+| Exit Criteria | The existing Probe has one explicit finite edge mode, its parser rejects incompatible modes, both widths are compared under the existing cap, evidence records the result and all named checks pass. |
+| Original Owner Request | Only an explicit directly applicable formula, constant or rule in an inspected primary manual PDF is L3; external/range/reference behavior is L2; otherwise it is L1. |
+| Similar-Issue Sweep | Inspect all existing selected-set Probe input options and wrapper forwarding for duplicated control setup, incompatible combinations or held-state assumptions. |
+
+## M1 T7 S19 Closure
+
+S19 is closed. The existing Probe now has one bounded Coin/Start pulse mode;
+its parser rejects mutually exclusive input modes. Its x64/x86 selected-set
+runs apply the same press/release schedule and yield identical neutral frame,
+Sound-command and PCM summaries. This proves only the existing Board input
+route's finite deterministic edge handling, not title acceptance, host input
+delivery, gameplay or release. See [S19 evidence](../etc/evidence/t7-s19-input-pulse-diagnostic.md).
+
 ## Archived Packet — M1 T7 S18
 
 | Field | Required record |
