@@ -6,6 +6,40 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S24
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S24 follows closed S23. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation, prefers probes over Computer Use, and has authorized external emulator behavior as L2 evidence. This packet is a bounded external black-box diagnostic only. |
+| Objective | Use MAME's documented Lua input API to establish whether a finite Coin 1 then Start 1 press/release changes the selected set's visible checkpoint relative to an otherwise identical no-input run. |
+| Non-goals | No Computer Use, source/code/table import, local production/test/API change, ROM/PAL acquisition or retention, debugger/memory/trace/screenshot/audio capture, input mapping change, gameplay or release claim. |
+| Reference Baseline | S23 proves the local Machine-driver pulse reaches Board controls but cannot infer guest acceptance. S35 provides the owner-approved external PAL BYOB inputs required for current MAME verification. |
+| Candidate Proposal | Create one transient Lua script outside tracked source. It enumerates the named Coin 1/Start 1 fields through MAME's documented I/O-port API, applies a bounded press/release schedule, and prints only field discovery plus visible-screen dimensions and non-reversible checksums at fixed frames. Run the same fixed budget once with and once without the pulse; remove all scripts/configuration/logs afterwards. |
+| Files And ABI Surface | Documentation/evidence only after the experiment. No repository source, test, CMake, manifest, public interface, asset or executable change. Temporary external MAME output is confined to `<external-assets>/media-myraidenii/t7-s24-mame/`. |
+| Applicable Rules | MyRaidenII guide; product Architecture, Coding and UI; shared Execution, Documentation and Coding rules; source policy. MAME Lua is an L2 black-box tool. Its API and visible result do not establish a physical Board contract or local game correctness. |
+| Verification | Record MAME version and the previously inventoried read-only ROM/PAL inputs; run bounded no-input and pulse observations with no payload retention; compare the neutral output records; remove owned external output; run documentation governance, whitespace checks and repository-only units on both host widths. |
+| Expected Markers | The two cases either produce a repeatable finite difference or a repeatable no-difference. Either result is L2 evidence only and cannot alone prove title, credit, start, gameplay or a local defect. |
+| Asset Needs | Read-only owner archive and already owner-approved external PAL files. No asset is added, copied, modified or committed. |
+| Reporting Requirements | Record tool/input identities, input-field names, schedule, dimensions, irreversible checksums, host-cleanup and the exact scope limitation. Do not retain pixel, ROM, RAM, sound or trace payload. |
+| Stop Conditions | Missing/ambiguous input fields, API inability to schedule the bounded pulse, nondeterministic results, any need for debugger/memory/source inspection, or any local behavior change stops this packet and records the gap rather than guessing. |
+| Exit Criteria | One documented, reproducible black-box disposition exists for no-input versus Coin/Start pulse; all owned transient files are removed; required documentation checks pass; no local product behavior is misrepresented as qualified. |
+| Original Owner Request | Continue implementing MyRaidenII under the stated L3/L2/L1 classification; probes are the normal diagnostic mechanism, while Computer Use is not required for this task. |
+| Similar-Issue Sweep | Inspect both player-one input fields, active-low/active-high semantics through the API rather than assuming polarity, no-input baseline scheduling, frame callback termination, and every transient external output path. |
+
+## M1 T7 S24 Progress
+
+S24 execution and regression are complete, awaiting coordinator acceptance.
+Both host widths passed the full 697 repository-only units, including the
+45 MyNES cases omitted by the initial cache. The MAME I/O-field probe identifies the exact
+external Coin 1 and Start 1 field names, and a bounded press/release schedule
+produces a repeatable 320 x 240 screen checksum distinct from its no-input
+baseline.  The external root and transient scripts were removed.  This is L2
+evidence that the input schedule is meaningful in the reference, not a local
+guest-state or gameplay claim. The local and external schedules differ, so this
+is not a controlled cross-emulator comparison. See [S24 evidence]
+(../etc/evidence/t7-s24-mame-input-pulse.md).
+
 ## M1 T7 S23 Closure
 
 S23 is closed. The existing Machine-driver Coin/Start pulse completed the

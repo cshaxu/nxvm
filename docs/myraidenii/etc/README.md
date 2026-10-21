@@ -105,6 +105,7 @@
 - [T7 Machine-driver selected-set input pulse](evidence/t7-s21-machine-input-pulse.md).
 - [T7 frozen qualification reconciliation](evidence/t7-s22-qualification-reconciliation.md).
 - [T7 full-budget Machine-driver pulse](evidence/t7-s23-full-budget-machine-pulse.md).
+- [T7 MAME black-box Coin/Start pulse](evidence/t7-s24-mame-input-pulse.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
