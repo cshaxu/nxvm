@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S48
+## Archived Packet — M1 T7 S48
 
 | Field | Required record |
 | --- | --- |
@@ -26,6 +26,12 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | All ten forms exist at one owner; focused semantics/failure paths and both complete unit labels pass; evidence is indexed; actual diff review finds no second executor, map or flag path. |
 | Original Owner Request | Continue MyRaidenII under governance; use L3 only for directly sourced manual facts, do not import protected media/source, and run long work in background sessions. |
 | Similar-Issue Sweep | Reconcile the complete legal NEG alias set and both decimal directions together; retain accumulator/refresh transfers, port forms and block forms as explicit later ledger receivers rather than leaving same-family omissions hidden. |
+
+S48 closes after implementing all eight legal `NEG` aliases and both decimal
+memory exchanges at the one Sound ED executor.  Focused Sound/Board tests and
+the complete twelve-test MyRaidenII label pass on x64 and x86.  The receiver
+does not add I/R state, external map routes, release artifacts or a selected-ROM
+qualification claim; those residual ED families remain explicit later work.
 
 ## Archived Packet — M1 T7 S47
 
