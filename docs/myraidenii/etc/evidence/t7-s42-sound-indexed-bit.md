@@ -38,8 +38,11 @@ adding another decoder fixture.
   instructions on both widths after the change. Both widths produce matching
   evolving non-black frame samples and active Sound/Input/Video observations.
 
-The post-change host execution channel cannot complete the earlier long
-receiver-crossing budget within its single bounded invocation. The 8,000,000
-instruction Probe is therefore a regression check, not evidence that the new
-receiver has been crossed or that gameplay/release qualification is complete.
-Each wrapper invocation removed its external staging directory.
+One persistent background selected-set Probe per width crossed the former
+receiver and reached the same later Board-runtime fault. The fault carries the
+existing `LIB_STATUS_UNSUPPORTED` detail. Board advance reports that detail
+through the one existing fault path; Sound advance is in that path, but this
+run does not isolate the precise unsupported Sound branch. It is therefore a
+transfer boundary, not evidence for a guessed Sound repair or for
+gameplay/release qualification. Each completed Probe removed its external
+staging directory.
