@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S24
+## Archived Packet — M1 T7 S24
 
 | Field | Required record |
 | --- | --- |
@@ -27,9 +27,9 @@ It does not redefine unimplemented Board behavior as a release result.
 | Original Owner Request | Continue implementing MyRaidenII under the stated L3/L2/L1 classification; probes are the normal diagnostic mechanism, while Computer Use is not required for this task. |
 | Similar-Issue Sweep | Inspect both player-one input fields, active-low/active-high semantics through the API rather than assuming polarity, no-input baseline scheduling, frame callback termination, and every transient external output path. |
 
-## M1 T7 S24 Progress
+## M1 T7 S24 Closure
 
-S24 execution and regression are complete, awaiting coordinator acceptance.
+S24 is accepted and closed after coordinator actual-diff review of `27533db46`.
 Both host widths passed the full 697 repository-only units, including the
 45 MyNES cases omitted by the initial cache. The MAME I/O-field probe identifies the exact
 external Coin 1 and Start 1 field names, and a bounded press/release schedule
