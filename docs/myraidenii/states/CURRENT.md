@@ -6,6 +6,27 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S13
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S13 follows closed S12. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work and reaffirmed the L3/L2/L1 rule: only an inspected primary-manual PDF's directly applicable formula, constant or rule is L3; a range, board observation or external reference is L2; an unsupported local approximation is L1. |
+| Objective | Reconcile the existing local video-raster cadence against an independently inspected external L2 hardware implementation, and determine whether a concrete timing repair is warranted without importing source, tables or protected content. |
+| Non-goals | No third-party code/table import, no ROM/PAL acquisition or retention, no sprite-blend implementation, no COPX-D2 attachment, no new timer/worker/frame path, no release claim and no change merely to match an external implementation's internal clock labels. |
+| Reference Baseline | Local Video advances a 16 MHz nominal Board axis by 1024 ticks per 512-pixel line, for 282 lines/frame and VBlank after 240 lines. The inspected external FPGA reference reports an 8 MHz pixel clock, 512 pixels/line, 282 lines/frame and separately counts 4096 cycles/line on its 64 MHz internal renderer clock. |
+| Candidate Proposal | Independently calculate each source's line/frame duration and only modify local timing if their physical-duration contracts disagree. Record the exact grade and keep the current implementation unchanged when they agree. |
+| Files And ABI Surface | Expected only `docs/myraidenii/states/CURRENT.md`, `docs/myraidenii/etc/evidence/` and its index. No source/test/build/API/asset/artifact change is admitted. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution and Documentation rules. L3/L2/L1 labels must match the owner's definition; source policy forbids external code/table/data import. |
+| Verification | Inspect the current Video constants and external published clock statements; calculate line/frame/VBlank duration independently; run documentation governance, whitespace and diff review. |
+| Expected Markers | A finite conclusion that the local cadence either differs with a named owner or already represents the same duration through a different clock axis. No unsupported timing-grade promotion. |
+| Asset Needs | None. External web/source inspection is read-only; no external payload is downloaded or retained. |
+| Reporting Requirements | State the two clock-domain calculations, evidence grade and whether code changed. Explicitly distinguish the external internal renderer clock from Board timing. |
+| Stop Conditions | Any need to copy/transliterate external HDL/code/table, claim a primary-manual fact, change blend/COPX semantics, or infer a guest checkpoint stops this S and transfers the receiver. |
+| Exit Criteria | The cadence relation is documented with exact arithmetic and grade; any justified repair has an identified owner, otherwise no production code changes; governance checks pass. |
+| Original Owner Request | Continue under the rule that only a direct explicit primary-manual-PDF formula/constant/rule is L3, external/range evidence is L2, and unsupported borrowing is L1. |
+| Similar-Issue Sweep | Inspect existing local raster comments/constants and the external reference's separately stated pixel, line, frame and internal-clock values; reject any conflation of clock domains. |
+
 ## M1 T7 S12 Closure
 
 S12 is closed with no source change. Current design and source-map authorities
