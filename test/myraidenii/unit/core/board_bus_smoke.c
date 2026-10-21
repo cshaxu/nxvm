@@ -1938,6 +1938,8 @@ static lib_i32 board_cop_updates(void)
         {0x0905u,0x2000u,0xffffffffu,2u,7u,1u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
         {0x0905u,0x2000u,0x80000000u,0x80000000u,7u,0u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
         {0x0905u,0x2000u,5u,0xfffffffeu,7u,3u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0904u,0x2000u,5u,2u,7u,3u,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
+        {0x0904u,0x2000u,0u,1u,7u,0xffffffffu,7u,LIB_FALSE,LIB_TRUE,LIB_TRUE},
         /* Actual write-only COP routes refuse each source lane. */
         {0x0205u,0x424u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
         {0x0205u,0x422u,0xffffu,1u,7u,0xffffu,7u,LIB_TRUE,LIB_FALSE,LIB_FALSE},
@@ -1966,8 +1968,10 @@ static lib_i32 board_cop_updates(void)
 
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
     for (lib_u8 slot = 0u; slot < (cases[index].failure ? 1u : 3u); ++slot) {
-        const lib_u32 position = cases[index].command == 0x0905u ? 16u : 4u;
-        const lib_u32 increment = cases[index].command == 0x0905u ? 40u : 16u;
+        const lib_bool secondary = cases[index].command == 0x0904u ||
+            cases[index].command == 0x0905u;
+        const lib_u32 position = secondary ? 16u : 4u;
+        const lib_u32 increment = secondary ? 40u : 16u;
         cop_fixture fixture = {0};
         x86_core_machine *machine;
         x86_core_machine_run_result result = {0};
@@ -2387,7 +2391,11 @@ static lib_i32 board_cop_numeric_vectors(void)
         {0x2208u,0x8000u,1u,0u,{7u,5u,63u},0x5aa5u,0x34u,2u},
         {0x2208u,1u,0xffffu,0u,{7u,5u,0u},0x5aa5u,0x34u,2u},
         {0x2208u,1u,0u,0u,{0x8007u,5u,0u},0x5aa5u,0x34u,2u},
+        {0x2288u,0xffffu,0xffffu,0u,{7u,5u,32u},32u,0x34u,1u},
+        {0x2288u,1u,0u,0u,{0x8007u,5u,0u},0u,0x34u,1u},
+        {0x3b30u,0x30000u,0x40000u,0u,{7u,5u,32u},0x5aa5u,0x38u,2u},
         {0x3bb0u,0x30000u,0x40000u,0u,{7u,5u,32u},5u,0x3au,2u},
+        {0x39b0u,0x30000u,0x40000u,0u,{7u,5u,32u},5u,0x38u,2u},
         {0x3bb0u,0xffffffffu,0u,0u,{7u,1u,32u},1u,0x3au,2u},
         {0x3bb0u,0x80000000u,0x80000000u,0u,{7u,46340u,32u},46340u,0x3au,2u},
         {0x3bb0u,0x7fffffffu,0x7fffffffu,0u,{7u,46339u,32u},46339u,0x3au,2u},
@@ -2433,7 +2441,8 @@ static lib_i32 board_cop_numeric_vectors(void)
             goto done;
         if (cases[index].command == 0x130eu || cases[index].command == 0x138eu ||
             cases[index].command == 0x330eu || cases[index].command == 0x338eu ||
-            cases[index].command == 0x3bb0u) {
+            cases[index].command == 0x3b30u || cases[index].command == 0x3bb0u ||
+            cases[index].command == 0x39b0u) {
             for (lib_u8 axis = 0u; axis < 2u; ++axis) {
                 const lib_u32 second = 0xffff0000u + (axis == 0u ? cases[index].x : cases[index].y);
 
@@ -2444,12 +2453,13 @@ static lib_i32 board_cop_numeric_vectors(void)
                     goto done;
             }
         } else {
-            const lib_u32 operand = cases[index].command == 0x2208u ? 0x2012u :
+            const lib_u32 operand = (cases[index].command == 0x2208u ||
+                cases[index].command == 0x2288u) ? 0x2012u :
                 cases[index].command == 0x42c2u ? 0x2036u :
                 cases[index].command == 0x4aa0u ? 0x2038u : 0x2034u;
 
             if (board_cop_word_write(machine, operand, (lib_u16)cases[index].x) != LIB_STATUS_OK ||
-                (cases[index].command == 0x2208u &&
+                ((cases[index].command == 0x2208u || cases[index].command == 0x2288u) &&
                  board_cop_word_write(machine, 0x2016u, (lib_u16)cases[index].y) != LIB_STATUS_OK) ||
                 ((cases[index].command == 0x8100u || cases[index].command == 0x8900u) &&
                  board_cop_word_write(machine, 0x2036u, (lib_u16)cases[index].y) != LIB_STATUS_OK))

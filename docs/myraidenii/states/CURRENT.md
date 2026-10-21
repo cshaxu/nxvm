@@ -588,6 +588,38 @@ correct. No source/test/build/public interface/artifact/media file changed.
 S58 is closed; M1 T7 remains open for separately evidenced hardware or runtime
 receivers.
 
+## Archived Packet — M1 T7 S59
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S58; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized M1 implementation using independently written L2 behavior derived from approved external-emulator inspection. S58 confirms that no unknown command may be accepted generically. |
+| Objective | Complete the finite COP aliases whose behavior is expressible by the existing update and numeric executors, without adding a command path, table, device, or ROM-derived input. |
+| Non-goals | No COPX attachment, unresolved historical command admission, collision-mirror alias, generic command fallback, external code/table import, Shared change, new public interface, new thread/queue, ROM/media retention, gameplay or release claim. |
+| Reference Baseline | The local classifier/advance pair supports complete update and numeric families. The inspected external L2 implementation identifies selected aliases as the same arithmetic/coordinate behaviors, while a separate collision-mirror alias requires state not present in the local collision contract and is excluded. |
+| Candidate Proposal | Add only the aliases that reuse existing local algorithms: one subtractive update form; a vector-angle result-store form; and two distance result-publication variants. Parameterize the existing local decision points by command bits/identity rather than create handlers. |
+| Files And ABI Surface | MyRaidenII `core/cop.c`, existing Board smoke, Current/evidence/index. Estimated production +15..45/-0..12, tests +40..115/-0..20, documents +50..115. No header, Shared, public ABI, build, manifest, artifact or media change. |
+| Applicable Rules | MyRaidenII architecture/coding/source policy; Shared execution/architecture/coding/documentation rules. External GPL material is L2 behavior/layout evidence only; no source, table, literal implementation or license-bearing material is copied. |
+| Verification | Extend existing update/numeric Board cases through the installed CPU/Board route, preserving existing failure cases; focused Board x64/x86 units; complete MyRaidenII unit labels x64/x86 in background; source/diff/whitespace/documentation checks. No owner-ROM run is claimed unless the local batch passes and needs one new bounded diagnostic. |
+| Expected Markers | All added aliases use the sole classifier and advance dispatcher; each retains checked-memory failure behavior, reset/pending semantics and existing result publication; excluded collision aliases remain rejected. |
+| Asset Needs | None. |
+| Reporting Requirements | Record only alias-family behavior and L2 source identity, not raw external source, tables, ROM/media content, traces or selected-program command values. |
+| Stop Conditions | Any alias needs new state outside its existing owner, a copied external table/algorithm, ambiguous result/status/reset/failure behavior, Shared change or an external command identity; stop that alias and retain explicit refusal. |
+| Exit Criteria | Each admitted alias is covered in existing Board tests through production routing; both focused and full unit labels pass on both widths; evidence/index/current document L2 limits and exclusions; reviewed P is pushed. |
+| Original Owner Request | Continue MyRaidenII toward its real target by completing bounded owner-valid behavior rather than stopping at a safe diagnostic. |
+| Similar-Issue Sweep | All classifier cases, advance dispatch, update/numeric command decisions, result/status publication, pending/reset/failure handling and collision aliases. |
+
+## M1 T7 S59 Closure
+
+S59 admits only four aliases that reuse the existing update and numeric
+executors.  The L2 comparison is pinned in the accompanying evidence without
+copying external source, tables or protected media data.  Collision-mirror and
+historical unresolved forms remain explicit refusals because their required
+state or complete contract is absent.  The existing Board smoke passed for the
+new paths on x64 and x86, followed by all 11 repository-only MyRaidenII unit
+executables on each width.  No owner-ROM run, gameplay or release result is
+claimed.  T7 remains open for its separately scoped runtime work.
+
 ## Active Packet
 
 No S packet is active.

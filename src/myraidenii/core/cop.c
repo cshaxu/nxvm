@@ -111,13 +111,14 @@ static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
 static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 command)
 {
     switch (command) {
-    case 0x0205u: case 0x0905u: return MYRAIDENII_CORE_COP_UPDATE;
+    case 0x0205u: case 0x0904u: case 0x0905u: return MYRAIDENII_CORE_COP_UPDATE;
     case 0x2a05u: return MYRAIDENII_CORE_COP_OFFSET_ADD;
     case 0x5205u: case 0x5a05u: case 0xf205u: return MYRAIDENII_CORE_COP_COPY;
     case 0xa100u: case 0xa900u: return MYRAIDENII_CORE_COP_POSITION;
     case 0xb100u: case 0xb900u: return MYRAIDENII_CORE_COP_HITBOX;
     case 0x6200u: return MYRAIDENII_CORE_COP_ANGLE_APPROACH;
-    case 0x130eu: case 0x138eu: case 0x2208u: case 0x330eu: case 0x338eu: case 0x3bb0u:
+    case 0x130eu: case 0x138eu: case 0x2208u: case 0x2288u: case 0x330eu: case 0x338eu:
+    case 0x3b30u: case 0x3bb0u: case 0x39b0u:
     case 0x42c2u: case 0x4aa0u: case 0x8100u: case 0x8900u:
         return MYRAIDENII_CORE_COP_NUMERIC;
     default: return MYRAIDENII_CORE_COP_UNSUPPORTED;
@@ -528,7 +529,7 @@ static lib_status myraidenii_core_cop_update(myraidenii_core_cop *cop)
         status = myraidenii_core_cop_memory(cop, base,
             increment_offset + slot, 4u, LIB_FALSE, &increment);
     if (status != LIB_STATUS_OK) return status;
-    next = previous + increment;
+    next = cop->pending.command == 0x0904u ? previous - increment : previous + increment;
     status = myraidenii_core_cop_memory(cop, base,
         position_offset + slot, 4u, LIB_TRUE, &next);
     if (status != LIB_STATUS_OK || cop->pending.command != 0x0205u) return status;
@@ -625,14 +626,14 @@ static lib_status myraidenii_core_cop_numeric(myraidenii_core_cop *cop)
     lib_u32 value = 0u, output = 0u;
     lib_status status;
 
-    if (command == 0x130eu || command == 0x138eu || command == 0x2208u ||
+    if (command == 0x130eu || command == 0x138eu || command == 0x2208u || command == 0x2288u ||
         command == 0x330eu || command == 0x338eu) {
         lib_i64 x, y;
         lib_u32 operands[2] = {0u, 0u};
-        lib_u16 result_status = command == 0x2208u ?
+        lib_u16 result_status = (command == 0x2208u || command == 0x2288u) ?
             myraidenii_core_cop_word(cop, MYRAIDENII_CORE_COP_STATUS) : 7u;
 
-        if (command == 0x2208u) {
+        if (command == 0x2208u || command == 0x2288u) {
             status = myraidenii_core_cop_memory(cop, base, 0x12u, 2u,
                 LIB_FALSE, &operands[0]);
             if (status == LIB_STATUS_OK)
@@ -662,10 +663,10 @@ static lib_status myraidenii_core_cop_numeric(myraidenii_core_cop *cop)
         }
         myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_STATUS, result_status);
         myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_ANGLE, (lib_u16)value);
-        return command == 0x138eu || command == 0x338eu ?
+        return command == 0x138eu || command == 0x2288u || command == 0x338eu ?
             myraidenii_core_cop_memory(cop, base, 0x34u, 1u, LIB_TRUE, &value) : LIB_STATUS_OK;
     }
-    if (command == 0x3bb0u) {
+    if (command == 0x3b30u || command == 0x3bb0u || command == 0x39b0u) {
         lib_u32 difference[2] = {0u, 0u};
 
         status = myraidenii_core_cop_coordinates(cop, difference);
@@ -676,7 +677,9 @@ static lib_status myraidenii_core_cop_numeric(myraidenii_core_cop *cop)
 
         value = (lib_u16)lib_c_sqrt((double)(x * x + y * y));
         myraidenii_core_cop_store_word(cop, MYRAIDENII_CORE_COP_DISTANCE, (lib_u16)value);
-        return myraidenii_core_cop_memory(cop, base, 0x3au, 2u, LIB_TRUE, &value);
+        if ((command & 0x80u) == 0u) return LIB_STATUS_OK;
+        return myraidenii_core_cop_memory(cop, base,
+            (command & 0x200u) != 0u ? 0x3au : 0x38u, 2u, LIB_TRUE, &value);
     }
     if (command == 0x42c2u || command == 0x4aa0u) {
         const lib_bool forward = command == 0x42c2u;
