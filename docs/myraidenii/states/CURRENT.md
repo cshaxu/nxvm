@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S25
+## Archived Packet — M1 T7 S25
 
 | Field | Required record |
 | --- | --- |
@@ -30,7 +30,24 @@ It does not redefine unimplemented Board behavior as a release result.
 Transient scripts are under `build/myraidenii-t7-s25/`; external tool output is
 under `<external-assets>/media-myraidenii/t7-s25-mame/`. Each reference probe has
 a 20-second emulated ceiling, 60-second wall budget and 1 MiB output budget.
-The current session owns cleanup after process exit; no protected output is retained.
+The current session completed cleanup after process exit; no protected output is retained.
+
+## M1 T7 S25 Closure
+
+S25 is closed after coordinator actual-diff review of `d99c89ef4`. The finite
+Board/Sound handoff repair and both existing regression suites preserve one
+production route. Both host widths passed all 697 repository-only units and
+the 20M-instruction real-set pulse produced identical neutral results. Both
+Product candidates were rebuilt; initial Assets release remains T7's unfulfilled
+qualification, not this bounded repair's outcome. No Shared or other App
+files changed. See [S25 evidence](../etc/evidence/t7-s25-sound-handoff.md).
+
+T7 remains active: the sampled PCM is still silent and gameplay is unqualified.
+The next receiving investigation should distinguish Sound CPU execution,
+device register writes and PCM generation using bounded observations along the
+existing route. The corrected latch `00,82` alone proves neither command
+completion nor an audible result; it must not be used to blame COPX without
+independent evidence. No new S is admitted by this closure record.
 
 ## Archived Packet — M1 T7 S24
 
