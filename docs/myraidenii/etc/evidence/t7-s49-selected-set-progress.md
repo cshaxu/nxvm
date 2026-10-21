@@ -27,9 +27,11 @@ qualification.
 
 The previous finite `DECODER` terminal is no longer observed under this
 bounded run.  Therefore the next receiver is not another speculative CPU
-opcode patch.  It must first exercise the existing controlled coin/start input
-mode and compare its two-width finite result; any later repair must still be a
-complete owner-valid family selected from that observation.
+opcode patch.  The controlled Coin/Start routes are already covered by
+S19/S31/S34/S35, including ordered and vblank-aligned pulses plus delivery and
+consumption observations; S49 does not reopen them.  The next receiver must
+instead select an unclosed owner-valid hardware or Product boundary from the
+T7 qualification ledger.
 
 ## Verification
 

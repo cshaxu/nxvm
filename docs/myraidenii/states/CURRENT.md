@@ -36,9 +36,11 @@ The external wrapper removes its generated staging child, and documentation
 governance plus whitespace checks pass.  This evidence establishes continued
 boot/attract execution only: neutral input was used, so it makes no title,
 coin/start, gameplay, audio-output, desktop, RDP or release claim.  The next
-receiver must exercise the existing controlled input path rather than adding a
-speculative CPU repair.  No source, test, build, manifest, public interface,
-artifact, ROM or media file changed.
+receiver must select an unclosed owner-valid hardware or Product boundary
+rather than adding a speculative CPU repair.  S19/S31/S34/S35 already cover
+the existing controlled input paths, so S49 does not reopen that work.  No
+source, test, build, manifest, public interface, artifact, ROM or media file
+changed.
 
 ## Archived Packet — M1 T7 S48
 
