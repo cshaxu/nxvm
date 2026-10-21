@@ -1220,6 +1220,28 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
     }
 }
 
+static lib_status myraidenii_core_sound_decimal_rotate(myraidenii_core_sound *sound,
+    lib_bool left)
+{
+    lib_u8 value;
+    lib_u8 accumulator;
+    const lib_u8 carry = sound->f & MYRAIDENII_CORE_SOUND_FLAG_CARRY;
+    lib_status status = myraidenii_core_sound_read(sound,
+        myraidenii_core_sound_hl(sound), &value);
+
+    if (status != LIB_STATUS_OK) return status;
+    accumulator = left ? (lib_u8)((sound->a & 0xf0u) | (value >> 4u)) :
+        (lib_u8)((sound->a & 0xf0u) | (value & 0x0fu));
+    value = left ? (lib_u8)((value << 4u) | (sound->a & 0x0fu)) :
+        (lib_u8)((sound->a << 4u) | (value >> 4u));
+    status = myraidenii_core_sound_write(sound, myraidenii_core_sound_hl(sound), value);
+    if (status != LIB_STATUS_OK) return status;
+    sound->a = accumulator;
+    myraidenii_core_sound_flags_logic(sound, sound->a, LIB_FALSE);
+    sound->f |= carry;
+    return LIB_STATUS_OK;
+}
+
 static lib_status myraidenii_core_sound_execute_extended(myraidenii_core_sound *sound,
     lib_u8 *out_ticks)
 {
@@ -1253,6 +1275,25 @@ static lib_status myraidenii_core_sound_execute_extended(myraidenii_core_sound *
         status = myraidenii_core_sound_pop(sound, &sound->pc);
         if (status == LIB_STATUS_OK) sound->interrupt_enable = LIB_TRUE;
         *out_ticks = 14u;
+        return status;
+    case 0x44u:
+    case 0x4cu:
+    case 0x54u:
+    case 0x5cu:
+    case 0x64u:
+    case 0x6cu:
+    case 0x74u:
+    case 0x7cu:
+        sound->a = myraidenii_core_sound_sub8(sound, 0u, sound->a, 0u);
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
+    case 0x67u:
+        status = myraidenii_core_sound_decimal_rotate(sound, LIB_FALSE);
+        *out_ticks = 18u;
+        return status;
+    case 0x6fu:
+        status = myraidenii_core_sound_decimal_rotate(sound, LIB_TRUE);
+        *out_ticks = 18u;
         return status;
     case 0x4au:
     case 0x5au:

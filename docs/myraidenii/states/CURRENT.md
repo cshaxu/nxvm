@@ -6,6 +6,27 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S48
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S47; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation and routine bounded in-scope receivers. This S consumes the S46 ED ledger's CPU-local scalar/decimal subset. |
+| Objective | Complete all eight documented `NEG` ED aliases and the two decimal memory forms `RRD` and `RLD` in the sole Sound ED executor. |
+| Non-goals | No I/R refresh-state transfer, port or block I/O, map widening, external source import, Shared/public interface, queue, thread, renderer, product, ROM probe, or release artifact change. |
+| Reference Baseline | The pinned original Zilog Z80 CPU User Manual UM008011-0816 is L3 for the opcodes, flag effects and 8/18-T-state timings. The static S47 follow-up audit confirms A/F, HL and the Sound memory owner already exist. |
+| Candidate Proposal | Reuse the existing 8-bit subtract helper for all `NEG` aliases. Add one small local decimal-nibble helper or direct cases for `RRD/RLD`, using the existing read/write helpers and logic-flag helper while retaining carry. |
+| Files And ABI Surface | MyRaidenII `core/sound.c`, existing Sound/Board smoke, Current, one evidence record/index. No header, public API, Shared component, new object, or persistent state. Estimated production +20..70/-0..20; tests +45..130/-0..30; documents +45..100/-0..20. |
+| Applicable Rules | MyRaidenII Architecture and Coding; shared Architecture, Coding, Execution and Documentation rules; source policy. Sound remains the one ED executor, flag owner and memory-map client. |
+| Verification | Build/run focused Sound and Board units and the full MyRaidenII unit label on x64/x86; test all NEG aliases, both decimal directions, flag/carry behavior, map failure and unchanged decoder rejection; run whitespace/documentation checks. |
+| Expected Markers | All ten forms use existing local state/owners, accurate L3 nominal ticks, no duplicate map/flag path, unchanged undefined ED rejection, and no I/R state implied by this receiver. |
+| Asset Needs | The pinned original Zilog manual is read-only outside the repository; no ROM/media input or retained temporary research output is needed. |
+| Reporting Requirements | Record L3 facts, actual source/test line deltas, retained owner paths, dual-width proof, no-release rationale, and desktop/audio validations not run. Do not retain guest bytes, addresses, traces, ROM payloads or third-party code. |
+| Stop Conditions | A required I/R state contract, unowned map behavior, Shared/public API, conflicting primary source, non-finite behavior or failing unchanged regression stops and transfers the issue. |
+| Exit Criteria | All ten forms exist at one owner; focused semantics/failure paths and both complete unit labels pass; evidence is indexed; actual diff review finds no second executor, map or flag path. |
+| Original Owner Request | Continue MyRaidenII under governance; use L3 only for directly sourced manual facts, do not import protected media/source, and run long work in background sessions. |
+| Similar-Issue Sweep | Reconcile the complete legal NEG alias set and both decimal directions together; retain accumulator/refresh transfers, port forms and block forms as explicit later ledger receivers rather than leaving same-family omissions hidden. |
+
 ## Archived Packet — M1 T7 S47
 
 | Field | Required record |

@@ -128,6 +128,7 @@
 - [T7 Sound accumulator/carry forms](evidence/t7-s45-sound-accumulator-flags.md).
 - [T7 Sound ED-family ledger](evidence/t7-s46-sound-ed-family-ledger.md).
 - [T7 Sound ED pair forms](evidence/t7-s47-sound-ed-pair-forms.md).
+- [T7 Sound ED scalar and decimal forms](evidence/t7-s48-sound-ed-scalar-decimal.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
