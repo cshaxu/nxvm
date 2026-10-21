@@ -6,11 +6,20 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Current Packet
+## Active Packet — M1 T7 S43
 
-No S packet is active. M1 T7 remains open for its later Board/Sound receiver
-and broader gameplay/release qualification; it does not infer a repair from
-the S42 terminal boundary.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S42; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 work, permits L2 external references where primary documentation is absent, and directed ordinary in-scope work to proceed without repeated approval. This is a read-only ledger S; it changes no production, test, build or artifact path. |
+| Objective | Reconcile the complete finite Sound Z80 `LIB_STATUS_UNSUPPORTED` surface before selecting a repair for the deterministic post-S42 receiver. |
+| Reference Baseline | Both persistent background selected-set Probes cross S42 and stop with the same Board-runtime `LIB_STATUS_UNSUPPORTED` detail. Static control flow shows Sound advance can return that status only from its existing instruction/interrupt/device execution path; the runtime result alone does not establish a particular guest opcode or device access. |
+| Candidate Proposal | Inventory every base, CB, ED, DD/FD and DD/FD-CB decoder disposition plus the finite Sound interrupt/device status branches. Map each unimplemented finite family to the existing executor owner, existing regression coverage and available L3/L2 authority; distinguish unsupported program forms from deliberately unsupported device routes. Do not record guest bytes, addresses, instructions, media payload or a trace. |
+| Files And ABI Surface | Current, one evidence ledger and its index only. No source, test, build, manifest, public interface, Shared component, ROM/media, renderer, queue, thread or host route changes. |
+| Verification | Independently review the sole Sound executor and its existing ROM-free smoke against the complete static instruction-family inventory; run documentation governance and whitespace checks. No runtime probe is rerun for a documentation-only reconciliation. |
+| Expected Markers | One complete finite ledger states which owner/family can produce the observed status, which forms are already implemented, and what exact bounded repair batch may next be admitted. |
+| Stop Conditions | Any need for guest payload, raw opcode/address capture, external source/code/table import, a guessed behavior, a Shared/public cross-product contract, or a non-finite receiver stops this S and transfers the gap. |
+| Exit Criteria | The entire static Sound unsupported surface has an explicit disposition and source-grade basis; no individual runtime checkpoint is mistaken for whole-family coverage; an evidence record identifies the next bounded implementation batch or a true external blocker. |
 
 ## Archived Packet — M1 T7 S42
 
