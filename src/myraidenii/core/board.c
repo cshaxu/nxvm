@@ -10,6 +10,7 @@ struct myraidenii_core_board {
     myraidenii_core_sprite_buffer *sprite_buffer;
     myraidenii_core_sound *sound;
     myraidenii_core_board_control_failure_observation control_failure;
+    myraidenii_core_board_input_observation input_observation;
     myraidenii_core_video video;
     lib_u8 *program;
     lib_u8 bank_selected;
@@ -81,7 +82,11 @@ static lib_status myraidenii_core_board_sound_transport_response_set(void *conte
 static lib_status myraidenii_core_board_sound_transport_coin_get(void *context,
     lib_u8 *out_value)
 {
-    return myraidenii_core_board_get_coin_inputs(context, out_value);
+    myraidenii_core_board *board = context;
+    lib_status status = myraidenii_core_board_get_coin_inputs(board, out_value);
+
+    if (status == LIB_STATUS_OK) ++board->input_observation.coin_reads;
+    return status;
 }
 
 enum {
@@ -897,9 +902,20 @@ static lib_status myraidenii_core_board_input_query(void *owner,
     return myraidenii_core_board_input_value(owner, first, &value);
 }
 
+static void myraidenii_core_board_input_read_note(myraidenii_core_board *board,
+    lib_u32 physical)
+{
+    switch (physical & ~1u) {
+    case MYRAIDENII_CORE_DIP_SWITCHES_ADDRESS: ++board->input_observation.dip_reads; break;
+    case MYRAIDENII_CORE_PLAYER_INPUTS_ADDRESS: ++board->input_observation.player_reads; break;
+    case MYRAIDENII_CORE_SYSTEM_INPUTS_ADDRESS: ++board->input_observation.system_reads; break;
+    }
+}
+
 static lib_status myraidenii_core_board_input_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
+    myraidenii_core_board *board = owner;
     lib_u16 value;
     lib_u32 first = physical & ~1u;
     lib_status status;
@@ -909,6 +925,7 @@ static lib_status myraidenii_core_board_input_read(void *owner, lib_u32 physical
         return LIB_STATUS_INVALID_ARGUMENT;
     status = myraidenii_core_board_input_value(owner, first, &value);
     if (status != LIB_STATUS_OK) return status;
+    if (!observe_only) myraidenii_core_board_input_read_note(board, physical);
     for (lib_uptr index = 0u; index < bytes; ++index)
         ((lib_u8 *)destination)[index] = (lib_u8)(value >> ((physical + index - first) * 8u));
     return LIB_STATUS_OK;
@@ -1013,6 +1030,7 @@ static void myraidenii_core_board_reset(void *owner)
         myraidenii_core_sound_reset(board->sound);
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
+        lib_memory_set(&board->input_observation, 0, sizeof(board->input_observation));
         myraidenii_core_sprite_buffer_reset(board->sprite_buffer);
         myraidenii_core_cop_reset(board->cop);
         myraidenii_core_video_reset(&board->video);
@@ -1352,6 +1370,14 @@ lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board
 {
     if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_observation = board->control_failure;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_input_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_input_observation *out_observation)
+{
+    if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = board->input_observation;
     return LIB_STATUS_OK;
 }
 

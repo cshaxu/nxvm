@@ -6,7 +6,26 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-No S packet is active.
+## Active Packet — M1 T7 S35
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S34; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation, permits bounded owner-ROM probes and external-emulator behavior as L2, and has not authorized a guessed Board/COP/Video/Sound repair. This packet adds only the smallest existing-owner observation required to locate the next receiver. |
+| Objective | Determine whether the selected main V30 and Sound Z80 actually consume the already delivered system/player/Coin input registers during the bounded no-input and vblank-aligned Coin/Start runs. |
+| Non-goals | No input behavior change, stored input value or payload capture, ROM/PAL/source import, renderer, guest-state mirror, second input path, timer, host automation, gameplay/release claim or Shared change. |
+| Reference Baseline | S34 proves all four edges reach the existing Machine driver once at the named local vblank thresholds, yet its neutral frame aggregate equals the no-input result. The Board already owns the only main input read callback and the Sound transport already calls the Board Coin getter. |
+| Candidate Proposal | Add one resettable Board-owned aggregate of successful non-observe input reads: DIP, Player, System and Coin. Increment only inside the present actual read/callback owners, expose it through one copied Board getter, exercise it through existing Board routes, and print it in the existing selected-set Probe. |
+| Files And ABI Surface | `src/myraidenii/core/{board.c,board_interface.h}`, existing Board smoke, existing selected-set Probe, Current and one evidence record/index. Core-local additive copied observation only; no Shared/API consumer beyond existing MyRaidenII Core/Probe. Estimated production +18..42/-0..8; tests +20..55/-0..15. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Architecture/Coding/Documentation rules and T7 qualification proposal. Selected-set output remains L2. |
+| Verification | Extend existing Board read/reset coverage on x64/x86; build and run the Probe on both widths; run one 20,000,000-instruction baseline and one vblank sequence per width; compare only count aggregates and existing neutral summaries; run complete MyRaidenII unit labels, documentation governance and whitespace checks. |
+| Expected Markers | Each count represents only an actual owner read and reset clears it. The bounded results either identify a missing consumer boundary (zero count) or rule out the input-read route without implying accepted credits, title, gameplay, graphics or sound fidelity. |
+| Asset Needs | Read-only owner archive through the existing wrapper only; temporary external staging/logs are removed after completed runs. |
+| Reporting Requirements | Exact owner/count matrix, dual-width baseline/pulse summaries, source-grade limit, actual diff and next receiver; no raw input or guest payload. |
+| Stop Conditions | Need for input values/history, raw guest state, a new input route, a guessed repair, Shared API, unbounded run, nondeterminism or staging failure stops and records the gap. |
+| Exit Criteria | One actual-read aggregate has a single Board owner, its existing routes/reset are covered, dual-width bounded results and complete units pass, staging is empty, evidence is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII implementation efficiently toward real Raiden II execution without copying external implementation. |
+| Similar-Issue Sweep | Query/preview reads versus actual reads, byte/word aliases, all input registers, Sound Coin callback, reset, null/getter failures, Probe-only output and unchanged control delivery. |
 
 ## Archived Packet — M1 T7 S34
 

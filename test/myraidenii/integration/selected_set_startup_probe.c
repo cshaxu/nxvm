@@ -191,6 +191,7 @@ int main(int argument_count, char **arguments)
     lib_u64 dropped_pcm_frames = 0u;
     lib_u32 pcm_frames = 0u;
     myraidenii_core_board_sound_observation sound_observation = {0};
+    myraidenii_core_board_input_observation input_observation = {0};
     myraidenii_core_board_video_observation video_observation = {0};
     myraidenii_startup_control_mode control_mode;
     lib_bool coin_pressed = LIB_FALSE;
@@ -345,6 +346,9 @@ int main(int argument_count, char **arguments)
                 status = myraidenii_core_board_sound_observation_get(board,
                     &sound_observation);
             if (status == LIB_STATUS_OK)
+                status = myraidenii_core_board_input_observation_get(board,
+                    &input_observation);
+            if (status == LIB_STATUS_OK)
                 status = myraidenii_core_board_video_observation_get(board,
                     &video_observation);
         }
@@ -390,6 +394,8 @@ int main(int argument_count, char **arguments)
             "oki-1-stops=%llu oki-2-stops=%llu oki-1-rejected=%llu "
             "oki-2-rejected=%llu oki-1-ignored=%llu oki-2-ignored=%llu "
             "oki-1-voice-starts=%llu oki-2-voice-starts=%llu pcm-nonzero-generated=%llu "
+            "input-dip-reads=%llu input-player-reads=%llu input-system-reads=%llu "
+            "input-coin-reads=%llu "
             "video-vblanks=%llu video-crtc-writes=%llu video-sprite-flag-writes=%llu "
             "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu\n",
             (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
@@ -433,6 +439,10 @@ int main(int argument_count, char **arguments)
             (unsigned long long)sound_observation.oki_voice_starts[0u],
             (unsigned long long)sound_observation.oki_voice_starts[1u],
             (unsigned long long)sound_observation.pcm_nonzero_frames,
+            (unsigned long long)input_observation.dip_reads,
+            (unsigned long long)input_observation.player_reads,
+            (unsigned long long)input_observation.system_reads,
+            (unsigned long long)input_observation.coin_reads,
             (unsigned long long)video_observation.vblank_events,
             (unsigned long long)video_observation.crtc_byte_writes,
             (unsigned long long)video_observation.sprite_flag_byte_writes,

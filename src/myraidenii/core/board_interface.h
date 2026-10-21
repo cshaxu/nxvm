@@ -86,6 +86,15 @@ typedef struct myraidenii_core_board_control_failure_observation {
     x86_core_machine_memory_access access;
 } myraidenii_core_board_control_failure_observation;
 
+/* Reset clears this aggregate. It counts only successful production reads of
+ * the Board's input owners and never retains input values or guest state. */
+typedef struct myraidenii_core_board_input_observation {
+    lib_u64 dip_reads;
+    lib_u64 player_reads;
+    lib_u64 system_reads;
+    lib_u64 coin_reads;
+} myraidenii_core_board_input_observation;
+
 /* Reset clears this aggregate Sound-path observation. It reports reachability,
  * not guest payload, private device layout or host PCM delivery. */
 typedef struct myraidenii_core_board_sound_observation {
@@ -129,6 +138,8 @@ lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *bo
 
 lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board *board,
     myraidenii_core_board_control_failure_observation *out_observation);
+lib_status myraidenii_core_board_input_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_input_observation *out_observation);
 
 /* Board controls are active-low electrical inputs. The caller supplies a
  * semantic pressed state; this component alone owns the register polarity. */
