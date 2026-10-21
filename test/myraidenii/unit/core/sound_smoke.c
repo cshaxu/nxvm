@@ -124,6 +124,19 @@ static void sound_program_expect_carry(lib_u8 *program, lib_size *at)
     program[(*at)++] = 0x04u; /* INC B */
 }
 
+static void sound_program_load_pair(lib_u8 *program, lib_size *at, lib_u8 pair,
+    lib_u16 value)
+{
+    program[(*at)++] = (lib_u8)(0x01u | (pair << 4u));
+    program[(*at)++] = (lib_u8)value;
+    program[(*at)++] = (lib_u8)(value >> 8u);
+}
+
+static void sound_program_publish_hl(lib_u8 *program, lib_size *at)
+{
+    program[(*at)++] = 0x22u; program[(*at)++] = 0x18u; program[(*at)++] = 0x40u;
+}
+
 static lib_i32 sound_executes_fixed_transport(void)
 {
     static lib_u8 program[0x2000u];
@@ -905,6 +918,118 @@ done:
     return failed;
 }
 
+static lib_i32 sound_executes_extended_pair_forms(void)
+{
+    static lib_u8 program[0x2000u];
+    const struct {
+        lib_u8 opcode;
+        lib_u8 pair;
+        lib_u16 left;
+        lib_u16 right;
+        lib_u16 result;
+    } arithmetic_cases[] = {
+        {0x4au, 0u, 0x0001u, 0x0001u, 0x0003u},
+        {0x5au, 1u, 0x1000u, 0x2000u, 0x3001u},
+        {0x6au, 2u, 0x3000u, 0x3000u, 0x6001u},
+        {0x7au, 3u, 0x0100u, 0x00ffu, 0x0200u},
+        {0x42u, 0u, 0x1000u, 0x0001u, 0x0ffeu},
+        {0x52u, 1u, 0x3000u, 0x1000u, 0x1fffu},
+        {0x62u, 2u, 0x3000u, 0x3000u, 0xffffu},
+        {0x72u, 3u, 0x5000u, 0x0001u, 0x4ffeu}
+    };
+    const lib_u16 transfer_values[] = {0x1122u, 0x3344u, 0x5566u, 0x7788u};
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_i32 failed = 1;
+
+    for (lib_size index = 0u; index < sizeof(arithmetic_cases) /
+            sizeof(arithmetic_cases[0u]); ++index) {
+        lib_size at = 0u;
+
+        lib_memory_set(program, 0, sizeof(program));
+        sound_program_load_pair(program, &at, 2u, arithmetic_cases[index].left);
+        sound_program_load_pair(program, &at, arithmetic_cases[index].pair,
+            arithmetic_cases[index].right);
+        program[at++] = 0x37u; program[at++] = 0xedu;
+        program[at++] = arithmetic_cases[index].opcode;
+        sound_program_publish_hl(program, &at);
+        program[at++] = 0x76u;
+        if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+            myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+            fixture.response[0u] != (lib_u8)arithmetic_cases[index].result ||
+            fixture.response[1u] != (lib_u8)(arithmetic_cases[index].result >> 8u)) {
+            goto done;
+        }
+        myraidenii_core_sound_destroy(sound);
+        sound = LIB_NULL;
+    }
+    for (lib_u8 pair = 0u; pair < 4u; ++pair) {
+        const lib_u16 value = transfer_values[pair];
+        lib_size at = 0u;
+
+        lib_memory_set(program, 0, sizeof(program));
+        program[at++] = 0x3eu; program[at++] = (lib_u8)value;
+        program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x20u;
+        program[at++] = 0x3eu; program[at++] = (lib_u8)(value >> 8u);
+        program[at++] = 0x32u; program[at++] = 0x01u; program[at++] = 0x20u;
+        program[at++] = 0xedu; program[at++] = (lib_u8)(0x4bu | (pair << 4u));
+        program[at++] = 0x00u; program[at++] = 0x20u;
+        program[at++] = 0xedu; program[at++] = (lib_u8)(0x43u | (pair << 4u));
+        program[at++] = 0x02u; program[at++] = 0x20u;
+        program[at++] = 0x3au; program[at++] = 0x02u; program[at++] = 0x20u;
+        program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+        program[at++] = 0x3au; program[at++] = 0x03u; program[at++] = 0x20u;
+        program[at++] = 0x32u; program[at++] = 0x19u; program[at++] = 0x40u;
+        program[at++] = 0x76u;
+        if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+            myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK)
+            goto done;
+        if (fixture.response[0u] != (lib_u8)value ||
+            fixture.response[1u] != (lib_u8)(value >> 8u))
+            goto done;
+        myraidenii_core_sound_destroy(sound);
+        sound = LIB_NULL;
+    }
+    lib_memory_set(program, 0, sizeof(program));
+    {
+        lib_size at = 0u;
+
+        sound_program_load_pair(program, &at, 3u, 0x2800u);
+        sound_program_load_pair(program, &at, 2u, 0x7fffu);
+        sound_program_load_pair(program, &at, 0u, 0u);
+        program[at++] = 0x37u; program[at++] = 0xedu; program[at++] = 0x4au;
+        program[at++] = 0xf5u; program[at++] = 0xe1u;
+        sound_program_publish_hl(program, &at);
+        program[at] = 0x76u;
+    }
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 0x94u)
+        goto done;
+    myraidenii_core_sound_destroy(sound);
+    sound = LIB_NULL;
+    lib_memory_set(program, 0, sizeof(program));
+    {
+        lib_size at = 0u;
+
+        sound_program_load_pair(program, &at, 3u, 0x2800u);
+        sound_program_load_pair(program, &at, 2u, 0u);
+        sound_program_load_pair(program, &at, 0u, 0u);
+        program[at++] = 0x37u; program[at++] = 0xedu; program[at++] = 0x42u;
+        program[at++] = 0xf5u; program[at++] = 0xe1u;
+        sound_program_publish_hl(program, &at);
+        program[at] = 0x76u;
+    }
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 0x93u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 static lib_i32 sound_classifies_unsupported_failures(void)
 {
     static lib_u8 program[0x2000u];
@@ -914,7 +1039,7 @@ static lib_i32 sound_classifies_unsupported_failures(void)
     lib_i32 failed = 1;
 
     lib_memory_set(program, 0, sizeof(program));
-    program[0u] = 0xedu; program[1u] = 0x4bu;
+    program[0u] = 0xedu; program[1u] = 0x47u;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_UNSUPPORTED ||
         myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
@@ -959,5 +1084,6 @@ int main(void)
         sound_executes_index_high_low_forms() != 0 ||
         sound_executes_index_bit_transform() != 0 ||
         sound_executes_accumulator_carry_forms() != 0 ||
+        sound_executes_extended_pair_forms() != 0 ||
         sound_classifies_unsupported_failures() != 0 ? 1 : 0;
 }

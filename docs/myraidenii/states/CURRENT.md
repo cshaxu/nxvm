@@ -6,6 +6,24 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S47
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S46; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation, manual-derived L3 instruction work and ordinary in-scope changes without repeated approval. This S consumes the S46 CPU-only ED pair-family receiver. |
+| Objective | Complete `ADC HL,ss`, `SBC HL,ss`, `LD (nn),dd` and `LD dd,(nn)` for all four `ss`/`dd` selections at the sole Sound ED executor. |
+| Non-goals | No port or block I/O, map widening, accumulator/refresh transfer, decimal rotate, ROM probe, Shared/public interface, queue, thread, renderer, product or release artifact change. |
+| Reference Baseline | The original Zilog UM008011-0816 is L3 for all sixteen documented forms, their flags and 15/20-T-state timings. S46 corrects the prior label: existing `ED 52` is `SBC HL,DE`, not ADC. |
+| Candidate Proposal | Extend the private 16-bit arithmetic helper only enough to distinguish ordinary add from full-flag ED ADC; reuse its existing subtract behavior for ED SBC. Generalize the existing DE-only absolute pair transfer cases through the existing pair accessors and read/write helpers. |
+| Files And ABI Surface | MyRaidenII `core/sound.c`, existing Sound smoke, Current, one evidence record/index; correction to S46 evidence. No header, public API, Shared component or new object. Estimated production +35..95/-10..30; tests +55..150/-0..35; documents +45..100/-0..20. |
+| Applicable Rules | MyRaidenII Architecture and Coding; shared Architecture, Coding, Execution and Documentation rules; source policy. Sound owns execution/flags, its existing map owns memory access, and one decoder remains the only instruction path. |
+| Verification | Build/run focused Sound and Board units and the full MyRaidenII unit label on x64/x86; test all pair selections plus arithmetic carry/overflow and transfer direction; run whitespace/documentation checks. No selected-ROM probe is required because this CPU-only batch does not itself establish the previous category's opcode. |
+| Expected Markers | Sixteen documented forms use one pair selector and existing helpers; ED arithmetic records full `S/Z/H/PV/N/C`, ordinary add behavior remains unchanged, transfer failures propagate, and undefined ED forms remain rejected. |
+| Stop Conditions | A needed port/device contract, Shared/public API, new state owner, conflict with the manual, non-finite behavior or failing unchanged ordinary-add regression stops and transfers the issue. |
+| Exit Criteria | All sixteen forms are present at one owner; focused semantic/error paths and complete dual-width unit labels pass; source-grade evidence and correction are indexed; actual diff review finds no duplicate map or arithmetic path. |
+| Original Owner Request | Continue MyRaidenII under governance, use L3 only for directly sourced manual facts, retain external behavior as L2 when needed, and run long work in background sessions. |
+
 ## Archived Packet — M1 T7 S46
 
 | Field | Required record |

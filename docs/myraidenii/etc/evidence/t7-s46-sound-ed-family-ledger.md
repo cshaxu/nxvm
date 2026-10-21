@@ -13,7 +13,7 @@ documented ED forms, their operation, flags and cycle counts.
 | Family | Local state | Owner-valid disposition |
 | --- | --- | --- |
 | Interrupt mode and return | IM aliases plus RETI/RETN subset are present. | Retain; a separate interrupt-contract correction owns the existing no-interrupt sentinel. |
-| 16-bit `ADC HL,ss` / `SBC HL,ss` | Only one `ADC HL,DE` form exists. | Receive all four pair selections for both arithmetic operations through the existing 16-bit arithmetic helper. |
+| 16-bit `ADC HL,ss` / `SBC HL,ss` | Only `SBC HL,DE` exists; its subtract path confirms the local opcode identity. | Receive all four pair selections for both arithmetic operations through the existing 16-bit arithmetic helper. |
 | `LD (nn),dd` / `LD dd,(nn)` | Only the DE forms exist. | Receive all four pair selections through the existing word fetch/read/write helpers. |
 | Accumulator / refresh transfers and `NEG` | Not implemented. | Defer to a later register-state receiver; it needs a complete review of existing refresh-state ownership. |
 | `RRD` / `RLD` | Not implemented. | Defer to a later accumulator-memory decimal receiver. |
