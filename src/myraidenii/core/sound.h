@@ -19,6 +19,13 @@ enum {
 
 typedef struct myraidenii_core_sound myraidenii_core_sound;
 
+/* The finite terminal owner is observable without exposing guest execution data. */
+typedef enum myraidenii_core_sound_unsupported_category {
+    MYRAIDENII_CORE_SOUND_UNSUPPORTED_NONE = 0,
+    MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER,
+    MYRAIDENII_CORE_SOUND_UNSUPPORTED_MAP
+} myraidenii_core_sound_unsupported_category;
+
 /* Reset clears these aggregate observations. They expose device-path reachability
  * without retaining command bytes, ROM contents, register values or PCM data. */
 typedef struct myraidenii_core_sound_observation {
@@ -35,6 +42,7 @@ typedef struct myraidenii_core_sound_observation {
     lib_u64 oki_ignored_controls[2u];
     lib_u64 oki_voice_starts[2u];
     lib_u64 pcm_nonzero_frames;
+    lib_u8 unsupported_category;
 } myraidenii_core_sound_observation;
 
 /* These are the Board-owned sides of the fixed Seibu handoff. Sound does not

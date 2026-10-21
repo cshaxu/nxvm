@@ -411,6 +411,7 @@ int main(int argument_count, char **arguments)
             "frame-digest=%016llx frame-samples=%u frame-transitions=%u "
             "pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
             "pcm-digest=%016llx sound-command-0-reads=%llu sound-command-1-reads=%llu "
+            "sound-unsupported-category=%u "
             "sound-command-acknowledgements=%llu sound-interrupt-accepts=%llu "
             "ym-address-writes=%llu ym-data-writes=%llu "
             "oki-1-writes=%llu oki-2-writes=%llu oki-1-commands=%llu "
@@ -453,6 +454,7 @@ int main(int argument_count, char **arguments)
             (unsigned long long)nonzero_pcm_frames, (unsigned long long)pcm_digest,
             (unsigned long long)sound_observation.transport_command_reads[0u],
             (unsigned long long)sound_observation.transport_command_reads[1u],
+            (lib_u32)sound_observation.unsupported_category,
             (unsigned long long)sound_observation.transport_command_acknowledgements,
             (unsigned long long)sound_observation.transport_interrupt_accepts,
             (unsigned long long)sound_observation.ym_address_writes,

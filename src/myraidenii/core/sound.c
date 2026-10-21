@@ -135,6 +135,13 @@ static lib_bool myraidenii_core_sound_image_valid(const lib_u8 *image,
         (image != LIB_NULL && image_bytes == MYRAIDENII_CORE_SOUND_SAMPLE_BYTES);
 }
 
+static lib_status myraidenii_core_sound_unsupported(myraidenii_core_sound *sound,
+    myraidenii_core_sound_unsupported_category category)
+{
+    sound->observation.unsupported_category = (lib_u8)category;
+    return LIB_STATUS_UNSUPPORTED;
+}
+
 static lib_status myraidenii_core_sound_image_copy(const lib_u8 *source,
     lib_size source_bytes, lib_u8 **out_copy)
 {
@@ -685,7 +692,8 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
     case MYRAIDENII_CORE_SOUND_COIN:
         return sound->transport.coin_get(sound->transport.context, out_value);
     default:
-        return LIB_STATUS_UNSUPPORTED;
+        return myraidenii_core_sound_unsupported(sound,
+            MYRAIDENII_CORE_SOUND_UNSUPPORTED_MAP);
     }
 }
 
@@ -730,7 +738,8 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
     case MYRAIDENII_CORE_SOUND_COIN_OUTPUT:
         return LIB_STATUS_OK;
     default:
-        return LIB_STATUS_UNSUPPORTED;
+        return myraidenii_core_sound_unsupported(sound,
+            MYRAIDENII_CORE_SOUND_UNSUPPORTED_MAP);
     }
 }
 
@@ -908,7 +917,8 @@ static lib_status myraidenii_core_sound_bit_transform(myraidenii_core_sound *sou
     case 5u: result = (lib_u8)((value >> 1u) | (value & 0x80u)); break;
     case 6u: result = (lib_u8)((value << 1u) | 1u); break;
     case 7u: result = (lib_u8)(value >> 1u); break;
-    default: return LIB_STATUS_UNSUPPORTED;
+    default: return myraidenii_core_sound_unsupported(sound,
+        MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER);
     }
     myraidenii_core_sound_flags_logic(sound, result, LIB_FALSE);
     if ((value & (operation == 1u ? 1u : 0x80u)) != 0u)
@@ -979,7 +989,8 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
             *out_ticks = 23u;
             return LIB_STATUS_OK;
         }
-        return LIB_STATUS_UNSUPPORTED;
+        return myraidenii_core_sound_unsupported(sound,
+            MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER);
     }
     if ((opcode & 0xc7u) == 0x46u && opcode != 0x76u) {
         status = myraidenii_core_sound_fetch(sound, &displacement);
@@ -1242,7 +1253,8 @@ static lib_status myraidenii_core_sound_execute_extended(myraidenii_core_sound *
             *out_ticks = 16u;
         }
         return LIB_STATUS_OK;
-    default: return LIB_STATUS_UNSUPPORTED;
+    default: return myraidenii_core_sound_unsupported(sound,
+        MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER);
     }
 }
 
@@ -1737,7 +1749,8 @@ static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
         *out_ticks = 11u;
         return status;
     default:
-        return LIB_STATUS_UNSUPPORTED;
+        return myraidenii_core_sound_unsupported(sound,
+            MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER);
     }
 }
 

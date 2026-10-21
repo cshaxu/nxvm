@@ -6,10 +6,20 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Current Packet
+## Active Packet — M1 T7 S44
 
-No S packet is active. M1 T7 retains the transferred finite Sound runtime
-receiver and broader gameplay/release qualification.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S43; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 work, bounded owner-ROM diagnostics, L2 external references where primary manuals are absent, and ordinary in-scope work without repeated approval. This S consumes only the S43 diagnostic transfer. |
+| Objective | Distinguish the two finite post-S42 Sound error classes—decoder rejection versus existing unified Sound-map rejection—without retaining a guest byte, address, opcode, instruction trace, media payload or mutable guest state. |
+| Reference Baseline | S43 establishes that Sound advance can propagate `LIB_STATUS_UNSUPPORTED` from its decoder default or its unified read/write map default. The existing Sound observation already reaches Board and the selected-set Probe without creating another execution path. |
+| Candidate Proposal | Add one resettable enum field to the existing Sound observation: none, decoder or map. Set it only at the two existing unsupported-return owners; Board copies it through its existing Sound observation getter and the Probe prints only that finite category. Extend the existing Sound/Board smokes for both categories and reset. |
+| Files And ABI Surface | MyRaidenII `core/sound.[ch]`, `core/board.[ch]`, existing Sound/Board smokes and selected-set Probe, Current and one evidence record/index only. No Shared component, new getter, second decoder/map, guest-state capture, ROM/media retention, renderer, queue, thread or host route. Estimated production +18..45/-0..8; tests +35..100/-0..15; documents +45..90/-0..15. |
+| Verification | Build/run affected Sound and Board tests plus the complete MyRaidenII unit label on x64/x86; run one bounded selected-set Probe per width in persistent background sessions; clean staging; run manifest/documentation/whitespace checks. |
+| Expected Markers | Synthetic decoder/map failures report their own category and reset to none; the live Probe reports one matching category on both widths; no successful execution, map behavior or timing changes. |
+| Stop Conditions | Need for a separate port map, guest payload/address/opcode capture, an unbounded trace, external source/code/table import, a Shared/public cross-product contract, a different failure owner, nondeterminism or a guessed repair stops and transfers the receiver. |
+| Exit Criteria | One existing Sound observation owns the finite category; current Board/Probe paths copy it; synthetic category/reset coverage and x64/x86 runtime results agree; staging is empty; evidence selects the next bounded receiver without a guessed emulation behavior. |
 
 ## Archived Packet — M1 T7 S43
 

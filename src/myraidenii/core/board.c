@@ -1596,6 +1596,7 @@ lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_boa
     out_observation->oki_voice_starts[0u] = observation.oki_voice_starts[0u];
     out_observation->oki_voice_starts[1u] = observation.oki_voice_starts[1u];
     out_observation->pcm_nonzero_frames = observation.pcm_nonzero_frames;
+    out_observation->unsupported_category = observation.unsupported_category;
     return LIB_STATUS_OK;
 }
 

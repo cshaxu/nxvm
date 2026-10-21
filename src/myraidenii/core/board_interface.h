@@ -111,6 +111,7 @@ typedef struct myraidenii_core_board_sound_observation {
     lib_u64 oki_ignored_controls[2u];
     lib_u64 oki_voice_starts[2u];
     lib_u64 pcm_nonzero_frames;
+    lib_u8 unsupported_category;
 } myraidenii_core_board_sound_observation;
 
 /* Reset clears this aggregate Video-path observation. It reports only

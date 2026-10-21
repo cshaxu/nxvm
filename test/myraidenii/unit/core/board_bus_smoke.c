@@ -1,5 +1,6 @@
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/cop.h"
+#include "myraidenii/core/sound.h"
 #include "myraidenii/core/video.h"
 #include "lib/types/file.h"
 #include "x86-core/machine/debug_interface.h"
@@ -930,7 +931,8 @@ static lib_i32 board_sound_handshake(void)
         observation.oki_stops[0u] != 0u || observation.oki_rejected_selections[0u] != 0u ||
         observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
-        observation.pcm_nonzero_frames != 0u)
+        observation.pcm_nonzero_frames != 0u ||
+        observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_NONE)
         goto done;
     machine = myraidenii_core_board_machine_get(board);
     if (x86_core_machine_memory_write(machine, 0x800u, loop, sizeof(loop)) != LIB_STATUS_OK ||
@@ -965,7 +967,8 @@ static lib_i32 board_sound_handshake(void)
         observation.oki_stops[0u] != 0u || observation.oki_rejected_selections[0u] != 0u ||
         observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
-        observation.pcm_nonzero_frames != 0u)
+        observation.pcm_nonzero_frames != 0u ||
+        observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_NONE)
         goto done;
     for (lib_u32 address = 0x700u; address < 0x708u; ++address) {
         word = (address & 1u) != 0u ? 0xa5u : 0x5au;
@@ -1006,11 +1009,67 @@ static lib_i32 board_sound_handshake(void)
         observation.oki_stops[0u] != 0u || observation.oki_rejected_selections[0u] != 0u ||
         observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
-        observation.pcm_nonzero_frames != 0u)
+        observation.pcm_nonzero_frames != 0u ||
+        observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_NONE)
         goto done;
     failed = 0;
 done:
     myraidenii_core_board_destroy(board);
+    return failed;
+}
+
+static lib_i32 board_reports_sound_unsupported_category(void)
+{
+    static lib_u8 sound_program[0x2000u];
+    const lib_u8 loop[] = {0xebu, 0xfeu};
+    const struct {
+        lib_u8 program[3u];
+        lib_u8 category;
+    } cases[] = {
+        {{0x27u, 0u, 0u}, MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER},
+        {{0x3au, 0u, 0x50u}, MYRAIDENII_CORE_SOUND_UNSUPPORTED_MAP}
+    };
+    const myraidenii_core_board_config config = {
+        .program_even = program_even, .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES,
+        .sound_program = sound_program, .sound_program_bytes = sizeof(sound_program)
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0u, [X86_CORE_CPU_DEBUG_EIP] = 0x800u}
+    };
+    lib_i32 failed = 1;
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0u]); ++index) {
+        myraidenii_core_board *board = LIB_NULL;
+        myraidenii_core_board_sound_observation observation;
+        x86_core_machine *machine;
+        x86_core_machine_run_result result;
+
+        lib_memory_set(sound_program, 0, sizeof(sound_program));
+        lib_memory_copy(sound_program, cases[index].program, sizeof(cases[index].program));
+        if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) goto done;
+        machine = myraidenii_core_board_machine_get(board);
+        if (x86_core_machine_memory_write(machine, 0x800u, loop, sizeof(loop)) != LIB_STATUS_OK ||
+            x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){512u, 0u}, &result) !=
+                LIB_STATUS_INTERNAL_ERROR || result.reason != X86_CORE_MACHINE_STOP_FAULT ||
+            myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+            observation.unsupported_category != cases[index].category) {
+            myraidenii_core_board_destroy(board);
+            goto done;
+        }
+        if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+            observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_NONE) {
+            myraidenii_core_board_destroy(board);
+            goto done;
+        }
+        myraidenii_core_board_destroy(board);
+    }
+    failed = 0;
+done:
     return failed;
 }
 
@@ -3103,6 +3162,7 @@ lib_i32 main(void)
         board_sprite_protection_latches() || board_control_failure_observation() ||
         board_sprite_object_write_aperture() || board_sprite_ram_and_latch_route() ||
         board_interrupt_input_and_sound_routes() || board_sound_handshake() ||
+        board_reports_sound_unsupported_category() ||
         board_video_phase() || board_video_sprite_flags() || board_video_palette_colors() ||
         board_video_crtc() ||
         board_sprite_protection_upload() ||

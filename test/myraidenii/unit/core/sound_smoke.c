@@ -803,6 +803,40 @@ done:
     return failed;
 }
 
+static lib_i32 sound_classifies_unsupported_failures(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    myraidenii_core_sound_observation observation;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[0u] = 0x27u;
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_UNSUPPORTED ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER)
+        goto done;
+    myraidenii_core_sound_reset(sound);
+    if (myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_NONE)
+        goto done;
+    myraidenii_core_sound_destroy(sound);
+    sound = LIB_NULL;
+    lib_memory_set(program, 0, sizeof(program));
+    program[0u] = 0x3au; program[1u] = 0u; program[2u] = 0x50u;
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_UNSUPPORTED ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.unsupported_category != MYRAIDENII_CORE_SOUND_UNSUPPORTED_MAP)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 int main(void)
 {
     return sound_executes_fixed_transport() != 0 ||
@@ -821,5 +855,6 @@ int main(void)
         sound_decodes_oki_nibble_sign() != 0 ||
         sound_executes_index_ignored_prefix() != 0 ||
         sound_executes_index_high_low_forms() != 0 ||
-        sound_executes_index_bit_transform() != 0 ? 1 : 0;
+        sound_executes_index_bit_transform() != 0 ||
+        sound_classifies_unsupported_failures() != 0 ? 1 : 0;
 }
