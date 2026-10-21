@@ -2,10 +2,61 @@
 
 ## Current Work
 
-M1 T6 is closed. It received the closed T5 Machine/PCM driver and established
-the one Product composition route without reopening Board, Sound, Video, or
-CPU modeling work. The queued qualification task receives external-ROM startup,
-gameplay and release work.
+M1 T7 is active. It receives T6's one Product composition route and qualifies
+external-ROM startup, then progressively receives gameplay and release work.
+It does not redefine unimplemented Board behavior as a release result.
+
+## Archived Packet — M1 T7 S3
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S3 receives the precise S2 real-Product early-exit outcome. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner instructed continuation, previously required host mute/endpoint absence not to make testability depend on physical audio, and permanently approved ordinary in-scope MyRaidenII changes. No Shared change is admitted. |
+| Objective | Make the MyRaidenII Machine's existing Board PCM bridge optional when Lib cannot create a host endpoint, while retaining the one Board PCM drain route and preventing endpoint absence from stopping the emulator. |
+| Non-goals | No audio synthesizer, alternate mixer, endpoint retry/recovery framework, second queue/thread, Shared API, ROM/archive reader, release artifact, audio-fidelity claim or hardware timing change. |
+| Reference Baseline | S2's verified external Product bundle exited before the ten-second observation. Product constructs Lib PCM before Machine; Machine and its Audio bridge currently require a non-null stream and unconditionally call stream methods. The Board already owns produced PCM; missing host output is a host capability condition, not a guest-board state change. |
+| Candidate Proposal | Keep one Machine Audio bridge. Let it accept a null host stream and drain/discard Board PCM locally; all stream operations become conditional on the existing borrowed stream. Product treats only `IO_ERROR`/`UNSUPPORTED` from stream creation as the no-endpoint mode, while other creation failures remain fatal. No public function/type is added. |
+| Files And ABI Surface | Expected only `src/myraidenii/product/`, `src/myraidenii/machine/`, their existing unit tests, Current and evidence. Existing signatures remain; their null-stream behavior is clarified and tested. No Lib/Emulator/X86/Core/asset/ROM/external source change. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. This host-fallback policy is L1: no primary manual or external model establishes a Raiden II endpoint requirement. |
+| Verification | Focused existing Machine audio/driver and Product composition tests plus complete MyRaidenII unit selection on x64/x86. Re-run the bounded external Product launch only after production tests pass, then inspect cleanup. |
+| Expected Markers | Exactly one Audio bridge; null stream never reaches a Lib stream operation; Board PCM is still consumed; non-endpoint failures remain fatal; normal stream behavior is unchanged. |
+| Asset Needs | The same read-only owner archive only for the final external launch repro. Temporary files stay beneath the external diagnostic root and are removed. |
+| Reporting Requirements | Report the exact fallback statuses, paths that remain fatal, test deltas, actual launch disposition and L1 limitation. |
+| Stop Conditions | Need for a Shared audio contract, retained external payload, second host audio route, retry service, or a host failure outside the two existing endpoint-unavailable statuses stops and transfers the gap. |
+| Exit Criteria | Both unit widths prove the optional-output path and retained normal path; the external Product launch is rechecked; no duplicate audio path or host-dependent startup failure remains for the identified statuses. |
+| Original Owner Request | Continue MyRaidenII under the strict L3/L2/L1 definition: only an inspected primary-manual PDF's explicit applicable formula/constant/rule is L3; range/reference facts are L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Check configuration filename/case, relative-path base, image role coverage, process ownership, temporary-root safety and cleanup; do not retain protected bytes in build/repository locations. |
+
+## M1 T7 S2 Closure
+
+S2 verified the real Product path uses the adjacent lower-case INI and temporary
+selected image bundle, but both widths exited before the ten-second observation
+with code 1.  The bundle was removed in every case.  Product currently
+collapses construction failure to the process result, so S2 does not claim the
+specific internal status; its construction-order review identifies the
+mandatory host PCM stream as the next bounded local receiver.  See S3 for the
+repair and recheck; no external payload or release artifact was retained.
+
+## Archived Packet — M1 T7 S1
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New qualification task; S1 is its bounded external-input startup diagnostic. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner accepted continuation of MyRaidenII implementation, supplied the existing `O:\\assets\\raidenii\\raiden2.zip` input, and authorized external emulator behavior only as L2. The source policy permits bounded read-only selected-set diagnostics; no protected data may enter the repository. |
+| Objective | Re-run the existing verified selected-set startup probe through the actual current Core/Machine graph, record its first terminal or bounded-budget outcome, and reconcile the result with the qualification ledger. |
+| Non-goals | No ROM download/import/embedding, archive runtime reader, Product release INI, executable deployment, source derivation, trace/pixel/sample dump, game-completion claim, or evidence-grade promotion. |
+| Reference Baseline | T1's checked inventory identifies the owner-supplied archive and its 12 runtime roles. T6 supplies the one configuration/Product path but has not claimed a runnable release. `Invoke-SelectedSetStartupProbe.ps1` already validates then stages a short-lived external input bundle for the existing diagnostic executable. |
+| Candidate Proposal | Build the existing x64/x86 startup probe from the stable Ninja graph, run the existing inventory verifier and staging wrapper once per width against the unchanged owner archive, retain only its bounded neutral output/evidence, and clean the generated external staging directory. Treat any resulting fault as a receiver ledger fact, not an opportunity to invent a device model. |
+| Files And ABI Surface | Expected only MyRaidenII Current/evidence/queue records unless diagnostic evidence identifies an already-approved bounded receiver. No production/test/API/build/asset/ROM/external source file change is admitted in S1. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. L3 requires an inspected primary-manual PDF with an explicit applicable formula/constant/rule. External observations are L2; unsupported local behavior is L1. |
+| Verification | Existing inventory verifier plus existing selected-set startup probe on x64/x86; source-policy review; staging cleanup verification; documentation, whitespace and diff review. This is an opt-in diagnostic, not a CTest result. |
+| Expected Markers | One verified archive identity, twelve runtime image roles, temporary files only under the external diagnostic root, one bounded probe per width, no payload retained, and a precise terminal/budget disposition. |
+| Asset Needs | Read-only owner-supplied `O:\\assets\\raidenii\\raiden2.zip`; generated staging/log output may exist only under `O:\\assets\\raidenii\\myraidenii-diagnostics\\` and must not become tracked data. |
+| Reporting Requirements | Record command identities, archive identity check, bounded neutral results, cleanup state, grade limits, and whether a concrete existing receiver is eligible for a later S. |
+| Stop Conditions | Archive identity failure, a request to retain protected payload, a need to modify Shared/external code, or a result requiring an unapproved Board/CPU model stops and transfers the gap. |
+| Exit Criteria | Both widths complete the existing bounded diagnostic using verified external inputs; no protected payload or misleading release claim remains; the next receiver boundary is explicitly accepted, deferred, or refused. |
+| Original Owner Request | Continue MyRaidenII under the strict grade definition: only an inspected primary-manual PDF's explicit applicable formula/constant/rule is L3; range/reference facts are L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Check every external path, archive handle, temporary extraction location and output record for payload retention, working-directory dependence, unbounded trace output, and false L3 language. |
 
 ## Archived Packet — M1 T6 S3
 
@@ -90,6 +141,33 @@ Complete MyRaidenII unit selections pass 12/12 on both widths; see
 T6 remains active.  A later S must qualify the external release configuration
 and artifact workflow without introducing a second configuration or runtime
 path.
+
+## M1 T7 S1 Closure
+
+S1 verified the owner-supplied selected set and ran the existing bounded
+startup probe once per width.  Both widths reached the same two-million-
+instruction budget without CPU, COP or control fault and produced the same
+neutral frame/PCM observations.  This is limited L2 execution evidence, not
+gameplay, audio-fidelity, desktop or release qualification.  The staging root
+was empty after each wrapper run.  See
+[S1 evidence](../etc/evidence/t7-s1-selected-set-startup.md).
+
+T7 remains active.  The next packet must address only a concrete, independently
+reviewed qualification boundary; it must not reinterpret the bounded probe as
+a complete startup or playable-game proof.
+
+## M1 T7 S3 Closure
+
+S3 makes only host PCM output optional.  The same Machine Audio bridge still
+consumes Board PCM; it locally discards that data only when Lib reports the
+existing endpoint-unavailable statuses during stream creation.  All other
+creation failures remain fatal.  Focused and complete MyRaidenII units pass on
+both widths, and the real temporary Product launch survived the ten-second
+observation on both widths before controlled shutdown/cleanup.  See
+[S3 evidence](../etc/evidence/t7-s3-optional-host-audio.md).
+
+T7 remains active.  This removes only host endpoint absence from startup; it
+does not qualify audible output, guest input, visuals, gameplay or release.
 
 ## M1 T6 Closure
 

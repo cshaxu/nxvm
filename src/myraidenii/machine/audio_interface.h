@@ -7,8 +7,9 @@
 
 typedef struct myraidenii_machine_audio myraidenii_machine_audio;
 
-/* The Machine bridge borrows the Board and Lib stream.  The future Machine
- * driver owns both lifetimes and must stop draining before releasing either. */
+/* The Machine bridge borrows the Board and, when host output is available, the
+ * Lib stream.  A null stream retains the one Board-drain owner but discards
+ * its PCM locally; the driver owns both available lifetimes. */
 lib_status myraidenii_machine_audio_create(myraidenii_core_board *board,
     lib_audio_pcm_stream *stream, myraidenii_machine_audio **out_audio);
 /* Copies available Board PCM into the bridge once, then submits ordered

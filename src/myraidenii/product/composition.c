@@ -159,6 +159,8 @@ static lib_status myraidenii_product_construct(myraidenii_product_composition *c
     status = lib_audio_pcm_stream_create(&(lib_audio_pcm_stream_options){
         .sample_rate = MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE,
         .channel_count = MYRAIDENII_CORE_AUDIO_PCM_CHANNELS}, &stream);
+    if (status == LIB_STATUS_IO_ERROR || status == LIB_STATUS_UNSUPPORTED)
+        status = LIB_STATUS_OK;
     if (status == LIB_STATUS_OK)
         status = myraidenii_machine_create(composition->board, stream, &composition->machine);
     if (status != LIB_STATUS_OK) {

@@ -99,7 +99,8 @@ static void myraidenii_machine_request_stop(void *context)
     if (machine == LIB_NULL) return;
     lib_atomic_i32_store_explicit(&machine->stop_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
     (void)x86_core_machine_request_stop(machine->core_machine);
-    (void)lib_audio_pcm_stream_cancel_wait(machine->stream);
+    if (machine->stream != LIB_NULL)
+        (void)lib_audio_pcm_stream_cancel_wait(machine->stream);
 }
 
 static void myraidenii_machine_request_wake(void *context)
@@ -108,20 +109,21 @@ static void myraidenii_machine_request_wake(void *context)
 
     if (machine == LIB_NULL) return;
     lib_atomic_i32_store_explicit(&machine->wake_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
-    (void)lib_audio_pcm_stream_cancel_wait(machine->stream);
+    if (machine->stream != LIB_NULL)
+        (void)lib_audio_pcm_stream_cancel_wait(machine->stream);
 }
 
 static void myraidenii_machine_set_heartbeat(void *context, lib_bool enabled)
 {
     myraidenii_machine *machine = context;
-    lib_status status;
+    lib_status status = LIB_STATUS_OK;
 
     if (machine == LIB_NULL) return;
     if (enabled == LIB_FALSE) {
         status = myraidenii_machine_audio_clear(machine->audio);
-        if (status == LIB_STATUS_OK)
+        if (status == LIB_STATUS_OK && machine->stream != LIB_NULL)
             status = lib_audio_pcm_stream_set_active(machine->stream, LIB_FALSE);
-    } else {
+    } else if (machine->stream != LIB_NULL) {
         status = lib_audio_pcm_stream_set_active(machine->stream, LIB_TRUE);
     }
     if (status != LIB_STATUS_OK) myraidenii_machine_fail(machine);
@@ -201,8 +203,7 @@ lib_status myraidenii_machine_create(myraidenii_core_board *board, lib_audio_pcm
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
-    if (board == LIB_NULL || stream == LIB_NULL ||
-        myraidenii_core_board_machine_get(board) == LIB_NULL)
+    if (board == LIB_NULL || myraidenii_core_board_machine_get(board) == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     machine = lib_allocate_zero(1u, sizeof(*machine));
     if (machine == LIB_NULL) return LIB_STATUS_NO_MEMORY;
@@ -245,8 +246,10 @@ lib_status myraidenii_machine_destroy(myraidenii_machine **machine)
 
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (*machine == LIB_NULL) return LIB_STATUS_OK;
-    status = lib_audio_pcm_stream_destroy(&(*machine)->stream);
-    if (status != LIB_STATUS_OK) return status;
+    if ((*machine)->stream != LIB_NULL) {
+        status = lib_audio_pcm_stream_destroy(&(*machine)->stream);
+        if (status != LIB_STATUS_OK) return status;
+    }
     myraidenii_machine_audio_destroy((*machine)->audio);
     lib_release(*machine);
     *machine = LIB_NULL;

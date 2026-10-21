@@ -36,6 +36,7 @@ static lib_status myraidenii_machine_audio_copy_board(myraidenii_machine_audio *
         capacity = LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION;
     status = myraidenii_core_board_pcm_copy(audio->board, copied, capacity, &frames, &dropped);
     if (status != LIB_STATUS_OK) return status;
+    if (audio->stream == LIB_NULL) return LIB_STATUS_OK;
     if (dropped != 0u) return LIB_STATUS_LIMIT_EXCEEDED;
     if (frames == 0u) return LIB_STATUS_OK;
     if (frames > capacity) return LIB_STATUS_INTERNAL_ERROR;
@@ -58,6 +59,8 @@ static lib_status myraidenii_machine_audio_submit(myraidenii_machine_audio *audi
     lib_u32 accepted;
     lib_status status;
 
+    if (audio->stream == LIB_NULL) return audio->count == 0u ? LIB_STATUS_OK :
+        LIB_STATUS_INTERNAL_ERROR;
     while (audio->count != 0u) {
         frames = MYRAIDENII_MACHINE_AUDIO_STAGING_FRAME_CAPACITY - audio->read;
         if (frames > audio->count) frames = audio->count;
@@ -82,7 +85,7 @@ lib_status myraidenii_machine_audio_create(myraidenii_core_board *board,
 
     if (out_audio == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_audio = LIB_NULL;
-    if (board == LIB_NULL || stream == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     audio = lib_allocate_zero(1u, sizeof(*audio));
     if (audio == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     audio->board = board;
@@ -107,7 +110,8 @@ lib_status myraidenii_machine_audio_clear(myraidenii_machine_audio *audio)
     lib_status status;
 
     if (audio == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = lib_audio_pcm_stream_clear(audio->stream);
+    status = audio->stream == LIB_NULL ? LIB_STATUS_OK :
+        lib_audio_pcm_stream_clear(audio->stream);
     if (status == LIB_STATUS_OK) {
         audio->read = 0u;
         audio->count = 0u;

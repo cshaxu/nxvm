@@ -172,7 +172,7 @@ int main(void)
 
     if (myraidenii_machine_create(LIB_NULL, stream, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_machine_create((myraidenii_core_board *)board, LIB_NULL, &machine) !=
-            LIB_STATUS_INVALID_ARGUMENT ||
+            LIB_STATUS_OK || myraidenii_machine_destroy(&machine) != LIB_STATUS_OK ||
         myraidenii_machine_create((myraidenii_core_board *)board, stream, &machine) != LIB_STATUS_OK ||
         myraidenii_machine_driver_get(machine, &driver) != LIB_STATUS_OK ||
         driver.context != machine || driver.reset == LIB_NULL || driver.run == LIB_NULL ||

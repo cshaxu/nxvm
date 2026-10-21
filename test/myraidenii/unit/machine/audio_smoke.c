@@ -108,6 +108,24 @@ done:
     return failed;
 }
 
+static lib_i32 audio_discards_without_host_stream(void)
+{
+    myraidenii_machine_audio *audio = LIB_NULL;
+    const myraidenii_core_board *board = (const myraidenii_core_board *)(lib_uptr)1u;
+    lib_i32 failed = 1;
+
+    reset_fixture();
+    if (myraidenii_machine_audio_create((myraidenii_core_board *)board, LIB_NULL,
+            &audio) != LIB_STATUS_OK || myraidenii_machine_audio_drain(audio) != LIB_STATUS_OK ||
+        source_read != 3u || submitted_count != 0u ||
+        myraidenii_machine_audio_clear(audio) != LIB_STATUS_OK)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_machine_audio_destroy(audio);
+    return failed;
+}
+
 int main(void)
 {
     lib_i32 result;
@@ -116,5 +134,6 @@ int main(void)
         LIB_STATUS_INVALID_ARGUMENT) return 1;
     result = audio_retains_partial_prefix_suffix();
     if (result != 0) return result;
-    return audio_retains_staging_when_clear_fails() != 0 ? 1 : 0;
+    if (audio_retains_staging_when_clear_fails() != 0) return 1;
+    return audio_discards_without_host_stream() != 0 ? 1 : 0;
 }

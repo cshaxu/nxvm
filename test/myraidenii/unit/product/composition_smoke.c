@@ -87,7 +87,8 @@ lib_status lib_audio_pcm_stream_destroy(lib_audio_pcm_stream **stream)
 lib_status myraidenii_machine_create(myraidenii_core_board *board, lib_audio_pcm_stream *stream,
     myraidenii_machine **out_machine)
 {
-    if (board == LIB_NULL || stream == LIB_NULL || out_machine == LIB_NULL)
+    (void)stream;
+    if (board == LIB_NULL || out_machine == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = machine_status == LIB_STATUS_OK ?
         (myraidenii_machine *)(lib_uptr)4u : LIB_NULL;
@@ -214,6 +215,7 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     emulator_session_options control = {0};
     emulator_ui_options ui = {0};
 
+    hotkey_count = 0;
     assert(definition != LIB_NULL);
     assert(lib_text_compare(definition->banner, MYRAIDENII_PRODUCT_BANNER) == 0);
     assert(definition->machine.machine != LIB_NULL && definition->machine.bind != LIB_NULL &&
@@ -271,12 +273,22 @@ int main(void)
     assert(myraidenii_product_run(&config) == 1);
     assert(image_destroy_count == 2 && stream_destroy_count == 1 && board_destroy_count == 2);
     machine_status = LIB_STATUS_OK;
+    stream_status = LIB_STATUS_IO_ERROR;
+    assert(myraidenii_product_run(&config) == 0);
+    assert(image_destroy_count == 3 && machine_destroy_count == 2 && board_destroy_count == 3);
+    stream_status = LIB_STATUS_UNSUPPORTED;
+    assert(myraidenii_product_run(&config) == 0);
+    assert(image_destroy_count == 4 && machine_destroy_count == 3 && board_destroy_count == 4);
+    stream_status = LIB_STATUS_NO_MEMORY;
+    assert(myraidenii_product_run(&config) == 1);
+    assert(image_destroy_count == 5 && machine_destroy_count == 3 && board_destroy_count == 5);
+    stream_status = LIB_STATUS_OK;
     driver_status = LIB_STATUS_INTERNAL_ERROR;
     assert(myraidenii_product_run(&config) == 1);
-    assert(image_destroy_count == 3 && machine_destroy_count == 2 && board_destroy_count == 3);
+    assert(image_destroy_count == 6 && machine_destroy_count == 4 && board_destroy_count == 6);
     driver_status = LIB_STATUS_OK;
     config.display = EMULATOR_SESSION_DISPLAY_CONSOLE;
     assert(myraidenii_product_run(&config) == 1);
-    assert(image_destroy_count == 4 && machine_destroy_count == 3 && board_destroy_count == 4);
+    assert(image_destroy_count == 7 && machine_destroy_count == 5 && board_destroy_count == 7);
     return 0;
 }
