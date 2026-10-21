@@ -111,6 +111,7 @@
 - [T7 COP existing-executor alias completion](evidence/t7-s59-cop-existing-executor-aliases.md).
 - [T7 post-alias selected-set qualification](evidence/t7-s60-post-alias-selected-set-qualification.md).
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
+- [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 Board Sound IM1 transport](evidence/t7-s17-sound-im1-transport.md).
 - [T7 Board Sound IM0 transport](evidence/t7-s18-sound-im0-transport.md).
 - [T7 selected-set input pulse diagnostic](evidence/t7-s19-input-pulse-diagnostic.md).

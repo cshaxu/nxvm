@@ -684,6 +684,36 @@ graphics, audio, gameplay or release readiness.  No production, test, Shared,
 asset or artifact file changed.  T7 remains open for a separately admitted
 user-visible qualification.
 
+## Archived Packet — M1 T7 S62
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S61; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation using external emulators only as L2 behavior evidence and preserving source-policy boundaries. |
+| Objective | Audit the complete local Board Sound-to-PCM publication path against existing safe selected-set aggregates and identify one finite owner-valid receiver only if its contract is complete. |
+| Non-goals | No source, test, Shared, API, asset, media, product UI, thread, queue, renderer, ROM/PAL import, raw guest trace or speculative sound implementation change. |
+| Reference Baseline | S60 reaches the bounded selected-set budget without Sound unsupported/provider failure, while the existing safe aggregate does not establish an audible selected-set result. Machine audio bridge and Board Sound executors are already present. |
+| Candidate Proposal | Trace local command transport, sound CPU execution, FM/ADPCM device state, Board PCM production, Machine drain and Lib enqueue contracts. Compare only L2 behavioral facts from pinned external references if primary material is absent. Classify each observed no-output condition as implemented, incomplete, not-yet-triggered or unprovable; select a repair only when one owner has complete semantics. |
+| Files And ABI Surface | Current, one evidence record/index only. No production/test/build/manifest/public interface/artifact/media change. |
+| Applicable Rules | MyRaidenII source policy, architecture/coding and Shared execution/documentation rules. No external source/table or protected data is copied. |
+| Verification | Static local route audit, existing safe aggregate review, documentation governance and whitespace checks. No owner-ROM rerun unless a separately complete receiver requires it. |
+| Expected Markers | One complete producer-to-consumer ownership map; each potential silence cause has an explicit disposition; any selected follow-up is finite and owned by one existing component. |
+| Asset Needs | None for this static audit. |
+| Reporting Requirements | Record only safe aggregate categories and source-grade limits; never retain raw guest bytes, commands, addresses, payload or external-source implementation. |
+| Stop Conditions | Required behavior needs imported source/table, unbounded reverse engineering, a new Shared contract, no single owner or ambiguous selected-set trigger; record the boundary rather than manufacture sound. |
+| Exit Criteria | Evidence/index/current document the complete local route and one next owner-valid receiver or explicit unprovable boundary; governance/whitespace checks pass and a reviewed P is pushed. |
+| Original Owner Request | Continue toward genuine MyRaidenII execution without replacing evidence with a passing internal scaffold. |
+| Similar-Issue Sweep | Board command lanes, Sound CPU scheduling/interrupts, YM/OKI control, PCM generation/copy/drop, Machine staging/drain, Lib accepted-prefix handling, reset/pause/stop and existing units. |
+
+## M1 T7 S62 Closure
+
+The static route audit confirms one Board-to-Lib PCM chain and existing
+coverage for each owner; there is no evidence for a transport or Machine audio
+repair. Existing safe selected-set aggregates establish device traffic but not
+a selected program state that requests a playable voice. The next productive
+receiver is the independently admitted COPX-D2 Board-contract research gate.
+No production, test, Shared, asset or artifact file changed.
+
 ## Active Packet
 
 No S packet is active.
