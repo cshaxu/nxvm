@@ -6,6 +6,14 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S10 Closure
+
+S10 is closed with no source change.  Video has one existing sprite-flags owner
+and no hidden blend path, but the external L2 reference selects its half-alpha
+operation through a non-importable reference colour table.  Without a Board
+selection contract or non-ROM oracle, a local implementation would be L1
+guesswork; the fidelity receiver remains explicitly deferred.  See [S10 evidence](../etc/evidence/t7-s10-sprite-blend-contract-review.md).
+
 ## M1 T7 S9 Closure
 
 S9 is closed without a source change.  The existing staged Probe completed its
