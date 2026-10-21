@@ -346,8 +346,11 @@ int main(int argument_count, char **arguments)
             "frame-digest=%016llx frame-samples=%u frame-transitions=%u "
             "pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
             "pcm-digest=%016llx ym-address-writes=%llu ym-data-writes=%llu "
-            "oki-1-writes=%llu oki-2-writes=%llu oki-1-voice-starts=%llu "
-            "oki-2-voice-starts=%llu pcm-nonzero-generated=%llu\n",
+            "oki-1-writes=%llu oki-2-writes=%llu oki-1-commands=%llu "
+            "oki-2-commands=%llu oki-1-selections=%llu oki-2-selections=%llu "
+            "oki-1-stops=%llu oki-2-stops=%llu oki-1-rejected=%llu "
+            "oki-2-rejected=%llu oki-1-ignored=%llu oki-2-ignored=%llu "
+            "oki-1-voice-starts=%llu oki-2-voice-starts=%llu pcm-nonzero-generated=%llu\n",
             (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
             fault_linear, delivered_exceptions, (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
@@ -372,6 +375,16 @@ int main(int argument_count, char **arguments)
             (unsigned long long)sound_observation.ym_data_writes,
             (unsigned long long)sound_observation.oki_writes[0u],
             (unsigned long long)sound_observation.oki_writes[1u],
+            (unsigned long long)sound_observation.oki_sample_commands[0u],
+            (unsigned long long)sound_observation.oki_sample_commands[1u],
+            (unsigned long long)sound_observation.oki_voice_selections[0u],
+            (unsigned long long)sound_observation.oki_voice_selections[1u],
+            (unsigned long long)sound_observation.oki_stops[0u],
+            (unsigned long long)sound_observation.oki_stops[1u],
+            (unsigned long long)sound_observation.oki_rejected_selections[0u],
+            (unsigned long long)sound_observation.oki_rejected_selections[1u],
+            (unsigned long long)sound_observation.oki_ignored_controls[0u],
+            (unsigned long long)sound_observation.oki_ignored_controls[1u],
             (unsigned long long)sound_observation.oki_voice_starts[0u],
             (unsigned long long)sound_observation.oki_voice_starts[1u],
             (unsigned long long)sound_observation.pcm_nonzero_frames);

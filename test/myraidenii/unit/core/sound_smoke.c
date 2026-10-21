@@ -319,6 +319,10 @@ static lib_i32 sound_executes_device_map(void)
         myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
         observation.ym_address_writes != 3u || observation.ym_data_writes != 3u ||
         observation.oki_writes[0u] != 3u || observation.oki_writes[1u] != 0u ||
+        observation.oki_sample_commands[0u] != 1u ||
+        observation.oki_voice_selections[0u] != 1u || observation.oki_stops[0u] != 1u ||
+        observation.oki_rejected_selections[0u] != 0u ||
+        observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 1u || observation.oki_voice_starts[1u] != 0u ||
         observation.pcm_nonzero_frames == 0u)
         goto done;
@@ -326,8 +330,46 @@ static lib_i32 sound_executes_device_map(void)
     if (myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
         observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_sample_commands[0u] != 0u ||
+        observation.oki_voice_selections[0u] != 0u || observation.oki_stops[0u] != 0u ||
+        observation.oki_rejected_selections[0u] != 0u ||
+        observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
         observation.pcm_nonzero_frames != 0u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
+static lib_i32 sound_classifies_oki_write_dispositions(void)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    myraidenii_core_sound_observation observation;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples_1, 0, sizeof(samples_1));
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x0fu);
+    sound_program_write_oki(program, &at, 0x00u);
+    program[at] = 0x76u;
+    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.oki_writes[0u] != 3u ||
+        observation.oki_sample_commands[0u] != 1u ||
+        observation.oki_voice_selections[0u] != 0u ||
+        observation.oki_stops[0u] != 0u ||
+        observation.oki_rejected_selections[0u] != 1u ||
+        observation.oki_ignored_controls[0u] != 1u ||
+        observation.oki_voice_starts[0u] != 0u)
         goto done;
     failed = 0;
 done:
@@ -655,6 +697,7 @@ int main(void)
         sound_executes_bootstrap_control_flow() != 0 ||
         sound_allows_no_device_map_slot() != 0 ||
         sound_executes_device_map() != 0 ||
+        sound_classifies_oki_write_dispositions() != 0 ||
         sound_delivers_ym_timer_interrupt() != 0 ||
         sound_delivers_transport_interrupt() != 0 ||
         sound_acknowledges_transport_service() != 0 ||

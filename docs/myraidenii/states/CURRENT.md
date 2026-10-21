@@ -6,6 +6,45 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S29
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S28; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work; this packet changes only MyRaidenII's existing Sound-to-Board aggregate observation. |
+| Objective | Classify existing OKI writes as sample commands, voice selections, stops or locally rejected selections without recording guest payload, so the observed zero voice starts can be assigned to the current receiver or to upstream Z80 behavior. |
+| Non-goals | No Shared/API change, raw command/sample output, host audio redesign, emulator reference import, new thread/queue, ROM/PAL change, mixer behavior change, title/gameplay claim or release. |
+| Reference Baseline | S26 proves both OKI ports receive writes but active voice starts and generated PCM are zero. The existing OKI state machine already distinguishes its command, selection and stop paths internally. |
+| Candidate Proposal | Add bounded counters to the existing private Sound observation and copied Board observation. Increment them at the existing branch owners only; extend the existing Sound/Board tests and selected-set neutral summary. |
+| Files And ABI Surface | MyRaidenII `core/sound.[ch]`, `core/board.[ch]`, existing Sound/Board tests, existing selected-set Probe, Current and evidence. Expected production +20..40/-0..8, tests +30..70/-0..15. No Shared/public cross-product interface. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Coding/Documentation rules and T7 qualification proposal. Real-set counts are L2 observations. |
+| Verification | Focused Sound/Board units x64/x86; existing Probe build; one bounded selected-ROM run per width; compare neutral summaries; affected MyRaidenII unit suites; documentation/whitespace checks. |
+| Expected Markers | Every OKI write has one named local disposition; no raw values leave Sound; both widths agree. A count alone does not establish audible playback or a physical chip contract. |
+| Asset Needs | Read-only owner archive through the existing wrapper only; no acquisition or persistence. |
+| Reporting Requirements | Before/after branch/accounting matrix, actual diff, dual-width counts, retained uncertainty and cleanup. |
+| Stop Conditions | Need for Shared/public cross-product API, raw payload capture, source import, behavior change to force a voice, unexplained counter ambiguity or staging failure stops and records the gap. |
+| Exit Criteria | Existing observation exposes every named OKI disposition, synthetic owner tests cover them, bounded results are compared, checks pass, stages/logs are removed and a complete P is pushed. |
+| Original Owner Request | Continue independently using bounded probes and external emulators as L2 references rather than waiting for physical hardware. |
+| Similar-Issue Sweep | Both devices, pending/nonpending command state, valid/invalid selection, every stop mask, reset, aggregation copy and no-payload output. |
+
+## M1 T7 S29 Closure
+
+S29 is closed after actual-diff review.  The existing Sound observation now
+classifies all local OKI receiver paths without exposing payload.  Existing
+synthetic tests cover valid selection, stop, rejected selection and ignored
+control through the production decoder; both host widths passed the affected
+tests and the complete 12-test MyRaidenII unit label.
+
+The bounded selected-set runs agree exactly: both OKI devices received 373
+writes, all through the existing stop branch, with zero sample commands,
+selections, rejections, starts and generated nonzero PCM.  S25's reconciled
+Board-to-Sound lane map remains unchanged.  Thus no local mapping or decoder
+change is justified merely to manufacture audio.  See [S29 evidence](../etc/evidence/t7-s29-oki-write-disposition.md).
+
+The external stages were removed after the probes.  No Shared component,
+public cross-product interface, executable, protected media or Assets release
+changed.  T7 remains active; no successor S is admitted by this closure.
+
 ## Archived Packet — M1 T7 S28
 
 | Field | Required record |

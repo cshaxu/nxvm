@@ -1429,6 +1429,16 @@ lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_boa
     out_observation->ym_data_writes = observation.ym_data_writes;
     out_observation->oki_writes[0u] = observation.oki_writes[0u];
     out_observation->oki_writes[1u] = observation.oki_writes[1u];
+    out_observation->oki_sample_commands[0u] = observation.oki_sample_commands[0u];
+    out_observation->oki_sample_commands[1u] = observation.oki_sample_commands[1u];
+    out_observation->oki_voice_selections[0u] = observation.oki_voice_selections[0u];
+    out_observation->oki_voice_selections[1u] = observation.oki_voice_selections[1u];
+    out_observation->oki_stops[0u] = observation.oki_stops[0u];
+    out_observation->oki_stops[1u] = observation.oki_stops[1u];
+    out_observation->oki_rejected_selections[0u] = observation.oki_rejected_selections[0u];
+    out_observation->oki_rejected_selections[1u] = observation.oki_rejected_selections[1u];
+    out_observation->oki_ignored_controls[0u] = observation.oki_ignored_controls[0u];
+    out_observation->oki_ignored_controls[1u] = observation.oki_ignored_controls[1u];
     out_observation->oki_voice_starts[0u] = observation.oki_voice_starts[0u];
     out_observation->oki_voice_starts[1u] = observation.oki_voice_starts[1u];
     out_observation->pcm_nonzero_frames = observation.pcm_nonzero_frames;

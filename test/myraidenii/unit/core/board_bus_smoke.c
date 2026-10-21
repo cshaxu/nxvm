@@ -902,6 +902,9 @@ static lib_i32 board_sound_handshake(void)
     if (myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
         observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_sample_commands[0u] != 0u || observation.oki_voice_selections[0u] != 0u ||
+        observation.oki_stops[0u] != 0u || observation.oki_rejected_selections[0u] != 0u ||
+        observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
         observation.pcm_nonzero_frames != 0u) goto done;
     machine = myraidenii_core_board_machine_get(board);
@@ -926,6 +929,9 @@ static lib_i32 board_sound_handshake(void)
     if (myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
         observation.ym_address_writes == 0u || observation.ym_data_writes == 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_sample_commands[0u] != 0u || observation.oki_voice_selections[0u] != 0u ||
+        observation.oki_stops[0u] != 0u || observation.oki_rejected_selections[0u] != 0u ||
+        observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
         observation.pcm_nonzero_frames != 0u) goto done;
     for (lib_u32 address = 0x700u; address < 0x708u; ++address) {
@@ -956,6 +962,9 @@ static lib_i32 board_sound_handshake(void)
         myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
         observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_sample_commands[0u] != 0u || observation.oki_voice_selections[0u] != 0u ||
+        observation.oki_stops[0u] != 0u || observation.oki_rejected_selections[0u] != 0u ||
+        observation.oki_ignored_controls[0u] != 0u ||
         observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
         observation.pcm_nonzero_frames != 0u) goto done;
     failed = 0;

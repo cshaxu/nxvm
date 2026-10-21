@@ -290,25 +290,35 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound *sound,
     oki = &sound->oki[device];
     ++sound->observation.oki_writes[device];
     if ((value & 0x80u) != 0u) {
+        ++sound->observation.oki_sample_commands[device];
         oki->pending_sample = value & 0x7fu;
         oki->has_pending_sample = LIB_TRUE;
         return LIB_STATUS_OK;
     }
     if (!oki->has_pending_sample && (value & 0x08u) != 0u) {
+        ++sound->observation.oki_stops[device];
         for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
             if ((value & (lib_u8)(1u << index)) != 0u)
                 oki->voices[index].active = LIB_FALSE;
         }
         return LIB_STATUS_OK;
     }
-    if (!oki->has_pending_sample) return LIB_STATUS_INVALID_STATE;
+    if (!oki->has_pending_sample) {
+        ++sound->observation.oki_ignored_controls[device];
+        return LIB_STATUS_INVALID_STATE;
+    }
     if ((value & 0x0fu) >= MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS) {
+        ++sound->observation.oki_rejected_selections[device];
         oki->has_pending_sample = LIB_FALSE;
         return LIB_STATUS_OK;
     }
     status = myraidenii_core_sound_oki_sample_bounds(oki, oki->pending_sample,
         &start, &end);
-    if (status != LIB_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) {
+        ++sound->observation.oki_rejected_selections[device];
+        return status;
+    }
+    ++sound->observation.oki_voice_selections[device];
     for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
         if ((value & (lib_u8)(0x10u << index)) != 0u) {
             oki->voices[index].position = start;

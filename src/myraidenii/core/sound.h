@@ -25,6 +25,11 @@ typedef struct myraidenii_core_sound_observation {
     lib_u64 ym_address_writes;
     lib_u64 ym_data_writes;
     lib_u64 oki_writes[2u];
+    lib_u64 oki_sample_commands[2u];
+    lib_u64 oki_voice_selections[2u];
+    lib_u64 oki_stops[2u];
+    lib_u64 oki_rejected_selections[2u];
+    lib_u64 oki_ignored_controls[2u];
     lib_u64 oki_voice_starts[2u];
     lib_u64 pcm_nonzero_frames;
 } myraidenii_core_sound_observation;
