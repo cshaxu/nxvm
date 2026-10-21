@@ -38,6 +38,26 @@ function Require([bool]$Condition, [string]$Message)
     if (-not $Condition) { throw $Message }
 }
 
+function Invoke-StagedChild([string]$FilePath, [string[]]$ArgumentList,
+    [string]$WorkingDirectory, [string]$Name)
+{
+    $stdoutPath = Join-Path $WorkingDirectory "$Name.stdout"
+    $stderrPath = Join-Path $WorkingDirectory "$Name.stderr"
+    $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList `
+        -WorkingDirectory $WorkingDirectory -PassThru -Wait `
+        -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+
+    if (Test-Path -LiteralPath $stdoutPath -PathType Leaf) {
+        Get-Content -LiteralPath $stdoutPath
+    }
+    if (Test-Path -LiteralPath $stderrPath -PathType Leaf) {
+        Get-Content -LiteralPath $stderrPath
+    }
+    if ($process.ExitCode -ne 0) {
+        throw "$Name failed: $($process.ExitCode)"
+    }
+}
+
 $verifier = Join-Path $PSScriptRoot 'Verify-RomInventory.ps1'
 $inventoryPath = [System.IO.Path]::GetFullPath($Inventory)
 $archivePath = [System.IO.Path]::GetFullPath($Archive)
@@ -125,8 +145,7 @@ try {
         if ($CoinStartSequence) { $probeArguments += '--coin-start-sequence' }
         if ($CoinStartFrameSequence) { $probeArguments += '--coin-start-frame-sequence' }
         $probeArguments += "--instruction-budget=$InstructionBudget"
-        & $probePath @probeArguments
-        if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
+        Invoke-StagedChild $probePath $probeArguments $stagePath 'startup-probe'
     }
     else {
         $iniNames = [ordered]@{
@@ -152,10 +171,8 @@ try {
         $stagedProduct = Join-Path $stagePath ([System.IO.Path]::GetFileName($productPath))
         [System.IO.File]::Copy($productPath, $stagedProduct, $false)
         if ($PSCmdlet.ParameterSetName -ceq 'ProductSmoke') {
-            & $productSmokePath $stagedProduct $stagePath
-            if ($LASTEXITCODE -ne 0) {
-                throw "Product Console smoke failed: $LASTEXITCODE"
-            }
+            Invoke-StagedChild $productSmokePath @($stagedProduct, $stagePath) $stagePath `
+                'product-console-smoke'
         }
         else {
             $process = Start-Process -FilePath $stagedProduct -WorkingDirectory $stagePath -PassThru

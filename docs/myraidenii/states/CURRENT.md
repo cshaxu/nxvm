@@ -943,6 +943,49 @@ active packet.
 
 None.
 
+## Archived Packet — M1 T7 S70
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S69; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs continued MyRaidenII implementation, permits bounded external-ROM probes and requires missing original hardware facts to use explicit external-emulator L2 or bounded L1 models rather than blocking. The just-observed GUI-child lifecycle defect is in S69's MyRaidenII wrapper and is admitted here. The mandatory complete-unit run also exposes an existing NXVM negative-test assertion that depends on PowerShell's width-sensitive diagnostic formatting; this packet admits only its assertion stabilization. |
+| Objective | Make the existing verified-asset wrapper wait for its staged GUI probe or Product-smoke child, propagate its actual exit result and remove the wrapper-owned staging child only after that child exits. Keep the NXVM dependency negative test's real rejection requirement while removing its dependence on wrapped presentation text. |
+| Non-goals | No Board/CPU/COP/video/sound behavior change; no MAME code/table import; no ROM/media commit, raw guest trace, screenshot, new thread, test framework, public API, lifecycle policy, dependency-gate semantics or production artifact refresh. |
+| Reference Baseline | Direct invocation of the Windows-subsystem startup probe returned control to PowerShell while the child remained live, leaving wrapper-owned staging directories. The probe itself is bounded by an instruction budget but the old PowerShell `&` invocation did not synchronize a GUI child. |
+| Candidate Proposal | Use one small wrapper-owned child invocation helper based on `Start-Process -Wait -PassThru`, temporary stdout/stderr inside the existing staging child, visible relay after exit and nonzero-exit rejection. Reuse it for the startup probe and Product Console smoke; retain the existing timed Product-launch branch. |
+| Files And ABI Surface | `tools/myraidenii/Invoke-SelectedSetStartupProbe.ps1`, `cmake/nxvm/tests/dependency_dag_negative.cmake`, `test/tools/build_cleanup.ps1`, Current and evidence/index. No production header/API/layout, Shared production component, build graph or manifest change. Estimate tool/test +25..55/-2..10; NXVM test +0..3/-2..6; documents +35..85/-0..15. |
+| Applicable Rules | MyRaidenII source policy and coding rules; Shared execution/documentation rules; external assets remain outside the repository; long runs use the one persisted wrapper child and are polled to terminal completion. |
+| Verification | Run the existing minimum-budget probe and one full 100,000,000-instruction frame-sequence probe on x64, then the corresponding x86 qualification; prove child exit, exit-code handling and removal of exactly the generated staging child. Re-run the NXVM negative test in the complete repository unit suites, then run tool syntax, documentation governance and whitespace checks. |
+| Expected Markers | No wrapper may report success while its probe child is live. A successful bounded child exits before staging cleanup; a nonzero child causes a wrapper failure. |
+| Asset Needs | Read-only verified archive `O:\assets\raidenii\raiden2.zip`; wrapper-created staging only below `O:\assets\raidenii\myraidenii-diagnostics\`; this S owns only `build/myraidenii-s70/` for parent-process logs and removes it after recording neutral results. |
+| Reporting Requirements | Record only wrapper lifecycle facts, per-width aggregate terminal category, staging cleanup and source-grade boundary. Do not retain ROM bytes, screenshots, guest addresses, opcodes, traces or third-party source. |
+| Stop Conditions | Missing/mismatched verified archive, inability to wait for or clean an owned child, non-finite child, retained staging, a need for Board behavior changes or any public API change stops this S without guessing a hardware repair. |
+| Exit Criteria | Both widths complete a real bounded probe through the corrected wrapper with child exit and cleanup verified; tool/whitespace/docs checks pass; the actual diff is reviewed and committed by its MyRaidenII, NXVM and Shared test-infrastructure owners. |
+| Original Owner Request | Implement MyRaidenII without blocking on absent physical-hardware evidence: original facts are L3, external emulator behavior is L2 and bounded synthetic L1 is permitted when necessary. |
+| Similar-Issue Sweep | Check every wrapper child invocation (startup probe and Product smoke) for the same GUI-child non-wait path; retain the distinct timed Product-launch process contract. Inspect the negative test for any other match that observes formatted target display rather than the actual rejected source inputs. |
+
+## M1 T7 S70 Closure
+
+The MyRaidenII wrapper now waits for each staged GUI child, relays its
+captured output only after it exits, propagates the child exit code, and then
+removes its unique staging child.  Both widths completed the bounded selected
+set probe and Product monitor smoke through that route; input edges were
+delivered, frames changed, and staging was removed.  The run does not qualify
+audible sound, desktop/RDP interaction, graphics fidelity, gameplay or
+release readiness.  The full probes continue to leave audio output
+unqualified, which remains a future Sound-owner receiver.
+
+The NXVM dependency negative test now checks the actual two rejected probe
+source paths instead of width-sensitive wrapped diagnostic presentation.  The
+repository cleanup test preserves link/junction rejection coverage on hosts
+that can create the fixture and explicitly records the unavailable host
+capability otherwise; it never relaxes the cleanup tool's rejection policy.
+
+Documentation governance and whitespace checks pass.  Complete repository
+unit suites pass 697/697 on x64 and x86.  S70 owns no release artifact because
+it changes only tools, tests and records.  Its task-owned build logs were
+removed after neutral results were recorded.
+
 ## Archived Packet — M1 T7 S54
 
 | Field | Required record |
