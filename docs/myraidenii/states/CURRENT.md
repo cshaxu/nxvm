@@ -899,9 +899,49 @@ failure behavior plus a local synthetic oracle.  Documentation links and
 whitespace pass; no source, test, API, build, artifact, ROM or media file
 changed.
 
+## M1 T7 S69 — External Product Start Qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S68; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs continued MyRaidenII implementation without physical-evidence blocking and requires reuse over duplicate test paths. This packet may make the necessary Shared test-infrastructure extraction and MyRaidenII integration/wrapper changes. |
+| Objective | Exercise the real MyRaidenII Product monitor `start` route against the verified external set, prove the running lifecycle reaches frame publication, then exit cleanly without changing the Product's standardized initial `STOPPED` behavior. |
+| Non-goals | No automatic Product start, production lifecycle/configuration change, COPX/PAL attachment, sprite-blend guess, ROM/media commit, protected-payload retention, second console driver, UI framework or extra execution thread. |
+| Reference Baseline | S67 proves a stopped Product has no Window by design and direct Board execution produces changing frames. Existing PC integration code owns a generic Windows Console child-process driver but is misplaced below `test/x86-nxvm/setup` despite no PC dependency. |
+| Candidate Proposal | Move that generic test-only Console process helper intact to `test/emulator/setup`, update existing PC consumers, add a MyRaidenII external Product smoke which supplies `start` then `exit`, and extend the existing external staging wrapper with a Product-smoke mode that stages owner assets and invokes the test executable. |
+| Files And ABI Surface | Shared test helper/CMake/manifests and its PC test callers; MyRaidenII integration smoke, CMake/wrapper, evidence/index/current. No production header/API/layout change. Estimate Shared test +25..80/-25..80; MyRaidenII test/tool/docs +100..230/-0..40. |
+| Applicable Rules | MyRaidenII and Shared Architecture/Coding/Execution/Documentation rules; test ownership, inward dependencies, source policy and one-target-per-commit rules. Long external runs use persistent terminal sessions. |
+| Verification | Build helper and all moved PC consumers on x64/x86; run affected Shared/PC tests; build/run the MyRaidenII Product smoke once per width through the wrapper against the verified archive; verify exact lifecycle markers, child exit and staging cleanup; run required complete repository unit suites before closure. |
+| Expected Markers | One existing generic helper owns native Console process input; both widths prove monitor `start` reaches running/frame publication and `exit` terminates the Product. This does not prove visible title content, gameplay, sound audibility, sprite fidelity, RDP behavior or release readiness. |
+| Asset Needs | Read-only verified archive `O:\assets\raidenii\raiden2.zip`; wrapper-owned temporary staging only below `O:\assets\raidenii\myraidenii-diagnostics\`. |
+| Reporting Requirements | Record helper move, changed callers, per-width bounded Product result, cleanup, source grades and actual diffs. Do not retain ROM bytes, screenshots, guest traces, addresses or third-party source. |
+| Stop Conditions | A helper dependence on PC-specific behavior, unsafe Console ownership, inability to stage validated media, Product lifecycle failure, retained staging, or a required production API change stops the receiver and records the owner boundary. |
+| Exit Criteria | The helper has one correct Shared test owner; both-width external Product smoke proves start/frame/exit plus cleanup; applicable tests and documentation governance pass; actual changes are reviewed and committed in target-scoped P commits. |
+| Original Owner Request | Implement MyRaidenII under governance, use external emulators as L2 when needed, allow explicit L1 where justified, and do not block on lack of physical-hardware evidence. |
+| Similar-Issue Sweep | Inspect all users of the moved helper, existing external Product wrappers and direct Console child-process tests; reject duplicate monitor-input drivers or PC/App-specific behavior in Shared test infrastructure. |
+
+## M1 T7 S69 Closure
+
+The generic Windows Console child-process helper now has the single shared
+test owner `test/emulator/setup`; existing PC integrations and the new
+MyRaidenII external Product smoke use it directly.  Both widths stage the
+verified owner archive, obtain the real Product's `Machine started.` monitor
+result, send `exit`, and remove their wrapper-owned staging child.  This
+qualifies the monitor start/exit and Product-to-driver route, while existing
+Board evidence remains the separate proof of changing frame data.  It does
+not claim captured Window output, desktop/RDP input, sound audibility,
+gameplay, sprite fidelity or release readiness.
+
+The recently extended X86 Core memory-route interface exposed omitted
+no-observer initializers in X86-NXVM and DeskPro code/tests; each now states
+`LIB_NULL` without changing routing semantics.  Both x64 and x86 repository
+unit suites pass all 697 tests (the x64 cleanup fixture is additionally
+validated with its permitted local junction setup).  S69 is closed with no
+active packet.
+
 ## Active Packet
 
-No S packet is active.
+None.
 
 ## Archived Packet — M1 T7 S54
 

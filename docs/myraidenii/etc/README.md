@@ -113,6 +113,7 @@
 - [T7 residual COP L1 compatibility](evidence/t7-s65-residual-cop-compatibility.md).
 - [T7 post-COP Product launch qualification](evidence/t7-s66-product-launch.md).
 - [T7 bounded Product surface observation](evidence/t7-s67-product-surface-observation.md).
+- [T7 controlled Product monitor start qualification](evidence/t7-s69-product-monitor-start.md).
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
 - [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 COPX-D2 contract research gate](evidence/t7-s63-copx-contract-research.md).

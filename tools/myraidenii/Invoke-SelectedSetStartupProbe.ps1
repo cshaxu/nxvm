@@ -5,8 +5,11 @@ param(
     [string]$Archive,
     [Parameter(Mandatory = $true, ParameterSetName = 'Probe')]
     [string]$Probe,
-    [Parameter(Mandatory = $true, ParameterSetName = 'Product')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'ProductLaunch')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'ProductSmoke')]
     [string]$Product,
+    [Parameter(Mandatory = $true, ParameterSetName = 'ProductSmoke')]
+    [string]$ProductSmoke,
     [Parameter(Mandatory = $true)]
     [string]$TemporaryRoot,
     [Parameter(ParameterSetName = 'Probe')]
@@ -20,7 +23,7 @@ param(
     [Parameter(ParameterSetName = 'Probe')]
     [ValidateRange(2000000, 100000000)]
     [UInt64]$InstructionBudget = 2000000,
-    [Parameter(ParameterSetName = 'Product')]
+    [Parameter(ParameterSetName = 'ProductLaunch')]
     [ValidateRange(1, 60)]
     [int]$ObserveSeconds = 10
 )
@@ -49,6 +52,13 @@ else {
     Require (Test-Path -LiteralPath $productPath -PathType Leaf) 'Product executable is missing'
     Require ([System.IO.Path]::GetExtension($productPath) -ceq '.exe') `
         'Product must be a Windows executable'
+    if ($PSCmdlet.ParameterSetName -ceq 'ProductSmoke') {
+        $productSmokePath = [System.IO.Path]::GetFullPath($ProductSmoke)
+        Require (Test-Path -LiteralPath $productSmokePath -PathType Leaf) `
+            'Product Console smoke executable is missing'
+        Require ([System.IO.Path]::GetExtension($productSmokePath) -ceq '.exe') `
+            'Product Console smoke must be a Windows executable'
+    }
 }
 $controlModes = [int][bool]$CoinStartHeld + [int][bool]$CoinStartPulse +
     [int][bool]$CoinStartSequence + [int][bool]$CoinStartFrameSequence
@@ -141,17 +151,25 @@ try {
             [System.Text.UTF8Encoding]::new($false))
         $stagedProduct = Join-Path $stagePath ([System.IO.Path]::GetFileName($productPath))
         [System.IO.File]::Copy($productPath, $stagedProduct, $false)
-        $process = Start-Process -FilePath $stagedProduct -WorkingDirectory $stagePath -PassThru
-        try {
-            if ($process.WaitForExit($ObserveSeconds * 1000)) {
-                throw "Product exited before observation: $($process.ExitCode)"
+        if ($PSCmdlet.ParameterSetName -ceq 'ProductSmoke') {
+            & $productSmokePath $stagedProduct $stagePath
+            if ($LASTEXITCODE -ne 0) {
+                throw "Product Console smoke failed: $LASTEXITCODE"
             }
-            "MYRAIDENII:PRODUCT-LAUNCH:OK pid=$($process.Id) seconds=$ObserveSeconds"
         }
-        finally {
-            if (-not $process.HasExited) {
-                Stop-Process -Id $process.Id -Force
-                $process.WaitForExit()
+        else {
+            $process = Start-Process -FilePath $stagedProduct -WorkingDirectory $stagePath -PassThru
+            try {
+                if ($process.WaitForExit($ObserveSeconds * 1000)) {
+                    throw "Product exited before observation: $($process.ExitCode)"
+                }
+                "MYRAIDENII:PRODUCT-LAUNCH:OK pid=$($process.Id) seconds=$ObserveSeconds"
+            }
+            finally {
+                if (-not $process.HasExited) {
+                    Stop-Process -Id $process.Id -Force
+                    $process.WaitForExit()
+                }
             }
         }
     }
