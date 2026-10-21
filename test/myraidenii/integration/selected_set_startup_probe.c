@@ -192,12 +192,18 @@ int main(int argument_count, char **arguments)
     lib_u32 pcm_frames = 0u;
     myraidenii_core_board_sound_observation sound_observation = {0};
     myraidenii_core_board_input_observation input_observation = {0};
+    myraidenii_core_board_input_observation coin_window_before = {0};
+    myraidenii_core_board_input_observation coin_window_after = {0};
+    myraidenii_core_board_input_observation start_window_before = {0};
+    myraidenii_core_board_input_observation start_window_after = {0};
     myraidenii_core_board_video_observation video_observation = {0};
     myraidenii_startup_control_mode control_mode;
     lib_bool coin_pressed = LIB_FALSE;
     lib_bool coin_released = LIB_FALSE;
     lib_bool start_pressed = LIB_FALSE;
     lib_bool start_released = LIB_FALSE;
+    lib_bool coin_window_observed = LIB_FALSE;
+    lib_bool start_window_observed = LIB_FALSE;
     lib_u64 pulse_press_at;
     lib_u64 pulse_release_at;
     lib_u64 start_press_at;
@@ -273,29 +279,43 @@ int main(int argument_count, char **arguments)
             (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
              control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
             !coin_pressed && control_time >= pulse_press_at) {
-            status = myraidenii_startup_set_control(&driver, '5', LIB_TRUE);
-            coin_pressed = status == LIB_STATUS_OK;
+            status = myraidenii_core_board_input_observation_get(board, &coin_window_before);
+            if (status == LIB_STATUS_OK) {
+                status = myraidenii_startup_set_control(&driver, '5', LIB_TRUE);
+                coin_pressed = status == LIB_STATUS_OK;
+            }
         }
         if (status == LIB_STATUS_OK &&
             (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
              control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
             coin_pressed && !coin_released && control_time >= pulse_release_at) {
-            status = myraidenii_startup_set_control(&driver, '5', LIB_FALSE);
-            coin_released = status == LIB_STATUS_OK;
+            status = myraidenii_core_board_input_observation_get(board, &coin_window_after);
+            if (status == LIB_STATUS_OK) {
+                coin_window_observed = LIB_TRUE;
+                status = myraidenii_startup_set_control(&driver, '5', LIB_FALSE);
+                coin_released = status == LIB_STATUS_OK;
+            }
         }
         if (status == LIB_STATUS_OK &&
             (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
              control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
             coin_released && !start_pressed && control_time >= start_press_at) {
-            status = myraidenii_startup_set_control(&driver, '1', LIB_TRUE);
-            start_pressed = status == LIB_STATUS_OK;
+            status = myraidenii_core_board_input_observation_get(board, &start_window_before);
+            if (status == LIB_STATUS_OK) {
+                status = myraidenii_startup_set_control(&driver, '1', LIB_TRUE);
+                start_pressed = status == LIB_STATUS_OK;
+            }
         }
         if (status == LIB_STATUS_OK &&
             (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
              control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
             start_pressed && !start_released && control_time >= start_release_at) {
-            status = myraidenii_startup_set_control(&driver, '1', LIB_FALSE);
-            start_released = status == LIB_STATUS_OK;
+            status = myraidenii_core_board_input_observation_get(board, &start_window_after);
+            if (status == LIB_STATUS_OK) {
+                start_window_observed = LIB_TRUE;
+                status = myraidenii_startup_set_control(&driver, '1', LIB_FALSE);
+                start_released = status == LIB_STATUS_OK;
+            }
         }
         if (status != LIB_STATUS_OK) break;
         status = x86_core_machine_run(machine, (x86_core_machine_run_budget){quantum, 0u},
@@ -395,7 +415,12 @@ int main(int argument_count, char **arguments)
             "oki-2-rejected=%llu oki-1-ignored=%llu oki-2-ignored=%llu "
             "oki-1-voice-starts=%llu oki-2-voice-starts=%llu pcm-nonzero-generated=%llu "
             "input-dip-reads=%llu input-player-reads=%llu input-system-reads=%llu "
-            "input-coin-reads=%llu "
+            "input-coin-reads=%llu coin-window-observed=%u "
+            "coin-window-dip-reads=%llu coin-window-player-reads=%llu "
+            "coin-window-system-reads=%llu coin-window-coin-reads=%llu "
+            "start-window-observed=%u start-window-dip-reads=%llu "
+            "start-window-player-reads=%llu start-window-system-reads=%llu "
+            "start-window-coin-reads=%llu "
             "video-vblanks=%llu video-crtc-writes=%llu video-sprite-flag-writes=%llu "
             "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu\n",
             (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
@@ -443,6 +468,24 @@ int main(int argument_count, char **arguments)
             (unsigned long long)input_observation.player_reads,
             (unsigned long long)input_observation.system_reads,
             (unsigned long long)input_observation.coin_reads,
+            (lib_u32)coin_window_observed,
+            (unsigned long long)(coin_window_observed ?
+                coin_window_after.dip_reads - coin_window_before.dip_reads : 0u),
+            (unsigned long long)(coin_window_observed ?
+                coin_window_after.player_reads - coin_window_before.player_reads : 0u),
+            (unsigned long long)(coin_window_observed ?
+                coin_window_after.system_reads - coin_window_before.system_reads : 0u),
+            (unsigned long long)(coin_window_observed ?
+                coin_window_after.coin_reads - coin_window_before.coin_reads : 0u),
+            (lib_u32)start_window_observed,
+            (unsigned long long)(start_window_observed ?
+                start_window_after.dip_reads - start_window_before.dip_reads : 0u),
+            (unsigned long long)(start_window_observed ?
+                start_window_after.player_reads - start_window_before.player_reads : 0u),
+            (unsigned long long)(start_window_observed ?
+                start_window_after.system_reads - start_window_before.system_reads : 0u),
+            (unsigned long long)(start_window_observed ?
+                start_window_after.coin_reads - start_window_before.coin_reads : 0u),
             (unsigned long long)video_observation.vblank_events,
             (unsigned long long)video_observation.crtc_byte_writes,
             (unsigned long long)video_observation.sprite_flag_byte_writes,

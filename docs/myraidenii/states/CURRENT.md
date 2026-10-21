@@ -8,7 +8,26 @@ It does not redefine unimplemented Board behavior as a release result.
 
 ## Active Packet
 
-No S packet is active.
+## Active Packet — M1 T7 S36
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S35; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation, permits bounded owner-ROM probes and external-emulator behavior as L2, and has not authorized a guessed Board/COP/Video/Sound repair. |
+| Objective | Determine whether the existing V30/Sound input reads occur while the already delivered Coin and Start pulses are actually asserted, rather than only elsewhere in the bounded run. |
+| Non-goals | No input behavior change, value/history capture, guest-state inspection, ROM/PAL/source import, renderer, state mirror, Shared/API change, timer, automation, gameplay/release claim or hardware repair. |
+| Reference Baseline | S35 proves actual main V30 and Sound input reads occur during both no-input and vblank-aligned runs, but its whole-run aggregate does not locate them relative to the named Coin/Start pulse windows. |
+| Candidate Proposal | In the existing selected-set Probe only, snapshot the existing copied Board input aggregate immediately before each press and immediately before the corresponding release, then print the monotonic read-count delta for each named pulse window. |
+| Files And ABI Surface | Existing selected-set Probe, Current, one evidence record/index. No production code, public interface, state, build path, external asset or Shared change. Estimated source +18..42/-0..8; documents +35..80/-0..12. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Architecture/Coding/Documentation rules and T7 qualification proposal. Selected-set output remains L2. |
+| Verification | Build the existing Probe x64/x86; run one vblank-aligned 20,000,000-instruction sequence per width through the existing owner-ROM wrapper; compare window counts and existing neutral summary; run the affected MyRaidenII unit label, documentation governance and whitespace checks. |
+| Expected Markers | Each pulse has an explicit before/after counter pair. A positive Player/System/Coin delta locates actual reads in the asserted interval; a zero delta identifies a timing/sampling boundary. Neither result proves accepted credit, title, gameplay, graphics or sound fidelity. |
+| Asset Needs | Read-only owner archive through the existing wrapper only; temporary external staging/logs are removed after completed runs. |
+| Reporting Requirements | Exact dual-width window-count matrix, preserved neutral frame summary, source-grade limit, actual diff and next receiver; no raw input or guest payload. |
+| Stop Conditions | Need for input values/history, raw guest state, a new input route, guessed repair, Shared API, unbounded run, nondeterminism or staging failure stops and records the gap. |
+| Exit Criteria | Existing aggregate only is reused, both asserted windows are reported on both widths, affected tests/checks pass, staging is empty, evidence is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII implementation efficiently toward real Raiden II execution without copying external implementation. |
+| Similar-Issue Sweep | Counter monotonicity, press/release ordering, input-mode exclusivity, all four input registers, reset, getter failure, unchanged legacy modes, Probe-only output and staging cleanup. |
 
 ## Archived Packet — M1 T7 S35
 
