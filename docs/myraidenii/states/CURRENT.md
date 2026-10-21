@@ -6,6 +6,39 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S7
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S7 follows closed S6. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation and established the strict evidence grades: only an inspected primary manual PDF's directly applicable formula, constant or rule is L3; external references/ranges/runtime observations are L2; unsupported local choices are L1. |
+| Objective | Make the existing external selected-set probe's bounded instruction budget explicit and safely variable, then observe a longer identical selected-set run on both widths without converting elapsed diagnostic work into a guest-hardware timing claim. |
+| Non-goals | No CPU/Board/Sound/Video model change, ROM import/retention, trace/screenshot/PCM dump, new input path, COPX behavior, playable-game claim or release artifact. |
+| Reference Baseline | The current probe always executes a fixed two-million-instruction budget. Its aggregate output proves a nonfaulted bounded run, but cannot distinguish a later guest checkpoint from a missing receiver. |
+| Candidate Proposal | Preserve the two-million default. Add one strictly parsed optional budget argument capped at a finite diagnostic maximum; have the existing staging wrapper pass it only in Probe mode. Output the requested budget with existing aggregate metadata. |
+| Files And ABI Surface | Expected only the MyRaidenII integration probe, its existing staging tool, Current and one evidence record. No public API or Shared/Product/Machine/Core ABI changes. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding and Source Policy; shared Execution, Architecture, Coding and Document rules. The budget cap is L1 containment policy. Runtime results are L2 and cannot establish physical timing or gameplay. |
+| Verification | Build the existing probe for both widths; prove default compatibility and invalid-budget rejection; run exactly one longer owner-input probe per width through the existing verifier/staging route; run complete repository-only unit selection per width; verify cleanup, documents and diff. |
+| Expected Markers | Default output retains two-million budget; invalid input is rejected before image loading; both long runs report the same requested/executed budget or a concrete owned terminal result; staging remains empty. |
+| Asset Needs | Read-only `O:\\assets\\raidenii\\raiden2.zip`; temporary files remain only below `O:\\assets\\raidenii\\myraidenii-diagnostics\\` and are removed. |
+| Reporting Requirements | Separate the L1 diagnostic budget choice from L2 runtime observations; report both widths, terminal reason, aggregate frame/PCM metadata and all nonclaims. |
+| Stop Conditions | A need for unbounded execution/trace, retained payload, a guest behavior change, Shared change, inferred timing constant or unsupported production receiver stops this packet. |
+| Exit Criteria | The probe remains one bounded diagnostic with default compatibility; both widths complete the one longer observation or expose a concrete owned terminal; cleanup and applicable tests pass. |
+| Original Owner Request | Continue under the strict L3/L2/L1 definition: only an inspected primary manual PDF's explicit applicable formula/constant/rule is L3; external references, ranges and runtime observations are L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Check every external diagnostic argument is bounded and parsed once, staging still validates before extraction, and no changed output exposes protected content. |
+
+## M1 T7 S7 Closure
+
+S7 is closed.  The one selected-set Probe now accepts an explicit bounded
+instruction budget while retaining its two-million default and one execution
+route.  A five-million held-control observation completed with identical x64
+and x86 aggregates and no terminal CPU, COP or control fault.  The budget is
+L1 containment policy and the run is L2 only; neither is a game/hardware timing
+or gameplay claim.  Existing complete repository unit selections from S6 remain
+valid because S7 changes only the opt-in integration Probe and its wrapper; the
+affected Probe was rebuilt on both widths and invalid-input handling was
+executed on both.  See [S7 evidence](../etc/evidence/t7-s7-bounded-budget.md).
+
 ## Archived Packet — M1 T7 S6
 
 | Field | Required record |

@@ -11,6 +11,9 @@ param(
     [string]$TemporaryRoot,
     [Parameter(ParameterSetName = 'Probe')]
     [switch]$CoinStartHeld,
+    [Parameter(ParameterSetName = 'Probe')]
+    [ValidateRange(2000000, 20000000)]
+    [UInt64]$InstructionBudget = 2000000,
     [Parameter(ParameterSetName = 'Product')]
     [ValidateRange(1, 60)]
     [int]$ObserveSeconds = 10
@@ -99,6 +102,7 @@ try {
             $images['sprites-3'], $images['sprites-4'], $images['samples-1'], `
             $images['samples-2'])
         if ($CoinStartHeld) { $probeArguments += '--coin-start-held' }
+        $probeArguments += "--instruction-budget=$InstructionBudget"
         & $probePath @probeArguments
         if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
     }

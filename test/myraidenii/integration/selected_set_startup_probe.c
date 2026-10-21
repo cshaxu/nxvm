@@ -5,12 +5,48 @@
 #include "myraidenii/machine/configuration_interface.h"
 #include "x86-core/machine/machine_interface.h"
 
-#define MYRAIDENII_STARTUP_INSTRUCTION_BUDGET 2000000u
+#define MYRAIDENII_STARTUP_DEFAULT_INSTRUCTION_BUDGET 2000000u
+#define MYRAIDENII_STARTUP_MAXIMUM_INSTRUCTION_BUDGET 20000000u
 
-static lib_bool myraidenii_startup_controls_requested(lib_i32 argument_count,
-    char **arguments)
+static lib_bool myraidenii_startup_parse_arguments(lib_i32 argument_count, char **arguments,
+    lib_bool *out_coin_start_held, lib_u64 *out_instruction_budget)
 {
-    return argument_count == 14 && lib_text_compare(arguments[13], "--coin-start-held") == 0;
+    static const char budget_prefix[] = "--instruction-budget=";
+    lib_bool coin_start_held = LIB_FALSE;
+    lib_bool budget_seen = LIB_FALSE;
+    lib_u64 instruction_budget = MYRAIDENII_STARTUP_DEFAULT_INSTRUCTION_BUDGET;
+
+    if (arguments == LIB_NULL || out_coin_start_held == LIB_NULL ||
+        out_instruction_budget == LIB_NULL || argument_count < 13 || argument_count > 15)
+        return LIB_FALSE;
+    for (lib_i32 index = 13; index < argument_count; ++index) {
+        const char *argument = arguments[index];
+
+        if (argument == LIB_NULL) return LIB_FALSE;
+        if (lib_text_compare(argument, "--coin-start-held") == 0) {
+            if (coin_start_held) return LIB_FALSE;
+            coin_start_held = LIB_TRUE;
+        } else {
+            lib_size prefix_length = sizeof(budget_prefix) - 1u;
+            lib_u64 value = 0u;
+
+            if (budget_seen || lib_memory_compare(argument, budget_prefix, prefix_length) != 0 ||
+                argument[prefix_length] == '\0') return LIB_FALSE;
+            for (const char *digit = argument + prefix_length; *digit != '\0'; ++digit) {
+                if (*digit < '0' || *digit > '9' ||
+                    value > (MYRAIDENII_STARTUP_MAXIMUM_INSTRUCTION_BUDGET -
+                        (lib_u64)(*digit - '0')) / 10u)
+                    return LIB_FALSE;
+                value = value * 10u + (lib_u64)(*digit - '0');
+            }
+            if (value < MYRAIDENII_STARTUP_DEFAULT_INSTRUCTION_BUDGET) return LIB_FALSE;
+            instruction_budget = value;
+            budget_seen = LIB_TRUE;
+        }
+    }
+    *out_coin_start_held = coin_start_held;
+    *out_instruction_budget = instruction_budget;
+    return LIB_TRUE;
 }
 
 static void myraidenii_startup_frame_observe(const lib_u32 *pixels, lib_size pixel_count,
@@ -60,7 +96,8 @@ int main(int argument_count, char **arguments)
     x86_core_machine *machine;
     lib_u32 *pixels = LIB_NULL;
     lib_i16 *pcm_samples = LIB_NULL;
-    lib_u64 remaining = MYRAIDENII_STARTUP_INSTRUCTION_BUDGET;
+    lib_u64 instruction_budget;
+    lib_u64 remaining;
     x86_core_machine_run_result result = {0};
     x86_core_cpu_diagnostic diagnostic = {0};
     myraidenii_core_cop_failure_observation cop_failure = {0};
@@ -76,13 +113,12 @@ int main(int argument_count, char **arguments)
     lib_bool coin_start_held;
     int exit_code = 1;
 
-    if ((argument_count != 13 && argument_count != 14) ||
-        (argument_count == 14 && !myraidenii_startup_controls_requested(argument_count,
-            arguments))) {
+    if (!myraidenii_startup_parse_arguments(argument_count, arguments, &coin_start_held,
+            &instruction_budget)) {
         lib_c_printf("MYRAIDENII:STARTUP-PROBE:USAGE\n");
         return 2;
     }
-    coin_start_held = myraidenii_startup_controls_requested(argument_count, arguments);
+    remaining = instruction_budget;
     for (lib_size index = 0u; index < MYRAIDENII_MACHINE_IMAGE_COUNT; ++index)
         image_paths[index] = arguments[index + 1u];
     status = myraidenii_machine_images_load(".", image_paths, &images);
@@ -158,7 +194,7 @@ int main(int argument_count, char **arguments)
             "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
             "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
-            "coin-start-held=%u "
+            "coin-start-held=%u instruction-budget=%llu "
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
             "frame-digest=%016llx pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
             "pcm-digest=%016llx\n",
@@ -172,7 +208,8 @@ int main(int argument_count, char **arguments)
             (lib_u32)control_failure.valid, control_failure.physical,
             (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,
             (lib_u32)coin_start_held,
-            (unsigned long long)(MYRAIDENII_STARTUP_INSTRUCTION_BUDGET - remaining),
+            (unsigned long long)instruction_budget,
+            (unsigned long long)(instruction_budget - remaining),
             (unsigned long long)result.elapsed_ticks, MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH,
             MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT, (unsigned long long)nonblack_pixels,
             (unsigned long long)frame_digest, pcm_frames,
