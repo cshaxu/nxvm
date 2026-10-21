@@ -104,6 +104,7 @@
 - [T7 Product-to-Machine input-route qualification](evidence/t7-s20-product-input-route.md).
 - [T7 Machine-driver selected-set input pulse](evidence/t7-s21-machine-input-pulse.md).
 - [T7 frozen qualification reconciliation](evidence/t7-s22-qualification-reconciliation.md).
+- [T7 full-budget Machine-driver pulse](evidence/t7-s23-full-budget-machine-pulse.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
