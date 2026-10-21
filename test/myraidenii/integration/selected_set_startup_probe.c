@@ -13,6 +13,9 @@ typedef struct myraidenii_startup_frame_sample {
     lib_u64 executed;
     lib_u64 digest;
     lib_u64 nonblack;
+    lib_u8 sound_command_0;
+    lib_u8 sound_command_1;
+    lib_bool sound_interrupt_pending;
 } myraidenii_startup_frame_sample;
 
 static lib_bool myraidenii_startup_parse_arguments(lib_i32 argument_count, char **arguments,
@@ -86,7 +89,12 @@ static lib_status myraidenii_startup_frame_sample_capture(
     out_sample->executed = executed;
     myraidenii_startup_frame_observe(pixels, MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS,
         &out_sample->digest, &out_sample->nonblack);
-    return LIB_STATUS_OK;
+    status = myraidenii_core_board_sound_command_get(board, 0u, &out_sample->sound_command_0);
+    if (status != LIB_STATUS_OK) return status;
+    status = myraidenii_core_board_sound_command_get(board, 1u, &out_sample->sound_command_1);
+    if (status != LIB_STATUS_OK) return status;
+    return myraidenii_core_board_sound_interrupt_is_pending(board,
+        &out_sample->sound_interrupt_pending);
 }
 
 static void myraidenii_startup_pcm_observe(const lib_i16 *samples, lib_u32 frame_count,
@@ -267,10 +275,13 @@ int main(int argument_count, char **arguments)
             (unsigned long long)nonzero_pcm_frames, (unsigned long long)pcm_digest);
         for (lib_u8 index = 0u; index < frame_sample_count; ++index) {
             lib_c_printf("MYRAIDENII:STARTUP-PROBE:FRAME-SAMPLE index=%u executed=%llu "
-                "digest=%016llx nonblack=%llu\n", index + 1u,
+                "digest=%016llx nonblack=%llu sound-command-0=%u sound-command-1=%u "
+                "sound-interrupt-pending=%u\n", index + 1u,
                 (unsigned long long)frame_samples[index].executed,
                 (unsigned long long)frame_samples[index].digest,
-                (unsigned long long)frame_samples[index].nonblack);
+                (unsigned long long)frame_samples[index].nonblack,
+                frame_samples[index].sound_command_0, frame_samples[index].sound_command_1,
+                (lib_u32)frame_samples[index].sound_interrupt_pending);
         }
         exit_code = 0;
     } else {

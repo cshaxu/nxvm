@@ -6,6 +6,39 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S16
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S16 follows closed S15. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work under the stated L3/L2/L1 evidence rule. This packet is a bounded T7 runtime qualification diagnostic. |
+| Objective | Identify whether the selected-set main CPU reaches the existing Board-to-Sound command transport during the same bounded startup observation that produces advancing frames but zero copied PCM. |
+| Non-goals | No Sound synthesis, YM/OKI model, ROM/PAL import or retention, production behavior change, public API expansion, execution-budget increase, source import, screenshot/trace, Shared change, release artifact or audio-success claim. |
+| Reference Baseline | S15 establishes identical x64/x86 frame progression at the existing 20M cap while its one final PCM copy has zero nonzero frames. Board already exposes non-destructive command-byte and interrupt-pending queries. |
+| Candidate Proposal | Extend the existing four Probe samples with the two current Board sound-command bytes and the Board sound-interrupt-pending state. The same single helper takes the frame and Sound transport snapshot after each fixed sample. No query acknowledges, clears or consumes any guest state. |
+| Files And ABI Surface | Expected only `test/myraidenii/integration/selected_set_startup_probe.c`, Current and one evidence record; no public/production ABI or manifest owner changes. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Documentation rules. Observed selected-set behavior is L2; no result is L3 without an explicit inspected primary-manual PDF fact. |
+| Verification | Build the existing Probe on x64/x86; run the existing external staging wrapper once per width at the unchanged cap; require identical finite sample state and no terminal failure; run MyRaidenII units x64/x86, documentation governance and whitespace checks. |
+| Expected Markers | A finite result distinguishes no main-to-Sound transport activity from active/pending transport. It may select a later Sound receiver, but cannot itself establish audio fidelity. |
+| Asset Needs | Read-only owner archive `O:\assets\raidenii\raiden2.zip`; wrapper-owned transient staging only, removed on exit. |
+| Reporting Requirements | Record only command bytes, pending state, existing neutral summaries, host-width comparison and cleanup. Preserve the distinction between transport activity, PCM output and audible sound. |
+| Stop Conditions | Any need to alter guest state, acknowledge a command, inspect/dump protected payload, retain a trace, alter production Sound semantics, use MAME/source behavior, or make a gameplay/audio claim stops this packet and transfers the receiver. |
+| Exit Criteria | The existing Probe exposes one non-destructive Sound transport sample per fixed frame sample, both widths are compared under the existing budget, all touched checks pass and evidence identifies the next owner without an unsupported implementation. |
+| Original Owner Request | Continue with strict evidence: only an explicit directly applicable rule/constant/formula in an inspected primary manual PDF is L3; external/range/board observations are L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Verify all Board sound queries are read-only, return failures consistently and do not accidentally acknowledge/clear the pending transport; retain the single final destructive PCM copy. |
+
+## M1 T7 S16 Closure
+
+S16 is closed. The bounded selected-set Probe now records existing Board Sound
+command bytes and the existing Sound-interrupt latch at S15's four fixed frame
+samples. Both host widths observed the same pending interrupt throughout the
+unchanged 20M budget; the prior zero-nonzero PCM result remains. This is L2
+runtime evidence only. It transfers a finite Board-to-Sound interrupt-arbitration
+receiver to a later S; it neither qualifies audio nor introduces production
+behavior. See [S16 evidence](../etc/evidence/t7-s16-sound-transport-observation.md).
+Coordinator actual-change review accepted the test-only Probe extension: no
+production ABI, artifact, protected-input retention or Shared component changed.
+
 ## M1 T7 S15 Closure
 
 S15 is closed.  The existing selected-set Probe now samples four non-destructive

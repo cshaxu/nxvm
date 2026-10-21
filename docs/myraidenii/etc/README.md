@@ -97,6 +97,7 @@
 - [T7 L2 raster-cadence reconciliation](evidence/t7-s13-raster-cadence-reconciliation.md).
 - [T7 Board-map L2 reconciliation](evidence/t7-s14-board-map-reconciliation.md).
 - [T7 bounded selected-set progress sampling](evidence/t7-s15-progress-sampling.md).
+- [T7 bounded Board-to-Sound transport observation](evidence/t7-s16-sound-transport-observation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
