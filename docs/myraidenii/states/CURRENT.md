@@ -6,7 +6,13 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S42
+## Current Packet
+
+No S packet is active. M1 T7 remains open for its later Board/Sound receiver
+and broader gameplay/release qualification; it does not infer a repair from
+the S42 terminal boundary.
+
+## Archived Packet — M1 T7 S42
 
 | Field | Required record |
 | --- | --- |
@@ -19,6 +25,22 @@ It does not redefine unimplemented Board behavior as a release result.
 | Verification | Extend the existing Sound smoke through its real executor, pass focused and complete MyRaidenII unit labels on x64/x86, then run one bounded selected-set Probe per width with staging removed. |
 | Stop Conditions | Need for raw guest payload, an unsupported non-finite opcode family, a new device route, a Shared/public contract, nondeterminism or a failure outside the existing Sound owner stops and transfers the gap. |
 | Exit Criteria | The finite indexed transform family is covered through the single executor and qualified on both widths, or its explicit unresolved boundary is recorded without a guessed production behavior; staging is empty and actual diff review is complete. |
+
+## M1 T7 S42 Closure
+
+Sequential coordinator actual-change review accepts P1 `aaaf124a2`, P2
+`1f933e64b` and P3 `6c7c9ac70`. The ordinary and DD/FD-CB transform paths now
+share one private Sound helper; indexed memory write-back and optional register
+copy retain the existing executor, memory route and flag owner. The existing
+ROM-free Sound smoke covers the finite indexed transform cases without a second
+decoder fixture or a Shared/public contract.
+
+The current complete MyRaidenII unit label passes 12/12 on both x64 and x86.
+One persistent background selected-set Probe per width crosses S42's previous
+receiver and reaches the same later Board-runtime `LIB_STATUS_UNSUPPORTED`
+boundary. That result is a transfer, not a guessed Sound repair or a
+gameplay/release claim; external staging is empty. M1 T7 remains open for an
+independently admitted receiver packet.
 
 ## M1 T7 S40 Closure
 
