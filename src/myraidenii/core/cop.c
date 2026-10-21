@@ -24,20 +24,6 @@ enum {
     MYRAIDENII_CORE_COP_DMA_PALETTE_SIZE = 0x00ffu
 };
 
-typedef enum myraidenii_core_cop_register_role {
-    MYRAIDENII_CORE_COP_CONFIG,
-    MYRAIDENII_CORE_COP_DECIMAL_INPUT,
-    MYRAIDENII_CORE_COP_READ_WRITE,
-    MYRAIDENII_CORE_COP_COMMAND,
-    MYRAIDENII_CORE_COP_RESULT,
-    MYRAIDENII_CORE_COP_RANDOM,
-    MYRAIDENII_CORE_COP_DMA_CONFIGURATION,
-    MYRAIDENII_CORE_COP_SORT_CONFIGURATION,
-    MYRAIDENII_CORE_COP_DMA_TRIGGER,
-    MYRAIDENII_CORE_COP_SORT_TRIGGER,
-    MYRAIDENII_CORE_COP_UNMODELLED_REGISTER
-} myraidenii_core_cop_register_role;
-
 typedef enum myraidenii_core_cop_command_kind {
     MYRAIDENII_CORE_COP_UNSUPPORTED,
     MYRAIDENII_CORE_COP_COPY,
@@ -173,6 +159,8 @@ static lib_bool myraidenii_core_cop_dma_mode_supported(lib_u16 mode)
 
 static void myraidenii_core_cop_note_failure(myraidenii_core_cop *cop,
     lib_status status, lib_u32 physical);
+static const myraidenii_core_cop_range *myraidenii_core_cop_range_find(lib_u32 physical,
+    lib_uptr bytes);
 
 static void myraidenii_core_cop_pending_clear(myraidenii_core_cop *cop)
 {
@@ -184,11 +172,13 @@ static void myraidenii_core_cop_provider_failure_note(void *owner,
     lib_status status)
 {
     myraidenii_core_cop *cop = owner;
+    const myraidenii_core_cop_range *range =
+        myraidenii_core_cop_range_find(physical, bytes);
 
-    (void)physical;
-    (void)bytes;
     if (cop == LIB_NULL || cop->provider_failure.valid) return;
     cop->provider_failure.valid = LIB_TRUE;
+    cop->provider_failure.role = range == LIB_NULL ?
+        MYRAIDENII_CORE_COP_UNKNOWN_REGISTER : range->role;
     cop->provider_failure.access = access;
     cop->provider_failure.status = status;
 }

@@ -14,6 +14,23 @@ typedef enum myraidenii_core_cop_operation {
     MYRAIDENII_CORE_COP_OPERATION_SORT
 } myraidenii_core_cop_operation;
 
+/* Safe logical classification for an already selected COP range. These values
+ * describe a range's existing owner role, never its guest address or data. */
+typedef enum myraidenii_core_cop_register_role {
+    MYRAIDENII_CORE_COP_CONFIG,
+    MYRAIDENII_CORE_COP_DECIMAL_INPUT,
+    MYRAIDENII_CORE_COP_READ_WRITE,
+    MYRAIDENII_CORE_COP_COMMAND,
+    MYRAIDENII_CORE_COP_RESULT,
+    MYRAIDENII_CORE_COP_RANDOM,
+    MYRAIDENII_CORE_COP_DMA_CONFIGURATION,
+    MYRAIDENII_CORE_COP_SORT_CONFIGURATION,
+    MYRAIDENII_CORE_COP_DMA_TRIGGER,
+    MYRAIDENII_CORE_COP_SORT_TRIGGER,
+    MYRAIDENII_CORE_COP_UNMODELLED_REGISTER,
+    MYRAIDENII_CORE_COP_UNKNOWN_REGISTER
+} myraidenii_core_cop_register_role;
+
 /* This is a bounded failure summary for the Board diagnostic only. It never
  * retains guest payload or execution position. Rejected DMA triggers retain
  * only their selected source, size, destination and relative descriptor values. */
@@ -33,6 +50,7 @@ typedef struct myraidenii_core_cop_failure_observation {
  * command, guest address, descriptor or register value. */
 typedef struct myraidenii_core_cop_provider_failure_observation {
     lib_bool valid;
+    myraidenii_core_cop_register_role role;
     x86_core_machine_memory_access access;
     lib_status status;
 } myraidenii_core_cop_provider_failure_observation;

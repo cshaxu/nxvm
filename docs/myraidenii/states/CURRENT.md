@@ -478,11 +478,48 @@ Focused and complete repository-only verification passed on x64 and x86:
 the MyRaidenII unit set completed 11 executables per width, and the complete
 X86 Core suite completed 183 executables per width.  One registered bounded
 owner-ROM run per width produced the same safe classification: a selected COP
-provider read returned `LIB_STATUS_INVALID_STATE`, while the Board aggregate
-remained clear.  Wrapper staging was empty after each run.  The result selects
-a future COP-owned receiver only; it does not prove boot, title-screen,
-gameplay, graphics, audio or release readiness.  S55 is closed with no active
-packet; M1 T7 remains open.
+provider terminal while the Board aggregate remained clear.  Wrapper staging
+was empty after each run.  The result selects a future COP-owned receiver only;
+it does not prove boot, title-screen, gameplay, graphics, audio or release
+readiness.  S55 is closed; M1 T7 remains open.
+
+## M1 T7 S56 — COP provider-role classification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S55; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII M1 implementation and automatic bounded S progression. S55 establishes one matching dual-width COP provider terminal but intentionally withholds raw guest location. |
+| Objective | Extend the existing safe COP provider-failure aggregate with its bounded local COP range role, so the selected-set probe can name a logical receiver without retaining a guest address, byte, trace or payload. |
+| Non-goals | No Shared change, second bus/route, map widening, generic read success, CPU decoder, timer, thread, ROM/media import, raw output, gameplay/release claim or device repair. |
+| Reference Baseline | S55 records an identical x64/x86 selected COP-provider terminal; `myraidenii_core_cop_read()` and `myraidenii_core_cop_write()` both have several local terminal categories, so status and direction alone cannot select an owner-valid receiver. |
+| Candidate Proposal | In the existing COP failure observer, map the Core-supplied physical span through the existing private range lookup and retain only a public bounded range-kind enum plus access/status. Board continues forwarding the existing COP aggregate. No address or range offset enters the public structure or probe. |
+| Files And ABI Surface | MyRaidenII `core/cop.[ch]`, Board forwarding header/source only if its existing getter needs the enlarged copied observation, existing Board smoke and selected-set probe, Current/evidence/index and manifests as required. Estimated source +20..55/-0..10, tests +30..85/-0..15, documents +40..95. |
+| Applicable Rules | MyRaidenII guide/architecture/coding/source policy; Shared execution/architecture/coding/documentation rules. Long build/test/probe work is background-only. COP remains the sole range/role owner; Core only reports selected terminal provider results. |
+| Verification | Static complete range/read-failure inventory; focused COP/Board x64/x86 units; complete MyRaidenII unit labels on x64/x86; one registered bounded safe-output wrapper run per width after local proof; manifests, documentation governance and whitespace. |
+| Expected Markers | Every copied kind corresponds to one existing COP role; unrecognised observer span is an explicit none/unknown category rather than a synthetic address; both external runs either agree on one safe role or stop on an explicit divergent/unknown result. |
+| Asset Needs | Existing owner archive is read-only through the registered wrapper. Wrapper staging stays external and is removed after each run. |
+| Reporting Requirements | Record only range-role category, access/status, width agreement and cleanup. Do not record raw physical/linear address, instruction, register, byte, trace, ROM/media or third-party source. |
+| Stop Conditions | A meaningful receiver would require raw range offset, a new Shared contract, an external map inference, a generic success fallback, divergent widths or retained staging stops this S and transfers the boundary. |
+| Exit Criteria | The existing COP observer reports a safe complete range-role category; local and full units pass on both widths; each bounded external run is cleaned/classified; evidence/index/current are complete and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII under governance, resolve the real owner by bounded evidence and do not patch the first observed external failure. |
+| Similar-Issue Sweep | All COP ranges, read/query outcomes, observer reset/first-failure behavior, Board forwarding, probe output format and synthetic unsupported/terminal paths. |
+
+## M1 T7 S56 Closure
+
+S56 promotes the existing COP range-role vocabulary as the one safe
+selected-provider category.  The Core-supplied physical span remains local to
+the COP callback and is never copied into Board state, the probe or evidence.
+The Board smoke proves distinct configuration and unmodelled-register failures
+retain their own role, access and status through the actual installed route.
+
+The complete MyRaidenII unit set passed on both widths (11 executables per
+width).  One registered bounded owner-ROM wrapper run per width reports the
+same `command` role; x86 additionally establishes write plus
+`LIB_STATUS_INVALID_STATE`.  Staging was empty after each run.  This is only a
+safe owner transfer: it does not establish a command value, make rejected
+commands succeed, or prove boot, gameplay, audio, graphics or release
+readiness.  S56 is closed; M1 T7 remains open for a separately bounded COP
+command-admission audit.
 
 ## Active Packet
 

@@ -1483,6 +1483,7 @@ static lib_i32 board_cop_routes(void)
 
     if (myraidenii_core_board_cop_provider_failure_get(board, &cop_provider_failure) !=
             LIB_STATUS_OK || !cop_provider_failure.valid ||
+        cop_provider_failure.role != MYRAIDENII_CORE_COP_CONFIG ||
         cop_provider_failure.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
         cop_provider_failure.status != LIB_STATUS_INVALID_STATE)
         goto done;
@@ -1568,6 +1569,13 @@ static lib_i32 board_cop_routes(void)
                 goto done;
         }
     }
+
+    if (myraidenii_core_board_cop_provider_failure_get(board, &cop_provider_failure) !=
+            LIB_STATUS_OK || !cop_provider_failure.valid ||
+        cop_provider_failure.role != MYRAIDENII_CORE_COP_UNMODELLED_REGISTER ||
+        cop_provider_failure.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        cop_provider_failure.status != LIB_STATUS_INVALID_STATE)
+        goto done;
 
     if (x86_core_machine_memory_query(machine, 0x00426u, 1u,
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||

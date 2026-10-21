@@ -36,9 +36,10 @@ after the interface migration.
 The registered bounded owner-ROM wrapper then ran once per width with the
 existing Coin/Start sequence and containment budget.  Both widths reached the
 same finite terminal result.  The safe classification was a selected COP
-provider read returning `LIB_STATUS_INVALID_STATE`; the Board aggregate stayed
-clear.  The wrapper-created external staging child was empty after each run.
-No raw guest fields or probe transcript are retained here.
+provider terminal; the Board aggregate stayed clear.  S56 refines the retained
+logical range role without relying on this record for an access direction or a
+raw guest discriminator.  The wrapper-created external staging child was empty
+after each run.  No raw guest fields or probe transcript are retained here.
 
 ## Boundary
 
