@@ -8,6 +8,48 @@ It does not redefine unimplemented Board behavior as a release result.
 
 ## Active Packet
 
+No S packet is active.
+
+## Archived Packet — M1 T7 S37
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S36; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation, authorized external-emulator behavior as L2 where primary board material is absent, and explicitly directed progress without repeated approval requests for non-degrading in-scope work. This packet consumes one finite local Board gap; it does not import external source or data. |
+| Objective | Implement the existing Sprite-protection source-trigger endpoint as one bounded Board-local L2 object-culling/write mechanism, rather than leaving its established configuration/output latches disconnected. |
+| Non-goals | No Shared/API change; no MAME/source/table/ROM import; no sprite decryption rewrite; no new renderer, queue, thread, host route, guest-state mirror, generic COP framework, or claim of physical protection accuracy, title, gameplay or release. |
+| Reference Baseline | S29/S30 established the exact Board-local register directions for source segment, offset, destination, X/Y/max-X and source trigger/output. S33--S36 prove Video and input owners are active yet do not prove the disconnected trigger changes object state. The inspected L2 reference describes a finite trigger that derives a source address from the existing segment/source latches, evaluates one descriptor against the existing bounds, and conditionally emits a compact object record while advancing the existing destination. |
+| Candidate Proposal | Extend only the existing Board Sprite-protection latch write owner. A completed write to the existing source-trigger pair sets one private pending bit. The existing `board_advance()` safe point consumes that bit once through the already-public Core DMA memory cycle: it obtains one descriptor, applies an independently written L2 bounds/flag decision using the already owned latches, writes an accepted compact record, advances only the existing destination, and preserves every existing access direction. The bit is necessary because a memory-provider callback runs inside the active CPU transaction and may not nest a DMA transaction; it is not a second queue or new execution path. Invalid memory/service failure reports through the existing Core fault path and does not advance destination. |
+| Files And ABI Surface | `src/myraidenii/core/board.c`, existing `test/myraidenii/unit/core/board_bus_smoke.c`, Current, one evidence record/index and relevant manifest only. One private Board pending bit is added to bridge the existing CPU callback to the existing Board safe point. No public header, Shared, product, machine, assets, ROM or media change. Estimated production +55..120/-0..20; test +85..210/-0..30; documents +45..100/-0..15. |
+| Applicable Rules | MyRaidenII guide; Architecture/Coding/UI/source policy; shared Execution/Architecture/Coding/Documentation rules; M1 T7 proposal. External facts are L2 only: independently implement the finite behavior and record exact inspected reference identity; no code/text/table transliteration. |
+| Verification | Extend the existing Board executable with synthetic descriptor/bounds/byte-lane/reset and memory-failure cases through the real mapped trigger. Build and run affected MyRaidenII Core unit target x64/x86, then the MyRaidenII unit label x64/x86, manifests/documentation/whitespace gates. Run one bounded owner-ROM Probe per width only if the repaired path is observed without retaining raw payload; otherwise record its absence, do not widen scope. |
+| Expected Markers | The trigger is no longer a passive latch: its next existing Board safe point consumes one request; accepted descriptors write exactly one compact result and advance destination once; rejected descriptors leave destination/output unchanged; failures do not partially advance. Existing endpoint access restrictions, reset and unrelated sprite/Video routes remain intact. |
+| Asset Needs | Existing owner ROM archive is read-only and used only through the existing bounded Probe wrapper. Temporary staging/logs remain external and are removed after each completed run. |
+| Reporting Requirements | Record exact L2 facts, local model boundary, source-grade limit, accepted/rejected/failure matrix, x64/x86 result, actual diff, retained/deleted paths and any real-set observation without protected payload. Do not describe a passing synthetic model as gameplay qualification. |
+| Stop Conditions | Need for a source/table import, undocumented new register, raw guest payload, decryption change, new Shared/public contract, ambiguous multi-object iteration, a non-finite behavior, nondeterminism, or a failure that cannot remain atomic stops and transfers the gap. |
+| Exit Criteria | One Board-owned trigger model and one production access path exist; complete synthetic matrix passes on both widths; affected units and gates pass; any permitted bounded probe is clean; actual diff review finds no duplicate path; evidence and a complete pushed P are ready for coordinator acceptance. |
+| Original Owner Request | Continue MyRaidenII implementation efficiently toward running Raiden II, using external emulator behavior as L2 when direct primary material is unavailable, without importing external implementation. |
+| Similar-Issue Sweep | Both byte lanes and word writes; partial latch writes; pending coalescence/reset; source-address arithmetic; signed bounds; accepted/rejected descriptors; destination/output alias; advance overflow; DMA read/write failure atomicity; reset; existing CRTC/sprite routes; no outer dependency. |
+
+## M1 T7 S37 Closure
+
+S37 is closed after actual-change review of the finite Board-only trigger
+implementation.  The source-trigger latch now defers one descriptor service to
+the existing Board safe point; it does not nest a Core transaction inside the
+CPU's mapped write callback.  The source/test delta is restricted to the
+MyRaidenII Board and its existing Board smoke; there is no Shared/public ABI,
+machine/product, ROM/media, artifact or external-source change.
+
+The accepted/rejected/failure matrix passes through the real mapped endpoints
+on both widths.  The affected MyRaidenII unit label passes 12/12 on x64 and
+x86.  One bounded 20,000,000-instruction owner-ROM vblank Coin/Start probe per
+width completes identically without CPU/COP/control fault and retains no media
+payload; its result is recorded in the
+[evidence record](../etc/evidence/t7-s37-sprite-protection-trigger.md).
+This is an L2 finite behavior model, not a claim of protection accuracy,
+playability, rendering fidelity, desktop behavior or release qualification.
+T7/M1 stays open for its remaining required qualification work.
+
 ## Archived Packet — M1 T7 S36
 
 | Field | Required record |

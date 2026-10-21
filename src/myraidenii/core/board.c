@@ -28,6 +28,7 @@ struct myraidenii_core_board {
     lib_u16 sprite_protection_y;
     lib_u16 sprite_protection_max_x;
     lib_u16 sprite_protection_source;
+    lib_bool sprite_protection_pending;
     lib_bool sound_command_pending;
     lib_bool sound_response_pending;
     lib_bool sound_interrupt_pending;
@@ -586,6 +587,8 @@ static lib_status myraidenii_core_board_sprite_protection_latch_write(void *owne
         *value = (lib_u16)((*value & (lib_u16)~mask) |
             ((lib_u16)((const lib_u8 *)source)[index] << shift));
     }
+    if (first == MYRAIDENII_CORE_SPRITE_PROTECTION_SOURCE_LATCH_START)
+        board->sprite_protection_pending = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -832,6 +835,97 @@ static lib_bool myraidenii_core_board_interrupt_pending(void *owner)
     return board != LIB_NULL && board->main_interrupt_pending;
 }
 
+static lib_status myraidenii_core_board_sprite_protection_word(
+    myraidenii_core_board *board, lib_u32 physical,
+    x86_core_machine_memory_access access, lib_u16 *in_out_value)
+{
+    return x86_core_machine_dma_memory_cycle(board->machine, physical, 2u, 0u,
+        access, in_out_value, LIB_NULL, LIB_NULL, board);
+}
+
+static lib_status myraidenii_core_board_sprite_protection_service(
+    myraidenii_core_board *board)
+{
+    lib_u32 source;
+    lib_u16 source_flags = 0u;
+    lib_u16 head_1 = 0u;
+    lib_u16 head_2 = 0u;
+    lib_u16 source_x = 0u;
+    lib_u16 source_y = 0u;
+    lib_i32 width;
+    lib_i32 height;
+    lib_i32 left;
+    lib_i32 top;
+    lib_bool visible;
+    lib_status status;
+
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    source = ((lib_u32)board->sprite_protection_source_segment << 4u) +
+        board->sprite_protection_source;
+    if (source > LIB_UINT32_MAX - 10u ||
+        source > LIB_UINT32_MAX - board->sprite_protection_offset - 2u) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    status = myraidenii_core_board_sprite_protection_word(board, source,
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &source_flags);
+    if (status == LIB_STATUS_OK) {
+        status = myraidenii_core_board_sprite_protection_word(board,
+            source + board->sprite_protection_offset,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &head_1);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = myraidenii_core_board_sprite_protection_word(board,
+            source + board->sprite_protection_offset + 2u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &head_2);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = myraidenii_core_board_sprite_protection_word(board, source + 6u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &source_y);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = myraidenii_core_board_sprite_protection_word(board, source + 10u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &source_x);
+    }
+    if (status != LIB_STATUS_OK) return status;
+
+    width = ((head_1 >> 8u & 7u) + 1u) << 4u;
+    height = ((head_1 >> 12u & 7u) + 1u) << 4u;
+    left = (lib_i16)source_x - (lib_i16)board->sprite_protection_x - width / 2;
+    top = (lib_i16)source_y - (lib_i16)board->sprite_protection_y - height / 2;
+    visible = left > -width && left < (lib_i32)board->sprite_protection_max_x + width &&
+        top > -height && top < 256 + height;
+    source_flags = (lib_u16)((source_flags & (lib_u16)~1u) | (visible ? 1u : 0u));
+    status = myraidenii_core_board_sprite_protection_word(board, source,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &source_flags);
+    if (status != LIB_STATUS_OK || !visible) return status;
+
+    status = myraidenii_core_board_sprite_protection_word(board,
+        board->sprite_protection_destination, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &head_1);
+    if (status == LIB_STATUS_OK) {
+        status = myraidenii_core_board_sprite_protection_word(board,
+            (lib_u16)(board->sprite_protection_destination + 2u),
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &head_2);
+    }
+    if (status == LIB_STATUS_OK) {
+        lib_u16 value = (lib_u16)left;
+
+        status = myraidenii_core_board_sprite_protection_word(board,
+            (lib_u16)(board->sprite_protection_destination + 4u),
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &value);
+    }
+    if (status == LIB_STATUS_OK) {
+        lib_u16 value = (lib_u16)top;
+
+        status = myraidenii_core_board_sprite_protection_word(board,
+            (lib_u16)(board->sprite_protection_destination + 6u),
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &value);
+    }
+    if (status == LIB_STATUS_OK)
+        board->sprite_protection_destination =
+            (lib_u16)(board->sprite_protection_destination + 8u);
+    return status;
+}
+
 static void myraidenii_core_board_deadline(void *owner, lib_u64 now,
     x86_core_machine_attachment_deadline_observation *out_observation)
 {
@@ -847,6 +941,14 @@ static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 du
     lib_status status;
 
     (void)due_tick;
+    if (board->sprite_protection_pending) {
+        board->sprite_protection_pending = LIB_FALSE;
+        status = myraidenii_core_board_sprite_protection_service(board);
+        if (status != LIB_STATUS_OK) {
+            (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
+            return;
+        }
+    }
     status = myraidenii_core_sound_advance(board->sound, ticks);
     if (status != LIB_STATUS_OK) {
         (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
@@ -1019,6 +1121,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->sprite_protection_y = 0u;
         board->sprite_protection_max_x = 0u;
         board->sprite_protection_source = 0u;
+        board->sprite_protection_pending = LIB_FALSE;
         board->sound_command_pending = LIB_FALSE;
         board->sound_response_pending = LIB_FALSE;
         board->sound_interrupt_pending = LIB_FALSE;

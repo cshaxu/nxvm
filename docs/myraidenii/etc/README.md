@@ -117,6 +117,7 @@
 - [T7 vblank-aligned input sequence](evidence/t7-s34-vblank-input-sequence.md).
 - [T7 input-consumption observation](evidence/t7-s35-input-consumption-observation.md).
 - [T7 input-window observation](evidence/t7-s36-input-window-observation.md).
+- [T7 sprite-protection source trigger](evidence/t7-s37-sprite-protection-trigger.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

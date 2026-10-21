@@ -1510,6 +1510,85 @@ static lib_status board_cop_word_write(x86_core_machine *machine,
     return x86_core_machine_memory_write(machine, address, bytes, sizeof(bytes));
 }
 
+static lib_i32 board_sprite_protection_trigger(void)
+{
+    const myraidenii_core_board_config config = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    myraidenii_core_board *board = LIB_NULL;
+    x86_core_machine *machine;
+    x86_core_machine_lifecycle lifecycle;
+    lib_u16 actual = 0u;
+    lib_u8 trigger = 0u;
+    lib_u8 advanced = LIB_FALSE;
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
+        board_cop_word_write(machine, 0x1000u, 0xa4a4u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x1002u, 0x2133u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x1004u, 0x8899u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x1006u, 100u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x100au, 100u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6c0u, 2u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6c2u, 0x100u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6c6u, 0x2000u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6d8u, 10u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6dau, 20u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6dcu, 320u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6deu, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x762u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 0x2000u ||
+        x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
+        !advanced || x86_core_machine_memory_read(machine, 0x1000u, &actual,
+            sizeof(actual)) != LIB_STATUS_OK || actual != 0xa4a5u ||
+        x86_core_machine_memory_read(machine, 0x2000u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 0x2133u ||
+        x86_core_machine_memory_read(machine, 0x2002u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 0x8899u ||
+        x86_core_machine_memory_read(machine, 0x2004u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 74u ||
+        x86_core_machine_memory_read(machine, 0x2006u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 56u ||
+        x86_core_machine_memory_read(machine, 0x762u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 0x2008u) {
+        goto done;
+    }
+
+    if (board_cop_word_write(machine, 0x1000u, 0xa4a5u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x1006u, 0x8000u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x100au, 0x8000u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x2008u, 0x5a5au) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6deu, &trigger, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x6dfu, &trigger, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
+        !advanced || x86_core_machine_memory_read(machine, 0x1000u, &actual,
+            sizeof(actual)) != LIB_STATUS_OK || actual != 0xa4a4u ||
+        x86_core_machine_memory_read(machine, 0x2008u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 0x5a5au ||
+        x86_core_machine_memory_read(machine, 0x762u, &actual, sizeof(actual)) !=
+            LIB_STATUS_OK || actual != 0x2008u) {
+        goto done;
+    }
+
+    /* A source in the rejected control window faults at the Board boundary;
+     * the deferred operation cannot claim a completed output descriptor. */
+    if (board_cop_word_write(machine, 0x6c2u, 0x40u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x6deu, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_advance_to_next_deadline(machine, &advanced) !=
+            LIB_STATUS_INTERNAL_ERROR || advanced ||
+        x86_core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle != X86_CORE_MACHINE_FAULTED) {
+        goto done;
+    }
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 static lib_status board_cop_upload(x86_core_machine *machine, lib_u16 command,
     lib_u16 base, lib_u8 words)
 {
@@ -3047,6 +3126,7 @@ lib_i32 main(void)
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_offset_add() ||
+        board_sprite_protection_trigger() ||
         board_cop_numeric_vectors() || board_cop_numeric_failures() || board_cop_numeric_chain() ||
         board_cop_collisions() || board_cop_decimal() || board_cop_random() ||
         board_cop_dma_and_sort();
