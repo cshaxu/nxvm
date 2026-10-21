@@ -31,10 +31,10 @@ No S packet is active.
 
 ## M1 T7 S33 Closure
 
-S33 is closed after the actual-change review records the one Board-facing
-aggregate and the full synthetic owner sweep.  The bounded selected-set
-Coin/Start runs reach nonzero vblank, CRTC, sprite, palette and tilemap
-boundaries identically on x64 and x86.  The [evidence record](../etc/evidence/t7-s33-video-configuration-observation.md)
+S33 is closed after coordinator actual-change review accepts P1 `abf8a8cdd`:
+one Board-facing aggregate and the full synthetic owner sweep.  The bounded
+selected-set Coin/Start runs reach nonzero vblank, CRTC, sprite, palette and
+tilemap boundaries identically on x64 and x86.  The [evidence record](../etc/evidence/t7-s33-video-configuration-observation.md)
 retains the neutral totals and the remaining qualification boundary.
 
 The complete MyRaidenII unit label passed 12/12 per width.  The wrapper
