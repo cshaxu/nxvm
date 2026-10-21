@@ -6,6 +6,39 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S51
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S50; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII qualification. This S is read-only analysis of the X86 Core internal case-error diagnostic reached by S50; it admits no Shared change. |
+| Objective | Audit every existing `VCPUINS_EXCEPT_CE` producer, its overloaded detail-code contract and available copied diagnostic fields, then decide the smallest source-policy-compliant way to classify S50's finite Core terminal without retaining guest payload. |
+| Non-goals | No source/test/API/build/manifest/artifact/media change; no ROM probe rerun, trace retention, raw guest instruction/address output, exception suppression, special-case map, guessed opcode repair or public-interface expansion. |
+| Reference Baseline | S50 establishes an identical two-width Core case-error-class terminal after crossing S40's former Sound receiver. `exception_code` is currently an internal detail value rather than an enumerated cause. |
+| Candidate Proposal | Inventory existing CE producers and their detail domains; inspect existing diagnostic copy/observation routes and tests. If no existing finite classifier exists, record the exact minimum proposed diagnostic boundary for a separately approved receiver. |
+| Files And ABI Surface | Current and one evidence record/index only. No source/test/build/manifest/public interface/Shared/product artifact/ROM/media file changes. Estimated documents +45..110/-0..15. |
+| Applicable Rules | MyRaidenII and Shared Architecture/Coding/Execution/Documentation rules; source policy. X86 Core remains the sole CPU owner; external assets are not accessed by this S. |
+| Verification | Static source inventory, affected existing-test review, documentation governance and whitespace. No dynamic run is claimed or required. |
+| Expected Markers | A complete owner/discriminator ledger establishes whether the existing copied snapshot can classify the terminal; any needed new diagnostic is isolated from machine semantics and deferred to an explicit receiving packet. |
+| Asset Needs | None. |
+| Reporting Requirements | Record source-level cause classes, existing observer limits, changed/no-changed status and proposed boundary only. Do not record guest payload, bytes, addresses or traces. |
+| Stop Conditions | Ambiguous/overlapping current detail contracts, a required public Shared change, source-policy conflict or any need to execute a raw trace stops selection and records the boundary. |
+| Exit Criteria | Complete CE-owner audit is indexed; it either identifies an existing safe classifier or specifies a minimal separately admitted diagnostic need; no code path is modified. |
+| Original Owner Request | Continue MyRaidenII under governance and use precise component boundaries rather than patching a first observed failure. |
+| Similar-Issue Sweep | Review all CE detail writers, copied snapshot consumers, current X86 Core diagnostic tests and MyRaidenII probe use; distinguish an internal implementation invariant from a guest architectural exception. |
+
+## M1 T7 S51 Closure
+
+The source audit establishes that the S50 detail identifies the existing Core
+memory-provider failure path for the MyRaidenII COP command window.  The
+overloaded CE detail is not an opcode identifier, so no X86 Core observation
+or interface change is justified.  The local COP query accepts reads while its
+read callback rejects them; external L2 mapping marks the window write-only.
+The next receiver is therefore a bounded App COP read-contract repair, not a
+CPU/Shared workaround.  Documentation governance and whitespace checks pass;
+no source, test, build, manifest, public interface, artifact, ROM or media
+file changed.
+
 ## Archived Packet — M1 T7 S50
 
 | Field | Required record |
