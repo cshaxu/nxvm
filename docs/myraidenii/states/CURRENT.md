@@ -6,6 +6,39 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S50
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S49; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation and bounded external-ROM qualification. This S resumes only S40's post-COP full-budget qualification after S41--S48 completed its transferred Sound CPU receiver. |
+| Objective | Rebuild and run the existing selected-set probe once per width with its existing vblank-aligned Coin/Start sequence and fixed 100,000,000-instruction containment budget; record its finite result without changing emulator behavior. |
+| Non-goals | No source/test/API/build/manifest/release-artifact change; no new input route, ROM/media commit, raw trace/address/opcode/payload capture, external code import, renderer, audio claim, desktop claim, gameplay claim or speculative repair. |
+| Reference Baseline | S40 crossed its COP admission boundary but full-budget runs then stopped in the Sound DD/FD executor. S41--S48 reconcile the applicable indexed/ED Sound families. S34/S35 establish the exact existing vblank-aligned delivery and consumption path. |
+| Candidate Proposal | Reuse the existing probe target and external wrapper exactly as registered, passing `--coin-start-frame-sequence` and the already supported maximum 100,000,000 budget. The wrapper alone stages verified owner media below the external diagnostics root and deletes its child. |
+| Files And ABI Surface | Current and one evidence record/index only. No production/test/build/manifest/public interface/Shared/product artifact/ROM/media change. Estimated documents +40..100/-0..15. |
+| Applicable Rules | MyRaidenII Architecture and Coding; shared Architecture, Coding, Execution and Documentation rules; source policy. Every build/probe runs in persistent background terminal sessions. |
+| Verification | Build the existing probe in both stable Ninja trees; invoke the existing wrapper once per width; compare only finite aggregate outcome and delivery facts; verify cleanup, documentation governance and whitespace. |
+| Expected Markers | Both widths either reach the same bounded success budget or the same finite existing owner category after S40's old Sound boundary. Neither result by itself proves a title screen, accepted credit, gameplay, graphics fidelity, audible audio or release readiness. |
+| Asset Needs | Read-only external archive `O:\assets\raidenii\raiden2.zip`, verified through the recorded inventory; staging only under `O:\assets\raidenii\myraidenii-diagnostics\`, automatically removed. |
+| Reporting Requirements | Record width, budget, finite terminal, existing input-delivery result, aggregate evidence and staging cleanup only. Do not retain protected payload, guest bytes, addresses, traces or third-party code. |
+| Stop Conditions | Archive/inventory mismatch, missing target, inconsistent widths, non-finite behavior, retained stage or terminal outside established owner categories stops without repair selection. |
+| Exit Criteria | One bounded maximum-budget diagnostic per width completes with cleanup checked, evidence is indexed, and the next receiver is selected only from its finite owner-valid result. |
+| Original Owner Request | Continue MyRaidenII under governance; use L2 external results only as such, keep assets outside the repository and execute all long tasks in background. |
+| Similar-Issue Sweep | Preserve S34/S35's existing vblank schedule and all four edges; compare S40's former Sound boundary against the post-S41--S48 result; do not weaken fault handling or re-open already qualified input routes. |
+
+## M1 T7 S50 Closure
+
+Sequential coordinator review accepts the bounded two-width qualification.
+Both widths deliver the existing four vblank-aligned input edges and reach the
+same finite X86 Core case-error-class terminal at 43,714,177 instructions,
+well before the containment cap.  The former Sound decoder receiver is not
+present; no COP or Board-control terminal is reported.  Staging cleanup,
+documentation governance and whitespace checks pass.  The result is a
+receiving boundary only: the next S must audit the complete existing Core
+case-error owner/family before proposing any repair.  No source, test, build,
+manifest, public interface, artifact, ROM or media file changed.
+
 ## Archived Packet — M1 T7 S49
 
 | Field | Required record |
