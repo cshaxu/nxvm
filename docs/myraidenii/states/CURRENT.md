@@ -6,6 +6,43 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S14 Closure
+
+S14 is closed with no source, test, ABI, asset or artifact change. The complete
+external L2 Board-map reconciliation found no unowned finite local route: the
+existing COP, Video, sprite, sound, input, bank and memory owners cover every
+selected Raiden II address class. COPX-D2 and sprite blend remain explicit
+non-finite receivers rather than guessed behavior. See [S14 evidence](../etc/evidence/t7-s14-board-map-reconciliation.md).
+
+## Archived Packet — M1 T7 S14
+
+S14 performs one bounded L2 Board address-space reconciliation.  It compares
+the locally implemented V30 Board routes with the inspected external Raiden II
+reference map, classifies every address-class difference, and admits no source
+change unless the difference has a finite independently implementable receiver
+contract.  An external map is L2 context only: it cannot promote a constant,
+formula, timing value or behavior to L3, and no external implementation,
+table, ROM or PAL data may be copied.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S14 follows closed S13. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work and fixed the evidence rule: only an inspected primary-manual PDF's explicit directly applicable formula, constant or rule is L3; a range, board observation or external reference is L2; unsupported borrowing is L1. |
+| Objective | Reconcile the complete finite V30 Board address map against the local Board routes, identify any real finite receiver omission, and preserve the two known non-finite receivers (COPX-D2 and sprite blend) without guessing behavior. |
+| Non-goals | No external source/table/data import, ROM/PAL operation, generic board framework, guest behavior claim, raster retune, COPX attachment, sprite blend implementation, or release artifact. |
+| Reference Baseline | Local `myraidenii_core_board` owns the selected V30 memory and device routes. The inspected external Raiden II map is a permitted L2 address-ownership reference, not a primary hardware manual or behavioral specification. |
+| Candidate Proposal | Enumerate the external map's finite route classes, inspect the corresponding local Board reader/writer paths and tests, then classify each as equivalent, intentionally unimplemented with an existing owner, or a newly finite receiver. Only the last case transfers to a later implementation S with its own bounded contract. |
+| Files And ABI Surface | Expected `docs/myraidenii/states/CURRENT.md`, one evidence record and its index only. No source/test/build/API/asset/artifact change is admitted by this audit packet. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding and Source Policy; shared Execution and Documentation rules. Evidence grades follow the owner-defined L3/L2/L1 rule exactly. |
+| Verification | Inspect local Board routes and unit coverage; inspect the pinned external map only as L2; reconcile ranges/widths/read-write direction; run documentation governance, whitespace and diff review. |
+| Expected Markers | A complete disposition table with no undocumented map-class difference; either no finite omission or a named later receiver with owner and boundary. |
+| Asset Needs | None. No payload is downloaded, extracted, logged or retained. |
+| Reporting Requirements | State every unresolved route class, its grade and reason. Explicitly distinguish address ownership from operation semantics and avoid any L3 claim from the external reference. |
+| Stop Conditions | Any need to infer a formula/constant/semantics from the map, copy/transliterate external code or tables, attach COPX without request/index/result semantics, or alter production behavior stops this S and transfers the receiver. |
+| Exit Criteria | Every finite map class is reconciled, evidence grades are correct, any real receiver is explicitly transferred, and governance checks pass. |
+| Original Owner Request | Continue under the strict evidence definition: direct explicit primary-manual-PDF constants/formulas/rules are L3; external/range/board evidence is L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Inspect both read and write paths, byte/word lane handling, local no-op/failure gaps, and existing Board unit tests rather than comparing only address labels. |
+
 ## M1 T7 S13 Closure
 
 S13 is closed with no source, test, ABI, asset or artifact change.  The

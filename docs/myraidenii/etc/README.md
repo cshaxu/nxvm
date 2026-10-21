@@ -95,6 +95,7 @@
 - [T4 Video/Sprite source disposition](evidence/t4-s2-video-source-disposition.md).
 - [T4 third-party Video-reference provenance](evidence/t4-s3-third-party-provenance.md).
 - [T7 L2 raster-cadence reconciliation](evidence/t7-s13-raster-cadence-reconciliation.md).
+- [T7 Board-map L2 reconciliation](evidence/t7-s14-board-map-reconciliation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
