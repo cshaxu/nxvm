@@ -1,5 +1,26 @@
 # Unplanned Debt
 
+## High: COPX-D2 Board Receiver Contract
+
+Owner: MyRaidenII Core COP/Board. The selected Raiden II set's audited
+`copx-d2.u0313` image is a real 262144-byte input identity, but current
+Product, Machine and Board deliberately have no COPX role or consumer.
+M1 T7 S5 verified that the inspected L2 external reference likewise declares
+the region without an explicit access contract and describes its lookup/math
+purpose tentatively.
+
+Risk: the bounded twelve-image startup route cannot qualify COPX-dependent
+game behavior, including any effect such as the externally reported first-boss
+issue. Adding a configuration key with no Board consumer would be false
+support; inventing a lookup rule would be unqualified L1 behavior.
+
+Admission: a later MyRaidenII Board/COP receiver task must first obtain either
+an inspected primary-manual PDF rule (L3) or a bounded L2 behavior contract
+that can be independently implemented without copied code/tables. It must pin
+the request/index/result semantics, attach the image only at the existing
+Machine-to-Board transaction, prove synthetic non-ROM cases and then re-run
+the owner-ROM checkpoint. No external payload enters the repository.
+
 ## Medium: Selected-Set Sprite Blend Fidelity
 
 Owner: MyRaidenII Video. The Board now owns the `0x6ce--0x6cf` sprite-flags

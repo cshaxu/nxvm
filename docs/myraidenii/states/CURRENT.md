@@ -6,6 +6,37 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S5
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S5 follows closed S4. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner instructed continued work under the strict L3/L2/L1 definition and expressly permits external emulator implementations as L2 references. The source policy still prohibits copying/transliterating MAME code, tables or ROM data. |
+| Objective | Establish whether the selected set's separately inventoried COPX image has a concrete, independently implementable Board consumer contract, or record a precise deferral instead of adding a path-only image role. |
+| Non-goals | No MAME source/data import, no ROM embedding/retention, no guessed lookup function, no configuration role with no Board consumer, no protection bypass, no Shared change, and no release/gameplay claim. |
+| Reference Baseline | The archive inventory identifies `copx-d2.u0313` as a 262144-byte runtime image that current Machine configuration does not consume. S4 proves the twelve-image route has no immediate bounded control fault, but not that the COPX-dependent behavior is complete. |
+| Candidate Proposal | Inspect the already available external L2 reference only to determine whether it supplies a finite COPX access contract. Cross-check our Board/COP address ownership and consumer paths. If no exact independently implementable contract exists, retain the image as a documented deferred receiver and add no inert configuration/API path. |
+| Files And ABI Surface | Expected Current/evidence/TODO only. Any production/test/API change requires a concrete consumer contract and a new bounded implementation packet. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. Only an inspected primary-manual PDF's explicit applicable rule/formula/constant may be L3. The external reference and observed ROM identity are L2; any unsupported local model would be L1. |
+| Verification | Static ownership/call-path audit, external-reference provenance record without copying source/data, Current/TODO/documentation gates and diff review. No CTest or binary deployment is claimed for a research-only packet. |
+| Expected Markers | Either one finite Board-owned consumer contract that can be independently implemented later, or a written L2 deferral explaining why the role must not yet be passed through Machine/Board. |
+| Asset Needs | Read-only metadata already recorded for `O:\\assets\\raidenii\\raiden2.zip`; no extraction is needed. The external source reference remains outside the repository and is not a dependency. |
+| Reporting Requirements | Separate the exact L2 facts from speculation, name every current COPX absence point, state why a path-only input would be false support, and place the concrete deferred receiver in TODO if no consumer is available. |
+| Stop Conditions | A request to copy/transliterate external source or tables, retain external payload, claim L3 without a primary manual PDF, add a guessed model, or modify a Shared contract stops this packet. |
+| Exit Criteria | COPX ownership is either tied to a finite later receiver or truthfully deferred; no inert code path or unsupported behavior enters the product. |
+| Original Owner Request | Continue under the strict definition: only an inspected primary-manual PDF's explicit applicable formula/constant/rule is L3; an external reference, range or runtime observation is L2; unsupported local borrowing is L1. |
+| Similar-Issue Sweep | Review every selected image role for a complete Machine-to-Board consumer and distinguish a verified input identity from an implemented hardware behavior. |
+
+## M1 T7 S5 Closure
+
+S5 is closed.  The current twelve-role Machine transaction and Board COP have
+no hidden COPX consumer.  The inspected external L2 source confirms the
+separate 262144-byte image identity but exposes no finite access contract and
+describes its purpose tentatively.  The image therefore remains an explicit
+High-priority Board/COP receiver in TODO rather than an inert configuration
+role or guessed lookup model.  See
+[S5 evidence](../etc/evidence/t7-s5-copx-receiver-review.md).
+
 ## Archived Packet — M1 T7 S4
 
 | Field | Required record |
