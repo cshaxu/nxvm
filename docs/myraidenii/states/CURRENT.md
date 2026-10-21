@@ -6,6 +6,15 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S22 Closure
+
+S22 is closed. The indexed reconciliation maps every frozen G01--G12
+checkpoint to current evidence without inventing a title, credit or gameplay
+state. It confirms that KVM Coin/Start electrical ingress is already proven
+through the Machine driver, while guest acceptance and title/attract remain
+blocked by a missing finite COPX-D2 Board contract. See [S22 evidence]
+(../etc/evidence/t7-s22-qualification-reconciliation.md).
+
 ## M1 T7 S21 Closure
 
 S21 is closed. The selected-set held/pulse diagnostic now injects KVM `5`/`1`
