@@ -6,6 +6,27 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S4
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S4 follows archived S3. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner instructed continuation under the strict L3/L2/L1 evidence definition and permanently approved ordinary in-scope MyRaidenII work. No Shared change, ROM import, external-source import or artifact deployment is admitted. |
+| Objective | Exercise the already implemented Coin 1 and Start 1 Board-control path through the existing bounded selected-set startup probe, once per host width, and record whether it preserves the established non-faulted bounded result. |
+| Non-goals | No claim of title/attract/gameplay/stage qualification; no automated host keyboard/window test; no new controller mapping, ROM reader, COPX integration, protection model, video/audio fidelity change, raw trace, screenshot or binary release. |
+| Reference Baseline | S1 established the neutral twelve-image selected-set probe on both widths. The probe already owns an opt-in `--coin-start-held` path that calls the public Board controls before its bounded execution; Core and Machine units separately cover the control mapping. |
+| Candidate Proposal | Reuse that exact probe and external staging wrapper with `--coin-start-held`. Compare its terminal reason, fault observation, control-failure observation and published frame/PCM metadata with S1, then delete staging. A successful bounded run establishes only that the current selected control path does not immediately fault this bounded external-input route. |
+| Files And ABI Surface | Expected only Current and a new MyRaidenII evidence record. No production, test, public API, build, ROM/archive, shared-component or asset change. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. This is L2 because it uses owner-supplied runtime input; only an inspected primary-manual PDF with an explicit applicable rule/formula/constant can establish L3. |
+| Verification | Build the existing probe only if needed, verify the unchanged inventory once, run the bounded wrapper once on x64 and once on x86, verify staging cleanup, then perform documentation/whitespace/diff review. This is an opt-in diagnostic, not a CTest or release qualification. |
+| Expected Markers | `coin-start-held=1`, no reported CPU/COP/control terminal fault, one bounded budget result per width and an empty external staging root after each run. |
+| Asset Needs | Read-only `O:\\assets\\raidenii\\raiden2.zip`; temporary files only under `O:\\assets\\raidenii\\myraidenii-diagnostics\\` and removed by the existing wrapper. |
+| Reporting Requirements | Preserve output without protected payload, label it L2, compare it to S1 without claiming equivalence to real user input or gameplay, and state the still-unresolved COPX ownership separately. |
+| Stop Conditions | Identity failure, retained payload, a need to alter Board behavior/controls or external source, nonempty staging residue, or a terminal fault transfers the concrete receiver to a later packet. |
+| Exit Criteria | Both widths complete the existing bounded control diagnostic, staging is clean, no source change is needed, and evidence truthfully states its narrow L2 scope. |
+| Original Owner Request | Continue under the strict definition: only an inspected primary-manual PDF's explicit applicable formula/constant/rule is L3; an external reference, range or runtime observation is L2; unsupported local borrowing is L1. |
+| Similar-Issue Sweep | Check that the wrapper stages only declared roles, control assertions are not mistaken for host input, external paths are bounded/read-only and cleanup remains complete. |
+
 ## Archived Packet — M1 T7 S3
 
 | Field | Required record |
@@ -26,6 +47,18 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | Both unit widths prove the optional-output path and retained normal path; the external Product launch is rechecked; no duplicate audio path or host-dependent startup failure remains for the identified statuses. |
 | Original Owner Request | Continue MyRaidenII under the strict L3/L2/L1 definition: only an inspected primary-manual PDF's explicit applicable formula/constant/rule is L3; range/reference facts are L2; unsupported borrowing is L1. |
 | Similar-Issue Sweep | Check configuration filename/case, relative-path base, image role coverage, process ownership, temporary-root safety and cleanup; do not retain protected bytes in build/repository locations. |
+
+## M1 T7 S4 Closure
+
+S4 is closed.  The existing bounded selected-set probe accepted its direct
+Coin 1/Start 1 request on x64 and x86 without a CPU, COP or unowned-control
+terminal fault; both runs reached the normal two-million-instruction budget.
+Its frame/PCM observations matched S1, and the external staging root was
+empty after each run.  This is L2 evidence only: it demonstrates neither
+host input delivery nor a playable credit/start sequence.  The separate COPX
+image remains an explicit later Board-ownership receiver; no speculative ROM
+input or lookup model was added.  See
+[S4 evidence](../etc/evidence/t7-s4-selected-set-controls.md).
 
 ## M1 T7 S2 Closure
 
