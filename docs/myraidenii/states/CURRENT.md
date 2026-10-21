@@ -620,6 +620,38 @@ new paths on x64 and x86, followed by all 11 repository-only MyRaidenII unit
 executables on each width.  No owner-ROM run, gameplay or release result is
 claimed.  T7 remains open for its separately scoped runtime work.
 
+## Archived Packet — M1 T7 S60
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S59; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation, external assets remain outside the repository, and long work must use persistent background sessions. |
+| Objective | Re-run the existing bounded selected-set startup diagnostic after S59, once per supported width, to select the next owner-valid receiver from an actual finite result. |
+| Non-goals | No production, Shared, test, build, public-interface, artifact, ROM/media, renderer, desktop, audio, gameplay or release change; no raw guest trace, address, opcode, register, payload or protected output retention. |
+| Reference Baseline | S59 adds only aliases already owned by the update/numeric executors and proves repository-only units. The previous selected-set receiver stopped at a safe unsupported command-admission category. |
+| Candidate Proposal | Rebuild the existing opt-in probe in each stable Ninja tree. Run its existing archive-verifying wrapper once per width with its established vblank-aligned Coin/Start sequence and fixed maximum instruction budget. Record only width, finite terminal class, wrapper/staging disposition and next bounded owner. |
+| Files And ABI Surface | Current, one evidence record/index only unless a separate receiver is selected. No source/test/build/manifest/public interface/artifact/media file change. |
+| Applicable Rules | MyRaidenII source policy, architecture/coding and Shared execution/documentation rules. Every long command uses a persistent PTY session; staged external files are wrapper-owned and removed. |
+| Verification | Build existing probe targets x64/x86. Execute one bounded wrapper run per width, verify staging root has no generated child afterward, then run documentation governance and whitespace checks. |
+| Expected Markers | Both widths either report one safe finite terminal category or stop on an explicit wrapper failure; no diagnostic output persists protected fields. |
+| Asset Needs | Read-only `O:\assets\raidenii\raiden2.zip`, verified by the existing inventory; transient staging only below `O:\assets\raidenii\myraidenii-diagnostics\`. |
+| Reporting Requirements | Record only neutral category, width, budget, staging cleanup and unexecuted desktop/gameplay/release validation. Do not retain raw guest or asset data. |
+| Stop Conditions | Missing/changed asset inventory, inconsistent widths, non-finite process, retained staging, unsafe output or a terminal without one current owner stops selection without speculative repair. |
+| Exit Criteria | One bounded background run per width completes with cleanup verified, evidence/index/current are updated, documentation/whitespace pass and a reviewed P is pushed. |
+| Original Owner Request | Continue toward real execution using external behavior as L2 when necessary, without importing third-party code or protected media. |
+| Similar-Issue Sweep | Existing wrapper verification/cleanup, S59-owned aliases, terminal owner categories, selected-set input schedule and source-policy-safe output. |
+
+## M1 T7 S60 Closure
+
+The existing selected-set wrapper rebuilt and ran once per width in persistent
+background sessions after S59.  Both executions reached the fixed budget with
+the same safe completion category and no new unsupported admission or provider
+failure category.  The wrapper removed its generated external staging child;
+the diagnostics root is clean.  This establishes continued bounded execution
+only, not a desktop, audio, gameplay, timing-fidelity or release result.  No
+production, test, Shared, asset or artifact file changed.  T7 remains open for
+a separately admitted qualification question.
+
 ## Active Packet
 
 No S packet is active.
