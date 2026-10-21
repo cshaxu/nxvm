@@ -183,6 +183,7 @@ int main(int argument_count, char **arguments)
     lib_u64 dropped_pcm_frames = 0u;
     lib_u32 pcm_frames = 0u;
     myraidenii_core_board_sound_observation sound_observation = {0};
+    myraidenii_core_board_video_observation video_observation = {0};
     myraidenii_startup_control_mode control_mode;
     lib_bool coin_pressed = LIB_FALSE;
     lib_bool coin_released = LIB_FALSE;
@@ -311,6 +312,9 @@ int main(int argument_count, char **arguments)
             if (status == LIB_STATUS_OK)
                 status = myraidenii_core_board_sound_observation_get(board,
                     &sound_observation);
+            if (status == LIB_STATUS_OK)
+                status = myraidenii_core_board_video_observation_get(board,
+                    &video_observation);
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
@@ -352,7 +356,9 @@ int main(int argument_count, char **arguments)
             "oki-2-commands=%llu oki-1-selections=%llu oki-2-selections=%llu "
             "oki-1-stops=%llu oki-2-stops=%llu oki-1-rejected=%llu "
             "oki-2-rejected=%llu oki-1-ignored=%llu oki-2-ignored=%llu "
-            "oki-1-voice-starts=%llu oki-2-voice-starts=%llu pcm-nonzero-generated=%llu\n",
+            "oki-1-voice-starts=%llu oki-2-voice-starts=%llu pcm-nonzero-generated=%llu "
+            "video-vblanks=%llu video-crtc-writes=%llu video-sprite-flag-writes=%llu "
+            "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu\n",
             (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
             fault_linear, delivered_exceptions, (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
@@ -393,7 +399,13 @@ int main(int argument_count, char **arguments)
             (unsigned long long)sound_observation.oki_ignored_controls[1u],
             (unsigned long long)sound_observation.oki_voice_starts[0u],
             (unsigned long long)sound_observation.oki_voice_starts[1u],
-            (unsigned long long)sound_observation.pcm_nonzero_frames);
+            (unsigned long long)sound_observation.pcm_nonzero_frames,
+            (unsigned long long)video_observation.vblank_events,
+            (unsigned long long)video_observation.crtc_byte_writes,
+            (unsigned long long)video_observation.sprite_flag_byte_writes,
+            (unsigned long long)video_observation.sprite_latch_events,
+            (unsigned long long)video_observation.palette_commits,
+            (unsigned long long)video_observation.tilemap_commits);
         for (lib_u8 index = 0u; index < frame_sample_count; ++index) {
             lib_c_printf("MYRAIDENII:STARTUP-PROBE:FRAME-SAMPLE index=%u executed=%llu "
                 "digest=%016llx nonblack=%llu sound-command-0=%u sound-command-1=%u "

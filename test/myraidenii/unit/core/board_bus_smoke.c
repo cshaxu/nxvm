@@ -710,6 +710,7 @@ static lib_i32 board_sprite_ram_and_latch_route(void)
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     x86_core_machine_memory_route route;
+    myraidenii_core_board_video_observation observation = {0};
     const lib_u8 source[] = {0x11u,0x22u,0x33u,0x44u};
     lib_u8 actual[sizeof(source)] = {0};
     lib_u8 trigger = 0u;
@@ -729,12 +730,18 @@ static lib_i32 board_sprite_ram_and_latch_route(void)
         route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
         x86_core_machine_memory_write(machine, 0x068eu, &trigger, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x068fu, &trigger, 1u) != LIB_STATUS_OK ||
+        myraidenii_core_board_video_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.sprite_latch_events != 2u || observation.vblank_events != 0u ||
+        observation.crtc_byte_writes != 0u || observation.sprite_flag_byte_writes != 0u ||
+        observation.palette_commits != 0u || observation.tilemap_commits != 0u ||
         x86_core_machine_memory_read(machine, 0x068eu, &trigger, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x0c000u, actual, sizeof(actual)) !=
             LIB_STATUS_OK || actual[0] != 0u || actual[1] != 0u || actual[2] != 0u ||
-        actual[3] != 0u) {
+        actual[3] != 0u ||
+        myraidenii_core_board_video_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.sprite_latch_events != 0u) {
         goto done;
     }
     failed = 0;
@@ -1019,13 +1026,13 @@ static lib_i32 board_video_sprite_flags(void)
         myraidenii_core_video_sprite_flags_write(&video, 2u, 0u) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_video_sprite_flags_write(&video, 0u, 0x34u) != LIB_STATUS_OK ||
-        video.sprite_flags != 0x0034u ||
+        video.sprite_flags != 0x0034u || video.sprite_flag_byte_writes != 1u ||
         myraidenii_core_video_sprite_flags_write(&video, 1u, 0x80u) != LIB_STATUS_OK ||
-        video.sprite_flags != 0x8034u) {
+        video.sprite_flags != 0x8034u || video.sprite_flag_byte_writes != 2u) {
         return 1;
     }
     myraidenii_core_video_reset(&video);
-    return video.sprite_flags == 0u ? 0 : 1;
+    return video.sprite_flags == 0u && video.sprite_flag_byte_writes == 0u ? 0 : 1;
 }
 
 static lib_i32 board_video_palette_colors(void)
@@ -1066,6 +1073,7 @@ static lib_i32 board_video_crtc(void)
     myraidenii_core_video video = {0};
     const lib_u8 values[] = {0x12u,0x34u,0x56u,0x78u};
     myraidenii_core_board *board = LIB_NULL;
+    myraidenii_core_board_video_observation observation = {0};
     x86_core_machine *machine;
     lib_u8 actual[sizeof(values)];
     lib_i32 failed = 1;
@@ -1076,7 +1084,8 @@ static lib_i32 board_video_crtc(void)
         myraidenii_core_video_crtc_write(&video, MYRAIDENII_CORE_VIDEO_CRTC_BYTES, 0u) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_video_crtc_write(&video, 0u, 0xa5u) != LIB_STATUS_OK ||
-        myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0xa5u)
+        myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0xa5u ||
+        video.crtc_byte_writes != 1u)
         return 1;
     myraidenii_core_video_reset(&video);
     if (myraidenii_core_video_crtc_read(&video, 0u, actual) != LIB_STATUS_OK || actual[0] != 0u ||
@@ -1088,6 +1097,9 @@ static lib_i32 board_video_crtc(void)
     myraidenii_core_video_reset(&video);
     if (myraidenii_core_video_crtc_read(&video,
             MYRAIDENII_CORE_VIDEO_CRTC_BYTES - 1u, actual) != LIB_STATUS_OK || actual[0] != 0u ||
+        video.crtc_byte_writes != 0u ||
+        myraidenii_core_board_video_observation_get(LIB_NULL, &observation) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK)
         return 1;
     machine = myraidenii_core_board_machine_get(board);
@@ -1102,9 +1114,20 @@ static lib_i32 board_video_crtc(void)
         x86_core_machine_memory_inspect(machine, 0x640u, actual, 1u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x64fu, values, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x64fu, actual, 1u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_video_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.crtc_byte_writes != 10u || observation.vblank_events != 0u ||
+        observation.sprite_flag_byte_writes != 0u || observation.sprite_latch_events != 0u ||
+        observation.palette_commits != 0u || observation.tilemap_commits != 0u ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x600u, actual, sizeof(actual)) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u || actual[2] != 0u || actual[3] != 0u)
+        goto done;
+    if (myraidenii_core_board_video_observation_get(board, LIB_NULL) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        myraidenii_core_board_video_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.crtc_byte_writes != 0u || observation.vblank_events != 0u ||
+        observation.sprite_flag_byte_writes != 0u || observation.sprite_latch_events != 0u ||
+        observation.palette_commits != 0u || observation.tilemap_commits != 0u)
         goto done;
     failed = 0;
 done:
@@ -1201,6 +1224,7 @@ static lib_i32 board_video_interrupts(void)
     x86_core_machine *machine;
     x86_core_machine_run_result result;
     x86_core_machine_time_observation time;
+    myraidenii_core_board_video_observation observation = {0};
     lib_u8 advanced;
     lib_u16 count = 0u;
     lib_i32 failed = 1;
@@ -1253,6 +1277,11 @@ static lib_i32 board_video_interrupts(void)
                 LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
             goto done;
     }
+    if (myraidenii_core_board_video_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.vblank_events != 3u || observation.crtc_byte_writes != 0u ||
+        observation.sprite_flag_byte_writes != 0u || observation.sprite_latch_events != 0u ||
+        observation.palette_commits != 0u || observation.tilemap_commits != 0u)
+        goto done;
     if (x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
         !advanced || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
@@ -1263,6 +1292,9 @@ static lib_i32 board_video_interrupts(void)
         x86_core_machine_debug_continue(machine,
             (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
         result.executed != 2u || result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
+        goto done;
+    if (myraidenii_core_board_video_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.vblank_events != 0u)
         goto done;
     failed = 0;
 done:
@@ -2826,6 +2858,7 @@ static lib_i32 board_cop_dma_and_sort(void)
         fixture.video.tilemap[1u] != tilemap[1u] ||
         fixture.video.tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS - 1u] !=
             tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS - 1u] ||
+        fixture.video.tilemap_commits != 1u ||
         myraidenii_core_video_tilemap_load(&fixture.video, tilemap, 1u) !=
             LIB_STATUS_INVALID_ARGUMENT || fixture.video.tilemap[1u] != tilemap[1u] ||
         board_cop_dma_context_write(machine, 0x014u, 0x033fu, 0x027bu, 0u) !=
@@ -2839,7 +2872,8 @@ static lib_i32 board_cop_dma_and_sort(void)
         board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
         myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK ||
         fixture.video.tilemap[1u] != tilemap[1u] ||
-        x86_core_machine_reset(machine) != LIB_STATUS_OK || fixture.video.tilemap[0u] != 0u ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK || fixture.video.tilemap_commits != 0u ||
+        fixture.video.tilemap[0u] != 0u ||
         fixture.video.tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS - 1u] != 0u)
         goto done;
 
@@ -2855,6 +2889,7 @@ static lib_i32 board_cop_dma_and_sort(void)
         fixture.video.palette[1u] != palette[1u] ||
         fixture.video.palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS - 1u] !=
             palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS - 1u] ||
+        fixture.video.palette_commits != 1u ||
         myraidenii_core_video_palette_load(&fixture.video, palette, 1u) !=
             LIB_STATUS_INVALID_ARGUMENT || fixture.video.palette[1u] != palette[1u] ||
         board_cop_dma_context_write(machine, 0x015u, 0x07c0u, 0x00ffu, 1u) !=
@@ -2862,7 +2897,8 @@ static lib_i32 board_cop_dma_and_sort(void)
         board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
         myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK ||
         fixture.video.palette[1u] != palette[1u] ||
-        x86_core_machine_reset(machine) != LIB_STATUS_OK || fixture.video.palette[0u] != 0u ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK || fixture.video.palette_commits != 0u ||
+        fixture.video.palette[0u] != 0u ||
         fixture.video.palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS - 1u] != 0u)
         goto done;
 

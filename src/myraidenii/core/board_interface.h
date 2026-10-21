@@ -104,6 +104,17 @@ typedef struct myraidenii_core_board_sound_observation {
     lib_u64 pcm_nonzero_frames;
 } myraidenii_core_board_sound_observation;
 
+/* Reset clears this aggregate Video-path observation. It reports only
+ * successful existing state transitions; it retains no guest payload. */
+typedef struct myraidenii_core_board_video_observation {
+    lib_u64 vblank_events;
+    lib_u64 crtc_byte_writes;
+    lib_u64 sprite_flag_byte_writes;
+    lib_u64 sprite_latch_events;
+    lib_u64 palette_commits;
+    lib_u64 tilemap_commits;
+} myraidenii_core_board_video_observation;
+
 lib_status myraidenii_core_board_create(const myraidenii_core_board_config *config,
     myraidenii_core_board **out_board);
 void myraidenii_core_board_destroy(myraidenii_core_board *board);
@@ -145,6 +156,8 @@ lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
     lib_u64 *out_dropped_frames);
 lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_board *board,
     myraidenii_core_board_sound_observation *out_observation);
+lib_status myraidenii_core_board_video_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_video_observation *out_observation);
 
 /* These are the board-owned sides of the future sound-CPU handoff. They do not
  * instantiate or schedule a sound CPU. */

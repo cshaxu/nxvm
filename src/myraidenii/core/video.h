@@ -35,6 +35,10 @@ enum {
 typedef struct myraidenii_core_video {
     lib_u32 raster_tick;
     lib_u16 sprite_flags;
+    lib_u64 crtc_byte_writes;
+    lib_u64 sprite_flag_byte_writes;
+    lib_u64 palette_commits;
+    lib_u64 tilemap_commits;
     lib_u8 crtc_registers[MYRAIDENII_CORE_VIDEO_CRTC_BYTES];
     lib_u16 palette[MYRAIDENII_CORE_VIDEO_PALETTE_WORDS];
     lib_u16 tilemap[MYRAIDENII_CORE_VIDEO_TILEMAP_WORDS];

@@ -14,6 +14,8 @@ struct myraidenii_core_board {
     lib_u8 *program;
     lib_u8 bank_selected;
     lib_u8 main_interrupt_pending;
+    lib_u64 vblank_events;
+    lib_u64 sprite_latch_events;
     lib_u8 sound_command[2];
     lib_u8 sound_response[2];
     lib_u8 sprite_protection_upload[0x20u];
@@ -646,13 +648,17 @@ static lib_status myraidenii_core_board_sprite_latch_trigger_write(void *owner,
     lib_u32 physical, lib_uptr source, lib_uptr bytes)
 {
     myraidenii_core_board *board = owner;
+    lib_status status;
 
     if (board == LIB_NULL || source == 0u ||
         myraidenii_core_board_sprite_latch_trigger_query(owner, physical, bytes,
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return myraidenii_core_sprite_buffer_latch(board->sprite_buffer);
+    status = myraidenii_core_sprite_buffer_latch(board->sprite_buffer);
+
+    if (status == LIB_STATUS_OK) ++board->sprite_latch_events;
+    return status;
 }
 
 /* L2 object ownership at the exact selected-set write. No object register
@@ -841,8 +847,10 @@ static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 du
         (void)x86_core_machine_report_fault(board->machine, (lib_u32)status);
         return;
     }
-    if (myraidenii_core_video_advance(&board->video, ticks))
+    if (myraidenii_core_video_advance(&board->video, ticks)) {
         board->main_interrupt_pending = LIB_TRUE;
+        ++board->vblank_events;
+    }
     status = myraidenii_core_cop_advance(board->cop);
 
     if (status != LIB_STATUS_OK) {
@@ -980,6 +988,8 @@ static void myraidenii_core_board_reset(void *owner)
     if (board != LIB_NULL) {
         board->bank_selected = LIB_FALSE;
         board->main_interrupt_pending = LIB_FALSE;
+        board->vblank_events = 0u;
+        board->sprite_latch_events = 0u;
         board->sound_command[0] = 0u;
         board->sound_command[1] = 0u;
         board->sound_response[0] = 0u;
@@ -1447,6 +1457,19 @@ lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_boa
     out_observation->oki_voice_starts[0u] = observation.oki_voice_starts[0u];
     out_observation->oki_voice_starts[1u] = observation.oki_voice_starts[1u];
     out_observation->pcm_nonzero_frames = observation.pcm_nonzero_frames;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_video_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_video_observation *out_observation)
+{
+    if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    out_observation->vblank_events = board->vblank_events;
+    out_observation->crtc_byte_writes = board->video.crtc_byte_writes;
+    out_observation->sprite_flag_byte_writes = board->video.sprite_flag_byte_writes;
+    out_observation->sprite_latch_events = board->sprite_latch_events;
+    out_observation->palette_commits = board->video.palette_commits;
+    out_observation->tilemap_commits = board->video.tilemap_commits;
     return LIB_STATUS_OK;
 }
 

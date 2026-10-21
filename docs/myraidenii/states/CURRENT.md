@@ -6,6 +6,43 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+No S packet is active.
+
+## Archived Packet — M1 T7 S33
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S32; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII qualification and permits bounded owner-ROM probes and external emulator behavior as L2. No Shared change is authorized or needed. |
+| Objective | Add one read-only aggregate observation of existing Board/Video/COP success boundaries, then determine whether the bounded selected-set path actually configures the local Video owner before pursuing a title/output repair. |
+| Non-goals | No new renderer, register/state mirror, guest payload/ROM/RAM capture, source/table import, changed device behavior, longer guest budget, host automation, media/PAL change, release or gameplay claim. |
+| Reference Baseline | S13 verifies raster cadence; S31 reaches 20,000,000 instructions and has only three frame-digest transitions. S32 excludes Coin polarity. The remaining ambiguity is whether existing Video configuration paths are reached. |
+| Candidate Proposal | Count only successful existing events: Board vblank service, CRTC-byte writes, sprite-flag writes/latches, and COP palette/tilemap commits. Copy the aggregate through the existing Board query route and print totals in the existing selected-set Probe. |
+| Files And ABI Surface | MyRaidenII `core/{board,cop,video}` private/public owner declarations as required by the one Board aggregate, existing Core unit tests, selected-set Probe, Current, evidence and supporting index. Estimated production +30..70/-0..12; tests +35..90/-0..20. No Shared surface, new thread, queue, renderer or media API. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Architecture/Coding/Documentation rules and T7 qualification proposal. Owner-ROM observations are L2. |
+| Verification | Exercise every counter through existing synthetic Board/COP routes; run focused MyRaidenII Core/Probe tests x64/x86 and the complete MyRaidenII unit label; run one bounded selected-set probe per width; compare neutral aggregates; review docs/manifest/whitespace. |
+| Expected Markers | Each counter has one actual existing owner and reset behavior. Both widths either agree on a finite configuration footprint or expose an owner-specific zero boundary. |
+| Asset Needs | Read-only owner archive through the existing wrapper only; wrapper staging/logs use external owner storage and are removed after completed runs. |
+| Reporting Requirements | Counter-owner matrix, synthetic coverage, dual-width aggregate result, actual diff, cleanup and the next named owner; no raw protected payload. |
+| Stop Conditions | Need for a second execution route, raw guest state, longer/unbounded run, source/table import, Shared API, altered rendering behavior, nondeterministic result or staging failure stops and records the gap. |
+| Exit Criteria | The one aggregate has a single Board-facing query, every counter is exercised through the production owner, both bounded runs are compared, required checks pass, external stages are removed, actual diff is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII work efficiently with bounded probes; external emulator implementations supply L2 evidence only and are not imported. |
+| Similar-Issue Sweep | Reset, success-only counting, failed COP/Board paths, CRTC bytes, sprite flag/latch paths, all Video commit operations, aggregate copy and probe output framing. |
+
+## M1 T7 S33 Closure
+
+S33 is closed after the actual-change review records the one Board-facing
+aggregate and the full synthetic owner sweep.  The bounded selected-set
+Coin/Start runs reach nonzero vblank, CRTC, sprite, palette and tilemap
+boundaries identically on x64 and x86.  The [evidence record](../etc/evidence/t7-s33-video-configuration-observation.md)
+retains the neutral totals and the remaining qualification boundary.
+
+The complete MyRaidenII unit label passed 12/12 per width.  The wrapper
+removed its external staging; no protected media or diagnostic log remains.
+No Shared component, executable release, title, gameplay or audio claim
+changed.  T7/M1 stays active for the remaining selected-set runtime/release
+work.
+
 ## Archived Packet — M1 T7 S32
 
 | Field | Required record |

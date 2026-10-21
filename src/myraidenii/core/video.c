@@ -55,6 +55,10 @@ void myraidenii_core_video_reset(myraidenii_core_video *video)
 {
     video->raster_tick = 0u;
     video->sprite_flags = 0u;
+    video->crtc_byte_writes = 0u;
+    video->sprite_flag_byte_writes = 0u;
+    video->palette_commits = 0u;
+    video->tilemap_commits = 0u;
     lib_memory_set(video->crtc_registers, 0, sizeof(video->crtc_registers));
     lib_memory_set(video->palette, 0, sizeof(video->palette));
     lib_memory_set(video->tilemap, 0, sizeof(video->tilemap));
@@ -87,6 +91,7 @@ lib_status myraidenii_core_video_sprite_flags_write(myraidenii_core_video *video
     mask = (lib_u16)0xffu << (byte_offset * 8u);
     video->sprite_flags = (video->sprite_flags & (lib_u16)~mask) |
         ((lib_u16)value << (byte_offset * 8u));
+    ++video->sprite_flag_byte_writes;
     return LIB_STATUS_OK;
 }
 
@@ -107,6 +112,7 @@ lib_status myraidenii_core_video_crtc_write(myraidenii_core_video *video,
     if (video == LIB_NULL || byte_offset >= sizeof(video->crtc_registers))
         return LIB_STATUS_INVALID_ARGUMENT;
     video->crtc_registers[byte_offset] = value;
+    ++video->crtc_byte_writes;
     return LIB_STATUS_OK;
 }
 
@@ -118,6 +124,7 @@ lib_status myraidenii_core_video_palette_load(myraidenii_core_video *video,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_copy(video->palette, words, sizeof(video->palette));
+    ++video->palette_commits;
     return LIB_STATUS_OK;
 }
 
@@ -145,6 +152,7 @@ lib_status myraidenii_core_video_tilemap_load(myraidenii_core_video *video,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_copy(video->tilemap, words, sizeof(video->tilemap));
+    ++video->tilemap_commits;
     return LIB_STATUS_OK;
 }
 
