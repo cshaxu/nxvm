@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S44
+## Archived Packet — M1 T7 S44
 
 | Field | Required record |
 | --- | --- |
@@ -20,6 +20,19 @@ It does not redefine unimplemented Board behavior as a release result.
 | Expected Markers | Synthetic decoder/map failures report their own category and reset to none; the live Probe reports one matching category on both widths; no successful execution, map behavior or timing changes. |
 | Stop Conditions | Need for a separate port map, guest payload/address/opcode capture, an unbounded trace, external source/code/table import, a Shared/public cross-product contract, a different failure owner, nondeterminism or a guessed repair stops and transfers the receiver. |
 | Exit Criteria | One existing Sound observation owns the finite category; current Board/Probe paths copy it; synthetic category/reset coverage and x64/x86 runtime results agree; staging is empty; evidence selects the next bounded receiver without a guessed emulation behavior. |
+
+## M1 T7 S44 Closure
+
+Sequential coordinator actual-change review accepts P1 `0a1db7775`. One Sound
+observation now classifies only the existing terminal owners as decoder or
+unified map, while Board and the existing Probe only copy that finite result.
+Synthetic Sound and real Board-path smokes cover both categories and reset;
+the complete MyRaidenII unit label passes 12/12 on x64 and x86. One persistent
+background selected-set Probe per width reaches the same `DECODER` category;
+external staging is empty. The result admits no guessed instruction repair and
+transfers only a source-authorized complete decoder-family batch to the next
+packet. No Shared component, ROM/media, executable artifact, renderer, queue,
+thread, map route, timing behavior or release claim changed.
 
 ## Archived Packet — M1 T7 S43
 
