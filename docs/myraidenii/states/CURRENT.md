@@ -2,9 +2,10 @@
 
 ## Current Work
 
-M1 T6 is active. It receives the closed T5 Machine/PCM driver and establishes
-the one Product composition route; it does not reopen Board, Sound, Video, or
-CPU modeling work.
+M1 T6 is closed. It received the closed T5 Machine/PCM driver and established
+the one Product composition route without reopening Board, Sound, Video, or
+CPU modeling work. The queued qualification task receives external-ROM startup,
+gameplay and release work.
 
 ## Archived Packet — M1 T6 S3
 
@@ -89,6 +90,21 @@ Complete MyRaidenII unit selections pass 12/12 on both widths; see
 T6 remains active.  A later S must qualify the external release configuration
 and artifact workflow without introducing a second configuration or runtime
 path.
+
+## M1 T6 Closure
+
+T6 is closed after three bounded deliveries: S1 establishes the single
+configuration-to-Board/Machine composition owner; S2 establishes its single
+generic monitor and Escape lifecycle route; S3 establishes the sole process
+entry and local executable target.  All three retain Product -> Machine -> Core
+ownership and consume Emulator contracts unchanged.  No protected input,
+external archive, asset deployment, runnable release claim or gameplay claim
+entered T6.
+
+The next queued qualification task receives the deliberately separate work:
+verified external individual-ROM configuration, production startup, lifecycle
+and input observation, release artifacts and owner gameplay acceptance.  It
+must not recreate the T6 composition, monitor or entry routes.
 
 ## Archived Packet — M1 T5 S18
 
