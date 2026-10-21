@@ -32,7 +32,8 @@ typedef enum myraidenii_core_cop_command_kind {
     MYRAIDENII_CORE_COP_HITBOX,
     MYRAIDENII_CORE_COP_ANGLE_APPROACH,
     MYRAIDENII_CORE_COP_NUMERIC,
-    MYRAIDENII_CORE_COP_OFFSET_ADD
+    MYRAIDENII_CORE_COP_OFFSET_ADD,
+    MYRAIDENII_CORE_COP_COMPATIBILITY
 } myraidenii_core_cop_command_kind;
 
 typedef struct myraidenii_core_cop_range {
@@ -117,6 +118,8 @@ static myraidenii_core_cop_command_kind myraidenii_core_cop_classify(lib_u16 com
     case 0xa100u: case 0xa900u: return MYRAIDENII_CORE_COP_POSITION;
     case 0xb100u: case 0xb900u: return MYRAIDENII_CORE_COP_HITBOX;
     case 0x6200u: return MYRAIDENII_CORE_COP_ANGLE_APPROACH;
+    case 0x1905u: case 0x9100u: case 0x9900u:
+        return MYRAIDENII_CORE_COP_COMPATIBILITY;
     case 0x130eu: case 0x138eu: case 0x2208u: case 0x2288u: case 0x330eu: case 0x338eu:
     case 0x3b30u: case 0x3bb0u: case 0x39b0u:
     case 0x42c2u: case 0x4aa0u: case 0x8100u: case 0x8900u:
@@ -985,6 +988,8 @@ lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop)
             if (status == LIB_STATUS_OK)
                 status = myraidenii_core_cop_memory(cop, destination, 0u, 4u,
                     LIB_TRUE, &value);
+        } else if (kind == MYRAIDENII_CORE_COP_COMPATIBILITY) {
+            /* L1: the selected residual forms complete without a known result contract. */
         } else {
             status = LIB_STATUS_UNSUPPORTED;
         }

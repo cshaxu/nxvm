@@ -36,6 +36,19 @@ approved L2 observations, with synthetic pixel oracles and no imported source,
 table or protected media. This does not block the completed Board/Core frame
 qualification or authorize a second renderer.
 
+## Medium: Residual COP Semantic Fidelity
+
+Owner: MyRaidenII Core COP. T7 S65 admits the three remaining selected-set
+command forms as an explicit L1 compatibility completion so that they retain
+the one command route without invented outputs. Their true operands, result
+publication, timing and failure contracts remain unknown.
+
+Risk: continued execution does not establish that any game logic which depends
+on a concrete result is faithful. A later receiver may replace this L1 model
+only after a primary contract or independently reproducible L2 behavior model
+exists; it must preserve the single classifier, pending owner and dispatcher,
+and must not copy source code, tables or protected media.
+
 ## Medium: Shared Complete-Span Memory Query Classification
 
 Owner: Shared X86 Core Machine memory query and entry-plan preflight. T3 S15's

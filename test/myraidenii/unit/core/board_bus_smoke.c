@@ -1673,6 +1673,43 @@ done:
     return failed;
 }
 
+static lib_i32 board_cop_residual_compatibility(void)
+{
+    const lib_u16 commands[] = {0x1905u, 0x9100u, 0x9900u};
+    const lib_u8 sentinel[] = {0xa5u,0x5au,0x3cu,0xc3u};
+    cop_fixture fixture = {0};
+    x86_core_machine *machine;
+    lib_u8 actual[sizeof(sentinel)];
+    lib_i32 failed = 1;
+
+    if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
+    machine = fixture.machine;
+    for (lib_size index = 0u; index < sizeof(commands) / sizeof(commands[0]); ++index) {
+        if (board_cop_word_write(machine, 0x4a0u, 0x1122u) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x4c0u, 0x3344u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x2000u, sentinel, sizeof(sentinel)) !=
+                LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x500u, commands[index]) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x500u, commands[index]) != LIB_STATUS_INVALID_STATE ||
+            myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x4a0u, actual, 2u) != LIB_STATUS_OK ||
+            actual[0] != 0x22u || actual[1] != 0x11u ||
+            x86_core_machine_memory_read(machine, 0x4c0u, actual, 2u) != LIB_STATUS_OK ||
+            actual[0] != 0x44u || actual[1] != 0x33u ||
+            x86_core_machine_memory_inspect(machine, 0x2000u, actual, sizeof(actual)) !=
+                LIB_STATUS_OK || lib_memory_compare(actual, sentinel, sizeof(actual)) != 0)
+            goto done;
+        if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            board_cop_word_write(machine, 0x500u, commands[index]) != LIB_STATUS_OK ||
+            myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK)
+            goto done;
+    }
+    failed = 0;
+done:
+    cop_fixture_destroy(&fixture);
+    return failed;
+}
+
 static lib_i32 board_sprite_protection_trigger(void)
 {
     const myraidenii_core_board_config config = {
@@ -3281,7 +3318,7 @@ lib_i32 main(void)
         board_video_crtc() ||
         board_sprite_protection_upload() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
-        board_cop_command_admission() ||
+        board_cop_command_admission() || board_cop_residual_compatibility() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_offset_add() ||
         board_sprite_protection_trigger() ||

@@ -777,6 +777,44 @@ visual behavior is added.  Documentation governance and whitespace checks
 pass; no production, test, build, manifest, public interface, artifact or
 media file changed.
 
+## M1 T7 S65 — Residual COP L1 Compatibility Receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S64; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner clarified that missing physical documentation is not an implementation blocker: original material is preferred, external emulator behavior is L2, and an explicit L1 model is allowed when neither exists. |
+| Objective | Admit the three residual locally known COP command forms as one explicit L1 compatibility family that completes through the sole classifier/dispatcher without inventing registers, image lookups, result writes or a second command path. |
+| Non-goals | No copied external algorithm/table/data, COPX attachment, generic unknown-command success, inferred command operands/results, Shared change, new public API, queue/thread, ROM/media import, gameplay or release claim. |
+| Reference Baseline | Both inspected L2 implementations leave the same three residual forms unimplemented. The current local command admission instead stops selected startup at unsupported-command classification. |
+| Candidate Proposal | Add a private residual command kind for exactly the pre-audited forms. Its one executor is an L1 completion no-op: it clears no existing state, publishes no result and succeeds only after normal pending-command admission. All other unknown commands remain rejected. |
+| Files And ABI Surface | MyRaidenII `core/cop.c`, existing Board smoke and integration qualification evidence/current/index. No header, Shared/public ABI, asset or artifact interface change. Estimated production +12..35/-0..8, tests +25..90/-0..15, documents +45..110. |
+| Applicable Rules | MyRaidenII architecture/coding/source policy and Shared execution/documentation rules. COP retains one classifier, one pending owner and one dispatcher. |
+| Verification | Existing Board unit proves exact-admission, deferred completion, no state/result side effect, reset and unchanged unknown rejection. Build/run focused and complete MyRaidenII units on x64/x86; then run the existing bounded selected-set wrapper once per width in background and retain only safe aggregate outcome/cleanup. |
+| Expected Markers | Exactly three named residual forms reach a single L1 executor; unsupported unknowns still fail; every successful completion preserves prior observable COP state; real-set qualification either advances or names the next safe existing boundary. |
+| Asset Needs | Read-only owner archive through the existing external wrapper only; temporary stage stays below the existing diagnostics root and is removed by the wrapper. |
+| Reporting Requirements | Record L1 limitation, complete command-family boundary, actual diff, dual-width proof, safe aggregate result and cleanup. Do not retain raw guest command/address/payload/trace data. |
+| Stop Conditions | A form needs a non-empty state/result contract, an observed failure cannot be safely classified, a test shows state mutation, archive/inventory mismatch, inconsistent widths, retained stage or any Shared requirement stops and transfers the new boundary. |
+| Exit Criteria | The finite residual family has one explicit L1 owner, focused/full units and one bounded two-width qualification pass with cleanup, evidence/index/current are updated and reviewed P is pushed. |
+| Original Owner Request | Continue MyRaidenII toward a runnable emulator without treating unavailable physical documentation as a reason to stop; label L1/L2 limits honestly. |
+| Similar-Issue Sweep | All current classifier fall-through forms, external L2 disposition, pending lifecycle, result/status preservation, reset, failure observation, generic unknown rejection and selected-set consumer behavior. |
+
+## M1 T7 S65 Closure
+
+S65 adds the three finite residual COP forms as one private L1 compatibility
+family at the sole classifier and dispatcher. They retain normal deferred
+admission and completion but introduce no result, register, memory-transfer
+or lookup semantics; generic unknown forms remain rejected. The existing
+Board smoke proves admission, pending rejection, no additional observable
+state mutation, reset and unchanged unknown rejection. Focused tests and the
+complete twelve-test MyRaidenII unit label pass on x64 and x86.
+
+One bounded selected-set Coin/Start frame-sequence qualification per width
+reaches the fixed 100,000,000-instruction budget with the same neutral
+completion category and wrapper cleanup. This establishes only continued
+bounded execution; true residual-command semantics remain explicitly tracked
+as L1 debt. No Shared, public ABI, ROM/media, artifact or desktop claim
+changes. S65 is closed with no active packet.
+
 ## Active Packet
 
 No S packet is active.

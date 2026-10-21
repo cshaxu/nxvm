@@ -110,6 +110,7 @@
 - [T7 COP unsupported command-family audit](evidence/t7-s58-cop-command-family-audit.md).
 - [T7 COP existing-executor alias completion](evidence/t7-s59-cop-existing-executor-aliases.md).
 - [T7 post-alias selected-set qualification](evidence/t7-s60-post-alias-selected-set-qualification.md).
+- [T7 residual COP L1 compatibility](evidence/t7-s65-residual-cop-compatibility.md).
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
 - [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 COPX-D2 contract research gate](evidence/t7-s63-copx-contract-research.md).
