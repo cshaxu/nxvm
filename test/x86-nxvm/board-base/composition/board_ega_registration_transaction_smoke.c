@@ -61,7 +61,7 @@ static lib_i32 create_machine(x86_core_machine **out_machine, lib_u32 *writes)
     };
     const x86_core_machine_memory_device_route memory = {
         0x1000u, 1u, {sentinel_memory_read, sentinel_memory_write, sentinel_memory_query},
-        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD
+        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, LIB_NULL
     };
 
     return x86_core_machine_neutral_create(&config, out_machine) != LIB_STATUS_OK ||

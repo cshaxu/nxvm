@@ -3,7 +3,7 @@
 #include "x86-nxvm/product/ini_interface.h"
 #include <windows.h>
 
-#include "test/x86-nxvm/setup/pc_console_process.h"
+#include "test/emulator/setup/console_process.h"
 
 static lib_bool write_ini(const char *path, const char *text)
 {
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     /* A correct adjacent INI wins despite wrong product files and invalid CWD INI.
      * Renaming the test EXE also proves the name is not inferred from argv[0]. */
     if (!write_ini(cwd_ini, "[invalid]\nkey=value\n") ||
-        !pc_console_process_run(executable, cwd, commands, markers,
+        !emulator_console_process_run(executable, cwd, commands, markers,
             sizeof(commands) / sizeof(commands[0]))) goto done;
     if (!DeleteFileA(paths[selected]) || !write_ini(cwd_ini, valid)) goto done;
     for (lib_size i = 0u; i < sizeof(names) / sizeof(names[0]); ++i)

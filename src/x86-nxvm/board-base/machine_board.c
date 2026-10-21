@@ -1231,10 +1231,12 @@ lib_status x86_nxvm_board_configure_absent_memory(x86_nxvm_board_state *board,
      * a dynamically decoded video aperture may own part of the same physical
      * range while the remaining addresses still read as open bus. */
     route = (x86_core_machine_memory_device_route) {
-        config->physical_start, config->bytes,
-        {x86_nxvm_board_absent_memory_read, x86_nxvm_board_absent_memory_write,
+        .physical_start = config->physical_start,
+        .bytes = config->bytes,
+        .callbacks = {x86_nxvm_board_absent_memory_read, x86_nxvm_board_absent_memory_write,
             x86_nxvm_board_absent_memory_query},
-        X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
+        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK,
+        .failure = LIB_NULL
     };
     status = x86_core_machine_install_memory_device_routes(board->core, &route, 1u,
         LIB_NULL, LIB_NULL, absent);

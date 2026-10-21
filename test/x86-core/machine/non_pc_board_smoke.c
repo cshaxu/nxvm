@@ -113,7 +113,7 @@ static lib_i32 non_pc_board_run(x86_core_cpu_profile profile, lib_u32 reset_addr
     const x86_core_machine_memory_alias_config alias = {0x3000u, 0x2000u, 16u};
     const x86_core_machine_memory_device_route route = {
         .physical_start = 0x7000u, .bytes = 1u,
-        .callbacks = {board_read, board_write, board_query}
+        .callbacks = {board_read, board_write, board_query}, .failure = LIB_NULL
     };
     non_pc_board board = {0};
     const x86_core_machine_attachment attachment = {

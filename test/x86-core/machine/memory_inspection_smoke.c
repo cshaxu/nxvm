@@ -187,7 +187,8 @@ static lib_bool inspection_cache_execution(void)
     const x86_core_machine_memory_alias_config alias = {
         .physical_start = 0x8000u, .backing_start = 0x3000u, .bytes = 16u};
     const x86_core_machine_memory_device_route route = {.physical_start = 0x5000u,
-        .bytes = 16u, .callbacks = {probe_read, probe_write, probe_query}};
+        .bytes = 16u, .callbacks = {probe_read, probe_write, probe_query},
+        .failure = LIB_NULL};
     if (x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
         x86_core_machine_install_memory_device_routes(machine, &route, 1u,
             LIB_NULL, LIB_NULL, &device) != LIB_STATUS_OK ||

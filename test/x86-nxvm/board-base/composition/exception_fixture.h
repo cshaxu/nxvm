@@ -42,7 +42,8 @@ static inline lib_status test_board_exception_block_vector(x86_core_machine *mac
         .physical_start = (lib_u32)vector * 4u, .bytes = 4u,
         .callbacks = {test_board_exception_read, test_board_exception_write,
             test_board_exception_query},
-        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
+        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY,
+        .failure = LIB_NULL
     };
 
     return x86_core_machine_install_memory_device_routes(machine, &route, 1u,

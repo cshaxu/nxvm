@@ -34,7 +34,8 @@ static inline lib_status test_x86_core_exception_block_vector(x86_core_machine *
         .physical_start = (lib_u32)vector * 4u, .bytes = 4u,
         .callbacks = { test_x86_core_exception_read, test_x86_core_exception_write,
             test_x86_core_exception_query },
-        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
+        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY,
+        .failure = LIB_NULL
     };
     return x86_core_machine_install_memory_device_routes(machine, &route, 1u,
         LIB_NULL, LIB_NULL, owner);

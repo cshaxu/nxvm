@@ -346,16 +346,19 @@ lib_status x86_nxvm_board_vadp_configure(t_vadp *adapter,
     /* Prepare the complete chip before publishing either memory or ports. */
     if (status == LIB_STATUS_OK && config->cga_vram_present)
         memory_routes[memory_route_count++] = (x86_core_machine_memory_device_route) {
-            X86_NXVM_BOARD_VADP_VIDEO_BASE, X86_NXVM_BOARD_VADP_VIDEO_BYTES,
-            { cga_read, cga_write, cga_query },
-            X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
+            .physical_start = X86_NXVM_BOARD_VADP_VIDEO_BASE,
+            .bytes = X86_NXVM_BOARD_VADP_VIDEO_BYTES,
+            .callbacks = {cga_read, cga_write, cga_query},
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD,
+            .failure = LIB_NULL};
     if (status == LIB_STATUS_OK && config->ega_present) {
         if (config->ega_sequencer.planar_ega)
             memory_routes[memory_route_count++] = (x86_core_machine_memory_device_route) {
-                X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE,
-                X86_NXVM_BOARD_VADP_EGA_CPU_DECODE_BYTES,
-                { planar_read, planar_write, planar_query },
-                X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
+                .physical_start = X86_NXVM_BOARD_VADP_EGA_APERTURE_BASE,
+                .bytes = X86_NXVM_BOARD_VADP_EGA_CPU_DECODE_BYTES,
+                .callbacks = {planar_read, planar_write, planar_query},
+                .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD,
+                .failure = LIB_NULL};
         {
             const lib_bool compaq = config->ega_personality ==
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;

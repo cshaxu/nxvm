@@ -315,7 +315,8 @@ static lib_i32 execution_devices(lib_bool emulation, lib_bool memory,
         .address = 0x55u, .read = execution_read, .write = execution_write, .owner = &probe};
     const x86_core_machine_memory_device_route memory_route = {
         .physical_start = 0x7000u, .bytes = 1u,
-        .callbacks = {execution_memory_read, execution_memory_write, execution_query}};
+        .callbacks = {execution_memory_read, execution_memory_write, execution_query},
+        .failure = LIB_NULL};
     x86_core_machine *machine = LIB_NULL;
     x86_core_machine_run_result result = {0};
     const char *phase = "construct";

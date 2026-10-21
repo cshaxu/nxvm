@@ -112,7 +112,8 @@ static inline lib_status test_x86_nxvm_machine_fixture_register_memory_device_pr
         .physical_start = physical,
         .bytes = bytes,
         .callbacks = {read, write, query},
-        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD
+        .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD,
+        .failure = LIB_NULL
     };
     return machine == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         x86_core_machine_install_memory_device_routes(machine, &route, 1u,

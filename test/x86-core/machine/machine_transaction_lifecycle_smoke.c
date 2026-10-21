@@ -221,7 +221,8 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
     const x86_core_machine_memory_device_route route = {
         .physical_start = 0x80000u, .bytes = 1u,
         .callbacks = {lifecycle_memory_read, lifecycle_memory_write,
-            lifecycle_memory_query}
+            lifecycle_memory_query},
+        .failure = LIB_NULL
     };
 
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;

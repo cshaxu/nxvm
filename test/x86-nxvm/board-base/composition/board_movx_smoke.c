@@ -64,9 +64,9 @@ static lib_i32 movx_prepare(x86_core_cpu_profile profile,
     };
     const x86_core_machine_memory_device_route routes[] = {
         {.physical_start = MOVX_SOURCE_MEMORY, .bytes = 2u,
-            .callbacks = {movx_read, movx_write, movx_query}},
+            .callbacks = {movx_read, movx_write, movx_query}, .failure = LIB_NULL},
         {.physical_start = 0x18u, .bytes = 4u,
-            .callbacks = {movx_read, movx_write, movx_query}}
+            .callbacks = {movx_read, movx_write, movx_query}, .failure = LIB_NULL}
     };
 
     const x86_core_cpu_debug_register_patch entry = {
