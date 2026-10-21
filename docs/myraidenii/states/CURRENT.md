@@ -6,26 +6,26 @@ M1 T6 is active. It receives the closed T5 Machine/PCM driver and establishes
 the one Product composition route; it does not reopen Board, Sound, Video, or
 CPU modeling work.
 
-## Active Packet — M1 T6 S2
+## Archived Packet — M1 T6 S3
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; S2 follows accepted S1 commit `10ed1f5fe`. One session performs coordinator and executor roles. |
-| Admission And Approval | The owner accepted M1 Product work, delegated ordinary same-T S planning, and instructed continuation on 2026-10-20. No Shared change, protected input, third-party source import, or artifact release is admitted. |
-| Objective | Add the single MyRaidenII Product monitor/hotkey policy to the S1 composition owner: one Emulator monitor provider, one Escape pause/resume hotkey route, structured help rows for the fixed initial guest controls, and honest unsupported save/load/debug behavior through the existing Emulator grammar. |
-| Non-goals | No second parser, Session provider, lifecycle state machine, executor, renderer, console graphics route, snapshot/debug implementation, new Machine/Core API, ROM loading path, application EXE, or asset template. |
-| Reference Baseline | S1 owns the Board/Machine composition and already injects a neutral monitor provider. Machine's existing KVM input adapter owns the initial L1 key-to-Board-control mapping. Emulator Product owns fixed monitor parsing, help formatting, lifecycle requests, result framing and Window titles. |
-| Candidate Proposal | Product replaces S1's empty monitor policy with one local adapter that delegates fixed monitor grammar to Emulator Product. It registers Escape only as `pause-toggle`, uses Emulator's existing pause-toggle/lifecycle request helpers, and supplies structured hotkey rows for the existing Machine mappings. All other guest keys stay ordinary KVM input events and therefore reach Machine through the one Session route. |
-| Files And ABI Surface | Expected only `src/myraidenii/product/`, its existing unit test/CMake, Current and S evidence. No Lib/Emulator/X86/Core/Machine/public API, root CMake, executable target, INI, asset, ROM or external repository file changes. |
-| Applicable Rules | MyRaidenII guide; Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. The one Product -> Machine -> Core direction, single provider and strict L3/L2/L1 ladder apply. Initial keyboard binding is local L1 policy, not a board-wiring claim. |
-| Verification | Focused Product monitor/hotkey unit tests plus complete MyRaidenII unit selection on x64/x86; documentation, whitespace and actual diff/ownership review. No desktop, endpoint, external-ROM, EXE or gameplay claim. |
-| Expected Markers | One provider/context, one Escape registry entry, one lifecycle helper call for pause/resume, fixed commands never overridden, no raw command/help formatting in Product, and no new direct UI/Machine control path. |
-| Asset Needs | None. The owner-supplied external selected-set archive remains unopened and read-only. |
-| Reporting Requirements | Report exact control/help rows, retained generic parser and lifecycle ownership, L1 scope of host bindings, tests and explicit non-claims. |
-| Stop Conditions | A need to change a Shared contract, intercept a guest key outside the existing hotkey registry, add a platform API, implement snapshots/debug, read external ROMs, create an executable/INI release, or claim a hardware fact stops and transfers the gap. |
-| Exit Criteria | The Product adapter has one test-covered monitor/hotkey policy using existing Emulator contracts; unsupported fixed capabilities remain truthful; all scoped gates pass; no duplicate command/lifecycle path is retained. |
+| Identifier Mode | Continuation; S3 follows accepted S2 commit `2c0796648`. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner accepted M1 Product work, delegated ordinary same-T S planning, and instructed continuation on 2026-10-20. No Shared change, protected input, third-party source import, asset deployment, or executable release is admitted. |
+| Objective | Add the one real MyRaidenII process entry and local executable target that invoke the established Product configuration and composition path. |
+| Non-goals | No INI template, ROM/archive opening, release artifact, deployment, snapshot/debug implementation, console graphics fallback, new lifecycle path, Shared/Core/Machine API or external-source import. |
+| Reference Baseline | S1 supplies the one Product composition owner; S2 supplies its one monitor/hotkey policy. Configuration already resolves exactly the adjacent lowercase `myraidenii.ini`; Machine remains the one image transaction owner. |
+| Candidate Proposal | Add a narrow `main.c` that loads the existing Product configuration and invokes the existing Product composition. Add one local executable CMake target linking the existing Product library. It creates no second configuration, ownership or runtime route and is not copied to Assets until a separately qualified external configuration/artifact packet. |
+| Files And ABI Surface | Expected only `src/myraidenii/product/main.c`, its CMake declaration, Current and S evidence. No public API, Shared/Core/Machine/test/asset/ROM/external repository file change is expected. |
+| Applicable Rules | MyRaidenII guide; Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. Product -> Machine -> Core remains the only application direction. L3 requires an inspected primary-manual PDF with the explicit applicable fact; external evidence is L2; local policy is L1. |
+| Verification | Configure/build the actual entry target on x64/x86, then rerun the complete MyRaidenII unit selection on both widths plus documentation/whitespace/diff review. No external-ROM, desktop, executable deployment or gameplay claim. |
+| Expected Markers | One `main`, one configuration load, one Product run, one executable target and no asset-copy/post-build release command. |
+| Asset Needs | None. The owner-supplied external selected-set archive remains unopened and read-only. The required adjacent INI and individual ROM files are not invented or committed. |
+| Reporting Requirements | Report entry/control-flow ownership, build names, tests and explicit non-claims. |
+| Stop Conditions | A need to parse/archive ROM inputs, add a release INI, deploy an artifact, change a Shared contract, alter Machine/Core, or claim successful guest startup stops and transfers the gap. |
+| Exit Criteria | The build contains one real process entry into the existing Product route on both widths; it introduces no duplicate configuration/composition path and all scoped checks pass. |
 | Original Owner Request | Continue MyRaidenII under the strict grade definition: L3 only for an inspected primary-manual PDF's explicit applicable formula/constant/rule; reference/range evidence is L2; unsupported local policy is L1. |
-| Similar-Issue Sweep | Review all MyRaidenII Product input/help/monitor call sites and Machine input mappings for duplicate Escape ownership, raw help framing, fixed-command parsing, or a Product bypass of Session. |
+| Similar-Issue Sweep | Review MyRaidenII for duplicate `main`, configuration-load or composition-run paths and ensure the target does not deploy an executable, INI or protected payload. |
 
 ## Archived Packet — M1 T6 S1
 
@@ -75,6 +75,20 @@ passing.  See [S2 evidence](../etc/evidence/t6-s2-product-monitor-policy.md).
 
 T6 remains active.  A later S must establish the real App entry, adjacent
 release configuration and product artifacts before any runnable-product claim.
+
+## M1 T6 S3 Closure
+
+S3 is closed.  `myraidenii-0-0-0006` is the sole process entry and calls the
+existing adjacent-INI loader and Product composition exactly once.  It is
+configured and linked on x64 and x86, but has no Asset copy command: an
+external, user-owned `myraidenii.ini` plus individual ROM inputs remain a
+separate release-qualification prerequisite.  No archive or ROM was opened.
+Complete MyRaidenII unit selections pass 12/12 on both widths; see
+[S3 evidence](../etc/evidence/t6-s3-product-entry.md).
+
+T6 remains active.  A later S must qualify the external release configuration
+and artifact workflow without introducing a second configuration or runtime
+path.
 
 ## Archived Packet — M1 T5 S18
 
