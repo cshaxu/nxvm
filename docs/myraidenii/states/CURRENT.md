@@ -8,7 +8,7 @@ It does not redefine unimplemented Board behavior as a release result.
 
 ## Active Packet
 
-## Active Packet — M1 T7 S36
+## Archived Packet — M1 T7 S36
 
 | Field | Required record |
 | --- | --- |
@@ -28,6 +28,29 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | Existing aggregate only is reused, both asserted windows are reported on both widths, affected tests/checks pass, staging is empty, evidence is reviewed and a complete P is pushed. |
 | Original Owner Request | Continue MyRaidenII implementation efficiently toward real Raiden II execution without copying external implementation. |
 | Similar-Issue Sweep | Counter monotonicity, press/release ordering, input-mode exclusivity, all four input registers, reset, getter failure, unchanged legacy modes, Probe-only output and staging cleanup. |
+
+## M1 T7 S36 Closure
+
+S36 is closed after actual-change review accepts P1 `db471affd`.  It adds only
+Probe-local before/after snapshots of S35's existing copied input aggregate;
+there is no production, public-interface, Shared, input-delivery or hardware
+model change.  The 20,000,000-instruction vblank sequence agrees exactly on
+x64 and x86: during Coin vblanks 300--330, the counters advance
+`0/28/56/98` (DIP/Player/System/Coin); during Start vblanks 360--390, they
+advance `0/30/60/98`.  All four edges still deliver once and the neutral final
+frame digest/nonblack remains `ccad0e0867e39b9c` / 74,865.
+
+The [evidence record](../etc/evidence/t7-s36-input-window-observation.md)
+records the exact L2 scope and result.  The affected 12/12 MyRaidenII units,
+Probe builds on both stable Ninja trees, documentation governance and
+whitespace checks pass; owner-ROM staging is empty.  T7/M1 remains open.  A
+future receiver must establish one finite non-payload game-state or
+Board-semantic discrepancy before changing a device model.  S36 makes no
+gameplay, desktop/RDP or release claim.
+
+## Active Packet
+
+No S packet is active.
 
 ## Archived Packet — M1 T7 S35
 
