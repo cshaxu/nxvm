@@ -6,6 +6,43 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S27
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S26; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work, permits probes instead of Computer Use, and permits external emulator behavior as L2 evidence. This packet is MyRaidenII research only. |
+| Objective | Establish whether the selected set exposes a finite observable COPX-D2 receiver boundary during bounded reference startup, or record the evidence-backed absence of such a contract without inventing a local COPX route. |
+| Non-goals | No production/test/CMake/API change, COPX loader, lookup-table import, ROM/PAL download, raw ROM/RAM/trace/pixel/audio retention, MAME source import, protected-media commit, Shared/other-App change, or release claim. |
+| Reference Baseline | S5/S8 establish that the local twelve-image transaction deliberately excludes COPX-D2 because no finite receiver exists. S26 proves sound register traffic but no PCM activity. The current Board owns the only local COP model. |
+| Candidate Proposal | Inspect the already-pinned external reference only for map/device identity, then run a bounded MAME Lua black-box probe against the owner-supplied selected set. Observe only named device/bus write counts and neutral lifecycle markers for candidate COP boundaries during fixed startup. Adopt no behavior from an unbounded trace or opaque payload. |
+| Files And ABI Surface | Current and one MyRaidenII evidence record only. Temporary Lua/configuration/staged archive material is external under `O:\repos.hobby\nxvm-assets\media-myraidenii\t7-s27-mame`; it is removed after process exit. No source, test, manifest, interface, asset or executable file changes. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Documentation/Coding rules and T7 qualification proposal. External observations are L2 only. |
+| Verification | Pin external tool/revision identities; bounded reference observations once per specified schedule; retain only aggregate counts and irreversible neutral markers; verify owned process/stage cleanup; run documentation governance and whitespace checks. |
+| Expected Markers | Either a repeatable finite candidate request/result boundary with enough facts for a later independently designed contract, or a documented no-contract result. Neither outcome proves gameplay, COPX accuracy, title progress, sound or release readiness. |
+| Asset Needs | Read-only owner ROM archive and already owner-approved external PAL files, staged only outside the repository. No asset is acquired, modified or committed. |
+| Reporting Requirements | Record exact reference revision/tool identity, candidate observation scope, schedules, aggregate results, evidence grade, cleanup, and what remains unknown. Do not retain protected payloads. |
+| Stop Conditions | Any need for source/table/code import, raw guest-state inspection, unbounded tracing, an inferred local lookup rule, unavailable reference boundary, nondeterminism, or a production change stops this S and records the gap. |
+| Exit Criteria | A finite evidence-backed disposition is recorded; owned temporary output is removed; applicable documentation checks pass; actual diff is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue independently toward MyRaidenII using bounded probes and external emulators as L2 references rather than waiting for physical hardware. |
+| Similar-Issue Sweep | Candidate COP map/register traffic, selected-set boot state, device availability, staging isolation, output size limits and cleanup. |
+
+## M1 T7 S27 Closure
+
+S27 is closed after the actual-diff review.  The bounded MAME observation
+shows existing COP control, command and trigger windows are active, while the
+pinned reference still exposes no COPX-D2 request/result boundary.  It would
+therefore be misleading to add an INI role, loader or guessed Board lookup.
+The result is recorded as L2 evidence in
+[S27 evidence](../etc/evidence/t7-s27-copx-boundary-observation.md); COPX
+remains the explicitly deferred receiver gap in TODO.
+
+No production, test, CMake, manifest, interface, asset or executable changed.
+The external ROM/PAL staging root and task Lua script were removed after the
+reference process exited.  Documentation governance and whitespace review are
+the applicable verification for this documentation-only result.  T7 remains
+active; no successor S is admitted by this closure.
+
 ## M1 T7 S26 Closure
 
 S26 is closed after the coordinator review of `4a68b49fb`.  The single existing

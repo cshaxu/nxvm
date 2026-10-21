@@ -107,6 +107,7 @@
 - [T7 full-budget Machine-driver pulse](evidence/t7-s23-full-budget-machine-pulse.md).
 - [T7 MAME black-box Coin/Start pulse](evidence/t7-s24-mame-input-pulse.md).
 - [T7 Board/Sound byte-lane and handshake repair](evidence/t7-s25-sound-handoff.md).
+- [T7 COPX-D2 boundary observation](evidence/t7-s27-copx-boundary-observation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
