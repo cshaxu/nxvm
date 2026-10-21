@@ -747,6 +747,40 @@ interface, artifact or media file changed.
 
 ## Active Packet
 
+## Archived Packet — M1 T7 S64
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S63; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation through complete owner-valid contracts and permits external-emulator behavior as L2 only. |
+| Objective | Determine whether the existing sprite-flags latch has a finite, independently implementable blend/shadow contract sufficient for a later bounded Video receiver. |
+| Non-goals | No renderer rewrite, palette/table import, ROM/media access, new graphics format, guessed blend fallback, Shared change, second compositor, artifact or release claim. |
+| Reference Baseline | Board owns the two-byte sprite-flags latch and the Video compositor deliberately has no flag-dependent blend/shadow behavior. The current TODO records the missing fidelity contract. |
+| Candidate Proposal | Reconcile the existing local sprite pipeline, prior L2 evidence and pinned external behavioral reference. Record only flag ownership, input classification, output-compositing rule, reset/failure expectations and uncertainty. Admit a later receiver only if every fact is complete and can be verified with synthetic non-ROM pixels. |
+| Files And ABI Surface | Current, one evidence record/index only. No production/test/build/manifest/public interface/artifact/media change. |
+| Applicable Rules | MyRaidenII source policy and architecture/coding; Shared execution/documentation rules. External source is behavior evidence only and is never copied, transliterated or retained. |
+| Verification | Static local pipeline inventory, prior-evidence and reference-identity review, source-policy review, documentation governance and whitespace checks. No owner-ROM run or production build is required. |
+| Expected Markers | One unambiguous disposition: complete finite blend receiver, or an explicit unresolved boundary with named missing semantic facts. |
+| Asset Needs | Read-only external research checkout only; no image, palette or media staging. |
+| Reporting Requirements | Record evidence grade and reference identity without raw external code/table/pixel data; do not record guest addresses, payloads, traces or protected media. |
+| Stop Conditions | A contract depends on copied palette/table data, raw media inspection, unbounded reverse engineering, unknown blend priority, unknown reset/failure semantics or a Shared output change; stop and retain the gap. |
+| Exit Criteria | Evidence/index/current document the complete contract or precise insufficiency, all documentation checks pass and a reviewed P is pushed. |
+| Original Owner Request | Implement MyRaidenII toward Raiden II execution using permitted L2 research but never substitute guessed fidelity for a missing hardware contract. |
+| Similar-Issue Sweep | Sprite flags, descriptor decode, palette lookup, compositor order, output publication, reset, failure handling and source-policy constraints. |
+
+## M1 T7 S64 Closure
+
+The review confirms that the current Board/Video split is already single-owned:
+Board maps the latch, Video owns it and the one compositor owns ordinary
+priority phases.  Existing L2 evidence deliberately does not establish a
+flag-dependent blend/shadow rule, colour transformation, ordering or
+reset/failure contract.  The TODO remains the receiving boundary; no guessed
+visual behavior is added.  Documentation governance and whitespace checks
+pass; no production, test, build, manifest, public interface, artifact or
+media file changed.
+
+## Active Packet
+
 No S packet is active.
 
 ## Archived Packet — M1 T7 S54

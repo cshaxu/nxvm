@@ -113,6 +113,7 @@
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
 - [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 COPX-D2 contract research gate](evidence/t7-s63-copx-contract-research.md).
+- [T7 sprite blend contract research gate](evidence/t7-s64-sprite-blend-contract-research.md).
 - [T7 Board Sound IM1 transport](evidence/t7-s17-sound-im1-transport.md).
 - [T7 Board Sound IM0 transport](evidence/t7-s18-sound-im0-transport.md).
 - [T7 selected-set input pulse diagnostic](evidence/t7-s19-input-pulse-diagnostic.md).
