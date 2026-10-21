@@ -6,6 +6,14 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S9 Closure
+
+S9 is closed without a source change.  The existing staged Probe completed its
+maximum 20M-instruction held-control budget identically on x64 and x86, with
+no CPU/COP/control terminal and no retained staging files.  This is L2
+determinism evidence only, not a game-start or timing result; another longer
+run would not select a finite receiver.  See [S9 evidence](../etc/evidence/t7-s9-maximum-budget-probe.md).
+
 ## M1 T7 S8 Closure
 
 S8 is closed with no production change.  It repeated the COPX-D2 source
