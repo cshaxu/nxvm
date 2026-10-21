@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S32
+## Archived Packet — M1 T7 S32
 
 | Field | Required record |
 | --- | --- |
@@ -26,6 +26,21 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | The finite polarity comparison is independently reviewable, documented, indexed, documentation checks pass, and a complete P is pushed. |
 | Original Owner Request | Continue MyRaidenII qualification using external emulator implementations only as L2 evidence and do not block on unavailable physical hardware. |
 | Similar-Issue Sweep | Coin1/Coin2 reset, press, release, local active-low Player/System conventions, reference macro scope and all callers of the local coin callback. |
+
+## M1 T7 S32 Closure
+
+S32 is closed after coordinator review of P1 `5d9c66db4`. The exact public
+reference macro uses active-low Coin1/Coin2, and the local Board already resets
+high, clears on press and restores on release through its one Sound callback.
+No source change was justified; reversing the local route would regress the
+bounded electrical contract. The complete comparison is retained in the
+[S32 evidence](../etc/evidence/t7-s32-coin-input-polarity.md).
+
+Documentation governance and whitespace checks passed. No source, test, CMake,
+manifest, executable, protected media, external staging or Asset changed. T7
+remains active; no successor S is admitted by this closure. The unresolved
+qualification boundary remains the selected program's wider startup/title/
+gameplay hardware coverage, not Coin polarity.
 
 ## Archived Packet — M1 T7 S31
 
