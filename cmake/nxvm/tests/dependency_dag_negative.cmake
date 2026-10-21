@@ -21,12 +21,9 @@ execute_process(
     OUTPUT_VARIABLE output
     ERROR_VARIABLE error)
 file(REMOVE_RECURSE "${WORK}")
-if(result EQUAL 0 OR NOT "${output}${error}" MATCHES
-        "src/x86-nxvm/chips/probe/outer.c" OR
-        NOT "${output}${error}" MATCHES "app/probe" OR
-        NOT "${output}${error}" MATCHES
-        "src/x86-nxvm/chips/probe/reverse.c" OR
-        NOT "${output}${error}" MATCHES "x86-nxvm/machine")
+if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "Forbidden source" OR
+        NOT "${output}${error}" MATCHES "src/x86-nxvm/chips/probe/outer.c" OR
+        NOT "${output}${error}" MATCHES "src/x86-nxvm/chips/probe/reverse.c")
     message(FATAL_ERROR
         "Dependency DAG probe did not reject outer and reverse edges: ${result}: ${output}${error}")
 endif()
