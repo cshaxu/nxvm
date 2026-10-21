@@ -6,6 +6,39 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S17
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S17 follows closed S16. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued work under the L3/L2/L1 evidence rule and permits L2 external-emulator behavior reference without source/table import. |
+| Objective | Connect the existing Board Sound-interrupt-pending latch to the existing local Z80 IM1 interrupt arbitration through its single Board-to-Sound transport contract. |
+| Non-goals | No Shared change, new thread, clock, executor, audio renderer, YM/OKI behavior, ROM/PAL import or retention, source import, timing-grade promotion, audio-success or gameplay claim. |
+| Reference Baseline | S16 observes the Board interrupt latch pending through all four bounded selected-set checkpoints while local Sound accepts only YM timer pending. The inspected external sound-map reference is L2 only; the local Z80 IM1 vector and existing acknowledge map are already-owned code. |
+| Candidate Proposal | Add one read-only `interrupt_is_pending` transport callback. Board supplies its existing latch. The existing Sound interrupt gate accepts IM1 when either the existing YM source or the Board latch is pending; the existing guest-side acknowledge writes remain the only clear owner. |
+| Files And ABI Surface | Local MyRaidenII Core only: `sound.h/c`, `board.c`, existing `sound_smoke.c`, Current and one evidence record. The local transport structure expands; no Shared/public product API changes. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Documentation rules. The Board-to-Sound union is L2 unless a directly applicable explicit primary-manual-PDF fact is inspected. |
+| Verification | Extend the existing ROM-free Sound smoke to prove Board-pending IM1 entry, guest acknowledge clear and no interrupt without a source; retain YM interrupt coverage. Build/test MyRaidenII x64/x86, run documentation governance and whitespace checks; rerun the bounded selected-set Probe if local Sound behavior changes successfully. |
+| Expected Markers | The synthetic Z80 reaches its existing IM1 vector for a pending Board source and clears that source only by writing its existing acknowledge register. |
+| Asset Needs | None for unit work. The existing owner archive is read only only if the final bounded Probe is run; wrapper staging remains transient and removed on exit. |
+| Reporting Requirements | Report L2 evidence separately from local deterministic unit behavior. State whether selected-set PCM changes; neither result proves audible sound. |
+| Stop Conditions | Any need for a second interrupt path, guessed vector/mode beyond existing IM1 behavior, synthesized audio, external source/table import, protected payload logging or L3 claim stops this packet. |
+| Exit Criteria | One transport source owner, no automatic latch clear, existing YM coverage retained, Board-source regression passes on both widths, all touched checks pass and evidence records exact L2 limit. |
+| Original Owner Request | Only an explicit directly applicable formula, constant or rule in an inspected primary manual PDF is L3; external/range/reference behavior is L2; otherwise it is L1. |
+| Similar-Issue Sweep | Audit all transport callbacks for read-only query versus guest-owned acknowledge, and all interrupt acceptance failure paths for propagated status rather than silent source loss. |
+
+## M1 T7 S17 Closure
+
+S17 is closed. The local Board Sound latch now reaches the existing Sound CPU
+IM1 gate through its one transport contract, while guest acknowledge remains
+the only clear owner. Existing YM interrupt coverage and the new Board-source
+regression pass on both widths. The bounded selected ROM still retains its
+pending latch and zero-nonzero PCM summary, identically on x64/x86; therefore
+the actual mode/vector/acknowledgement receiver remains open as L2 work rather
+than being guessed. See [S17 evidence](../etc/evidence/t7-s17-sound-im1-transport.md).
+Coordinator actual-change review accepted the local Core-only contract expansion:
+no Shared component, external asset, new execution path or release artifact changed.
+
 ## Archived Packet — M1 T7 S16
 
 | Field | Required record |

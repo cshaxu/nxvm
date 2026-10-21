@@ -57,6 +57,12 @@ static lib_status myraidenii_core_board_sound_transport_command_acknowledge(
     return myraidenii_core_board_sound_command_acknowledge(context);
 }
 
+static lib_status myraidenii_core_board_sound_transport_interrupt_is_pending(
+    void *context, lib_bool *out_pending)
+{
+    return myraidenii_core_board_sound_interrupt_is_pending(context, out_pending);
+}
+
 static lib_status myraidenii_core_board_sound_transport_interrupt_acknowledge(
     void *context)
 {
@@ -1246,6 +1252,8 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
                 myraidenii_core_board_sound_transport_command_is_pending,
             .command_acknowledge =
                 myraidenii_core_board_sound_transport_command_acknowledge,
+            .interrupt_is_pending =
+                myraidenii_core_board_sound_transport_interrupt_is_pending,
             .interrupt_acknowledge =
                 myraidenii_core_board_sound_transport_interrupt_acknowledge,
             .response_set = myraidenii_core_board_sound_transport_response_set,
