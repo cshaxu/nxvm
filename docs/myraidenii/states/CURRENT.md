@@ -6,6 +6,37 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S18
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S18 follows closed S17. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued L2 implementation from permitted external-emulator reference behavior when no directly applicable primary-manual-PDF rule is available. |
+| Objective | Replace the local selected-Sound IM1-only interrupt assumption with one bounded L2 Seibu-style IM0 arbitration model, using the existing Board latch and YM pending source. |
+| Non-goals | No Shared change, imported/transliterated source/table, primary-manual claim, second interrupt loop, second clock, thread, Sound synthesis, ROM/PAL retention, audio-success or gameplay claim. |
+| Reference Baseline | S17 proves the local Board source reaches the local transport but the selected ROM retains it. The inspected MAME Raiden II configuration routes the audio CPU through `im0_vector_cb`; inspected Seibu Sound behavior selects RST18 (`0xdf`) before RST10 (`0xd7`), assigns main-CPU request to RST18 and FM/YM to RST10. This is L2 external behavior only. |
+| Candidate Proposal | Keep one local interrupt acceptance point. In IM0, choose Board pending first and enter `0x18`; otherwise choose YM pending and enter `0x10`. Board source clears at its accepted RST18 transition; guest acknowledge addresses end service only and no longer conflate all sources with Board latch clear. IM1 is deliberately outside this selected-Sound L2 model. |
+| Files And ABI Surface | Local MyRaidenII Core only: `sound.h/c`, `board.c`, existing `sound_smoke.c`, Current and one evidence record. The local transport renames its Board-clear callback to accepted-source semantics; no Shared/public product interface changes. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Documentation rules. The vector/source/priority model is L2 and is not promoted by a passing ROM run. |
+| Verification | Update existing Sound smoke: IM0 Board RST18, IM0 YM RST10, Board-over-YM priority and Board clear at accepted delivery. Build/test MyRaidenII x64/x86, run the bounded selected-set Probe on both widths, documentation governance and whitespace checks. |
+| Expected Markers | A selected-set run may clear the Board latch or change PCM, but either observation is L2 runtime evidence only; unchanged output remains a valid finite disposition. |
+| Asset Needs | Read-only owner archive only for the final bounded Probe; wrapper-owned staging is removed on exit. |
+| Reporting Requirements | Pin the external revision/path and facts without retaining its source. Report exact local model and selected-set observation separately from audible/gameplay evidence. |
+| Stop Conditions | Any need for undocumented third source, guessed opcode/vector, source/table import, raw ROM disassembly/logging, additional execution loop or L3 claim stops this packet. |
+| Exit Criteria | One Sound interrupt acceptance owner implements the stated L2 IM0 source/priority model; existing and new unit coverage passes in both widths; bounded Probe is compared on both widths; evidence retains limits. |
+| Original Owner Request | Only an explicit directly applicable formula, constant or rule in an inspected primary manual PDF is L3; external/range/reference behavior is L2; otherwise it is L1. |
+| Similar-Issue Sweep | Review every Sound interrupt address for source-clear versus service-end semantics and confirm no Board latch is cleared by unrelated YM/RST10 activity. |
+
+## M1 T7 S18 Closure
+
+S18 is closed. The one local Sound interrupt acceptance point now uses the
+bounded L2 IM0 source model: Board RST18 has priority over YM RST10, and the
+Board latch clears only once its transition is accepted. Existing Sound and
+all MyRaidenII unit tests pass on both widths. The bounded selected-set Probe
+observes the Board latch cleared at all four checkpoints identically on x64
+and x86; copied PCM remains zero, so this does not claim audible output or
+gameplay. See [S18 evidence](../etc/evidence/t7-s18-sound-im0-transport.md).
+
 ## Archived Packet — M1 T7 S17
 
 | Field | Required record |

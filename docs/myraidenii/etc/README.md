@@ -99,6 +99,7 @@
 - [T7 bounded selected-set progress sampling](evidence/t7-s15-progress-sampling.md).
 - [T7 bounded Board-to-Sound transport observation](evidence/t7-s16-sound-transport-observation.md).
 - [T7 Board Sound IM1 transport](evidence/t7-s17-sound-im1-transport.md).
+- [T7 Board Sound IM0 transport](evidence/t7-s18-sound-im0-transport.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

@@ -27,7 +27,7 @@ typedef struct myraidenii_core_sound_transport {
     lib_status (*command_is_pending)(void *context, lib_bool *out_pending);
     lib_status (*command_acknowledge)(void *context);
     lib_status (*interrupt_is_pending)(void *context, lib_bool *out_pending);
-    lib_status (*interrupt_acknowledge)(void *context);
+    lib_status (*interrupt_accept)(void *context);
     lib_status (*response_set)(void *context, lib_u8 index, lib_u8 value);
     lib_status (*coin_get)(void *context, lib_u8 *out_value);
 } myraidenii_core_sound_transport;

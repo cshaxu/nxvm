@@ -41,7 +41,7 @@ static lib_status sound_interrupt_is_pending(void *context, lib_bool *out_pendin
     return LIB_STATUS_OK;
 }
 
-static lib_status sound_interrupt_acknowledge(void *context)
+static lib_status sound_interrupt_accept(void *context)
 {
     ((sound_fixture *)context)->interrupt = LIB_FALSE;
     return LIB_STATUS_OK;
@@ -82,7 +82,7 @@ static lib_status sound_create_with_samples(const lib_u8 *program,
             .command_is_pending = sound_command_is_pending,
             .command_acknowledge = sound_command_acknowledge,
             .interrupt_is_pending = sound_interrupt_is_pending,
-            .interrupt_acknowledge = sound_interrupt_acknowledge,
+            .interrupt_accept = sound_interrupt_accept,
             .response_set = sound_response_set,
             .coin_get = sound_coin_get
         }
@@ -169,7 +169,7 @@ static lib_i32 sound_switches_fixed_bank(void)
             .command_is_pending = sound_command_is_pending,
             .command_acknowledge = sound_command_acknowledge,
             .interrupt_is_pending = sound_interrupt_is_pending,
-            .interrupt_acknowledge = sound_interrupt_acknowledge,
+            .interrupt_accept = sound_interrupt_accept,
             .response_set = sound_response_set,
             .coin_get = sound_coin_get
         }
@@ -324,10 +324,11 @@ static lib_i32 sound_delivers_ym_timer_interrupt(void)
     static lib_u8 program[0x2000u];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
-    lib_size at = 0u;
+    lib_size at = 0x100u;
     lib_i32 failed = 1;
 
     lib_memory_set(program, 0, sizeof(program));
+    program[0u] = 0xc3u; program[1u] = 0u; program[2u] = 1u;
     program[at++] = 0x31u; program[at++] = 0xffu; program[at++] = 0x27u;
     program[at++] = 0x3eu; program[at++] = 0x10u;
     program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
@@ -341,18 +342,17 @@ static lib_i32 sound_delivers_ym_timer_interrupt(void)
     program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
     program[at++] = 0x3eu; program[at++] = 0x05u;
     program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
-    program[at++] = 0xedu; program[at++] = 0x56u;
+    program[at++] = 0xedu; program[at++] = 0x46u;
     program[at++] = 0xfbu;
     program[at++] = 0x00u;
     program[at++] = 0x76u;
-    program[at++] = 0xc3u; program[at++] = 0x25u; program[at++] = 0x00u;
-    program[0x38u] = 0x3eu; program[0x39u] = 0x14u;
-    program[0x3au] = 0x32u; program[0x3bu] = 0x08u; program[0x3cu] = 0x40u;
-    program[0x3du] = 0x3eu; program[0x3eu] = 0x10u;
-    program[0x3fu] = 0x32u; program[0x40u] = 0x09u; program[0x41u] = 0x40u;
-    program[0x42u] = 0x3eu; program[0x43u] = 0x5au;
-    program[0x44u] = 0x32u; program[0x45u] = 0x18u; program[0x46u] = 0x40u;
-    program[0x47u] = 0xedu; program[0x48u] = 0x4du;
+    program[0x10u] = 0x3eu; program[0x11u] = 0x14u;
+    program[0x12u] = 0x32u; program[0x13u] = 0x08u; program[0x14u] = 0x40u;
+    program[0x15u] = 0x3eu; program[0x16u] = 0x10u;
+    program[0x17u] = 0x32u; program[0x18u] = 0x09u; program[0x19u] = 0x40u;
+    program[0x1au] = 0x3eu; program[0x1bu] = 0x5au;
+    program[0x1cu] = 0x32u; program[0x1du] = 0x18u; program[0x1eu] = 0x40u;
+    program[0x1fu] = 0xedu; program[0x20u] = 0x4du;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK)
         goto done;
@@ -374,17 +374,15 @@ static lib_i32 sound_delivers_transport_interrupt(void)
     lib_i32 failed = 1;
 
     lib_memory_set(program, 0, sizeof(program));
-    program[0u] = 0x31u; program[1u] = 0xffu; program[2u] = 0x27u;
-    program[3u] = 0xedu; program[4u] = 0x56u;
-    program[5u] = 0xfbu;
-    program[6u] = 0x00u;
-    program[7u] = 0x76u;
-    program[8u] = 0xc3u; program[9u] = 7u; program[10u] = 0u;
-    program[0x38u] = 0x3eu; program[0x39u] = 0x5au;
-    program[0x3au] = 0x32u; program[0x3bu] = 0x18u; program[0x3cu] = 0x40u;
-    program[0x3du] = 0x3eu; program[0x3eu] = 0u;
-    program[0x3fu] = 0x32u; program[0x40u] = 0x01u; program[0x41u] = 0x40u;
-    program[0x42u] = 0xedu; program[0x43u] = 0x4du;
+    program[0u] = 0xc3u; program[1u] = 0u; program[2u] = 1u;
+    program[0x18u] = 0x3eu; program[0x19u] = 0x5au;
+    program[0x1au] = 0x32u; program[0x1bu] = 0x18u; program[0x1cu] = 0x40u;
+    program[0x1du] = 0x76u;
+    program[0x100u] = 0x31u; program[0x101u] = 0xffu; program[0x102u] = 0x27u;
+    program[0x103u] = 0xedu; program[0x104u] = 0x46u;
+    program[0x105u] = 0xfbu;
+    program[0x106u] = 0x00u;
+    program[0x107u] = 0x76u;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
         fixture.response[0] != 0x5au || fixture.interrupt)

@@ -121,7 +121,7 @@ static lib_bool myraidenii_core_sound_transport_valid(
         transport->command_is_pending != LIB_NULL &&
         transport->command_acknowledge != LIB_NULL &&
         transport->interrupt_is_pending != LIB_NULL &&
-        transport->interrupt_acknowledge != LIB_NULL &&
+        transport->interrupt_accept != LIB_NULL &&
         transport->response_set != LIB_NULL && transport->coin_get != LIB_NULL;
 }
 
@@ -685,7 +685,7 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
     case MYRAIDENII_CORE_SOUND_INTERRUPT_ACKNOWLEDGE:
     case MYRAIDENII_CORE_SOUND_RST10_ACKNOWLEDGE:
     case MYRAIDENII_CORE_SOUND_RST18_ACKNOWLEDGE:
-        return sound->transport.interrupt_acknowledge(sound->transport.context);
+        return LIB_STATUS_OK;
     case MYRAIDENII_CORE_SOUND_RESPONSE_0:
         return sound->transport.response_set(sound->transport.context, 0u, value);
     case MYRAIDENII_CORE_SOUND_RESPONSE_1:
@@ -1146,20 +1146,30 @@ static lib_status myraidenii_core_sound_interrupt_accept(
     myraidenii_core_sound *sound, lib_u8 *out_ticks)
 {
     lib_bool transport_pending;
+    lib_bool ym_pending;
+    lib_u16 vector;
     lib_status status;
 
     status = sound->transport.interrupt_is_pending(sound->transport.context,
         &transport_pending);
     if (status != LIB_STATUS_OK) return status;
-    if (!sound->interrupt_enable || sound->interrupt_mode != 1u ||
-        (!myraidenii_core_sound_ym_irq_pending(&sound->ym) && !transport_pending))
+    ym_pending = myraidenii_core_sound_ym_irq_pending(&sound->ym);
+    if (!sound->interrupt_enable || sound->interrupt_mode != 0u)
         return LIB_STATUS_UNSUPPORTED;
+    if (transport_pending) vector = 0x0018u;
+    else if (ym_pending) vector = 0x0010u;
+    else return LIB_STATUS_UNSUPPORTED;
     sound->halted = LIB_FALSE;
     sound->interrupt_enable = LIB_FALSE;
     status = myraidenii_core_sound_push(sound, sound->pc);
-    if (status == LIB_STATUS_OK) sound->pc = 0x0038u;
+    if (status != LIB_STATUS_OK) return status;
+    sound->pc = vector;
+    if (transport_pending) {
+        status = sound->transport.interrupt_accept(sound->transport.context);
+        if (status != LIB_STATUS_OK) return status;
+    }
     *out_ticks = 13u;
-    return status;
+    return LIB_STATUS_OK;
 }
 
 static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
