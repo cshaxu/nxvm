@@ -556,6 +556,38 @@ each run.  This selects a future local unsupported-command-family inventory;
 it does not identify an external command value, add a command, prove boot or
 gameplay, or establish a release.  S57 is closed; M1 T7 remains open.
 
+## Archived Packet — M1 T7 S58
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S57; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII M1 implementation and automatic bounded S progression. S57 establishes that both widths reach the existing unsupported COP command-admission branch. |
+| Objective | Audit the complete local COP command classifier, implementation owners, tests and recorded residual contracts to determine which unsupported command families have a complete source-policy-compliant implementation contract and which must remain explicitly rejected. |
+| Non-goals | No guessed command implementation, generic success fallback, ROM/media retention, raw command/address/trace output, external-source import, map widening, Shared change, CPU workaround, release artifact, gameplay or release claim. |
+| Reference Baseline | S57 reports the same safe `unsupported` command-admission category on both widths. The local classifier owns all supported command admission; S20/S29 record residual command evidence limits. |
+| Candidate Proposal | Build a complete family ledger from the sole local classifier, its one advance dispatcher, existing Board tests and prior evidence. Select a receiver only if its input, output, reset, failure-prefix and publication contract are complete; otherwise retain the existing rejection and document the missing evidence. |
+| Files And ABI Surface | Current, one evidence record/index and any directly required task/proposal references. No production/test/build/manifest/public interface/Shared/artifact/media change is planned. Estimated documents +55..130/-0..20. |
+| Applicable Rules | MyRaidenII guide/architecture/coding/source policy; Shared execution/architecture/coding/documentation rules. The classifier and pending-operation advance path remain the only command owners. |
+| Verification | Static complete-family inventory; cross-check each classifier family against its one executor and existing Board coverage; inspect S20/S29 residual contracts; run documentation governance and whitespace checks. No ROM run is required or claimed. |
+| Expected Markers | Every local supported family has one owner and evidence status; every unsupported family is either a separately admissible receiver or a named continued rejection. No external command identity is inferred from S57. |
+| Asset Needs | None. |
+| Reporting Requirements | Record only command-family names, owner disposition and evidence status. Do not retain command words, addresses, instruction bytes, traces, ROM/media data or third-party implementation material. |
+| Stop Conditions | Any selection requires raw external command data, copied reference behavior, an incomplete operand/output/reset/failure contract, a Shared/public change or a second command path; stop selection and retain the existing rejection. |
+| Exit Criteria | A complete family ledger is indexed, all unsupported families have an explicit disposition, documentation/whitespace checks pass, and any implementation receiver is bounded without changing the current command contract. |
+| Original Owner Request | Continue MyRaidenII by complete owner-valid work, not first-observed opcode patching or guessed ROM behavior. |
+| Similar-Issue Sweep | Classifier, pending admission, advance dispatch, all existing COP command tests, S20 residual ledger, S29 unresolved boundary, reset and failure observation. |
+
+## M1 T7 S58 Closure
+
+The complete static inventory confirms that all admitted COP command families
+have one classifier/advance owner and existing Board-family coverage. The
+remaining historical forms lack the complete contract needed for admission,
+and S57's source-policy-safe external category cannot identify one without
+retaining prohibited data. The existing unsupported result therefore remains
+correct. No source/test/build/public interface/artifact/media file changed.
+S58 is closed; M1 T7 remains open for separately evidenced hardware or runtime
+receivers.
+
 ## Active Packet
 
 No S packet is active.
