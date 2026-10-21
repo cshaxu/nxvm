@@ -6,6 +6,35 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S20
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S20 follows closed S19. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation and clarified the mandatory L3/L2/L1 evidence rule on 2026-10-20. Ordinary same-T packet planning is delegated. |
+| Objective | Qualify the existing Product-to-Machine input wiring without inventing desktop automation: prove the Product supplies its one driver and the existing driver consumes ordinary KVM key events into Board controls, alongside a bounded real-Product launch. |
+| Non-goals | No new input path, scheduler, Core/Board behavior, Shared change, ROM/PAL/media retention, desktop automation framework, gameplay/title/audio/release claim, or product artifact publication. |
+| Reference Baseline | S19 proves a finite Coin/Start electrical edge through the Board API but deliberately bypasses Product, Emulator UI and KVM. Product already constructs one Emulator route; Machine already maps ordinary KVM key events to Board controls. |
+| Candidate Proposal | Reuse existing Product composition and Machine-driver probes rather than adding a Window automation path. Verify that Product passes its one driver to Emulator and that the driver maps ordinary KVM events, including `5` and `1`, to the existing Board controls. Launch each host width once with the selected owner archive and record only neutral process disposition. No raw trace, screenshot, ROM byte, key payload or staged file is retained. |
+| Files And ABI Surface | Initially no source or ABI change. If a repeatable harness gap is found, stop and transfer it rather than adding a second Product or input route. Expected documentation-only Current/evidence update. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Documentation rules. Window result is L2 runtime evidence. Only a directly applicable inspected primary-manual-PDF fact may be L3; external implementations or ranges are L2 and unsupported local borrowing is L1. |
+| Verification | Build existing Product x64/x86 using the reusable Ninja graphs; run its existing bounded staging launch once per width; run the existing Product-composition and Machine-driver coverage as part of the complete MyRaidenII unit suites; confirm staged cleanup; run documentation/whitespace checks. |
+| Expected Markers | Each Product stays alive for the bounded observation. Existing probes show the one Product driver and its `5`/`1` KVM-to-Board mapping. This does not prove title acceptance, gameplay or desktop focus. |
+| Asset Needs | Owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; wrapper-owned transient staging beneath the owner-managed external asset root, deleted before completion. |
+| Reporting Requirements | Record exact widths, staging cleanup, composition/driver disposition, test/build result and the distinction between KVM delivery, Board input, title acceptance and gameplay. |
+| Stop Conditions | Any need to retain a Window, image, trace, ROM/media, add an input API, emulate guest input, change Product/Core behavior, use a second execution path, or claim a playable result stops this packet and transfers the gap. |
+| Exit Criteria | Both widths receive one bounded real-Product launch, all owned staging is gone, existing composition/driver probes and required tests pass, an evidence record states what was and was not proven, and no production path is added. |
+| Original Owner Request | Only explicit directly applicable formulas or constants from an inspected primary manual PDF are L3; ranges or external references are L2; unsupported borrowing is L1. Continue under that distinction. |
+| Similar-Issue Sweep | Review existing Product launch/staging code for another runtime input route, retained transient directory or host-automation dependency; retain only the existing route. |
+
+## M1 T7 S20 Closure
+
+S20 is closed. Product composition retains one driver route, and the existing
+Machine driver consumes ordinary KVM `5`/`1` events into Coin 1/Start 1 Board
+controls. The selected ROM Product remained alive for ten seconds on x64 and
+x86, with staging removed each time. This does not prove Window focus, title
+acceptance or gameplay. See [S20 evidence](../etc/evidence/t7-s20-product-input-route.md).
+
 ## Archived Packet — M1 T7 S19
 
 | Field | Required record |

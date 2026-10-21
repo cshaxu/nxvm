@@ -101,6 +101,7 @@
 - [T7 Board Sound IM1 transport](evidence/t7-s17-sound-im1-transport.md).
 - [T7 Board Sound IM0 transport](evidence/t7-s18-sound-im0-transport.md).
 - [T7 selected-set input pulse diagnostic](evidence/t7-s19-input-pulse-diagnostic.md).
+- [T7 Product-to-Machine input-route qualification](evidence/t7-s20-product-input-route.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
