@@ -6,7 +6,16 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S13
+## M1 T7 S13 Closure
+
+S13 is closed with no source, test, ABI, asset or artifact change.  The
+external FPGA reference independently confirms the existing L2 cadence after
+clock-domain conversion: its 8 MHz pixel clock and its 64 MHz, 4096-cycle
+renderer line are both the local 64-us line interval.  The local 16 MHz Board
+axis must therefore retain 1024 ticks/line.  This is not L3 hardware timing,
+nor a sprite/COPX/gameplay qualification.  See [S13 evidence](../etc/evidence/t7-s13-raster-cadence-reconciliation.md).
+
+## Archived Packet — M1 T7 S13
 
 | Field | Required record |
 | --- | --- |
