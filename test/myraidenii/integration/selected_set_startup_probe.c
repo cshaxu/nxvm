@@ -197,6 +197,7 @@ int main(int argument_count, char **arguments)
     myraidenii_core_board_input_observation start_window_before = {0};
     myraidenii_core_board_input_observation start_window_after = {0};
     myraidenii_core_board_video_observation video_observation = {0};
+    myraidenii_core_board_sprite_protection_observation sprite_protection_observation = {0};
     myraidenii_startup_control_mode control_mode;
     lib_bool coin_pressed = LIB_FALSE;
     lib_bool coin_released = LIB_FALSE;
@@ -371,6 +372,9 @@ int main(int argument_count, char **arguments)
             if (status == LIB_STATUS_OK)
                 status = myraidenii_core_board_video_observation_get(board,
                     &video_observation);
+            if (status == LIB_STATUS_OK)
+                status = myraidenii_core_board_sprite_protection_observation_get(board,
+                    &sprite_protection_observation);
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
@@ -422,7 +426,9 @@ int main(int argument_count, char **arguments)
             "start-window-player-reads=%llu start-window-system-reads=%llu "
             "start-window-coin-reads=%llu "
             "video-vblanks=%llu video-crtc-writes=%llu video-sprite-flag-writes=%llu "
-            "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu\n",
+            "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu "
+            "sprite-protection-services=%llu sprite-protection-accepted=%llu "
+            "sprite-protection-rejected=%llu\n",
             (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
             fault_linear, delivered_exceptions, (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
@@ -491,7 +497,10 @@ int main(int argument_count, char **arguments)
             (unsigned long long)video_observation.sprite_flag_byte_writes,
             (unsigned long long)video_observation.sprite_latch_events,
             (unsigned long long)video_observation.palette_commits,
-            (unsigned long long)video_observation.tilemap_commits);
+            (unsigned long long)video_observation.tilemap_commits,
+            (unsigned long long)sprite_protection_observation.services,
+            (unsigned long long)sprite_protection_observation.accepted,
+            (unsigned long long)sprite_protection_observation.rejected);
         for (lib_u8 index = 0u; index < frame_sample_count; ++index) {
             lib_c_printf("MYRAIDENII:STARTUP-PROBE:FRAME-SAMPLE index=%u executed=%llu "
                 "digest=%016llx nonblack=%llu sound-command-0=%u sound-command-1=%u "

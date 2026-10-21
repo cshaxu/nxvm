@@ -124,6 +124,14 @@ typedef struct myraidenii_core_board_video_observation {
     lib_u64 tilemap_commits;
 } myraidenii_core_board_video_observation;
 
+/* Reset clears this aggregate. It reports only the finite source-trigger
+ * disposition and retains neither descriptor bytes nor guest addresses. */
+typedef struct myraidenii_core_board_sprite_protection_observation {
+    lib_u64 services;
+    lib_u64 accepted;
+    lib_u64 rejected;
+} myraidenii_core_board_sprite_protection_observation;
+
 lib_status myraidenii_core_board_create(const myraidenii_core_board_config *config,
     myraidenii_core_board **out_board);
 void myraidenii_core_board_destroy(myraidenii_core_board *board);
@@ -169,6 +177,9 @@ lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_boa
     myraidenii_core_board_sound_observation *out_observation);
 lib_status myraidenii_core_board_video_observation_get(const myraidenii_core_board *board,
     myraidenii_core_board_video_observation *out_observation);
+lib_status myraidenii_core_board_sprite_protection_observation_get(
+    const myraidenii_core_board *board,
+    myraidenii_core_board_sprite_protection_observation *out_observation);
 
 /* These are the board-owned sides of the future sound-CPU handoff. They do not
  * instantiate or schedule a sound CPU. */

@@ -29,6 +29,7 @@ struct myraidenii_core_board {
     lib_u16 sprite_protection_max_x;
     lib_u16 sprite_protection_source;
     lib_bool sprite_protection_pending;
+    myraidenii_core_board_sprite_protection_observation sprite_protection_observation;
     lib_bool sound_command_pending;
     lib_bool sound_response_pending;
     lib_bool sound_interrupt_pending;
@@ -866,6 +867,7 @@ static lib_status myraidenii_core_board_sprite_protection_service(
         source > LIB_UINT32_MAX - board->sprite_protection_offset - 2u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    ++board->sprite_protection_observation.services;
     status = myraidenii_core_board_sprite_protection_word(board, source,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, &source_flags);
     if (status == LIB_STATUS_OK) {
@@ -897,7 +899,11 @@ static lib_status myraidenii_core_board_sprite_protection_service(
     source_flags = (lib_u16)((source_flags & (lib_u16)~1u) | (visible ? 1u : 0u));
     status = myraidenii_core_board_sprite_protection_word(board, source,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &source_flags);
-    if (status != LIB_STATUS_OK || !visible) return status;
+    if (status != LIB_STATUS_OK) return status;
+    if (!visible) {
+        ++board->sprite_protection_observation.rejected;
+        return LIB_STATUS_OK;
+    }
 
     status = myraidenii_core_board_sprite_protection_word(board,
         board->sprite_protection_destination, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &head_1);
@@ -920,9 +926,11 @@ static lib_status myraidenii_core_board_sprite_protection_service(
             (lib_u16)(board->sprite_protection_destination + 6u),
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &value);
     }
-    if (status == LIB_STATUS_OK)
+    if (status == LIB_STATUS_OK) {
         board->sprite_protection_destination =
             (lib_u16)(board->sprite_protection_destination + 8u);
+        ++board->sprite_protection_observation.accepted;
+    }
     return status;
 }
 
@@ -1122,6 +1130,8 @@ static void myraidenii_core_board_reset(void *owner)
         board->sprite_protection_max_x = 0u;
         board->sprite_protection_source = 0u;
         board->sprite_protection_pending = LIB_FALSE;
+        lib_memory_set(&board->sprite_protection_observation, 0,
+            sizeof(board->sprite_protection_observation));
         board->sound_command_pending = LIB_FALSE;
         board->sound_response_pending = LIB_FALSE;
         board->sound_interrupt_pending = LIB_FALSE;
@@ -1599,6 +1609,15 @@ lib_status myraidenii_core_board_video_observation_get(const myraidenii_core_boa
     out_observation->sprite_latch_events = board->sprite_latch_events;
     out_observation->palette_commits = board->video.palette_commits;
     out_observation->tilemap_commits = board->video.tilemap_commits;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_sprite_protection_observation_get(
+    const myraidenii_core_board *board,
+    myraidenii_core_board_sprite_protection_observation *out_observation)
+{
+    if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = board->sprite_protection_observation;
     return LIB_STATUS_OK;
 }
 

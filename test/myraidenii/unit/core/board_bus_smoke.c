@@ -1520,6 +1520,7 @@ static lib_i32 board_sprite_protection_trigger(void)
     myraidenii_core_board *board = LIB_NULL;
     x86_core_machine *machine;
     x86_core_machine_lifecycle lifecycle;
+    myraidenii_core_board_sprite_protection_observation observation = {0};
     lib_u16 actual = 0u;
     lib_u8 trigger = 0u;
     lib_u8 advanced = LIB_FALSE;
@@ -1553,7 +1554,10 @@ static lib_i32 board_sprite_protection_trigger(void)
         x86_core_machine_memory_read(machine, 0x2006u, &actual, sizeof(actual)) !=
             LIB_STATUS_OK || actual != 56u ||
         x86_core_machine_memory_read(machine, 0x762u, &actual, sizeof(actual)) !=
-            LIB_STATUS_OK || actual != 0x2008u) {
+            LIB_STATUS_OK || actual != 0x2008u ||
+        myraidenii_core_board_sprite_protection_observation_get(board, &observation) !=
+            LIB_STATUS_OK || observation.services != 1u || observation.accepted != 1u ||
+        observation.rejected != 0u) {
         goto done;
     }
 
@@ -1569,7 +1573,10 @@ static lib_i32 board_sprite_protection_trigger(void)
         x86_core_machine_memory_read(machine, 0x2008u, &actual, sizeof(actual)) !=
             LIB_STATUS_OK || actual != 0x5a5au ||
         x86_core_machine_memory_read(machine, 0x762u, &actual, sizeof(actual)) !=
-            LIB_STATUS_OK || actual != 0x2008u) {
+            LIB_STATUS_OK || actual != 0x2008u ||
+        myraidenii_core_board_sprite_protection_observation_get(board, &observation) !=
+            LIB_STATUS_OK || observation.services != 2u || observation.accepted != 1u ||
+        observation.rejected != 1u) {
         goto done;
     }
 

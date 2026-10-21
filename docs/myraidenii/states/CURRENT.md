@@ -10,6 +10,21 @@ It does not redefine unimplemented Board behavior as a release result.
 
 No S packet is active.
 
+## M1 T7 S38 Closure
+
+S38 establishes, without retaining guest payload, that the S37 finite
+sprite-protection source trigger is active in the selected owner ROM: both
+widths service 38,400 requests, accepting 37,597 and rejecting 803 during the
+same bounded 20,000,000-instruction vblank Coin/Start diagnostic.  The new
+observation is Board-local, resettable and copied; it changes no emulation
+semantics or Shared/public contract.  The existing Board smoke and both-width
+MyRaidenII units pass.  See the
+[evidence record](../etc/evidence/t7-s38-sprite-protection-reachability.md).
+
+This closes the reachability question only.  T7/M1 remains open for the
+finite output-semantic and gameplay/release receivers; no title, sprite
+fidelity or playability claim follows.
+
 ## Archived Packet — M1 T7 S37
 
 | Field | Required record |
