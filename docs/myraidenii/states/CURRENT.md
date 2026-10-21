@@ -714,6 +714,37 @@ a selected program state that requests a playable voice. The next productive
 receiver is the independently admitted COPX-D2 Board-contract research gate.
 No production, test, Shared, asset or artifact file changed.
 
+## Archived Packet — M1 T7 S63
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S62; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized L2 external-emulator research without source import and directed implementation to continue through complete owner-valid contracts. |
+| Objective | Determine whether the existing COPX-D2 external image has a finite, independently implementable Board request/index/result contract sufficient for a later bounded receiver. |
+| Non-goals | No image attachment, configuration key, Board route, generic lookup, source/table import, ROM/media commit, protected payload retention, Shared change, renderer/audio change, guessed game-state repair or release claim. |
+| Reference Baseline | The audited image identity exists outside the repository, but Product/Machine/Board intentionally have no consumer. S62 confirms no safe audio repair is selected before a game-state dependency is understood. |
+| Candidate Proposal | Reconcile current local ownership and the pinned L2 reference's semantic COPX behavior. Record only request shape, state owner, result publication, reset/failure expectations and uncertainty. Select a later receiver solely if every part is complete and independently implementable; otherwise retain the explicit absence. |
+| Files And ABI Surface | Current, one evidence record/index only. No production/test/build/manifest/public interface/artifact/media change. |
+| Applicable Rules | MyRaidenII source policy and architecture/coding; Shared documentation/execution rules. External code is behavior evidence only and must not be copied, transliterated or retained. |
+| Verification | Static local route inventory, reference identity/license verification, source-policy review, documentation governance and whitespace checks. No owner-ROM run or production build is required for research-only work. |
+| Expected Markers | One unambiguous disposition: complete finite receiver, or explicit unresolved boundary with named missing semantic facts. |
+| Asset Needs | Read-only external research checkout only; no image staging or media access. |
+| Reporting Requirements | Record source grade and exact reference identity without raw external code/table/image data; do not record guest command/address/payload/trace information. |
+| Stop Conditions | Any contract depends on copied lookup data, raw asset inspection, unbounded reverse engineering, new Shared semantics, ambiguous ownership or unknown reset/failure behavior; stop and retain the gap. |
+| Exit Criteria | Evidence/index/current document the complete contract or precise insufficiency, all checks pass and a reviewed P is pushed. |
+| Original Owner Request | Implement MyRaidenII toward Raiden II execution using permitted L2 research but never substitute guessed support for a missing hardware contract. |
+| Similar-Issue Sweep | Current unused image disposition, Product/Machine config boundary, Board/COP state, L2 reference ownership, image lifetime, request/result/reset/error semantics and source-policy constraints. |
+
+## M1 T7 S63 Closure
+
+The bounded L2 review confirms that the pinned external reference declares a
+separate COPX image but does not expose a finite request, index, result,
+reset or failure contract.  Local Product, Machine and Board correctly retain
+no COPX consumer.  The explicit TODO remains the receiving boundary; neither
+an inert loader nor a guessed lookup is admitted.  Documentation governance
+and whitespace checks pass; no production, test, build, manifest, public
+interface, artifact or media file changed.
+
 ## Active Packet
 
 No S packet is active.
