@@ -14,6 +14,9 @@ widths have the same three observed frame transitions and no CPU, COP or
 Board-control failure.  This is L2 runtime progress evidence only; it does not
 qualify title/attract, input, sound, blend fidelity, COPX-D2 or gameplay.  See
 [S15 evidence](../etc/evidence/t7-s15-progress-sampling.md).
+Coordinator actual-change review accepted S15 P1 `01598b1ce`: the only code
+path is the existing integration Probe (`+67/-10` source lines); its added
+sampling has no production ABI, artifact or protected-input effect.
 
 ## M1 T7 S14 Closure
 
