@@ -871,7 +871,10 @@ done:
 static lib_i32 board_sound_handshake(void)
 {
     static lib_u8 sound_program[0x2000u];
-    const lib_u8 echo[] = {0x3au,0x12u,0x40u,0x32u,0x18u,0x40u,0xc3u,0u,0u};
+    const lib_u8 echo[] = {
+        0x3eu,0x10u,0x32u,0x08u,0x40u,0x3eu,0u,0x32u,0x09u,0x40u,
+        0x3au,0x12u,0x40u,0x32u,0x18u,0x40u,0xc3u,0u,0u
+    };
     const lib_u8 loop[] = {0xebu,0xfeu};
     const lib_u32 publish_addresses[] = {0x708u,0x70au,0x718u,0x71au};
     const myraidenii_core_board_config config = {
@@ -891,10 +894,16 @@ static lib_i32 board_sound_handshake(void)
     lib_u8 byte;
     lib_u16 word;
     lib_bool pending;
+    myraidenii_core_board_sound_observation observation;
 
     lib_memory_set(sound_program, 0, sizeof(sound_program));
     lib_memory_copy(sound_program, echo, sizeof(echo));
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) goto done;
+    if (myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
+        observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
+        observation.pcm_nonzero_frames != 0u) goto done;
     machine = myraidenii_core_board_machine_get(board);
     if (x86_core_machine_memory_write(machine, 0x800u, loop, sizeof(loop)) != LIB_STATUS_OK ||
         x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK) goto done;
@@ -914,6 +923,11 @@ static lib_i32 board_sound_handshake(void)
             x86_core_machine_memory_read(machine, 0x70au, &byte, 1u) != LIB_STATUS_OK ||
             byte != 0u) goto done;
     }
+    if (myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.ym_address_writes == 0u || observation.ym_data_writes == 0u ||
+        observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
+        observation.pcm_nonzero_frames != 0u) goto done;
     for (lib_u32 address = 0x700u; address < 0x708u; ++address) {
         word = (address & 1u) != 0u ? 0xa5u : 0x5au;
         if (x86_core_machine_memory_write(machine, address, &word, 1u) != LIB_STATUS_OK ||
@@ -938,6 +952,12 @@ static lib_i32 board_sound_handshake(void)
             myraidenii_core_board_sound_interrupt_is_pending(board, &pending) != LIB_STATUS_OK ||
             pending != ((address & 1u) == 0u)) goto done;
     }
+    if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
+        observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
+        observation.pcm_nonzero_frames != 0u) goto done;
     failed = 0;
 done:
     myraidenii_core_board_destroy(board);

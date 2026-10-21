@@ -86,6 +86,16 @@ typedef struct myraidenii_core_board_control_failure_observation {
     x86_core_machine_memory_access access;
 } myraidenii_core_board_control_failure_observation;
 
+/* Reset clears this aggregate Sound-path observation. It reports reachability,
+ * not guest payload, private device layout or host PCM delivery. */
+typedef struct myraidenii_core_board_sound_observation {
+    lib_u64 ym_address_writes;
+    lib_u64 ym_data_writes;
+    lib_u64 oki_writes[2u];
+    lib_u64 oki_voice_starts[2u];
+    lib_u64 pcm_nonzero_frames;
+} myraidenii_core_board_sound_observation;
+
 lib_status myraidenii_core_board_create(const myraidenii_core_board_config *config,
     myraidenii_core_board **out_board);
 void myraidenii_core_board_destroy(myraidenii_core_board *board);
@@ -125,6 +135,8 @@ lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
 lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
     lib_i16 *out_samples, lib_u32 out_frame_capacity, lib_u32 *out_frames,
     lib_u64 *out_dropped_frames);
+lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_sound_observation *out_observation);
 
 /* These are the board-owned sides of the future sound-CPU handoff. They do not
  * instantiate or schedule a sound CPU. */

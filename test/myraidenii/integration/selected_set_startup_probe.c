@@ -171,6 +171,7 @@ int main(int argument_count, char **arguments)
     lib_u64 nonzero_pcm_frames = 0u;
     lib_u64 dropped_pcm_frames = 0u;
     lib_u32 pcm_frames = 0u;
+    myraidenii_core_board_sound_observation sound_observation = {0};
     myraidenii_startup_control_mode control_mode;
     lib_bool pulse_pressed = LIB_FALSE;
     lib_bool pulse_released = LIB_FALSE;
@@ -268,6 +269,9 @@ int main(int argument_count, char **arguments)
             if (status == LIB_STATUS_OK)
                 myraidenii_startup_pcm_observe(pcm_samples, pcm_frames, &pcm_digest,
                     &nonzero_pcm_frames);
+            if (status == LIB_STATUS_OK)
+                status = myraidenii_core_board_sound_observation_get(board,
+                    &sound_observation);
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
@@ -301,7 +305,9 @@ int main(int argument_count, char **arguments)
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
             "frame-digest=%016llx frame-samples=%u frame-transitions=%u "
             "pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
-            "pcm-digest=%016llx\n",
+            "pcm-digest=%016llx ym-address-writes=%llu ym-data-writes=%llu "
+            "oki-1-writes=%llu oki-2-writes=%llu oki-1-voice-starts=%llu "
+            "oki-2-voice-starts=%llu pcm-nonzero-generated=%llu\n",
             (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
             fault_linear, delivered_exceptions, (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
@@ -320,7 +326,14 @@ int main(int argument_count, char **arguments)
             MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT, (unsigned long long)nonblack_pixels,
             (unsigned long long)frame_digest, frame_sample_count, frame_transition_count, pcm_frames,
             (unsigned long long)dropped_pcm_frames,
-            (unsigned long long)nonzero_pcm_frames, (unsigned long long)pcm_digest);
+            (unsigned long long)nonzero_pcm_frames, (unsigned long long)pcm_digest,
+            (unsigned long long)sound_observation.ym_address_writes,
+            (unsigned long long)sound_observation.ym_data_writes,
+            (unsigned long long)sound_observation.oki_writes[0u],
+            (unsigned long long)sound_observation.oki_writes[1u],
+            (unsigned long long)sound_observation.oki_voice_starts[0u],
+            (unsigned long long)sound_observation.oki_voice_starts[1u],
+            (unsigned long long)sound_observation.pcm_nonzero_frames);
         for (lib_u8 index = 0u; index < frame_sample_count; ++index) {
             lib_c_printf("MYRAIDENII:STARTUP-PROBE:FRAME-SAMPLE index=%u executed=%llu "
                 "digest=%016llx nonblack=%llu sound-command-0=%u sound-command-1=%u "

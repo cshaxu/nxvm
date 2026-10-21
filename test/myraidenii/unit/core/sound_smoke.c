@@ -275,6 +275,7 @@ static lib_i32 sound_executes_device_map(void)
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
+    myraidenii_core_sound_observation observation;
     lib_size at = 0u;
     lib_i32 failed = 1;
 
@@ -314,7 +315,19 @@ static lib_i32 sound_executes_device_map(void)
     if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
             LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
-        fixture.response[0] != 1u || fixture.response[1] != 1u)
+        fixture.response[0] != 1u || fixture.response[1] != 1u ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.ym_address_writes != 3u || observation.ym_data_writes != 3u ||
+        observation.oki_writes[0u] != 3u || observation.oki_writes[1u] != 0u ||
+        observation.oki_voice_starts[0u] != 1u || observation.oki_voice_starts[1u] != 0u ||
+        observation.pcm_nonzero_frames == 0u)
+        goto done;
+    myraidenii_core_sound_reset(sound);
+    if (myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
+        observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
+        observation.oki_voice_starts[0u] != 0u || observation.oki_voice_starts[1u] != 0u ||
+        observation.pcm_nonzero_frames != 0u)
         goto done;
     failed = 0;
 done:

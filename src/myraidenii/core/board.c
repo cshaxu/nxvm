@@ -1416,6 +1416,25 @@ lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
         out_frame_capacity, out_frames, out_dropped_frames);
 }
 
+lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_sound_observation *out_observation)
+{
+    myraidenii_core_sound_observation observation;
+    lib_status status;
+
+    if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = myraidenii_core_sound_observation_get(board->sound, &observation);
+    if (status != LIB_STATUS_OK) return status;
+    out_observation->ym_address_writes = observation.ym_address_writes;
+    out_observation->ym_data_writes = observation.ym_data_writes;
+    out_observation->oki_writes[0u] = observation.oki_writes[0u];
+    out_observation->oki_writes[1u] = observation.oki_writes[1u];
+    out_observation->oki_voice_starts[0u] = observation.oki_voice_starts[0u];
+    out_observation->oki_voice_starts[1u] = observation.oki_voice_starts[1u];
+    out_observation->pcm_nonzero_frames = observation.pcm_nonzero_frames;
+    return LIB_STATUS_OK;
+}
+
 lib_status myraidenii_core_board_sound_command_get(const myraidenii_core_board *board,
     lib_u8 index, lib_u8 *out_value)
 {

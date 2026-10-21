@@ -19,6 +19,16 @@ enum {
 
 typedef struct myraidenii_core_sound myraidenii_core_sound;
 
+/* Reset clears these aggregate observations. They expose device-path reachability
+ * without retaining command bytes, ROM contents, register values or PCM data. */
+typedef struct myraidenii_core_sound_observation {
+    lib_u64 ym_address_writes;
+    lib_u64 ym_data_writes;
+    lib_u64 oki_writes[2u];
+    lib_u64 oki_voice_starts[2u];
+    lib_u64 pcm_nonzero_frames;
+} myraidenii_core_sound_observation;
+
 /* These are the Board-owned sides of the fixed Seibu handoff. Sound does not
  * retain a Board pointer outside this explicitly supplied local contract. */
 typedef struct myraidenii_core_sound_transport {
@@ -55,5 +65,7 @@ lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,
 lib_status myraidenii_core_sound_pcm_copy(myraidenii_core_sound *sound,
     lib_i16 *out_samples, lib_u32 out_frame_capacity, lib_u32 *out_frames,
     lib_u64 *out_dropped_frames);
+lib_status myraidenii_core_sound_observation_get(const myraidenii_core_sound *sound,
+    myraidenii_core_sound_observation *out_observation);
 
 #endif

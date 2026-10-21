@@ -113,6 +113,7 @@ struct myraidenii_core_sound {
     lib_bool transport_in_service;
     lib_bool ym_in_service;
     lib_bool halted;
+    myraidenii_core_sound_observation observation;
     lib_u8 ram[MYRAIDENII_CORE_SOUND_RAM_BYTES];
 };
 
@@ -205,9 +206,11 @@ static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
 
     if (address == MYRAIDENII_CORE_SOUND_YM_ADDRESS) {
         ym->address = value;
+        ++sound->observation.ym_address_writes;
         return LIB_STATUS_OK;
     }
     if (address != MYRAIDENII_CORE_SOUND_YM_DATA) return LIB_STATUS_UNSUPPORTED;
+    ++sound->observation.ym_data_writes;
     ym->registers[ym->address] = value;
     if (ym->address == 8u) {
         ym->channel_key_on[value & 7u] = (value & 0x78u) != 0u;
@@ -275,13 +278,17 @@ static lib_u32 myraidenii_core_sound_oki_volume_scale(lib_u8 volume)
     return scale;
 }
 
-static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki,
-    lib_u8 value)
+static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound *sound,
+    lib_u8 device, lib_u8 value)
 {
+    myraidenii_core_sound_oki *oki;
     lib_u32 start;
     lib_u32 end;
     lib_status status;
 
+    if (device >= 2u) return LIB_STATUS_INVALID_ARGUMENT;
+    oki = &sound->oki[device];
+    ++sound->observation.oki_writes[device];
     if ((value & 0x80u) != 0u) {
         oki->pending_sample = value & 0x7fu;
         oki->has_pending_sample = LIB_TRUE;
@@ -311,6 +318,7 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound_oki *oki
             oki->voices[index].volume = value & 0x0fu;
             oki->voices[index].step = 0u;
             oki->voices[index].signal = 0;
+            ++sound->observation.oki_voice_starts[device];
         }
     }
     oki->has_pending_sample = LIB_FALSE;
@@ -432,6 +440,8 @@ static void myraidenii_core_sound_pcm_enqueue(myraidenii_core_sound *sound,
     lib_i16 sample)
 {
     lib_u32 write;
+
+    if (sample != 0) ++sound->observation.pcm_nonzero_frames;
 
     if (sound->pcm_count == MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY) {
         sound->pcm_read = (sound->pcm_read + 1u) %
@@ -677,9 +687,9 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
         address == MYRAIDENII_CORE_SOUND_YM_DATA)
         return myraidenii_core_sound_ym_write(sound, address, value);
     if (address == MYRAIDENII_CORE_SOUND_OKI_1)
-        return myraidenii_core_sound_oki_write(&sound->oki[0u], value);
+        return myraidenii_core_sound_oki_write(sound, 0u, value);
     if (address == MYRAIDENII_CORE_SOUND_OKI_2)
-        return myraidenii_core_sound_oki_write(&sound->oki[1u], value);
+        return myraidenii_core_sound_oki_write(sound, 1u, value);
     if (address == MYRAIDENII_CORE_SOUND_NO_DEVICE) return LIB_STATUS_OK;
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_ACKNOWLEDGE:
@@ -1685,6 +1695,7 @@ void myraidenii_core_sound_reset(myraidenii_core_sound *sound)
         sound->transport_in_service = LIB_FALSE;
         sound->ym_in_service = LIB_FALSE;
         sound->halted = LIB_FALSE;
+        lib_memory_set(&sound->observation, 0, sizeof(sound->observation));
         lib_memory_set(sound->ram, 0, sizeof(sound->ram));
         lib_memory_set(&sound->ym, 0, sizeof(sound->ym));
         for (lib_u8 index = 0u; index < 2u; ++index) {
@@ -1695,6 +1706,14 @@ void myraidenii_core_sound_reset(myraidenii_core_sound *sound)
                 sizeof(sound->oki[index].voices));
         }
     }
+}
+
+lib_status myraidenii_core_sound_observation_get(const myraidenii_core_sound *sound,
+    myraidenii_core_sound_observation *out_observation)
+{
+    if (sound == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = sound->observation;
+    return LIB_STATUS_OK;
 }
 
 lib_status myraidenii_core_sound_advance(myraidenii_core_sound *sound,

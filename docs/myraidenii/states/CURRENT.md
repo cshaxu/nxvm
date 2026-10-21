@@ -6,6 +6,27 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S26
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after accepted S25; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's active goal requests continued MyRaidenII implementation. The continuing approval permits ordinary, bounded MyRaidenII-only work and L2 reference/probe evidence. |
+| Objective | Identify the first silent stage of the existing Sound CPU → YM/OKI → PCM route during the selected set: distinguish executed peripheral writes, active OKI voices, generated nonzero PCM and publication loss. Repair only a demonstrated local mechanism defect. |
+| Non-goals | No Shared/other-App change, second audio path/thread/queue, ROM/PAL/source import, audio table import, change to sound synthesis merely to force output, gameplay/release claim, desktop automation or COPX attribution without evidence. |
+| Reference Baseline | S25 `317cbe452`, whose Board bus and Sound interrupt handoff now pass both widths. The selected MAME revision remains a behavior-only L2 reference. |
+| Candidate Proposal | Add the minimum immutable Sound observation snapshot at the existing Board public boundary, with counters/facts already owned by Sound. Extend the existing ROM-free Sound/Board tests and selected-set probe to report bounded aggregate facts only. Use the same finite MAME address-space behavior observation to compare peripheral-map write activity. If local execution reaches device writes but PCM remains zero, isolate the first distinct local device-model mismatch; otherwise repair the earlier demonstrated owner. |
+| Files And ABI Surface | Expected `src/myraidenii/core/{sound.c,sound.h,board.c,board_interface.h}`, existing Board/Sound unit tests, selected-set integration probe, Current/evidence/index. One Core read-only observation struct/function is allowed only if private state cannot otherwise be observed through the existing Board route; no Shared or Machine/Product interface changes. Estimated production +45/-5, tests/integration +130/-15. |
+| Applicable Rules | MyRaidenII guide, architecture/coding/UI/source policy, Execution, Architecture, Coding and Documentation rules. Product → Machine → Core remains unchanged; Core exposes only a stable read-only aggregate observation, never mutable sound internals. Reference behavior is L2. |
+| Verification | Existing Board/Sound units x64/x86; bounded local selected-set pulse x64/x86; bounded external MAME write observation; the complete repository-only unit suite on both widths after any production code; documentation/whitespace/actual-diff review. Rebuild the current Product candidate pair but do not publish an unqualified release. |
+| Expected Markers | A bounded record states whether selected ROM execution writes YM/OKI, activates voices, produces nonzero device mix and retains nonzero PCM before copying. Each counter has one existing state owner and reset semantics. |
+| Asset Needs | Read-only owner-supplied ROM/PAL inputs and external MAME only; no download, copy, output payload retention or commit. |
+| Reporting Requirements | Report the source stage reached on both widths, reference identity/grade, production/test line delta, retained owner path, artifact candidate identities if changed, and every remaining qualification limit. |
+| Stop Conditions | A need for Shared change, protected code/table import, raw ROM/RAM/audio retention, an additional execution route, or an undocumented device contract beyond finite L2 reference facts stops implementation and records the precise receiver. |
+| Exit Criteria | The entire finite observation batch has one evidence-backed disposition, demonstrated local defects are fixed with same-owner regressions, required verifications pass and all owned temporary output is removed; S26 does not claim gameplay/release completion. |
+| Original Owner Request | Continue independently implementing MyRaidenII using probes and explicit L2 external-emulator references rather than waiting for physical hardware. |
+| Similar-Issue Sweep | YM address/data, both OKI device ports, invalid/no-device writes, voice start/stop, PCM generation/mix/copy/drop, reset, command/IRQ traffic and both host widths. |
+
 ## Archived Packet — M1 T7 S25
 
 | Field | Required record |
