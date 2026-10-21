@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S46
+## Archived Packet — M1 T7 S46
 
 | Field | Required record |
 | --- | --- |
@@ -23,6 +23,16 @@ It does not redefine unimplemented Board behavior as a release result.
 | Stop Conditions | Required map behavior, port/device semantics, external-code import, a Shared/public contract, conflicting primary facts, or a non-finite family stops selection and records the boundary. |
 | Exit Criteria | A complete L3-backed ED-family ledger exists, no guest payload is retained, the next receiver is bounded and owner-valid, checks pass, evidence is indexed and the packet is closed. |
 | Original Owner Request | Continue MyRaidenII under governance, use original manuals as L3, external emulators only as L2 where needed, do not import protected source/media, and run long tasks in background sessions. |
+
+## M1 T7 S46 Closure
+
+Sequential coordinator actual-change review accepts P1 `f9c65a50c`. The
+source-free ledger reads the entire local ED decoder against the pinned original
+manual and isolates its next complete CPU-only receiver: four `ADC HL,ss`, four
+`SBC HL,ss`, four absolute pair stores and four absolute pair loads. Port I/O,
+block, accumulator/refresh and decimal-rotate behavior remain outside this
+receiver. Documentation governance and whitespace checks pass; no source,
+test, Shared component, map, artifact or external asset changed.
 
 ## Archived Packet — M1 T7 S45
 
