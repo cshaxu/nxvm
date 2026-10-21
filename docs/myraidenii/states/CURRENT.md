@@ -6,6 +6,40 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S49
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S48; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII implementation and bounded external-ROM diagnostics. This S is admitted to measure the post-S45--S48 selected-set terminal before selecting any further receiver. |
+| Objective | Rebuild and run the existing selected-set startup probe once per supported host width, record only its finite terminal category, and determine whether the completed local CPU families changed the next owner-valid repair boundary. |
+| Non-goals | No production/test/API/build/manifest/release-artifact change; no ROM/media commit, raw guest trace, address, opcode, payload, desktop claim, gameplay claim, guessed decoder repair, or Shared change. |
+| Reference Baseline | S45's original post-batch probes stopped at `DECODER`; S46--S48 then complete the admitted ED pair, NEG, RRD and RLD receivers. The existing probe and external wrapper remain the sole owner-ROM diagnostic path. |
+| Candidate Proposal | Use the already registered probe target and existing wrapper with the verified inventory and external archive. Stage only under the caller-owned external diagnostics root; retain only neutral category/exit evidence and remove the wrapper-created staging child after each run. |
+| Files And ABI Surface | Current and one evidence record/index only. No source, test, public interface, build graph, manifest, Shared component, product artifact, ROM or media file changes. Estimated documents +35..90/-0..15. |
+| Applicable Rules | MyRaidenII Architecture and Coding; shared Architecture, Coding, Execution and Documentation rules; source policy. Long builds/probes run only as persistent background terminal sessions. |
+| Verification | Build the existing `myraidenii-selected-set-startup-probe` target and invoke it once on x64 and once on x86 through `Invoke-SelectedSetStartupProbe.ps1`, with the fixed 2,000,000-instruction budget; verify wrapper cleanup, documentation governance and whitespace. |
+| Expected Markers | Each width either reaches the same finite category or produces a bounded reproducible diagnostic failure. A matching `DECODER` category triggers a complete applicable local decoder-family inventory before code selection; it never licenses a single-opcode patch. |
+| Asset Needs | Read-only `O:\assets\raidenii\raiden2.zip` verified against `docs/myraidenii/etc/evidence/t1-s1-rom-inventory.json`; temporary extraction only below `O:\assets\raidenii\myraidenii-diagnostics\`, removed by the wrapper and checked afterward. |
+| Reporting Requirements | Record host width, finite result, budget, target identity, staging cleanup and unexecuted desktop/audio/gameplay validation. Do not record guest bytes, addresses, instruction traces, ROM payloads or proprietary source. |
+| Stop Conditions | Archive/inventory mismatch, missing probe target, non-finite result, inconsistent width result, retained staging, or a terminal outside existing owners stops the S and transfers a bounded diagnostic conclusion; no speculative repair. |
+| Exit Criteria | Both widths have one bounded run with cleanup verified; a source-policy-compliant evidence record is indexed; the next receiver is either an owner-valid complete family or an explicit research boundary. |
+| Original Owner Request | Continue MyRaidenII under governance; use external assets only outside the repository, implement by complete owner-valid families, and run every long operation in background. |
+| Similar-Issue Sweep | Compare the real terminal with the S43/S44 static decoder inventory and the S45--S48 completed families before naming another receiver; do not select an opcode only because it is first observed. |
+
+## M1 T7 S49 Closure
+
+Sequential coordinator review accepts the bounded two-width diagnostic.  Both
+existing startup probes complete the 2,000,000-instruction budget with a zero
+wrapper exit status and without a decoder, map, COP, control or CPU terminal.
+The external wrapper removes its generated staging child, and documentation
+governance plus whitespace checks pass.  This evidence establishes continued
+boot/attract execution only: neutral input was used, so it makes no title,
+coin/start, gameplay, audio-output, desktop, RDP or release claim.  The next
+receiver must exercise the existing controlled input path rather than adding a
+speculative CPU repair.  No source, test, build, manifest, public interface,
+artifact, ROM or media file changed.
+
 ## Archived Packet — M1 T7 S48
 
 | Field | Required record |
