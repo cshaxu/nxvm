@@ -357,7 +357,7 @@ lib_i32 main(void)
     failed |= x86_core_machine_memory_register_device_provider(
         &dma_machine.executor_memory, 0x11240u, 1u,
         dma_cycle_failing_read, dma_cycle_failing_write,
-        dma_cycle_failing_query, &dma_probe) != LIB_STATUS_OK;
+        dma_cycle_failing_query, &dma_probe, LIB_NULL) != LIB_STATUS_OK;
     failed |= x86_core_machine_dma_memory_cycle(&dma_machine, 0x11240u, 1u, 2u,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &cycle_value,
         dma_cycle_before, dma_cycle_after, &dma_probe) != LIB_STATUS_IO_ERROR;

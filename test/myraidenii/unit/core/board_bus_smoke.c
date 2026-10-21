@@ -482,6 +482,7 @@ static lib_i32 board_control_failure_observation(void)
     };
     myraidenii_core_board *board = LIB_NULL;
     myraidenii_core_board_control_failure_observation observation = {0};
+    myraidenii_core_board_provider_failure_observation provider_failure = {0};
     x86_core_machine *machine;
     lib_u8 value = 0u;
 
@@ -490,10 +491,16 @@ static lib_i32 board_control_failure_observation(void)
     if (machine == LIB_NULL ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
+        myraidenii_core_board_provider_failure_get(board, &provider_failure) !=
+            LIB_STATUS_OK || provider_failure.valid ||
         x86_core_machine_memory_read(machine, 0x400u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         !observation.valid || observation.physical != 0x400u || observation.bytes != 1u ||
         observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        myraidenii_core_board_provider_failure_get(board, &provider_failure) !=
+            LIB_STATUS_OK || !provider_failure.valid ||
+        provider_failure.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        provider_failure.status != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x400u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.physical != 0x400u || observation.bytes != 1u ||
@@ -501,6 +508,8 @@ static lib_i32 board_control_failure_observation(void)
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         observation.valid ||
+        myraidenii_core_board_provider_failure_get(board, &provider_failure) !=
+            LIB_STATUS_OK || provider_failure.valid ||
         x86_core_machine_memory_write(machine, 0x400u, &value, 1u) != LIB_STATUS_INVALID_STATE ||
         myraidenii_core_board_control_failure_get(board, &observation) != LIB_STATUS_OK ||
         !observation.valid || observation.physical != 0x400u || observation.bytes != 1u ||
@@ -1434,6 +1443,7 @@ static lib_i32 board_cop_routes(void)
     x86_core_machine_run_result result = {0};
     x86_core_machine_lifecycle lifecycle;
     myraidenii_core_cop_failure_observation cop_failure = {0};
+    myraidenii_core_cop_provider_failure_observation cop_provider_failure = {0};
     lib_u8 value[2] = {0u, 0u};
     lib_size index;
     lib_i32 failed = 1;
@@ -1443,7 +1453,9 @@ static lib_i32 board_cop_routes(void)
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
         (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL ||
         myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
-        cop_failure.valid)
+        cop_failure.valid ||
+        myraidenii_core_board_cop_provider_failure_get(board, &cop_provider_failure) !=
+            LIB_STATUS_OK || cop_provider_failure.valid)
         goto done;
 
     for (index = 0u; index < sizeof(configuration_addresses) /
@@ -1468,6 +1480,12 @@ static lib_i32 board_cop_routes(void)
                 (value[0] != 0xa5u || value[1] != 0x5au)))
             goto done;
     }
+
+    if (myraidenii_core_board_cop_provider_failure_get(board, &cop_provider_failure) !=
+            LIB_STATUS_OK || !cop_provider_failure.valid ||
+        cop_provider_failure.access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        cop_provider_failure.status != LIB_STATUS_INVALID_STATE)
+        goto done;
 
     if (x86_core_machine_memory_write(machine, 0x47eu, mode_bytes, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x47eu, value, 2u) != LIB_STATUS_OK ||

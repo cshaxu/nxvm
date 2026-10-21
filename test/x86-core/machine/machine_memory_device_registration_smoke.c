@@ -100,11 +100,12 @@ static lib_i32 registration_growth_and_priority(void)
             X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY; ++index) {
         failed |= x86_core_machine_memory_register_device_provider(&memory,
             0x1000u + (lib_u32)(index * 0x100u), 1u, overlay_read,
-            overlay_write, overlay_query, &filler) != LIB_STATUS_OK;
+            overlay_write, overlay_query, &filler, LIB_NULL) != LIB_STATUS_OK;
     }
     memory.connect.device_provider_test_allocation = &allocation;
     failed |= x86_core_machine_memory_register_device_provider(&memory, 0x1c00u,
-        1u, overlay_read, overlay_write, overlay_query, &filler) != LIB_STATUS_NO_MEMORY;
+        1u, overlay_read, overlay_write, overlay_query, &filler,
+        LIB_NULL) != LIB_STATUS_NO_MEMORY;
     failed |= allocation.attempts != 1u ||
         memory.connect.device_provider_count !=
             X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY ||
@@ -112,7 +113,8 @@ static lib_i32 registration_growth_and_priority(void)
             X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
     memory.connect.device_provider_test_allocation = LIB_NULL;
     failed |= x86_core_machine_memory_register_device_provider(&memory, 0x1c00u,
-        1u, overlay_read, overlay_write, overlay_query, &filler) != LIB_STATUS_OK;
+        1u, overlay_read, overlay_write, overlay_query, &filler,
+        LIB_NULL) != LIB_STATUS_OK;
     failed |= memory.connect.device_provider_count !=
         X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY + 1u ||
         memory.connect.device_provider_capacity <=
@@ -123,9 +125,11 @@ static lib_i32 registration_growth_and_priority(void)
             LIB_NULL) != LIB_STATUS_OK) return 1;
     failed |= x86_core_machine_memory_allocate_for(&memory, 0x10000u) != LIB_STATUS_OK;
     failed |= x86_core_machine_memory_register_device_provider(&memory, 0x8000u,
-        1u, priority_read, overlay_write, priority_query, &first) != LIB_STATUS_OK;
+        1u, priority_read, overlay_write, priority_query, &first,
+        LIB_NULL) != LIB_STATUS_OK;
     failed |= x86_core_machine_memory_register_overlay_device_provider(&memory,
-        0x8000u, 1u, priority_read, overlay_write, priority_query, &overlay) != LIB_STATUS_OK;
+        0x8000u, 1u, priority_read, overlay_write, priority_query, &overlay,
+        LIB_NULL) != LIB_STATUS_OK;
     x86_core_machine_memory_freeze_mappings(&memory);
     failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
         (lib_uptr)&value, 1u) != LIB_STATUS_OK || value != first.value;
@@ -134,7 +138,8 @@ static lib_i32 registration_growth_and_priority(void)
     failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
         (lib_uptr)&value, 1u) != LIB_STATUS_OK || value != overlay.value;
     failed |= x86_core_machine_memory_register_device_provider(&memory, 0x9000u,
-        1u, overlay_read, overlay_write, overlay_query, &filler) != LIB_STATUS_INVALID_ARGUMENT;
+        1u, overlay_read, overlay_write, overlay_query, &filler,
+        LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
     failed |= memory.connect.device_provider_count != 2u;
     x86_core_machine_memory_finalize(&memory);
     return failed;
@@ -148,9 +153,9 @@ static lib_i32 registration_standard_transaction(void)
     lib_u8 candidate_owner = 1u;
     const x86_core_machine_memory_device_route routes[2] = {
         {0x8000u, 1u, {overlay_read, overlay_write, overlay_query},
-            X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD},
+            X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, LIB_NULL},
         {0x9000u, 1u, {overlay_read, overlay_write, overlay_query},
-            X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD}
+            X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, LIB_NULL}
     };
     lib_i32 failed = 0;
 
@@ -160,7 +165,7 @@ static lib_i32 registration_standard_transaction(void)
             X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u; ++index) {
         failed |= x86_core_machine_memory_register_device_provider(memory,
             0x1000u + (lib_u32)(index * 0x100u), 1u, overlay_read,
-            overlay_write, overlay_query, &filler) != LIB_STATUS_OK;
+            overlay_write, overlay_query, &filler, LIB_NULL) != LIB_STATUS_OK;
     }
     failed |= x86_core_machine_install_memory_device_routes(&machine, routes, 2u,
         registration_observer, LIB_NULL, &candidate_owner) != LIB_STATUS_NO_MEMORY;
@@ -192,9 +197,9 @@ static lib_i32 registration_atomicity(lib_u32 mode)
     t_ram *memory = &machine.executor_memory;
     x86_core_machine_memory_device_route routes[2] = {
         {0x80000000u, 1u, {overlay_read, overlay_write, overlay_query},
-            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT},
+            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL},
         {0x80000100u, 1u, {overlay_read, overlay_write, overlay_query},
-            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT}
+            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL}
     };
     const x86_core_machine_memory_parity_config parity = {
         2u * 1024u * 1024u, registration_fault
@@ -217,7 +222,7 @@ static lib_i32 registration_atomicity(lib_u32 mode)
         for (lib_size index = 0u; index < count; ++index)
             failed |= x86_core_machine_memory_register_device_provider(memory,
                 0x1000u + (lib_u32)index * 0x100u, 1u, overlay_read,
-                overlay_write, overlay_query, &filler) != LIB_STATUS_OK;
+                overlay_write, overlay_query, &filler, LIB_NULL) != LIB_STATUS_OK;
     } else if (mode == 2u) {
         failed |= x86_core_machine_memory_enable_parity(memory, 1024u,
             registration_fault, &filler) != LIB_STATUS_OK;
@@ -266,7 +271,7 @@ static lib_i32 registration_allocation_failure(void)
     };
     const x86_core_machine_memory_device_route route = {
         0xa0000u, 1u, {overlay_read, overlay_write, overlay_query},
-        X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
+        X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK, LIB_NULL
     };
     x86_core_machine_memory_test_allocation allocation = {LIB_TRUE, 0u};
     x86_core_machine *machine = LIB_NULL;
@@ -288,6 +293,106 @@ static lib_i32 registration_allocation_failure(void)
         machine->executor_memory.connect.device_providers[0].owner != &owner;
     failed |= x86_core_machine_remove_memory_device_routes(machine, &owner) !=
         LIB_STATUS_OK || machine->executor_memory.connect.device_provider_count != 0u;
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+typedef struct registration_failure_provider {
+    lib_status query_status;
+    lib_status read_status;
+    lib_status write_status;
+    lib_u32 failure_count;
+    x86_core_machine_memory_access failure_access;
+    lib_status failure_status;
+} registration_failure_provider;
+
+static lib_status registration_failure_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    registration_failure_provider *provider = owner;
+
+    (void)physical;
+    (void)destination;
+    (void)bytes;
+    (void)observe_only;
+    return provider == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : provider->read_status;
+}
+
+static lib_status registration_failure_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    registration_failure_provider *provider = owner;
+
+    (void)physical;
+    (void)source;
+    (void)bytes;
+    return provider == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : provider->write_status;
+}
+
+static lib_status registration_failure_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    registration_failure_provider *provider = owner;
+
+    (void)physical;
+    (void)bytes;
+    (void)access;
+    return provider == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : provider->query_status;
+}
+
+static void registration_failure_note(void *owner, lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access, lib_status status)
+{
+    registration_failure_provider *provider = owner;
+
+    (void)physical;
+    (void)bytes;
+    ++provider->failure_count;
+    provider->failure_access = access;
+    provider->failure_status = status;
+}
+
+static lib_i32 registration_failure_observer_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
+    };
+    registration_failure_provider provider = {
+        .query_status = LIB_STATUS_IO_ERROR,
+        .read_status = LIB_STATUS_IO_ERROR,
+        .write_status = LIB_STATUS_IO_ERROR
+    };
+    const x86_core_machine_memory_device_route route = {
+        0x8000u, 1u,
+        {registration_failure_read, registration_failure_write,
+            registration_failure_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, registration_failure_note
+    };
+    x86_core_machine *machine = LIB_NULL;
+    lib_u8 value = 0u;
+    lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) failed |= x86_core_machine_install_memory_device_routes(machine, &route,
+        1u, LIB_NULL, LIB_NULL, &provider) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x8000u, &value, 1u) !=
+            LIB_STATUS_IO_ERROR || provider.failure_count != 1u ||
+        provider.failure_access != X86_CORE_MACHINE_MEMORY_ACCESS_READ ||
+        provider.failure_status != LIB_STATUS_IO_ERROR;
+    provider.failure_count = 0u;
+    provider.query_status = LIB_STATUS_UNSUPPORTED;
+    if (!failed) failed |= x86_core_machine_memory_read(machine, 0x8000u, &value, 1u) !=
+        LIB_STATUS_OK || provider.failure_count != 0u;
+    provider.query_status = LIB_STATUS_OK;
+    if (!failed) failed |= x86_core_machine_memory_read(machine, 0x8000u, &value, 1u) !=
+        LIB_STATUS_IO_ERROR || provider.failure_count != 1u ||
+        provider.failure_access != X86_CORE_MACHINE_MEMORY_ACCESS_READ;
+    provider.failure_count = 0u;
+    if (!failed) failed |= x86_core_machine_memory_write(machine, 0x8000u, &value, 1u) !=
+        LIB_STATUS_IO_ERROR || provider.failure_count != 1u ||
+        provider.failure_access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE;
     x86_core_machine_destroy(machine);
     return failed;
 }
@@ -394,7 +499,7 @@ lib_i32 main(void)
     x86_core_machine_memory_device_route provider = {
         0x000f0000u, 1u,
         { overlay_read, overlay_write, overlay_query },
-        X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
+        X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY, LIB_NULL
     };
     const lib_u8 rom = 0x5au;
     x86_core_machine *machine = LIB_NULL;
@@ -403,7 +508,8 @@ lib_i32 main(void)
     lib_u8 observed = 0u;
     lib_u8 write = 0xa5u;
     lib_i32 failed = parity_delivery_contract() || registration_allocation_failure() ||
-        registration_growth_and_priority() || registration_standard_transaction();
+        registration_growth_and_priority() || registration_standard_transaction() ||
+        registration_failure_observer_contract();
 
     for (lib_u32 mode = 0u; mode < 5u; ++mode)
         failed |= registration_atomicity(mode);

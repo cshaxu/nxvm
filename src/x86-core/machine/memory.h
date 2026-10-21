@@ -44,6 +44,7 @@ typedef struct {
     x86_core_machine_memory_device_read read;
     x86_core_machine_memory_device_write write;
     x86_core_machine_memory_device_query query;
+    x86_core_machine_memory_device_failure_observer failure;
     void *owner;
     lib_u8 overlay;
     /* Immutable reset-ROM alias decoded at its raw physical address before
@@ -131,23 +132,28 @@ lib_status x86_core_machine_memory_register_write_observer(t_ram *ram,
 lib_status x86_core_machine_memory_register_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner);
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure);
 lib_status x86_core_machine_memory_register_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner);
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure);
 lib_status x86_core_machine_memory_register_raw_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner);
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure);
 lib_status x86_core_machine_memory_register_replacement_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner);
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure);
 lib_status x86_core_machine_memory_register_fallback_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner);
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure);
 void x86_core_machine_memory_freeze_mappings(t_ram *ram);
 /* Exclusive construction/teardown only; remove this owner's device routes and
  * write observers before destroying the callback context. */

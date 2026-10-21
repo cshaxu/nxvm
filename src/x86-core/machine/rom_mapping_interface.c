@@ -70,7 +70,7 @@ static lib_status x86_core_machine_register_immutable_rom_mapping_internal(
 {
     const x86_core_machine_memory_device_route route = {
         physical_start, bytes, rom_callbacks,
-        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD
+        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, LIB_NULL
     };
     x86_core_machine_immutable_rom_mapping *mapping;
     lib_u8 *copy;
@@ -123,7 +123,7 @@ static lib_status x86_core_machine_register_immutable_rom_mapping_alias_internal
     const x86_core_machine_memory_device_route route = {
         physical_start, bytes, rom_callbacks,
         raw_decode ? X86_CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY :
-            X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
+            X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY, LIB_NULL
     };
     x86_core_machine_immutable_rom_mapping *source = LIB_NULL;
     x86_core_machine_immutable_rom_mapping *mapping;

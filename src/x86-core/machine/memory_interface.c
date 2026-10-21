@@ -91,28 +91,28 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
         case X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD:
             status = x86_core_machine_memory_register_device_provider(memory,
                 route->physical_start, route->bytes, route->callbacks.read,
-                route->callbacks.write, route->callbacks.query, owner);
+                route->callbacks.write, route->callbacks.query, owner, route->failure);
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY:
             status = x86_core_machine_memory_register_overlay_device_provider(memory,
                 route->physical_start, route->bytes, route->callbacks.read,
-                route->callbacks.write, route->callbacks.query, owner);
+                route->callbacks.write, route->callbacks.query, owner, route->failure);
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY:
             status = x86_core_machine_memory_register_raw_overlay_device_provider(
                 memory, route->physical_start, route->bytes,
                 route->callbacks.read, route->callbacks.write,
-                route->callbacks.query, owner);
+                route->callbacks.query, owner, route->failure);
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT:
             status = x86_core_machine_memory_register_replacement_device_provider(memory,
                 route->physical_start, route->bytes, route->callbacks.read,
-                route->callbacks.write, route->callbacks.query, owner);
+                route->callbacks.write, route->callbacks.query, owner, route->failure);
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK:
             status = x86_core_machine_memory_register_fallback_device_provider(memory,
                 route->physical_start, route->bytes, route->callbacks.read,
-                route->callbacks.write, route->callbacks.query, owner);
+                route->callbacks.write, route->callbacks.query, owner, route->failure);
             break;
         default:
             status = LIB_STATUS_INVALID_ARGUMENT;

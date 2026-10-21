@@ -120,7 +120,7 @@ static lib_i32 run_case(lib_u32 mode)
         for (lib_size index = 0u; index < remaining; ++index)
             failed |= x86_core_machine_memory_register_device_provider(
                 &machine->executor_memory, 0x1000u + (lib_u32)(index * 16u),
-                1u, filler_read, filler_write, filler_query, &filler) !=
+                1u, filler_read, filler_write, filler_query, &filler, LIB_NULL) !=
                 LIB_STATUS_OK;
     }
     provider_count = machine->executor_memory.connect.device_provider_count;

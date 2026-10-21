@@ -48,12 +48,22 @@ static lib_i32 x86_core_machine_memory_access_is_valid(x86_core_machine_memory_a
         access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE;
 }
 
+static void x86_core_machine_memory_note_provider_failure(
+    const x86_core_machine_memory_device_provider *provider,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access,
+    lib_status status)
+{
+    if (provider == LIB_NULL || provider->failure == LIB_NULL ||
+        status == LIB_STATUS_OK || status == LIB_STATUS_UNSUPPORTED) return;
+    provider->failure(provider->owner, physical, bytes, access, status);
+}
+
 /* Resolve one frozen physical route.  A provider may decline a range with
  * LIB_STATUS_UNSUPPORTED so a lower registered provider or ordinary RAM owns
  * it; any other query result is terminal. */
 static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
     lib_u32 physical, lib_uptr bytes,
-    x86_core_machine_memory_access access,
+    x86_core_machine_memory_access access, lib_bool notify_failure,
     const x86_core_machine_memory_device_provider **out_provider,
     lib_u32 *out_provider_physical,
     lib_size *out_offset)
@@ -64,7 +74,8 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
 
     if (ram == LIB_NULL || out_provider == LIB_NULL ||
         out_provider_physical == LIB_NULL || out_offset == LIB_NULL ||
-        bytes == 0u || !x86_core_machine_memory_access_is_valid(access)) {
+        bytes == 0u || !x86_core_machine_memory_access_is_valid(access) ||
+        (notify_failure != LIB_FALSE && notify_failure != LIB_TRUE)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
@@ -80,7 +91,12 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             *out_provider_physical = physical;
             return LIB_STATUS_OK;
         }
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            if (notify_failure)
+                x86_core_machine_memory_note_provider_failure(provider, physical,
+                    bytes, access, status);
+            return status;
+        }
     }
     wrapped = x86_core_machine_memory_decode_address(ram, physical);
     /* A frozen board RAM alias is a selected physical decode, not an ordinary
@@ -111,7 +127,12 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             *out_provider_physical = wrapped;
             return LIB_STATUS_OK;
         }
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            if (notify_failure)
+                x86_core_machine_memory_note_provider_failure(provider, wrapped,
+                    bytes, access, status);
+            return status;
+        }
     }
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
@@ -127,7 +148,12 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             *out_provider_physical = wrapped;
             return LIB_STATUS_OK;
         }
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            if (notify_failure)
+                x86_core_machine_memory_note_provider_failure(provider, wrapped,
+                    bytes, access, status);
+            return status;
+        }
     }
     /* An unpopulated board window is an explicit fallback: an installed
      * device or ROM alias has first claim. */
@@ -145,7 +171,12 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             *out_provider_physical = wrapped;
             return LIB_STATUS_OK;
         }
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            if (notify_failure)
+                x86_core_machine_memory_note_provider_failure(provider, wrapped,
+                    bytes, access, status);
+            return status;
+        }
     }
     status = x86_core_machine_memory_offset(ram, physical, bytes, out_offset);
     if (status != LIB_STATUS_OK) return status;
@@ -185,7 +216,11 @@ static lib_status x86_core_machine_memory_reset_provider_resolve(const t_ram *ra
             *out_provider = provider;
             return LIB_STATUS_OK;
         }
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            x86_core_machine_memory_note_provider_failure(provider, physical, bytes,
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
+            return status;
+        }
     }
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
@@ -201,7 +236,11 @@ static lib_status x86_core_machine_memory_reset_provider_resolve(const t_ram *ra
             *out_provider = provider;
             return LIB_STATUS_OK;
         }
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            x86_core_machine_memory_note_provider_failure(provider, physical, bytes,
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
+            return status;
+        }
     }
     return LIB_STATUS_UNSUPPORTED;
 }
@@ -387,7 +426,8 @@ static void x86_core_machine_memory_append_write_observer(t_ram *ram,
 static void x86_core_machine_memory_append_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner, lib_u8 overlay,
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure, lib_u8 overlay,
     lib_u8 raw_decode, lib_u8 replacement, lib_u8 fallback)
 {
     x86_core_machine_memory_device_provider *provider =
@@ -398,6 +438,7 @@ static void x86_core_machine_memory_append_device_provider(t_ram *ram,
     provider->read = read;
     provider->write = write;
     provider->query = query;
+    provider->failure = failure;
     provider->owner = owner;
     provider->overlay = overlay;
     provider->raw_decode = raw_decode;
@@ -419,7 +460,8 @@ lib_status x86_core_machine_memory_register_write_observer(t_ram *ram,
 lib_status x86_core_machine_memory_register_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner)
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure)
 {
     lib_status status = x86_core_machine_memory_validate_device_provider(ram,
         physical_start, bytes, read, write, query, owner, LIB_FALSE);
@@ -428,14 +470,15 @@ lib_status x86_core_machine_memory_register_device_provider(t_ram *ram,
     status = x86_core_machine_memory_reserve_device_provider(ram);
     if (status != LIB_STATUS_OK) return status;
     x86_core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE);
+        write, query, owner, failure, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE);
     return LIB_STATUS_OK;
 }
 
 lib_status x86_core_machine_memory_register_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner)
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure)
 {
     lib_status status = x86_core_machine_memory_validate_device_provider(ram,
         physical_start, bytes, read, write, query, owner, LIB_TRUE);
@@ -444,14 +487,15 @@ lib_status x86_core_machine_memory_register_overlay_device_provider(t_ram *ram,
     status = x86_core_machine_memory_reserve_device_provider(ram);
     if (status != LIB_STATUS_OK) return status;
     x86_core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE);
+        write, query, owner, failure, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_FALSE);
     return LIB_STATUS_OK;
 }
 
 lib_status x86_core_machine_memory_register_raw_overlay_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner)
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure)
 {
     lib_status status = x86_core_machine_memory_validate_device_provider(ram,
         physical_start, bytes, read, write, query, owner, LIB_TRUE);
@@ -460,14 +504,15 @@ lib_status x86_core_machine_memory_register_raw_overlay_device_provider(t_ram *r
     status = x86_core_machine_memory_reserve_device_provider(ram);
     if (status != LIB_STATUS_OK) return status;
     x86_core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, LIB_TRUE, LIB_TRUE, LIB_FALSE, LIB_FALSE);
+        write, query, owner, failure, LIB_TRUE, LIB_TRUE, LIB_FALSE, LIB_FALSE);
     return LIB_STATUS_OK;
 }
 
 lib_status x86_core_machine_memory_register_replacement_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner)
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure)
 {
     lib_status status = x86_core_machine_memory_validate_device_provider(ram,
         physical_start, bytes, read, write, query, owner, LIB_TRUE);
@@ -476,14 +521,15 @@ lib_status x86_core_machine_memory_register_replacement_device_provider(t_ram *r
     status = x86_core_machine_memory_reserve_device_provider(ram);
     if (status != LIB_STATUS_OK) return status;
     x86_core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_FALSE);
+        write, query, owner, failure, LIB_TRUE, LIB_FALSE, LIB_TRUE, LIB_FALSE);
     return LIB_STATUS_OK;
 }
 
 lib_status x86_core_machine_memory_register_fallback_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
-    x86_core_machine_memory_device_query query, void *owner)
+    x86_core_machine_memory_device_query query, void *owner,
+    x86_core_machine_memory_device_failure_observer failure)
 {
     lib_status status = x86_core_machine_memory_validate_device_provider(ram,
         physical_start, bytes, read, write, query, owner, LIB_TRUE);
@@ -492,7 +538,7 @@ lib_status x86_core_machine_memory_register_fallback_device_provider(t_ram *ram,
     status = x86_core_machine_memory_reserve_device_provider(ram);
     if (status != LIB_STATUS_OK) return status;
     x86_core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_TRUE);
+        write, query, owner, failure, LIB_TRUE, LIB_FALSE, LIB_FALSE, LIB_TRUE);
     return LIB_STATUS_OK;
 }
 
@@ -529,7 +575,8 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = x86_core_machine_memory_route_resolve(ram, physical, byte,
-        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &provider, &provider_physical, &offset);
+        X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_TRUE, &provider,
+        &provider_physical, &offset);
     if (status != LIB_STATUS_OK) return status;
     if (provider == LIB_NULL && byte > 1u) {
         lib_uptr index;
@@ -538,7 +585,7 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
             lib_size single_offset;
             status = x86_core_machine_memory_route_resolve(ram,
                 physical + (lib_u32)index, 1u,
-                X86_CORE_MACHINE_MEMORY_ACCESS_READ, &single_provider,
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_TRUE, &single_provider,
                 &provider_physical, &single_offset);
             if (status != LIB_STATUS_OK) return status;
             if (single_provider != LIB_NULL) {
@@ -555,7 +602,11 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
     if (provider != LIB_NULL) {
         status = provider->read(provider->owner, provider_physical, destination,
             byte, observe_only);
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            x86_core_machine_memory_note_provider_failure(provider, provider_physical,
+                byte, X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
+            return status;
+        }
         status = x86_core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != LIB_STATUS_OK) return status;
     }
@@ -597,9 +648,13 @@ lib_status x86_core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical
     if (reset_fetch) {
         status = x86_core_machine_memory_reset_provider_resolve(ram, physical,
             bytes, &provider);
-        if (status == LIB_STATUS_OK)
+        if (status == LIB_STATUS_OK) {
             status = provider->read(provider->owner, physical, destination,
                 bytes, LIB_TRUE);
+            if (status != LIB_STATUS_UNSUPPORTED)
+                x86_core_machine_memory_note_provider_failure(provider, physical, bytes,
+                    X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
+        }
         if (status != LIB_STATUS_UNSUPPORTED) return status;
     }
     return x86_core_machine_memory_read_routed(ram, physical, destination, bytes,
@@ -619,8 +674,12 @@ lib_status x86_core_machine_memory_read_reset_physical(t_ram *ram,
     status = x86_core_machine_memory_reset_provider_resolve(ram, physical, bytes,
         &provider);
     if (status != LIB_STATUS_OK) return status;
-    return provider->read(provider->owner, physical, destination, bytes,
+    status = provider->read(provider->owner, physical, destination, bytes,
         LIB_FALSE);
+    if (status != LIB_STATUS_UNSUPPORTED)
+        x86_core_machine_memory_note_provider_failure(provider, physical, bytes,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
+    return status;
 }
 static void x86_core_machine_memory_snoop_written(t_ram *ram, lib_u32 physical,
     lib_u32 decoded, lib_size bytes)
@@ -644,7 +703,8 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = x86_core_machine_memory_route_resolve(ram, physical, byte,
-        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &provider, &provider_physical, &offset);
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, LIB_TRUE, &provider,
+        &provider_physical, &offset);
     if (status != LIB_STATUS_OK) return status;
     if (provider == LIB_NULL && byte > 1u) {
         lib_uptr index;
@@ -653,7 +713,7 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
             lib_size single_offset;
             status = x86_core_machine_memory_route_resolve(ram,
                 physical + (lib_u32)index, 1u,
-                X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &single_provider,
+                X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, LIB_TRUE, &single_provider,
                 &provider_physical, &single_offset);
             if (status != LIB_STATUS_OK) return status;
             if (single_provider != LIB_NULL) {
@@ -672,7 +732,11 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
          * not rollback. UNSUPPORTED alone declines this route without effects. */
         if (status != LIB_STATUS_UNSUPPORTED)
             x86_core_machine_memory_snoop_written(ram, physical, provider_physical, byte);
-        if (status != LIB_STATUS_UNSUPPORTED) return status;
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            x86_core_machine_memory_note_provider_failure(provider, provider_physical,
+                byte, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, status);
+            return status;
+        }
         status = x86_core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != LIB_STATUS_OK) return status;
     }
@@ -716,7 +780,7 @@ lib_status x86_core_machine_memory_query_physical(const t_ram *ram,
 
     if (out_route == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_core_machine_memory_route_resolve(ram, physical, bytes, access,
-        &provider, &provider_physical, &offset);
+        LIB_TRUE, &provider, &provider_physical, &offset);
     if (status != LIB_STATUS_OK) return status;
     *out_route = provider == LIB_NULL ? X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM :
         X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
@@ -749,7 +813,7 @@ lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
         lib_u32 provider_physical;
         lib_size offset;
         lib_status status = x86_core_machine_memory_route_resolve(ram, first + byte,
-            1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &provider,
+            1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_FALSE, &provider,
             &provider_physical, &offset);
 
         /* A failed speculative line query disables fills. The requested data

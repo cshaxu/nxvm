@@ -48,6 +48,13 @@ typedef enum x86_core_machine_memory_access {
     X86_CORE_MACHINE_MEMORY_ACCESS_WRITE
 } x86_core_machine_memory_access;
 
+/* Called only after this route has claimed an access and its query, read or
+ * write callback returns a terminal status. UNSUPPORTED is a normal decline
+ * and never reaches this observer. */
+typedef void (*x86_core_machine_memory_device_failure_observer)(void *owner,
+    lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access, lib_status status);
+
 typedef enum x86_core_machine_memory_route {
     X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM = 0,
     X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER
@@ -89,6 +96,7 @@ typedef struct x86_core_machine_memory_device_route {
     lib_size bytes;
     x86_core_machine_memory_device_callbacks callbacks;
     x86_core_machine_memory_provider_mode mode;
+    x86_core_machine_memory_device_failure_observer failure;
 } x86_core_machine_memory_device_route;
 
 typedef struct x86_core_machine_memory_parity_config {

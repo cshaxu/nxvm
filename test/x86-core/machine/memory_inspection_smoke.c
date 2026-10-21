@@ -438,9 +438,10 @@ lib_i32 main(void)
         failed |= x86_core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK;
     }
     failed |= x86_core_machine_memory_register_device_provider(memory, 0x1001u, 2u,
-        probe_read, probe_write, probe_query, &probe) != LIB_STATUS_OK;
+        probe_read, probe_write, probe_query, &probe, LIB_NULL) != LIB_STATUS_OK;
     failed |= x86_core_machine_memory_register_overlay_device_provider(memory,
-        0xfffffff0u, 16u, probe_read, probe_write, probe_query, &probe) != LIB_STATUS_OK;
+        0xfffffff0u, 16u, probe_read, probe_write, probe_query, &probe,
+        LIB_NULL) != LIB_STATUS_OK;
     failed |= x86_core_machine_memory_enable_parity(memory, 0x2000u,
         probe_parity, &probe) != LIB_STATUS_OK;
     {

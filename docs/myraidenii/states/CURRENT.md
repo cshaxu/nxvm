@@ -444,6 +444,46 @@ future receiver must establish one finite non-payload game-state or
 Board-semantic discrepancy before changing a device model.  S36 makes no
 gameplay, desktop/RDP or release claim.
 
+## Archived Packet — M1 T7 S55
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S54; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner approved the Shared X86 Core route-failure observer after review of the minimal public contract. |
+| Objective | Let a composition-owned memory route observe a selected provider's terminal query/read/write failure, then let MyRaidenII classify the Board/COP owner without retaining raw guest fields in the external-ROM probe. |
+| Non-goals | No second bus, route, CPU decoder, timer, thread, ROM/media import, address-map widening, exception suppression, runtime workaround, desktop/gameplay/release claim or raw trace/output retention. |
+| Reference Baseline | S53 has a finite but unclassified Core terminal because Core alone knows which selected provider returns terminal failure. S54 removes unsafe raw probe formatting. |
+| Candidate Proposal | Add an optional trailing failure observer to the existing route contract. Core saves it with each provider and calls it only for an already selected provider's non-OK/non-UNSUPPORTED query/read/write result. Board and COP routes record separate resettable category/status/access aggregates, preserving COP's existing detailed failure owner. |
+| Files And ABI Surface | Shared `src/test/x86-core` memory route interface/implementation/tests; MyRaidenII Core Board/COP and its existing Board/probe tests; Current, evidence/index. Expected Shared +45..100/-5..20, MyRaidenII source +40..100/-10..25, tests +75..180/-10..30, documents +45..110. Existing positional route initializers may receive explicit trailing `LIB_NULL` solely to preserve strict-warning builds. |
+| Applicable Rules | MyRaidenII guide/architecture/coding/source policy; Shared execution/architecture/coding/documentation rules. Long build/test/probe work is background-only. |
+| Verification | Core focused route observer units, MyRaidenII Board units and complete MyRaidenII unit labels on x64/x86; one bounded wrapper run per width only after local tests pass; documentation, dependency and whitespace checks. |
+| Expected Markers | `UNSUPPORTED` remains silent/fallthrough; selected terminal query/read/write failure notifies exactly once with existing status; Board/COP report source-safe category only; no raw address or payload is emitted. |
+| Asset Needs | Existing external owner archive is read-only through the registered wrapper; staging remains external and is removed after each run. |
+| Reporting Requirements | Record interface/consumer change, actual diff, width results, safe category, cleanup and unexecuted desktop/gameplay/audio checks. Do not retain raw guest fields, protected bytes or third-party source. |
+| Stop Conditions | A required callback changes route semantics, an observer is invoked on decline/fallback, a consumer needs raw output, an unrelated Shared consumer regresses, or runs diverge by width; stop at that boundary. |
+| Exit Criteria | One Core-owned observer contract handles all selected terminal query/read/write failures; MyRaidenII Board/COP use it at their existing owners; focused/full units pass on both widths; one bounded safe-output probe per width is clean and classified; evidence/index/current are complete and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII under governance with a clean single-owner diagnostic path rather than App-local bus wrappers. |
+| Similar-Issue Sweep | Raw/reset/standard/replacement/fallback provider selection, query/read/write terminal and decline results, direct inspection/reset fetch, all route initializer consumers, Board fallback/COP local observations and probe output contract. |
+
+## M1 T7 S55 Closure
+
+S55 adds the one approved trailing X86 Core memory-route failure observer.
+It is invoked only after a selected provider reports a terminal query, read or
+write result; `LIB_STATUS_UNSUPPORTED` remains a silent decline.  The
+speculative cache eligibility query is deliberately not observable because it
+does not propagate a terminal bus result.  Board and COP retain separate safe
+first-failure aggregates, so the existing detailed COP diagnostic is unchanged.
+
+Focused and complete repository-only verification passed on x64 and x86:
+the MyRaidenII unit set completed 11 executables per width, and the complete
+X86 Core suite completed 183 executables per width.  One registered bounded
+owner-ROM run per width produced the same safe classification: a selected COP
+provider read returned `LIB_STATUS_INVALID_STATE`, while the Board aggregate
+remained clear.  Wrapper staging was empty after each run.  The result selects
+a future COP-owned receiver only; it does not prove boot, title-screen,
+gameplay, graphics, audio or release readiness.  S55 is closed with no active
+packet; M1 T7 remains open.
+
 ## Active Packet
 
 No S packet is active.
