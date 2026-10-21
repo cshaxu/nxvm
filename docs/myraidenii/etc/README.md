@@ -101,6 +101,7 @@
 - [T7 bounded selected-set post-CPU progress diagnostic](evidence/t7-s49-selected-set-progress.md).
 - [T7 full-budget post-Sound qualification](evidence/t7-s50-full-budget-post-sound.md).
 - [T7 case-error owner audit](evidence/t7-s51-case-error-owner-audit.md).
+- [T7 COP command-window read contract](evidence/t7-s52-cop-command-read.md).
 - [T7 Board Sound IM1 transport](evidence/t7-s17-sound-im1-transport.md).
 - [T7 Board Sound IM0 transport](evidence/t7-s18-sound-im0-transport.md).
 - [T7 selected-set input pulse diagnostic](evidence/t7-s19-input-pulse-diagnostic.md).

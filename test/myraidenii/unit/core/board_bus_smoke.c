@@ -295,6 +295,7 @@ static lib_i32 board_control_window(void)
         .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x800u}
     };
     const lib_u8 guest[] = {0xb8u,1u,0u,0xa3u,0u,4u,0xf4u};
+    const lib_u8 command_read_guest[] = {0xa1u,0u,5u,0xf4u};
     const lib_u8 unused_write_guest[] = {0xb8u,1u,0u,0xa3u,0x3eu,4u,0xf4u};
     const lib_u8 unused_write_word_guest[] = {0xb8u,1u,0u,0xa3u,0xc8u,6u,0xf4u};
     const lib_u8 unused_write_696_guest[] = {0xb8u,1u,0u,0xa3u,0x96u,6u,0xf4u};
@@ -306,11 +307,29 @@ static lib_i32 board_control_window(void)
     x86_core_machine *machine;
     x86_core_machine_run_result result = {0};
     x86_core_machine_memory_route route;
+    myraidenii_core_cop_failure_observation cop_failure = {0};
+    lib_u32 eax = 0u;
     lib_u8 value[8];
     lib_i32 failed = 1;
 
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
     machine = myraidenii_core_board_machine_get(board);
+    if (x86_core_machine_memory_read(machine, 0x500u, value, 2u) != LIB_STATUS_OK ||
+        value[0] != 0u || value[1] != 0u ||
+        x86_core_machine_memory_inspect(machine, 0x504u, value, 2u) != LIB_STATUS_OK ||
+        value[0] != 0u || value[1] != 0u ||
+        myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
+        cop_failure.valid || x86_core_machine_memory_write(machine, 0x800u,
+            command_read_guest, sizeof(command_read_guest)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_debug_continue(machine, (x86_core_machine_run_budget){2u,0u},
+            &result) != LIB_STATUS_OK || result.executed != 2u ||
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX, &eax) !=
+            LIB_STATUS_OK || (eax & 0xffffu) != 0u ||
+        myraidenii_core_board_cop_failure_get(board, &cop_failure) != LIB_STATUS_OK ||
+        cop_failure.valid || x86_core_machine_reset(machine) != LIB_STATUS_OK)
+        goto done;
     for (lib_u8 phase = 0u; phase < 2u; ++phase) {
         if (phase != 0u && x86_core_machine_reset(machine) != LIB_STATUS_OK) goto done;
         for (lib_u32 address = 0x400u; address < 0x800u; ++address) {
@@ -1543,7 +1562,10 @@ static lib_i32 board_cop_routes(void)
         x86_core_machine_memory_write(machine, 0x00500u, command_write, 1u) !=
             LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x00500u, value, sizeof(value)) !=
-            LIB_STATUS_INVALID_STATE || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            LIB_STATUS_OK || value[0] != 0u || value[1] != 0u ||
+        x86_core_machine_memory_inspect(machine, 0x00500u, value, sizeof(value)) !=
+            LIB_STATUS_OK || value[0] != 0u || value[1] != 0u ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_query(machine, 0x00428u, sizeof(value),
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER)

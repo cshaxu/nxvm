@@ -266,6 +266,13 @@ static lib_status myraidenii_core_cop_read(void *owner, lib_u32 physical,
         }
         return LIB_STATUS_OK;
     }
+    if (range->role == MYRAIDENII_CORE_COP_COMMAND) {
+        /* L2: the external map establishes write-only decoding, not a physical
+         * open-bus value. Keep the one admitted provider deterministic without
+         * inventing a command-result latch or changing pending state. */
+        lib_memory_set((void *)destination, 0, bytes);
+        return LIB_STATUS_OK;
+    }
     /* Unmodelled result/configuration reads remain explicit failures. */
     return LIB_STATUS_INVALID_STATE;
 }

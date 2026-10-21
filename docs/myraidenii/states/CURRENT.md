@@ -448,6 +448,40 @@ gameplay, desktop/RDP or release claim.
 
 No S packet is active.
 
+## Archived Packet — M1 T7 S52
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M1 T7 S52; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation, permits independent L2 models informed by external emulator behavior, and requires long builds/tests/probes to run only in persistent background sessions. This packet changes only the App-owned COP read contract selected by S51. |
+| Objective | Reconcile the COP command-window query/read contract so a V30 read accepted by its single COP provider has one deterministic L2 result rather than becoming an X86 Core provider failure. |
+| Non-goals | No Lib, Emulator, X86 Core, public-interface, queue, thread, second bus route, command latch, pending-state mutation, ROM/media, renderer, product artifact, or hardware-exact open-bus claim. |
+| Reference Baseline | S50 reaches the same finite two-width Core case-error terminal after Sound progress. S51 proves the COP query accepts the command window for reads while its read callback rejects it; the externally inspected L2 map establishes that window as write-only but does not establish a physical read value. |
+| Candidate Proposal | Keep one COP provider for both access directions. For the admitted command range only, return zero-filled requested bytes without changing registers, pending operation or failure observation. This is a deterministic local L2 interoperability model, not a claimed physical open-bus value. Extend the existing Board bus smoke with direct and actual V30 read proof, retaining existing command-write admission checks. |
+| Files And ABI Surface | `src/myraidenii/core/cop.c`, existing `test/myraidenii/unit/core/board_bus_smoke.c`, Current, one evidence record and supporting index. No public header, Shared component, ABI, artifact or media change. Estimated production +7..18/-0..5; test +35..85/-0..20; documents +40..95/-0..15. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding and source policy; shared Execution, Architecture, Coding and Documentation rules. COP remains the one range/query/read/write owner; all long operations use persistent background sessions. |
+| Verification | Build and run the affected Board unit x64/x86 in background, then complete MyRaidenII unit labels x64/x86 in background. Run the existing bounded selected-set wrapper once per width only after focused proof passes; retain only neutral result category and verify external staging cleanup. Run documentation governance and whitespace checks. |
+| Expected Markers | Command-range read succeeds with deterministic zero bytes, causes neither a COP failure nor pending-command mutation, and a real V30 `MOV AX,moffs` followed by `HLT` reaches the normal waiting terminal. Existing command writes retain their present admission/failure behavior. |
+| Asset Needs | Existing external owner ROM archive is read-only and accessed only through the registered wrapper. Wrapper staging remains beneath its owner-managed external directory and is removed after each completed run. |
+| Reporting Requirements | Record the L2 evidence boundary, changed owner, direct/guest test scope, actual line deltas, dual-width results, probe terminal category, staging cleanup and unexecuted desktop/audio/gameplay verification. Never retain ROM bytes, guest addresses, traces or payload. |
+| Stop Conditions | Any need for a Shared/Core API change, a second route, a physical read-value claim, divergence between widths, retained stage, non-finite run or regression in command write admission stops and records the boundary. |
+| Exit Criteria | One COP owner supplies the complete accepted access contract; direct and V30 paths are covered; focused and complete product units pass on both widths; one bounded owner-ROM probe per width is clean; evidence is indexed; actual diff is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII under governance and make concrete progress toward running Raiden II without copying third-party source or bypassing unresolved hardware semantics. |
+| Similar-Issue Sweep | Inspect all COP range roles, query/read consistency, read-only/write-only routes, widths, pending/failure/reset behavior, Board fallback ownership and existing guest bus tests. |
+
+## M1 T7 S52 Closure
+
+S52 closes after correcting the one App-local query/read contradiction in the
+COP command range.  The command owner now produces a deterministic zero-filled
+L2 result for an already admitted read and retains all write/pending/failure
+behavior.  Focused Board proof and complete MyRaidenII units pass on both
+widths.  One bounded selected-set probe per width reaches the same neutral
+fault category and leaves no external staging child; no raw guest data was
+retained.  The new terminal is not classified by the existing safe probe
+surface, so T7 remains open for a separately admitted owner-valid diagnostic
+or receiver.  No Shared/Core/API/artifact/media change, release claim, desktop
+claim or gameplay claim is made.
+
 ## Archived Packet — M1 T7 S35
 
 | Field | Required record |
