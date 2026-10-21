@@ -3,6 +3,7 @@
 #include "myraidenii/core/sound.h"
 #include "myraidenii/core/video.h"
 #include "myraidenii/machine/configuration_interface.h"
+#include "myraidenii/machine/driver_interface.h"
 #include "x86-core/machine/machine_interface.h"
 
 #define MYRAIDENII_STARTUP_DEFAULT_INSTRUCTION_BUDGET 2000000u
@@ -68,15 +69,20 @@ static lib_bool myraidenii_startup_parse_arguments(lib_i32 argument_count, char 
     return LIB_TRUE;
 }
 
-static lib_status myraidenii_startup_set_coin_start(myraidenii_core_board *board,
+static lib_status myraidenii_startup_set_coin_start(const emulator_machine_driver *driver,
     lib_bool pressed)
 {
-    lib_status status = myraidenii_core_board_set_control(board,
-        MYRAIDENII_CORE_BOARD_CONTROL_COIN_1, pressed);
+    kvm_input_event event = {0};
 
-    if (status != LIB_STATUS_OK) return status;
-    return myraidenii_core_board_set_control(board,
-        MYRAIDENII_CORE_BOARD_CONTROL_START_1, pressed);
+    if (driver == LIB_NULL || driver->context == LIB_NULL ||
+        driver->deliver_input == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    event.type = KVM_EVENT_KEY;
+    event.data.key.key = '5';
+    event.data.key.pressed = pressed;
+    driver->deliver_input(driver->context, &event);
+    event.data.key.key = '1';
+    driver->deliver_input(driver->context, &event);
+    return LIB_STATUS_OK;
 }
 
 static void myraidenii_startup_frame_observe(const lib_u32 *pixels, lib_size pixel_count,
@@ -145,6 +151,8 @@ int main(int argument_count, char **arguments)
     myraidenii_machine_images *images = LIB_NULL;
     myraidenii_core_board_config config;
     myraidenii_core_board *board = LIB_NULL;
+    myraidenii_machine *machine_adapter = LIB_NULL;
+    emulator_machine_driver driver = {0};
     x86_core_machine *machine;
     lib_u32 *pixels = LIB_NULL;
     lib_i16 *pcm_samples = LIB_NULL;
@@ -189,8 +197,12 @@ int main(int argument_count, char **arguments)
         if (status == LIB_STATUS_OK)
             status = myraidenii_core_board_create(&config, &board);
     }
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_machine_create(board, LIB_NULL, &machine_adapter);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_machine_driver_get(machine_adapter, &driver);
     if (status == LIB_STATUS_OK && control_mode == MYRAIDENII_STARTUP_CONTROL_HELD)
-        status = myraidenii_startup_set_coin_start(board, LIB_TRUE);
+        status = myraidenii_startup_set_coin_start(&driver, LIB_TRUE);
     machine = myraidenii_core_board_machine_get(board);
     if (status == LIB_STATUS_OK) {
         pixels = lib_allocate(MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS * sizeof(*pixels));
@@ -203,12 +215,12 @@ int main(int argument_count, char **arguments)
 
         if (control_mode == MYRAIDENII_STARTUP_CONTROL_PULSE && !pulse_pressed &&
             executed >= pulse_press_at) {
-            status = myraidenii_startup_set_coin_start(board, LIB_TRUE);
+            status = myraidenii_startup_set_coin_start(&driver, LIB_TRUE);
             pulse_pressed = status == LIB_STATUS_OK;
         }
         if (status == LIB_STATUS_OK && control_mode == MYRAIDENII_STARTUP_CONTROL_PULSE &&
             pulse_pressed && !pulse_released && executed >= pulse_release_at) {
-            status = myraidenii_startup_set_coin_start(board, LIB_FALSE);
+            status = myraidenii_startup_set_coin_start(&driver, LIB_FALSE);
             pulse_released = status == LIB_STATUS_OK;
         }
         if (status != LIB_STATUS_OK) break;
@@ -284,7 +296,7 @@ int main(int argument_count, char **arguments)
             "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
             "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
-            "coin-start-mode=%u pulse-press-at=%llu pulse-release-at=%llu "
+            "input-route=machine-driver coin-start-mode=%u pulse-press-at=%llu pulse-release-at=%llu "
             "pulse-pressed=%u pulse-released=%u instruction-budget=%llu "
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
             "frame-digest=%016llx frame-samples=%u frame-transitions=%u "
@@ -325,6 +337,7 @@ int main(int argument_count, char **arguments)
     }
     lib_release(pixels);
     lib_release(pcm_samples);
+    (void)myraidenii_machine_destroy(&machine_adapter);
     myraidenii_core_board_destroy(board);
     myraidenii_machine_images_destroy(images);
     return exit_code;

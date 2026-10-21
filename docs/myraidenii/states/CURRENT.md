@@ -6,26 +6,26 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S20
+## Active Packet — M1 T7 S21
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; S20 follows closed S19. One session performs coordinator and executor roles. |
-| Admission And Approval | The owner directed continued MyRaidenII implementation and clarified the mandatory L3/L2/L1 evidence rule on 2026-10-20. Ordinary same-T packet planning is delegated. |
-| Objective | Qualify the existing Product-to-Machine input wiring without inventing desktop automation: prove the Product supplies its one driver and the existing driver consumes ordinary KVM key events into Board controls, alongside a bounded real-Product launch. |
-| Non-goals | No new input path, scheduler, Core/Board behavior, Shared change, ROM/PAL/media retention, desktop automation framework, gameplay/title/audio/release claim, or product artifact publication. |
-| Reference Baseline | S19 proves a finite Coin/Start electrical edge through the Board API but deliberately bypasses Product, Emulator UI and KVM. Product already constructs one Emulator route; Machine already maps ordinary KVM key events to Board controls. |
-| Candidate Proposal | Reuse existing Product composition and Machine-driver probes rather than adding a Window automation path. Verify that Product passes its one driver to Emulator and that the driver maps ordinary KVM events, including `5` and `1`, to the existing Board controls. Launch each host width once with the selected owner archive and record only neutral process disposition. No raw trace, screenshot, ROM byte, key payload or staged file is retained. |
-| Files And ABI Surface | Initially no source or ABI change. If a repeatable harness gap is found, stop and transfer it rather than adding a second Product or input route. Expected documentation-only Current/evidence update. |
+| Identifier Mode | Continuation; S21 follows closed S20. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner asked whether a probe can replace Computer Use and directed continued MyRaidenII implementation on 2026-10-20. The owner previously delegated ordinary same-T packet planning. |
+| Objective | Strengthen the existing selected-set Coin/Start pulse diagnostic so its ordinary KVM events cross the real MyRaidenII Machine driver before reaching the real Board, without host-window automation. |
+| Non-goals | No Product/Core/Shared behavior change, new input path, scheduler, public API, desktop automation, ROM/PAL/media retention, title/gameplay/audio/release claim, or product artifact publication. |
+| Reference Baseline | S19 applies the pulse directly to Board controls. S20 proves Product composition supplies the one driver and unit coverage proves that driver maps `5`/`1` KVM events. The selected-set probe itself still bypasses the driver. |
+| Candidate Proposal | In the existing integration probe, construct the existing opaque Machine adapter with no host PCM stream, copy its existing driver, and submit the normal KVM `5`/`1` press/release events through `deliver_input`. Keep the existing Core run loop, Board observations, budget and pulse schedule. This adds no second executor or route; it joins the established ingress with the established selected-ROM observation. |
+| Files And ABI Surface | Test-only `test/myraidenii/integration/selected_set_startup_probe.c`, Current and one evidence record. No production ABI, CMake, manifest, asset or artifact change. |
 | Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Documentation rules. Window result is L2 runtime evidence. Only a directly applicable inspected primary-manual-PDF fact may be L3; external implementations or ranges are L2 and unsupported local borrowing is L1. |
-| Verification | Build existing Product x64/x86 using the reusable Ninja graphs; run its existing bounded staging launch once per width; run the existing Product-composition and Machine-driver coverage as part of the complete MyRaidenII unit suites; confirm staged cleanup; run documentation/whitespace checks. |
-| Expected Markers | Each Product stays alive for the bounded observation. Existing probes show the one Product driver and its `5`/`1` KVM-to-Board mapping. This does not prove title acceptance, gameplay or desktop focus. |
+| Verification | Build the existing selected-set probe x64/x86 through the reusable Ninja graphs; run it once per width with its existing 2M default cap and pulse mode; run complete MyRaidenII units x64/x86; run documentation/whitespace checks. |
+| Expected Markers | Both widths report the same scheduled pulse and neutral finite result while the input route is explicitly the Machine driver. This does not prove Product Window focus, title acceptance, gameplay or desktop control. |
 | Asset Needs | Owner-supplied `O:\assets\raidenii\raiden2.zip`, read-only; wrapper-owned transient staging beneath the owner-managed external asset root, deleted before completion. |
-| Reporting Requirements | Record exact widths, staging cleanup, composition/driver disposition, test/build result and the distinction between KVM delivery, Board input, title acceptance and gameplay. |
+| Reporting Requirements | Record exact widths, source/test delta, selected-set results and the distinction between KVM-to-Machine ingress, Board electrical controls, Product Window delivery, title acceptance and gameplay. |
 | Stop Conditions | Any need to retain a Window, image, trace, ROM/media, add an input API, emulate guest input, change Product/Core behavior, use a second execution path, or claim a playable result stops this packet and transfers the gap. |
-| Exit Criteria | Both widths receive one bounded real-Product launch, all owned staging is gone, existing composition/driver probes and required tests pass, an evidence record states what was and was not proven, and no production path is added. |
+| Exit Criteria | Existing pulse input reaches the selected Board only through the real Machine driver; both widths yield a bounded comparable result; all named checks pass; evidence records the L2 runtime limit and no production path is added. |
 | Original Owner Request | Only explicit directly applicable formulas or constants from an inspected primary manual PDF are L3; ranges or external references are L2; unsupported borrowing is L1. Continue under that distinction. |
-| Similar-Issue Sweep | Review existing Product launch/staging code for another runtime input route, retained transient directory or host-automation dependency; retain only the existing route. |
+| Similar-Issue Sweep | Review the selected-set probe for another direct Board control call or another Core execution loop. Retain the one actual Machine `deliver_input` route and the one established Core execution loop. |
 
 ## M1 T7 S20 Closure
 
