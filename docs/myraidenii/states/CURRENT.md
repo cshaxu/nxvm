@@ -845,6 +845,38 @@ the post-S65 Product/Machine/configuration route does not regress to an early
 exit. It makes no rendered-output, input, audio, gameplay, desktop/RDP or
 release-readiness claim. S66 is closed with no active packet.
 
+## M1 T7 S67 — Bounded Product Surface Observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S66; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs continued implementation without treating absent physical-hardware evidence as a blocker: original/manual facts remain L3, external emulator behavior may establish L2, and an explicit independently implemented L1 model is permitted when neither exists. |
+| Objective | Observe the already qualified selected-set Product in its real Window surface during one bounded external-ROM launch, then classify the next missing receiver from actual visible/lifecycle behavior rather than inventing COPX-D2, PAL, blend, or input semantics. |
+| Non-goals | No production/test/API/build/manifest/artifact/ROM/media change; no ROM disassembly, trace retention, protected screenshot retention, external-source import, PAL equation inference, copied table, guessed blend bit, or release/playability claim. |
+| Reference Baseline | S65 admits the three residual COP forms as L1 compatibility completions; S66 proves each Product process survives a bounded launch. COPX-D2/PAL and sprite-blend semantics remain explicitly unowned by a complete L2/L3 contract. |
+| Candidate Proposal | Reuse the existing selected-set Product wrapper with a bounded observation interval, inspect only the live Window surface and public Product state, then retain a neutral evidence summary and wrapper cleanup result. If the surface exposes a finite local receiver, admit that receiver next; otherwise select a constrained L1 model only after recording its owner and synthetic oracle. |
+| Files And ABI Surface | Current and one evidence record/index only. Estimated documents +35..90/-0..15. |
+| Applicable Rules | MyRaidenII Architecture, Coding, Execution, Documentation and source policy; long process work runs through the existing wrapper in a persistent terminal session. |
+| Verification | Build is reused; start the existing x64 Product through the wrapper, inspect its Window while it is alive, verify wrapper cleanup, then run documentation governance and whitespace checks. No screenshot or protected payload is retained. |
+| Expected Markers | A bounded observation records whether a Product Window appears and whether its surface is blank/active without asserting a title, accepted credit, audio, gameplay, visual fidelity or release readiness. |
+| Asset Needs | Read-only verified external archive `O:\assets\raidenii\raiden2.zip`; wrapper-owned temporary staging only under `O:\assets\raidenii\myraidenii-diagnostics\`. |
+| Reporting Requirements | Record only host width, product launch/surface category, bounded interval, cleanup and the next owner decision. Do not retain ROM bytes, addresses, instruction traces, screenshots or third-party source. |
+| Stop Conditions | Archive/inventory mismatch, missing Product, no bounded Window observation path, retained staging, or any need to inspect protected payload stops selection without an invented repair. |
+| Exit Criteria | One bounded live Product observation and cleanup are recorded; the next receiver is selected with an honest L1/L2/L3 grade, or a concrete no-observation limitation is retained without blocking unrelated work. |
+| Similar-Issue Sweep | Distinguish Product launch/surface state from Board/COPX/PAL, sprite blend, sound, input and release claims; do not use a visible Window to silently close any of them. |
+
+## M1 T7 S67 Closure
+
+The bounded x64 Product process survives and cleans its wrapper-owned staging,
+but has no discoverable Window because the standardized initial lifecycle is
+`STOPPED` and the wrapper does not submit `start`.  The existing owner-ROM
+Board probe separately establishes an active, changing 320-by-240 frame
+surface through the same selected set.  Thus no PAL/COPX/renderer repair is
+selected from a stopped Product's absent Window.  S67 changes only this
+evidence/current record; no source, test, API, build, artifact or media file
+changed.  The next receiver is controlled Product monitor/UI start
+qualification, not automatic startup or a guessed hardware workaround.
+
 ## Active Packet
 
 No S packet is active.
