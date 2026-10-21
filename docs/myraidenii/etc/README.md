@@ -106,6 +106,7 @@
 - [T7 frozen qualification reconciliation](evidence/t7-s22-qualification-reconciliation.md).
 - [T7 full-budget Machine-driver pulse](evidence/t7-s23-full-budget-machine-pulse.md).
 - [T7 MAME black-box Coin/Start pulse](evidence/t7-s24-mame-input-pulse.md).
+- [T7 Board/Sound byte-lane and handshake repair](evidence/t7-s25-sound-handoff.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

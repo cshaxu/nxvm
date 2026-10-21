@@ -25,8 +25,9 @@ struct myraidenii_core_board {
     lib_u16 sprite_protection_y;
     lib_u16 sprite_protection_max_x;
     lib_u16 sprite_protection_source;
-    lib_u8 sound_command_pending;
-    lib_u8 sound_interrupt_pending;
+    lib_bool sound_command_pending;
+    lib_bool sound_response_pending;
+    lib_bool sound_interrupt_pending;
     lib_u16 tile_bank_2;
     lib_u16 dip_switches;
     lib_u16 player_inputs;
@@ -40,14 +41,14 @@ static lib_status myraidenii_core_board_sound_transport_command_get(void *contex
     return myraidenii_core_board_sound_command_get(context, index, out_value);
 }
 
-static lib_status myraidenii_core_board_sound_transport_command_is_pending(
+static lib_status myraidenii_core_board_sound_transport_response_is_pending(
     void *context, lib_bool *out_pending)
 {
     const myraidenii_core_board *board = context;
 
     if (board == LIB_NULL || out_pending == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_pending = board->sound_command_pending;
+    *out_pending = board->sound_response_pending;
     return LIB_STATUS_OK;
 }
 
@@ -935,10 +936,12 @@ static lib_status myraidenii_core_board_sound_read(void *owner, lib_u32 physical
         myraidenii_core_board_sound_query(owner, physical, bytes,
             X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     for (lib_uptr index = 0u; index < bytes; ++index) {
-        lib_u8 offset = (lib_u8)((physical + index - MYRAIDENII_CORE_SOUND_START) >> 1u);
-        lib_u8 value = 0xffu;
+        /* A1 mirrors the low lane; each latch occupies four physical bytes. */
+        lib_u8 offset = (lib_u8)((physical + index - MYRAIDENII_CORE_SOUND_START) >> 2u);
+        lib_u8 value = 0u;
 
         if (((physical + index) & 1u) == 0u) {
+            value = 0xffu;
             if (offset == 2u || offset == 3u) value = board->sound_response[offset - 2u];
             else if (offset == 5u) value = board->sound_command_pending ? 1u : 0u;
         }
@@ -956,12 +959,15 @@ static lib_status myraidenii_core_board_sound_write(void *owner, lib_u32 physica
         myraidenii_core_board_sound_query(owner, physical, bytes,
             X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     for (lib_uptr index = 0u; index < bytes; ++index) {
-        lib_u8 offset = (lib_u8)((physical + index - MYRAIDENII_CORE_SOUND_START) >> 1u);
+        lib_u8 offset = (lib_u8)((physical + index - MYRAIDENII_CORE_SOUND_START) >> 2u);
 
         if (((physical + index) & 1u) == 0u) {
             if (offset < 2u) board->sound_command[offset] = ((const lib_u8 *)source)[index];
             else if (offset == 4u) board->sound_interrupt_pending = LIB_TRUE;
-            else if (offset == 6u) board->sound_command_pending = LIB_TRUE;
+            else if (offset == 2u || offset == 6u) {
+                board->sound_command_pending = LIB_TRUE;
+                board->sound_response_pending = LIB_FALSE;
+            }
         }
     }
     return LIB_STATUS_OK;
@@ -987,6 +993,7 @@ static void myraidenii_core_board_reset(void *owner)
         board->sprite_protection_max_x = 0u;
         board->sprite_protection_source = 0u;
         board->sound_command_pending = LIB_FALSE;
+        board->sound_response_pending = LIB_FALSE;
         board->sound_interrupt_pending = LIB_FALSE;
         board->tile_bank_2 = 0u;
         board->dip_switches = 0xffffu;
@@ -1248,8 +1255,8 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
         .transport = {
             .context = board,
             .command_get = myraidenii_core_board_sound_transport_command_get,
-            .command_is_pending =
-                myraidenii_core_board_sound_transport_command_is_pending,
+            .response_is_pending =
+                myraidenii_core_board_sound_transport_response_is_pending,
             .command_acknowledge =
                 myraidenii_core_board_sound_transport_command_acknowledge,
             .interrupt_is_pending =
@@ -1422,6 +1429,7 @@ lib_status myraidenii_core_board_sound_command_acknowledge(myraidenii_core_board
 {
     if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     board->sound_command_pending = LIB_FALSE;
+    board->sound_response_pending = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 

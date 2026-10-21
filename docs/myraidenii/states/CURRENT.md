@@ -6,6 +6,32 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S25
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S24; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner's continuing MyRaidenII implementation approval, reaffirmed by the latest continue request; external emulator facts may be used as L2. Target is MyRaidenII only. |
+| Objective | Reconcile the complete main/sound command, response, pending and interrupt handoff at the actual byte-address boundary; repair only demonstrated local discrepancies. This consumes the sound/input receiving-path portion of G04/G05/G11, not gameplay qualification. |
+| Non-goals | No Shared or other App changes, new public API, CPU fork, game-state mirror, COPX guess, ROM patch/import, host UI automation or unrelated sound synthesis redesign. |
+| Reference Baseline | S24 `2c3ce8354`; existing Board low-byte mapping, Sound transport, board-bus/sound tests, frozen T1 checkpoint ledger. Local address division and MAME delegate offset units need direct verification, not interpretation by name. |
+| Candidate Proposal | Use bounded MAME Lua address-space operations with synthetic command/reply values, without guest execution between write/read observations. Compare physical-address results with the local real Board route. Sweep commands, replies, pending/acknowledge, IRQ and unused lanes. If mismatch is demonstrated, repair its existing owner and extend existing synthetic tests. |
+| Files And ABI Surface | src/myraidenii/core/board.c, sound.c, private sound.h and existing board-bus/sound tests; evidence and Current. Probe confirms a four-byte register stride with even-lane mirrors, plus two distinct pending directions. Reference IRQ inspection also identifies missing in-service inhibition. Revised estimate: production +65/-25, tests +140/-30. Existing private callback is renamed to its actual response-pending meaning; no public or Shared interface is added. |
+| Applicable Rules | Product guide, Architecture/Coding/UI, source policy, shared Execution/Architecture/Coding/Documentation and T7 proposal. External implementation is reference only; synthetic observations are L2, not a silicon claim. |
+| Verification | Bounded external synthetic handoff probe; existing Board/Sound units on x64/x86; required complete repository-only unit suites; affected local selected-set startup observation; existing Ninja/ccache trees; rebuild the existing Product candidate pair. T7 still owns initial release/configuration qualification, so this repair does not promote the unqualified candidate into Assets. |
+| Expected Markers | Explicit physical addresses and synthetic values agree across each receiving path, or each discrepancy has an owner and regression. No checksum or elapsed budget is labelled gameplay success. |
+| Asset Needs | Read-only previously inventoried owner ROM/PAL set for MAME; no acquisition or protected payload retention. |
+| Reporting Requirements | Before/after address/handshake matrix, reference revision/tool identity, actual code delta, test results, artifacts if affected and remaining gameplay limits. |
+| Stop Conditions | Need for Shared change, protected code/table import or undocumented new CPU/device contract stops that implementation and reports the precise missing authority. A disproved mapping hypothesis is recorded, not patched. |
+| Exit Criteria | Entire finite handoff batch is reconciled and any demonstrated in-scope mismatch fixed with receiving-path regressions; applicable verification passes; temporary output removed; complete P pushed and reviewed. |
+| Original Owner Request | Continue independently implementing MyRaidenII using probes and explicit L2 external-emulator references rather than waiting for physical hardware. |
+| Similar-Issue Sweep | All main sound-window byte/word offsets, inactive lanes, both latch bytes, both directions, pending/acknowledge/IRQ/reset and coin input polarity; retain unrelated video/COP work without attributing an unproven cause. |
+
+Transient scripts are under `build/myraidenii-t7-s25/`; external tool output is
+under `<external-assets>/media-myraidenii/t7-s25-mame/`. Each reference probe has
+a 20-second emulated ceiling, 60-second wall budget and 1 MiB output budget.
+The current session owns cleanup after process exit; no protected output is retained.
+
 ## Archived Packet — M1 T7 S24
 
 | Field | Required record |

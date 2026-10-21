@@ -4,6 +4,7 @@ typedef struct sound_fixture {
     lib_u8 command[2];
     lib_u8 response[2];
     lib_bool pending;
+    lib_bool response_pending;
     lib_bool interrupt;
     lib_u8 coin;
     lib_u8 acknowledgements;
@@ -18,10 +19,10 @@ static lib_status sound_command_get(void *context, lib_u8 index, lib_u8 *out_val
     return LIB_STATUS_OK;
 }
 
-static lib_status sound_command_is_pending(void *context, lib_bool *out_pending)
+static lib_status sound_response_is_pending(void *context, lib_bool *out_pending)
 {
     if (out_pending == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_pending = ((sound_fixture *)context)->pending;
+    *out_pending = ((sound_fixture *)context)->response_pending;
     return LIB_STATUS_OK;
 }
 
@@ -30,6 +31,7 @@ static lib_status sound_command_acknowledge(void *context)
     sound_fixture *fixture = context;
 
     fixture->pending = LIB_FALSE;
+    fixture->response_pending = LIB_TRUE;
     ++fixture->acknowledgements;
     return LIB_STATUS_OK;
 }
@@ -79,7 +81,7 @@ static lib_status sound_create_with_samples(const lib_u8 *program,
         .transport = {
             .context = fixture,
             .command_get = sound_command_get,
-            .command_is_pending = sound_command_is_pending,
+            .response_is_pending = sound_response_is_pending,
             .command_acknowledge = sound_command_acknowledge,
             .interrupt_is_pending = sound_interrupt_is_pending,
             .interrupt_accept = sound_interrupt_accept,
@@ -128,7 +130,8 @@ static lib_i32 sound_executes_fixed_transport(void)
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound,
             MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR) != LIB_STATUS_OK ||
-        fixture.response[0] != 0x5au || fixture.response[1] != 1u || fixture.pending ||
+        fixture.response[0] != 0x5au || fixture.response[1] != 0u || fixture.pending ||
+        !fixture.response_pending ||
         fixture.acknowledgements != 1u)
         goto done;
     myraidenii_core_sound_reset(sound);
@@ -166,7 +169,7 @@ static lib_i32 sound_switches_fixed_bank(void)
         .transport = {
             .context = &fixture,
             .command_get = sound_command_get,
-            .command_is_pending = sound_command_is_pending,
+            .response_is_pending = sound_response_is_pending,
             .command_acknowledge = sound_command_acknowledge,
             .interrupt_is_pending = sound_interrupt_is_pending,
             .interrupt_accept = sound_interrupt_accept,
@@ -322,6 +325,11 @@ done:
 static lib_i32 sound_delivers_ym_timer_interrupt(void)
 {
     static lib_u8 program[0x2000u];
+    static const lib_u8 handler[] = {
+        0xf5u, 0x04u, 0x78u, /* PUSH AF / INC B / LD A,B */
+        0x32u, 0x18u, 0x40u,
+        0xf1u, 0xfbu, 0xedu, 0x4du /* POP AF / EI / RETI */
+    };
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
     lib_size at = 0x100u;
@@ -330,6 +338,7 @@ static lib_i32 sound_delivers_ym_timer_interrupt(void)
     lib_memory_set(program, 0, sizeof(program));
     program[0u] = 0xc3u; program[1u] = 0u; program[2u] = 1u;
     program[at++] = 0x31u; program[at++] = 0xffu; program[at++] = 0x27u;
+    program[at++] = 0x06u; program[at++] = 0u;
     program[at++] = 0x3eu; program[at++] = 0x10u;
     program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
     program[at++] = 0x3eu; program[at++] = 0xffu;
@@ -345,21 +354,27 @@ static lib_i32 sound_delivers_ym_timer_interrupt(void)
     program[at++] = 0xedu; program[at++] = 0x46u;
     program[at++] = 0xfbu;
     program[at++] = 0x00u;
-    program[at++] = 0x76u;
-    program[0x10u] = 0x3eu; program[0x11u] = 0x14u;
-    program[0x12u] = 0x32u; program[0x13u] = 0x08u; program[0x14u] = 0x40u;
-    program[0x15u] = 0x3eu; program[0x16u] = 0x10u;
-    program[0x17u] = 0x32u; program[0x18u] = 0x09u; program[0x19u] = 0x40u;
-    program[0x1au] = 0x3eu; program[0x1bu] = 0x5au;
-    program[0x1cu] = 0x32u; program[0x1du] = 0x18u; program[0x1eu] = 0x40u;
-    program[0x1fu] = 0xedu; program[0x20u] = 0x4du;
+    /* Keep the timer asserted; only its EOI may permit another delivery. */
+    program[at++] = 0x3au; program[at++] = 0x10u; program[at++] = 0x40u;
+    program[at++] = 0xb7u;
+    program[at++] = 0x28u; program[at++] = 0xfau;
+    program[at++] = 0x32u; program[at++] = 0x02u; program[at++] = 0x40u;
+    program[at++] = 0x18u; program[at++] = 0xf5u;
+    lib_memory_copy(program + 0x10u, handler, sizeof(handler));
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
-        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK)
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 1u ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 1u)
         goto done;
-    if (fixture.response[0] != 0x5au) {
-        failed = 4;
+    fixture.command[0] = 1u;
+    if (myraidenii_core_sound_advance(sound, 1000u) != LIB_STATUS_OK ||
+        fixture.response[0] <= 1u)
         goto done;
-    }
+    fixture.command[0] = 0u;
+    myraidenii_core_sound_reset(sound);
+    if (myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0] != 1u) goto done;
     failed = 0;
 done:
     myraidenii_core_sound_destroy(sound);
@@ -391,6 +406,63 @@ static lib_i32 sound_delivers_transport_interrupt(void)
 done:
     myraidenii_core_sound_destroy(sound);
     return failed;
+}
+
+static lib_i32 sound_acknowledges_transport_service(void)
+{
+    static lib_u8 program[0x2000u];
+    static const lib_u8 entry[] = {
+        0x31u, 0xffu, 0x27u, /* LD SP,27ff */
+        0x06u, 0x00u,       /* LD B,0: interrupt count */
+        0xedu, 0x46u,       /* IM 0 */
+        0xf3u, 0xfbu, 0x00u, /* DI/EI must not end device service. */
+        0x3au, 0x10u, 0x40u, /* LD A,(4010): permit EOI */
+        0xb7u, 0x28u, 0xf7u, /* OR A / JR Z,0107 */
+        0x32u, 0x01u, 0x40u, /* LD (EOI),A */
+        0xc3u, 0x07u, 0x01u
+    };
+    static const lib_u8 handler[] = {
+        0xf5u,             /* Preserve the polling loop's A/flags. */
+        0x04u, 0x78u,       /* INC B / LD A,B */
+        0x32u, 0x18u, 0x40u, /* LD (4018),A */
+        0xf1u, 0xfbu, 0xedu, 0x4du /* POP AF / EI / RETI */
+    };
+
+    for (lib_u8 acknowledge = 1u; acknowledge <= 3u; ++acknowledge) {
+        sound_fixture fixture = {.interrupt = LIB_TRUE};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_i32 failed = 1;
+
+        lib_memory_set(program, 0, sizeof(program));
+        program[0u] = 0xc3u; program[1u] = 0u; program[2u] = 1u;
+        lib_memory_copy(program + 0x18u, handler, sizeof(handler));
+        lib_memory_copy(program + 0x100u, entry, sizeof(entry));
+        program[0x111u] = acknowledge;
+        if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+            myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+            fixture.response[0] != 1u || fixture.interrupt)
+            goto done;
+        fixture.interrupt = LIB_TRUE;
+        if (myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+            fixture.response[0] != 1u || !fixture.interrupt)
+            goto done;
+        fixture.command[0] = 1u;
+        if (myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+            fixture.response[0] != (acknowledge == 2u ? 1u : 2u) ||
+            fixture.interrupt != (acknowledge == 2u))
+            goto done;
+        fixture.command[0] = 0u;
+        fixture.interrupt = LIB_TRUE;
+        myraidenii_core_sound_reset(sound);
+        if (myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+            fixture.response[0] != 1u || fixture.interrupt)
+            goto done;
+        failed = 0;
+done:
+        myraidenii_core_sound_destroy(sound);
+        if (failed) return failed;
+    }
+    return 0;
 }
 
 static lib_i32 sound_publishes_bounded_pcm(void)
@@ -572,6 +644,7 @@ int main(void)
         sound_executes_device_map() != 0 ||
         sound_delivers_ym_timer_interrupt() != 0 ||
         sound_delivers_transport_interrupt() != 0 ||
+        sound_acknowledges_transport_service() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||

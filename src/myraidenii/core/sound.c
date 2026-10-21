@@ -13,7 +13,7 @@ enum {
     MYRAIDENII_CORE_SOUND_NO_DEVICE = 0x4004u,
     MYRAIDENII_CORE_SOUND_COMMAND_0 = 0x4010u,
     MYRAIDENII_CORE_SOUND_COMMAND_1 = 0x4011u,
-    MYRAIDENII_CORE_SOUND_COMMAND_PENDING = 0x4012u,
+    MYRAIDENII_CORE_SOUND_RESPONSE_PENDING = 0x4012u,
     MYRAIDENII_CORE_SOUND_COIN = 0x4013u,
     MYRAIDENII_CORE_SOUND_RESPONSE_0 = 0x4018u,
     MYRAIDENII_CORE_SOUND_RESPONSE_1 = 0x4019u,
@@ -110,6 +110,8 @@ struct myraidenii_core_sound {
     lib_u8 interrupt_mode;
     lib_u8 interrupt_enable_delay;
     lib_bool interrupt_enable;
+    lib_bool transport_in_service;
+    lib_bool ym_in_service;
     lib_bool halted;
     lib_u8 ram[MYRAIDENII_CORE_SOUND_RAM_BYTES];
 };
@@ -118,7 +120,7 @@ static lib_bool myraidenii_core_sound_transport_valid(
     const myraidenii_core_sound_transport *transport)
 {
     return transport != LIB_NULL && transport->command_get != LIB_NULL &&
-        transport->command_is_pending != LIB_NULL &&
+        transport->response_is_pending != LIB_NULL &&
         transport->command_acknowledge != LIB_NULL &&
         transport->interrupt_is_pending != LIB_NULL &&
         transport->interrupt_accept != LIB_NULL &&
@@ -647,9 +649,9 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
         return sound->transport.command_get(sound->transport.context, 0u, out_value);
     case MYRAIDENII_CORE_SOUND_COMMAND_1:
         return sound->transport.command_get(sound->transport.context, 1u, out_value);
-    case MYRAIDENII_CORE_SOUND_COMMAND_PENDING: {
+    case MYRAIDENII_CORE_SOUND_RESPONSE_PENDING: {
         lib_bool pending;
-        lib_status status = sound->transport.command_is_pending(
+        lib_status status = sound->transport.response_is_pending(
             sound->transport.context, &pending);
 
         if (status != LIB_STATUS_OK) return status;
@@ -683,8 +685,11 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
     case MYRAIDENII_CORE_SOUND_COMMAND_ACKNOWLEDGE:
         return sound->transport.command_acknowledge(sound->transport.context);
     case MYRAIDENII_CORE_SOUND_INTERRUPT_ACKNOWLEDGE:
-    case MYRAIDENII_CORE_SOUND_RST10_ACKNOWLEDGE:
     case MYRAIDENII_CORE_SOUND_RST18_ACKNOWLEDGE:
+        sound->transport_in_service = LIB_FALSE;
+        return LIB_STATUS_OK;
+    case MYRAIDENII_CORE_SOUND_RST10_ACKNOWLEDGE:
+        sound->ym_in_service = LIB_FALSE;
         return LIB_STATUS_OK;
     case MYRAIDENII_CORE_SOUND_RESPONSE_0:
         return sound->transport.response_set(sound->transport.context, 0u, value);
@@ -1156,18 +1161,19 @@ static lib_status myraidenii_core_sound_interrupt_accept(
     ym_pending = myraidenii_core_sound_ym_irq_pending(&sound->ym);
     if (!sound->interrupt_enable || sound->interrupt_mode != 0u)
         return LIB_STATUS_UNSUPPORTED;
-    if (transport_pending) vector = 0x0018u;
-    else if (ym_pending) vector = 0x0010u;
+    if (transport_pending && !sound->transport_in_service) vector = 0x0018u;
+    else if (ym_pending && !sound->ym_in_service) vector = 0x0010u;
     else return LIB_STATUS_UNSUPPORTED;
     sound->halted = LIB_FALSE;
     sound->interrupt_enable = LIB_FALSE;
     status = myraidenii_core_sound_push(sound, sound->pc);
     if (status != LIB_STATUS_OK) return status;
     sound->pc = vector;
-    if (transport_pending) {
+    if (vector == 0x0018u) {
         status = sound->transport.interrupt_accept(sound->transport.context);
         if (status != LIB_STATUS_OK) return status;
-    }
+        sound->transport_in_service = LIB_TRUE;
+    } else sound->ym_in_service = LIB_TRUE;
     *out_ticks = 13u;
     return LIB_STATUS_OK;
 }
@@ -1676,6 +1682,8 @@ void myraidenii_core_sound_reset(myraidenii_core_sound *sound)
         sound->interrupt_mode = 0u;
         sound->interrupt_enable_delay = 0u;
         sound->interrupt_enable = LIB_FALSE;
+        sound->transport_in_service = LIB_FALSE;
+        sound->ym_in_service = LIB_FALSE;
         sound->halted = LIB_FALSE;
         lib_memory_set(sound->ram, 0, sizeof(sound->ram));
         lib_memory_set(&sound->ym, 0, sizeof(sound->ym));
