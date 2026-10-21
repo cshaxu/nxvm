@@ -125,6 +125,7 @@
 - [T7 Sound indexed-CB transform](evidence/t7-s42-sound-indexed-bit.md).
 - [T7 Sound unsupported-surface inventory](evidence/t7-s43-sound-unsupported-inventory.md).
 - [T7 Sound terminal-category diagnostic](evidence/t7-s44-sound-failure-category.md).
+- [T7 Sound accumulator/carry forms](evidence/t7-s45-sound-accumulator-flags.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

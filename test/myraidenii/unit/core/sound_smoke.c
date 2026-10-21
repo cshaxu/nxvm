@@ -112,6 +112,18 @@ static void sound_program_read_oki_response(lib_u8 *program, lib_size *at,
     program[(*at)++] = 0x32u; program[(*at)++] = response; program[(*at)++] = 0x40u;
 }
 
+static void sound_program_expect_zero(lib_u8 *program, lib_size *at)
+{
+    program[(*at)++] = 0x20u; program[(*at)++] = 1u; /* JR NZ,+1 */
+    program[(*at)++] = 0x04u; /* INC B */
+}
+
+static void sound_program_expect_carry(lib_u8 *program, lib_size *at)
+{
+    program[(*at)++] = 0x30u; program[(*at)++] = 1u; /* JR NC,+1 */
+    program[(*at)++] = 0x04u; /* INC B */
+}
+
 static lib_i32 sound_executes_fixed_transport(void)
 {
     static lib_u8 program[0x2000u];
@@ -803,6 +815,96 @@ done:
     return failed;
 }
 
+static lib_i32 sound_executes_accumulator_carry_forms(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[at++] = 0x06u; program[at++] = 0u; /* LD B,0 */
+
+    program[at++] = 0xafu; /* XOR A: preserve Z through RLCA */
+    program[at++] = 0x3eu; program[at++] = 0x81u;
+    program[at++] = 0x07u; /* RLCA */
+    sound_program_expect_zero(program, &at);
+    sound_program_expect_carry(program, &at);
+    program[at++] = 0xfeu; program[at++] = 0x03u;
+    sound_program_expect_zero(program, &at);
+
+    program[at++] = 0xafu; program[at++] = 0x37u; /* XOR A / SCF */
+    program[at++] = 0x3eu; program[at++] = 0x80u;
+    program[at++] = 0x17u; /* RLA */
+    sound_program_expect_zero(program, &at);
+    sound_program_expect_carry(program, &at);
+    program[at++] = 0xfeu; program[at++] = 0x01u;
+    sound_program_expect_zero(program, &at);
+
+    program[at++] = 0xafu;
+    program[at++] = 0x3eu; program[at++] = 0x01u;
+    program[at++] = 0x0fu; /* RRCA */
+    sound_program_expect_zero(program, &at);
+    sound_program_expect_carry(program, &at);
+    program[at++] = 0xfeu; program[at++] = 0x80u;
+    sound_program_expect_zero(program, &at);
+
+    program[at++] = 0xafu; program[at++] = 0x37u;
+    program[at++] = 0x3eu; program[at++] = 0x01u;
+    program[at++] = 0x1fu; /* RRA */
+    sound_program_expect_zero(program, &at);
+    sound_program_expect_carry(program, &at);
+    program[at++] = 0xfeu; program[at++] = 0x80u;
+    sound_program_expect_zero(program, &at);
+
+    program[at++] = 0x3eu; program[at++] = 0x09u;
+    program[at++] = 0xc6u; program[at++] = 0x01u;
+    program[at++] = 0x27u; /* DAA after addition */
+    program[at++] = 0xfeu; program[at++] = 0x10u;
+    sound_program_expect_zero(program, &at);
+    program[at++] = 0x3eu; program[at++] = 0x99u;
+    program[at++] = 0xc6u; program[at++] = 0x01u;
+    program[at++] = 0x27u;
+    sound_program_expect_carry(program, &at);
+    program[at++] = 0xfeu; program[at++] = 0u;
+    sound_program_expect_zero(program, &at);
+    program[at++] = 0x3eu; program[at++] = 0x10u;
+    program[at++] = 0xd6u; program[at++] = 0x01u;
+    program[at++] = 0x27u; /* DAA after subtraction */
+    program[at++] = 0xfeu; program[at++] = 0x09u;
+    sound_program_expect_zero(program, &at);
+
+    program[at++] = 0xafu; program[at++] = 0x37u; program[at++] = 0x2fu; /* CPL */
+    program[at++] = 0x27u;
+    sound_program_expect_carry(program, &at);
+    program[at++] = 0xfeu; program[at++] = 0x99u;
+    sound_program_expect_zero(program, &at);
+    program[at++] = 0x37u; program[at++] = 0x3fu; /* SCF / CCF */
+    program[at++] = 0x3eu; program[at++] = 0u;
+    program[at++] = 0x27u;
+    program[at++] = 0xfeu; program[at++] = 0x06u;
+    sound_program_expect_zero(program, &at);
+    program[at++] = 0xafu; program[at++] = 0x37u;
+    sound_program_expect_carry(program, &at);
+
+    program[at++] = 0x78u; /* LD A,B */
+    program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+    program[at++] = 0x76u;
+    if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 20u)
+        goto done;
+    myraidenii_core_sound_reset(sound);
+    if (myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 20u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 static lib_i32 sound_classifies_unsupported_failures(void)
 {
     static lib_u8 program[0x2000u];
@@ -812,7 +914,7 @@ static lib_i32 sound_classifies_unsupported_failures(void)
     lib_i32 failed = 1;
 
     lib_memory_set(program, 0, sizeof(program));
-    program[0u] = 0x27u;
+    program[0u] = 0xedu; program[1u] = 0x4bu;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_UNSUPPORTED ||
         myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
@@ -856,5 +958,6 @@ int main(void)
         sound_executes_index_ignored_prefix() != 0 ||
         sound_executes_index_high_low_forms() != 0 ||
         sound_executes_index_bit_transform() != 0 ||
+        sound_executes_accumulator_carry_forms() != 0 ||
         sound_classifies_unsupported_failures() != 0 ? 1 : 0;
 }

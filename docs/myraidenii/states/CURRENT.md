@@ -6,6 +6,27 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S45
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S44; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 implementation, original-manual L3 facts, bounded L2 external behavior where needed, and ordinary in-scope work without repeated approval. This S consumes only S44's `DECODER` transfer. |
+| Objective | Complete the finite Z80 base accumulator/carry-flag family at the sole local Sound executor: `RLCA`, `RLA`, `RRCA`, `RRA`, `DAA`, `CPL`, `SCF`, and `CCF`. |
+| Non-goals | No ED/index/CB expansion, Sound-map widening, YM/OKI change, timing-raster claim, guest trace/data retention, external-code import, Shared change, new CPU, second decoder, queue, thread or product behavior. |
+| Reference Baseline | S43 inventories the base default and S44 identifies the selected-set terminal only as `DECODER`. The pinned original Zilog UM008011-0816 gives the eight opcode, operation, flag and four-T-state facts; existing Sound owns all execution and flag state. |
+| Candidate Proposal | Repair the existing accumulator rotate flag mask once, add the three absent forms and decimal-adjust logic at the same base dispatch owner, then use existing ROM-free Sound/Board paths for result, flag-sensitive control-flow, reset and failure proof. |
+| Files And ABI Surface | MyRaidenII `core/sound.c`, existing Sound/Board smokes, Current, one evidence record/index and required manifests only. Private helpers permitted only when they consolidate the four accumulator rotate flag writes. No public interface or ABI change. Estimated production +35..90/-0..25; tests +55..150/-0..40; documents +45..90/-0..15. |
+| Applicable Rules | MyRaidenII Architecture and Coding; shared Architecture, Coding, Execution and Documentation rules; source policy. Sound remains App-owned Core, uses Lib types/status, has one executor and one reset owner. |
+| Verification | Build and run affected Sound/Board units plus full MyRaidenII unit label on x64/x86; run static source/manifest/doc/whitespace checks; run one bounded persistent-background selected-set probe per width only after ROM-free proof; clear external staging. |
+| Expected Markers | All eight forms execute at the same owner, documented flag masks and DAA result/carry behavior hold, reset remains clear, both widths pass, and the selected set either advances or reports a finite next category without a guessed repair. |
+| Asset Needs | Read-only original Zilog manual outside the repository and owner-supplied `O:\assets\raidenii\raiden2.zip`; temporary files only below `O:\assets\raidenii\myraidenii-diagnostics\`, removed after each owned background process exits. |
+| Reporting Requirements | Record adopted manual facts and grade, actual source/test line deltas, retained executor/flag owner, dual-width proof, probe outcome, staging cleanup and any unexecuted desktop/audio verification. Do not record guest bytes, addresses, instruction traces or ROM payload. |
+| Stop Conditions | A needed behavior outside this eight-form family, conflicting primary fact, missing testable existing path, map/ED/index receiver, Shared/public contract or nondeterministic result stops and transfers the receiver. |
+| Exit Criteria | One existing decoder owns all eight forms; no duplicate flag path exists; ROM-free result/flag/reset/failure proof and both-width units pass; bounded probe outcome is recorded without a gameplay claim; evidence names the next receiver and staging is empty. |
+| Original Owner Request | Continue implementing MyRaidenII under its governance, use source-graded L2 where no physical source exists, do not import third-party code or protected media, and keep long tasks in background sessions. |
+| Similar-Issue Sweep | Review all base accumulator/carry forms and their flags together, plus the existing indexed/CB rotate helpers only to confirm their distinct full-flag contract is not accidentally changed. Review every base unsupported default in the family before declaring the batch complete. |
+
 ## Archived Packet — M1 T7 S44
 
 | Field | Required record |

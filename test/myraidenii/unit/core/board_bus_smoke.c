@@ -1026,7 +1026,7 @@ static lib_i32 board_reports_sound_unsupported_category(void)
         lib_u8 program[3u];
         lib_u8 category;
     } cases[] = {
-        {{0x27u, 0u, 0u}, MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER},
+        {{0xedu, 0x4bu, 0u}, MYRAIDENII_CORE_SOUND_UNSUPPORTED_DECODER},
         {{0x3au, 0u, 0x50u}, MYRAIDENII_CORE_SOUND_UNSUPPORTED_MAP}
     };
     const myraidenii_core_board_config config = {
