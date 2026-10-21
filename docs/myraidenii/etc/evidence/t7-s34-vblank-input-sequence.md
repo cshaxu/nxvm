@@ -75,4 +75,3 @@ or Sound implementation change. No guessed repair is admitted here.
 - The wrapper removed all external staging after the four runs. No raw ROM,
   RAM, trace, screenshot or log is retained.
 - `git diff --check` passed.
-

@@ -6,7 +6,9 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S34
+No S packet is active.
+
+## Archived Packet — M1 T7 S34
 
 | Field | Required record |
 | --- | --- |
@@ -26,6 +28,24 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | The existing Probe has one additional exclusive control mode, both mode cases run on both widths with clean staging and all required checks, evidence records the bounded result, actual diff is reviewed and a complete P is pushed. |
 | Original Owner Request | Continue MyRaidenII implementation efficiently with bounded probes and independently written L2 reference behavior. |
 | Similar-Issue Sweep | Option exclusivity, vblank threshold ordering/overflow, delivery failures, unchanged old modes, output framing, wrapper forwarding and cleanup. |
+
+## M1 T7 S34 Closure
+
+S34 is closed after actual-change review accepts P1 `4e3b1c331`.  It adds one
+exclusive Probe-only vblank-aligned Coin/Start sequence; it does not alter the
+Product, Machine, Board, Video, Sound, ROM, PAL or Shared behavior.  On both
+host widths, all four edges are delivered once at the recorded thresholds, yet
+the bounded 20,000,000-instruction result has the same four sampled frame
+digests and neutral Video aggregates as its no-input baseline.  The
+[evidence record](../etc/evidence/t7-s34-vblank-input-sequence.md) retains
+the exact L2 scope, results and limits.
+
+Probe builds, mutual-exclusivity refusal and the complete 12/12 MyRaidenII
+unit selection passed on x64 and x86.  The external wrapper staging directory
+was empty after the runs.  No raw guest payload or diagnostic log is retained,
+and no release claim is made.  T7/M1 remains active: the next receiver must
+obtain a bounded non-payload checkpoint before assigning another hardware
+repair.
 
 ## Archived Packet — M1 T7 S33
 
