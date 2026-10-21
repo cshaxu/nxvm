@@ -89,6 +89,9 @@ typedef struct myraidenii_core_board_control_failure_observation {
 /* Reset clears this aggregate Sound-path observation. It reports reachability,
  * not guest payload, private device layout or host PCM delivery. */
 typedef struct myraidenii_core_board_sound_observation {
+    lib_u64 transport_command_reads[2u];
+    lib_u64 transport_command_acknowledgements;
+    lib_u64 transport_interrupt_accepts;
     lib_u64 ym_address_writes;
     lib_u64 ym_data_writes;
     lib_u64 oki_writes[2u];

@@ -117,22 +117,30 @@ static lib_i32 sound_executes_fixed_transport(void)
     static lib_u8 program[0x2000u];
     sound_fixture fixture = {.command = {0x5au, 0x3cu}, .pending = LIB_TRUE};
     myraidenii_core_sound *sound = LIB_NULL;
+    myraidenii_core_sound_observation observation;
     lib_i32 failed = 1;
 
     lib_memory_set(program, 0, sizeof(program));
     program[0u] = 0x3au; program[1u] = 0x10u; program[2u] = 0x40u;
     program[3u] = 0x32u; program[4u] = 0x18u; program[5u] = 0x40u;
-    program[6u] = 0x3au; program[7u] = 0x12u; program[8u] = 0x40u;
-    program[9u] = 0x32u; program[10u] = 0x19u; program[11u] = 0x40u;
-    program[12u] = 0x3eu; program[13u] = 0u;
-    program[14u] = 0x32u; program[15u] = 0x00u; program[16u] = 0x40u;
-    program[17u] = 0x76u;
+    program[6u] = 0x3au; program[7u] = 0x11u; program[8u] = 0x40u;
+    program[9u] = 0x32u; program[10u] = 0u; program[11u] = 0x20u;
+    program[12u] = 0x3au; program[13u] = 0x12u; program[14u] = 0x40u;
+    program[15u] = 0x32u; program[16u] = 0x19u; program[17u] = 0x40u;
+    program[18u] = 0x3eu; program[19u] = 0u;
+    program[20u] = 0x32u; program[21u] = 0x00u; program[22u] = 0x40u;
+    program[23u] = 0x76u;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound,
             MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR) != LIB_STATUS_OK ||
         fixture.response[0] != 0x5au || fixture.response[1] != 0u || fixture.pending ||
         !fixture.response_pending ||
-        fixture.acknowledgements != 1u)
+        fixture.acknowledgements != 1u ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.transport_command_reads[0u] != 1u ||
+        observation.transport_command_reads[1u] != 1u ||
+        observation.transport_command_acknowledgements != 1u ||
+        observation.transport_interrupt_accepts != 0u)
         goto done;
     myraidenii_core_sound_reset(sound);
     fixture.command[0] = 0x96u;
@@ -140,7 +148,12 @@ static lib_i32 sound_executes_fixed_transport(void)
     if (myraidenii_core_sound_advance(sound,
             MYRAIDENII_CORE_SOUND_Z80_CLOCK_DENOMINATOR) != LIB_STATUS_OK ||
         fixture.response[0] != 0x96u || fixture.response[1] != 1u || fixture.pending ||
-        fixture.acknowledgements != 2u)
+        fixture.acknowledgements != 2u ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.transport_command_reads[0u] != 1u ||
+        observation.transport_command_reads[1u] != 1u ||
+        observation.transport_command_acknowledgements != 1u ||
+        observation.transport_interrupt_accepts != 0u)
         goto done;
     failed = 0;
 done:
@@ -441,6 +454,7 @@ static lib_i32 sound_delivers_transport_interrupt(void)
     static lib_u8 program[0x2000u];
     sound_fixture fixture = {.interrupt = LIB_TRUE};
     myraidenii_core_sound *sound = LIB_NULL;
+    myraidenii_core_sound_observation observation;
     lib_i32 failed = 1;
 
     lib_memory_set(program, 0, sizeof(program));
@@ -455,7 +469,9 @@ static lib_i32 sound_delivers_transport_interrupt(void)
     program[0x107u] = 0x76u;
     if (sound_create(program, &fixture, &sound) != LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
-        fixture.response[0] != 0x5au || fixture.interrupt)
+        fixture.response[0] != 0x5au || fixture.interrupt ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.transport_interrupt_accepts != 1u)
         goto done;
     failed = 0;
 done:

@@ -1425,6 +1425,11 @@ lib_status myraidenii_core_board_sound_observation_get(const myraidenii_core_boa
     if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = myraidenii_core_sound_observation_get(board->sound, &observation);
     if (status != LIB_STATUS_OK) return status;
+    out_observation->transport_command_reads[0u] = observation.transport_command_reads[0u];
+    out_observation->transport_command_reads[1u] = observation.transport_command_reads[1u];
+    out_observation->transport_command_acknowledgements =
+        observation.transport_command_acknowledgements;
+    out_observation->transport_interrupt_accepts = observation.transport_interrupt_accepts;
     out_observation->ym_address_writes = observation.ym_address_writes;
     out_observation->ym_data_writes = observation.ym_data_writes;
     out_observation->oki_writes[0u] = observation.oki_writes[0u];

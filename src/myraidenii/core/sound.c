@@ -631,6 +631,7 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
     lib_u16 address, lib_u8 *out_value)
 {
     lib_size index;
+    lib_status status;
 
     if (address < MYRAIDENII_CORE_SOUND_FIXED_ROM_BYTES) {
         *out_value = address < sound->program_bytes ? sound->program[address] : 0xffu;
@@ -666,9 +667,12 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
     }
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_0:
-        return sound->transport.command_get(sound->transport.context, 0u, out_value);
     case MYRAIDENII_CORE_SOUND_COMMAND_1:
-        return sound->transport.command_get(sound->transport.context, 1u, out_value);
+        index = address - MYRAIDENII_CORE_SOUND_COMMAND_0;
+        status = sound->transport.command_get(sound->transport.context,
+            (lib_u8)index, out_value);
+        if (status == LIB_STATUS_OK) ++sound->observation.transport_command_reads[index];
+        return status;
     case MYRAIDENII_CORE_SOUND_RESPONSE_PENDING: {
         lib_bool pending;
         lib_status status = sound->transport.response_is_pending(
@@ -688,6 +692,8 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
 static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
     lib_u16 address, lib_u8 value)
 {
+    lib_status status;
+
     if (address >= MYRAIDENII_CORE_SOUND_RAM_START &&
         address - MYRAIDENII_CORE_SOUND_RAM_START < MYRAIDENII_CORE_SOUND_RAM_BYTES) {
         sound->ram[address - MYRAIDENII_CORE_SOUND_RAM_START] = value;
@@ -703,7 +709,9 @@ static lib_status myraidenii_core_sound_write(myraidenii_core_sound *sound,
     if (address == MYRAIDENII_CORE_SOUND_NO_DEVICE) return LIB_STATUS_OK;
     switch (address) {
     case MYRAIDENII_CORE_SOUND_COMMAND_ACKNOWLEDGE:
-        return sound->transport.command_acknowledge(sound->transport.context);
+        status = sound->transport.command_acknowledge(sound->transport.context);
+        if (status == LIB_STATUS_OK) ++sound->observation.transport_command_acknowledgements;
+        return status;
     case MYRAIDENII_CORE_SOUND_INTERRUPT_ACKNOWLEDGE:
     case MYRAIDENII_CORE_SOUND_RST18_ACKNOWLEDGE:
         sound->transport_in_service = LIB_FALSE;
@@ -1192,6 +1200,7 @@ static lib_status myraidenii_core_sound_interrupt_accept(
     if (vector == 0x0018u) {
         status = sound->transport.interrupt_accept(sound->transport.context);
         if (status != LIB_STATUS_OK) return status;
+        ++sound->observation.transport_interrupt_accepts;
         sound->transport_in_service = LIB_TRUE;
     } else sound->ym_in_service = LIB_TRUE;
     *out_ticks = 13u;

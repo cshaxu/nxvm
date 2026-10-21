@@ -22,6 +22,9 @@ typedef struct myraidenii_core_sound myraidenii_core_sound;
 /* Reset clears these aggregate observations. They expose device-path reachability
  * without retaining command bytes, ROM contents, register values or PCM data. */
 typedef struct myraidenii_core_sound_observation {
+    lib_u64 transport_command_reads[2u];
+    lib_u64 transport_command_acknowledgements;
+    lib_u64 transport_interrupt_accepts;
     lib_u64 ym_address_writes;
     lib_u64 ym_data_writes;
     lib_u64 oki_writes[2u];

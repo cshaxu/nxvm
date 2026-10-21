@@ -345,7 +345,9 @@ int main(int argument_count, char **arguments)
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
             "frame-digest=%016llx frame-samples=%u frame-transitions=%u "
             "pcm-frames=%u pcm-dropped=%llu pcm-nonzero=%llu "
-            "pcm-digest=%016llx ym-address-writes=%llu ym-data-writes=%llu "
+            "pcm-digest=%016llx sound-command-0-reads=%llu sound-command-1-reads=%llu "
+            "sound-command-acknowledgements=%llu sound-interrupt-accepts=%llu "
+            "ym-address-writes=%llu ym-data-writes=%llu "
             "oki-1-writes=%llu oki-2-writes=%llu oki-1-commands=%llu "
             "oki-2-commands=%llu oki-1-selections=%llu oki-2-selections=%llu "
             "oki-1-stops=%llu oki-2-stops=%llu oki-1-rejected=%llu "
@@ -371,6 +373,10 @@ int main(int argument_count, char **arguments)
             (unsigned long long)frame_digest, frame_sample_count, frame_transition_count, pcm_frames,
             (unsigned long long)dropped_pcm_frames,
             (unsigned long long)nonzero_pcm_frames, (unsigned long long)pcm_digest,
+            (unsigned long long)sound_observation.transport_command_reads[0u],
+            (unsigned long long)sound_observation.transport_command_reads[1u],
+            (unsigned long long)sound_observation.transport_command_acknowledgements,
+            (unsigned long long)sound_observation.transport_interrupt_accepts,
             (unsigned long long)sound_observation.ym_address_writes,
             (unsigned long long)sound_observation.ym_data_writes,
             (unsigned long long)sound_observation.oki_writes[0u],

@@ -900,6 +900,10 @@ static lib_i32 board_sound_handshake(void)
     lib_memory_copy(sound_program, echo, sizeof(echo));
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) goto done;
     if (myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.transport_command_reads[0u] != 0u ||
+        observation.transport_command_reads[1u] != 0u ||
+        observation.transport_command_acknowledgements != 0u ||
+        observation.transport_interrupt_accepts != 0u ||
         observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
         observation.oki_sample_commands[0u] != 0u || observation.oki_voice_selections[0u] != 0u ||
@@ -927,6 +931,10 @@ static lib_i32 board_sound_handshake(void)
             byte != 0u) goto done;
     }
     if (myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.transport_command_reads[0u] != 0u ||
+        observation.transport_command_reads[1u] != 0u ||
+        observation.transport_command_acknowledgements != 0u ||
+        observation.transport_interrupt_accepts != 0u ||
         observation.ym_address_writes == 0u || observation.ym_data_writes == 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
         observation.oki_sample_commands[0u] != 0u || observation.oki_voice_selections[0u] != 0u ||
@@ -960,6 +968,10 @@ static lib_i32 board_sound_handshake(void)
     }
     if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         myraidenii_core_board_sound_observation_get(board, &observation) != LIB_STATUS_OK ||
+        observation.transport_command_reads[0u] != 0u ||
+        observation.transport_command_reads[1u] != 0u ||
+        observation.transport_command_acknowledgements != 0u ||
+        observation.transport_interrupt_accepts != 0u ||
         observation.ym_address_writes != 0u || observation.ym_data_writes != 0u ||
         observation.oki_writes[0u] != 0u || observation.oki_writes[1u] != 0u ||
         observation.oki_sample_commands[0u] != 0u || observation.oki_voice_selections[0u] != 0u ||

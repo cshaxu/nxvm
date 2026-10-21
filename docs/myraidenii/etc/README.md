@@ -110,6 +110,7 @@
 - [T7 COPX-D2 boundary observation](evidence/t7-s27-copx-boundary-observation.md).
 - [T7 ordered Coin/Start probe](evidence/t7-s28-ordered-input-probe.md).
 - [T7 OKI write-disposition observation](evidence/t7-s29-oki-write-disposition.md).
+- [T7 Sound transport observation](evidence/t7-s30-sound-transport-observation.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.
