@@ -175,14 +175,18 @@ lib_status mydeskpro386_d4_memory_configure(x86_core_machine *core,
     mydeskpro386_d4_iochk_output output, void *context)
 {
     static const x86_core_machine_memory_device_route routes[2] = {
-        { MYDESKPRO386_D4_SETUP_BANK_START, MYDESKPRO386_D4_SETUP_BANK_BYTES,
-            { mydeskpro386_d4_setup_read, mydeskpro386_d4_setup_write,
-                mydeskpro386_d4_setup_query },
-            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT },
-        { MYDESKPRO386_D4_CONTROL_PHYSICAL, MYDESKPRO386_D4_CONTROL_WINDOW_BYTES,
-            { mydeskpro386_d4_control_read, mydeskpro386_d4_control_write,
-                mydeskpro386_d4_control_query },
-            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT }
+        {.physical_start = MYDESKPRO386_D4_SETUP_BANK_START,
+            .bytes = MYDESKPRO386_D4_SETUP_BANK_BYTES,
+            .callbacks = {mydeskpro386_d4_setup_read, mydeskpro386_d4_setup_write,
+                mydeskpro386_d4_setup_query},
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT,
+            .failure = LIB_NULL},
+        {.physical_start = MYDESKPRO386_D4_CONTROL_PHYSICAL,
+            .bytes = MYDESKPRO386_D4_CONTROL_WINDOW_BYTES,
+            .callbacks = {mydeskpro386_d4_control_read, mydeskpro386_d4_control_write,
+                mydeskpro386_d4_control_query},
+            .mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT,
+            .failure = LIB_NULL}
     };
     static const x86_core_machine_memory_parity_config parity = {
         1024u * 1024u, mydeskpro386_d4_parity_fault

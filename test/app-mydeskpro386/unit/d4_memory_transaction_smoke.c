@@ -133,7 +133,8 @@ static lib_i32 run_case(lib_u32 mode)
         for (; count < D4_TEST_REGISTRATION_CAPACITY; ++count) {
             const x86_core_machine_memory_device_route route = {
                 .physical_start = 0x1000u + (lib_u32)count * 0x100u, .bytes = 1u,
-                .callbacks = {filler_read, filler_write, filler_query}
+                .callbacks = {filler_read, filler_write, filler_query},
+                .failure = LIB_NULL
             };
             status = x86_core_machine_install_memory_device_routes(machine,
                 mode == 3u ? LIB_NULL : &route, mode == 3u ? 0u : 1u,
