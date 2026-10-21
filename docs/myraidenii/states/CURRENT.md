@@ -6,7 +6,7 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S45
+## Archived Packet — M1 T7 S45
 
 | Field | Required record |
 | --- | --- |
@@ -26,6 +26,20 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | One existing decoder owns all eight forms; no duplicate flag path exists; ROM-free result/flag/reset/failure proof and both-width units pass; bounded probe outcome is recorded without a gameplay claim; evidence names the next receiver and staging is empty. |
 | Original Owner Request | Continue implementing MyRaidenII under its governance, use source-graded L2 where no physical source exists, do not import third-party code or protected media, and keep long tasks in background sessions. |
 | Similar-Issue Sweep | Review all base accumulator/carry forms and their flags together, plus the existing indexed/CB rotate helpers only to confirm their distinct full-flag contract is not accidentally changed. Review every base unsupported default in the family before declaring the batch complete. |
+
+## M1 T7 S45 Closure
+
+Sequential coordinator actual-change review accepts P1 `8fbec9654`.  The sole
+Sound decoder now owns the admitted eight-form accumulator/carry batch, with
+one private rotate-flag helper and one decimal-adjust owner; no Board map,
+Shared component, public interface, queue, thread, product path or release
+artifact changed.  Existing Sound and Board smokes cover result, flag-sensitive
+control flow, reset and decoder-category continuity.  The complete MyRaidenII
+unit label passes 12/12 on x64 and x86.  One persistent-background selected-set
+probe per width remains at the same finite `DECODER` category and external
+staging is empty.  This S makes no startup, audio, gameplay or hardware-timing
+claim; the next receiver must select a complete decoder family from the static
+inventory and primary authority.
 
 ## Archived Packet — M1 T7 S44
 
