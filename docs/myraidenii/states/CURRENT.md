@@ -815,6 +815,36 @@ bounded execution; true residual-command semantics remain explicitly tracked
 as L1 debt. No Shared, public ABI, ROM/media, artifact or desktop claim
 changes. S65 is closed with no active packet.
 
+## M1 T7 S66 — Post-COP Product Launch Qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S65; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation without treating missing primary hardware material as a blocker. This packet verifies the real existing Product path after the COP receiver change. |
+| Objective | Rebuild the current Product entry on x64 and x86, launch each through the existing verified external-asset wrapper, and establish bounded process survival plus wrapper cleanup. |
+| Non-goals | No release publication, ROM/media commit, desktop screenshot, guest-state capture, input automation, audio/playability claim, source/API change, Shared change or second launch path. |
+| Reference Baseline | S61 previously proved the one Product composition launch route. S65 changes only the private COP completion classifier, so this is a transitive Product regression qualification. |
+| Candidate Proposal | Reuse the one current Product target and the wrapper's existing Product mode. Each host width runs once at its fixed observation period with the verified external archive, then wrapper-owned staging is checked empty. |
+| Files And ABI Surface | Current, one evidence record and supporting index only. No production, test, build, public API, artifact or media file change. Estimated documents +30..70/-0..12. |
+| Verification | Build existing Product target on both stable Ninja trees; invoke the wrapper once per width in persistent background sessions; verify normal wrapper exit, staging cleanup, documentation governance and whitespace. |
+| Expected Markers | Both product processes remain alive for the bounded observation and are then wrapper-terminated; no claim is made about what was rendered or played. |
+| Asset Needs | Read-only owner archive through the existing wrapper; temporary child only below the established external diagnostics root. |
+| Reporting Requirements | Record widths, target identity, bounded survival and cleanup only. Do not retain guest payload, screenshots, raw traces, ROM data or third-party source. |
+| Stop Conditions | Missing target, archive/inventory mismatch, early product exit, retained stage or inconsistent host results stops qualification and records the actual Product owner boundary. |
+| Exit Criteria | One bounded Product launch per width completes with staging cleanup, evidence/index/current are updated and reviewed P is pushed. |
+| Original Owner Request | Continue implementing MyRaidenII toward a usable Raiden II emulator without letting unavailable physical documentation stop ordinary bounded implementation and qualification work. |
+| Similar-Issue Sweep | Existing Product target/entry, Machine composition, verified inventory wrapper, width-specific output identity, child cleanup and absence of a second Product launch route. |
+
+## M1 T7 S66 Closure
+
+S66 rebuilds the existing Product on both stable architecture trees and
+launches the actual process once per width through the verified external-asset
+wrapper. Both processes survive the fixed observation period; each wrapper
+then terminates its owned process and removes its staging child. This confirms
+the post-S65 Product/Machine/configuration route does not regress to an early
+exit. It makes no rendered-output, input, audio, gameplay, desktop/RDP or
+release-readiness claim. S66 is closed with no active packet.
+
 ## Active Packet
 
 No S packet is active.
