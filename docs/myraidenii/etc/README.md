@@ -96,6 +96,7 @@
 - [T4 third-party Video-reference provenance](evidence/t4-s3-third-party-provenance.md).
 - [T7 L2 raster-cadence reconciliation](evidence/t7-s13-raster-cadence-reconciliation.md).
 - [T7 Board-map L2 reconciliation](evidence/t7-s14-board-map-reconciliation.md).
+- [T7 bounded selected-set progress sampling](evidence/t7-s15-progress-sampling.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

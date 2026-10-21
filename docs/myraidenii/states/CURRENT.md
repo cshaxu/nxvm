@@ -6,6 +6,15 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S15 Closure
+
+S15 is closed.  The existing selected-set Probe now samples four non-destructive
+frame checkpoints within S9's unchanged finite instruction budget.  Both
+widths have the same three observed frame transitions and no CPU, COP or
+Board-control failure.  This is L2 runtime progress evidence only; it does not
+qualify title/attract, input, sound, blend fidelity, COPX-D2 or gameplay.  See
+[S15 evidence](../etc/evidence/t7-s15-progress-sampling.md).
+
 ## M1 T7 S14 Closure
 
 S14 is closed with no source, test, ABI, asset or artifact change. The complete
