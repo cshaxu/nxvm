@@ -96,6 +96,7 @@ struct myraidenii_core_cop {
     myraidenii_core_cop_dma_context dma_contexts[MYRAIDENII_CORE_COP_DMA_CONTEXTS];
     myraidenii_core_cop_pending pending;
     myraidenii_core_cop_failure_observation failure;
+    myraidenii_core_cop_provider_failure_observation provider_failure;
 };
 
 static const myraidenii_core_cop_range myraidenii_core_cop_ranges[] = {
@@ -176,6 +177,20 @@ static void myraidenii_core_cop_note_failure(myraidenii_core_cop *cop,
 static void myraidenii_core_cop_pending_clear(myraidenii_core_cop *cop)
 {
     cop->pending = (myraidenii_core_cop_pending){0};
+}
+
+static void myraidenii_core_cop_provider_failure_note(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access,
+    lib_status status)
+{
+    myraidenii_core_cop *cop = owner;
+
+    (void)physical;
+    (void)bytes;
+    if (cop == LIB_NULL || cop->provider_failure.valid) return;
+    cop->provider_failure.valid = LIB_TRUE;
+    cop->provider_failure.access = access;
+    cop->provider_failure.status = status;
 }
 
 static void myraidenii_core_cop_decimal_update(myraidenii_core_cop *cop)
@@ -425,6 +440,7 @@ void myraidenii_core_cop_reset(myraidenii_core_cop *cop)
         lib_memory_set(cop->collision, 0, sizeof(cop->collision));
         lib_memory_set(cop->dma_contexts, 0, sizeof(cop->dma_contexts));
         lib_memory_set(&cop->failure, 0, sizeof(cop->failure));
+        lib_memory_set(&cop->provider_failure, 0, sizeof(cop->provider_failure));
         myraidenii_core_cop_pending_clear(cop);
     }
 }
@@ -983,6 +999,14 @@ lib_status myraidenii_core_cop_failure_get(const myraidenii_core_cop *cop,
     return LIB_STATUS_OK;
 }
 
+lib_status myraidenii_core_cop_provider_failure_get(const myraidenii_core_cop *cop,
+    myraidenii_core_cop_provider_failure_observation *out_observation)
+{
+    if (cop == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = cop->provider_failure;
+    return LIB_STATUS_OK;
+}
+
 lib_status myraidenii_core_cop_install(myraidenii_core_cop *cop,
     x86_core_machine *machine)
 {
@@ -1001,6 +1025,7 @@ lib_status myraidenii_core_cop_install(myraidenii_core_cop *cop,
         routes[index].bytes = myraidenii_core_cop_ranges[index].bytes;
         routes[index].callbacks = callbacks;
         routes[index].mode = X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT;
+        routes[index].failure = myraidenii_core_cop_provider_failure_note;
     }
     lib_status status = x86_core_machine_install_memory_device_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, cop);

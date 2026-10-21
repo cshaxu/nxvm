@@ -10,6 +10,7 @@ struct myraidenii_core_board {
     myraidenii_core_sprite_buffer *sprite_buffer;
     myraidenii_core_sound *sound;
     myraidenii_core_board_control_failure_observation control_failure;
+    myraidenii_core_board_provider_failure_observation provider_failure;
     myraidenii_core_board_input_observation input_observation;
     myraidenii_core_video video;
     lib_u8 *program;
@@ -246,6 +247,20 @@ static void myraidenii_core_board_control_failure_note(myraidenii_core_board *bo
     board->control_failure.physical = physical;
     board->control_failure.bytes = (lib_u8)bytes;
     board->control_failure.access = access;
+}
+
+static void myraidenii_core_board_provider_failure_note(void *owner,
+    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access,
+    lib_status status)
+{
+    myraidenii_core_board *board = owner;
+
+    (void)physical;
+    (void)bytes;
+    if (board == LIB_NULL || board->provider_failure.valid) return;
+    board->provider_failure.valid = LIB_TRUE;
+    board->provider_failure.access = access;
+    board->provider_failure.status = status;
 }
 
 static lib_status myraidenii_core_board_control_read(void *owner, lib_u32 physical,
@@ -1143,6 +1158,7 @@ static void myraidenii_core_board_reset(void *owner)
         myraidenii_core_sound_reset(board->sound);
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
+        lib_memory_set(&board->provider_failure, 0, sizeof(board->provider_failure));
         lib_memory_set(&board->input_observation, 0, sizeof(board->input_observation));
         myraidenii_core_sprite_buffer_reset(board->sprite_buffer);
         myraidenii_core_cop_reset(board->cop);
@@ -1427,6 +1443,10 @@ lib_status myraidenii_core_board_create(const myraidenii_core_board_config *conf
     }
     if (status == LIB_STATUS_OK)
         status = myraidenii_core_cop_create(&board->video, &board->cop);
+    if (status == LIB_STATUS_OK) {
+        for (index = 0u; index < sizeof(routes) / sizeof(routes[0]); ++index)
+            routes[index].failure = myraidenii_core_board_provider_failure_note;
+    }
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_install_memory_device_routes(board->machine, routes,
             sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, board);
@@ -1478,11 +1498,28 @@ lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *bo
     return myraidenii_core_cop_failure_get(board->cop, out_observation);
 }
 
+lib_status myraidenii_core_board_cop_provider_failure_get(
+    const myraidenii_core_board *board,
+    myraidenii_core_cop_provider_failure_observation *out_observation)
+{
+    if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return myraidenii_core_cop_provider_failure_get(board->cop, out_observation);
+}
+
 lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board *board,
     myraidenii_core_board_control_failure_observation *out_observation)
 {
     if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_observation = board->control_failure;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_provider_failure_get(const myraidenii_core_board *board,
+    myraidenii_core_board_provider_failure_observation *out_observation)
+{
+    if (board == LIB_NULL || out_observation == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_observation = board->provider_failure;
     return LIB_STATUS_OK;
 }
 

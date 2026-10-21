@@ -29,6 +29,14 @@ typedef struct myraidenii_core_cop_failure_observation {
     lib_status status;
 } myraidenii_core_cop_failure_observation;
 
+/* Reset clears this aggregate selected-route observation. It retains no COP
+ * command, guest address, descriptor or register value. */
+typedef struct myraidenii_core_cop_provider_failure_observation {
+    lib_bool valid;
+    x86_core_machine_memory_access access;
+    lib_status status;
+} myraidenii_core_cop_provider_failure_observation;
+
 lib_status myraidenii_core_cop_create(myraidenii_core_video *video,
     myraidenii_core_cop **out_cop);
 void myraidenii_core_cop_destroy(myraidenii_core_cop *cop);
@@ -36,6 +44,8 @@ void myraidenii_core_cop_reset(myraidenii_core_cop *cop);
 lib_status myraidenii_core_cop_advance(myraidenii_core_cop *cop);
 lib_status myraidenii_core_cop_failure_get(const myraidenii_core_cop *cop,
     myraidenii_core_cop_failure_observation *out_observation);
+lib_status myraidenii_core_cop_provider_failure_get(const myraidenii_core_cop *cop,
+    myraidenii_core_cop_provider_failure_observation *out_observation);
 lib_status myraidenii_core_cop_install(myraidenii_core_cop *cop,
     x86_core_machine *machine);
 

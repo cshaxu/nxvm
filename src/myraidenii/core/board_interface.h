@@ -86,6 +86,14 @@ typedef struct myraidenii_core_board_control_failure_observation {
     x86_core_machine_memory_access access;
 } myraidenii_core_board_control_failure_observation;
 
+/* Reset clears this aggregate. It identifies a terminal failure from a
+ * Board-owned Core route without retaining guest addresses or payload. */
+typedef struct myraidenii_core_board_provider_failure_observation {
+    lib_bool valid;
+    x86_core_machine_memory_access access;
+    lib_status status;
+} myraidenii_core_board_provider_failure_observation;
+
 /* Reset clears this aggregate. It counts only successful production reads of
  * the Board's input owners and never retains input values or guest state. */
 typedef struct myraidenii_core_board_input_observation {
@@ -144,9 +152,14 @@ x86_core_machine *myraidenii_core_board_machine_get(myraidenii_core_board *board
  * diagnostics without exposing guest payload or execution internals. */
 lib_status myraidenii_core_board_cop_failure_get(const myraidenii_core_board *board,
     myraidenii_core_cop_failure_observation *out_observation);
+lib_status myraidenii_core_board_cop_provider_failure_get(
+    const myraidenii_core_board *board,
+    myraidenii_core_cop_provider_failure_observation *out_observation);
 
 lib_status myraidenii_core_board_control_failure_get(const myraidenii_core_board *board,
     myraidenii_core_board_control_failure_observation *out_observation);
+lib_status myraidenii_core_board_provider_failure_get(const myraidenii_core_board *board,
+    myraidenii_core_board_provider_failure_observation *out_observation);
 lib_status myraidenii_core_board_input_observation_get(const myraidenii_core_board *board,
     myraidenii_core_board_input_observation *out_observation);
 
