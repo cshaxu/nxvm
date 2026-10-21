@@ -18,7 +18,7 @@ param(
     [Parameter(ParameterSetName = 'Probe')]
     [switch]$CoinStartFrameSequence,
     [Parameter(ParameterSetName = 'Probe')]
-    [ValidateRange(2000000, 20000000)]
+    [ValidateRange(2000000, 100000000)]
     [UInt64]$InstructionBudget = 2000000,
     [Parameter(ParameterSetName = 'Product')]
     [ValidateRange(1, 60)]

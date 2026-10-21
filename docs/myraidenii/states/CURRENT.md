@@ -25,6 +25,18 @@ This closes the reachability question only.  T7/M1 remains open for the
 finite output-semantic and gameplay/release receivers; no title, sprite
 fidelity or playability claim follows.
 
+## M1 T7 S39 Closure
+
+S39 extends only the bounded selected-set Probe ceiling from 20,000,000 to
+100,000,000 instructions.  It establishes a deterministic new finite stop on
+both host widths: the existing COP command classifier reports command `0x3bb0`
+after 24,517,538 instructions.  No Board, CPU, Video, Sound or Product
+behavior is changed.  The bounded diagnostic and its exact non-payload result
+are retained in the [S39 evidence](../etc/evidence/t7-s39-extended-startup-receiver.md).
+
+T7 remains open.  A later admitted COP packet must establish `0x3bb0`'s own
+bounded semantics before changing production behavior; S39 does not infer them.
+
 ## Archived Packet — M1 T7 S37
 
 | Field | Required record |
