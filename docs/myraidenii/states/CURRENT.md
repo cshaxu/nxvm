@@ -6,6 +6,14 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S23 Closure
+
+S23 is closed. The existing Machine-driver Coin/Start pulse completed the
+full bounded 20M instructions on x64 and x86 with byte-identical neutral
+output, then all staging, logs and temporary OS tasks were removed. The result
+preserves the unresolved distinction between electrical ingress and guest
+acceptance. See [S23 evidence](../etc/evidence/t7-s23-full-budget-machine-pulse.md).
+
 ## M1 T7 S22 Closure
 
 S22 is closed. The indexed reconciliation maps every frozen G01--G12
