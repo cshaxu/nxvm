@@ -6,6 +6,35 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S12 Closure
+
+S12 is closed with no source change. Current design and source-map authorities
+now name the existing Core, Machine and Product implementations without
+promoting their bounded evidence to gameplay or release qualification. The
+active T7 receivers, including COPX-D2 and sprite blend fidelity, remain open.
+See [S12 evidence](../etc/evidence/t7-s12-current-authority-reconciliation.md).
+
+## Archived Packet — M1 T7 S12
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S12 follows closed S11. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work under the established L3/L2/L1 evidence definition. This packet corrects current-authority documentation only; it does not upgrade any evidence grade or runtime qualification. |
+| Objective | Reconcile current MyRaidenII design/source-map documentation with the existing Product -> Machine -> Core implementation, while retaining the active T7 gameplay/release gaps exactly as unqualified. |
+| Non-goals | No production/test/build/API/asset change, no historical-record rewrite, no executable rebuild, no ROM/PAL operation, no claim that composition, bounded startup or a native frame proves gameplay. |
+| Reference Baseline | `src/myraidenii/CMakeLists.txt` owns active Core, Machine and Product subcomponents; their corresponding unit roots are registered. Current design/source-map text still describes those paths as future or unimplemented, which can misdirect later qualification work. |
+| Candidate Proposal | Correct only present-tense architecture, coding, roadmap and source-root statements. Preserve historical proposal records and explicitly distinguish implemented finite Board/Video/Sound/Product mechanisms from pending external-ROM gameplay, COPX and blend-fidelity qualification. |
+| Files And ABI Surface | Expected only `docs/myraidenii/design/`, `docs/myraidenii/states/CURRENT.md`, `src/myraidenii/README.md` and one evidence record. No source ABI or artifact changes. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Documentation and Execution rules. Current design documentation remains authority; history remains evidence. |
+| Verification | Compare each amended statement against current source/CMake ownership and existing closure records; run documentation governance, whitespace and diff review. |
+| Expected Markers | No current authority says Product/configuration/controls or the local Board Video/Sound path is absent; no current authority calls T7's required gameplay/release evidence complete. |
+| Asset Needs | None. |
+| Reporting Requirements | List corrected current statements and retained qualification gaps. Do not quote or retain protected content. |
+| Stop Conditions | Any required source change, historical correction, Shared change, evidence-grade promotion or game-behavior claim stops this packet. |
+| Exit Criteria | Current-source documentation agrees with the active source graph and current task state; governance checks pass; history is unchanged. |
+| Original Owner Request | Continue implementation under the strict rule: only an inspected primary-manual PDF's direct formula/constant/rule is L3; external reference/runtime evidence is L2; unsupported local behavior is L1. |
+| Similar-Issue Sweep | Search current design/source-map authorities for stale future/unimplemented wording and retain it only when it names a real open receiver. |
+
 ## M1 T7 S11 Closure
 
 S11 is closed with no source change.  The single bounded external MAME

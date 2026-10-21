@@ -11,12 +11,13 @@ docs/myraidenii/{design,states,proposals,history,etc}/
 ```
 
 Create subdirectories only with real cohesive code, not empty future chips or
-CMake stubs. M1 T3 owns `src/myraidenii/core/` and its corresponding
-`test/myraidenii/unit/core/` Board route unit. M1 T5 adds the first real
-Machine units: the Board-to-Lib PCM bridge and one Emulator driver foundation.
-Product composition, configuration and controls remain unimplemented. Unit
-tests mirror actual source owners below
-`unit/{product,machine,core}`. Setup holds
+CMake stubs. The active source graph has one Board/Core component, one Machine
+component and one Product component; their unit tests mirror those owners below
+`unit/{core,machine,product}`. Core owns board, COP, native video and local
+sound mechanisms; Machine owns image materialization and the Emulator driver;
+Product owns configuration, identity, controls and the one composition route.
+This records implementation ownership, not gameplay or release qualification.
+Setup holds
 only real shared integration/diagnostic harnesses; diagnostics are opt-in and
 are never silently counted as integration. External game tests are integration,
 not units. No tests under src and no fixture borrowing from another App.
@@ -29,7 +30,7 @@ filesystem, host clock or worker dependency. Public component headers end in
 for example `myraidenii_machine_*` and `myraidenii_core_*`; game register
 constants retain meaningful hardware names rather than task numbers.
 
-The future `product/version_interface.h` follows MyNES's product-local pattern:
+`product/version_interface.h` follows MyNES's product-local pattern:
 it owns `APP_PRODUCT_NAME`, `APP_PRODUCT_VERSION` and the two-line
 `APP_PRODUCT_BANNER`. A numeric implementation T selects its four-digit
 revision, not an S or compiler option. The banner is passed to Emulator

@@ -32,9 +32,10 @@ grammar, help formatting, prompt and lifecycle. One provider/router is injected.
 Lib owns native handles, input decoding, presentation and actual audio output.
 
 X86 Core has the separately approved V30 native/emulation CPU profile and
-neutral Machine bus/time receiver qualified by accepted T2. Board-specific
-COP, video, sound and real-set startup qualification remain T3/later work;
-the historical partial S49 receiver is not the current qualification boundary.
+neutral Machine bus/time receiver qualified by accepted T2. The App-owned
+Board includes the admitted finite COP, native video and local sound receivers
+from T3--T5; their presence does not qualify real-set startup, gameplay,
+audible output or release. Those outcomes remain the active T7 boundary.
 An 8086/386 profile is not a valid substitute. The existing shared CPU owner
 must qualify NEC instructions, flags, entry, mode/bus behavior and timing before
 board admission. The neutral X86 Core
@@ -74,7 +75,9 @@ is 16 MHz (macro-proportional, never verified physical); the existing Core
 attachment deadline/advance integrates these ratios without another clock.
 Video reports an edge to the Board's single pending IRQ latch, and Core
 acknowledgement clears that latch. Reset restarts phase and clears the latch.
-Full rendering, video registers and DMA qualification remain queued work.
+The existing native renderer and its register/DMA receivers are the sole
+local frame source; their bounded selected-set observation is not gameplay
+qualification.
 
 Guest output flows from device state to complete copied Core output, Machine
 frame/PCM conversion, Emulator publication and Lib presentation. Failed
@@ -88,8 +91,9 @@ board's 2048-entry palette remains board state; Machine resolves complete
 images directly into Emulator's granted frame slot. KVM Console remains
 text-only. The previous host 256-entry transport limit is resolved by the
 accepted Shared import, not by this product adding a format or presenter.
-Actual board-colour/rotation/frame integration still belongs to the video
-receiver and remains unqualified. Do not reduce colour fidelity, silently wrap
+The existing Board-to-Machine RGB32 path is the sole frame publication route.
+Its bounded selected-set observation does not qualify a title, rotation,
+palette fidelity or gameplay. Do not reduce colour fidelity, silently wrap
 indices or claim a game frame has been tested merely because the host contract
 can represent it.
 

@@ -27,18 +27,13 @@ owner admission, not a speculative M2 roadmap or accidental scope expansion.
 
 ## Current Implementation Route
 
-Source/set freeze T1 and NEC V30/neutral Machine qualification T2 are accepted
-and closed. The [archived T2 proposal](../history/M1-T2-v30-proposal.md)
-preserves its five delivered acceptance boundaries: residual semantics/forms,
-complete nominal timing, complete elapsed-time/bounds, real neutral Machine,
-and final CPU/receiving qualification.
+Source/set freeze T1, NEC V30/neutral Machine qualification T2, deterministic
+Board/COP T3, native video T4, local sound T5 and one Product/Machine host
+route T6 are closed. Their historical records preserve each delivered finite
+receiver and evidence grade; they do not prove the game result.
 
-T3 now freezes and implements board/bus/COP. The owner's 2026-10-19 ordering
-approval brings the prerequisite Video-owned periodic event into T3 S8;
-Video rendering and complete DMA/graphics qualification remain separate.
-After T3, the
-[Queue](../states/QUEUE.md) continues with video, sound, Product/Machine host
-integration and complete gameplay/release.
-Real ROM board checkpoints belong to board/COP, not to CPU qualification
-before that board exists. Earlier tasks may use headless/presentation probes;
-no current runnable MyRaidenII or gameplay readiness follows from CPU tests.
+T7 is the active gameplay and release qualification task. It owns bounded
+external-ROM startup/attract/control/stage/end/restart evidence, host lifecycle
+and cleanup, and final owner acceptance. Current explicit receivers include
+the unresolved COPX-D2 contract and sprite blend fidelity; neither may be
+silently replaced by a path-only asset or guessed renderer behavior.
