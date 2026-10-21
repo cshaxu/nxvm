@@ -705,6 +705,104 @@ static lib_i32 sound_decodes_oki_nibble_sign(void)
         positive <= 0 || negative >= 0;
 }
 
+static lib_i32 sound_executes_index_ignored_prefix(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[0u] = 0xddu;
+    program[1u] = 0x3eu;
+    program[2u] = 0x5au;
+    program[3u] = 0x32u;
+    program[4u] = 0x18u;
+    program[5u] = 0x40u;
+    program[6u] = 0x76u;
+    if (sound_create_with_samples(program, LIB_NULL, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 0x5au)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
+static lib_i32 sound_executes_index_high_low_forms(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_i32 failed = 1;
+    lib_size at = 0u;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[at++] = 0xddu; program[at++] = 0x21u;
+    program[at++] = 0u; program[at++] = 0x20u;
+    program[at++] = 0x3eu; program[at++] = 0x44u;
+    program[at++] = 0xddu; program[at++] = 0x67u;
+    program[at++] = 0xddu; program[at++] = 0x26u; program[at++] = 0x4au;
+    program[at++] = 0xddu; program[at++] = 0x2eu; program[at++] = 0x55u;
+    program[at++] = 0xddu; program[at++] = 0x7du;
+    program[at++] = 0xddu; program[at++] = 0x84u;
+    program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+    program[at++] = 0xddu; program[at++] = 0x21u;
+    program[at++] = 0u; program[at++] = 0x20u;
+    program[at++] = 0xddu; program[at++] = 0x36u;
+    program[at++] = 1u; program[at++] = 0x5au;
+    program[at++] = 0xddu; program[at++] = 0x34u; program[at++] = 1u;
+    program[at++] = 0xddu; program[at++] = 0x7eu; program[at++] = 1u;
+    program[at++] = 0xddu; program[at++] = 0x21u;
+    program[at++] = 0u; program[at++] = 0x20u;
+    program[at++] = 0xddu; program[at++] = 0x29u;
+    program[at++] = 0xddu; program[at++] = 0x84u;
+    program[at++] = 0x32u; program[at++] = 0x19u; program[at++] = 0x40u;
+    program[at] = 0x76u;
+    if (sound_create_with_samples(program, LIB_NULL, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 0x9fu || fixture.response[1u] != 0x9bu)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
+static lib_i32 sound_executes_index_bit_transform(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_i32 failed = 1;
+    lib_size at = 0u;
+
+    lib_memory_set(program, 0, sizeof(program));
+    program[at++] = 0xddu; program[at++] = 0x21u;
+    program[at++] = 0u; program[at++] = 0x20u;
+    program[at++] = 0xddu; program[at++] = 0x36u;
+    program[at++] = 1u; program[at++] = 0x4au;
+    program[at++] = 0xddu; program[at++] = 0xcbu;
+    program[at++] = 1u; program[at++] = 0x07u;
+    program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+    program[at++] = 0xddu; program[at++] = 0xcbu;
+    program[at++] = 1u; program[at++] = 0x37u;
+    program[at++] = 0x32u; program[at++] = 0x19u; program[at++] = 0x40u;
+    program[at] = 0x76u;
+    if (sound_create_with_samples(program, LIB_NULL, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        fixture.response[0u] != 0x94u || fixture.response[1u] != 0x29u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 int main(void)
 {
     return sound_executes_fixed_transport() != 0 ||
@@ -720,5 +818,8 @@ int main(void)
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||
-        sound_decodes_oki_nibble_sign() != 0 ? 1 : 0;
+        sound_decodes_oki_nibble_sign() != 0 ||
+        sound_executes_index_ignored_prefix() != 0 ||
+        sound_executes_index_high_low_forms() != 0 ||
+        sound_executes_index_bit_transform() != 0 ? 1 : 0;
 }

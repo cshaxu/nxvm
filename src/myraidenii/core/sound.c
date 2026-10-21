@@ -890,6 +890,33 @@ static void myraidenii_core_sound_exchange_registers(myraidenii_core_sound *soun
     value = sound->l; sound->l = sound->alternate_l; sound->alternate_l = value;
 }
 
+static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
+    lib_u8 *out_ticks);
+
+static lib_status myraidenii_core_sound_bit_transform(myraidenii_core_sound *sound,
+    lib_u8 operation, lib_u8 value, lib_u8 *out_result)
+{
+    const lib_u8 carry = sound->f & MYRAIDENII_CORE_SOUND_FLAG_CARRY;
+    lib_u8 result;
+
+    switch (operation) {
+    case 0u: result = (lib_u8)((value << 1u) | (value >> 7u)); break;
+    case 1u: result = (lib_u8)((value >> 1u) | (value << 7u)); break;
+    case 2u: result = (lib_u8)((value << 1u) | (carry != 0u)); break;
+    case 3u: result = (lib_u8)((value >> 1u) | (carry << 7u)); break;
+    case 4u: result = (lib_u8)(value << 1u); break;
+    case 5u: result = (lib_u8)((value >> 1u) | (value & 0x80u)); break;
+    case 6u: result = (lib_u8)((value << 1u) | 1u); break;
+    case 7u: result = (lib_u8)(value >> 1u); break;
+    default: return LIB_STATUS_UNSUPPORTED;
+    }
+    myraidenii_core_sound_flags_logic(sound, result, LIB_FALSE);
+    if ((value & (operation == 1u ? 1u : 0x80u)) != 0u)
+        sound->f |= MYRAIDENII_CORE_SOUND_FLAG_CARRY;
+    *out_result = result;
+    return LIB_STATUS_OK;
+}
+
 static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *sound,
     lib_u16 *index, lib_u8 *out_ticks)
 {
@@ -908,6 +935,21 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
         status = myraidenii_core_sound_read(sound,
             (lib_u16)(*index + (lib_i8)displacement), &value);
         if (status != LIB_STATUS_OK) return status;
+        if ((opcode & 0xc0u) == 0u) {
+            status = myraidenii_core_sound_bit_transform(sound,
+                (lib_u8)((opcode >> 3u) & 7u), value, &value);
+            if (status != LIB_STATUS_OK) return status;
+            status = myraidenii_core_sound_write(sound,
+                (lib_u16)(*index + (lib_i8)displacement), value);
+            if (status != LIB_STATUS_OK) return status;
+            if ((opcode & 7u) != 6u) {
+                status = myraidenii_core_sound_register_set(sound,
+                    (lib_u8)(opcode & 7u), value);
+                if (status != LIB_STATUS_OK) return status;
+            }
+            *out_ticks = 23u;
+            return LIB_STATUS_OK;
+        }
         if ((opcode & 0xc0u) == 0x40u) {
             const lib_u8 mask = (lib_u8)(1u << ((opcode >> 3u) & 7u));
             const lib_bool set = (value & mask) != 0u;
@@ -939,7 +981,7 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
         }
         return LIB_STATUS_UNSUPPORTED;
     }
-    if ((opcode & 0xc7u) == 0x46u) {
+    if ((opcode & 0xc7u) == 0x46u && opcode != 0x76u) {
         status = myraidenii_core_sound_fetch(sound, &displacement);
         if (status != LIB_STATUS_OK) return status;
         status = myraidenii_core_sound_read(sound,
@@ -960,7 +1002,7 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
         *out_ticks = 19u;
         return status;
     }
-    if ((opcode & 0xc7u) == 0x06u) {
+    if (opcode == 0x36u) {
         status = myraidenii_core_sound_fetch(sound, &displacement);
         if (status != LIB_STATUS_OK) return status;
         status = myraidenii_core_sound_fetch(sound, &value);
@@ -969,6 +1011,79 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
             (lib_u16)(*index + (lib_i8)displacement), value);
         *out_ticks = 19u;
         return status;
+    }
+    if (opcode == 0x26u || opcode == 0x2eu) {
+        status = myraidenii_core_sound_fetch(sound, &value);
+        if (status != LIB_STATUS_OK) return status;
+        if (opcode == 0x26u)
+            *index = (lib_u16)((*index & 0x00ffu) | (lib_u16)value << 8u);
+        else
+            *index = (lib_u16)((*index & 0xff00u) | value);
+        *out_ticks = 11u;
+        return LIB_STATUS_OK;
+    }
+    if (opcode == 0x24u || opcode == 0x25u || opcode == 0x2cu || opcode == 0x2du) {
+        const lib_bool subtract = (opcode & 1u) != 0u;
+        const lib_u8 carry = sound->f & MYRAIDENII_CORE_SOUND_FLAG_CARRY;
+
+        value = (opcode & 8u) == 0u ? (lib_u8)(*index >> 8u) : (lib_u8)*index;
+        value = subtract ? myraidenii_core_sound_sub8(sound, value, 1u, 0u) :
+            myraidenii_core_sound_add8(sound, value, 1u, 0u);
+        sound->f = (sound->f & (lib_u8)~MYRAIDENII_CORE_SOUND_FLAG_CARRY) | carry;
+        if ((opcode & 8u) == 0u)
+            *index = (lib_u16)((*index & 0x00ffu) | (lib_u16)value << 8u);
+        else
+            *index = (lib_u16)((*index & 0xff00u) | value);
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
+    }
+    if (opcode == 0x34u || opcode == 0x35u) {
+        const lib_bool subtract = opcode == 0x35u;
+        const lib_u8 carry = sound->f & MYRAIDENII_CORE_SOUND_FLAG_CARRY;
+
+        status = myraidenii_core_sound_fetch(sound, &displacement);
+        if (status != LIB_STATUS_OK) return status;
+        status = myraidenii_core_sound_read(sound,
+            (lib_u16)(*index + (lib_i8)displacement), &value);
+        if (status != LIB_STATUS_OK) return status;
+        value = subtract ? myraidenii_core_sound_sub8(sound, value, 1u, 0u) :
+            myraidenii_core_sound_add8(sound, value, 1u, 0u);
+        sound->f = (sound->f & (lib_u8)~MYRAIDENII_CORE_SOUND_FLAG_CARRY) | carry;
+        status = myraidenii_core_sound_write(sound,
+            (lib_u16)(*index + (lib_i8)displacement), value);
+        *out_ticks = 23u;
+        return status;
+    }
+    if (opcode >= 0x40u && opcode <= 0x7fu && opcode != 0x76u &&
+        ((((opcode >> 3u) & 7u) == 4u || ((opcode >> 3u) & 7u) == 5u) ||
+        ((opcode & 7u) == 4u || (opcode & 7u) == 5u))) {
+        const lib_u8 destination = (lib_u8)((opcode >> 3u) & 7u);
+        const lib_u8 source = (lib_u8)(opcode & 7u);
+
+        if (source == 4u) value = (lib_u8)(*index >> 8u);
+        else if (source == 5u) value = (lib_u8)*index;
+        else {
+            status = myraidenii_core_sound_register_get(sound, source, &value);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        if (destination == 4u)
+            *index = (lib_u16)((*index & 0x00ffu) | (lib_u16)value << 8u);
+        else if (destination == 5u)
+            *index = (lib_u16)((*index & 0xff00u) | value);
+        else {
+            status = myraidenii_core_sound_register_set(sound, destination, value);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
+    }
+    if (opcode >= 0x80u && opcode <= 0xbfu && ((opcode & 7u) == 4u ||
+        (opcode & 7u) == 5u)) {
+        value = (opcode & 7u) == 4u ? (lib_u8)(*index >> 8u) : (lib_u8)*index;
+        myraidenii_core_sound_accumulator_operation(sound,
+            (lib_u8)((opcode >> 3u) & 7u), value);
+        *out_ticks = 8u;
+        return LIB_STATUS_OK;
     }
     if ((opcode & 0xc7u) == 0x86u) {
         const lib_u8 operation = (lib_u8)((opcode >> 3u) & 7u);
@@ -987,8 +1102,9 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
     case 0x19u:
     case 0x29u:
     case 0x39u:
-        word = myraidenii_core_sound_pair_get(sound, (lib_u8)((opcode >> 4u) & 3u));
-        *index = (lib_u16)(*index + word);
+        word = opcode == 0x29u ? *index :
+            myraidenii_core_sound_pair_get(sound, (lib_u8)((opcode >> 4u) & 3u));
+        *index = myraidenii_core_sound_add16(sound, *index, word, 0u, LIB_FALSE);
         *out_ticks = 15u;
         return LIB_STATUS_OK;
     case 0x21u:
@@ -1038,7 +1154,11 @@ static lib_status myraidenii_core_sound_execute_indexed(myraidenii_core_sound *s
         return status;
     case 0xe9u: sound->pc = *index; *out_ticks = 8u; return LIB_STATUS_OK;
     case 0xf9u: sound->sp = *index; *out_ticks = 10u; return LIB_STATUS_OK;
-    default: return LIB_STATUS_UNSUPPORTED;
+    default:
+        --sound->pc;
+        status = myraidenii_core_sound_execute(sound, out_ticks);
+        if (status == LIB_STATUS_OK) *out_ticks = (lib_u8)(*out_ticks + 4u);
+        return status;
     }
 }
 
@@ -1156,19 +1276,9 @@ static lib_status myraidenii_core_sound_execute_bit(myraidenii_core_sound *sound
         result = (opcode & 0xc0u) == 0x80u ?
             (lib_u8)(value & (lib_u8)~mask) : (lib_u8)(value | mask);
     } else {
-        switch ((opcode >> 3u) & 7u) {
-        case 0u: result = (lib_u8)((value << 1u) | (value >> 7u)); break;
-        case 1u: result = (lib_u8)((value >> 1u) | (value << 7u)); break;
-        case 2u: result = (lib_u8)((value << 1u) | (carry != 0u)); break;
-        case 3u: result = (lib_u8)((value >> 1u) | (carry << 7u)); break;
-        case 4u: result = (lib_u8)(value << 1u); break;
-        case 5u: result = (lib_u8)((value >> 1u) | (value & 0x80u)); break;
-        case 7u: result = (lib_u8)(value >> 1u); break;
-        default: return LIB_STATUS_UNSUPPORTED;
-        }
-        myraidenii_core_sound_flags_logic(sound, result, LIB_FALSE);
-        if ((value & (((opcode >> 3u) & 7u) == 1u ? 1u : 0x80u)) != 0u)
-            sound->f |= MYRAIDENII_CORE_SOUND_FLAG_CARRY;
+        status = myraidenii_core_sound_bit_transform(sound,
+            (lib_u8)((opcode >> 3u) & 7u), value, &result);
+        if (status != LIB_STATUS_OK) return status;
     }
     status = myraidenii_core_sound_register_set(sound, (lib_u8)(opcode & 7u), result);
     *out_ticks = (opcode & 7u) == 6u ? 15u : 8u;

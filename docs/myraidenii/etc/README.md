@@ -120,6 +120,9 @@
 - [T7 sprite-protection source trigger](evidence/t7-s37-sprite-protection-trigger.md).
 - [T7 sprite-protection reachability](evidence/t7-s38-sprite-protection-reachability.md).
 - [T7 extended-startup receiver](evidence/t7-s39-extended-startup-receiver.md).
+- [T7 COP command-admission correction](evidence/t7-s40-cop-command-admission.md).
+- [T7 Sound indexed-prefix receiver](evidence/t7-s41-sound-indexed-prefix.md).
+- [T7 Sound indexed-CB transform](evidence/t7-s42-sound-indexed-bit.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

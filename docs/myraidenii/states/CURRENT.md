@@ -6,9 +6,50 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet
+## Active Packet — M1 T7 S42
 
-No S packet is active.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S41 transfer; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 work, permits external emulator behavior as L2 where primary documentation is absent, and directed in-scope non-degrading work to proceed without repeated approval. |
+| Objective | Complete the finite Sound Z80 DD/FD-CB transform receiver reached after S41, through the sole existing indexed executor. |
+| Reference Baseline | Both widths pass S41's former indexed-prefix receiver and stop at the same later Sound receiver after 25,416,482 instructions. Temporary category-only diagnostics identify Sound, not COP; no guest bytes, instructions, addresses or media payload are retained. |
+| Candidate Proposal | Share the existing CB transform arithmetic between ordinary and indexed CB execution. Preserve one Sound executor, memory route and flag owner; apply the existing indexed memory write-back/register-copy contract. Use a documented Z80 rule where available and record any external-emulator-only conclusion as L2. |
+| Files And ABI Surface | `src/myraidenii/core/sound.c`, its existing ROM-free Sound smoke, Current and one evidence record/index only. No Shared/public interface, Board/COP path, new queue, ROM/media or copied source/table. |
+| Verification | Extend the existing Sound smoke through its real executor, pass focused and complete MyRaidenII unit labels on x64/x86, then run one bounded selected-set Probe per width with staging removed. |
+| Stop Conditions | Need for raw guest payload, an unsupported non-finite opcode family, a new device route, a Shared/public contract, nondeterminism or a failure outside the existing Sound owner stops and transfers the gap. |
+| Exit Criteria | The finite indexed transform family is covered through the single executor and qualified on both widths, or its explicit unresolved boundary is recorded without a guessed production behavior; staging is empty and actual diff review is complete. |
+
+## M1 T7 S40 Closure
+
+S40 removes the unused COP upload-table admission mirror and accepts recognised
+commands through the pre-existing classifier and deferred-operation path.  It
+also adds the two missing members of the already modelled angle-from-vector
+family.  Existing Board smoke now proves no-upload admission, pending-command
+rejection and unsupported-command rejection; the full MyRaidenII unit label
+passes on x64 and x86.
+
+The selected set passes the former COP boundary and a later angle receiver.
+The full bounded qualification then exposes a deterministic Sound Z80 indexed
+receiver, which is outside S40's COP-only stop boundary.  It transfers to S41;
+no Sound behavior is guessed or changed by S40.  See the
+[evidence record](../etc/evidence/t7-s40-cop-command-admission.md).
+
+## M1 T7 S41 Closure
+
+S41 corrects the finite Sound Z80 DD/FD indexed-prefix receiver through its
+sole existing executor.  Direct IX/IY high/low forms, prefix-ignored forms,
+indexed-memory semantics and self-pair addition are covered by the existing
+ROM-free Sound smoke; no second decoder, Sound bus path, public contract or
+Shared component was added.  Complete MyRaidenII units pass 12/12 on both
+widths.
+
+The selected-set Coin/Start probe now crosses the former Sound stop on both
+widths and reaches the same later Sound receiver after 25,416,482 instructions.
+Its external staging was removed.  The exact finite model, evidence grade and
+verification boundary are retained in the
+[S41 evidence](../etc/evidence/t7-s41-sound-indexed-prefix.md).  S42 receives
+only that separate Sound receiver; S41 makes no gameplay or release claim.
 
 ## M1 T7 S38 Closure
 

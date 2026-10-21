@@ -398,9 +398,9 @@ int main(int argument_count, char **arguments)
             }
         }
 
-        lib_c_printf("MYRAIDENII:STARTUP-PROBE:OK reason=%u detail=%u fault-valid=%u "
+        lib_c_printf("MYRAIDENII:STARTUP-PROBE:%s reason=%u detail=%u fault-valid=%u "
             "fault-code=%u fault-mask=%u fault-linear=%u delivered-exceptions=%u "
-            "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
+            "cop-valid=%u cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
             "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
             "input-route=machine-driver coin-start-mode=%u input-time-unit=%s "
@@ -429,8 +429,10 @@ int main(int argument_count, char **arguments)
             "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu "
             "sprite-protection-services=%llu sprite-protection-accepted=%llu "
             "sprite-protection-rejected=%llu\n",
-            (lib_u32)result.reason, result.detail, (lib_u32)fault_valid, fault_code, fault_mask,
-            fault_linear, delivered_exceptions, (lib_u32)cop_failure.operation,
+            terminal_fault ? "FAULT" : "OK", (lib_u32)result.reason, result.detail,
+            (lib_u32)fault_valid, fault_code, fault_mask,
+            fault_linear, delivered_exceptions, (lib_u32)cop_failure.valid,
+            (lib_u32)cop_failure.operation,
             (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
             (lib_u32)cop_failure.dma_size, (lib_u32)cop_failure.dma_destination,
             (lib_u32)cop_failure.dma_relative,
@@ -511,7 +513,7 @@ int main(int argument_count, char **arguments)
                 frame_samples[index].sound_command_0, frame_samples[index].sound_command_1,
                 (lib_u32)frame_samples[index].sound_interrupt_pending);
         }
-        exit_code = 0;
+        exit_code = terminal_fault ? 1 : 0;
     } else {
         lib_c_printf("MYRAIDENII:STARTUP-PROBE:FAIL status=%u\n", (lib_u32)status);
     }

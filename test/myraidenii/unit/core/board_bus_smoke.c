@@ -1596,45 +1596,28 @@ done:
     return failed;
 }
 
-static lib_status board_cop_upload(x86_core_machine *machine, lib_u16 command,
-    lib_u16 base, lib_u8 words)
-{
-    lib_status status = board_cop_word_write(machine, 0x438u, 0x1234u);
-
-    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x43au, 0xffffu);
-    if (status == LIB_STATUS_OK) status = board_cop_word_write(machine, 0x43cu, command);
-    for (lib_u8 index = 0u; index < words && status == LIB_STATUS_OK; ++index) {
-        status = board_cop_word_write(machine, 0x434u, (lib_u16)(base + index));
-        if (status == LIB_STATUS_OK)
-            status = board_cop_word_write(machine, 0x432u, (lib_u16)(0x6000u + index));
-    }
-    return status;
-}
-
 static lib_i32 board_cop_transfers(void)
 {
     static const struct {
         lib_u16 command;
         lib_u32 source;
         lib_u32 destination;
-        lib_u16 upload_base;
-        lib_u8 upload_words;
         lib_bool failure;
         lib_bool accepted_write_prefix;
     } cases[] = {
-        {0x5205u, 0x2000u, 0x3000u, 0u, 8u, LIB_FALSE, LIB_FALSE},
-        {0x5a05u, 0x2000u, 0x3000u, 0u, 8u, LIB_FALSE, LIB_FALSE},
-        {0xf205u, 0x2000u, 0x3000u, 0u, 8u, LIB_FALSE, LIB_FALSE},
-        {0x5205u, 0x2000u, 0x2002u, 248u, 8u, LIB_FALSE, LIB_FALSE},
-        {0x5205u, 0x428u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
-        {0x5205u, 0x426u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
-        {0x5205u, 0x2000u, 0x428u, 0u, 8u, LIB_TRUE, LIB_FALSE},
-        {0x5205u, 0x2000u, 0x426u, 0u, 8u, LIB_TRUE, LIB_TRUE},
-        {0x5205u, 0x2000u, 0x3000u, 0u, 7u, LIB_TRUE, LIB_FALSE},
-        {0x5205u, 0x2000u, 0x3000u, 0u, 0u, LIB_TRUE, LIB_FALSE},
-        {0x6105u, 0x2000u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
-        {0x5205u, 0x102000u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE},
-        {0xf205u, LIB_UINT32_MAX - 3u, 0x3000u, 0u, 8u, LIB_TRUE, LIB_FALSE}
+        {0x5205u, 0x2000u, 0x3000u, LIB_FALSE, LIB_FALSE},
+        {0x5a05u, 0x2000u, 0x3000u, LIB_FALSE, LIB_FALSE},
+        {0xf205u, 0x2000u, 0x3000u, LIB_FALSE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x2002u, LIB_FALSE, LIB_FALSE},
+        {0x5205u, 0x428u, 0x3000u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x426u, 0x3000u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x428u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x426u, LIB_TRUE, LIB_TRUE},
+        {0x5205u, 0x2000u, 0x3000u, LIB_FALSE, LIB_FALSE},
+        {0x5205u, 0x2000u, 0x3000u, LIB_FALSE, LIB_FALSE},
+        {0x6105u, 0x2000u, 0x3000u, LIB_TRUE, LIB_FALSE},
+        {0x5205u, 0x102000u, 0x3000u, LIB_TRUE, LIB_FALSE},
+        {0xf205u, LIB_UINT32_MAX - 3u, 0x3000u, LIB_TRUE, LIB_FALSE}
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -1664,8 +1647,6 @@ static lib_i32 board_cop_transfers(void)
                 sizeof(sentinel)) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
             x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
-            board_cop_upload(machine, cases[index].command, cases[index].upload_base,
-                cases[index].upload_words) != LIB_STATUS_OK ||
             board_cop_word_write(machine, 0x4c0u, (lib_u16)cases[index].source) != LIB_STATUS_OK ||
             board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].source >> 16u)) !=
                 LIB_STATUS_OK ||
@@ -1725,25 +1706,27 @@ static lib_i32 board_cop_reset_and_admission(void)
     lib_u8 data = 0xabu;
     lib_u8 mode[2];
     lib_u8 actual[4];
+    myraidenii_core_cop_failure_observation failure = {0};
     lib_i32 failed = 1;
 
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
     machine = myraidenii_core_board_machine_get(board);
-    if (board_cop_word_write(machine, 0x434u, 256u) != LIB_STATUS_INVALID_ARGUMENT ||
-        board_cop_upload(machine, 0x5205u, 0u, 7u) != LIB_STATUS_OK ||
+    if (board_cop_word_write(machine, 0x434u, 256u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x434u, 7u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x432u, &data, 1u) != LIB_STATUS_OK ||
-        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
-        x86_core_machine_memory_write(machine, 0x433u, &data, 1u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_cop_failure_get(board, &failure) != LIB_STATUS_OK ||
+        !failure.valid || failure.operation != MYRAIDENII_CORE_COP_OPERATION_COMMAND ||
+        failure.operation_value != 0x5205u ||
+        failure.physical != 0x500u || failure.status != LIB_STATUS_INVALID_STATE ||
         board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_INVALID_STATE ||
         board_cop_word_write(machine, 0x47eu, 0xffffu) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_read(machine, 0x47eu, mode, 2u) != LIB_STATUS_OK ||
         mode[0] != 0u || mode[1] != 0u ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_INVALID_STATE ||
-        board_cop_upload(machine, 0x5205u, 248u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x4c2u, 0x3000u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x2000u, source, sizeof(source)) != LIB_STATUS_OK ||
@@ -1845,8 +1828,7 @@ static lib_i32 board_cop_updates(void)
         if (!cases[index].failure && board_cop_word_write(machine,
                 cases[index].base + 32u + slot * 4u, 0x5aa5u) != LIB_STATUS_OK)
             goto done;
-        if (board_cop_upload(machine, cases[index].command, 0u, 8u) != LIB_STATUS_OK ||
-            board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].base >> 16u)) !=
+        if (board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].base >> 16u)) !=
                 LIB_STATUS_OK ||
             board_cop_word_write(machine, 0x4c0u, (lib_u16)cases[index].base) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, 0x800u, guest, sizeof(guest)) != LIB_STATUS_OK ||
@@ -1929,8 +1911,7 @@ static lib_i32 board_cop_offset_add(void)
                 LIB_STATUS_OK)
             goto done;
         if (slot == 0u &&
-            (board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
-             board_cop_address_write(machine, 0u, primary) != LIB_STATUS_OK ||
+            (board_cop_address_write(machine, 0u, primary) != LIB_STATUS_OK ||
              board_cop_address_write(machine, 1u, secondary) != LIB_STATUS_OK))
             goto done;
         if (board_cop_run_commands(machine, &command, 1u, slot, &result) != LIB_STATUS_OK ||
@@ -1947,7 +1928,6 @@ static lib_i32 board_cop_offset_add(void)
     }
 
     if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
         board_cop_address_write(machine, 0u, primary) != LIB_STATUS_OK ||
         board_cop_address_write(machine, 1u, primary - 24u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, primary + 6u, 2u) != LIB_STATUS_OK ||
@@ -1965,9 +1945,10 @@ static lib_i32 board_cop_offset_add(void)
             (lib_u32)actual[3] << 24u) != 3u)
         goto done;
 
-    if (x86_core_machine_reset(machine) != LIB_STATUS_OK) goto done;
-    if (board_cop_word_write(machine, 0x500u, command) != LIB_STATUS_INVALID_STATE) goto done;
-    if (board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK) goto done;
+    if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, command) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK)
+        goto done;
     if (board_cop_address_write(machine, 0u, primary) != LIB_STATUS_OK) goto done;
     if (board_cop_address_write(machine, 1u, LIB_UINT32_MAX - 0x1du) != LIB_STATUS_OK) goto done;
     if (board_cop_word_write(machine, primary + 6u, 0xa5a5u) != LIB_STATUS_OK) goto done;
@@ -1986,7 +1967,6 @@ static lib_i32 board_cop_offset_add(void)
         actual[0] != 0x5au || actual[1] != 0x5au) goto done;
 
     if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
         board_cop_address_write(machine, 0u, 0xfffe0u) != LIB_STATUS_OK ||
         board_cop_address_write(machine, 1u, secondary) != LIB_STATUS_OK ||
         board_cop_word_write(machine, secondary + 0x1eu, 2u) != LIB_STATUS_OK ||
@@ -2083,8 +2063,7 @@ static lib_i32 board_cop_angle_approach(void)
 
         if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
         machine = fixture.machine;
-        if (board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
-            board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].base >> 16u)) !=
+        if (board_cop_word_write(machine, 0x4a0u, (lib_u16)(cases[index].base >> 16u)) !=
                 LIB_STATUS_OK ||
             board_cop_word_write(machine, 0x4c0u, (lib_u16)cases[index].base) != LIB_STATUS_OK ||
             board_cop_word_write(machine, 0x41cu, 0xab00u | cases[index].target) != LIB_STATUS_OK ||
@@ -2141,8 +2120,7 @@ done:
 
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
     machine = myraidenii_core_board_machine_get(board);
-    if (board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
-        board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
+    if (board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x2000u, 0xa5a5u) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x2034u, angle, sizeof(angle)) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x41cu, 0xabffu) != LIB_STATUS_OK ||
@@ -2164,8 +2142,8 @@ done:
         x86_core_machine_memory_read(machine, 0x5b0u, actual, 2u) != LIB_STATUS_OK ||
         actual[0] != 0u || actual[1] != 0u ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        board_cop_word_write(machine, 0x500u, command) != LIB_STATUS_INVALID_STATE ||
-        board_cop_upload(machine, command, 0u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, command) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
         board_cop_run_commands(machine, &command, 1u, 0u, &result) != LIB_STATUS_OK ||
         x86_core_machine_memory_inspect(machine, 0x2000u, actual, 2u) != LIB_STATUS_OK ||
@@ -2211,9 +2189,6 @@ static lib_status board_cop_numeric_seed(x86_core_machine *machine)
         0x4aa0u,0x6200u,0x8100u,0x8900u};
     x86_core_machine_run_result result = {0};
 
-    for (lib_u8 index = 0u; index < 9u; ++index)
-        if (board_cop_upload(machine, commands[index], index * 8u, 8u) != LIB_STATUS_OK)
-            return LIB_STATUS_INTERNAL_ERROR;
     if (board_cop_word_write(machine, 0x4c0u, 0x2000u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x4c2u, 0x2100u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x2106u, 3u) != LIB_STATUS_OK ||
@@ -2240,6 +2215,8 @@ static lib_i32 board_cop_numeric_vectors(void)
         {0x130eu,0xffff0000u,0xffff0000u,0u,{7u,5u,160u},0x5aa5u,0x34u,2u},
         {0x130eu,0u,0xffff0000u,0u,{7u,5u,128u},0x5aa5u,0x34u,2u},
         {0x130eu,1u,0u,0u,{0x8007u,5u,0u},0x5aa5u,0x34u,2u},
+        {0x138eu,0x10000u,0x10000u,0u,{7u,5u,32u},0x5a20u,0x34u,2u},
+        {0x330eu,0x10000u,0x10000u,0u,{7u,5u,32u},0x5aa5u,0x34u,2u},
         {0x338eu,0x80000000u,0x80000000u,0u,{7u,5u,160u},0x5aa0u,0x34u,2u},
         {0x338eu,0x10000u,0x10000u,0u,{7u,5u,32u},0x5a20u,0x34u,2u},
         {0x338eu,1u,0u,0u,{0x8007u,5u,0u},0x5a00u,0x34u,2u},
@@ -2291,7 +2268,8 @@ static lib_i32 board_cop_numeric_vectors(void)
             x86_core_machine_memory_write(machine, 0x2000u + cases[index].offset,
                 sentinel, 4u) != LIB_STATUS_OK)
             goto done;
-        if (cases[index].command == 0x130eu || cases[index].command == 0x338eu ||
+        if (cases[index].command == 0x130eu || cases[index].command == 0x138eu ||
+            cases[index].command == 0x330eu || cases[index].command == 0x338eu ||
             cases[index].command == 0x3bb0u) {
             for (lib_u8 axis = 0u; axis < 2u; ++axis) {
                 const lib_u32 second = 0xffff0000u + (axis == 0u ? cases[index].x : cases[index].y);
@@ -2445,7 +2423,6 @@ static lib_i32 board_cop_numeric_chain(void)
     if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK) return 1;
     x86_core_machine *machine = myraidenii_core_board_machine_get(board);
     if (board_cop_numeric_seed(machine) != LIB_STATUS_OK ||
-        board_cop_upload(machine, 0x5205u, 72u, 8u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x2012u, 1u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x2016u, 1u) != LIB_STATUS_OK)
         goto done;
@@ -2494,8 +2471,8 @@ static lib_i32 board_cop_numeric_chain(void)
         board_cop_numeric_result(machine, (lib_u16[3]){0x8007u,46340u,32u}) ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         board_cop_numeric_result(machine, (lib_u16[3]){0u,0u,0u}) ||
-        board_cop_word_write(machine, 0x500u, 0x130eu) != LIB_STATUS_INVALID_STATE ||
-        board_cop_upload(machine, 0x2208u, 0u, 8u) != LIB_STATUS_OK ||
+        board_cop_word_write(machine, 0x500u, 0x130eu) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x12u, 1u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x16u, 1u) != LIB_STATUS_OK ||
         board_cop_run_commands(machine, chain + 1u, 1u, 0u, &result) != LIB_STATUS_OK ||
@@ -2570,8 +2547,7 @@ static lib_i32 board_cop_collisions(void)
         if (cop_fixture_create(&fixture) != LIB_STATUS_OK) return 1;
         machine = fixture.machine;
         for (lib_u8 slot = 0u; slot < 4u; ++slot) {
-            if (board_cop_upload(machine, commands[slot], slot * 8u, 8u) != LIB_STATUS_OK ||
-                board_cop_word_write(machine, 0x4c0u + slot * 2u,
+            if (board_cop_word_write(machine, 0x4c0u + slot * 2u,
                     (lib_u16)(slot < 2u ? 0x2000u + slot * 0x100u :
                         0x3000u + (slot - 2u) * 2u)) != LIB_STATUS_OK)
                 goto done;
@@ -2642,20 +2618,19 @@ static lib_i32 board_cop_collisions(void)
                 board_cop_collision_result(machine, changed) ||
                 x86_core_machine_reset(machine) != LIB_STATUS_OK ||
                 board_cop_collision_result(machine, zero) ||
-                board_cop_word_write(machine, 0x500u, commands[0]) != LIB_STATUS_INVALID_STATE)
+                board_cop_word_write(machine, 0x500u, commands[0]) != LIB_STATUS_OK ||
+                x86_core_machine_reset(machine) != LIB_STATUS_OK)
                 goto done;
             for (lib_u8 alternate = 0u; alternate < 3u; ++alternate) {
                 const lib_u16 unsupported[] = {0xa180u,0xa980u,0xb080u};
 
-                if (board_cop_upload(machine, unsupported[alternate], 0u, 8u) != LIB_STATUS_OK ||
-                    board_cop_word_write(machine, 0x500u, unsupported[alternate]) !=
+                if (board_cop_word_write(machine, 0x500u, unsupported[alternate]) !=
                         LIB_STATUS_INVALID_STATE)
                     goto done;
             }
             /* Reset must clear latches, not merely the visible result words. */
             for (lib_u8 slot = 0u; slot < 3u; ++slot) {
-                if (board_cop_upload(machine, commands[slot], slot * 8u, 8u) != LIB_STATUS_OK ||
-                    board_cop_word_write(machine, 0x4c0u + slot * 2u,
+                if (board_cop_word_write(machine, 0x4c0u + slot * 2u,
                         slot == 2u ? 0x3000u : (lib_u16)(0x2000u + slot * 0x100u)) != LIB_STATUS_OK)
                     goto done;
                 if (board_cop_word_write(machine, 0x2006u + slot * 4u, 20u) != LIB_STATUS_OK)
@@ -2792,7 +2767,6 @@ static lib_i32 board_cop_decimal(void)
         board_cop_decimal_result(machine, "698914503") ||
         x86_core_machine_memory_inspect(machine, 0x3000u, actual, 2u) != LIB_STATUS_OK ||
         actual[0] != '6' || actual[1] != '9' ||
-        board_cop_upload(machine, 0x5205u, 0u, 8u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x420u, 1u) != LIB_STATUS_INVALID_STATE ||
         board_cop_word_write(machine, 0x424u, 0u) != LIB_STATUS_INVALID_STATE ||
@@ -2865,8 +2839,7 @@ static lib_i32 board_cop_random(void)
                 LIB_STATUS_INVALID_STATE))
             goto done;
     }
-    if (board_cop_upload(machine, 0x5205u, 0u, 8u) != LIB_STATUS_OK ||
-        board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
+    if (board_cop_word_write(machine, 0x500u, 0x5205u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x42cu, 0u) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_memory_write(machine, 0x42du, &low, 1u) != LIB_STATUS_INVALID_STATE ||
         board_cop_random_result(machine, (lib_u16)(before.now % 257u)) ||
@@ -3059,13 +3032,16 @@ static lib_i32 board_cop_dma_and_sort(void)
         goto done;
     for (lib_size index = 0u; index < 32u; ++index)
         if (actual[index] != fill[index % sizeof(fill)]) goto done;
-    if (board_cop_dma_context_write(machine, 0x118u, 0x140u, 0u, 1u) != LIB_STATUS_OK ||
+    if (x86_core_machine_memory_write(machine, 0x5000u, (lib_u8[]){0xa5u}, 1u) !=
+            LIB_STATUS_OK ||
+        board_cop_dma_context_write(machine, 0x118u, 0x140u, 0u, 1u) != LIB_STATUS_OK ||
         board_cop_word_write(machine, 0x6fcu, 0u) != LIB_STATUS_OK ||
-        myraidenii_core_cop_advance(fixture.cop) == LIB_STATUS_OK)
+        myraidenii_core_cop_advance(fixture.cop) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x5000u, actual, 1u) != LIB_STATUS_OK ||
+        actual[0u] != 0xa5u)
         goto done;
     if (myraidenii_core_cop_failure_get(fixture.cop, &failure) != LIB_STATUS_OK ||
-        !failure.valid || failure.operation != MYRAIDENII_CORE_COP_OPERATION_DMA ||
-        failure.operation_value != 0x118u || failure.status == LIB_STATUS_OK) {
+        failure.valid) {
         goto done;
     }
     myraidenii_core_cop_reset(fixture.cop);
