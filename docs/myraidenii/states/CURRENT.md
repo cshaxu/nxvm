@@ -6,6 +6,40 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S6
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S6 follows closed S5. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continuation and clarified the evidence-grade rule: only an inspected primary manual PDF with a directly applicable explicit formula, constant or rule is L3; ranges, external emulators and runtime observations are L2; unsupported local approximations are L1. |
+| Objective | Qualify the already implemented Product composition through a bounded, external selected-set Window launch, then determine whether the existing KVM input path can be observed without inventing a gameplay or hardware claim. |
+| Non-goals | No ROM import/embedding, external-source import, COPX model, protection bypass, Shared change, synthetic title/gameplay success, release deployment or claim that a Window observation proves game correctness. |
+| Reference Baseline | S1/S4 exercised the Core/Machine selected-set probe only; S2/S3 established a bounded Product launch and optional host PCM endpoint. Product remains Window-only and owns no alternative input route. |
+| Candidate Proposal | Add only the minimum reproducible external staging/launch support needed to place the existing Product executable, its adjacent lowercase INI and the twelve already validated external inputs in one temporary owner-managed directory. Observe one bounded launch per width and, when a Window is available, use existing KVM input only; retain no payload and clean the stage. |
+| Files And ABI Surface | Expected MyRaidenII tool/test/evidence/current files only. Product/Machine/Core/Shared ABI changes require a separately evidenced defect. |
+| Applicable Rules | MyRaidenII guide, Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. All runtime and external-reference conclusions are L2 unless an inspected primary manual PDF directly supplies the applicable rule. |
+| Verification | Verify archive identity before staging; build existing Product once per width; check generated INI uses only adjacent relative filenames; bounded process/Window observation and owned-process cleanup per width; documentation/governance/whitespace/diff review. This is external integration evidence, not a CTest or release qualification. |
+| Expected Markers | Product locates `myraidenii.ini`, validates all twelve images, remains alive through the bounded observation or yields a concrete owned failure; no stage remains after cleanup. Any visible input observation records only host-to-KVM delivery, not gameplay response. |
+| Asset Needs | Read-only `O:\\assets\\raidenii\\raiden2.zip`; temporary input extraction only under `O:\\assets\\raidenii\\myraidenii-diagnostics\\`, removed after the owned process exits. |
+| Reporting Requirements | Record commands, widths, staging cleanup, Product exit/Window disposition and exact evidence grade. Distinguish a UI/input observation from guest title, coin/start, sound or stage qualification. |
+| Stop Conditions | A retained protected payload, a need to modify Shared contracts, a need for a guessed Board behavior, an unbounded process/trace, or a launch failure whose owner is outside Product/Machine stops this packet and records the receiver. |
+| Exit Criteria | Both widths have a bounded real-Product launch result with safe cleanup; any observed input fact is bounded and accurately graded; no unsupported behavior or release claim is introduced. |
+| Original Owner Request | Continue under the strict L3/L2/L1 definition: only an inspected primary manual PDF's explicit applicable formula/constant/rule is L3; external references, ranges and runtime observations are L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Verify all Product configuration paths use the adjacent INI/base directory, both widths use the same image-role transaction, and no diagnostic leaves ROM data, configs or child processes behind. |
+
+## M1 T7 S6 Closure
+
+S6 is closed.  The selected-set wrapper now owns both its established Probe
+route and a bounded Product route without adding another Product loader.  Both
+x64 and x86 real Product processes remained live for ten seconds from fresh
+adjacent-INI stages and were then stopped and cleaned.  The external stage root
+was empty after each run.  Complete repository-only unit selections passed
+652/652 on each width; the temporary-junction build-cleanup selftest required
+the host execution capability rather than the restricted sandbox.  This is L2
+startup evidence only: the desktop automation surface did not expose the native
+Product Window, so no visual, host-key, title, gameplay or sound claim is made.
+See [S6 evidence](../etc/evidence/t7-s6-product-launch.md).
+
 ## Archived Packet — M1 T7 S5
 
 | Field | Required record |

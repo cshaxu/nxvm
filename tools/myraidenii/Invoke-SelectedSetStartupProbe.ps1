@@ -3,11 +3,17 @@ param(
     [string]$Inventory,
     [Parameter(Mandatory = $true)]
     [string]$Archive,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'Probe')]
     [string]$Probe,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Product')]
+    [string]$Product,
     [Parameter(Mandatory = $true)]
     [string]$TemporaryRoot,
-    [switch]$CoinStartHeld
+    [Parameter(ParameterSetName = 'Probe')]
+    [switch]$CoinStartHeld,
+    [Parameter(ParameterSetName = 'Product')]
+    [ValidateRange(1, 60)]
+    [int]$ObserveSeconds = 10
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,10 +29,18 @@ function Require([bool]$Condition, [string]$Message)
 $verifier = Join-Path $PSScriptRoot 'Verify-RomInventory.ps1'
 $inventoryPath = [System.IO.Path]::GetFullPath($Inventory)
 $archivePath = [System.IO.Path]::GetFullPath($Archive)
-$probePath = [System.IO.Path]::GetFullPath($Probe)
 $rootPath = [System.IO.Path]::GetFullPath($TemporaryRoot)
 Require (Test-Path -LiteralPath $verifier -PathType Leaf) 'ROM inventory verifier is missing'
-Require (Test-Path -LiteralPath $probePath -PathType Leaf) 'Startup probe executable is missing'
+if ($PSCmdlet.ParameterSetName -ceq 'Probe') {
+    $probePath = [System.IO.Path]::GetFullPath($Probe)
+    Require (Test-Path -LiteralPath $probePath -PathType Leaf) 'Startup probe executable is missing'
+}
+else {
+    $productPath = [System.IO.Path]::GetFullPath($Product)
+    Require (Test-Path -LiteralPath $productPath -PathType Leaf) 'Product executable is missing'
+    Require ([System.IO.Path]::GetExtension($productPath) -ceq '.exe') `
+        'Product must be a Windows executable'
+}
 
 # The verifier owns identity validation; its structured success record has no ROM payload.
 & $verifier -Inventory $inventoryPath -Archive $archivePath | Out-Null
@@ -78,14 +92,53 @@ try {
         finally { $zip.Dispose() }
     }
     finally { $archiveStream.Dispose() }
-    $probeArguments = @($images['program-even'], $images['program-odd'], `
-        $images['sound-program'], $images['characters'], $images['background-1'], `
-        $images['background-2'], $images['sprites-1'], $images['sprites-2'], `
-        $images['sprites-3'], $images['sprites-4'], $images['samples-1'], `
-        $images['samples-2'])
-    if ($CoinStartHeld) { $probeArguments += '--coin-start-held' }
-    & $probePath @probeArguments
-    if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
+    if ($PSCmdlet.ParameterSetName -ceq 'Probe') {
+        $probeArguments = @($images['program-even'], $images['program-odd'], `
+            $images['sound-program'], $images['characters'], $images['background-1'], `
+            $images['background-2'], $images['sprites-1'], $images['sprites-2'], `
+            $images['sprites-3'], $images['sprites-4'], $images['samples-1'], `
+            $images['samples-2'])
+        if ($CoinStartHeld) { $probeArguments += '--coin-start-held' }
+        & $probePath @probeArguments
+        if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
+    }
+    else {
+        $iniNames = [ordered]@{
+            'program-even' = 'program_even'
+            'program-odd' = 'program_odd'
+            'sound-program' = 'sound_program'
+            'characters' = 'characters'
+            'background-1' = 'background_1'
+            'background-2' = 'background_2'
+            'sprites-1' = 'sprites_1'
+            'sprites-2' = 'sprites_2'
+            'sprites-3' = 'sprites_3'
+            'sprites-4' = 'sprites_4'
+            'samples-1' = 'samples_1'
+            'samples-2' = 'samples_2'
+        }
+        $iniLines = @('display=window', 'console_control=0')
+        foreach ($role in $iniNames.Keys) {
+            $iniLines += "$($iniNames[$role])=$([System.IO.Path]::GetFileName($images[$role]))"
+        }
+        [System.IO.File]::WriteAllLines((Join-Path $stagePath 'myraidenii.ini'), $iniLines,
+            [System.Text.UTF8Encoding]::new($false))
+        $stagedProduct = Join-Path $stagePath ([System.IO.Path]::GetFileName($productPath))
+        [System.IO.File]::Copy($productPath, $stagedProduct, $false)
+        $process = Start-Process -FilePath $stagedProduct -WorkingDirectory $stagePath -PassThru
+        try {
+            if ($process.WaitForExit($ObserveSeconds * 1000)) {
+                throw "Product exited before observation: $($process.ExitCode)"
+            }
+            "MYRAIDENII:PRODUCT-LAUNCH:OK pid=$($process.Id) seconds=$ObserveSeconds"
+        }
+        finally {
+            if (-not $process.HasExited) {
+                Stop-Process -Id $process.Id -Force
+                $process.WaitForExit()
+            }
+        }
+    }
 }
 finally {
     if (Test-Path -LiteralPath $stagePath) {
