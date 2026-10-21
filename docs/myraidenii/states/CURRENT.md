@@ -745,8 +745,6 @@ an inert loader nor a guessed lookup is admitted.  Documentation governance
 and whitespace checks pass; no production, test, build, manifest, public
 interface, artifact or media file changed.
 
-## Active Packet
-
 ## Archived Packet — M1 T7 S64
 
 | Field | Required record |
