@@ -419,7 +419,8 @@ int main(int argument_count, char **arguments)
             "sprite-protection-services=%llu sprite-protection-accepted=%llu "
             "sprite-protection-rejected=%llu board-provider-failure=%u "
             "board-provider-status=%u board-provider-access=%u cop-provider-failure=%u "
-            "cop-provider-role=%u cop-provider-status=%u cop-provider-access=%u\n",
+            "cop-provider-role=%u cop-command-admission=%u cop-provider-status=%u "
+            "cop-provider-access=%u\n",
             terminal_fault ? "FAULT" : "OK", (lib_u32)result.reason,
             (lib_u32)control_mode, control_time_unit, (unsigned long long)pulse_press_at,
             (unsigned long long)pulse_release_at, (unsigned long long)start_press_at,
@@ -490,6 +491,7 @@ int main(int argument_count, char **arguments)
             (lib_u32)board_provider_failure.access,
             (lib_u32)cop_provider_failure.valid,
             (lib_u32)cop_provider_failure.role,
+            (lib_u32)cop_provider_failure.command_admission,
             (lib_u32)cop_provider_failure.status,
             (lib_u32)cop_provider_failure.access);
         for (lib_u8 index = 0u; index < frame_sample_count; ++index) {

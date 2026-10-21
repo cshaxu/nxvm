@@ -106,6 +106,7 @@
 - [T7 probe output boundary](evidence/t7-s54-probe-output-boundary.md).
 - [T7 selected-provider failure observation](evidence/t7-s55-selected-provider-failure.md).
 - [T7 COP provider-role classification](evidence/t7-s56-cop-provider-role.md).
+- [T7 COP command-admission classification](evidence/t7-s57-cop-command-admission.md).
 - [T7 Board Sound IM1 transport](evidence/t7-s17-sound-im1-transport.md).
 - [T7 Board Sound IM0 transport](evidence/t7-s18-sound-im0-transport.md).
 - [T7 selected-set input pulse diagnostic](evidence/t7-s19-input-pulse-diagnostic.md).

@@ -330,6 +330,9 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         range->role == MYRAIDENII_CORE_COP_UNMODELLED_REGISTER)
         return LIB_STATUS_INVALID_STATE;
     if (cop->pending.kind != MYRAIDENII_CORE_COP_PENDING_NONE) {
+        if (range->role == MYRAIDENII_CORE_COP_COMMAND)
+            cop->provider_failure.command_admission =
+                MYRAIDENII_CORE_COP_COMMAND_ADMISSION_PENDING;
         if (range->role == MYRAIDENII_CORE_COP_COMMAND && bytes == 2u &&
             (physical & 1u) == 0u && !cop->failure.valid) {
             const lib_u8 *data = (const lib_u8 *)source;
@@ -346,10 +349,17 @@ static lib_status myraidenii_core_cop_write(void *owner, lib_u32 physical,
         const lib_u8 *data = (const lib_u8 *)source;
         lib_u16 command;
 
-        if (bytes != 2u || (physical & 1u) != 0u) return LIB_STATUS_INVALID_STATE;
-        command = (lib_u16)(data[0] | (lib_u16)data[1] << 8u);
-        if (myraidenii_core_cop_classify(command) == MYRAIDENII_CORE_COP_UNSUPPORTED)
+        if (bytes != 2u || (physical & 1u) != 0u) {
+            cop->provider_failure.command_admission =
+                MYRAIDENII_CORE_COP_COMMAND_ADMISSION_INVALID_REQUEST;
             return LIB_STATUS_INVALID_STATE;
+        }
+        command = (lib_u16)(data[0] | (lib_u16)data[1] << 8u);
+        if (myraidenii_core_cop_classify(command) == MYRAIDENII_CORE_COP_UNSUPPORTED) {
+            cop->provider_failure.command_admission =
+                MYRAIDENII_CORE_COP_COMMAND_ADMISSION_UNSUPPORTED;
+            return LIB_STATUS_INVALID_STATE;
+        }
         cop->pending.kind = MYRAIDENII_CORE_COP_PENDING_COMMAND;
         cop->pending.command = command;
         cop->pending.slot = (lib_u8)((physical - 0x500u) / 2u);

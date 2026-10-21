@@ -1617,6 +1617,62 @@ static lib_status board_cop_word_write(x86_core_machine *machine,
     return x86_core_machine_memory_write(machine, address, bytes, sizeof(bytes));
 }
 
+static lib_i32 board_cop_command_admission(void)
+{
+    const myraidenii_core_board_config config = {
+        .program_even = program_even,
+        .program_odd = program_odd,
+        .program_lane_bytes = MYRAIDENII_CORE_PROGRAM_LANE_BYTES
+    };
+    const lib_u8 supported_command[] = {0x05u, 0x02u};
+    const lib_u8 unsupported_command[] = {0x96u, 0x69u};
+    myraidenii_core_board *board = LIB_NULL;
+    myraidenii_core_cop_provider_failure_observation observation = {0};
+    x86_core_machine *machine;
+    lib_i32 failed = 1;
+
+    if (myraidenii_core_board_create(&config, &board) != LIB_STATUS_OK ||
+        (machine = myraidenii_core_board_machine_get(board)) == LIB_NULL)
+        goto done;
+    if (x86_core_machine_memory_write(machine, 0x500u, supported_command, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_cop_provider_failure_get(board, &observation) !=
+            LIB_STATUS_OK || !observation.valid ||
+        observation.role != MYRAIDENII_CORE_COP_COMMAND ||
+        observation.command_admission !=
+            MYRAIDENII_CORE_COP_COMMAND_ADMISSION_INVALID_REQUEST ||
+        observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ||
+        observation.status != LIB_STATUS_INVALID_STATE)
+        goto done;
+    if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x500u, unsupported_command,
+            sizeof(unsupported_command)) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_cop_provider_failure_get(board, &observation) !=
+            LIB_STATUS_OK || !observation.valid ||
+        observation.role != MYRAIDENII_CORE_COP_COMMAND ||
+        observation.command_admission !=
+            MYRAIDENII_CORE_COP_COMMAND_ADMISSION_UNSUPPORTED ||
+        observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ||
+        observation.status != LIB_STATUS_INVALID_STATE)
+        goto done;
+    if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x500u, supported_command,
+            sizeof(supported_command)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x500u, supported_command,
+            sizeof(supported_command)) != LIB_STATUS_INVALID_STATE ||
+        myraidenii_core_board_cop_provider_failure_get(board, &observation) !=
+            LIB_STATUS_OK || !observation.valid ||
+        observation.role != MYRAIDENII_CORE_COP_COMMAND ||
+        observation.command_admission != MYRAIDENII_CORE_COP_COMMAND_ADMISSION_PENDING ||
+        observation.access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ||
+        observation.status != LIB_STATUS_INVALID_STATE)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_board_destroy(board);
+    return failed;
+}
+
 static lib_i32 board_sprite_protection_trigger(void)
 {
     const myraidenii_core_board_config config = {
@@ -3215,6 +3271,7 @@ lib_i32 main(void)
         board_video_crtc() ||
         board_sprite_protection_upload() ||
         board_video_interrupts() || board_cop_routes() || board_cop_reset_and_admission() ||
+        board_cop_command_admission() ||
         board_cop_transfers() || board_cop_updates() || board_cop_angle_approach() ||
         board_cop_offset_add() ||
         board_sprite_protection_trigger() ||

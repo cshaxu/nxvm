@@ -521,6 +521,41 @@ commands succeed, or prove boot, gameplay, audio, graphics or release
 readiness.  S56 is closed; M1 T7 remains open for a separately bounded COP
 command-admission audit.
 
+## M1 T7 S57 — COP command-admission classification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S56; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued MyRaidenII M1 implementation and automatic bounded S progression. S56 establishes the same dual-width COP command-role terminal and transfers only its local admission classification. |
+| Objective | Classify an already rejected COP command write as pending-conflict, invalid request shape or unsupported command without copying command value, address, guest bytes or external-source data. |
+| Non-goals | No command behavior change, generic success fallback, second command path, map widening, Shared change, CPU/timer/thread change, external source import, ROM/media retention, gameplay/release claim or raw diagnostic output. |
+| Reference Baseline | `myraidenii_core_cop_write()` rejects command writes only when an existing command is pending, the width/alignment is invalid, or the local classifier returns unsupported. S56 proves a selected command-role terminal but intentionally does not identify which existing admission branch owns it. |
+| Candidate Proposal | Add one resettable, COP-owned safe command-admission enum to the existing provider-failure observation. Set it only immediately before the three existing command returns. Preserve range role/access/status and all existing detailed failure behavior; probe prints only the category. |
+| Files And ABI Surface | MyRaidenII `core/cop.[ch]`, existing Board/probe tests, Current/evidence/index. Estimated source +15..45/-0..10, tests +35..95/-0..15, documents +40..95. No Shared/public cross-product interface or manifest change expected. |
+| Applicable Rules | MyRaidenII guide/architecture/coding/source policy; Shared execution/architecture/coding/documentation rules. The COP write owner remains the sole command admission path. Long build/test/probe work is background-only. |
+| Verification | Complete local command-branch inventory; synthetic Board tests for all three existing rejects and reset; focused x64/x86 Board units; complete MyRaidenII unit labels on x64/x86; one safe registered wrapper run per width after local proof; staging, documentation and whitespace checks. |
+| Expected Markers | Every category maps to exactly one existing rejection branch; no command value enters copied state or output; no rejected request becomes successful; both external widths agree on one safe existing admission category or S stops. |
+| Asset Needs | Existing external owner archive is read-only through the registered wrapper. Staging remains external and is removed by that wrapper. |
+| Reporting Requirements | Record only the command admission category, range role, access/status, width agreement and cleanup. Never record command word, address, instruction, bytes, trace, ROM/media or third-party implementation data. |
+| Stop Conditions | An observed condition is outside the three existing branches, needs a command value or external map inference, widths diverge, staging remains, or a proposed repair would accept a currently rejected path; stop and transfer. |
+| Exit Criteria | The COP command owner reports one complete safe admission category; all required local/full units and two bounded wrapper runs pass/clean; evidence/index/current are complete and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII by bounded owner-valid families, not by guessing an external command or bypassing protection. |
+| Similar-Issue Sweep | Command query/read/write, pending state, width/alignment, classifier rejection, reset, detailed failure observation, provider aggregate, Board forwarding and probe formatting. |
+
+## M1 T7 S57 Closure
+
+S57 adds a resettable safe admission category to the existing COP provider
+aggregate.  It distinguishes only the existing pending, invalid-request and
+unsupported command-write returns, with no behavior or command set change.
+The Board smoke proves all three categories through the production route.
+
+The complete MyRaidenII unit set passed on x64 and x86 (11 executables per
+width).  One registered bounded owner-ROM wrapper run per width reports the
+same `unsupported` command-admission category, and staging was empty after
+each run.  This selects a future local unsupported-command-family inventory;
+it does not identify an external command value, add a command, prove boot or
+gameplay, or establish a release.  S57 is closed; M1 T7 remains open.
+
 ## Active Packet
 
 No S packet is active.

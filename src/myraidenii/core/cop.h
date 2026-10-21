@@ -31,6 +31,13 @@ typedef enum myraidenii_core_cop_register_role {
     MYRAIDENII_CORE_COP_UNKNOWN_REGISTER
 } myraidenii_core_cop_register_role;
 
+typedef enum myraidenii_core_cop_command_admission {
+    MYRAIDENII_CORE_COP_COMMAND_ADMISSION_NONE,
+    MYRAIDENII_CORE_COP_COMMAND_ADMISSION_PENDING,
+    MYRAIDENII_CORE_COP_COMMAND_ADMISSION_INVALID_REQUEST,
+    MYRAIDENII_CORE_COP_COMMAND_ADMISSION_UNSUPPORTED
+} myraidenii_core_cop_command_admission;
+
 /* This is a bounded failure summary for the Board diagnostic only. It never
  * retains guest payload or execution position. Rejected DMA triggers retain
  * only their selected source, size, destination and relative descriptor values. */
@@ -46,11 +53,13 @@ typedef struct myraidenii_core_cop_failure_observation {
     lib_status status;
 } myraidenii_core_cop_failure_observation;
 
-/* Reset clears this aggregate selected-route observation. It retains no COP
- * command, guest address, descriptor or register value. */
+/* Reset clears this aggregate selected-route observation. Its command category
+ * identifies only an existing rejection branch, never a command, guest
+ * address, descriptor or register value. */
 typedef struct myraidenii_core_cop_provider_failure_observation {
     lib_bool valid;
     myraidenii_core_cop_register_role role;
+    myraidenii_core_cop_command_admission command_admission;
     x86_core_machine_memory_access access;
     lib_status status;
 } myraidenii_core_cop_provider_failure_observation;
