@@ -2,6 +2,7 @@
 
 #include "emulator/product/composition_interface.h"
 #include "emulator/product/monitor_interface.h"
+#include "lib/kvm-base/hotkey_interface.h"
 #include "lib/audio/pcm/stream_interface.h"
 #include "myraidenii/core/audio_interface.h"
 #include "myraidenii/core/board_interface.h"
@@ -24,6 +25,37 @@ typedef struct myraidenii_product_composition {
     char paused_window_title[MYRAIDENII_PRODUCT_WINDOW_TITLE_CAPACITY];
     char graphics_console_status[EMULATOR_SESSION_TEXT_CAPACITY];
 } myraidenii_product_composition;
+
+/* These host bindings are Product policy (L1).  Machine alone translates the
+ * resulting ordinary KVM events into active-low board controls. */
+static const emulator_product_help_row myraidenii_product_hotkeys[] = {
+    {"Arrow keys", "move"},
+    {"Z", "fire"},
+    {"X", "bomb"},
+    {"1", "start"},
+    {"5", "coin"},
+    {"F2", "service"},
+    {"Esc", "pause or resume"}
+};
+
+static lib_bool myraidenii_product_handle_hotkey(void *opaque,
+    emulator_session_machine_state state, const lib_u8 *identifier,
+    emulator_session_command_result *out_result)
+{
+    myraidenii_product_composition *composition = opaque;
+    emulator_session_request request;
+
+    if (composition == LIB_NULL || identifier == LIB_NULL || out_result == LIB_NULL ||
+        lib_text_compare((const char *)identifier, "pause-toggle") != 0)
+        return LIB_FALSE;
+    if (!emulator_session_request_pause_toggle(state, &request))
+        request = EMULATOR_SESSION_REQUEST_PAUSE;
+    return emulator_product_monitor_request_lifecycle(&composition->monitor,
+        request == EMULATOR_SESSION_REQUEST_RESUME ?
+            EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME :
+            EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE,
+        state, out_result);
+}
 
 static lib_status myraidenii_product_destroy_machine(void *opaque)
 {
@@ -58,7 +90,10 @@ static lib_status myraidenii_product_configure_control(void *opaque,
         return LIB_STATUS_INVALID_ARGUMENT;
     if (composition->config->display != EMULATOR_SESSION_DISPLAY_WINDOW)
         return LIB_STATUS_UNSUPPORTED;
-    composition->monitor = (emulator_product_monitor_provider){0};
+    composition->monitor = (emulator_product_monitor_provider){
+        .context = composition,
+        .hotkeys = {myraidenii_product_hotkeys,
+            sizeof(myraidenii_product_hotkeys) / sizeof(myraidenii_product_hotkeys[0])}};
     *out_options = (emulator_session_options){
         .display = composition->config->display,
         .console_control = composition->config->console_control,
@@ -67,6 +102,7 @@ static lib_status myraidenii_product_configure_control(void *opaque,
             .open = emulator_product_monitor_provider_open,
             .reject_line = emulator_product_monitor_provider_reject_line,
             .submit_line = emulator_product_monitor_provider_submit_line,
+            .handle_hotkey = myraidenii_product_handle_hotkey,
             .note_runtime = emulator_product_monitor_provider_note_runtime}};
     return LIB_STATUS_OK;
 }
@@ -75,6 +111,7 @@ static lib_status myraidenii_product_configure_ui(void *opaque,
     emulator_ui_options *out_options)
 {
     myraidenii_product_composition *composition = opaque;
+    kvm_hotkey_registry hotkeys;
     lib_status status;
 
     if (composition == LIB_NULL || out_options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -83,10 +120,17 @@ static lib_status myraidenii_product_configure_ui(void *opaque,
         composition->paused_window_title, sizeof(composition->paused_window_title));
     if (status != LIB_STATUS_OK) return status;
     status = emulator_product_monitor_format_window_status(MYRAIDENII_PRODUCT_NAME,
-        (emulator_product_help_map){0}, composition->graphics_console_status,
+        (emulator_product_help_map){myraidenii_product_hotkeys,
+            sizeof(myraidenii_product_hotkeys) / sizeof(myraidenii_product_hotkeys[0])},
+        composition->graphics_console_status,
         sizeof(composition->graphics_console_status));
     if (status != LIB_STATUS_OK) return status;
+    kvm_hotkey_registry_initialize(&hotkeys);
+    if (kvm_hotkey_registry_register(&hotkeys, BASE_KEY_ESCAPE, 0u,
+            "pause-toggle") != LIB_STATUS_OK)
+        return LIB_STATUS_INTERNAL_ERROR;
     *out_options = (emulator_ui_options){
+        .hotkeys = hotkeys,
         .running_window_title = composition->running_window_title,
         .paused_window_title = composition->paused_window_title,
         .graphics_console_status_text = composition->graphics_console_status};

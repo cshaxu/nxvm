@@ -20,6 +20,7 @@ static lib_i32 board_destroy_count;
 static lib_i32 stream_destroy_count;
 static lib_i32 machine_destroy_count;
 static lib_i32 bind_count;
+static lib_i32 hotkey_count;
 
 lib_status myraidenii_machine_images_load(const char *directory,
     const char *const paths[MYRAIDENII_MACHINE_IMAGE_COUNT],
@@ -128,7 +129,7 @@ lib_status emulator_product_monitor_format_window_status(const char *name,
     emulator_product_help_map hotkeys, char *text, lib_size capacity)
 {
     if (name == LIB_NULL || text == LIB_NULL || capacity == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    assert(hotkeys.count == 0u && hotkeys.rows == LIB_NULL);
+    assert(hotkeys.count == 7u && hotkeys.rows != LIB_NULL);
     text[0] = '\0';
     return LIB_STATUS_OK;
 }
@@ -167,6 +168,47 @@ void emulator_product_monitor_provider_note_runtime(void *context,
     if (out_result != LIB_NULL) *out_result = (emulator_session_command_result){0};
 }
 
+void kvm_hotkey_registry_initialize(kvm_hotkey_registry *registry)
+{
+    assert(registry != LIB_NULL);
+    *registry = (kvm_hotkey_registry){0};
+}
+
+lib_status kvm_hotkey_registry_register(kvm_hotkey_registry *registry,
+    base_key key, lib_u8 modifiers, const char *identifier)
+{
+    if (registry == LIB_NULL || identifier == LIB_NULL || key != BASE_KEY_ESCAPE ||
+        modifiers != 0u || lib_text_compare(identifier, "pause-toggle") != 0)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    registry->count = 1u;
+    return LIB_STATUS_OK;
+}
+
+lib_bool emulator_session_request_pause_toggle(emulator_session_machine_state state,
+    emulator_session_request *out_request)
+{
+    if (out_request == LIB_NULL) return LIB_FALSE;
+    *out_request = state == EMULATOR_SESSION_MACHINE_PAUSED ?
+        EMULATOR_SESSION_REQUEST_RESUME : EMULATOR_SESSION_REQUEST_PAUSE;
+    return state == EMULATOR_SESSION_MACHINE_RUNNING || state == EMULATOR_SESSION_MACHINE_PAUSED;
+}
+
+lib_bool emulator_product_monitor_request_lifecycle(
+    const emulator_product_monitor_provider *provider,
+    emulator_product_monitor_command command, emulator_session_machine_state state,
+    emulator_session_command_result *out_result)
+{
+    if (provider == LIB_NULL || out_result == LIB_NULL) return LIB_FALSE;
+    assert((state == EMULATOR_SESSION_MACHINE_RUNNING &&
+            command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE) ||
+        (state == EMULATOR_SESSION_MACHINE_PAUSED &&
+            command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME));
+    ++hotkey_count;
+    out_result->request = command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE ?
+        EMULATOR_SESSION_REQUEST_PAUSE : EMULATOR_SESSION_REQUEST_RESUME;
+    return LIB_TRUE;
+}
+
 lib_i32 emulator_product_run(const emulator_product_definition *definition)
 {
     emulator_session_options control = {0};
@@ -188,8 +230,13 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     }
     assert(control.display == EMULATOR_SESSION_DISPLAY_WINDOW &&
         control.command.open == emulator_product_monitor_provider_open &&
-        control.command.submit_line == emulator_product_monitor_provider_submit_line);
-    assert(definition->configure_ui(definition->context, &ui) == LIB_STATUS_OK);
+        control.command.submit_line == emulator_product_monitor_provider_submit_line &&
+        control.command.handle_hotkey != LIB_NULL);
+    assert(control.command.handle_hotkey(control.command.context,
+        EMULATOR_SESSION_MACHINE_RUNNING, (const lib_u8 *)"pause-toggle",
+        &(emulator_session_command_result){0}) == LIB_TRUE && hotkey_count == 1);
+    assert(definition->configure_ui(definition->context, &ui) == LIB_STATUS_OK &&
+        ui.hotkeys.count == 1u);
     assert(definition->machine.bind(definition->machine.machine, LIB_NULL) == LIB_STATUS_OK);
     ++bind_count;
     assert(definition->machine.destroy(definition->machine.machine) == LIB_STATUS_OK);
