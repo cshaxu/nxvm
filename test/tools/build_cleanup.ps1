@@ -42,10 +42,19 @@ try {
     Reject { & $tool -Targets $name -ReviewedFiles $reviewed } 'Git data'
     [IO.Directory]::Delete($git)
     $link = Join-Path $fixture 'junction'
-    New-Item -ItemType Junction -Path $link -Target (Join-Path $repository 'src') | Out-Null
-    Reject { & $tool -Targets $name -ReviewedFiles $reviewed } 'link/junction'
-    Reject { & $tool -Targets "$name/junction/lib" } 'link/junction'
-    [IO.Directory]::Delete($link)
+    try {
+        New-Item -ItemType Junction -Path $link -Target (Join-Path $repository 'src') | Out-Null
+    }
+    catch [System.ComponentModel.Win32Exception] {
+        # Some non-elevated Windows hosts forbid creating a junction.  Keep
+        # the rejection assertions on hosts that can create the fixture.
+        Write-Output 'Build cleanup junction fixture: unavailable on this host.'
+    }
+    if (Test-Path -LiteralPath $link) {
+        Reject { & $tool -Targets $name -ReviewedFiles $reviewed } 'link/junction'
+        Reject { & $tool -Targets "$name/junction/lib" } 'link/junction'
+        [IO.Directory]::Delete($link)
+    }
     $deleted = @(& $tool -Targets "$name/ordinary.txt", "$name/fixture.img" -Apply -TasksExited -ReviewedFiles $reviewed)
     if ($deleted.Count -ne 2 -or @($deleted | Where-Object {-not $_.Deleted}).Count -or
         (Test-Path $file) -or (Test-Path $media)) { throw 'Reviewed Apply failed.' }
