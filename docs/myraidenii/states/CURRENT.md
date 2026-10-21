@@ -448,6 +448,37 @@ gameplay, desktop/RDP or release claim.
 
 No S packet is active.
 
+## Archived Packet — M1 T7 S54
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S53; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII work. Static review established that the existing opt-in integration probe formats raw lower-level diagnostic fields despite the source policy. |
+| Objective | Restrict probe output to neutral termination, lifecycle and existing aggregate observations, removing raw fault, address, COP and control fields without changing runtime behavior. |
+| Non-goals | No production, Shared, CPU, Board, public-interface, ROM/media, runtime-map, host-UI, artifact or gameplay change; no external-ROM execution is required solely for this output-contract correction. |
+| Reference Baseline | S53 deliberately held the wrapper output in process memory because the checked-in probe text exposes raw diagnostic fields. The source policy forbids retaining those fields. |
+| Candidate Proposal | Remove raw-detail formatting and its now-unneeded observation reads from the existing probe. Preserve neutral terminal reason, bounded execution, input/video/sound aggregates and frame summaries. |
+| Files And ABI Surface | `test/myraidenii/integration/selected_set_startup_probe.c`, Current, evidence/index only. No public API, production source, shared component, manifest, asset or media file. Estimated test -20..55 lines; documents +30..75. |
+| Applicable Rules | MyRaidenII source policy and Coding; shared Execution, Architecture, Coding and Documentation rules. Any build runs in a persistent background session. |
+| Verification | Build the existing probe on x64/x86 in background; statically verify removed formatter tokens; run documentation governance and whitespace checks. No real ROM probe is required or claimed. |
+| Expected Markers | Probe output contains only neutral aggregate fields and no raw fault detail, linear location, COP register/physical field or Board-control physical field. |
+| Asset Needs | None. |
+| Reporting Requirements | Record source-policy correction, exact deleted output classes, dual-width build result and unexecuted owner-ROM run. Never retain prior raw output. |
+| Stop Conditions | A required safe diagnostic cannot be represented without a new Shared/Core contract, or a test shows that deleting output changes execution, stops this S for a separate approved receiver. |
+| Exit Criteria | The output contract is source-policy compliant, both existing probe targets build, documentation/whitespace checks pass, evidence is indexed and a complete Product-only commit is pushed. |
+| Original Owner Request | Continue MyRaidenII implementation under governance without retaining protected ROM data or raw guest diagnostics. |
+| Similar-Issue Sweep | Check all probe output fields and corresponding source-policy exclusions; distinguish neutral aggregate outcomes from raw internal/guest fields. |
+
+## M1 T7 S54 Closure
+
+S54 removes the selected-set probe's raw lower-level formatter fields and the
+now-unneeded observation reads. The probe retains only neutral terminal and
+aggregate summaries. Existing x64 and x86 probe targets rebuild in their
+stable Ninja trees without accessing external media or creating staging. The
+source sweep, documentation governance and whitespace checks pass. This is a
+test-output and documentation correction only: it neither classifies S53's
+terminal nor changes CPU, Board, COP, Machine, Shared or release behavior.
+
 ## Archived Packet — M1 T7 S53
 
 | Field | Required record |

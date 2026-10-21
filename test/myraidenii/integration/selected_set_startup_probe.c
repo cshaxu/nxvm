@@ -179,9 +179,6 @@ int main(int argument_count, char **arguments)
     lib_u64 remaining;
     lib_u64 next_frame_sample;
     x86_core_machine_run_result result = {0};
-    x86_core_cpu_diagnostic diagnostic = {0};
-    myraidenii_core_cop_failure_observation cop_failure = {0};
-    myraidenii_core_board_control_failure_observation control_failure = {0};
     lib_status status;
     lib_bool terminal_fault = LIB_FALSE;
     lib_u64 frame_digest = 0u;
@@ -378,19 +375,6 @@ int main(int argument_count, char **arguments)
         }
     }
     if (status == LIB_STATUS_OK || terminal_fault) {
-        const lib_bool has_diagnostic = terminal_fault &&
-            x86_core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK;
-        const lib_bool fault_valid = has_diagnostic && diagnostic.first_fault.valid;
-        const lib_u32 fault_code = fault_valid ? diagnostic.first_fault.exception_code : 0u;
-        const lib_u32 fault_mask = fault_valid ? diagnostic.first_fault.exception_mask : 0u;
-        const lib_u32 fault_linear = fault_valid ? diagnostic.first_fault.point.linear_pc : 0u;
-        const lib_u32 delivered_exceptions = has_diagnostic ?
-            diagnostic.delivered_exception_count : 0u;
-
-        if (terminal_fault) {
-            (void)myraidenii_core_board_cop_failure_get(board, &cop_failure);
-            (void)myraidenii_core_board_control_failure_get(board, &control_failure);
-        }
         for (lib_u8 index = 1u; index < frame_sample_count; ++index) {
             if (frame_samples[index].digest != frame_samples[index - 1u].digest ||
                 frame_samples[index].nonblack != frame_samples[index - 1u].nonblack) {
@@ -398,11 +382,7 @@ int main(int argument_count, char **arguments)
             }
         }
 
-        lib_c_printf("MYRAIDENII:STARTUP-PROBE:%s reason=%u detail=%u fault-valid=%u "
-            "fault-code=%u fault-mask=%u fault-linear=%u delivered-exceptions=%u "
-            "cop-valid=%u cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
-            "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
-            "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
+        lib_c_printf("MYRAIDENII:STARTUP-PROBE:%s reason=%u "
             "input-route=machine-driver coin-start-mode=%u input-time-unit=%s "
             "coin-press-at=%llu coin-release-at=%llu "
             "start-press-at=%llu start-release-at=%llu coin-pressed=%u coin-released=%u "
@@ -430,17 +410,7 @@ int main(int argument_count, char **arguments)
             "video-sprite-latches=%llu video-palette-commits=%llu video-tilemap-commits=%llu "
             "sprite-protection-services=%llu sprite-protection-accepted=%llu "
             "sprite-protection-rejected=%llu\n",
-            terminal_fault ? "FAULT" : "OK", (lib_u32)result.reason, result.detail,
-            (lib_u32)fault_valid, fault_code, fault_mask,
-            fault_linear, delivered_exceptions, (lib_u32)cop_failure.valid,
-            (lib_u32)cop_failure.operation,
-            (lib_u32)cop_failure.operation_value, (lib_u32)cop_failure.dma_source,
-            (lib_u32)cop_failure.dma_size, (lib_u32)cop_failure.dma_destination,
-            (lib_u32)cop_failure.dma_relative,
-            cop_failure.physical,
-            (lib_u32)cop_failure.status,
-            (lib_u32)control_failure.valid, control_failure.physical,
-            (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,
+            terminal_fault ? "FAULT" : "OK", (lib_u32)result.reason,
             (lib_u32)control_mode, control_time_unit, (unsigned long long)pulse_press_at,
             (unsigned long long)pulse_release_at, (unsigned long long)start_press_at,
             (unsigned long long)start_release_at, (lib_u32)coin_pressed,
