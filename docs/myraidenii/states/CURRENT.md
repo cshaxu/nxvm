@@ -6,7 +6,11 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-## Active Packet — M1 T7 S35
+## Active Packet
+
+No S packet is active.
+
+## Archived Packet — M1 T7 S35
 
 | Field | Required record |
 | --- | --- |
@@ -26,6 +30,30 @@ It does not redefine unimplemented Board behavior as a release result.
 | Exit Criteria | One actual-read aggregate has a single Board owner, its existing routes/reset are covered, dual-width bounded results and complete units pass, staging is empty, evidence is reviewed and a complete P is pushed. |
 | Original Owner Request | Continue MyRaidenII implementation efficiently toward real Raiden II execution without copying external implementation. |
 | Similar-Issue Sweep | Query/preview reads versus actual reads, byte/word aliases, all input registers, Sound Coin callback, reset, null/getter failures, Probe-only output and unchanged control delivery. |
+
+## M1 T7 S35 Closure
+
+S35 is closed after actual-change review accepts P1 `0aae821bb`.  It adds one
+resettable Board-owned aggregate for successful non-preview input-owner reads;
+it neither records input values nor changes input, execution, Video, Sound,
+ROM, PAL or Shared behavior.  The selected V30 and Sound routes both consume
+the existing input owners during the bounded owner-ROM runs: x64 and x86 agree
+on the same neutral frame digest (`ccad0e0867e39b9c`), nonblack count
+(`74865`) and sampled frame values.  The baseline records `2/1078/2156/3662`
+DIP/Player/System/Coin reads; the vblank-aligned Coin/Start sequence records
+`2/1078/2156/3660`, while all four edges are delivered once.
+
+The [evidence record](../etc/evidence/t7-s35-input-consumption-observation.md)
+retains the exact source-grade limit and results.  Complete repository unit
+selections ran on both widths: the restricted executor passed 696/697 and
+could not create the Windows junction used only by `repository.build-cleanup`;
+that safety test was then rerun with normal filesystem privilege and passed on
+each width.  Documentation governance passed, owner-ROM staging was empty,
+and the transient unrelated MyNES/NXVM x86 release rewrites caused by the
+verification build were restored rather than committed.  T7/M1 remains open:
+the next receiver needs a finite non-payload checkpoint that distinguishes
+successful input reads from selected-set game-state acceptance before assigning
+another hardware repair.  No gameplay, desktop/RDP or release claim is made.
 
 ## Archived Packet — M1 T7 S34
 
