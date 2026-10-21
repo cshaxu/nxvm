@@ -29,6 +29,15 @@ This is deliberate: attaching an external image without the five semantic
 facts above would create an inert configuration role, while inventing a
 lookup would be an unqualified L1 behavior.
 
+## Independent L2 corroboration
+
+The local MAME Raiden II reference separately declares the same external COPX
+region while its available Board-facing map delegates ordinary COP work to the
+existing COP device.  Static inspection exposes no independent COPX request,
+index, result, reset or failure interface there either.  This corroborates the
+MiSTer review; it does not upgrade either implementation to a hardware source
+or license a copied lookup model.
+
 ## Disposition
 
 No finite COPX-D2 receiver is admitted.  The existing high-priority TODO
