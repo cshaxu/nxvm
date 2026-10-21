@@ -6,6 +6,14 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## M1 T7 S8 Closure
+
+S8 is closed with no production change.  It repeated the COPX-D2 source
+sweep under the owner-restated evidence grades and found only L2 identity/
+board-observation facts, not a finite Board receiver contract.  The separate
+image therefore remains deliberately unconfigured and deferred rather than
+being represented by a misleading path-only input.  See [S8 evidence](../etc/evidence/t7-s8-copx-source-sweep.md).
+
 ## Archived Packet — M1 T7 S7
 
 | Field | Required record |
