@@ -9,12 +9,17 @@
 #define MYRAIDENII_STARTUP_DEFAULT_INSTRUCTION_BUDGET 2000000u
 #define MYRAIDENII_STARTUP_MAXIMUM_INSTRUCTION_BUDGET 20000000u
 #define MYRAIDENII_STARTUP_FRAME_SAMPLE_COUNT 4u
+#define MYRAIDENII_STARTUP_COIN_PRESS_VBLANK 300u
+#define MYRAIDENII_STARTUP_COIN_RELEASE_VBLANK 330u
+#define MYRAIDENII_STARTUP_START_PRESS_VBLANK 360u
+#define MYRAIDENII_STARTUP_START_RELEASE_VBLANK 390u
 
 typedef enum myraidenii_startup_control_mode {
     MYRAIDENII_STARTUP_CONTROL_NONE,
     MYRAIDENII_STARTUP_CONTROL_HELD,
     MYRAIDENII_STARTUP_CONTROL_PULSE,
-    MYRAIDENII_STARTUP_CONTROL_SEQUENCE
+    MYRAIDENII_STARTUP_CONTROL_SEQUENCE,
+    MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE
 } myraidenii_startup_control_mode;
 
 typedef struct myraidenii_startup_frame_sample {
@@ -50,6 +55,9 @@ static lib_bool myraidenii_startup_parse_arguments(lib_i32 argument_count, char 
         } else if (lib_text_compare(argument, "--coin-start-sequence") == 0) {
             if (control_mode != MYRAIDENII_STARTUP_CONTROL_NONE) return LIB_FALSE;
             control_mode = MYRAIDENII_STARTUP_CONTROL_SEQUENCE;
+        } else if (lib_text_compare(argument, "--coin-start-frame-sequence") == 0) {
+            if (control_mode != MYRAIDENII_STARTUP_CONTROL_NONE) return LIB_FALSE;
+            control_mode = MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE;
         } else {
             lib_size prefix_length = sizeof(budget_prefix) - 1u;
             lib_u64 value = 0u;
@@ -193,6 +201,7 @@ int main(int argument_count, char **arguments)
     lib_u64 pulse_release_at;
     lib_u64 start_press_at;
     lib_u64 start_release_at;
+    const char *control_time_unit;
     myraidenii_startup_frame_sample frame_samples[MYRAIDENII_STARTUP_FRAME_SAMPLE_COUNT] = {0};
     lib_u8 frame_sample_count = 0u;
     lib_u8 frame_transition_count = 0u;
@@ -208,6 +217,14 @@ int main(int argument_count, char **arguments)
     pulse_release_at = instruction_budget / 2u;
     start_press_at = instruction_budget * 3u / 5u;
     start_release_at = instruction_budget * 13u / 20u;
+    control_time_unit = "instructions";
+    if (control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) {
+        pulse_press_at = MYRAIDENII_STARTUP_COIN_PRESS_VBLANK;
+        pulse_release_at = MYRAIDENII_STARTUP_COIN_RELEASE_VBLANK;
+        start_press_at = MYRAIDENII_STARTUP_START_PRESS_VBLANK;
+        start_release_at = MYRAIDENII_STARTUP_START_RELEASE_VBLANK;
+        control_time_unit = "vblank";
+    }
     for (lib_size index = 0u; index < MYRAIDENII_MACHINE_IMAGE_COUNT; ++index)
         image_paths[index] = arguments[index + 1u];
     status = myraidenii_machine_images_load(".", image_paths, &images);
@@ -231,6 +248,13 @@ int main(int argument_count, char **arguments)
     while (status == LIB_STATUS_OK && remaining != 0u) {
         const lib_u64 executed = instruction_budget - remaining;
         const lib_u64 quantum = remaining < 4096u ? remaining : 4096u;
+        lib_u64 control_time = executed;
+
+        if (control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) {
+            status = myraidenii_core_board_video_observation_get(board, &video_observation);
+            if (status != LIB_STATUS_OK) break;
+            control_time = video_observation.vblank_events;
+        }
 
         if (control_mode == MYRAIDENII_STARTUP_CONTROL_PULSE && !coin_pressed &&
             executed >= pulse_press_at) {
@@ -244,23 +268,31 @@ int main(int argument_count, char **arguments)
             coin_released = status == LIB_STATUS_OK;
             start_released = coin_released;
         }
-        if (status == LIB_STATUS_OK && control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE &&
-            !coin_pressed && executed >= pulse_press_at) {
+        if (status == LIB_STATUS_OK &&
+            (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
+             control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
+            !coin_pressed && control_time >= pulse_press_at) {
             status = myraidenii_startup_set_control(&driver, '5', LIB_TRUE);
             coin_pressed = status == LIB_STATUS_OK;
         }
-        if (status == LIB_STATUS_OK && control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE &&
-            coin_pressed && !coin_released && executed >= pulse_release_at) {
+        if (status == LIB_STATUS_OK &&
+            (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
+             control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
+            coin_pressed && !coin_released && control_time >= pulse_release_at) {
             status = myraidenii_startup_set_control(&driver, '5', LIB_FALSE);
             coin_released = status == LIB_STATUS_OK;
         }
-        if (status == LIB_STATUS_OK && control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE &&
-            coin_released && !start_pressed && executed >= start_press_at) {
+        if (status == LIB_STATUS_OK &&
+            (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
+             control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
+            coin_released && !start_pressed && control_time >= start_press_at) {
             status = myraidenii_startup_set_control(&driver, '1', LIB_TRUE);
             start_pressed = status == LIB_STATUS_OK;
         }
-        if (status == LIB_STATUS_OK && control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE &&
-            start_pressed && !start_released && executed >= start_release_at) {
+        if (status == LIB_STATUS_OK &&
+            (control_mode == MYRAIDENII_STARTUP_CONTROL_SEQUENCE ||
+             control_mode == MYRAIDENII_STARTUP_CONTROL_FRAME_SEQUENCE) &&
+            start_pressed && !start_released && control_time >= start_release_at) {
             status = myraidenii_startup_set_control(&driver, '1', LIB_FALSE);
             start_released = status == LIB_STATUS_OK;
         }
@@ -343,7 +375,8 @@ int main(int argument_count, char **arguments)
             "cop-operation=%u cop-value=%u cop-source=%u cop-size=%u "
             "cop-destination=%u cop-relative=%u cop-physical=%u cop-status=%u "
             "control-valid=%u control-physical=%u control-bytes=%u control-access=%u "
-            "input-route=machine-driver coin-start-mode=%u coin-press-at=%llu coin-release-at=%llu "
+            "input-route=machine-driver coin-start-mode=%u input-time-unit=%s "
+            "coin-press-at=%llu coin-release-at=%llu "
             "start-press-at=%llu start-release-at=%llu coin-pressed=%u coin-released=%u "
             "start-pressed=%u start-released=%u instruction-budget=%llu "
             "executed=%llu ticks=%llu frame-width=%u frame-height=%u nonblack=%llu "
@@ -368,7 +401,7 @@ int main(int argument_count, char **arguments)
             (lib_u32)cop_failure.status,
             (lib_u32)control_failure.valid, control_failure.physical,
             (lib_u32)control_failure.bytes, (lib_u32)control_failure.access,
-            (lib_u32)control_mode, (unsigned long long)pulse_press_at,
+            (lib_u32)control_mode, control_time_unit, (unsigned long long)pulse_press_at,
             (unsigned long long)pulse_release_at, (unsigned long long)start_press_at,
             (unsigned long long)start_release_at, (lib_u32)coin_pressed,
             (lib_u32)coin_released, (lib_u32)start_pressed, (lib_u32)start_released,

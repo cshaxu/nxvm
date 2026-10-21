@@ -6,7 +6,26 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
-No S packet is active.
+## Active Packet — M1 T7 S34
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S33; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation and permits bounded owner-ROM probes plus external-emulator behavior as L2. No Shared or production-hardware change is authorized. |
+| Objective | Add one existing-Probe control mode which delivers the externally observed Coin/Start pulse at Board vblank thresholds rather than unrelated instruction fractions, then compare bounded local baseline and pulse results on both host widths. |
+| Non-goals | No product input behavior, guest Board/COP/Video/Sound behavior, renderer, ROM/PAL, external-source import, raw guest state, host automation, gameplay or release claim. |
+| Reference Baseline | S24 records a repeatable MAME L2 pulse: Coin active frames 300--329 and Start active frames 360--389. S31's local instruction-relative sequence is electrically delivered but is not time-equivalent. S33 proves the local Board vblank owner is active. |
+| Candidate Proposal | Extend only `selected_set_startup_probe` and its existing wrapper with `--coin-start-frame-sequence`. Query the existing read-only Board aggregate at bounded run points; press/release the already mapped Coin/Start keys when vblank counts reach 300/330/360/390. Print the mode, time unit and all four delivery facts. |
+| Files And ABI Surface | Existing MyRaidenII integration Probe and wrapper, Current, one evidence record and its index. No production API/state or Shared surface. Estimated source +20..55/-0..15; wrapper +4..14/-0..4; tests are the actual dual-width integration runs. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Architecture/Coding/Documentation rules and T7 qualification proposal. External schedule is L2 only. |
+| Verification | Build Probe x64/x86; preserve existing option exclusivity; run one no-input baseline and one vblank-sequence case per width at the current bounded cap; compare only neutral frame/audio/Video aggregates and all delivery flags; review staging cleanup, docs and whitespace. |
+| Expected Markers | Every edge is delivered once after its named vblank threshold. Results either show a finite local pulse difference or honestly retain no difference; neither proves title, accepted credit, gameplay, sound fidelity or release readiness. |
+| Asset Needs | Read-only owner archive through the existing wrapper only; temporary staging and logs stay under the external owner directory and are removed after runs. |
+| Reporting Requirements | Exact MAME L2 schedule, local event unit/thresholds, dual-width baseline/pulse summaries, diff size, cleanup and the next named receiver. |
+| Stop Conditions | Need for a new input route, raw guest-state capture, source/table import, unbounded run, Shared change, nondeterminism or staging failure stops and records the gap. |
+| Exit Criteria | The existing Probe has one additional exclusive control mode, both mode cases run on both widths with clean staging and all required checks, evidence records the bounded result, actual diff is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue MyRaidenII implementation efficiently with bounded probes and independently written L2 reference behavior. |
+| Similar-Issue Sweep | Option exclusivity, vblank threshold ordering/overflow, delivery failures, unchanged old modes, output framing, wrapper forwarding and cleanup. |
 
 ## Archived Packet — M1 T7 S33
 

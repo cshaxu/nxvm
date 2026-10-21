@@ -16,6 +16,8 @@ param(
     [Parameter(ParameterSetName = 'Probe')]
     [switch]$CoinStartSequence,
     [Parameter(ParameterSetName = 'Probe')]
+    [switch]$CoinStartFrameSequence,
+    [Parameter(ParameterSetName = 'Probe')]
     [ValidateRange(2000000, 20000000)]
     [UInt64]$InstructionBudget = 2000000,
     [Parameter(ParameterSetName = 'Product')]
@@ -49,8 +51,8 @@ else {
         'Product must be a Windows executable'
 }
 $controlModes = [int][bool]$CoinStartHeld + [int][bool]$CoinStartPulse +
-    [int][bool]$CoinStartSequence
-Require ($controlModes -le 1) 'CoinStartHeld, CoinStartPulse and CoinStartSequence are exclusive'
+    [int][bool]$CoinStartSequence + [int][bool]$CoinStartFrameSequence
+Require ($controlModes -le 1) 'CoinStartHeld, CoinStartPulse, CoinStartSequence and CoinStartFrameSequence are exclusive'
 
 # The verifier owns identity validation; its structured success record has no ROM payload.
 & $verifier -Inventory $inventoryPath -Archive $archivePath | Out-Null
@@ -111,6 +113,7 @@ try {
         if ($CoinStartHeld) { $probeArguments += '--coin-start-held' }
         if ($CoinStartPulse) { $probeArguments += '--coin-start-pulse' }
         if ($CoinStartSequence) { $probeArguments += '--coin-start-sequence' }
+        if ($CoinStartFrameSequence) { $probeArguments += '--coin-start-frame-sequence' }
         $probeArguments += "--instruction-budget=$InstructionBudget"
         & $probePath @probeArguments
         if ($LASTEXITCODE -ne 0) { throw "Startup probe failed: $LASTEXITCODE" }
