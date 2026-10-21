@@ -6,6 +6,24 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Active Packet — M1 T7 S46
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after coordinator-closed S45; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner authorized continued M1 implementation, primary-manual L3 facts and ordinary in-scope work without repeated approval. This is a static receiving audit for S45's finite `DECODER` transfer. |
+| Objective | Reconcile the sole Sound ED decoder into complete documented semantic families and select the smallest coherent implementation batch. |
+| Non-goals | No ROM probe, map widening, I/O-device modeling, external code/table import, Shared change, public ABI, queue, thread, renderer, product or release artifact change. |
+| Reference Baseline | S43 retains the complete ED default inventory; S45 completes the base accumulator/carry family but leaves the selected-set category at `DECODER`. The pinned original Zilog UM008011-0816 is the L3 source for ED operation, flags and clocks. |
+| Candidate Proposal | Audit the existing ED switch and original instruction families, separate pure register/memory CPU forms from forms requiring an unevidenced Sound I/O map, and nominate a complete pair-arithmetic/absolute-transfer receiver if its ownership is already local. |
+| Files And ABI Surface | Current, one evidence record/index only. No source, test, build, manifest, public interface, Shared component, ROM/media or executable artifact change. Estimated documents +55..120/-0..20. |
+| Applicable Rules | MyRaidenII Architecture and Coding; shared Architecture, Coding, Execution and Documentation rules; source policy. The existing Sound executor remains the only decoder and Sound map remains the sole map owner. |
+| Verification | Inspect the complete local ED switch against the primary manual, perform source-policy/documentation/whitespace checks, and review the resulting receiver for one owner and no implied map behavior. |
+| Expected Markers | Each documented ED family has an explicit implemented, receiving or deferred disposition; undefined encodings remain rejected; one bounded follow-up receiver has a complete opcode/flag/timing contract. |
+| Stop Conditions | Required map behavior, port/device semantics, external-code import, a Shared/public contract, conflicting primary facts, or a non-finite family stops selection and records the boundary. |
+| Exit Criteria | A complete L3-backed ED-family ledger exists, no guest payload is retained, the next receiver is bounded and owner-valid, checks pass, evidence is indexed and the packet is closed. |
+| Original Owner Request | Continue MyRaidenII under governance, use original manuals as L3, external emulators only as L2 where needed, do not import protected source/media, and run long tasks in background sessions. |
+
 ## Archived Packet — M1 T7 S45
 
 | Field | Required record |
