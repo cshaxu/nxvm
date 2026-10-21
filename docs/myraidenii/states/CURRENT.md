@@ -2,11 +2,45 @@
 
 ## Current Work
 
-M1 T5 is closed. Its finite Sound/PCM/driver ledger is complete; the queued
-Product task is the sole receiver for runnable composition, real monitor/input
-qualification and release artifacts.
+M1 T6 is active. It receives the closed T5 Machine/PCM driver and establishes
+the one Product composition route; it does not reopen Board, Sound, Video, or
+CPU modeling work.
 
-| T5 | Closed by S18 ledger review; see [history](../history/M1-T5-sound.md) and [closure evidence](../etc/evidence/t5-s18-ledger-closure.md). |
+## Active Packet — M1 T6 S1
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New implementation task; T6 is allocated from the head Product candidate after T5 closed. S1 is the first bounded composition increment. One session performs coordinator and executor roles. |
+| Admission And Approval | The owner accepted M1 Product work in the queue and instructed continuation on 2026-10-20. Ordinary in-scope S planning and implementation are delegated. No Shared change, protected payload import, or source-license exception is admitted. |
+| Objective | Establish the one MyRaidenII Product-owned composition context that consumes the existing parsed configuration and Machine image transaction, constructs the existing Core Board and Machine driver, and supplies that one owned Machine to Emulator Product. |
+| Non-goals | No second executor, Session provider, audio route, renderer, ZIP reader, ROM embedding, command grammar, snapshot/debug implementation, gameplay claim, App artifact, or Shared API change. |
+| Reference Baseline | T5 S16 parses the fixed adjacent INI; T5 S17 materializes/validates the complete external image bundle; T5 closes the sole Board-to-Machine PCM bridge and one Emulator Machine driver. Emulator Product already owns composition, Session, UI creation and teardown. |
+| Candidate Proposal | Add a cohesive Product composition owner and the minimum configuration-directory fact needed to pass the already parsed path set to Machine. It creates Board from the one complete image bundle, creates the existing Machine driver, copies its existing driver descriptor into `emulator_product_machine`, and lets `emulator_product_run()` own the neutral composition lifetime. Bind/unbind only establishes the required opaque Emulator Machine borrow. |
+| Files And ABI Surface | Expected: `src/myraidenii/product/` and matching `test/myraidenii/unit/product/`, its CMake/manifest and MyRaidenII records. Product config may gain a copied INI-directory output required by the existing Machine transaction. Existing public Emulator, Machine and Core interfaces are consumed unchanged. |
+| Applicable Rules | MyRaidenII guide; Architecture, Coding, UI and Source Policy; shared Execution, Architecture, Coding and Document rules. Product -> Machine -> Core remains the only dependency direction. L3 requires an inspected primary-manual PDF with the explicit applicable rule; reference/range facts are L2; unsupported local decisions are L1. |
+| Verification | Before S1 closure: focused Product composition/configuration unit tests on x64/x86, complete MyRaidenII unit selection on x64/x86, manifest/whitespace/documentation gates, and actual diff/ownership review. No external-ROM desktop or EXE qualification is claimed by S1. |
+| Expected Markers | One Product context owns images, Board and Machine until Emulator Product has completed ordered teardown; one existing driver descriptor; one bind/revoke link; failed construction leaves no candidate reachable; no Product-to-Core file route or second Session/worker. |
+| Asset Needs | Existing owner-supplied `O:\assets\raidenii\raiden2.zip` remains read-only and unused by S1 unit work. No asset is copied, retained or committed. |
+| Reporting Requirements | Record actual files/API delta, composition/cleanup order, source-grade classifications, test results, retained single paths and explicit non-claims. |
+| Stop Conditions | A need for Shared change, archive decoding, payload retention, public Core file API, second execution/session route, protected source import, or evidence-grade escalation stops and transfers the gap. |
+| Exit Criteria | The Product has one test-covered composition owner that can construct and cleanly release the existing Machine through Emulator Product without bypassing its lifecycle; all scoped checks pass and no obsolete/parallel route remains. |
+| Original Owner Request | Continue MyRaidenII while applying the strict L3/L2/L1 definition: only an inspected primary-manual PDF's explicit applicable formula/constant/rule is L3; range-only/reference evidence is L2; unsupported borrowing is L1. |
+| Similar-Issue Sweep | Review all current MyRaidenII Product/Machine construction and cleanup call sites for duplicated path resolution, duplicate resource ownership, direct Core file access, second driver creation, or raw platform/CRT vocabulary. |
+
+## M1 T6 S1 Closure
+
+S1 is closed.  The Product now has exactly one owned construction route from
+the runtime configuration through Machine image validation, Board, PCM stream
+and Machine driver into Emulator Product.  The matching composition smoke
+proves normal bind/revoke/destruction plus image, Machine and configuration
+failure boundaries without a test-only production route.  The focused Product
+and complete MyRaidenII unit selections pass 12/12 on x64 and x86; the
+documentation and whitespace gates pass.  See
+[S1 evidence](../etc/evidence/t6-s1-product-composition.md).
+
+T6 remains active.  Later bounded S packets receive the real App entry,
+input/hotkey policy and release qualification; they must consume this owner
+rather than construct another Board, Machine, Session or PCM path.
 
 ## Archived Packet — M1 T5 S18
 

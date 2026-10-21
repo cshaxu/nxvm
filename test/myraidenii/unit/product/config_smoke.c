@@ -75,6 +75,7 @@ int main(void)
         myraidenii_test_directory = directories[index];
         myraidenii_test_expected_path = expected[index];
         assert(myraidenii_product_config_load(1, argv, &config));
+        assert(lib_text_compare((const char *)config.ini_directory, directories[index]) == 0);
     }
     return 0;
 }

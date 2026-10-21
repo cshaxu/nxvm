@@ -159,14 +159,16 @@ lib_bool myraidenii_product_config_load_text(const lib_u8 *text, lib_size text_l
     return LIB_TRUE;
 }
 
-static lib_bool myraidenii_product_config_path(lib_u8 *path)
+static lib_bool myraidenii_product_config_path(lib_u8 *directory, lib_u8 *path)
 {
     const char *name = "myraidenii.ini";
     lib_size length = 0u;
 
-    if (base_process_executable_directory((char *)path,
+    if (directory == LIB_NULL || path == LIB_NULL ||
+        base_process_executable_directory((char *)directory,
             MYRAIDENII_PRODUCT_PATH_CAPACITY) != LIB_STATUS_OK)
         return LIB_FALSE;
+    lib_memory_copy(path, directory, MYRAIDENII_PRODUCT_PATH_CAPACITY);
     while (path[length] != '\0') ++length;
     if (length != 0u && path[length - 1u] != '/' && path[length - 1u] != '\\') {
         if (length + 1u + lib_text_length(name) + 1u > MYRAIDENII_PRODUCT_PATH_CAPACITY)
@@ -182,6 +184,7 @@ static lib_bool myraidenii_product_config_path(lib_u8 *path)
 lib_bool myraidenii_product_config_load(lib_i32 argc, char **argv,
     myraidenii_product_config *out_config)
 {
+    lib_u8 directory[MYRAIDENII_PRODUCT_PATH_CAPACITY];
     lib_u8 path[MYRAIDENII_PRODUCT_PATH_CAPACITY];
     void *bytes = LIB_NULL;
     lib_size byte_count;
@@ -189,12 +192,14 @@ lib_bool myraidenii_product_config_load(lib_i32 argc, char **argv,
     lib_bool result;
 
     if (out_config == LIB_NULL || argc != 1 || argv == LIB_NULL ||
-        !myraidenii_product_config_path(path)) return LIB_FALSE;
+        !myraidenii_product_config_path(directory, path)) return LIB_FALSE;
     status = lib_storage_file_read_owned((const char *)path, 24u * 1024u, &bytes,
         &byte_count);
     if (status != LIB_STATUS_OK) return LIB_FALSE;
     result = myraidenii_product_config_load_text((const lib_u8 *)bytes, byte_count,
         out_config);
     lib_release(bytes);
+    if (result != LIB_FALSE)
+        lib_memory_copy(out_config->ini_directory, directory, sizeof(directory));
     return result;
 }

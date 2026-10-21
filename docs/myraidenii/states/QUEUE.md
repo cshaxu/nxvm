@@ -11,8 +11,7 @@ delivery. The candidates below are unadmitted; numeric T identifiers are
 allocated only on admission in MyRaidenII's independent sequence, not NXVM's
 sequence.
 
-1. [Connect Machine, Product, configuration and controls](../proposals/m1-product.md)
-2. [Qualify complete gameplay and release](../proposals/m1-qualification.md)
+1. [Qualify complete gameplay and release](../proposals/m1-qualification.md)
 
 These are receiving boundaries, not already admitted implementations.
 Each admission freezes bounded S batches and a finite verification ledger.
