@@ -108,6 +108,7 @@
 - [T7 MAME black-box Coin/Start pulse](evidence/t7-s24-mame-input-pulse.md).
 - [T7 Board/Sound byte-lane and handshake repair](evidence/t7-s25-sound-handoff.md).
 - [T7 COPX-D2 boundary observation](evidence/t7-s27-copx-boundary-observation.md).
+- [T7 ordered Coin/Start probe](evidence/t7-s28-ordered-input-probe.md).
 
 These records support the design authorities and active Current packet; they
 are not another architecture, queue or task-state authority.

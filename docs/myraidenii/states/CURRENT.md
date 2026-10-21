@@ -6,6 +6,41 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result.
 
+## Archived Packet — M1 T7 S28
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S27; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued MyRaidenII implementation and permits bounded probes rather than Computer Use. This is a MyRaidenII test-only packet. |
+| Objective | Add one mutually exclusive, ordered Coin then Start pulse to the existing selected-set Probe so its deterministic Board input route can be compared with the prior simultaneous pulse without adding a guest-input path. |
+| Non-goals | No Shared, Product, Machine, Core production, API, ROM/PAL, title-state mirror, host automation, timing claim, gameplay claim, external-reference dependency, or release change. |
+| Reference Baseline | S19 proved only the simultaneous quarter/half instruction-budget pulse. S24's external input pulse orders Coin before Start at frame checkpoints; its frame schedule is not transferred as local hardware timing. |
+| Candidate Proposal | Extend the existing Probe argument enum with one exclusive `--coin-start-sequence` mode. At fixed normalized instruction-budget fractions it presses/releases Coin, then later presses/releases Start through the existing Machine driver. Report the four application flags and thresholds in the existing neutral summary. |
+| Files And ABI Surface | `test/myraidenii/integration/selected_set_startup_probe.c`, its existing wrapper only if forwarding needs adjustment, Current and one evidence record. No production or public ABI change. Expected test-only delta +45..75/-8..18 lines. |
+| Applicable Rules | MyRaidenII guide, Architecture/Coding/UI, source policy, shared Execution/Coding/Documentation rules and T7 qualification proposal. The schedule is L1 containment/diagnostic policy; resulting owner-ROM observations are L2. |
+| Verification | Build the existing Probe on x64/x86; reject conflicting/unknown options; run the owner-ROM wrapper once per width at its existing 20M cap; compare neutral summaries; run affected MyRaidenII tests and documentation/whitespace checks. |
+| Expected Markers | Four ordered driver deliveries succeed once each, both widths agree, and either a finite difference or a finite neutral result is recorded without identifying a title/credit state. |
+| Asset Needs | Read-only owner archive through the existing staging wrapper only; no acquisition or persistence. |
+| Reporting Requirements | Record schedule, implementation/test delta, dual-width output comparison, cleanup and the explicit non-equivalence to external frame timing. |
+| Stop Conditions | A need for production input changes, new public state/API, host automation, raw guest-state capture, unbounded run, protected output retention or a failing existing input route stops the S and records the precise gap. |
+| Exit Criteria | The existing Probe has the ordered mode with exclusive parsing and all four edge results; verification passes; stages are removed; actual diff is reviewed and a complete P is pushed. |
+| Original Owner Request | Continue independently using bounded probes and external emulators as L2 references rather than waiting for physical hardware. |
+| Similar-Issue Sweep | Existing held/simultaneous/ordered mode exclusivity, every press/release failure, instruction threshold overflow/order, output summary framing, wrapper forwarding and staging cleanup. |
+
+## M1 T7 S28 Closure
+
+S28 is closed after actual-diff review.  The existing selected-set Probe now
+has one exclusive ordered Coin/Start diagnostic mode.  Both widths completed
+the full 20M run with byte-identical neutral summaries and all four driver
+deliveries accepted.  This rules out only the old simultaneous-pulse shape;
+it does not prove a guest title, credit, start, gameplay or sound outcome.
+See [S28 evidence](../etc/evidence/t7-s28-ordered-input-probe.md).
+
+The affected MyRaidenII unit suites passed on both host widths.  External
+stages and temporary logs were removed.  No production, Shared, public API,
+asset or executable changed.  T7 remains active; no successor S is admitted
+by this closure.
+
 ## Archived Packet — M1 T7 S27
 
 | Field | Required record |
