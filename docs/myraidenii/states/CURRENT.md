@@ -34,6 +34,25 @@ FIFO; it is not a real-game or desktop qualification.
 | Original Owner Request | Continue MyRaidenII without modifying Lib, Emulator, X86 Core or X86 IBMPC production and test packages. |
 | Similar-Issue Sweep | Consider press and release handling, transient effects, and continued gameplay independently. |
 
+An x64 temporary probe pressed X at vblank 1350 and captured the frame at
+1370. The run completed; the captured image showed a small object ahead of the
+aircraft, but without a no-X frame at the same phase its identity and relation
+to the button were not established. A separate x64 run with the same schedule
+and no X captured vblank 1370: the object was absent. The matched comparison
+therefore establishes a visible second-button response at that checkpoint,
+but not the full bomb sequence or later-stage behavior. The transient captures
+and probe edits were removed.
+
+An x64 selected-set run with the same Coin/Start schedule then held fire from
+vblank 1350 for a 60-million-instruction budget. It completed normally; its
+final frame visibly showed a later terrain scene, score 800 and `INSERT COIN`.
+This is bounded progression evidence only: it does not identify a game-over
+transition or boss, prove stage completion, or establish interactive output.
+The temporary screen capture and probe edits were removed.
+The restored x64 probe builds successfully; the MyRaidenII documentation
+governance check and `git diff --check` pass. This is a diagnostic-only S:
+there is no production, unit-test, public API, Shared or artifact change.
+
 ## M1 T7 S77 — Closed
 
 Coordinator review accepts P1 `5341b01df`: paired scripted runs visibly
