@@ -13,7 +13,11 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S107 — Active
+## M1 T7 S107 — Closed
+
+Coordinator reviewed P1 `762a4153c`, both injected failure cases, dual-width
+unit results and artifact identities. The shutdown-failure objects intentionally
+survive until process exit. This does not close S79 or T7 qualification.
 
 | Field | Required record |
 | --- | --- |
