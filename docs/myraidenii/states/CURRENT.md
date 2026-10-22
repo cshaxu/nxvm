@@ -13,6 +13,55 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S109 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Bound guest execution against the existing nominal Core time axis when no host audio stream is available. |
+| Non-goals | No second guest clock, shared change, audio device recovery, hardware-precision or gameplay qualification claim. |
+| Reference Baseline | Machine drains and discards PCM without a stream and currently has no host-time pacing in that branch; Core declares a macro-proportional 16 MHz axis. |
+| Candidate Proposal | Use the existing Core time observation and Lib monotonic clock in the existing Machine worker, with bounded responsive waits and origin rebase on lifecycle transitions; retain existing stream backpressure. |
+| Files And ABI Surface | MyRaidenII Machine driver and its existing smoke, Current and product EXEs; no public interface change. Estimated production +55/-0 and tests +65/-3. |
+| Applicable Rules | Architecture: one guest timeline and worker; Coding: existing Lib interfaces, flat local ownership; Execution: complete dual-width unit suites and stripped artifacts; Documentation: truthful evidence. |
+| Verification | Controlled-clock driver test of pacing, wake/stop, reset/resume, lag and no-stream behavior; x64/x86 focused and repository-only unit suites; both product builds, PE and artifact hashes; documentation gate. |
+| Expected Markers | No-stream execution cannot advance ahead of nominal guest time indefinitely; lifecycle remains responsive; existing stream behavior and Core time remain unchanged. |
+| Asset Needs | Existing Ninja/ccache trees and local product assets; no external media or temporary output. |
+| Reporting Requirements | Distinguish nominal model from physical fidelity and simulated clock tests from desktop gameplay. |
+| Stop Conditions | Correct implementation needs an excluded Shared change or unsupported guest-time contract. |
+| Exit Criteria | Actual diff reviewed, verification and release recorded, P committed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without changes to the four specified Shared source/test pairs. |
+| Similar-Issue Sweep | Inspect paused/resumed epochs, reset, overdue host, clock errors, audio-present branch and stop/wake handling. |
+
+Executor evidence: the only no-stream production run path previously discarded
+PCM and advanced Core without a host-time bound. The driver now samples the
+existing macro-proportional Core observation and uses Lib monotonic milliseconds
+to defer the next instruction quantum when guest time leads. Waits are bounded
+to five milliseconds so the existing executor callback remains responsive;
+reset and heartbeat transitions invalidate the origin. A host lag above 100 ms
+rebases rather than accumulating a permanent catch-up obligation. The existing
+stream-present backpressure path is unchanged. Core remains the sole owner of
+guest time; the new host origin only limits execution. The 16 MHz axis is a
+nominal model, not physical timing evidence.
+
+The existing driver fixture now controls host time and guest ticks and checks
+lead, bounded wait, wake without extra execution, pause/resume rebase, lag,
+stop/reset and clock failure. Dual-width focused tests passed; the complete
+repository-only unit selection passed 698/698 x64 (88.27 s) and 698/698 x86
+(88.58 s). A subsequent test-only formatting adjustment was rebuilt and the
+focused test rerun on both widths. Documentation governance and diff whitespace
+checks passed. Tracked code diff is driver +57/-0 and driver test +53/-3.
+
+Both stripped Product EXEs were rebuilt and PE identities verified: x64 SHA-256
+`44ccc00b333778bb88e892ac11b65bb49c2bf01d9951dd8496e39ea87ebe518d`,
+x86 `ae69d3e60757a9d173c222cd33cc263575d173223919526ad55fc5117e009b85`.
+The owner-ROM Product Console smoke passed for both using the x64 harness;
+it does not check child exit code, desktop controls, audible output or complete
+gameplay. No real no-device speed measurement was performed. S79 input FIFO
+ordering, desktop audio and T7 game qualification remain open. No Shared
+source or tests were changed.
+
 ## M1 T7 S108 — Closed
 
 Coordinator reviewed P1 `d402d088d`, full dual-width unit results, the

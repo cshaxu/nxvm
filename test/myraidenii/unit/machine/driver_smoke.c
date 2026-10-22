@@ -25,6 +25,34 @@ static lib_bool control_pressed;
 static lib_u32 queued_count;
 static lib_u32 queue_fail_at = LIB_UINT32_MAX;
 static base_key queued_keys[17];
+static lib_u64 clock_ms;
+static lib_u64 guest_ticks;
+static lib_u32 slept_ms;
+static lib_bool clock_fails;
+
+lib_status base_clock_milliseconds(lib_u64 *out_milliseconds)
+{
+    if (out_milliseconds == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (clock_fails) return LIB_STATUS_IO_ERROR;
+    *out_milliseconds = clock_ms;
+    return LIB_STATUS_OK;
+}
+
+void base_sync_sleep_milliseconds(lib_u32 milliseconds)
+{
+    slept_ms += milliseconds;
+    clock_ms += milliseconds;
+}
+
+lib_status x86_core_machine_capture_time_observation(const x86_core_machine *machine,
+    x86_core_machine_time_observation *observation)
+{
+    if (machine == LIB_NULL || observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *observation = (x86_core_machine_time_observation){
+        .elapsed_ticks = guest_ticks, .pacing_ticks_per_second = 16000000u,
+        .pacing_time_available = LIB_TRUE };
+    return LIB_STATUS_OK;
+}
 
 lib_bool emulator_machine_enqueue_input(emulator_machine *machine, const kvm_input_event *event)
 {
@@ -95,6 +123,7 @@ lib_status x86_core_machine_reset(x86_core_machine *machine)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     ++reset_count;
+    guest_ticks = 0u;
     return LIB_STATUS_OK;
 }
 
@@ -104,6 +133,7 @@ lib_status x86_core_machine_run(x86_core_machine *machine,
     if (machine == LIB_NULL || result == LIB_NULL || budget.instructions != 256u || budget.ticks != 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
     ++run_count;
+    guest_ticks += 160000u;
     *result = (x86_core_machine_run_result) { .reason = X86_CORE_MACHINE_STOP_BUDGET };
     return LIB_STATUS_OK;
 }
@@ -227,9 +257,29 @@ int main(void)
     queue_fail_at = LIB_UINT32_MAX;
 
     if (myraidenii_machine_create(LIB_NULL, stream, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
-        myraidenii_machine_create((myraidenii_core_board *)board, LIB_NULL, &machine) !=
-            LIB_STATUS_OK || myraidenii_machine_destroy(&machine) != LIB_STATUS_OK ||
-        myraidenii_machine_create((myraidenii_core_board *)board, stream, &machine) != LIB_STATUS_OK ||
+        myraidenii_machine_create((myraidenii_core_board *)board, LIB_NULL, &machine) != LIB_STATUS_OK ||
+        myraidenii_machine_driver_get(machine, &driver) != LIB_STATUS_OK ||
+        !driver.reset(driver.context) || !driver.run(driver.context) ||
+        !driver.run(driver.context) || slept_ms != 5u || run_count != 1 ||
+        !driver.run(driver.context) || slept_ms != 10u || run_count != 1 ||
+        !driver.run(driver.context) || run_count != 2) return 1;
+    driver.set_heartbeat(driver.context, LIB_FALSE);
+    clock_ms += 1000u;
+    driver.set_heartbeat(driver.context, LIB_TRUE);
+    if (!driver.run(driver.context) || run_count != 3 || slept_ms != 10u) return 1;
+    driver.request_wake(driver.context);
+    if (!driver.run(driver.context) || run_count != 3 || slept_ms != 10u ||
+        !driver.run(driver.context) || slept_ms != 15u) return 1;
+    clock_ms += 200u;
+    if (!driver.run(driver.context) || run_count != 4 || slept_ms != 15u) return 1;
+    driver.request_stop(driver.context);
+    if (!driver.run(driver.context) || run_count != 4 || !driver.reset(driver.context)) return 1;
+    clock_fails = LIB_TRUE;
+    if (driver.run(driver.context)) return 1;
+    clock_fails = LIB_FALSE;
+    if (myraidenii_machine_destroy(&machine) != LIB_STATUS_OK) return 1;
+    reset_count = run_count = stop_count = 0;
+    if (myraidenii_machine_create((myraidenii_core_board *)board, stream, &machine) != LIB_STATUS_OK ||
         myraidenii_machine_driver_get(machine, &driver) != LIB_STATUS_OK ||
         driver.context != machine || driver.reset == LIB_NULL || driver.run == LIB_NULL ||
         driver.request_stop == LIB_NULL || driver.request_wake == LIB_NULL ||

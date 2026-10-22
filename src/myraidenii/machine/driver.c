@@ -1,6 +1,7 @@
 #include "myraidenii/machine/driver_interface.h"
 
 #include "lib/base/sync_interface.h"
+#include "lib/base/clock_interface.h"
 #include "myraidenii/machine/audio_interface.h"
 
 enum {
@@ -20,8 +21,53 @@ struct myraidenii_machine {
     lib_atomic_i32 failed;
     lib_u32 frame_sequence;
     lib_u64 frame_vblank;
+    lib_u64 pacing_host_ms;
+    lib_u64 pacing_guest_ticks;
+    lib_bool pacing_ready;
     lib_u32 native_pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS];
 };
+
+/* Bound only the no-audio fallback; the stream already supplies backpressure.
+ * Guest time remains owned exclusively by Core. */
+static lib_status myraidenii_machine_pace(myraidenii_machine *machine,
+    lib_bool *out_ready)
+{
+    x86_core_machine_time_observation observation;
+    lib_u64 now, elapsed, whole, remainder, due;
+
+    *out_ready = LIB_FALSE;
+    if (x86_core_machine_capture_time_observation(machine->core_machine, &observation) != LIB_STATUS_OK ||
+        !observation.pacing_time_available || observation.pacing_ticks_per_second == 0u ||
+        observation.pacing_ticks_per_second > LIB_UINT64_MAX / 1000u ||
+        base_clock_milliseconds(&now) != LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
+    if (!machine->pacing_ready || now < machine->pacing_host_ms ||
+        observation.elapsed_ticks < machine->pacing_guest_ticks) {
+        machine->pacing_host_ms = now;
+        machine->pacing_guest_ticks = observation.elapsed_ticks;
+        machine->pacing_ready = LIB_TRUE;
+    }
+    elapsed = observation.elapsed_ticks - machine->pacing_guest_ticks;
+    whole = elapsed / observation.pacing_ticks_per_second;
+    remainder = elapsed % observation.pacing_ticks_per_second;
+    if (machine->pacing_host_ms > LIB_UINT64_MAX - 1000u ||
+        whole > (LIB_UINT64_MAX - machine->pacing_host_ms - 1000u) / 1000u)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    due = machine->pacing_host_ms + whole * 1000u +
+        remainder * 1000u / observation.pacing_ticks_per_second;
+    if (now >= due) {
+        if (now - due > 100u) {
+            machine->pacing_host_ms = now;
+            machine->pacing_guest_ticks = observation.elapsed_ticks;
+        }
+        *out_ready = LIB_TRUE;
+        return LIB_STATUS_OK;
+    }
+    if (lib_atomic_i32_exchange_explicit(&machine->wake_requested, 0,
+            LIB_MEMORY_ORDER_SEQ_CST) == 0 &&
+        lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0)
+        base_sync_sleep_milliseconds((lib_u32)(due - now > 5u ? 5u : due - now));
+    return LIB_STATUS_OK;
+}
 
 static void myraidenii_machine_fail(myraidenii_machine *machine)
 {
@@ -39,6 +85,7 @@ static lib_bool myraidenii_machine_reset(void *context)
         return LIB_FALSE;
     }
     machine->frame_vblank = LIB_UINT64_MAX;
+    machine->pacing_ready = LIB_FALSE;
     lib_atomic_i32_store_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
     return LIB_TRUE;
 }
@@ -56,6 +103,15 @@ static lib_bool myraidenii_machine_run(void *context)
         machine->executor_callback(machine->executor_context);
     if (lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0)
         return LIB_TRUE;
+    if (machine->stream == LIB_NULL) {
+        lib_bool ready;
+        status = myraidenii_machine_pace(machine, &ready);
+        if (status != LIB_STATUS_OK) {
+            myraidenii_machine_fail(machine);
+            return LIB_FALSE;
+        }
+        if (!ready) return LIB_TRUE;
+    }
     status = x86_core_machine_run(machine->core_machine,
         (x86_core_machine_run_budget){ MYRAIDENII_MACHINE_RUN_INSTRUCTION_QUANTUM, 0u },
         &result);
@@ -122,6 +178,7 @@ static void myraidenii_machine_set_heartbeat(void *context, lib_bool enabled)
     lib_status status = LIB_STATUS_OK;
 
     if (machine == LIB_NULL) return;
+    machine->pacing_ready = LIB_FALSE;
     if (enabled == LIB_FALSE) {
         status = myraidenii_machine_audio_clear(machine->audio);
         if (status == LIB_STATUS_OK && machine->stream != LIB_NULL)
