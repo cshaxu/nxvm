@@ -58,6 +58,16 @@ and matching PCM digest `ea90f8cea7f30039` and frame digest `ac25ef796f90ea94`.
 The probe uses the external owner archive, and its staging is removed by the
 wrapper. These observations do not establish desktop audio or fidelity.
 
+The same reference's `fm_operator::start_attack` treats an effective attack
+rate of 62 or more as immediately reaching the maximum envelope on key-on.
+The local model now applies this L2 threshold while retaining its L1 gradual
+envelope approximation at lower rates. The existing pitch test additionally
+checks the early output level; the key-off test observes both initial sound and
+the eventual release after a longer window, rather than assuming the old
+slower attack's lower level. The MyRaidenII units and executable builds pass
+on both widths. Selected-set and desktop playback have not yet been rechecked
+for this attack change.
+
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected
 rate and four waveform selections follow the inspected register vocabulary;

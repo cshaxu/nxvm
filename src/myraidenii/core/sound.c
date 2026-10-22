@@ -214,6 +214,21 @@ static void myraidenii_core_sound_ym_advance(myraidenii_core_sound_ym *ym,
     }
 }
 
+static lib_u8 myraidenii_core_sound_ym_slot(lib_u8 channel, lib_u8 op)
+{
+    return (lib_u8)((((op & 1u) << 1u) | ((op & 2u) >> 1u)) * 8u + channel);
+}
+
+static lib_u8 myraidenii_core_sound_ym_effective_rate(
+    const myraidenii_core_sound_ym *ym, lib_u8 channel, lib_u8 slot, lib_u8 base)
+{
+    const lib_u8 keycode = (ym->registers[0x28u + channel] & 0x7fu) >> 2u;
+    const lib_u8 key_scale = ym->registers[0x80u + slot] >> 6u;
+    const lib_u8 rate = (lib_u8)(base + (keycode >> (3u - key_scale)));
+
+    return base == 0u ? 0u : rate > 63u ? 63u : rate;
+}
+
 static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
     lib_u16 address, lib_u8 value)
 {
@@ -236,8 +251,14 @@ static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
             const lib_u8 bit = (lib_u8)(1u << op);
             if ((changed & bit) == 0u) continue;
             if ((keys & bit) != 0u) {
+                const lib_u8 slot = myraidenii_core_sound_ym_slot(channel, op);
+                const lib_u8 attack = ym->registers[0x80u + slot] & 31u;
+
                 ym->output_phase[channel][op] = 0u;
                 ym->envelope[channel][op] = 1u;
+                if (myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
+                        (lib_u8)(2u * attack)) >= 62u)
+                    ym->level[channel][op] = 1.0;
             } else ym->envelope[channel][op] = 4u;
         }
         ym->operator_keys[channel] = keys;
@@ -463,12 +484,6 @@ static double myraidenii_core_sound_ym_frequency(const myraidenii_core_sound_ym 
         64.0) * 0.0594630943592953);
 }
 
-static double myraidenii_core_sound_ym_rate(lib_u8 raw, lib_u8 scale)
-{
-    const lib_u8 rate = (lib_u8)(2u * raw + scale);
-    return raw == 0u ? 0.0 : (double)(rate > 63u ? 63u : rate) / 2.0;
-}
-
 static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     lib_u8 channel, lib_u8 op, double frequency, double modulation, double lfo_am)
 {
@@ -476,7 +491,7 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     static const double detune2_ratio[4u] = {
         1.0, 1.4142135623730951, 1.5700748447110506, 1.731073122012286
     };
-    const lib_u8 slot = (lib_u8)((((op & 1u) << 1u) | ((op & 2u) >> 1u)) * 8u + channel);
+    const lib_u8 slot = myraidenii_core_sound_ym_slot(channel, op);
     const lib_u8 multiple = ym->registers[0x40u + slot] & 15u;
     const lib_u8 attenuation = ym->registers[0x60u + slot] & 127u;
     const lib_u8 attack = ym->registers[0x80u + slot] & 31u;
@@ -484,14 +499,14 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     const lib_u8 sustain_rate = ym->registers[0xc0u + slot] & 31u;
     const lib_u8 sustain = ym->registers[0xe0u + slot] >> 4u;
     const lib_u8 release = ym->registers[0xe0u + slot] & 15u;
-    const lib_u8 keycode = (ym->registers[0x28u + channel] & 0x7fu) >> 2u;
-    const lib_u8 key_scale = ym->registers[0x80u + slot] >> 6u;
-    const lib_u8 rate_scale = keycode >> (3u - key_scale);
-    const double attack_rate = myraidenii_core_sound_ym_rate(attack, rate_scale);
-    const double decay_rate = myraidenii_core_sound_ym_rate(decay, rate_scale);
-    const double sustain_adjusted = myraidenii_core_sound_ym_rate(sustain_rate, rate_scale);
-    const lib_u8 release_steps = (lib_u8)(4u * release + 2u + rate_scale);
-    const double release_rate = (double)(release_steps > 63u ? 63u : release_steps) / 4.0;
+    const double attack_rate = myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
+        (lib_u8)(2u * attack)) / 2.0;
+    const double decay_rate = myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
+        (lib_u8)(2u * decay)) / 2.0;
+    const double sustain_adjusted = myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
+        (lib_u8)(2u * sustain_rate)) / 2.0;
+    const double release_rate = myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
+        (lib_u8)(4u * release + 2u)) / 4.0;
     double *level = &ym->level[channel][op];
     lib_u8 *stage = &ym->envelope[channel][op];
     double step, gain = 1.0, factor = 0.9172759353897796;

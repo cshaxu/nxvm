@@ -93,6 +93,10 @@ relationship. Restoring the old base makes that test fail; MyRaidenII units
 pass 13/13 on both widths. Sequential selected-set runs after the pitch change
 reach 20 million instructions on both widths with matching frame and PCM
 digests; desktop playback and fidelity remain unverified.
+The current attack candidate applies the L2 reference's immediate maximum
+level on key-on at effective attack rates 62 and 63; lower-rate curves remain
+L1. Both-width MyRaidenII units pass 13/13. Its selected-set and desktop
+playback checks remain outstanding.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.
