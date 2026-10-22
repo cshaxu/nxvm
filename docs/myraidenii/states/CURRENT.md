@@ -68,6 +68,15 @@ Shared Console helper does not inspect the child exit code, so an external
 process handle was retained to observe the Product's exit. This is a failure
 of the direct x86 test process and is not counted as a passed direct smoke;
 its root cause remains unproven. No Shared repair is authorized by this task.
+An additional controlled x86 diagnostic removed only the smoke's success
+print, rebuilt it, and reproduced `0xc0000005`; the source and executable
+were then restored. Thus the marker print alone is not the cause. Changing
+the helper's working directory to the artifact directory also reproduced it.
+The x86 smoke imports UCRT while the x64 smoke imports MSVCRT; this is a
+toolchain difference, not proof of causation. Under 32-bit GDB, the first
+observed exception remains `0xc0000008` at a file-handle query during CRT
+exit; continuing terminated the process. The staged wrapper smoke previously
+passed, so the conditions triggering the difference are not yet established.
 
 | Field | Required record |
 | --- | --- |
@@ -77,7 +86,7 @@ its root cause remains unproven. No Shared repair is authorized by this task.
 | Non-goals | No Shared changes, copied implementation, audio fidelity or hardware-exact claims, or inference that ignored control counters imply a fault. |
 | Reference Baseline | Local OKI status returns only low voice bits; MAME mame0289 src/devices/sound/okim6295.cpp returns high bits set as well. S94 observed ignored empty-mask controls but no rejected selections. |
 | Candidate Proposal | Model the common status behavior in the existing Sound owner and extend existing synthetic sound CPU tests for both devices and voice states; correct the Product's stale T6 version to active T7 before its artifact verification. |
-| Files And ABI Surface | MyRaidenII Core sound and existing owned unit, Product version and build declaration, current task record and product preview artifacts/configuration; no public API or Shared files. |
+| Files And ABI Surface | MyRaidenII Core sound, existing owned unit and Product integration smoke for exit diagnosis, Product version and build declaration, current task record and product preview artifacts/configuration; no public API or Shared files. |
 | Applicable Rules | Product source policy and architecture; shared execution, coding and documentation; preserve one Sound owner, independent implementation and external-source provenance. |
 | Verification | Demonstrate existing status mismatch with a focused test, rebuild both candidate architectures and run owned units, relevant real-set integration and governance gates; inspect actual diff. |
 | Expected Markers | Both devices report high status bits and accurate low voice bits before, during and after playback; no claim of host audio or full-game qualification. |
