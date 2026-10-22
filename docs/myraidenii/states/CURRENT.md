@@ -13,6 +13,64 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S96 — Active
+
+The coordinator admits a bounded selected-board Video overlap investigation
+and, if the independently checked comparison establishes the gap, repair.
+The existing compositor draws sprites independently per priority phase. The
+inspected MAME Raiden II path draws a single raw sprite image before applying
+its priority phases, suggesting that overlapping descriptors of different
+priorities must first resolve one frontmost sprite. The exact sprite overwrite
+and transparent-pen rules must be verified before changing the renderer.
+
+The reference comparison confirms that the selected Raiden II path resolves
+one raw sprite image before its four applicable layer positions; the inspected
+MiSTer SEI252 model (`27021027c5c3db226c5e77a27c5390022b8aa1f2`,
+`rtl/sei252.sv`) likewise selects the first opaque descriptor by list order
+before carrying its priority to the mixer. These are L2 references, not a
+claim of hardware-exact rendering. The existing graphics fixture gained a
+cross-priority overlap that failed before the local change. The one Video
+compositor now resolves sprite order once and carries the selected priority in
+the unused high byte of its working RGB destination until layer composition
+finishes; it clears that byte before a successful frame is returned. No extra
+buffer, persistent state, interface, or renderer was added. Reverse-priority
+and transparent-front cases also pass; existing fixture coverage now checks
+the sprite priority transition at background, midground, foreground and text
+layers. Blend/shadow and the conflicting background-pen observations remain
+separate and are not claimed fixed.
+
+After relinking affected targets, MyRaidenII units passed 13/13 on each host
+width. The x64 Console helper exercised the deployed x64 and x86 Product and
+adjacent INI through start/pause/resume/stop/exit; the helper's independent x86
+standard-handle failure is still unresolved and the helper does not itself
+verify child exit codes. These checks are not real desktop, audio, stage/boss,
+full gameplay, or owner acceptance. The updated stripped preview hashes are
+`6af4dac94ce67c98f7ed2883bef14fc660d39279ab9f5899b6f2861a2dfa508d`
+(x64) and `e9756c04120d2da7b02b498750650c4e08ddc9e19196f99108c09a9d0f1c6961`
+(x86). PE headers confirm x86-64 and i386 respectively. Documentation
+governance and whitespace checks passed. The source/test diff is 94 additions
+and 29 deletions (net +65), of which 66 added lines extend the existing
+graphics test. S96 remains active pending coordinator review.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S95; one person performs coordinator and executor review. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation and independently derived L2 emulator behavior; Lib, Emulator, X86 Core and X86 IBMPC source/tests remain unchanged. |
+| Objective | Verify and, if confirmed, correct the selected-board overlap of differently prioritized sprites in the one Video compositor. |
+| Non-goals | No copied external source or tables, blend implementation, new renderer, Shared changes, protected data in Git, or unsupported whole-game claim. |
+| Reference Baseline | MAME mame0289 f34f025 Raiden II draws one raw sprite bitmap before priority/layer mixing; current Video scans descriptors separately per priority. |
+| Candidate Proposal | Confirm frontmost and transparency semantics against reference; extend the existing synthetic graphics test for cross-priority overlaps and layer occlusion, then make the smallest coherent independently written Video change if the test establishes a discrepancy. |
+| Files And ABI Surface | MyRaidenII Core Video and existing graphics unit; Product artifacts and task records as required. No public Shared interface or other App. |
+| Applicable Rules | Product source policy and architecture; shared execution, coding and documentation; preserve one renderer, source provenance, and honest L2 classification. |
+| Verification | Demonstrate discriminating synthetic cases against the old and corrected compositor; build and run affected units and owned suite for x86 and x64; build/deploy and check both Product previews; run relevant selected-set Product integration; check actual diff and documentation gates. |
+| Expected Markers | Frontmost sprite selection and transparent pixels agree with the observed reference independent of sprite priority; tile layers occlude only according to the selected sprite's priority. |
+| Asset Needs | Synthetic pixels for unit tests; existing owner-supplied selected-set files for integration only; no ROM or screenshots retained. |
+| Reporting Requirements | Record reference version, actual overlap semantics, code/test diff, dual-width results and all unqualified gameplay, sound and desktop behavior. |
+| Stop Conditions | A correct repair would require prohibited Shared changes, copied protected data or an unsupported claim of exact hardware behavior. |
+| Exit Criteria | Reference comparison and every admitted overlap case are resolved, relevant checks and preview artifacts completed, actual changes reviewed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying the specified four Shared source/test pairs. |
+| Similar-Issue Sweep | Check descriptor order, equal and unequal priorities, transparent top pixels, all tile boundaries, disabled layers and both output widths. |
+
 ## M1 T7 S95 — Closed
 
 The local Sound receiver now returns high status bits set for both OKI

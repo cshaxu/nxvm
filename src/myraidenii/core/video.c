@@ -2,6 +2,11 @@
 #include "myraidenii/core/graphics.h"
 #include "myraidenii/core/sprite_interface.h"
 
+/* RGB32 has an unused high byte. During composition it holds the selected
+ * sprite's presence and priority; frame_copy removes it before publication. */
+#define MYRAIDENII_CORE_VIDEO_SPRITE_PRESENT 0x80000000u
+#define MYRAIDENII_CORE_VIDEO_RGB_MASK 0x00ffffffu
+
 enum {
     MYRAIDENII_CORE_VIDEO_LINE_TICKS = 512u * 2u,
     MYRAIDENII_CORE_VIDEO_FRAME_TICKS = MYRAIDENII_CORE_VIDEO_LINE_TICKS * 282u,
@@ -237,7 +242,8 @@ static lib_status myraidenii_core_video_layer_pixel(const myraidenii_core_video 
 
 static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *video,
     lib_u16 tilemap_offset, lib_u8 tile_width, lib_u8 tile_height, lib_u8 bank,
-    lib_u16 palette_base, lib_u16 scroll_x, lib_u16 scroll_y, lib_u32 *pixels)
+    lib_u16 palette_base, lib_u16 scroll_x, lib_u16 scroll_y, lib_u8 layer_priority,
+    lib_u32 *pixels)
 {
     lib_u16 y;
 
@@ -255,9 +261,9 @@ static lib_status myraidenii_core_video_layer_draw(const myraidenii_core_video *
                 (lib_u16)(y + scroll_y) & (MYRAIDENII_CORE_VIDEO_TILE_LAYER_SIZE - 1u),
                 &color, &visible);
             if (status != LIB_STATUS_OK) return status;
-            if (visible) {
-                pixels[(lib_size)y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x] = color;
-            }
+            lib_size offset = (lib_size)y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x;
+            if (visible && ((pixels[offset] & MYRAIDENII_CORE_VIDEO_SPRITE_PRESENT) == 0u ||
+                ((pixels[offset] >> 24u) & 3u) <= layer_priority)) pixels[offset] = color;
         }
     }
     return LIB_STATUS_OK;
@@ -275,13 +281,12 @@ static lib_bool myraidenii_core_video_sprite_entry_is_empty(const lib_u8 *source
 }
 
 static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video *video,
-    const lib_u8 *sprite_bytes, lib_u8 priority, lib_u32 *pixels)
+    const lib_u8 *sprite_bytes, lib_u32 *pixels)
 {
     lib_size descriptor_offset;
 
-    /* The selected SEI25X-compatible L2 renderer scans the object image from
-     * its final entry down.  Keep that ordering here so the lower-addressed
-     * descriptor is the later (frontmost) write within one priority phase. */
+    /* The selected L2 renderer resolves sprite overlap before layer priority.
+     * Scan backwards so a lower-addressed descriptor is the frontmost write. */
     for (descriptor_offset = MYRAIDENII_CORE_SPRITE_BUFFER_BYTES;
             descriptor_offset != 0u;
             descriptor_offset -= MYRAIDENII_CORE_SPRITE_DESCRIPTOR_BYTES) {
@@ -295,7 +300,6 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
         if (status != LIB_STATUS_OK) return status;
         if (myraidenii_core_video_sprite_entry_is_empty(source) || descriptor.tile_index == 0u)
             continue;
-        if (descriptor.priority != priority) continue;
         for (tile_y = 0u; tile_y < descriptor.height_tiles; ++tile_y) {
             lib_u8 tile_x;
 
@@ -329,10 +333,12 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
                             source_x, source_y, &pixel);
                         if (status != LIB_STATUS_OK) return status;
                         if (pixel != 15u) {
+                            lib_size offset = (lib_size)y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x;
                             status = myraidenii_core_video_palette_color(video,
-                                (lib_u16)(descriptor.color_index * 16u + pixel),
-                                &pixels[(lib_size)y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x]);
+                                (lib_u16)(descriptor.color_index * 16u + pixel), &pixels[offset]);
                             if (status != LIB_STATUS_OK) return status;
+                            pixels[offset] |= MYRAIDENII_CORE_VIDEO_SPRITE_PRESENT |
+                                ((lib_u32)descriptor.priority << 24u);
                         }
                     }
                 }
@@ -361,7 +367,7 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
     }
     lib_memory_set(out_pixels, 0, MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS * sizeof(*out_pixels));
     if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
-        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 0u, out_pixels);
+        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
     if (myraidenii_core_video_layer_is_enabled(video, 0u)) {
@@ -371,11 +377,7 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
             myraidenii_core_video_crtc_word(video,
                 MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_X_OFFSET),
             myraidenii_core_video_crtc_word(video,
-                MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_Y_OFFSET), out_pixels);
-        if (status != LIB_STATUS_OK) return status;
-    }
-    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
-        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 1u, out_pixels);
+                MYRAIDENII_CORE_VIDEO_CRTC_BACKGROUND_SCROLL_Y_OFFSET), 0u, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
     if (myraidenii_core_video_layer_is_enabled(video, 1u)) {
@@ -385,11 +387,7 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
             myraidenii_core_video_crtc_word(video,
                 MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_X_OFFSET),
             myraidenii_core_video_crtc_word(video,
-                MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_Y_OFFSET), out_pixels);
-        if (status != LIB_STATUS_OK) return status;
-    }
-    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
-        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 2u, out_pixels);
+                MYRAIDENII_CORE_VIDEO_CRTC_MIDGROUND_SCROLL_Y_OFFSET), 1u, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
     if (myraidenii_core_video_layer_is_enabled(video, 2u)) {
@@ -399,15 +397,16 @@ lib_status myraidenii_core_video_frame_copy(const myraidenii_core_video *video,
             myraidenii_core_video_crtc_word(video,
                 MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_X_OFFSET),
             myraidenii_core_video_crtc_word(video,
-                MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_Y_OFFSET), out_pixels);
+                MYRAIDENII_CORE_VIDEO_CRTC_FOREGROUND_SCROLL_Y_OFFSET), 2u, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
-    if (sprite_buffer != LIB_NULL && myraidenii_core_video_layer_is_enabled(video, 4u)) {
-        status = myraidenii_core_video_sprite_draw(video, sprite_bytes, 3u, out_pixels);
+    if (myraidenii_core_video_layer_is_enabled(video, 3u)) {
+        status = myraidenii_core_video_layer_draw(video, 0xc00u,
+            MYRAIDENII_CORE_CHARACTER_WIDTH, MYRAIDENII_CORE_CHARACTER_HEIGHT,
+            0u, 0x700u, 0u, 0u, 3u, out_pixels);
         if (status != LIB_STATUS_OK) return status;
     }
-    if (!myraidenii_core_video_layer_is_enabled(video, 3u)) return LIB_STATUS_OK;
-    return myraidenii_core_video_layer_draw(video, 0xc00u,
-        MYRAIDENII_CORE_CHARACTER_WIDTH, MYRAIDENII_CORE_CHARACTER_HEIGHT,
-        0u, 0x700u, 0u, 0u, out_pixels);
+    for (lib_size index = 0u; index < pixel_count; ++index)
+        out_pixels[index] &= MYRAIDENII_CORE_VIDEO_RGB_MASK;
+    return LIB_STATUS_OK;
 }
