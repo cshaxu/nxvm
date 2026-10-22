@@ -13,6 +13,41 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S91 — Implementation Review
+
+An x64 selected-set background probe used the actual Machine driver: coin 2
+was pressed at vblanks 300--330 and 500--530, followed by start 2 at
+750--780. At vblank 1500 the observed game frame showed two differently
+colored player aircraft and separate score/life displays. The 30,000,000
+instruction run reached vblank 1814 with zero Board/COP provider failures;
+the guest read coin and system ports during the press windows. This supports
+second-player game entry, not independent movement/fire, desktop input, full
+gameplay, sound playback or pause-fence qualification. The probe bypassed the
+Session FIFO and drove the existing Machine driver directly. Its temporary
+instrumentation and image captures were removed; the original x64 probe was
+rebuilt. No protected image or Shared change is retained. T7 remains active.
+
+## Archived Packet — M1 T7 S91
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S90; single-person executor and coordinator. |
+| Admission And Approval | Automatic product-local work within the owner-approved T7 and existing Shared prohibition. |
+| Objective | Test whether the selected real game accepts the newly connected second-player coin/start controls. |
+| Non-goals | No Shared changes, protected payload commits, or claim of complete gameplay or desktop qualification. |
+| Reference Baseline | S90 proved Machine mappings synthetically but did not establish real-game acceptance. |
+| Candidate Proposal | Temporarily instrument the existing owned real-set probe for second-player input and a bounded frame observation; remove instrumentation and protected captures after the probe. |
+| Files And ABI Surface | Existing MyRaidenII integration probe for temporary instrumentation and this task record only; no production or public interface change anticipated. |
+| Applicable Rules | MyRaidenII source policy and architecture; shared execution and documentation rules. |
+| Verification | Background selected-set run with a bounded instruction budget, actual input polling and frame observation; compare against the known first-player checkpoint. |
+| Expected Markers | Distinguish a second-player game frame from merely delivering or polling input. |
+| Asset Needs | Existing external selected-set archive and temporary staging. |
+| Reporting Requirements | Report precisely what was observed, not desktop play or full-game success. |
+| Stop Conditions | Any required change to prohibited Shared components or retained protected media. |
+| Exit Criteria | Record observed results and actionable next step, clean owned temporary data, review and push. |
+| Original Owner Request | Implement MyRaidenII without changing the four specified Shared source/test packages. |
+| Similar-Issue Sweep | Distinguish coin/start routing, player input, polling and lifecycle ordering. |
+
 ## M1 T7 S90 — Closed
 
 The existing Machine input map now includes Player 2 movement, buttons, start
