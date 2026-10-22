@@ -22,6 +22,7 @@ static lib_i32 stream_destroy_count;
 static lib_i32 machine_destroy_count;
 static lib_i32 bind_count;
 static lib_i32 hotkey_count;
+static const emulator_product_monitor_provider *expected_hotkey_provider;
 static lib_bool release_inputs_ok = LIB_TRUE;
 static lib_u32 release_inputs_count;
 
@@ -213,6 +214,7 @@ lib_bool emulator_product_monitor_request_lifecycle(
     emulator_session_command_result *out_result)
 {
     if (provider == LIB_NULL || out_result == LIB_NULL) return LIB_FALSE;
+    assert(provider == expected_hotkey_provider);
     assert((state == EMULATOR_SESSION_MACHINE_RUNNING &&
             command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE) ||
         (state == EMULATOR_SESSION_MACHINE_PAUSED &&
@@ -247,9 +249,18 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
         control.command.open == emulator_product_monitor_provider_open &&
         control.command.submit_line == emulator_product_monitor_provider_submit_line &&
         control.command.handle_hotkey != LIB_NULL);
-    assert(control.command.handle_hotkey(control.command.context,
-        EMULATOR_SESSION_MACHINE_RUNNING, (const lib_u8 *)"pause-toggle",
-        &(emulator_session_command_result){0}) == LIB_TRUE && hotkey_count == 1);
+    expected_hotkey_provider = control.command.context;
+    {
+        emulator_session_command_result result = {0};
+        assert(control.command.handle_hotkey(control.command.context,
+            EMULATOR_SESSION_MACHINE_RUNNING, (const lib_u8 *)"pause-toggle",
+            &result) == LIB_TRUE && hotkey_count == 1 &&
+            result.request == EMULATOR_SESSION_REQUEST_PAUSE);
+        assert(control.command.handle_hotkey(control.command.context,
+            EMULATOR_SESSION_MACHINE_PAUSED, (const lib_u8 *)"pause-toggle",
+            &result) == LIB_TRUE && hotkey_count == 2 &&
+            result.request == EMULATOR_SESSION_REQUEST_RESUME);
+    }
     {
         emulator_session_command_result result = {0};
         release_inputs_count = 0u;

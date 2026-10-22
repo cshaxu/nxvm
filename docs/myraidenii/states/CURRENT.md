@@ -13,6 +13,47 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S106 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T7 continuation; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorizes autonomous MyRaidenII fixes; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Correct the Product hotkey callback's Session-provider context handling and verify actual lifecycle request routing. |
+| Non-goals | No Shared edits, extra provider, input-fence claim, new public interface or unrelated product changes. |
+| Reference Baseline | Session invokes the callback with command.context, which Product sets to the embedded monitor provider. The current hotkey callback incorrectly interprets that address as its enclosing Product composition. The existing unit stub only checks that the resulting pointer is non-null. |
+| Candidate Proposal | Treat the callback context as the monitor provider and pass that exact pointer to the existing lifecycle request helper; strengthen the existing Product fixture to check pointer identity and pause/resume requests. |
+| Files And ABI Surface | MyRaidenII Product composition, its existing composition smoke test and task record; no public API change. Estimated production +2/-2, test +8/-1, documentation +20. |
+| Applicable Rules | Product architecture, coding and UX; shared execution and documentation rules. |
+| Verification | x64/x86 affected Product units and builds, relevant lifecycle regression; rebuild and deploy MyRaidenII dual-width EXEs when production changes, review and push complete P. |
+| Asset Needs | Existing build graph and product assets; no ROM content publication. |
+| Reporting Requirements | Distinguish callback identity regression from unresolved pause-input FIFO and desktop qualification. |
+| Stop Conditions | Correct implementation demonstrably requires an excluded Shared change. |
+| Exit Criteria | Fix and tests reviewed, relevant builds and checks pass, affected artifacts delivered, full P committed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying the four named Shared source/test pairs. |
+| Similar-Issue Sweep | Inspect the other callbacks for the same context misunderstanding. |
+
+Executor evidence: Session calls the registered hotkey using `command.context`,
+which is the embedded monitor provider. The old handler cast that address to
+the enclosing composition and passed a different address as a provider;
+the real lifecycle helper may read its callback fields. The handler now passes
+the actual provider directly. The existing Product smoke asserts exact pointer
+identity and both running-to-pause and paused-to-resume requests. Restoring
+the old address calculation temporarily caused the x64 assertion to fail;
+restoring the fix made it pass. The runtime notification already converts the
+provider context via `monitor->context`; the other registered callbacks are the
+Emulator provider functions and receive the provider directly.
+
+The existing Ninja trees built the Product and focused test on x64 and x86;
+the complete MyRaidenII unit selection passed 13/13 on each architecture.
+The resulting dual-width EXEs were deployed to the existing MyRaidenII assets;
+PE formats were verified. SHA-256: x64
+`a5eb77a029aeed43827b4e6744633f5a43ffa56eb1ab581e25925ca0460d96f8`;
+x86 `6cb29ae504fb624a6caece00c950b8e031bcb8c7b0f0b50544cbb4b5d420c67d`.
+This fixture uses a lifecycle-helper stub and does not prove the desktop
+hotkey, audible audio or the separate S79 input FIFO ordering. No Shared source
+or test was changed, and no complete-game qualification is claimed.
+
 ## M1 T7 S105 — Closed
 
 Coordinator reviewed P1 `93c9b928f`: the bounded probe was intentionally

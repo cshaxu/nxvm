@@ -44,15 +44,15 @@ static lib_bool myraidenii_product_handle_hotkey(void *opaque,
     emulator_session_machine_state state, const lib_u8 *identifier,
     emulator_session_command_result *out_result)
 {
-    myraidenii_product_composition *composition = opaque;
+    emulator_product_monitor_provider *monitor = opaque;
     emulator_session_request request;
 
-    if (composition == LIB_NULL || identifier == LIB_NULL || out_result == LIB_NULL ||
+    if (monitor == LIB_NULL || identifier == LIB_NULL || out_result == LIB_NULL ||
         lib_text_compare((const char *)identifier, "pause-toggle") != 0)
         return LIB_FALSE;
     if (!emulator_session_request_pause_toggle(state, &request))
         request = EMULATOR_SESSION_REQUEST_PAUSE;
-    return emulator_product_monitor_request_lifecycle(&composition->monitor,
+    return emulator_product_monitor_request_lifecycle(monitor,
         request == EMULATOR_SESSION_REQUEST_RESUME ?
             EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME :
             EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE,
