@@ -115,6 +115,7 @@
 - [T7 bounded Product surface observation](evidence/t7-s67-product-surface-observation.md).
 - [T7 controlled Product monitor start qualification](evidence/t7-s69-product-monitor-start.md).
 - [T7 staged child lifecycle](evidence/t7-s70-staged-child-lifecycle.md).
+- [T7 MAME L2 Sound boundary](evidence/t7-s71-mame-sound-boundary.md).
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
 - [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 COPX-D2 contract research gate](evidence/t7-s63-copx-contract-research.md).

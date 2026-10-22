@@ -943,6 +943,48 @@ active packet.
 
 None.
 
+## M1 T7 S71 Closure
+
+The locally available MAME v0.289 verifier rejects the owner-supplied selected
+set before emulation because its archive lacks both PAL identities required by
+that MAME revision.  One is recorded by external MAME material as having no
+known-good dump.  The attempted headless observation therefore establishes no
+runtime sound fact and cannot select a Sound repair.
+
+This is not a hardware-evidence blocker.  The independently inspected MAME
+source remains admissible L2 evidence for finite behavior/layout facts under
+the product source policy; it confirms that the existing local Sound map has
+the same two OKI address roles.  It does not show that the bounded selected-set
+path reaches an audio-producing state, so changing the local Sound owner would
+be speculative.  The generated external MAME output root was empty and is
+removed.  No source, test, build, API, manifest, artifact, ROM, PAL or media
+file changed.  Documentation governance and whitespace pass.  The next
+receiver remains a separately evidenced Board/Video/COP qualification item,
+not a fabricated PAL or a copied MAME table.
+
+## Archived Packet — M1 T7 S71
+
+## M1 T7 S71 — MAME L2 Sound Checkpoint
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S70; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directs MyRaidenII to continue with external-emulator L2 behavior when primary hardware material is unavailable, rather than blocking on physical evidence. This S admits a bounded MAME black-box sound/startup observation only. |
+| Objective | Establish whether the selected external set reaches a finite sound-producing checkpoint under the same bounded startup and Coin/Start conditions, then select the correct local owner without copying MAME source, tables, PAL data or ROM content. |
+| Non-goals | No MAME source/code/table transcription, no PAL/ROM import or retention, no MyRaidenII production/test/API change, no second renderer/audio path, no desktop automation, screenshot, trace, raw audio capture, gameplay or release claim. |
+| Reference Baseline | Local MAME maps the two OKI devices at the same Sound CPU device addresses as the existing local owner. The S70 full local probes reported device writes but no selected voice starts or nonzero PCM; this alone does not establish a Sound implementation fault because the bounded guest path may not have reached an audio-producing game state. |
+| Candidate Proposal | Run the owner-supplied archive through the locally pinned MAME executable with all config/NVRAM/log output directed to `O:\assets\raidenii\mame-s71\`. Record only process terminal status and neutral aggregate audio/device observables if exposed by the tool; remove owned outputs after recording a source-grade disposition. |
+| Files And ABI Surface | Current plus one evidence/index record only. No production/test/build/API/manifest/artifact/ROM/PAL change. Estimated documents +35..90/-0..15. |
+| Applicable Rules | MyRaidenII source policy; Architecture Sound ownership; shared Execution and Documentation rules. MAME is L2 research only and never a runtime dependency. |
+| Verification | Confirm exact local MAME executable identity and external asset path; run one bounded headless observation through a persistent background process; verify its owned external output cleanup; run documentation governance and whitespace. |
+| Expected Markers | A finite L2 classification distinguishing MAME startup reaching sound-producing work from a startup-only no-audio interval, without retaining protected output. |
+| Asset Needs | Read-only `O:\assets\raidenii\raiden2.zip` and existing external PAL inputs only. MAME configuration/output is task-owned under `O:\assets\raidenii\mame-s71\` and removed after recording neutral facts. |
+| Reporting Requirements | Record MAME revision/path, bounded process outcome, aggregate classification, cleanup and explicit limits. Do not record ROM bytes, image frames, audio samples, guest addresses/opcodes/traces or third-party source. |
+| Stop Conditions | Missing media, launch/configuration inability, non-finite process, a need to retain protected output, or a conclusion requiring code/table import stops the observation and records only the boundary. |
+| Exit Criteria | One bounded L2 observation finishes with owned-output cleanup, evidence is indexed, documentation/whitespace checks pass, and the next local owner is selected without claiming playable-game qualification. |
+| Original Owner Request | Implement MyRaidenII and use MAME or other external emulators as L2 evidence instead of blocking on absent physical-hardware documentation. |
+| Similar-Issue Sweep | Inspect MAME invocation/configuration ownership, local Sound/OKI map ownership, selected-set startup input schedule and existing no-PCM observation; distinguish a missing audio state from an untriggered bounded checkpoint. |
+
 ## Archived Packet — M1 T7 S70
 
 | Field | Required record |
