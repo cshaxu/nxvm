@@ -13,6 +13,38 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S86 — Closed
+
+One background x64 selected-set diagnostic executed 100,000,000 instructions
+with the S83 control schedule and restart. The existing COP dispatch counted
+zero executions of each residual command 1905, 9100 and 9900. This establishes
+only that this bounded sequence did not execute them; it does not establish
+their correctness or complete-game unreachability. Board and COP provider
+failures were zero. Temporary instrumentation was removed and the original
+probe rebuilt; no Shared or persistent production code was modified. Gameplay,
+desktop qualification and S79 input ordering remain open in T7.
+
+## Archived Packet — M1 T7 S86
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S85; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission and external emulator behavior as L2 without Shared changes. |
+| Objective | Determine whether the actual selected game exercises the three residual L1 COP compatibility commands during bounded active play and restart. |
+| Non-goals | No Shared or other App modification, copied reference source, retained ROM content, gameplay bypass, or invented command semantics. |
+| Reference Baseline | S65 completes 1905, 9100 and 9900 without result effects; MiSTer and MAME references do not implement these forms. |
+| Candidate Proposal | Temporarily count only the three admitted COP trigger values on the existing real-set probe while repeating S83's controlled play and restart script; remove instrumentation afterwards. |
+| Files And ABI Surface | Temporary MyRaidenII COP and integration probe instrumentation, task evidence and state; no persistent production or public API changes presumed. |
+| Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution, architecture, coding and documentation rules. |
+| Verification | Bounded background x64 selected-set run, restore and rebuild modified targets, documentation and whitespace checks; additional dual-width verification if production changes. |
+| Expected Markers | Per-command occurrence counts tied to an identified 100-million-instruction control script, or an explicitly reported diagnostic failure. |
+| Asset Needs | Existing external owner ROM archive, wrapper-owned temporary staging removed after its child exits. |
+| Reporting Requirements | Zero observations apply only to this bounded sequence and cannot establish complete-game unreachability or command correctness. |
+| Stop Conditions | A correct production repair requires prohibited Shared changes or unapproved source import. |
+| Exit Criteria | Actual counts, bounded implications and cleanup reviewed and pushed; remaining gameplay and release requirements remain open. |
+| Original Owner Request | Implement MyRaidenII autonomously using other emulator behavior as L2 without modifying Shared packages. |
+| Similar-Issue Sweep | Differentiate command upload from execution and check all three command values at the existing dispatch point. |
+
 ## M1 T7 S85 — Closed
 
 Coordinator review accepts the two-width owner-ROM Product Console lifecycle
