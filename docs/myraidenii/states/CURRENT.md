@@ -45,7 +45,7 @@ The current one-keyed-flag-per-channel square waveform and duplicated mono
 output cannot satisfy those requirements. No reference implementation or
 table has been copied. This is design evidence, not a synthesis result.
 
-The uncommitted S81 candidate applies independent YM stereo routing and uses
+S81 P1 `0107800b3` applies independent YM stereo routing and uses
 four individually keyed sine operators with all eight channel connection
 choices. Pitch and envelope calculations are explicit L1 approximations, not
 the OPM's quantized implementation. DT2 uses the reference's nominal 0, 600,
