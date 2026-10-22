@@ -2,6 +2,65 @@
 
 ## Current Work
 
+## M1 T7 S111 — Delivered, Awaiting Owner Acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; coordinator and executor in one session. |
+| Admission And Approval | Owner requests the latest committed SoftPC public eight-tree import, all affected product builds, publication, tests, push and post-delivery audit. |
+| Objective | Import the four shared source and four matching test trees verbatim and qualify their receiving products. |
+| Non-goals | Do not import SoftPC uncommitted work, change sibling repository, protected assets, or claim T7 gameplay completion. |
+| Reference Baseline | NXVM 746598aa4; SoftPC 6f2ac634d3b4a51a6a1597b919eb5386e96c3ebc. |
+| Candidate Proposal | ../proposals/m1-qualification.md; owner-directed shared corpus update. |
+| Files And ABI Surface | Shared lib, emulator, x86-debug, x86-ibmpc source/test trees; receiving NXVM, MyNES and MyRaidenII artifacts and only necessary receiving adaptations. |
+| Applicable Rules | Exact provenance and inward dependencies, Types ownership, no duplicate route, target-scoped commits, protected media and actual-diff review. |
+| Verification | Complete byte comparison and manifests, boundary gates, cached dual-width builds, all unit suites and relevant integrations, affected product artifacts with PE/hash checks and post-delivery audit. |
+| Expected Markers | Eight trees exactly match pinned commit; changed paths and consumers audited; all claimed tests actually executed. |
+| Asset Needs | Stable Ninja/ccache trees; owner media remains read-only. Task scratch under build/t7-s111, 60 minutes and 200 MiB, no-progress check after 10 minutes. |
+| Reporting Requirements | Record actual diff, provenance, test/build/artifact results and remaining desktop/gameplay limitations. |
+| Stop Conditions | Protected asset modification, unapproved shared divergence or inability to satisfy receiving contracts. |
+| Exit Criteria | Reviewed exact import, verified builds and tests, all affected product artifacts delivered and target-scoped commits pushed; await owner acceptance. |
+| Original Owner Request | Import latest committed SoftPC public eight trees verbatim; compile, publish, test, commit, push and audit before acceptance. |
+| Similar-Issue Sweep | Console handoff failure cleanup and paused Session input admission, including all affected consumers and their tests. |
+
+Executor evidence: the pinned SoftPC commit's eight source/test trees match
+the receiving trees in file set and SHA-256 (297 files); its uncommitted App
+and documentation changes were excluded. The imported diff has nine files,
+47 additions and 40 deletions: the Console retirement and input-reset failures
+share the existing fail-closed path; paused mouse events are no longer admitted,
+while source retirement and reset retain their earlier unconditional handling.
+Existing tests exercise both failures and paused input; there is no new shared
+API, queue, fallback or receiving adaptation.
+
+The cached x64 and x86 full unit selections each passed 697/697. The full
+registered integration selections each passed 39/39, including five desktop
+tests per architecture. The MyRaidenII external-ROM Console lifecycle probe
+passed on both widths. This probe does not qualify real gameplay, audio, child
+exit status, RDP input or the separately suspended S79 input-order concern.
+The additional PC profile integration selections passed on x64 and x86:
+My5160 3/3, My5170 5/5 and DeskPro 5/5; the default profile is included in
+the full integration runs. All twelve affected EXEs were rebuilt, deployed
+and checked for PE width and SHA-256. Documentation governance and diff
+whitespace checks passed. No user INI, ROM or media was changed. T7 remains
+open and this S awaits owner acceptance.
+
+The deployed SHA-256 values, in x64 / x86 order, are:
+
+| Product | x64 | x86 |
+| --- | --- | --- |
+| My5160 | `25e72d825471a28c0daf54978f2834d2887ccab81cd60abe98e3d9ae0d33e156` | `e148a11f3a1942949f9409b57bb3415706d3364170f5925f977cc69f5dc334ae` |
+| My5170 | `db88f07c7591cda5ff95434c4acfc498be3db5a961fd639573abf8a57f6fbd0f` | `9e8a079b024f30896d5098097cc89db10a26d84df142df1f34802fde79f3c5d0` |
+| MyDeskPro386 | `127aef0ddba8538cf29d5facf73f5ec7ff043b5a011c8956177d092464803d9e` | `1ff4a324a0963d8a0c5701f939263121ad5b5d8a65c3e539f6f42546a159c720` |
+| NXVM | `7df0d0d9a2bc0b7349ae3402ec3ba02d7322af099af635d7381ff77190eac2a3` | `ce0ba872295ec440f77332685161fc05b023405c550da952b6ed43739b0624ba` |
+| MyNES | `66076e219e33e961552a07a8d10c6fffc39c33a63bfa463b5312c80649aa9564` | `5fb86f5e04e36d1d318dc363bf0d4e8b5336bbf7951aa4e15cad69f2dc1882a6` |
+| MyRaidenII | `37d44ef7c3c04322dc6cadf5944c1fb68b8652b21a1be78da4ac2161531fa14d` | `de016a4b58c66f4aae579ff67a2895011ca756a47020024c943ce850d419ec31` |
+
+Delivery uses target-scoped pushed commits: Shared P1 `65eadc38f`, NXVM P2
+`b36f1c2a8`, MyNES P3 `07ddc9b47`, and MyRaidenII P4 containing this record
+and the two MyRaidenII artifacts. Coordinator review checked the actual diff,
+inward dependencies, test/manifest gates and the absence of a second path;
+this is a bounded import review, not a claim that all eight trees are defect-free.
+
 ## M1 T7 S110 — Closed
 
 Owner accepted the imported SoftPC eight-tree corpus and receiving adaptations.
