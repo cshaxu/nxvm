@@ -107,16 +107,24 @@ lib_status myraidenii_machine_audio_drain(myraidenii_machine_audio *audio)
 
 lib_status myraidenii_machine_audio_clear(myraidenii_machine_audio *audio)
 {
+    lib_i16 discarded[LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION *
+        MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_u32 frames;
+    lib_u64 dropped;
     lib_status status;
 
     if (audio == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = audio->stream == LIB_NULL ? LIB_STATUS_OK :
         lib_audio_pcm_stream_clear(audio->stream);
-    if (status == LIB_STATUS_OK) {
-        audio->read = 0u;
-        audio->count = 0u;
-    }
-    return status;
+    if (status != LIB_STATUS_OK) return status;
+    do {
+        status = myraidenii_core_board_pcm_copy(audio->board, discarded,
+            LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION, &frames, &dropped);
+        if (status != LIB_STATUS_OK) return status;
+    } while (frames == LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION);
+    audio->read = 0u;
+    audio->count = 0u;
+    return LIB_STATUS_OK;
 }
 
 void myraidenii_machine_audio_destroy(myraidenii_machine_audio *audio)

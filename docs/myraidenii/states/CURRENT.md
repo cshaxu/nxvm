@@ -23,7 +23,7 @@ FIFO; it is not a real-game or desktop qualification.
 | Non-goals | No change to Lib, Emulator, X86 Core, X86 IBMPC or their tests; no copied external implementation, second clock, mixer path or protected content. |
 | Reference Baseline | S80 selected-set probes show active YM writes and nonzero PCM, but the existing oscillator is explicitly a placeholder and does not establish music fidelity. |
 | Candidate Proposal | Examine the Yamaha manual and bounded external reference behavior, specify the operator/register semantics and implement incrementally in the existing Core Sound owner. |
-| Files And ABI Surface | MyRaidenII Core Sound, existing product-owned sound tests and evidence; no public Shared ABI change. |
+| Files And ABI Surface | MyRaidenII Core Sound, Machine audio bridge, their existing product-owned tests and evidence; no public Shared ABI change. |
 | Applicable Rules | Product source policy, architecture and coding; shared execution and documentation rules. |
 | Verification | Synthetic register/operator/envelope and PCM vectors, x64/x86 affected builds and units, selected-set checks and full units as warranted. |
 | Asset Needs | External owner set only for bounded runtime observation; no committed ROM or raw generated media. |
@@ -97,6 +97,12 @@ The current attack candidate applies the L2 reference's immediate maximum
 level on key-on at effective attack rates 62 and 63; lower-rate curves remain
 L1. Both-width MyRaidenII units pass 13/13. Its selected-set and desktop
 playback checks remain outstanding.
+S81 also addresses a PCM-path ownership gap: Machine clear previously cleared
+its staging and host stream but left Board PCM queued, allowing stale samples
+to be submitted after a pause. The Machine bridge now discards the Board queue
+after the host clear succeeds, using the existing Board copy path. A focused
+fixture verifies both retained Board data on host-clear failure and successful
+discard before the next drain. This does not establish desktop playback.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

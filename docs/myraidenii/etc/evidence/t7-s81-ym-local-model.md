@@ -68,6 +68,17 @@ slower attack's lower level. The MyRaidenII units and executable builds pass
 on both widths. Selected-set and desktop playback have not yet been rechecked
 for this attack change.
 
+The local Machine audio clear path previously left Board PCM behind while
+discarding staging and clearing the host stream. Since heartbeat shutdown is
+called at the executor boundary, the retained Board frames could be submitted
+on resume. The Machine bridge now drains and discards those frames after a
+successful host clear, without another queue or Shared API change. The existing
+Machine audio fixture checks that a failed host clear leaves Board data intact,
+and that successful clear removes more than one submission's worth before a
+later drain. The no-stream path and staging-failure checks remain in place.
+Both-width MyRaidenII units and builds are checked separately from desktop
+audio or actual pause/resume qualification.
+
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected
 rate and four waveform selections follow the inspected register vocabulary;
