@@ -13,7 +13,14 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S103 — Active
+## M1 T7 S103 — Closed
+
+Coordinator reviewed P1 `07b65efd9`, the paired observations, restored probe,
+and temporary cleanup. Coin and start have bounded direct-driver evidence;
+player control, production Session and complete gameplay remain unqualified.
+T7 stays active.
+
+## Archived Packet — M1 T7 S103
 
 | Field | Required record |
 | --- | --- |
