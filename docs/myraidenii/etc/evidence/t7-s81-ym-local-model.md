@@ -147,6 +147,15 @@ noise changes channel 7 but not channel 6. Both x64 and x86 focused runs pass. T
 do not prove exact waveform, timbre, envelope timing, modulation scaling or
 host audio playback.
 
+The bounded PCM fixture now runs an audible YM operator alongside the OKI
+sample, saves the initial frames, verifies reset empties queued frames and
+replays the same program to compare the initial PCM exactly. MyRaidenII's
+13 unit tests passed on each width. As a negative check, a temporary build
+with the YM reset operation omitted made the overall Sound unit fail; the
+production operation was restored and rebuilt. This demonstrates a reset
+regression is detected by the suite, not that every individual assertion was
+isolated from all other checks.
+
 A bounded selected-set probe on each architecture executed 20,000,000 V30
 instructions with coin/start input, no reported board or COP provider error,
 739,013 nonzero PCM frames generated and the same retained PCM digest

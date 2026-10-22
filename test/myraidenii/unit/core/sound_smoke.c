@@ -981,9 +981,11 @@ static lib_i32 sound_publishes_bounded_pcm(void)
     static lib_u8 program[0x2000u];
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
     lib_i16 frames[32u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i16 initial_frames[32u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
     lib_u32 copied = 0u;
+    lib_u32 initial_count;
     lib_u64 dropped = 0u;
     lib_size at = 0u;
     lib_i32 failed = 1;
@@ -995,7 +997,9 @@ static lib_i32 sound_publishes_bounded_pcm(void)
     samples_1[13u] = 0x21u;
     samples_1[0x20u] = 0xf1u;
     samples_1[0x21u] = 0x23u;
-    sound_program_write_ym(program, &at, 0x20u, 0xc0u);
+    sound_program_write_ym(program, &at, 0x20u, 0xc7u);
+    sound_program_write_ym(program, &at, 0x28u, 0x4cu);
+    sound_program_write_ym(program, &at, 0x98u, 0x1fu);
     program[at++] = 0x3eu; program[at++] = 0x81u;
     program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
     program[at++] = 0x3eu; program[at++] = 0x10u;
@@ -1018,6 +1022,9 @@ static lib_i32 sound_publishes_bounded_pcm(void)
         if (frames[index * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] != 0)
             non_silent = LIB_TRUE;
     }
+    initial_count = copied;
+    lib_memory_copy(initial_frames, frames,
+        copied * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS * sizeof(frames[0]));
     if (!non_silent || myraidenii_core_sound_advance(sound,
             MYRAIDENII_CORE_SOUND_BOARD_TICKS_PER_SECOND) != LIB_STATUS_OK ||
         myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped) !=
@@ -1026,6 +1033,12 @@ static lib_i32 sound_publishes_bounded_pcm(void)
     myraidenii_core_sound_reset(sound);
     if (myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped) !=
             LIB_STATUS_OK || copied != 0u || dropped != 0u)
+        goto done;
+    if (myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        myraidenii_core_sound_pcm_copy(sound, frames, 32u, &copied, &dropped) !=
+            LIB_STATUS_OK || copied != initial_count || dropped != 0u ||
+        lib_memory_compare(frames, initial_frames,
+            copied * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS * sizeof(frames[0])) != 0)
         goto done;
     failed = 0;
 done:

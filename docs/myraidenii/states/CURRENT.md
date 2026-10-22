@@ -123,6 +123,11 @@ completion messages, then its process exit, on both widths. This is bounded
 diagnostic evidence, not a pass of the unchanged five-second formal helper;
 the helper does not validate the child exit code or audible playback. Its
 temporary source and binary were removed.
+The existing bounded-PCM unit now also replays a mixed YM/OKI setup after
+reset and compares its initial PCM with the pre-reset output, after checking
+the queue was cleared. Both-width MyRaidenII unit selections pass 13/13. A
+temporary negative build omitting YM reset caused the Sound suite to fail; the
+production reset was restored and the x64 suite rebuilt before the final run.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.
