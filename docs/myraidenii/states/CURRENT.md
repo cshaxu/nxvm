@@ -13,6 +13,54 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S101 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S100; one person executes and reviews. |
+| Admission And Approval | Owner authorized autonomous product work and external emulator L2 references; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Correct and test the selected sprite compositor's multi-tile boundary behavior. |
+| Non-goals | No shared change, protected media publication, copied external code, or claim of game completion or hardware-exact behavior. |
+| Reference Baseline | A nonzero 16-bit sprite tile plus its multi-tile offset can exceed the sprite stream count and fail an entire frame. External renderer behavior wraps each resulting tile to its graphics element count. |
+| Candidate Proposal | Apply the L2 boundary at the existing compositor before the strict graphics pixel reader; retain the zero-start descriptor rule and the single rendering path. |
+| Files And ABI Surface | MyRaidenII Core video, existing graphics unit and task records; rebuild the two product artifacts; no public interface. |
+| Applicable Rules | Product source policy, architecture and coding, shared execution and documentation; independently implement the finite L2 behavior. |
+| Verification | Reproduce with an existing synthetic graphics test before fixing; build and run MyRaidenII unit tests for both architectures, verify deployed EXEs and run bounded product integration where available. |
+| Expected Markers | The last sprite tile and wrapped tile zero render as distinct expected pixels; invalid low-level direct indices remain rejected. |
+| Asset Needs | Synthetic unit data; existing external selected-set assets only for bounded integration and no protected content committed. |
+| Reporting Requirements | Record code diff, provenance, tests, artifacts, unverified gameplay and desktop boundaries. |
+| Stop Conditions | A correct local fix demonstrably needs a prohibited shared change or unavailable protected media is necessary for a claimed validation. |
+| Exit Criteria | Review and record the independently implemented boundary, regressions, artifact identity, cleanup, commit and push; T7 remains open. |
+| Original Owner Request | Continue MyRaidenII autonomously without changing the four specified shared source/test packages. |
+| Similar-Issue Sweep | Check zero descriptors, flips and the direct pixel-reader bound; inspect other tile consumers rather than blindly wrapping them. |
+
+Executor evidence: MAME commit `5dd18911423f0530072ff30d34fa9748a8c5a220`,
+`src/mame/seibu/sei25x_rise1x_spr.cpp` and `src/emu/drawgfx.cpp`, was
+inspected read-only on 2026-10-22. The finite L2 fact adopted is that a
+nonzero starting sprite index is advanced for each tile and each resulting
+index is resolved within the graphics element count; this is not proof of
+silicon-exact behavior. No reference source or data was imported. The existing
+test now creates tiles 65535 and 0 with different colors. It failed before the
+local change and passed afterwards. The existing strict direct pixel reader
+still rejects an out-of-range tile; zero-start descriptors and existing flip
+tests remain unchanged. Character tiles use 12-bit indices against 4096 tiles;
+background banks yield indices within the 32768 available tiles, so those
+paths do not need this sprite-specific wrap.
+
+The x86 and x64 product and test trees were rebuilt in the existing Ninja
+graphs. Product-owned unit tests passed 13/13 per architecture. Both deployed
+EXEs passed the selected-set background Product/Console startup probe, using
+the x64 harness against the respective executable; their PE formats were
+verified. The x64 SHA256 is
+`de4315a5398eee03be1fb3ad53d1a390ea1948d624839afc4dfc42a707e1d286`;
+the x86 SHA256 is
+`11dc2d5ce540a253aba5d748c7458ee2b42776ed22f310def7b2e51d8c988a8d`.
+Temporary staging was removed. Documentation governance and `git diff --check`
+passed. Source/test line counts are +16/-2, net +14 (`git diff --numstat`);
+no shared files or API changed. The synthetic boundary has not been observed
+in real gameplay. These probes do not qualify real desktop controls, audio
+listening, stage completion, game-over or restart; T7 remains open.
+
 ## M1 T7 S100 — Closed
 
 Coordinator reviewed P1 `6bf762487`, the two completed probe outputs, the
