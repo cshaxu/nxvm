@@ -5,14 +5,42 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S76 is
-closed; S77 investigates gameplay control and progression. A follow-up review
+closed; S78 investigates the remaining second-button and progression evidence. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S77
+## Active Packet — M1 T7 S78
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S77; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission and L2 reference models. |
+| Objective | Establish a clear game-visible checkpoint for the second button and continue bounded gameplay progression qualification. |
+| Non-goals | No prohibited Shared or other App changes, protected payload retention or alternate input path. |
+| Reference Baseline | S77 visibly confirmed Right movement and Z fire/score; an X run changed output but its final image did not clearly prove the intended effect. |
+| Candidate Proposal | Inspect transient frames at matched phases and, as needed, compare reference behavior as L2; repair only evidenced MyRaidenII defects. |
+| Files And ABI Surface | MyRaidenII source, existing tests and task records if warranted; no Shared changes or new public API anticipated. |
+| Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution and documentation rules. |
+| Verification | Relevant dual-width builds and focused tests for changes; bounded selected-set checks; full units when production changes warrant them. |
+| Asset Needs | Existing owner-supplied external selected-set archive; remove temporary captures and extracted media. |
+| Reporting Requirements | Distinguish button delivery, visible effect, stage progression, desktop presentation and complete-game qualification. |
+| Stop Conditions | A necessary fix requires prohibited Shared changes or an unapproved source/license import. |
+| Exit Criteria | The scoped second-button/progression finding is evidenced and resolved or accurately bounded, applicable tests and governance pass, and reviewed changes are pushed. T7 remains open until full gameplay and release qualification. |
+| Temporary Work | Existing external diagnostics staging; bounded background probes and cleanup after their processes exit. |
+| Expected Markers | A time-aligned visible effect or another explicit guest-semantic checkpoint, not merely a changed hash. |
+| Original Owner Request | Continue MyRaidenII without modifying Lib, Emulator, X86 Core or X86 IBMPC production and test packages. |
+| Similar-Issue Sweep | Consider press and release handling, transient effects, and continued gameplay independently. |
+
+## M1 T7 S77 — Closed
+
+Coordinator review accepts P1 `5341b01df`: paired scripted runs visibly
+demonstrate player movement and firing with score change. Existing driver
+units cover all mapped direction and button inputs; the X run below changes
+output but does not itself prove a bomb effect, which S78 retains. This is not
+an interactive desktop or full-game qualification.
 
 | Field | Required record |
 | --- | --- |
@@ -49,6 +77,12 @@ the prior no-fire frame showed score 0. This verifies a visible shooting and
 score response in that scripted scenario, not bomb behavior, later stages or
 interactive desktop/audio qualification. Temporary capture and probe edits
 were removed.
+
+A further same-schedule x64 run held X (the second button) from vblank 1350.
+Its final digest and sound-command counts differed from the no-button run,
+but its final image did not provide an unambiguous bomb-effect checkpoint.
+Button delivery is covered by the existing driver unit; the real-game bomb
+effect remains unverified. Temporary capture and probe edits were removed.
 
 ## M1 T7 S76 — Closed
 
