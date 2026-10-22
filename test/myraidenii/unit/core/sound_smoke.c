@@ -714,6 +714,43 @@ done:
     return failed;
 }
 
+static lib_i32 sound_does_not_restart_busy_oki_voice(void)
+{
+    static lib_u8 program[0x2000u];
+    static lib_u8 samples[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound_observation observation = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_i32 failed = 1;
+
+    lib_memory_set(program, 0, sizeof(program));
+    lib_memory_set(samples, 0, sizeof(samples));
+    samples[10u] = 0x20u;
+    samples[13u] = 0x7fu;
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x10u);
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x30u);
+    sound_program_read_oki_response(program, &at, 0x18u);
+    sound_program_write_oki(program, &at, 0x08u);
+    sound_program_write_oki(program, &at, 0x81u);
+    sound_program_write_oki(program, &at, 0x10u);
+    sound_program_read_oki_response(program, &at, 0x19u);
+    program[at] = 0x76u;
+    if (sound_create_with_samples(program, samples, LIB_NULL, &fixture, &sound) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
+        myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
+        observation.oki_voice_starts[0u] != 3u ||
+        fixture.response[0] != 3u || fixture.response[1] != 3u)
+        goto done;
+    failed = 0;
+done:
+    myraidenii_core_sound_destroy(sound);
+    return failed;
+}
+
 static lib_status sound_first_oki_pcm(lib_u8 first_sample_byte,
     lib_i16 *out_sample)
 {
@@ -1205,6 +1242,7 @@ int main(void)
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||
+        sound_does_not_restart_busy_oki_voice() != 0 ||
         sound_decodes_oki_nibble_sign() != 0 ||
         sound_executes_index_ignored_prefix() != 0 ||
         sound_executes_index_high_low_forms() != 0 ||

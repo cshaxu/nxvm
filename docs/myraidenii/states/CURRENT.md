@@ -4,15 +4,50 @@
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
-It does not redefine unimplemented Board behavior as a release result. S76 is
-closed; S79 addresses pause/resume input ordering. A follow-up review
+It does not redefine unimplemented Board behavior as a release result. S79 is
+suspended with its pause/resume input ordering unresolved; S80 investigates the
+actual game sound chain. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S79
+## Active Packet — M1 T7 S80
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after suspended S79; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S planning, MyRaidenII-local fixes and external emulator behavioral reference as L2. |
+| Objective | Determine why selected-set game audio is missing or inaccurate and implement the highest-impact correct MyRaidenII-owned repair supported by evidence. |
+| Non-goals | No modification of Lib, Emulator, X86 Core, X86 IBMPC or their tests; no ROM embedding or unapproved third-party source copying. |
+| Reference Baseline | S75 observed no nonzero PCM in a bounded early run and identified an L1 diagnostic YM waveform; S76 changed sound-bank and OKI command handling. |
+| Candidate Proposal | Trace selected-set sound commands and PCM through the existing real board path, independently inspect available sound references as permitted, and repair demonstrated local defects. |
+| Files And ABI Surface | MyRaidenII source and its existing sound tests, integration and task evidence as needed. |
+| Applicable Rules | Product source policy, architecture and coding; shared execution and documentation rules. |
+| Verification | Focused x64/x86 sound/build regressions, bounded real-set evidence, full units if production changes warrant; distinguish rendered PCM from actual audible desktop output. |
+| Asset Needs | Existing external owner ROM set; temporary selected-set output is bounded and removed. |
+| Reporting Requirements | Separate command delivery, PCM output, fidelity, desktop audio and game completion claims. |
+| Stop Conditions | A necessary repair requires prohibited Shared changes or unapproved third-party source import. |
+| Exit Criteria | Demonstrate and repair an identified local sound gap with regressions, or identify the remaining specific limitation without overstating qualification; review and push the complete P. |
+| Temporary Work | Existing Ninja trees and external diagnostics staging; no protected content retained. |
+| Expected Markers | Real sound commands and nonzero output or an evidence-backed local failure boundary. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying the four specified Shared source/test packages. |
+| Similar-Issue Sweep | Inspect both YM and OKI channels and their command, timing and output paths. |
+
+S80's [sound evidence](../etc/evidence/t7-s80-sound-voice-admission.md)
+records the local OKI busy-voice fix, its fail-before/pass-after synthetic
+regression and real-set PCM observations on both widths. The existing YM
+waveform is still diagnostic, not qualified music. Full unit runs passed on
+both widths; MyRaidenII units were rerun after relinking all affected tests.
+Desktop audio and pause-fence qualification remain open in T7.
+
+## M1 T7 S79 — Suspended, unresolved
+
+Coordinator suspends the narrow pause-fence investigation while pursuing the
+independent sound and gameplay requirements. Existing FIFO reconciliation is
+not a proven fix. Reopen this work before T7 qualification; no permission to
+modify Shared is inferred from this suspension.
 
 | Field | Required record |
 | --- | --- |
@@ -33,6 +68,36 @@ FIFO; it is not a real-game or desktop qualification.
 | Expected Markers | Controlled pre-pause events, pause acknowledgement, resume and guest-visible state are checked at actual queue and execution boundaries. |
 | Original Owner Request | Implement MyRaidenII autonomously without modifying the four specified Shared source/test packages. |
 | Similar-Issue Sweep | Check repeated pause/resume, stop/reset, queued key press and release, and release-enqueue failure. |
+
+S79 source review confirms the limitation of the existing S74 proof. The
+maintained real-FIFO test asserts eventual delivery order, but its synthetic
+driver does not execute guest work between each delivered event, so it cannot
+prove that an old make is never guest-visible after resume. Machine accepts
+input after a RUNNING state check and the worker drains one event per executor
+callback; a Session-side running notification queues the product's releases
+later. The public Machine contract exposes no input-drain acknowledgement or
+pause generation in delivered events. `set_heartbeat` also brackets internal
+state-read continuation, so clearing on every heartbeat transition does not
+by itself identify a user pause. The only MyRaidenII producers are Session and
+its existing release helper; neither supplies an ordered worker-side fence.
+
+Discarding a prefix or using a synthetic key/reset as an undocumented marker
+could lose legitimate input or change an existing event meaning; neither is
+accepted. Draining until a wake bit clears also does not establish which
+concurrently arriving new events may be cleared. This is a contract-boundary
+finding, not proof of an observed desktop game failure, nor proof that every
+conceivable product policy is impossible. Under the owner's explicit prohibition
+on Shared modifications, do not claim an exact pause-boundary fix. Preserve
+the existing eventual FIFO reconciliation and keep this as an unresolved T7
+qualification item while continuing other MyRaidenII work.
+
+The related stop/reset and failure paths were also checked: cold-run setup
+clears the Machine FIFO and Board reset releases the active-low controls;
+neither supplies a fence for an ordinary pause/resume. If a reconciliation
+release cannot be enqueued, Product requests a stop and reports the failure;
+it does not claim the entire release sequence succeeded. The focused Machine
+driver, real-FIFO and Product composition units pass 3/3 on each host width.
+These existing tests do not prove repeated-pause or first-instruction safety.
 
 ## M1 T7 S78 — Closed
 

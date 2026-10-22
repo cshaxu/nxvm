@@ -326,7 +326,8 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound *sound,
     }
     ++sound->observation.oki_voice_selections[device];
     for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
-        if ((value & (lib_u8)(0x10u << index)) != 0u) {
+        if ((value & (lib_u8)(0x10u << index)) != 0u &&
+            !oki->voices[index].active) {
             oki->voices[index].position = start;
             oki->voices[index].end = end;
             oki->voices[index].high_nibble = LIB_TRUE;
