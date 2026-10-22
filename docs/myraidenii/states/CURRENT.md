@@ -78,6 +78,15 @@ the final PCM digest and the reported device counters matched the x64 run;
 neither run reported Board/COP provider failure or rejected OKI selections.
 This compares bounded guest execution, not physical sound or desktop play.
 
+On a subsequent background retest, the unchanged selected-set Product
+Console smoke passed once on each host width, including its original five-second
+prompt and command deadlines. It observed `Machine started.` and process
+termination after `exit`; it does not check the child exit code, pause/resume,
+window rendering, input or audible playback. The earlier audio-creation delay
+therefore is not universal; these passes do not establish its root cause or
+prove that the timeout cannot recur. Each wrapper removed its temporary staged
+ROM files after the owned child exited.
+
 ## M1 T7 S82 — Closed, bounded game-control observation
 
 Coordinator review accepts P2 `f6a66af44`: the bomb and no-bomb screenshots
