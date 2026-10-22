@@ -13,6 +13,51 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S102 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S101; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized autonomous product work and background probes; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Identify selected-set screen states following exactly one ordered coin/start input and sustained fire, without repeated credits or a scripted guest bypass. |
+| Non-goals | No shared changes, protected payload publication, new production input path, physical-hardware accuracy claim or false full-game qualification. |
+| Reference Baseline | S100 established later digest divergence but did not identify screens; S97 observed play with repeated coin/start and cannot establish one continuous game. |
+| Candidate Proposal | Temporarily instrument the existing x64 selected-set integration probe to save four bounded frame samples outside Git while sending one coin, one start and fire; inspect frames and restore the probe. |
+| Files And ABI Surface | Existing MyRaidenII integration probe and its staging wrapper temporarily, product task record; no production or public API change unless separately evidenced and admitted. |
+| Applicable Rules | Product source policy, architecture, coding and UX; shared execution and documentation; no protected data retained or committed. |
+| Verification | Use the existing Ninja graph, verified external ROM inventory, 80 million instruction and 15-minute bounded background run; inspect the four temporary frames, restore and rebuild the original probe, and check documentation and diff. |
+| Expected Markers | Exactly one coin and one start, delivery counters, sampled screens and terminal status; distinguish observed gameplay from attract mode and stage completion. |
+| Asset Needs | Existing owner-provided ROM archive; task-owned temporary external staging and frame files; no ROM or screenshots committed. |
+| Reporting Requirements | State the input schedule, screen observations, execution limits, cleanup and unverified desktop/audio/gameplay boundaries. |
+| Stop Conditions | Missing verified media or an actual scoped correction requires prohibited shared modification. |
+| Exit Criteria | Review the completed observations and real diff, remove temporary material, restore the original probe and push the task record; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without changing the four named shared source/test pairs. |
+| Similar-Issue Sweep | Distinguish initial attract, credit acceptance, actual game, game-over and possible continuation; direct driver input does not qualify Session ordering. |
+
+Executor observation: the x64 direct-driver run completed all 80,000,000
+instructions and 4,794 vblanks. The one coin press/release occurred at
+vblank 1200/1230, the one start press/release at 1260/1290, and fire was held
+after the start release. The probe reported all four edges and 98 coin-register
+reads in each asserted window. At the four approximately 20-million-instruction
+samples, inspection showed the RAIDEN II title, a battle scene with GAME OVER,
+another battle scene, and a battle scene with GAME OVER and CREDIT 0. The frame
+digests were `6b0996ad1b94b410`, `76d6f5ea345b1683`, `8c118a87aa6b9ba5`,
+and `977317ccd04b328a`. Board and COP provider failures and rejected OKI
+selections were zero. The bounded probe did not drain PCM, so its overflow is
+not evidence of Product audio loss.
+
+These observations establish delivery and visible state changes, but neither
+identify an unambiguous credit-to-play transition nor prove that the GAME OVER
+frames are not attract mode. They do not establish player movement, stage/boss,
+restart, desktop output or audible playback. Unlike S97 no further coin/start
+inputs were injected. The probe bypassed Session, so it does not resolve S79.
+Temporary probe and staging-wrapper edits were restored exactly and the x64
+probe rebuilt; all eleven temporary frame/image files and the empty task-owned
+external directory were removed. No production, test, shared or EXE change is
+retained. The next gameplay evidence needs a checkpoint immediately before and
+after each coin/start and a matched no-input control, rather than treating a
+later scene or score as proof of a player-controlled game.
+
 ## M1 T7 S101 — Closed
 
 Coordinator reviewed implementation P1 `14ba29fe1`, including the actual
