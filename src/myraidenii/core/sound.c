@@ -56,6 +56,11 @@ typedef struct myraidenii_core_sound_ym {
     lib_u8 envelope[8u][4u];
     lib_u64 noise_phase;
     lib_u32 noise_state;
+    double lfo_phase;
+    lib_u8 lfo_am_depth;
+    lib_u8 lfo_pm_depth;
+    lib_u8 lfo_noise_bin;
+    lib_u8 lfo_noise_sample;
 } myraidenii_core_sound_ym;
 
 typedef struct myraidenii_core_sound_oki_voice {
@@ -239,6 +244,9 @@ static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
             } else ym->envelope[channel][op] = 4u;
         }
         ym->operator_keys[channel] = keys;
+    } else if (ym->address == 0x19u) {
+        if ((value & 0x80u) != 0u) ym->lfo_pm_depth = value & 0x7fu;
+        else ym->lfo_am_depth = value & 0x7fu;
     } else if (ym->address == 0x14u) {
         if ((value & 0x10u) != 0u) ym->status &= (lib_u8)~1u;
         if ((value & 0x20u) != 0u) ym->status &= (lib_u8)~2u;
@@ -458,7 +466,7 @@ static double myraidenii_core_sound_ym_frequency(const myraidenii_core_sound_ym 
 }
 
 static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
-    lib_u8 channel, lib_u8 op, double frequency, double modulation)
+    lib_u8 channel, lib_u8 op, double frequency, double modulation, double lfo_am)
 {
     /* Nominal DT2 offsets are 0, 600, 781 and 950 cents. */
     static const double detune2_ratio[4u] = {
@@ -475,7 +483,10 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     double *level = &ym->level[channel][op];
     lib_u8 *stage = &ym->envelope[channel][op];
     double step, gain = 1.0, factor = 0.9172759353897796;
-    lib_u8 remaining = attenuation;
+    lib_u16 remaining = attenuation;
+
+    if ((ym->registers[0xa0u + slot] & 0x80u) != 0u)
+        remaining += (lib_u16)lfo_am;
 
     if (*stage == 0u) return 0.0;
     if (*stage == 1u && attack != 0u) {
@@ -516,9 +527,14 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
 }
 
 static double myraidenii_core_sound_ym_channel(myraidenii_core_sound_ym *ym,
-    lib_u8 channel)
+    lib_u8 channel, double lfo_am, double lfo_pm)
 {
+    static const double pm_cents[8u] = {0.0, 5.0, 10.0, 20.0, 50.0, 100.0, 400.0, 700.0};
     const lib_u8 control = ym->registers[0x20u + channel];
+    const lib_u8 sensitivity = ym->registers[0x38u + channel];
+    const lib_u8 am_sensitivity = sensitivity & 3u;
+    const double exponent = lfo_pm * (double)ym->lfo_pm_depth / 127.0 *
+        pm_cents[(sensitivity >> 4u) & 7u] * (0.6931471805599453 / 1200.0);
     const lib_u8 algorithm = control & 7u;
     double frequency;
     double a, b, c, d, input;
@@ -527,19 +543,24 @@ static double myraidenii_core_sound_ym_channel(myraidenii_core_sound_ym *ym,
         ym->envelope[channel][2u] == 0u && ym->envelope[channel][3u] == 0u)
         return 0.0;
     frequency = myraidenii_core_sound_ym_frequency(ym, channel);
+    frequency *= 1.0 + exponent * (1.0 + exponent * (0.5 + exponent *
+        (1.0 / 6.0 + exponent / 24.0)));
+    lfo_am *= am_sensitivity == 0u ? 0.0 :
+        (double)(1u << (am_sensitivity - 1u)) * (double)ym->lfo_am_depth *
+        (23.9 / (127.0 * 0.75));
     a = myraidenii_core_sound_ym_operator(ym, channel, 0u, frequency,
-        ym->feedback[channel] * (double)((control >> 3u) & 7u) / 4.0);
+        ym->feedback[channel] * (double)((control >> 3u) & 7u) / 4.0, lfo_am);
     ym->feedback[channel] = a;
     b = myraidenii_core_sound_ym_operator(ym, channel, 1u, frequency,
         (algorithm == 0u || algorithm == 3u || algorithm == 4u ||
-         algorithm == 5u || algorithm == 6u) ? a * 4.0 : 0.0);
+         algorithm == 5u || algorithm == 6u) ? a * 4.0 : 0.0, lfo_am);
     input = algorithm == 0u || algorithm == 2u ? b :
         algorithm == 1u ? a + b : algorithm == 5u ? a : 0.0;
-    c = myraidenii_core_sound_ym_operator(ym, channel, 2u, frequency, input * 4.0);
+    c = myraidenii_core_sound_ym_operator(ym, channel, 2u, frequency, input * 4.0, lfo_am);
     input = algorithm == 0u || algorithm == 1u || algorithm == 4u ? c :
         algorithm == 2u ? a + c : algorithm == 3u ? b + c :
         algorithm == 5u ? a : 0.0;
-    d = myraidenii_core_sound_ym_operator(ym, channel, 3u, frequency, input * 4.0);
+    d = myraidenii_core_sound_ym_operator(ym, channel, 3u, frequency, input * 4.0, lfo_am);
     if (algorithm == 4u) return b + d;
     if (algorithm == 5u || algorithm == 6u) return b + c + d;
     if (algorithm == 7u) return a + b + c + d;
@@ -551,8 +572,11 @@ static void myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound,
 {
     lib_i32 left = 0, right = 0;
     myraidenii_core_sound_ym *ym = &sound->ym;
+    const lib_u8 lfo_rate = ym->registers[0x18u];
+    const lib_u8 lfo_wave = ym->registers[0x1bu] & 3u;
     const lib_u64 noise_period = (lib_u64)8u * 32u *
         (32u - (ym->registers[0x0fu] & 31u)) * MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE;
+    double lfo_am, lfo_pm;
 
     /* L1 noise spectrum: deterministic Galois generator at the nominal
      * register-selected rate, not the OPM's exact internal noise sequence. */
@@ -562,9 +586,36 @@ static void myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound,
         ym->noise_phase -= noise_period;
         ym->noise_state = ((ym->noise_state << 1u) ^ (high ? 9u : 0u)) & 0x1ffffu;
     }
+    /* L1 continuous approximation of the OPM's quantized LFO. */
+    if ((ym->registers[1u] & 2u) != 0u) ym->lfo_phase = 0.0;
+    else {
+        ym->lfo_phase += ((double)MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR / 8.0 / 64.0) *
+            (double)(16u + (lfo_rate & 15u)) * (double)(1u << (lfo_rate >> 4u)) /
+            (1073741824.0 * MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE);
+        if (ym->lfo_phase >= 1.0) ym->lfo_phase -= 1.0;
+    }
+    if (lfo_wave == 0u) {
+        lfo_am = 1.0 - ym->lfo_phase;
+        lfo_pm = ym->lfo_phase < 0.5 ? 2.0 * ym->lfo_phase : 2.0 * ym->lfo_phase - 2.0;
+    } else if (lfo_wave == 1u) {
+        lfo_am = ym->lfo_phase < 0.5 ? 1.0 : 0.0;
+        lfo_pm = ym->lfo_phase < 0.5 ? 1.0 : -1.0;
+    } else if (lfo_wave == 2u) {
+        lfo_am = ym->lfo_phase < 0.5 ? 1.0 - 2.0 * ym->lfo_phase : 2.0 * ym->lfo_phase - 1.0;
+        lfo_pm = ym->lfo_phase < 0.25 ? 4.0 * ym->lfo_phase :
+            ym->lfo_phase < 0.75 ? 2.0 - 4.0 * ym->lfo_phase : 4.0 * ym->lfo_phase - 4.0;
+    } else {
+        const lib_u8 bin = (lib_u8)(ym->lfo_phase * 256.0);
+        if (ym->lfo_noise_bin != bin) {
+            ym->lfo_noise_bin = bin;
+            ym->lfo_noise_sample = (lib_u8)ym->noise_state;
+        }
+        lfo_am = (double)ym->lfo_noise_sample / 255.0;
+        lfo_pm = 2.0 * lfo_am - 1.0;
+    }
 
     for (lib_u8 index = 0u; index < 8u; ++index) {
-        const lib_i32 sample = (lib_i32)(myraidenii_core_sound_ym_channel(ym, index) * 1024.0);
+        const lib_i32 sample = (lib_i32)(myraidenii_core_sound_ym_channel(ym, index, lfo_am, lfo_pm) * 1024.0);
         if ((ym->registers[0x20u + index] & 0x40u) != 0u) left += sample;
         if ((ym->registers[0x20u + index] & 0x80u) != 0u) right += sample;
     }

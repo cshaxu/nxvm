@@ -15,7 +15,19 @@ DT2's nominal 0/600/781/950-cent settings are evaluated as continuous
 frequency ratios, not the reference's quantized phase computation. The special
 sustain setting 15 corresponds to 31 attenuation steps; each step is modeled
 as 3 dB. Equal-tempered pitch, continuous phase, envelope rates and modulation
-depth are local L1 approximations. DT1, key scaling and LFO are absent.
+depth are local L1 approximations. DT1 and key scaling are absent.
+
+An in-progress LFO candidate keeps the two `0x19` depth writes separately and
+uses channel PM/AM sensitivity and per-operator AM enable. The selected
+rate and four waveform selections follow the inspected register vocabulary;
+oscillator phase, continuous waveforms, modulation scaling and the held
+noise waveform are L1 approximations. The phase-modulation sensitivity's
+nominal cents values are finite facts recorded by the same reference, not a
+copied implementation. Tests exercise disabled routing, AM, PM and waveform
+selection. Both product unit selections pass 13/13 and both selected-set
+probes complete 20 million instructions. Full repository units remain to be
+run on this candidate before S closure. These checks do not establish
+quantized OPM behavior or audio fidelity.
 
 The subsequent local noise candidate uses the reference's register-selected
 noise output on channel 7 operator 4 and a nominal rate derived from that
