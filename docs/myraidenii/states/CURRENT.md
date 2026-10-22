@@ -17,7 +17,7 @@ FIFO; it is not a real-game or desktop qualification.
 
 The local Sound receiver now returns high status bits set for both OKI
 devices, while preserving the four live voice bits. The bounded L2 reference
-is MAME release tag `mame0289`, `src/devices/sound/okim6295.cpp`,
+is MAME release tag `mame0289` (`f34f025`), `src/devices/sound/okim6295.cpp`,
 `okim6295_device::read`; no source or table was imported. This is not a
 physical-hardware claim or evidence that the selected game relied on the
 previous high-bit value. The existing synthetic sound-CPU test failed before
@@ -27,6 +27,13 @@ last test-only extension, the sound unit passed again on both widths. Each
 candidate Product built and the selected-set Product Console lifecycle smoke
 passed once on each width. Documentation governance and whitespace checks
 passed. Temporary ROM staging and empty diagnostic logs were removed.
+
+The existing selected-set probe was rebuilt and ran once per width for
+20,000,000 instructions with coin/start sequencing. Both returned OK with
+matching neutral frame/PCM digests, 1205 vblanks, zero Board/COP failures,
+zero rejected OKI selections and nonzero synthesized PCM. The probe discards
+PCM and does not exercise desktop input, audio playback or the complete game.
+Its owned external staging was removed after both processes exited.
 
 S94's ignored-control counter counts empty voice masks, not busy-voice
 failures; the existing write-disposition test covers that distinction.
