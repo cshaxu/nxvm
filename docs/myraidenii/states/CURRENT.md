@@ -13,6 +13,46 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S94 — Implementation Review
+
+An x64 real-set probe held fire after vblank 1350, alternated horizontal
+movement, pulsed bombs, and issued ordinary coin/start pulses every 600
+vblanks after 1800. At 5000 the screen showed active play and score 3660; at
+6500 it showed score 11470. At 8000 it showed GAME OVER with nine credits;
+at 9500 it again showed a player in battle with score 3170 and a large
+multi-part enemy. The latter is not established as a boss, nor does a fresh
+score prove a same-stage continue or stage completion. The probe bypassed the
+Session queue and is not desktop qualification.
+
+The bounded run completed 160,000,000 instructions and 9701 vblanks, with
+zero Board/COP provider failures and zero rejected OKI selections. OKI-2
+reported 308 ignored controls, requiring separate interpretation rather than
+assuming either a fault or fidelity; generated PCM was not played. The
+temporary extended budget, input instrumentation, staging and frame captures
+were removed; the original x64 probe was rebuilt. No Shared code changed.
+T7, the boss/stage checkpoint, audible audio and S79 remain open.
+
+## Archived Packet — M1 T7 S94
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S93; one person executes and reviews. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation; T7 explicitly requires stage and boss checkpoints. |
+| Objective | Use ordinary coin, start and continue inputs to examine later selected-set gameplay and identify any actual stage/boss failure. |
+| Non-goals | No Shared edits, game logic bypass, protected content retention or invented success. |
+| Reference Baseline | S92 reached two-player game over before a confirmed boss; S83 separately observed a fresh game after another coin/start. |
+| Candidate Proposal | Temporarily adapt the existing local real-set probe to issue normal controls and inspect bounded later frames; follow observed MyRaidenII defects if found. |
+| Files And ABI Surface | Temporary changes to MyRaidenII diagnostic and wrapper, task record; product-local fixes only if evidenced. |
+| Applicable Rules | MyRaidenII source policy, architecture and UX; shared execution, coding and documentation. |
+| Verification | A fixed-budget background selected-set run, intermediate frame review and failure counters; rebuild restored probe and verify temporary cleanup. |
+| Expected Markers | Distinguish sustained play, continue, game over, attract, boss and stage transition. |
+| Asset Needs | Existing external selected-set archive, transient staged ROMs and frames. |
+| Reporting Requirements | No inference of desktop, audio, full-game or CPU fidelity from an observation. |
+| Stop Conditions | A necessary fix requires prohibited Shared modifications or protected payload retention. |
+| Exit Criteria | Record actual observations and actionable next work; remove temporary changes and protected material; review and push. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying specified Shared source/tests. |
+| Similar-Issue Sweep | Check continued play against actual game-over, start and credit state and provider-failure counters. |
+
 ## M1 T7 S93 — Closed
 
 Product now rejects a non-Window display before allocating the composition or
