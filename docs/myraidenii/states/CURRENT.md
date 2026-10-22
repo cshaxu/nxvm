@@ -13,6 +13,42 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S85 — Closed
+
+Coordinator review accepts the two-width owner-ROM Product Console lifecycle
+run and the existing helper's bounded marker behavior described below. No
+production or Shared files changed; T7's gameplay and input-ordering exit
+criteria remain open.
+
+## Archived Packet — M1 T7 S85
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S84; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission and product-local qualification without Shared modifications. |
+| Objective | Qualify actual selected-set Product lifecycle start, pause, resume, stop and exit using the existing Console integration route. |
+| Non-goals | No Shared or other App changes, new test framework, protected payload retention or desktop/audio qualification claim. |
+| Reference Baseline | The formal existing smoke covers start and exit; an earlier temporary longer-deadline probe covered lifecycle but did not qualify the formal test. |
+| Candidate Proposal | Extend the existing Product Console command/marker sequence, keeping its existing timeout and staging owner. |
+| Files And ABI Surface | MyRaidenII Product Console integration test and MyRaidenII task evidence; no production API or Shared edits. |
+| Applicable Rules | MyRaidenII architecture, coding, source policy and shared execution, coding and documentation rules. |
+| Verification | Rebuild the existing integration test and Product on x64/x86; execute the owner-ROM wrapper once per width, plus documentation and whitespace checks. |
+| Expected Markers | Machine started, paused, resumed and stopped messages followed by process termination. |
+| Asset Needs | Existing external owner ROM archive, temporary wrapper-owned staging removed on completion. |
+| Reporting Requirements | Distinguish the actual Console lifecycle check from input ordering, child exit code, desktop and audio. |
+| Stop Conditions | A correct fix demonstrably requires prohibited Shared edits or an unapproved source import. |
+| Exit Criteria | Both-width results and actual diff are reviewed and pushed; any failure is investigated without lowering the existing timeout. |
+| Original Owner Request | Implement MyRaidenII autonomously under existing governance without changing the specified Shared packages. |
+| Similar-Issue Sweep | Confirm output markers correspond to each transition and that no stale Console text can satisfy a later command. |
+
+The existing owner-ROM Product Console test now uses one sequential start,
+pause, resume, stop and exit command list. It passed once on each width with
+the existing five-second deadlines. The shared Console helper clears its
+private output before each command and requires the matching completion text;
+it waits for process termination after exit but does not inspect the child exit
+code. This does not prove S79 input ordering, Window presentation, physical
+audio or desktop gameplay. Wrapper staging was removed after each run.
+
 ## M1 T7 S84 — Closed
 
 Coordinator review accepts the product-local CSM model and tests, including
