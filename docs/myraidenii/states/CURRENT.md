@@ -2,26 +2,14 @@
 
 ## Current Work
 
-## M1 T7 S110 — Delivered, Awaiting Owner Acceptance
+## M1 T7 S110 — Closed
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; single person performs coordinator and executor roles. |
-| Admission And Approval | Owner explicitly admits original import of the committed SoftPC public eight trees and receiving adaptation; this supersedes the prior Shared-edit exclusion for this import. |
-| Objective | Import the exact committed SoftPC Lib, Emulator, X86 Debug and X86 IBMPC source and test corpora and connect all receiving products without retaining old shared paths. |
-| Non-goals | No SoftPC worktree writes, game/firmware/media import, invented pause-control fix, or X86 Core/NXVM corpus import. |
-| Reference Baseline | NXVM 213261c5c; SoftPC 453edcfaa651746dca35e389f723e34439f0e7dc; external untracked snapshot is excluded. |
-| Candidate Proposal | ../proposals/m1-qualification.md; owner-admitted shared corpus import and receiver adaptation. |
-| Files And ABI Surface | Targets: Shared, NXVM, MyNES and MyRaidenII. Eight shared trees byte-identical to SoftPC; receiving app, X86 NXVM, integration setup, build and tests as required; shared input, frame and composition API changes. Eight-tree comparison identified 107 differing files. |
-| Applicable Rules | Inward dependencies, one owner, Lib Types, exact source provenance, protected assets, single-target commits and actual-diff review; no workaround or compatibility route. |
-| Verification | Byte-hash eight trees and manifests; affected corpus gates; both cached release graphs, complete repository-only units x64/x86, affected product integrations; rebuild and check each affected admitted App pair, PE identities and hashes. |
-| Expected Markers | Exact eight-tree equality, no obsolete frame or boolean-input callers, correct real failure and ownership semantics; no claim that frozen FIFO resolves arcade stuck input. |
-| Asset Needs | Existing stable Ninja/ccache trees and owner-supplied read-only external assets; preserve all INI, media and snapshots. Temporary outputs under build/t7-s110, owned by this task, 60-minute and 200 MiB budgets, no-progress investigation after 10 minutes. |
-| Reporting Requirements | Report import provenance, exact byte equality, receiver edits, actual added/deleted/net counts, test and artifact evidence separately, and unresolved desktop/gameplay and pause input limitations. |
-| Stop Conditions | Protected asset mutation, missing license authority, inability to preserve required behavior without changing imported corpus, or unrelated active work collision. |
-| Exit Criteria | Reviewed complete import and receiving adaptations, required verification and artifact releases, target-scoped commits pushed; await owner acceptance, T7 remains open. |
-| Original Owner Request | Admit a new S and import SoftPC public eight components unmodified. |
-| Similar-Issue Sweep | All input status callers; frame storage initialization, allocation and cleanup; old composition calls and test helpers; deleted FM placeholder and test/build references. |
+Owner accepted the imported SoftPC eight-tree corpus and receiving adaptations.
+The coordinator reviewed the delivered commit scopes and receiving adaptations
+against the admitted import and checked the recorded gates and artifact
+deliveries. The retained production paths use the imported frame and input
+contracts; obsolete callers and the removed FM placeholder have no parallel
+compatibility path.
 
 Executor validation: imported source and test trees match SoftPC commit
 `453edcfaa651746dca35e389f723e34439f0e7dc` by complete file set and SHA-256.
@@ -34,14 +22,19 @@ x86 unit selections passed 697/697 each. Fifteen selected PC/MyNES integration
 tests passed on each width. Both MyRaidenII owner-ROM Console lifecycle probes
 passed; those do not qualify child exit status, desktop controls, audio or
 gameplay. Twelve PC, MyNES and MyRaidenII executables were rebuilt and their
-PE widths checked. SoftPC's paused FIFO freeze does not settle the existing
-S79 MyRaidenII release-order problem. Native desktop/RDP and full integration
-qualification were not performed.
+PE widths checked. Subsequent integration runs covered the default PC and
+MyNES registered suites on both widths, plus each other PC profile on both
+widths. The Window modal case initially failed in the sandbox because native
+ClipCursor returned access denied; isolated reruns on the host passed on both
+widths. MyRaidenII's real-ROM Console lifecycle passed both widths after an
+x64 prompt timeout under concurrent load. These checks do not establish RDP,
+real gameplay, physical audio or complete T7 qualification. SoftPC's paused
+FIFO freeze does not settle the existing S79 MyRaidenII release-order problem.
 
 Delivery is split by owner: Shared P1 `65d755cca`, NXVM P2 `602355273`,
 MyNES P3 `66403441f`, and MyRaidenII P4 carrying this record and its receiver.
-Each P is pushed independently. S110 and T7 remain open for owner acceptance;
-S79 remains unresolved.
+Each P was pushed independently. S110 is accepted and closed; T7 remains open,
+with no next S admitted and S79 unresolved.
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
