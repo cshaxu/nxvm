@@ -13,6 +13,50 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S103 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S102; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorizes autonomous MyRaidenII work and background probes; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Distinguish an accepted coin and start transition from attract-mode animation using matched visual checkpoints. |
+| Non-goals | No shared edits, protected payload publication, guest bypass, fabricated gameplay or release claim. |
+| Reference Baseline | S102 sent one coin and start but its sparse later frames cannot distinguish actual play from attract mode. |
+| Candidate Proposal | Temporarily use the existing startup probe for matched no-input and single coin/start runs, capturing five frames at the same vblank points around the two input windows. |
+| Files And ABI Surface | Existing MyRaidenII integration probe and staging wrapper temporarily, plus product task records; no production or public interface modification. |
+| Applicable Rules | Product source, architecture and coding; shared execution and documentation; one execution and graphics path, no imported code or protected payload. |
+| Verification | Use verified owner ROM and existing x64 Ninja graph; run each case in the background at 30 million instructions with a 15-minute limit, inspect matching frame points, restore and rebuild the probe and remove task-owned staging. |
+| Expected Markers | Identical pre-input screen, distinct or matching credit and start displays, delivered input windows, complete execution and honest visual conclusions. |
+| Asset Needs | Existing external selected-set archive and task-owned temporary image directories, removed after review; no screenshots or ROM committed. |
+| Reporting Requirements | Report exact schedule, per-case observations, cause if identified, retained changes, cleanup and unresolved desktop/input/gameplay limitations. |
+| Stop Conditions | Verified required media unavailable or a required correction demonstrably needs prohibited shared changes. |
+| Exit Criteria | Paired observations, limits and actual changes reviewed, temporary edits restored and original target rebuilt, documentation checked, committed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without changing the four named shared source/test pairs. |
+| Similar-Issue Sweep | Differentiate coin acceptance, start acceptance, actual control, game-over, Session ordering and sound qualification. |
+
+Executor evidence: both x64 direct-driver cases completed 30,000,000
+instructions, with 1,724 vblanks without input and 1,729 with input. At
+vblank 1190 their frame files had identical SHA256. The input case pressed and
+released coin at vblank 1200/1230 and start at 1260/1290; all four edges were
+delivered and each asserted window saw 98 coin-register reads. At vblank 1245
+the input case visibly showed `CREDIT 1`, while the control case was still at
+the title. At 1305 the input case showed the red airplane's runway introduction;
+at 1380 and 1600 it showed the airplane on the runway and then departing, with
+the one-player HUD. Frame hashes differed between the two cases after input.
+This paired observation supports coin acceptance and a start-triggered game
+introduction, not player control or stage completion. Both cases reported zero
+Board/COP provider failures and zero rejected OKI selections. Neither case
+drained the probe's PCM queue, so its overflow is not a Product audio result.
+
+The probe used the Machine driver directly, not Session or desktop input; S79,
+movement/fire, stage/boss, game-over/restart and audible output remain
+unqualified. Temporary probe and staging-wrapper edits were restored exactly,
+the original x64 probe rebuilt, and all twelve task-owned frame files and
+images and both empty external staging roots removed. No production, test,
+shared or executable change is retained. The next appropriate comparison is
+an input-versus-no-movement matched run after the verified start transition,
+with visual plane position and input-delivery checkpoints.
+
 ## M1 T7 S102 — Closed
 
 Coordinator reviewed P1 `581b5a3ba`, the recorded observation, restored probe
