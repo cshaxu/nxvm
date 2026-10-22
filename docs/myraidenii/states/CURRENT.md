@@ -13,6 +13,49 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S104 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S103; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorizes autonomous MyRaidenII work and background probes; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Determine whether movement and fire produce observable player-controlled behavior after the verified coin/start transition. |
+| Non-goals | No shared edits, protected payload publication, guest bypass, fabricated stage or release qualification. |
+| Reference Baseline | S103 obtained a paired credit and player introduction but did not issue or qualify movement or fire. |
+| Candidate Proposal | Temporarily instrument the existing selected-set x64 probe for matched coin/start runs, applying right and fire to only one case and sampling frames at matched vblanks. |
+| Files And ABI Surface | Existing MyRaidenII integration probe and staging wrapper temporarily, product task records; no production or public interface change without evidence. |
+| Applicable Rules | Product source, architecture, coding and UX; shared execution and documentation; preserve one actual driver input and graphics route. |
+| Verification | Use owner ROM inventory, existing x64 Ninja graph and two background 45-million-instruction runs capped at 15 minutes; compare input edges and sampled images, restore and rebuild the probe, remove external staging, review and document. |
+| Expected Markers | Matched pre-movement scene, reported press/release and visible position or firing differences; honest distinction between control, Session and complete gameplay. |
+| Asset Needs | Existing owner archive and task-owned external temporary frames, removed after review; no protected content committed. |
+| Reporting Requirements | Record input schedule, observation, validation, cleanup and unresolved gameplay, audio and desktop coverage. |
+| Stop Conditions | Required media unavailable or correct implementation demonstrably requires prohibited shared changes. |
+| Exit Criteria | Matched observations and actual diff reviewed, original probe restored and rebuilt, temporary files removed, record committed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying the four named Shared source/test pairs. |
+| Similar-Issue Sweep | Differentiate movement, firing, delayed response, Session delivery, stage progress and audio qualification. |
+
+Executor observation: two x64 direct-driver runs completed 45,000,000
+instructions and 2,649 vblanks each. Both sent one coin and one start using
+the S103 schedule. Only the experimental case pressed right and Z at vblank
+1700, releasing both at 2000. At 1650 and 1750 the two frame files were
+byte-identical. At 1850, 1950 and 2100 their hashes differed. Visual review
+of 1850 and 1950 showed the control airplane near the center, while the
+experimental airplane had moved toward the right edge and projectile-like
+pixels were visible above it. This supports rightward response to the combined
+input and is consistent with firing; because right and Z were varied together,
+it is not an independent proof of the Z button. Both cases had zero Board/COP
+provider failures and zero rejected OKI selections. Their diagnostic PCM queue
+was not drained; its overflow does not qualify or disqualify Product playback.
+
+This bounded run bypasses Session and does not qualify desktop input, pause
+ordering, other controls, stage/boss, game-over/restart or audible output.
+The temporary integration-probe and wrapper changes were restored exactly, the
+original x64 probe rebuilt, and fourteen task-owned frames/images and the two
+empty external directories removed. No production, test, shared or EXE change
+is retained. The remaining control evidence should isolate fire and exercise
+the real Session route instead of treating this direct-driver comparison as a
+complete input qualification.
+
 ## M1 T7 S103 — Closed
 
 Coordinator reviewed P1 `07b65efd9`, the paired observations, restored probe,
