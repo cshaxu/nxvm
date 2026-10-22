@@ -353,6 +353,18 @@ static lib_i32 graphics_sprite_layers(void)
         pixels[0u] != 0x00ff0000u) {
         goto done;
     }
+    stream[2u * MYRAIDENII_CORE_SPRITE_BYTES] = 0xf2u;
+    stream[4u * MYRAIDENII_CORE_SPRITE_BYTES] = 0xf3u;
+    graphics_sprite_descriptor_set(descriptor, 1u, 1u, 1u, LIB_FALSE, LIB_FALSE);
+    descriptor[1u] |= 1u | (2u << 4u);
+    if (myraidenii_core_sprite_buffer_write(sprites, 0u, descriptor, sizeof(descriptor)) !=
+            LIB_STATUS_OK ||
+        myraidenii_core_sprite_buffer_latch(sprites) != LIB_STATUS_OK ||
+        myraidenii_core_video_frame_copy(&video, 0u, 0u, sprites, pixels,
+            MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_OK ||
+        pixels[MYRAIDENII_CORE_SPRITE_WIDTH] != 0x0000ff00u) {
+        goto done;
+    }
     pixels[0u] = 0x00123456u;
     if (myraidenii_core_video_frame_copy(LIB_NULL, 0u, 0u, sprites, pixels,
             MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) != LIB_STATUS_INVALID_ARGUMENT ||

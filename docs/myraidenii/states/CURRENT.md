@@ -4,7 +4,8 @@
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
-It does not redefine unimplemented Board behavior as a release result.
+It does not redefine unimplemented Board behavior as a release result. S72 is
+active pending coordinator review and delivery.
 
 ## Archived Packet — M1 T7 S51
 
@@ -939,9 +940,44 @@ unit suites pass all 697 tests (the x64 cleanup fixture is additionally
 validated with its permitted local junction setup).  S69 is closed with no
 active packet.
 
-## Active Packet
+## M1 T7 S72 Progress
 
-None.
+S72 corrects the sole Core multi-tile traversal owner to SEI252 column-major
+order, using independently inspected MAME and MiSTer behavior as L2 evidence.
+The non-square synthetic regression rejects the former row-major expression
+without importing external source or assets. Unrelated integration failures
+remain explicitly reported, rather than weakening those test contracts.
+
+Focused graphics/sprite tests and the complete repository-only unit suite pass
+697/697 on each architecture. A separate full integration run included a MIDI
+test relaxation that was subsequently withdrawn; the original MIDI integration
+failure remains unresolved. No Shared production source,
+public interface or ROM/PAL/media changed.
+MyRaidenII has no admitted release artifact yet; no EXE is produced by this S.
+The evidence record retains provenance, actual changes and validation limits.
+
+## Active Packet — M1 T7 S72
+
+## M1 T7 S72 — SEI252 Multi-Tile Order
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S71; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued use of external emulators as explicit L2 evidence rather than treating absent physical material as a blocker. |
+| Objective | Correct the local Core renderer's multi-tile sprite traversal to the independently corroborated SEI252 column-major order. |
+| Non-goals | No MAME/MiSTer source, comments, tables, ROM/PAL data or decryption import; no blend-table model, per-line limit, Shared production change, new renderer, public API, thread, queue, external-ROM run or artifact release claim. |
+| Reference Baseline | `myraidenii_core_video_sprite_draw()` presently derives a tile as `tile_y * width + tile_x`, which is row-major. Independently inspected MAME and MiSTer SEI252 references both describe the selected board's descriptor stream as column-major. |
+| Candidate Proposal | Change the one local tile-offset expression to `tile_x * height + tile_y`, preserving descriptor decode, flip axes, object ordering, palette and the sole compositor. Extend the existing synthetic graphics smoke with a non-square multi-tile fixture that distinguishes both orders. |
+| Files And ABI Surface | `src/myraidenii/core/video.c`, `test/myraidenii/unit/core/graphics_smoke.c`, Current and one evidence/index record. No public header/API/layout, Shared component or other App. |
+| Applicable Rules | MyRaidenII Architecture/Coding/source policy; shared Execution and Documentation rules. The adopted tile-order fact is L2, while the implementation and synthetic oracle remain independently written. |
+| Verification | Run focused graphics/Board units on x64/x86, the complete repository unit suite required for S closure, manifests, documentation governance and whitespace. Report the native-MIDI integration failure separately; a generic I/O error is not proof of an unavailable endpoint. Rebuild artifacts only if executable inputs change, then follow the current artifact rule. |
+| Expected Markers | A `2×3` descriptor selects tile offsets in column-major sequence; existing 1×1, flip, priority, transparent-pixel and palette semantics remain unchanged. |
+| Asset Needs | None. No external archive/PAL is opened or staged. |
+| Reporting Requirements | Record the two independent L2 references by local revision/path, exact local behavior changed, synthetic proof, actual deltas and unexecuted selected-set/desktop/audio/gameplay validation. |
+| Stop Conditions | Contradictory external behavior, a required descriptor/API/layout change, a need for source/table copying, or regression of current 1×1/flip semantics stops selection. |
+| Exit Criteria | One Core owner has the corrected traversal; synthetic non-square proof and required suites pass on both widths; evidence is indexed and actual diff review finds no second sprite path. |
+| Original Owner Request | Use MAME or other emulator behavior as L2 when original hardware evidence is unavailable; do not block progress solely on missing physical evidence. |
+| Similar-Issue Sweep | Review every local multi-tile offset calculation and flip path, plus existing descriptor, tile-decode and compositor test coverage; do not alter already matching layer priority ordering. |
 
 ## M1 T7 S71 Closure
 

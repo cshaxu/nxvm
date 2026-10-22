@@ -305,7 +305,7 @@ static lib_status myraidenii_core_video_sprite_draw(const myraidenii_core_video 
                 lib_u8 source_tile_y = descriptor.flip_y ?
                     descriptor.height_tiles - 1u - tile_y : tile_y;
                 lib_u32 tile = descriptor.tile_index +
-                    (lib_u32)source_tile_y * descriptor.width_tiles + source_tile_x;
+                    (lib_u32)source_tile_x * descriptor.height_tiles + source_tile_y;
                 lib_u8 pixel_y;
 
                 for (pixel_y = 0u; pixel_y < MYRAIDENII_CORE_SPRITE_HEIGHT; ++pixel_y) {
