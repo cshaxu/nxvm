@@ -84,6 +84,13 @@ still crashed after a same-directory executable rename, and after copying the
 same executable and equivalent relative external-ROM INI to a disposable build
 directory. Thus neither release filename nor its directory alone explains
 the failure. Both temporary copies were removed after the owned processes exited.
+Further isolation temporarily reduced the owned smoke to `exit` alone: the
+x86 helper still exited with `0xc0000005` after its success marker, without
+starting the machine. The original command sequence was restored and rebuilt.
+Running the full sequence with stdout and stderr redirected also reproduced
+the failure, so it is not explained merely by writing to the caller's
+console. These observations narrow the failure to the test process or its
+environment; they do not establish the root cause or a product failure.
 
 | Field | Required record |
 | --- | --- |
