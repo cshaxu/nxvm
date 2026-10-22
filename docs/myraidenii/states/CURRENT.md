@@ -103,6 +103,12 @@ to be submitted after a pause. The Machine bridge now discards the Board queue
 after the host clear succeeds, using the existing Board copy path. A focused
 fixture verifies both retained Board data on host-clear failure and successful
 discard before the next drain. This does not establish desktop playback.
+An attempted background Product lifecycle check used a temporary Console-display
+variant of the selected-set wrapper and a hidden child. The x64 child remained
+alive, but the existing Console helper did not observe its initial monitor
+prompt within its deadline; no lifecycle command was sent. The experimental
+wrapper and test edits were reverted, and staging was removed by the wrapper.
+The cause is not yet established and this result is not a Product pass.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

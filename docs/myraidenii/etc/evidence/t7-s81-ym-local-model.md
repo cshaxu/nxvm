@@ -79,6 +79,14 @@ later drain. The no-stream path and staging-failure checks remain in place.
 Both-width MyRaidenII units and builds are checked separately from desktop
 audio or actual pause/resume qualification.
 
+A subsequent x64 real-Product attempt used temporary Console-display wrapper
+and lifecycle-smoke edits, with the existing helper's hidden private Console.
+The child remained alive, but the helper timed out waiting for the initial
+monitor prompt before issuing any command. The wrapper cleaned its staged ROMs;
+the experimental edits were reverted. The observation does not identify whether
+the Console host, Product startup, or helper caused the missing prompt, and it
+does not qualify start, pause, resume, stop, or audible playback.
+
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected
 rate and four waveform selections follow the inspected register vocabulary;
