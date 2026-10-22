@@ -186,11 +186,11 @@ add_executable(vm-model40-hdc-smoke
 target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-ini-smoke
     test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c
-    test/emulator/setup/console_process.c)
+    test/setup/console_process.c)
 
 add_executable(pc-product-ini-identity-smoke
     test/x86-nxvm/integration/product_ini_identity_smoke.c
-    test/emulator/setup/console_process.c)
+    test/setup/console_process.c)
 target_include_directories(pc-product-ini-identity-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(pc-product-ini-identity-smoke PRIVATE x86-nxvm-product)
@@ -245,7 +245,7 @@ add_executable(vm-app-default-profile-smoke test/app-nxvm/integration/dos/nxvm_d
 target_link_libraries(vm-app-default-profile-smoke PRIVATE integration-session-ini-support)
 add_executable(my5170-console-lifecycle-smoke
     test/app-my5170/integration/my5170_console_lifecycle_smoke.c
-    test/emulator/setup/console_process.c)
+    test/setup/console_process.c)
 target_include_directories(my5170-console-lifecycle-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(my5170-console-lifecycle-smoke PRIVATE

@@ -83,7 +83,7 @@ static lib_i32 vm_display_composition_delivery(x86_nxvm_machine *session)
 {
     emulator_machine_driver driver;
     static kvm_window_frame_storage delivered;
-    kvm_console_text_frame console;
+    kvm_console_text_frame console = {0};
     lib_bool produced;
     lib_u32 sequence;
     lib_u32 width;

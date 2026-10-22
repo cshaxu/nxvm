@@ -23,7 +23,7 @@ static lib_bool vm_runner_pixel_equals(const x86_nxvm_machine *machine,
     const kvm_window_frame_storage *frame, lib_size pixel, lib_u8 colour)
 {
     return machine->latest_snapshot.pixels[pixel] == colour &&
-        frame->data.graphics.pixels[pixel] == machine->latest_snapshot.palette_rgb[colour];
+        frame->data.graphics->pixels[pixel] == machine->latest_snapshot.palette_rgb[colour];
 }
 
 static lib_bool vm_runner_debug_execute(x86_nxvm_machine *machine,
@@ -119,9 +119,9 @@ static lib_bool vm_runner_blink_cycle(x86_nxvm_machine *machine,
         }, &response) || !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, frame, run_generation))
         return LIB_FALSE;
-    if (character ? !frame->frame.graphics || frame->data.graphics.width != 8u ||
-            frame->data.graphics.height != 2u || !vm_runner_pixel_equals(machine, frame, 0, 2u) :
-        frame->frame.graphics || !frame->data.text.base.cursor_phase)
+    if (character ? !frame->frame.graphics || frame->data.graphics->width != 8u ||
+            frame->data.graphics->height != 2u || !vm_runner_pixel_equals(machine, frame, 0, 2u) :
+        frame->frame.graphics || !frame->data.text->base.cursor_phase)
         return LIB_FALSE;
     sequence = frame->frame.sequence;
     /* Only real execution may produce the next named blink transition. */
@@ -132,12 +132,12 @@ static lib_bool vm_runner_blink_cycle(x86_nxvm_machine *machine,
             frame->frame.sequence != sequence || !vm_runner_step_and_pause(machine, waiter, 16u) ||
             !emulator_machine_copy_published_frame(machine->executor, frame, run_generation))
             return LIB_FALSE;
-        if (character ? !frame->frame.graphics || frame->data.graphics.width != 8u ||
-                frame->data.graphics.height != 2u || !vm_runner_pixel_equals(machine, frame, 1, 1u) :
-            frame->frame.graphics || frame->data.text.base.text_columns != 1u ||
-                frame->data.text.base.text_rows != 1u) return LIB_FALSE;
+        if (character ? !frame->frame.graphics || frame->data.graphics->width != 8u ||
+                frame->data.graphics->height != 2u || !vm_runner_pixel_equals(machine, frame, 1, 1u) :
+            frame->frame.graphics || frame->data.text->base.text_columns != 1u ||
+                frame->data.text->base.text_rows != 1u) return LIB_FALSE;
         visible = character ? vm_runner_pixel_equals(machine, frame, 0, 2u) :
-            frame->data.text.base.cursor_phase;
+            frame->data.text->base.cursor_phase;
         if (character && !visible && !vm_runner_pixel_equals(machine, frame, 0, 1u)) return LIB_FALSE;
         if (!visible || hidden) {
             if ((!hidden || visible) && frame->frame.sequence == sequence) return LIB_FALSE;
@@ -230,7 +230,7 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
 !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published,
             run_generation) || !published.frame.graphics ||
-        published.data.graphics.width != 320u || published.data.graphics.height != 200u ||
+        published.data.graphics->width != 320u || published.data.graphics->height != 200u ||
         !vm_runner_pixel_equals(machine, &published, 0, 15u) || published.frame.sequence != sequence + 1u)
         return LIB_FALSE;
     sequence = published.frame.sequence;
@@ -270,15 +270,15 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
         !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
         published.frame.graphics || published.frame.sequence != sequence + 1u ||
-        published.data.text.base.text_columns != 80u || published.data.text.base.text_rows != 50u ||
-        published.data.text.base.cells[0].glyph_index != 'A' ||
-        published.data.text.base.cells[0].glyph_bank != 0u ||
-        published.data.text.base.cells[3920u].glyph_index != 'A' ||
-        published.data.text.base.cells[3920u].glyph_bank != 1u ||
-        published.data.text.font[65u * 32u] != 0x80u ||
-        published.data.text.secondary_font[65u * 32u] != 0x40u ||
-        !published.data.text.base.cursor_phase ||
-        published.data.text.base.cursor_column != 2 || published.data.text.base.cursor_row != 49)
+        published.data.text->base.text_columns != 80u || published.data.text->base.text_rows != 50u ||
+        published.data.text->base.cells[0].glyph_index != 'A' ||
+        published.data.text->base.cells[0].glyph_bank != 0u ||
+        published.data.text->base.cells[3920u].glyph_index != 'A' ||
+        published.data.text->base.cells[3920u].glyph_bank != 1u ||
+        published.data.text->font[65u * 32u] != 0x80u ||
+        published.data.text->secondary_font[65u * 32u] != 0x40u ||
+        !published.data.text->base.cursor_phase ||
+        published.data.text->base.cursor_column != 2 || published.data.text->base.cursor_row != 49)
         return LIB_FALSE;
     sequence = published.frame.sequence;
     if (emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK ||
@@ -290,7 +290,7 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
         }, &response) || !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
         published.frame.sequence != sequence + 1u ||
-        published.data.text.secondary_font[65u * 32u] != 0x20u) return LIB_FALSE;
+        published.data.text->secondary_font[65u * 32u] != 0x20u) return LIB_FALSE;
     sequence = published.frame.sequence;
     if (!vm_runner_step_and_pause(machine, waiter, 4u) ||
         emulator_machine_published_frame_sequence(machine->executor) != sequence)
@@ -304,15 +304,15 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
                 {0x03c4u, 0u}, {0x03c5u, 3u}, {0x03c0u, 0x33u}, {0x03c0u, 8u}
             }, 8u) || !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
-        !published.frame.graphics || published.data.graphics.width != 720u ||
-        published.data.graphics.height != 400u || !vm_runner_pixel_equals(machine, &published, 0, 7u) ||
+        !published.frame.graphics || published.data.graphics->width != 720u ||
+        published.data.graphics->height != 400u || !vm_runner_pixel_equals(machine, &published, 0, 7u) ||
         !vm_runner_pixel_equals(machine, &published, 1, 1u) ||
         !vm_runner_pixel_equals(machine, &published, 392u * 720u + 2u, 7u) ||
         published.frame.sequence != sequence + 1u) {
         lib_c_fprintf(lib_c_stderr, "RUNNER:PIXEL-TEXT:graphics=%u width=%u height=%u sequence=%u expected=%u first=%u second=%u last=%u\n",
-            published.frame.graphics != LIB_NULL, published.data.graphics.width, published.data.graphics.height,
-            published.frame.sequence, sequence + 1u, published.data.graphics.pixels[0],
-            published.data.graphics.pixels[1], published.data.graphics.pixels[392u * 720u + 2u]);
+            published.frame.graphics != LIB_NULL, published.data.graphics->width, published.data.graphics->height,
+            published.frame.sequence, sequence + 1u, published.data.graphics->pixels[0],
+            published.data.graphics->pixels[1], published.data.graphics->pixels[392u * 720u + 2u]);
         return LIB_FALSE;
     }
     sequence = published.frame.sequence;
@@ -332,8 +332,8 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
                 .address = 0xa0000u, .bytes = 1u, .data = {1u}}, &response) ||
         !vm_runner_step_and_pause(machine, waiter, 4u) ||
         !emulator_machine_copy_published_frame(machine->executor, &published, run_generation) ||
-        !published.frame.graphics || published.data.graphics.width != 640u ||
-        published.data.graphics.height != 400u || !vm_runner_pixel_equals(machine, &published, 0, 1u) ||
+        !published.frame.graphics || published.data.graphics->width != 640u ||
+        published.data.graphics->height != 400u || !vm_runner_pixel_equals(machine, &published, 0, 1u) ||
         !vm_runner_pixel_equals(machine, &published, 640u, 0u) || published.frame.sequence != sequence + 1u)
         return LIB_FALSE;
     for (lib_u16 x = 0u; x < 8u; ++x)
@@ -352,10 +352,10 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
         !emulator_machine_copy_published_frame(machine->executor, &published,
             emulator_machine_run_generation(machine->executor))) return LIB_FALSE;
     return published.frame.text != LIB_NULL && !published.frame.graphics &&
-        published.data.text.base.text_columns == 1u &&
-        published.data.text.base.text_rows == 1u &&
-        published.data.text.font[65u * 32u] == 0u &&
-        published.data.text.secondary_font[65u * 32u] == 0u &&
+        published.data.text->base.text_columns == 1u &&
+        published.data.text->base.text_rows == 1u &&
+        published.data.text->font[65u * 32u] == 0u &&
+        published.data.text->secondary_font[65u * 32u] == 0u &&
         published.frame.sequence == sequence + 1u;
 }
 
@@ -364,7 +364,7 @@ lib_i32 main(void)
     x86_nxvm_machine *session = LIB_NULL;
     vm_test_emulator_machine_state_waiter waiter = {0};
     static kvm_window_frame_storage frame;
-    kvm_console_text_frame console;
+    kvm_console_text_frame console = {0};
     lib_bool produced;
     lib_i32 failed = 0;
 
@@ -376,8 +376,8 @@ lib_i32 main(void)
     if (x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
         x86_nxvm_machine_copy_emulator_frame(session, &frame, &console, &produced) != LIB_STATUS_OK ||
         !produced ||
-        frame.data.text.base.text_columns != 1u ||
-        frame.data.text.base.text_rows != 1u ||
+        frame.data.text->base.text_columns != 1u ||
+        frame.data.text->base.text_rows != 1u ||
         vm_test_emulator_machine_bind(session) != LIB_STATUS_OK ||
         vm_test_emulator_machine_state_waiter_initialize(session, &waiter) !=
             LIB_STATUS_OK ||
