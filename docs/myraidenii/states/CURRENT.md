@@ -13,7 +13,7 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S91 — Implementation Review
+## M1 T7 S91 — Closed
 
 An x64 selected-set background probe used the actual Machine driver: coin 2
 was pressed at vblanks 300--330 and 500--530, followed by start 2 at
@@ -25,7 +25,8 @@ second-player game entry, not independent movement/fire, desktop input, full
 gameplay, sound playback or pause-fence qualification. The probe bypassed the
 Session FIFO and drove the existing Machine driver directly. Its temporary
 instrumentation and image captures were removed; the original x64 probe was
-rebuilt. No protected image or Shared change is retained. T7 remains active.
+rebuilt. Coordinator reviewed P1 `f9ea50511` against this limited scope.
+No protected image or Shared change is retained. T7 remains active.
 
 ## Archived Packet — M1 T7 S91
 
