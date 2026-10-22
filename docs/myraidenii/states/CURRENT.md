@@ -128,6 +128,9 @@ reset and compares its initial PCM with the pre-reset output, after checking
 the queue was cleared. Both-width MyRaidenII unit selections pass 13/13. A
 temporary negative build omitting YM reset caused the Sound suite to fail; the
 production reset was restored and the x64 suite rebuilt before the final run.
+After relinking the current builds, the repository-wide unit selection also
+passed 698/698 on each width (x64 110.65 s; x86 97.76 s), sequentially with
+six workers. These are unit results, not integration or desktop qualification.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

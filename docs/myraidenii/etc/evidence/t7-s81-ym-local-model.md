@@ -155,6 +155,10 @@ with the YM reset operation omitted made the overall Sound unit fail; the
 production operation was restored and rebuilt. This demonstrates a reset
 regression is detected by the suite, not that every individual assertion was
 isolated from all other checks.
+After the restored production source was rebuilt, both existing Ninja trees
+were updated and the complete repository unit selection was run sequentially
+with six workers: x64 698/698 in 110.65 s, x86 698/698 in 97.76 s. This
+does not include real-device, desktop or external integration qualification.
 
 A bounded selected-set probe on each architecture executed 20,000,000 V30
 instructions with coin/start input, no reported board or COP provider error,
