@@ -97,6 +97,11 @@ state replacement clears the previous run's queue. Parked state-read continuatio
 input closed; genuine running/resume opens it. Enqueue returns OK for acceptance,
 INVALID_STATE for normal closed admission and LIMIT_EXCEEDED for overflow.
 Neither rejected events nor accepted prefixes are replayed by Session.
+Pause does not preserve ordinary host input transitions or resynchronize host
+keys on resume. Session still handles source reset/retirement and keyboard
+release bookkeeping, without injecting those releases into a paused machine.
+Hotkeys and window-close control retain their existing admission. Mouse input
+has no Session ledger and is admitted only while running.
 Machine copies opaque pointer-free request/response bytes with explicit lengths,
 bounded by 128/1536 bytes in its single request slot. It does not interpret CPU
 operations. Protocol vocabulary belongs to the requesting frontend and its

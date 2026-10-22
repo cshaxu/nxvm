@@ -60,6 +60,7 @@ int main(void)
     take(queue, &event); lib_test_assert(emulator_session_accept_kvm_event(&event, 7u,
         EMULATOR_SESSION_MACHINE_RUNNING));
     lib_test_assert(emulator_session_accept_kvm_event(&event, 8u, EMULATOR_SESSION_MACHINE_STOPPED));
+    lib_test_assert(emulator_session_accept_kvm_event(&event, 7u, EMULATOR_SESSION_MACHINE_PAUSED));
     lib_test_assert(emulator_session_dispatch_input(queue, &event.value.kvm,
         EMULATOR_SESSION_MACHINE_STOPPED, deliver_input, LIB_NULL));
 
@@ -77,6 +78,10 @@ int main(void)
         EMULATOR_SESSION_MACHINE_PAUSED, deliver_input, LIB_NULL));
     raw_mouse.type = KVM_EVENT_MOUSE;
     raw_mouse.data.mouse.buttons = 0u;
+    lib_test_assert(emulator_session_queue_push_kvm_for_run(queue, &raw_mouse, 7u));
+    take(queue, &event);
+    lib_test_assert(!emulator_session_accept_kvm_event(&event, 7u, EMULATOR_SESSION_MACHINE_PAUSED));
+    lib_test_assert(emulator_session_accept_kvm_event(&event, 7u, EMULATOR_SESSION_MACHINE_RUNNING));
     lib_test_assert(emulator_session_dispatch_input(queue, &raw_mouse,
         EMULATOR_SESSION_MACHINE_PAUSED, deliver_input, LIB_NULL));
     lib_test_assert(delivered_guest_input == 0u);

@@ -215,12 +215,11 @@ lib_status console_broker_replace(console_broker *broker,
        validation drops stale output and permits the current binding's output. */
     console_broker_backend_lock_output(broker->backend);
     status = console_broker_backend_deactivate(broker->backend, &old_cooked_request);
+    if (status == LIB_STATUS_OK)
+        status = console_broker_reset_bound(old, broker->generation);
     if (status != LIB_STATUS_OK) {
-        /* A cancellation request whose reader never completed has no
-           trustworthy Current Console.  Do not start next, and do not claim
-           old remains usable: it may still consume input after this point.
-           Fail closed so the product can terminate/report host I/O failure
-           rather than operating two indeterminate input paths. */
+        /* Failed retirement or input reset leaves no trustworthy binding.
+           Fail closed without starting next or advertising old as usable. */
         broker->broken = LIB_TRUE;
         lib_console_invalidate_binding(old);
         old_output = broker->current_output;
@@ -228,19 +227,6 @@ lib_status console_broker_replace(console_broker *broker,
         console_broker_backend_unlock_output(broker->backend);
         console_broker_remove_output_binding(next, next_output);
         lib_console_release(next); /* Caller still owns next. */
-        console_broker_remove_output_binding(old, old_output);
-        console_broker_backend_unlock_transaction(broker->backend);
-        return status;
-    }
-    status = console_broker_reset_bound(old, broker->generation);
-    if (status != LIB_STATUS_OK) {
-        broker->broken = LIB_TRUE;
-        lib_console_invalidate_binding(old);
-        old_output = broker->current_output;
-        broker->current_output = LIB_NULL;
-        console_broker_backend_unlock_output(broker->backend);
-        console_broker_remove_output_binding(next, next_output);
-        lib_console_release(next);
         console_broker_remove_output_binding(old, old_output);
         console_broker_backend_unlock_transaction(broker->backend);
         return status;

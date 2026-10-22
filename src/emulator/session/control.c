@@ -211,10 +211,8 @@ lib_bool emulator_session_accept_kvm_event(const emulator_session_event *event,
     if (runtime_state == EMULATOR_SESSION_MACHINE_RUNNING) return LIB_TRUE;
     if (runtime_state != EMULATOR_SESSION_MACHINE_PAUSED) return LIB_FALSE;
     return input->type == KVM_EVENT_WINDOW_CLOSE ||
-        input->type == KVM_EVENT_SOURCE_RETIRED ||
         input->type == KVM_EVENT_HOTKEY ||
-        (input->type == KVM_EVENT_KEY && input->data.key.pressed == 0u) ||
-        (input->type == KVM_EVENT_MOUSE && input->data.mouse.buttons == 0u);
+        (input->type == KVM_EVENT_KEY && input->data.key.pressed == 0u);
 }
 
 static void emulator_session_forget_pressed(emulator_session_queue *queue,

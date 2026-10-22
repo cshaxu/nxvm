@@ -27,6 +27,7 @@ static const lib_console_text_frame output_frame = { .columns = 80u, .rows = 25u
     .foreground = foreground, .background = background, .underline = underline };
 static lib_i32 console_broker_fail_next_prepare;
 static lib_i32 console_broker_fail_next_retirement;
+static lib_i32 console_broker_fail_next_reset;
 static lib_i32 console_broker_prepare_saw_active;
 static lib_i32 console_broker_wait_for_callback;
 static lib_u32 activations;
@@ -236,6 +237,10 @@ static lib_status tracked_delivery(lib_console *console, const lib_console_event
 {
     if (event->kind == LIB_CONSOLE_EVENT_INPUT_RESET) {
         lib_test_assert(test_backend->active == LIB_NULL); /* Old reader already quiesced. */
+        if (console_broker_fail_next_reset) {
+            console_broker_fail_next_reset = 0;
+            return LIB_STATUS_IO_ERROR;
+        }
         reset_console = console;
         reset_generation = event->binding_generation;
         if (test_backend->generation != 0u &&
@@ -343,20 +348,28 @@ int main(void)
     lib_test_assert(lib_console_write_text_frame(first, &output_frame) == LIB_STATUS_OK);
     lib_test_assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
     lib_test_assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
-    /* Reader retirement is an explicit transaction boundary.  After a failed
-       retirement cancellation may already have disturbed the old reader, so
-       the broker fails closed: neither old nor next is advertised Current. */
-    console_broker_fail_next_retirement = 1;
-    lib_u32 resets_before_failure = input_resets;
-    lib_test_assert(console_broker_replace(broker, second, first,
-        CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_IO_ERROR);
-    lib_test_assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
-    lib_test_assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
-    lib_test_assert(input_resets == resets_before_failure);
-    lib_test_assert(console_broker_replace(broker, second, first,
-        CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_INVALID_STATE);
-    console_broker_destroy(broker);
-    broker = LIB_NULL;
+    /* Retirement and old-input reset failures share the fail-closed path. */
+    lib_u32 resets_before_failure;
+    for (lib_u32 failure = 0u; failure < 2u; ++failure) {
+        if (failure != 0u)
+            lib_test_assert(console_broker_create(&broker, second,
+                CONSOLE_BROKER_RAW_EVENTS) == LIB_STATUS_OK);
+        console_broker_fail_next_retirement = failure == 0u;
+        console_broker_fail_next_reset = failure != 0u;
+        resets_before_failure = input_resets;
+        lib_u32 attempts_before_failure = activation_attempts;
+        lib_test_assert(console_broker_replace(broker, second, first,
+            CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(!console_broker_fail_next_retirement && !console_broker_fail_next_reset);
+        lib_test_assert(activation_attempts == attempts_before_failure);
+        lib_test_assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+        lib_test_assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
+        lib_test_assert(input_resets == resets_before_failure);
+        lib_test_assert(console_broker_replace(broker, second, first,
+            CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_INVALID_STATE);
+        console_broker_destroy(broker);
+        broker = LIB_NULL;
+    }
 
     /* The one native path is mode-agnostic: all four replacement pairs use
        the same retirement-before-activation contract. */
