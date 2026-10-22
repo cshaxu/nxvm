@@ -5,14 +5,43 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S76 is
-closed; S78 investigates the remaining second-button and progression evidence. A follow-up review
+closed; S79 addresses pause/resume input ordering. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S78
+## Active Packet — M1 T7 S79
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S78; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission and MyRaidenII-local repairs without changes to Lib, Emulator, X86 Core or X86 IBMPC. |
+| Objective | Investigate the reproduced pre-pause input FIFO ordering and, if feasible within the existing contracts, ensure stale controls cannot affect resumed guest execution. |
+| Non-goals | No Shared or other App changes, second input queue, new host worker, protected payload or unproven workaround. |
+| Reference Baseline | S74 introduced queued releases; a later scripted real-queue probe observed a pre-pause event delivered after the resume boundary. |
+| Candidate Proposal | Inspect existing executor, heartbeat, Session notification, queue and driver ownership; qualify a single local ordering or drain mechanism with the existing real-FIFO test before production changes. |
+| Files And ABI Surface | MyRaidenII Machine/Product and existing product-owned tests if evidence requires; no Shared modifications or new public API presumed. |
+| Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution and documentation rules. |
+| Verification | Actual real-FIFO pause/resume regression, affected x64/x86 builds and tests, plus full unit regressions if production changes warrant them. |
+| Asset Needs | No ROM needed for synthetic ordering tests; selected-set verification only where justified. |
+| Reporting Requirements | Distinguish actual worker ordering, input release, full desktop behavior and game qualification. |
+| Stop Conditions | A correct solution demonstrably requires a prohibited Shared change; report the exact contract limitation. |
+| Exit Criteria | Identify and resolve the in-scope ordering fault, or record a proven Shared contract limitation without an incorrect local workaround; applicable tests and governance pass, reviewed changes are pushed. |
+| Temporary Work | Use existing Ninja trees and bounded background probes; remove temporary local output. |
+| Expected Markers | Controlled pre-pause events, pause acknowledgement, resume and guest-visible state are checked at actual queue and execution boundaries. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying the four specified Shared source/test packages. |
+| Similar-Issue Sweep | Check repeated pause/resume, stop/reset, queued key press and release, and release-enqueue failure. |
+
+## M1 T7 S78 — Closed
+
+Coordinator review accepts P1 `17c01cc96`: matched temporary frames support
+a visible second-button response and the longer run shows bounded gameplay
+progress. This diagnostic-only batch changes no production or Shared source;
+the restored x64 probe builds, MyRaidenII documentation governance and
+whitespace checks pass. Full stage, game-over/restart, desktop and actual host
+audio qualification remain open in T7.
 
 | Field | Required record |
 | --- | --- |
