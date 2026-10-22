@@ -13,7 +13,14 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S100 — Active
+## M1 T7 S100 — Closed
+
+Coordinator reviewed P1 `6bf762487`, the two completed probe outputs, the
+restored diagnostic source and its rebuilt target. The retained change is
+documentation only, and the narrower observational limits below remain.
+The gameplay and release requirements of T7 are not closed.
+
+## Archived Packet — M1 T7 S100
 
 | Field | Required record |
 | --- | --- |
