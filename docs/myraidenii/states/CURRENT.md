@@ -13,7 +13,12 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S109 — Active
+## M1 T7 S109 — Closed
+
+Coordinator reviewed P1 `881ee8caf`, its actual local driver/test changes,
+both unit suites, Product artifacts and the limited Console smokes. The
+no-stream bound does not qualify desktop playback, game speed under real load
+or the suspended input FIFO contract; T7 remains open.
 
 | Field | Required record |
 | --- | --- |
