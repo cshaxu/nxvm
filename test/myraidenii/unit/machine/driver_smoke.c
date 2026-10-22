@@ -54,13 +54,13 @@ lib_status x86_core_machine_capture_time_observation(const x86_core_machine *mac
     return LIB_STATUS_OK;
 }
 
-lib_bool emulator_machine_enqueue_input(emulator_machine *machine, const kvm_input_event *event)
+lib_status emulator_machine_enqueue_input(emulator_machine *machine, const kvm_input_event *event)
 {
     if (machine == LIB_NULL || event == LIB_NULL || event->type != KVM_EVENT_KEY ||
-        event->data.key.pressed || queued_count == queue_fail_at) return LIB_FALSE;
-    if (queued_count >= sizeof(queued_keys) / sizeof(queued_keys[0])) return LIB_FALSE;
+        event->data.key.pressed || queued_count == queue_fail_at) return LIB_STATUS_INVALID_STATE;
+    if (queued_count >= sizeof(queued_keys) / sizeof(queued_keys[0])) return LIB_STATUS_LIMIT_EXCEEDED;
     queued_keys[queued_count++] = event->data.key.key;
-    return LIB_TRUE;
+    return LIB_STATUS_OK;
 }
 
 lib_status myraidenii_core_board_set_control(myraidenii_core_board *board,

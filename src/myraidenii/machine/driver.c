@@ -229,7 +229,7 @@ lib_bool myraidenii_machine_release_inputs(emulator_machine *machine)
     if (machine == LIB_NULL) return LIB_FALSE;
     for (lib_size i = 0; i < sizeof(myraidenii_machine_controls) / sizeof(myraidenii_machine_controls[0]); ++i) {
         event.data.key.key = myraidenii_machine_controls[i].key;
-        if (!emulator_machine_enqueue_input(machine, &event)) return LIB_FALSE;
+        if (emulator_machine_enqueue_input(machine, &event) != LIB_STATUS_OK) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -278,10 +278,11 @@ static lib_status myraidenii_machine_copy_frame(void *context,
     status = myraidenii_core_board_frame_copy(machine->board, machine->native_pixels,
         MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS);
     if (status != LIB_STATUS_OK) return status;
-    graphics = kvm_window_frame_begin_graphics(out_frame);
-    graphics->width = MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT;
-    graphics->height = MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH;
-    graphics->stride = MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT;
+    status = kvm_window_frame_prepare_graphics(out_frame,
+        MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT, MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH,
+        MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT);
+    if (status != LIB_STATUS_OK) return status;
+    graphics = out_frame->data.graphics;
     for (lib_u32 y = 0u; y < MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT; ++y) {
         for (lib_u32 x = 0u; x < MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH; ++x) {
             graphics->pixels[(MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH - 1u - x) *

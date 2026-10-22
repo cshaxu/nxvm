@@ -13,7 +13,7 @@ add_custom_target(myraidenii-selected-set-startup-probe-build
 
 add_executable(myraidenii-selected-set-product-console-smoke
     selected_set_product_console_smoke.c
-    "${CMAKE_SOURCE_DIR}/test/emulator/setup/console_process.c")
+    "${CMAKE_SOURCE_DIR}/test/setup/console_process.c")
 target_include_directories(myraidenii-selected-set-product-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(myraidenii-selected-set-product-console-smoke PRIVATE types base)

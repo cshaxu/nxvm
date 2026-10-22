@@ -76,15 +76,15 @@ int main(void)
     lib_test_assert(emulator_machine_start(machine));
     lib_test_assert(base_sync_event_wait(f.running, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     event.data.key.key = 'Z'; event.data.key.pressed = LIB_TRUE;
-    lib_test_assert(emulator_machine_enqueue_input(machine, &event));
-    lib_test_assert(emulator_machine_enqueue_input(machine, &event));
+    lib_test_assert(emulator_machine_enqueue_input(machine, &event) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_enqueue_input(machine, &event) == LIB_STATUS_OK);
     lib_test_assert(emulator_machine_pause(machine));
     lib_test_assert(base_sync_event_signal(f.gate) == LIB_STATUS_OK);
     lib_test_assert(base_sync_event_wait(f.paused, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     lib_test_assert(emulator_machine_resume(machine));
     lib_test_assert(base_sync_event_wait(f.running, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     lib_test_assert(myraidenii_machine_release_inputs(machine));
-    lib_test_assert(emulator_machine_enqueue_input(machine, &event));
+    lib_test_assert(emulator_machine_enqueue_input(machine, &event) == LIB_STATUS_OK);
     lib_test_assert(base_sync_event_wait(f.finished, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     lib_test_assert(f.selected_count == 4u && lib_text_compare(f.selected_order, "++-+") == 0);
     lib_test_assert(emulator_machine_stop(machine));

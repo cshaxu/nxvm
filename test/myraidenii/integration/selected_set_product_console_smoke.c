@@ -1,7 +1,7 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
-#include "test/emulator/setup/console_process.h"
+#include "test/setup/console_process.h"
 
 int main(lib_i32 argc, char **argv)
 {
