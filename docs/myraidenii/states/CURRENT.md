@@ -35,6 +35,22 @@ FIFO; it is not a real-game or desktop qualification.
 | Temporary Work | Reuse the existing Ninja trees and bounded external staging; stop owned processes and remove temporary captures. |
 | Similar-Issue Sweep | Check press/release delivery and timing against the existing confirmed fire and movement controls without multiplying independent test paths. |
 
+S82 background selected-set diagnostics used Coin at vblanks 300--330,
+Start at 750--780 and continuous fire beginning at 1350. In the x64 run,
+X was pressed at 1350 and released at 1380; the portrait frame at 1450
+showed a large explosion. A no-X x86 control using the same schedule did not
+show that explosion at the corresponding checkpoint. This is a cross-width
+comparison, not a same-width or cycle-exact equivalence proof; S78 separately
+recorded a same-width visible response at vblank 1370. The x64 run completed
+100 million instructions without a Board or COP provider failure. Its frame
+at 1800 displayed GAME OVER and score 140; later captures showed attract-mode
+scenes, not continued player-controlled stage completion. The x86 control
+completed 30 million instructions without a provider failure. Both were
+scripted Machine/Board observations, not desktop input or audio validation.
+Temporary probe instrumentation and captured images are not part of the
+product or its tests. This does not resolve S79's input ordering or qualify
+full gameplay.
+
 ## M1 T7 S81 — Closed, bounded YM model
 
 Coordinator review accepts the actual four changed MyRaidenII production and
