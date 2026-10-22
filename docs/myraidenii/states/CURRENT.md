@@ -91,6 +91,13 @@ Running the full sequence with stdout and stderr redirected also reproduced
 the failure, so it is not explained merely by writing to the caller's
 console. These observations narrow the failure to the test process or its
 environment; they do not establish the root cause or a product failure.
+Using that same exit-only MyRaidenII helper against the deployed NXVM x86
+program also produced the same helper exit failure. A control invocation of
+the helper executable that returned without using the Console helper exited
+normally; an invocation that only called `FreeConsole` also exited normally.
+These controls implicate the exercised helper/host interaction rather than a
+MyRaidenII-specific game command, but do not identify a single faulty call.
+The temporary control branches were removed and the original helper rebuilt.
 
 | Field | Required record |
 | --- | --- |
