@@ -4,7 +4,8 @@
 
 Owner: MyRaidenII Core Sound. S81 replaced the diagnostic square wave with an
 independent four-operator FM approximation and added stereo routing, LFO and
-noise. It is not yet a fidelity-qualified YM2151: DT1 is absent; Timer A's
+noise. It is not yet a fidelity-qualified YM2151: DT1 magnitude is an L1
+smooth approximation rather than a measured chip table; Timer A's
 CSM key source is sampled at PCM rate and can coalesce rapid triggers; phase,
 envelope, LFO and noise retain explicit L1 approximations; and real music and
 desktop playback have not been qualified. Continue improving the single Sound

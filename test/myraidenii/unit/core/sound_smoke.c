@@ -798,6 +798,46 @@ static lib_i32 sound_ym_pitch_and_level(void)
         crossings[5] > crossings[0] * 18u / 10u;
 }
 
+static lib_i32 sound_ym_detune(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[4096u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i16 baseline[sizeof(frames) / sizeof(frames[0])];
+    lib_u32 last_crossing[8u] = {0u};
+
+    for (lib_u8 mode = 0u; mode < 8u; ++mode) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_u32 copied = 0u;
+        lib_u64 dropped = 0u;
+        lib_size at = 0u;
+        lib_status status;
+
+        lib_memory_set(program, 0, sizeof(program));
+        sound_program_write_ym(program, &at, 0x20u, 0x47u);
+        sound_program_write_ym(program, &at, 0x28u, 0x4cu);
+        sound_program_write_ym(program, &at, 0x58u, (lib_u8)((mode << 4u) | 1u));
+        sound_program_write_ym(program, &at, 0x98u, 0x1fu);
+        sound_program_write_ym(program, &at, 0x08u, 0x40u);
+        program[at] = 0x76u;
+        status = sound_create(program, &fixture, &sound);
+        if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 2000000u);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_sound_pcm_copy(sound, frames, 4096u, &copied, &dropped);
+        myraidenii_core_sound_destroy(sound);
+        if (status != LIB_STATUS_OK || copied != 4096u || dropped == 0u) return 1;
+        if (mode == 0u) lib_memory_copy(baseline, frames, sizeof(baseline));
+        if (mode == 4u && lib_memory_compare(baseline, frames, sizeof(baseline)) != 0) return 1;
+        for (lib_u32 index = 1u; index < copied; ++index)
+            if (frames[(index - 1u) * 2u] <= 0 && frames[index * 2u] > 0)
+                last_crossing[mode] = index;
+    }
+    return last_crossing[3] >= last_crossing[1] ||
+        last_crossing[1] >= last_crossing[0] ||
+        last_crossing[0] >= last_crossing[5] ||
+        last_crossing[5] >= last_crossing[7];
+}
+
 static lib_i32 sound_ym_modulation(void)
 {
     static lib_u8 program[0x2000u];
@@ -1707,6 +1747,7 @@ int main(void)
         sound_routes_ym_channels() != 0 ||
         sound_ym_csm_trigger() != 0 ||
         sound_ym_pitch_and_level() != 0 ||
+        sound_ym_detune() != 0 ||
         sound_ym_modulation() != 0 ||
         sound_ym_key_off(LIB_FALSE) != 0 ||
         sound_ym_key_off(LIB_TRUE) != 0 ||

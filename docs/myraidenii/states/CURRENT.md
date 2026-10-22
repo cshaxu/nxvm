@@ -13,6 +13,48 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## Active Packet — M1 T7 S88
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S87; one person performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized automatic local subtasks and L2 reference behavior without the prohibited Shared changes. |
+| Objective | Add the selected game's missing YM2151 DT1 operator pitch control to the existing local synthesis path. |
+| Non-goals | No reference code or table import, new audio path, Shared change, hardware-exact fidelity or desktop-audio claim. |
+| Reference Baseline | S87 records actual nonzero DT1 writes and the external reference's sign, key dependence and pre-multiplier ordering. |
+| Candidate Proposal | Implement a small bounded smooth L1 magnitude approximation using the existing operator frequency and register state, with L2 ordering and sign; expand the existing Sound unit rather than create another test framework. |
+| Files And ABI Surface | MyRaidenII Core Sound, existing Sound unit, product task evidence and affected product artifacts; no public interface changes. |
+| Applicable Rules | Product source, architecture and coding policy; shared execution, architecture, coding and documentation rules. |
+| Verification | Focused Sound and all MyRaidenII units on both architectures; build and qualify both Product candidates, selected-set bounded regression, document and whitespace checks. |
+| Expected Markers | Both zero modes agree, nonzero positive and negative detune change pitch in opposite directions, stronger magnitude moves farther, and normal reset and pre-existing pitch tests remain valid. |
+| Asset Needs | Existing external ROM archive and wrapper-owned temporary staging; no protected output retained. |
+| Reporting Requirements | Record actual diff and evidence, separate L2 ordering from L1 magnitude and desktop/audio qualification. |
+| Stop Conditions | A correct local model requires prohibited Shared changes or unapproved reference source/table import. |
+| Exit Criteria | Local implementation, synthetic and real-set checks reviewed and pushed; no claim of overall YM or game completion. |
+| Original Owner Request | Implement MyRaidenII autonomously using allowed L2 references, without modifying the specified Shared packages. |
+| Similar-Issue Sweep | Verify DT1 polarity, zero modes, keycode dependence, DT2, multiplier, note range and overflow handling. |
+
+S88 implementation: the existing operator applies signed DT1 before the
+multiplier, using a smooth quadratic keycode-dependent magnitude. Ordering,
+polarity and key dependence are L2 observations from the reference identified
+in S87; the coefficients and resulting magnitude are an L1 approximation,
+not a measured table or silicon-accurate model. Zero magnitude is unchanged;
+the low-frequency result is clamped to zero. No new state or interface exists.
+The existing Sound unit exercises all eight values, both zero encodings, and
+opposite ordering for weak and strong positive/negative detuning; it does not
+independently prove the magnitude or every keycode and multiplier combination.
+The pre-existing pitch unit continues to cover DT2 and octave behavior.
+
+Both Release candidates and affected unit targets rebuilt in the stable Ninja
+trees; MyRaidenII units passed 13/13 on each width. Background selected-set
+probes completed 20 million instructions each with no Board/COP provider
+failure and matching frame and PCM digests across widths. Their PCM digest
+changed from the S87 baseline, which confirms a model effect but not audible
+fidelity. The selected-set Product Console lifecycle smoke also passed once
+on each width. The x64 and x86 runs are not desktop, full-game or sound-listening
+qualification. The counted source/test diff is +52/-1, net +51 lines in two
+files; the sole Sound/PCM path remains. No prohibited Shared files changed.
+
 ## M1 T7 S87 — Closed
 
 The x64 selected-set probe executed 20 million instructions with Coin at

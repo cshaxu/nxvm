@@ -505,6 +505,8 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     };
     const lib_u8 slot = myraidenii_core_sound_ym_slot(channel, op);
     const lib_u8 multiple = ym->registers[0x40u + slot] & 15u;
+    const lib_u8 detune = (ym->registers[0x40u + slot] >> 4u) & 7u;
+    const lib_u8 keycode = (ym->registers[0x28u + channel] & 0x7fu) >> 2u;
     const lib_u8 attenuation = ym->registers[0x60u + slot] & 127u;
     const lib_u8 attack = ym->registers[0x80u + slot] & 31u;
     const lib_u8 decay = ym->registers[0xa0u + slot] & 31u;
@@ -554,7 +556,15 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
         factor *= factor;
         remaining >>= 1u;
     }
-    step = frequency * detune2_ratio[ym->registers[0xc0u + slot] >> 6u] *
+    /* L1 smooth DT1 magnitude; L2 ordering and sign, without a chip table. */
+    frequency *= detune2_ratio[ym->registers[0xc0u + slot] >> 6u];
+    if ((detune & 3u) != 0u) {
+        const double adjustment = (double)(detune & 3u) * 0.037 *
+            (1.0 + (double)keycode * (double)keycode / 72.0);
+        frequency += (detune & 4u) != 0u ? -adjustment : adjustment;
+        if (frequency < 0.0) frequency = 0.0;
+    }
+    step = frequency *
         (multiple == 0u ? 0.5 : (double)multiple) /
         MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE;
     while (step >= 1.0) step -= 1.0;
