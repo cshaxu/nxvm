@@ -204,6 +204,10 @@ lib_i32 myraidenii_product_run(const myraidenii_product_config *config)
     lib_status status;
 
     if (config == LIB_NULL) return 1;
+    if (config->display != EMULATOR_SESSION_DISPLAY_WINDOW) {
+        lib_c_fprintf(lib_c_stderr, "Console display is not supported; set display=window in myraidenii.ini.\n");
+        return 1;
+    }
     composition = lib_allocate_zero(1u, sizeof(*composition));
     if (composition == LIB_NULL) {
         lib_c_fprintf(lib_c_stderr, "Cannot allocate machine composition.\n");

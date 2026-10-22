@@ -15,6 +15,7 @@ static lib_status board_status = LIB_STATUS_OK;
 static lib_status stream_status = LIB_STATUS_OK;
 static lib_status machine_status = LIB_STATUS_OK;
 static lib_status driver_status = LIB_STATUS_OK;
+static lib_i32 image_load_count;
 static lib_i32 image_destroy_count;
 static lib_i32 board_destroy_count;
 static lib_i32 stream_destroy_count;
@@ -37,6 +38,7 @@ lib_status myraidenii_machine_images_load(const char *directory,
 {
     if (out_images == LIB_NULL || directory == LIB_NULL || paths == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
+    ++image_load_count;
     assert(lib_text_compare(directory, "C:\\raiden") == 0);
     for (lib_size index = 0u; index < MYRAIDENII_MACHINE_IMAGE_COUNT; ++index)
         assert(paths[index] != LIB_NULL && paths[index][0] != '\0');
@@ -316,6 +318,7 @@ int main(void)
     driver_status = LIB_STATUS_OK;
     config.display = EMULATOR_SESSION_DISPLAY_CONSOLE;
     assert(myraidenii_product_run(&config) == 1);
-    assert(image_destroy_count == 7 && machine_destroy_count == 5 && board_destroy_count == 7);
+    assert(image_load_count == 7 && image_destroy_count == 6 &&
+        machine_destroy_count == 4 && board_destroy_count == 6);
     return 0;
 }

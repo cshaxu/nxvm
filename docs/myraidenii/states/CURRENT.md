@@ -13,6 +13,42 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S93 — Implementation Review
+
+Product now rejects a non-Window display before allocating the composition or
+loading any image, with a message naming the supported INI choice. The existing
+configure-control guard remains a defensive boundary for its callback. The
+Product unit checks that the rejected call adds no image load or destruction.
+Both candidate architectures rebuilt and all 13 MyRaidenII units passed on
+each; both selected-set Window Product Console lifecycle smokes passed. Actual
+x64/x86 processes with `display=console` and nonexistent image paths returned 1
+and printed the unsupported-display message, demonstrating the display check
+precedes ROM access. Temporary process fixtures were removed. These are build
+candidates, not released artifacts or a claim of complete gameplay, desktop
+presentation or audible sound. No Shared source or test was changed; T7 remains
+active and its S79 input-ordering qualification remains unresolved.
+
+## Archived Packet — M1 T7 S93
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S92; one person executes and reviews. |
+| Admission And Approval | Owner authorized autonomous product-local implementation without the specified Shared changes. |
+| Objective | Clearly reject unsupported Console gameplay before loading external images or creating a machine. |
+| Non-goals | No Console graphics renderer, fallback display, Shared changes or new configuration syntax. |
+| Reference Baseline | Product parses display=console but configure_control rejects it only after ROM construction; the shared runner returns failure without a reason. |
+| Candidate Proposal | Check the configured display at the Product entry, report the supported Window choice, and retain existing configuration and composition boundaries. |
+| Files And ABI Surface | MyRaidenII Product composition, existing Product unit and task record; no public API or Shared change. |
+| Applicable Rules | Product UX, architecture and coding; shared execution and documentation rules. |
+| Verification | Both-width Product build, affected unit and all MyRaidenII units; real-process invalid-display and valid-window startup where feasible. |
+| Expected Markers | Console fails with a useful message before any image/machine creation; Window behavior remains intact. |
+| Asset Needs | Synthetic config for failure; external selected-set archive only for existing success smoke. |
+| Reporting Requirements | Separate failure-path qualification from gameplay, desktop and audible audio. |
+| Stop Conditions | Correct behavior requires a Shared modification. |
+| Exit Criteria | Local change, regression and actual diff reviewed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII without changing specified Shared components. |
+| Similar-Issue Sweep | Check unsupported display, invalid configuration and existing startup failures for distinct diagnostics. |
+
 ## M1 T7 S92 — Closed
 
 The selected-set x64 background probe drove two coin-2 pulses at vblanks
