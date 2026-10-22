@@ -13,7 +13,7 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S94 — Implementation Review
+## M1 T7 S94 — Closed
 
 An x64 real-set probe held fire after vblank 1350, alternated horizontal
 movement, pulsed bombs, and issued ordinary coin/start pulses every 600
@@ -30,7 +30,8 @@ reported 308 ignored controls, requiring separate interpretation rather than
 assuming either a fault or fidelity; generated PCM was not played. The
 temporary extended budget, input instrumentation, staging and frame captures
 were removed; the original x64 probe was rebuilt. No Shared code changed.
-T7, the boss/stage checkpoint, audible audio and S79 remain open.
+Coordinator reviewed P1 `aacb88af7`. T7, the boss/stage checkpoint, audible
+audio and S79 remain open.
 
 ## Archived Packet — M1 T7 S94
 
