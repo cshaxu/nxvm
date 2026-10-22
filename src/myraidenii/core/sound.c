@@ -50,6 +50,8 @@ typedef struct myraidenii_core_sound_ym {
     lib_u64 timer_a_phase;
     lib_u64 timer_b_phase;
     lib_u8 operator_keys[8u];
+    lib_bool csm_pending;
+    lib_bool csm_active;
     lib_u32 output_phase[8u][4u];
     double level[8u][4u];
     double feedback[8u];
@@ -202,6 +204,7 @@ static void myraidenii_core_sound_ym_advance(myraidenii_core_sound_ym *ym,
         if (ym->timer_a_phase >= period) {
             ym->timer_a_phase %= period;
             if ((control & 4u) != 0u) ym->status |= 1u;
+            if ((control & 0x80u) != 0u) ym->csm_pending = LIB_TRUE;
         }
     }
     if ((control & 2u) != 0u) {
@@ -229,6 +232,27 @@ static lib_u8 myraidenii_core_sound_ym_effective_rate(
     return base == 0u ? 0u : rate > 63u ? 63u : rate;
 }
 
+static void myraidenii_core_sound_ym_key_transition(myraidenii_core_sound_ym *ym,
+    lib_u8 channel, lib_u8 before, lib_u8 after)
+{
+    const lib_u8 changed = before ^ after;
+
+    for (lib_u8 op = 0u; op < 4u; ++op) {
+        const lib_u8 bit = (lib_u8)(1u << op);
+        if ((changed & bit) == 0u) continue;
+        if ((after & bit) != 0u) {
+            const lib_u8 slot = myraidenii_core_sound_ym_slot(channel, op);
+            const lib_u8 attack = ym->registers[0x80u + slot] & 31u;
+
+            ym->output_phase[channel][op] = 0u;
+            ym->envelope[channel][op] = 1u;
+            if (myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
+                    (lib_u8)(2u * attack)) >= 62u)
+                ym->level[channel][op] = 1.0;
+        } else ym->envelope[channel][op] = 4u;
+    }
+}
+
 static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
     lib_u16 address, lib_u8 value)
 {
@@ -245,22 +269,10 @@ static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
     if (ym->address == 8u) {
         const lib_u8 channel = value & 7u;
         const lib_u8 keys = (value >> 3u) & 0x0fu;
-        const lib_u8 changed = ym->operator_keys[channel] ^ keys;
+        const lib_u8 csm = ym->csm_active ? 0x0fu : 0u;
 
-        for (lib_u8 op = 0u; op < 4u; ++op) {
-            const lib_u8 bit = (lib_u8)(1u << op);
-            if ((changed & bit) == 0u) continue;
-            if ((keys & bit) != 0u) {
-                const lib_u8 slot = myraidenii_core_sound_ym_slot(channel, op);
-                const lib_u8 attack = ym->registers[0x80u + slot] & 31u;
-
-                ym->output_phase[channel][op] = 0u;
-                ym->envelope[channel][op] = 1u;
-                if (myraidenii_core_sound_ym_effective_rate(ym, channel, slot,
-                        (lib_u8)(2u * attack)) >= 62u)
-                    ym->level[channel][op] = 1.0;
-            } else ym->envelope[channel][op] = 4u;
-        }
+        myraidenii_core_sound_ym_key_transition(ym, channel,
+            ym->operator_keys[channel] | csm, keys | csm);
         ym->operator_keys[channel] = keys;
     } else if (ym->address == 0x19u) {
         if ((value & 0x80u) != 0u) ym->lfo_pm_depth = value & 0x7fu;
@@ -604,6 +616,19 @@ static void myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound,
     const lib_u64 noise_period = (lib_u64)8u * 32u *
         (32u - (ym->registers[0x0fu] & 31u)) * MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE;
     double lfo_am, lfo_pm;
+
+    /* CSM is a short independent key source; the existing PCM rate bounds
+     * its duration in this L1 synthesizer, rather than modelling OPM clocks. */
+    if (ym->csm_active != ym->csm_pending) {
+        for (lib_u8 channel = 0u; channel < 8u; ++channel) {
+            const lib_u8 keys = ym->operator_keys[channel];
+            myraidenii_core_sound_ym_key_transition(ym, channel,
+                keys | (ym->csm_active ? 0x0fu : 0u),
+                keys | (ym->csm_pending ? 0x0fu : 0u));
+        }
+        ym->csm_active = ym->csm_pending;
+    }
+    ym->csm_pending = LIB_FALSE;
 
     /* L1 noise spectrum: deterministic Galois generator at the nominal
      * register-selected rate, not the OPM's exact internal noise sequence. */

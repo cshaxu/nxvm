@@ -680,6 +680,50 @@ static lib_i32 sound_routes_ym_channels(void)
     return 0;
 }
 
+static lib_i32 sound_ym_csm_trigger(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[256u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i16 direct[sizeof(frames) / sizeof(frames[0])];
+
+    for (lib_u8 channel = 0u; channel < 8u; ++channel) {
+        for (lib_u8 mode = 0u; mode < 5u; ++mode) {
+            sound_fixture fixture = {0};
+            myraidenii_core_sound *sound = LIB_NULL;
+            lib_u32 copied = 0u;
+            lib_u64 dropped = 0u;
+            lib_size at = 0u;
+            lib_bool audible = LIB_FALSE;
+            lib_status status;
+
+            lib_memory_set(program, 0, sizeof(program));
+            sound_program_write_ym(program, &at, (lib_u8)(0x20u + channel), 0x47u);
+            sound_program_write_ym(program, &at, (lib_u8)(0x28u + channel), 0x4cu);
+            sound_program_write_ym(program, &at, (lib_u8)(0x98u + channel), 0x1fu);
+            if (mode >= 3u)
+                sound_program_write_ym(program, &at, 0x08u, (lib_u8)(0x40u | channel));
+            sound_program_write_ym(program, &at, 0x10u, 0xffu);
+            sound_program_write_ym(program, &at, 0x11u, 0x03u);
+            sound_program_write_ym(program, &at, 0x14u,
+                mode == 0u ? 0x01u : mode == 1u ? 0x80u :
+                mode == 3u ? 0x01u : 0x81u);
+            program[at] = 0x76u;
+            status = sound_create(program, &fixture, &sound);
+            if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 100000u);
+            if (status == LIB_STATUS_OK)
+                status = myraidenii_core_sound_pcm_copy(sound, frames, 256u, &copied, &dropped);
+            myraidenii_core_sound_destroy(sound);
+            if (status != LIB_STATUS_OK || copied != 256u || dropped != 0u) return 1;
+            for (lib_u32 index = 0u; index < copied; ++index)
+                audible |= frames[index * 2u] != 0;
+            if (audible != (mode >= 2u)) return 1;
+            if (mode == 3u) lib_memory_copy(direct, frames, sizeof(direct));
+            if (mode == 4u && lib_memory_compare(direct, frames, sizeof(direct)) != 0) return 1;
+        }
+    }
+    return 0;
+}
+
 static lib_i32 sound_ym_pitch_and_level(void)
 {
     static lib_u8 program[0x2000u];
@@ -783,7 +827,7 @@ static lib_i32 sound_ym_modulation(void)
     return 0;
 }
 
-static lib_i32 sound_ym_key_off(void)
+static lib_i32 sound_ym_key_off(lib_bool csm)
 {
     static lib_u8 program[0x2000u];
     lib_i16 frames[4096u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
@@ -801,9 +845,13 @@ static lib_i32 sound_ym_key_off(void)
     sound_program_write_ym(program, &at, 0x78u, 0u);
     sound_program_write_ym(program, &at, 0x98u, 0x1fu);
     sound_program_write_ym(program, &at, 0xf8u, 0x0fu);
-    sound_program_write_ym(program, &at, 0x08u, 0x40u);
+    if (csm) {
+        sound_program_write_ym(program, &at, 0x10u, 0xffu);
+        sound_program_write_ym(program, &at, 0x11u, 3u);
+        sound_program_write_ym(program, &at, 0x14u, 0x81u);
+    } else sound_program_write_ym(program, &at, 0x08u, 0x40u);
     at += 2000u; /* NOPs allow the keyed operator to reach an audible level. */
-    sound_program_write_ym(program, &at, 0x08u, 0u);
+    sound_program_write_ym(program, &at, csm ? 0x14u : 0x08u, 0u);
     program[at] = 0x76u;
     status = sound_create(program, &fixture, &sound);
     if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 250000u);
@@ -1646,9 +1694,11 @@ int main(void)
         sound_interrupt_after_ei_instruction() != 0 ||
         sound_acknowledges_transport_service() != 0 ||
         sound_routes_ym_channels() != 0 ||
+        sound_ym_csm_trigger() != 0 ||
         sound_ym_pitch_and_level() != 0 ||
         sound_ym_modulation() != 0 ||
-        sound_ym_key_off() != 0 ||
+        sound_ym_key_off(LIB_FALSE) != 0 ||
+        sound_ym_key_off(LIB_TRUE) != 0 ||
         sound_ym_sustain_level() != 0 ||
         sound_ym_noise_channel() != 0 ||
         sound_ym_lfo_routing() != 0 ||

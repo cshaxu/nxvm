@@ -13,7 +13,42 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S83
+## Active Packet — M1 T7 S84
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S83; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission, product-local implementation and independently researched emulator behavior as L2. |
+| Objective | Implement and verify the missing YM2151 Timer A CSM key-trigger behavior in the existing local Sound owner. |
+| Non-goals | No Shared or other App modification, copied third-party source, new audio clock, alternate synthesizer, or claim of hardware-exact synthesis. |
+| Reference Baseline | S81 documents unimplemented CSM and reports no CSM write during one bounded real-set run. |
+| Candidate Proposal | Independently model the reference's Timer A-triggered temporary key source while preserving direct key-on, using the existing timer and PCM execution path. |
+| Files And ABI Surface | MyRaidenII Sound implementation, existing Sound unit, product evidence and state; no public interface change. |
+| Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution, architecture, coding and documentation rules. |
+| Verification | Existing Sound unit with CSM enabled/disabled and direct-key overlap regression, x64/x86 product builds and MyRaidenII units; selected-set probe if production changes. |
+| Expected Markers | Timer A triggers all channels only in CSM mode; direct key state persists independently; reset and timer-disabled paths remain stable. |
+| Asset Needs | Synthetic unit program; selected-set probe uses existing external owner archive and removes staging. |
+| Reporting Requirements | Separate observed L2 behavior from PCM-rate L1 approximation, real-set execution and desktop audio. |
+| Stop Conditions | A correct repair requires a prohibited Shared change or copying unapproved third-party code. |
+| Exit Criteria | Source and tests reviewed, dual-width affected tests and builds pass, evidence and any product artifacts follow governance, then changes pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously, using external emulator behavior as L2 without modifying Shared source or tests. |
+| Similar-Issue Sweep | Check timer enable, repeated expirations, direct key overlap, key release and reset interactions. |
+
+S84 adds the local CSM key source and tests all eight channels, disabled modes,
+direct-key overlap and Timer A stop/release. Both-width MyRaidenII unit suites
+and 20-million-instruction selected-set probes passed; the bounded model and
+its PCM-rate coalescing limitation are in [S84 evidence](../etc/evidence/t7-s84-ym-csm.md).
+Production candidates build on both widths; no release artifact or full game,
+desktop, physical audio or S79 input-ordering qualification is claimed.
+
+## M1 T7 S83 — Closed
+
+Coordinator accepts the bounded selected-set play/restart observations, the
+local OKI fix and both-width focused units. The independent production Console
+smoke also passed once on each width. These are not a full gameplay or audio
+qualification; S79 ordering and T7's remaining checkpoints stay open.
+
+## Archived Packet — M1 T7 S83
 
 | Field | Required record |
 | --- | --- |
