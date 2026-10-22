@@ -13,7 +13,11 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S105 — Active
+## M1 T7 S105 — Closed
+
+Coordinator reviewed P1 `93c9b928f`: the bounded probe was intentionally
+stopped after returning to attract and is not a completed gameplay
+qualification. Temporary instrumentation was restored; T7 remains open.
 
 | Field | Required record |
 | --- | --- |
