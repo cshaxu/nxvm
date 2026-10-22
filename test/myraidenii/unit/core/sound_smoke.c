@@ -345,7 +345,7 @@ static lib_i32 sound_executes_device_map(void)
     program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
     program[at++] = 0x3eu; program[at++] = 0x14u;
     program[at++] = 0x32u; program[at++] = 0x08u; program[at++] = 0x40u;
-    program[at++] = 0x3eu; program[at++] = 0x01u;
+    program[at++] = 0x3eu; program[at++] = 0x05u;
     program[at++] = 0x32u; program[at++] = 0x09u; program[at++] = 0x40u;
     for (lib_u8 index = 0u; index < 20u; ++index) program[at++] = 0x00u;
     program[at++] = 0x3au; program[at++] = 0x09u; program[at++] = 0x40u;
@@ -429,6 +429,36 @@ static lib_i32 sound_classifies_oki_write_dispositions(void)
 done:
     myraidenii_core_sound_destroy(sound);
     return failed;
+}
+
+static lib_i32 sound_ym_timer_status_enable(void)
+{
+    static lib_u8 program[0x2000u];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_size at = 0u;
+    lib_status status;
+
+    lib_memory_set(program, 0, sizeof(program));
+    sound_program_write_ym(program, &at, 0x10u, 0xffu);
+    sound_program_write_ym(program, &at, 0x11u, 0x03u);
+    sound_program_write_ym(program, &at, 0x12u, 0xffu);
+    sound_program_write_ym(program, &at, 0x14u, 0x03u);
+    at += 500u; /* Let both timers expire with flag generation disabled. */
+    sound_program_write_ym(program, &at, 0x14u, 0x0cu);
+    program[at++] = 0x3au; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+    sound_program_write_ym(program, &at, 0x14u, 0x0fu);
+    at += 500u; /* Enabled expirations latch both flags. */
+    sound_program_write_ym(program, &at, 0x14u, 0x00u);
+    program[at++] = 0x3au; program[at++] = 0x08u; program[at++] = 0x40u;
+    program[at++] = 0x32u; program[at++] = 0x19u; program[at++] = 0x40u;
+    program[at] = 0x76u;
+
+    status = sound_create(program, &fixture, &sound);
+    if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 20000u);
+    myraidenii_core_sound_destroy(sound);
+    return status != LIB_STATUS_OK || fixture.response[0] != 0u || fixture.response[1] != 3u;
 }
 
 static lib_i32 sound_delivers_ym_timer_interrupt(void)
@@ -1571,6 +1601,7 @@ int main(void)
         sound_allows_no_device_map_slot() != 0 ||
         sound_executes_device_map() != 0 ||
         sound_classifies_oki_write_dispositions() != 0 ||
+        sound_ym_timer_status_enable() != 0 ||
         sound_delivers_ym_timer_interrupt() != 0 ||
         sound_delivers_transport_interrupt() != 0 ||
         sound_interrupt_after_ei_instruction() != 0 ||

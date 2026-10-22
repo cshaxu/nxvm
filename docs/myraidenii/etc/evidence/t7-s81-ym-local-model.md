@@ -27,6 +27,17 @@ instructions with 736,536 nonzero generated PCM frames and matching PCM digest
 The full repository unit selection passed 698/698 on x64 and 698/698 on x86,
 run sequentially after the probes.
 
+The same reference's `ymfm_fm.ipp` `engine_timer_expired` and
+`engine_mode_write`, together with `ymfm_opm.h`, describe an independent L2
+timer contract: an expiration sets its status flag only when that timer's
+flag enable is set; a latched flag remains until the corresponding reset.
+The local receiver now follows this contract for both timers and uses the
+latched flags for the IRQ request. A synthetic Z80 program checks expirations
+with flag generation disabled, subsequent enabled expirations and persistence
+after stopping; the existing interrupt-delivery test remains in use. The
+product's 13 units and executable build passed on each width for this change;
+the selected-set probe and desktop audio have not been rerun for it.
+
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected
 rate and four waveform selections follow the inspected register vocabulary;
@@ -35,8 +46,7 @@ noise waveform are L1 approximations. The phase-modulation sensitivity's
 nominal cents values are finite facts recorded by the same reference, not a
 copied implementation. Tests exercise disabled routing, AM, PM and waveform
 selection. Both product unit selections pass 13/13 and both selected-set
-probes complete 20 million instructions. Full repository units remain to be
-run on this candidate before S closure. These checks do not establish
+probes complete 20 million instructions. These checks do not establish
 quantized OPM behavior or audio fidelity.
 
 The subsequent local noise candidate uses the reference's register-selected

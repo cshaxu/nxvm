@@ -187,10 +187,7 @@ static lib_u32 myraidenii_core_sound_ym_timer_b_period(
 static lib_bool myraidenii_core_sound_ym_irq_pending(
     const myraidenii_core_sound_ym *ym)
 {
-    const lib_u8 control = ym->registers[0x14u];
-
-    return ((ym->status & 1u) != 0u && (control & 4u) != 0u) ||
-        ((ym->status & 2u) != 0u && (control & 8u) != 0u);
+    return (ym->status & 3u) != 0u;
 }
 
 static void myraidenii_core_sound_ym_advance(myraidenii_core_sound_ym *ym,
@@ -204,7 +201,7 @@ static void myraidenii_core_sound_ym_advance(myraidenii_core_sound_ym *ym,
         ym->timer_a_phase += ticks;
         if (ym->timer_a_phase >= period) {
             ym->timer_a_phase %= period;
-            ym->status |= 1u;
+            if ((control & 4u) != 0u) ym->status |= 1u;
         }
     }
     if ((control & 2u) != 0u) {
@@ -212,7 +209,7 @@ static void myraidenii_core_sound_ym_advance(myraidenii_core_sound_ym *ym,
         ym->timer_b_phase += ticks;
         if (ym->timer_b_phase >= period) {
             ym->timer_b_phase %= period;
-            ym->status |= 2u;
+            if ((control & 8u) != 0u) ym->status |= 2u;
         }
     }
 }

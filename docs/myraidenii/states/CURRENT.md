@@ -80,6 +80,10 @@ widths before the key-scale change. The revised candidate has passed all 13
 MyRaidenII units and the 20 million-instruction selected-set probe on each
 width, with matching PCM digest `ea90f8cea7f30039`. The repository unit
 selection passed 698/698 on x64 and 698/698 on x86 for this revision.
+The subsequent local timer correction gates each new status flag on its enable
+at expiration and retains latched flags until reset, matching the recorded L2
+reference. Both-width MyRaidenII units pass 13/13 and the local executables
+build; a new selected-set run and desktop audio remain unverified.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.
