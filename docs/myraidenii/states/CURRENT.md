@@ -13,7 +13,7 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S92 — Implementation Review
+## M1 T7 S92 — Closed
 
 The selected-set x64 background probe drove two coin-2 pulses at vblanks
 300--330 and 500--530, then start-2 at 750--780, and held both players' fire
@@ -31,7 +31,8 @@ Board/COP provider failures and zero rejected OKI selections. PCM was generated,
 but the diagnostic drops buffered PCM and does not establish host playback.
 Temporary instrumentation and captured frames were removed after exit; the
 original x64 probe was rebuilt. S79, audible sound and T7 release qualification
-remain open. No Shared source or test was changed.
+remain open. Coordinator reviewed P1 `c0f36176c`; no Shared source or test
+was changed.
 
 ## Archived Packet — M1 T7 S92
 
