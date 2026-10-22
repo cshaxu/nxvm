@@ -47,6 +47,21 @@ inspect that path before treating this run as sound qualification. The probe
 is not desktop play. The temporary screenshot and control instrumentation are
 removed, and no protected image is retained.
 
+Follow-up source inspection identified a separate OKI command-contract defect:
+volume codes 9--15 were rejected instead of producing a silent active voice.
+MAME release `mame0289` (`f34f025`, [OKI device source](https://github.com/mamedev/mame/blob/mame0289/src/devices/sound/okim6295.cpp)) models
+these codes as silent while retaining normal voice occupancy; this is L2
+behavioral evidence, not imported source or a hardware-exact claim. An empty
+voice mask likewise consumes the command without consulting sample bounds.
+The MyRaidenII receiver now implements both behaviors. The existing Sound
+unit covers audible code 8, every silent code, voice status and stop, mixed output, and
+an empty mask with deliberately invalid sample bounds. Both-width Sound units
+and all 13 MyRaidenII units passed after rebuilding affected candidates. The
+same-schedule x64 selected-set post-fix run completed 100 million instructions;
+all four sampled frame digests matched the pre-fix run. Its output capture was
+truncated before the individual OKI counters could be recorded, so the prior
+single rejection is not attributed to a specific command or game effect.
+
 ## M1 T7 S82 — Closed, bounded game-control observation
 
 Coordinator review accepts P2 `f6a66af44`: the bomb and no-bomb screenshots

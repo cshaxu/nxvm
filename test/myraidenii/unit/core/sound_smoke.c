@@ -408,6 +408,7 @@ static lib_i32 sound_classifies_oki_write_dispositions(void)
 
     lib_memory_set(program, 0, sizeof(program));
     lib_memory_set(samples_1, 0, sizeof(samples_1));
+    samples_1[8u] = 1u; /* Invalid bounds must not matter with an empty mask. */
     sound_program_write_oki(program, &at, 0x81u);
     sound_program_write_oki(program, &at, 0x0fu);
     sound_program_write_oki(program, &at, 0x00u);
@@ -421,8 +422,8 @@ static lib_i32 sound_classifies_oki_write_dispositions(void)
         observation.oki_sample_commands[0u] != 1u ||
         observation.oki_voice_selections[0u] != 0u ||
         observation.oki_stops[0u] != 1u ||
-        observation.oki_rejected_selections[0u] != 1u ||
-        observation.oki_ignored_controls[0u] != 1u ||
+        observation.oki_rejected_selections[0u] != 0u ||
+        observation.oki_ignored_controls[0u] != 2u ||
         observation.oki_voice_starts[0u] != 0u)
         goto done;
     failed = 0;
@@ -1046,35 +1047,42 @@ done:
     return failed;
 }
 
-static lib_i32 sound_validates_oki_attenuation_field(void)
+static lib_i32 sound_plays_oki_attenuation_boundary(void)
 {
     static lib_u8 program[0x2000u];
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
-    sound_fixture fixture = {0};
-    myraidenii_core_sound *sound = LIB_NULL;
-    lib_size at = 0u;
-    lib_i32 failed = 1;
 
-    lib_memory_set(program, 0, sizeof(program));
-    lib_memory_set(samples_1, 0, sizeof(samples_1));
-    samples_1[10u] = 0x20u;
-    samples_1[13u] = 0x21u;
-    sound_program_write_oki(program, &at, 0x81u);
-    sound_program_write_oki(program, &at, 0x19u);
-    sound_program_read_oki_response(program, &at, 0x18u);
-    sound_program_write_oki(program, &at, 0x81u);
-    sound_program_write_oki(program, &at, 0x18u);
-    sound_program_read_oki_response(program, &at, 0x19u);
-    program[at++] = 0x76u;
-    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
-            LIB_STATUS_OK ||
-        myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
-        fixture.response[0] != 0u || fixture.response[1] != 1u)
-        goto done;
-    failed = 0;
-done:
-    myraidenii_core_sound_destroy(sound);
-    return failed;
+    for (lib_u8 volume = 8u; volume <= 15u; ++volume) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        myraidenii_core_sound_observation observation = {0};
+        lib_size at = 0u;
+        lib_bool valid;
+
+        lib_memory_set(program, 0, sizeof(program));
+        lib_memory_set(samples_1, 0, sizeof(samples_1));
+        samples_1[10u] = 0x20u;
+        samples_1[13u] = 0x7fu;
+        samples_1[0x20u] = 0x77u;
+        sound_program_write_oki(program, &at, 0x81u);
+        sound_program_write_oki(program, &at, (lib_u8)(0x10u | volume));
+        sound_program_read_oki_response(program, &at, 0x18u);
+        for (lib_u32 index = 0u; index < 512u; ++index) program[at++] = 0x00u;
+        sound_program_write_oki(program, &at, 0x08u);
+        sound_program_read_oki_response(program, &at, 0x19u);
+        program[at++] = 0x76u;
+        valid = sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) == LIB_STATUS_OK &&
+            myraidenii_core_sound_advance(sound, 10000u) == LIB_STATUS_OK &&
+            myraidenii_core_sound_observation_get(sound, &observation) == LIB_STATUS_OK &&
+            fixture.response[0] == 1u && fixture.response[1] == 0u &&
+            observation.oki_voice_starts[0u] == 1u &&
+            observation.oki_rejected_selections[0u] == 0u &&
+            (volume == 8u ? observation.pcm_nonzero_frames != 0u :
+                observation.pcm_nonzero_frames == 0u);
+        myraidenii_core_sound_destroy(sound);
+        if (!valid) return 1;
+    }
+    return 0;
 }
 
 static lib_i32 sound_stops_selected_oki_channel(void)
@@ -1646,7 +1654,7 @@ int main(void)
         sound_ym_lfo_routing() != 0 ||
         sound_ym_key_scale() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||
-        sound_validates_oki_attenuation_field() != 0 ||
+        sound_plays_oki_attenuation_boundary() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||
         sound_does_not_restart_busy_oki_voice() != 0 ||
         sound_decodes_oki_nibble_sign() != 0 ||

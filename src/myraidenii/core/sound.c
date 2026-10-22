@@ -317,13 +317,13 @@ static lib_u8 myraidenii_core_sound_oki_status(
     return status;
 }
 
-/* The MSM6295 manual gives D0--D3 as nine 3 dB attenuation steps, from
- * 0 dB through -24 dB. This local fixed-point ratio is only an L1 mapping for
- * the existing diagnostic waveform; it is not a chip decoder table. */
+/* Nine nominal attenuation steps are followed by silent volume codes.
+ * The fixed-point ratio for the audible steps is an L1 approximation. */
 static lib_u32 myraidenii_core_sound_oki_volume_scale(lib_u8 volume)
 {
     lib_u32 scale = MYRAIDENII_CORE_SOUND_OKI_VOLUME_SCALE;
 
+    if (volume >= MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS) return 0u;
     for (lib_u8 index = 0u; index < volume; ++index)
         scale = (scale * MYRAIDENII_CORE_SOUND_OKI_VOLUME_RATIO + 128u) / 256u;
     return scale;
@@ -357,8 +357,8 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound *sound,
         }
         return LIB_STATUS_OK;
     }
-    if ((value & 0x0fu) >= MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS) {
-        ++sound->observation.oki_rejected_selections[device];
+    if ((value & 0xf0u) == 0u) {
+        ++sound->observation.oki_ignored_controls[device];
         oki->has_pending_sample = LIB_FALSE;
         return LIB_STATUS_OK;
     }
