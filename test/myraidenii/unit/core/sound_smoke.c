@@ -368,7 +368,7 @@ static lib_i32 sound_executes_device_map(void)
     if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
             LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
-        fixture.response[0] != 1u || fixture.response[1] != 1u ||
+        fixture.response[0] != 1u || fixture.response[1] != 0xf1u ||
         myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
         observation.ym_address_writes != 3u || observation.ym_data_writes != 3u ||
         observation.oki_writes[0u] != 3u || observation.oki_writes[1u] != 0u ||
@@ -400,6 +400,7 @@ static lib_i32 sound_classifies_oki_write_dispositions(void)
 {
     static lib_u8 program[0x2000u];
     static lib_u8 samples_1[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
+    static lib_u8 samples_2[MYRAIDENII_CORE_SOUND_SAMPLE_BYTES];
     sound_fixture fixture = {0};
     myraidenii_core_sound *sound = LIB_NULL;
     myraidenii_core_sound_observation observation;
@@ -408,13 +409,24 @@ static lib_i32 sound_classifies_oki_write_dispositions(void)
 
     lib_memory_set(program, 0, sizeof(program));
     lib_memory_set(samples_1, 0, sizeof(samples_1));
+    lib_memory_set(samples_2, 0, sizeof(samples_2));
     samples_1[8u] = 1u; /* Invalid bounds must not matter with an empty mask. */
+    samples_2[10u] = 0x20u;
+    samples_2[13u] = 0x7fu;
     sound_program_write_oki(program, &at, 0x81u);
     sound_program_write_oki(program, &at, 0x0fu);
     sound_program_write_oki(program, &at, 0x00u);
     sound_program_write_oki(program, &at, 0x10u);
+    program[at++] = 0x3au; program[at++] = 0x02u; program[at++] = 0x60u;
+    program[at++] = 0x32u; program[at++] = 0x18u; program[at++] = 0x40u;
+    program[at++] = 0x3eu; program[at++] = 0x81u;
+    program[at++] = 0x32u; program[at++] = 0x02u; program[at++] = 0x60u;
+    program[at++] = 0x3eu; program[at++] = 0x20u;
+    program[at++] = 0x32u; program[at++] = 0x02u; program[at++] = 0x60u;
+    program[at++] = 0x3au; program[at++] = 0x02u; program[at++] = 0x60u;
+    program[at++] = 0x32u; program[at++] = 0x19u; program[at++] = 0x40u;
     program[at] = 0x76u;
-    if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
+    if (sound_create_with_samples(program, samples_1, samples_2, &fixture, &sound) !=
             LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
         myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
@@ -424,7 +436,8 @@ static lib_i32 sound_classifies_oki_write_dispositions(void)
         observation.oki_stops[0u] != 1u ||
         observation.oki_rejected_selections[0u] != 0u ||
         observation.oki_ignored_controls[0u] != 2u ||
-        observation.oki_voice_starts[0u] != 0u)
+        observation.oki_voice_starts[0u] != 0u || fixture.response[0] != 0xf0u ||
+        fixture.response[1] != 0xf2u || observation.oki_voice_starts[1u] != 1u)
         goto done;
     failed = 0;
 done:
@@ -1173,7 +1186,7 @@ static lib_i32 sound_plays_oki_attenuation_boundary(void)
         valid = sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) == LIB_STATUS_OK &&
             myraidenii_core_sound_advance(sound, 10000u) == LIB_STATUS_OK &&
             myraidenii_core_sound_observation_get(sound, &observation) == LIB_STATUS_OK &&
-            fixture.response[0] == 1u && fixture.response[1] == 0u &&
+            fixture.response[0] == 0xf1u && fixture.response[1] == 0xf0u &&
             observation.oki_voice_starts[0u] == 1u &&
             observation.oki_rejected_selections[0u] == 0u &&
             (volume == 8u ? observation.pcm_nonzero_frames != 0u :
@@ -1210,7 +1223,7 @@ static lib_i32 sound_stops_selected_oki_channel(void)
     if (sound_create_with_samples(program, samples_1, LIB_NULL, &fixture, &sound) !=
             LIB_STATUS_OK ||
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
-        fixture.response[0] != 2u || fixture.response[1] != 8u)
+        fixture.response[0] != 0xf2u || fixture.response[1] != 0xf8u)
         goto done;
     failed = 0;
 done:
@@ -1247,7 +1260,7 @@ static lib_i32 sound_does_not_restart_busy_oki_voice(void)
         myraidenii_core_sound_advance(sound, 10000u) != LIB_STATUS_OK ||
         myraidenii_core_sound_observation_get(sound, &observation) != LIB_STATUS_OK ||
         observation.oki_voice_starts[0u] != 3u ||
-        fixture.response[0] != 3u || fixture.response[1] != 3u)
+        fixture.response[0] != 0xf3u || fixture.response[1] != 0xf3u)
         goto done;
     failed = 0;
 done:

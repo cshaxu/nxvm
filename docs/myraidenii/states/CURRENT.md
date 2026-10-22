@@ -13,6 +13,46 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S95 — Active
+
+The local Sound receiver now returns high status bits set for both OKI
+devices, while preserving the four live voice bits. The bounded L2 reference
+is MAME release tag `mame0289`, `src/devices/sound/okim6295.cpp`,
+`okim6295_device::read`; no source or table was imported. This is not a
+physical-hardware claim or evidence that the selected game relied on the
+previous high-bit value. The existing synthetic sound-CPU test failed before
+the repair and passes after it; it covers idle, active and stopped states and
+the second device. Both-width 13/13 MyRaidenII unit runs passed; after the
+last test-only extension, the sound unit passed again on both widths. Each
+candidate Product built and the selected-set Product Console lifecycle smoke
+passed once on each width. Documentation governance and whitespace checks
+passed. Temporary ROM staging and empty diagnostic logs were removed.
+
+S94's ignored-control counter counts empty voice masks, not busy-voice
+failures; the existing write-disposition test covers that distinction.
+No Shared files were modified. Candidate builds are not release artifacts;
+real desktop listening, complete gameplay, S79 and final T7 qualification
+remain open. Artifact publication and coordinator review are not yet complete.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S94; one person performs coordinator and executor review. |
+| Admission And Approval | Owner authorizes autonomous MyRaidenII implementation and L2 reference behavior; the four specified Shared source and test packages remain untouched. |
+| Objective | Reconcile the two OKI status-read paths with the independently inspected MAME reference and verify their actual sound-CPU-visible values. |
+| Non-goals | No Shared changes, copied implementation, audio fidelity or hardware-exact claims, or inference that ignored control counters imply a fault. |
+| Reference Baseline | Local OKI status returns only low voice bits; MAME mame0289 src/devices/sound/okim6295.cpp returns high bits set as well. S94 observed ignored empty-mask controls but no rejected selections. |
+| Candidate Proposal | Model the common status behavior in the existing Sound owner and extend existing synthetic sound CPU tests for both devices and voice states. |
+| Files And ABI Surface | MyRaidenII Core sound and existing owned unit, current task record; no public API or Shared files. |
+| Applicable Rules | Product source policy and architecture; shared execution, coding and documentation; preserve one Sound owner, independent implementation and external-source provenance. |
+| Verification | Demonstrate existing status mismatch with a focused test, rebuild both candidate architectures and run owned units, relevant real-set integration and governance gates; inspect actual diff. |
+| Expected Markers | Both devices report high status bits and accurate low voice bits before, during and after playback; no claim of host audio or full-game qualification. |
+| Asset Needs | Synthetic unit data; existing owner ROM archive for applicable integration only, temporary material cleaned. |
+| Reporting Requirements | Report exact changed ownership, dual-width tests, L2 evidence, unresolved S79 and missing desktop/audio qualification. |
+| Stop Conditions | A correct result needs prohibited Shared edits, protected payload retention or third-party source copying. |
+| Exit Criteria | Relevant status behavior tested, source reviewed, required product artifacts and checks handled under governance, changes submitted and pushed; T7 remains open. |
+| Original Owner Request | Autonomously implement MyRaidenII without modifying Lib, Emulator, X86 Core or X86 IBMPC source/tests. |
+| Similar-Issue Sweep | Check both OKI devices, empty and busy voices, stop transitions and ignored-control interpretation. |
+
 ## M1 T7 S94 — Closed
 
 An x64 real-set probe held fire after vblank 1350, alternated horizontal

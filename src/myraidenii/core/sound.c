@@ -321,7 +321,8 @@ static lib_status myraidenii_core_sound_oki_sample_bounds(
 static lib_u8 myraidenii_core_sound_oki_status(
     const myraidenii_core_sound_oki *oki)
 {
-    lib_u8 status = 0u;
+    /* L2: the inspected OKIM6295 reference returns high status bits set. */
+    lib_u8 status = 0xf0u;
 
     for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
         if (oki->voices[index].active) status |= (lib_u8)(1u << index);
