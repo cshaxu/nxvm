@@ -9,9 +9,8 @@ lib_status kvm_window_worker_start(kvm_window *window)
     return LIB_STATUS_UNSUPPORTED;
 }
 
-lib_status kvm_window_worker_join(kvm_window *window, lib_u32 timeout_ms)
+lib_status kvm_window_worker_join(kvm_window *window)
 {
     (void)window;
-    (void)timeout_ms;
     return LIB_STATUS_OK;
 }

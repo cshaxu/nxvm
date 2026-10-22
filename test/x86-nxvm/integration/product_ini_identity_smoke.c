@@ -3,7 +3,7 @@
 #include "x86-nxvm/product/ini_interface.h"
 #include <windows.h>
 
-#include "test/emulator/setup/console_process.h"
+#include "test/setup/console_process.h"
 
 static lib_bool write_ini(const char *path, const char *text)
 {

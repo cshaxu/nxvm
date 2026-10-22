@@ -38,7 +38,11 @@ static void tracked_enter(base_sync_mutex *mutex)
 static lib_console *object;
 static lib_i32 mode;
 static lib_i32 replacement_calls;
-static lib_console_text_frame frame = { .columns = 80u, .rows = 25u };
+static lib_u16 text[80u * 25u];
+static lib_u8 foreground[80u * 25u], background[80u * 25u], underline[80u * 25u];
+static lib_console_text_frame frame = { .columns = 80u, .rows = 25u,
+    .stride = 80u, .capacity = 80u * 25u, .text = text,
+    .foreground = foreground, .background = background, .underline = underline };
 static lib_status output(void *opaque, const char *text, lib_size count)
 {
     (void)opaque; (void)text; (void)count;

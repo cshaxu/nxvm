@@ -77,7 +77,7 @@ lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,
 lib_status emulator_ui_set_state(emulator_ui *ui, emulator_ui_state state);
 /* Pure producer callback: reads immutable UI options, fills an executor-owned
  * slot, performs no host I/O. Stop the producer before destroying UI. */
-void emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame);
+lib_status emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame);
 /* Borrow both producer exchanges until their consumers have been destroyed. */
 lib_status emulator_ui_publish_frame(emulator_ui *ui, kvm_frame_exchange *frames,
     kvm_frame_exchange *console_frames, lib_bool graphics, lib_u32 sequence,

@@ -150,6 +150,38 @@ static void medium_lock_modes(const char *path)
     }
 }
 
+static void writer_progress(const char *path)
+{
+    lib_storage_file_writer *writer = LIB_NULL;
+    lib_size written = 99u;
+    lib_test_assert(lib_storage_file_writer_write_some(LIB_NULL, "abcd", 4u,
+        &written) == LIB_STATUS_INVALID_ARGUMENT && written == 0u);
+    lib_test_assert(lib_storage_file_writer_flush(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE,
+        &writer) == LIB_STATUS_OK);
+    lib_test_assert(lib_storage_file_writer_write_some(writer, "abcd", 4u,
+        LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    fail_write_at = write_calls + 1u;
+    lib_test_assert(lib_storage_file_writer_write_some(writer, "abcd", 4u,
+        &written) == LIB_STATUS_IO_ERROR && written == 2u);
+    fail_write_at = 0u;
+    lib_test_assert(lib_storage_file_writer_write_some(writer, "cd", 2u,
+        &written) == LIB_STATUS_OK && written == 2u);
+    reject_flush = LIB_TRUE;
+    lib_test_assert(lib_storage_file_writer_flush(writer) == LIB_STATUS_IO_ERROR);
+    reject_flush = LIB_FALSE;
+    lib_test_assert(lib_storage_file_writer_flush(writer) == LIB_STATUS_OK);
+    /* Storage's readonly lease deliberately excludes a live writer on Windows.
+     * A sharing CRT reader observes flush visibility without changing that lease. */
+    lib_c_file *reader = lib_c_fopen(path, "rb");
+    lib_u8 bytes[4];
+    lib_test_assert(reader != LIB_NULL && lib_c_fread(bytes, 1u, 4u, reader) == 4u);
+    lib_test_assert(lib_memory_compare(bytes, "abcd", 4u) == 0);
+    lib_test_assert(lib_c_fclose(reader) == 0);
+    lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
+    lib_test_assert(live_allocations == 0u);
+}
+
 static void medium_replace(const char *path)
 {
     lib_test_assert(lib_storage_medium_byte_count(LIB_NULL) == 0u);
@@ -434,6 +466,7 @@ int main(void)
     medium_replace(path);
     medium_fill();
     overlay_index(path);
+    writer_progress(path);
     lib_test_assert(shared_test_remove_file(path));
     for (lib_i32 mode = LIB_STORAGE_MEDIUM_DIRECT; mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++mode) {
         lib_test_assert(lib_storage_medium_open(path, (lib_storage_medium_mode)mode, &medium) == LIB_STATUS_IO_ERROR);

@@ -3,14 +3,15 @@
 static kvm_input_event events[6];
 static lib_size event_count;
 static lib_size event_limit = 6u;
+static lib_status rejection = LIB_STATUS_LIMIT_EXCEEDED;
 
-lib_bool emulator_machine_enqueue_input(emulator_machine *machine,
+lib_status emulator_machine_enqueue_input(emulator_machine *machine,
     const kvm_input_event *event)
 {
     (void)machine;
-    if (event_count >= event_limit) return LIB_FALSE;
+    if (event_count >= event_limit) return rejection;
     events[event_count++] = *event;
-    return LIB_TRUE;
+    return LIB_STATUS_OK;
 }
 
 static lib_bool chord(const char *identifier, const lib_u32 *scan,
@@ -79,6 +80,13 @@ lib_i32 main(void)
         events[5].data.key.key != BASE_KEY_ALT) return 2;
     if (!chord_rejects_each_prefix("send-ctrl-alt-del", 6u)) return 3;
     if (!chord_rejects_each_prefix("send-alt-enter", 6u)) return 4;
+    rejection = LIB_STATUS_INVALID_STATE;
+    for (event_limit = 0u; event_limit < 6u; ++event_limit) {
+        event_count = 0u;
+        if (!x86_ibmpc_product_keyboard_handle_hotkey((emulator_machine *)&events,
+                EMULATOR_SESSION_MACHINE_RUNNING, (const lib_u8 *)"send-ctrl-alt-del",
+                &result) || event_count != event_limit) return 6;
+    }
     if (!x86_ibmpc_product_keyboard_handle_hotkey(LIB_NULL, EMULATOR_SESSION_MACHINE_RUNNING,
             (const lib_u8 *)"release-window-mouse", &result) ||
         !result.release_window_mouse) return 5;

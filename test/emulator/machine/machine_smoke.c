@@ -1,6 +1,124 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
 #include "machine_fixture.h"
+#include "lib/base/sync_interface.h"
+
+typedef struct handoff_probe {
+    emulator_machine *machine;
+    emulator_machine_executor_callback callback;
+    void *context;
+    base_sync_event *advance, *stop, *running, *paused, *cut;
+    lib_u32 delivered;
+    lib_atomic_i32 debug_stop, wakes;
+} handoff_probe;
+
+static void handoff_wait(base_sync_event *event)
+{ lib_test_assert(base_sync_event_wait(event, 5000u) == BASE_SYNC_WAIT_SIGNALED); }
+static void handoff_signal(base_sync_event *event)
+{ lib_test_assert(base_sync_event_signal(event) == LIB_STATUS_OK); }
+static lib_bool handoff_reset(void *opaque)
+{ (void)opaque; return LIB_TRUE; }
+static void handoff_stop(void *opaque)
+{ handoff_signal(((handoff_probe *)opaque)->stop); }
+static void handoff_wake(void *opaque)
+{
+    (void)lib_atomic_i32_fetch_add_explicit(&((handoff_probe *)opaque)->wakes, 1,
+        LIB_MEMORY_ORDER_SEQ_CST);
+    /* Test controls safe-point arrival, not elapsed time. */
+}
+static void handoff_heartbeat(void *opaque, lib_bool enabled)
+{ (void)opaque; (void)enabled; }
+static void handoff_callback(void *opaque, emulator_machine_executor_callback callback, void *context)
+{ handoff_probe *p = opaque; p->callback = callback; p->context = context; }
+static lib_bool handoff_debug(void *opaque)
+{ return lib_atomic_i32_exchange_explicit(&((handoff_probe *)opaque)->debug_stop, 0,
+    LIB_MEMORY_ORDER_SEQ_CST) != 0; }
+static lib_bool handoff_run(void *opaque)
+{
+    handoff_probe *p = opaque;
+    base_sync_event *events[] = { p->stop, p->advance };
+    for (;;) {
+        lib_u32 index;
+        lib_test_assert(base_sync_wait_any(events, 2u, LIB_NULL, 5000u, &index) == BASE_SYNC_WAIT_SIGNALED);
+        if (index == 0u) return LIB_TRUE;
+        lib_test_assert(base_sync_event_reset(p->advance) == LIB_STATUS_OK);
+        p->callback(p->context);
+        handoff_signal(p->cut);
+    }
+}
+static void handoff_input(void *opaque, const kvm_input_event *event)
+{
+    handoff_probe *p = opaque;
+    lib_test_assert(event->data.key.key == p->delivered);
+    lib_test_assert(event->data.key.pressed == (p->delivered % 2u == 0u));
+    ++p->delivered;
+}
+static lib_status handoff_frame(void *opaque, kvm_window_frame_storage *frame,
+    kvm_console_text_frame *console, lib_bool *produced)
+{ (void)opaque; (void)frame; (void)console; *produced = LIB_FALSE; return LIB_STATUS_OK; }
+static void handoff_state(void *opaque, emulator_machine_state state, lib_u32 generation)
+{
+    handoff_probe *p = opaque;
+    (void)generation;
+    if (state == EMULATOR_MACHINE_PAUSED) {
+        handoff_signal(p->paused);
+    } else if (state == EMULATOR_MACHINE_RUNNING) handoff_signal(p->running);
+}
+static void check_input_handoff(lib_bool debug)
+{
+    handoff_probe p = { 0 };
+    base_sync_event **events[] = { &p.advance, &p.stop, &p.running, &p.paused, &p.cut };
+    emulator_machine_driver driver = { .context = &p, .reset = handoff_reset,
+        .run = handoff_run, .request_stop = handoff_stop, .request_wake = handoff_wake,
+        .set_heartbeat = handoff_heartbeat, .set_executor_callback = handoff_callback,
+        .deliver_input = handoff_input, .copy_frame = handoff_frame, .take_debug_stop = handoff_debug };
+    kvm_input_event event = { .type = KVM_EVENT_KEY };
+    for (lib_size i = 0; i < 5u; ++i)
+        lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, events[i]) == LIB_STATUS_OK);
+    lib_atomic_i32_initialize(&p.debug_stop, 0);
+    lib_atomic_i32_initialize(&p.wakes, 0);
+    lib_test_assert(emulator_machine_create(&p.machine, &driver) == LIB_STATUS_OK);
+    emulator_machine_set_state_sink(p.machine, handoff_state, &p);
+    lib_test_assert(emulator_machine_enqueue_input(p.machine, &event) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(emulator_machine_start(p.machine));
+    handoff_wait(p.running);
+    for (lib_u32 i = 0; i < 255u; ++i) {
+        event.data.key.key = i; event.data.key.pressed = i % 2u == 0u;
+        lib_test_assert(emulator_machine_enqueue_input(p.machine, &event) == LIB_STATUS_OK);
+    }
+    lib_test_assert(emulator_machine_enqueue_input(p.machine, &event) == LIB_STATUS_LIMIT_EXCEEDED);
+    if (debug) lib_atomic_i32_store_explicit(&p.debug_stop, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    else lib_test_assert(emulator_machine_pause(p.machine));
+    handoff_signal(p.advance);
+    handoff_wait(p.paused);
+    lib_test_assert(p.delivered == 0u);
+    lib_test_assert(emulator_machine_enqueue_input(p.machine, &event) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(base_sync_event_reset(p.running) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_reset(p.paused) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_resume(p.machine));
+    handoff_wait(p.running);
+    handoff_wait(p.cut); /* The paused callback returned without delivery. */
+    lib_test_assert(p.delivered == 0u);
+    lib_test_assert(lib_atomic_i32_load_explicit(&p.wakes, LIB_MEMORY_ORDER_SEQ_CST) == 256);
+    lib_test_assert(emulator_machine_enqueue_input(p.machine, &event) == LIB_STATUS_LIMIT_EXCEEDED);
+    for (lib_u32 i = 0u; i < 256u; ++i) {
+        lib_test_assert(base_sync_event_reset(p.cut) == LIB_STATUS_OK);
+        handoff_signal(p.advance);
+        handoff_wait(p.cut);
+        lib_test_assert(p.delivered == i + 1u);
+        if (i == 0u) {
+            /* New input joins behind the retained prefix; no replay or burst. */
+            event.data.key.key = 255u; event.data.key.pressed = LIB_FALSE;
+            lib_test_assert(emulator_machine_enqueue_input(p.machine, &event) == LIB_STATUS_OK);
+        }
+    }
+    lib_test_assert(emulator_machine_pause(p.machine));
+    handoff_signal(p.advance);
+    handoff_wait(p.paused);
+    lib_test_assert(p.delivered == 256u);
+    lib_test_assert(emulator_machine_destroy(p.machine) == LIB_STATUS_OK);
+    for (lib_size i = 0; i < 5u; ++i) base_sync_event_destroy(*events[i]);
+}
 
 
 typedef struct state_transfer {
@@ -79,6 +197,8 @@ static void shutdown_active(emulator_machine *machine, machine_fake *fake)
 
 int main(void)
 {
+    check_input_handoff(LIB_FALSE);
+    check_input_handoff(LIB_TRUE);
     machine_fake fake = { 0 };
     emulator_machine_driver driver = { 0 };
     emulator_machine *machine = LIB_NULL;
@@ -96,7 +216,7 @@ int main(void)
     lib_test_assert(emulator_machine_create(&machine, &driver) == LIB_STATUS_OK);
     lib_test_assert(emulator_machine_published_frame_run_generation(LIB_NULL) == 0u);
     lib_test_assert(emulator_machine_published_frame_run_generation(machine) == 0u);
-    (void)kvm_window_frame_begin_text(&frame);
+    lib_test_assert(kvm_window_frame_prepare_text(&frame, 80u, 50u, 80u) == LIB_STATUS_OK);
     frame.frame.sequence = 77u;
     lib_test_assert(!emulator_machine_copy_published_frame(machine, &frame,
         emulator_machine_run_generation(machine)));
@@ -109,13 +229,10 @@ int main(void)
     lib_test_assert(lib_win32_interlocked_compare_exchange(&fake.resets, 0, 0) == 1);
     generation = emulator_machine_run_generation(machine);
     lib_test_assert(emulator_machine_published_frame_run_generation(machine) == generation);
-    lib_memory_set(&frame, 0xa5, sizeof(frame));
+    kvm_window_frame_release(&frame);
     lib_test_assert(emulator_machine_copy_published_frame(machine, &frame, generation));
     lib_test_assert(frame.frame.text != LIB_NULL && generation == emulator_machine_run_generation(machine));
     lib_test_assert(!frame.frame.graphics);
-    for (lib_size i = lib_offsetof(kvm_window_frame_storage, data) + sizeof(frame.data.text);
-            i < sizeof(frame); ++i)
-        lib_test_assert(((const lib_u8 *)&frame.frame)[i] == 0xa5);
     {
         lib_u32 sequence = frame.frame.sequence;
         lib_test_assert(!emulator_machine_copy_published_frame(machine, &frame, generation + 1u));
@@ -123,7 +240,7 @@ int main(void)
     }
     input.type = KVM_EVENT_KEY;
     input.data.key.pressed = LIB_TRUE;
-    lib_test_assert(emulator_machine_enqueue_input(machine, &input));
+    lib_test_assert(emulator_machine_enqueue_input(machine, &input) == LIB_STATUS_OK);
     lib_test_assert(lib_win32_wait_for_single_object(fake.input, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
     lib_test_assert(lib_win32_interlocked_compare_exchange(&fake.inputs, 0, 0) == 1);
     fake.state_byte = 0x5au;
@@ -181,7 +298,7 @@ int main(void)
         lib_test_assert(emulator_machine_copy_published_frame(machine, &frame,
             emulator_machine_run_generation(machine)));
         lib_test_assert(frame.frame.text != LIB_NULL && !frame.frame.graphics &&
-            frame.frame.sequence > sequence && frame.data.text.base.text_rows == KVM_TEXT_ROWS);
+            frame.frame.sequence > sequence && frame.data.text->base.text_rows == 50u);
     }
     lib_test_assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     lib_test_assert(emulator_machine_debug_execute_with_lease(machine, &lease,
@@ -264,5 +381,6 @@ int main(void)
         lib_test_assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
     }
     machine_fake_dispose(&fake);
+    kvm_window_frame_release(&frame);
     return 0;
 }

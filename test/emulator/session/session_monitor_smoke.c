@@ -45,9 +45,13 @@ static lib_bool read_frame(emulator_machine *m, lib_u32 g, lib_u32 *s,
 { (void)m; (void)g; (void)s; (void)graphics; return LIB_FALSE; }
 static lib_u32 lifecycle_calls[EMULATOR_SESSION_REQUEST_RESET + 1u];
 static emulator_session_request opened_request;
+static lib_status input_status;
+static lib_status machine_input(emulator_machine *machine, const kvm_input_event *event)
+{ (void)machine; (void)event; return input_status; }
 static lib_bool machine_request(emulator_machine *m, emulator_session_request request)
 { (void)m; ++commands; ++lifecycle_calls[request]; return LIB_TRUE; }
 #define emulator_machine_run_generation run
+#define emulator_machine_enqueue_input machine_input
 #define emulator_machine_read_presentation read_frame
 #define emulator_machine_start(machine) machine_request(machine, EMULATOR_SESSION_REQUEST_START)
 #define emulator_machine_resume(machine) machine_request(machine, EMULATOR_SESSION_REQUEST_RESUME)
@@ -271,6 +275,14 @@ static void public_session_contract(void)
 
 int main(void)
 {
+    input_status = LIB_STATUS_OK;
+    lib_test_assert(emulator_session_deliver_machine_input(LIB_NULL, LIB_NULL));
+    input_status = LIB_STATUS_INVALID_STATE;
+    lib_test_assert(emulator_session_deliver_machine_input(LIB_NULL, LIB_NULL));
+    input_status = LIB_STATUS_LIMIT_EXCEEDED;
+    lib_test_assert(!emulator_session_deliver_machine_input(LIB_NULL, LIB_NULL));
+    input_status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(!emulator_session_deliver_machine_input(LIB_NULL, LIB_NULL));
     emulator_session_request toggle_request;
     {
         static emulator_session session;

@@ -52,7 +52,6 @@ shared_register_test(lib storage/storage_utf8 storage)
 shared_register_test(lib storage/storage_failure_output storage)
 shared_register_test(lib audio/pcm/stream types base)
 shared_register_test(lib audio/midi/midi_output types)
-shared_register_test(lib audio/fm/fm_output audio-fm)
 shared_register_test(lib audio/midi/linux/output types)
 shared_register_test(lib integration/native_midi_output audio-midi)
 set_property(TEST lib.integration/native_midi_output APPEND PROPERTY LABELS native_audio)
@@ -100,7 +99,7 @@ if(WIN32)
         "${LIB_ROOT}/kvm-console/console.c")
     foreach(probe IN ITEMS kvm-window/kvm_frame_damage_mouse integration/kvm_window_retirement
             integration/kvm_window_modal kvm-window/win32/kvm_input_admission
-            kvm-window/win32/kvm_window_capture_contract kvm-window/win32/window_keyboard_lifetime)
+            kvm-window/win32/window_keyboard_lifetime)
         shared_register_test(lib ${probe} kvm-window)
     endforeach()
     foreach(probe IN ITEMS console-broker/win32/console_broker_reader_failure
@@ -113,7 +112,19 @@ if(WIN32)
     shared_register_test(lib base/win32/sync base)
     shared_register_test(lib kvm-base/kvm_keyboard_lifetime kvm-base)
     shared_register_test(lib kvm-console/win32/console_keyboard_lifetime kvm-console)
-    shared_register_test(lib kvm-console/win32/kvm_shutdown_failure kvm-console)
+    foreach(probe IN ITEMS kvm-console/win32/kvm_shutdown_failure kvm-window/win32/kvm_window_capture_contract)
+        string(REPLACE "/" "-" target "lib-test-${probe}")
+        string(REGEX REPLACE "/.*" "" component "${probe}")
+        add_executable(${target} ${probe}_smoke.c)
+        target_link_libraries(${target} PRIVATE ${component})
+        target_compile_options(${target} PRIVATE "$<IF:$<C_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>")
+        list(APPEND SHARED_LIB_TEST_TARGETS ${target})
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/${target}")
+        add_test(NAME lib.${probe} COMMAND "${CMAKE_COMMAND}"
+            "-DPROGRAM=$<TARGET_FILE:${target}>" -P "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/lifetime.cmake")
+        set_tests_properties(lib.${probe} PROPERTIES LABELS "unit;lib" TIMEOUT 30
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/${target}")
+    endforeach()
     # Real native windows/consoles can affect the user's desktop even when hidden.
     set_property(TEST lib.integration/kvm_window_modal lib.integration/kvm_window_retirement
         lib.integration/console_broker_display APPEND PROPERTY LABELS desktop)

@@ -44,7 +44,7 @@ int main(void)
         lib_win32_handle thread;
         kvm_component_control taken;
         const kvm_component_control title = { .kind = 42u };
-        lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(lib_u32)) == LIB_STATUS_OK);
+        lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(lib_u32), LIB_NULL) == LIB_STATUS_OK);
         *(lib_u32 *)kvm_frame_exchange_writer(frames) = 80u;
         kvm_frame_exchange_publish(frames);
         lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);

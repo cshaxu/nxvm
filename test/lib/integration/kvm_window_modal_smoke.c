@@ -2,6 +2,7 @@
 #include "lib/types/file.h"
 #include "lib/types/win32/test.h"
 #include "lib/kvm-window/window_interface.h"
+#include "../fixtures/window_frame.h"
 
 static lib_win32_handle entered, exited, retired, done;
 static lib_win32_wndproc original;
@@ -10,6 +11,7 @@ static lib_win32_long retire_count;
 
 static lib_win32_lresult LIB_WIN32_CALLBACK observe(lib_win32_hwnd w, lib_win32_uint m, lib_win32_wparam a, lib_win32_lparam b)
 {
+    if (m == LIB_WIN32_WM_APP + 8u) return lib_win32_get_capture() == w;
     if (m == LIB_WIN32_WM_ENTERSIZEMOVE || m == LIB_WIN32_WM_ENTERMENULOOP) lib_win32_set_event(entered);
     if (m == LIB_WIN32_WM_EXITSIZEMOVE || m == LIB_WIN32_WM_EXITMENULOOP) lib_win32_set_event(exited);
     return lib_win32_call_window_proc_w(original, w, m, a, b);
@@ -43,6 +45,91 @@ static lib_win32_dword LIB_WIN32_WINAPI watchdog(void *p)
         lib_win32_terminate_process(lib_win32_get_current_process(), 99);
     return 0;
 }
+static void send_checked(lib_win32_uint message, lib_win32_wparam value)
+{
+    lib_win32_dword_ptr result;
+    lib_test_assert(lib_win32_send_message_timeout_w(target,message,value,0,
+        LIB_WIN32_SMTO_ABORT_IF_HUNG,3000,&result));
+}
+static void check_frame_scale(void)
+{
+    kvm_window *window=LIB_NULL;
+    kvm_window_options options={.component={.input_sink=input,.failure_sink=failed},
+        .initial_title="oversized-scale"};
+    kvm_frame_exchange *frames=LIB_NULL;
+    kvm_window_frame_storage frame={0};
+    lib_win32_rect client;
+    lib_u32 width=(lib_u32)lib_win32_get_system_metrics(LIB_WIN32_SM_CXSCREEN)+200u;
+    lib_u32 height=(lib_u32)lib_win32_get_system_metrics(LIB_WIN32_SM_CYSCREEN)+200u;
+    lib_test_assert(kvm_window_create(&window,&options)==LIB_STATUS_OK);
+    target=LIB_NULL;
+    lib_win32_enum_windows(find_window,0); lib_test_assert(target);
+    original=(lib_win32_wndproc)lib_win32_set_window_long_ptr_w(target,LIB_WIN32_GWLP_WNDPROC,(lib_win32_long_ptr)observe);
+    lib_test_assert(kvm_frame_exchange_create(&frames,sizeof(frame),kvm_window_frame_retire)==LIB_STATUS_OK);
+    lib_test_assert(kvm_window_frame_prepare_graphics(&frame,width,height,width)==LIB_STATUS_OK);
+    lib_test_assert(test_window_frame(window,frames,&frame.frame)==LIB_STATUS_OK);
+    send_checked(LIB_WIN32_WM_APP+1u,0);
+    send_checked(LIB_WIN32_WM_NCLBUTTONDBLCLK,LIB_WIN32_HTCAPTION);
+    lib_test_assert(lib_win32_get_client_rect(target,&client));
+    lib_test_assert(client.right==(lib_i32)width && client.bottom==(lib_i32)height);
+    send_checked(LIB_WIN32_WM_LBUTTONDOWN,0);
+    lib_win32_dword_ptr captured;
+    lib_test_assert(lib_win32_send_message_timeout_w(target,LIB_WIN32_WM_APP+8u,0,0,
+        LIB_WIN32_SMTO_ABORT_IF_HUNG,3000,&captured) && captured);
+    for(lib_u32 i=0;i<6u;++i) {
+        if(i%2u) lib_test_assert(kvm_window_frame_prepare_graphics(&frame,width,height,width)==LIB_STATUS_OK);
+        else {
+            lib_test_assert(kvm_window_frame_prepare_text(&frame,80u,25u,80u)==LIB_STATUS_OK);
+            frame.data.text->base.font_height=16u;
+        }
+        lib_test_assert(test_window_frame(window,frames,&frame.frame)==LIB_STATUS_OK);
+        send_checked(LIB_WIN32_WM_APP+1u,0);
+        lib_test_assert(lib_win32_get_client_rect(target,&client));
+        lib_test_assert(client.right==(i%2u ? (lib_i32)width : 640) &&
+            client.bottom==(i%2u ? (lib_i32)height : 400));
+    }
+    lib_test_assert(kvm_window_release_mouse(window)==LIB_STATUS_OK);
+    send_checked(LIB_WIN32_WM_APP+1u,0);
+    /* Exercise all eight native edge notifications through the real Window,
+       then let SetWindowPos deliver the resulting WM_SIZE synchronously. */
+    lib_test_assert(kvm_window_frame_prepare_graphics(&frame,640u,400u,640u)==LIB_STATUS_OK);
+    lib_test_assert(test_window_frame(window,frames,&frame.frame)==LIB_STATUS_OK);
+    send_checked(LIB_WIN32_WM_APP+1u,0);
+    for (lib_win32_wparam edge=LIB_WIN32_WMSZ_LEFT;edge<=LIB_WIN32_WMSZ_BOTTOMRIGHT;++edge) {
+        lib_win32_rect outer;
+        lib_win32_dword_ptr result;
+        lib_test_assert(lib_win32_get_window_rect(target,&outer));
+        lib_test_assert(lib_win32_get_client_rect(target,&client));
+        lib_i32 dw=outer.right-outer.left-client.right;
+        lib_i32 dh=outer.bottom-outer.top-client.bottom;
+        outer=(lib_win32_rect){40,40,40+800+dw,40+600+dh};
+        lib_test_assert(lib_win32_send_message_timeout_w(target,LIB_WIN32_WM_SIZING,edge,
+            (lib_win32_lparam)&outer,LIB_WIN32_SMTO_ABORT_IF_HUNG,3000,&result) && result);
+        lib_test_assert(lib_win32_set_window_pos(target,LIB_NULL,outer.left,outer.top,
+            outer.right-outer.left,outer.bottom-outer.top,
+            LIB_WIN32_SWP_NOZORDER|LIB_WIN32_SWP_NOACTIVATE));
+        lib_test_assert(lib_win32_get_client_rect(target,&client));
+        lib_bool horizontal=edge==LIB_WIN32_WMSZ_LEFT || edge==LIB_WIN32_WMSZ_RIGHT;
+        lib_test_assert(client.right==(horizontal ? 800 : 960) &&
+            client.bottom==(horizontal ? 500 : 600));
+    }
+    send_checked(LIB_WIN32_WM_SYSCOMMAND,LIB_WIN32_SC_MAXIMIZE);
+    {
+        lib_win32_monitorinfo info={.cbSize=sizeof(info)};
+        lib_win32_rect outer;
+        lib_test_assert(lib_win32_get_monitor_info_a(lib_win32_monitor_from_window(target,
+            LIB_WIN32_MONITOR_DEFAULTTONEAREST),&info));
+        lib_test_assert(lib_win32_get_window_rect(target,&outer));
+        lib_test_assert(outer.left>=info.rcWork.left && outer.top>=info.rcWork.top &&
+            outer.right<=info.rcWork.right && outer.bottom<=info.rcWork.bottom);
+    }
+    send_checked(LIB_WIN32_WM_NCLBUTTONDBLCLK,LIB_WIN32_HTCAPTION);
+    lib_test_assert(lib_win32_get_client_rect(target,&client) && client.right==640 && client.bottom==400);
+    kvm_window_frame_release(&frame);
+    /* The Window borrows the exchange until destroy. */
+    lib_test_assert(kvm_window_destroy(window)==LIB_STATUS_OK);
+    kvm_frame_exchange_destroy(frames);
+}
 int main(void)
 {
     const lib_win32_wparam commands[] = { LIB_WIN32_SC_SIZE | LIB_WIN32_WMSZ_RIGHT, LIB_WIN32_SC_MOVE, LIB_WIN32_SC_KEYMENU };
@@ -52,6 +139,7 @@ int main(void)
     done = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     lib_win32_handle guard = lib_win32_create_thread(LIB_NULL, 0, watchdog, LIB_NULL, 0, LIB_NULL);
     lib_test_assert(entered && exited && retired && done && guard);
+    check_frame_scale();
     for (lib_u32 i = 0; i < sizeof(commands)/sizeof(commands[0]); ++i) {
         kvm_window *w = LIB_NULL;
         kvm_window_options o = { 0 };
@@ -63,6 +151,11 @@ int main(void)
         o.initial_title = "modal-before";
         lib_test_assert(kvm_window_create(&w, &o) == LIB_STATUS_OK);
         lib_win32_enum_windows(find_window, 0); lib_test_assert(target);
+        lib_win32_minmaxinfo limits = {0};
+        lib_test_assert(lib_win32_send_message_timeout_w(target, LIB_WIN32_WM_GETMINMAXINFO,
+            0, (lib_win32_lparam)&limits, LIB_WIN32_SMTO_ABORT_IF_HUNG, 3000, &result));
+        lib_test_assert(limits.ptMaxTrackSize.x == LIB_INT32_MAX &&
+            limits.ptMaxTrackSize.y == LIB_INT32_MAX);
         original = (lib_win32_wndproc)lib_win32_set_window_long_ptr_w(target, LIB_WIN32_GWLP_WNDPROC, (lib_win32_long_ptr)observe);
         lib_c_printf("modal case %u\n", i); lib_c_fflush(lib_c_stdout);
         lib_test_assert(lib_win32_post_message_w(target, LIB_WIN32_WM_SYSCOMMAND, commands[i], i == 2 ? ' ' : 0));

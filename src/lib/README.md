@@ -59,7 +59,7 @@ An arrow means the component on the right may use the generic contract of the
 component on the left:
 
 ```text
-types -> base + console + console-broker + storage + audio/pcm + audio/midi + audio/fm + kvm-base + kvm-window + kvm-console
+types -> base + console + console-broker + storage + audio/pcm + audio/midi + kvm-base + kvm-window + kvm-console
 base -> console + console-broker + storage + audio/pcm + kvm-base + kvm-window + kvm-console
 console -> console-broker + kvm-console
 kvm-base -> kvm-window + kvm-console
@@ -97,6 +97,9 @@ lifecycle controller, or public unified presenter API.
   File paths and Base executable directories use UTF-8, not a host code page.
   Windows converts paths at its native boundary; POSIX names with non-UTF-8
   bytes are outside the contract. File contents remain arbitrary bytes.
+  Writer progress reports the accepted prefix even on failure; flush makes
+  buffered output visible without claiming durable-media persistence. Neither
+  flush failure nor close failure makes accepted bytes safe to replay.
   Base directory capacity counts UTF-8 bytes including NUL and must fit the
   full executable path; failure leaves caller output unchanged. Root/separator
   interpretation belongs to each native implementation, not the shared root.
@@ -111,8 +114,6 @@ lifecycle controller, or public unified presenter API.
   submission. Ordinary short messages preserve long-message ordering; realtime
   messages may interleave. Reset stops notes and terminates interrupted SysEx.
   Optional device volume can affect other clients. Linux reports unsupported.
-- `audio/fm` (target `audio-fm`) exposes raw FM capability acquisition only.
-  Current platforms return UNSUPPORTED/null, not a substitute synthesizer.
 - `kvm-base` provides copied frame/input values, source-local registered-hotkey
   matching, source identities, and private mailbox mechanics.
 - `kvm-window` owns one Window lifecycle; `kvm-console` owns one raw-Console
@@ -128,13 +129,19 @@ request, it is accepted: a later wake failure reports once through the existing
 component failure sink and is never replayed.
 
 A successful public create returns one complete object; a failed create leaves
-its output null. KVM and native Console destruction join their live worker once.
-An unjoinable worker is handled at the importing application's terminal
-infrastructure boundary rather than exposed as a half-object recovery protocol.
+its output null. KVM destruction consumes the object on every normal return,
+including post-join cleanup errors. If KVM cannot establish worker exit, it
+terminates the process without application cleanup callbacks. Native Console
+broker and Base task ownership contracts are unchanged.
 Storage close retains its documented consumed-stream behavior.
 
 Every `kvm-window` and `kvm-console` instance owns a separate, private pair of
 mailboxes. Callers never share or address a mailbox directly.
+
+Win32 Window fits its first frame to the work area. Later frame size/type
+changes retain the user-selected scale; natural-size restore and manual sizing
+may exceed the desktop, while maximize fits it. Captured motion uses the
+actual host clipping bounds, not an assumed full client rectangle.
 
 - The frame mailbox holds one copied frame. Publishing replaces that value:
   frames are **latest-wins** opaque payloads in leaf-owned fixed storage.
@@ -238,12 +245,19 @@ only a successful write of the entire requested rectangle commits the cache.
 Clipped native success is incomplete output and returns IO_ERROR.
 Surface size is established after palette application, which can change native
 buffer geometry; output does not rely on a precondition invalidated by metadata.
-Text frames hold at most 80x50 cells with a fixed 80-cell row stride; active
-dimensions, not capacity, determine the image. Raw output grows only backing
-storage to at least 80 columns and the frame's active rows; it preserves the
-host viewport, font fit and scroll position. Lower rows left by a taller frame
-are cleared within the 50-row capacity. A failed or silently ineffective backing
-resize returns IO_ERROR, not success.
+Text frames carry producer-selected columns, rows, cell stride and capacity;
+there is no fixed public grid limit. Zero dimensions, insufficient stride or
+capacity, and arithmetic overflow are rejected. Leaf prepare operations allocate
+only the active text/map/font or graphics payload on first use, then reuse equal
+specifications. Four exchange slots start with metadata only. Unheld incompatible
+payloads retire on publication or reader release; held inputs remain immutable.
+Prepare failure never changes a held frame. Producers must not shallow-copy
+owning storage and must release standalone diagnostic copies explicitly.
+Raw output grows only native backing storage to the frame's actual extent,
+preserving the host viewport, font fit and scroll position. Old right/bottom
+tails are cleared when a frame shrinks. Win32's signed 16-bit native cell extent
+is a backend limit (UNSUPPORTED), not a shared frame limit. A failed or silently
+ineffective backing resize returns IO_ERROR, not success.
 
 Window bitmap fonts use two copied banks of 256 fixed 32-byte glyph slots.
 The active glyph height is 1--32; zero uses the KVM Base-owned

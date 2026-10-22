@@ -105,10 +105,6 @@ endif()
 library_root(audio-midi)
 target_link_libraries(audio-midi PUBLIC types)
 
-add_library(audio-fm STATIC audio/fm/output.c)
-library_root(audio-fm)
-target_link_libraries(audio-fm PUBLIC types)
-
 if(WIN32)
     target_link_libraries(audio-pcm PRIVATE ole32)
     target_link_libraries(audio-midi PRIVATE winmm)
@@ -123,7 +119,7 @@ endif()
 # peer root remains independently compilable and names its exact dependencies.
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE
-    types base console console-broker storage audio-pcm audio-midi audio-fm kvm-base kvm-window kvm-console)
+    types base console console-broker storage audio-pcm audio-midi kvm-base kvm-window kvm-console)
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}

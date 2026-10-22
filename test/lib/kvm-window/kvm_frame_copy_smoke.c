@@ -1,153 +1,180 @@
 #include "lib/types/test.h"
-#include "lib/kvm-base/mailbox_interface.h"
-#include "lib/kvm-window/frame_interface.h"
-#include "lib/kvm-base/event_interface.h"
+#include "lib/kvm-base/frame_exchange_interface.h"
+#include "lib/base/sync_interface.h"
 
-#if defined(KVM_WINDOW_FONT_DEFAULT_HEIGHT) || defined(KVM_WINDOW_FONT_MAX_HEIGHT) || defined(LIB_CONSOLE_LINE_MAX)
-#error "Retired default/capacity names must not be exported"
-#endif
-
-_Static_assert(KVM_CURSOR_DISABLED == 0 && KVM_CURSOR_HOST == 1 &&
-    KVM_CURSOR_SOURCE == 2, "cursor mode values");
-
-static kvm_window_frame_storage source, destination;
-static kvm_frame_exchange *frames;
-static kvm_component_mailboxes mailbox;
-
-static void check_validation(void)
+static lib_size allocations, releases, last_bytes, live;
+static const void *held_payload[2];
+static lib_bool fail_allocation;
+static void *allocate_payload(lib_size count, lib_size bytes)
 {
-    lib_memory_set(&source.frame, 0, sizeof(source));
-    lib_test_assert(kvm_window_frame_validate(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
-    (void)kvm_window_frame_begin_text(&source);
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
-    source.data.text.base.text_columns = source.data.text.base.text_rows = 1u;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_OK);
-    source.data.text.base.font_height = KVM_TEXT_FONT_DEFAULT_HEIGHT;
-    source.data.text.base.text_columns = KVM_TEXT_COLUMNS;
-    source.data.text.base.text_rows = KVM_TEXT_ROWS;
-    source.data.text.base.cursor_mode = KVM_CURSOR_HOST;
-    source.data.text.base.cursor_column = -1;
-    source.data.text.base.cursor_row = 500;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_OK);
-    for (lib_u32 height = 1u; height <= KVM_WINDOW_FONT_HEIGHT; ++height) {
-        source.data.text.base.font_height = height;
-        lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_OK);
-    }
-    source.data.text.base.font_height = KVM_WINDOW_FONT_HEIGHT + 1u;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_UNSUPPORTED);
-    source.data.text.base.font_height = 0u;
-    (void)kvm_window_frame_begin_graphics(&source);
-    lib_memory_set(&source.data.graphics, 0, sizeof(source.data.graphics));
-    source.data.graphics.width = source.data.graphics.height = source.data.graphics.stride = 1u;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_OK);
-    source.data.graphics.stride = 0u;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
-    source.data.graphics.width = source.data.graphics.stride = KVM_WINDOW_GRAPHICS_MAX_WIDTH;
-    source.data.graphics.height = KVM_WINDOW_GRAPHICS_MAX_HEIGHT;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_OK);
-    source.data.graphics.height++;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_UNSUPPORTED);
-    source.data.graphics.height = 1u;
-    source.data.graphics.stride = (lib_u32)-1;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_UNSUPPORTED);
+    last_bytes = count * bytes;
+    if (fail_allocation) return LIB_NULL;
+    void *result = lib_allocate_zero(count, bytes);
+    lib_test_assert(result != LIB_NULL);
+    ++allocations; ++live;
+    return result;
 }
+static void release_payload(void *pointer)
+{
+    if (pointer != LIB_NULL) {
+        lib_test_assert(pointer != held_payload[0] && pointer != held_payload[1]);
+        ++releases; --live;
+    }
+    lib_release(pointer);
+}
+/* Observe real leaf allocations, not a test-only production API. Exchange
+ * metadata remains separately allocated by its normal implementation. */
+#define lib_allocate_zero allocate_payload
+#define lib_release release_payload
+#include "lib/kvm-window/frame_interface.h"
+#undef lib_allocate_zero
+#undef lib_release
 
 static void check_copy(void)
 {
-    lib_size bytes = source.frame.graphics != LIB_NULL ?
-        lib_offsetof(kvm_window_graphics_frame, pixels) +
-        (lib_size)source.data.graphics.stride * source.data.graphics.height * sizeof(lib_u32) :
-        sizeof(kvm_window_text_frame);
-    lib_memory_set(&destination, 0xa5, sizeof(destination));
-    lib_test_assert(kvm_window_frame_copy(&destination, &source.frame));
-    lib_test_assert(destination.frame.sequence == source.frame.sequence);
-    lib_test_assert(lib_memory_compare(&destination.data, &source.data, bytes) == 0);
-    lib_test_assert(source.frame.graphics != LIB_NULL ?
-        destination.frame.graphics == &destination.data.graphics && destination.frame.text == LIB_NULL :
-        destination.frame.text == &destination.data.text && destination.frame.graphics == LIB_NULL);
-    for (lib_size i = bytes; i < sizeof(destination.data); ++i)
-        lib_test_assert(((const lib_u8 *)&destination.data)[i] == 0xa5);
+    kvm_window_frame_storage source = {0}, copy = {0};
+    lib_test_assert(kvm_window_frame_validate(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
+    const lib_u32 sizes[][2] = {{80,25}, {80,50}, {132,43}, {100,60}, {193,77}};
+    for (lib_size i = 0u; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
+        lib_u32 columns = sizes[i][0], rows = sizes[i][1], stride = columns + 3u;
+        lib_test_assert(kvm_window_frame_prepare_text(&source, columns, rows, stride) == LIB_STATUS_OK);
+        lib_test_assert(last_bytes == sizeof(kvm_window_text_frame) + (lib_size)stride * rows * sizeof(kvm_text_cell));
+        source.frame.sequence = (lib_u32)i + 1u;
+        source.data.text->base.cells[(rows - 1u) * stride + columns - 1u] =
+            (kvm_text_cell){65, 1, 3, 4, 1};
+        source.data.text->secondary_font[65 * KVM_WINDOW_FONT_HEIGHT] = 0xa5;
+        source.data.text->base.cursor[1] = (kvm_text_cursor_span){12, 2};
+        lib_test_assert(kvm_window_frame_copy(&copy, &source.frame));
+        lib_test_assert(copy.frame.sequence == source.frame.sequence &&
+            copy.data.text != source.data.text && copy.data.text->base.cells != source.data.text->base.cells);
+        lib_test_assert(lib_memory_compare(copy.data.text->base.cells, source.data.text->base.cells,
+            (lib_size)stride * rows * sizeof(kvm_text_cell)) == 0);
+        lib_test_assert(copy.data.text->secondary_font[65 * KVM_WINDOW_FONT_HEIGHT] == 0xa5 &&
+            copy.data.text->base.cursor[1].height == 2);
+        lib_size before = allocations;
+        lib_test_assert(kvm_window_frame_prepare_text(&source, columns, rows, stride) == LIB_STATUS_OK);
+        lib_test_assert(kvm_window_frame_copy(&copy, &source.frame) && allocations == before);
+        source.data.text->base.capacity--;
+        lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
+        source.data.text->base.capacity++;
+        source.data.text->base.font_height = KVM_WINDOW_FONT_HEIGHT + 1u;
+        lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_UNSUPPORTED);
+        source.data.text->base.font_height = 0;
+    }
+    lib_test_assert(kvm_window_frame_prepare_graphics(&source, 3, 5, 7) == LIB_STATUS_OK);
+    source.frame.text = (const kvm_window_text_frame *)source.data.graphics;
+    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
+    source.frame.text = LIB_NULL;
+    --source.data.graphics->capacity;
+    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
+    ++source.data.graphics->capacity;
+    lib_test_assert(last_bytes == sizeof(kvm_window_graphics_frame) + 35 * sizeof(lib_u32));
+    for (lib_size i = 0; i < 35; ++i) source.data.graphics->pixels[i] = (lib_u32)i;
+    lib_test_assert(kvm_window_frame_copy(&copy, &source.frame));
+    lib_test_assert(copy.data.graphics->pixels != source.data.graphics->pixels &&
+        lib_memory_compare(copy.data.graphics->pixels, source.data.graphics->pixels, 35*sizeof(lib_u32)) == 0);
     lib_test_assert(kvm_window_frame_copy(&source, &source.frame));
+    source.data.graphics->pixels[0] = 0xff000000u;
+    lib_test_assert(!kvm_window_frame_copy(&copy, &source.frame));
+    lib_test_assert(copy.data.graphics->pixels[0] == 0);
+    lib_test_assert(kvm_window_frame_prepare_graphics(&source, 0, 1, 1) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_window_frame_prepare_graphics(&source, 5, 1, 4) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_window_frame_prepare_graphics(&source, LIB_UINT32_MAX,
+        LIB_UINT32_MAX, LIB_UINT32_MAX) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_window_frame_prepare_text(&source, LIB_UINT32_MAX,
+        LIB_UINT32_MAX, LIB_UINT32_MAX) == LIB_STATUS_INVALID_ARGUMENT);
+    kvm_window_frame_release(&source);
+    kvm_window_frame_release(&copy);
+}
+
+static void replace_frames(void *opaque, const base_sync_task *task)
+{
+    kvm_frame_exchange *frames = opaque;
+    (void)task;
+    for (lib_u32 i = 0; i < 20; ++i) {
+        kvm_window_frame_storage *writer = kvm_frame_exchange_writer(frames);
+        if (i % 2u == 0u) {
+            lib_test_assert(kvm_window_frame_prepare_text(writer, 80+i,25,100) == LIB_STATUS_OK);
+        } else {
+            lib_test_assert(kvm_window_frame_prepare_graphics(writer, 31+i,17,64) == LIB_STATUS_OK);
+            writer->data.graphics->pixels[0] = i;
+        }
+        lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
+        lib_test_assert(live <= 4u);
+    }
+}
+
+static void check_exchange(void)
+{
+    kvm_frame_exchange *frames = LIB_NULL;
+    lib_size before = allocations;
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_window_frame_storage),
+        kvm_window_frame_retire) == LIB_STATUS_OK && allocations == before);
+    kvm_window_frame_storage *writer = kvm_frame_exchange_writer(frames);
+    lib_test_assert(writer->frame.text == LIB_NULL && writer->frame.graphics == LIB_NULL);
+    lib_test_assert(kvm_window_frame_prepare_text(writer, 80,25,80) == LIB_STATUS_OK);
+    lib_test_assert(allocations == before + 1);
+    writer->data.text->base.cells[0].glyph_index = 'A';
+    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
+    const kvm_window_frame *old = kvm_frame_exchange_take(frames, LIB_NULL);
+    kvm_frame_exchange_finish(frames, LIB_TRUE);
+    writer = kvm_frame_exchange_writer(frames);
+    lib_test_assert(kvm_window_frame_prepare_text(writer, 80,25,80) == LIB_STATUS_OK);
+    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
+    const void *previous;
+    const kvm_window_frame *processing = kvm_frame_exchange_take(frames, &previous);
+    lib_test_assert(previous == old && processing != old);
+    base_sync_task *producer;
+    held_payload[0] = old->text; held_payload[1] = processing->text;
+    lib_test_assert(base_sync_task_create(replace_frames, frames, &producer) == LIB_STATUS_OK);
+    /* The consumer owns both old payloads throughout concurrent replacement.
+     * Only the producer mutates allocation counters until join establishes
+     * quiescence; no sleep or unsynchronized counter observation is needed. */
+    lib_test_assert(old->text->base.cells[0].glyph_index == 'A' && processing->text);
+    lib_test_assert(base_sync_task_destroy(producer) == LIB_STATUS_OK);
+    lib_test_assert(old->text->base.cells[0].glyph_index == 'A' && processing->text);
+    held_payload[0] = held_payload[1] = LIB_NULL;
+    kvm_frame_exchange_finish(frames, LIB_TRUE);
+    lib_test_assert(live == 2); /* Old text freed; mismatched writer is empty. */
+    const kvm_window_frame *latest = kvm_frame_exchange_take(frames, &previous);
+    lib_test_assert(latest->graphics->pixels[0] == 19 && previous == processing);
+    kvm_frame_exchange_finish(frames, LIB_TRUE);
+    lib_test_assert(live == 1); /* Only the newest graphics payload remains. */
+    kvm_frame_exchange_redraw(frames);
+    lib_test_assert(kvm_frame_exchange_take(frames, LIB_NULL) == latest);
+    held_payload[0] = latest->graphics;
+    lib_test_assert(base_sync_task_create(replace_frames, frames, &producer) == LIB_STATUS_OK);
+    lib_test_assert(latest->graphics->pixels[0] == 19);
+    lib_test_assert(base_sync_task_destroy(producer) == LIB_STATUS_OK);
+    lib_test_assert(latest->graphics->pixels[0] == 19);
+    held_payload[0] = LIB_NULL;
+    kvm_frame_exchange_finish(frames, LIB_TRUE);
+    latest = kvm_frame_exchange_take(frames, LIB_NULL);
+    lib_test_assert(latest != LIB_NULL && latest->graphics->pixels[0] == 19);
+    kvm_frame_exchange_finish(frames, LIB_TRUE);
+    fail_allocation = LIB_TRUE;
+    writer = kvm_frame_exchange_writer(frames);
+    lib_test_assert(kvm_window_frame_prepare_text(writer,132,43,132) == LIB_STATUS_NO_MEMORY);
+    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(latest->graphics->pixels[0] == 19);
+    fail_allocation = LIB_FALSE;
+    for (lib_u32 i = 0; i < 100; ++i) {
+        writer = kvm_frame_exchange_writer(frames);
+        lib_test_assert(kvm_window_frame_prepare_text(writer,100+i%2,60,101) == LIB_STATUS_OK);
+        lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
+        lib_test_assert(kvm_frame_exchange_take(frames, LIB_NULL) != LIB_NULL);
+        kvm_frame_exchange_finish(frames, LIB_TRUE);
+        lib_test_assert(live <= 2);
+    }
+    kvm_frame_exchange_destroy(frames);
 }
 
 int main(void)
 {
-    const kvm_window_frame *taken;
-    lib_test_assert(sizeof(kvm_window_text_frame) == 32476);
-    lib_test_assert(lib_offsetof(kvm_window_frame_storage, frame) == 0u);
-    check_validation();
-    (void)kvm_window_frame_begin_text(&source);
-    source.frame.graphics = &source.data.graphics;
-    lib_test_assert(kvm_window_frame_validate(&source.frame) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_memory_set(&source.frame, 0x3c, sizeof(source));
-    (void)kvm_window_frame_begin_text(&source);
-    source.data.text.base.text_columns = 80u;
-    source.data.text.base.text_rows = 25u;
-    source.data.text.base.font_height = 0u;
-    source.data.text.base.cursor_mode = KVM_CURSOR_SOURCE;
-    source.data.text.base.cursor_phase = LIB_TRUE;
-    for (lib_size i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
-        source.data.text.base.cells[i] = (kvm_text_cell){ (lib_u8)i, (lib_u8)(i % 2u),
-            (lib_u8)(i % 16u), (lib_u8)((i / 16u) % 16u) };
-    check_copy(); /* No inactive graphics payload is copied. */
-    lib_test_assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
-    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(source)) == LIB_STATUS_OK);
-    lib_test_assert(kvm_window_frame_copy(kvm_frame_exchange_writer(frames), &source.frame));
-    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
-    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, frames) == LIB_STATUS_OK);
-    taken = kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL);
-    lib_test_assert(taken != LIB_NULL && lib_memory_compare(taken->text->base.cells,
-        source.data.text.base.cells, sizeof(source.data.text.base.cells)) == 0);
-    (void)kvm_window_frame_begin_graphics(&source);
-    for (lib_size i = 0u; i < KVM_WINDOW_GRAPHICS_MAX_PIXELS; ++i)
-        source.data.graphics.pixels[i] = (lib_u32)i;
-    source.data.graphics.width = 3u;
-    source.data.graphics.stride = 7u;
-    source.data.graphics.height = 5u;
-    check_copy(); /* Copy row padding, not just width*height. */
-    lib_test_assert(kvm_window_frame_copy(kvm_frame_exchange_writer(frames), &source.frame));
-    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
-    kvm_component_mailboxes_finish_frame(&mailbox, LIB_TRUE);
-    taken = kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL);
-    lib_test_assert(taken != LIB_NULL && lib_memory_compare(taken->graphics->pixels,
-        source.data.graphics.pixels, 35u * sizeof(source.data.graphics.pixels[0])) == 0);
-    kvm_component_mailboxes_finish_frame(&mailbox, LIB_TRUE);
-    source.data.graphics.width = source.data.graphics.stride = KVM_WINDOW_GRAPHICS_MAX_WIDTH;
-    source.data.graphics.height = KVM_WINDOW_GRAPHICS_MAX_HEIGHT;
     check_copy();
-    (void)kvm_window_frame_begin_text(&source);
-    source.data.text.base.text_columns = 80u; source.data.text.base.text_rows = 25u;
-    source.data.text.base.font_height = 0u;
-    source.data.text.base.cursor_mode = KVM_CURSOR_DISABLED;
-    source.data.text.base.cursor_phase = LIB_FALSE;
-    for (lib_size i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
-        source.data.text.base.cells[i] = (kvm_text_cell){ (lib_u8)i, 1u, 15u, 2u };
-    check_copy(); /* Graphics -> text never exposes the old pixels. */
-    lib_test_assert(kvm_window_frame_copy(kvm_frame_exchange_writer(frames), &source.frame));
-    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
-    taken = kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL);
-    lib_test_assert(taken != LIB_NULL && !taken->graphics);
-    kvm_component_mailboxes_finish_frame(&mailbox, LIB_TRUE);
-    lib_test_assert(kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL) == LIB_NULL);
-    (void)kvm_window_frame_begin_graphics(&source);
-    source.data.graphics.stride = KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u;
-    lib_memory_set(&destination.frame, 0xa5, sizeof(destination));
-    lib_test_assert(!kvm_window_frame_copy(&destination, &source.frame));
-    lib_test_assert(!kvm_window_frame_copy(&destination, LIB_NULL));
-    lib_test_assert(!kvm_window_frame_copy(LIB_NULL, &source.frame));
-    for (lib_size i = 0u; i < sizeof(destination); ++i)
-        lib_test_assert(((const lib_u8 *)&destination.frame)[i] == 0xa5);
-    kvm_window_frame_storage *writer = kvm_frame_exchange_writer(frames);
-    writer->frame.text = LIB_NULL;
-    writer->frame.graphics = LIB_NULL;
-    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL) == LIB_NULL);
-    writer->frame.text = &writer->data.text;
-    writer->frame.graphics = &writer->data.graphics;
-    lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(kvm_component_mailboxes_take_frame(&mailbox, LIB_NULL) == LIB_NULL);
-    kvm_component_mailboxes_destroy(&mailbox);
-    kvm_frame_exchange_destroy(frames);
+    lib_test_assert(live == 0 && allocations == releases);
+    check_exchange();
+    lib_test_assert(live == 0 && allocations == releases);
     return 0;
 }

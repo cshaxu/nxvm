@@ -28,10 +28,11 @@ typedef struct kvm_component_options {
  * ordinary control queue still has its reserved STOP slot. Other control
  * enqueue failures are returned. A rejected request is not a worker fault. */
 lib_status kvm_component_request_stop(kvm_component *component);
-/* Synchronous destruction: OK means the worker completed and storage is freed.
- * Join waits at most 5000 ms. A failure means the caller must keep the owning
- * application alive and take its one terminal infrastructure-failure path;
- * this API never creates a reusable half-destroyed component. NULL returns OK. */
+/* Synchronous destruction: request terminal stop, wait for the worker and its
+ * callbacks to exit, then free storage. The owner serializes destroy and never
+ * calls it from a component callback or worker. Every normal return consumes
+ * the object; errors report cleanup failures after quiescence. If worker exit
+ * cannot be established, the process terminates without callbacks. NULL is OK. */
 lib_status kvm_component_destroy(kvm_component *component);
 
 #endif

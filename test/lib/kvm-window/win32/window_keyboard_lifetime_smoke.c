@@ -66,8 +66,8 @@ static void key_sequence(const capture *c, const char *keys, lib_u32 pressed)
 
 static void no_failure(void *opaque, lib_u64 source, lib_status status)
 { (void)opaque; (void)source; (void)status; }
-static lib_status no_join(kvm_component *component, lib_u32 timeout_ms)
-{ (void)component; (void)timeout_ms; return LIB_STATUS_OK; }
+static lib_status no_join(kvm_component *component)
+{ (void)component; return LIB_STATUS_OK; }
 static void no_dispose(kvm_component *component)
 { kvm_component_mailboxes_destroy(&component->mailboxes); }
 static void adapter_lifetime(lib_u32 scan)

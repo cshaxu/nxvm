@@ -26,13 +26,13 @@ typedef struct kvm_window_options {
  * Lib coordinates its Window instances; ordinary callers need no native
  * input registration. Capture/release I/O failures use the component failure sink.
  * On failure *out_window remains NULL. A live worker that cannot be joined is
- * a terminal application infrastructure fault, not a caller-owned half object. */
+ * an internal fatal failure: the process exits without returning a half object. */
 lib_status kvm_window_create(kvm_window **out_window,
     const kvm_window_options *options);
 /* Notify after committing a validated Window frame. Use a four-slot exchange
  * of kvm_window_frame_storage slots. Its payload pointers remain slot-owned and
  * immutable until retirement. The exchange is fixed for this Window lifetime
- * and outlives successful destroy.
+ * and outlives the destroy call, including a cleanup-error return.
  * Notification never copies a frame or creates another pending owner. */
 lib_status kvm_window_publish_frame(kvm_window *window, kvm_frame_exchange *frames);
 /* Same checked destruction contract as kvm_component_destroy. */

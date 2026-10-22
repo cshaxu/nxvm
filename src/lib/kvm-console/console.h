@@ -9,6 +9,8 @@ struct kvm_console {
     kvm_component base;
     lib_console *logical_console;
     void *worker_state;
+    void *mapped_cells; /* Worker-owned native-independent output conversion. */
+    lib_size mapped_count;
     lib_i32 previous_mouse_x, previous_mouse_y;
     lib_bool previous_mouse_valid;
 };
@@ -19,6 +21,6 @@ lib_status kvm_console_publish_text_frame(kvm_console *console,
 void kvm_console_receive_event(void *context, const lib_console_event *event);
 
 lib_status kvm_console_worker_start(kvm_console *console);
-lib_status kvm_console_worker_join(kvm_console *console, lib_u32 timeout_ms);
+lib_status kvm_console_worker_join(kvm_console *console);
 
 #endif

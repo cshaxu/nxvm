@@ -38,7 +38,6 @@ for an unsupported backend, or making both platforms' source bodies identical.
 | Storage | Binary writer, positions, UTF-8 paths, lock/mode and close contracts | Both file probes test open mode, invalid encoding and failed-acquisition cleanup. Linux additionally checks flock via file_lock; Windows sharing is selected in file and exercised by common storage tests. |
 | PCM | Shared FIFO, progress, cancellation and lifetime with a fake backend | Both stream probes execute their actual backend: Windows exercises native queue/initialization/failure; Linux proves public create rejects with UNSUPPORTED/null and checks stub output counts. |
 | MIDI | Short/SysEx validation, capacity, cancellation with a fake backend | Both output probes execute their actual backend: Windows has native ownership/failure cases; Linux rejects acquisition and cannot send messages. |
-| FM | Truthful unsupported acquisition | No platform implementation directories or artificial platform tests. |
 | Console | Logical events, output and blocking gates | No platform directories; native I/O belongs to the broker. |
 | Console broker | Binding and failed create | Both console probes exercise native boundary contracts. Windows owns screen/input/reader behavior; Linux proves acquisition/output/activation rejection and cancellation output. |
 | KVM Base | Mailbox, key lifetime, matching, input delivery and text contracts | No platform implementation directories or artificial platform tests. |

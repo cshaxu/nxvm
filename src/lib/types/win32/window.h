@@ -44,6 +44,11 @@ typedef WNDPROC lib_win32_wndproc;
 typedef CREATESTRUCTW lib_win32_createstructw;
 typedef PAINTSTRUCT lib_win32_paintstruct;
 typedef MONITORINFO lib_win32_monitorinfo;
+typedef MINMAXINFO lib_win32_minmaxinfo;
+typedef FARPROC lib_win32_farproc;
+typedef BOOL (WINAPI *lib_win32_is_window_arranged_proc)(HWND);
+#define lib_win32_get_proc_address GetProcAddress
+#define LIB_WIN32_WM_GETMINMAXINFO WM_GETMINMAXINFO
 typedef BITMAPINFO lib_win32_bitmapinfo;
 typedef const lib_win32_bitmapinfo *lib_win32_pcbitmapinfo;
 typedef const lib_win32_rect *lib_win32_pcrect;

@@ -2,6 +2,16 @@
 #include "emulator/machine/input_queue.h"
 
 static lib_bool fail_mutex;
+static emulator_machine_input_queue *close_before_push;
+static void lock_queue(base_sync_mutex *lock)
+{
+    if (close_before_push != LIB_NULL) {
+        emulator_machine_input_queue *queue = close_before_push;
+        close_before_push = LIB_NULL;
+        emulator_machine_input_queue_admit(queue, LIB_FALSE);
+    }
+    base_sync_mutex_lock(lock);
+}
 static lib_status create_mutex(base_sync_mutex **out)
 {
     if (!fail_mutex) return base_sync_mutex_create(out);
@@ -9,6 +19,7 @@ static lib_status create_mutex(base_sync_mutex **out)
     return LIB_STATUS_NO_MEMORY;
 }
 #define base_sync_mutex_create create_mutex
+#define base_sync_mutex_lock lock_queue
 #include "emulator/machine/input_queue.c"
 
 int main(void)
@@ -22,9 +33,14 @@ int main(void)
     emulator_machine_input_queue_dispose(&queue);
     fail_mutex = LIB_FALSE;
     lib_test_assert(emulator_machine_input_queue_initialize(&queue) == LIB_STATUS_OK);
+    emulator_machine_input_queue_admit(&queue, LIB_TRUE);
+    close_before_push = &queue;
+    lib_test_assert(emulator_machine_input_queue_push(&queue, &input) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(!emulator_machine_input_queue_pending(&queue));
+    emulator_machine_input_queue_admit(&queue, LIB_TRUE);
     for (i = 0; i < 600u; ++i) {
         input.source_identity = i;
-        lib_test_assert(emulator_machine_input_queue_push(&queue, &input));
+        lib_test_assert(emulator_machine_input_queue_push(&queue, &input) == LIB_STATUS_OK);
         lib_test_assert(emulator_machine_input_queue_pop(&queue, &output));
         lib_test_assert(output.source_identity == i);
     }

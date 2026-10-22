@@ -11,10 +11,6 @@
  * native handle, process ownership, reader, or presentation policy. Console
  * Broker alone binds a logical object to native Console I/O. */
 
-/* Fixed storage capacity; each frame supplies its active dimensions. */
-#define LIB_CONSOLE_TEXT_COLUMNS 80u
-#define LIB_CONSOLE_TEXT_ROWS 50u
-
 typedef struct lib_console lib_console;
 
 #define LIB_CONSOLE_LINE_CAPACITY 1024u
@@ -60,21 +56,25 @@ typedef struct lib_console_event {
     } value;
 } lib_console_event;
 
-/* Copied text output for a logical Console. It is deliberately a
+/* Synchronously borrowed text output for a logical Console. All arrays remain
+ * valid until write returns; sinks must not retain them. It is deliberately a
  * Console value rather than a KVM/window frame: native host renderers consume
  * it without learning an application or Window protocol. Palette values use
  * 0x00RRGGBB. */
 typedef struct lib_console_text_frame {
-    lib_u16 columns;
-    lib_u16 rows;
+    lib_u32 columns;
+    lib_u32 rows;
+    lib_u32 stride; /* Array elements per row. */
+    lib_size capacity; /* Element capacity of each array. */
     /* Cells equal the preceding successful frame on this logical Console.
      * The caller serializes that comparison and its frame writes. This only
      * permits reuse: binding/geometry changes still require complete output.
      * False is always safe. Palette and cursor are applied independently. */
     lib_bool cells_unchanged;
-    lib_u16 text[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* BMP characters */
-    lib_u8 foreground[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* palette index 0..15 */
-    lib_u8 background[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* palette index 0..15 */
+    lib_u16 *text; /* BMP characters; read-only during write. */
+    lib_u8 *foreground; /* palette index 0..15 */
+    lib_u8 *background; /* palette index 0..15 */
+    lib_u8 *underline; /* native text decoration, not a scanline */
     lib_u32 palette[16u];
     lib_i32 cursor_column;
     lib_i32 cursor_row;

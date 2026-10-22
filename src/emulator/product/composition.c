@@ -47,7 +47,7 @@ static void emulator_product_machine_frame_published(void *context, lib_u32 sequ
     (void)emulator_session_enqueue_frame_completed(product->session, run_generation);
 }
 
-lib_status emulator_product_create(const emulator_product_machine *machine,
+static lib_status emulator_product_create(const emulator_product_machine *machine,
     emulator_product **out_product)
 {
     emulator_product *product;
@@ -64,7 +64,7 @@ lib_status emulator_product_create(const emulator_product_machine *machine,
     return LIB_STATUS_OK;
 }
 
-lib_status emulator_product_destroy(emulator_product *product)
+static lib_status emulator_product_destroy(emulator_product *product)
 {
     lib_status shutdown_status;
 
@@ -92,7 +92,7 @@ lib_status emulator_product_destroy(emulator_product *product)
     return LIB_STATUS_OK;
 }
 
-lib_status emulator_product_compose_machine(emulator_product *product)
+static lib_status emulator_product_compose_machine(emulator_product *product)
 {
     emulator_machine_driver driver;
     void *machine = LIB_NULL;
@@ -120,7 +120,7 @@ lib_status emulator_product_compose_machine(emulator_product *product)
     return LIB_STATUS_OK;
 }
 
-lib_status emulator_product_compose_control(emulator_product *product,
+static lib_status emulator_product_compose_control(emulator_product *product,
     const emulator_session_options *options)
 {
     emulator_session_options resolved;
@@ -142,7 +142,7 @@ lib_status emulator_product_compose_control(emulator_product *product,
     return LIB_STATUS_OK;
 }
 
-lib_status emulator_product_compose_ui(emulator_product *product,
+static lib_status emulator_product_compose_ui(emulator_product *product,
     const emulator_ui_options *options)
 {
     emulator_ui *ui = LIB_NULL;
@@ -168,7 +168,7 @@ lib_status emulator_product_compose_ui(emulator_product *product,
     return LIB_STATUS_OK;
 }
 
-lib_status emulator_product_publish_initial_state(emulator_product *product)
+static lib_status emulator_product_publish_initial_state(emulator_product *product)
 {
     emulator_machine_state state;
 

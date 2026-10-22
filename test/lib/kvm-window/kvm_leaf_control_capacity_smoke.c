@@ -19,8 +19,8 @@ static void leaf_failure(void *opaque, lib_u64 identity, lib_status status)
     probe->last_failure = status;
 }
 
-static lib_status leaf_stop(kvm_component *component, lib_u32 timeout_ms)
-{ (void)component; (void)timeout_ms; return LIB_STATUS_OK; }
+static lib_status leaf_stop(kvm_component *component)
+{ (void)component; return LIB_STATUS_OK; }
 
 static void leaf_dispose(kvm_component *component)
 { kvm_component_mailboxes_destroy(&component->mailboxes); }

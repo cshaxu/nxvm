@@ -29,9 +29,7 @@ lib_status x86_nxvm_machine_frame_validate_source(const x86_video_snapshot *sour
     case X86_VIDEO_KIND_TEXT_PIXELS:
         if (source->pixel_width == 0u || source->pixel_height == 0u)
             return LIB_STATUS_INVALID_ARGUMENT;
-        if (source->pixel_width > KVM_WINDOW_GRAPHICS_MAX_WIDTH ||
-            source->pixel_height > KVM_WINDOW_GRAPHICS_MAX_HEIGHT ||
-            (lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels))
+        if ((lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels))
             return LIB_STATUS_UNSUPPORTED;
         return LIB_STATUS_OK;
     default:
@@ -78,66 +76,84 @@ lib_status x86_nxvm_machine_frame_from_display(
         return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_nxvm_machine_frame_validate_source(source);
     if (status != LIB_STATUS_OK) return status;
-    destination->frame.sequence = (lib_u32)sequence;
     if (source->kind != X86_VIDEO_KIND_TEXT) {
-        kvm_window_graphics_frame *image = kvm_window_frame_begin_graphics(destination);
-        image->width = source->pixel_width;
-        image->height = source->pixel_height;
-        image->stride = source->pixel_width;
+        kvm_window_graphics_frame *image;
+        status = kvm_window_frame_prepare_graphics(destination, source->pixel_width,
+            source->pixel_height, source->pixel_width);
+        if (status != LIB_STATUS_OK) return status;
+        image = destination->data.graphics;
+        destination->frame.sequence = (lib_u32)sequence;
         for (cell = 0u; cell < (lib_size)source->pixel_width * source->pixel_height; ++cell)
             image->pixels[cell] = source->palette_rgb[source->pixels[cell]];
         return LIB_STATUS_OK;
     }
-    (void)kvm_window_frame_begin_text(destination);
-    destination->data.text = (kvm_window_text_frame){0};
-    lib_memory_set(console, 0, sizeof(*console));
-    destination->data.text.base.text_columns = source->columns;
-    destination->data.text.base.text_rows = source->rows;
+    status = kvm_window_frame_prepare_text(destination, source->columns, source->rows,
+        X86_VIDEO_MAX_COLUMNS);
+    if (status != LIB_STATUS_OK) return status;
+    status = kvm_console_frame_prepare(console, source->columns, source->rows,
+        X86_VIDEO_MAX_COLUMNS);
+    if (status != LIB_STATUS_OK) return status;
+    destination->frame.sequence = (lib_u32)sequence;
+    lib_memory_set(destination->data.text->base.cells, 0,
+        destination->data.text->base.capacity * sizeof(kvm_text_cell));
+    lib_memory_set(destination->data.text->font, 0, sizeof(destination->data.text->font));
+    lib_memory_set(destination->data.text->secondary_font, 0, sizeof(destination->data.text->secondary_font));
+    destination->data.text->base.cursor[0] = (kvm_text_cursor_span){0};
+    destination->data.text->base.cursor[1] = (kvm_text_cursor_span){0};
+    destination->data.text->base.cursor_mode = KVM_CURSOR_DISABLED;
+    destination->data.text->base.cursor_phase = LIB_FALSE;
     /* CRTC cursor coordinates and the supplied bitmap height are distinct. */
-    destination->data.text.base.font_height = source->text_glyph_height != 0u ?
+    destination->data.text->base.font_height = source->text_glyph_height != 0u ?
         source->text_glyph_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
-    destination->data.text.base.cursor_column = source->cursor_x;
-    destination->data.text.base.cursor_row = source->cursor_y;
+    destination->data.text->base.cursor_column = source->cursor_x;
+    destination->data.text->base.cursor_row = source->cursor_y;
     if (source->cursor_top < source->text_cell_height) {
-        destination->data.text.base.cursor_top = (lib_u8)((lib_u32)source->cursor_top *
-            destination->data.text.base.font_height / source->text_cell_height);
-        destination->data.text.base.cursor_bottom = (lib_u8)(
-            (((lib_u32)source->cursor_bottom + 1u) * destination->data.text.base.font_height +
-                source->text_cell_height - 1u) / source->text_cell_height - 1u);
-        if (destination->data.text.base.cursor_bottom >= destination->data.text.base.font_height)
-            destination->data.text.base.cursor_bottom =
-                (lib_u8)(destination->data.text.base.font_height - 1u);
-        destination->data.text.base.cursor_mode = source->cursor_enabled ?
+        lib_u32 top = (lib_u32)source->cursor_top *
+            destination->data.text->base.font_height / source->text_cell_height;
+        lib_u32 bottom =
+            (((lib_u32)source->cursor_bottom + 1u) * destination->data.text->base.font_height +
+                source->text_cell_height - 1u) / source->text_cell_height - 1u;
+        if (bottom >= destination->data.text->base.font_height)
+            bottom = destination->data.text->base.font_height - 1u;
+        if (bottom >= top) destination->data.text->base.cursor[0] =
+            (kvm_text_cursor_span){top, bottom - top + 1u};
+        destination->data.text->base.cursor_mode = source->cursor_enabled ?
             KVM_CURSOR_SOURCE : KVM_CURSOR_DISABLED;
-        destination->data.text.base.cursor_phase = source->cursor_visible;
+        destination->data.text->base.cursor_phase = source->cursor_visible;
     }
     for (cell = 0u; cell < X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS; ++cell) {
         /* Preserve zero padding outside the visible snapshot rectangle. */
         if (cell / X86_VIDEO_MAX_COLUMNS >= source->rows ||
             cell % X86_VIDEO_MAX_COLUMNS >= source->columns) continue;
         lib_u8 attribute = source->attributes[cell];
-        destination->data.text.base.cells[cell] = (kvm_text_cell){
+        destination->data.text->base.cells[cell] = (kvm_text_cell){
             source->characters[cell],
             source->text_font_selection && (attribute & 0x08u) != 0u ? 1u : 0u,
             attribute & (source->text_foreground_mask != 0u ? source->text_foreground_mask : 15u),
-            attribute >> 4u };
+            attribute >> 4u, 0u };
     }
     for (cell = 0u; cell < 256u; ++cell) {
         lib_u16 character = cell < 32u ? cp437_controls[cell] :
             cell == 127u ? cp437_controls[32u] :
             cell < 128u ? (lib_u16)cell : cp437_extended[cell - 128u];
-        console->characters.primary[cell] = character;
-        console->characters.secondary[cell] = character;
+        console->characters->primary[cell] = character;
+        console->characters->secondary[cell] = character;
     }
-    lib_memory_copy(destination->data.text.base.text_palette, source->palette_rgb,
-        sizeof(destination->data.text.base.text_palette));
+    lib_memory_copy(destination->data.text->base.text_palette, source->palette_rgb,
+        sizeof(destination->data.text->base.text_palette));
     if (source->text_glyphs_present) {
-        lib_memory_copy(destination->data.text.font, source->text_glyphs,
-            sizeof(destination->data.text.font));
-        lib_memory_copy(destination->data.text.secondary_font,
+        lib_memory_copy(destination->data.text->font, source->text_glyphs,
+            sizeof(destination->data.text->font));
+        lib_memory_copy(destination->data.text->secondary_font,
             source->secondary_text_glyphs,
-            sizeof(destination->data.text.secondary_font));
+            sizeof(destination->data.text->secondary_font));
     }
-    console->base = destination->data.text.base;
+    {
+        kvm_text_cell *cells = console->base.cells;
+        console->base = destination->data.text->base;
+        console->base.cells = cells;
+        lib_memory_copy(cells, destination->data.text->base.cells,
+            console->base.capacity * sizeof(kvm_text_cell));
+    }
     return LIB_STATUS_OK;
 }

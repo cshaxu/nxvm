@@ -20,7 +20,11 @@ struct console_broker_backend {
 };
 
 static lib_i32 console_broker_fail_next_activation;
-static const lib_console_text_frame output_frame = { .columns = 80u, .rows = 25u };
+static lib_u16 text[80u * 25u];
+static lib_u8 foreground[80u * 25u], background[80u * 25u], underline[80u * 25u];
+static const lib_console_text_frame output_frame = { .columns = 80u, .rows = 25u,
+    .stride = 80u, .capacity = 80u * 25u, .text = text,
+    .foreground = foreground, .background = background, .underline = underline };
 static lib_i32 console_broker_fail_next_prepare;
 static lib_i32 console_broker_fail_next_retirement;
 static lib_i32 console_broker_prepare_saw_active;

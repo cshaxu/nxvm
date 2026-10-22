@@ -15,7 +15,6 @@ static void paint_scenario(void);
 static lib_u32 paint_ends;
 static lib_i32 inject_output_failure;
 static lib_u32 notification_attempts;
-static lib_bool reject_join;
 static lib_win32_bool LIB_WIN32_WINAPI startup_signal(lib_win32_handle h)
 { return scenario==19 ? LIB_WIN32_FALSE : lib_win32_set_event(h); }
 static lib_win32_bool LIB_WIN32_WINAPI set_title(lib_win32_hwnd w, lib_win32_lpcwstr title)
@@ -25,11 +24,6 @@ static lib_status select_notify(kvm_component_mailboxes *mailboxes,
 {
     return scenario==23 ? LIB_STATUS_INVALID_STATE :
         kvm_component_mailboxes_select_notify(mailboxes,notify_fn,context);
-}
-static lib_win32_dword LIB_WIN32_WINAPI join_wait(lib_win32_handle h,lib_win32_dword timeout)
-{
-    if(reject_join && timeout==KVM_COMPONENT_DESTROY_TIMEOUT_MS) return LIB_WIN32_WAIT_TIMEOUT;
-    return lib_win32_wait_for_single_object(h,timeout);
 }
 static lib_win32_uint_ptr LIB_WIN32_WINAPI start_timer(lib_win32_hwnd w,lib_win32_uint_ptr id,lib_win32_uint ms,lib_win32_timer_proc fn)
 { return scenario==15 || scenario==16 ? 0 : lib_win32_set_timer(w,id,ms,fn); }
@@ -52,7 +46,7 @@ static lib_win32_hdc LIB_WIN32_WINAPI begin(lib_win32_hwnd w,lib_win32_paintstru
 static lib_win32_bool LIB_WIN32_WINAPI end(lib_win32_hwnd w,const lib_win32_paintstruct *p)
 { ++paint_ends; lib_win32_bool result=lib_win32_end_paint(w,p); return scenario==20 && inject_output_failure ? LIB_WIN32_FALSE : result; }
 static lib_win32_bool LIB_WIN32_WINAPI dispose_cursor(lib_win32_hcursor cursor)
-{ return scenario==21 ? LIB_WIN32_FALSE : lib_win32_destroy_cursor(cursor); }
+{ lib_win32_bool result=lib_win32_destroy_cursor(cursor); return scenario==21 ? LIB_WIN32_FALSE : result; }
 static lib_win32_hcursor LIB_WIN32_WINAPI make_cursor(lib_win32_hinstance i,lib_i32 x,lib_i32 y,lib_i32 w,lib_i32 h,const void *a,const void *b)
 { return scenario==13 ? LIB_NULL : lib_win32_create_cursor(i,x,y,w,h,a,b); }
 static lib_win32_hwnd LIB_WIN32_WINAPI create_window(lib_win32_dword ex, lib_win32_lpcwstr klass, lib_win32_lpcwstr title,
@@ -83,7 +77,8 @@ static lib_win32_dword LIB_WIN32_WINAPI controlled_wait(lib_win32_dword count, c
     if (scenario == 7 || scenario == 8) input_scenario();
     if ((scenario >= 10 && scenario <= 12) || scenario==20) paint_scenario();
     lib_win32_send_message_w(created, LIB_WIN32_WM_APP + 1, 0, 0);
-    return LIB_WIN32_WAIT_OBJECT_0;
+    /* Production waits on stop at index zero; report queued Window work. */
+    return LIB_WIN32_WAIT_OBJECT_0 + 1u;
 }
 #undef lib_win32_create_window_ex_w
 #undef lib_win32_show_window
@@ -117,8 +112,6 @@ static lib_win32_dword LIB_WIN32_WINAPI controlled_wait(lib_win32_dword count, c
 #define lib_win32_kill_timer stop_timer
 #undef lib_win32_msg_wait_for_multiple_objects
 #define lib_win32_msg_wait_for_multiple_objects controlled_wait
-#undef lib_win32_wait_for_single_object
-#define lib_win32_wait_for_single_object join_wait
 #undef lib_win32_set_event
 #define lib_win32_set_event startup_signal
 #undef lib_win32_set_window_text_w
@@ -181,9 +174,72 @@ static void paint_scenario(void)
     if (!ctx->surface_dc) return; /* First wake consumes the copied frame. */
     lib_win32_send_message_w(created,LIB_WIN32_WM_PAINT,0,0);
 }
+
+typedef struct delayed_destroy_context {
+    kvm_window *window;
+    lib_win32_handle entered;
+    lib_win32_handle done;
+    lib_status status;
+} delayed_destroy_context;
+
+static lib_win32_dword LIB_WIN32_WINAPI delayed_destroy(void *opaque)
+{
+    delayed_destroy_context *context = (delayed_destroy_context *)opaque;
+
+    lib_win32_set_event(context->entered);
+    context->status = kvm_window_destroy(context->window);
+    lib_win32_set_event(context->done);
+    return 0u;
+}
+
+static void check_delayed_destroy(void)
+{
+    delayed_destroy_context context = { 0 };
+    kvm_window_options options = { 0 };
+    lib_win32_handle thread;
+
+    scenario = 24;
+    waiting = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    proceed = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    context.entered = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    context.done = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    lib_test_assert(waiting && proceed && context.entered && context.done);
+    retired = failures = ordinary = closes = 0;
+    input_resets = 0u;
+    paint_ends = 0u;
+    inject_output_failure = 0;
+    notification_attempts = 0u;
+    options.component.input_sink = input;
+    options.component.failure_sink = failure;
+    options.initial_title = "delayed retirement proof";
+    lib_test_assert(kvm_window_create(&context.window, &options) == LIB_STATUS_OK);
+    lib_test_assert(lib_win32_wait_for_single_object(waiting, LIB_WIN32_INFINITE) ==
+        LIB_WIN32_WAIT_OBJECT_0);
+    thread = lib_win32_create_thread(LIB_NULL, 0u, delayed_destroy, &context, 0u, LIB_NULL);
+    lib_test_assert(thread != LIB_NULL);
+    lib_test_assert(lib_win32_wait_for_single_object(context.entered, LIB_WIN32_INFINITE) ==
+        LIB_WIN32_WAIT_OBJECT_0);
+    /* The worker is known to be in an in-flight operation.  Destroy must wait
+     * for real exit beyond the former five-second product deadline; this is a
+     * synchronized ownership proof, not a production timeout. */
+    lib_test_assert(lib_win32_wait_for_single_object(context.done, 5100u) ==
+        LIB_WIN32_WAIT_TIMEOUT);
+    lib_win32_set_event(proceed);
+    lib_test_assert(lib_win32_wait_for_single_object(context.done, LIB_WIN32_INFINITE) ==
+        LIB_WIN32_WAIT_OBJECT_0);
+    lib_test_assert(context.status == LIB_STATUS_OK && retired == 1 && failures == 0);
+    lib_test_assert(lib_win32_wait_for_single_object(thread, LIB_WIN32_INFINITE) ==
+        LIB_WIN32_WAIT_OBJECT_0);
+    lib_win32_close_handle(thread);
+    lib_win32_close_handle(context.entered);
+    lib_win32_close_handle(context.done);
+    lib_win32_close_handle(waiting);
+    lib_win32_close_handle(proceed);
+}
+
 int main(void)
 {
-    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_window_frame_storage)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_window_frame_storage), kvm_window_frame_retire) == LIB_STATUS_OK);
     static kvm_window_frame_storage frame;
     for (scenario = 0; scenario != 24; ++scenario) {
         kvm_window_options options = { 0 };
@@ -196,7 +252,6 @@ int main(void)
         paint_ends=0;
         inject_output_failure=0;
         notification_attempts=0;
-        reject_join=0;
         options.component.input_sink = input;
         options.component.failure_sink = failure;
         options.initial_title = "retirement proof";
@@ -212,20 +267,9 @@ int main(void)
         }
         lib_test_assert(kvm_window_create(&window, &options) == LIB_STATUS_OK);
         lib_test_assert(lib_win32_wait_for_single_object(waiting, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
-        (void)kvm_window_frame_begin_text(&frame); frame.data.text.base.text_columns = 80u; frame.data.text.base.text_rows = 25u;
-        frame.data.text.base.cursor_mode=KVM_CURSOR_HOST; frame.data.text.base.font_height=16; frame.data.text.base.cursor_top=14; frame.data.text.base.cursor_bottom=15;
+        lib_test_assert(kvm_window_frame_prepare_text(&frame, 80u, 50u, 80u) == LIB_STATUS_OK); frame.data.text->base.text_columns = 80u; frame.data.text->base.text_rows = 25u;
+        frame.data.text->base.cursor_mode=KVM_CURSOR_HOST; frame.data.text->base.font_height=16; frame.data.text->base.cursor[0] = (kvm_text_cursor_span){ 14, 2u };
         lib_test_assert(test_window_frame(window, frames, &frame.frame) == LIB_STATUS_OK);
-        if(scenario==18) {
-            void *retained=window->worker_state;
-            reject_join=1;
-            lib_test_assert(kvm_window_destroy(window)==LIB_STATUS_IO_ERROR);
-            lib_test_assert(window->worker_state==retained);
-            lib_test_assert(!retired);
-            /* Native wake coalescing is private.  The contract is the
-             * independently reported component fault, not its attempt count. */
-            lib_test_assert(failures==1);
-            reject_join=0;
-        }
         if (scenario == 0 || scenario == 5 || scenario==21)
             lib_test_assert(kvm_component_request_stop(&window->base) == LIB_STATUS_OK);
         if (scenario==16) lib_test_assert(kvm_window_unfreeze(window)==LIB_STATUS_OK);
@@ -234,16 +278,20 @@ int main(void)
         /* Wait for the actual worker before destroy queues an additional STOP. */
         kvm_window_win32_state *state = window->worker_state;
         lib_test_assert(lib_win32_wait_for_single_object(state->worker, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
-        lib_test_assert(retired == 1 && failures == (scenario != 0 && scenario != 8));
+        lib_test_assert(retired == 1);
+        lib_test_assert(failures == (scenario != 0 && scenario != 8));
         if (scenario == 17) lib_test_assert(input_resets != 0u);
         lib_test_assert(!lib_win32_is_window(created));
         if (scenario==10 || scenario==11) lib_test_assert(paint_ends>0);
         lib_test_assert(ordinary == (scenario == 7) && closes == (scenario == 8));
         lib_test_assert(test_window_frame(window, frames, &frame.frame) == LIB_STATUS_INVALID_STATE);
-        lib_test_assert(kvm_window_destroy(window)==LIB_STATUS_OK);
+        lib_test_assert(kvm_window_destroy(window)==
+            (scenario==21 ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK));
         lib_test_assert(retired == 1);
         lib_win32_close_handle(waiting); lib_win32_close_handle(proceed);
     }
+    check_delayed_destroy();
     kvm_frame_exchange_destroy(frames);
+    kvm_window_frame_release(&frame);
     return 0;
 }

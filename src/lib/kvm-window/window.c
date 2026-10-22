@@ -1,8 +1,8 @@
 #include "lib/kvm-window/window.h"
 #include "lib/base/text_interface.h"
 
-static lib_status kvm_window_component_stop(kvm_component *base, lib_u32 timeout_ms)
-{ return kvm_window_worker_join((kvm_window *)base, timeout_ms); }
+static lib_status kvm_window_component_stop(kvm_component *base)
+{ return kvm_window_worker_join((kvm_window *)base); }
 
 static void kvm_window_component_dispose(kvm_component *base)
 {
@@ -42,11 +42,7 @@ lib_status kvm_window_create(kvm_window **out_window,
         kvm_window_component_stop, kvm_window_component_dispose);
     if (status == LIB_STATUS_OK) status = kvm_window_worker_start(window);
     if (status != LIB_STATUS_OK) {
-        /* The worker start path has either joined its failed worker or has
-         * entered the process-terminal failure path at the application edge.
-         * A normal create failure never exposes a half-created Window. */
-        if (window->worker_state == LIB_NULL)
-            kvm_window_component_dispose(&window->base);
+        kvm_window_component_dispose(&window->base);
         return status;
     }
     *out_window = window;

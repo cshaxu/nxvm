@@ -15,8 +15,23 @@ static lib_bool kvm_win32_window_decoration(lib_win32_hwnd window, lib_i32 *widt
     return *width >= 0 && *height >= 0;
 }
 
+kvm_win32_snap kvm_win32_snap_state(lib_win32_hwnd window)
+{
+    /* The explicit maximize command is handled separately. Native maximization
+       here is the shell's top snap; arranged (non-maximized) is a side snap. */
+    union {
+        lib_win32_farproc address;
+        lib_win32_is_window_arranged_proc call;
+    } arranged;
+    if (lib_win32_is_zoomed(window)) return KVM_WIN32_SNAP_TOP;
+    arranged.address = lib_win32_get_proc_address(
+        lib_win32_get_module_handle_a("user32.dll"), "IsWindowArranged");
+    return arranged.address != LIB_NULL && arranged.call(window) ?
+        KVM_WIN32_SNAP_SIDE : KVM_WIN32_SNAP_NONE;
+}
+
 lib_status kvm_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source_width,
-    lib_u32 source_height)
+    lib_u32 source_height, kvm_win32_size_basis basis)
 {
     lib_win32_rect client;
     lib_i32 decoration_width;
@@ -27,10 +42,18 @@ lib_status kvm_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source
     if (window == LIB_NULL || !lib_win32_get_client_rect(window, &client)) return LIB_STATUS_IO_ERROR;
     if (client.right <= client.left || client.bottom <= client.top) return LIB_STATUS_OK;
     if (source_width == 0u || source_height == 0u || !kvm_win32_window_decoration(window,
-            &decoration_width, &decoration_height) ||
-        !kvm_window_fit_aspect_size(client.right - client.left,
-            client.bottom - client.top, source_width, source_height,
-            &target_width, &target_height)) return LIB_STATUS_IO_ERROR;
+            &decoration_width, &decoration_height)) return LIB_STATUS_IO_ERROR;
+    /* Fit a native assigned region, or keep the restored axis without a
+       desktop cap. Native coordinate capacity is still a hard bound. */
+    if (client.right - client.left > LIB_INT32_MAX - decoration_width ||
+        client.bottom - client.top > LIB_INT32_MAX - decoration_height ||
+        !kvm_window_fit_aspect_size(
+            basis == KVM_WIN32_SIZE_HEIGHT ? LIB_INT32_MAX - decoration_width : client.right - client.left,
+            basis == KVM_WIN32_SIZE_WIDTH ? LIB_INT32_MAX - decoration_height : client.bottom - client.top,
+            source_width, source_height, &target_width, &target_height) ||
+        (basis == KVM_WIN32_SIZE_WIDTH && target_width != client.right - client.left) ||
+        (basis == KVM_WIN32_SIZE_HEIGHT && target_height != client.bottom - client.top))
+        return LIB_STATUS_IO_ERROR;
     if (target_width == client.right - client.left &&
         target_height == client.bottom - client.top) return LIB_STATUS_OK;
     return lib_win32_set_window_pos(window, LIB_NULL, 0, 0, target_width + decoration_width,
@@ -76,7 +99,7 @@ lib_status kvm_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width
 }
 
 lib_status kvm_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
-    lib_u32 height)
+    lib_u32 height, lib_bool fit_work_area)
 {
     lib_win32_rect outer;
     lib_win32_monitorinfo monitor_info;
@@ -89,7 +112,8 @@ lib_status kvm_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     style = (lib_win32_dword)lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWL_STYLE);
     extended_style = (lib_win32_dword)lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWL_EXSTYLE);
     if (!lib_win32_adjust_window_rect_ex(&outer, style, LIB_WIN32_FALSE, extended_style)) return LIB_STATUS_IO_ERROR;
-    monitor = lib_win32_monitor_from_window(window, LIB_WIN32_MONITOR_DEFAULTTONEAREST);
+    monitor = fit_work_area ? lib_win32_monitor_from_window(window,
+        LIB_WIN32_MONITOR_DEFAULTTONEAREST) : LIB_NULL;
     lib_win32_zero_memory(&monitor_info, sizeof(monitor_info));
     monitor_info.cbSize = sizeof(monitor_info);
     if (monitor != LIB_NULL && lib_win32_get_monitor_info_a(monitor, &monitor_info)) {
@@ -116,7 +140,6 @@ lib_status kvm_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam ed
     kvm_window_edge direction;
     kvm_window_rect value;
     if (source_width == 0u || source_height == 0u) return LIB_STATUS_OK;
-    if (!outer || !kvm_win32_window_decoration(window, &frame_width, &frame_height)) return LIB_STATUS_IO_ERROR;
     switch (edge) {
     case LIB_WIN32_WMSZ_LEFT: direction = KVM_WINDOW_EDGE_LEFT; break;
     case LIB_WIN32_WMSZ_RIGHT: direction = KVM_WINDOW_EDGE_RIGHT; break;
@@ -126,8 +149,10 @@ lib_status kvm_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam ed
     case LIB_WIN32_WMSZ_TOPRIGHT: direction = KVM_WINDOW_EDGE_TOPRIGHT; break;
     case LIB_WIN32_WMSZ_BOTTOMLEFT: direction = KVM_WINDOW_EDGE_BOTTOMLEFT; break;
     case LIB_WIN32_WMSZ_BOTTOMRIGHT: direction = KVM_WINDOW_EDGE_BOTTOMRIGHT; break;
-    default: return LIB_STATUS_IO_ERROR;
+    /* Native snap restoration can supply a non-edge notification (observed 9). */
+    default: return LIB_STATUS_UNSUPPORTED;
     }
+    if (!outer || !kvm_win32_window_decoration(window, &frame_width, &frame_height)) return LIB_STATUS_IO_ERROR;
     value = kvm_win32_rect_value(outer);
     kvm_window_constrain_sizing(&value, direction, frame_width, frame_height,
         source_width, source_height);

@@ -37,7 +37,8 @@ static void emulator_session_clear_result(emulator_session_command_result *resul
 static lib_bool emulator_session_deliver_machine_input(void *context,
     const kvm_input_event *event)
 {
-    return emulator_machine_enqueue_input((emulator_machine *)context, event) != 0;
+    lib_status status = emulator_machine_enqueue_input((emulator_machine *)context, event);
+    return status == LIB_STATUS_OK || status == LIB_STATUS_INVALID_STATE;
 }
 
 static lib_bool emulator_session_dispatch_request(emulator_session *session,

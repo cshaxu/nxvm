@@ -23,6 +23,6 @@ struct kvm_window {
 };
 
 lib_status kvm_window_worker_start(kvm_window *window);
-lib_status kvm_window_worker_join(kvm_window *window, lib_u32 timeout_ms);
+lib_status kvm_window_worker_join(kvm_window *window);
 
 #endif

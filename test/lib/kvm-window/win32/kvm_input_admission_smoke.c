@@ -49,8 +49,8 @@ static lib_bool sink(void *opaque, const kvm_input_event *event)
 }
 static void failure(void *opaque, lib_u64 identity, lib_status status)
 { (void)opaque; lib_test_assert(identity && status == LIB_STATUS_IO_ERROR); ++failures; }
-static lib_status join(kvm_component *component, lib_u32 timeout_ms)
-{ (void)component; (void)timeout_ms; return LIB_STATUS_OK; }
+static lib_status join(kvm_component *component)
+{ (void)component; return LIB_STATUS_OK; }
 static void dispose(kvm_component *component)
 { kvm_component_mailboxes_destroy(&component->mailboxes); }
 static void initialize(void)
@@ -67,7 +67,7 @@ static void initialize(void)
     test_window_context = &context;
     count = resets = retirements = attempts = reject_at = failures = 0;
     reject_reset = LIB_FALSE;
-    (void)kvm_window_frame_begin_text(&frame); frame.data.text.base.text_columns = 80; frame.data.text.base.text_rows = 25;
+    lib_test_assert(kvm_window_frame_prepare_text(&frame, 80u, 50u, 80u) == LIB_STATUS_OK); frame.data.text->base.text_columns = 80; frame.data.text->base.text_rows = 25;
 }
 static lib_bool key(base_key key, lib_u16 scan, lib_bool down, lib_u8 modifiers)
 {
@@ -218,7 +218,7 @@ static lib_win32_dword LIB_WIN32_WINAPI enqueue_title(void *unused)
 }
 int main(void)
 {
-    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_window_frame_storage)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(kvm_window_frame_storage), kvm_window_frame_retire) == LIB_STATUS_OK);
     kvm_input_event event = { .type = KVM_EVENT_WINDOW_CLOSE };
     kvm_component_control taken;
     frozen_prefix_replay();
@@ -310,5 +310,6 @@ int main(void)
         lib_win32_close_handle(thread); lib_win32_close_handle(start_race);
     }
     kvm_frame_exchange_destroy(frames);
+    kvm_window_frame_release(&frame);
     return 0;
 }

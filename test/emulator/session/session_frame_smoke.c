@@ -90,12 +90,12 @@ int main(void)
     lib_test_assert(emulator_session_state_note_frame(&session.state, 1u, 0));
 
     publication_ready = LIB_TRUE;
+    lib_test_assert(kvm_window_frame_prepare_graphics(&published, 4u, 4u, 4u) == LIB_STATUS_OK);
     published.frame.sequence = 3u;
-    (void)kvm_window_frame_begin_graphics(&published);
-    published.data.graphics.width = published.data.graphics.stride = 4;
-    published.data.graphics.height = 4;
-    published.data.graphics.pixels[0] = 0x123456; /* A changed the first corner. */
-    published.data.graphics.pixels[15] = 0xabcdef; /* B changed the opposite corner. */
+    published.data.graphics->width = published.data.graphics->stride = 4;
+    published.data.graphics->height = 4;
+    published.data.graphics->pixels[0] = 0x123456; /* A changed the first corner. */
+    published.data.graphics->pixels[15] = 0xabcdef; /* B changed the opposite corner. */
     event.kind = EMULATOR_SESSION_EVENT_FRAME_COMPLETED;
     event.run_generation = 7u;
     lib_test_assert(emulator_session_process_completed(&session, &event));
@@ -126,8 +126,8 @@ int main(void)
       lib_test_assert(emulator_session_process_completed(&session, &event));
       lib_test_assert(copies == prior); } /* Old-run event rejected before snapshot access. */
     current_run = published_run = 7u;
+    lib_test_assert(kvm_window_frame_prepare_text(&published, 80u, 50u, 80u) == LIB_STATUS_OK);
     published.frame.sequence = 5u;
-    (void)kvm_window_frame_begin_text(&published);
     lib_test_assert(emulator_session_process_completed(&session, &event));
     lib_test_assert(session.state.observed_frame_sequence == 5u &&
         !session.state.graphics_actual);
@@ -174,5 +174,6 @@ int main(void)
     event.run_generation = current_run;
     lib_test_assert(emulator_session_process_completed(&session, &event));
     lib_test_assert(copies == before + 1u && session.state.observed_frame_sequence == 2u);
+    kvm_window_frame_release(&published);
     return 0;
 }

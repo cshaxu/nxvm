@@ -6,11 +6,16 @@ mechanics to `kvm-window` and `kvm-console`.
 
 `kvm_text_frame` contains the common text fields with a fixed 80-cell row stride.
 One `kvm_text_cell` array carries glyph index, glyph bank (0 primary, 1 secondary)
-and foreground/background palette indices (0..15) together in each four-byte cell.
+and foreground/background palette indices (0..15), plus an underline enable,
+together in each five-byte cell.
 Cells have no padding; whole-array copying/comparison is valid. Colours and bank are independent;
 visible cells are validated before publication. No packed device attribute is
 interpreted here. Producers initialize the complete fixed-capacity value.
 Fonts, character maps and graphics belong to the receiving leaf, not this base.
+Underline scanline is shared by the frame; outside the effective font height it
+is invisible. The cursor is one position and phase with two start/height spans.
+Zero height is empty. Normalization clips, sorts and merges adjacent/overlapping
+spans; it never interprets device registers. Leaves own rendering approximation.
 The public frame exchange circulates opaque storage through four slots
 (produce/pending/processing/displayed) for both consumers. The producer
 writes outside its lock, then commits a validated complete frame. A superseded
@@ -99,9 +104,10 @@ delivered make always retains its break and never becomes consumed later.
 The ledger is released at retirement; destroy also handles workerless cleanup.
 An unmatched break is consumed without delivery or pending-key replay: a new or
 reset input source must not forward a release whose make it never accepted.
-Destroy performs one bounded join. An unjoinable live worker is an importing
-application terminal infrastructure failure; the library does not terminate or
-add a fallback wake channel. A selected wake failure after a request has been
+Destroy requests terminal stop, uses a leaf-owned terminal wake, and joins
+actual worker exit before it releases callback dependencies. Unconfirmed exit
+terminates the process without application callbacks. Every normal destroy
+return consumes the object, reporting any cleanup error. An ordinary wake failure after a request has been
 accepted reports through the failure sink; it does not roll back or replay it.
 
 Window submits copied native records through kvm_keyboard_submit_record, which

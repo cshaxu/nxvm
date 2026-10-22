@@ -11,13 +11,17 @@ typedef struct emulator_machine_input_queue {
     kvm_input_event entries[EMULATOR_MACHINE_INPUT_QUEUE_CAPACITY];
     lib_size head;
     lib_size tail;
+    lib_bool accepting;
 } emulator_machine_input_queue;
 
 /* KVM producers publish copied events; the sole machine executor consumes them.
  * Queue ownership belongs to Machine, not to a second KVM implementation. */
 lib_status emulator_machine_input_queue_initialize(emulator_machine_input_queue *queue);
 void emulator_machine_input_queue_dispose(emulator_machine_input_queue *queue);
-lib_bool emulator_machine_input_queue_push(emulator_machine_input_queue *queue,
+/* Initially closed. Admission and push share the same mutex; closing retains
+ * accepted records for executor delivery, rather than discarding them. */
+void emulator_machine_input_queue_admit(emulator_machine_input_queue *queue, lib_bool accepting);
+lib_status emulator_machine_input_queue_push(emulator_machine_input_queue *queue,
     const kvm_input_event *event);
 lib_bool emulator_machine_input_queue_pop(emulator_machine_input_queue *queue,
     kvm_input_event *event);

@@ -14,6 +14,7 @@ typedef SRWLOCK lib_win32_srwlock;
 #define lib_win32_release_semaphore ReleaseSemaphore
 #define lib_win32_initialize_critical_section InitializeCriticalSection
 #define lib_win32_create_thread CreateThread
+#define lib_win32_get_exit_code_thread GetExitCodeThread
 #define lib_win32_wait_for_multiple_objects WaitForMultipleObjects
 #define lib_win32_wait_for_single_object WaitForSingleObject
 #define lib_win32_set_event SetEvent

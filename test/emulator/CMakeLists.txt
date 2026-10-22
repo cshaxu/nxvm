@@ -21,16 +21,9 @@ endif()
 set(SHARED_EMULATOR_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
-# Windows child-process helpers exercise external Products; they are not
-# Emulator unit sources and retain their native platform contract.
-set(emulator_external_test_directories "${CMAKE_CURRENT_LIST_DIR}/setup")
-string(REPLACE ";" "\\;" emulator_external_test_directories_argument
-    "${emulator_external_test_directories}")
-
 add_test(NAME emulator.test-boundaries COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=emulator"
     "-DTEST_SOURCE_ROOT=${EMULATOR_ROOT}"
-    "-DTEST_EXCLUDE_DIRECTORIES=${emulator_external_test_directories_argument}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_test_boundaries.cmake")
 
 shared_register_test(emulator session/sync emulator-session)
@@ -47,8 +40,7 @@ shared_register_test(emulator session/physical_key_identity emulator-session)
 shared_register_test(emulator session/session_frame emulator-session)
 shared_register_test(emulator session/session_monitor emulator-session)
 shared_register_test(emulator ui/composition emulator-ui)
-add_executable(emulator-product-composition-smoke product/composition_smoke.c
-    "${EMULATOR_ROOT}/product/composition.c")
+add_executable(emulator-product-composition-smoke product/composition_smoke.c)
 target_link_libraries(emulator-product-composition-smoke PRIVATE types)
 target_compile_definitions(emulator-product-composition-smoke PRIVATE
     printf=emulator_product_composition_smoke_printf)
@@ -80,7 +72,6 @@ add_test(NAME emulator.verifier-negative COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
 add_test(NAME emulator.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
-    "-DTEST_EXCLUDE_DIRECTORIES=${emulator_external_test_directories_argument}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
 add_test(NAME emulator.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"

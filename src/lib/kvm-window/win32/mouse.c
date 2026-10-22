@@ -95,7 +95,11 @@ lib_bool kvm_win32_mouse_refresh_bounds(kvm_win32_mouse *mouse)
     bounds.left = upper_left.x; bounds.top = upper_left.y;
     bounds.right = lower_right.x; bounds.bottom = lower_right.y;
     if (!lib_win32_clip_cursor(&bounds)) return LIB_FALSE;
-    mouse->bounds = bounds;
+    /* The desktop may clip an oversized/off-screen client to its own bounds. */
+    if (!lib_win32_get_clip_cursor(&mouse->bounds)) {
+        (void)lib_win32_clip_cursor(LIB_NULL);
+        return LIB_FALSE;
+    }
     lib_memory_set(&mouse->motion, 0, sizeof(mouse->motion));
     return LIB_TRUE;
 }

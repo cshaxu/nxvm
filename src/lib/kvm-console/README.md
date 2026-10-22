@@ -1,5 +1,12 @@
 # kvm-console
 
+Native Console is an approximate character presenter: an enabled in-font
+underline becomes a host-positioned character underline. Cursor shape uses the
+topmost normalized span's height through the existing native percentage mapping;
+two segments cannot be represented exactly. Native blinking remains host-owned.
+These documented approximations do not reject the frame or stop the product.
+Actual I/O failures remain errors. Exact scanline output belongs to Window.
+
 `kvm-console` depends on `types`, `base`, `console`, and `kvm-base` only. It owns one raw Console lifecycle,
 creates its logical Console object, and publishes copied text frames through
 that object. It never opens, registers, or renders native Console I/O.
@@ -46,8 +53,10 @@ Successful broker binding delivers a neutral Console activation event. The callb
 requeues held input only when no newer frame is pending, then signals the existing
 worker's wake; it neither renders nor reenters the broker.
 A failed activation notification enters the same terminal failure path as a
-failed frame/control notification. Checked destroy uses the shared bounded-join
-contract; failure retains the component and its callback dependencies.
+failed frame/control notification. Checked destroy uses the shared terminal
+wake and joins actual exit. Unconfirmed exit terminates the process without
+application callbacks. Every normal destroy return consumes the component;
+post-join cleanup errors are reported without retaining a recovery object.
 The worker draws a pending exchange frame, or does nothing if empty. An unbound
 logical Console accepts output without native drawing; successful consumption
 retains that frame. Activation redraws through the same output path even when

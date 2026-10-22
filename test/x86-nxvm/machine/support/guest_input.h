@@ -48,7 +48,7 @@ static inline lib_status vm_test_submit_host_input(x86_nxvm_machine *session,
         input.data.mouse.buttons = event->data.relative_mouse.buttons;
     }
     if (session->executor != LIB_NULL)
-        return emulator_machine_enqueue_input(session->executor, &input) ?
+        return emulator_machine_enqueue_input(session->executor, &input) == LIB_STATUS_OK ?
             LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
     (void)x86_nxvm_machine_deliver_emulator_input(session, &input);
     return LIB_STATUS_OK;

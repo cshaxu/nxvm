@@ -82,15 +82,11 @@ static lib_status fake_copy_frame(void *opaque, kvm_window_frame_storage *frame,
     machine_fake *fake = opaque;
     if (lib_win32_interlocked_compare_exchange(&fake->fail_frame, 0, 0))
         return LIB_STATUS_IO_ERROR;
-    lib_memory_set(frame, 0, sizeof(*frame));
-    (void)kvm_window_frame_begin_text(frame);
+    lib_test_assert(kvm_window_frame_prepare_text(frame, 80u, 50u, 80u) == LIB_STATUS_OK);
     *produced = LIB_TRUE;
-    frame->data.text.base.text_columns = KVM_TEXT_COLUMNS;
-    frame->data.text.base.text_rows = KVM_TEXT_ROWS;
-    lib_memory_set(console, 0, sizeof(*console));
-    console->base.text_columns = KVM_TEXT_COLUMNS;
-    console->base.text_rows = KVM_TEXT_ROWS;
-    return LIB_STATUS_OK;
+    frame->data.text->base.text_columns = 80u;
+    frame->data.text->base.text_rows = 50u;
+    return kvm_console_frame_prepare(console, 80u, 50u, 80u);
 }
 
 /* State transfer is deliberately exercised through the injected driver, on

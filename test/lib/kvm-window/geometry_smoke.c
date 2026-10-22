@@ -48,6 +48,13 @@ int main(void)
     kvm_window_rect work_area = { 0, 0, 1920, 1080 };
     kvm_window_rect fitted;
     check_stable_fit();
+    {
+        kvm_window_rect source = {50000, 60000, 70000, 80000};
+        kvm_window_rect display = {10, 20, 100010, 100020}, mapped;
+        kvm_window_map_dirty_rect(&source, &display, 100000u, 100000u, &mapped);
+        lib_test_assert(mapped.left == 50010 && mapped.top == 60020 &&
+            mapped.right == 70010 && mapped.bottom == 80020);
+    }
 
     lib_test_assert(kvm_window_fit_outer_rect(&work_area, 680, 560, &fitted));
     lib_test_assert(fitted.right - fitted.left == 680);

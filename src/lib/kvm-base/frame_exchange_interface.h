@@ -4,16 +4,23 @@
 #include "lib/types/types_interface.h"
 
 typedef struct kvm_frame_exchange kvm_frame_exchange;
+typedef void (*kvm_frame_exchange_latest_observer)(void *context,
+    const void *frame);
+/* Leaf-owned payload retirement. Called only for an unheld slot. Release its
+ * payload if its specification differs from latest; null latest releases all.
+ * Must not reenter the exchange or perform host output. */
+typedef void (*kvm_frame_exchange_retire)(void *slot, const void *latest);
 
 /* One producer and one consumer, with four reusable frames:
  * producing, pending, processing and displayed.
  * Contents belong to the caller.
  * The producer alone writes writer(), outside the exchange lock. Publication
  * transfers that storage and supplies another writer without waiting for the
- * consumer. No allocation or payload copy occurs after create.
+ * consumer. Create allocates only caller-sized slot metadata. Payloads are
+ * prepared by their leaf on the writer, never copied by the exchange.
  * Destroy requires both participants and all observers to have stopped. */
 lib_status kvm_frame_exchange_create(kvm_frame_exchange **out_exchange,
-    lib_size frame_size);
+    lib_size frame_size, kvm_frame_exchange_retire retire);
 void kvm_frame_exchange_destroy(kvm_frame_exchange *exchange);
 void *kvm_frame_exchange_writer(kvm_frame_exchange *exchange);
 void kvm_frame_exchange_publish(kvm_frame_exchange *exchange);
@@ -30,11 +37,11 @@ void kvm_frame_exchange_redraw(kvm_frame_exchange *exchange);
 /* After consumer quiescence, return its input and allow a replacement consumer
  * to present the latest complete publication, without copying it. */
 void kvm_frame_exchange_detach(kvm_frame_exchange *exchange);
-/* A bounded observation, not another frame owner. Always unlock, even when
- * NULL is returned. Never retain the pointer or call host/UI operations while
- * locked. Used for publication metadata and explicit diagnostic copies. */
-const void *kvm_frame_exchange_lock_latest(kvm_frame_exchange *exchange);
-void kvm_frame_exchange_unlock(kvm_frame_exchange *exchange);
+/* Observe the latest publication while the exchange protects it. The callback
+ * must not retain frame or call host/UI operations. False means no publication
+ * was available; true means observer ran exactly once. */
+lib_bool kvm_frame_exchange_observe_latest(kvm_frame_exchange *exchange,
+    kvm_frame_exchange_latest_observer observer, void *context);
 /* Producer-side generation invalidation; never mutates a consumer's input. */
 void kvm_frame_exchange_invalidate(kvm_frame_exchange *exchange);
 

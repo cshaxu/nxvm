@@ -40,11 +40,11 @@ typedef struct composition_fixture {
 } composition_fixture;
 
 static composition_fixture fixture;
-void emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame)
-{ (void)context; (void)frame; }
+lib_status emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame)
+{ (void)context; (void)frame; return LIB_STATUS_OK; }
 
 void emulator_machine_set_console_status_source(emulator_machine *machine,
-    void (*produce)(void *, kvm_console_text_frame *), void *context)
+    lib_status (*produce)(void *, kvm_console_text_frame *), void *context)
 {
     lib_test_assert(machine == &fixture.emulator_machine);
     lib_test_assert(produce == emulator_ui_produce_console_status && context == &fixture.ui);
@@ -219,6 +219,11 @@ lib_status emulator_ui_destroy(emulator_ui *ui)
     ui->live = LIB_FALSE;
     return LIB_STATUS_OK;
 }
+
+/* Staged assembly is implementation-private. Include this component's source
+ * in its owner-local fixture to retain teardown-order coverage without making
+ * the individual stages public API. */
+#include "emulator/product/composition.c"
 
 static lib_i32 composition_machine_failure_recovers(composition_failure failure)
 {

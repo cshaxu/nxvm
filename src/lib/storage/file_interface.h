@@ -28,6 +28,14 @@ lib_status lib_storage_file_writer_open(const char *path,
     lib_storage_file_writer **out_writer);
 lib_status lib_storage_file_writer_write(lib_storage_file_writer *writer,
     const void *bytes, lib_size byte_count);
+/* Same write operation, additionally reporting the accepted prefix even on
+ * IO_ERROR. Invalid arguments set out_written to zero when supplied. Accepted
+ * bytes must not be replayed; this does not imply persistence or flushing. */
+lib_status lib_storage_file_writer_write_some(lib_storage_file_writer *writer,
+    const void *bytes, lib_size byte_count, lib_size *out_written);
+/* Make buffered bytes visible to other readers, not a durable-media barrier.
+ * Failure does not revoke bytes previously accepted by write. */
+lib_status lib_storage_file_writer_flush(lib_storage_file_writer *writer);
 lib_status lib_storage_file_writer_close(lib_storage_file_writer *writer);
 
 #endif

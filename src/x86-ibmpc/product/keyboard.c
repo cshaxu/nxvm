@@ -19,8 +19,8 @@ emulator_product_help_map x86_ibmpc_product_keyboard_hotkey_help(void)
 
 lib_bool x86_ibmpc_product_keyboard_deliver_input(void *context, const kvm_input_event *event)
 {
-    return context != LIB_NULL && event != LIB_NULL && emulator_machine_enqueue_input(
-        (emulator_machine *)context, event) != 0;
+    lib_status status = emulator_machine_enqueue_input((emulator_machine *)context, event);
+    return status == LIB_STATUS_OK || status == LIB_STATUS_INVALID_STATE;
 }
 
 lib_bool x86_ibmpc_product_keyboard_hotkeys(kvm_hotkey_registry *registry)

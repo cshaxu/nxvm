@@ -16,8 +16,9 @@ int main(void)
     second = first;
     second.data.mouse.delta_y = 16;
     lib_test_assert(emulator_machine_input_queue_initialize(queue) == LIB_STATUS_OK);
-    lib_test_assert(emulator_machine_input_queue_push(queue, &first));
-    lib_test_assert(emulator_machine_input_queue_push(queue, &second));
+    emulator_machine_input_queue_admit(queue, LIB_TRUE);
+    lib_test_assert(emulator_machine_input_queue_push(queue, &first) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_input_queue_push(queue, &second) == LIB_STATUS_OK);
     lib_test_assert(emulator_machine_input_queue_pop(queue, &actual));
     lib_test_assert(lib_memory_compare(&actual, &first, sizeof(actual)) == 0);
     lib_test_assert(emulator_machine_input_queue_pop(queue, &actual));

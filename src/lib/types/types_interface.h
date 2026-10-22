@@ -21,6 +21,9 @@ typedef uintptr_t lib_uptr;
 typedef lib_u8 lib_bool;
 typedef lib_i32 lib_status;
 
+/* Immediate process termination: no atexit callbacks or ordinary cleanup. */
+#define lib_process_exit_immediate _Exit
+
 
 enum {
     LIB_STATUS_OK = 0,

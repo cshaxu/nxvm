@@ -43,12 +43,14 @@ static lib_status console_probe_frame(void *context,
 
 int main(void)
 {
-    lib_test_assert(sizeof(lib_console_text_frame) == 16088);
     lib_console *console = LIB_NULL;
     console_probe probe = { 0 };
     lib_console_event event = { 0 };
     console_probe next = { 0 };
-    lib_console_text_frame frame = { .columns = 80u, .rows = 25u };
+    lib_u16 text[2000] = {0};
+    lib_u8 foreground[2000] = {0}, background[2000] = {0}, underline[2000] = {0};
+    lib_console_text_frame frame = { .columns = 80u, .rows = 25u, .stride = 80u,
+        .capacity = 2000u, .text = text, .foreground = foreground, .background = background, .underline = underline };
     lib_console_output_binding binding = {
         console_probe_output, console_probe_frame, &probe
     };
@@ -102,9 +104,9 @@ int main(void)
     lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_OK);
     lib_test_assert(probe.frames == 1u && next.frames == 0u);
     frame.columns = 81u;
-    lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_UNSUPPORTED);
+    lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_INVALID_ARGUMENT);
     frame.columns = 80u; frame.rows = 51u;
-    lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_UNSUPPORTED);
+    lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_INVALID_ARGUMENT);
     frame.rows = 0u;
     lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_INVALID_ARGUMENT);
     frame.rows = 25u; frame.text[1999] = 0xd800u;

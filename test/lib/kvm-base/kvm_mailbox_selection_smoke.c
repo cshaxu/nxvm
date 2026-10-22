@@ -78,7 +78,7 @@ int main(void)
     lib_test_assert(signals == 1u && notifications == 1u && creates == 2u);
     kvm_component_control control = { .kind = 1u }, taken;
     kvm_frame_exchange *frames;
-    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(lib_u32)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(lib_u32), LIB_NULL) == LIB_STATUS_OK);
     lib_u32 *value = kvm_frame_exchange_writer(frames);
     *value = 0x12345678u;
     kvm_frame_exchange_publish(frames);

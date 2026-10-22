@@ -42,6 +42,9 @@ struct console_broker_backend {
     lib_u16 previous_columns;
     lib_u16 previous_rows;
     lib_u16 coverage_rows;
+    lib_u16 coverage_columns;
+    lib_win32_char_info *cells;
+    lib_size cell_count;
 };
 
 /* This is a liveness boundary, not an input debounce or product timer.
@@ -134,7 +137,7 @@ static lib_status console_broker_apply_display(lib_win32_handle output,
 }
 
 static lib_bool console_broker_ensure_text_surface(console_broker_backend *backend,
-    lib_u16 rows)
+    lib_u32 columns, lib_u32 rows)
 {
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;
@@ -142,8 +145,8 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
 
     if (output == LIB_NULL || output == LIB_WIN32_INVALID_HANDLE_VALUE ||
         !lib_win32_get_console_screen_buffer_info(output, &info)) return LIB_FALSE;
-    required.X = info.dwSize.X < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS ?
-        (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS : info.dwSize.X;
+    required.X = info.dwSize.X < (lib_win32_short)columns ?
+        (lib_win32_short)columns : info.dwSize.X;
     required.Y = info.dwSize.Y < (lib_win32_short)rows ?
         (lib_win32_short)rows : info.dwSize.Y;
     /* A host may shrink backing storage between frames without making the
@@ -152,6 +155,10 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
     if (backend->coverage_rows > (lib_u16)info.dwSize.Y) {
         backend->previous_columns = backend->previous_rows = 0u;
         backend->coverage_rows = (lib_u16)info.dwSize.Y;
+    }
+    if (backend->coverage_columns > (lib_u16)info.dwSize.X) {
+        backend->previous_columns = backend->previous_rows = 0u;
+        backend->coverage_columns = (lib_u16)info.dwSize.X;
     }
     /* Frame storage is independent of the host's visible window. Preserve its
      * font and scroll position, including when the whole frame cannot fit. */
@@ -331,6 +338,7 @@ lib_status console_broker_backend_create(console_broker_backend **out_backend)
 release:
     base_sync_mutex_destroy(backend->transaction_lock);
     base_sync_mutex_destroy(backend->output_lock);
+    lib_release(backend->cells);
     lib_release(backend);
     return status;
 }
@@ -389,6 +397,7 @@ lib_status console_broker_backend_destroy(console_broker_backend *backend)
     }
     base_sync_mutex_destroy(backend->output_lock);
     base_sync_mutex_destroy(backend->transaction_lock);
+    lib_release(backend->cells);
     lib_release(backend);
     return LIB_STATUS_OK;
 }
@@ -439,6 +448,12 @@ static lib_status console_broker_prepare_output(console_broker_backend *backend,
             LIB_WIN32_CONSOLE_TEXTMODE_BUFFER, LIB_NULL);
         if (output == LIB_WIN32_INVALID_HANDLE_VALUE) return LIB_STATUS_IO_ERROR;
         backend->raw_output = output;
+    }
+    if (mode == CONSOLE_BROKER_RAW_EVENTS) {
+        lib_win32_dword flags;
+        if (!lib_win32_get_console_mode(backend->raw_output, &flags) ||
+            !lib_win32_set_console_mode(backend->raw_output, flags | LIB_WIN32_ENABLE_LVB_GRID_WORLDWIDE))
+            return LIB_STATUS_IO_ERROR;
     }
     return LIB_STATUS_OK;
 }
@@ -503,6 +518,7 @@ lib_status console_broker_backend_activate(console_broker_backend *backend,
     backend->previous_columns = 0u;
     backend->previous_rows = 0u;
     backend->coverage_rows = 0u;
+    backend->coverage_columns = 0u;
     /* Normal cooked activation is not a line request. Rollback alone may
      * restore the unfinished request captured after the old reader joined. */
     if (mode == CONSOLE_BROKER_RAW_EVENTS || restore_cooked_request) {
@@ -685,15 +701,17 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
     lib_console *expected_console, lib_u32 expected_generation,
     const lib_console_text_frame *frame)
 {
-    lib_win32_char_info cells[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS];
-    lib_win32_coord size = { LIB_CONSOLE_TEXT_COLUMNS, LIB_CONSOLE_TEXT_ROWS };
+    lib_win32_coord size = { 0, 0 };
     lib_win32_coord position = { 0, 0 };
-    lib_win32_small_rect region = { 0, 0, LIB_CONSOLE_TEXT_COLUMNS - 1,
-        LIB_CONSOLE_TEXT_ROWS - 1 };
+    lib_win32_small_rect region = { 0, 0, 0, 0 };
     lib_u32 row;
 
     if (backend == LIB_NULL || frame == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
+    /* COORD/SMALL_RECT use signed 16-bit coordinates. This is a backend
+     * capability boundary, not a public text-frame storage limit. */
+    if (frame->columns > LIB_INT16_MAX || frame->rows > LIB_INT16_MAX)
+        return LIB_STATUS_UNSUPPORTED;
     console_broker_backend_lock_output(backend);
     if (backend->console != expected_console ||
         backend->generation != expected_generation) {
@@ -729,7 +747,7 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
     }
     /* Palette application can also change native buffer/viewport geometry.
      * Establish the write surface after that operation, never before it. */
-    if (!console_broker_ensure_text_surface(backend, frame->rows)) {
+    if (!console_broker_ensure_text_surface(backend, frame->columns, frame->rows)) {
         console_broker_backend_unlock_output(backend);
         return LIB_STATUS_IO_ERROR;
     }
@@ -740,18 +758,34 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
         size.Y = (lib_win32_short)backend->coverage_rows;
     else
         size.Y = (lib_win32_short)frame->rows;
+    size.X = (lib_win32_short)(backend->coverage_columns > frame->columns ?
+        backend->coverage_columns : frame->columns);
+    region.Right = size.X - 1;
     region.Bottom = size.Y - 1;
     if (!frame->cells_unchanged || backend->previous_columns != frame->columns ||
         backend->previous_rows != frame->rows) {
+        lib_size count = (lib_size)size.X * (lib_size)size.Y;
+        if (count != backend->cell_count) {
+            lib_win32_char_info *cells = lib_allocate(count * sizeof(*cells));
+            if (cells == LIB_NULL) {
+                console_broker_backend_unlock_output(backend);
+                return LIB_STATUS_NO_MEMORY;
+            }
+            lib_release(backend->cells);
+            backend->cells = cells;
+            backend->cell_count = count;
+        }
         for (row = 0u; row < (lib_u32)size.Y; ++row) {
             lib_u32 column;
-            for (column = 0u; column < LIB_CONSOLE_TEXT_COLUMNS; ++column) {
-                lib_size offset = (lib_size)row * LIB_CONSOLE_TEXT_COLUMNS + column;
-                cells[offset].Char.UnicodeChar = row < frame->rows &&
-                    column < frame->columns ? frame->text[offset] : ' ';
-                cells[offset].Attributes = (lib_win32_word)(row < frame->rows &&
-                    column < frame->columns ? frame->foreground[offset] |
-                        (frame->background[offset] << 4u) : 0);
+            for (column = 0u; column < (lib_u32)size.X; ++column) {
+                lib_size offset = (lib_size)row * (lib_size)size.X + column;
+                lib_size source = (lib_size)row * frame->stride + column;
+                backend->cells[offset].Char.UnicodeChar = row < frame->rows &&
+                    column < frame->columns ? frame->text[source] : ' ';
+                backend->cells[offset].Attributes = (lib_win32_word)(row < frame->rows &&
+                    column < frame->columns ? frame->foreground[source] |
+                        (frame->background[source] << 4u) |
+                        (frame->underline[source] ? LIB_WIN32_COMMON_LVB_UNDERSCORE : 0u) : 0);
             }
         }
         /* A failed or clipped write may already have changed some cells. The
@@ -759,9 +793,10 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
          * part of the next retry's rectangle. */
         backend->previous_columns = backend->previous_rows = 0u;
         backend->coverage_rows = (lib_u16)size.Y;
-        if (!lib_win32_write_console_output_w(backend->output, cells, size, position,
+        backend->coverage_columns = (lib_u16)size.X;
+        if (!lib_win32_write_console_output_w(backend->output, backend->cells, size, position,
                 &region) || region.Left != 0 || region.Top != 0 ||
-                region.Right != LIB_CONSOLE_TEXT_COLUMNS - 1 ||
+                region.Right != size.X - 1 ||
                 region.Bottom != size.Y - 1) {
             console_broker_backend_unlock_output(backend);
             return LIB_STATUS_IO_ERROR;
@@ -794,6 +829,7 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
     backend->previous_columns = frame->columns;
     backend->previous_rows = frame->rows;
     backend->coverage_rows = frame->rows;
+    backend->coverage_columns = frame->columns;
     console_broker_backend_unlock_output(backend);
     return LIB_STATUS_OK;
 }

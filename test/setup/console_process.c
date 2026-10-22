@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-#include "test/emulator/setup/console_process.h"
+#include "test/setup/console_process.h"
 
 #define EMULATOR_CONSOLE_WAIT_MILLISECONDS 5000u
 

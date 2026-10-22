@@ -87,11 +87,19 @@ lib_status kvm_window_unfreeze(kvm_window *window)
 { lib_test_assert(window == &window_fake); ++unfreezes; return LIB_STATUS_OK; }
 lib_status kvm_window_release_mouse(kvm_window *window)
 { lib_test_assert(window == &window_fake); return control_status; }
+
+static void validate_window_frame(void *opaque, const void *value)
+{
+    const kvm_window_frame *frame = value;
+    lib_bool *valid = opaque;
+    *valid = frame->text != LIB_NULL || frame->graphics != LIB_NULL;
+}
+
 lib_status kvm_window_publish_frame(kvm_window *window, kvm_frame_exchange *exchange)
 {
-    const kvm_window_frame *frame = kvm_frame_exchange_lock_latest(exchange);
-    lib_test_assert(window == &window_fake && (frame->text != LIB_NULL || frame->graphics != LIB_NULL));
-    kvm_frame_exchange_unlock(exchange);
+    lib_bool valid = LIB_FALSE;
+    lib_test_assert(window == &window_fake &&
+        kvm_frame_exchange_observe_latest(exchange, validate_window_frame, &valid) && valid);
     ++window_frames;
     return publish_status;
 }
@@ -104,17 +112,32 @@ lib_status kvm_console_create(kvm_console **out, const kvm_console_options *opti
 }
 lib_status kvm_console_destroy(kvm_console *console)
 { lib_test_assert(console == &console_fake); ++console_destroys;
-  if (destroy_failure == 3u) return LIB_STATUS_IO_ERROR;
-  lib_console_release(console->object); return LIB_STATUS_OK; }
+  lib_console_release(console->object);
+  return destroy_failure == 3u ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK; }
 lib_console *kvm_console_get_console(const kvm_console *console)
 { return console->object; }
+
+static void copy_console_frame(void *opaque, const void *value)
+{
+    kvm_console_text_frame *destination = opaque;
+    const kvm_console_text_frame *frame = value;
+    lib_test_assert(kvm_console_text_frame_validate(frame) == LIB_STATUS_OK);
+    lib_test_assert(kvm_console_frame_prepare(destination, frame->base.text_columns,
+        frame->base.text_rows, frame->base.stride) == LIB_STATUS_OK);
+    kvm_text_cell *cells = destination->base.cells;
+    lib_size capacity = destination->base.capacity;
+    destination->base = frame->base;
+    destination->base.cells = cells;
+    destination->base.capacity = capacity;
+    *destination->characters = *frame->characters;
+    lib_memory_copy(cells, frame->base.cells, capacity * sizeof(*cells));
+}
+
 lib_status kvm_console_publish_frame(kvm_console *console, kvm_frame_exchange *exchange)
 {
     lib_test_assert(console == &console_fake);
-    const kvm_console_text_frame *frame = kvm_frame_exchange_lock_latest(exchange);
-    lib_test_assert(kvm_console_text_frame_validate(frame) == LIB_STATUS_OK);
-    last_console = *frame;
-    kvm_frame_exchange_unlock(exchange);
+    lib_test_assert(kvm_frame_exchange_observe_latest(exchange, copy_console_frame,
+        &last_console));
     ++console_frames;
     return publish_status;
 }
@@ -176,20 +199,20 @@ static void check_destroy(const emulator_ui_options *options, lib_u32 failure, l
     released_ui = broker_destroys = window_destroys = console_destroys = 0u;
     destroy_failure = failure;
     lib_test_assert(emulator_ui_destroy(ui) == LIB_STATUS_IO_ERROR);
-    lib_test_assert(released_ui == 0u && ui->monitor != LIB_NULL && ui->console != LIB_NULL);
+    lib_test_assert(released_ui == 0u && ui->monitor != LIB_NULL);
+    lib_test_assert((ui->console != LIB_NULL) == (failure != 3u));
     lib_test_assert(broker_destroys == 1u && window_destroys == (failure >= 2u) &&
         console_destroys == (failure == 3u));
     lib_test_assert((ui->broker != LIB_NULL) == (failure == 1u));
-    lib_test_assert((ui->window != LIB_NULL) == (failure != 3u));
+    lib_test_assert((ui->window != LIB_NULL) == (failure == 1u));
     /* A retained source can still safely call its retained UI/event context. */
-    input_worker(&console_fake.options, LIB_NULL);
+    if (ui->console) input_worker(&console_fake.options, LIB_NULL);
     if (ui->window) input_worker(&window_fake.options.component, LIB_NULL);
     /* End the scripted failure for fixture cleanup, not a product retry policy. */
     destroy_failure = 0u;
     lib_test_assert(emulator_ui_destroy(ui) == LIB_STATUS_OK && released_ui == 1u);
     lib_test_assert(broker_destroys == (failure == 1u ? 2u : 1u));
-    lib_test_assert(window_destroys == (failure == 2u ? 2u : 1u));
-    lib_test_assert(console_destroys == (failure == 3u ? 2u : 1u));
+    lib_test_assert(window_destroys == 1u && console_destroys == 1u);
     tracked_ui = LIB_NULL;
 }
 
@@ -201,10 +224,12 @@ static lib_status publish_ui(emulator_ui *ui, const kvm_window_frame *frame,
     lib_test_assert(kvm_window_frame_commit(frames) == LIB_STATUS_OK);
     if (!frame->graphics) {
         kvm_console_text_frame *target = kvm_frame_exchange_writer(console_exchange);
-        target->base = frame->text->base;
-        target->characters = *characters;
+        kvm_console_text_frame source = { .base = frame->text->base,
+            .characters = (kvm_console_character_map *)characters };
+        copy_console_frame(target, &source);
     } else {
-        emulator_ui_produce_console_status(ui, kvm_frame_exchange_writer(console_exchange));
+        lib_test_assert(emulator_ui_produce_console_status(ui,
+            kvm_frame_exchange_writer(console_exchange)) == LIB_STATUS_OK);
     }
     lib_test_assert(kvm_console_frame_commit(console_exchange) == LIB_STATUS_OK);
     return emulator_ui_publish_frame(ui, frames, console_exchange, frame->graphics != LIB_NULL, sequence,
@@ -219,8 +244,8 @@ int main(void)
     static kvm_window_frame_storage frame;
     kvm_console_character_map characters = { 0 };
     lib_u32 sequence;
-    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(frame)) == LIB_STATUS_OK);
-    lib_test_assert(kvm_frame_exchange_create(&console_exchange, sizeof(kvm_console_text_frame)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_frame_exchange_create(&frames, sizeof(frame), kvm_window_frame_retire) == LIB_STATUS_OK);
+    lib_test_assert(kvm_frame_exchange_create(&console_exchange, sizeof(kvm_console_text_frame), kvm_console_frame_retire) == LIB_STATUS_OK);
     lib_test_assert(emulator_ui_create(LIB_NULL, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     ui = (emulator_ui *)&options;
     lib_test_assert(emulator_ui_create(&ui, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT && ui == LIB_NULL);
@@ -290,8 +315,10 @@ int main(void)
     lib_test_assert(emulator_ui_set_state(ui, EMULATOR_UI_STATE_PAUSED) == LIB_STATUS_OK);
     lib_test_assert(emulator_ui_set_state(ui, EMULATOR_UI_STATE_RUNNING) == LIB_STATUS_OK);
     lib_test_assert(freezes == 1u && unfreezes == 1u);
+    destroy_failure = 2u;
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_DESTROY_WINDOW,
-        EMULATOR_UI_STATE_PAUSED) == LIB_STATUS_OK);
+        EMULATOR_UI_STATE_PAUSED) == LIB_STATUS_IO_ERROR && ui->window == LIB_NULL);
+    destroy_failure = 0u;
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_CREATE_WINDOW,
         EMULATOR_UI_STATE_PAUSED) == LIB_STATUS_OK);
     lib_test_assert(window_fake.options.initial_frozen && unfreezes == 1u);
@@ -299,8 +326,7 @@ int main(void)
     lib_test_assert(unfreezes == 2u);
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_CREATE_VM_CONSOLE,
         EMULATOR_UI_STATE_RUNNING) == LIB_STATUS_OK);
-    (void)kvm_window_frame_begin_graphics(&frame);
-    frame.data.graphics.width = frame.data.graphics.height = frame.data.graphics.stride = 1u;
+    lib_test_assert(kvm_window_frame_prepare_graphics(&frame, 1u, 1u, 1u) == LIB_STATUS_OK);
     sequence = 1u;
     lib_test_assert(publish_ui(ui, &frame.frame, &characters, sequence, 1, 0, 1) == LIB_STATUS_OK);
     lib_test_assert(console_frames == 0u && window_frames == 1u);
@@ -315,8 +341,8 @@ int main(void)
     for (lib_u32 i = 0; i < 13u; ++i)
         lib_test_assert(last_console.base.cells[i].glyph_index == "Window active"[i]);
     for (lib_u32 i = 0; i < 7u; ++i)
-        lib_test_assert(last_console.base.cells[KVM_TEXT_COLUMNS * 2u + i].glyph_index == "Hotkeys"[i]);
-    for (lib_u32 i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i) {
+        lib_test_assert(last_console.base.cells[80u * 2u + i].glyph_index == "Hotkeys"[i]);
+    for (lib_size i = 0; i < last_console.base.capacity; ++i) {
         lib_test_assert(last_console.base.cells[i].foreground == 7u);
         lib_test_assert(last_console.base.cells[i].background == 0u && last_console.base.cells[i].glyph_bank == 0u);
     }
@@ -327,13 +353,12 @@ int main(void)
     lib_test_assert(publish_ui(ui, &frame.frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_OK);
     lib_test_assert(console_frames == 1u && window_frames == 2u);
     sequence = 3u;
-    (void)kvm_window_frame_begin_text(&frame);
-    lib_memory_set(&frame.data.text, 0, sizeof(frame.data.text));
-    frame.data.text.base.text_columns = 80u; frame.data.text.base.text_rows = 50u;
-    frame.data.text.base.cells[3999].glyph_index = 'Z';
+    lib_test_assert(kvm_window_frame_prepare_text(&frame, 80u, 50u, 80u) == LIB_STATUS_OK);
+    frame.data.text->base.text_columns = 80u; frame.data.text->base.text_rows = 50u;
+    frame.data.text->base.cells[3999].glyph_index = 'Z';
     characters.primary['T'] = 0x263au;
     characters.secondary['T'] = 0x2665u;
-    frame.data.text.base.cells[0].glyph_index = 'T';
+    frame.data.text->base.cells[0].glyph_index = 'T';
     publish_status = LIB_STATUS_IO_ERROR;
     lib_test_assert(publish_ui(ui, &frame.frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_IO_ERROR);
     lib_test_assert(ui->console_status_delivered);
@@ -342,17 +367,16 @@ int main(void)
     lib_test_assert(!ui->console_status_delivered && last_console.base.cells[0].glyph_index == 'T');
     lib_test_assert(last_console.base.text_rows == 50u &&
         last_console.base.cells[3999].glyph_index == 'Z');
-    lib_test_assert(last_console.characters.primary['T'] == 0x263au &&
-        last_console.characters.secondary['T'] == 0x2665u);
+    lib_test_assert(last_console.characters->primary['T'] == 0x263au &&
+        last_console.characters->secondary['T'] == 0x2665u);
     lib_test_assert(console_frames == 3u && window_frames == 3u);
     sequence = 4u;
-    frame.data.text.base.cells[0].glyph_index = 'U';
+    frame.data.text->base.cells[0].glyph_index = 'U';
     lib_test_assert(publish_ui(ui, &frame.frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
     lib_test_assert(console_frames == 4u && last_console.base.cells[0].glyph_index == 'U');
     sequence = 5u;
-    lib_memory_set(&frame.frame, 0, sizeof(frame));
-    (void)kvm_window_frame_begin_graphics(&frame);
-    frame.data.graphics.width = frame.data.graphics.height = frame.data.graphics.stride = 1u;
+    kvm_window_frame_release(&frame);
+    lib_test_assert(kvm_window_frame_prepare_graphics(&frame, 1u, 1u, 1u) == LIB_STATUS_OK);
     publish_status = LIB_STATUS_IO_ERROR;
     lib_test_assert(publish_ui(ui, &frame.frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_IO_ERROR);
     lib_test_assert(!ui->console_status_delivered);
@@ -374,8 +398,10 @@ int main(void)
     /* A fresh Console has no old status; even the same sequence is delivered. */
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_BIND_MONITOR,
         EMULATOR_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    destroy_failure = 3u;
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_DESTROY_VM_CONSOLE,
-        EMULATOR_UI_STATE_RUNNING) == LIB_STATUS_OK);
+        EMULATOR_UI_STATE_RUNNING) == LIB_STATUS_IO_ERROR && ui->console == LIB_NULL);
+    destroy_failure = 0u;
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_CREATE_VM_CONSOLE,
         EMULATOR_UI_STATE_RUNNING) == LIB_STATUS_OK);
     lib_test_assert(emulator_ui_apply_action(ui, EMULATOR_UI_ACTION_BIND_VM_CONSOLE,
@@ -383,10 +409,10 @@ int main(void)
     lib_test_assert(publish_ui(ui, &frame.frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_OK);
     lib_test_assert(console_frames == 7u && window_frames == 5u);
     /* UI deduplication needs equality only, including wrap and recreation. */
-    lib_memory_set(&frame.frame, 0, sizeof(frame));
-    (void)kvm_window_frame_begin_text(&frame);
-    frame.data.text.base.text_columns = 80u;
-    frame.data.text.base.text_rows = 25u;
+    kvm_window_frame_release(&frame);
+    lib_test_assert(kvm_window_frame_prepare_text(&frame, 80u, 50u, 80u) == LIB_STATUS_OK);
+    frame.data.text->base.text_columns = 80u;
+    frame.data.text->base.text_rows = 25u;
     for (lib_u32 i = 0u; i < 2u; ++i) {
         sequence = i == 0u ? LIB_UINT32_MAX : 1u;
         lib_u32 wc = window_frames, cc = console_frames;
@@ -450,5 +476,7 @@ int main(void)
     lib_test_assert(emulator_ui_destroy(LIB_NULL) == LIB_STATUS_OK);
     kvm_frame_exchange_destroy(frames);
     kvm_frame_exchange_destroy(console_exchange);
+    kvm_window_frame_release(&frame);
+    kvm_console_frame_release(&last_console);
     return 0;
 }

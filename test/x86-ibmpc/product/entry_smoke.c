@@ -27,36 +27,12 @@ static lib_status fixture_destroy(void *machine)
     return LIB_STATUS_OK;
 }
 
-lib_status emulator_product_create(const emulator_product_machine *machine,
-    emulator_product **out_app)
-{
-    (void)machine;
-    ++created;
-    if (failure == 1u) return LIB_STATUS_NO_MEMORY;
-    fixture.live = LIB_TRUE;
-    *out_app = &fixture;
-    return LIB_STATUS_OK;
-}
-
-lib_status emulator_product_destroy(emulator_product *app)
-{
-    if (app == LIB_NULL) return LIB_STATUS_OK;
-    app->live = LIB_FALSE;
-    return failure == 6u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
-}
-
 lib_bool emulator_session_enqueue_ui_event(void *context,
     const emulator_ui_event *event)
 {
     (void)context;
     (void)event;
     return LIB_TRUE;
-}
-
-lib_status emulator_product_compose_machine(emulator_product *app)
-{
-    (void)app;
-    return failure == 2u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
 
 lib_status x86_ibmpc_product_command_provider_initialize(x86_ibmpc_product_command_context *command,
@@ -76,22 +52,6 @@ lib_bool x86_ibmpc_product_keyboard_hotkeys(kvm_hotkey_registry *registry)
 {
     (void)registry;
     return failure == 4u ? LIB_FALSE : LIB_TRUE;
-}
-
-lib_status emulator_product_compose_control(emulator_product *app,
-    const emulator_session_options *options)
-{
-    (void)app;
-    (void)options;
-    return failure == 5u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
-}
-
-lib_status emulator_product_compose_ui(emulator_product *app,
-    const emulator_ui_options *options)
-{
-    (void)app;
-    (void)options;
-    return LIB_STATUS_OK;
 }
 
 lib_bool emulator_session_run(emulator_session *session)

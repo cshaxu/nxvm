@@ -27,15 +27,6 @@ typedef struct emulator_product_definition {
     emulator_product_configure_ui configure_ui;
 } emulator_product_definition;
 
-lib_status emulator_product_create(const emulator_product_machine *machine,
-    emulator_product **out_product);
-lib_status emulator_product_destroy(emulator_product *product);
-lib_status emulator_product_compose_machine(emulator_product *product);
-lib_status emulator_product_compose_control(emulator_product *product,
-    const emulator_session_options *options);
-lib_status emulator_product_compose_ui(emulator_product *product,
-    const emulator_ui_options *options);
-lib_status emulator_product_publish_initial_state(emulator_product *product);
 lib_i32 emulator_product_run(const emulator_product_definition *definition);
 
 #endif

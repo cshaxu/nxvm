@@ -195,15 +195,15 @@ lib_status emulator_ui_destroy(emulator_ui *ui)
     }
     if (ui->window != LIB_NULL) {
         status = kvm_window_destroy(ui->window);
-        if (status != LIB_STATUS_OK) return status;
         ui->window = LIB_NULL;
         lib_atomic_i32_store_explicit(
             &ui->window_live, 0, LIB_MEMORY_ORDER_SEQ_CST);
+        if (status != LIB_STATUS_OK) return status;
     }
     if (ui->console != LIB_NULL) {
         status = kvm_console_destroy(ui->console);
-        if (status != LIB_STATUS_OK) return status;
         ui->console = LIB_NULL;
+        if (status != LIB_STATUS_OK) return status;
     }
     if (ui->monitor != LIB_NULL) {
         (void)lib_console_set_event_sink(ui->monitor, LIB_NULL, LIB_NULL);
@@ -247,18 +247,18 @@ lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,
     case EMULATOR_UI_ACTION_DESTROY_VM_CONSOLE:
         if (ui->console == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = kvm_console_destroy(ui->console);
-        if (status != LIB_STATUS_OK) return status;
         ui->console = LIB_NULL;
         ui->console_delivered_frame_sequence = 0u;
+        if (status != LIB_STATUS_OK) return status;
         return emulator_ui_emit_component(ui, EMULATOR_UI_COMPONENT_VM_CONSOLE, LIB_FALSE);
     case EMULATOR_UI_ACTION_DESTROY_WINDOW:
         if (ui->window == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = kvm_window_destroy(ui->window);
-        if (status != LIB_STATUS_OK) return status;
         lib_atomic_i32_store_explicit(&ui->window_live, 0,
             LIB_MEMORY_ORDER_SEQ_CST);
         ui->window = LIB_NULL;
         ui->window_delivered_frame_sequence = 0u;
+        if (status != LIB_STATUS_OK) return status;
         return emulator_ui_emit_component(ui, EMULATOR_UI_COMPONENT_WINDOW, LIB_FALSE);
     }
     return LIB_STATUS_INVALID_ARGUMENT;
@@ -277,32 +277,35 @@ lib_status emulator_ui_set_state(emulator_ui *ui, emulator_ui_state state)
     return LIB_STATUS_OK;
 }
 
-void emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame)
+lib_status emulator_ui_produce_console_status(void *context, kvm_console_text_frame *frame)
 {
     const emulator_ui *ui = context;
     const char *text = ui->options.graphics_console_status_text;
     lib_size index;
     lib_size row = 0u, column = 0u;
-    lib_memory_set(frame, 0, sizeof(*frame));
-    frame->base.text_columns = KVM_TEXT_COLUMNS;
-    frame->base.text_rows = 25u; /* Status layout is independent of capacity. */
+    lib_status status = kvm_console_frame_prepare(frame, 80u, 25u, 80u);
+    if (status != LIB_STATUS_OK) return status;
+    frame->base.cursor_mode = KVM_CURSOR_DISABLED;
+    frame->base.font_height = 0u;
+    lib_memory_set(frame->base.text_palette, 0, sizeof(frame->base.text_palette));
     frame->base.cursor_column = -1;
     frame->base.cursor_row = -1;
     frame->base.text_palette[7] = 0xc0c0c0u;
-    for (index = 0u; index < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++index)
-        frame->base.cells[index] = (kvm_text_cell){ ' ', 0u, 7u, 0u };
+    for (index = 0u; index < frame->base.capacity; ++index)
+        frame->base.cells[index] = (kvm_text_cell){ ' ', 0u, 7u, 0u, 0u };
     for (index = 0u; index < 256u; ++index) {
         lib_u16 character = index >= 32u && index < 127u ? (lib_u16)index : ' ';
-        frame->characters.primary[index] = character;
-        frame->characters.secondary[index] = character;
+        frame->characters->primary[index] = character;
+        frame->characters->secondary[index] = character;
     }
     for (index = 0u; text != LIB_NULL && text[index] != '\0'; ++index) {
         if (text[index] == '\r') continue;
         if (text[index] == '\n') { ++row; column = 0u; continue; }
         if (row < frame->base.text_rows && column < frame->base.text_columns)
-            frame->base.cells[row * KVM_TEXT_COLUMNS + column].glyph_index = (lib_u8)text[index];
+            frame->base.cells[row * frame->base.stride + column].glyph_index = (lib_u8)text[index];
         ++column;
     }
+    return LIB_STATUS_OK;
 }
 
 lib_status emulator_ui_publish_frame(emulator_ui *ui, kvm_frame_exchange *frames,

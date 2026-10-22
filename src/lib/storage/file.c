@@ -28,16 +28,22 @@ lib_status lib_storage_file_read_exact(const lib_storage_file *file, void *bytes
         LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
+static lib_status storage_file_write(lib_storage_file *file,
+    const void *bytes, lib_size byte_count, lib_size *transferred)
+{
+    *transferred = 0u;
+    if (file == LIB_NULL || (bytes == LIB_NULL && byte_count != 0u))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *transferred = lib_c_fwrite(bytes, 1u, byte_count, file->stream);
+    return *transferred == byte_count && !lib_c_ferror(file->stream) ?
+        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
+}
+
 lib_status lib_storage_file_write_exact(lib_storage_file *file,
     const void *bytes, lib_size byte_count)
 {
     lib_size transferred;
-
-    if (file == LIB_NULL || (bytes == LIB_NULL && byte_count != 0u))
-        return LIB_STATUS_INVALID_ARGUMENT;
-    transferred = lib_c_fwrite(bytes, 1u, byte_count, file->stream);
-    return transferred == byte_count && !lib_c_ferror(file->stream) ?
-        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
+    return storage_file_write(file, bytes, byte_count, &transferred);
 }
 
 lib_status lib_storage_file_flush(lib_storage_file *file)
@@ -170,4 +176,18 @@ lib_status lib_storage_file_writer_close(lib_storage_file_writer *writer)
     status = lib_storage_file_close(&writer->file);
     lib_release(writer);
     return status;
+}
+
+lib_status lib_storage_file_writer_write_some(lib_storage_file_writer *writer,
+    const void *bytes, lib_size byte_count, lib_size *out_written)
+{
+    if (out_written == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return storage_file_write(writer == LIB_NULL ? LIB_NULL : &writer->file,
+        bytes, byte_count, out_written);
+}
+
+lib_status lib_storage_file_writer_flush(lib_storage_file_writer *writer)
+{
+    return writer == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
+        lib_storage_file_flush(&writer->file);
 }

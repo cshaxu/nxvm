@@ -8,15 +8,15 @@ struct emulator_machine {
     emulator_machine_input_queue input_queue;
     kvm_frame_exchange *frames;
     kvm_frame_exchange *console_frames;
-    void (*console_status_source)(void *context, kvm_console_text_frame *frame);
+    lib_status (*console_status_source)(void *context, kvm_console_text_frame *frame);
     void *console_status_context;
     base_sync_mutex *frame_lock;
     base_sync_mutex *request_lock;
     lib_u32 published_frame_sequence;
     lib_u32 published_frame_run_generation;
+    lib_bool published_frame_graphics;
     base_sync_event *command_event;
     base_sync_event *resume_event;
-    base_sync_event *input_event;
     base_sync_event *media_event;
     base_sync_event *debug_event;
     base_sync_event *state_event;
@@ -77,6 +77,7 @@ static void emulator_machine_invalidate_published_frame(emulator_machine *machin
     kvm_frame_exchange_invalidate(machine->frames);
     kvm_frame_exchange_invalidate(machine->console_frames);
     machine->published_frame_run_generation = 0u;
+    machine->published_frame_graphics = LIB_FALSE;
     base_sync_mutex_unlock(machine->frame_lock);
 }
 
@@ -97,8 +98,10 @@ static lib_status emulator_machine_publish(emulator_machine *machine)
     if (status != LIB_STATUS_OK || !produced) return status;
     status = kvm_window_frame_validate(frame);
     if (status != LIB_STATUS_OK) return status;
-    if (frame->graphics && machine->console_status_source != LIB_NULL)
-        machine->console_status_source(machine->console_status_context, console);
+    if (frame->graphics && machine->console_status_source != LIB_NULL) {
+        status = machine->console_status_source(machine->console_status_context, console);
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (!frame->graphics || machine->console_status_source != LIB_NULL) {
         status = kvm_console_text_frame_validate(console);
         if (status != LIB_STATUS_OK) return status;
@@ -114,6 +117,7 @@ static lib_status emulator_machine_publish(emulator_machine *machine)
     machine->published_frame_sequence = frame->sequence;
     generation = emulator_machine_run_generation(machine);
     machine->published_frame_run_generation = generation;
+    machine->published_frame_graphics = frame->graphics != LIB_NULL;
     base_sync_mutex_unlock(machine->frame_lock);
     if (machine->driver.frame_published != LIB_NULL)
         machine->driver.frame_published(machine->driver.context, frame);
@@ -138,10 +142,16 @@ static void emulator_machine_drain_input(emulator_machine *machine)
     }
 }
 
+static void emulator_machine_close_input(emulator_machine *machine)
+{
+    emulator_machine_input_queue_admit(&machine->input_queue, LIB_FALSE);
+}
+
 /* Fatal synchronization failure is not a retryable product operation. The
  * existing task cancellation is independent of its completion event. */
 static lib_status emulator_machine_fail_sync(emulator_machine *machine)
 {
+    emulator_machine_close_input(machine);
     lib_atomic_i32_store_explicit(&machine->state, EMULATOR_MACHINE_ERROR, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_store_explicit(&machine->reset_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_store_explicit(&machine->stop_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
@@ -298,6 +308,7 @@ static lib_status emulator_machine_submit_request(emulator_machine *machine,
 static void emulator_machine_finish_requests(emulator_machine *machine,
     emulator_machine_state terminal)
 {
+    emulator_machine_close_input(machine);
     base_sync_mutex_lock(machine->request_lock);
     if (emulator_machine_state_get(machine) == EMULATOR_MACHINE_ERROR)
         terminal = EMULATOR_MACHINE_ERROR;
@@ -342,15 +353,22 @@ static void emulator_machine_executor_event(void *opaque)
         debug_stop = LIB_FALSE;
     }
     if (debug_stop) lib_atomic_i32_exchange_explicit(&machine->pause_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
-    emulator_machine_drain_input(machine);
+    /* A completed capture may request pause at this very callback. Do not
+     * change devices after its checkpoint by delivering another input. */
+    emulator_machine_service_state_read(machine);
+    if (lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0 ||
+        lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0)
+        emulator_machine_close_input(machine);
+    else if (emulator_machine_state_get(machine) == EMULATOR_MACHINE_RUNNING)
+        emulator_machine_drain_input(machine);
     if (emulator_machine_publish(machine) != LIB_STATUS_OK) {
+        emulator_machine_close_input(machine);
         lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_ERROR, LIB_MEMORY_ORDER_SEQ_CST);
         lib_atomic_i32_exchange_explicit(&machine->reset_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
         lib_atomic_i32_exchange_explicit(&machine->stop_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
         machine->driver.request_stop(machine->driver.context);
         return;
     }
-    emulator_machine_service_state_read(machine);
     if (machine->state_read_continuing && lib_atomic_i32_load_explicit(
             &machine->state_read_ready, LIB_MEMORY_ORDER_SEQ_CST) != 0) {
         suppress_paused_fact = LIB_TRUE;
@@ -358,6 +376,9 @@ static void emulator_machine_executor_event(void *opaque)
     }
     if (lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0 &&
         lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0) {
+        emulator_machine_close_input(machine);
+        if (lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0)
+            return;
         machine->driver.set_heartbeat(machine->driver.context, LIB_FALSE);
         lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_PAUSED, LIB_MEMORY_ORDER_SEQ_CST);
         if (lib_atomic_i32_exchange_explicit(&machine->reset_active, 0, LIB_MEMORY_ORDER_SEQ_CST) != 0)
@@ -372,10 +393,9 @@ static void emulator_machine_executor_event(void *opaque)
             emulator_machine_complete_request(machine, machine->state_event);
         while (lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0 &&
             lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0) {
-            base_sync_event *events[3] = { machine->resume_event,
-                machine->command_event, machine->input_event };
+            base_sync_event *events[2] = { machine->resume_event, machine->command_event };
             lib_u32 index = LIB_UINT32_MAX;
-            base_sync_wait_result result = base_sync_wait_any(events, 3u,
+            base_sync_wait_result result = base_sync_wait_any(events, 2u,
                 machine->worker, LIB_UINT32_MAX, &index);
             if (result != BASE_SYNC_WAIT_SIGNALED) {
                 if (result != BASE_SYNC_WAIT_CANCELLED)
@@ -405,8 +425,6 @@ static void emulator_machine_executor_event(void *opaque)
                         machine->driver.request_wake(machine->driver.context);
                     }
                 }
-            } else if (index == 2u) {
-                emulator_machine_drain_input(machine);
             }
         }
         if (lib_atomic_i32_load_explicit(&machine->stop_requested,
@@ -414,6 +432,9 @@ static void emulator_machine_executor_event(void *opaque)
             machine->driver.set_heartbeat(machine->driver.context, LIB_TRUE);
             if (!machine->state_read_continuing) {
                 lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST);
+                emulator_machine_input_queue_admit(&machine->input_queue, LIB_TRUE);
+                if (emulator_machine_input_queue_pending(&machine->input_queue))
+                    machine->driver.request_wake(machine->driver.context);
                 emulator_machine_notify_state(machine, EMULATOR_MACHINE_RUNNING);
             }
         }
@@ -424,6 +445,7 @@ static void emulator_machine_begin_cold_run(emulator_machine *machine,
     lib_bool pause_after_start)
 {
     emulator_machine_debug_invalidate(machine);
+    emulator_machine_close_input(machine);
     emulator_machine_input_queue_clear(&machine->input_queue);
     emulator_machine_invalidate_published_frame(machine);
     lib_atomic_i32_exchange_explicit(&machine->pause_requested, pause_after_start != 0, LIB_MEMORY_ORDER_SEQ_CST);
@@ -534,6 +556,8 @@ static void emulator_machine_worker(void *opaque, const base_sync_task *task)
             emulator_machine_executor_event, machine);
         machine->driver.set_heartbeat(machine->driver.context, LIB_TRUE);
         lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST);
+        emulator_machine_input_queue_admit(&machine->input_queue,
+            lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0);
         if (lib_atomic_i32_load_explicit(&machine->reset_active, LIB_MEMORY_ORDER_SEQ_CST) == 0 &&
             lib_atomic_i32_load_explicit(&machine->pause_requested,
                 LIB_MEMORY_ORDER_SEQ_CST) == 0)
@@ -543,6 +567,7 @@ static void emulator_machine_worker(void *opaque, const base_sync_task *task)
         } while (succeeded &&
             lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0 &&
             lib_atomic_i32_load_explicit(&machine->terminate_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0);
+        emulator_machine_close_input(machine);
         machine->driver.set_heartbeat(machine->driver.context, LIB_FALSE);
         machine->driver.set_executor_callback(machine->driver.context, LIB_NULL, LIB_NULL);
         if (machine->driver.cancel_debug != LIB_NULL)
@@ -608,17 +633,16 @@ lib_status emulator_machine_create(emulator_machine **out_machine,
     if (status == LIB_STATUS_OK) status = base_sync_mutex_create(&machine->request_lock);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->command_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->resume_event);
-    if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->input_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->media_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->debug_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->state_event);
     if (status == LIB_STATUS_OK) status = emulator_machine_input_queue_initialize(&machine->input_queue);
     if (status == LIB_STATUS_OK)
         status = kvm_frame_exchange_create(&machine->frames,
-            sizeof(kvm_window_frame_storage));
+            sizeof(kvm_window_frame_storage), kvm_window_frame_retire);
     if (status == LIB_STATUS_OK)
         status = kvm_frame_exchange_create(&machine->console_frames,
-            sizeof(kvm_console_text_frame));
+            sizeof(kvm_console_text_frame), kvm_console_frame_retire);
     if (status == LIB_STATUS_OK)
         status = base_sync_task_create(emulator_machine_worker, machine, &machine->worker);
     if (status != LIB_STATUS_OK) {
@@ -772,30 +796,39 @@ emulator_machine_state emulator_machine_state_get(const emulator_machine *machin
         (emulator_machine_state)lib_atomic_i32_load_explicit(&machine->state, LIB_MEMORY_ORDER_SEQ_CST);
 }
 
-lib_bool emulator_machine_enqueue_input(emulator_machine *machine,
+lib_status emulator_machine_enqueue_input(emulator_machine *machine,
     const kvm_input_event *event)
 {
-    if (machine == LIB_NULL || event == LIB_NULL ||
-        emulator_machine_state_get(machine) != EMULATOR_MACHINE_RUNNING ||
-        !emulator_machine_input_queue_push(&machine->input_queue, event))
-        return LIB_FALSE;
-    base_sync_event_signal(machine->input_event);
+    lib_status status;
+    if (machine == LIB_NULL || event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = emulator_machine_input_queue_push(&machine->input_queue, event);
+    if (status != LIB_STATUS_OK) return status;
     machine->driver.request_wake(machine->driver.context);
-    return LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
+typedef struct emulator_machine_frame_copy {
+    kvm_window_frame_storage *destination;
+    lib_bool copied;
+} emulator_machine_frame_copy;
+
+static void emulator_machine_copy_latest_frame(void *opaque, const void *frame)
+{
+    emulator_machine_frame_copy *copy = opaque;
+    copy->copied = kvm_window_frame_copy(copy->destination, frame);
 }
 
 lib_bool emulator_machine_copy_published_frame(emulator_machine *machine,
     kvm_window_frame_storage *destination, lib_u32 run_generation)
 {
-    lib_bool copied;
+    emulator_machine_frame_copy copy = { destination, LIB_FALSE };
     if (machine == LIB_NULL || destination == LIB_NULL) return LIB_FALSE;
     base_sync_mutex_lock(machine->frame_lock);
-    const kvm_window_frame *frame = kvm_frame_exchange_lock_latest(machine->frames);
-    copied = frame != LIB_NULL && machine->published_frame_run_generation == run_generation;
-    if (copied) copied = kvm_window_frame_copy(destination, frame);
-    kvm_frame_exchange_unlock(machine->frames);
+    if (machine->published_frame_run_generation == run_generation)
+        (void)kvm_frame_exchange_observe_latest(machine->frames,
+            emulator_machine_copy_latest_frame, &copy);
     base_sync_mutex_unlock(machine->frame_lock);
-    return copied;
+    return copy.copied;
 }
 
 kvm_frame_exchange *emulator_machine_frame_exchange(emulator_machine *machine)
@@ -805,7 +838,7 @@ kvm_frame_exchange *emulator_machine_console_exchange(emulator_machine *machine)
 { return machine == LIB_NULL ? LIB_NULL : machine->console_frames; }
 
 void emulator_machine_set_console_status_source(emulator_machine *machine,
-    void (*produce)(void *context, kvm_console_text_frame *frame), void *context)
+    lib_status (*produce)(void *context, kvm_console_text_frame *frame), void *context)
 {
     if (machine == LIB_NULL) return;
     machine->console_status_source = produce;
@@ -816,18 +849,14 @@ lib_bool emulator_machine_read_presentation(emulator_machine *machine,
     lib_u32 run_generation, lib_u32 *sequence, lib_bool *graphics)
 {
     lib_bool available;
-    const kvm_window_frame *frame;
     if (machine == LIB_NULL || sequence == LIB_NULL || graphics == LIB_NULL)
         return LIB_FALSE;
     base_sync_mutex_lock(machine->frame_lock);
-    frame = kvm_frame_exchange_lock_latest(machine->frames);
-    available = frame != LIB_NULL &&
-        machine->published_frame_run_generation == run_generation;
+    available = machine->published_frame_run_generation == run_generation;
     if (available) {
-        *sequence = frame->sequence;
-        *graphics = frame->graphics != LIB_NULL;
+        *sequence = machine->published_frame_sequence;
+        *graphics = machine->published_frame_graphics;
     }
-    kvm_frame_exchange_unlock(machine->frames);
     base_sync_mutex_unlock(machine->frame_lock);
     return available;
 }
@@ -932,7 +961,6 @@ lib_status emulator_machine_destroy(emulator_machine *machine)
     status = emulator_machine_shutdown(machine);
     if (status != LIB_STATUS_OK) return status;
     base_sync_event_destroy(machine->resume_event);
-    base_sync_event_destroy(machine->input_event);
     base_sync_event_destroy(machine->media_event);
     base_sync_event_destroy(machine->debug_event);
     base_sync_event_destroy(machine->state_event);

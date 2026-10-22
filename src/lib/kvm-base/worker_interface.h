@@ -6,8 +6,8 @@
 
 #include "lib/types/atomic.h"
 
-#define KVM_COMPONENT_DESTROY_TIMEOUT_MS 5000u
-typedef lib_status (*kvm_component_join_fn)(kvm_component *component, lib_u32 timeout_ms);
+/* Every return guarantees worker/callback quiescence, including cleanup errors. */
+typedef lib_status (*kvm_component_join_fn)(kvm_component *component);
 typedef void (*kvm_component_dispose_fn)(kvm_component *component);
 
 struct kvm_component {
