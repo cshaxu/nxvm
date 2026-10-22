@@ -229,8 +229,12 @@ lib_i32 myraidenii_product_run(const myraidenii_product_config *config)
     } else lib_c_fprintf(lib_c_stderr,
         "Cannot initialize machine or ROM images (status %d); check ROM paths and identities.\n",
         (int)status);
-    if (composition->machine != LIB_NULL || composition->board != LIB_NULL)
-        (void)myraidenii_product_destroy_machine(composition);
+    /* A failed shared shutdown retains the binding and may retain a worker.
+     * Keep its callback context and private machine alive until process exit. */
+    if (composition->emulator != LIB_NULL) return 1;
+    if ((composition->machine != LIB_NULL || composition->board != LIB_NULL) &&
+        myraidenii_product_destroy_machine(composition) != LIB_STATUS_OK)
+        return 1;
     lib_release(composition);
     return result;
 }

@@ -13,6 +13,47 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S107 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T7 continuation; single-person executor and coordinator. |
+| Admission And Approval | Owner authorizes MyRaidenII-local repair, excluding the four Shared source/test pairs. |
+| Objective | Preserve the Product machine and callback context if shared composition cannot shut down or unbind the worker. |
+| Non-goals | No Shared change, extra worker, retry loop, new ownership abstraction or suppression of failure. |
+| Reference Baseline | Emulator Product destroy returns immediately when shutdown or UI teardown fails and keeps the Machine bound; its run returns failure. MyRaidenII then unconditionally attempts private machine destruction and frees the callback context. |
+| Candidate Proposal | Check the existing binding before local fallback destruction; on retained binding or failed private destruction return failure and leave the referenced objects alive until process exit. Preserve normal cleanup. Extend the existing fixture with failure injection. |
+| Files And ABI Surface | MyRaidenII Product composition and existing composition smoke, Current and two MyRaidenII EXEs. No API change. Estimated production +6/-2, test +15/-0, record +25. |
+| Applicable Rules | Product architecture, coding and UX; shared execution and documentation. |
+| Verification | Existing Product fixture with a simulated retained binding and destroy failure, dual-width MyRaidenII unit/build and artifact verification, governance and diff review. |
+| Asset Needs | Existing Ninja trees and Product artifact directory; no media. |
+| Reporting Requirements | Explain intentional failure-path retention, test limits and unresolved T7 qualifications. |
+| Stop Conditions | Fix requires editing an excluded Shared component. |
+| Exit Criteria | Review actual diff and tests, update affected EXEs, commit and push complete P; T7 stays open. |
+| Original Owner Request | Implement MyRaidenII autonomously without the four Shared source/test pairs. |
+| Similar-Issue Sweep | Check unbound private-destroy failure and the normal and construction-failure cleanup paths. |
+
+Executor evidence: Emulator Product retains its objects when Machine shutdown
+or UI destruction fails. If MyRaidenII's existing binding still points to the
+Emulator Machine on return, its local fallback now returns failure without
+destroying the private Machine or freeing the callback context. After an
+unbound private-destroy failure, it likewise returns without freeing the
+context. The objects intentionally remain allocated until process exit; this
+is failure containment, not a claim that shutdown succeeded. The unchanged
+normal path releases them. The existing Product fixture now injects both a
+retained binding and a failed private destroy, checks no private object was
+destroyed prematurely, and then explicitly releases its fake test objects.
+This is a simulated failure test, not a native worker-failure reproduction.
+
+MyRaidenII's 13 unit tests pass on each architecture using the existing Ninja
+graphs. Both Product EXEs were rebuilt and deployed; PE widths were checked.
+Their SHA-256 values are x64
+`365f1c8a6c3a9f6387cde0a3572d2752a42cb2909315f9367a20062d4a102106`
+and x86 `ae1ccf6b58642d222eb28ba274e4c05aeaee787b5dbeb62083fb4df347b7f83a`.
+The retained-binding case and the unbound destruction error do not imply a
+fix for S79. No Shared source/test was modified; desktop, audio listening,
+complete gameplay and release qualification remain open.
+
 ## M1 T7 S106 — Closed
 
 Coordinator reviewed P1 `4497b138b`, the old-address negative control,

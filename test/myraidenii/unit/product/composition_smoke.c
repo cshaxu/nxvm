@@ -25,6 +25,9 @@ static lib_i32 hotkey_count;
 static const emulator_product_monitor_provider *expected_hotkey_provider;
 static lib_bool release_inputs_ok = LIB_TRUE;
 static lib_u32 release_inputs_count;
+static lib_bool leave_bound;
+static lib_bool destroy_fails;
+static emulator_product_machine retained_machine;
 
 lib_bool myraidenii_machine_release_inputs(emulator_machine *machine)
 {
@@ -110,6 +113,7 @@ lib_status myraidenii_machine_create(myraidenii_core_board *board, lib_audio_pcm
 lib_status myraidenii_machine_destroy(myraidenii_machine **machine)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (destroy_fails) return LIB_STATUS_IO_ERROR;
     if (*machine != LIB_NULL) {
         ++machine_destroy_count;
         *machine = LIB_NULL;
@@ -238,6 +242,10 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     assert(definition->machine.bind(definition->machine.machine,
         (emulator_machine *)(lib_uptr)5u) == LIB_STATUS_OK);
     ++bind_count;
+    if (leave_bound) {
+        retained_machine = definition->machine;
+        return 1;
+    }
     if (definition->configure_control(definition->context,
             (emulator_machine *)(lib_uptr)5u, &control) != LIB_STATUS_OK) {
         assert(definition->machine.bind(definition->machine.machine, LIB_NULL) == LIB_STATUS_OK);
@@ -281,6 +289,11 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
         ui.hotkeys.count == 1u);
     assert(definition->machine.bind(definition->machine.machine, LIB_NULL) == LIB_STATUS_OK);
     ++bind_count;
+    if (destroy_fails) {
+        retained_machine = definition->machine;
+        assert(retained_machine.destroy(retained_machine.machine) == LIB_STATUS_IO_ERROR);
+        return 1;
+    }
     assert(definition->machine.destroy(definition->machine.machine) == LIB_STATUS_OK);
     return 0;
 }
@@ -327,9 +340,22 @@ int main(void)
     assert(myraidenii_product_run(&config) == 1);
     assert(image_destroy_count == 6 && machine_destroy_count == 4 && board_destroy_count == 6);
     driver_status = LIB_STATUS_OK;
+    leave_bound = LIB_TRUE;
+    assert(myraidenii_product_run(&config) == 1);
+    assert(image_destroy_count == 7 && machine_destroy_count == 4 && board_destroy_count == 6);
+    assert(retained_machine.bind(retained_machine.machine, LIB_NULL) == LIB_STATUS_OK);
+    assert(retained_machine.destroy(retained_machine.machine) == LIB_STATUS_OK);
+    lib_release(retained_machine.machine);
+    leave_bound = LIB_FALSE;
+    destroy_fails = LIB_TRUE;
+    assert(myraidenii_product_run(&config) == 1);
+    assert(image_destroy_count == 8 && machine_destroy_count == 5 && board_destroy_count == 7);
+    destroy_fails = LIB_FALSE;
+    assert(retained_machine.destroy(retained_machine.machine) == LIB_STATUS_OK);
+    lib_release(retained_machine.machine);
     config.display = EMULATOR_SESSION_DISPLAY_CONSOLE;
     assert(myraidenii_product_run(&config) == 1);
-    assert(image_load_count == 7 && image_destroy_count == 6 &&
-        machine_destroy_count == 4 && board_destroy_count == 6);
+    assert(image_load_count == 9 && image_destroy_count == 8 &&
+        machine_destroy_count == 6 && board_destroy_count == 8);
     return 0;
 }
