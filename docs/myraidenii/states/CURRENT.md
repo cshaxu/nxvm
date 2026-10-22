@@ -13,6 +13,39 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S90 — Implementation Review
+
+The existing Machine input map now includes Player 2 movement, buttons, start
+and coin; the same map owns the pause-time release sequence. The Product help
+describes both players. The driver unit checks each make and break and every
+release enqueue failure position; the FIFO and Product composition units were
+updated to match. Both architectures built the Product and affected tests;
+all 13 MyRaidenII units passed on each. The real selected-set Product Console
+startup/lifecycle smoke also passed on each. These checks do not establish
+real-game second-player play or desktop input qualification. S79 remains open.
+No Shared package was changed and T7 remains active.
+
+## Archived Packet — M1 T7 S90
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S89; one person performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation; the frozen T7 G05/G06 gameplay scope includes both players. |
+| Objective | Expose the Board's existing Player 2 controls through the existing host input route and help. |
+| Non-goals | No Shared/other App change, second queue, configurable binding framework, new Board state or claim of full two-player gameplay. |
+| Reference Baseline | Board owns both players, starts and coins, while Machine currently maps only Player 1; the existing release helper traverses the same mapping. |
+| Candidate Proposal | Extend the sole local host mapping with WASD movement, J/K buttons, 2 start and 6 coin; update structured help and existing driver/FIFO tests. |
+| Files And ABI Surface | MyRaidenII Machine driver, Product help, existing local units, UI and task evidence; no public or Shared interface changes. |
+| Applicable Rules | Product UX, source architecture/coding and shared execution, architecture, coding and documentation rules. |
+| Verification | Existing driver and actual FIFO units plus all MyRaidenII units on both widths; both Product candidates and selected-set Console lifecycle smoke; bounded real-set Player 2 probe if feasible. |
+| Expected Markers | Each P2 make/break reaches its exact Board control, existing P1 is unchanged, release handles all mappings and queue failure remains visible. |
+| Asset Needs | Synthetic unit fixtures; selected-set smoke uses external archive and wrapper-owned staging. |
+| Reporting Requirements | Separate host mapping/Board ingress from actual second-player gameplay and desktop qualification, include code diff. |
+| Stop Conditions | Correct behavior requires a prohibited Shared change or protected data import. |
+| Exit Criteria | Mapping and help reviewed, required double-width tests pass and complete P pushed; remaining gameplay and S79 boundaries remain open. |
+| Original Owner Request | Implement MyRaidenII autonomously using existing Shared interfaces without modifying the specified Shared packages. |
+| Similar-Issue Sweep | Check key collisions, make/break, all release entries and failure positions, P1 behavior and help consistency. |
+
 ## M1 T7 S89 — Closed
 
 Coordinator reviewed implementation P1 `e10f05af3`, its real-process failure

@@ -23,6 +23,8 @@ do not copy PC Ctrl+Alt synthetic-key behavior. Initial policy is Escape pause
 toggle, with coin/start/direction/fire/bomb/service bindings frozen in M1's
 selected-board input contract. Guest controls never feed cooked monitor input.
 Source/focus loss and pause/reset release guest input through the existing route.
+Player 1 uses arrows, Z/X, 1 and 5; Player 2 uses WASD, J/K, 2 and 6 for
+movement, fire/bomb, start and coin respectively. F2 is service.
 
 Window gameplay is the initial graphical presentation. Product injects title
 identity while Emulator owns Running/Paused formatting and raw-console status.

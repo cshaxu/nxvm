@@ -139,7 +139,9 @@ lib_status emulator_product_monitor_format_window_status(const char *name,
     emulator_product_help_map hotkeys, char *text, lib_size capacity)
 {
     if (name == LIB_NULL || text == LIB_NULL || capacity == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    assert(hotkeys.count == 7u && hotkeys.rows != LIB_NULL);
+    assert(hotkeys.count == 8u && hotkeys.rows != LIB_NULL);
+    assert(lib_text_compare(hotkeys.rows[2].key, "W / A / S / D") == 0);
+    assert(lib_text_compare(hotkeys.rows[3].key, "J / K") == 0);
     text[0] = '\0';
     return LIB_STATUS_OK;
 }

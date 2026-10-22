@@ -41,7 +41,7 @@ static void input(void *opaque, const kvm_input_event *event)
         lib_test_assert(f->selected_count < 4u);
         f->selected_order[f->selected_count++] = event->data.key.pressed ? '+' : '-';
     }
-    if (++f->delivered == 12u)
+    if (++f->delivered == 20u)
         lib_test_assert(base_sync_event_signal(f->finished) == LIB_STATUS_OK);
 }
 static lib_status frame(void *opaque, kvm_window_frame_storage *out,

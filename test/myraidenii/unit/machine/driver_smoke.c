@@ -20,7 +20,7 @@ static myraidenii_core_board_control control_last;
 static lib_bool control_pressed;
 static lib_u32 queued_count;
 static lib_u32 queue_fail_at = LIB_UINT32_MAX;
-static base_key queued_keys[9];
+static base_key queued_keys[17];
 
 lib_bool emulator_machine_enqueue_input(emulator_machine *machine, const kvm_input_event *event)
 {
@@ -184,8 +184,16 @@ int main(void)
         {BASE_KEY_RIGHT, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_RIGHT},
         {'Z', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1},
         {'X', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_2},
+        {'W', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_UP},
+        {'S', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_DOWN},
+        {'A', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_LEFT},
+        {'D', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_RIGHT},
+        {'J', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_BUTTON_1},
+        {'K', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_2_BUTTON_2},
         {'1', MYRAIDENII_CORE_BOARD_CONTROL_START_1},
+        {'2', MYRAIDENII_CORE_BOARD_CONTROL_START_2},
         {'5', MYRAIDENII_CORE_BOARD_CONTROL_COIN_1},
+        {'6', MYRAIDENII_CORE_BOARD_CONTROL_COIN_2},
         {BASE_KEY_F2, MYRAIDENII_CORE_BOARD_CONTROL_SERVICE}
     };
     const myraidenii_core_board *board = (const myraidenii_core_board *)(lib_uptr)1u;
@@ -238,21 +246,20 @@ int main(void)
         event.data.key.key = mappings[index].key;
         event.data.key.pressed = LIB_TRUE;
         driver.deliver_input(driver.context, &event);
-        if (control_count != (lib_i32)(index + 1u) || control_last != mappings[index].control ||
+        if (control_count != (lib_i32)(index * 2u + 1u) || control_last != mappings[index].control ||
             control_pressed != LIB_TRUE) return 1;
+        event.data.key.pressed = LIB_FALSE;
+        driver.deliver_input(driver.context, &event);
+        if (control_count != (lib_i32)(index * 2u + 2u) || control_last != mappings[index].control ||
+            control_pressed != LIB_FALSE) return 1;
     }
-    event.data.key.key = 'Z';
-    event.data.key.pressed = LIB_FALSE;
-    driver.deliver_input(driver.context, &event);
-    if (control_count != 10 || control_last != MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1 ||
-        control_pressed != LIB_FALSE) return 1;
     event.data.key.key = 'Q';
     driver.deliver_input(driver.context, &event);
     event.type = KVM_EVENT_INPUT_RESET;
     driver.deliver_input(driver.context, &event);
     event.type = KVM_EVENT_SOURCE_RETIRED;
     driver.deliver_input(driver.context, &event);
-    if (control_count != 10) return 1;
+    if (control_count != (lib_i32)(2u * sizeof(mappings) / sizeof(mappings[0]))) return 1;
     driver.set_heartbeat(driver.context, LIB_FALSE);
     driver.set_heartbeat(driver.context, LIB_TRUE);
     audio_frames = 1u;

@@ -30,11 +30,12 @@ typedef struct myraidenii_product_composition {
 /* These host bindings are Product policy (L1).  Machine alone translates the
  * resulting ordinary KVM events into active-low board controls. */
 static const emulator_product_help_row myraidenii_product_hotkeys[] = {
-    {"Arrow keys", "move"},
-    {"Z", "fire"},
-    {"X", "bomb"},
-    {"1", "start"},
-    {"5", "coin"},
+    {"Arrow keys", "Player 1 move"},
+    {"Z / X", "Player 1 fire / bomb"},
+    {"W / A / S / D", "Player 2 move"},
+    {"J / K", "Player 2 fire / bomb"},
+    {"1 / 2", "Player 1 / 2 start"},
+    {"5 / 6", "Player 1 / 2 coin"},
     {"F2", "service"},
     {"Esc", "pause or resume"}
 };
