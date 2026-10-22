@@ -13,7 +13,7 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S96 — Active
+## M1 T7 S96 — Closed
 
 The coordinator admits a bounded selected-board Video overlap investigation
 and, if the independently checked comparison establishes the gap, repair.
@@ -50,7 +50,16 @@ full gameplay, or owner acceptance. The updated stripped preview hashes are
 (x86). PE headers confirm x86-64 and i386 respectively. Documentation
 governance and whitespace checks passed. The source/test diff is 94 additions
 and 29 deletions (net +65), of which 66 added lines extend the existing
-graphics test. S96 remains active pending coordinator review.
+graphics test. The Coordinator reviewed the actual P1 code, tests, records
+and artifact diff. After P1, the independently rebuilt real-set probe ran
+20,000,000 instructions per width, with identical frame digest
+`ac25ef796f90ea94`, 1197 vblanks and no Board/COP provider failure or
+rejected OKI selection. It reached a bounded probe budget, not a stage or
+boss checkpoint; the staged external inputs were cleaned by the wrapper.
+S96 is accepted as this bounded fix; T7 and all broader qualification remain
+open.
+
+## Archived Packet — M1 T7 S96
 
 | Field | Required record |
 | --- | --- |
