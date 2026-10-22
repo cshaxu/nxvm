@@ -41,6 +41,16 @@ No Shared files were modified. Candidate builds are not release artifacts;
 real desktop listening, complete gameplay, S79 and final T7 qualification
 remain open. Artifact publication and coordinator review are not yet complete.
 
+The Product had still advertised the T6 revision despite T7 changes. The
+Product-owned build target and banner now use `0.0.0007`. Both widths were
+rebuilt and passed the 13 owned units and selected-set Product Console smoke.
+The build-tree files are PE x86-64 and PE i386 respectively; their SHA-256
+values are `01ffaf045651d2389d59d35ff117fcbe7db56a09949d81aac6cb23b30000b15c`
+and `a01cac56817899893b6cfb20c1c62b6651e4fdc8938c285ed7b3c912095c9ede`.
+They retain build symbols and are not deployable Release evidence. The T7
+release packet still has to produce stripped artifacts, prove their identity
+and external-asset setup, and satisfy gameplay and owner acceptance.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation after S94; one person performs coordinator and executor review. |
@@ -48,8 +58,8 @@ remain open. Artifact publication and coordinator review are not yet complete.
 | Objective | Reconcile the two OKI status-read paths with the independently inspected MAME reference and verify their actual sound-CPU-visible values. |
 | Non-goals | No Shared changes, copied implementation, audio fidelity or hardware-exact claims, or inference that ignored control counters imply a fault. |
 | Reference Baseline | Local OKI status returns only low voice bits; MAME mame0289 src/devices/sound/okim6295.cpp returns high bits set as well. S94 observed ignored empty-mask controls but no rejected selections. |
-| Candidate Proposal | Model the common status behavior in the existing Sound owner and extend existing synthetic sound CPU tests for both devices and voice states. |
-| Files And ABI Surface | MyRaidenII Core sound and existing owned unit, current task record; no public API or Shared files. |
+| Candidate Proposal | Model the common status behavior in the existing Sound owner and extend existing synthetic sound CPU tests for both devices and voice states; correct the Product's stale T6 version to active T7 before its artifact verification. |
+| Files And ABI Surface | MyRaidenII Core sound and existing owned unit, Product version and build declaration, current task record and verified product artifacts; no public API or Shared files. |
 | Applicable Rules | Product source policy and architecture; shared execution, coding and documentation; preserve one Sound owner, independent implementation and external-source provenance. |
 | Verification | Demonstrate existing status mismatch with a focused test, rebuild both candidate architectures and run owned units, relevant real-set integration and governance gates; inspect actual diff. |
 | Expected Markers | Both devices report high status bits and accurate low voice bits before, during and after playback; no claim of host audio or full-game qualification. |
