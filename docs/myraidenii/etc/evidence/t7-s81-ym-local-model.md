@@ -65,8 +65,12 @@ envelope approximation at lower rates. The existing pitch test additionally
 checks the early output level; the key-off test observes both initial sound and
 the eventual release after a longer window, rather than assuming the old
 slower attack's lower level. The MyRaidenII units and executable builds pass
-on both widths. Selected-set and desktop playback have not yet been rechecked
-for this attack change.
+on both widths. After explicitly relinking the selected-set probe on each
+width, sequential 20-million-instruction checks completed with no Board/COP
+provider failure. Both observed 736,521 nonzero generated PCM frames, PCM
+digest `1067e196557f7455`, and frame digest `ac25ef796f90ea94`. An earlier
+run used a stale probe binary and is excluded. This is not desktop playback,
+audible-fidelity, or playable-game qualification.
 
 The local Machine audio clear path previously left Board PCM behind while
 discarding staging and clearing the host stream. Since heartbeat shutdown is
@@ -85,7 +89,11 @@ The child remained alive, but the helper timed out waiting for the initial
 monitor prompt before issuing any command. The wrapper cleaned its staged ROMs;
 the experimental edits were reverted. The observation does not identify whether
 the Console host, Product startup, or helper caused the missing prompt, and it
-does not qualify start, pause, resume, stop, or audible playback.
+does not qualify start, pause, resume, stop, or audible playback. A later
+uninstrumented hidden-console observation found the prompt after a 15-second
+wait; the original five-second helper timed out again. Temporary stage prints
+changed the observed behavior, so neither slowness nor a Console defect is
+established as the root cause. All temporary instrumentation was removed.
 
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected

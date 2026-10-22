@@ -95,8 +95,10 @@ reach 20 million instructions on both widths with matching frame and PCM
 digests; desktop playback and fidelity remain unverified.
 The current attack candidate applies the L2 reference's immediate maximum
 level on key-on at effective attack rates 62 and 63; lower-rate curves remain
-L1. Both-width MyRaidenII units pass 13/13. Its selected-set and desktop
-playback checks remain outstanding.
+L1. Both-width MyRaidenII units pass 13/13. After explicitly relinking the
+selected-set probe against this revision, both widths completed 20 million
+instructions with matching frame and PCM digests. Desktop playback remains
+outstanding; the bounded probe is not a fidelity or playable-game test.
 S81 also addresses a PCM-path ownership gap: Machine clear previously cleared
 its staging and host stream but left Board PCM queued, allowing stale samples
 to be submitted after a pause. The Machine bridge now discards the Board queue
@@ -108,7 +110,10 @@ variant of the selected-set wrapper and a hidden child. The x64 child remained
 alive, but the existing Console helper did not observe its initial monitor
 prompt within its deadline; no lifecycle command was sent. The experimental
 wrapper and test edits were reverted, and staging was removed by the wrapper.
-The cause is not yet established and this result is not a Product pass.
+An additional uninstrumented observation saw the prompt by 15 seconds, while
+the original five-second helper still timed out; temporary stage prints also
+changed the observed timing. The cause remains unconfirmed, and neither
+observation is a Product lifecycle pass.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.
