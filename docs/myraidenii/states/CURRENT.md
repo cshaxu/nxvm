@@ -13,6 +13,52 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S105 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S104; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorizes autonomous MyRaidenII implementation, reference L2 models and background probes; Lib, Emulator, X86 Core and X86 IBMPC source and tests are excluded. |
+| Objective | Determine whether one credited game using continuous fire and bounded movement reaches a first boss or stage transition. |
+| Non-goals | No shared changes, guest-state manipulation, extra credits or starts, protected payload publication, or false gameplay qualification. |
+| Reference Baseline | S103 verified credit and game introduction and S104 verified movement with combined fire, but S97 used repeated credits and cannot identify one continuous game. |
+| Candidate Proposal | Temporarily instrument the existing selected-set x64 probe to send one coin/start, hold fire and alternate ordinary left/right inputs, and save eight bounded frames for inspection. |
+| Files And ABI Surface | Existing MyRaidenII integration probe and staging wrapper temporarily, product task record; no production/public API modification unless separately evidenced. |
+| Applicable Rules | Product source policy, architecture, coding and UX; shared execution and documentation; no source copying, protected payload or parallel runtime. |
+| Verification | Owner ROM inventory and existing x64 Ninja graph; one background run budgeted for 240 million instructions and 15 minutes, ending early if screen evidence shows return to attract; review available screens and counters without treating early termination as success, restore and rebuild the probe and remove staging. |
+| Expected Markers | At most one coin and start, continuous fire/movement schedule, sampled scenes, bounded result and explicit checkpoint limitations. |
+| Asset Needs | Existing owner archive and temporary task-owned external images, removed after inspection; no ROM or screenshots committed. |
+| Reporting Requirements | Record schedule, visible checkpoint evidence, failures, cleanup, desktop, sound and Session limitations. |
+| Stop Conditions | Missing verified media or a necessary correction demonstrably requires prohibited shared changes. |
+| Exit Criteria | Actual evidence and diff reviewed, temporary instrumentation restored and rebuilt, files cleaned, records committed and pushed; T7 remains open absent all required qualification. |
+| Original Owner Request | Implement MyRaidenII autonomously without modifying the four named Shared source/test pairs. |
+| Similar-Issue Sweep | Distinguish one game from attract, boss encounter from defeat, first stage from completion, and PCM generation from audible playback. |
+
+Executor observation: the x64 direct-driver probe was budgeted for 240 million
+instructions and sent only one scheduled coin/start followed by held fire and
+alternating horizontal movement. At approximately 60 million instructions,
+the sampled screen showed an active aircraft, projectiles, an explosion and
+1UP score 3,770. At approximately 90 million the screen showed score 7,940,
+`CREDIT 0` and `INSERT COIN`; at approximately 120 million it showed the
+copyright/startup visual rather than an active player HUD. This indicates the
+single-credit attempt had returned to an attract/startup sequence; it does not
+establish a stage or boss completion. Continued sampling of the resulting
+attract sequence would not prove the objective, so the coordinator stopped the
+identified task-owned process after that checkpoint. The wrapper reported its
+expected nonzero child termination, not a completed 240-million-instruction
+pass; therefore final counters, exact event counts and absence of provider
+failure for this run are not claimed.
+
+The diagnostic bypassed Session and did not drain PCM; it does not qualify
+desktop input, pause ordering, audible sound or the remainder of a game.
+Its automatically staged images were removed by wrapper cleanup, the three
+inspected converted frames and empty external task directory were deleted,
+temporary source/tool changes were restored exactly, and the original x64
+probe rebuilt. No production, test, shared or EXE change is retained. A later
+attempt needs a more effective legitimate play strategy or user-driven play;
+no guest-state bypass or repeated credits should be used to claim a single
+game reached a stage checkpoint.
+
 ## M1 T7 S104 — Closed
 
 Coordinator reviewed P1 `00779bcd8`, the matched frame observations, restored
