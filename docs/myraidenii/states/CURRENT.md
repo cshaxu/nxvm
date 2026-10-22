@@ -4,15 +4,34 @@
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
-It does not redefine unimplemented Board behavior as a release result. S74 is
-closed; S75 is active for selected-set gameplay progression. A follow-up review
+It does not redefine unimplemented Board behavior as a release result. S75 is
+closed; S76 investigates selected-set credit and start acceptance. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S75
+## Active Packet — M1 T7 S76
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S75; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic admission and L2 reference models. |
+| Objective | Identify why the selected game has not shown observable credit or start acceptance, using the existing Board and sound/input paths. |
+| Non-goals | No Shared or other App changes, protected payload retention, invented gameplay success, or second input path. |
+| Reference Baseline | S75 observed actual input reads but no attributable progression in paired bounded runs. |
+| Candidate Proposal | Compare existing input, sound CPU, interrupt and transport behavior with independently sourced board semantics; use bounded background probes and correct only evidenced MyRaidenII-owned gaps. |
+| Files And ABI Surface | MyRaidenII production and existing tests as evidence requires, plus task records; no Shared changes or new public API anticipated. |
+| Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution and documentation rules. |
+| Verification | Relevant dual-width builds and tests; bounded selected-set comparison and complete repository units when production changes warrant them. |
+| Asset Needs | Existing owner-supplied external selected-set archive. |
+| Reporting Requirements | Distinguish input delivery, credit acceptance and actual play; report audio and desktop verification separately. |
+| Stop Conditions | A necessary fix requires prohibited Shared changes or an unapproved source/license import. |
+| Exit Criteria | Evidence identifies and resolves the scoped acceptance gap, relevant tests and governance pass, and changes are reviewed and pushed. T7 remains open until full gameplay and release qualification. |
+| Temporary Work | Existing external diagnostics staging; bounded probes and cleanup after their child processes exit. |
+
+## Archived Packet — M1 T7 S75
 
 | Field | Required record |
 | --- | --- |
@@ -39,7 +58,7 @@ title; a later aircraft scene also occurs without input and cannot establish
 accepted credit. Audio remains silent in these observations, and the YM mixer
 is explicitly L1 diagnostic rather than complete synthesis. See the
 [evidence](../etc/evidence/t7-s75-gameplay-progression.md). No Shared or other
-App files changed; final coordinator review remains due.
+App files changed. Coordinator review accepts P1 `3e5a96583`; S75 is closed.
 
 ## Archived Packet — M1 T7 S74
 
