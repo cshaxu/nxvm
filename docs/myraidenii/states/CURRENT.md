@@ -6,14 +6,49 @@ M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S79 is
 suspended with its pause/resume input ordering unresolved; S80 closed a narrow
-OKI repair, and S81 addresses the diagnostic-only YM sound path. A follow-up review
+OKI repair, and S81 closed its bounded YM model batch. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S81
+## Active Packet — M1 T7 S82
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S81; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S planning, MyRaidenII-local fixes and independently observed external-emulator behavior as L2. |
+| Objective | Establish a causally attributable selected-set bomb/input and gameplay progression checkpoint, then repair an evidenced MyRaidenII-owned defect if found. |
+| Non-goals | No modification of Lib, Emulator, X86 Core, X86 IBMPC or their tests; no foreground execution, protected payload retention, second input route or invented gameplay claim. |
+| Reference Baseline | S77 established scripted Right and fire response; the X-button run changed a frame digest but did not establish an identifiable bomb effect. |
+| Candidate Proposal | Reuse the existing selected-set Machine/Board probe, compare matched-phase control and baseline runs, and investigate the actual input and rendered behavior before changing code. |
+| Files And ABI Surface | MyRaidenII-owned integration probe, Machine/Board code and existing tests only if justified by evidence; no Shared ABI changes. |
+| Applicable Rules | Product source policy, architecture and coding, shared execution and documentation rules. |
+| Verification | Background paired real-set probes with bounded budgets; both-width affected builds and units for code changes; report desktop and audio separately. |
+| Expected Markers | A reproducible game-semantic response attributable to the X-button input, or a precisely localized unverified boundary with the next investigative action. |
+| Asset Needs | Existing external owner ROM set; temporary captures and staging are removed after owned processes exit. |
+| Reporting Requirements | Distinguish input delivery, actual game response, desktop play and complete-stage qualification. |
+| Stop Conditions | A correct repair demonstrably requires prohibited Shared modification or unapproved source import. |
+| Exit Criteria | Scope evidence and any local fix are reviewed and pushed; unresolved gameplay, audio and S79 pause ordering remain explicit T7 requirements. |
+| Original Owner Request | Implement playable MyRaidenII autonomously, using external emulator behavior as L2 and without modifying the four specified Shared source/test packages. |
+| Temporary Work | Reuse the existing Ninja trees and bounded external staging; stop owned processes and remove temporary captures. |
+| Similar-Issue Sweep | Check press/release delivery and timing against the existing confirmed fire and movement controls without multiplying independent test paths. |
+
+## M1 T7 S81 — Closed, bounded YM model
+
+Coordinator review accepts the actual four changed MyRaidenII production and
+test files: the square-wave placeholder was replaced by a four-operator FM
+model with stereo and tested register behavior; Machine clears stale Board PCM
+through the existing audio path. Both-width 698-test unit runs and bounded
+selected-set probes passed, and the temporarily extended hidden-console
+lifecycle diagnostic observed the four completion messages. These results do
+not establish real YM fidelity, audible desktop output or complete gameplay.
+DT1, CSM, phase/envelope/LFO/noise accuracy and real listening remain in the
+Sound fidelity TODO; S79 input ordering and the unchanged five-second formal
+helper remain unresolved. No prohibited Shared component was changed in S81.
+
+The following packet and evidence are retained as the closed S81 record.
 
 | Field | Required record |
 | --- | --- |
