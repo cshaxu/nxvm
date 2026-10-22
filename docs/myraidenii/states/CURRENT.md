@@ -13,6 +13,47 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S98 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S97; one person performs coordinator and executor review. |
+| Admission And Approval | Owner approved autonomous MyRaidenII work; no Lib, Emulator, X86 Core or X86 IBMPC source or test changes are permitted. |
+| Objective | Eliminate redundant full-frame composition between guest VBlank events in the MyRaidenII Machine adapter. |
+| Non-goals | No Shared changes, guest timing changes, additional rendering path, frontend-specific frame policy, or claim of real-time performance without measurement. |
+| Reference Baseline | The Emulator worker calls the existing driver copy-frame callback at execution safe points; MyRaidenII runs in 256-instruction quanta and currently copies and rotates a complete frame on every callback, regardless of the existing Board VBlank counter. |
+| Candidate Proposal | Compare the Board's existing VBlank observation with the last successfully composed frame in the single Machine driver; return no new frame within the same VBlank, preserve first-frame and reset publication, and advance the marker only after successful composition. |
+| Files And ABI Surface | MyRaidenII Machine driver and its existing unit test, product records and two preview EXEs as required; no public API or Shared changes. |
+| Applicable Rules | MyRaidenII architecture and coding, shared execution and documentation; use one existing render path and Board guest clock, preserve failure and reset semantics. |
+| Verification | Demonstrate repeated-callback, next VBlank, failed composition/retry, failed observation and reset behavior in the existing unit; x86/x64 build and MyRaidenII units, Product smoke, preview identities and applicable governance checks; measure any speed claim separately. |
+| Expected Markers | One initial image and at most one image per observed VBlank; same-epoch requests do no frame conversion; failures do not advance the marker; reset permits a fresh image. |
+| Asset Needs | Synthetic unit data; existing external selected-set media only for relevant background integration, with cleanup and no payload committed. |
+| Reporting Requirements | Give actual source/test line changes, exact dual-width results, deployment and performance limits, and distinguish this fix from unresolved pause ordering and full gameplay. |
+| Stop Conditions | Correct frame publication requires a prohibited Shared change or a different ownership contract. |
+| Exit Criteria | Local production and test changes verified, reviewed, packaged and pushed; T7 remains open until full gameplay and release qualification. |
+| Original Owner Request | Implement MyRaidenII autonomously without changing the four specified Shared source/test packages. |
+| Similar-Issue Sweep | Check initialization, reset, unchanged frame, next VBlank, observation and conversion failures, and lifecycle publication behavior. |
+
+The driver now records the VBlank count only after a successful existing frame
+copy and rotation. Repeated callbacks during that count report no new frame;
+creation and successful reset invalidate the marker for a first frame. The
+existing driver unit fails against the old path and passes with the change,
+including failed observation, failed conversion and retry, next VBlank and
+reset. This changes no guest time or Shared source/API. Tracked production
+diff: +8/-0; existing test: +26/-1 (net code +33); no additional test binary
+or rendering path. The marker records publication progress, not a second
+guest clock. Actual host frame rate and desktop presentation are not measured.
+
+The x64 and x86 MyRaidenII unit suites each passed 13/13. Both preview EXEs
+were rebuilt and stripped; PE identities are x86-64 and i386. Their SHA-256
+values are `28d479f7553c478336dda975f79a27a8fc1793fa3c12200e4bd5b7bfb7fecd94`
+and `aecee32c1bc9f7d256a9b8460c9be3ce8f832a2245e8700713e3149c328631f2`.
+The existing x64 Console helper exercised each Product's start, pause, resume,
+stop and exit with staged external media. Its existing contract does not
+verify child exit status or prove Window rendering, audible sound, sustained
+gameplay or S79 input-fence behavior; those remain open. Temporary media were
+removed by the wrapper. This is an in-scope efficiency fix, not T7 completion.
+
 ## M1 T7 S97 — Closed
 
 The coordinator reviewed diagnostic P1 `0a43d0745`, the bounded observations,

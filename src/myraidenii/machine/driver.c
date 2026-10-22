@@ -19,6 +19,7 @@ struct myraidenii_machine {
     lib_atomic_i32 wake_requested;
     lib_atomic_i32 failed;
     lib_u32 frame_sequence;
+    lib_u64 frame_vblank;
     lib_u32 native_pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS];
 };
 
@@ -37,6 +38,7 @@ static lib_bool myraidenii_machine_reset(void *context)
         myraidenii_machine_fail(machine);
         return LIB_FALSE;
     }
+    machine->frame_vblank = LIB_UINT64_MAX;
     lib_atomic_i32_store_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
     return LIB_TRUE;
 }
@@ -205,6 +207,7 @@ static lib_status myraidenii_machine_copy_frame(void *context,
     lib_bool *out_produced)
 {
     myraidenii_machine *machine = context;
+    myraidenii_core_board_video_observation observation;
     kvm_window_graphics_frame *graphics;
     lib_status status;
 
@@ -212,6 +215,9 @@ static lib_status myraidenii_machine_copy_frame(void *context,
     if (out_produced == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_produced = LIB_FALSE;
     if (machine == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = myraidenii_core_board_video_observation_get(machine->board, &observation);
+    if (status != LIB_STATUS_OK) return status;
+    if (machine->frame_vblank == observation.vblank_events) return LIB_STATUS_OK;
     status = myraidenii_core_board_frame_copy(machine->board, machine->native_pixels,
         MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS);
     if (status != LIB_STATUS_OK) return status;
@@ -226,6 +232,7 @@ static lib_status myraidenii_machine_copy_frame(void *context,
                 machine->native_pixels[y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x];
         }
     }
+    machine->frame_vblank = observation.vblank_events;
     out_frame->frame.sequence = ++machine->frame_sequence;
     *out_produced = LIB_TRUE;
     return LIB_STATUS_OK;
@@ -245,6 +252,7 @@ lib_status myraidenii_machine_create(myraidenii_core_board *board, lib_audio_pcm
     if (machine == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     machine->board = board;
     machine->core_machine = myraidenii_core_board_machine_get(board);
+    machine->frame_vblank = LIB_UINT64_MAX;
     lib_atomic_i32_initialize(&machine->stop_requested, 0);
     lib_atomic_i32_initialize(&machine->wake_requested, 0);
     lib_atomic_i32_initialize(&machine->failed, 0);

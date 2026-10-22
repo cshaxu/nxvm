@@ -11,6 +11,8 @@ static lib_i32 stream_cancel_count;
 static lib_i32 stream_destroy_count;
 static lib_i32 frame_copy_count;
 static lib_status frame_status = LIB_STATUS_OK;
+static lib_status video_status = LIB_STATUS_OK;
+static lib_u64 video_vblanks;
 static lib_i32 callback_count;
 static lib_status destroy_status = LIB_STATUS_OK;
 static lib_u32 audio_frames;
@@ -74,6 +76,15 @@ lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
     pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS - 1u] = 0x00aabbccu;
     pixels[17u * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + 29u] = 0x00010203u;
     ++frame_copy_count;
+    return LIB_STATUS_OK;
+}
+
+lib_status myraidenii_core_board_video_observation_get(const myraidenii_core_board *board,
+    myraidenii_core_board_video_observation *observation)
+{
+    if (board == LIB_NULL || observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (video_status != LIB_STATUS_OK) return video_status;
+    *observation = (myraidenii_core_board_video_observation){ .vblank_events = video_vblanks };
     return LIB_STATUS_OK;
 }
 
@@ -236,11 +247,25 @@ int main(void)
         frame.frame.graphics->pixels[(MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH - 1u - 29u) *
             MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT + 17u] != 0x00010203u ||
         frame_copy_count != 1 || frame.frame.sequence != 1u) return 1;
+    if (driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_OK ||
+        produced != LIB_FALSE || frame_copy_count != 1) return 1;
+    video_status = LIB_STATUS_IO_ERROR;
+    if (driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_IO_ERROR ||
+        produced != LIB_FALSE || frame_copy_count != 1) return 1;
+    video_status = LIB_STATUS_OK;
+    ++video_vblanks;
     frame_status = LIB_STATUS_IO_ERROR;
     if (driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_IO_ERROR ||
         produced != LIB_FALSE || frame.frame.sequence != 1u ||
         frame.frame.graphics->pixels[0u] != 0x00445566u) return 1;
     frame_status = LIB_STATUS_OK;
+    if (driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_OK ||
+        produced != LIB_TRUE || frame_copy_count != 2 || frame.frame.sequence != 2u ||
+        driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_OK ||
+        produced != LIB_FALSE || frame_copy_count != 2) return 1;
+    if (driver.reset(driver.context) == LIB_FALSE ||
+        driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_OK ||
+        produced != LIB_TRUE || frame_copy_count != 3 || frame.frame.sequence != 3u) return 1;
     event.type = KVM_EVENT_KEY;
     for (lib_size index = 0u; index < sizeof(mappings) / sizeof(mappings[0]); ++index) {
         event.data.key.key = mappings[index].key;
@@ -271,7 +296,7 @@ int main(void)
     if (driver.run(driver.context) == LIB_FALSE || run_count != 3 || callback_count != 5)
         return 1;
     driver.request_stop(driver.context);
-    if (stream_clear_count != 2 || stream_active_count != 2 || stop_count != 1 ||
+    if (stream_clear_count != 3 || stream_active_count != 2 || stop_count != 1 ||
         stream_cancel_count != 2) return 1;
     destroy_status = LIB_STATUS_IO_ERROR;
     if (myraidenii_machine_destroy(&machine) != LIB_STATUS_IO_ERROR || machine == LIB_NULL)
