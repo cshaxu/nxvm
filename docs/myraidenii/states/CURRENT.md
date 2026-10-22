@@ -13,6 +13,46 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S97 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S96; one person performs coordinator and executor review. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation and L2 reference models; Lib, Emulator, X86 Core and X86 IBMPC source and tests remain unchanged. |
+| Objective | Investigate the remaining real-game and input-lifecycle gaps and implement a locally owned correction when supported by evidence. |
+| Non-goals | No Shared edits, protected payload in Git, copied reference implementation, speculative hardware-accuracy claims, or second input path. |
+| Reference Baseline | S94 reached gameplay but did not establish a boss checkpoint; S79 demonstrated queued input ordering across pause and resume. |
+| Candidate Proposal | Inspect the actual Product, Machine and existing FIFO contracts; run a bounded real-set probe with ordinary fire, movement and coin/start input, capturing temporary frames for stage/boss review after S96; investigate any reproducible product-local failure. |
+| Files And ABI Surface | MyRaidenII source, existing tests, documentation and artifacts as necessary; no Shared/public interface expansion. |
+| Applicable Rules | Product source policy, architecture and coding; shared execution and documentation; preserve unrelated changes. |
+| Verification | Run a time-bounded x64 selected-set gameplay diagnostic and inspect its temporary frames and failure counters; restore temporary probe changes and rebuild it. For any production correction, demonstrate the failing case before and after, perform relevant x86/x64 builds and tests, and qualify affected deployed artifacts. Record precisely what remains unverified. |
+| Expected Markers | A reproducible causal result and evidence-backed correction, or a documented specific remaining limitation without falsely claiming completion. |
+| Asset Needs | Existing external owner-provided selected-set assets for bounded probes; synthetic input for regression. Use the existing x64 Ninja tree and task-owned temporary directory, with a 240-million-instruction and 15-minute limit. |
+| Reporting Requirements | Explain cause, exact scope, validation, cleanup and remaining gameplay, audio and desktop gaps. |
+| Stop Conditions | Required behavior cannot be established or correctly implemented without changing prohibited Shared components. |
+| Exit Criteria | Actual changes and checks reviewed, relevant artifacts delivered and committed; no claim that T7 is complete without its full qualification. |
+| Original Owner Request | Continue independently without modifying the four named Shared source/test pairs. |
+| Similar-Issue Sweep | Check pause, resume, queued and delivered input ordering alongside normal game input. |
+
+The x64 real-set diagnostic completed 240,000,000 instructions and 14,483
+vblanks. It drove the existing Machine driver directly: fire held after
+vblank 1350, left/right alternated every 120 vblanks, and coin/start were
+pulsed after vblank 1800. Four temporary frames showed: an apparent attract
+or waiting screen; active play with a score of 4,370; GAME OVER with a large
+enemy; and GAME OVER with a score of 21,150 and a large enemy in an explosion.
+The repeating coin/start inputs mean these are not proven to be one continuous
+game; neither a boss defeat nor a stage transition is established.
+
+Board and COP provider failures and rejected OKI sample selections were zero.
+Sprite-protection `rejected=6453` counts the existing off-screen visibility
+cull, not a provider error; source review confirmed this distinction. The
+probe does not drain PCM during the run and reported 12,542,505 dropped
+frames, so it does not establish normal Product playback or an audio defect.
+It also bypasses the Session FIFO and cannot qualify S79. Temporary code and
+frames were removed and the original probe rebuilt. Stage/boss completion,
+end/restart, x86 real-set comparison, desktop input and audible audio remain
+open; no product code changed.
+
 ## M1 T7 S96 — Closed
 
 The coordinator admits a bounded selected-board Video overlap investigation
