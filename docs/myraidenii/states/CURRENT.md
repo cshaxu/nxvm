@@ -13,7 +13,7 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S95 — Active
+## M1 T7 S95 — Closed
 
 The local Sound receiver now returns high status bits set for both OKI
 devices, while preserving the four live voice bits. The bounded L2 reference
@@ -38,7 +38,7 @@ Its owned external staging was removed after both processes exited.
 S94's ignored-control counter counts empty voice masks, not busy-voice
 failures; the existing write-disposition test covers that distinction.
 No Shared files were modified. Real desktop listening, complete gameplay, S79
-and final T7 qualification remain open. Coordinator review is not complete.
+and final T7 qualification remain open.
 
 The Product had still advertised the T6 revision despite T7 changes. The
 Product-owned build target and banner now use `0.0.0007`. Both widths were
@@ -115,6 +115,16 @@ The current Types facade does not expose `SetStdHandle`, and the shared helper
 and Types are outside the owner's permitted change surface. The x64-driver
 control above remains the truthful direct-product evidence; the native x86
 helper failure remains open rather than being suppressed.
+
+Coordinator reviewed the actual S95 source, test, build, INI and artifact
+diff against the bounded packet. The retained production change is the single
+Sound status owner; counted source/test diff is 27 additions and 13 deletions
+(net +14), including Product build/version updates. Both current-width owned
+unit suites were rerun and passed 13/13 each. The uncorrected Shared Console
+helper issue is transferred to TODO; neither this closure nor the preview
+artifacts claim that issue, complete gameplay or T7 qualification is resolved.
+
+## Archived Packet — M1 T7 S95
 
 | Field | Required record |
 | --- | --- |

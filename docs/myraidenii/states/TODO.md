@@ -1,5 +1,19 @@
 # Unplanned Debt
 
+## Medium: Shared Console Integration Helper Standard Handles
+
+Owner: Shared Emulator test setup. On this host, its Console attach/detach
+sequence leaves the test process with different standard handles; the x86
+MyRaidenII direct lifecycle helper subsequently exits abnormally during CRT
+cleanup. S95 reproduced the same outcome with an NXVM child, and a temporary
+restoration of the caller's original standard handles made the x86 helper
+exit 0. The shared helper and Lib Types are outside the currently authorized
+MyRaidenII scope. A separately authorized Shared fix should preserve the
+caller's standard-handle and Console ownership, handle errors, and exercise
+both architectures and console/redirected execution; do not mask the exit
+code. See CURRENT's archived S95 evidence. The x64 helper successfully
+exercised the actual x86 product lifecycle as a separate control.
+
 ## High: YM2151 Synthesis Fidelity
 
 Owner: MyRaidenII Core Sound. S81 replaced the diagnostic square wave with an
