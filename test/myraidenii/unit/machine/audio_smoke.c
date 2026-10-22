@@ -6,6 +6,7 @@ static lib_i16 source[3u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] = {
 };
 static lib_u32 source_read;
 static lib_u32 source_count;
+static lib_u64 source_dropped;
 static lib_u32 accepted_script[4u];
 static lib_u32 accepted_index;
 static lib_i16 submitted[3u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
@@ -29,7 +30,8 @@ lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
     }
     source_read += frames;
     *out_frames = frames;
-    *out_dropped = 0u;
+    *out_dropped = source_dropped;
+    source_dropped = 0u;
     return LIB_STATUS_OK;
 }
 
@@ -58,6 +60,7 @@ static void reset_fixture(void)
 {
     source_read = 0u;
     source_count = 3u;
+    source_dropped = 0u;
     accepted_index = 0u;
     submitted_count = 0u;
     clear_status = LIB_STATUS_OK;
@@ -121,11 +124,29 @@ static lib_i32 audio_discards_without_host_stream(void)
     lib_i32 failed = 1;
 
     reset_fixture();
+    source_dropped = 1u;
     if (myraidenii_machine_audio_create((myraidenii_core_board *)board, LIB_NULL,
             &audio) != LIB_STATUS_OK || myraidenii_machine_audio_drain(audio) != LIB_STATUS_OK ||
         source_read != 3u || submitted_count != 0u ||
         myraidenii_machine_audio_clear(audio) != LIB_STATUS_OK)
         goto done;
+    failed = 0;
+done:
+    myraidenii_machine_audio_destroy(audio);
+    return failed;
+}
+
+static lib_i32 audio_reports_irrecoverable_board_loss(void)
+{
+    myraidenii_machine_audio *audio = LIB_NULL;
+    lib_i32 failed = 1;
+
+    reset_fixture();
+    source_dropped = 1u;
+    if (myraidenii_machine_audio_create((myraidenii_core_board *)(lib_uptr)1u,
+            (lib_audio_pcm_stream *)(lib_uptr)1u, &audio) != LIB_STATUS_OK ||
+        myraidenii_machine_audio_drain(audio) != LIB_STATUS_INTERNAL_ERROR ||
+        submitted_count != 0u) goto done;
     failed = 0;
 done:
     myraidenii_machine_audio_destroy(audio);
@@ -166,6 +187,7 @@ int main(void)
     result = audio_retains_partial_prefix_suffix();
     if (result != 0) return result;
     if (audio_retains_staging_when_clear_fails() != 0) return 1;
-    return audio_discards_without_host_stream() != 0 ||
+    return audio_reports_irrecoverable_board_loss() != 0 ||
+        audio_discards_without_host_stream() != 0 ||
         audio_clear_discards_board_pcm() != 0 ? 1 : 0;
 }

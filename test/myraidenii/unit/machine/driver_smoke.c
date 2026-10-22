@@ -17,6 +17,8 @@ static lib_i32 callback_count;
 static lib_status destroy_status = LIB_STATUS_OK;
 static lib_u32 audio_frames;
 static lib_u32 audio_accepted;
+static lib_u64 audio_dropped;
+static lib_u32 audio_wait_count;
 static lib_i32 control_count;
 static myraidenii_core_board_control control_last;
 static lib_bool control_pressed;
@@ -57,7 +59,8 @@ lib_status myraidenii_core_board_pcm_copy(myraidenii_core_board *board,
     if (audio_frames > capacity) audio_frames = capacity;
     if (audio_frames != 0u) out_samples[0u] = 7;
     *out_frames = audio_frames;
-    *out_dropped = 0u;
+    *out_dropped = audio_dropped;
+    audio_dropped = 0u;
     audio_frames = 0u;
     return LIB_STATUS_OK;
 }
@@ -146,6 +149,7 @@ lib_status lib_audio_pcm_stream_set_active(lib_audio_pcm_stream *stream, lib_boo
 
 lib_status lib_audio_pcm_stream_wait_writable(lib_audio_pcm_stream *stream)
 {
+    ++audio_wait_count;
     return stream == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK;
 }
 
@@ -294,6 +298,9 @@ int main(void)
         return 1;
     audio_accepted = 1u;
     if (driver.run(driver.context) == LIB_FALSE || run_count != 3 || callback_count != 5)
+        return 1;
+    audio_dropped = 1u;
+    if (driver.run(driver.context) != LIB_FALSE || audio_wait_count != 0u)
         return 1;
     driver.request_stop(driver.context);
     if (stream_clear_count != 3 || stream_active_count != 2 || stop_count != 1 ||

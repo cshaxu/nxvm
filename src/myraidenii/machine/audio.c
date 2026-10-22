@@ -37,7 +37,8 @@ static lib_status myraidenii_machine_audio_copy_board(myraidenii_machine_audio *
     status = myraidenii_core_board_pcm_copy(audio->board, copied, capacity, &frames, &dropped);
     if (status != LIB_STATUS_OK) return status;
     if (audio->stream == LIB_NULL) return LIB_STATUS_OK;
-    if (dropped != 0u) return LIB_STATUS_LIMIT_EXCEEDED;
+    /* Core has already lost frames; waiting for host capacity cannot recover them. */
+    if (dropped != 0u) return LIB_STATUS_INTERNAL_ERROR;
     if (frames == 0u) return LIB_STATUS_OK;
     if (frames > capacity) return LIB_STATUS_INTERNAL_ERROR;
     first = MYRAIDENII_MACHINE_AUDIO_STAGING_FRAME_CAPACITY -

@@ -13,6 +13,59 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S108 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T7 continuation; single-person executor and coordinator. |
+| Admission And Approval | Owner authorizes MyRaidenII-local fixes and background validation; the four named Shared source/test pairs are excluded. |
+| Objective | Distinguish irrecoverable Core PCM overflow from recoverable host-stream backpressure and verify the actual Machine driver response. |
+| Non-goals | No Shared changes, new audio queue, retry framework or claim of audible output qualification. |
+| Reference Baseline | Machine Audio returns LIMIT_EXCEEDED after Core reports dropped frames, the same status as a full host stream. Machine Driver interprets that status solely as temporary backpressure and can continue after waiting. |
+| Candidate Proposal | Report Core frame loss through existing INTERNAL_ERROR while retaining LIMIT_EXCEEDED for unaccepted host-stream submissions; extend existing Audio and Driver fixtures to prove both paths. |
+| Files And ABI Surface | MyRaidenII Machine audio and existing unit tests, Current, two MyRaidenII EXEs. No API change. Estimate source +1/-1, tests +20..40, record +25. |
+| Applicable Rules | Product architecture and coding; shared execution and documentation. |
+| Verification | Build and run affected tests on both widths, full repository-only unit suites per width, produce stripped Release EXEs and verify PE and hashes. Correct S106/S107 record to distinguish their actual product-only suites and unstripped binaries from required full-suite/stripped qualification. |
+| Asset Needs | Existing Ninja/ccache graphs and product artifacts; no media. |
+| Reporting Requirements | Report frame-loss failure, normal backpressure and no-stream behavior separately; desktop audio, FIFO and T7 qualification remain open. |
+| Stop Conditions | Correctness requires an excluded Shared change. |
+| Exit Criteria | Source/tests and artifact reviewed, mandatory full suites pass, records committed and pushed; T7 stays open. |
+| Original Owner Request | Implement MyRaidenII without modifying Lib, Emulator, X86 Core or X86 IBMPC source/tests. |
+| Similar-Issue Sweep | Check no-stream and clear paths, accepted prefixes and driver wait error handling. |
+
+Qualification correction: S106 and S107 recorded the Product-only unit suites,
+not the complete repository-only unit suites required by Execution. Their
+deployed EXEs also retained symbols and debug information, contrary to the
+stripped Release artifact rule. Their prior recorded tests and hashes remain
+historical facts, but those S closures were not fully qualified at the time.
+S108 runs the complete suites on the current cumulative code and replaces
+the Product pair with stripped binaries; it does not retroactively claim
+that S106 or S107 independently ran the missing suites.
+
+Executor evidence: Core's PCM copy returns and clears the number of frames
+already dropped. Machine Audio formerly mapped this to LIMIT_EXCEEDED, which
+Driver reserves for retryable host-stream backpressure; a successful writable
+wait could therefore hide the loss. The local adapter now returns the existing
+INTERNAL_ERROR for actual Core loss when a host stream exists. Host partial
+acceptance retains its suffix and LIMIT_EXCEEDED; with no host stream the
+existing intentional discard remains successful. Clear still intentionally
+drains discarded data. Existing Audio and Driver fixtures inject loss, verify
+that the Driver fails without a writable wait, and retain the previous partial
+submission and no-stream assertions. No observed desktop audio loss or root
+cause for an external audio symptom is asserted.
+
+Stable Ninja build-unit-tests reported no additional work; repository-only
+unit suites passed x64 698/698 (90.76 s) and x86 698/698 (98.59 s), run
+sequentially. Focused Machine audio/driver tests also passed on both widths.
+The two MyRaidenII Release EXEs were rebuilt, copied and stripped; objdump
+reports the proper x64/x86 PE formats with no debug or symbol flags. SHA-256:
+x64 `5025c25b8c327cfe9b30fe338b9dfd1330c59bc0e1a88bfb4e529ec08d92f892`;
+x86 `72a9a6bddc22959554b979ff3fe20e5e751bcf36d405a38e475290964dad387f`.
+The existing owner-ROM Product Console smoke reported success for each
+deployed EXE via the x64 harness. Its contract checks lifecycle output, not
+the child exit code, desktop controls or sound playback. Full gameplay and
+S79 remain open; no Shared source/test files changed.
+
 ## M1 T7 S107 — Closed
 
 Coordinator reviewed P1 `762a4153c`, both injected failure cases, dual-width
