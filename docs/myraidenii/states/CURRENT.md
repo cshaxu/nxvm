@@ -13,7 +13,49 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S82
+## Active Packet — M1 T7 S83
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S82; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S planning and bounded independently observed L2 behavior. |
+| Objective | Exercise sustained actual selected-set player progression with firing, movement and bounded bomb use; investigate any observed product-owned fault. |
+| Non-goals | No modification of Lib, Emulator, X86 Core, X86 IBMPC or their tests; no protected payload retention, fabricated checkpoints or alternate input route. |
+| Reference Baseline | S82 established a bomb-like explosion and later GAME OVER, not a player-controlled stage or boss transition. |
+| Candidate Proposal | Reuse the real Machine/Board diagnostic with bounded scripted controls and guest-phase captures, then investigate only observed defects. |
+| Files And ABI Surface | MyRaidenII-owned diagnostic, Machine/Board and existing tests if evidenced; no Shared ABI change. |
+| Applicable Rules | Product source policy, architecture and coding, shared execution and documentation rules. |
+| Verification | Background selected-set observation; both-width affected builds and units for any production change. |
+| Asset Needs | Existing external owner archive; temporary staging and captures removed after owned processes exit. |
+| Reporting Requirements | Distinguish actual active play, attract mode, frame and sound generation, desktop and end-to-end qualification. |
+| Stop Conditions | A correct repair demonstrably requires prohibited Shared changes or an unapproved source import. |
+| Exit Criteria | Scope observation and any local fix reviewed and pushed; incomplete gameplay, audio and S79 input ordering remain T7 requirements. |
+| Temporary Work | Stable Ninja trees and bounded external staging, with temporary captures cleaned. |
+| Similar-Issue Sweep | Check control release, fire, bomb, resumed gameplay and distinction between game-over and attract frames. |
+
+An x64 background diagnostic ran the selected set for 100 million instructions
+with Coin at vblanks 300--330, Start at 750--780, fire held from 1350,
+alternating horizontal movement every 120 vblanks, and a 12-vblank bomb pulse
+every 600 vblanks. The vblank-1600, 2000 and 2500 frames showed the player
+aircraft and scores 140, 420 and 560, respectively. Later frames showed a
+changing playfield and higher scores, but also GAME OVER text; they do not
+establish which later frames were still player-controlled or a stage/boss
+transition. The probe completed with zero Board/COP provider failures and
+generated nonzero PCM; this does not prove host audio playback. It observed
+one OKI-2 rejected selection, whose cause and impact are not yet established;
+inspect that path before treating this run as sound qualification. The probe
+is not desktop play. The temporary screenshot and control instrumentation are
+removed, and no protected image is retained.
+
+## M1 T7 S82 — Closed, bounded game-control observation
+
+Coordinator review accepts P2 `f6a66af44`: the bomb and no-bomb screenshots
+provide a bounded cross-width comparison, and the longer run establishes a
+game-over/attract transition only. The restored diagnostic built on both host
+widths, temporary assets were removed, and the documentation gate passed.
+No product or Shared code was changed and T7 is not closed.
+
+The following packet and evidence are retained as the closed S82 record.
 
 | Field | Required record |
 | --- | --- |
