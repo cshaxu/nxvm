@@ -13,7 +13,11 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S106 — Active
+## M1 T7 S106 — Closed
+
+Coordinator reviewed P1 `4497b138b`, the old-address negative control,
+dual-width Product unit results and deployed artifact identities. This closes
+the scoped callback correction, not the S79 input fence or T7 qualification.
 
 | Field | Required record |
 | --- | --- |
