@@ -131,6 +131,10 @@ production reset was restored and the x64 suite rebuilt before the final run.
 After relinking the current builds, the repository-wide unit selection also
 passed 698/698 on each width (x64 110.65 s; x86 97.76 s), sequentially with
 six workers. These are unit results, not integration or desktop qualification.
+The reference also describes Timer A CSM triggering, absent in this model.
+An instrumented x64 20-million-instruction coin/start diagnostic observed no
+CSM-enable write; this does not rule out use later in gameplay. The limitation
+is retained in TODO and instrumentation was removed.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

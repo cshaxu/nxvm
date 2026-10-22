@@ -139,6 +139,17 @@ an L2 board observation rather than a source import.
 
 ## Evidence and limits
 
+The pinned 86Box reference identifies YM register 0x14 bit 7 as CSM and
+Timer A expiration as a trigger for all channels; the current local YM model
+does not implement this automatic key triggering. A temporary x64 selected-set
+diagnostic reported any CSM-enable write during a 20-million-instruction
+coin/start sequence and observed none; it saw 14,075 YM data writes and the
+same frame and PCM digests as the preceding uninstrumented check. This bounds
+only that run, not later gameplay or other software. The temporary diagnostic
+was removed, the probe and Sound test were relinked, and the x64 Sound unit
+passed. CSM remains an explicitly recorded Sound fidelity gap, not a claim
+that the feature is unused by the complete game.
+
 The existing Sound unit executes synthetic Z80 programs and checks stereo and
 mute routing, all eight algorithms' carrier selection, first-operator modulation
 for algorithms 0--6, key-off, octave, total level, all nonzero DT2 settings and
