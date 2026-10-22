@@ -4,15 +4,15 @@
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
-It does not redefine unimplemented Board behavior as a release result. S73 is
-closed; S74 is active for pause-boundary control release. A follow-up review
+It does not redefine unimplemented Board behavior as a release result. S74 is
+closed with no active S. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S74
+## Archived Packet — M1 T7 S74
 
 | Field | Required record |
 | --- | --- |
@@ -38,7 +38,10 @@ completion, with reported stop on partial admission failure. Focused tests and
 the actual Machine FIFO regression pass on both widths; the complete `unit`
 suite passes 698/698 on each. The [evidence](../etc/evidence/t7-s74-pause-controls.md)
 records the rejected heartbeat-only candidate and remaining desktop, RDP and
-real-game verification limits. Coordinator actual-change review remains due.
+real-game verification limits. Coordinator actual-change review accepts P1
+`5a2dc85c0`: no Shared or other App files changed, FIFO rejection is not silently
+reported as success, and the maintained regression exercises the real Machine
+worker. S74 is closed; T7 remains open for the remaining gameplay work.
 
 ## M1 T7 S73 Closure
 
