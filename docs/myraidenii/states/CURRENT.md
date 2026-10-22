@@ -13,6 +13,63 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S99 — Evidence review complete
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S98; one person performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized autonomous product work and independently researched L2 models; the named Lib, Emulator, X86 Core and X86 IBMPC source and test packages are excluded. |
+| Objective | Investigate YM CSM timer-to-audio clock behavior and evaluate redundant pitch calculation work in the existing sound hot path. |
+| Non-goals | No shared changes, second sound path, copied reference code or claim of hardware-exact synthesis or full game qualification. |
+| Reference Baseline | The existing model samples a pending CSM source at 48 kHz; consecutive samples can keep the source asserted. A native YM sample clock and the host sample clock are different, so this observation alone does not establish that an extra key transition is correct. |
+| Candidate Proposal | Compare the CSM reference behavior and evaluate bounded exponentiation for the existing equal-tempered calculation; retain neither speculative CSM changes nor an optimization without measured benefit. |
+| Files And ABI Surface | Product-local sound implementation and existing sound unit, product records and preview EXEs as needed; no shared or public ABI change. |
+| Applicable Rules | Product source, architecture and coding; shared execution, architecture and documentation rules; one guest clock, one mixer and independent implementation. |
+| Verification | Compare the existing Sound unit before and after on both architectures and inspect actual diffs; require complete product units and preview identity checks only if a production change is retained; report measured timings without claiming host real-time performance. |
+| Expected Markers | Explicit native-versus-host clock limitations, an evidence-based optimization decision, no speculative semantic change or second audio path. |
+| Asset Needs | Synthetic sound program for the unit; existing owner-supplied external game media only for bounded follow-up if necessary; no protected bytes committed. |
+| Reporting Requirements | State exact source and test changes, tests and deployment, the remaining sub-sample and listening limitations, and no full-game claim. |
+| Stop Conditions | A correct scoped change demonstrably requires a prohibited shared edit; incorrect initial hypotheses are revised, not treated as blockers. |
+| Exit Criteria | Review and record the reference and candidate results, restore all temporary production/test changes and builds, and retain the unresolved CSM fidelity limitation; no artifact refresh is needed when production is unchanged. |
+| Original Owner Request | Implement MyRaidenII autonomously using external implementations as L2 references without modifying the four specified shared source/test pairs. |
+| Similar-Issue Sweep | Check consecutive triggers, no-trigger release, simultaneous ordinary held keys, timer disable and reset. |
+
+The initial suggestion to force an off/on transition at every consecutive
+host sample is not yet justified. The inspected 86Box checkout
+`4fef696a4eead1d55a28d6ac0e5bd2864e5454da`, `src/sound/ymfm/ymfm_fm.ipp`
+and `ymfm_opm.h`, models CSM as one source ORed with other key sources, clears
+that source after a native operator preparation, and uses 32 operators with
+prescale two. Consecutive native CSM assertions may therefore keep the combined
+key state asserted. This is independently inspected L2 behavior, not an
+implementation or table import. A fixed 48 kHz host observation cannot alone
+prove a missing native key edge; a distinguishing native-clock case is needed
+before changing the model. A temporary standalone reference harness used the
+same revision with a 64-clock-per-native-sample timer adapter and synthetic
+register writes. Timer A periods of 64, 128 and 192 clocks each yielded a
+continuous waveform after their respective initial delays, rather than an
+obvious phase reset at every overflow. Inspection explains a qualification:
+the reference's operator preparation is conditional on modified channels or
+an infrequent refresh, so clearing its live CSM source is not in itself proof
+of a falling key edge on the next sample. This L2 result contradicts the
+previous blanket claim that every overflow must audibly retrigger; it does not
+prove silicon behavior. A second independently inspected JT51 input combines
+Timer A overflow with the direct-key source at its native processing cadence;
+the difference between those reference models needs reconciliation. The
+temporary harness contained no external source or ROM bytes and was removed.
+
+The existing pitch loop's semitone multiplication was temporarily replaced
+with exponentiation by squaring, with two additional high/low octave cases in
+the existing Sound unit. Both widths compiled and passed that expanded unit.
+With exactly the same expanded x64 test and sequential executions, the old
+code took 1.32 seconds and the candidate 1.33 seconds. This coarse single-run
+comparison does not establish a meaningful improvement or real-game speed;
+therefore both candidate edits were removed. The original code and tests were
+rebuilt on both architectures. Actual tracked changes are documentation only;
+the two existing deployed Product binaries are unchanged. S79 input ordering,
+complete gameplay, actual audio listening and the CSM fidelity limit remain
+open. The next batch should prioritize real gameplay qualification and actual
+product-local issues over another speculative CSM or microbenchmark change.
+
 ## M1 T7 S98 — Closed
 
 Coordinator actual-change review accepts P1 `613752f21`: the frame marker is
