@@ -4,11 +4,20 @@
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
-It does not redefine unimplemented Board behavior as a release result. S72 is
-closed; S73 is active for portrait output, with both complete unit suites
-passing and coordinator review pending.
+It does not redefine unimplemented Board behavior as a release result. S73 is
+closed; T7 remains open for gameplay and release qualification.
 
-## Active Packet — M1 T7 S73
+## M1 T7 S73 Closure
+
+Coordinator review accepts P1 `0e80c5f1e`: the Machine driver alone converts
+native Board pixels to ROT270 portrait; capture failure preserves the output
+slot. The existing driver test covers the four corners, an interior pixel,
+dimensions and failure; both Product targets built and each complete unit suite
+passed 697/697. No Shared component, other App, guest raster or public API was
+changed. The [evidence](../etc/evidence/t7-s73-portrait-output.md) records the
+L2 source, scratch-memory cost and unverified real-game/desktop boundaries.
+
+## Archived Packet — M1 T7 S73
 
 | Field | Required record |
 | --- | --- |
