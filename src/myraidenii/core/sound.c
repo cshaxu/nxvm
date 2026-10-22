@@ -454,7 +454,8 @@ static double myraidenii_core_sound_ym_frequency(const myraidenii_core_sound_ym 
     const lib_u8 note_code = code & 15u;
     const lib_i32 semitones = ((lib_i32)(code >> 4u) - 4) * 12 +
         (lib_i32)note_code - (lib_i32)(note_code / 4u) - 9;
-    double result = 440.0;
+    /* At the board's nominal OPM clock, key code 0x4c is approximately A#4. */
+    double result = 466.1637615180899;
 
     for (lib_i32 i = 0; i < semitones; ++i) result *= 1.0594630943592953;
     for (lib_i32 i = 0; i > semitones; --i) result /= 1.0594630943592953;

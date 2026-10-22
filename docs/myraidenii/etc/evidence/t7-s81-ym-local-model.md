@@ -27,6 +27,18 @@ instructions with 736,536 nonzero generated PCM frames and matching PCM digest
 The full repository unit selection passed 698/698 on x64 and 698/698 on x86,
 run sequentially after the probes.
 
+An absolute pitch comparison against the same pinned 86Box reference's
+`ymfm_fm.ipp` key-code conversion and `ymfm_opm.cpp` phase-step use found that
+key code `0x4c`, zero fraction and multiplier one at the nominal board clock
+is approximately 466.2 Hz, not the local model's former 440 Hz. This is an
+L2 comparison to an emulator, not a claim that every phase step is exact. The
+local equal-tempered approximation now uses the corresponding A-sharp base;
+no reference table is copied. The existing pitch test measures the mean period
+over multiple PCM zero crossings. On x64 it failed with the former base and
+passed with the corrected base; all 13 MyRaidenII units and the executable build
+pass on each width. This pitch change has not yet received a selected-set or
+desktop playback qualification.
+
 The same reference's `ymfm_fm.ipp` `engine_timer_expired` and
 `engine_mode_write`, together with `ymfm_opm.h`, describe an independent L2
 timer contract: an expiration sets its status flag only when that timer's

@@ -86,6 +86,12 @@ reference. Both-width MyRaidenII units pass 13/13 and the local executables
 build. Sequential selected-set probes after the timer correction reach 20
 million instructions on each width with matching frame and PCM digests;
 desktop audio remains unverified.
+An absolute pitch check subsequently found the local YM base was one semitone
+below the pinned L2 reference. The local equal-tempered base is corrected and
+the existing sound test now verifies its absolute period as well as the octave
+relationship. Restoring the old base makes that test fail; MyRaidenII units
+pass 13/13 on both widths. Selected-set and desktop checks for this pitch change
+remain outstanding.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

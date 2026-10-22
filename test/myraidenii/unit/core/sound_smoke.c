@@ -684,6 +684,7 @@ static lib_i32 sound_ym_pitch_and_level(void)
     static lib_u8 program[0x2000u];
     lib_i16 frames[2048u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
     lib_u32 crossings[6] = {0u};
+    lib_u32 first_crossing = 0u, last_crossing = 0u;
     lib_i32 peak[6] = {0};
 
     for (lib_u8 mode = 0u; mode < 6u; ++mode) {
@@ -713,13 +714,22 @@ static lib_i32 sound_ym_pitch_and_level(void)
             const lib_i32 previous = frames[(index - 1u) * 2u];
             const lib_i32 magnitude = sample < 0 ? -sample : sample;
             if (magnitude > peak[mode]) peak[mode] = magnitude;
-            if (previous <= 0 && sample > 0) ++crossings[mode];
+            if (previous <= 0 && sample > 0) {
+                if (mode == 0u) {
+                    if (crossings[mode] == 0u) first_crossing = index;
+                    last_crossing = index;
+                }
+                ++crossings[mode];
+            }
         }
         myraidenii_core_sound_destroy(sound);
         if (status != LIB_STATUS_OK || copied != 2048u || dropped != 0u) return 1;
     }
     return peak[0] < 100 || peak[2] >= peak[0] / 4 ||
-        crossings[0] < 10u || crossings[1] < crossings[0] * 19u / 10u ||
+        crossings[0] < 10u ||
+        last_crossing - first_crossing < (crossings[0] - 1u) * 101u ||
+        last_crossing - first_crossing > (crossings[0] - 1u) * 105u ||
+        crossings[1] < crossings[0] * 19u / 10u ||
         crossings[1] > crossings[0] * 21u / 10u ||
         crossings[3] < crossings[0] * 13u / 10u ||
         crossings[3] > crossings[0] * 15u / 10u ||
