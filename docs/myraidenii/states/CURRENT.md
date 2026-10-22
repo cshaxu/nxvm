@@ -13,7 +13,13 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S88
+## M1 T7 S88 — Closed
+
+Coordinator review accepted implementation P1 `f96f13e34` against the bounded
+packet and actual source/test diff. The approximation and unverified desktop,
+sound and full-game boundaries remain explicit; T7 remains open.
+
+## Archived Packet — M1 T7 S88
 
 | Field | Required record |
 | --- | --- |
