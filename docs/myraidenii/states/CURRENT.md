@@ -37,9 +37,8 @@ Its owned external staging was removed after both processes exited.
 
 S94's ignored-control counter counts empty voice masks, not busy-voice
 failures; the existing write-disposition test covers that distinction.
-No Shared files were modified. Candidate builds are not release artifacts;
-real desktop listening, complete gameplay, S79 and final T7 qualification
-remain open. Artifact publication and coordinator review are not yet complete.
+No Shared files were modified. Real desktop listening, complete gameplay, S79
+and final T7 qualification remain open. Coordinator review is not complete.
 
 The Product had still advertised the T6 revision despite T7 changes. The
 Product-owned build target and banner now use `0.0.0007`. Both widths were
@@ -47,9 +46,28 @@ rebuilt and passed the 13 owned units and selected-set Product Console smoke.
 The build-tree files are PE x86-64 and PE i386 respectively; their SHA-256
 values are `01ffaf045651d2389d59d35ff117fcbe7db56a09949d81aac6cb23b30000b15c`
 and `a01cac56817899893b6cfb20c1c62b6651e4fdc8938c285ed7b3c912095c9ede`.
-They retain build symbols and are not deployable Release evidence. The T7
-release packet still has to produce stripped artifacts, prove their identity
-and external-asset setup, and satisfy gameplay and owner acceptance.
+They retain build symbols. Stripped developer-preview artifacts have now been
+produced with the same source and identity. The T7 final release still requires
+gameplay and owner acceptance; the developer-preview label does not claim it.
+
+The preview artifacts are `myraidenii_0_0_0007_x64.exe` (SHA-256
+`19badcc2fe9ce9eee14693876e01d88ca88cd93e88b1cbbc6c48723543adeef6`) and
+`myraidenii_0_0_0007_x86.exe` (SHA-256
+`01f6ce7278cac193224317172541d183445ab9dd6e51d2fdad97d2936d690d3e`).
+PE width, stripped status and embedded banner were checked. The owner archive
+was verified and its twelve required images placed in the existing external
+asset tree without overwriting its PAL files; all extracted hashes match.
+The new adjacent INI uses relative paths to that external tree.
+
+The selected-set wrapper smoke passed against each stripped artifact using its
+own temporary INI. A direct smoke of the actual artifact/INI pair observed
+normal Product exit code 0 on both widths, and x64 helper exit code 0. The x86
+helper printed its success marker but then exited with `0xc0000005`; under
+GDB it stopped at `0xc0000008` in CRT exit cleanup after the marker. The
+Shared Console helper does not inspect the child exit code, so an external
+process handle was retained to observe the Product's exit. This is a failure
+of the direct x86 test process and is not counted as a passed direct smoke;
+its root cause remains unproven. No Shared repair is authorized by this task.
 
 | Field | Required record |
 | --- | --- |
@@ -59,7 +77,7 @@ and external-asset setup, and satisfy gameplay and owner acceptance.
 | Non-goals | No Shared changes, copied implementation, audio fidelity or hardware-exact claims, or inference that ignored control counters imply a fault. |
 | Reference Baseline | Local OKI status returns only low voice bits; MAME mame0289 src/devices/sound/okim6295.cpp returns high bits set as well. S94 observed ignored empty-mask controls but no rejected selections. |
 | Candidate Proposal | Model the common status behavior in the existing Sound owner and extend existing synthetic sound CPU tests for both devices and voice states; correct the Product's stale T6 version to active T7 before its artifact verification. |
-| Files And ABI Surface | MyRaidenII Core sound and existing owned unit, Product version and build declaration, current task record and verified product artifacts; no public API or Shared files. |
+| Files And ABI Surface | MyRaidenII Core sound and existing owned unit, Product version and build declaration, current task record and product preview artifacts/configuration; no public API or Shared files. |
 | Applicable Rules | Product source policy and architecture; shared execution, coding and documentation; preserve one Sound owner, independent implementation and external-source provenance. |
 | Verification | Demonstrate existing status mismatch with a focused test, rebuild both candidate architectures and run owned units, relevant real-set integration and governance gates; inspect actual diff. |
 | Expected Markers | Both devices report high status bits and accurate low voice bits before, during and after playback; no claim of host audio or full-game qualification. |

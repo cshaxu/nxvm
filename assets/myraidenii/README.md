@@ -1,8 +1,15 @@
 # MyRaidenII Releases
 
-M0 produces no EXE or INI. A future admitted M1 release retains one verified
-pair, myraidenii_0_0_NNNN_x64.exe and myraidenii_0_0_NNNN_x86.exe, and the
-owner's lowercase myraidenii.ini. NNNN follows this product's numeric T identity.
-Generated candidates and test binaries stay in build; superseded releases
-remain only in Git history. Game/protection/graphics/sound ROMs remain external
-in the owner-managed nxvm-assets archive and are never embedded or committed.
+The `0.0.0007` x64 and x86 executables are development previews. Both pass the
+selected-set startup and lifecycle smoke, but complete gameplay, desktop input,
+audible audio, and the pause/resume input ordering remain unqualified.
+
+Place the owner-supplied individual ROM files in the sibling
+`nxvm-assets/media-myraidenii/raiden2/roms/raiden2/` directory, or edit the adjacent
+`myraidenii.ini` to point to them. Paths are relative to the INI directory.
+The program does not read ZIP archives. The expected original US set and
+individual file hashes are described in the product's ROM inventory; ROMs
+are not included in this repository.
+
+Only the latest verified executable pair is retained here. Game, protection,
+graphics and sound ROMs remain external and are never embedded or committed.
