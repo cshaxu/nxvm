@@ -13,7 +13,17 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S98 — Active
+## M1 T7 S98 — Closed
+
+Coordinator actual-change review accepts P1 `613752f21`: the frame marker is
+local to the sole Machine adaptation, advances only after successful copy,
+and is invalidated after successful reset. The existing unit distinguishes
+unchanged epochs, failure/retry, next VBlank and reset; dual-width units and
+the bounded Product checks below pass. This is not a measured host-speed,
+desktop, audio or full-game qualification. No specified Shared component was
+changed. T7 and the recorded S79 input-ordering gap remain open.
+
+## Archived Packet — M1 T7 S98
 
 | Field | Required record |
 | --- | --- |
