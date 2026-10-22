@@ -53,7 +53,9 @@ the OPM's quantized implementation. DT2 uses the reference's nominal 0, 600,
 frequency ratios rather than the reference's quantized phase calculation.
 Sustain targets use the reference's 3 dB steps, including the special level
 15 mapping to 31 steps; the rate and linear-amplitude envelope remain L1.
-DT1 and key scaling remain unimplemented. The in-progress LFO candidate keeps
+DT1 remains unimplemented. The current candidate applies key-scale selection
+to the nominal operator envelope rates, preserving a zero attack/decay/sustain
+rate; the resulting continuous envelope timing remains L1. The LFO model keeps
 AM and PM depths independently, routes channel sensitivity and operator AM
 enable through the existing mixer, and approximates four continuous waveforms
 on the existing PCM clock. Its phase and depth calculations are not the OPM's
@@ -66,14 +68,18 @@ on both widths. Further synthetic Z80 checks cover pitch, level, key-off and
 the carrier selection of all eight connection algorithms, active modulation
 in algorithms 0--6, all three DT2 pitch shifts and sustained-level ordering on
 both widths; the noise test also checks channel ownership, and the in-progress
-LFO tests check AM/PM gating and waveform selection. With noise
+LFO tests check AM/PM gating and waveform selection; key-scale tests check
+relative attack rates and zero-rate behavior. With noise
 enabled in the candidate, both selected-set probes completed their 20 million
 instruction budgets; this is not an audio fidelity or desktop qualification.
 The noise candidate's full 698-test repository-only unit selection passed on
 each width after a lower-concurrency rerun; the earlier two timeout results
 remain recorded in the evidence. The later LFO candidate has passed the 13
 MyRaidenII units and the 20 million-instruction selected-set probe on both
-widths; the full unit selection has not yet been repeated for this candidate.
+widths before the key-scale change. The revised candidate has passed all 13
+MyRaidenII units and the 20 million-instruction selected-set probe on each
+width, with matching PCM digest `ea90f8cea7f30039`. The repository unit
+selection passed 698/698 on x64 and 698/698 on x86 for this revision.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

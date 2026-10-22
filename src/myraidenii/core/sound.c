@@ -465,6 +465,12 @@ static double myraidenii_core_sound_ym_frequency(const myraidenii_core_sound_ym 
         64.0) * 0.0594630943592953);
 }
 
+static double myraidenii_core_sound_ym_rate(lib_u8 raw, lib_u8 scale)
+{
+    const lib_u8 rate = (lib_u8)(2u * raw + scale);
+    return raw == 0u ? 0.0 : (double)(rate > 63u ? 63u : rate) / 2.0;
+}
+
 static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     lib_u8 channel, lib_u8 op, double frequency, double modulation, double lfo_am)
 {
@@ -480,6 +486,14 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
     const lib_u8 sustain_rate = ym->registers[0xc0u + slot] & 31u;
     const lib_u8 sustain = ym->registers[0xe0u + slot] >> 4u;
     const lib_u8 release = ym->registers[0xe0u + slot] & 15u;
+    const lib_u8 keycode = (ym->registers[0x28u + channel] & 0x7fu) >> 2u;
+    const lib_u8 key_scale = ym->registers[0x80u + slot] >> 6u;
+    const lib_u8 rate_scale = keycode >> (3u - key_scale);
+    const double attack_rate = myraidenii_core_sound_ym_rate(attack, rate_scale);
+    const double decay_rate = myraidenii_core_sound_ym_rate(decay, rate_scale);
+    const double sustain_adjusted = myraidenii_core_sound_ym_rate(sustain_rate, rate_scale);
+    const lib_u8 release_steps = (lib_u8)(4u * release + 2u + rate_scale);
+    const double release_rate = (double)(release_steps > 63u ? 63u : release_steps) / 4.0;
     double *level = &ym->level[channel][op];
     lib_u8 *stage = &ym->envelope[channel][op];
     double step, gain = 1.0, factor = 0.9172759353897796;
@@ -490,7 +504,7 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
 
     if (*stage == 0u) return 0.0;
     if (*stage == 1u && attack != 0u) {
-        *level += (double)(attack * attack) / 400000.0;
+        *level += attack_rate * attack_rate / 400000.0;
         if (*level >= 1.0) { *level = 1.0; *stage = 2u; }
     } else if (*stage == 2u && decay != 0u) {
         double threshold = 1.0;
@@ -502,12 +516,12 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
             attenuation_step *= attenuation_step;
             steps >>= 1u;
         }
-        *level -= (double)(decay * decay) / 4000000.0;
+        *level -= decay_rate * decay_rate / 4000000.0;
         if (*level <= threshold) *stage = 3u;
     } else if (*stage == 3u && sustain_rate != 0u) {
-        *level -= (double)(sustain_rate * sustain_rate) / 4000000.0;
+        *level -= sustain_adjusted * sustain_adjusted / 4000000.0;
     } else if (*stage == 4u) {
-        *level -= (double)((release + 1u) * (release + 1u)) / 1000000.0;
+        *level -= release_rate * release_rate / 1000000.0;
     }
     if (*level <= 0.0 && *stage != 1u) { *level = 0.0; *stage = 0u; return 0.0; }
     while (remaining != 0u) {

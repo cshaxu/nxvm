@@ -8,14 +8,24 @@ establish YM2151 fidelity or complete the sound implementation.
 ## Independent behavioral reference
 
 The local 86Box checkout at `4fef696a4eead1d55a28d6ac0e5bd2864e5454da`,
-`src/sound/ymfm/ymfm_opm.h`, `ymfm_opm.cpp` and `ymfm_fm.ipp`, was inspected
+`src/sound/ymfm/ymfm_opm.h`, `ymfm_opm.cpp`, `ymfm_fm.h` and `ymfm_fm.ipp`, was inspected
 for register fields, operator connections, nominal DT2 offsets and sustain
 level encoding. Those finite facts are L2; no source or table is incorporated.
 DT2's nominal 0/600/781/950-cent settings are evaluated as continuous
 frequency ratios, not the reference's quantized phase computation. The special
 sustain setting 15 corresponds to 31 attenuation steps; each step is modeled
 as 3 dB. Equal-tempered pitch, continuous phase, envelope rates and modulation
-depth are local L1 approximations. DT1 and key scaling are absent.
+depth are local L1 approximations. DT1 is absent. A later candidate applies
+key-dependent envelope-rate scaling with zero attack/decay/sustain remaining
+zero and a bounded effective rate. The rate-selection behavior is based on
+the inspected OPM reference; the resulting continuous envelope timings remain
+an L1 approximation. A synthetic attack test checks relative key scaling and
+zero-rate behavior on both widths. The current candidate's 13 MyRaidenII
+units pass on each width. Each selected-set probe reaches 20 million
+instructions with 736,536 nonzero generated PCM frames and matching PCM digest
+`ea90f8cea7f30039`; this is not a fidelity or desktop-playback result.
+The full repository unit selection passed 698/698 on x64 and 698/698 on x86,
+run sequentially after the probes.
 
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected

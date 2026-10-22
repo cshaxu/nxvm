@@ -892,6 +892,42 @@ static lib_i32 sound_ym_lfo_routing(void)
     return 0;
 }
 
+static lib_i32 sound_ym_key_scale(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[512u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i32 peaks[3] = {0};
+
+    for (lib_u8 mode = 0u; mode < 3u; ++mode) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_u32 copied = 0u;
+        lib_u64 dropped = 0u;
+        lib_size at = 0u;
+        lib_status status;
+
+        lib_memory_set(program, 0, sizeof(program));
+        sound_program_write_ym(program, &at, 0x20u, 0x47u);
+        sound_program_write_ym(program, &at, 0x28u, 0x7cu);
+        sound_program_write_ym(program, &at, 0x98u,
+            mode == 0u ? 10u : mode == 1u ? 0xcau : 0xc0u);
+        sound_program_write_ym(program, &at, 0x08u, 0x40u);
+        program[at] = 0x76u;
+        status = sound_create(program, &fixture, &sound);
+        if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 250000u);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_sound_pcm_copy(sound, frames, 512u, &copied, &dropped);
+        myraidenii_core_sound_destroy(sound);
+        if (status != LIB_STATUS_OK || copied != 512u || dropped != 0u) return 1;
+        for (lib_u32 index = 0u; index < copied; ++index) {
+            const lib_i32 sample = frames[index * 2u];
+            const lib_i32 magnitude = sample < 0 ? -sample : sample;
+            if (magnitude > peaks[mode]) peaks[mode] = magnitude;
+        }
+    }
+    return peaks[0] == 0 || peaks[1] <= peaks[0] * 2 || peaks[2] != 0;
+}
+
 static lib_i32 sound_publishes_bounded_pcm(void)
 {
     static lib_u8 program[0x2000u];
@@ -1546,6 +1582,7 @@ int main(void)
         sound_ym_sustain_level() != 0 ||
         sound_ym_noise_channel() != 0 ||
         sound_ym_lfo_routing() != 0 ||
+        sound_ym_key_scale() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||
