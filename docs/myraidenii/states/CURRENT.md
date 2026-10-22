@@ -72,6 +72,12 @@ rejected OKI selections on either device and nonzero generated PCM; it does
 not establish audible host playback or identify the earlier rejection's cause.
 Temporary diagnostic instrumentation and captured frames are removed.
 
+The matching x86 run completed the same 100-million-instruction script and
+showed the restarted player aircraft at vblank 5300. All four frame digests,
+the final PCM digest and the reported device counters matched the x64 run;
+neither run reported Board/COP provider failure or rejected OKI selections.
+This compares bounded guest execution, not physical sound or desktop play.
+
 ## M1 T7 S82 — Closed, bounded game-control observation
 
 Coordinator review accepts P2 `f6a66af44`: the bomb and no-bomb screenshots
