@@ -36,8 +36,12 @@ local equal-tempered approximation now uses the corresponding A-sharp base;
 no reference table is copied. The existing pitch test measures the mean period
 over multiple PCM zero crossings. On x64 it failed with the former base and
 passed with the corrected base; all 13 MyRaidenII units and the executable build
-pass on each width. This pitch change has not yet received a selected-set or
-desktop playback qualification.
+pass on each width. Sequential selected-set frame-sequence runs after the pitch
+change each reached 20 million instructions without a Board/COP failure; both
+widths produced 736,511 nonzero PCM frames and matching PCM digest
+`b186a68211d94251`, with matching frame digest `ac25ef796f90ea94`. The PCM
+digest differs from the pre-change model, as expected; this is not a listening
+test or desktop playback qualification.
 
 The same reference's `ymfm_fm.ipp` `engine_timer_expired` and
 `engine_mode_write`, together with `ymfm_opm.h`, describe an independent L2
