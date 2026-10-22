@@ -77,6 +77,13 @@ toolchain difference, not proof of causation. Under 32-bit GDB, the first
 observed exception remains `0xc0000008` at a file-handle query during CRT
 exit; continuing terminated the process. The staged wrapper smoke previously
 passed, so the conditions triggering the difference are not yet established.
+The existing x86 `integration.pc-product-ini-identity-smoke`, which uses the
+same Console helper and UCRT imports, passed once; this does not prove its
+different command sequence is free of the problem. The MyRaidenII direct smoke
+still crashed after a same-directory executable rename, and after copying the
+same executable and equivalent relative external-ROM INI to a disposable build
+directory. Thus neither release filename nor its directory alone explains
+the failure. Both temporary copies were removed after the owned processes exited.
 
 | Field | Required record |
 | --- | --- |
