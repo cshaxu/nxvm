@@ -105,6 +105,15 @@ static void sound_program_write_oki(lib_u8 *program, lib_size *at, lib_u8 value)
     program[(*at)++] = 0x32u; program[(*at)++] = 0x00u; program[(*at)++] = 0x60u;
 }
 
+static void sound_program_write_ym(lib_u8 *program, lib_size *at,
+    lib_u8 address, lib_u8 value)
+{
+    program[(*at)++] = 0x3eu; program[(*at)++] = address;
+    program[(*at)++] = 0x32u; program[(*at)++] = 0x08u; program[(*at)++] = 0x40u;
+    program[(*at)++] = 0x3eu; program[(*at)++] = value;
+    program[(*at)++] = 0x32u; program[(*at)++] = 0x09u; program[(*at)++] = 0x40u;
+}
+
 static void sound_program_read_oki_response(lib_u8 *program, lib_size *at,
     lib_u8 response)
 {
@@ -593,6 +602,215 @@ done:
     return 0;
 }
 
+static lib_i32 sound_routes_ym_channels(void)
+{
+    static const lib_u8 carriers[8] = {8u, 8u, 8u, 8u, 10u, 14u, 14u, 15u};
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[256u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+
+    for (lib_u8 mode = 0u; mode < 37u; ++mode) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_u32 copied = 0u;
+        lib_u64 dropped = 0u;
+        lib_bool left = LIB_FALSE, right = LIB_FALSE;
+        lib_size at = 0u;
+        lib_status status;
+
+        lib_memory_set(program, 0, sizeof(program));
+        const lib_u8 algorithm = mode >= 5u ? (lib_u8)((mode - 5u) / 4u) : 0u;
+        const lib_u8 op = mode >= 5u ? (lib_u8)((mode - 5u) % 4u) : 0u;
+        const lib_u8 slot = (lib_u8)((((op & 1u) << 1u) | ((op & 2u) >> 1u)) * 8u);
+        const lib_bool expected_left = mode >= 5u ?
+            (carriers[algorithm] & (1u << op)) != 0u : (mode == 0u || mode == 4u);
+
+        sound_program_write_ym(program, &at, 0x20u, mode >= 5u ? (lib_u8)(0x40u | algorithm) : mode >= 3u ? 0x40u :
+            (lib_u8)(0x07u | (mode == 0u ? 0x40u : mode == 1u ? 0x80u : 0u)));
+        sound_program_write_ym(program, &at, 0x28u, 0x4au);
+        sound_program_write_ym(program, &at, 0x78u, 0u);
+        sound_program_write_ym(program, &at, 0x98u, 0x1fu);
+        sound_program_write_ym(program, &at, 0x80u, 0x1fu);
+        if (mode >= 5u) sound_program_write_ym(program, &at, (lib_u8)(0x80u + slot), 0x1fu);
+        sound_program_write_ym(program, &at, 0x08u, mode >= 5u ?
+            (lib_u8)(1u << (op + 3u)) : mode == 3u ? 0x08u : 0x40u);
+        program[at] = 0x76u;
+        status = sound_create(program, &fixture, &sound);
+        if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 100000u);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_sound_pcm_copy(sound, frames, 256u, &copied, &dropped);
+        for (lib_u32 index = 0u; index < copied; ++index) {
+            left |= frames[index * 2u] != 0;
+            right |= frames[index * 2u + 1u] != 0;
+        }
+        myraidenii_core_sound_destroy(sound);
+        if (status != LIB_STATUS_OK || copied == 0u || dropped != 0u ||
+            left != expected_left || right != (mode == 1u)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 sound_ym_pitch_and_level(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[2048u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_u32 crossings[6] = {0u};
+    lib_i32 peak[6] = {0};
+
+    for (lib_u8 mode = 0u; mode < 6u; ++mode) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_u32 copied = 0u;
+        lib_u64 dropped = 0u;
+        lib_size at = 0u;
+        lib_status status;
+
+        lib_memory_set(program, 0, sizeof(program));
+        sound_program_write_ym(program, &at, 0x20u, 0x47u);
+        sound_program_write_ym(program, &at, 0x28u, mode == 1u ? 0x5cu : 0x4cu);
+        sound_program_write_ym(program, &at, 0x58u, 1u);
+        sound_program_write_ym(program, &at, 0x78u, mode == 2u ? 40u : 0u);
+        sound_program_write_ym(program, &at, 0x98u, 0x1fu);
+        if (mode >= 3u) sound_program_write_ym(program, &at, 0xd8u,
+            (lib_u8)((mode - 2u) << 6u));
+        sound_program_write_ym(program, &at, 0x08u, 0x40u);
+        program[at] = 0x76u;
+        status = sound_create(program, &fixture, &sound);
+        if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 1000000u);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_sound_pcm_copy(sound, frames, 2048u, &copied, &dropped);
+        for (lib_u32 index = 1u; index < copied; ++index) {
+            const lib_i32 sample = frames[index * 2u];
+            const lib_i32 previous = frames[(index - 1u) * 2u];
+            const lib_i32 magnitude = sample < 0 ? -sample : sample;
+            if (magnitude > peak[mode]) peak[mode] = magnitude;
+            if (previous <= 0 && sample > 0) ++crossings[mode];
+        }
+        myraidenii_core_sound_destroy(sound);
+        if (status != LIB_STATUS_OK || copied != 2048u || dropped != 0u) return 1;
+    }
+    return peak[0] < 100 || peak[2] >= peak[0] / 4 ||
+        crossings[0] < 10u || crossings[1] < crossings[0] * 19u / 10u ||
+        crossings[1] > crossings[0] * 21u / 10u ||
+        crossings[3] < crossings[0] * 13u / 10u ||
+        crossings[3] > crossings[0] * 15u / 10u ||
+        crossings[4] < crossings[0] * 15u / 10u ||
+        crossings[4] > crossings[0] * 17u / 10u ||
+        crossings[5] < crossings[0] * 16u / 10u ||
+        crossings[5] > crossings[0] * 18u / 10u;
+}
+
+static lib_i32 sound_ym_modulation(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 baseline[256u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i16 frames[256u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+
+    for (lib_u8 algorithm = 0u; algorithm < 7u; ++algorithm) {
+        for (lib_u8 keyed = 0u; keyed < 2u; ++keyed) {
+            sound_fixture fixture = {0};
+            myraidenii_core_sound *sound = LIB_NULL;
+            lib_u32 copied = 0u;
+            lib_u64 dropped = 0u;
+            lib_bool changed = LIB_FALSE;
+            lib_size at = 0u;
+            lib_status status;
+
+            lib_memory_set(program, 0, sizeof(program));
+            sound_program_write_ym(program, &at, 0x20u, (lib_u8)(0x40u | algorithm));
+            sound_program_write_ym(program, &at, 0x28u, 0x4cu);
+            sound_program_write_ym(program, &at, 0x40u, 2u);
+            for (lib_u8 slot = 0u; slot < 32u; slot += 8u)
+                sound_program_write_ym(program, &at, (lib_u8)(0x80u + slot), 0x1fu);
+            sound_program_write_ym(program, &at, 0x08u, keyed ? 0x78u : 0x70u);
+            program[at] = 0x76u;
+            status = sound_create(program, &fixture, &sound);
+            if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 100000u);
+            if (status == LIB_STATUS_OK)
+                status = myraidenii_core_sound_pcm_copy(sound, frames, 256u, &copied, &dropped);
+            myraidenii_core_sound_destroy(sound);
+            if (status != LIB_STATUS_OK || copied != 256u || dropped != 0u) return 1;
+            for (lib_u32 index = 0u; index < 256u; ++index) {
+                if (keyed == 0u) baseline[index * 2u] = frames[index * 2u];
+                else if (baseline[index * 2u] != frames[index * 2u]) changed = LIB_TRUE;
+            }
+            if (keyed != 0u && !changed) return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 sound_ym_key_off(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[2048u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    sound_fixture fixture = {0};
+    myraidenii_core_sound *sound = LIB_NULL;
+    lib_u32 copied = 0u;
+    lib_u64 dropped = 0u;
+    lib_size at = 0u;
+    lib_bool sounded = LIB_FALSE;
+    lib_status status;
+
+    lib_memory_set(program, 0, sizeof(program));
+    sound_program_write_ym(program, &at, 0x20u, 0x47u);
+    sound_program_write_ym(program, &at, 0x28u, 0x4cu);
+    sound_program_write_ym(program, &at, 0x78u, 0u);
+    sound_program_write_ym(program, &at, 0x98u, 0x1fu);
+    sound_program_write_ym(program, &at, 0xf8u, 0x0fu);
+    sound_program_write_ym(program, &at, 0x08u, 0x40u);
+    at += 2000u; /* NOPs allow the keyed operator to reach an audible level. */
+    sound_program_write_ym(program, &at, 0x08u, 0u);
+    program[at] = 0x76u;
+    status = sound_create(program, &fixture, &sound);
+    if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 1000000u);
+    if (status == LIB_STATUS_OK)
+        status = myraidenii_core_sound_pcm_copy(sound, frames, 2048u, &copied, &dropped);
+    for (lib_u32 index = 0u; index < copied; ++index) {
+        if (index < 1024u && frames[index * 2u] != 0) sounded = LIB_TRUE;
+        if (index >= 1920u && frames[index * 2u] != 0) status = LIB_STATUS_INTERNAL_ERROR;
+    }
+    myraidenii_core_sound_destroy(sound);
+    return status != LIB_STATUS_OK || copied != 2048u || dropped != 0u || !sounded;
+}
+
+static lib_i32 sound_ym_sustain_level(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 frames[4096u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i32 peaks[3] = {0};
+
+    for (lib_u8 mode = 0u; mode < 3u; ++mode) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_u32 copied = 0u;
+        lib_u64 dropped = 0u;
+        lib_size at = 0u;
+        lib_status status;
+
+        lib_memory_set(program, 0, sizeof(program));
+        sound_program_write_ym(program, &at, 0x20u, 0x47u);
+        sound_program_write_ym(program, &at, 0x28u, 0x4cu);
+        sound_program_write_ym(program, &at, 0x98u, 0x1fu);
+        sound_program_write_ym(program, &at, 0xb8u, 0x1fu);
+        sound_program_write_ym(program, &at, 0xf8u,
+            mode == 0u ? 0u : mode == 1u ? 0x80u : 0xf0u);
+        sound_program_write_ym(program, &at, 0x08u, 0x40u);
+        program[at] = 0x76u;
+        status = sound_create(program, &fixture, &sound);
+        if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 2000000u);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_sound_pcm_copy(sound, frames, 4096u, &copied, &dropped);
+        myraidenii_core_sound_destroy(sound);
+        if (status != LIB_STATUS_OK || copied != 4096u || dropped == 0u) return 1;
+        for (lib_u32 index = 3072u; index < copied; ++index) {
+            const lib_i32 sample = frames[index * 2u];
+            const lib_i32 magnitude = sample < 0 ? -sample : sample;
+            if (magnitude > peaks[mode]) peaks[mode] = magnitude;
+        }
+    }
+    return peaks[0] < 100 || peaks[1] >= peaks[0] / 5 || peaks[2] >= peaks[1] / 2;
+}
+
 static lib_i32 sound_publishes_bounded_pcm(void)
 {
     static lib_u8 program[0x2000u];
@@ -612,6 +830,7 @@ static lib_i32 sound_publishes_bounded_pcm(void)
     samples_1[13u] = 0x21u;
     samples_1[0x20u] = 0xf1u;
     samples_1[0x21u] = 0x23u;
+    sound_program_write_ym(program, &at, 0x20u, 0xc0u);
     program[at++] = 0x3eu; program[at++] = 0x81u;
     program[at++] = 0x32u; program[at++] = 0x00u; program[at++] = 0x60u;
     program[at++] = 0x3eu; program[at++] = 0x10u;
@@ -1239,6 +1458,11 @@ int main(void)
         sound_delivers_transport_interrupt() != 0 ||
         sound_interrupt_after_ei_instruction() != 0 ||
         sound_acknowledges_transport_service() != 0 ||
+        sound_routes_ym_channels() != 0 ||
+        sound_ym_pitch_and_level() != 0 ||
+        sound_ym_modulation() != 0 ||
+        sound_ym_key_off() != 0 ||
+        sound_ym_sustain_level() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||

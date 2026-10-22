@@ -35,6 +35,40 @@ FIFO; it is not a real-game or desktop qualification.
 | Original Owner Request | Implement playable MyRaidenII autonomously without modifying the specified Shared source/test packages. |
 | Similar-Issue Sweep | Check timing, clipping, reset, stereo and both OKI contributions against the single existing PCM path. |
 
+S81 research has begun against the existing Yamaha YM2151 1991 data sheet and
+the local 86Box checkout at `4fef696a4eead1d55a28d6ac0e5bd2864e5454da`
+(`src/sound/ymfm/ymfm_opm.h`, `ymfm_opm.cpp` and `ymfm_fm.ipp`). The independently implemented
+model must handle eight channels with four independently keyed operators,
+channel-selected connection algorithms, levels and left/right routing;
+pitch, envelopes and modulation require their own explicit accuracy boundaries.
+The current one-keyed-flag-per-channel square waveform and duplicated mono
+output cannot satisfy those requirements. No reference implementation or
+table has been copied. This is design evidence, not a synthesis result.
+
+The uncommitted S81 candidate applies independent YM stereo routing and uses
+four individually keyed sine operators with all eight channel connection
+choices. Pitch and envelope calculations are explicit L1 approximations, not
+the OPM's quantized implementation. DT2 uses the reference's nominal 0, 600,
+781 and 950 cent offsets as L2 register semantics, approximated as continuous
+frequency ratios rather than the reference's quantized phase calculation.
+Sustain targets use the reference's 3 dB steps, including the special level
+15 mapping to 31 steps; the rate and linear-amplitude envelope remain L1.
+DT1, key scaling, LFO and noise remain
+unimplemented. A synthetic Z80 program tests left/right/muted routing and
+distinguishes a lone modulator from a carrier; the affected Sound unit passes
+on both widths. Further synthetic Z80 checks cover pitch, level, key-off and
+the carrier selection of all eight connection algorithms, active modulation
+in algorithms 0--6, all three DT2 pitch shifts and sustained-level ordering on
+both widths. Both
+selected-set probes reach 20 million instructions with identical nonzero PCM
+digest and no reported board-provider failure; this is not an audio fidelity
+or desktop qualification. The latest candidate passes the full 698-test
+repository-only unit selection on each width. Modulation depth, envelope
+timing, performance and host audio still require qualification. The
+candidate is not yet an accepted YM2151 implementation.
+The [work-in-progress evidence](../etc/evidence/t7-s81-ym-local-model.md)
+records adopted facts and the bounded selected-set observation.
+
 ## M1 T7 S80 — Closed
 
 Coordinator actual-change review accepts P1 `5d5ff3bf8`: one MyRaidenII

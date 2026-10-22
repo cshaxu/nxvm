@@ -1,4 +1,5 @@
 #include "myraidenii/core/sound.h"
+#include "lib/types/math.h"
 
 enum {
     MYRAIDENII_CORE_SOUND_FIXED_ROM_BYTES = 0x2000u,
@@ -48,8 +49,11 @@ typedef struct myraidenii_core_sound_ym {
     lib_u8 status;
     lib_u64 timer_a_phase;
     lib_u64 timer_b_phase;
-    lib_bool channel_key_on[8u];
-    lib_u32 output_phase[8u];
+    lib_u8 operator_keys[8u];
+    lib_u32 output_phase[8u][4u];
+    double level[8u][4u];
+    double feedback[8u];
+    lib_u8 envelope[8u][4u];
 } myraidenii_core_sound_ym;
 
 typedef struct myraidenii_core_sound_oki_voice {
@@ -220,7 +224,19 @@ static lib_status myraidenii_core_sound_ym_write(myraidenii_core_sound *sound,
     ++sound->observation.ym_data_writes;
     ym->registers[ym->address] = value;
     if (ym->address == 8u) {
-        ym->channel_key_on[value & 7u] = (value & 0x78u) != 0u;
+        const lib_u8 channel = value & 7u;
+        const lib_u8 keys = (value >> 3u) & 0x0fu;
+        const lib_u8 changed = ym->operator_keys[channel] ^ keys;
+
+        for (lib_u8 op = 0u; op < 4u; ++op) {
+            const lib_u8 bit = (lib_u8)(1u << op);
+            if ((changed & bit) == 0u) continue;
+            if ((keys & bit) != 0u) {
+                ym->output_phase[channel][op] = 0u;
+                ym->envelope[channel][op] = 1u;
+            } else ym->envelope[channel][op] = 4u;
+        }
+        ym->operator_keys[channel] = keys;
     } else if (ym->address == 0x14u) {
         if ((value & 0x10u) != 0u) ym->status &= (lib_u8)~1u;
         if ((value & 0x20u) != 0u) ym->status &= (lib_u8)~2u;
@@ -422,20 +438,121 @@ static void myraidenii_core_sound_pcm_drop(myraidenii_core_sound *sound,
     else sound->pcm_dropped_frames += frames;
 }
 
-/* This first local mixer is deliberately an L1 diagnostic waveform, not a
- * reproduction of either chip's analogue path. Its sole contract is stable
- * PCM publication from the already-owned register/channel state. */
-static lib_i16 myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound)
+/* Independently constructed L1 approximation: equal-tempered pitch and
+ * continuous envelopes are not the OPM's quantized phase/envelope tables. */
+static double myraidenii_core_sound_ym_frequency(const myraidenii_core_sound_ym *ym,
+    lib_u8 channel)
 {
-    lib_i32 mixed = 0;
+    const lib_u8 code = ym->registers[0x28u + channel] & 0x7fu;
+    const lib_u8 note_code = code & 15u;
+    const lib_i32 semitones = ((lib_i32)(code >> 4u) - 4) * 12 +
+        (lib_i32)note_code - (lib_i32)(note_code / 4u) - 9;
+    double result = 440.0;
+
+    for (lib_i32 i = 0; i < semitones; ++i) result *= 1.0594630943592953;
+    for (lib_i32 i = 0; i > semitones; --i) result /= 1.0594630943592953;
+    return result * (1.0 + ((double)(ym->registers[0x30u + channel] >> 2u) /
+        64.0) * 0.0594630943592953);
+}
+
+static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
+    lib_u8 channel, lib_u8 op, double frequency, double modulation)
+{
+    /* Nominal DT2 offsets are 0, 600, 781 and 950 cents. */
+    static const double detune2_ratio[4u] = {
+        1.0, 1.4142135623730951, 1.5700748447110506, 1.731073122012286
+    };
+    const lib_u8 slot = (lib_u8)((((op & 1u) << 1u) | ((op & 2u) >> 1u)) * 8u + channel);
+    const lib_u8 multiple = ym->registers[0x40u + slot] & 15u;
+    const lib_u8 attenuation = ym->registers[0x60u + slot] & 127u;
+    const lib_u8 attack = ym->registers[0x80u + slot] & 31u;
+    const lib_u8 decay = ym->registers[0xa0u + slot] & 31u;
+    const lib_u8 sustain_rate = ym->registers[0xc0u + slot] & 31u;
+    const lib_u8 sustain = ym->registers[0xe0u + slot] >> 4u;
+    const lib_u8 release = ym->registers[0xe0u + slot] & 15u;
+    double *level = &ym->level[channel][op];
+    lib_u8 *stage = &ym->envelope[channel][op];
+    double step, gain = 1.0, factor = 0.9172759353897796;
+    lib_u8 remaining = attenuation;
+
+    if (*stage == 0u) return 0.0;
+    if (*stage == 1u && attack != 0u) {
+        *level += (double)(attack * attack) / 400000.0;
+        if (*level >= 1.0) { *level = 1.0; *stage = 2u; }
+    } else if (*stage == 2u && decay != 0u) {
+        double threshold = 1.0;
+        double attenuation_step = 0.7079457843841379;
+        lib_u8 steps = sustain == 15u ? 31u : sustain;
+
+        while (steps != 0u) {
+            if ((steps & 1u) != 0u) threshold *= attenuation_step;
+            attenuation_step *= attenuation_step;
+            steps >>= 1u;
+        }
+        *level -= (double)(decay * decay) / 4000000.0;
+        if (*level <= threshold) *stage = 3u;
+    } else if (*stage == 3u && sustain_rate != 0u) {
+        *level -= (double)(sustain_rate * sustain_rate) / 4000000.0;
+    } else if (*stage == 4u) {
+        *level -= (double)((release + 1u) * (release + 1u)) / 1000000.0;
+    }
+    if (*level <= 0.0 && *stage != 1u) { *level = 0.0; *stage = 0u; return 0.0; }
+    while (remaining != 0u) {
+        if ((remaining & 1u) != 0u) gain *= factor;
+        factor *= factor;
+        remaining >>= 1u;
+    }
+    step = frequency * detune2_ratio[ym->registers[0xc0u + slot] >> 6u] *
+        (multiple == 0u ? 0.5 : (double)multiple) /
+        MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE;
+    while (step >= 1.0) step -= 1.0;
+    ym->output_phase[channel][op] += (lib_u32)(step * 4294967296.0);
+    return lib_c_sin((double)ym->output_phase[channel][op] *
+        (6.283185307179586 / 4294967296.0) + modulation) * *level * gain;
+}
+
+static double myraidenii_core_sound_ym_channel(myraidenii_core_sound_ym *ym,
+    lib_u8 channel)
+{
+    const lib_u8 control = ym->registers[0x20u + channel];
+    const lib_u8 algorithm = control & 7u;
+    double frequency;
+    double a, b, c, d, input;
+
+    if (ym->envelope[channel][0u] == 0u && ym->envelope[channel][1u] == 0u &&
+        ym->envelope[channel][2u] == 0u && ym->envelope[channel][3u] == 0u)
+        return 0.0;
+    frequency = myraidenii_core_sound_ym_frequency(ym, channel);
+    a = myraidenii_core_sound_ym_operator(ym, channel, 0u, frequency,
+        ym->feedback[channel] * (double)((control >> 3u) & 7u) / 4.0);
+    ym->feedback[channel] = a;
+    b = myraidenii_core_sound_ym_operator(ym, channel, 1u, frequency,
+        (algorithm == 0u || algorithm == 3u || algorithm == 4u ||
+         algorithm == 5u || algorithm == 6u) ? a * 4.0 : 0.0);
+    input = algorithm == 0u || algorithm == 2u ? b :
+        algorithm == 1u ? a + b : algorithm == 5u ? a : 0.0;
+    c = myraidenii_core_sound_ym_operator(ym, channel, 2u, frequency, input * 4.0);
+    input = algorithm == 0u || algorithm == 1u || algorithm == 4u ? c :
+        algorithm == 2u ? a + c : algorithm == 3u ? b + c :
+        algorithm == 5u ? a : 0.0;
+    d = myraidenii_core_sound_ym_operator(ym, channel, 3u, frequency, input * 4.0);
+    if (algorithm == 4u) return b + d;
+    if (algorithm == 5u || algorithm == 6u) return b + c + d;
+    if (algorithm == 7u) return a + b + c + d;
+    return d;
+}
+
+static void myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound,
+    lib_i16 *out_left, lib_i16 *out_right)
+{
+    lib_i32 left = 0, right = 0;
 
     for (lib_u8 index = 0u; index < 8u; ++index) {
         myraidenii_core_sound_ym *ym = &sound->ym;
 
-        if (!ym->channel_key_on[index]) continue;
-        ym->output_phase[index] += 1u +
-            ((lib_u32)(ym->registers[0x28u + index] & 0x7fu) << 4u);
-        mixed += (ym->output_phase[index] & 0x8000u) == 0u ? 192 : -192;
+        const lib_i32 sample = (lib_i32)(myraidenii_core_sound_ym_channel(ym, index) * 1024.0);
+        if ((ym->registers[0x20u + index] & 0x40u) != 0u) left += sample;
+        if ((ym->registers[0x20u + index] & 0x80u) != 0u) right += sample;
     }
     for (lib_u8 device = 0u; device < 2u; ++device) {
         const myraidenii_core_sound_oki *oki = &sound->oki[device];
@@ -444,21 +561,26 @@ static lib_i16 myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound)
             ++index) {
             const myraidenii_core_sound_oki_voice *voice = &oki->voices[index];
             if (!voice->active || voice->position >= oki->samples_bytes) continue;
-            mixed += (lib_i32)voice->signal *
+            const lib_i32 sample = (lib_i32)voice->signal *
                 (lib_i32)myraidenii_core_sound_oki_volume_scale(voice->volume) / 8;
+            left += sample;
+            right += sample;
         }
     }
-    if (mixed > 32767) return 32767;
-    if (mixed < -32768) return -32768;
-    return (lib_i16)mixed;
+    if (left > 32767) left = 32767;
+    if (left < -32768) left = -32768;
+    if (right > 32767) right = 32767;
+    if (right < -32768) right = -32768;
+    *out_left = (lib_i16)left;
+    *out_right = (lib_i16)right;
 }
 
 static void myraidenii_core_sound_pcm_enqueue(myraidenii_core_sound *sound,
-    lib_i16 sample)
+    lib_i16 left, lib_i16 right)
 {
     lib_u32 write;
 
-    if (sample != 0) ++sound->observation.pcm_nonzero_frames;
+    if (left != 0 || right != 0) ++sound->observation.pcm_nonzero_frames;
 
     if (sound->pcm_count == MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY) {
         sound->pcm_read = (sound->pcm_read + 1u) %
@@ -467,19 +589,8 @@ static void myraidenii_core_sound_pcm_enqueue(myraidenii_core_sound *sound,
     } else ++sound->pcm_count;
     write = (sound->pcm_read + sound->pcm_count - 1u) %
         MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
-    sound->pcm_samples[write * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] = sample;
-    sound->pcm_samples[write * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u] = sample;
-}
-
-static void myraidenii_core_sound_pcm_skip(myraidenii_core_sound *sound,
-    lib_u64 frames)
-{
-    for (lib_u8 index = 0u; index < 8u; ++index) {
-        const lib_u32 frequency = 1u +
-            ((lib_u32)(sound->ym.registers[0x28u + index] & 0x7fu) << 4u);
-
-        sound->ym.output_phase[index] += (lib_u32)(frames * frequency);
-    }
+    sound->pcm_samples[write * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS] = left;
+    sound->pcm_samples[write * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS + 1u] = right;
 }
 
 static lib_status myraidenii_core_sound_pcm_advance(myraidenii_core_sound *sound,
@@ -504,12 +615,15 @@ static lib_status myraidenii_core_sound_pcm_advance(myraidenii_core_sound *sound
             frames - MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY);
         sound->pcm_read = 0u;
         sound->pcm_count = 0u;
-        myraidenii_core_sound_pcm_skip(sound,
-            frames - MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY);
+        /* This large advance occurs only without a sound program; no guest
+         * register writes or keyed operators are possible in that mode. */
         frames = MYRAIDENII_CORE_SOUND_PCM_FRAME_CAPACITY;
     }
     while (frames != 0u) {
-        myraidenii_core_sound_pcm_enqueue(sound, myraidenii_core_sound_pcm_mix(sound));
+        lib_i16 left, right;
+
+        myraidenii_core_sound_pcm_mix(sound, &left, &right);
+        myraidenii_core_sound_pcm_enqueue(sound, left, right);
         --frames;
     }
     return LIB_STATUS_OK;
