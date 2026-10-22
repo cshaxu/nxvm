@@ -104,6 +104,17 @@ Product and its actual adjacent INI, and exited 0. Together with the earlier
 independent x86 Product exit-code observation, this verifies that sequence
 under this control; it does not repair the x86 helper or establish gameplay,
 desktop input, or audio playback qualification.
+An additional temporary diagnostic captured the process standard handles
+around the shared Console helper: on this host they changed from `4/8/12`
+to `292/288/308` as the helper attached and freed the child Console. Restoring
+the original three handles after the helper made this x86 direct smoke exit 0
+in one run. This isolates a standard-handle restoration problem in the test
+process, not in the game's machine execution. The diagnostic used native
+Win32 calls and was removed; it is not an accepted production or test repair.
+The current Types facade does not expose `SetStdHandle`, and the shared helper
+and Types are outside the owner's permitted change surface. The x64-driver
+control above remains the truthful direct-product evidence; the native x86
+helper failure remains open rather than being suppressed.
 
 | Field | Required record |
 | --- | --- |
