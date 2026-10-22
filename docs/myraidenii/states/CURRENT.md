@@ -13,7 +13,11 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## M1 T7 S108 — Active
+## M1 T7 S108 — Closed
+
+Coordinator reviewed P1 `d402d088d`, full dual-width unit results, the
+separate Product Console smokes and stripped artifact identities. S106/S107
+qualification corrections remain explicit below; T7 and S79 remain open.
 
 | Field | Required record |
 | --- | --- |
