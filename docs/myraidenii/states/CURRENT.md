@@ -13,6 +13,47 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S92 — Implementation Review
+
+The selected-set x64 background probe drove two coin-2 pulses at vblanks
+300--330 and 500--530, then start-2 at 750--780, and held both players' fire
+from 1350 while alternating horizontal movement and pulsing bombs. At 1800
+both aircraft were visible with scores 140 and 280; at 3400 both scores had
+grown to 3830 and 5540. At 5000 player 1 had ended and player 2 was still
+visible; at 5800 both sides displayed GAME OVER. This is a bounded scripted
+two-player play and game-over observation, not proof of independently tested
+movement/bombs, a boss or stage transition, interactive desktop play, or
+complete gameplay. The probe delivered directly to the Machine driver, not
+through the Session FIFO.
+
+The run completed 100,000,000 instructions and 6084 vblanks with zero
+Board/COP provider failures and zero rejected OKI selections. PCM was generated,
+but the diagnostic drops buffered PCM and does not establish host playback.
+Temporary instrumentation and captured frames were removed after exit; the
+original x64 probe was rebuilt. S79, audible sound and T7 release qualification
+remain open. No Shared source or test was changed.
+
+## Archived Packet — M1 T7 S92
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S91; one person executes and reviews. |
+| Admission And Approval | Owner authorized autonomous local implementation; T7 requires stage and boss gameplay checkpoints. |
+| Objective | Exercise sustained two-player fire and periodic bomb use through the real game and identify whether a stage or boss checkpoint is reached. |
+| Non-goals | No Shared changes, retained protected frames, gameplay bypass or unsupported completeness claims. |
+| Reference Baseline | S91 showed both aircraft after 2P start; S83 did not establish stage or boss progression. |
+| Candidate Proposal | Temporarily extend the existing bounded real-set probe, use the existing Machine input driver, and inspect timed frames and device failures; remove instrumentation and captures after the owned process exits. |
+| Files And ABI Surface | Temporary MyRaidenII integration probe edits and task evidence; no production or public API changes anticipated. |
+| Applicable Rules | MyRaidenII source policy and architecture, shared execution and documentation rules. |
+| Verification | One bounded x64 real-set run, with actual controls and intermediate frames; rebuild the restored probe and verify cleanup. |
+| Expected Markers | Distinguish player-controlled action, game-over and attract from real boss or stage events. |
+| Asset Needs | Owner-supplied selected-set archive and temporary staging. |
+| Reporting Requirements | Explain observations and limitations without treating screenshots or generated PCM as full desktop qualification. |
+| Stop Conditions | Shared edits or protected asset commits would be necessary. |
+| Exit Criteria | Record actionable actual-game results, remove temporary material, review and push. |
+| Original Owner Request | Implement MyRaidenII locally without changing the four specified Shared component packages. |
+| Similar-Issue Sweep | Check game-control delivery, game state, input and provider failures and bounded sound counters. |
+
 ## M1 T7 S91 — Closed
 
 An x64 selected-set background probe used the actual Machine driver: coin 2
