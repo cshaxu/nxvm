@@ -5,7 +5,29 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S72 is
-closed; T7 remains open for gameplay and release qualification.
+closed; S73 is active for portrait output, with both complete unit suites
+passing and coordinator review pending.
+
+## Active Packet — M1 T7 S73
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S72; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner approved automatic S admission within T and use of external emulator behavior as L2. |
+| Objective | Publish the native 320x240 Board frame as a correctly oriented 240x320 ROT270 portrait frame through the existing Machine driver. |
+| Non-goals | No Shared, other App, Core guest raster, control mapping, renderer, media, API, thread, queue or physical aspect change; no gameplay or release claim. |
+| Reference Baseline | Current driver publishes Board dimensions unchanged. T4 source disposition and the MAME Raiden II driver designate native 320x240 and ROT270. |
+| Candidate Proposal | Preserve the existing Board frame copy and one output route; use Machine-owned scratch storage to rotate its native pixels into the existing KVM frame, publish only after successful capture, and retain current sequence/failure semantics. |
+| Files And ABI Surface | MyRaidenII machine driver, existing driver smoke, Current and evidence/index; no public interface. Estimated source +15..30/-3..6, tests +15..35/-3..6. |
+| Applicable Rules | MyRaidenII source policy and architecture/coding; shared execution and documentation. The orientation is L2, not a physical-aspect claim. |
+| Verification | Existing machine driver unit proves orientation with distinct corners and an interior sample, frame size/stride, failure and sequence; build and run focused x64/x86, complete repository-only unit suites, documentation governance and whitespace. Long runs use persistent background sessions. |
+| Expected Markers | Native top-left maps to portrait bottom-left, native top-right to portrait top-left; dimensions become 240x320. No frame is published on capture failure. |
+| Asset Needs | None; synthetic frame and existing local L2 source only. |
+| Reporting Requirements | State exact direction, model grade, actual source/test diff, tests, unresolved gameplay and desktop checks, and artifact status. |
+| Stop Conditions | Contradictory orientation evidence, required Shared API change, inability to preserve frame failure behavior, or a licensing conflict. |
+| Exit Criteria | One Machine output conversion, meaningful corner/interior regression and complete required dual-width units; actual diff reviewed and pushed. |
+| Original Owner Request | Implement MyRaidenII and use independent emulator evidence as L2 without blocking for physical hardware. |
+| Similar-Issue Sweep | Check all frame-copy callers, input mapping, KVM dimensions, failure/sequence and native Board probes; do not rotate the Board or introduce a parallel presenter. |
 
 ## Archived Packet — M1 T7 S51
 

@@ -10,6 +10,7 @@ static lib_i32 stream_active_count;
 static lib_i32 stream_cancel_count;
 static lib_i32 stream_destroy_count;
 static lib_i32 frame_copy_count;
+static lib_status frame_status = LIB_STATUS_OK;
 static lib_i32 callback_count;
 static lib_status destroy_status = LIB_STATUS_OK;
 static lib_u32 audio_frames;
@@ -52,7 +53,14 @@ lib_status myraidenii_core_board_frame_copy(const myraidenii_core_board *board,
 {
     if (board == LIB_NULL || pixels == LIB_NULL ||
         pixel_count != MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS) return LIB_STATUS_INVALID_ARGUMENT;
+    if (frame_status != LIB_STATUS_OK) return frame_status;
+    lib_memory_set(pixels, 0, pixel_count * sizeof(*pixels));
     pixels[0u] = 0x00112233u;
+    pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH - 1u] = 0x00445566u;
+    pixels[(MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT - 1u) *
+        MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH] = 0x00778899u;
+    pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS - 1u] = 0x00aabbccu;
+    pixels[17u * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + 29u] = 0x00010203u;
     ++frame_copy_count;
     return LIB_STATUS_OK;
 }
@@ -184,10 +192,22 @@ int main(void)
         driver.run(driver.context) == LIB_FALSE || run_count != 1 || callback_count != 2 ||
         driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_OK ||
         produced == LIB_FALSE || frame.frame.graphics == LIB_NULL ||
-        frame.frame.graphics->width != MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH ||
-        frame.frame.graphics->height != MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT ||
-        frame.frame.graphics->stride != MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH ||
-        frame.frame.graphics->pixels[0u] != 0x00112233u || frame_copy_count != 1) return 1;
+        frame.frame.graphics->width != MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT ||
+        frame.frame.graphics->height != MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH ||
+        frame.frame.graphics->stride != MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT ||
+        frame.frame.graphics->pixels[0u] != 0x00445566u ||
+        frame.frame.graphics->pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT - 1u] != 0x00aabbccu ||
+        frame.frame.graphics->pixels[(MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH - 1u) *
+            MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT] != 0x00112233u ||
+        frame.frame.graphics->pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS - 1u] != 0x00778899u ||
+        frame.frame.graphics->pixels[(MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH - 1u - 29u) *
+            MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT + 17u] != 0x00010203u ||
+        frame_copy_count != 1 || frame.frame.sequence != 1u) return 1;
+    frame_status = LIB_STATUS_IO_ERROR;
+    if (driver.copy_frame(driver.context, &frame, LIB_NULL, &produced) != LIB_STATUS_IO_ERROR ||
+        produced != LIB_FALSE || frame.frame.sequence != 1u ||
+        frame.frame.graphics->pixels[0u] != 0x00445566u) return 1;
+    frame_status = LIB_STATUS_OK;
     event.type = KVM_EVENT_KEY;
     for (lib_size index = 0u; index < sizeof(mappings) / sizeof(mappings[0]); ++index) {
         event.data.key.key = mappings[index].key;

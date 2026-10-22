@@ -117,6 +117,7 @@
 - [T7 staged child lifecycle](evidence/t7-s70-staged-child-lifecycle.md).
 - [T7 MAME L2 Sound boundary](evidence/t7-s71-mame-sound-boundary.md).
 - [T7 SEI252 multi-tile order](evidence/t7-s72-sei252-tile-order.md).
+- [T7 portrait output](evidence/t7-s73-portrait-output.md).
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
 - [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 COPX-D2 contract research gate](evidence/t7-s63-copx-contract-research.md).

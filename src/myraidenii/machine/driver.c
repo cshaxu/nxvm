@@ -19,6 +19,7 @@ struct myraidenii_machine {
     lib_atomic_i32 wake_requested;
     lib_atomic_i32 failed;
     lib_u32 frame_sequence;
+    lib_u32 native_pixels[MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS];
 };
 
 static void myraidenii_machine_fail(myraidenii_machine *machine)
@@ -183,13 +184,20 @@ static lib_status myraidenii_machine_copy_frame(void *context,
     if (out_produced == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_produced = LIB_FALSE;
     if (machine == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    graphics = kvm_window_frame_begin_graphics(out_frame);
-    graphics->width = MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH;
-    graphics->height = MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT;
-    graphics->stride = MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH;
-    status = myraidenii_core_board_frame_copy(machine->board, graphics->pixels,
+    status = myraidenii_core_board_frame_copy(machine->board, machine->native_pixels,
         MYRAIDENII_CORE_GRAPHICS_FRAME_PIXELS);
     if (status != LIB_STATUS_OK) return status;
+    graphics = kvm_window_frame_begin_graphics(out_frame);
+    graphics->width = MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT;
+    graphics->height = MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH;
+    graphics->stride = MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT;
+    for (lib_u32 y = 0u; y < MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT; ++y) {
+        for (lib_u32 x = 0u; x < MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH; ++x) {
+            graphics->pixels[(MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH - 1u - x) *
+                MYRAIDENII_CORE_GRAPHICS_FRAME_HEIGHT + y] =
+                machine->native_pixels[y * MYRAIDENII_CORE_GRAPHICS_FRAME_WIDTH + x];
+        }
+    }
     out_frame->frame.sequence = ++machine->frame_sequence;
     *out_produced = LIB_TRUE;
     return LIB_STATUS_OK;
