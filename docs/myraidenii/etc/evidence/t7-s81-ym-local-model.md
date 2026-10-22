@@ -92,8 +92,19 @@ the Console host, Product startup, or helper caused the missing prompt, and it
 does not qualify start, pause, resume, stop, or audible playback. A later
 uninstrumented hidden-console observation found the prompt after a 15-second
 wait; the original five-second helper timed out again. Temporary stage prints
-changed the observed behavior, so neither slowness nor a Console defect is
-established as the root cause. All temporary instrumentation was removed.
+changed the observed behavior. An additional hidden-process timing probe saw
+the first banner and prompt at approximately 10.7 seconds in two runs. In a
+separate run with temporary shared-memory timestamps, entry and configuration
+were reached at 203 ms, verified image load completed at 313 ms, Board creation
+at 516 ms, and synchronous `lib_audio_pcm_stream_create` at 10,625 ms. That
+run reached its prompt at 10,672 ms. This locates the observed delay at audio
+stream creation, not at the monitor's text formatting; the specific native
+worker operation and its variability have not been established. MyNES also
+calls the same synchronous stream-creation API during Machine creation, so
+there is no evidence that it is categorically immune. No Shared behavior was
+changed. Instrumentation and the temporary probe were removed, and the normal
+x64 executable was rebuilt. These observations do not qualify lifecycle or
+desktop audio.
 
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected

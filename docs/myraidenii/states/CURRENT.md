@@ -112,8 +112,11 @@ prompt within its deadline; no lifecycle command was sent. The experimental
 wrapper and test edits were reverted, and staging was removed by the wrapper.
 An additional uninstrumented observation saw the prompt by 15 seconds, while
 the original five-second helper still timed out; temporary stage prints also
-changed the observed timing. The cause remains unconfirmed, and neither
-observation is a Product lifecycle pass.
+changed the observed timing. A later hidden-process timing probe located the
+delay in synchronous host audio stream creation: in one instrumented run,
+Board creation finished at 516 ms and stream creation at 10,625 ms after
+process creation. The shared audio worker's exact native wait remains
+unidentified; the observation is not a Product lifecycle or audio pass.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.
