@@ -83,7 +83,9 @@ selection passed 698/698 on x64 and 698/698 on x86 for this revision.
 The subsequent local timer correction gates each new status flag on its enable
 at expiration and retains latched flags until reset, matching the recorded L2
 reference. Both-width MyRaidenII units pass 13/13 and the local executables
-build; a new selected-set run and desktop audio remain unverified.
+build. Sequential selected-set probes after the timer correction reach 20
+million instructions on each width with matching frame and PCM digests;
+desktop audio remains unverified.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

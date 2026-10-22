@@ -35,8 +35,12 @@ The local receiver now follows this contract for both timers and uses the
 latched flags for the IRQ request. A synthetic Z80 program checks expirations
 with flag generation disabled, subsequent enabled expirations and persistence
 after stopping; the existing interrupt-delivery test remains in use. The
-product's 13 units and executable build passed on each width for this change;
-the selected-set probe and desktop audio have not been rerun for it.
+product's 13 units and executable build passed on each width for this change.
+Sequential x64/x86 selected-set frame-sequence probes each reached 20 million
+instructions with no Board/COP failure, 736,536 nonzero generated PCM frames,
+and matching PCM digest `ea90f8cea7f30039` and frame digest `ac25ef796f90ea94`.
+The probe uses the external owner archive, and its staging is removed by the
+wrapper. These observations do not establish desktop audio or fidelity.
 
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected
