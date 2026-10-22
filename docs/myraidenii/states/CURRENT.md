@@ -5,7 +5,7 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S72 is
-active pending coordinator review and delivery.
+closed; T7 remains open for gameplay and release qualification.
 
 ## Archived Packet — M1 T7 S51
 
@@ -940,7 +940,7 @@ unit suites pass all 697 tests (the x64 cleanup fixture is additionally
 validated with its permitted local junction setup).  S69 is closed with no
 active packet.
 
-## M1 T7 S72 Progress
+## M1 T7 S72 Closure
 
 S72 corrects the sole Core multi-tile traversal owner to SEI252 column-major
 order, using independently inspected MAME and MiSTer behavior as L2 evidence.
@@ -954,9 +954,14 @@ test relaxation that was subsequently withdrawn; the original MIDI integration
 failure remains unresolved. No Shared production source,
 public interface or ROM/PAL/media changed.
 MyRaidenII has no admitted release artifact yet; no EXE is produced by this S.
-The evidence record retains provenance, actual changes and validation limits.
+The coordinator reviewed P1 `20e3dfc2b`: the single compositor remains the
+owner; the non-square fixture distinguishes the old order, and no reference
+code or tables were imported. Production is +1/-1 and tests +12/-0 by Git
+numstat. Documentation governance and whitespace checks passed. The owned
+temporary directory was removed after its processes had exited. The evidence
+record retains provenance, actual changes and validation limits.
 
-## Active Packet — M1 T7 S72
+## Archived Packet — M1 T7 S72
 
 ## M1 T7 S72 — SEI252 Multi-Tile Order
 
