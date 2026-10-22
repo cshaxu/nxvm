@@ -54,6 +54,8 @@ typedef struct myraidenii_core_sound_ym {
     double level[8u][4u];
     double feedback[8u];
     lib_u8 envelope[8u][4u];
+    lib_u64 noise_phase;
+    lib_u32 noise_state;
 } myraidenii_core_sound_ym;
 
 typedef struct myraidenii_core_sound_oki_voice {
@@ -507,6 +509,8 @@ static double myraidenii_core_sound_ym_operator(myraidenii_core_sound_ym *ym,
         MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE;
     while (step >= 1.0) step -= 1.0;
     ym->output_phase[channel][op] += (lib_u32)(step * 4294967296.0);
+    if (channel == 7u && op == 3u && (ym->registers[0x0fu] & 0x80u) != 0u)
+        return (ym->noise_state & 1u ? 1.0 : -1.0) * *level * gain;
     return lib_c_sin((double)ym->output_phase[channel][op] *
         (6.283185307179586 / 4294967296.0) + modulation) * *level * gain;
 }
@@ -546,10 +550,20 @@ static void myraidenii_core_sound_pcm_mix(myraidenii_core_sound *sound,
     lib_i16 *out_left, lib_i16 *out_right)
 {
     lib_i32 left = 0, right = 0;
+    myraidenii_core_sound_ym *ym = &sound->ym;
+    const lib_u64 noise_period = (lib_u64)8u * 32u *
+        (32u - (ym->registers[0x0fu] & 31u)) * MYRAIDENII_CORE_AUDIO_PCM_SAMPLE_RATE;
+
+    /* L1 noise spectrum: deterministic Galois generator at the nominal
+     * register-selected rate, not the OPM's exact internal noise sequence. */
+    ym->noise_phase += MYRAIDENII_CORE_SOUND_Z80_CLOCK_NUMERATOR;
+    while (ym->noise_phase >= noise_period) {
+        const lib_u32 high = ym->noise_state & 0x10000u;
+        ym->noise_phase -= noise_period;
+        ym->noise_state = ((ym->noise_state << 1u) ^ (high ? 9u : 0u)) & 0x1ffffu;
+    }
 
     for (lib_u8 index = 0u; index < 8u; ++index) {
-        myraidenii_core_sound_ym *ym = &sound->ym;
-
         const lib_i32 sample = (lib_i32)(myraidenii_core_sound_ym_channel(ym, index) * 1024.0);
         if ((ym->registers[0x20u + index] & 0x40u) != 0u) left += sample;
         if ((ym->registers[0x20u + index] & 0x80u) != 0u) right += sample;
@@ -2093,6 +2107,7 @@ void myraidenii_core_sound_reset(myraidenii_core_sound *sound)
         lib_memory_set(&sound->observation, 0, sizeof(sound->observation));
         lib_memory_set(sound->ram, 0, sizeof(sound->ram));
         lib_memory_set(&sound->ym, 0, sizeof(sound->ym));
+        sound->ym.noise_state = 1u;
         for (lib_u8 index = 0u; index < 2u; ++index) {
             sound->oki[index].pending_sample = 0u;
             sound->oki[index].nibble_phase = 0u;

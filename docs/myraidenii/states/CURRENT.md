@@ -53,17 +53,20 @@ the OPM's quantized implementation. DT2 uses the reference's nominal 0, 600,
 frequency ratios rather than the reference's quantized phase calculation.
 Sustain targets use the reference's 3 dB steps, including the special level
 15 mapping to 31 steps; the rate and linear-amplitude envelope remain L1.
-DT1, key scaling, LFO and noise remain
-unimplemented. A synthetic Z80 program tests left/right/muted routing and
+DT1, key scaling and LFO remain unimplemented. A new local L1 noise candidate
+uses the reference's channel-7/operator-4 enable and nominal rate selection,
+but a different deterministic Galois sequence rather than claiming the OPM's
+exact internal noise behavior. A synthetic Z80 program tests left/right/muted routing and
 distinguishes a lone modulator from a carrier; the affected Sound unit passes
 on both widths. Further synthetic Z80 checks cover pitch, level, key-off and
 the carrier selection of all eight connection algorithms, active modulation
 in algorithms 0--6, all three DT2 pitch shifts and sustained-level ordering on
-both widths. Both
-selected-set probes reach 20 million instructions with identical nonzero PCM
-digest and no reported board-provider failure; this is not an audio fidelity
-or desktop qualification. The latest candidate passes the full 698-test
-repository-only unit selection on each width. Modulation depth, envelope
+both widths; the current noise test also checks channel ownership. With noise
+enabled in the candidate, both selected-set probes completed their 20 million
+instruction budgets; this is not an audio fidelity or desktop qualification.
+The noise candidate's full 698-test repository-only unit selection passes on
+each width after a lower-concurrency rerun; the earlier two timeout results
+remain recorded in the evidence. Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.
 The [work-in-progress evidence](../etc/evidence/t7-s81-ym-local-model.md)

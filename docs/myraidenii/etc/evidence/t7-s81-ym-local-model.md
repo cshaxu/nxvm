@@ -15,14 +15,25 @@ DT2's nominal 0/600/781/950-cent settings are evaluated as continuous
 frequency ratios, not the reference's quantized phase computation. The special
 sustain setting 15 corresponds to 31 attenuation steps; each step is modeled
 as 3 dB. Equal-tempered pitch, continuous phase, envelope rates and modulation
-depth are local L1 approximations. DT1, key scaling, LFO and noise are absent.
+depth are local L1 approximations. DT1, key scaling and LFO are absent.
+
+The subsequent local noise candidate uses the reference's register-selected
+noise output on channel 7 operator 4 and a nominal rate derived from that
+clocking model, but a different Galois generator and PCM-rate sampling. Its
+sequence and spectrum are L1 approximations, not an exact OPM noise claim.
+The selected board's YM clock of 28,636,363/8 Hz is also visible in the local
+`mame-raiden2-l2/raiden2.cpp` reference at latest-path commit
+`c1425a1af00b88aa07477b1b23a30ed5e5f856ff` (SHA-256
+`fdde57f6e9024657f2a9830864523305139562229750b87c967e597324cdb26a`),
+an L2 board observation rather than a source import.
 
 ## Evidence and limits
 
 The existing Sound unit executes synthetic Z80 programs and checks stereo and
 mute routing, all eight algorithms' carrier selection, first-operator modulation
 for algorithms 0--6, key-off, octave, total level, all nonzero DT2 settings and
-sustain-level ordering. Both x64 and x86 focused runs pass. These observations
+sustain-level ordering. The noise candidate additionally tests that enabling
+noise changes channel 7 but not channel 6. Both x64 and x86 focused runs pass. These observations
 do not prove exact waveform, timbre, envelope timing, modulation scaling or
 host audio playback.
 
@@ -34,6 +45,14 @@ not a recording, playback qualification or proof of game completion. The
 probe's bounded staging is external and removed by its owner.
 
 The current candidate passed all 698 repository-only unit tests per
-architecture (x64 122.81 s; x86 122.83 s). The
+architecture (x64 122.81 s; x86 122.83 s) before the noise addition. With
+noise, full tests on both architectures were started concurrently with two
+real-set probes: each full run had timeouts in `lib.test-boundaries-selftest`
+and `emulator.verifier-negative`. After all probes exited, both tests passed
+in isolation on each architecture (x64 6.06/11.70 s; x86 7.70/18.79 s).
+This is consistent with contention but does not prove the timeout cause.
+Architecture-by-architecture full reruns with six workers then passed all
+698 tests: x64 101.65 s and x86 93.60 s. Both noise-candidate selected-set
+probes also completed their 20 million instruction budgets. The
 MyRaidenII release artifacts, playable audio quality, suspended S79 pause FIFO,
 and T7's full gameplay/desktop exits remain unqualified.

@@ -811,6 +811,44 @@ static lib_i32 sound_ym_sustain_level(void)
     return peaks[0] < 100 || peaks[1] >= peaks[0] / 5 || peaks[2] >= peaks[1] / 2;
 }
 
+static lib_i32 sound_ym_noise_channel(void)
+{
+    static lib_u8 program[0x2000u];
+    lib_i16 reference[512u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+    lib_i16 frames[512u * MYRAIDENII_CORE_AUDIO_PCM_CHANNELS];
+
+    for (lib_u8 mode = 0u; mode < 4u; ++mode) {
+        sound_fixture fixture = {0};
+        myraidenii_core_sound *sound = LIB_NULL;
+        lib_u32 copied = 0u;
+        lib_u64 dropped = 0u;
+        lib_bool differs = LIB_FALSE;
+        const lib_u8 channel = mode < 2u ? 6u : 7u;
+        lib_size at = 0u;
+        lib_status status;
+
+        lib_memory_set(program, 0, sizeof(program));
+        sound_program_write_ym(program, &at, 0x0fu, (mode & 1u) != 0u ? 0x9fu : 0x1fu);
+        sound_program_write_ym(program, &at, (lib_u8)(0x20u + channel), 0x47u);
+        sound_program_write_ym(program, &at, (lib_u8)(0x28u + channel), 0x4cu);
+        sound_program_write_ym(program, &at, (lib_u8)(0x98u + channel), 0x1fu);
+        sound_program_write_ym(program, &at, 0x08u, (lib_u8)(0x40u | channel));
+        program[at] = 0x76u;
+        status = sound_create(program, &fixture, &sound);
+        if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 250000u);
+        if (status == LIB_STATUS_OK)
+            status = myraidenii_core_sound_pcm_copy(sound, frames, 512u, &copied, &dropped);
+        myraidenii_core_sound_destroy(sound);
+        if (status != LIB_STATUS_OK || copied != 512u || dropped != 0u) return 1;
+        for (lib_u32 index = 0u; index < 512u; ++index) {
+            if ((mode & 1u) == 0u) reference[index * 2u] = frames[index * 2u];
+            else if (reference[index * 2u] != frames[index * 2u]) differs = LIB_TRUE;
+        }
+        if ((mode & 1u) != 0u && differs != (channel == 7u)) return 1;
+    }
+    return 0;
+}
+
 static lib_i32 sound_publishes_bounded_pcm(void)
 {
     static lib_u8 program[0x2000u];
@@ -1463,6 +1501,7 @@ int main(void)
         sound_ym_modulation() != 0 ||
         sound_ym_key_off() != 0 ||
         sound_ym_sustain_level() != 0 ||
+        sound_ym_noise_channel() != 0 ||
         sound_publishes_bounded_pcm() != 0 ||
         sound_validates_oki_attenuation_field() != 0 ||
         sound_stops_selected_oki_channel() != 0 ||
