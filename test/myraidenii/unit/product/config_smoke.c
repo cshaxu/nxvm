@@ -6,6 +6,8 @@
 
 static const char *myraidenii_test_directory;
 static const char *myraidenii_test_expected_path;
+static lib_status myraidenii_test_read_status = LIB_STATUS_OK;
+static lib_bool myraidenii_test_invalid_text = LIB_FALSE;
 
 lib_status base_process_executable_directory(char *output, lib_size capacity)
 {
@@ -26,11 +28,12 @@ lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
         "sprites_4=spr4.bin\nsamples_1=pcm1.bin\nsamples_2=pcm2.bin\n";
 
     assert(lib_text_compare(path, myraidenii_test_expected_path) == 0);
+    if (myraidenii_test_read_status != LIB_STATUS_OK) return myraidenii_test_read_status;
     assert(maximum >= sizeof(text));
     *out_bytes = lib_allocate(sizeof(text));
     assert(*out_bytes != LIB_NULL);
     lib_memory_copy(*out_bytes, text, sizeof(text));
-    *out_byte_count = sizeof(text) - 1u;
+    *out_byte_count = myraidenii_test_invalid_text ? 1u : sizeof(text) - 1u;
     return LIB_STATUS_OK;
 }
 
@@ -74,8 +77,14 @@ int main(void)
     for (lib_size index = 0u; index < sizeof(directories) / sizeof(directories[0]); ++index) {
         myraidenii_test_directory = directories[index];
         myraidenii_test_expected_path = expected[index];
-        assert(myraidenii_product_config_load(1, argv, &config));
+        assert(myraidenii_product_config_load(1, argv, &config) == LIB_STATUS_OK);
         assert(lib_text_compare((const char *)config.ini_directory, directories[index]) == 0);
     }
+    myraidenii_test_read_status = LIB_STATUS_IO_ERROR;
+    assert(myraidenii_product_config_load(1, argv, &config) == LIB_STATUS_IO_ERROR);
+    myraidenii_test_read_status = LIB_STATUS_OK;
+    myraidenii_test_invalid_text = LIB_TRUE;
+    assert(myraidenii_product_config_load(1, argv, &config) == LIB_STATUS_INVALID_ARGUMENT);
+    assert(myraidenii_product_config_load(2, argv, &config) == LIB_STATUS_INVALID_ARGUMENT);
     return 0;
 }

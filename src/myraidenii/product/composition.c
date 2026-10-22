@@ -9,6 +9,7 @@
 #include "myraidenii/machine/configuration_interface.h"
 #include "myraidenii/machine/driver_interface.h"
 #include "myraidenii/product/version_interface.h"
+#include "lib/types/file.h"
 
 enum {
     MYRAIDENII_PRODUCT_WINDOW_TITLE_CAPACITY = 256u
@@ -199,12 +200,17 @@ lib_i32 myraidenii_product_run(const myraidenii_product_config *config)
 {
     myraidenii_product_composition *composition;
     lib_i32 result = 1;
+    lib_status status;
 
     if (config == LIB_NULL) return 1;
     composition = lib_allocate_zero(1u, sizeof(*composition));
-    if (composition == LIB_NULL) return 1;
+    if (composition == LIB_NULL) {
+        lib_c_fprintf(lib_c_stderr, "Cannot allocate machine composition.\n");
+        return 1;
+    }
     composition->config = config;
-    if (myraidenii_product_construct(composition) == LIB_STATUS_OK) {
+    status = myraidenii_product_construct(composition);
+    if (status == LIB_STATUS_OK) {
         result = emulator_product_run(&(emulator_product_definition){
             .banner = MYRAIDENII_PRODUCT_BANNER,
             .machine = {
@@ -215,7 +221,9 @@ lib_i32 myraidenii_product_run(const myraidenii_product_config *config)
             .context = composition,
             .configure_control = myraidenii_product_configure_control,
             .configure_ui = myraidenii_product_configure_ui});
-    }
+    } else lib_c_fprintf(lib_c_stderr,
+        "Cannot initialize machine or ROM images (status %d); check ROM paths and identities.\n",
+        (int)status);
     if (composition->machine != LIB_NULL || composition->board != LIB_NULL)
         (void)myraidenii_product_destroy_machine(composition);
     lib_release(composition);

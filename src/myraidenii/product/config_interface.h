@@ -24,7 +24,7 @@ typedef struct myraidenii_product_config {
  * deliberately deferred to the composition transaction. */
 lib_bool myraidenii_product_config_load_text(const lib_u8 *text, lib_size text_length,
     myraidenii_product_config *out_config);
-lib_bool myraidenii_product_config_load(lib_i32 argc, char **argv,
+lib_status myraidenii_product_config_load(lib_i32 argc, char **argv,
     myraidenii_product_config *out_config);
 
 #endif

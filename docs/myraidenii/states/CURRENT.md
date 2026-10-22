@@ -13,6 +13,45 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## Active Packet — M1 T7 S89
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S88; one person performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation and local fixes while prohibiting Shared changes. |
+| Objective | Make actual Product startup failures diagnosable instead of exiting silently when INI loading or machine resource construction fails. |
+| Non-goals | No Shared or other App changes, new lifecycle path, fallback configuration, ROM disclosure or release qualification claim. |
+| Reference Baseline | Product config loader collapses unavailable and invalid INI into false; main and machine construction return without an explanation. Product UI requires clear errors. |
+| Candidate Proposal | Return existing lib_status from the product-owned INI loader, report its failure class in main, and report the existing construction failure status from the sole Product entry. |
+| Files And ABI Surface | MyRaidenII Product config, entry, composition and existing Product units/integration if necessary; local interface only, no Shared API change. |
+| Applicable Rules | Product UX, architecture and coding; shared execution, architecture, coding and documentation rules. |
+| Verification | Focused Product failure cases and all MyRaidenII units on x86/x64, rebuild both Product candidates and real-set Console integration, documentation and diff checks. |
+| Expected Markers | Missing or malformed INI and failed image/machine construction produce actionable, distinct diagnostics; successful startup behavior stays unchanged. |
+| Asset Needs | Synthetic missing/invalid inputs; existing external ROM archive only for success-path Product smoke. |
+| Reporting Requirements | Report actual changes, error categories, dual-width evidence and unverified full-game/desktop/audio boundaries. |
+| Stop Conditions | A correct diagnostic demonstrably requires a prohibited Shared change or exposes protected contents. |
+| Exit Criteria | Failure and success paths verified, actual diff reviewed and pushed; T7 remains open. |
+| Original Owner Request | Implement MyRaidenII autonomously without changes to the specified Shared packages. |
+| Similar-Issue Sweep | Check argument, executable-directory, file-read, parse and machine-construction failures without leaking media data or hiding errors. |
+
+S89 changes the product-local config loader to return existing `lib_status`;
+main reports configuration read errors separately from invalid arguments or
+INI content. Product composition reports construction failure and allocation
+failure instead of silently returning. These messages do not disclose ROM
+bytes, and existing startup and ownership paths remain single. The status for
+machine construction is not a per-image error diagnosis; the text directs the
+user to check paths and identities and includes the original status.
+
+Both Release candidates rebuilt and MyRaidenII units passed 13/13 per width.
+Actual x64/x86 processes without an adjacent INI returned 2 with a read-error
+message; a malformed INI returned 2 with the invalid-configuration message;
+an otherwise complete synthetic INI referencing absent images returned 1 with
+the machine/ROM failure message. Temporary INI and candidate copies were
+removed. Both selected-set Product Console lifecycle smokes passed. Product
+config units also inject read failure and malformed content. No desktop,
+audible-output or full-game qualification is claimed. Counted source/test
+diff: +47/-20, net +27 lines across five paths; no Shared file changed.
+
 ## M1 T7 S88 — Closed
 
 Coordinator review accepted implementation P1 `f96f13e34` against the bounded

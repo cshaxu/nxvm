@@ -159,29 +159,30 @@ lib_bool myraidenii_product_config_load_text(const lib_u8 *text, lib_size text_l
     return LIB_TRUE;
 }
 
-static lib_bool myraidenii_product_config_path(lib_u8 *directory, lib_u8 *path)
+static lib_status myraidenii_product_config_path(lib_u8 *directory, lib_u8 *path)
 {
     const char *name = "myraidenii.ini";
     lib_size length = 0u;
+    lib_status status;
 
-    if (directory == LIB_NULL || path == LIB_NULL ||
-        base_process_executable_directory((char *)directory,
-            MYRAIDENII_PRODUCT_PATH_CAPACITY) != LIB_STATUS_OK)
-        return LIB_FALSE;
+    if (directory == LIB_NULL || path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = base_process_executable_directory((char *)directory,
+        MYRAIDENII_PRODUCT_PATH_CAPACITY);
+    if (status != LIB_STATUS_OK) return status;
     lib_memory_copy(path, directory, MYRAIDENII_PRODUCT_PATH_CAPACITY);
     while (path[length] != '\0') ++length;
     if (length != 0u && path[length - 1u] != '/' && path[length - 1u] != '\\') {
         if (length + 1u + lib_text_length(name) + 1u > MYRAIDENII_PRODUCT_PATH_CAPACITY)
-            return LIB_FALSE;
+            return LIB_STATUS_LIMIT_EXCEEDED;
         path[length++] = '\\';
     }
     if (length + lib_text_length(name) + 1u > MYRAIDENII_PRODUCT_PATH_CAPACITY)
-        return LIB_FALSE;
+        return LIB_STATUS_LIMIT_EXCEEDED;
     lib_memory_copy(path + length, name, lib_text_length(name) + 1u);
-    return LIB_TRUE;
+    return LIB_STATUS_OK;
 }
 
-lib_bool myraidenii_product_config_load(lib_i32 argc, char **argv,
+lib_status myraidenii_product_config_load(lib_i32 argc, char **argv,
     myraidenii_product_config *out_config)
 {
     lib_u8 directory[MYRAIDENII_PRODUCT_PATH_CAPACITY];
@@ -191,15 +192,16 @@ lib_bool myraidenii_product_config_load(lib_i32 argc, char **argv,
     lib_status status;
     lib_bool result;
 
-    if (out_config == LIB_NULL || argc != 1 || argv == LIB_NULL ||
-        !myraidenii_product_config_path(directory, path)) return LIB_FALSE;
+    if (out_config == LIB_NULL || argc != 1 || argv == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = myraidenii_product_config_path(directory, path);
+    if (status != LIB_STATUS_OK) return status;
     status = lib_storage_file_read_owned((const char *)path, 24u * 1024u, &bytes,
         &byte_count);
-    if (status != LIB_STATUS_OK) return LIB_FALSE;
+    if (status != LIB_STATUS_OK) return status;
     result = myraidenii_product_config_load_text((const lib_u8 *)bytes, byte_count,
         out_config);
     lib_release(bytes);
     if (result != LIB_FALSE)
         lib_memory_copy(out_config->ini_directory, directory, sizeof(directory));
-    return result;
+    return result ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
 }
