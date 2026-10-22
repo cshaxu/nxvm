@@ -57,6 +57,23 @@ static lib_bool myraidenii_product_handle_hotkey(void *opaque,
         state, out_result);
 }
 
+static void myraidenii_product_note_runtime(void *opaque,
+    emulator_session_machine_state prior, emulator_session_machine_state completed,
+    emulator_session_command_result *out_result)
+{
+    emulator_product_monitor_provider *monitor = opaque;
+    myraidenii_product_composition *composition = monitor == LIB_NULL ? LIB_NULL : monitor->context;
+
+    emulator_product_monitor_provider_note_runtime(opaque, prior, completed, out_result);
+    if (composition != LIB_NULL && out_result != LIB_NULL &&
+        prior == EMULATOR_SESSION_MACHINE_PAUSED && completed == EMULATOR_SESSION_MACHINE_RUNNING &&
+        !myraidenii_machine_release_inputs(composition->emulator)) {
+        lib_memory_copy(out_result->text, "Input reset failed; stopping machine.\r\n",
+            sizeof("Input reset failed; stopping machine.\r\n"));
+        out_result->request = EMULATOR_SESSION_REQUEST_STOP;
+    }
+}
+
 static lib_status myraidenii_product_destroy_machine(void *opaque)
 {
     myraidenii_product_composition *composition = opaque;
@@ -103,7 +120,7 @@ static lib_status myraidenii_product_configure_control(void *opaque,
             .reject_line = emulator_product_monitor_provider_reject_line,
             .submit_line = emulator_product_monitor_provider_submit_line,
             .handle_hotkey = myraidenii_product_handle_hotkey,
-            .note_runtime = emulator_product_monitor_provider_note_runtime}};
+            .note_runtime = myraidenii_product_note_runtime}};
     return LIB_STATUS_OK;
 }
 

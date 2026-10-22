@@ -140,24 +140,44 @@ static void myraidenii_machine_set_executor_callback(void *context,
     machine->executor_context = callback_context;
 }
 
+/* Host-key policy (L1), shared by delivery and resume reconciliation. */
+static const struct {
+    base_key key;
+    myraidenii_core_board_control control;
+} myraidenii_machine_controls[] = {
+    { BASE_KEY_UP, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_UP },
+    { BASE_KEY_DOWN, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_DOWN },
+    { BASE_KEY_LEFT, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_LEFT },
+    { BASE_KEY_RIGHT, MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_RIGHT },
+    { 'Z', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1 },
+    { 'X', MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_2 },
+    { '1', MYRAIDENII_CORE_BOARD_CONTROL_START_1 },
+    { '5', MYRAIDENII_CORE_BOARD_CONTROL_COIN_1 },
+    { BASE_KEY_F2, MYRAIDENII_CORE_BOARD_CONTROL_SERVICE }
+};
+
+lib_bool myraidenii_machine_release_inputs(emulator_machine *machine)
+{
+    kvm_input_event event = { .type = KVM_EVENT_KEY };
+    if (machine == LIB_NULL) return LIB_FALSE;
+    for (lib_size i = 0; i < sizeof(myraidenii_machine_controls) / sizeof(myraidenii_machine_controls[0]); ++i) {
+        event.data.key.key = myraidenii_machine_controls[i].key;
+        if (!emulator_machine_enqueue_input(machine, &event)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool myraidenii_machine_control_for_key(base_key key,
     myraidenii_core_board_control *out_control)
 {
-    /* This is the initial host-key policy (L1), not a board wiring fact. */
     if (out_control == LIB_NULL) return LIB_FALSE;
-    switch (key) {
-    case BASE_KEY_UP: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_UP; break;
-    case BASE_KEY_DOWN: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_DOWN; break;
-    case BASE_KEY_LEFT: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_LEFT; break;
-    case BASE_KEY_RIGHT: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_RIGHT; break;
-    case 'Z': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_1; break;
-    case 'X': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_PLAYER_1_BUTTON_2; break;
-    case '1': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_START_1; break;
-    case '5': *out_control = MYRAIDENII_CORE_BOARD_CONTROL_COIN_1; break;
-    case BASE_KEY_F2: *out_control = MYRAIDENII_CORE_BOARD_CONTROL_SERVICE; break;
-    default: return LIB_FALSE;
+    for (lib_size i = 0; i < sizeof(myraidenii_machine_controls) / sizeof(myraidenii_machine_controls[0]); ++i) {
+        if (myraidenii_machine_controls[i].key == key) {
+            *out_control = myraidenii_machine_controls[i].control;
+            return LIB_TRUE;
+        }
     }
-    return LIB_TRUE;
+    return LIB_FALSE;
 }
 
 static void myraidenii_machine_deliver_input(void *context, const kvm_input_event *event)

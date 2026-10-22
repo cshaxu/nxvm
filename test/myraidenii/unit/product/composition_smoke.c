@@ -21,6 +21,15 @@ static lib_i32 stream_destroy_count;
 static lib_i32 machine_destroy_count;
 static lib_i32 bind_count;
 static lib_i32 hotkey_count;
+static lib_bool release_inputs_ok = LIB_TRUE;
+static lib_u32 release_inputs_count;
+
+lib_bool myraidenii_machine_release_inputs(emulator_machine *machine)
+{
+    assert(machine == (emulator_machine *)(lib_uptr)5u);
+    ++release_inputs_count;
+    return release_inputs_ok;
+}
 
 lib_status myraidenii_machine_images_load(const char *directory,
     const char *const paths[MYRAIDENII_MACHINE_IMAGE_COUNT],
@@ -237,6 +246,22 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     assert(control.command.handle_hotkey(control.command.context,
         EMULATOR_SESSION_MACHINE_RUNNING, (const lib_u8 *)"pause-toggle",
         &(emulator_session_command_result){0}) == LIB_TRUE && hotkey_count == 1);
+    {
+        emulator_session_command_result result = {0};
+        release_inputs_count = 0u;
+        control.command.note_runtime(control.command.context, EMULATOR_SESSION_MACHINE_STOPPED,
+            EMULATOR_SESSION_MACHINE_RUNNING, &result);
+        assert(release_inputs_count == 0u);
+        control.command.note_runtime(control.command.context, EMULATOR_SESSION_MACHINE_PAUSED,
+            EMULATOR_SESSION_MACHINE_RUNNING, &result);
+        assert(release_inputs_count == 1u && result.request == EMULATOR_SESSION_REQUEST_NONE);
+        release_inputs_ok = LIB_FALSE;
+        control.command.note_runtime(control.command.context, EMULATOR_SESSION_MACHINE_PAUSED,
+            EMULATOR_SESSION_MACHINE_RUNNING, &result);
+        assert(release_inputs_count == 2u && result.request == EMULATOR_SESSION_REQUEST_STOP &&
+            lib_text_compare(result.text, "Input reset failed; stopping machine.\r\n") == 0);
+        release_inputs_ok = LIB_TRUE;
+    }
     assert(definition->configure_ui(definition->context, &ui) == LIB_STATUS_OK &&
         ui.hotkeys.count == 1u);
     assert(definition->machine.bind(definition->machine.machine, LIB_NULL) == LIB_STATUS_OK);

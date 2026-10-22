@@ -18,6 +18,18 @@ static lib_u32 audio_accepted;
 static lib_i32 control_count;
 static myraidenii_core_board_control control_last;
 static lib_bool control_pressed;
+static lib_u32 queued_count;
+static lib_u32 queue_fail_at = LIB_UINT32_MAX;
+static base_key queued_keys[9];
+
+lib_bool emulator_machine_enqueue_input(emulator_machine *machine, const kvm_input_event *event)
+{
+    if (machine == LIB_NULL || event == LIB_NULL || event->type != KVM_EVENT_KEY ||
+        event->data.key.pressed || queued_count == queue_fail_at) return LIB_FALSE;
+    if (queued_count >= sizeof(queued_keys) / sizeof(queued_keys[0])) return LIB_FALSE;
+    queued_keys[queued_count++] = event->data.key.key;
+    return LIB_TRUE;
+}
 
 lib_status myraidenii_core_board_set_control(myraidenii_core_board *board,
     myraidenii_core_board_control control, lib_bool pressed)
@@ -177,6 +189,19 @@ int main(void)
         {BASE_KEY_F2, MYRAIDENII_CORE_BOARD_CONTROL_SERVICE}
     };
     const myraidenii_core_board *board = (const myraidenii_core_board *)(lib_uptr)1u;
+
+    if (myraidenii_machine_release_inputs(LIB_NULL) ||
+        !myraidenii_machine_release_inputs((emulator_machine *)(lib_uptr)5u) ||
+        queued_count != sizeof(mappings) / sizeof(mappings[0])) return 1;
+    for (lib_u32 i = 0u; i < sizeof(mappings) / sizeof(mappings[0]); ++i)
+        if (queued_keys[i] != mappings[i].key) return 1;
+    for (lib_u32 i = 0u; i < sizeof(mappings) / sizeof(mappings[0]); ++i) {
+        queued_count = 0u;
+        queue_fail_at = i;
+        if (myraidenii_machine_release_inputs((emulator_machine *)(lib_uptr)5u) ||
+            queued_count != i) return 1;
+    }
+    queue_fail_at = LIB_UINT32_MAX;
 
     if (myraidenii_machine_create(LIB_NULL, stream, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
         myraidenii_machine_create((myraidenii_core_board *)board, LIB_NULL, &machine) !=

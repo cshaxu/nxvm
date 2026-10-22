@@ -5,7 +5,40 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S73 is
-closed; T7 remains open for gameplay and release qualification.
+closed; S74 is active for pause-boundary control release. A follow-up review
+found that queued pre-pause input can be delivered while paused or after resume;
+the incomplete local heartbeat candidate was removed because it did not close
+that FIFO race. An x64
+scripted-wait probe has reproduced the latter ordering with the actual Machine
+FIFO; it is not a real-game or desktop qualification.
+
+## Active Packet — M1 T7 S74
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after closed S73; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized automatic S admission and continued gameplay implementation. |
+| Objective | Reconcile MyRaidenII guest controls at the paused-to-running transition so stale held controls do not survive resume. |
+| Non-goals | No Shared, other App, new input ledger, public API, change to source-retirement semantics, board input polarity or host binding. |
+| Reference Baseline | Session synthesizes source releases only while running; releases after pause do not reach guest. The driver disables heartbeat on the worker before publishing paused state, but currently does not release Board controls there. |
+| Candidate Proposal | On the Session control thread, when a PAUSED-to-RUNNING completion is observed, enqueue ordinary key-release events for the actual mapped MyRaidenII controls before processing later Session input. The existing Machine FIFO orders prior accepted input, these releases, and subsequent input; the driver applies them on its worker. Report any rejected release and stop rather than silently leave a partial reconciliation. Do not use an artificial event marker. |
+| Files And ABI Surface | MyRaidenII product composition, machine input mapping and existing product/machine tests, Current and evidence/index. No Shared interface or ABI. Initial estimate source +30..60/-5..15, tests +45..100/-0..10. |
+| Applicable Rules | MyRaidenII architecture, UI and coding, shared execution/documentation. Source-specific release while running remains Session-owned. |
+| Verification | Extend the existing driver and product tests for every mapped control, transition selection and enqueue failure; exercise pause/resume ordering with the actual Machine worker and FIFO; run dual-width focused tests and complete repository-only unit suites, documentation governance and whitespace. |
+| Expected Markers | Already accepted pre-resume inputs precede reconciliation releases; later Session input follows them. Each actual mapped control is released once; queue rejection is visible and does not silently continue with partial reconciliation. No claim that releases precede PAUSED publication. |
+| Asset Needs | None; synthetic input only. |
+| Reporting Requirements | Record actual diff, lifecycle boundary, test results and unverified desktop/RDP behavior. |
+| Stop Conditions | FIFO ordering cannot preserve reconciliation, a release failure cannot be reported safely, or a Shared/API change is required. |
+| Exit Criteria | Single Board-owned control state and worker-side release, complete focused and dual-width repository units, reviewed and pushed. |
+| Original Owner Request | Implement a playable MyRaidenII with correct lifecycle and input, without unnecessary user approval or physical-hardware blockers. |
+| Similar-Issue Sweep | Inspect pause, reset, stop, focus loss, source retirement, state-read continuation, held coin/start/direction/buttons and failure propagation. |
+
+S74 executor delivery uses ordinary queued releases after the paused-to-running
+completion, with reported stop on partial admission failure. Focused tests and
+the actual Machine FIFO regression pass on both widths; the complete `unit`
+suite passes 698/698 on each. The [evidence](../etc/evidence/t7-s74-pause-controls.md)
+records the rejected heartbeat-only candidate and remaining desktop, RDP and
+real-game verification limits. Coordinator actual-change review remains due.
 
 ## M1 T7 S73 Closure
 

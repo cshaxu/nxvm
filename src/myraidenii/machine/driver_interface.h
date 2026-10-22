@@ -15,6 +15,8 @@ lib_status myraidenii_machine_create(myraidenii_core_board *board, lib_audio_pcm
 /* Copies the one callback descriptor used to create Emulator Machine. */
 lib_status myraidenii_machine_driver_get(myraidenii_machine *machine,
     emulator_machine_driver *out_driver);
+/* Enqueue mapped key releases in FIFO order; false leaves an accepted prefix. */
+lib_bool myraidenii_machine_release_inputs(emulator_machine *machine);
 /* A failed native-stream teardown retains Machine ownership for retry. */
 lib_status myraidenii_machine_destroy(myraidenii_machine **machine);
 
