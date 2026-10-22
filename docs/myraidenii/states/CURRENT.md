@@ -13,7 +13,14 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S84
+## M1 T7 S84 — Closed
+
+Coordinator review accepts the product-local CSM model and tests, including
+dual-width CSM reset replay and a negative mutation confirming the Sound test
+rejects a missing timer trigger. T7 remains open; this is not hardware-exact
+sound or full gameplay qualification.
+
+## Archived Packet — M1 T7 S84
 
 | Field | Required record |
 | --- | --- |

@@ -24,7 +24,11 @@ x86 all 13 MyRaidenII unit tests pass after rebuilding Sound and Product. This
 does not establish desktop playback, complete musical fidelity, or gameplay.
 The existing key-off test was also extended to stop CSM Timer A and verify the
 resulting sound decays; it passes on both host widths. Reset uses the same
-whole-YM clearing already exercised by the existing reset/PCM tests.
+whole-YM clearing, and the CSM unit now resets an active CSM setup and checks
+that the replayed PCM matches the initial run on every channel, on both widths.
+Suppressing the Timer A CSM trigger in a temporary x64 mutation makes the Sound
+unit fail; the mutation was removed, affected targets were rebuilt, and the
+unit passed again. No mutation or generated test media is retained.
 
 Both rebuilt selected-set probes completed 20 million instructions on the
 existing real-ROM route with identical frame digest `ac25ef796f90ea94` and PCM

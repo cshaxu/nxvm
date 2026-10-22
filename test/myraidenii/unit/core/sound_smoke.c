@@ -712,6 +712,17 @@ static lib_i32 sound_ym_csm_trigger(void)
             if (status == LIB_STATUS_OK) status = myraidenii_core_sound_advance(sound, 100000u);
             if (status == LIB_STATUS_OK)
                 status = myraidenii_core_sound_pcm_copy(sound, frames, 256u, &copied, &dropped);
+            if (status == LIB_STATUS_OK && mode == 2u && copied == 256u && dropped == 0u) {
+                lib_memory_copy(direct, frames, sizeof(direct));
+                myraidenii_core_sound_reset(sound);
+                status = myraidenii_core_sound_advance(sound, 100000u);
+                if (status == LIB_STATUS_OK)
+                    status = myraidenii_core_sound_pcm_copy(sound, frames, 256u, &copied, &dropped);
+                if (status == LIB_STATUS_OK &&
+                    (copied != 256u || dropped != 0u ||
+                     lib_memory_compare(direct, frames, sizeof(direct)) != 0))
+                    status = LIB_STATUS_INTERNAL_ERROR;
+            }
             myraidenii_core_sound_destroy(sound);
             if (status != LIB_STATUS_OK || copied != 256u || dropped != 0u) return 1;
             for (lib_u32 index = 0u; index < copied; ++index)
