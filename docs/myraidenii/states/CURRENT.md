@@ -4,15 +4,43 @@
 
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
-It does not redefine unimplemented Board behavior as a release result. S75 is
-closed; S76 investigates selected-set credit and start acceptance. A follow-up review
+It does not redefine unimplemented Board behavior as a release result. S76 is
+closed; S77 investigates gameplay control and progression. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S76
+## Active Packet — M1 T7 S77
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S76; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission and L2 reference models. |
+| Objective | Determine whether the selected game enters controllable play, and resolve evidenced MyRaidenII-owned gaps in its control and progression path. |
+| Non-goals | No prohibited Shared or other App changes, protected payload retention, invented gameplay success, or alternate input path. |
+| Reference Baseline | S76 proved credit acceptance, input-sensitive Start progression and a direction-dependent frame digest with a later input edge; the latter did not visually establish movement. |
+| Candidate Proposal | Use bounded paired probes at matched guest phases and inspect existing Board, Machine and rendering paths; compare reference behavior as L2 and amend only proven MyRaidenII defects. |
+| Files And ABI Surface | MyRaidenII source, existing tests and task records if evidence warrants; no Shared changes or new public API anticipated. |
+| Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution and documentation rules. |
+| Verification | Dual-width focused tests and builds for any changes; paired selected-set checks; full units if production changes warrant them. |
+| Asset Needs | Existing owner-supplied external selected-set archive; temporary captures and extracted media are removed. |
+| Reporting Requirements | Distinguish delivery, actual player movement, desktop presentation and complete-game qualification. |
+| Stop Conditions | A necessary fix requires prohibited Shared changes or an unapproved source/license import. |
+| Exit Criteria | The scoped control/progression finding is evidenced and resolved or accurately bounded, applicable tests and governance pass, and reviewed changes are pushed. T7 remains open until full gameplay and release qualification. |
+| Temporary Work | Existing external diagnostics staging; bounded background probes and cleanup after their processes exit. |
+| Expected Markers | Matched-phase evidence of player response, not merely different frame hashes. |
+| Original Owner Request | Continue MyRaidenII without modifying Lib, Emulator, X86 Core or X86 IBMPC production and test packages. |
+| Similar-Issue Sweep | Check directions and buttons through the actual Machine-to-Board route and distinguish display movement from attract behavior. |
+
+## M1 T7 S76 — Closed
+
+Coordinator review accepted P1 `1716345d0`: the scope is limited to
+MyRaidenII, the selected-set credit and Start sequence now produces observable
+progress, the recorded x64/x86 unit results and focused rechecks pass, and no
+complete gameplay or desktop qualification is claimed. The additional player
+control observation continues in S77.
 
 | Field | Required record |
 | --- | --- |
