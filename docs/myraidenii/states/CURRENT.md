@@ -13,6 +13,48 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S100 — Active
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S99; one person executes and reviews. |
+| Admission And Approval | Owner authorized autonomous MyRaidenII implementation and background probes; Lib, Emulator, X86 Core and X86 IBMPC source and tests remain excluded. |
+| Objective | Establish whether ordinary coin and start input causally changes the selected game's later behavior, rather than mistaking attract-mode play for a controlled game. |
+| Non-goals | No shared changes, game-state bypass, protected media publication, fabricated stage completion or desktop/audio qualification. |
+| Reference Baseline | S97 observed apparent play and game-over screens without a matched no-input control; S75's earlier short pair was indistinguishable. |
+| Candidate Proposal | Run one matched no-input and one timed ordinary coin/start selected-set probe using the same bounded instruction budget and four existing frame and sound observations; temporarily change only the owned diagnostic's input schedule. |
+| Files And ABI Surface | MyRaidenII integration probe only temporarily, existing wrapper and product task documentation; no public interface or production change unless a demonstrated local defect is separately incorporated. |
+| Applicable Rules | Product source policy, architecture, coding and UX; shared execution and documentation; one owner, protected media remains external. |
+| Verification | Use the existing x64 Ninja graph and hidden staging wrapper, compare the two completed observations and input delivery counters, restore the probe and rebuild, inspect actual changes, and perform documentation and cleanup checks. |
+| Expected Markers | Same frame sampling budget and startup state; explicit four input edges and actual register reads; matching or diverging frame and sound observations reported without overclaiming a stage or gameplay. |
+| Asset Needs | Owner archive and existing verified inventory, read-only external staging under the diagnostics root; no ROM data, image or trace committed. |
+| Reporting Requirements | Give probe budgets, control times, outcome and limits, cleanup and exact retained changes. |
+| Stop Conditions | Missing or inconsistent verified media, timeout without a completed result, or a fix requiring prohibited shared changes. |
+| Exit Criteria | The paired comparison and evidence are reviewed, temporary code and media cleaned, original probe rebuilt and the bounded record committed and pushed; full-game T7 remains open. |
+| Original Owner Request | Implement MyRaidenII with reasonable L2 sources, no prohibited shared edits and all long runs in background. |
+| Similar-Issue Sweep | Distinguish causal input response from attract animation, queue/desktop behavior, game-over, full-stage and audible playback. |
+
+Both x64 background probes completed their 80,000,000-instruction budgets.
+The no-input and coin/start cases produced the same first sampled frame
+digest (`6b0996ad1b94b410`); their later three digests differed:
+`0530ccc53a6d6a1b`, `7e385958872c37d3`, `1842300721b75880` versus
+`3172a1c4cefd8875`, `522b739f42b45f25`, `234bb7a2fb2add1b`. The input run
+confirmed all four coin/start edges at vblanks 1200/1230/1260/1290, with
+98 coin-register reads in each asserted window. Both cases had zero recorded
+Board/COP provider failure, zero sound unsupported category and zero rejected
+OKI sample selections. Sound traffic also differed. The observation supports
+that this ordered input changes guest behavior after an identical early
+checkpoint; it does not identify the resulting screens or prove an accepted
+credit, user-controlled game, stage completion, audible playback or Session
+queue ordering. Same instruction budgets do not mean equal guest ticks or
+vblank counts; the latter were 4649 and 4784 respectively. Each probe bypasses
+the production Session and its bounded PCM queue overflow reflects the probe
+not draining audio, not a demonstrated Product dropout.
+
+Both wrapper staging children and their empty task roots were removed; the
+temporary four diagnostic timing constants were restored and the original x64
+probe rebuilt. No Shared or production code and no Product executable changed.
+
 ## M1 T7 S99 — Closed
 
 Coordinator reviewed P1 `086c4a3b0` and its actual one-file documentation
