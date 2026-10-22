@@ -117,6 +117,12 @@ delay in synchronous host audio stream creation: in one instrumented run,
 Board creation finished at 516 ms and stream creation at 10,625 ms after
 process creation. The shared audio worker's exact native wait remains
 unidentified; the observation is not a Product lifecycle or audio pass.
+Subsequently, a temporary copy of the existing hidden-console helper with a
+30-second wait observed the real Product's start, pause, resume and stop
+completion messages, then its process exit, on both widths. This is bounded
+diagnostic evidence, not a pass of the unchanged five-second formal helper;
+the helper does not validate the child exit code or audible playback. Its
+temporary source and binary were removed.
 Modulation depth, envelope
 timing, performance and host audio still require qualification. The
 candidate is not yet an accepted YM2151 implementation.

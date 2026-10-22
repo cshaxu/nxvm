@@ -106,6 +106,16 @@ changed. Instrumentation and the temporary probe were removed, and the normal
 x64 executable was rebuilt. These observations do not qualify lifecycle or
 desktop audio.
 
+For a further bounded check, a temporary copy of the existing hidden Console
+helper changed only its wait budget from five to 30 seconds, and its temporary
+command list requested start, pause, resume, stop and exit. Against the staged
+selected set, both x64 and x86 Product processes produced the four expected
+lifecycle completion messages and exited within the helper's budget. The
+helper checks process termination but not the child's exit code. Its copied
+source and binary were removed, and no Shared test was modified. This is not
+an unchanged formal-helper pass, a desktop/input check, or an audible audio
+qualification.
+
 An in-progress LFO candidate keeps the two `0x19` depth writes separately and
 uses channel PM/AM sensitivity and per-operator AM enable. The selected
 rate and four waveform selections follow the inspected register vocabulary;
