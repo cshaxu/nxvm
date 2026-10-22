@@ -62,6 +62,16 @@ all four sampled frame digests matched the pre-fix run. Its output capture was
 truncated before the individual OKI counters could be recorded, so the prior
 single rejection is not attributed to a specific command or game effect.
 
+A subsequent x64 100-million-instruction background run extended the same
+script with a second Coin at vblanks 5050--5080 and Start at 5150--5180.
+Captured frames showed GAME OVER with zero credit at 5000, one credit at
+5120, and a fresh player aircraft, lives and score of 1000 at 5300. This
+establishes a bounded second-game restart, not stage completion or desktop
+interaction. The run finished with zero Board/COP provider failures, zero
+rejected OKI selections on either device and nonzero generated PCM; it does
+not establish audible host playback or identify the earlier rejection's cause.
+Temporary diagnostic instrumentation and captured frames are removed.
+
 ## M1 T7 S82 — Closed, bounded game-control observation
 
 Coordinator review accepts P2 `f6a66af44`: the bomb and no-bomb screenshots
