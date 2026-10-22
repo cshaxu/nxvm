@@ -5,15 +5,45 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S79 is
-suspended with its pause/resume input ordering unresolved; S80 investigates the
-actual game sound chain. A follow-up review
+suspended with its pause/resume input ordering unresolved; S80 closed a narrow
+OKI repair, and S81 addresses the diagnostic-only YM sound path. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
-## Active Packet — M1 T7 S80
+## Active Packet — M1 T7 S81
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S80; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S planning, local fixes and independently implemented L2 reference behavior. |
+| Objective | Replace the diagnostic-only YM waveform with a meaningful independently implemented YM2151-compatible sound model, using the existing sound owner and PCM route. |
+| Non-goals | No change to Lib, Emulator, X86 Core, X86 IBMPC or their tests; no copied external implementation, second clock, mixer path or protected content. |
+| Reference Baseline | S80 selected-set probes show active YM writes and nonzero PCM, but the existing oscillator is explicitly a placeholder and does not establish music fidelity. |
+| Candidate Proposal | Examine the Yamaha manual and bounded external reference behavior, specify the operator/register semantics and implement incrementally in the existing Core Sound owner. |
+| Files And ABI Surface | MyRaidenII Core Sound, existing product-owned sound tests and evidence; no public Shared ABI change. |
+| Applicable Rules | Product source policy, architecture and coding; shared execution and documentation rules. |
+| Verification | Synthetic register/operator/envelope and PCM vectors, x64/x86 affected builds and units, selected-set checks and full units as warranted. |
+| Asset Needs | External owner set only for bounded runtime observation; no committed ROM or raw generated media. |
+| Reporting Requirements | Distinguish supported FM model and its evidence grade from exact chip, real music and desktop audio qualification. |
+| Stop Conditions | A correct solution requires a prohibited Shared modification or unapproved code import. |
+| Exit Criteria | A tested model replaces the placeholder and limitations are explicit; affected tests and governance pass, complete P is reviewed and pushed. |
+| Temporary Work | Existing Ninja trees and bounded external diagnostics staging, cleaned after owned process exit. |
+| Expected Markers | Sound behavior reacts correctly to key-on/off, pitch, operator configuration, routing and level; no synthetic square-wave substitution claimed as YM2151. |
+| Original Owner Request | Implement playable MyRaidenII autonomously without modifying the specified Shared source/test packages. |
+| Similar-Issue Sweep | Check timing, clipping, reset, stereo and both OKI contributions against the single existing PCM path. |
+
+## M1 T7 S80 — Closed
+
+Coordinator actual-change review accepts P1 `5d5ff3bf8`: one MyRaidenII
+receiver condition prevents restarting busy OKI voices, and the existing unit
+covers mixed busy/free selection and subsequent stop/restart. Both widths
+passed focused and full unit checks as qualified in the evidence, and the
+selected-set probes completed on both widths. No Shared changes or protected
+payload were committed. The diagnostic YM waveform and suspended S79 race
+remain T7 requirements; S80 does not claim playable audio or release readiness.
 
 | Field | Required record |
 | --- | --- |
