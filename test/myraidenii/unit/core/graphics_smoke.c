@@ -6,10 +6,19 @@ static lib_i32 graphics_character_pixels(void)
 {
     lib_u8 image[MYRAIDENII_CORE_CHARACTER_BYTES] = {0};
     lib_u8 pixel = 0u;
+    const lib_u8 bytes[] = {1u, 1u, 0u, 0u};
+    const lib_u8 masks[] = {0x10u, 0x01u, 0x10u, 0x01u};
 
-    image[1u] = 0x08u;
-    image[7u] = 0x80u;
-    image[30u] = 0x10u;
+    for (lib_u8 plane = 0u; plane < 4u; ++plane) {
+        image[bytes[plane]] = masks[plane];
+        if (myraidenii_core_graphics_character_pixel(image, 0u, 0u, 0u, &pixel) !=
+                LIB_STATUS_OK || pixel != (lib_u8)(8u >> plane)) return 1;
+        image[bytes[plane]] = 0u;
+    }
+
+    image[0u] = 0x01u;
+    image[6u] = 0x10u;
+    image[31u] = 0x80u;
     if (myraidenii_core_graphics_character_pixel(image, 0u, 0u, 0u, &pixel) !=
             LIB_STATUS_OK || pixel != 1u ||
         myraidenii_core_graphics_character_pixel(image, 0u, 4u, 1u, &pixel) !=
@@ -32,9 +41,9 @@ static lib_i32 graphics_background_pixels(void)
     lib_u8 image[MYRAIDENII_CORE_BACKGROUND_BYTES] = {0};
     lib_u8 pixel = 0u;
 
-    image[1u] = 0x08u;
-    image[35u] = 0x80u;
-    image[126u] = 0x10u;
+    image[0u] = 0x01u;
+    image[34u] = 0x10u;
+    image[127u] = 0x80u;
     if (myraidenii_core_graphics_background_pixel(image, image, 0u, 0u, 0u, &pixel) !=
             LIB_STATUS_OK || pixel != 1u ||
         myraidenii_core_graphics_background_pixel(image, image, 0u, 4u, 8u, &pixel) !=
@@ -139,8 +148,8 @@ static void graphics_background_pixel_one_set(lib_u8 *image, lib_u32 tile)
 {
     lib_u8 *element = image + tile * MYRAIDENII_CORE_BACKGROUND_BYTES;
 
-    element[0u] = 0u;
-    element[1u] = 0x08u;
+    element[0u] = 0x01u;
+    element[1u] = 0u;
 }
 
 static lib_i32 graphics_tile_layers(void)
@@ -154,16 +163,16 @@ static lib_i32 graphics_tile_layers(void)
 
     if (images == LIB_NULL) return 1;
     lib_memory_set(images, 0xff, MYRAIDENII_CORE_VIDEO_GRAPHICS_IMAGE_BYTES);
-    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] = 0u;
-    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET + 1u] = 0x08u;
+    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET] = 0x01u;
+    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET + 1u] = 0u;
     images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET +
-        4096u * MYRAIDENII_CORE_BACKGROUND_BYTES] = 0u;
+        4096u * MYRAIDENII_CORE_BACKGROUND_BYTES] = 0x10u;
     images[MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET +
-        4096u * MYRAIDENII_CORE_BACKGROUND_BYTES + 1u] = 0x80u;
-    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0u;
-    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET + 1u] = 0x88u;
-    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x08u;
-    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0u;
+        4096u * MYRAIDENII_CORE_BACKGROUND_BYTES + 1u] = 0u;
+    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET] = 0x11u;
+    images[MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET + 1u] = 0u;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0u;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0x01u;
     tilemap[0x400u] = 0x1000u;
     tilemap[0x800u] = 0x2000u;
     tilemap[0xc00u] = 0x3000u;
@@ -405,8 +414,8 @@ static lib_i32 graphics_crtc_layers(void)
     graphics_background_pixel_one_set(images + MYRAIDENII_CORE_VIDEO_BACKGROUND_1_OFFSET, 4097u);
     graphics_background_pixel_one_set(images + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET, 0u);
     graphics_background_pixel_one_set(images + MYRAIDENII_CORE_VIDEO_BACKGROUND_2_OFFSET, 1u);
-    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0u;
-    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0x08u;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET] = 0x01u;
+    images[MYRAIDENII_CORE_VIDEO_CHARACTERS_OFFSET + 1u] = 0u;
     palette[0x411u] = 0x001fu;
     palette[0x421u] = 0x03e0u;
     palette[0x431u] = 0x7c00u;

@@ -1,5 +1,15 @@
 # Unplanned Debt
 
+## High: YM2151 Synthesis Fidelity
+
+Owner: MyRaidenII Core Sound. The current PCM mixer explicitly produces an L1
+diagnostic square waveform from a subset of YM channel state; it is not a
+YM2151 FM synthesizer. Register and timer execution, or a nonzero PCM sample,
+therefore cannot qualify music, operator/envelope behavior or stereo output.
+Replace it at the existing Sound owner with an independently implemented,
+source-policy-compliant model supported by component evidence and synthetic
+tests. Do not add a second sound clock, mixer, or Shared dependency.
+
 ## High: COPX-D2 Board Receiver Contract
 
 Owner: MyRaidenII Core COP/Board. The selected Raiden II set's audited

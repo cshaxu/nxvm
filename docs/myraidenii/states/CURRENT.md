@@ -5,12 +5,41 @@
 M1 T7 is active. It receives T6's one Product composition route and qualifies
 external-ROM startup, then progressively receives gameplay and release work.
 It does not redefine unimplemented Board behavior as a release result. S74 is
-closed with no active S. A follow-up review
+closed; S75 is active for selected-set gameplay progression. A follow-up review
 found that queued pre-pause input can be delivered while paused or after resume;
 the incomplete local heartbeat candidate was removed because it did not close
 that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
+
+## Active Packet — M1 T7 S75
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S74; one person performs executor and coordinator roles. |
+| Admission And Approval | Owner authorized automatic S admission and external emulator behavior as L2. |
+| Objective | Determine whether the selected game progresses differently after Coin/Start using the actual current Board and existing integration probe, and identify the next evidenced gameplay receiver. |
+| Non-goals | No Shared or other App changes, protected payload retention, invented success, or unrelated recovery framework. |
+| Reference Baseline | S65 established bounded execution with Coin/Start but did not prove acceptance or gameplay; S72 and S73 subsequently changed video composition. |
+| Candidate Proposal | Compare bounded no-input and vblank-aligned Coin/Start cases, then correct the independently established character/background bit and plane ordering at the existing graphics decoder owner. Do not equate a changed frame with gameplay. |
+| Files And ABI Surface | MyRaidenII graphics decoder, existing graphics/compositor tests, diagnostic wrapper, Current and evidence; no Shared change or ABI extension. Initial estimate decoder +2/-2 lines, tests +15..50/-5..25, wrapper +1/-1. |
+| Applicable Rules | MyRaidenII source policy, architecture and UI; shared execution and documentation rules. |
+| Verification | Stable Ninja builds, bounded owner-ROM probe and cleanup; any code change requires focused tests and full repository units on both widths. |
+| Expected Markers | Report actual paired outcomes, accepted input observability, sound/frame status and limitations; no ROM data or raw trace retained. |
+| Asset Needs | Existing verified external selected-set archive, read-only. |
+| Reporting Requirements | Identify result, comparison limits, actual changes and next receiver; distinguish no-input/control differences from proven gameplay. |
+| Stop Conditions | A necessary fix would require the prohibited Shared changes or an unapproved source/license import. |
+| Exit Criteria | Paired observation and its actionable disposition recorded, applicable tests and governance reviewed and pushed. T7 remains open unless its full gameplay and release contract is met. |
+| Temporary Work | Wrapper-owned unique child under existing external diagnostics root; one probe at a time, bounded 100 million instructions and a 15-minute wall-clock budget; verify child exits and cleanup. |
+
+S75 has corrected the L2 character/background bit and plane ordering. Both
+repository-only unit suites pass 698/698, and both widths complete the bounded
+selected-set input run. An x64 temporary frame visibly reaches a readable
+title; a later aircraft scene also occurs without input and cannot establish
+accepted credit. Audio remains silent in these observations, and the YM mixer
+is explicitly L1 diagnostic rather than complete synthesis. See the
+[evidence](../etc/evidence/t7-s75-gameplay-progression.md). No Shared or other
+App files changed; final coordinator review remains due.
 
 ## Archived Packet — M1 T7 S74
 

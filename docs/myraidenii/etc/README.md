@@ -119,6 +119,7 @@
 - [T7 SEI252 multi-tile order](evidence/t7-s72-sei252-tile-order.md).
 - [T7 portrait output](evidence/t7-s73-portrait-output.md).
 - [T7 pause-boundary control release](evidence/t7-s74-pause-controls.md).
+- [T7 gameplay progression and character/background bit order](evidence/t7-s75-gameplay-progression.md).
 - [T7 production composition launch qualification](evidence/t7-s61-production-composition-launch.md).
 - [T7 sound publication audit](evidence/t7-s62-sound-publication-audit.md).
 - [T7 COPX-D2 contract research gate](evidence/t7-s63-copx-contract-research.md).

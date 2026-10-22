@@ -43,7 +43,7 @@ function Invoke-StagedChild([string]$FilePath, [string[]]$ArgumentList,
 {
     $stdoutPath = Join-Path $WorkingDirectory "$Name.stdout"
     $stderrPath = Join-Path $WorkingDirectory "$Name.stderr"
-    $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList `
+    $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -WindowStyle Hidden `
         -WorkingDirectory $WorkingDirectory -PassThru -Wait `
         -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
 

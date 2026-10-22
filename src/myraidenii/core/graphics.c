@@ -125,7 +125,7 @@ static lib_status myraidenii_core_graphics_pixel(const lib_u8 *image,
         lib_u32 x_bits = x < 4u ? 3u - x : 23u - x;
         lib_u32 bit = row_bits + plane_bits + x_bits;
 
-        result |= (lib_u8)(((image[base + bit / 8u] >> (bit % 8u)) & 1u) << plane);
+        result |= (lib_u8)(((image[base + bit / 8u] >> (7u - bit % 8u)) & 1u) << (3u - plane));
     }
     *out_pixel = result;
     return LIB_STATUS_OK;
