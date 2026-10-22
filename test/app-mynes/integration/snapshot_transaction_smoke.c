@@ -94,7 +94,7 @@ static void run_and_check(emulator_machine *machine, lib_bool pressed)
     event.source_identity = 1u;
     event.data.key.key = 'K';
     event.data.key.pressed = pressed;
-    assert(emulator_machine_enqueue_input(machine, &event));
+    assert(emulator_machine_enqueue_input(machine, &event) == LIB_STATUS_OK);
     sequence = emulator_machine_published_frame_sequence(machine);
     for (lib_u32 i = 0u; i < 1000u; ++i) {
         if (emulator_machine_published_frame_sequence(machine) - sequence >= 2u) break;

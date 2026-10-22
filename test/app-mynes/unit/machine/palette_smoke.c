@@ -8,7 +8,7 @@ int main(void)
 {
     core_machine *machine = lib_allocate_zero(1u, sizeof(*machine));
     kvm_window_frame_storage *actual = lib_allocate_zero(1u, sizeof(*actual));
-    kvm_console_text_frame console;
+    kvm_console_text_frame console = {0};
     lib_bool produced;
     machine_driver driver = { .machine = machine };
     lib_u32 rgb[512];
@@ -20,8 +20,8 @@ int main(void)
             machine->ppu.completed[index] = (lib_u16)sample;
         ++machine->ppu.frame_revision;
         lib_test_assert(machine_driver_copy_frame(&driver, actual, &console, &produced) == LIB_STATUS_OK);
-        lib_test_assert(produced && actual->frame.graphics == &actual->data.graphics);
-        rgb[sample] = actual->data.graphics.pixels[0];
+        lib_test_assert(produced && actual->frame.graphics == actual->data.graphics);
+        rgb[sample] = actual->data.graphics->pixels[0];
     }
     for (lib_u32 scene = 0u; scene < 8u; ++scene) {
         for (lib_u32 index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index) {
@@ -37,15 +37,16 @@ int main(void)
         ++machine->ppu.frame_revision;
         lib_test_assert(machine_driver_copy_frame(&driver, actual, &console, &produced) == LIB_STATUS_OK);
         lib_test_assert(produced && actual->frame.graphics &&
-            actual->data.graphics.width == CORE_PPU_WIDTH &&
-            actual->data.graphics.height == CORE_PPU_HEIGHT &&
-            actual->data.graphics.stride == CORE_PPU_WIDTH);
+            actual->data.graphics->width == CORE_PPU_WIDTH &&
+            actual->data.graphics->height == CORE_PPU_HEIGHT &&
+            actual->data.graphics->stride == CORE_PPU_WIDTH);
         for (lib_u32 index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index)
-            lib_test_assert(actual->data.graphics.pixels[index] ==
+            lib_test_assert(actual->data.graphics->pixels[index] ==
                 rgb[machine->ppu.completed[index] & 511u]);
         lib_test_assert(machine_driver_copy_frame(&driver, actual, &console, &produced) == LIB_STATUS_OK);
         lib_test_assert(!produced);
     }
+    kvm_window_frame_release(actual);
     lib_release(actual);
     lib_release(machine);
     return 0;

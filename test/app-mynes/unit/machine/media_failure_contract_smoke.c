@@ -262,18 +262,18 @@ int main(void)
         assert(machine_driver_run(driver));
     assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK);
     assert(frame_produced && frame.frame.graphics != LIB_NULL);
-    assert(frame.data.graphics.width == 256u && frame.data.graphics.height == 240u &&
-        frame.data.graphics.stride == 256u);
-    assert(frame.data.graphics.pixels[0] == 0x666666u &&
-        frame.data.graphics.pixels[256u * 239u + 255u] == 0x666666u);
-    assert(frame.data.graphics.pixels[0] == 0x666666u);
+    assert(frame.data.graphics->width == 256u && frame.data.graphics->height == 240u &&
+        frame.data.graphics->stride == 256u);
+    assert(frame.data.graphics->pixels[0] == 0x666666u &&
+        frame.data.graphics->pixels[256u * 239u + 255u] == 0x666666u);
+    assert(frame.data.graphics->pixels[0] == 0x666666u);
     assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame_produced == 0u);
     driver->machine->ppu.completed[0] = 0x1c3u;
     ++driver->machine->ppu.frame_revision;
     assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && frame_produced == 1u);
     /* Palette index 3 with every emphasis bit uses the immutable combined
      * attenuation table: 0x3b00a4 -> 0x21005c. */
-    assert(frame.data.graphics.pixels[0] == 0x21005cu);
+    assert(frame.data.graphics->pixels[0] == 0x21005cu);
     {
         lib_u8 request[16] = { MACHINE_DEBUG_VERSION, 0u, MACHINE_DEBUG_OUTPUT_SET, 0u, 8u };
         lib_u8 response[16]; lib_size response_size = 0u;
@@ -282,11 +282,11 @@ int main(void)
             sizeof(response), &response_size) == LIB_STATUS_OK && response_size == 12u);
         assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK &&
             frame_produced && frame.frame.graphics == LIB_NULL);
-        assert(frame.data.text.base.cells[0].glyph_index == ' ' &&
-            frame.data.text.base.cells[0].foreground == 0u &&
-            frame.data.text.base.cells[7].glyph_index == '-' &&
-            frame.data.text.base.cells[7].foreground == 8u &&
-            console_frame.characters.primary['-'] == '-' && console_frame.characters.primary[0x80u] == ' ');
+        assert(frame.data.text->base.cells[0].glyph_index == ' ' &&
+            frame.data.text->base.cells[0].foreground == 0u &&
+            frame.data.text->base.cells[7].glyph_index == '-' &&
+            frame.data.text->base.cells[7].foreground == 8u &&
+            console_frame.characters->primary['-'] == '-' && console_frame.characters->primary[0x80u] == ' ');
         request[8] = 2u;
         assert(machine_driver_debug_execute()(driver, request, sizeof(request), response,
             sizeof(response), &response_size) == LIB_STATUS_INVALID_ARGUMENT);

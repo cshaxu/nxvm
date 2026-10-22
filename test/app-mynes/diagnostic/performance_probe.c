@@ -37,13 +37,13 @@ static lib_status clock_read(lib_u64 *units, lib_u64 *frequency)
 static void hash_frame(lib_u64 *hash, const kvm_window_frame_storage *frame)
 {
     if (frame->frame.graphics) {
-        hash_bytes(hash, frame->data.graphics.pixels,
+        hash_bytes(hash, frame->data.graphics->pixels,
             CORE_PPU_WIDTH * CORE_PPU_HEIGHT * sizeof(lib_u32));
     } else {
-        hash_bytes(hash, frame->data.text.base.cells,
-            80u * 25u * sizeof(frame->data.text.base.cells[0]));
-        hash_bytes(hash, console_frame.characters.primary, sizeof(console_frame.characters.primary));
-        hash_bytes(hash, console_frame.characters.secondary, sizeof(console_frame.characters.secondary));
+        hash_bytes(hash, frame->data.text->base.cells,
+            80u * 25u * sizeof(frame->data.text->base.cells[0]));
+        hash_bytes(hash, console_frame.characters->primary, sizeof(console_frame.characters->primary));
+        hash_bytes(hash, console_frame.characters->secondary, sizeof(console_frame.characters->secondary));
     }
 }
 

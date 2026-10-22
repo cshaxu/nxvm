@@ -119,7 +119,7 @@ static void run_fresh_frames(machine_driver *driver, lib_u32 count)
 
 static lib_u32 rgb_at(const kvm_window_frame_storage *frame, lib_u32 x, lib_u32 y)
 {
-    return frame->data.graphics.pixels[y * 256u + x];
+    return frame->data.graphics->pixels[y * 256u + x];
 }
 
 static void prove_console(void)
@@ -134,13 +134,13 @@ static void prove_console(void)
     assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_frame(driver);
     assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && !frame.frame.graphics);
-    idle = frame.data.text.base.cells[7u];
+    idle = frame.data.text->base.cells[7u];
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
     machine_driver_deliver_input(driver, &input);
     run_fresh_frames(driver, 2u);
     assert(machine_driver_copy_frame(driver, &frame, &console_frame, &frame_produced) == LIB_STATUS_OK && !frame.frame.graphics);
-    assert(frame.data.text.base.cells[7u].glyph_index != idle.glyph_index ||
-        frame.data.text.base.cells[7u].foreground != idle.foreground);
+    assert(frame.data.text->base.cells[7u].glyph_index != idle.glyph_index ||
+        frame.data.text->base.cells[7u].foreground != idle.foreground);
     assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 

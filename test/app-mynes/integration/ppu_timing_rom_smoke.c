@@ -85,7 +85,7 @@ static void run_fresh_frames(machine_driver *driver, lib_u32 count)
 
 static lib_u32 rgb_at(const kvm_window_frame_storage *frame, lib_u32 x, lib_u32 y)
 {
-    return frame->data.graphics.pixels[y * 256u + x];
+    return frame->data.graphics->pixels[y * 256u + x];
 }
 
 static lib_u8 expected_bit(lib_u8 fine_x, lib_u32 x)

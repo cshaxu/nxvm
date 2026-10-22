@@ -607,14 +607,13 @@ lib_status machine_driver_copy_frame(void *context, kvm_window_frame_storage *ou
     if (driver->text_output) {
         lib_u32 row;
         lib_u32 column;
-        (void)kvm_window_frame_begin_text(out_frame);
-        lib_memory_set(&out_frame->data.text, 0, sizeof(out_frame->data.text));
-        lib_memory_set(out_console, 0, sizeof(*out_console));
-        out_frame->data.text.base.text_columns = 80u;
-        out_frame->data.text.base.text_rows = 25u;
-        out_frame->data.text.base.cursor_mode = KVM_CURSOR_DISABLED;
-        out_frame->data.text.base.font_height = 16u;
-        lib_memory_copy(out_frame->data.text.base.text_palette, machine_driver_rgbi,
+        status = kvm_window_frame_prepare_text(out_frame, 80u, 25u, 80u);
+        if (status != LIB_STATUS_OK) return status;
+        status = kvm_console_frame_prepare(out_console, 80u, 25u, 80u);
+        if (status != LIB_STATUS_OK) return status;
+        out_frame->data.text->base.cursor_mode = KVM_CURSOR_DISABLED;
+        out_frame->data.text->base.font_height = 16u;
+        lib_memory_copy(out_frame->data.text->base.text_palette, machine_driver_rgbi,
             sizeof(machine_driver_rgbi));
         for (row = 0u; row < 25u; ++row) for (column = 0u; column < 80u; ++column) {
             static const lib_u8 glyphs[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', 0u};
@@ -628,7 +627,8 @@ lib_status machine_driver_copy_frame(void *context, kvm_window_frame_storage *ou
             lib_u32 samples = 0u;
             lib_u32 source_y;
             lib_u32 source_x;
-            kvm_text_cell *cell = &out_frame->data.text.base.cells[row * 80u + column];
+            kvm_text_cell *cell = &out_frame->data.text->base.cells[row * 80u + column];
+            cell->underline = 0u;
             if (column < 7u || column >= 73u) {
                 cell->glyph_index = ' '; cell->foreground = 0u;
                 cell->background = 0u; cell->glyph_bank = 0u;
@@ -656,18 +656,24 @@ lib_status machine_driver_copy_frame(void *context, kvm_window_frame_storage *ou
             }
         }
         for (index = 0u; index < 256u; ++index) {
-            out_console->characters.primary[index] = index < 128u ? (lib_u16)index : ' ';
-            out_console->characters.secondary[index] = index < 128u ? (lib_u16)index : ' ';
+            out_console->characters->primary[index] = index < 128u ? (lib_u16)index : ' ';
+            out_console->characters->secondary[index] = index < 128u ? (lib_u16)index : ' ';
         }
-        out_console->base = out_frame->data.text.base;
+        {
+            kvm_text_cell *cells = out_console->base.cells;
+            out_console->base = out_frame->data.text->base;
+            out_console->base.cells = cells;
+            lib_memory_copy(cells, out_frame->data.text->base.cells,
+                out_console->base.capacity * sizeof(kvm_text_cell));
+        }
         *produced = LIB_TRUE;
         driver->published_frame_revision = video.revision;
         return LIB_STATUS_OK;
     }
-    kvm_window_graphics_frame *image = kvm_window_frame_begin_graphics(out_frame);
-    image->width = CORE_MACHINE_VIDEO_WIDTH;
-    image->height = CORE_MACHINE_VIDEO_HEIGHT;
-    image->stride = CORE_MACHINE_VIDEO_WIDTH;
+    status = kvm_window_frame_prepare_graphics(out_frame, CORE_MACHINE_VIDEO_WIDTH,
+        CORE_MACHINE_VIDEO_HEIGHT, CORE_MACHINE_VIDEO_WIDTH);
+    if (status != LIB_STATUS_OK) return status;
+    kvm_window_graphics_frame *image = out_frame->data.graphics;
     for (index = 0u; index < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY; ++index)
         image->pixels[index] = machine_driver_rgb(driver->video_samples[index]);
     *produced = LIB_TRUE;
