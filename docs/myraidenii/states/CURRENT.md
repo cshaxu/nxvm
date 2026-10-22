@@ -98,6 +98,12 @@ normally; an invocation that only called `FreeConsole` also exited normally.
 These controls implicate the exercised helper/host interaction rather than a
 MyRaidenII-specific game command, but do not identify a single faulty call.
 The temporary control branches were removed and the original helper rebuilt.
+As an additional cross-width control, the x64 Console test helper ran the
+complete start/pause/resume/stop/exit sequence against the deployed x86
+Product and its actual adjacent INI, and exited 0. Together with the earlier
+independent x86 Product exit-code observation, this verifies that sequence
+under this control; it does not repair the x86 helper or establish gameplay,
+desktop input, or audio playback qualification.
 
 | Field | Required record |
 | --- | --- |
