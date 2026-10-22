@@ -13,6 +13,44 @@ that FIFO race. An x64
 scripted-wait probe has reproduced the latter ordering with the actual Machine
 FIFO; it is not a real-game or desktop qualification.
 
+## M1 T7 S87 — Closed
+
+The x64 selected-set probe executed 20 million instructions with Coin at
+vblanks 300--330 and Start at 360--390. DT1 values 0 through 7 were written
+14, 5, 1, 6, 6, 1, 0 and 3 times respectively. These are register writes,
+not proof of an audible effect; later gameplay is not covered. Board and COP
+provider failures were zero. Temporary instrumentation was removed, the probe
+rebuilt and wrapper staging cleaned.
+
+The independently inspected 86Box checkout `4fef696a4eead1d55a28d6ac0e5bd2864e5454da`,
+`src/sound/ymfm/ymfm_opm.cpp` and `ymfm_fm.ipp`, models DT1 as a signed,
+key-dependent phase displacement applied before the operator multiplier; its
+reference table is not imported. This is L2 evidence of ordering and sign,
+not a license to copy its implementation or a complete numeric oracle. A
+following local Sound batch should implement and test an explicitly bounded
+model with its approximation grade and retain the existing synthesis owner.
+
+## Archived Packet — M1 T7 S87
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S86; one person performs coordinator and executor roles. |
+| Admission And Approval | Owner authorized automatic subtasks, L2 external behavioral research and product-local implementation while prohibiting Shared changes. |
+| Objective | Determine whether selected-set sound actually uses the missing YM2151 DT1 control and identify its bounded behavioral model. |
+| Non-goals | No Shared change, external code or table import, protected data retention, synthetic sound-fidelity claim or new audio path. |
+| Reference Baseline | Existing local YM operator ignores DT1; TODO records the resulting L1 fidelity gap. |
+| Candidate Proposal | Inspect the pinned external OPM behavior and temporarily count guest writes by DT1 value through the existing sound path during the selected-set control sequence. |
+| Files And ABI Surface | Temporary local Sound instrumentation and Current evidence; no persistent production or API changes in this diagnostic batch. |
+| Applicable Rules | MyRaidenII source policy and architecture/coding; shared execution, architecture, coding and documentation rules. |
+| Verification | Bounded background x64 real-set probe; remove instrumentation and rebuild; run documentation and whitespace gates. |
+| Expected Markers | Count of writes by DT1 value and explicit distinction between a write and audible effect. |
+| Asset Needs | Existing external owner archive and wrapper-owned staging, removed when the child exits. |
+| Reporting Requirements | Specify run duration, adopted reference facts, source grade and limits; do not call this sound or full-game qualification. |
+| Stop Conditions | An implementation would require prohibited Shared changes or unapproved external source import. |
+| Exit Criteria | Diagnostic result, reference and cleanup reviewed and pushed, with a concrete next receiver if applicable. |
+| Original Owner Request | Complete MyRaidenII autonomously with approved external L2 behavioral references and no changes to the specified Shared packages. |
+| Similar-Issue Sweep | Distinguish key fraction, DT2, multiplier and DT1 ordering and whether guest writes use the nonzero magnitude. |
+
 ## M1 T7 S86 — Closed
 
 One background x64 selected-set diagnostic executed 100,000,000 instructions
