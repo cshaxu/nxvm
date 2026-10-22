@@ -34,6 +34,22 @@ FIFO; it is not a real-game or desktop qualification.
 | Original Owner Request | Continue MyRaidenII without modifying Lib, Emulator, X86 Core or X86 IBMPC production and test packages. |
 | Similar-Issue Sweep | Check directions and buttons through the actual Machine-to-Board route and distinguish display movement from attract behavior. |
 
+S77 paired temporary selected-set probes used the same Coin and later-Start
+schedule and 30-million-instruction budget; the second held Right beginning at
+vblank 1350. Visual inspection of their final portrait frames showed the
+player aircraft centered without Right and at the right edge with Right. The
+baseline final digest matched across widths in S76, and the x86 controlled
+run reproduced the direction-sensitive digest. Both probe processes completed;
+temporary image files and scheduling edits were removed. This establishes a
+visible Right response for this bounded scripted scenario, not button behavior,
+actual desktop control, complete stage progression or release qualification.
+Under the same schedule and budget, a temporary x64 run held Z (fire) from
+vblank 1350. Its final frame showed projectiles and player score 140, whereas
+the prior no-fire frame showed score 0. This verifies a visible shooting and
+score response in that scripted scenario, not bomb behavior, later stages or
+interactive desktop/audio qualification. Temporary capture and probe edits
+were removed.
+
 ## M1 T7 S76 — Closed
 
 Coordinator review accepted P1 `1716345d0`: the scope is limited to
