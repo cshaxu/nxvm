@@ -296,23 +296,22 @@ static lib_status myraidenii_core_sound_oki_write(myraidenii_core_sound *sound,
     if (device >= 2u) return LIB_STATUS_INVALID_ARGUMENT;
     oki = &sound->oki[device];
     ++sound->observation.oki_writes[device];
-    if ((value & 0x80u) != 0u) {
+    if (!oki->has_pending_sample && (value & 0x80u) != 0u) {
         ++sound->observation.oki_sample_commands[device];
         oki->pending_sample = value & 0x7fu;
         oki->has_pending_sample = LIB_TRUE;
         return LIB_STATUS_OK;
     }
-    if (!oki->has_pending_sample && (value & 0x08u) != 0u) {
-        ++sound->observation.oki_stops[device];
+    if (!oki->has_pending_sample) {
+        const lib_u8 voices = (value >> 3u) & 0x0fu;
+
+        if (voices == 0u) ++sound->observation.oki_ignored_controls[device];
+        else ++sound->observation.oki_stops[device];
         for (lib_u8 index = 0u; index < MYRAIDENII_CORE_SOUND_OKI_VOICE_COUNT; ++index) {
-            if ((value & (lib_u8)(1u << index)) != 0u)
+            if ((voices & (lib_u8)(1u << index)) != 0u)
                 oki->voices[index].active = LIB_FALSE;
         }
         return LIB_STATUS_OK;
-    }
-    if (!oki->has_pending_sample) {
-        ++sound->observation.oki_ignored_controls[device];
-        return LIB_STATUS_INVALID_STATE;
     }
     if ((value & 0x0fu) >= MYRAIDENII_CORE_SOUND_OKI_VOLUME_STEPS) {
         ++sound->observation.oki_rejected_selections[device];
@@ -696,8 +695,8 @@ static lib_status myraidenii_core_sound_read(myraidenii_core_sound *sound,
         return LIB_STATUS_OK;
     }
     if (address >= MYRAIDENII_CORE_SOUND_BANK_START) {
-        index = MYRAIDENII_CORE_SOUND_FIXED_ROM_BYTES +
-            (lib_size)sound->bank * MYRAIDENII_CORE_SOUND_BANK_BYTES +
+        index = (lib_size)(1u - (sound->bank & 1u)) *
+            MYRAIDENII_CORE_SOUND_BANK_BYTES +
             (address - MYRAIDENII_CORE_SOUND_BANK_START);
         *out_value = index < sound->program_bytes ? sound->program[index] : 0xffu;
         return LIB_STATUS_OK;
@@ -1422,7 +1421,8 @@ static lib_status myraidenii_core_sound_interrupt_accept(
         &transport_pending);
     if (status != LIB_STATUS_OK) return status;
     ym_pending = myraidenii_core_sound_ym_irq_pending(&sound->ym);
-    if (!sound->interrupt_enable || sound->interrupt_mode != 0u)
+    if (!sound->interrupt_enable || sound->interrupt_enable_delay != 0u ||
+        sound->interrupt_mode != 0u)
         return LIB_STATUS_UNSUPPORTED;
     if (transport_pending && !sound->transport_in_service) vector = 0x0018u;
     else if (ym_pending && !sound->ym_in_service) vector = 0x0010u;
@@ -1803,7 +1803,7 @@ static lib_status myraidenii_core_sound_execute(myraidenii_core_sound *sound,
         *out_ticks = 4u;
         return LIB_STATUS_OK;
     case 0xfbu:
-        sound->interrupt_enable_delay = 2u;
+        sound->interrupt_enable_delay = 1u;
         *out_ticks = 4u;
         return LIB_STATUS_OK;
     case 0x7eu:

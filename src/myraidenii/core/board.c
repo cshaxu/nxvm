@@ -39,6 +39,8 @@ struct myraidenii_core_board {
     lib_u16 player_inputs;
     lib_u16 system_inputs;
     lib_u8 coin_inputs;
+    lib_u8 coin_held;
+    lib_u8 coin_frames[2];
 };
 
 static lib_status myraidenii_core_board_sound_transport_command_get(void *context,
@@ -980,6 +982,10 @@ static void myraidenii_core_board_advance(void *owner, lib_u64 ticks, lib_u64 du
     if (myraidenii_core_video_advance(&board->video, ticks)) {
         board->main_interrupt_pending = LIB_TRUE;
         ++board->vblank_events;
+        for (lib_u8 index = 0u; index < 2u; ++index) {
+            if (board->coin_frames[index] != 0u && --board->coin_frames[index] == 0u)
+                board->coin_inputs |= (lib_u8)(1u << index);
+        }
     }
     status = myraidenii_core_cop_advance(board->cop);
 
@@ -1155,6 +1161,9 @@ static void myraidenii_core_board_reset(void *owner)
         board->player_inputs = 0xffffu;
         board->system_inputs = 0xffffu;
         board->coin_inputs = 0xffu;
+        board->coin_held = 0u;
+        board->coin_frames[0] = 0u;
+        board->coin_frames[1] = 0u;
         myraidenii_core_sound_reset(board->sound);
         lib_memory_set(board->sprite_protection_upload, 0, sizeof(board->sprite_protection_upload));
         lib_memory_set(&board->control_failure, 0, sizeof(board->control_failure));
@@ -1550,11 +1559,14 @@ lib_status myraidenii_core_board_set_control(myraidenii_core_board *board,
         mask = (lib_u16)(1u << (control == MYRAIDENII_CORE_BOARD_CONTROL_SERVICE ? 3u :
             control - MYRAIDENII_CORE_BOARD_CONTROL_START_1));
     } else {
-        lib_u8 coin_mask = (lib_u8)(1u <<
-            (control - MYRAIDENII_CORE_BOARD_CONTROL_COIN_1));
+        const lib_u8 index = (lib_u8)(control - MYRAIDENII_CORE_BOARD_CONTROL_COIN_1);
+        const lib_u8 coin_mask = (lib_u8)(1u << index);
 
-        if (pressed) board->coin_inputs &= (lib_u8)~coin_mask;
-        else board->coin_inputs |= coin_mask;
+        if (pressed && (board->coin_held & coin_mask) == 0u) {
+            board->coin_held |= coin_mask;
+            board->coin_inputs &= (lib_u8)~coin_mask;
+            board->coin_frames[index] = 4u;
+        } else if (!pressed) board->coin_held &= (lib_u8)~coin_mask;
         return LIB_STATUS_OK;
     }
     if (pressed) *register_value &= (lib_u16)~mask;

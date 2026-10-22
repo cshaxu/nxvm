@@ -1,4 +1,5 @@
 #include "lib/types/file.h"
+#include "lib/base/input_interface.h"
 #include "myraidenii/core/board_interface.h"
 #include "myraidenii/core/sound.h"
 #include "myraidenii/core/video.h"
@@ -82,7 +83,7 @@ static lib_bool myraidenii_startup_parse_arguments(lib_i32 argument_count, char 
 }
 
 static lib_status myraidenii_startup_set_control(const emulator_machine_driver *driver,
-    lib_u16 key, lib_bool pressed)
+    base_key key, lib_bool pressed)
 {
     kvm_input_event event = {0};
 

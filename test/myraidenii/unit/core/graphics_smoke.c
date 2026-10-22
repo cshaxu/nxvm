@@ -177,8 +177,8 @@ static lib_i32 graphics_tile_layers(void)
     tilemap[0x800u] = 0x2000u;
     tilemap[0xc00u] = 0x3000u;
     palette[0x401u] = 0x001fu;
-    palette[0x442u] = 0x03e0u;
-    palette[0x423u] = 0x7c00u;
+    palette[0x622u] = 0x03e0u;
+    palette[0x513u] = 0x7c00u;
     palette[0x734u] = 0x4210u;
     if (graphics_images_load(&video, images) != LIB_STATUS_OK ||
         myraidenii_core_video_palette_load(&video, palette,
@@ -419,8 +419,12 @@ static lib_i32 graphics_crtc_layers(void)
     palette[0x411u] = 0x001fu;
     palette[0x421u] = 0x03e0u;
     palette[0x431u] = 0x7c00u;
-    palette[0x441u] = 0x001fu;
-    palette[0x451u] = 0x03e0u;
+    palette[0x611u] = 0x7c00u;
+    palette[0x621u] = 0x001fu;
+    palette[0x631u] = 0x03e0u;
+    palette[0x511u] = 0x03e0u;
+    palette[0x521u] = 0x7c00u;
+    palette[0x531u] = 0x001fu;
     palette[0x711u] = 0x4210u;
     for (layer = 0u; layer < 3u; ++layer) {
         tilemap[tilemap_offsets[layer]] = 0x1000u;

@@ -22,7 +22,7 @@ FIFO; it is not a real-game or desktop qualification.
 | Non-goals | No Shared or other App changes, protected payload retention, invented gameplay success, or second input path. |
 | Reference Baseline | S75 observed actual input reads but no attributable progression in paired bounded runs. |
 | Candidate Proposal | Compare existing input, sound CPU, interrupt and transport behavior with independently sourced board semantics; use bounded background probes and correct only evidenced MyRaidenII-owned gaps. |
-| Files And ABI Surface | MyRaidenII production and existing tests as evidence requires, plus task records; no Shared changes or new public API anticipated. |
+| Files And ABI Surface | MyRaidenII production and existing tests as evidence requires, plus task records; no Shared changes or new public API anticipated. Initial bounded probe experiment changes one existing test constant temporarily; any production fix and its diff estimate require an evidence-led packet revision. |
 | Applicable Rules | MyRaidenII source policy, architecture and coding; shared execution and documentation rules. |
 | Verification | Relevant dual-width builds and tests; bounded selected-set comparison and complete repository units when production changes warrant them. |
 | Asset Needs | Existing owner-supplied external selected-set archive. |
@@ -30,6 +30,201 @@ FIFO; it is not a real-game or desktop qualification.
 | Stop Conditions | A necessary fix requires prohibited Shared changes or an unapproved source/license import. |
 | Exit Criteria | Evidence identifies and resolves the scoped acceptance gap, relevant tests and governance pass, and changes are reviewed and pushed. T7 remains open until full gameplay and release qualification. |
 | Temporary Work | Existing external diagnostics staging; bounded probes and cleanup after their child processes exit. |
+| Expected Markers | Separate edge delivery, guest reads, sound response and visible progress; a budget stop alone is not success. |
+| Original Owner Request | Implement MyRaidenII, using available emulator evidence as L2 without changing the prohibited Shared source and tests. |
+| Similar-Issue Sweep | Examine both Coin inputs, Start inputs, sound transport and interrupt handoff, and compare the real reference impulse duration with the local test stimulus. |
+
+After the Board impulse and Sound fixes described below, an x64 selected-set
+probe asserted Coin1 at vblanks 300--330 and did not assert Start. At 11 million
+instructions its temporary, portrait-oriented final frame visibly showed
+`CREDIT 1`. This confirms credit acceptance for that bounded run; it does not
+establish gameplay controls, desktop presentation or audible host output. The
+temporary capture and probe source change were removed after inspection.
+An additional direction-input experiment exposed that the existing probe helper
+accepted only 16-bit keys, truncating neutral extended key identities; the
+helper now accepts the existing `base_key` type. One run pressing Right after
+the original Start schedule produced the same final frame as its no-direction
+counterpart, which is not proof that gameplay controls work. Two further x64
+20-million-instruction runs used Start at vblanks 750--780, with and without
+Right held from vblank 900. Both reached the same final frame digest; the
+frame showed a game scene and an INSERT COIN message. This does not establish
+whether gameplay began or why direction had no observable effect. In a repeat
+of the Right-held run, the guest read the player input register 305 times
+while that direction was held; those reads alone do not prove the game used
+the input for player movement. Temporary captures and scheduling edits were
+removed.
+At the same 20-million-instruction budget, a Coin-only run remained on the
+credit/title frame while the later-Start run progressed to the game scene;
+this supports Start acceptance for that sequence. It does not close the
+separate direction-control question or prove an interactive release.
+Two x86 30-million-instruction runs used the same later Start schedule, with
+Right held from vblank 1350 in only one run. Their samples before the key edge
+matched; their final frame digests differed. The no-direction x86 final frame
+also matched the x64 no-direction run. This supports an input-sensitive guest
+output after the later edge, not a visual proof of player movement or desktop
+gameplay. The probe's temporary scheduling and input edits were removed.
+
+Verification of the production changes: the repository unit selection passed
+698/698 on each architecture. The updated Sound regression was rebuilt and
+passed separately on both widths after its last assertion was added; both
+MyRaidenII product candidates and the restored probe also built on both widths.
+The NXVM documentation governance target and `git diff --check` passed. These
+results do not include an interactive desktop/audio or full-game qualification.
+
+S76's first background x64 probe temporarily shortened Coin1 to vblanks
+300--304, matching the four-frame reference impulse while leaving Start1 at
+360--390. The sound CPU read Coin during that window, but the final frame
+digest still matched S75's no-input result; no nonzero PCM was generated.
+The temporary probe change was removed. This rules out neither a delayed or
+transient credit display nor another sound/input defect; acceptance remains
+unproven. The next investigation is the actual sound-to-main response path.
+
+Temporary Board-local aggregate instrumentation compared 20-million-instruction
+x64 no-input and 300--330 Coin / 360--390 Start runs. Each performed 4,017
+sound-response writes. The response changed zero times without input and four
+times with input; 98 response writes occurred while Coin was held. The main
+CPU read the response 2,007 and 2,008 times respectively. No response values or
+protected data were recorded. This establishes input-sensitive response writes
+and main-side reads, not that a changed response was read or a credit accepted.
+The instrumentation was removed. A later temporary aggregate was initially
+interpreted as two nonzero response writes and reads during Coin1; the more
+direct input-level instrumentation below contradicts its write interpretation.
+That earlier conclusion is withdrawn pending an explanation of the measurement.
+
+To check the earlier four-sample blind spot, paired x64 runs used 100 evenly
+spaced instruction-budget frame samples with and without the existing Coin1 /
+Start1 sequence. All 100 corresponding frame digests matched. This is denser
+sampling, not a per-frame proof and not an exact vblank-aligned comparison;
+the temporary sample-count edit was removed. Continue examining the guest's
+processing of the received response and distinguish attract from active play.
+
+Another paired x64 run compared an observational digest of the ordinary main
+RAM range 0x800--0xb7ff after 20 million instructions. Input and no-input
+digests differed, despite identical final frame digests. This is an internal
+state difference consistent with input having an effect, but it does not
+identify a credit, separate Coin from Start, or exclude a timing-dependent
+RAM difference. Only digests were emitted; the probe and copied RAM were
+discarded. A named semantic checkpoint remains necessary.
+
+An x64 no-input run stopped at 6 million instructions (343 observed vblanks).
+Its temporary frame, inspected after the existing portrait transform, showed an
+aircraft and copyright text: the local Coin1 threshold at vblank 300 is thus
+near that opening presentation, not established to match the reference's
+gameplay phase at the same frame number. The temporary image and probe edit were
+removed. The separate later 1200--1290 input experiment also failed to change
+sampled frames, so this observation alone does not establish a timing fix.
+
+To separate credit visibility from an immediately following Start, paired x64
+22-million-instruction runs used no input versus Coin1 only at vblanks
+1150--1154, with Start scheduled beyond the run. Both finished normally and
+had the same final frame digest. The Coin-only final frame was visibly the
+title/logo and copyright, without an identified credit indicator. This one
+checkpoint does not exclude a transient indicator. The temporary frame and
+probe edits were removed; no ROM or screen payload was retained.
+
+An additional paired semantic check used MAME 0.289 as an L2 black box with
+the owner set and Coin1 asserted at frames 300--329, without Start. At frame
+600 the reference visibly showed CREDIT 1 and a player-start prompt. A local
+Coin-only run with the same nominal edge thresholds reached 616 vblanks at
+11 million instructions and still showed an aircraft/copyright presentation,
+without an identified credit indicator. The local sound CPU read the held
+input 98 times. Equal frame numbers do not establish equal guest phase, so this
+is a concrete reference checkpoint and discrepancy, not yet a root cause.
+The temporary reference Lua, generated configuration, pixel files and local
+probe edits were removed.
+
+The reference layer palette layout exposes a separate, directly evidenced
+local rendering gap: middle and foreground tiles use 0x420/0x410 as palette
+bases, but their 16-color groups start at 0x600/0x500. S76 also corrects these
+two constants in MyRaidenII Video and updates its existing synthetic layer
+tests. Estimate: production +2/-2, tests about +8/-4; no Shared changes or
+new interface. Verify both widths and repeat the selected-set observation;
+this visual correction is not assumed to explain credit acceptance.
+The existing graphics smoke passes on x86 and x64 with the corrected layer
+indices; selected-set acceptance and full regression remain pending.
+
+The selected-set Sound ROM bank also has a verified L2 mapping gap: the
+reference region maps file offset 0x8000 as bank 0 and file offset 0 as bank 1,
+with only selector bit 0 used. The local flat-file map instead starts at
+0x2000 and uses the whole selector. S76 corrects the existing Sound map and
+its existing executable-CPU bank test; estimated production +3/-3 and test
++12/-6, with no Shared changes. This is independently incorrect even if
+selected-set execution does not exercise it; credit acceptance remains to be
+measured rather than presumed. Reference: MAME raiden2.cpp ROM layout and
+shared/seibusound.cpp bank setup/selection, consulted as L2 facts only.
+Both widths pass the existing Sound and Graphics smokes after these corrections.
+At 22 million instructions the x64 selected-set Coin/Start probe has the same
+four frame digests and the same zero-PCM/OKI-stop aggregate as the immediately
+preceding run, so neither correction is presented as the acceptance root cause.
+After relinking the unit targets, all 698 repository unit tests pass on each
+width; the x86 selected-set probe matches the x64 frame and sound aggregates.
+The active acceptance investigation continues; these results do not qualify
+playable gameplay, real audio output, integration or desktop interaction.
+
+An additional local Sound CPU defect was isolated with the existing smoke:
+pending interrupts were delayed by two instructions after EI instead of one.
+The implementation now inhibits acceptance for the instruction immediately
+following EI, including when interrupts were already enabled. The new
+synthetic regression failed before the correction and passes on both widths.
+The x64 seven-million-instruction selected-set probe still reports zero
+non-silent PCM; this correction alone does not establish coin acceptance or
+resolve the observed game failure. No shared source or test was changed.
+
+The four-frame Coin stimulus exposed a separate local OKI command-decoding
+fault: an idle control with no voice mask returned INVALID_STATE and faulted
+the machine. MAME 0.289's OKI device treats non-pending, high-bit-clear writes
+as a stop mask in bits 3--6; a zero mask is harmless. Correct the existing
+local decoder and its existing sound smoke (estimated production +7/-7, test
++5/-4). A four-frame selected-set probe then reached its budget with Coin and
+Start delivered, nonzero PCM and changed frame output. This is not yet a
+credit or gameplay qualification. The public input path still holds Coin for
+the host key duration; the selected L2 reference uses a four-frame impulse.
+Implement that in the existing Board control owner and extend its existing
+input smoke (estimated production +20/-2, test +25/-2); no Shared changes or
+public interface are needed. Verify held, release, repeat and both coin slots.
+
+The Board now emits one active-low four-vblank impulse per Coin press edge;
+holding the host key does not retrigger it, and releasing early does not cut
+it short. The existing Board smoke exercises both slots, early release, a held
+key, re-press and reset. The existing Sound smoke exercises harmless zero-mask
+controls and correct stop-mask bits. Both smokes pass on x86 and x64. The
+unchanged 30-frame host-held selected-set sequence now reaches seven million
+instructions on both widths with matching frame/PCM digests, both OKI devices
+starting voices, and nonzero PCM. A further x64 11-million-instruction run
+completed without a machine fault. A transient rotated final frame showed a
+player aircraft, score/life text and game-over text; the picture was deleted.
+This is stronger evidence of progression, not proof that movement, shooting,
+actual audio delivery, desktop interaction, or release qualification works.
+
+A bounded MAME 0.289 write/read-tap comparison examined the same frame-300
+Coin1 / frame-360 Start1 schedule through frame 600. During the Coin hold,
+the reference emitted two nonzero sound response writes and its main-side bus
+read tap counted two values other than zero or 0xff; the previously measured
+earlier local time-window aggregate was interpreted similarly. The MAME bus
+tap's lane/mask interpretation was not separately qualified, so the counts do
+not prove matching response bytes, guest state or equivalent read lanes.
+The reference issued 12 OKI sample-select writes over the whole run; the local
+11-million-instruction probe, at 616 vblanks, issued none. Those differing
+observations do not establish why or imply equivalent startup phase. The
+reference probe emitted counts only and its temporary Lua was removed.
+
+A follow-up directly observes the actual input level at the Sound callback and
+the actual response setter while that level is asserted. At Coin1 frames
+300--330 the local Sound callback confirms active-low input was read, but no
+nonzero response was written while active; MAME's Sound write tap records two
+nonzero response writes in the corresponding input interval. This corrects the
+earlier indirect local aggregate claim and identifies a narrower observable
+Sound-execution discrepancy, not yet its cause. The reference reports only
+response index and bit count, not response bytes; all transient instrumentation
+was removed. Phase and sample-boundary differences remain possible.
+
+The next bounded comparison found the first active Coin read in both models
+within the same four-byte Sound-CPU instruction neighborhood; the engines'
+different fetch position conventions were not independently resolved. Sound RAM digests at that point do
+not match. This points to an earlier execution or scheduling difference, not
+an incorrect Coin register address, but it does not identify the first changed
+byte or prove an instruction defect. No guest memory or instruction trace was
+retained, and the transient reference/local probes were removed.
 
 ## Archived Packet — M1 T7 S75
 

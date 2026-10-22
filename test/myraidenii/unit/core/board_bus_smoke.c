@@ -1335,6 +1335,7 @@ static lib_i32 board_video_interrupts(void)
     x86_core_machine_time_observation time;
     myraidenii_core_board_video_observation observation = {0};
     lib_u8 advanced;
+    lib_u8 coin;
     lib_u16 count = 0u;
     lib_i32 failed = 1;
 
@@ -1347,7 +1348,13 @@ static lib_i32 board_video_interrupts(void)
             vector, sizeof(vector)) != LIB_STATUS_OK ||
         x86_core_machine_debug_continue(machine,
             (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
-        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)
+        result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_1,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_2,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_2,
+            LIB_FALSE) != LIB_STATUS_OK)
         goto done;
 
     /* Independent raster oracle: 240 active lines, 512 pixels and two CPU
@@ -1366,7 +1373,8 @@ static lib_i32 board_video_interrupts(void)
             x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
             !advanced ||
             x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
-            time.elapsed_ticks != edge || time.next_deadline_tick != edge + 288768u)
+            time.elapsed_ticks != edge || time.next_deadline_tick != edge + 288768u ||
+            myraidenii_core_board_get_coin_inputs(board, &coin) != LIB_STATUS_OK || coin != 0xfcu)
             goto done;
         /* Literal RNG oracles at the existing three independently scheduled edges. */
         for (lib_size index = 0u; index < sizeof(limits) / sizeof(limits[0]); ++index) {
@@ -1392,7 +1400,18 @@ static lib_i32 board_video_interrupts(void)
         observation.palette_commits != 0u || observation.tilemap_commits != 0u)
         goto done;
     if (x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
-        !advanced || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        !advanced || myraidenii_core_board_get_coin_inputs(board, &coin) != LIB_STATUS_OK ||
+        coin != 0xffu ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_1,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_get_coin_inputs(board, &coin) != LIB_STATUS_OK || coin != 0xffu ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_1,
+            LIB_FALSE) != LIB_STATUS_OK ||
+        myraidenii_core_board_set_control(board, MYRAIDENII_CORE_BOARD_CONTROL_COIN_1,
+            LIB_TRUE) != LIB_STATUS_OK ||
+        myraidenii_core_board_get_coin_inputs(board, &coin) != LIB_STATUS_OK || coin != 0xfeu ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        myraidenii_core_board_get_coin_inputs(board, &coin) != LIB_STATUS_OK || coin != 0xffu ||
         x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
         time.elapsed_ticks != 0u || !time.next_deadline_valid ||
         time.next_deadline_tick != 245760u ||
