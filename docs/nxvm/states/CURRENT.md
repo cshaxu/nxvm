@@ -2,6 +2,13 @@
 
 ## Current Work
 
+The owner extended open T564 on 2026-10-22 to plan the public-component TODO
+classes and former PC App test-encapsulation candidate as S6--S13. The
+[updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
+sequence and conditional dispositions. S1--S5 remain closed; no new S is
+admitted by this planning change. Model40 throughput and DevBox exploration
+remain in NXVM TODO. T564 is open.
+
 M5 Td S183 is closed: the owner directed correction of the two Shared documentation
 items omitted from Td S182. Shared documentation rules now identify the six
 current shared source/test package pairs, and Execution records the four PC

@@ -1,40 +1,9 @@
 # Long-Term Review Ledger
 
-Only unplanned debt belongs here; [Queue](QUEUE.md) owns admitted candidate
-receivers. The [former debt disposition](../etc/history/retired-machine-plans/README.md)
-preserves every old entry and its retirement/transfer, not an assertion of repair.
-
-## CPU, Time, And Debugging Debt
-
-- [ ] **Internal descriptor vocabulary (`TODO(Low)`).** Preserve data layout
-  and debugger behavior; admit only a caller-inventoried source cleanup, not a
-  broad CPU rewrite.
-- [ ] **Debug control-register mutation (`TODO(Medium)`).** Debug writes can
-  create control/paging states unlike guest MOV CR. Admit a Core-owned bounded
-  mutation contract with explicit raw-override policy and unchanged Debug UX.
-- [ ] **Broader x87 execution (`TODO(Low)`).** Existing ESC/WAIT/interface
-  behavior is not complete 287/387 numeric execution. Admit only a separately
-  selected coprocessor, primary function/timing ledger and owned corpus;
-  preserve existing no-FPU and exception behavior.
-- [ ] **Other virtual-interrupt extensions (`TODO(Medium)`).** Selected embedded
-  486SX VME has actual CR4/flags/TSS/entry proof; it is not deferred here.
-  Ordinary 386 VM86 is retained. PVI or extensions for another CPU variant need
-  that variant's exact source and admission; they are not advertised by the
-  selected SX or implied by its VME support.
-- [ ] **CPU fault reporting (`TODO(Medium)`).** Re-admit from a reproducible
-  missing outcome at the existing Common/Debug boundary; keep first-fault
-  evidence and one execution path.
-- [ ] **Assembler checkop (`TODO(Low)`).** Admit an owned diagnostic regression
-  when a real defect requires it; no per-instruction reassemble comparison.
-
-## Hardware And Compatibility Debt
-
-- [ ] **Unselected peripheral breadth (`TODO(Low)`).** ELCR/PCI/APIC, advanced
-  AUX, light-pen/composite effects, serial/parallel/game ports and host speaker
-  breadth require a named board consumer and source contract. If selected by
-  an XT/AT/DeskPro/default/PC110 BOM they transfer to controller qualification; otherwise
-  they are not implicit product features.
-## Timing-Fidelity Debt
+Only unplanned debt belongs here; [Queue](QUEUE.md) owns candidate receivers.
+The public-component entries were transferred to the open
+[T564 S6--S13 plan](../proposals/m5-softpc-rgb-frame-import.md) by owner
+direction; transfer is not a repair or a claim of implementation.
 
 - [ ] **Model40 x86 external-throughput qualification (`TODO(Medium)`).** The
   fixed 180-second Turbo DOS-installation terminal is not presently a
@@ -44,60 +13,5 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   terminal; admit a separate IBM PC/runtime throughput investigation only with
   a reproducible host baseline. Do not solve it by extending the timeout,
   changing the profile, or inventing guest time.
-
-- [ ] **Beyond digital timing (`TODO(Medium)`).** Analog/pin/physical-media
-  behavior is not proven by register order or a proportional model. Admit a
-  bounded source-backed receiver only when a selected product needs it; never
-  hide required digital behavior here.
-
-## Architecture And Portability Debt
-
-- [ ] **X86 NXVM verifier-negative runtime margin (`TODO(Low)`).** T563 S2's
-  frozen x64 full unit run timed out this unchanged test at 30 seconds;
-  isolated repetition passed in 29.09 seconds without changing its budget.
-  Admit a bounded test-efficiency investigation of repeated corpus copies
-  and checker invocations, retaining every negative assertion and the same
-  dependency rules. T564 S3 subsequently raised its timeout to 300 seconds;
-  the former 30-second limit is historical, not the current budget. This is a test-runtime reliability risk, not evidence of
-  a CPU timing regression or permission to weaken checks or tune the host.
-
-- [ ] **Common Machine wake failure (`TODO(Medium)`).** T542 S10's read-only
-  sweep found ignored event-signal failures in start/resume/stop/reset/input
-  and debug-cancel submission, plus shutdown's two wakes before worker join.
-  State or queued work can be published while
-  success is reported without a successful wake; shutdown may wait on an
-  unwoken worker. Common owns the repair;
-  admit a separate Shared failure-contract review with injected event failures
-  and all receiving consumers. Lib/Common changes were explicitly excluded
-  from S10; this is a reported gap, not a claimed fix.
-
-- [ ] **Shared native-test desktop isolation (`TODO(Medium)`).** During T539
-  S21, concurrent x64/x86 unit suites produced one unchanged
-  `library.kvm_window_modal` failure: the native move loop exited before the
-  test's expected cancellation point. Cross-process desktop interference is
-  suspected, not proven. Keep native desktop suites from overlapping across
-  build trees for receiving verification. Admit a separate Shared test-runner
-  isolation review if reproduced; preserve real window assertions, do not
-  suppress the test. [Evidence](../etc/evidence/t539-s21-lea-movx-migration.md).
-
-- [ ] **Shared Console failure rollback (`TODO(Medium)`).** T538's exploratory
-  native fixture observed a 120x60 cooked history buffer with a 40x13 viewport
-  restored as 120x13 after injected raw-reader startup failure, before any frame
-  write. Risk: offscreen monitor history loss on that failure path. Admit a
-  separate Shared buffer-switch/rollback review with before/after native proof;
-  the approved raw-frame backing-capacity repair does not claim this recovery.
-  [Evidence](../etc/evidence/t538-boot-pairs.md).
-
-- [ ] **Browser storage (`TODO(Low)`).** Native file-backed storage already has
-  its Lib owner. OPFS/IndexedDB/HTTP-backed pending I/O is a separate host
-  capability, admitted only with a future browser consumer and no second
-  guest-time or storage path.
-- [ ] **Direct-production strict compilation (`TODO(Medium)`).** Reconcile
-  legacy mixed-target warning exemptions against current source ownership when
-  that domain changes. Require target-local diagnostics and regressions, not
-  a blanket global suppression or an assumed inherited strict build.
-- [ ] **Linux runtime verification (`TODO(Medium)`).** Portability source is
-  not runtime support proof. Admit POSIX runtime validation when an approved
-  environment exists; no WSL installation is implied.
 - [ ] **DevBox exploration (`TODO(Low)`).** Requires an explicit product goal,
   trust boundary and corpus; not an automatic extension of these machine builds.

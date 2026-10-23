@@ -1,4 +1,41 @@
-# Committed SoftPC RGB Frame Import
+# Shared Import And Public-Component Quality Program
+
+## Owner-approved extension: public component debt
+
+On 2026-10-22 the owner extended open T564 to receive the fifteen public
+component TODO classes and the former PC App test-encapsulation queue item.
+This does not retroactively change S1--S5 or their evidence. The public scope
+is the six source/test pairs Lib, Emulator, X86 Debug, X86 Core, X86 IBM PC
+and X86 NXVM, plus affected four-PC and other receiving-App tests. Plan each
+S as a finite audit and, where necessary and authorized, a bounded repair; do
+not predeclare historical risks to be active defects. An S remains unadmitted
+until its packet is opened in Current. Preserve existing queue order and
+Shared/inward ownership, single execution paths and existing assertions.
+
+| Planned S | Scope and explicit exit |
+| --- | --- |
+| S6 | X86 Core descriptor vocabulary, Debug CR mutation and CPU fault reporting: inventory callers and contracts, reproduce any defect, fix confirmed issues with appropriate Core/Debug/Emulator regressions; document raw-override semantics and unresolved evidence. |
+| S7 | x87 execution and other virtual-interrupt extensions: establish selected CPU/FPU profiles and source-backed coverage; qualify existing claimed behavior, explicitly disposition unselected variants without implementing speculative hardware. |
+| S8 | X86 Debug assembler `checkop`: review real use and defects, extend existing regressions only when justified; no per-instruction reassembly framework. |
+| S9 | Emulator Machine async wake failures: review current lifecycle, input, debug cancellation and shutdown signaling, implement an existing-contract failure path if needed, inject failures and qualify receiving products. |
+| S10 | Lib Console failure rollback and native desktop test isolation: reproduce on current implementation, repair proven ownership/rollback or test isolation defects without weakening native assertions; record unproven cases honestly. |
+| S11 | X86 NXVM verifier-negative efficiency and four-PC App test adapter ownership: retain negative assertions, classify every private-header use, move or adapt only justified tests, avoid new raw getters and qualification regressions. |
+| S12 | Unselected peripherals and beyond-digital timing: inventory selected board requirements and evidence levels, repair proven in-scope selected-device gaps or explicitly defer conditional analog/unselected capabilities without adding speculative devices. |
+| S13 | Direct-production strict compilation, Linux runtime and future browser storage: inventory warning exceptions, validate supported Linux paths only where a suitable environment exists, and disposition browser storage only for an actual selected consumer. Never claim unrun platform verification. |
+
+Each S records exact scope and before/after dispositions, actual diff, test
+ownership and unresolved prerequisites. Reuse existing tests and cache;
+build and run the full repository unit suite per S, required affected tests
+and integrations, and rebuild affected product binaries in accordance with
+Execution. Shared changes are delivered as Shared-scoped commits and reviewed
+across consumers; product changes use separate target-scoped commits. At T
+closure, reconcile all fifteen classes and the four-App test inventory, run
+required full integration qualification, and explicitly transfer any owner-
+accepted conditional or environment-blocked work. Do not declare unselected
+features implemented merely because their audit is complete.
+
+The scope extension supersedes the original one-S-only delivery wording below;
+it does not authorize editing external repositories or protected inputs.
 
 Admitted M5 T564 S1 on 2026-10-17 by the owner, before the unchanged PC110
 candidates. Current owns its active packet and acceptance state.
