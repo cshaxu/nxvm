@@ -215,7 +215,8 @@ lib_status x86_nxvm_board_plan_validate(const x86_nxvm_board_plan *plan)
             plan->declarations, plan->declaration_count) != LIB_STATUS_OK ||
         (plan->configuration.keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042 &&
         plan->configuration.keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI &&
-        plan->configuration.keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE) ||
+        plan->configuration.keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE &&
+        plan->configuration.keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042_NEUTRAL) ||
         (plan->configuration.keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI &&
         !x86_nxvm_board_xt_ppi_keyboard_config_is_valid(
             &plan->configuration.xt_ppi_keyboard)) ||

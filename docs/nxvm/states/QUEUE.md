@@ -70,7 +70,7 @@ the ordered candidates below remain unadmitted.
 
 The former first candidate, [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board.md), is closed as M5 T565. Its accepted mapping foundation is retained in task history. The former next candidate, [PC110: minimal base composition](../history/M5-T566-pc110-base-composition.md), is closed as M5 T566; its typed neutral controller/App composition foundation is retained in task history. The ordered endpoint receivers below remain unadmitted.
 
-1. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md) is admitted as M5 T567; Current owns its S1 input/power contract audit.
+1. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md) is admitted as M5 T567; Current owns its S3 power/suspend/wake disposition after completed input composition.
 2. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
 3. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
 4. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)

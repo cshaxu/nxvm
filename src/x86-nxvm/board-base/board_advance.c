@@ -130,7 +130,7 @@ void x86_nxvm_board_after_internal_advance(void *owner,
     kbc_ticks = x86_core_machine_clock_domain_advance(&board->kbc_clock, source_ticks);
     if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_advance(board->xt_keyboard, source_ticks);
-    } else {
+    } else if (board->keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE) {
         x86_nxvm_board_kbc_advance(board->shared_kbc, kbc_ticks);
     }
     x86_nxvm_board_pic_advance(board->shared_pic_master, board->shared_pic_slave,

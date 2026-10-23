@@ -2,7 +2,28 @@
 
 ## Current Work
 
-## M5 T567 S2 — Active: PC110 keyboard and TrackPoint composition
+## M5 T567 S3 — Active: PC110 power and suspend/wake disposition
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of T567 after closed S2; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed the admitted PC110 T to closure. S1/S2 transfer only the still-unresolved power, status and wake rows here. |
+| Objective | Decide whether the PC110 U6 power-controller CPU protocol is sufficiently evidenced for one deterministic guest-visible model, or transfer it without a placeholder to a newly bounded evidence receiver. |
+| Non-goals | No fabricated mailbox, always-ready reply, host power shortcut, Emulator lifecycle alias, MCU firmware import/execution, rail simulation, display/storage/audio/product EXE or Shared Lib/Emulator modification. |
+| Reference Baseline | S1 audit; S2 KBC/TrackPoint composition; original U6 power-sequence evidence, Pluto port observations and current App/Core lifecycle ownership. |
+| Candidate Proposal | [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md). |
+| Files And ABI Surface | Documentation/evidence and task disposition unless an already-sourced CPU-visible protocol establishes an App-local port model. No interface is presumed. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy; one lifecycle owner and no fabricated-success invariants. |
+| Verification | Inspect all cited physical/firmware protocol facts against current Core lifecycle and I/O abstractions; enumerate request, reply, ready, error, reset and wake semantics before admitting code. |
+| Expected Markers | A finite supported contract or an explicit no-device decision plus a separately queued receiver; no overlap with Emulator machine lifecycle. |
+| Asset Needs | Read-only research only. No raw MCU payload, ROM or external code is copied. |
+| Reporting Requirements | State exact evidence grade, rejected models, code surface if any, unexecuted physical proof and the route that owns unresolved work. |
+| Stop Conditions | CPU-visible protocol remains incomplete, conflicts with one-owner lifecycle, or requires a new Shared contract. Close the row as unsupported and transfer it rather than guessing. |
+| Exit Criteria | The power/suspend/wake row is resolved into bounded implementation or explicit transfer, records are updated and the S P is pushed. |
+| Original Owner Request | Continue the PC110 programme to the real product end state after T566 closure. |
+| Similar-Issue Sweep | Check every current App/Core power/reset shortcut for accidental reuse or second lifecycle ownership. |
+
+## M5 T567 S2 — Closed: PC110 keyboard and TrackPoint composition
 
 | Field | Required record |
 | --- | --- |
@@ -12,7 +33,7 @@
 | Non-goals | No inking, power MCU, suspend/wake, display, storage, firmware import, product EXE or guest boot claim; no Lib/Emulator/Public-Shared interface change. |
 | Reference Baseline | T566 App-local base, S1 input/power audit, current X86 NXVM KBC/keyboard/PS2 mechanisms and the cited measured PC110 sources. |
 | Candidate Proposal | [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md). |
-| Files And ABI Surface | `src/app-mypc110`, `test/app-mypc110`, and only already-public X86 NXVM mechanisms. New routes must stay App-local; no PC/AT Board adapter reuse. |
+| Files And ABI Surface | `src/app-mypc110`, `test/app-mypc110`, and one additive X86 NXVM Board keyboard-topology enum. New routes must stay App-local; no PC/AT Board adapter reuse and no Lib/Emulator or CPU interface change. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; NXVM architecture/coding/source policy; S1 evidence and component dependency direction. |
 | Verification | Directly prove `60h`/`64h` command/data behavior, OBF/IBF, guest-facing make/break, AUX reset/ID/status and atomic three-byte pointer reports; prove no PC/AT facade route appears. |
 | Expected Markers | One PC110-owned composition and one input route; real protocol failures propagate; power and inking remain absent rather than falsely succeeding. |
@@ -22,6 +43,14 @@
 | Exit Criteria | PC110 can compose/destroy the proven input transport with direct tests on both widths and unchanged existing Apps; manifests/docs pass and the implementation P is pushed. |
 | Original Owner Request | Continue the PC110 programme to the real product end state after T566 closure. |
 | Similar-Issue Sweep | Check all PC110 assembly/test paths for a hidden PC/AT board dependency, second KBC ownership or direct host-to-BIOS input path. |
+
+### S2 Delivery
+
+The [keyboard and TrackPoint composition record](../etc/evidence/t567-s2-keyboard-trackpoint-composition.md)
+captures the neutral 8042 transport boundary, direct `60h`/`64h` and AUX
+proof, and its deliberate exclusions.  Existing PC Apps retain their PC/AT
+selection; MyPC110 alone uses the new neutral selection.  S2 is closed after
+both widths pass the direct App tests plus X86 NXVM structural/manifest gates.
 
 ## M5 T567 S1 — Closed: PC110 input/power contract audit
 

@@ -114,7 +114,8 @@ void x86_nxvm_board_deadline_observe(void *owner, lib_u64 now,
         board_consider_absolute(now, due_tick,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
-    if (x86_nxvm_board_kbc_ticks_until_event(board->shared_kbc,
+    if (board->keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE &&
+        x86_nxvm_board_kbc_ticks_until_event(board->shared_kbc,
             &device_ticks) == LIB_STATUS_OK &&
         board_consider_clock(&board->kbc_clock, device_ticks,
             &out_observation->source_ticks))

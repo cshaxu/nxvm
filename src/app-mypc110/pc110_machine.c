@@ -24,7 +24,7 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
     .shared_pit_personality = X86_PIT_PERSONALITY_8254,
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
-    .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE,
+    .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042_NEUTRAL,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
     .system_facade = X86_NXVM_BOARD_SYSTEM_FACADE_NONE
 };

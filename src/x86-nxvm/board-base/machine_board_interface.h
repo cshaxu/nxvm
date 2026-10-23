@@ -58,7 +58,9 @@ typedef enum x86_nxvm_board_keyboard_topology {
     X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042 = 0,
     X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI = 1,
     /* The board owns no keyboard endpoint; a product receiver may attach one. */
-    X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE = 2
+    X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE = 2,
+    /* An 8042-style serial transport without PC/AT output-port wiring. */
+    X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042_NEUTRAL = 3
 } x86_nxvm_board_keyboard_topology;
 
 /* Zero keeps the existing PC video default for all existing board inputs. */
