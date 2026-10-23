@@ -70,16 +70,17 @@ the ordered candidates below remain unadmitted.
 
 The former first candidate, [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board.md), is closed as M5 T565. Its accepted mapping foundation is retained in task history. The former next candidate, [PC110: minimal base composition](../history/M5-T566-pc110-base-composition.md), is closed as M5 T566; its typed neutral controller/App composition foundation is retained in task history. The ordered endpoint receivers below remain unadmitted.
 
-1. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md) is admitted as M5 T567; Current owns its S3 power/suspend/wake disposition after completed input composition.
+1. [PC110: keyboard, pointer and power](../history/M5-T567-pc110-input-power.md) is closed as M5 T567: keyboard/TrackPoint are delivered, while power is explicitly transferred rather than fabricated.
 2. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
-3. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
-4. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
-5. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
-6. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
-7. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-8. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-9. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-10. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+3. [PC110: power management and APM](../proposals/m5-pc110-power-apm.md)
+4. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
+5. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
+6. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
+7. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
+8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+10. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+11. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

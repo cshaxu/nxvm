@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T567 S3 — Active: PC110 power and suspend/wake disposition
+## M5 T567 S3 — Closed: PC110 power and suspend/wake disposition
 
 | Field | Required record |
 | --- | --- |
@@ -22,6 +22,16 @@
 | Exit Criteria | The power/suspend/wake row is resolved into bounded implementation or explicit transfer, records are updated and the S P is pushed. |
 | Original Owner Request | Continue the PC110 programme to the real product end state after T566 closure. |
 | Similar-Issue Sweep | Check every current App/Core power/reset shortcut for accidental reuse or second lifecycle ownership. |
+
+### S3 Delivery And T567 Closure
+
+The [power disposition](../etc/evidence/t567-s3-power-disposition.md) confirms
+physical U6 and APM facts but not a complete CPU-visible power contract.  The
+historical `0ECh/0EDh` attribution conflicts with the source-qualified chipset
+route, so no speculative power device is admitted.  The source-gated
+[PC110 power management and APM](../proposals/m5-pc110-power-apm.md) receiver
+owns the unresolved row.  [T567 closure](../history/M5-T567-pc110-input-power.md)
+records the completed neutral input transport and this explicit transfer.
 
 ## M5 T567 S2 — Closed: PC110 keyboard and TrackPoint composition
 
