@@ -2,7 +2,28 @@
 
 ## Current Work
 
-## M5 T564 S5 — Delivered, awaiting owner acceptance: verbatim SoftPC shared-package import
+## M5 Td S182 — Active: NXVM documentation governance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Governance, next NXVM M5 Td S182; single-session coordinator and executor. T564 remains open. |
+| Admission And Approval | Owner requests S5 closure and a new NXVM documentation governance Td on 2026-10-22. |
+| Objective | Audit current NXVM documentation and identify needed governance corrections. |
+| Non-goals | No implementation, Shared or other product changes; no assumption that all TODO entries must be queued or deleted. |
+| Reference Baseline | S5 delivery through abb2b10f2, followed by MyNES governance commit 14d12458a. |
+| Candidate Proposal | Owner-directed documentation governance; detailed remediation scope remains to be established. |
+| Files And ABI Surface | NXVM documentation only; no production, test, binary or public API changes. |
+| Applicable Rules | NXVM guide and shared Execution and Documentation rules; preserve historical records and single authority. |
+| Verification | Audit actual current documentation, links and state; run NXVM documentation governance gate and review actual changes. |
+| Expected Markers | Clear findings and approved, consistent documentation disposition. |
+| Asset Needs | No media, runtime assets or temporary build output. |
+| Reporting Requirements | Distinguish verified stale descriptions, historical evidence and unapproved proposed changes. |
+| Stop Conditions | Scope requiring Shared or another product, or an owner choice affecting task order or deletion. |
+| Exit Criteria | Approved scope completed, checks and actual-diff review passed, target-scoped commit pushed. |
+| Original Owner Request | Close preceding S and admit a Td to govern NXVM project documentation. |
+| Similar-Issue Sweep | Review related current authorities and references; retain history rather than rewriting it. |
+
+## M5 T564 S5 — Closed: verbatim SoftPC shared-package import
 
 | Field | Required record |
 | --- | --- |
@@ -33,7 +54,9 @@ failure which passed on separate retry. Five NXVM integration receivers were
 updated for the S3 unready-frame contract. Ten EXEs were rebuilt. The
 [S5 evidence](../etc/evidence/t564-s5-softpc-shared-import.md) records the
 failure, retest and verification limits. Two pre-existing owner INI changes
-remain untouched. S5 awaits owner acceptance; T564 remains open.
+were subsequently restored at the owner's request. The owner accepted and
+closed S5 on 2026-10-22; T564 remains open. The intermittent MyNES native
+Console failure remains a separately queued investigation, not a claimed fix.
 T564 S3 was accepted by the owner and closed on 2026-10-22. The
 [task history](../history/M5-T564-softpc-rgb-frame-import.md) records its
 delivery, corrective verification and closure. T564 remains open; S2's

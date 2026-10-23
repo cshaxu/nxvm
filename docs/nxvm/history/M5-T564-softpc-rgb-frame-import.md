@@ -1,5 +1,13 @@
 # M5 T564 — SoftPC RGB Frame Import
 
+## S5 — Committed shared import
+
+The owner accepted and closed S5 on 2026-10-22. Shared `09ebe0476`, MyNES
+`c79285fef`, and NXVM `abb2b10f2` deliver the import, ten EXEs and receiver
+qualification. The [S5 evidence](../etc/evidence/t564-s5-softpc-shared-import.md)
+records the one native Console failure and passing isolated retry; its cause
+remains unresolved. T564 remains open and S2 acceptance remains separate.
+
 Owner-admitted on 2026-10-17 after T563 closure. S1 imports committed SoftPC
 dfc85aac4387600033d3ed11d7fb26e74b9eb631 and adapts all ten receiving EXEs.
 The [proposal](../proposals/m5-softpc-rgb-frame-import.md) freezes scope;
