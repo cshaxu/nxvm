@@ -15,3 +15,10 @@ direction; transfer is not a repair or a claim of implementation.
   changing the profile, or inventing guest time.
 - [ ] **DevBox exploration (`TODO(Low)`).** Requires an explicit product goal,
   trust boundary and corpus; not an automatic extension of these machine builds.
+- [ ] **Browser storage (`TODO(Low)`).** Native file-backed storage already has
+  its Lib owner. OPFS/IndexedDB/HTTP-backed pending I/O is a separate host
+  capability, admitted only with a future browser consumer and no second
+  guest-time or storage path.
+- [ ] **Linux runtime verification (`TODO(Medium)`).** Portability source is
+  not runtime support proof. Admit POSIX runtime validation when an approved
+  environment exists; no WSL installation is implied.

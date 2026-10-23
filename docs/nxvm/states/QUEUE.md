@@ -79,7 +79,7 @@ the ordered candidates below remain unadmitted.
 9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 10. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 
-The former PC App test adapter candidate was transferred into T564 S11 by
+The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)
 retains the detailed inventory and boundary, not another queued task.
 

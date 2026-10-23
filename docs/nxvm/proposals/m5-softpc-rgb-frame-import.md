@@ -14,14 +14,14 @@ Shared/inward ownership, single execution paths and existing assertions.
 
 | Planned S | Scope and explicit exit |
 | --- | --- |
-| S6 | X86 Core descriptor vocabulary, Debug CR mutation and CPU fault reporting: inventory callers and contracts, reproduce any defect, fix confirmed issues with appropriate Core/Debug/Emulator regressions; document raw-override semantics and unresolved evidence. |
-| S7 | x87 execution and other virtual-interrupt extensions: establish selected CPU/FPU profiles and source-backed coverage; qualify existing claimed behavior, explicitly disposition unselected variants without implementing speculative hardware. |
+| S6 | Lib: review Console failure rollback and native desktop test isolation; reproduce and repair proven defects without weakening assertions. |
+| S7 | Emulator: review Machine async wake failures in lifecycle, input, debug cancellation and shutdown, implement an existing-contract failure path if needed, inject failures and qualify receiving products. |
 | S8 | X86 Debug assembler `checkop`: review real use and defects, extend existing regressions only when justified; no per-instruction reassembly framework. |
-| S9 | Emulator Machine async wake failures: review current lifecycle, input, debug cancellation and shutdown signaling, implement an existing-contract failure path if needed, inject failures and qualify receiving products. |
-| S10 | Lib Console failure rollback and native desktop test isolation: reproduce on current implementation, repair proven ownership/rollback or test isolation defects without weakening native assertions; record unproven cases honestly. |
-| S11 | X86 NXVM verifier-negative efficiency and four-PC App test adapter ownership: retain negative assertions, classify every private-header use, move or adapt only justified tests, avoid new raw getters and qualification regressions. |
-| S12 | Unselected peripherals and beyond-digital timing: inventory selected board requirements and evidence levels, repair proven in-scope selected-device gaps or explicitly defer conditional analog/unselected capabilities without adding speculative devices. |
-| S13 | Direct-production strict compilation, Linux runtime and future browser storage: inventory warning exceptions, validate supported Linux paths only where a suitable environment exists, and disposition browser storage only for an actual selected consumer. Never claim unrun platform verification. |
+| S9 | X86 IBM PC: audit relevant receiving contracts and tests for the preceding Lib, Emulator and Debug results; repair confirmed owner-local gaps without inventing a defect or duplicating inner-component behavior. |
+| S10 | X86 Core descriptor vocabulary, Debug CR mutation and CPU fault reporting: inventory callers and contracts, reproduce any defect, fix confirmed issues with appropriate Core/Debug/Emulator regressions; document raw-override semantics and unresolved evidence. |
+| S11 | X86 Core x87 execution and other virtual-interrupt extensions: establish selected CPU/FPU profiles and source-backed coverage; qualify existing claimed behavior, explicitly disposition unselected variants without implementing speculative hardware. |
+| S12 | X86 NXVM unselected peripherals and beyond-digital timing: inventory selected board requirements and evidence levels, repair proven in-scope selected-device gaps or explicitly defer conditional analog/unselected capabilities without adding speculative devices. |
+| S13 | X86 NXVM verifier-negative efficiency and four-PC App test adapter ownership: retain negative assertions, classify every private-header use, move or adapt only justified tests, avoid new raw getters and qualification regressions. |
 
 Each S records exact scope and before/after dispositions, actual diff, test
 ownership and unresolved prerequisites. Reuse existing tests and cache;
@@ -33,6 +33,13 @@ closure, reconcile all fifteen classes and the four-App test inventory, run
 required full integration qualification, and explicitly transfer any owner-
 accepted conditional or environment-blocked work. Do not declare unselected
 features implemented merely because their audit is complete.
+
+Direct-production strict compilation is cross-cutting: assess each package's
+warning exceptions in its ordered S. S13 reconciles the complete six-package
+and receiver dispositions. Linux runtime verification and future browser
+storage are excluded from T564 and returned to TODO by owner direction; no
+unrun platform is claimed verified. Owner direction on 2026-10-22 establishes
+the order Lib, Emulator, X86 Debug, X86 IBM PC, X86 Core, X86 NXVM.
 
 The scope extension supersedes the original one-S-only delivery wording below;
 it does not authorize editing external repositories or protected inputs.
