@@ -2938,6 +2938,16 @@ lib_status x86_video_capture_snapshot_from(x86_video *adapter, const x86_video_m
 {
     if (adapter == LIB_NULL || out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (adapter->data.ega_controller_configured && !adapter->data.vga_configured) {
+        /* Reset leaves the EGA scan totals unprogrammed. Until firmware has
+         * established a raster there is no display frame to publish. */
+        if ((adapter->data.graphics[6] & 1u) == 0u &&
+            adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_TOTAL] == 0u &&
+            adapter->data.crtc[X86_VIDEO_EGA_CRTC_VERTICAL_TOTAL] == 0u &&
+            adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED] == 0u &&
+            adapter->data.crtc[X86_VIDEO_CRTC_VERTICAL_DISPLAY_END] == 0u &&
+            adapter->data.crtc[X86_VIDEO_CRTC_OVERFLOW] == 0u &&
+            adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] == 0u)
+            return LIB_STATUS_UNSUPPORTED;
         /* Graphics Miscellaneous selects text/graphics scanout (CECG 4-19).
          * Attribute Mode controls interpretation of the serialized output. */
         if ((adapter->data.graphics[6] & 1u) != 0u)

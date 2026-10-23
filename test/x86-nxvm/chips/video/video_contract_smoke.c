@@ -1597,5 +1597,25 @@ lib_i32 main(void)
             x86_video_destroy(video);
         }
     }
+    {
+        const x86_video_ega_sequencer_config sequencer = {
+            X86_VIDEO_EGA_APERTURE_BASE, X86_VIDEO_EGA_APERTURE_BYTES,
+            3u, 1u, 15u, 6u, LIB_TRUE };
+        const x86_video_ega_controller_config controllers = {0};
+        x86_video_snapshot snapshot;
+
+        for (lib_u8 kind = 0u; kind < 2u; ++kind) {
+            if (x86_video_create(&video) != LIB_STATUS_OK) return 1;
+            failed |= x86_video_configure_ega_sequencer(video, &sequencer) != LIB_STATUS_OK ||
+                x86_video_configure_ega_controllers(video, &controllers) != LIB_STATUS_OK ||
+                x86_video_configure_ega_personality(video, kind == 0u ?
+                    X86_VIDEO_EGA_PERSONALITY_GENERIC :
+                    X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK;
+            x86_video_reset(video);
+            failed |= x86_video_capture_snapshot_from(video, LIB_NULL, &snapshot) !=
+                LIB_STATUS_UNSUPPORTED;
+            x86_video_destroy(video);
+        }
+    }
     return failed ? 1 : 0;
 }
