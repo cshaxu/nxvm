@@ -8,6 +8,7 @@ add_test(NAME unit.vm-profile-contract-smoke COMMAND vm-profile-contract-smoke)
 set_tests_properties(unit.vm-profile-contract-smoke PROPERTIES LABELS "unit;x86-nxvm" TIMEOUT 30)
 list(APPEND X86_NXVM_BOARD_TEST_TARGETS vm-profile-contract-smoke)
 shared_register_test(x86-nxvm board-base/construction_helpers x86-nxvm-board-base)
+shared_register_test(x86-nxvm board-base/board_neutral_controller x86-nxvm-board-base)
 shared_register_test(x86-nxvm board-base/at_contract x86-nxvm-board-base)
 shared_register_test(x86-nxvm board-base/at_assembly x86-nxvm-board-base)
 add_executable(x86-nxvm-board-rom-mapping-test ${X86_NXVM_TEST_ROOT}/board-base/rom_mapping_smoke.c

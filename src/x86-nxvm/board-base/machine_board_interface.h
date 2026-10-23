@@ -56,8 +56,23 @@ typedef struct x86_nxvm_board_clock_plan {
  * keyboard-only variant of the PC/AT 8042. */
 typedef enum x86_nxvm_board_keyboard_topology {
     X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042 = 0,
-    X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI = 1
+    X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI = 1,
+    /* The board owns no keyboard endpoint; a product receiver may attach one. */
+    X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE = 2
 } x86_nxvm_board_keyboard_topology;
+
+/* Zero keeps the existing PC video default for all existing board inputs. */
+typedef enum x86_nxvm_board_display_topology {
+    X86_NXVM_BOARD_DISPLAY_TOPOLOGY_VADP = 0,
+    X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE = 1
+} x86_nxvm_board_display_topology;
+
+/* The legacy facade groups only the forced PC/AT port-92 and reset-alias
+ * policy.  It does not describe an actual chipset. */
+typedef enum x86_nxvm_board_system_facade {
+    X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT = 0,
+    X86_NXVM_BOARD_SYSTEM_FACADE_NONE = 1
+} x86_nxvm_board_system_facade;
 
 #include "x86-nxvm/board-xt/xt_ppi_keyboard_interface.h"
 
@@ -117,6 +132,8 @@ typedef struct x86_nxvm_board_config {
     lib_u8 kbc_reset_output_port_configured;
     lib_u8 kbc_reset_output_port;
     x86_nxvm_board_keyboard_topology keyboard_topology;
+    x86_nxvm_board_display_topology display_topology;
+    x86_nxvm_board_system_facade system_facade;
     x86_nxvm_board_xt_ppi_keyboard_config xt_ppi_keyboard;
 } x86_nxvm_board_config;
 

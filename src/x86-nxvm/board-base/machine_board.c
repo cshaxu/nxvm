@@ -117,9 +117,14 @@ lib_i32 x86_nxvm_board_config_is_valid(
          config->pic_topology == X86_NXVM_BOARD_PIC_TOPOLOGY_SINGLE) &&
         config->dma_controller_count <= X86_NXVM_BOARD_DMA_CONTROLLER_COUNT &&
         (config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042 ||
-         config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) &&
+         config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI ||
+         config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE) &&
         (config->keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI ||
          x86_nxvm_board_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) &&
+        (config->display_topology == X86_NXVM_BOARD_DISPLAY_TOPOLOGY_VADP ||
+         config->display_topology == X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE) &&
+        (config->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT ||
+         config->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_NONE) &&
         (!config->auxiliary_pit_present || config->auxiliary_pit_base_port <= 0xfffcu);
 }
 
@@ -247,6 +252,8 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
         X86_NXVM_BOARD_DMA_CONTROLLER_COUNT : config->dma_controller_count;
     board->dma_wiring.controller_count = dma_controller_count;
     board->keyboard_topology = config->keyboard_topology;
+    board->display_topology = config->display_topology;
+    board->system_facade = config->system_facade;
     /* Zero is an explicit profile choice: without a calibrated guest-time
      * mapping, core-generated keyboard repeat must remain disabled. */
     board->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
@@ -264,7 +271,8 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
         x86_core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    reset_alias = x86_nxvm_board_reset_rom_alias(cpu_profile);
+    reset_alias = board->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT ?
+        x86_nxvm_board_reset_rom_alias(cpu_profile) : 0u;
     if (installed_bytes >= 0x00100000u && reset_alias != 0u) {
         const x86_core_machine_memory_alias_config alias = {
             reset_alias,
@@ -277,14 +285,14 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
             return status;
         }
     }
-    {
+    if (board->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT) {
         lib_status status = x86_nxvm_board_register_a20_port(board);
         if (status != LIB_STATUS_OK) {
             x86_core_machine_destroy(machine);
             return status;
         }
     }
-    {
+    if (board->display_topology == X86_NXVM_BOARD_DISPLAY_TOPOLOGY_VADP) {
         lib_status status = x86_nxvm_board_vadp_create(machine, &board->shared_vadp);
         if (status != LIB_STATUS_OK) {
             x86_core_machine_destroy(machine);
@@ -317,7 +325,7 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
                 return status;
             }
         }
-    } else {
+    } else if (config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042) {
         lib_status status = x86_nxvm_board_kbc_create(machine, &board->shared_kbc);
         if (status != LIB_STATUS_OK) {
             x86_core_machine_destroy(machine);
@@ -382,7 +390,7 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
         x86_nxvm_board_xt_ppi_keyboard_bind_keyboard_observer(board->xt_ppi_keyboard,
             x86_nxvm_board_xt_keyboard_lines, board->xt_keyboard,
             x86_nxvm_board_xt_keyboard_released);
-    } else {
+    } else if (config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042) {
         lib_status status = x86_nxvm_board_pic_irq_source_bind(
             &board->keyboard_irq1_source, board->shared_pic_master,
             board->shared_pic_slave, 1u);
@@ -435,6 +443,9 @@ lib_status x86_nxvm_board_keyboard_receive_native_byte(x86_nxvm_board_state *boa
         lifecycle == X86_CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
+    if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE) {
+        return LIB_STATUS_UNSUPPORTED;
+    }
     if (board->keyboard_topology ==
             X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) {
         return x86_xt_keyboard_receive_native_bytes(board->xt_keyboard,
@@ -453,6 +464,9 @@ lib_status x86_nxvm_board_keyboard_get_native_scan_set(const x86_nxvm_board_stat
         lifecycle == X86_CORE_MACHINE_INITIALIZED) {
         return LIB_STATUS_INVALID_STATE;
     }
+    if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE) {
+        return LIB_STATUS_UNSUPPORTED;
+    }
     *out_scan_set = board->keyboard_topology ==
         X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI ? X86_NXVM_BOARD_KEYBOARD_SCAN_SET_1 :
         x86_nxvm_board_kbc_get_native_scan_set(board->shared_kbc);
@@ -469,6 +483,9 @@ lib_status x86_nxvm_board_keyboard_receive_native_bytes(x86_nxvm_board_state *bo
         lifecycle == X86_CORE_MACHINE_INITIALIZED ||
         lifecycle == X86_CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
+    }
+    if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE) {
+        return LIB_STATUS_UNSUPPORTED;
     }
     if (board->keyboard_topology ==
             X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) {
@@ -501,8 +518,8 @@ lib_status x86_nxvm_board_mouse_receive_relative(x86_nxvm_board_state *board,
         lifecycle != X86_CORE_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (board->keyboard_topology ==
-            X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) return LIB_STATUS_UNSUPPORTED;
+    if (board->keyboard_topology != X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042)
+        return LIB_STATUS_UNSUPPORTED;
     return x86_nxvm_board_kbc_submit_aux_report(board->shared_kbc, delta_x, delta_y, buttons);
 }
 
@@ -527,11 +544,15 @@ static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile)
 static lib_status x86_nxvm_board_register_reset_rom_alias(void *owner)
 {
     x86_nxvm_board_state *board = owner;
-    x86_core_machine *machine = board->core;
+    x86_core_machine *machine;
     x86_core_cpu_profile profile;
     lib_u32 reset_alias;
-    lib_status status = x86_core_machine_get_cpu_profile(machine, &profile);
+    lib_status status;
 
+    if (board == LIB_NULL || board->system_facade !=
+            X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT) return LIB_STATUS_OK;
+    machine = board->core;
+    status = x86_core_machine_get_cpu_profile(machine, &profile);
     if (status != LIB_STATUS_OK) return status;
     reset_alias = x86_nxvm_board_reset_rom_alias(profile);
     /* Keep the established source/target presence widths and explicit high
@@ -769,7 +790,7 @@ void x86_nxvm_board_reset_devices(void *owner)
     if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_nxvm_board_xt_ppi_keyboard_reset(board->xt_ppi_keyboard);
         x86_xt_keyboard_reset(board->xt_keyboard);
-    } else {
+    } else if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042) {
         x86_nxvm_board_kbc_reset(board->shared_kbc);
         if (board->kbc_input_port_configured) {
             x86_nxvm_board_kbc_set_input_port(board->shared_kbc,
@@ -812,7 +833,9 @@ void x86_nxvm_board_finalize_devices(void *owner)
     if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_destroy(board->xt_keyboard);
         x86_nxvm_board_xt_ppi_keyboard_destroy(board->xt_ppi_keyboard);
-    } else x86_nxvm_board_kbc_destroy(board->shared_kbc);
+    } else if (board->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042) {
+        x86_nxvm_board_kbc_destroy(board->shared_kbc);
+    }
     x86_pit_destroy(board->shared_pit);
     x86_pit_destroy(board->auxiliary_pit);
     x86_nxvm_board_hdc_destroy(board->hdc);

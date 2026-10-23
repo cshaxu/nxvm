@@ -2,6 +2,29 @@
 
 ## Current Work
 
+## M5 T566 S2 — Closed: neutral X86 NXVM controller substrate
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of M5 T566 after closed S1; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed the whole PC110 task to completion and S1 identified this bounded implementation as its next cohort. Standing approval covers X86 NXVM/Core-facing construction work that does not modify Lib or Emulator. |
+| Objective | Make the existing X86 NXVM Board lifetime capable of instantiating its reusable PIC/PIT/DMA substrate without forced PC/AT keyboard, VADP, port-92/A20 or automatic reset-alias endpoints. |
+| Non-goals | No PC110 guest boot, executable, ROM embedding, RTC seed, panel, keyboard, pointer, storage, PCMCIA, power, audio, PC/AT descriptor reuse, Shared Lib/Emulator change or second board/device manager. |
+| Files And ABI Surface | `src/test/x86-nxvm/board-base` configuration/constructor/test surface and their manifests; task evidence/Current only. Existing numeric choices retain behavior; new no-endpoint selections are additive. |
+| Verification | x64/x86 direct no-endpoint construction test proves PIC/PIT remain available while 60h, 92h and 3DAh remain uninstalled; existing X86 NXVM unit corpus, manifests and dependency gates retain behavior. |
+| Exit Criteria | One Board object and one Core attachment own the controller lifetime; no forced AT facade under explicit no-endpoint selections; existing Apps retain defaults; required two-width tests and review pass, then P is pushed. |
+| Stop Conditions | A controller requires an absent endpoint, or PC110 needs a reset/RTC/device behavior not represented by the selected neutral substrate. Transfer that behavior to its named receiver rather than installing an AT substitute. |
+
+### S2 Delivery
+
+The [neutral-controller substrate record](../etc/evidence/t566-s2-neutral-controller-substrate.md)
+documents the three explicit selections and the one new direct regression.
+Focused x64/x86 construction tests and both manifests pass.  The change is
+limited to X86 NXVM's internal Board configuration and test corpus; Lib,
+Emulator, X86 Core, firmware assets and existing App selections do not change.
+S2 is closed after its implementation P; the next S may compose these selected
+mechanisms into the App-local PC110 root.
+
 ## M5 T566 S1 — Closed: PC110 minimal base-composition audit
 
 | Field | Required record |

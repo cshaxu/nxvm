@@ -98,6 +98,8 @@ struct x86_nxvm_board_state {
     lib_u8 kbc_input_port_configured;
     lib_u8 kbc_input_port;
     x86_nxvm_board_keyboard_topology keyboard_topology;
+    x86_nxvm_board_display_topology display_topology;
+    x86_nxvm_board_system_facade system_facade;
     x86_nxvm_board_display_port_topology display_ports;
     lib_u8 display_configured;
     x86_nxvm_board_dma_wiring dma_wiring;
