@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T565 S1 — Active: PC110 board and firmware admission baseline
+## M5 T565 S1 — Closed: PC110 board and firmware admission baseline
 
 | Field | Required record |
 | --- | --- |
@@ -31,6 +31,13 @@ PC110 input set in the approved external asset root.  It assigns the consumed
 BRD/SIO rows to explicit Board, Storage, Display, Input/Power or Firmware
 receivers.  No source, ROM, media, INI or artifact changed; no firmware or boot
 claim is made.
+
+Coordinator actual-change review accepts S1 P1 `52d83344b`: it changes only
+the Queue, active packet and a bounded evidence ledger. The reviewed ledger
+preserves the external ROM/license boundary, names the unresolved reset and
+firmware choices, and does not create a hidden placeholder implementation.
+Documentation governance and whitespace checks pass. S1 is closed; T565
+remains open for its next bounded board-evidence receiver.
 
 ## M5 T564 — Closed: public-component qualification
 
