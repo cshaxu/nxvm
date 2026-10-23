@@ -1239,6 +1239,7 @@ void x86_fdc_reset(x86_fdc *fdc)
 {
     if (fdc == LIB_NULL) return;
     x86_fdc_set_irq(fdc, LIB_FALSE);
+    fdc->data.elapsed_ticks = 0u;
     x86_fdc_reset_controller(fdc);
     fdc->reset_released = LIB_FALSE;
 }

@@ -169,7 +169,17 @@ int main(void)
     observation.pcn[2] = 99u;
     failed |= x86_fdc_capture(state.chip, &observation) != LIB_STATUS_OK;
     failed |= observation.pcn[2] != 3u;
+    x86_fdc_advance_at(state.chip, 10000u);
+    x86_fdc_set_reset(state.chip, LIB_FALSE);
+    x86_fdc_set_reset(state.chip, LIB_TRUE);
+    failed |= x86_fdc_capture(state.chip, &observation) != LIB_STATUS_OK ||
+        observation.elapsed_ticks != 10000u;
     x86_fdc_reset(state.chip);
+    failed |= x86_fdc_capture(state.chip, &observation) != LIB_STATUS_OK ||
+        observation.elapsed_ticks != 0u;
+    x86_fdc_advance_at(state.chip, 1u);
+    failed |= x86_fdc_capture(state.chip, &observation) != LIB_STATUS_OK ||
+        observation.elapsed_ticks != 1u;
     failed |= state.irq || state.drq || state.cylinder[2] != 3u;
     x86_fdc_destroy(state.chip);
     return failed != 0;
