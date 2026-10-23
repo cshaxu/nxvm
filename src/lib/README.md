@@ -89,8 +89,10 @@ lifecycle controller, or public unified presenter API.
   has no monitor, raw Console, prompt, or lifecycle vocabulary. A replacement first
   retires and confirms the old native reader, then activates the next binding;
   it uses the same transaction for every raw/cooked pair. If retirement cannot
-  complete, no next reader starts and the broker fails closed with host-I/O
-  failure rather than claiming either Console is usable.
+  confirm thread exit, the process terminates without returning unsafe ownership.
+  Errors after confirmed exit still stop replacement, but cannot block safe
+  cleanup. Every normal broker destroy return consumes its object and reports
+  the first cleanup error after releasing independent resources.
 - `storage` provides file and byte-medium primitives. Medium and writer own
   embedded file storage; owned-byte reads use a stack file. Closing consumes
   the stream, not its enclosing allocation; failed opens leave it empty.

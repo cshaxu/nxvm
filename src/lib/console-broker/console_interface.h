@@ -12,9 +12,8 @@ typedef enum console_broker_mode {
 
 /* The broker owns one process-native Console I/O path. The caller owns every
  * logical Console and remains the product-state owner. */
-/* Failure leaves *out_broker NULL.  An activation that cannot retire its
- * native reader is terminal at the application boundary, not a half-broker
- * protocol for ordinary callers. */
+/* Failure leaves *out_broker NULL with safe cleanup complete. Unconfirmed
+ * native reader exit terminates the process rather than returning a half object. */
 lib_status console_broker_create(console_broker **out_broker,
     lib_console *initial_console, console_broker_mode initial_mode);
 /* Replaces Current Console only when expected_current is still current. This
@@ -33,7 +32,8 @@ lib_status console_broker_request_cooked_line(console_broker *broker,
  * No prompt/output policy is applied. Failure is terminal for this broker. */
 lib_status console_broker_cancel_cooked_line(console_broker *broker,
     lib_console *expected_current, lib_bool *out_completed);
-/* OK consumes the object. Failure is a terminal infrastructure failure. */
+/* Every normal return consumes the object. Cleanup errors are reported after
+ * independent resources are released; unconfirmed reader exit cannot return. */
 lib_status console_broker_destroy(console_broker *broker);
 
 #endif

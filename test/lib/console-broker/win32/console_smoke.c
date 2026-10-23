@@ -105,6 +105,17 @@ static lib_u32 cursor_positions;
 static lib_win32_bool LIB_WIN32_WINAPI cursor_position(lib_win32_handle h, lib_win32_coord p)
 { (void)h; ++cursor_positions; if (cursor_ok) native_cursor=p; return cursor_ok; }
 static lib_u32 readers_started, mode_sets;
+static lib_win32_handle failed_close, closed_handles[4];
+static lib_u32 close_count;
+static lib_win32_bool LIB_WIN32_WINAPI close_handle(lib_win32_handle handle)
+{
+    if (failed_close != LIB_NULL) {
+        lib_test_assert(close_count < 4u);
+        closed_handles[close_count++] = handle;
+        return handle != failed_close;
+    }
+    return lib_win32_close_handle(handle);
+}
 static lib_bool mode_query_ok=LIB_TRUE, underline_mode_ok=LIB_TRUE;
 static lib_win32_dword output_flags;
 static lib_win32_bool LIB_WIN32_WINAPI get_mode(lib_win32_handle h, lib_win32_lpdword mode)
@@ -147,6 +158,8 @@ static lib_win32_handle LIB_WIN32_WINAPI start_reader(lib_win32_lpsecurity_attri
 #define lib_win32_set_console_cursor_info cursor_info
 #undef lib_win32_set_console_cursor_position
 #define lib_win32_set_console_cursor_position cursor_position
+#undef lib_win32_close_handle
+#define lib_win32_close_handle close_handle
 #include "lib/console-broker/win32/console.c"
 
 static lib_u32 delivered;
@@ -568,13 +581,24 @@ int main(void)
     cooked_restore();
     /* Disposal must not restore native mode a second time. */
     console_broker_backend *disposed=lib_allocate_zero(1,sizeof(*disposed));
-    disposed->input=disposed->output=LIB_WIN32_INVALID_HANDLE_VALUE;
+    disposed->input=disposed->output=disposed->cooked_output=LIB_WIN32_INVALID_HANDLE_VALUE;
     lib_test_assert(base_sync_mutex_create(&disposed->output_lock)==LIB_STATUS_OK);
     lib_test_assert(base_sync_mutex_create(&disposed->transaction_lock)==LIB_STATUS_OK);
     lib_test_assert(console_broker_backend_deactivate(disposed,LIB_NULL)==LIB_STATUS_OK);
     lib_u32 restored=mode_sets;
     console_broker_backend_destroy(disposed);
     lib_test_assert(mode_sets==restored);
+    /* A display restore failure must not close raw twice or skip cooked/input. */
+    disposed=lib_allocate_zero(1,sizeof(*disposed));
+    disposed->raw_output=disposed->output=(lib_win32_handle)(lib_uptr)1u;
+    disposed->input=(lib_win32_handle)(lib_uptr)2u;
+    disposed->cooked_output=(lib_win32_handle)(lib_uptr)3u;
+    disposed->output_ready=LIB_TRUE;
+    palette_query_ok=LIB_FALSE;
+    failed_close=disposed->raw_output;
+    lib_test_assert(console_broker_backend_destroy(disposed)==LIB_STATUS_IO_ERROR);
+    lib_test_assert(close_count==3u && closed_handles[0]==(lib_win32_handle)(lib_uptr)1u &&
+        closed_handles[1]==(lib_win32_handle)(lib_uptr)2u && closed_handles[2]==(lib_win32_handle)(lib_uptr)3u);
     lib_release(b.cells);
     return 0;
 }

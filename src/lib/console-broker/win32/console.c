@@ -258,9 +258,6 @@ static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
                 console_broker_reader_failed(backend);
                 return 0u;
             }
-            if (lib_win32_wait_for_single_object(backend->stop_event, 0u) == LIB_WIN32_WAIT_OBJECT_0) {
-                return 0u;
-            }
             for (i = 0u; i < read; ++i) {
                 if (text[i] == '\n') { complete = LIB_TRUE; break; }
                 if (text[i] == '\r') continue;
@@ -269,6 +266,9 @@ static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
                 else line[used++] = text[i];
             }
         }
+        /* Retire only after draining the native line, including its tail. */
+        if (lib_win32_wait_for_single_object(backend->stop_event, 0u) == LIB_WIN32_WAIT_OBJECT_0)
+            return 0u;
         /* Decode the completed native line once: fragments may divide a
          * surrogate pair. UTF-8 capacity counts bytes, not native units. */
         if (!overflow && used != 0u) {
@@ -376,30 +376,33 @@ static lib_status console_broker_select_output(console_broker_backend *backend,
 
 lib_status console_broker_backend_destroy(console_broker_backend *backend)
 {
+    lib_status status = LIB_STATUS_OK;
     if (backend == LIB_NULL) return LIB_STATUS_OK;
     /* Reader is already joined. Restore the original display before closing
      * the alternate buffer, including failure during initial raw activation. */
     if (backend->raw_output != LIB_NULL) {
         if (backend->output != backend->cooked_output) {
-            lib_status status = console_broker_select_output(backend, backend->cooked_output);
-            if (status != LIB_STATUS_OK) return status;
+            status = console_broker_select_output(backend, backend->cooked_output);
         }
-        if (!lib_win32_close_handle(backend->raw_output)) return LIB_STATUS_IO_ERROR;
+        if (!lib_win32_close_handle(backend->raw_output) && status == LIB_STATUS_OK)
+            status = LIB_STATUS_IO_ERROR;
         backend->raw_output = LIB_NULL;
     }
     if (backend->input != LIB_WIN32_INVALID_HANDLE_VALUE) {
-        if (!lib_win32_close_handle(backend->input)) return LIB_STATUS_IO_ERROR;
+        if (!lib_win32_close_handle(backend->input) && status == LIB_STATUS_OK)
+            status = LIB_STATUS_IO_ERROR;
         backend->input = LIB_WIN32_INVALID_HANDLE_VALUE;
     }
-    if (backend->output != LIB_WIN32_INVALID_HANDLE_VALUE) {
-        if (!lib_win32_close_handle(backend->output)) return LIB_STATUS_IO_ERROR;
-        backend->output = LIB_WIN32_INVALID_HANDLE_VALUE;
-    }
+    /* Selection can fail before output changes: close the owned cooked handle,
+     * never the already closed raw alias in output. */
+    if (backend->cooked_output != LIB_WIN32_INVALID_HANDLE_VALUE &&
+        !lib_win32_close_handle(backend->cooked_output) && status == LIB_STATUS_OK)
+        status = LIB_STATUS_IO_ERROR;
     base_sync_mutex_destroy(backend->output_lock);
     base_sync_mutex_destroy(backend->transaction_lock);
     lib_release(backend->cells);
     lib_release(backend);
-    return LIB_STATUS_OK;
+    return status;
 }
 
 static lib_status console_broker_start_reader(console_broker_backend *backend)
@@ -561,25 +564,19 @@ lib_status console_broker_backend_request_cooked_line(
 static lib_status console_broker_retire_reader(console_broker_backend *backend)
 {
     lib_win32_dword completed;
+    lib_status status;
 
     if (backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (backend->reader == LIB_NULL) return LIB_STATUS_OK;
-    if (backend->stop_event == LIB_NULL ||
-        !lib_win32_set_event(backend->stop_event)) return LIB_STATUS_IO_ERROR;
-    /* A reader owns the process Console until it has exited.  Cancellation is
-       deliberately best effort because Console implementations differ; the
-       completion observation below is the actual ownership proof. */
-    (void)lib_win32_cancel_io_ex(backend->input, LIB_NULL);
-    (void)lib_win32_cancel_synchronous_io(backend->reader);
+    status = backend->stop_event != LIB_NULL && lib_win32_set_event(backend->stop_event) ?
+        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
+    /* The old reader owns input until its exit has been observed. */
     completed = lib_win32_wait_for_single_object(backend->reader, 0u);
-    if (completed == LIB_WIN32_WAIT_TIMEOUT && backend->mode == CONSOLE_BROKER_COOKED_LINES) {
+    if (status == LIB_STATUS_OK && completed == LIB_WIN32_WAIT_TIMEOUT && backend->mode == CONSOLE_BROKER_COOKED_LINES) {
         lib_win32_input_record wake = { 0 };
         lib_win32_dword written = 0u;
-        /* Some terminal hosts do not interrupt a line-buffered ReadConsoleW
-           even after both documented cancellation requests.  Supply the
-           terminating record ourselves while the old reader is still the
-           sole owner.  It observes stop_event and discards this synthetic
-           line; the new binding cannot observe it. */
+        /* Complete the pending native line. The reader drains it before
+           observing stop; the caller flushes any unused wake after join. */
         wake.EventType = LIB_WIN32_KEY_EVENT;
         wake.Event.KeyEvent.bKeyDown = LIB_WIN32_TRUE;
         wake.Event.KeyEvent.wRepeatCount = 1u;
@@ -588,15 +585,17 @@ static lib_status console_broker_retire_reader(console_broker_backend *backend)
             LIB_WIN32_MAPVK_VK_TO_VSC);
         wake.Event.KeyEvent.uChar.AsciiChar = '\r';
         if (!lib_win32_write_console_input_a(backend->input, &wake, 1u, &written) ||
-            written != 1u) return LIB_STATUS_IO_ERROR;
+            written != 1u) status = LIB_STATUS_IO_ERROR;
     }
     completed = lib_win32_wait_for_single_object(backend->reader,
-        CONSOLE_BROKER_READER_RETIRE_TIMEOUT_MS);
-    if (completed != LIB_WIN32_WAIT_OBJECT_0) return LIB_STATUS_IO_ERROR;
-    if (backend->reader_status != LIB_STATUS_OK) return backend->reader_status;
-    if (!lib_win32_close_handle(backend->reader)) return LIB_STATUS_IO_ERROR;
+        status == LIB_STATUS_OK ? CONSOLE_BROKER_READER_RETIRE_TIMEOUT_MS : 0u);
+    if (completed != LIB_WIN32_WAIT_OBJECT_0)
+        lib_process_exit_immediate(LIB_STATUS_INTERNAL_ERROR);
+    if (status == LIB_STATUS_OK) status = backend->reader_status;
+    if (!lib_win32_close_handle(backend->reader) && status == LIB_STATUS_OK)
+        status = LIB_STATUS_IO_ERROR;
     backend->reader = LIB_NULL;
-    return LIB_STATUS_OK;
+    return status;
 }
 
 lib_status console_broker_backend_cancel_cooked_line(console_broker_backend *backend,
@@ -630,24 +629,24 @@ lib_status console_broker_backend_deactivate(console_broker_backend *backend,
 
     if (backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = console_broker_retire_reader(backend);
-    if (status != LIB_STATUS_OK) return status;
     /* The retired reader was the sole owner of input.  Discard its cancelled
        read fragment and any synthetic wake before a replacement reader can
        claim the Console. */
-    if (!lib_win32_flush_console_input_buffer(backend->input))
-        return LIB_STATUS_IO_ERROR;
+    if (!lib_win32_flush_console_input_buffer(backend->input) && status == LIB_STATUS_OK)
+        status = LIB_STATUS_IO_ERROR;
     /* A completed line clears pending before delivery; cancelled reads retain
      * it until this join. Never snapshot it while the reader can still finish. */
     if (out_cooked_request != LIB_NULL)
         *out_cooked_request = backend->cooked_line_pending != 0;
     lib_win32_interlocked_exchange(&backend->cooked_line_pending, 0);
-    if (backend->stop_event != LIB_NULL && !lib_win32_close_handle(backend->stop_event))
-        return LIB_STATUS_IO_ERROR;
+    if (backend->stop_event != LIB_NULL && !lib_win32_close_handle(backend->stop_event) &&
+        status == LIB_STATUS_OK) status = LIB_STATUS_IO_ERROR;
     backend->stop_event = LIB_NULL;
     backend->console = LIB_NULL;
     backend->generation = 0u;
-    return lib_win32_set_console_mode(backend->input, backend->original_mode) ?
-        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
+    if (!lib_win32_set_console_mode(backend->input, backend->original_mode) &&
+        status == LIB_STATUS_OK) status = LIB_STATUS_IO_ERROR;
+    return status;
 }
 
 void console_broker_backend_lock_output(console_broker_backend *backend)

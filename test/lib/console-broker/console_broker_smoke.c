@@ -111,6 +111,7 @@ lib_status console_broker_backend_deactivate(console_broker_backend *native_cons
     ++deactivations;
     if (console_broker_fail_next_retirement) {
         console_broker_fail_next_retirement = 0;
+        native_console->active = LIB_NULL;
         return LIB_STATUS_IO_ERROR;
     }
 #ifdef _WIN32
@@ -310,6 +311,9 @@ int main(void)
     console_broker_fail_next_activation=1;
     lib_test_assert(console_broker_create(&broker,first,CONSOLE_BROKER_RAW_EVENTS)==LIB_STATUS_IO_ERROR);
     lib_test_assert(!broker && deactivations==1 && disposals==1);
+    console_broker_fail_next_activation = console_broker_fail_next_retirement = 1;
+    lib_test_assert(console_broker_create(&broker, first, CONSOLE_BROKER_RAW_EVENTS) == LIB_STATUS_IO_ERROR);
+    lib_test_assert(!broker && deactivations == 2 && disposals == 2);
     lib_test_assert(lib_console_write_text(first,"x",1)==LIB_STATUS_OK);
     lib_test_assert(lib_console_set_event_sink(first, activated_sink, LIB_NULL) == LIB_STATUS_OK);
     lib_test_assert(console_broker_create(&broker, first,

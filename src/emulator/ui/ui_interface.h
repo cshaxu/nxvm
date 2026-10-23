@@ -68,8 +68,8 @@ typedef struct emulator_ui_options {
 } emulator_ui_options;
 
 lib_status emulator_ui_create(emulator_ui **out_ui, const emulator_ui_options *options);
-/* Failure retains ui and remaining resources; callback dependencies must stay
- * alive. Treat unjoined workers as terminal, not as a completed destruction. */
+/* Stop the producer first. Every normal return consumes ui and quiesces its
+ * callbacks, including when independent resource cleanup reports an error. */
 lib_status emulator_ui_destroy(emulator_ui *ui);
 void emulator_ui_set_run_generation(emulator_ui *ui, lib_u32 run_generation);
 lib_status emulator_ui_apply_action(emulator_ui *ui, emulator_ui_action action,

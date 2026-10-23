@@ -185,32 +185,32 @@ lib_status emulator_ui_create(emulator_ui **out_ui, const emulator_ui_options *o
 
 lib_status emulator_ui_destroy(emulator_ui *ui)
 {
-    lib_status status;
+    lib_status status = LIB_STATUS_OK;
+    lib_status cleanup;
     if (ui == LIB_NULL) return LIB_STATUS_OK;
     /* Stop native input and detach output before releasing its consumers. */
     if (ui->broker != LIB_NULL) {
         status = console_broker_destroy(ui->broker);
-        if (status != LIB_STATUS_OK) return status;
         ui->broker = LIB_NULL;
     }
     if (ui->window != LIB_NULL) {
-        status = kvm_window_destroy(ui->window);
+        cleanup = kvm_window_destroy(ui->window);
+        if (status == LIB_STATUS_OK) status = cleanup;
         ui->window = LIB_NULL;
         lib_atomic_i32_store_explicit(
             &ui->window_live, 0, LIB_MEMORY_ORDER_SEQ_CST);
-        if (status != LIB_STATUS_OK) return status;
     }
     if (ui->console != LIB_NULL) {
-        status = kvm_console_destroy(ui->console);
+        cleanup = kvm_console_destroy(ui->console);
+        if (status == LIB_STATUS_OK) status = cleanup;
         ui->console = LIB_NULL;
-        if (status != LIB_STATUS_OK) return status;
     }
     if (ui->monitor != LIB_NULL) {
         (void)lib_console_set_event_sink(ui->monitor, LIB_NULL, LIB_NULL);
         lib_console_release(ui->monitor);
     }
     lib_release(ui);
-    return LIB_STATUS_OK;
+    return status;
 }
 
 void emulator_ui_set_run_generation(emulator_ui *ui, lib_u32 run_generation)

@@ -18,10 +18,8 @@ static lib_bool x86_ibmpc_product_command_provider_hotkey(void *opaque,
                 EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME :
                 EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE, state, out);
     }
-    lib_bool accepted = x86_ibmpc_product_keyboard_handle_hotkey(command->machine, state,
+    return x86_ibmpc_product_keyboard_handle_hotkey(command->machine, state,
         identifier, out);
-
-    return accepted;
 }
 
 lib_status x86_ibmpc_product_command_provider_initialize(x86_ibmpc_product_command_context *command,

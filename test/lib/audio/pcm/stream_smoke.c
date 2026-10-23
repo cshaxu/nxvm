@@ -1,5 +1,6 @@
 #include "lib/types/test.h"
 #include "lib/audio/pcm/stream.h"
+#include "../../fixtures/lifetime.h"
 
 
 struct audio_pcm_stream_platform {
@@ -194,8 +195,10 @@ lib_status audio_pcm_stream_platform_set_gain(audio_pcm_stream_platform *platfor
 
 lib_status audio_pcm_stream_platform_destroy(audio_pcm_stream_platform **platform)
 {
-    lib_test_assert(platform != LIB_NULL && *platform == &fake_platform);
-    if (destroy_status == LIB_STATUS_OK) *platform = LIB_NULL;
+    lib_test_assert(platform != LIB_NULL);
+    if (*platform == LIB_NULL) return LIB_STATUS_OK;
+    lib_test_assert(*platform == &fake_platform);
+    *platform = LIB_NULL;
     return destroy_status;
 }
 
@@ -206,6 +209,11 @@ static lib_status audio_test_task_create(base_sync_task_entry entry,
     return base_sync_task_create(entry, context, out_task);
 }
 
+static lib_status audio_test_task_destroy(base_sync_task *task)
+{
+    return lifetime_fault ? LIB_STATUS_IO_ERROR : base_sync_task_destroy(task);
+}
+#define base_sync_task_destroy audio_test_task_destroy
 #define base_sync_task_create audio_test_task_create
 #define base_sync_wait_any audio_test_wait_any
 #define base_sync_event_signal audio_test_event_signal
@@ -273,7 +281,7 @@ static void control_completion_failure(void)
     failed_signal = LIB_NULL;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     lib_audio_pcm_stream_options options = { 48000u, 2u };
     lib_audio_pcm_stream *stream = LIB_NULL;
@@ -283,6 +291,14 @@ int main(void)
     lib_i16 submission[LIB_AUDIO_PCM_STREAM_MAX_FRAMES_PER_SUBMISSION * 2u] = { 0 };
     lib_u32 accepted = 99u, queued = 99u, writable = 99u;
     unsigned before_destroy_enqueue_calls;
+    (void)argv;
+    if (argc > 1) {
+        lifetime_fault = 1u;
+        attach_status = LIB_STATUS_IO_ERROR;
+        lib_test_assert(lib_test_at_exit(unexpected_cleanup) == 0);
+        (void)lib_audio_pcm_stream_create(&options, &stream);
+        lib_test_assert(0);
+    }
 
     lib_test_assert(lib_audio_pcm_stream_create(LIB_NULL, &stream) == LIB_STATUS_INVALID_ARGUMENT);
     options.sample_rate = 0u;
@@ -517,10 +533,12 @@ int main(void)
         lib_u32 before_attach = attach_calls;
         lib_u32 before_detach = detach_calls;
         attach_status = LIB_STATUS_UNSUPPORTED;
+        destroy_status = LIB_STATUS_IO_ERROR;
         lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_UNSUPPORTED);
         lib_test_assert(stream == LIB_NULL && attach_calls == before_attach + 1u);
         lib_test_assert(detach_calls == before_detach);
         attach_status = LIB_STATUS_OK;
+        destroy_status = LIB_STATUS_OK;
         signal_status = LIB_STATUS_IO_ERROR;
         lib_test_assert(lib_audio_pcm_stream_create(&options, &stream) == LIB_STATUS_IO_ERROR);
         lib_test_assert(stream == LIB_NULL && detach_calls == before_detach + 1u);

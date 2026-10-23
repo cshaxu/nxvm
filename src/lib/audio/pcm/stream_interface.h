@@ -26,7 +26,9 @@ enum {
 /* PCM frames are interleaved signed 16-bit samples. A stream accepts mono or
  * stereo PCM at a nonzero sample rate; unsupported platform formats return
  * UNSUPPORTED. Create waits for native
- * initialization and returns no stream on failure. The library owns a
+ * initialization and returns no stream on failure. If creation rollback cannot
+ * confirm worker exit, the process terminates without returning a half object.
+ * The library owns a
  * private bounded producer queue and delegates output to its platform backend.
  * The caller owns sample storage and serializes operations on a
  * stream, except that one other thread may call cancel_wait. */

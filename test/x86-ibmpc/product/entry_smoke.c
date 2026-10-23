@@ -4,9 +4,9 @@
 #include "emulator/product/composition_interface.h"
 #include "x86-ibmpc/product/entry_interface.h"
 
-struct emulator_product { lib_bool live; };
+struct fixture_product { lib_bool live; };
 
-static struct emulator_product fixture;
+static struct fixture_product fixture;
 static lib_u32 failure;
 static lib_u32 created;
 static lib_u32 destroyed;
@@ -62,7 +62,7 @@ lib_bool emulator_session_run(emulator_session *session)
 
 lib_i32 emulator_product_run(const emulator_product_definition *definition)
 {
-    emulator_product product = {0};
+    struct fixture_product product = {0};
     emulator_session_options session_options = {0};
     emulator_ui_options ui_options = {0};
 

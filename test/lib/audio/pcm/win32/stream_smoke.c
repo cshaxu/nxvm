@@ -9,6 +9,7 @@ static lib_u8 objects[6];
 static lib_i16 native_buffer[8], delivered[32];
 static lib_u32 channels, expected_rate, delivered_samples, pending_frames;
 static lib_u32 acquired, released, initialized, uninitialized, closed;
+static lib_bool fail_close;
 static lib_u32 started, stopped, reset, waits, padding;
 static lib_u32 events_created;
 static lib_u32 fail_at, calls;
@@ -139,7 +140,7 @@ static lib_win32_dword wait_events(lib_win32_dword count,
 #undef lib_win32_create_event_a
 #define lib_win32_create_event_a(a,m,s,n) ((void)(a),(void)(m),(void)(s),(void)(n),event_create())
 #undef lib_win32_close_handle
-#define lib_win32_close_handle(h) ((void)(h),++closed,LIB_WIN32_TRUE)
+#define lib_win32_close_handle(h) ((void)(h),++closed,!fail_close)
 #undef lib_win32_set_event
 #define lib_win32_set_event(h) ((void)(h),interrupted = LIB_TRUE,LIB_WIN32_TRUE)
 #undef lib_win32_reset_event
@@ -339,6 +340,15 @@ int main(void)
         audio_pcm_stream_platform_worker_detach(platform);
         lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK);
         lib_test_assert(acquired == released && initialized == uninitialized);
+    }
+    {
+        audio_pcm_stream_platform *platform = LIB_NULL;
+        lib_audio_pcm_stream_options options = {22050, 2};
+        clear_probe();
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
+        fail_close = LIB_TRUE;
+        lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_IO_ERROR && !platform);
+        lib_test_assert(closed == 1u);
     }
     return 0;
 }

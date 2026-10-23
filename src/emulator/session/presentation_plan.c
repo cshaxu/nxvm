@@ -19,7 +19,7 @@ emulator_session_presentation_plan emulator_session_derive_presentation(
         return plan;
     }
     if (display == EMULATOR_SESSION_DISPLAY_WINDOW) {
-        plan.window_enabled = 1;
+        plan.window_enabled = LIB_TRUE;
         return plan;
     }
     /* A running Console-display machine remains on the cooked monitor until
@@ -28,14 +28,14 @@ emulator_session_presentation_plan emulator_session_derive_presentation(
     if (!frame_available)
         return plan;
     if (!graphics) {
-        plan.vm_console_enabled = 1;
-        plan.monitor_console_enabled = 0;
+        plan.vm_console_enabled = LIB_TRUE;
+        plan.monitor_console_enabled = LIB_FALSE;
     } else if (!console_control) {
-        plan.window_enabled = 1;
-        plan.vm_console_enabled = 1;
-        plan.monitor_console_enabled = 0;
+        plan.window_enabled = LIB_TRUE;
+        plan.vm_console_enabled = LIB_TRUE;
+        plan.monitor_console_enabled = LIB_FALSE;
     } else {
-        plan.window_enabled = 1;
+        plan.window_enabled = LIB_TRUE;
     }
     return plan;
 }

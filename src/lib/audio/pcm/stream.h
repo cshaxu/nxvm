@@ -53,6 +53,8 @@ lib_status audio_pcm_stream_platform_set_gain(audio_pcm_stream_platform *platfor
     const lib_u16 *gains, lib_u32 channel_count);
 lib_status audio_pcm_stream_platform_cancel_wait(audio_pcm_stream_platform *platform);
 lib_status audio_pcm_stream_platform_clear(audio_pcm_stream_platform *platform);
+/* Detached platform storage is consumed even when native handle cleanup fails.
+ * An attached platform is rejected without consumption. */
 lib_status audio_pcm_stream_platform_destroy(audio_pcm_stream_platform **platform);
 
 #endif

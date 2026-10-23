@@ -2,14 +2,13 @@
 
 static lib_atomic_u64 kvm_component_next_source_identity = 1u;
 
-lib_status kvm_component_allocate_source_identity(lib_atomic_u64 *next,
+/* Component-local allocator: identities never wrap into a second epoch. */
+static lib_status kvm_component_allocate_source_identity(lib_atomic_u64 *next,
     lib_u64 *out_identity)
 {
     lib_u64 identity;
     lib_u64 following;
 
-    if (next == LIB_NULL || out_identity == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
     identity = lib_atomic_u64_load_explicit(next, LIB_MEMORY_ORDER_RELAXED);
     for (;;) {
         /* Zero is written only after UINT64_MAX has been issued.  Do not use

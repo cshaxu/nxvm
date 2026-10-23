@@ -315,13 +315,13 @@ lib_status audio_pcm_stream_platform_clear(audio_pcm_stream_platform *platform)
 
 lib_status audio_pcm_stream_platform_destroy(audio_pcm_stream_platform **platform)
 {
+    lib_status status;
     if (platform == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (*platform == LIB_NULL) return LIB_STATUS_OK;
     if ((*platform)->attached != LIB_FALSE) return LIB_STATUS_INVALID_STATE;
-    if (lib_win32_close_handle((*platform)->interruption) == LIB_WIN32_FALSE)
-        return LIB_STATUS_IO_ERROR;
-    (*platform)->interruption = LIB_NULL;
+    status = lib_win32_close_handle((*platform)->interruption) ?
+        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
     lib_release(*platform);
     *platform = LIB_NULL;
-    return LIB_STATUS_OK;
+    return status;
 }

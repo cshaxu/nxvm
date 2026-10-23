@@ -199,20 +199,9 @@ static void check_destroy(const emulator_ui_options *options, lib_u32 failure, l
     released_ui = broker_destroys = window_destroys = console_destroys = 0u;
     destroy_failure = failure;
     lib_test_assert(emulator_ui_destroy(ui) == LIB_STATUS_IO_ERROR);
-    lib_test_assert(released_ui == 0u && ui->monitor != LIB_NULL);
-    lib_test_assert((ui->console != LIB_NULL) == (failure != 3u));
-    lib_test_assert(broker_destroys == 1u && window_destroys == (failure >= 2u) &&
-        console_destroys == (failure == 3u));
-    lib_test_assert((ui->broker != LIB_NULL) == (failure == 1u));
-    lib_test_assert((ui->window != LIB_NULL) == (failure == 1u));
-    /* A retained source can still safely call its retained UI/event context. */
-    if (ui->console) input_worker(&console_fake.options, LIB_NULL);
-    if (ui->window) input_worker(&window_fake.options.component, LIB_NULL);
-    /* End the scripted failure for fixture cleanup, not a product retry policy. */
-    destroy_failure = 0u;
-    lib_test_assert(emulator_ui_destroy(ui) == LIB_STATUS_OK && released_ui == 1u);
-    lib_test_assert(broker_destroys == (failure == 1u ? 2u : 1u));
+    lib_test_assert(released_ui == 1u && broker_destroys == 1u);
     lib_test_assert(window_destroys == 1u && console_destroys == 1u);
+    destroy_failure = 0u;
     tracked_ui = LIB_NULL;
 }
 

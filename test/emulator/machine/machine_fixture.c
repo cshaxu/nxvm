@@ -1,50 +1,54 @@
 #include "lib/types/test.h"
-#include "lib/types/win32/test.h"
+#include "lib/types/atomic.h"
 #include "machine_fixture.h"
+
+/* C11 thread-local identity verifies executor affinity without an OS thread ID. */
+static _Thread_local machine_fake *executor_fixture;
 
 static lib_bool fake_reset(void *opaque)
 {
     machine_fake *fake = (machine_fake *)opaque;
-    lib_win32_reset_event(fake->stopped);
-    lib_win32_reset_event(fake->wake);
-    lib_win32_reset_event(fake->run_waiting);
-    lib_win32_interlocked_increment(&fake->resets);
+    base_sync_event_reset(fake->stopped);
+    base_sync_event_reset(fake->wake);
+    base_sync_event_reset(fake->run_waiting);
+    lib_atomic_i32_fetch_add_explicit(&fake->resets, 1, LIB_MEMORY_ORDER_SEQ_CST);
     return LIB_TRUE;
 }
 
 static lib_bool fake_run(void *opaque)
 {
     machine_fake *fake = (machine_fake *)opaque;
-    lib_win32_handle events[2] = { fake->stopped, fake->wake };
-    lib_win32_interlocked_increment(&fake->runs);
-    fake->executor_thread = lib_win32_get_current_thread_id();
+    base_sync_event *events[2] = { fake->stopped, fake->wake };
+    lib_atomic_i32_fetch_add_explicit(&fake->runs, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    executor_fixture = fake;
     if (fake->callback != LIB_NULL) fake->callback(fake->callback_context);
     for (;;) {
-        lib_win32_set_event(fake->run_waiting);
-        lib_win32_dword result = lib_win32_wait_for_multiple_objects(2u, events, LIB_WIN32_FALSE, 5000u);
-        if (result == LIB_WIN32_WAIT_OBJECT_0) return LIB_TRUE;
-        if (result != LIB_WIN32_WAIT_OBJECT_0 + 1u) return LIB_FALSE;
-        lib_win32_reset_event(fake->wake);
-        if (lib_win32_interlocked_compare_exchange(&fake->fail_run, 0, 0)) return LIB_FALSE;
+        base_sync_event_signal(fake->run_waiting);
+        lib_u32 index;
+        if (base_sync_wait_any(events, 2u, LIB_NULL, 5000u, &index) !=
+            BASE_SYNC_WAIT_SIGNALED) return LIB_FALSE;
+        if (index == 0u) return LIB_TRUE;
+        base_sync_event_reset(fake->wake);
+        if (lib_atomic_i32_load_explicit(&fake->fail_run, LIB_MEMORY_ORDER_SEQ_CST)) return LIB_FALSE;
         if (fake->callback != LIB_NULL) fake->callback(fake->callback_context);
     }
 }
 
 static void fake_request_stop(void *opaque)
-{ lib_win32_set_event(((machine_fake *)opaque)->stopped); }
+{ base_sync_event_signal(((machine_fake *)opaque)->stopped); }
 static void fake_request_wake(void *opaque)
 {
     machine_fake *fake = (machine_fake *)opaque;
-    if (lib_win32_interlocked_exchange(&fake->fail_on_read_wake, 0))
-        lib_win32_interlocked_exchange(&fake->fail_frame, 1);
-    if (lib_win32_interlocked_exchange(&fake->state_read_waiting, 0) != 0) {
+    if (lib_atomic_i32_exchange_explicit(&fake->fail_on_read_wake, 0, LIB_MEMORY_ORDER_SEQ_CST))
+        lib_atomic_i32_exchange_explicit(&fake->fail_frame, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    if (lib_atomic_i32_exchange_explicit(&fake->state_read_waiting, 0, LIB_MEMORY_ORDER_SEQ_CST) != 0) {
         lib_test_assert(fake->deferred_state_writer.write(
             fake->deferred_state_writer.context, &fake->state_byte, 1u) ==
             LIB_STATUS_OK);
-        lib_win32_interlocked_increment(&fake->state_reads);
-        lib_win32_interlocked_exchange(&fake->state_read_ready, 1);
+        lib_atomic_i32_fetch_add_explicit(&fake->state_reads, 1, LIB_MEMORY_ORDER_SEQ_CST);
+        lib_atomic_i32_exchange_explicit(&fake->state_read_ready, 1, LIB_MEMORY_ORDER_SEQ_CST);
     }
-    lib_win32_set_event(fake->wake);
+    base_sync_event_signal(fake->wake);
 }
 static lib_bool fake_set_media(void *opaque, const char *path,
     lib_storage_medium_mode mode)
@@ -73,14 +77,14 @@ static void fake_deliver_input(void *opaque, const kvm_input_event *event)
 {
     machine_fake *fake = (machine_fake *)opaque;
     (void)event;
-    lib_win32_interlocked_increment(&fake->inputs);
-    lib_win32_set_event(fake->input);
+    lib_atomic_i32_fetch_add_explicit(&fake->inputs, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    base_sync_event_signal(fake->input);
 }
 static lib_status fake_copy_frame(void *opaque, kvm_window_frame_storage *frame,
     kvm_console_text_frame *console, lib_bool *produced)
 {
     machine_fake *fake = opaque;
-    if (lib_win32_interlocked_compare_exchange(&fake->fail_frame, 0, 0))
+    if (lib_atomic_i32_load_explicit(&fake->fail_frame, LIB_MEMORY_ORDER_SEQ_CST))
         return LIB_STATUS_IO_ERROR;
     lib_test_assert(kvm_window_frame_prepare_text(frame, 80u, 50u, 80u) == LIB_STATUS_OK);
     *produced = LIB_TRUE;
@@ -96,22 +100,22 @@ static lib_status fake_begin_state_read(void *opaque,
     const emulator_machine_state_writer *writer)
 {
     machine_fake *fake = (machine_fake *)opaque;
-    lib_test_assert(lib_win32_get_current_thread_id() == fake->executor_thread);
+    lib_test_assert(executor_fixture == fake);
     if (writer == LIB_NULL || writer->write == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (lib_win32_interlocked_exchange(&fake->fail_after_read_arm, 0)) {
-        lib_win32_interlocked_exchange(&fake->fail_run, 1);
-        lib_win32_set_event(fake->wake);
+    if (lib_atomic_i32_exchange_explicit(&fake->fail_after_read_arm, 0, LIB_MEMORY_ORDER_SEQ_CST)) {
+        lib_atomic_i32_exchange_explicit(&fake->fail_run, 1, LIB_MEMORY_ORDER_SEQ_CST);
+        base_sync_event_signal(fake->wake);
         return LIB_STATUS_OK;
     }
-    if (lib_win32_interlocked_exchange(&fake->defer_state_read, 0) != 0) {
+    if (lib_atomic_i32_exchange_explicit(&fake->defer_state_read, 0, LIB_MEMORY_ORDER_SEQ_CST) != 0) {
         fake->deferred_state_writer = *writer;
-        lib_win32_interlocked_exchange(&fake->state_read_waiting, 1);
+        lib_atomic_i32_exchange_explicit(&fake->state_read_waiting, 1, LIB_MEMORY_ORDER_SEQ_CST);
         return LIB_STATUS_OK;
     }
     if (writer->write(writer->context, &fake->state_byte, 1u) != LIB_STATUS_OK)
         return LIB_STATUS_IO_ERROR;
-    lib_win32_interlocked_increment(&fake->state_reads);
-    lib_win32_interlocked_exchange(&fake->state_read_ready, 1);
+    lib_atomic_i32_fetch_add_explicit(&fake->state_reads, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    lib_atomic_i32_exchange_explicit(&fake->state_read_ready, 1, LIB_MEMORY_ORDER_SEQ_CST);
     return LIB_STATUS_OK;
 }
 
@@ -119,7 +123,7 @@ static lib_bool fake_take_state_read_result(void *opaque, lib_status *status)
 {
     machine_fake *fake = (machine_fake *)opaque;
     if (status == LIB_NULL) return LIB_FALSE;
-    if (lib_win32_interlocked_exchange(&fake->state_read_ready, 0) == 0) return LIB_FALSE;
+    if (lib_atomic_i32_exchange_explicit(&fake->state_read_ready, 0, LIB_MEMORY_ORDER_SEQ_CST) == 0) return LIB_FALSE;
     *status = LIB_STATUS_OK;
     return LIB_TRUE;
 }
@@ -133,7 +137,7 @@ static lib_status fake_write_state(void *opaque,
     if (reader->read(reader->context, &byte, 1u) != LIB_STATUS_OK)
         return LIB_STATUS_IO_ERROR;
     fake->state_byte = byte;
-    lib_win32_interlocked_increment(&fake->state_writes);
+    lib_atomic_i32_fetch_add_explicit(&fake->state_writes, 1, LIB_MEMORY_ORDER_SEQ_CST);
     return LIB_STATUS_OK;
 }
 
@@ -141,8 +145,8 @@ static lib_status fake_execute_debug(void *opaque, const void *bytes, lib_size s
     void *response, lib_size capacity, lib_size *response_size)
 {
     machine_fake *fake = opaque;
-    lib_test_assert(lib_win32_get_current_thread_id() == fake->executor_thread);
-    lib_win32_interlocked_increment(&fake->debug_calls);
+    lib_test_assert(executor_fixture == fake);
+    lib_atomic_i32_fetch_add_explicit(&fake->debug_calls, 1, LIB_MEMORY_ORDER_SEQ_CST);
     return fake->debug(fake->debug_context, bytes, size, response, capacity,
         response_size);
 }
@@ -152,39 +156,39 @@ void machine_fake_note_state(void *opaque, emulator_machine_state state,
 {
     machine_fake *fake = (machine_fake *)opaque;
     (void)generation;
-    lib_win32_interlocked_increment(&fake->notifications);
+    lib_atomic_i32_fetch_add_explicit(&fake->notifications, 1, LIB_MEMORY_ORDER_SEQ_CST);
     if (state == EMULATOR_MACHINE_RUNNING) {
-        lib_win32_interlocked_increment(&fake->running_notifications);
-        lib_win32_set_event(fake->running);
+        lib_atomic_i32_fetch_add_explicit(&fake->running_notifications, 1, LIB_MEMORY_ORDER_SEQ_CST);
+        base_sync_event_signal(fake->running);
     }
     if (state == EMULATOR_MACHINE_PAUSED)
-        lib_win32_interlocked_increment(&fake->paused_notifications);
+        lib_atomic_i32_fetch_add_explicit(&fake->paused_notifications, 1, LIB_MEMORY_ORDER_SEQ_CST);
     if (state == EMULATOR_MACHINE_STOPPED && fake->callback_entered != LIB_NULL) {
-        lib_win32_set_event(fake->callback_entered);
-        lib_test_assert(lib_win32_wait_for_single_object(fake->callback_release, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
+        base_sync_event_signal(fake->callback_entered);
+        lib_test_assert(base_sync_event_wait(fake->callback_release, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     }
-    if (state == EMULATOR_MACHINE_STOPPED) lib_win32_set_event(fake->state_stopped);
-    if (state == EMULATOR_MACHINE_RESET_COMPLETED) lib_win32_set_event(fake->reset_completed);
+    if (state == EMULATOR_MACHINE_STOPPED) base_sync_event_signal(fake->state_stopped);
+    if (state == EMULATOR_MACHINE_RESET_COMPLETED) base_sync_event_signal(fake->reset_completed);
 }
 void machine_fake_note_frame(void *opaque, lib_u32 sequence, lib_bool graphics,
     lib_u32 generation)
 {
     machine_fake *fake = (machine_fake *)opaque;
     (void)sequence; (void)graphics; (void)generation;
-    lib_win32_interlocked_increment(&fake->notifications);
-    lib_win32_set_event(fake->frame);
+    lib_atomic_i32_fetch_add_explicit(&fake->notifications, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    base_sync_event_signal(fake->frame);
 }
 
 void machine_fake_initialize(machine_fake *fake, emulator_machine_driver *driver)
 {
-    fake->stopped = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->state_stopped = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->reset_completed = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->wake = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->running = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->run_waiting = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->frame = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
-    fake->input = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->stopped) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->state_stopped) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->reset_completed) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->wake) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->running) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->run_waiting) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->frame) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &fake->input) == LIB_STATUS_OK);
     lib_test_assert(fake->stopped != LIB_NULL && fake->state_stopped != LIB_NULL &&
         fake->reset_completed != LIB_NULL && fake->wake != LIB_NULL && fake->running != LIB_NULL &&
         fake->frame != LIB_NULL && fake->input != LIB_NULL && fake->run_waiting != LIB_NULL);
@@ -206,8 +210,8 @@ void machine_fake_initialize(machine_fake *fake, emulator_machine_driver *driver
 
 void machine_fake_dispose(machine_fake *fake)
 {
-    lib_win32_close_handle(fake->input); lib_win32_close_handle(fake->frame); lib_win32_close_handle(fake->running);
-    lib_win32_close_handle(fake->run_waiting);
-    lib_win32_close_handle(fake->wake); lib_win32_close_handle(fake->reset_completed);
-    lib_win32_close_handle(fake->state_stopped); lib_win32_close_handle(fake->stopped);
+    base_sync_event_destroy(fake->input); base_sync_event_destroy(fake->frame); base_sync_event_destroy(fake->running);
+    base_sync_event_destroy(fake->run_waiting);
+    base_sync_event_destroy(fake->wake); base_sync_event_destroy(fake->reset_completed);
+    base_sync_event_destroy(fake->state_stopped); base_sync_event_destroy(fake->stopped);
 }

@@ -6,8 +6,9 @@
 typedef struct console_broker_backend console_broker_backend;
 
 lib_status console_broker_backend_create(console_broker_backend **out_backend);
-/* Broker must deactivate successfully before disposal, including failed
- * activation cleanup. Disposal never retires readers or restores modes. */
+/* Deactivate must return before disposal, including failed activation cleanup.
+ * Every returning deactivate has joined its reader; I/O errors do not retain
+ * live readers. Disposal consumes the backend, reporting cleanup errors. */
 lib_status console_broker_backend_destroy(console_broker_backend *backend);
 /* Validate that the next binding can be activated without changing the
  * current Console's reader, mode, or output ownership.  Preparation never

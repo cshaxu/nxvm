@@ -220,9 +220,10 @@ lib_status lib_audio_pcm_stream_create(const lib_audio_pcm_stream_options *optio
         base_sync_mutex_unlock(stream->lock);
     }
     if (status != LIB_STATUS_OK) {
-        /* Never free a context whose worker exit could not be established. */
+        /* No public owner exists on failure; never strand a live worker. */
         if (stream->worker != LIB_NULL &&
-            base_sync_task_destroy(stream->worker) != LIB_STATUS_OK) return status;
+            base_sync_task_destroy(stream->worker) != LIB_STATUS_OK)
+            lib_process_exit_immediate(LIB_STATUS_INTERNAL_ERROR);
         base_sync_event_destroy(stream->control_done);
         base_sync_event_destroy(stream->space);
         base_sync_event_destroy(stream->wake);

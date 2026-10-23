@@ -148,13 +148,8 @@ lib_status console_broker_create(console_broker **out_broker,
     if (status != LIB_STATUS_OK) {
         /* Activation can change native mode before failing. Broker owns the
          * same quiesce-before-dispose sequence here as in normal destruction. */
-        if (broker->backend != LIB_NULL &&
-            console_broker_backend_deactivate(broker->backend, LIB_NULL) != LIB_STATUS_OK) {
-            /* No public broker exists yet.  The application treats this
-             * impossible-to-quiesce native reader as terminal; do not invent
-             * a half-broker ownership protocol for ordinary callers. */
-            return status;
-        }
+        if (broker->backend != LIB_NULL)
+            (void)console_broker_backend_deactivate(broker->backend, LIB_NULL);
         console_broker_remove_output_binding(broker->current, broker->current_output);
         broker->current_output = LIB_NULL;
         lib_console_release(broker->current);
@@ -315,27 +310,16 @@ lib_status console_broker_destroy(console_broker *broker)
     lib_console *current;
     console_broker_output_binding *output;
     lib_status status;
+    lib_status cleanup;
     if (broker == LIB_NULL) return LIB_STATUS_OK;
     console_broker_backend_lock_transaction(broker->backend);
     current = broker->current;
     output = broker->current_output;
     console_broker_backend_lock_output(broker->backend);
     status = console_broker_backend_deactivate(broker->backend, LIB_NULL);
-    if (status != LIB_STATUS_OK) {
-        /* A live reader still references backend and current.  This is
-           already a terminal broker failure; retain its process-lifetime
-           state rather than releasing either object underneath that worker. */
-        console_broker_backend_unlock_output(broker->backend);
-        console_broker_backend_unlock_transaction(broker->backend);
-        return status;
-    }
-    status = console_broker_reset_bound(current, broker->generation);
-    if (status != LIB_STATUS_OK) {
-        broker->broken = LIB_TRUE;
-        console_broker_backend_unlock_output(broker->backend);
-        console_broker_backend_unlock_transaction(broker->backend);
-        return status;
-    }
+    /* Every returning deactivate has quiesced its reader, even on I/O error. */
+    cleanup = console_broker_reset_bound(current, broker->generation);
+    if (status == LIB_STATUS_OK) status = cleanup;
     broker->current = LIB_NULL;
     broker->current_output = LIB_NULL;
     if (current != LIB_NULL) lib_console_invalidate_binding(current);
@@ -343,9 +327,9 @@ lib_status console_broker_destroy(console_broker *broker)
     console_broker_backend_unlock_transaction(broker->backend);
     console_broker_remove_output_binding(current, output);
     lib_console_release(current);
-    status = console_broker_backend_destroy(broker->backend);
-    if (status != LIB_STATUS_OK) return status;
+    cleanup = console_broker_backend_destroy(broker->backend);
+    if (status == LIB_STATUS_OK) status = cleanup;
     lib_release(broker);
     lib_atomic_flag_clear_explicit(&console_broker_process_claimed, LIB_MEMORY_ORDER_RELEASE);
-    return LIB_STATUS_OK;
+    return status;
 }

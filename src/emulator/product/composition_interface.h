@@ -6,7 +6,6 @@
 #include "emulator/session/session_interface.h"
 #include "emulator/ui/ui_interface.h"
 #include "emulator/product/machine_interface.h"
-typedef struct emulator_product emulator_product;
 
 /* Product-specific code supplies concrete machine and command/UI policy. The
  * App provides its complete opening identity text; Emulator Product owns its

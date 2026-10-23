@@ -31,10 +31,6 @@ lib_status kvm_component_initialize(kvm_component *component,
  * STOP or terminal fault rejects later publications with INVALID_STATE. */
 lib_status kvm_component_publish_frame(kvm_component *component,
     kvm_frame_exchange *frames);
-/* A source identity is never recycled.  Zero is the permanent exhausted
- * sentinel, rather than the beginning of a second allocation epoch. */
-lib_status kvm_component_allocate_source_identity(lib_atomic_u64 *next,
-    lib_u64 *out_identity);
 lib_bool kvm_component_emit(kvm_component *component, const kvm_input_event *event);
 /* Uses the component's normal source attribution and source-local matcher,
  * but lets a leaf choose how to deliver matcher output.  This is internal:

@@ -124,6 +124,10 @@ targets and finally destroy the machine/driver; destroy reuses shutdown.
 Both return status. Failed shutdown/destroy retains ownership; callback targets
 and the driver must remain alive until shutdown succeeds.
 Shutdown is permanent and idempotent, unlike the restartable product stop.
+After Machine shutdown, UI destruction quiesces all native inputs and consumes
+UI on every normal return. Cleanup errors do not retain UI or prevent Product
+from releasing independent resources; private machine unbind/shutdown failures
+still preserve their dependencies.
 
 ## Independent verification
 

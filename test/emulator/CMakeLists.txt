@@ -57,10 +57,8 @@ set_tests_properties(emulator.product/composition PROPERTIES LABELS "unit;emulat
     WORKING_DIRECTORY "${emulator_composition_work_directory}")
 list(APPEND SHARED_EMULATOR_TEST_TARGETS emulator-product-composition-smoke)
 shared_register_test(emulator product/monitor emulator-product)
-if(WIN32)
-    shared_register_test(emulator machine/machine emulator-machine)
-    target_sources(emulator-test-machine-machine PRIVATE machine/machine_fixture.c)
-endif()
+shared_register_test(emulator machine/machine emulator-machine)
+target_sources(emulator-test-machine-machine PRIVATE machine/machine_fixture.c)
 
 foreach(check IN ITEMS manifest corpus)
     add_test(NAME emulator.${check} COMMAND "${CMAKE_COMMAND}"

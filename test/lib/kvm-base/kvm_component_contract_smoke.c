@@ -1,5 +1,6 @@
 #include "lib/types/test.h"
 #include "lib/kvm-base/worker_interface.h"
+#include "lib/kvm-base/component.c"
 
 
 typedef struct component_probe {
