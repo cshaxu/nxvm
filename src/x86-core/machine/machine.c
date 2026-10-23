@@ -20,8 +20,10 @@ static lib_i32 x86_core_machine_retirement_qualification_contains(
 static lib_i32 x86_core_machine_publish_successful_retirement(x86_core_machine *machine)
 {
     if (machine == LIB_NULL) return 0;
-    x86_core_machine_retirement_observation_publish(machine,
-        machine->cpu_retirement_source_ticks);
+    if (machine->retirement_observation.provider.callback != LIB_NULL) {
+        x86_core_machine_retirement_observation_publish(machine,
+            machine->cpu_retirement_source_ticks);
+    }
     return x86_core_machine_retirement_time_is_qualified(machine);
 }
 
@@ -1106,7 +1108,14 @@ static lib_status x86_core_machine_execute_budget(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
-                x86_core_machine_retirement_observation_capture_eligibility_key(machine);
+                /* The verified-physical contract and an explicit observer
+                 * consume this copied identity. Deterministic machines with
+                 * no observer are already qualified by their contract. */
+                if (machine->retirement_time_contract ==
+                        X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
+                    machine->retirement_observation.provider.callback != LIB_NULL) {
+                    x86_core_machine_retirement_observation_capture_eligibility_key(machine);
+                }
                 if (machine->maximum_instruction_ticks == 0u ||
                     machine->external_cycle_round_ticks != 0u || timing_result.event_ticks != 0u) {
                     x86_core_machine_begin_retirement_wait(machine,
