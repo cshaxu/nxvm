@@ -2,26 +2,37 @@
 
 ## Current Work
 
-## M5 T568 S2 — Active: PC110 observed font-ROM window
+## M5 T568 S3 — Active: PC110 F65535 controller contract audit
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation of T568 after closed S1; one session performs coordinator and executor roles. |
-| Admission And Approval | S1's source ledger and the standing PC110 implementation instruction admit only the directly observed font-ROM path. |
-| Objective | Compose the PC110 immutable 1 MiB font ROM through the observed 7-bit bank register at 1160h and 8 KiB DE000h window. |
-| Non-goals | No F65535 implementation, display capture, panel mode, 1161h--1163h guessed behavior, raw ROM commit, product EXE or guest-boot claim. |
-| Reference Baseline | T568 S1 ledger, existing Core port/memory-device contracts and App-local MyPC110 base composition. |
+| Identifier Mode | Continuation of T568 after closed S2; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner requested T568 continue to closure. S1--S2 establish the font route; the original C&T F65535 manual and PC110 live-dump record admit this bounded register/VRAM ownership audit. |
+| Objective | Freeze the smallest truthful F65535 chip boundary, its reset/register/VRAM facts, the App-owned physical wiring and the exact source grade of panel behavior before any controller implementation. |
+| Non-goals | No controller implementation, display capture, panel timing inference, raw ROM commit, product EXE, guest-boot claim or change to Lib, Emulator, X86 Core or the existing PC/AT VADP. |
+| Reference Baseline | T568 S1/S2, C&T F65535 Revision 2.0 register manual, PC110 live-dump identity observation, existing X86 NXVM video/VADP ownership and App-local MyPC110 base composition. |
 | Candidate Proposal | [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md). |
-| Files And ABI Surface | `src/app-mypc110`, `test/app-mypc110`, task evidence and state only. No Lib, Emulator, X86 Core or X86 NXVM public surface changes. |
+| Files And ABI Surface | Task evidence, state and proposal refinement only. No source, test, public ABI or asset changes. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy; current architecture/coding authorities; no second guest-frame or renderer owner. |
-| Verification | Direct App tests prove bank endpoints, bit-7 aliasing, immutable writes, ordinary non-window routing and no fabricated bank-register readback. |
-| Expected Markers | One App-owned font route with Core as sole port/memory dispatcher; no VADP, host path or second font cache. |
-| Asset Needs | Test bytes only. Real owner-managed bytes remain external and are not embedded or committed by this S. |
-| Reporting Requirements | Record source grade, exact route, rejected auxiliary behaviors and unexecuted guest validation. |
-| Stop Conditions | Any needed behavior requires an unapproved Shared change, guessed 1161h--1163h behavior, an unsourced ROM pairing or a second display owner. |
-| Exit Criteria | Both widths pass App-local route tests and all changed documentation/build gates; changes are reviewed, pushed and the next F65535 receiver remains explicit. |
+| Verification | Reconcile every admitted register/memory fact against the actual manual and live observation; inspect the existing video/VADP surface for incompatible ownership; prove the proposed chip direction introduces neither a second renderer nor a VADP personality. |
+| Expected Markers | One distinct X86 NXVM F65535 chip candidate, one App-owned PC110 wiring receiver, explicit 512 KiB and `3D6h/3D7h` facts, and every unproven panel value retained as a labelled later model. |
+| Asset Needs | Read-only manuals, research and external asset metadata only. No firmware, media or ROM payload enters Git or an artifact. |
+| Reporting Requirements | Record exact source page/observation, L3/L2 distinctions, rejected reuse/shortcuts, candidate source/test surface and unexecuted guest/physical proof. |
+| Stop Conditions | Required behavior needs a Shared change, has no identified owner, conflicts with manual/live facts or would make a VADP personality falsely represent F65535. |
+| Exit Criteria | A reviewed source ledger and bounded S4 chip receiver exist; documentation gates pass and the audit P is pushed. |
 | Original Owner Request | Continue the PC110 programme after T567 closure. |
 | Similar-Issue Sweep | Check all App-local device routes for an external ROM path, VADP dependency, guessed auxiliary behavior or duplicate memory owner. |
+
+### S3 Delivery
+
+The [F65535 controller contract](../etc/evidence/t568-s3-f65535-controller-contract.md)
+records the original C&T register/manual facts, the PC110 live identity and
+the one truthful ownership split.  It admits a later standalone
+`x86-nxvm/chips/f65535` mechanism with 512 KiB logical VRAM and App-local
+wiring; it rejects VADP impersonation, reconstruction-board capacity and
+unsourced panel defaults.  Both cached widths pass documentation governance.
+S3 is closed after its documentation P; S4 is the bounded chip/route
+implementation receiver.
 
 ### S2 Delivery
 

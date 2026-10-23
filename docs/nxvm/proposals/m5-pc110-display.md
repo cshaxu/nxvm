@@ -26,7 +26,10 @@ fix. Do not mutate the research master or add a host-side display workaround.
 
 Implement standard/extended video register behavior, VRAM/banking, panel scanout and font-ROM bank/window behavior. Reuse existing copied frame publication to the host; qualify text, graphics, palette, cursor and generation/reset semantics.
 
-Expected owners: PC110 display/font wiring; reusable F65535 mechanism in Core only with a reviewed chip boundary; test/core and test/app-mypc110.
+Expected owners: PC110 display/font wiring in `app-mypc110`; reusable F65535
+mechanism in `x86-nxvm/chips/f65535`; matching `test/x86-nxvm` and
+`test/app-mypc110` receivers.  The controller is not a Core component and is
+not a VADP personality.
 
 ## Non-goals And Stop Conditions
 
