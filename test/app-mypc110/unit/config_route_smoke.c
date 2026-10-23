@@ -8,15 +8,13 @@ int main(void)
     };
     x86_core_machine *machine = LIB_NULL;
     x86_vl82c420 *chip = LIB_NULL;
-    mypc110_config_routes routes;
     lib_u32 value = 0u;
     lib_bool failed = LIB_FALSE;
 
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         x86_vl82c420_create(&chip) != LIB_STATUS_OK ||
-        mypc110_config_routes_initialize(&routes, chip) != LIB_STATUS_OK ||
-        mypc110_config_install_routes(machine, &routes) != LIB_STATUS_OK ||
-        mypc110_config_install_routes(machine, &routes) != LIB_STATUS_INVALID_STATE ||
+        mypc110_config_install_routes(machine, chip) != LIB_STATUS_OK ||
+        mypc110_config_install_routes(machine, chip) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
@@ -48,7 +46,7 @@ int main(void)
             value != 0xffu;
     }
     if (machine != LIB_NULL && chip != LIB_NULL) {
-        failed |= x86_core_machine_remove_port_routes(machine, &routes) != LIB_STATUS_OK ||
+        failed |= x86_core_machine_remove_port_routes(machine, chip) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_UNSUPPORTED;
     }
     x86_vl82c420_destroy(chip);
