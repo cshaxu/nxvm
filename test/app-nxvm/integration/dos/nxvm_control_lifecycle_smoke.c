@@ -35,8 +35,20 @@ int main(lib_i32 argc, char **argv)
     }
     base_sync_sleep_milliseconds(5000u);
     if (integration_ini_session_pause(&ini_session, 2000u) != LIB_STATUS_OK ||
-        integration_ini_session_reset(&ini_session, 2000u) != LIB_STATUS_OK ||
-        integration_ini_session_resume(&ini_session, 2000u) != LIB_STATUS_OK ||
+        integration_ini_session_reset(&ini_session, 2000u) != LIB_STATUS_OK) {
+        integration_ini_session_close(&ini_session);
+        return 1;
+    }
+    {
+        x86_nxvm_test_guest_display_frame frame;
+        lib_status s = test_nxvm_machine_capture_presentation(ini_session.session, &frame);
+        if (s == LIB_STATUS_OK && frame.kind == X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT &&
+            frame.columns == 1u && frame.rows == 1u && frame.text_cell_height == 1u) {
+            integration_ini_session_close(&ini_session);
+            return 1;
+        }
+    }
+    if (integration_ini_session_resume(&ini_session, 2000u) != LIB_STATUS_OK ||
         integration_ini_session_wait_for_state(&ini_session,
             EMULATOR_MACHINE_RUNNING, 2000u) == 0 || !wait_for_floppy_prompt(&ini_session)) {
         integration_ini_session_close(&ini_session);

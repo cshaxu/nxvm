@@ -770,6 +770,9 @@ target_link_libraries(vm-app PUBLIC
 add_executable(vm-control-lifecycle-smoke
     test/app-nxvm/integration/dos/nxvm_control_lifecycle_smoke.c
 )
+add_executable(vm-model40-frame-start-smoke
+    test/app-mydeskpro386/integration/model40_frame_start_smoke.c)
+target_link_libraries(vm-model40-frame-start-smoke PRIVATE integration-session-ini-support)
 target_link_libraries(vm-control-lifecycle-smoke PRIVATE
     integration-session-ini-support
 )
@@ -1559,6 +1562,7 @@ set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
 set(PROJECT_INTEGRATION_PRODUCT_TARGETS
     pc-product-ini-identity-smoke
     vm-model40-console-ini-smoke
+    vm-model40-frame-start-smoke
     my5170-console-lifecycle-smoke
     vm-ini-cmos-seed-smoke
     session-ini-status-smoke
@@ -1597,6 +1601,7 @@ elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
         vm-model40-console-ini-smoke
+        vm-model40-frame-start-smoke
         vm-ini-cmos-seed-smoke
         session-ini-status-smoke)
 endif()
