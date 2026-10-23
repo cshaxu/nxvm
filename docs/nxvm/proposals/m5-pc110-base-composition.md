@@ -20,6 +20,13 @@ The composition consumes the existing PC110 VL82C420 route adapter and typed
 TFT firmware provider.  It must have one construction/lifetime owner and must
 not publish a runnable executable until its device contract is complete.
 
+The first admitted construction cohort keeps the existing X86 NXVM board
+lifetime and makes its currently forced endpoint families explicit selections:
+keyboard, display, and reset/A20 facade.  Existing PC Apps retain their
+current selections by default; PC110 selects no endpoint until its dedicated
+receiver supplies one.  This is a subtraction of implicit AT policy, not a
+second board abstraction.
+
 ## Non-goals And Stop Conditions
 
 No PC/AT descriptor reuse, BIOS interception, guessed reset/CMOS/SCAMP
