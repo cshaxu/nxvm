@@ -2,7 +2,155 @@
 
 ## Current Work
 
-## M5 T564 S8 — Active: X86 Debug assembler checkop audit
+## M5 T564 S14 — Active: final integration qualification and T564 closure audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S13 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepted S13 and directed admission of the next S. |
+| Objective | Reconcile all T564 public-component dispositions, run the required clean dual-width integration qualification, and prepare the truthful T-level closure record. |
+| Non-goals | No speculative repair, new component scope, test weakening, artifact refresh without production inputs, or claim of Linux/browser/desktop verification not actually run. |
+| Reference Baseline | Accepted S1--S13 deliveries; S13 implementation commits `dcc8e98ca` and `a864cf7fd`. |
+| Candidate Proposal | [T564 public-component quality program](../proposals/m5-softpc-rgb-frame-import.md), final qualification requirement. |
+| Files And ABI Surface | State/history/evidence records; existing integration registrations and test-owned generated data only unless a reproduced failure requires a separately admitted corrective S. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; current source policy; component ownership and task closure requirements. |
+| Verification | Reuse the stable x64/x86 Ninja graphs; run the repository integration suite serially on both widths, required static/manifest/documentation gates, and reconcile all six-package/App dispositions against the proposal. |
+| Expected Markers | Every planned S has a recorded disposition; both integration suites pass from clean test-owned temporary state; no unqualified platform/manual result is represented as complete. |
+| Asset Needs | Existing approved BYOB assets and stable build trees only; preserve INIs, ROMs, media, snapshots and currently released binaries. |
+| Reporting Requirements | Record per-width integration counts/results, any skipped external/manual validation, complete S disposition map, actual worktree/commit state, and every remaining transferred debt. |
+| Stop Conditions | Any integration failure requiring production/test repair, missing required external input, unexpected artifact mutation, or scope beyond T564's six-package/App receivers. |
+| Exit Criteria | Required integration and governance checks pass; all planned S work is reconciled; T closure record and target-scoped governance commit are pushed; owner accepts the final qualification. |
+| Original Owner Request | Close S13 and admit the next S under the established T564 program. |
+| Similar-Issue Sweep | Verify all source/test package gates and both product receiver families are represented in the final result; distinguish clean test-state failures from production defects. |
+
+## M5 T564 S13 — Closed: X86 NXVM verifier-negative efficiency and four-PC App test ownership
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S12 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepts S12's no-repair audit disposition and directs admission of the next planned S. |
+| Objective | Retain the effective X86 NXVM negative boundary assertions while auditing every four-PC App test use of X86 NXVM private headers; move or adapt only tests whose real behavior belongs to an inner owner. |
+| Non-goals | No raw production getter, copied private layout, test-only public API, assertion weakening, qualification regression, production-path change or unrelated Shared work. |
+| Reference Baseline | Accepted S7 repair and S8--S12 audit dispositions. |
+| Candidate Proposal | T564 public-component quality program, S13; [PC App test adapter encapsulation](../proposals/m5-pc-app-test-encapsulation.md). |
+| Files And ABI Surface | `test/app-my5160`, `test/app-my5170`, `test/app-mydeskpro386`, `test/app-nxvm`, and their CMake registration; X86 NXVM test owners only if a classified assertion belongs there. Production interfaces remain unchanged unless evidence demonstrates no existing public operation can prove an App-owned behavior. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; strict inward test ownership, no private-layout facade, one production path and no test-only compatibility contract. |
+| Verification | Inventory every private-header include and classify it as hardware observation, inner-component proof, actual App integration or fault injection; preserve assertion meaning, run focused x64/x86 tests, and expand only for actual moves. |
+| Expected Markers | Complete use ledger, per-use disposition, retained negative assertions, no new raw getter/layout mirror and evidence that moved tests retain the original behavioral proof. |
+| Asset Needs | Reuse stable Ninja/ccache trees; preserve INIs, media, ROMs, snapshots, existing artifacts and unrelated work. |
+| Reporting Requirements | State each private-header use and its owner, distinguish a safe test-local fixture from an illegal cross-owner dependency, report actual diff/test results and unexecuted integration or desktop work. |
+| Stop Conditions | A required production API, a behavior that cannot be observed through an existing owner boundary, a proposed assertion weakening, or an unrelated Shared/App change. |
+| Exit Criteria | Every scoped use has a documented disposition; any justified move/adaptation preserves coverage; required tests, manifests and governance pass; reviewed commits/push and owner acceptance. |
+| Original Owner Request | Close S12 and admit the next S under the established public-component program. |
+| Similar-Issue Sweep | Search all four PC App test roots and CMake registrations for equivalent private-header or private-layout access; classify every hit rather than repairing only the first include. |
+
+### S13 Accepted Delivery
+
+The [S13 ownership audit](../etc/evidence/t564-s13-test-ownership-audit.md)
+classifies all 81 four-PC-App private Machine-header uses.  Every use is an
+App-selected hardware, firmware, media, integration or explicit diagnostic
+observation; none is a generic X86 NXVM behavior misplaced beneath an App.
+No raw getter, test-only public API, layout mirror or assertion weakening is
+warranted.  The X86 NXVM negative verifier now reuses one restored corpus per
+probe family and independently resets each nested-CMake bypass case, preserving
+all assertions while eliminating repeated full-corpus copies.  Focused tests
+pass on x64 and x86, and the clean serial repository unit suite passes 697/697
+on both widths.  No executable is refreshed because no production input changed.
+The owner accepted this delivery.  Shared P1 `dcc8e98ca` contains the verifier
+change; NXVM P2 `a864cf7fd` contains the evidence and queue receiver.  S13 is
+closed; S14 owns final integration qualification and T564 closure preparation.
+
+## M5 T564 S12 — Closed: X86 NXVM peripheral and timing-boundary audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S11 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepts S11's no-repair audit disposition and directs admission of S12. |
+| Objective | Inventory selected X86 NXVM board peripheral requirements and beyond-digital timing boundaries; repair only a reproduced gap in an already selected device, otherwise explicitly defer unselected or analogue capability. |
+| Non-goals | No speculative device, analog model, second timing mechanism, product profile expansion, unrelated Shared change or weakened regression. |
+| Reference Baseline | Accepted S7 implementation and accepted S8--S11 audit dispositions. |
+| Candidate Proposal | T564 public-component quality program, S12. |
+| Files And ABI Surface | X86 NXVM chips, board and Machine routes plus direct tests only where actual selected-board evidence requires; manifests and records only for approved repairs. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy before external research; inward dependency and one Core guest-time owner. |
+| Verification | Establish profile/device ownership and timing-evidence ledger before modifying code; reproduce a selected-device defect before repair; focused x64/x86 owner and receiver tests, expanded only for actual changes. |
+| Expected Markers | Selected-device inventory, evidence grades, existing owner/test map, explicit unselected/analog dispositions or a minimal owner-local repair design. |
+| Asset Needs | Reuse existing Ninja and ccache trees; preserve owner configuration, ROMs, media and unrelated work. |
+| Reporting Requirements | Separate digital behavioral correctness from physical/analog timing claims; name any public surface precisely; do not call an inventory full hardware qualification. |
+| Stop Conditions | Unapproved new device/profile/API, protected/external source need without policy admission, unproven hardware-model claim, unresolved safety issue or unrelated change. |
+| Exit Criteria | Required audit, approved necessary repairs, verification, reviewed commits/push and owner acceptance. |
+| Original Owner Request | Close S11 and admit the next S for brief, audit and design. |
+| Similar-Issue Sweep | Review equivalent selected-board peripheral/timing consumers without making a second clock, signal route or board owner. |
+
+Owner accepted the S12 no-repair audit.  The [peripheral and timing-boundary audit](../etc/evidence/t564-s12-peripheral-timing-audit.md) traces all four selected PC profiles through the complete copied Board timing table into the one Core deadline owner.  It found no selected-device defect and no basis for a speculative model; 11 focused X86 NXVM profile/Board/chip tests passed on each architecture.  No source, test, ABI or artifact change was warranted.  S12 is closed and S13 is active.
+
+## M5 T564 S11 — Closed: X86 Core x87 and virtual-interrupt audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S10 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepts S10's no-repair audit disposition, directs S11, then accepts its no-repair disposition and directs S12. |
+| Objective | Establish the selected CPU/FPU profiles and source-backed coverage for X86 Core x87 execution and virtual-interrupt extensions; qualify current claimed behavior and explicitly disposition unselected variants. |
+| Non-goals | No speculative hardware implementation, profile expansion, timing claim beyond evidence, duplicate interrupt route, unrelated Shared change or weakened regression. |
+| Reference Baseline | S7 delivery and accepted S8--S10 public-component audits. |
+| Candidate Proposal | T564 public-component quality program, S11. |
+| Files And ABI Surface | X86 Core CPU/FPU/Machine and direct tests only where an actual selected-profile contract requires them; manifests and records only for approved repairs. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy before external research; inward dependencies and evidence-tiered hardware claims. |
+| Verification | First inventory selected profiles, current execution paths and existing regressions; reproduce any claimed gap before modification; use focused x64/x86 tests and expand verification only with actual changes. |
+| Expected Markers | Profile/feature ledger, evidence grades, coverage ownership, no-repair dispositions or an owner-local repair design with actual test plan. |
+| Asset Needs | Reuse existing Ninja and ccache trees; preserve owner configuration, media and unrelated work. |
+| Reporting Requirements | Separate implemented selected behavior from unselected variants and from source evidence; identify any proposed public surface precisely; do not present an audit as universal x87 qualification. |
+| Stop Conditions | Unapproved public ABI or profile expansion, protected/external source need without policy admission, unproven hardware model claim, unresolved safety issue or unrelated change. |
+| Exit Criteria | Required audit, approved necessary repairs, verification, reviewed commits/push and owner acceptance. |
+| Original Owner Request | Close S10 and admit the next S for brief, audit and design. |
+| Similar-Issue Sweep | Review x87 and virtual-interrupt owner paths across selected profiles without adding parallel interrupt, timing or FPU state. |
+
+Owner accepted the S11 audit.  The [x87 and VME record](../etc/evidence/t564-s11-fpu-vme-audit.md) establishes that all four current PC Apps select no FPU, retains the one CPU/FPU/deadline boundary and verifies the selected VME condition without claiming broad x87 or virtual-interrupt completeness.  Sixteen focused tests passed on each architecture; no source, test, ABI or artifact change was warranted.  The complete x87 program is now a Queue candidate.  S11 is closed and S12 is active.
+
+## M5 T564 S10 — Closed: X86 Core descriptor, Debug CR and CPU-fault audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S9 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepts S9's no-repair disposition, directs S10, then accepts its no-repair disposition and directs S11. |
+| Objective | Inventory X86 Core descriptor vocabulary, Debug control-register mutation and CPU fault reporting; reproduce any concrete gap and design only the owner-local repair. |
+| Non-goals | No speculative CPU implementation, duplicate fault channel, raw private-machine access, unrelated Shared change or weakened regression. |
+| Reference Baseline | S7 delivery and full qualification through 197076521; S8 and S9 accepted read-only dispositions. |
+| Candidate Proposal | T564 public-component quality program, S10. |
+| Files And ABI Surface | X86 Core CPU/Machine and direct X86 Debug/Emulator receivers only where actual callers require them; manifests and records only for approved repairs. |
+| Applicable Rules | NXVM guide and source policy; Execution, Architecture, Coding and Documentation rules; inward dependencies, explicit timing/fault ownership and minimal public contracts. |
+| Verification | Trace descriptors, CR mutation and fault facts through actual execution and receiving code; reproduce a concrete defect before modifying source; use focused x64/x86 tests and expand verification only with actual changes. |
+| Expected Markers | Evidence-backed owner map, normal/failure-path disposition, test-ownership assessment, repair design and estimated diff. |
+| Asset Needs | Reuse existing Ninja and ccache trees; preserve owner configuration, media and unrelated work. |
+| Reporting Requirements | Distinguish source-confirmed behavior from hardware-evidence limits, identify any proposed public surface precisely, and report no-repair dispositions honestly. |
+| Stop Conditions | Unapproved public ABI expansion, unproven hardware model claim, unresolved safety issue or unrelated change. |
+| Exit Criteria | Required audit, approved necessary repairs, verification, reviewed commits/push and owner acceptance. |
+| Original Owner Request | Close S9 and admit S10 for brief, audit and design. |
+| Similar-Issue Sweep | Examine descriptor, CR and CPU-fault receivers without creating a second exception or status path. |
+
+Owner accepted the S10 audit.  The [descriptor, Debug CR and fault record](../etc/evidence/t564-s10-core-debug-fault-audit.md) confirms one copied descriptor boundary, one paused raw-Debug register patch owner and one CPU-fault publication path.  Fourteen focused X86 Core/Debug/NXVM tests passed on each architecture; no source, test, ABI or artifact change was warranted.  S10 is closed and S11 is active.
+
+## M5 T564 S9 — Closed: X86 IBM PC receiving-contract audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S8 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepts S8 and requests S9 audit with a detailed report. |
+| Objective | Audit X86 IBM PC receiving contracts and tests against the preceding Lib, Emulator and Debug dispositions; reproduce any suspected defects before proposing repairs. |
+| Non-goals | No speculative defect, duplicate inner-component mechanism, unrelated Shared change or weakened test. |
+| Reference Baseline | S7 delivery and full qualification through 197076521; S8 checkop audit and focused x86/x64 verification. |
+| Candidate Proposal | T564 public-component quality program, S9. |
+| Files And ABI Surface | X86 IBM PC Product, its tests and affected records; extend to receivers only if evidence requires. Review Shared changes before implementation. |
+| Applicable Rules | NXVM guide and source policy; Execution, Architecture, Coding and Documentation rules; inward dependencies, minimal behavior and existing ownership. |
+| Verification | Inspect actual call and failure contracts and direct tests; reproduce concrete gaps; focused x64/x86 component and receiver tests. Full repository units and affected integration and binaries follow actual implementation when required. |
+| Expected Markers | Evidence-backed disposition of Lib, Emulator and Debug receiving paths, warning exceptions and test ownership. |
+| Asset Needs | Reuse existing Ninja and ccache trees; preserve owner configuration, media and unrelated work. |
+| Reporting Requirements | Detailed factual audit, normal and failure paths, real test coverage, proposed repairs and estimated diff; distinguish hypotheses and unverified behavior. |
+| Stop Conditions | Unapproved Shared or public interface expansion, unresolved safety issue or unrelated change. |
+| Exit Criteria | Required review and necessary approved repairs and verification complete; reviewed commits pushed and owner acceptance. |
+| Original Owner Request | Close S8, admit S9 and audit its receiving contracts. |
+| Similar-Issue Sweep | Review equivalent receiving paths without creating a second owner, redundant tests or speculative fixes. |
+
+## M5 T564 S8 — Closed: X86 Debug assembler checkop audit
 
 | Field | Required record |
 | --- | --- |
@@ -22,6 +170,20 @@
 | Exit Criteria | Evidence-backed disposition, necessary changes and verification completed, actual diff reviewed and applicable delivery pushed; await owner acceptance. |
 | Original Owner Request | Close S7 after complete cached compilation and unit/integration tests; admit the next S. |
 | Similar-Issue Sweep | Inspect comparable assembler operand checking and its existing test coverage without inventing duplicate machinery. |
+
+Owner accepted the X86 IBM PC receiving-contract audit: X86 Debug's valid-result-on-output-failure
+contract, the Machine closed-input result and the shared Window formatting contract all reach
+their sole PC adapter correctly.  The direct adapters do not introduce a second lifecycle owner,
+queue, parser or presentation path.  Twenty-five relevant Emulator/X86 IBM PC tests passed on
+each architecture; no source, test or interface change was warranted.  S9 is closed and S10 is
+active.
+
+Owner accepted the read-only checkop audit: the historical optional runtime
+disassemble/reassemble check is not present, no concrete current defect was
+identified, and all 12 X86 Debug tests passed on each architecture. No source,
+test or interface changes were warranted. This disposition does not qualify
+all x86 instructions or close the other planned public-component audits. S8
+is closed and S9 is active.
 
 ## M5 T564 S7 — Closed: Emulator Machine wake failure contracts
 
@@ -58,7 +220,7 @@ classes and former PC App test-encapsulation candidate as S6--S13. The
 [updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
 sequence and conditional dispositions, reordered by owner direction as Lib,
 Emulator, X86 Debug, X86 IBM PC, X86 Core, then X86 NXVM. S1--S5 remain closed;
-The owner accepted and closed S6 on 2026-10-22; its [evidence](../etc/evidence/t564-s6-lib-console-review.md) records the audit and verification. S8 is active. Model40 throughput, DevBox exploration,
+The owner accepted and closed S6 on 2026-10-22; its [evidence](../etc/evidence/t564-s6-lib-console-review.md) records the audit and verification. S14 is active. Model40 throughput, DevBox exploration,
 Linux runtime verification and future browser storage remain in NXVM TODO;
 the latter two are excluded from T564 by owner direction. T564 is open.
 
