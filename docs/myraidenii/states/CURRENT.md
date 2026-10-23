@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M1 T7 S114 — Active: V30/Core execution efficiency
+## M1 T7 S114 — Closed: V30/Core execution efficiency
 
 | Field | Required record |
 | --- | --- |
@@ -19,7 +19,7 @@
 | Asset Needs | Read-only owner archive `O:\assets\raidenii\raiden2.zip` through the existing verified staging wrapper. Temporary profiles/logs only below `build/t7-s114-profile`, with a 30-minute / 300 MiB / 10-minute-no-progress budget; retain only neutral timing summaries. |
 | Reporting Requirements | Record baseline and post-change measurements, exact owner/cost removed, actual source/test diff, quality review, all receiving verification and unexecuted desktop/RDP/audio checks. Do not describe a benchmark-only result as complete gameplay qualification. |
 | Stop Conditions | Evidence identifies no shared duplicate, requires a JIT/second executor/public contract or an accuracy/quality trade-off, changes a protected asset, or does not produce a durable measurable improvement. Record and transfer rather than ship a speculative micro-optimization. |
-| Exit Criteria | Implementation evidence is complete: the one proven Core change has an unchanged public contract, required dual-width and receiver checks pass, artifact handling is target-scoped, and the task scratch is removed. Await coordinator actual-diff review and governance close. |
+| Exit Criteria | Met: the one proven Core change has an unchanged public contract, required dual-width and receiver checks pass, artifact handling is target-scoped, and the task scratch is removed. The implementation and governance commits identify the final acceptance records. |
 | Original Owner Request | Continue optimization because MyRaidenII is not usable; eliminate actual excess work rather than rely on UI or timing shortcuts. |
 | Similar-Issue Sweep | Examine V30 instruction retirement, scheduler time publication, zero-work attachment calls, trace-disabled paths, deadline capture, and every affected CPU profile/board attachment for equivalent duplicate work; retain real device work and distinct timing contracts. |
 
