@@ -2,15 +2,16 @@
 
 ## Current Work
 
-## M5 T564 — Awaiting owner acceptance: final qualification complete
+## M5 T564 — Closed: public-component qualification
 
-S15 closed after retaining the modal/frame-scale integration test while
-returning host mouse-capture proof to its dedicated Unit owner.  Clean serial
-qualification now passes: x64 and x86 unit suites each pass 697/697, and x64
-and x86 integration suites each pass 21/21.  The [S15 evidence](../etc/evidence/t564-s15-window-modal-test-ownership.md)
+The owner accepted final qualification on 2026-10-23.  S15 retained the
+modal/frame-scale integration test while returning host mouse-capture proof to
+its dedicated Unit owner.  Clean serial qualification passes: x64 and x86
+unit suites each pass 697/697, and x64 and x86 integration suites each pass
+21/21.  The [S15 evidence](../etc/evidence/t564-s15-window-modal-test-ownership.md)
 records the RDP `ClipCursor` failure, retained coverage, no-artifact decision
-and exact results.  T564 is not closed until the owner accepts this final
-qualification and the corresponding closure P is recorded.
+and exact results.  `ad5c532a8` records the final target-scoped repair and
+qualification; no executable input changed.
 
 ## M5 T564 S15 — Closed: Window modal integration test ownership correction
 

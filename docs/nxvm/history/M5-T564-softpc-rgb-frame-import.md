@@ -1,5 +1,14 @@
 # M5 T564 — SoftPC RGB Frame Import
 
+## T closure
+
+The owner accepted final qualification on 2026-10-23.  The final S15
+correction retains the native modal/frame-scale integration proof and restores
+mouse-capture proof to its dedicated controlled-fixture Unit owner.  Both
+architectures pass 697/697 Unit and 21/21 integration tests.  Commit
+`ad5c532a8` records the final correction; no production or executable input
+changed.  T564 is closed.
+
 ## S5 — Committed shared import
 
 The owner accepted and closed S5 on 2026-10-22. Shared `09ebe0476`, MyNES
