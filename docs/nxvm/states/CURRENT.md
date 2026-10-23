@@ -161,15 +161,31 @@ and Core lifecycle proof. x64/x86 CMake configuration, build and direct route
 test pass. No ROM is embedded, no executable is produced, and no boot claim is
 made. S5 is closed.
 
-## M5 T565 S6 — Active: PC110 firmware binding and construction publication
+## M5 T565 S6 — Closed: PC110 TFT firmware binding
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation of T565 after closed S5. |
-| Objective | Add the typed TFT firmware binding and a single neutral-construction publication path, using the external asset manifest only at configuration/build time. |
-| Non-goals | No DSTN substitution, executable publication, firmware boot claim, AT profile helper, fabricated reset/shadow defaults, display/storage/input/power endpoint or Shared change. |
-| Required Proof | The binding validates exact external TFT identity and maps only the source-confirmed immutable BIOS range; construction/rollback tests prove one owner and source absence fails closed. |
-| Stop Conditions | Any need to infer ROM aliases/shadow/reset data or to load the TFT input from a machine-local path at runtime stops the affected behavior. |
+| Objective | Add the typed TFT firmware binding at the qualified immutable BIOS range, without giving an incomplete board a false construction/publication path. |
+| Non-goals | No asset-path loading, manifest parsing, DSTN substitution, executable publication, firmware boot claim, AT profile helper, fabricated reset/shadow defaults, display/storage/input/power endpoint or Shared change. |
+| Required Proof | The binding accepts only an exact TFT image; Core owns the copied mapping; null/wrong-size input rejects and the ordinary firmware reset path remains valid. |
+| Stop Conditions | Any need to infer ROM aliases/shadow/reset data, load a machine-local asset at runtime, or publish an empty board construction stops that behavior and transfers it to the appropriate endpoint receiver. |
+
+### S6 Delivery
+
+`app-mypc110` now provides a construction-only `mypc110_tft_firmware` binding.
+It accepts one exact 256 KiB TFT BIOS byte image and publishes only the
+evidence-supported `000C0000h..000FFFFFh` immutable mapping through the
+existing Core firmware contract.  Core copies the bytes while binding; no
+external path, manifest, asset or executable enters this delivery.  The
+[S6 evidence](../etc/evidence/t565-s6-pc110-tft-firmware-binding.md) records
+the L2 source basis and the deliberately unresolved behavior.
+
+Both Ninja/ccache widths configure, build and pass the direct PC110
+configuration-route and firmware-binding tests.  A source-qualified complete
+board composition is still required before X86 NXVM construction publication;
+S6 correctly does not emit a fake empty machine plan.  S6 is closed and T565
+continues with the remaining board-composition receivers.
 
 ## M5 T564 — Closed: public-component qualification
 
