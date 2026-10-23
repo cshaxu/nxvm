@@ -130,7 +130,7 @@ lib_status x86_core_machine_reset(x86_core_machine *machine)
 lib_status x86_core_machine_run(x86_core_machine *machine,
     x86_core_machine_run_budget budget, x86_core_machine_run_result *result)
 {
-    if (machine == LIB_NULL || result == LIB_NULL || budget.instructions != 256u || budget.ticks != 0u)
+    if (machine == LIB_NULL || result == LIB_NULL || budget.instructions != 4096u || budget.ticks != 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
     ++run_count;
     guest_ticks += 160000u;

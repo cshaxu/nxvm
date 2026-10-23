@@ -5,8 +5,11 @@
 #include "myraidenii/machine/audio_interface.h"
 
 enum {
-    /* L1 host-control bound: it creates no guest ticks or timing conversion. */
-    MYRAIDENII_MACHINE_RUN_INSTRUCTION_QUANTUM = 256u
+    /* L1 host-control bound: it creates no guest ticks or timing conversion.
+     * It matches the bounded direct selected-set route, keeping control turns
+     * below one observed host-frame interval without polling every 256
+     * instructions. */
+    MYRAIDENII_MACHINE_RUN_INSTRUCTION_QUANTUM = 4096u
 };
 
 struct myraidenii_machine {

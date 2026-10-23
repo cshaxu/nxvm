@@ -2,7 +2,80 @@
 
 ## Current Work
 
-## M1 T7 S111 — Delivered, Awaiting Owner Acceptance
+## M1 T7 S113 — Active: local execution-rendezvous efficiency
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after bounded S112 diagnostic; single-session coordinator and executor. |
+| Admission And Approval | Owner requested an immediate investigation and practical improvement after observing that the selected game is too slow to use. The scope is limited to the MyRaidenII App; no Shared component may change. |
+| Objective | Remove the App-local excessive Emulator rendezvous cadence without changing guest timing, input route, rendering path, audio model, or lifecycle contract. |
+| Non-goals | No Lib/Emulator/X86 Core/X86 Debug/X86 IBMPC/X86 NXVM change; no CPU optimization, second clock, frame skip, audio-rate change, sound-model rewrite, new thread, queue, or product UX claim. |
+| Reference Baseline | The x64 selected-set probe executes 2,000,000 instructions / 33,287,472 guest ticks in 4,969 ms (about 0.42x of the nominal 16 MHz guest axis) while using 4,096-instruction Core runs. The production MyRaidenII Machine instead uses a 256-instruction run quantum and invokes the existing Emulator callback before and after every quantum. |
+| Candidate Proposal | Raise only the Machine's existing host-control instruction bound to 4,096, matching the already exercised probe bound; retain both existing callback positions and the sole Core run / audio / frame paths. |
+| Files And ABI Surface | `src/myraidenii/machine/driver.c`, the existing `test/myraidenii/unit/machine/driver_smoke.c`, Current/evidence and affected MyRaidenII build/test records. No public API or Shared source/test change. |
+| Applicable Rules | MyRaidenII architecture/coding/UI, shared execution/architecture/coding/documentation rules; sole guest clock, one Machine driver, one input route, VBlank-only frame publication and bounded host control. |
+| Verification | Extend the existing driver fixture to assert the one Core budget; build and run affected x64/x86 MyRaidenII units and the selected-set probe. Compare guest execution facts before/after; record the hosted speed boundary separately from desktop/RDP qualification. |
+| Expected Markers | Exactly one existing Core run per driver turn with 4,096 instructions; unchanged two callback rendezvous per turn, lifecycle/input semantics, fault propagation and VBlank publication behavior. |
+| Asset Needs | Existing read-only owner ROMs only for the bounded selected-set probe; no retained protected payload. |
+| Reporting Requirements | Give measured baseline, actual diff, dual-width results, any measured gain, and desktop/RDP/audio limitations. Do not claim real-time gameplay unless it is actually measured. |
+| Stop Conditions | Evidence requires a Shared contract change, callback removal, guest-time alteration, audio/rendering shortcut, or the existing 4,096 bound changes lifecycle/input semantics. |
+| Exit Criteria | The local bound and fixture proof are reviewed, focused dual-width validation passes, no prohibited component changes, and the result is committed/pushed for owner validation. |
+| Original Owner Request | Investigate why MyRaidenII is too slow to use and improve execution efficiency without destabilizing the emulator. |
+| Similar-Issue Sweep | Compare the direct selected-set probe, Machine run cadence, callback locations, audio drain/backpressure, VBlank frame copy and host pacing; retain distinct mechanisms unless evidence shows duplicate work. |
+
+Executor evidence: the Machine's sole host-control quantum now matches the
+already exercised 4,096-instruction selected-set bound, while retaining both
+existing executor callbacks and every guest-time/audio/frame path.  The
+focused x64/x86 Driver unit and complete MyRaidenII unit selection each pass;
+the two-width owner-ROM selected-set probe also completes its bounded route.
+Both current `0.0.0007` release EXEs were rebuilt and deployed with checked PE
+identities.  Native Window/RDP responsiveness and audible output remain owner
+desktop validation; this S awaits that acceptance.
+
+## M1 T7 S112 — Closed
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open M1 T7 after accepted S111; single-session coordinator and executor. |
+| Admission And Approval | Owner directs a new S to investigate why the selected RAIDEN II set reaches its boot/title page but not a playable state. |
+| Objective | Reproduce the observed title-page stall through the real Product/Machine/Core path; establish the first deterministic blocked guest checkpoint and its owning mechanism before proposing any repair. |
+| Non-goals | No ROM/media modification, protection bypass, scripted input, guessed register route, copied emulator implementation, Shared component change, gameplay-completion claim, or artifact publication before an evidence-backed repair. |
+| Reference Baseline | Accepted S111 import at `746598aa4` baseline and its current delivered public eight-tree receivers; existing T7 selected-set/COP/Video/Sound evidence and unresolved startup obligations. |
+| Candidate Proposal | [M1 T7 qualification](../proposals/m1-qualification.md), specifically its real owner-ROM startup, coin/start, controls and stage-entry requirement. |
+| Files And ABI Surface | Initially read-only: `src/myraidenii/{product,machine,core}`, matching unit/setup/integration tests, current external owner-ROM configuration and existing T7 evidence. Any later repair receives a revised packet naming its single owner and affected consumers. |
+| Applicable Rules | MyRaidenII guide; Architecture, Coding, UX, Source Policy, Execution and Documentation rules; one guest-time owner, protected-media handling, L2/L3 evidence labels, no second execution path and inward dependencies. |
+| Verification | Establish a bounded reproducible startup/coin/start/control trace on x64 and x86 without retaining ROM payload; correlate the first stable stop with CPU, board bus/COP, video, sound, input or Product lifecycle evidence; replay existing owner tests and add no source until ownership is established. |
+| Expected Markers | A deterministic checkpoint, exact guest state/observable route, failure classification, candidate owner and a proof that title-page display alone is not misreported as gameplay. |
+| Asset Needs | Read-only owner-supplied external ROMs and existing `myraidenii.ini`; logs/traces remain bounded under the approved external asset location and retain no protected payload. |
+| Reporting Requirements | Report reproduction on each width separately, exact first blocked checkpoint, source/evidence grade, ruled-out owners, any safety boundary and a minimal repair design with file/diff estimate. |
+| Stop Conditions | Missing/invalid protected input, nondeterministic first stop, need for unapproved ROM/decryption/source import, proposed bypass, Shared/API change, or any claim beyond the observed checkpoint. |
+| Exit Criteria | A reviewed, evidence-backed diagnosis and owner-local repair plan, or an explicit transfer to the earliest valid receiver; no unsupported implementation or release claim. |
+| Original Owner Request | Investigate why the game cannot enter playable state and stalls at its boot page. |
+| Similar-Issue Sweep | Compare start/coin/player-control handoff, pending COP/Video/Sound operations and lifecycle input admission without absorbing unrelated unresolved mechanisms. |
+
+Executor evidence: the current deployed x64 Product's adjacent INI resolves
+all twelve selected-set roles.  Its existing staged Console lifecycle smoke
+passed.  The existing Machine-driver Probe was run at its current
+8,000,000-instruction, VBlank-relative Coin/Start sequence on both x64 and
+x86; both delivered all four edges, observed guest input-register reads and
+completed their bounded budget without Board or COP provider failure.  The
+two records were identical.  This rules out a reproducible selected-set
+Core/Board/COP/Machine deadlock, but does not certify native Window or RDP
+focus.  The focused diagnosis, route analysis, timing interpretation and
+remaining desktop boundary are recorded in
+[S112 evidence](../etc/evidence/t7-s112-gameplay-stall-investigation.md).
+The bounded diagnosis did not reproduce a guest deadlock: input reaches the
+Board and the later direct-driver evidence reaches player control. It did show
+that the game needs roughly 22 guest seconds before the documented coin/start
+window and that host throughput needs its own App-local treatment. S113 owns
+only that transfer; it does not reinterpret the successful Core/Board/COP
+trace as a gameplay repair.
+
+## M1 T7 S111 — Closed
+
+The owner advanced T7 to this new diagnostic after accepting S111's complete
+public-corpus import, receiving builds and qualification record.  S111 does
+not establish real gameplay; its delivered limits remain in force below.
 
 | Field | Required record |
 | --- | --- |
