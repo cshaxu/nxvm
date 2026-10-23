@@ -28,6 +28,13 @@ records why the only concrete candidate remains required by the public CPU
 contract.  It retains no source or artifact change and does not claim a
 real-time or gameplay result.
 
+Coordinator actual-change review accepts S117 P1 `7e9dc21c3`: the two
+documentation paths accurately record the rejected candidate and introduce no
+source, test, artifact, media or build change. Documentation governance and
+`git diff --check` pass. S117 is closed; T7 remains open for actual gameplay
+and release qualification, while any execution-strategy redesign needs its own
+owner-approved task.
+
 ## M1 T7 S116 — Closed: V30 CPU sampled-cost attribution
 
 | Field | Required record |
