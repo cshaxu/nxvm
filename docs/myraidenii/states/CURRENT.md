@@ -2,6 +2,33 @@
 
 ## Current Work
 
+## M1 T7 S114 — Active: V30/Core execution efficiency
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after S113; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner approved escalation from the exhausted App-local route to the proven shared X86 Core owner on 2026-10-23, after the selected-set measurements showed the remaining material deficit. This S has target `Shared`; MyRaidenII is the measured receiving product. |
+| Objective | Establish a reproducible V30/Core execution-cost baseline, identify one real duplicate or avoidable per-retirement cost in the shared owner, and remove it without changing guest-visible timing, scheduling, instruction semantics, input, audio or presentation behavior. |
+| Non-goals | No dynarec/JIT, new execution path, guest-clock lie, timing-model downgrade, frame skip, audio-rate/model shortcut, Lib/Emulator/X86 Debug/X86 IBMPC/X86 NXVM change, public API expansion, or external-source import. |
+| Reference Baseline | S113's selected real-set phase reaches 133,667,500 guest ticks in 23,650.1 ms with Sound and 20,438.7 ms without Sound. The remaining material owner is V30/Core execution plus its required Board time publication, not host Window, input or the App-local rendezvous cadence. |
+| Candidate Proposal | First use bounded, untracked profiling/controlled Core runs to compare the same V30 workload with and without the MyRaidenII attachment and to locate an existing repeated zero-work or redundant scheduler/CPU cost. Implement only the smallest source-owner consolidation backed by that comparison; retain the sole Core execution and timeline route. |
+| Files And ABI Surface | Initially diagnostics only under `build/t7-s114-profile`; later only proven `src/x86-core` owner files, their mirrored `test/x86-core` coverage, manifests and MyRaidenII evidence/receiving checks. A Shared production change triggers required receiving-App rebuild/release review; no public function/type/opaque-layout change without a revised packet. |
+| Applicable Rules | Shared architecture/coding/execution/documentation rules; MyRaidenII architecture/source policy; one guest clock, one Core executor, deterministic deadline ordering, inward dependencies, bounded ROM diagnostics and no protected output retention. |
+| Verification | Reproduced the bounded selected-set phase on x64 and x86; both complete 8,000,000 instructions and 133,667,500 guest ticks with the same frame, sound and Board checkpoint. X86 Core focused tests and complete repository-only unit suites pass on both widths (697/697 each). All eight PC receiver artifacts and MyRaidenII's two artifacts were rebuilt, deployed and PE-width checked. |
+| Expected Markers | Identical V30 retirement/tick and visible Board checkpoint facts, no changed Core public contract, no additional execution/timeline route, and a measured wall-time improvement exceeding measurement noise. |
+| Asset Needs | Read-only owner archive `O:\assets\raidenii\raiden2.zip` through the existing verified staging wrapper. Temporary profiles/logs only below `build/t7-s114-profile`, with a 30-minute / 300 MiB / 10-minute-no-progress budget; retain only neutral timing summaries. |
+| Reporting Requirements | Record baseline and post-change measurements, exact owner/cost removed, actual source/test diff, quality review, all receiving verification and unexecuted desktop/RDP/audio checks. Do not describe a benchmark-only result as complete gameplay qualification. |
+| Stop Conditions | Evidence identifies no shared duplicate, requires a JIT/second executor/public contract or an accuracy/quality trade-off, changes a protected asset, or does not produce a durable measurable improvement. Record and transfer rather than ship a speculative micro-optimization. |
+| Exit Criteria | Implementation evidence is complete: the one proven Core change has an unchanged public contract, required dual-width and receiver checks pass, artifact handling is target-scoped, and the task scratch is removed. Await coordinator actual-diff review and governance close. |
+| Original Owner Request | Continue optimization because MyRaidenII is not usable; eliminate actual excess work rather than rely on UI or timing shortcuts. |
+| Similar-Issue Sweep | Examine V30 instruction retirement, scheduler time publication, zero-work attachment calls, trace-disabled paths, deadline capture, and every affected CPU profile/board attachment for equivalent duplicate work; retain real device work and distinct timing contracts. |
+
+S114 begins after S113 P2 `9467a5594`.  The Shared Core change removes only
+the deterministic/no-observer retirement copy and no-op publication; physical
+qualification and explicit observer behavior remain intact.  The [S114
+evidence](../etc/evidence/t7-s114-v30-core-efficiency.md) records the exact
+baseline, dual-width result and non-claims.
+
 ## M1 T7 S113 — Closed: local execution-rendezvous efficiency
 
 | Field | Required record |
