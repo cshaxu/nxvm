@@ -534,14 +534,12 @@ needs no binary commit. Receiving Apps retain their current artifact version
 unless a version change is explicitly admitted; unrelated user INI/configuration
 must remain unchanged. Missing or stale required artifacts block closure.
 
-Until the fixed-product build cutover, executable names remain
-`nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe`. After that admitted
-cutover, names use `nxvm_<machine>_0_5_NNNN_<arch>.exe`, with machine keys
-`xt`, `at`, `model40`, `default`, `pc110` and architectures `x64`, `x86`. Build only
-implemented profiles admitted as runnable. Each runnable product requires both
-host architectures in its one `assets/nxvm/<profile>/` directory,
-with its adjacent generated `NXVM.ini`. Any absent implementation must be reported, not replaced
-by a stub artifact. Product targets share one build recipe and revision
+The four PC Apps publish product-prefixed lowercase EXEs
+`<app>_0_5_NNNN_<arch>.exe` and an owner-maintained `<app>.ini` under
+`assets/<app>/`, with App keys `my5160`, `my5170`, `mydeskpro386`, `nxvm`
+and architectures `x64`, `x86`. Build only implemented profiles admitted as
+runnable. Any absent implementation must be reported, not replaced by a stub
+artifact. Product targets share one build recipe and revision
 declaration; each links exactly one profile, and the toolchain selects host
 architecture. Each is an optimized,
 stripped Release artifact and has its own recorded SHA-256 and PE architecture
@@ -557,16 +555,10 @@ verified build of the same named task.
 
 A current product artifact is a stripped Release build with no compiler debug information; this never removes an admitted runtime debugger, and Debug builds are for development and gates only.
 
-At the four-PC-App cutover, each accepted App instead deploys its existing
-machine-named pair and adjacent owner INI directly under `assets/<app>/`, with
-App keys `my5160`, `my5170`, `mydeskpro386`, `nxvm`. The retained profile
-is compiled into the EXE, not another artifact subdirectory. Rebase relative
-media references when removing that directory level; they must resolve to the
-same external master and preserve access mode and all other INI settings.
-An App not yet migrated retains its previous `assets/nxvm/<profile>/` pair;
-move its owner INI with only that path rebase and retire old EXEs after verification.
-All four retain the one task revision; original default-386 hardware becomes
-the NXVM App, not a separately branded default-at product.
+Each PC EXE embeds its retained profile; no profile subdirectory or generated
+replacement INI is required. Preserve owner INI contents and media references.
+All four retain the one task revision; original default-386 hardware is the
+NXVM App, not a separately branded default-at product.
 
 ## Build Tree Hygiene
 

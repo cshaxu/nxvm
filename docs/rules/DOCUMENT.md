@@ -13,7 +13,7 @@ shared rules instead of duplicating an authority.
 | `docs/nxvm/` | NXVM | NXVM design, task state, proposals, history, evidence, and source policy. |
 | `docs/mynes/` | MyNES | MyNES design, task state, proposals, history, evidence, and source policy. |
 | `docs/myraidenii/` | MyRaidenII | Independent design, task state, queue, history, evidence and source policy; shared rules are linked, not copied. |
-| `src/{lib,common,x86}` and matching `test/` roots | Repository | Neutral shared implementation and tests. |
+| `src/{lib,emulator,x86-debug,x86-core,x86-ibmpc,x86-nxvm}` and matching `test/` roots | Repository | Shared implementation and tests, subject to each package's documented scope. |
 | `src/app-<product>` and matching `test/`, `tools/`, `assets/<product>` roots | Product | Product implementation, tests, tools, and versioned artifacts. |
 | `src/myraidenii`, `test/myraidenii`, `assets/myraidenii` | MyRaidenII | Owner-selected product roots without an app- prefix; not shared component packages. |
 
