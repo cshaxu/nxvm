@@ -23,6 +23,12 @@
 | Original Owner Request | Close S6, admit the next S and first provide its task brief. |
 | Similar-Issue Sweep | Inspect event signal, reset and wait results across lifecycle, input, debug cancellation and shutdown, distinguishing synchronous accepted work from actual failures. |
 
+S7's bounded Machine and Session repair and its verification are recorded in
+the [event failure review](../etc/evidence/t564-s7-event-failure-review.md).
+The owner accepted leaving simultaneous native synchronization failures as a
+documented limitation rather than adding recovery machinery. S7 remains open
+for delivery review and owner acceptance; T564 remains open.
+
 The owner extended open T564 on 2026-10-22 to plan the public-component TODO
 classes and former PC App test-encapsulation candidate as S6--S13. The
 [updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
