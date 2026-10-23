@@ -58,16 +58,19 @@ lib_i32 main(lib_i32 argc, char **argv)
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     for (instruction = 0u; instruction < VM_CGA254_BOOT_BUDGET; ++instruction) {
+        lib_status capture_status;
+
         if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
-            x86_nxvm_board_capture_display_snapshot(session->board,
-                &snapshot) != LIB_STATUS_OK) goto done;
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) goto done;
+        capture_status = x86_nxvm_board_capture_display_snapshot(session->board, &snapshot);
+        if (capture_status != LIB_STATUS_OK && capture_status != LIB_STATUS_UNSUPPORTED) goto done;
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) !=
                     LIB_STATUS_OK || !advanced) goto done;
         }
+        if (capture_status != LIB_STATUS_OK) continue;
         if (snapshot.kind == X86_VIDEO_KIND_CGA_640X200X2 &&
             snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u &&
             snapshot.pixels[2] == 1u && snapshot.pixels[640u] == 0u &&

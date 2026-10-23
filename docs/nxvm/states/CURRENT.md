@@ -2,6 +2,38 @@
 
 ## Current Work
 
+## M5 T564 S5 — Delivered, awaiting owner acceptance: verbatim SoftPC shared-package import
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564 after S4 audit; single-session coordinator and executor. S2 remains delivered pending owner acceptance. |
+| Admission And Approval | Owner authorizes verbatim import, build, release, testing, commit and push on 2026-10-22. |
+| Objective | Import the committed SoftPC Lib, Emulator, X86 Debug and X86 IBM PC source/test pairs byte for byte and qualify affected products. |
+| Non-goals | No sibling repository writes, uncommitted upstream import, user INI/media changes, or unrelated feature changes. |
+| Reference Baseline | NXVM 0ee06e444; SoftPC 898e40546f6182cc0f6649c5dfaf8aab6b414d6e, whose eight roots match the S4 audited 9ee4af66. |
+| Candidate Proposal | T564 shared import proposal and S4 audit evidence; owner adds this committed refresh. |
+| Files And ABI Surface | Eight shared source/test roots and required NXVM/MyNES receiving build, tests and release EXEs; task records. Preserve unrelated changes. |
+| Applicable Rules | NXVM guide and source policy; shared Execution, Architecture, Coding and Documentation rules; byte identity, inward dependency, test ownership and artifact scope apply. |
+| Verification | Compare all eight trees to the committed source, check manifests and boundaries, build x64/x86 with reusable Ninja/cache, run all shared and affected product units and required integrations, verify released EXE identity and hashes. |
+| Expected Markers | Eight matching roots; passing applicable double-width builds and tests; deployed current PC and MyNES EXEs with evidence. |
+| Asset Needs | Existing reusable Ninja/ccache graphs and external owner-provided firmware and media; do not mutate owner INI or media. |
+| Reporting Requirements | Record source commit, actual diff, result counts, binaries, omissions and actual-change review; distinguish desktop and RDP verification. |
+| Stop Conditions | Unapproved external mutation, unresolvable ownership conflict, missing required asset or unexplained required test failure. |
+| Exit Criteria | Complete scoped delivery and evidence pushed; await owner acceptance; T564 remains open. |
+| Original Owner Request | Admit a new S to import the latest committed SoftPC eight components, build, publish, test, commit and push for acceptance. |
+| Similar-Issue Sweep | Check changed Console/PCM worker termination, UI/Product ownership and all actual consumers for retained-resource assumptions. |
+
+S4 audit was accepted for follow-up by the owner; its evidence is
+[retained](../etc/evidence/t564-s4-softpc-shared-audit.md). No concrete
+incompatibility was found that blocks import; qualification is still required.
+S5 imports the committed eight shared roots byte for byte. Both architectures
+passed 697 unit tests and the specialized gates; all profile integration
+cases passed, although the x64 DeskPro batch had one MyNES native Console
+failure which passed on separate retry. Five NXVM integration receivers were
+updated for the S3 unready-frame contract. Ten EXEs were rebuilt. The
+[S5 evidence](../etc/evidence/t564-s5-softpc-shared-import.md) records the
+failure, retest and verification limits. Two pre-existing owner INI changes
+remain untouched. S5 awaits owner acceptance; T564 remains open.
 T564 S3 was accepted by the owner and closed on 2026-10-22. The
 [task history](../history/M5-T564-softpc-rgb-frame-import.md) records its
 delivery, corrective verification and closure. T564 remains open; S2's

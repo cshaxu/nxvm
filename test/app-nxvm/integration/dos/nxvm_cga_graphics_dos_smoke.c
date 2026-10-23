@@ -139,25 +139,27 @@ static lib_i32 vm_cga_dos_run_until(x86_nxvm_machine *session, lib_u32 limit,
 {
     x86_core_machine_run_budget budget = { 128u, 0u };
     x86_core_machine_run_result result;
-    x86_video_snapshot snapshot;
+    x86_video_snapshot snapshot = {0};
     lib_u32 executed = 0u;
 
     while (executed < limit) {
+        lib_status capture_status;
+
         if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
-            x86_nxvm_board_capture_display_snapshot(session->board,
-                &snapshot) != LIB_STATUS_OK) return 0;
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) return 0;
+        capture_status = x86_nxvm_board_capture_display_snapshot(session->board, &snapshot);
+        if (capture_status != LIB_STATUS_OK && capture_status != LIB_STATUS_UNSUPPORTED) return 0;
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
-        if (!want_graphics && vm_cga_dos_has_prompt(&snapshot)) {
+        if (capture_status == LIB_STATUS_OK && !want_graphics && vm_cga_dos_has_prompt(&snapshot)) {
             printf("CGA DOS prompt: instruction budget used=%u\n", executed);
             return 1;
         }
-        if (want_graphics && snapshot.kind == X86_VIDEO_KIND_CGA_320X200X4 &&
+        if (capture_status == LIB_STATUS_OK && want_graphics && snapshot.kind == X86_VIDEO_KIND_CGA_320X200X4 &&
             snapshot.pixels[0] == 0u && snapshot.pixels[1] == 1u &&
             snapshot.pixels[2] == 2u && snapshot.pixels[3] == 3u &&
             snapshot.pixels[320u] == 3u && snapshot.pixels[321u] == 2u &&

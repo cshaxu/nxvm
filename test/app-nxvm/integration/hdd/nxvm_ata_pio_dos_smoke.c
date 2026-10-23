@@ -297,19 +297,21 @@ static lib_i32 vm_ata253_run_until(x86_nxvm_machine *session, lib_u32 limit,
     lib_u32 executed = 0u;
 
     while (executed < limit) {
+        lib_status capture_status;
+
         if (x86_core_machine_run(session->x86_core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == X86_CORE_MACHINE_STOP_FAULT ||
-            x86_nxvm_board_capture_display_snapshot(session->board,
-                &snapshot) != LIB_STATUS_OK) return 0;
+            result.reason == X86_CORE_MACHINE_STOP_FAULT) return 0;
+        capture_status = x86_nxvm_board_capture_display_snapshot(session->board, &snapshot);
+        if (capture_status != LIB_STATUS_OK && capture_status != LIB_STATUS_UNSUPPORTED) return 0;
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (x86_nxvm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
-        if (marker != 0u ? snapshot.kind == X86_VIDEO_KIND_TEXT &&
+        if (capture_status == LIB_STATUS_OK && (marker != 0u ? snapshot.kind == X86_VIDEO_KIND_TEXT &&
                 snapshot.characters[VM_ATA253_MARKER_CELL] == marker :
-            vm_ata253_has_prompt(&snapshot)) return 1;
+            vm_ata253_has_prompt(&snapshot))) return 1;
         executed += budget.instructions;
     }
     return 0;
