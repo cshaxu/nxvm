@@ -111,7 +111,7 @@ load, and each failed case passed when immediately rerun alone. No product
 input changed, so no executable artifact refresh is applicable. S3 is closed;
 T565 remains open for the App-owned PC110 board binding.
 
-## M5 T565 S4 — Active: PC110 composition inventory and proven base routes
+## M5 T565 S4 — Closed: PC110 composition inventory and proven base routes
 
 | Field | Required record |
 | --- | --- |
@@ -140,7 +140,7 @@ configuration windows, their owner boundary and every endpoint still blocked
 on PC110-specific facts. No production input or asset changed; x64/x86 S3
 Core route tests remain the applicable executable verification. S4 is closed.
 
-## M5 T565 S5 — Active: PC110 App-local firmware and configuration-route binding
+## M5 T565 S5 — Closed: PC110 App-local firmware and configuration-route binding
 
 | Field | Required record |
 | --- | --- |
@@ -186,6 +186,25 @@ configuration-route and firmware-binding tests.  A source-qualified complete
 board composition is still required before X86 NXVM construction publication;
 S6 correctly does not emit a fake empty machine plan.  S6 is closed and T565
 continues with the remaining board-composition receivers.
+
+## M5 T565 S7 — Closed: PC110 Block2 configuration gate
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of T565 after closed S1--S6. |
+| Objective | Bind the source-backed PC110 Block2 port gate to the existing address-neutral VL82C420 protocol without adding a second unlock state or exposing a Core-internal failure to the guest. |
+| Non-goals | No reset-image inference, board construction publication, BIOS boot, ROM shadow model, endpoint implementation, external asset loading, executable publication, or Shared Lib/Emulator change. |
+| Files And ABI Surface | App-local PC110 config-route adapter, direct App test, manifest and evidence only. The existing VL82C420 public contract is reused unchanged. |
+| Required Proof | Closed reads return `FFh`; an out-of-order read sequence remains closed; the exact `FC23h/F023h/C023h/0023h` read sequence enables indexed Block2 access; a `22h` bit-8 write relocks it. |
+| Stop Conditions | Any need for undocumented Block2 reset contents, ROM/shadow semantics or a generic PC/AT construction route transfers that behavior to a later receiver. |
+
+The route adapter maps only the physical PC110 I/O addresses.  `x86_vl82c420`
+remains the sole owner of unlock progress and lock state; the adapter forwards
+the four observation reads and the relock write.  It translates the chip's
+closed-state result to the observed guest-facing `FFh`/ignored-write gate,
+rather than duplicating protocol state.  The direct route test passed on both
+established Ninja/ccache widths together with the existing TFT firmware-binding
+test.  This verifies a configuration path only, not a bootable PC110.
 
 ## M5 T564 — Closed: public-component qualification
 
