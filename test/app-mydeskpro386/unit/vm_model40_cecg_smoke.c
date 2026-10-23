@@ -20,6 +20,11 @@ lib_i32 main(void)
     if (!failed) {
         x86_video_snapshot snapshot;
 
+        /* The reset CRTC has no frame until firmware programs its raster. */
+        failed |= x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) !=
+            LIB_STATUS_UNSUPPORTED;
+        test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x03d4u, 1u);
+        test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x03d5u, 79u);
         failed |= x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) != LIB_STATUS_OK ||
             snapshot.palette_rgb[1] != 0x0000aau;
         test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine, 0x03c6u, 0x51u);

@@ -205,14 +205,13 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
         emulator_machine_state_get(machine->executor) != EMULATOR_MACHINE_PAUSED)
         return LIB_FALSE;
     run_generation = emulator_machine_run_generation(machine->executor);
-    if (!emulator_machine_copy_published_frame(machine->executor, &published,
-            run_generation) || published.frame.graphics ||
-        published.frame.text == LIB_NULL ||
+    if (emulator_machine_copy_published_frame(machine->executor, &published,
+            run_generation) ||
         emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK ||
         !vm_runner_debug_execute(machine, &lease, &(x86_debug_request) {
             .operation = X86_DEBUG_READ_PORT, .port = 0x03dau, .bytes = 1u
         }, &response)) return LIB_FALSE;
-    sequence = published.frame.sequence;
+    sequence = emulator_machine_published_frame_sequence(machine->executor);
     if (!vm_runner_program_ports(machine, &lease, graphics,
             sizeof(graphics) / sizeof(graphics[0]))) return LIB_FALSE;
     if (!vm_runner_debug_execute(machine, &lease, &(x86_debug_request) {
@@ -349,14 +348,9 @@ static lib_bool vm_runner_bound_delivery(x86_nxvm_machine *machine,
         emulator_machine_state_get(machine->executor) != EMULATOR_MACHINE_PAUSED ||
         emulator_machine_copy_published_frame(machine->executor, &published,
             run_generation) ||
-        !emulator_machine_copy_published_frame(machine->executor, &published,
+        emulator_machine_copy_published_frame(machine->executor, &published,
             emulator_machine_run_generation(machine->executor))) return LIB_FALSE;
-    return published.frame.text != LIB_NULL && !published.frame.graphics &&
-        published.data.text->base.text_columns == 1u &&
-        published.data.text->base.text_rows == 1u &&
-        published.data.text->font[65u * 32u] == 0u &&
-        published.data.text->secondary_font[65u * 32u] == 0u &&
-        published.frame.sequence == sequence + 1u;
+    return emulator_machine_published_frame_sequence(machine->executor) == sequence;
 }
 
 lib_i32 main(void)
@@ -375,9 +369,7 @@ lib_i32 main(void)
     }
     if (x86_nxvm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
         x86_nxvm_machine_copy_emulator_frame(session, &frame, &console, &produced) != LIB_STATUS_OK ||
-        !produced ||
-        frame.data.text->base.text_columns != 1u ||
-        frame.data.text->base.text_rows != 1u ||
+        produced ||
         vm_test_emulator_machine_bind(session) != LIB_STATUS_OK ||
         vm_test_emulator_machine_state_waiter_initialize(session, &waiter) !=
             LIB_STATUS_OK ||

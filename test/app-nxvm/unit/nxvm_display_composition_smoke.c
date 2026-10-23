@@ -302,12 +302,8 @@ lib_i32 main(void)
     failed |= x86_core_machine_get_timeline_observation(session->x86_core_machine,
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
-        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
-        frame.kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT || frame.columns != 1u ||
-        frame.rows != 1u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
-        frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xaaaaffu ||
         x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) !=
-            LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
+            LIB_STATUS_UNSUPPORTED;
     /* Reset discards programmed geometry; a fresh port program restores text. */
     vm_display_composition_enable_text(session, 25u);
     failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||

@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T564 S3 — Delivered, awaiting owner acceptance: PC Window frame readiness
+## M5 T564 S3 — Corrective verification: PC Window frame readiness
 
 | Field | Required record |
 | --- | --- |
@@ -43,6 +43,19 @@ x86 X86-NXVM regression passed 231/231. On x64, 230/231 passed in the first
 parallel run; the negative verifier exceeded its 30-second budget, then passed
 alone in 29.11 seconds. This is not a clean first full run. Documentation governance
 passed. The two pre-existing owner INI edits are deliberately excluded.
+
+The owner accepted the delivered Window behavior on 2026-10-22. During the
+mandatory full-unit closure run, three App tests failed because they assumed
+the reset 1x1 EGA snapshot would be published. Corrective P3 updates those
+tests to assert the new unready-frame contract while retaining the original
+configured-display, palette, publication and blink checks. The existing
+whole-corpus negative verifier exceeded its 30-second budget twice; its
+assertions remain unchanged and its timeout is raised to the owner-approved
+300 seconds. Both architectures passed the three corrected tests and the
+complete repository-only unit suite, 697/697 per width. No runnable source or
+EXE input changed in this corrective batch, so the deployed eight EXEs remain
+current. The initial full runs and their failures are retained above and are
+not represented as passing runs.
 
 ## M5 T564 S2 — Delivered, awaiting owner acceptance
 
