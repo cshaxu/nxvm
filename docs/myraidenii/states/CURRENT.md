@@ -31,6 +31,15 @@ reusable Ninja widths build the affected unit and integration executables; the
 [S118 layout record](../etc/evidence/t7-s118-app-root-layout.md).  No release
 artifact refresh or ROM-backed run was required for this filesystem-only task.
 
+Coordinator actual-change review accepts S118 P1 `b339395a5`: it moves the two
+complete App-owned trees, updates only their live registration/include paths,
+and leaves product symbols, targets, assets and execution behavior intact.
+The x64/x86 unit suites each pass 13/13; both selected integration executables
+compile; documentation governance and whitespace checks pass.  S118 is
+closed.  T7 remains open only as the previously recorded unqualified
+execution-path/release work, not as an implication that a playable arcade
+release exists.
+
 ## M1 T7 S117 — Closed: V30 execution-path decision
 
 | Field | Required record |
