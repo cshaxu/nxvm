@@ -376,11 +376,14 @@ static void emulator_machine_executor_event(void *opaque)
     }
     if (lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0 &&
         lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0) {
+        lib_i32 expected = suppress_paused_fact ? EMULATOR_MACHINE_PAUSED : EMULATOR_MACHINE_RUNNING;
         emulator_machine_close_input(machine);
         if (lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0)
             return;
         machine->driver.set_heartbeat(machine->driver.context, LIB_FALSE);
-        lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_PAUSED, LIB_MEMORY_ORDER_SEQ_CST);
+        if (!lib_atomic_i32_compare_exchange_strong_explicit(&machine->state, &expected,
+                EMULATOR_MACHINE_PAUSED, LIB_MEMORY_ORDER_SEQ_CST, LIB_MEMORY_ORDER_SEQ_CST))
+            return;
         if (lib_atomic_i32_exchange_explicit(&machine->reset_active, 0, LIB_MEMORY_ORDER_SEQ_CST) != 0)
             emulator_machine_notify_state(machine, EMULATOR_MACHINE_RESET_COMPLETED);
         else if (!suppress_paused_fact)
@@ -431,7 +434,12 @@ static void emulator_machine_executor_event(void *opaque)
                 LIB_MEMORY_ORDER_SEQ_CST) == 0) {
             machine->driver.set_heartbeat(machine->driver.context, LIB_TRUE);
             if (!machine->state_read_continuing) {
-                lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST);
+                lib_i32 expected = EMULATOR_MACHINE_PAUSED;
+                if (!lib_atomic_i32_compare_exchange_strong_explicit(&machine->state, &expected,
+                        EMULATOR_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST, LIB_MEMORY_ORDER_SEQ_CST)) {
+                    machine->driver.set_heartbeat(machine->driver.context, LIB_FALSE);
+                    return;
+                }
                 emulator_machine_input_queue_admit(&machine->input_queue, LIB_TRUE);
                 if (emulator_machine_input_queue_pending(&machine->input_queue))
                     machine->driver.request_wake(machine->driver.context);
@@ -462,7 +470,10 @@ static lib_bool emulator_machine_schedule_cold_run(emulator_machine *machine,
     if (machine == LIB_NULL || machine->worker == LIB_NULL || lib_atomic_i32_load_explicit(&machine->state, LIB_MEMORY_ORDER_SEQ_CST) !=
         EMULATOR_MACHINE_STOPPED) return LIB_FALSE;
     emulator_machine_begin_cold_run(machine, pause_after_start);
-    base_sync_event_signal(machine->command_event);
+    if (base_sync_event_signal(machine->command_event) != LIB_STATUS_OK) {
+        (void)emulator_machine_fail_sync(machine);
+        return LIB_FALSE;
+    }
     return LIB_TRUE;
 }
 
@@ -504,6 +515,7 @@ static void emulator_machine_worker(void *opaque, const base_sync_task *task)
     lib_bool failure_notified = LIB_FALSE;
     for (;;) {
         lib_bool succeeded;
+        lib_i32 expected;
         /* The paused callback may have consumed the terminal command wake. */
         base_sync_wait_result result = base_sync_wait_any(&machine->command_event,
             1u, task, LIB_UINT32_MAX, LIB_NULL);
@@ -549,13 +561,21 @@ static void emulator_machine_worker(void *opaque, const base_sync_task *task)
         }
         if (lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0) {
             emulator_machine_finish_requests(machine, EMULATOR_MACHINE_STOPPED);
-            emulator_machine_notify_state(machine, EMULATOR_MACHINE_STOPPED);
+            failure_notified = emulator_machine_state_get(machine) == EMULATOR_MACHINE_ERROR;
+            emulator_machine_notify_state(machine, failure_notified ?
+                EMULATOR_MACHINE_ERROR : EMULATOR_MACHINE_STOPPED);
             continue;
         }
+        expected = EMULATOR_MACHINE_STARTING;
         machine->driver.set_executor_callback(machine->driver.context,
             emulator_machine_executor_event, machine);
         machine->driver.set_heartbeat(machine->driver.context, LIB_TRUE);
-        lib_atomic_i32_exchange_explicit(&machine->state, EMULATOR_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST);
+        if (!lib_atomic_i32_compare_exchange_strong_explicit(&machine->state, &expected,
+                EMULATOR_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST, LIB_MEMORY_ORDER_SEQ_CST)) {
+            machine->driver.set_heartbeat(machine->driver.context, LIB_FALSE);
+            machine->driver.set_executor_callback(machine->driver.context, LIB_NULL, LIB_NULL);
+            break;
+        }
         emulator_machine_input_queue_admit(&machine->input_queue,
             lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0);
         if (lib_atomic_i32_load_explicit(&machine->reset_active, LIB_MEMORY_ORDER_SEQ_CST) == 0 &&
@@ -678,7 +698,10 @@ void emulator_machine_debug_cancel(emulator_machine *machine)
 {
     if (machine == LIB_NULL) return;
     lib_atomic_i32_exchange_explicit(&machine->debug_cancel_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
-    base_sync_event_signal(machine->command_event);
+    if (base_sync_event_signal(machine->command_event) != LIB_STATUS_OK) {
+        (void)emulator_machine_fail_sync(machine);
+        return;
+    }
     machine->driver.request_wake(machine->driver.context);
 }
 
@@ -696,7 +719,10 @@ lib_bool emulator_machine_resume(emulator_machine *machine)
         EMULATOR_MACHINE_PAUSED) return LIB_FALSE;
     emulator_machine_debug_invalidate(machine);
     lib_atomic_i32_exchange_explicit(&machine->pause_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
-    base_sync_event_signal(machine->resume_event);
+    if (base_sync_event_signal(machine->resume_event) != LIB_STATUS_OK) {
+        (void)emulator_machine_fail_sync(machine);
+        return LIB_FALSE;
+    }
     return LIB_TRUE;
 }
 
@@ -710,7 +736,10 @@ lib_bool emulator_machine_stop(emulator_machine *machine)
     emulator_machine_debug_invalidate(machine);
     lib_atomic_i32_exchange_explicit(&machine->stop_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_exchange_explicit(&machine->pause_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
-    base_sync_event_signal(machine->resume_event);
+    if (base_sync_event_signal(machine->resume_event) != LIB_STATUS_OK) {
+        (void)emulator_machine_fail_sync(machine);
+        return LIB_FALSE;
+    }
     machine->driver.request_stop(machine->driver.context);
     return LIB_TRUE;
 }
@@ -733,7 +762,10 @@ lib_bool emulator_machine_reset(emulator_machine *machine)
     lib_atomic_i32_exchange_explicit(&machine->reset_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_exchange_explicit(&machine->stop_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_exchange_explicit(&machine->pause_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
-    base_sync_event_signal(machine->resume_event);
+    if (base_sync_event_signal(machine->resume_event) != LIB_STATUS_OK) {
+        (void)emulator_machine_fail_sync(machine);
+        return LIB_FALSE;
+    }
     machine->driver.request_stop(machine->driver.context);
     return LIB_TRUE;
 }

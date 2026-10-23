@@ -1,7 +1,7 @@
 #include "lib/types/test.h"
 #include "emulator/session/control.h"
 
-static lib_i32 fail_allocation, fail_mutex, fail_event;
+static lib_i32 fail_allocation, fail_mutex, fail_event, fail_signal;
 static lib_u32 blocks, mutexes, events;
 static void *allocate(lib_size count, lib_size size)
 {
@@ -38,10 +38,16 @@ static void destroy_event(base_sync_event *p)
     if (p != LIB_NULL) { lib_test_assert(events != 0u); --events; }
     base_sync_event_destroy(p);
 }
+static lib_status signal_event(base_sync_event *event)
+{
+    if (fail_signal) { fail_signal = 0; return LIB_STATUS_IO_ERROR; }
+    return base_sync_event_signal(event);
+}
 #define base_sync_mutex_create create_mutex
 #define base_sync_mutex_destroy destroy_mutex
 #define base_sync_event_create create_event
 #define base_sync_event_destroy destroy_event
+#define base_sync_event_signal signal_event
 #define lib_release release
 #define lib_allocate_zero allocate
 #include "emulator/session/control.c"
@@ -66,6 +72,13 @@ int main(void)
     fail_mutex = fail_allocation = fail_event = 0;
     lib_test_assert(emulator_session_queue_initialize(queue));
     lib_test_assert(blocks == 1u && mutexes == 1u && events == 1u);
+    fail_signal = 1;
+    lib_test_assert(!emulator_session_queue_push_runtime_completed(queue,
+        EMULATOR_SESSION_MACHINE_PAUSED, 7u));
+    lib_test_assert(emulator_session_queue_take(queue, &event, 0u));
+    lib_test_assert(event.kind == EMULATOR_SESSION_EVENT_QUEUE_DELIVERY_FAILED &&
+        event.value.queue_delivery_status == LIB_STATUS_IO_ERROR);
+    lib_test_assert(!emulator_session_queue_take(queue, &event, 0u));
     for (round = 0u; round < 2u; ++round) {
         for (i = 0u; i < 64u; ++i)
             lib_test_assert(emulator_session_queue_push_frame_completed(queue, i + 1u));

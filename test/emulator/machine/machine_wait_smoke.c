@@ -8,6 +8,7 @@ static base_sync_wait_result wait_result;
 static lib_u32 idle_waits, paused_waits, resets, stops, cleanups, facts;
 static lib_u32 action;
 static lib_bool heartbeat;
+static lib_bool fail_heartbeat;
 static emulator_machine_executor_callback executor;
 static void *executor_context;
 static emulator_machine_state observed[8];
@@ -196,7 +197,13 @@ static lib_bool reset(void *context)
 static void stop(void *context)
 { (void)context; ++stops; }
 static void set_heartbeat(void *context, lib_bool enabled)
-{ (void)context; heartbeat = enabled; }
+{
+    (void)context; heartbeat = enabled;
+    if (enabled && fail_heartbeat) {
+        fail_heartbeat = LIB_FALSE;
+        (void)emulator_machine_fail_sync(active);
+    }
+}
 static void callback(void *context, emulator_machine_executor_callback entry, void *opaque)
 {
     (void)context; executor = entry; executor_context = opaque;
@@ -327,6 +334,36 @@ static void check_request_failures(void)
         lib_test_assert(!emulator_machine_take_request(active, requests[i]));
     }
     lib_test_assert(emulator_machine_destroy(active) == LIB_STATUS_OK);
+    /* A fault concurrent with startup cannot be overwritten by RUNNING. */
+    lib_test_assert(emulator_machine_create(&active, &driver) == LIB_STATUS_OK);
+    action = 1u; idle_waits = resets = 0u;
+    fail_heartbeat = LIB_TRUE;
+    emulator_machine_begin_cold_run(active, LIB_FALSE);
+    emulator_machine_worker(active, LIB_NULL);
+    lib_test_assert(!fail_heartbeat && !heartbeat &&
+        emulator_machine_state_get(active) == EMULATOR_MACHINE_ERROR);
+    lib_test_assert(emulator_machine_destroy(active) == LIB_STATUS_OK);
+    /* A failed lifecycle wake is a machine fault, not an accepted command. */
+    for (lib_u32 i = 0; i < 6u; ++i) {
+        lib_bool unwound = LIB_FALSE;
+        lib_bool accepted = LIB_FALSE;
+        lib_test_assert(emulator_machine_create(&active, &driver) == LIB_STATUS_OK);
+        lib_test_assert(base_sync_task_create(cancellation_task, &unwound, &active->worker) == LIB_STATUS_OK);
+        if (i != 0u && i != 4u)
+            lib_atomic_i32_store_explicit(&active->state, EMULATOR_MACHINE_PAUSED, LIB_MEMORY_ORDER_SEQ_CST);
+        reject_signal = i == 0u || i == 4u || i == 5u ? active->command_event : active->resume_event;
+        switch (i) {
+        case 0u: accepted = emulator_machine_start(active); break;
+        case 1u: accepted = emulator_machine_resume(active); break;
+        case 2u: accepted = emulator_machine_stop(active); break;
+        case 3u: case 4u: accepted = emulator_machine_reset(active); break;
+        default: emulator_machine_debug_cancel(active); break;
+        }
+        lib_test_assert(!accepted && emulator_machine_state_get(active) == EMULATOR_MACHINE_ERROR);
+        lib_test_assert(base_sync_task_cancelled(active->worker));
+        reject_signal = LIB_NULL;
+        lib_test_assert(emulator_machine_destroy(active) == LIB_STATUS_OK && unwound);
+    }
     for (lib_u32 i = 0; i < 3u; ++i) {
         lib_bool unwound = LIB_FALSE;
         lib_test_assert(emulator_machine_create(&active, &driver) == LIB_STATUS_OK);

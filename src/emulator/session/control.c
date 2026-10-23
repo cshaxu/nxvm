@@ -2,7 +2,7 @@
 
 #define EMULATOR_SESSION_EVENT_QUEUE_INITIAL_CAPACITY 64u
 
-static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
+static lib_status emulator_session_queue_push(emulator_session_queue *queue,
     const emulator_session_event *event);
 
 /* Fixed storage survives allocation failure. Each class keeps its first fault;
@@ -24,32 +24,33 @@ static lib_bool emulator_session_queue_push_required(emulator_session_queue *que
     const emulator_session_event *event)
 {
     emulator_session_event fault = { 0 };
-    if (emulator_session_queue_push(queue, event)) return LIB_TRUE;
+    lib_status status = emulator_session_queue_push(queue, event);
+    if (status == LIB_STATUS_OK) return LIB_TRUE;
     fault.kind = EMULATOR_SESSION_EVENT_QUEUE_DELIVERY_FAILED;
     fault.run_generation = event == LIB_NULL ? 0u : event->run_generation;
-    fault.value.queue_delivery_status = LIB_STATUS_NO_MEMORY;
+    fault.value.queue_delivery_status = status;
     emulator_session_queue_latch_failure(queue, 1u, &fault);
     return LIB_FALSE;
 }
 
-static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
+static lib_status emulator_session_queue_push(emulator_session_queue *queue,
     const emulator_session_event *event)
 {
     emulator_session_event *expanded;
     lib_size index;
-    if (queue == LIB_NULL || event == LIB_NULL) return LIB_FALSE;
+    if (queue == LIB_NULL || event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     base_sync_mutex_lock(queue->lock);
     if (queue->count == queue->capacity) {
         lib_size next_capacity = queue->capacity * 2u;
         if (next_capacity <= queue->capacity ||
             next_capacity > LIB_SIZE_MAX / sizeof(*expanded)) {
             base_sync_mutex_unlock(queue->lock);
-            return LIB_FALSE;
+            return LIB_STATUS_NO_MEMORY;
         }
         expanded = lib_allocate_zero(next_capacity, sizeof(*expanded));
         if (expanded == LIB_NULL) {
             base_sync_mutex_unlock(queue->lock);
-            return LIB_FALSE;
+            return LIB_STATUS_NO_MEMORY;
         }
         for (index = 0u; index < queue->count; ++index)
             expanded[index] = queue->events[(queue->first + index) % queue->capacity];
@@ -58,12 +59,15 @@ static lib_bool emulator_session_queue_push(emulator_session_queue *queue,
         queue->first = 0u;
         queue->capacity = next_capacity;
     }
+    if (base_sync_event_signal(queue->available) != LIB_STATUS_OK) {
+        base_sync_mutex_unlock(queue->lock);
+        return LIB_STATUS_IO_ERROR;
+    }
     queue->events[(queue->first + queue->count) % queue->capacity] =
         *event;
     ++queue->count;
-    base_sync_event_signal(queue->available);
     base_sync_mutex_unlock(queue->lock);
-    return LIB_TRUE;
+    return LIB_STATUS_OK;
 }
 
 lib_bool emulator_session_queue_initialize(emulator_session_queue *queue)
@@ -94,14 +98,16 @@ lib_bool emulator_session_queue_push_kvm_for_run(emulator_session_queue *queue,
     const kvm_input_event *event, lib_u32 run_generation)
 {
     emulator_session_event copied = { 0 };
+    lib_status status;
     if (event == LIB_NULL) return LIB_FALSE;
     copied.kind = EMULATOR_SESSION_EVENT_KVM_INPUT;
     copied.run_generation = run_generation;
     copied.value.kvm = *event;
-    if (emulator_session_queue_push(queue, &copied)) return LIB_TRUE;
+    status = emulator_session_queue_push(queue, &copied);
+    if (status == LIB_STATUS_OK) return LIB_TRUE;
     copied.kind = EMULATOR_SESSION_EVENT_KVM_DELIVERY_FAILED;
     copied.value.delivery_failure.source_identity = event->source_identity;
-    copied.value.delivery_failure.status = LIB_STATUS_NO_MEMORY;
+    copied.value.delivery_failure.status = status;
     emulator_session_queue_latch_failure(queue, 0u, &copied);
     return LIB_FALSE;
 }
