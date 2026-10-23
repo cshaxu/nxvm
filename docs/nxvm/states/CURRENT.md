@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T566 S3 — Active: PC110 App-local base composition
+## M5 T566 S3 — Closed: PC110 App-local base composition
 
 | Field | Required record |
 | --- | --- |
@@ -14,6 +14,21 @@
 | Verification | Both stable Ninja/ccache widths build and run the three PC110 App units; direct Board neutral-controller regression remains green. |
 | Exit Criteria | One App owner creates and tears down the complete admitted base atomically; the test proves firmware mapping and absence of forced PC/AT endpoints; scope/evidence accurately transfer every unimplemented endpoint. |
 | Stop Conditions | Any required reset, input, display, storage or firmware behavior would need an invented PC/AT fallback or a new Shared contract. Transfer it to its named later receiver. |
+
+### S3 Delivery And T566 Closure
+
+S3 adds the one App-local base composition and its direct regression. The
+composition owns only the admitted 486SX, neutral PIC/PIT/DMA substrate, TFT
+firmware map and VL82C420 route binding. It explicitly has no PC/AT facade,
+input, display, storage or executable publication path.
+
+T566 is closed as the minimal PC110 base-composition task. Its three
+implementation commits are `a6179bd67`, `201fff250` and `aef783205`; the
+[T566 closure](../history/M5-T566-pc110-base-composition.md) transfers every
+remaining endpoint and guest/product qualification to the ordered PC110
+receiver tasks. Both stable Ninja/ccache widths pass the four affected direct
+units, documentation governance and the MyPC110 dependency gate. No release
+artifact is due because the resulting App is deliberately non-runnable.
 
 ## M5 T566 S2 — Closed: neutral X86 NXVM controller substrate
 

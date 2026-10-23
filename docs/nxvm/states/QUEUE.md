@@ -68,7 +68,7 @@ after complete selected-486SX qualification and S10 receiving acceptance.
 Current owns closure status. No PC110 receiver is admitted by that CPU work;
 the ordered candidates below remain unadmitted.
 
-The former first candidate, [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board.md), is closed as M5 T565. Its accepted mapping foundation is retained in task history. The former next candidate, [PC110: minimal base composition](../proposals/m5-pc110-base-composition.md), is admitted as M5 T566; Current owns its active S1 packet.
+The former first candidate, [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board.md), is closed as M5 T565. Its accepted mapping foundation is retained in task history. The former next candidate, [PC110: minimal base composition](../history/M5-T566-pc110-base-composition.md), is closed as M5 T566; its typed neutral controller/App composition foundation is retained in task history. The ordered endpoint receivers below remain unadmitted.
 
 1. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)
 2. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
