@@ -26,18 +26,18 @@ the two physical operations or add a second ownership path.
 
 The candidate retained those two physical phases and skipped the remaining
 Release-only diagnostic phases.  It passed the complete X86 Core unit
-selection on both widths (196/196 each), and the selected-set checkpoint was
-unchanged:
+selection on both widths (196/196 each), and the matched VBlank-relative
+Coin/Start selected-set checkpoint was unchanged:
 
 - 8,000,000 instructions;
-- 131,798,219 guest ticks;
-- terminal frame digest `a388337a0d6ec5df`;
+- 133,667,500 guest ticks;
+- terminal frame digest `0364633fdce1196d`;
 - no Board or COP provider failure.
 
-The measured x64 route took 19,512.9 ms.  This is within the accepted route's
-host-time variation and does not establish a durable improvement.  The x86
-route completed with the same checkpoint in 23,451.1 ms; it is an
-interoperability result, not a comparable host-speed result.
+On the same x64 route, the restored baseline took 20,223.1 ms and the
+candidate took 21,480.7 ms.  The candidate is therefore not a speedup.  An
+unpaired no-input pass and the x86 completion were used only as route-health
+checks, not as speed comparisons.
 
 The trial source was restored.  There is therefore no source, ABI, artifact,
 or test change from this S.
