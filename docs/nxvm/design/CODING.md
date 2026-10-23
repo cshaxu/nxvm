@@ -165,7 +165,11 @@ The four fixed Apps consume the sole X86 NXVM Machine/Product implementation;
 they do not supply libraries to one another. Portable Debug/Xasm32 tooling
 remains in x86-debug; NXVM PC mechanisms live in x86-nxvm, and immutable model choices
 and D4 remain in each App.
-PC110 remains future work, not an empty source/test directory.
+`app-mypc110` is an admitted, deliberately non-runnable base composition:
+it owns its fixed 486SX construction, external firmware binding and PC110
+decode choices, while each unqualified endpoint is admitted by its own
+evidence receiver. It is not a PC/AT facade and must not claim a product
+executable, display, storage or guest boot before those receivers qualify.
 
 Each App has its own source, profile assertions, integration registration and
 flat artifact root. PC-family docs/nxvm, tools/nxvm, version and MTSP stay

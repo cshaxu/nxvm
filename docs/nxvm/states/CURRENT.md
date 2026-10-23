@@ -2,6 +2,36 @@
 
 ## Current Work
 
+## M5 T568 S1 — Active: PC110 F65535 and font-ROM admission audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T568 from the next ordered PC110 receiver after closed T567; one session performs coordinator and executor roles. |
+| Admission And Approval | The standing owner instruction to implement PC110 admits the queue head. This S audits and freezes an implementation boundary before any video/font code is admitted. |
+| Objective | Reconcile the current MyPC110 base, existing X86 NXVM video path, original F65535 sources, external ROM provenance and reference-model limits into one finite display/font implementation ledger. |
+| Non-goals | No display implementation, shared-frame change, renderer shortcut, external code import, raw ROM/font commit, firmware patch, product EXE, guest-boot claim or panel normalization. |
+| Reference Baseline | Closed T565/T566/T567, PC110 display proposal, T558 source/checklist evidence, current X86 NXVM video contracts, and read-only Open-Source-PC110/PC110-QEMU/PC110-EMU research. |
+| Candidate Proposal | [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md). |
+| Files And ABI Surface | Documentation/evidence, Current and Queue disposition only. Later S may nominate App-local PC110 and existing X86 Core/X86 NXVM files after proving the actual ownership boundary. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy; current architecture/coding authorities; no second guest-frame or renderer owner. |
+| Verification | Trace current guest video, memory, frame and reset paths; verify every cited source identity and source grade; classify F65535, VRAM, panel, font window, ROM pairing and frame capacity as direct, labelled model or blocked. |
+| Expected Markers | One source-backed owner/route ledger; explicit DSTN/TFT pairing status; no speculative reuse of QEMU enable/reset assumptions; a bounded implementation cohort or named transfer. |
+| Asset Needs | Read-only external BYOB assets and research only. No binary is copied, transformed or embedded. |
+| Reporting Requirements | Record source grade, current-code route, precise gaps, proposed owner/test surface, rejected shortcuts and unexecuted guest/physical validation. |
+| Stop Conditions | A necessary behavior requires an unapproved Shared frame change, an unsourced panel/ROM pairing, conflicting source facts without a labelled model, or a second display owner. Transfer the exact row. |
+| Exit Criteria | The display/font scope is exhausted into implementation-ready, source-qualified rows or explicit transfers; documents and evidence are pushed. |
+| Original Owner Request | Continue the PC110 programme after T567 closure. |
+| Similar-Issue Sweep | Check all candidate paths for accidental VADP/PC-AT reuse, external-ROM runtime loading, panel-specific host behavior or a duplicate frame truth. |
+
+### S1 Delivery
+
+The [F65535/font admission record](../etc/evidence/t568-s1-f65535-font-admission.md)
+separates the directly observed App-local font window from the still
+source-qualified F65535 receiver. It confirms that existing VADP is not a
+truthful F65535 owner and that no Shared frame change is presently justified.
+S1 changes only documentation and task evidence; it makes no display, ROM,
+boot or artifact claim.
+
 ## M5 T567 S3 — Closed: PC110 power and suspend/wake disposition
 
 | Field | Required record |
