@@ -2,6 +2,32 @@
 
 ## Current Work
 
+## M1 T7 S116 — Closed: V30 CPU sampled-cost attribution
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after accepted S115; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner directed continued execution-efficiency work after S115's no-change result and has approved automatic in-scope S admission. MyRaidenII owns the diagnostic; any later Shared change needs a separately evidenced owner-local boundary. |
+| Objective | Attribute the real selected-set V30/Core host cost to a bounded existing CPU/Core owner before considering another implementation change. |
+| Non-goals | No JIT/dynarec, second executor, guest-clock/timing-model/semantic change, frame/audio shortcut, public API/layout change, protected-source import, or speculative production cleanup. |
+| Reference Baseline | The matched VBlank-relative Coin/Start route completes 8,000,000 instructions at 133,667,500 guest ticks with terminal frame digest `0364633fdce1196d`; S115's restored x64 reference measured 20,223.1 ms. |
+| Candidate Proposal | Use a bounded compiler/runtime sampling diagnostic under `build/.ninja/t7-s116-profile` against the existing staged selected-set probe. Retain only neutral attribution summaries. If attribution cannot distinguish one owner, record that limitation rather than changing source. |
+| Files And ABI Surface | Diagnostic-only unless a later evidence revision names one owner. No production source, public header, test, manifest, artifact or protected media change is currently eligible. |
+| Applicable Rules | MyRaidenII architecture/coding/source policy and shared execution/architecture/coding/documentation rules; sole guest clock and executor, protected-media containment, bounded diagnostics and no quality tradeoff. |
+| Verification | Confirm the diagnostic build and the ordinary release probe reach the same selected-set facts. Bound the run to 30 minutes, 300 MiB scratch and 10 minutes without progress; delete raw profiler data before closure. |
+| Expected Markers | A named existing function/component cost with sampling evidence and a source-owner disposition, or an explicit inconclusive disposition with no code modification. |
+| Asset Needs | The existing read-only `O:\assets\raidenii\raiden2.zip` through its verified staging wrapper; no ROM payload, screenshot, raw trace or profiler output is retained. |
+| Reporting Requirements | Record the profiler mechanism, matching checkpoint, attribution limitations, inspected owner paths, cleanup and unexecuted desktop/RDP/audio qualification. |
+| Stop Conditions | The available profiler cannot produce reliable attribution, output would exceed the declared budget, evidence requires a forbidden architecture/timing change, or no owner can be identified. |
+| Exit Criteria | Met by a documented inconclusive attribution: profiling produced no usable function sample, IPO was measured on both required widths and rejected as a non-portable build exception, and no source change was retained. |
+| Original Owner Request | Make MyRaidenII practically usable by removing real unnecessary work, not by manipulating guest behavior or spending time on unfounded micro-patches. |
+| Similar-Issue Sweep | Attribute CPU decoder, instruction execution, bus/memory access, physical timing, Board attachment and remaining diagnostic routes; retain every independently required owner. |
+
+The [S116 compiler review](../etc/evidence/t7-s116-compiler-ipo-review.md)
+records matching guest checkpoints, the x64-only IPO gain, and the prohibitive
+x86 regression.  The task does not retain a per-architecture build exception
+or a speculative CPU edit.
+
 ## M1 T7 S115 — Closed: V30/Core hot-path cost inventory
 
 | Field | Required record |
