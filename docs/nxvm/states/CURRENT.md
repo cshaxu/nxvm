@@ -131,6 +131,27 @@ T565 remains open for the App-owned PC110 board binding.
 | Original Owner Request | Continue the complete admitted PC110 board/chipset/firmware mapping task to closure. |
 | Similar-Issue Sweep | Compare each candidate route with every existing four-App plan to catch accidental descriptor, firmware-slot or controller-state reuse. |
 
+### S4 Delivery
+
+The [composition inventory](../etc/evidence/t565-s4-pc110-composition-inventory.md)
+proves the narrow reusable construction surfaces and rejects the tempting but
+incorrect AT-board shortcut. It records three directly attributable VL82C420
+configuration windows, their owner boundary and every endpoint still blocked
+on PC110-specific facts. No production input or asset changed; x64/x86 S3
+Core route tests remain the applicable executable verification. S4 is closed.
+
+## M5 T565 S5 — Active: PC110 App-local firmware and configuration-route binding
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open M5 T565 after closed S4; one session performs coordinator and executor roles. |
+| Admission And Approval | Standing owner approval admits bounded in-scope work; S4 names this as the first legal production receiver. |
+| Objective | Add one App-local, non-runnable PC110 construction foundation: typed immutable firmware binding plus a tested configuration-route adapter that delegates to S3's VL82C420 mechanism. |
+| Non-goals | No executable, firmware embedding, DSTN fallback, guest boot, AT preparation, reset-default table, ROM-shadow behavior, display/storage/input/power endpoint, Shared Lib/Emulator change or external-source import. |
+| Files And ABI Surface | New `src/app-mypc110` and matching `test/app-mypc110` foundation files, build/test registration, manifests and PC110 evidence only. Existing public Shared interfaces remain unchanged. |
+| Verification | x64/x86 direct route and firmware-map units; App/Core dependency, manifest and static gates. No artifact publication because no runnable App input is admitted. |
+| Exit Criteria | One App-local construction/route owner proves its exact delegation and rollback behavior, has no AT or sibling-App dependency, and leaves every unknown endpoint explicitly absent. |
+
 ## M5 T564 — Closed: public-component qualification
 
 The owner accepted final qualification on 2026-10-23.  S15 retained the
