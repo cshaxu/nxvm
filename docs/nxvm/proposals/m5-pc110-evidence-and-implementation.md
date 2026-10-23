@@ -73,7 +73,8 @@ receiver before its design gate closes.
 1. [486SX instruction semantics](m5-pc110-486-instructions.md).
 2. [486SX system, reset and timing](../history/M5-T560-complete-486sx-cpu-proposal.md),
    retained as a stage with its [complete CPU successor](../history/M5-T563-486sx-timing-production-completion-proposal.md).
-3. [Board, chipset and firmware mapping](m5-pc110-board.md).
+3. [Board, chipset and firmware mapping](../history/M5-T565-pc110-board.md),
+   followed by [minimal base composition](m5-pc110-base-composition.md).
 4. [Keyboard, pointer and power](m5-pc110-input-power.md).
 5. [F65535 display and font ROM](m5-pc110-display.md).
 6. [PCMCIA, flash and boot storage](m5-pc110-storage.md).

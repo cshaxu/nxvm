@@ -11,7 +11,7 @@
 | Objective | Freeze the exact PC110 board/firmware input batch and the concrete App/Core construction boundary required before implementing board, chipset or ROM mapping. Produce the coverage ledger and admission disposition for BRD-1--3/SIO-1--3 without claiming a bootable machine. |
 | Non-goals | No production chip/device implementation, no guessed reset constants, no external ROM acquisition, no firmware patch/application, no PC110 EXE, no INI/runtime model selector, no guest boot claim, no Shared-six change and no modification to the existing four PC Apps. |
 | Reference Baseline | T558 research delivery `7ea9084fe`, the PC110 programme and receiver checklists, the current four-App/Core source map, and the external BYOB asset/provenance policy. T559/T563 provide the closed 486 prerequisites; this task does not requalify them. |
-| Candidate Proposal | [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md), consuming its first construction/mapping boundary and the programme's board rows. |
+| Candidate Proposal | [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board-proposal.md), consuming its first construction/mapping boundary and the programme's board rows. |
 | Files And ABI Surface | Initially NXVM documentation/evidence only: `docs/nxvm/states/CURRENT.md` and new PC110 evidence records. Any later production S must explicitly name its App/Core surface after this S freezes it. No public ABI is eligible in S1. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; NXVM architecture/coding authorities; source/research policy; PC110 programme, board proposal, T558 S1 ownership audit, T558 S2 source-availability record and receiver checklists. Evidence must distinguish original manual, observed dump, model/reference and unresolved fact. |
 | Verification | Inventory current Core/App capabilities and direct consumers; verify all cited asset/manuscript identities against the external asset index without copying protected payloads; create a finite board/firmware ledger with owner, evidence grade, reset/decode status, direct/composed proof and next receiver for each required row; run documentation governance and link/path checks. |
@@ -48,7 +48,7 @@ remains open for its next bounded board-evidence receiver.
 | Objective | Reconcile the exact existing Core construction/lifetime route with PC110 board evidence, and produce a minimal construction/reset/decode contract that states what can be implemented next, what must remain App-local, and which unresolved facts block a behavior. |
 | Non-goals | No production code, App directory, public API, ROM copy/embed/patch, executable, reset-value guess, synthesized chipset, QEMU/EMU source import, BIOS interception or guest boot claim. |
 | Reference Baseline | T565 S1 ledger; T558 ownership/source-availability/checklist records; current Core and four-App construction paths; the three pinned research checkouts read only. |
-| Candidate Proposal | [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md), specifically BRD-1--3 and SIO-1--3 construction/mapping preparation. |
+| Candidate Proposal | [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board-proposal.md), specifically BRD-1--3 and SIO-1--3 construction/mapping preparation. |
 | Files And ABI Surface | Documentation/evidence only during S2. The result may nominate later `src/app-mypc110` and `test/app-mypc110` files but creates neither now. No public ABI is in scope. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; NXVM architecture/coding; source/research policy; T558 source availability, ownership audit and receiver checklist. Existing Core must remain the sole CPU/executor/controller timeline owner. |
 | Verification | Inspect every current constructor/reset/ROM-map call chain used by the four PC Apps; trace board evidence to named source pages/observations; classify each future PC110 operation as direct proof, L2 model candidate or blocked; verify no proposed owner requires a peer/App reverse dependency; run documentation governance and path/link review. |
@@ -205,6 +205,23 @@ closed-state result to the observed guest-facing `FFh`/ignored-write gate,
 rather than duplicating protocol state.  The direct route test passed on both
 established Ninja/ccache widths together with the existing TFT firmware-binding
 test.  This verifies a configuration path only, not a bootable PC110.
+
+## M5 T565 S8 — Closed: PC110 board mapping closure audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Final bounded S of M5 T565 after S1--S7. |
+| Objective | Reconcile the original board/mapping universe against actual source and construction owners, close only the accepted mapping foundation, and explicitly transfer every remaining controller/device/boot item. |
+| Non-goals | No production change, board publication, executable, external asset mutation, boot claim or Shared change. |
+| Required Proof | Every in-scope row is either accepted with a direct owner/proof or transferred to a named Queue receiver; no existing AT assembly is silently reused as PC110. |
+| Exit Criteria | Closure audit, Queue transfer and task history preserve all residual work; worktree remains clean and earlier committed direct dual-width proof is linked. |
+
+The S8 audit transfers the unresolved standard-controller construction root to
+the explicit `m5-pc110-base-composition.md` candidate, and retains endpoint and
+firmware/guest responsibilities at their existing PC110 receiver proposals.
+T565 is closed as a mapping foundation only; it does not claim complete board
+or guest qualification.  See the closure history and S8 evidence for the full
+disposition.
 
 ## M5 T564 — Closed: public-component qualification
 
