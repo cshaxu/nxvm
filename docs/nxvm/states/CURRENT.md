@@ -2,12 +2,33 @@
 
 ## Current Work
 
+## M5 T564 S6 — Active: Lib Console rollback and native desktop isolation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S5 are closed; single-session coordinator and executor. |
+| Admission And Approval | Owner admitted S6 on 2026-10-22; Shared repairs remain subject to the established review boundary. |
+| Objective | Investigate current Console failure rollback and desktop-test isolation; repair proven Lib-owned defects without weakening behavior or assertions. |
+| Non-goals | No speculative fix, new framework, browser storage or Linux qualification; no unrelated product, media or INI changes. |
+| Reference Baseline | NXVM b69f738d1; imported SoftPC shared baseline and T564 S5 evidence; historical T538 and T539 observations. |
+| Candidate Proposal | T564 public-component quality program, S6; historical evidence t538-boot-pairs and t539-s21-lea-movx-migration. |
+| Files And ABI Surface | Lib Console Broker and Lib desktop tests if justified; required receiver tests, manifests and artifacts only if affected. No public ABI change presumed. |
+| Applicable Rules | NXVM guide and source policy; Execution, Architecture, Coding and Documentation rules; inward dependencies, minimal ownership and real native assertions. |
+| Verification | Reproduce or bound each historical observation on current code; focused failure injection and native desktop tests, x64/x86 full repository units, relevant integration and static gates; qualify every affected receiver and binary when production changes. |
+| Expected Markers | An explicit disposition for both historical cases, retained cooked-buffer history and viewport when rollback is supported, and preserved modal assertions without concurrent desktop interference. |
+| Asset Needs | Existing reusable Ninja/ccache graphs; disposable test data only; preserve owner INI and media. |
+| Reporting Requirements | Separate observed failure, reproduction, hypothesis and repair; report actual diff, desktop versus RDP limits, and artifact identities. |
+| Stop Conditions | Unresolved required failure, unapproved public API or external change, or inability to preserve native test assertions. |
+| Exit Criteria | Both cases and Lib strict-compilation exceptions dispositioned with evidence; required tests, review and any affected artifacts committed and pushed; owner acceptance. |
+| Original Owner Request | Admit S6 and explain which problems it will address. |
+| Similar-Issue Sweep | Inspect related Console handoff failure paths and desktop test registrations; do not assume a failed test proves production failure. |
+
 The owner extended open T564 on 2026-10-22 to plan the public-component TODO
 classes and former PC App test-encapsulation candidate as S6--S13. The
 [updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
 sequence and conditional dispositions, reordered by owner direction as Lib,
-Emulator, X86 Debug, X86 IBM PC, X86 Core, then X86 NXVM. S1--S5 remain closed; no new S is
-admitted by this planning change. Model40 throughput, DevBox exploration,
+Emulator, X86 Debug, X86 IBM PC, X86 Core, then X86 NXVM. S1--S5 remain closed;
+S6 is active. Model40 throughput, DevBox exploration,
 Linux runtime verification and future browser storage remain in NXVM TODO;
 the latter two are excluded from T564 by owner direction. T564 is open.
 
