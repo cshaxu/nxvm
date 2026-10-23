@@ -15,7 +15,7 @@ shared rules instead of duplicating an authority.
 | `docs/myraidenii/` | MyRaidenII | Independent design, task state, queue, history, evidence and source policy; shared rules are linked, not copied. |
 | `src/{lib,emulator,x86-debug,x86-core,x86-ibmpc,x86-nxvm}` and matching `test/` roots | Repository | Shared implementation and tests, subject to each package's documented scope. |
 | `src/app-<product>` and matching `test/`, `tools/`, `assets/<product>` roots | Product | Product implementation, tests, tools, and versioned artifacts. |
-| `src/myraidenii`, `test/myraidenii`, `assets/myraidenii` | MyRaidenII | Owner-selected product roots without an app- prefix; not shared component packages. |
+| `src/app-myraidenii`, `test/app-myraidenii`, `assets/myraidenii` | MyRaidenII | Product-owned App roots; they are not shared component packages. |
 
 There is one active packet per product, in
 `docs/<product>/states/CURRENT.md`. A packet may declare NXVM, MyNES,

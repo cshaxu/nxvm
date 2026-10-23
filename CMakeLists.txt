@@ -73,6 +73,6 @@ if(REPOSITORY_BUILD_MYNES)
 endif()
 
 if(REPOSITORY_BUILD_MYRAIDENII)
-    add_subdirectory(src/myraidenii)
-    add_subdirectory(test/myraidenii)
+    add_subdirectory(src/app-myraidenii)
+    add_subdirectory(test/app-myraidenii)
 endif()

@@ -70,7 +70,7 @@ The concrete source tree and naming map belongs to the selected product's
   modules follow their `src/` owner; external-ROM, disk, firmware, media, or
   other owner-managed scenarios are only under the selected product's
   declared integration tree: existing Apps use `test/app-<product>/integration/`;
-  MyRaidenII uses `test/myraidenii/integration/`. Neither is a shared unit corpus.
+  MyRaidenII uses `test/app-myraidenii/integration/`. Neither is a shared unit corpus.
 
 Product-specific migration records remain in the selected product's supporting
 documentation.

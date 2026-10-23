@@ -278,7 +278,7 @@ Git commit have exactly one declared target.
 
 - `NXVM` owns only NXVM code, configuration, documentation, tests, tools,
   artifacts and media declarations. `MyNES` owns the corresponding MyNES
-  surface. `MyRaidenII` owns src/myraidenii, test/myraidenii,
+  surface. `MyRaidenII` owns src/app-myraidenii, test/app-myraidenii,
   assets/myraidenii, docs/myraidenii and its own future tools/configuration.
   Its owner-selected source/test roots deliberately omit the app- prefix;
   they do not create a shared-component boundary or permission to edit peers.

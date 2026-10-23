@@ -2,7 +2,7 @@
 
 ## Ownership And Dependencies
 
-MyRaidenII uses `src/myraidenii`, not `src/app-myraidenii`. Keep three real
+MyRaidenII uses `src/app-myraidenii`. Keep three real
 responsibilities when implementation begins:
 
 - `product`: entry, identity/version/banner, INI/assets policy, controls and

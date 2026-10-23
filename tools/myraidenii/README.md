@@ -21,7 +21,7 @@ members fail. No extraction, download, payload output or source modification
 occurs. The one read-only archive handle is retained throughout verification.
 Only structured metadata is printed on success; errors terminate the command.
 
-ROM-free synthetic unit coverage lives in test/myraidenii/unit/tools. Actual
+ROM-free synthetic unit coverage lives in test/app-myraidenii/unit/tools. Actual
 owner-ROM execution will belong to integration, not this metadata check.
 
 `Invoke-SelectedSetStartupProbe.ps1` is the opt-in, bounded selected-set

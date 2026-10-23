@@ -2,6 +2,35 @@
 
 ## Current Work
 
+## M1 T7 S118 — Closed: App-root layout normalization
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after accepted S117; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner explicitly directed `src/myraidenii` to become `src/app-myraidenii` and the matching `test` root to become `test/app-myraidenii`; automatic in-scope S admission remains approved. |
+| Objective | Normalize MyRaidenII's product-owned source and test roots to the repository's `app-` product layout without changing implementation, product identity, assets or runtime behavior. |
+| Non-goals | No production semantic change, symbol rename, build-target rename, Shared component change, asset/ROM/media movement, version/artifact refresh or historical-record rewrite. |
+| Reference Baseline | Root CMake currently registers `src/myraidenii` and `test/myraidenii`; active source/test headers use the logical include namespace `myraidenii/...`, which is product identity rather than a filesystem-root requirement. |
+| Candidate Proposal | Move the two roots as complete trees, update active CMake source/test registration, source-relative unit paths, manifests and present-tense documentation/rules. Preserve logical include and public symbol names unless a build proof requires a different owner spelling. |
+| Files And ABI Surface | `src/app-myraidenii/**`, `test/app-myraidenii/**`, root/owner CMake registration, present-tense MyRaidenII documentation and the shared documentation rules that name the root. No C/H public declaration or binary surface changes are intended. |
+| Applicable Rules | MyRaidenII architecture/coding/source policy and shared execution/architecture/coding/documentation rules: product ownership, inward dependencies, one source/test owner, historical-record preservation and no unnecessary compatibility roots. |
+| Verification | Search for live old-root references excluding archived history/evidence; configure/build affected x64/x86 MyRaidenII targets through the reusable Ninja graphs; run MyRaidenII unit registration/tests and manifest/documentation gates; verify no old source/test root remains. |
+| Expected Markers | Root CMake, test CMake and source-relative compilation all resolve only the new app-prefixed roots while logical product identity remains unchanged. |
+| Asset Needs | None. No external asset is read, copied, changed or deployed. |
+| Reporting Requirements | Report moved paths/count, active references changed, unchanged logical symbols/targets, actual diff, validation results and any intentionally preserved historical references. |
+| Stop Conditions | A required live consumer outside the named roots cannot be updated without unrelated product change, a symbol/ABI change is needed, or a preserved historical record would need alteration to make a gate pass. |
+| Exit Criteria | The active source/test layout is app-prefixed, all live registrations and manifests resolve, x64/x86 affected validation passes, no obsolete compatibility directory remains and the change is reviewed/pushed. |
+| Original Owner Request | Rename `src/myraidenii` to `src/app-myraidenii`, with the test root following the same product-layout convention. |
+| Similar-Issue Sweep | Check root CMake, product/test CMake, manifests, tools and present-tense docs for live root assumptions; retain archived task/evidence text as historical fact. |
+
+The App roots, source-relative test compilation paths and live documentation
+now use `src/app-myraidenii` and `test/app-myraidenii`.  Logical symbols and
+CMake targets deliberately retain their `myraidenii` product identity.  Both
+reusable Ninja widths build the affected unit and integration executables; the
+13 registered MyRaidenII unit tests pass on each width.  See the
+[S118 layout record](../etc/evidence/t7-s118-app-root-layout.md).  No release
+artifact refresh or ROM-backed run was required for this filesystem-only task.
+
 ## M1 T7 S117 — Closed: V30 execution-path decision
 
 | Field | Required record |

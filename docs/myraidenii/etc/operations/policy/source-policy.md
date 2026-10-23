@@ -58,7 +58,7 @@ is not a redistribution grant. Commit metadata/hashes only after actual audit;
 never invent missing contents or bypass protection. Existing ROMs are read-only.
 
 Units use original synthetic ROM-free vectors. Real-set execution belongs only
-to test/myraidenii/integration with bounded checkpoints and cleanup. Logs do not
+to test/app-myraidenii/integration with bounded checkpoints and cleanup. Logs do not
 dump protected content; raw traces have hard byte/time budgets and are discarded
 after retaining neutral observations. Microsoft binaries are not required or
 distributed. Sibling repositories are read-only absent explicit import approval.

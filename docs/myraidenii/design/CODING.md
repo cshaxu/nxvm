@@ -4,8 +4,8 @@ Apply shared [Coding Rules](../../rules/CODING.md). Product root spelling is
 `myraidenii`; display/commit identity is `MyRaidenII`. Exact roots:
 
 ```text
-src/myraidenii/{product,machine,core}/
-test/myraidenii/{unit,setup,integration,diagnostic}/
+src/app-myraidenii/{product,machine,core}/
+test/app-myraidenii/{unit,setup,integration,diagnostic}/
 assets/myraidenii/
 docs/myraidenii/{design,states,proposals,history,etc}/
 ```
