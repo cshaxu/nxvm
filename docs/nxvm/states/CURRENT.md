@@ -152,6 +152,25 @@ Core route tests remain the applicable executable verification. S4 is closed.
 | Verification | x64/x86 direct route and firmware-map units; App/Core dependency, manifest and static gates. No artifact publication because no runnable App input is admitted. |
 | Exit Criteria | One App-local construction/route owner proves its exact delegation and rollback behavior, has no AT or sibling-App dependency, and leaves every unknown endpoint explicitly absent. |
 
+### S5 Delivery
+
+`app-mypc110` now contains the one admitted configuration-route adapter and
+matching unit root. The [S5 record](../etc/evidence/t565-s5-pc110-config-route-binding.md)
+captures the exact four delegated routes, S3 ownership, omitted Block2 reason
+and Core lifecycle proof. x64/x86 CMake configuration, build and direct route
+test pass. No ROM is embedded, no executable is produced, and no boot claim is
+made. S5 is closed.
+
+## M5 T565 S6 — Active: PC110 firmware binding and construction publication
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of T565 after closed S5. |
+| Objective | Add the typed TFT firmware binding and a single neutral-construction publication path, using the external asset manifest only at configuration/build time. |
+| Non-goals | No DSTN substitution, executable publication, firmware boot claim, AT profile helper, fabricated reset/shadow defaults, display/storage/input/power endpoint or Shared change. |
+| Required Proof | The binding validates exact external TFT identity and maps only the source-confirmed immutable BIOS range; construction/rollback tests prove one owner and source absence fails closed. |
+| Stop Conditions | Any need to infer ROM aliases/shadow/reset data or to load the TFT input from a machine-local path at runtime stops the affected behavior. |
+
 ## M5 T564 — Closed: public-component qualification
 
 The owner accepted final qualification on 2026-10-23.  S15 retained the

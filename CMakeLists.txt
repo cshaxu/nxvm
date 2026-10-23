@@ -66,6 +66,9 @@ endif()
 
 if(REPOSITORY_BUILD_NXVM)
     include(cmake/nxvm/NxvmProduct.cmake)
+    add_subdirectory(src/app-mypc110)
+    add_subdirectory(test/app-mypc110)
+    include(cmake/nxvm/verify_mypc110_boundary.cmake)
 endif()
 
 if(REPOSITORY_BUILD_MYNES)
