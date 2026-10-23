@@ -2,26 +2,58 @@
 
 ## Current Work
 
-## M5 T564 S14 — Active: final integration qualification and T564 closure audit
+## M5 T564 — Awaiting owner acceptance: final qualification complete
+
+S15 closed after retaining the modal/frame-scale integration test while
+returning host mouse-capture proof to its dedicated Unit owner.  Clean serial
+qualification now passes: x64 and x86 unit suites each pass 697/697, and x64
+and x86 integration suites each pass 21/21.  The [S15 evidence](../etc/evidence/t564-s15-window-modal-test-ownership.md)
+records the RDP `ClipCursor` failure, retained coverage, no-artifact decision
+and exact results.  T564 is not closed until the owner accepts this final
+qualification and the corresponding closure P is recorded.
+
+## M5 T564 S15 — Closed: Window modal integration test ownership correction
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation of open T564; S1--S13 closed; single-session coordinator and executor. |
-| Admission And Approval | Owner accepted S13 and directed admission of the next S. |
-| Objective | Reconcile all T564 public-component dispositions, run the required clean dual-width integration qualification, and prepare the truthful T-level closure record. |
-| Non-goals | No speculative repair, new component scope, test weakening, artifact refresh without production inputs, or claim of Linux/browser/desktop verification not actually run. |
-| Reference Baseline | Accepted S1--S13 deliveries; S13 implementation commits `dcc8e98ca` and `a864cf7fd`. |
+| Identifier Mode | Continuation of open T564; S1--S14 concluded under its declared stop condition; single-session coordinator and executor. |
+| Admission And Approval | Owner approved the minimal repair after diagnosis: keep the modal/frame-scale integration test, remove only its unrelated real mouse-capture exercise. |
+| Objective | Restore environment-independent ownership of the native Window modal/frame-scale integration test without changing Window production behavior or weakening the actual modal/geometry proof. |
+| Non-goals | No Lib production/API change; no mouse-capture semantic change; no removal or reclassification of the integration test; no artifact refresh without production inputs. |
+| Reference Baseline | S14 clean x64 integration run: 20/21 passed; `lib.integration/kvm_window_modal` reproducibly failed only after its synthetic `WM_LBUTTONDOWN` attempted RDP-restricted `ClipCursor` (`ERROR_ACCESS_DENIED`). Existing `kvm_window_capture_contract_smoke` covers capture/release outcomes with controlled native-call fixtures. |
 | Candidate Proposal | [T564 public-component quality program](../proposals/m5-softpc-rgb-frame-import.md), final qualification requirement. |
-| Files And ABI Surface | State/history/evidence records; existing integration registrations and test-owned generated data only unless a reproduced failure requires a separately admitted corrective S. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; current source policy; component ownership and task closure requirements. |
-| Verification | Reuse the stable x64/x86 Ninja graphs; run the repository integration suite serially on both widths, required static/manifest/documentation gates, and reconcile all six-package/App dispositions against the proposal. |
-| Expected Markers | Every planned S has a recorded disposition; both integration suites pass from clean test-owned temporary state; no unqualified platform/manual result is represented as complete. |
-| Asset Needs | Existing approved BYOB assets and stable build trees only; preserve INIs, ROMs, media, snapshots and currently released binaries. |
-| Reporting Requirements | Record per-width integration counts/results, any skipped external/manual validation, complete S disposition map, actual worktree/commit state, and every remaining transferred debt. |
-| Stop Conditions | Any integration failure requiring production/test repair, missing required external input, unexpected artifact mutation, or scope beyond T564's six-package/App receivers. |
-| Exit Criteria | Required integration and governance checks pass; all planned S work is reconciled; T closure record and target-scoped governance commit are pushed; owner accepts the final qualification. |
-| Original Owner Request | Close S13 and admit the next S under the established T564 program. |
-| Similar-Issue Sweep | Verify all source/test package gates and both product receiver families are represented in the final result; distinguish clean test-state failures from production defects. |
+| Files And ABI Surface | `test/lib/integration/kvm_window_modal_smoke.c`, its manifest, task evidence/state only. No production source, public header, CMake registration or receiver App input changes. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; strict test ownership, no assertion weakening and one production path. |
+| Verification | Run the focused modal integration and capture-contract unit test on x64/x86; then run clean serial repository unit and integration suites on both widths, static/manifest/documentation gates, and inspect no EXE input changed. |
+| Expected Markers | Modal test still proves real Window frame scaling, all sizing edges, maximize/restore, native modal-loop admission, freeze/title control and teardown; capture remains proved only by its dedicated contract test; both qualification suites pass. |
+| Asset Needs | Reuse stable Ninja/ccache graphs; preserve all INIs, ROMs, media, snapshots and released binaries. No EXE refresh is expected because the executable input graph is unchanged. |
+| Reporting Requirements | Record the native failure evidence, the retained and removed assertions, per-width focused/full results, manifest state, actual diff and unchanged artifact determination. |
+| Stop Conditions | Any failure outside the removed host-policy capture segment, a need to alter production capture behavior/API, unexpected artifact mutation, or a failure in a required qualification suite. |
+| Exit Criteria | Narrow test correction reviewed; required tests and governance pass; target-scoped commit is pushed; final qualification is truthfully recorded for owner acceptance. |
+| Original Owner Request | Approve this correction, then compile, test, commit and push according to the established process. |
+| Similar-Issue Sweep | Confirm no other modal/frame-scale integration test invokes host mouse capture; retain all dedicated capture-contract coverage. |
+
+### S15 Delivery
+
+The integration test continues to exercise its native Window/modal behavior;
+only its unrelated host-policy-sensitive capture branch was removed.  The
+dedicated capture contract continues to cover capture and release semantics.
+Focused x64/x86 tests, full x64/x86 unit suites and full x64/x86 integration
+suites pass.  No production or artifact input changed.  Commit and push record
+this delivery; T564 awaits owner review rather than claiming closure.
+
+## M5 T564 S14 — Closed: qualification stop-condition diagnosis
+
+S14 ran the x64 serial integration suite. Twenty of twenty-one tests passed;
+the remaining `lib.integration/kvm_window_modal` failure was reproduced alone.
+Debugger evidence identifies `LIB_STATUS_IO_ERROR` from its synthetic
+mouse-capture branch, while Win32 reports `ERROR_ACCESS_DENIED` from the RDP
+desktop's `ClipCursor` policy. The test's stated scope is modal-loop and
+frame-scale behavior; its real capture assertion duplicates the dedicated
+`kvm_window_capture_contract_smoke` unit suite. No production defect or
+receiver-App fault was found. The declared stop condition therefore admitted
+the owner-approved narrow S15 correction; S14 does not claim T-level
+qualification or closure.
 
 ## M5 T564 S13 — Closed: X86 NXVM verifier-negative efficiency and four-PC App test ownership
 

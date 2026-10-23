@@ -11,7 +11,6 @@ static lib_win32_long retire_count;
 
 static lib_win32_lresult LIB_WIN32_CALLBACK observe(lib_win32_hwnd w, lib_win32_uint m, lib_win32_wparam a, lib_win32_lparam b)
 {
-    if (m == LIB_WIN32_WM_APP + 8u) return lib_win32_get_capture() == w;
     if (m == LIB_WIN32_WM_ENTERSIZEMOVE || m == LIB_WIN32_WM_ENTERMENULOOP) lib_win32_set_event(entered);
     if (m == LIB_WIN32_WM_EXITSIZEMOVE || m == LIB_WIN32_WM_EXITMENULOOP) lib_win32_set_event(exited);
     return lib_win32_call_window_proc_w(original, w, m, a, b);
@@ -72,10 +71,6 @@ static void check_frame_scale(void)
     send_checked(LIB_WIN32_WM_NCLBUTTONDBLCLK,LIB_WIN32_HTCAPTION);
     lib_test_assert(lib_win32_get_client_rect(target,&client));
     lib_test_assert(client.right==(lib_i32)width && client.bottom==(lib_i32)height);
-    send_checked(LIB_WIN32_WM_LBUTTONDOWN,0);
-    lib_win32_dword_ptr captured;
-    lib_test_assert(lib_win32_send_message_timeout_w(target,LIB_WIN32_WM_APP+8u,0,0,
-        LIB_WIN32_SMTO_ABORT_IF_HUNG,3000,&captured) && captured);
     for(lib_u32 i=0;i<6u;++i) {
         if(i%2u) lib_test_assert(kvm_window_frame_prepare_graphics(&frame,width,height,width)==LIB_STATUS_OK);
         else {
@@ -88,8 +83,6 @@ static void check_frame_scale(void)
         lib_test_assert(client.right==(i%2u ? (lib_i32)width : 640) &&
             client.bottom==(i%2u ? (lib_i32)height : 400));
     }
-    lib_test_assert(kvm_window_release_mouse(window)==LIB_STATUS_OK);
-    send_checked(LIB_WIN32_WM_APP+1u,0);
     /* Exercise all eight native edge notifications through the real Window,
        then let SetWindowPos deliver the resulting WM_SIZE synchronously. */
     lib_test_assert(kvm_window_frame_prepare_graphics(&frame,640u,400u,640u)==LIB_STATUS_OK);
