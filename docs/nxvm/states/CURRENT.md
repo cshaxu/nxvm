@@ -77,6 +77,40 @@ governance and whitespace checks are the only applicable verification; guest,
 desktop and hardware validation are not claimed. Coordinator review accepts the
 bounded contract and asset-ledger update. S2 is closed; T565 remains open.
 
+## M5 T565 S3 — Active: VL82C420 configuration mechanism
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open M5 T565; S3 follows closed S1--S2. |
+| Admission And Approval | Owner directed that T565 continue through closure. Earlier standing approval admits bounded in-scope S work automatically. |
+| Objective | Extract the source-backed, address-neutral VL82C420 configuration mechanism into X86 Core: four-read unlock/relock, indexed banks, warm-reset preservation and opaque register storage. Establish only the mechanism required for later PC110 board wiring. |
+| Non-goals | No port registration, App executable, firmware boot, guessed DRAM bit meaning, ROM-shadow behavior, QEMU/EMU source import, synthetic successful POST, display/storage/input implementation or Shared Lib/Emulator change. |
+| Reference Baseline | T565 S1/S2 records; Open-Source-PC110 Chipset sections 13j/13h and checked live-dump/config files; PC110-QEMU/EMU behavior is L2 comparison only. |
+| Files And ABI Surface | New `src/x86-core/chips/vl82c420/*` and matching `test/x86-core/chips/vl82c420/*`, Core CMake/manifest and task evidence only. Its interface must remain port/address neutral; later App wiring owns actual I/O decode. |
+| Applicable Rules | NXVM guide; Architecture, Coding, Execution and Documentation rules; source/research policy; X86 Core dependency direction and L2/L3 evidence rules. |
+| Verification | Direct Core tests cover fresh state, four exact unlock reads, gated/ungated index-data access, relock, independent bank retention and warm reset. Run affected Core x64/x86 unit suites and the complete repository unit suite before closure; no artifact refresh without a runnable product-input change. |
+| Expected Markers | One chip state owner, no guest-IP shortcut, no board port constants in Core, no duplicate config bank, and explicit L2 labeling for any behavior not directly observed. |
+| Asset Needs | Read-only use of the admitted external TFT asset manifest and research checkouts. No firmware bytes enter this repository or a product artifact. |
+| Reporting Requirements | Record primary/reference evidence, exact interface and behavior table, test boundaries, actual diff and unexecuted guest/hardware proof. |
+| Stop Conditions | A required operation cannot be stated without a guessed reset/default or requires a Lib/Emulator contract; stop that operation and retain it for the App wiring/firmware receiver. |
+| Exit Criteria | One tested, address-neutral configuration mechanism with source-grade labeling, no PC110 App port decode or firmware claim, required Core/repository units and static/doc gates passed, reviewed commit pushed. |
+| Original Owner Request | Continue the entire admitted PC110 board task through closure. |
+| Similar-Issue Sweep | Inspect existing Core chips for a matching indexed/unlock mechanism; reuse only a semantic match, not a board-specific port facade. |
+
+### S3 Delivery
+
+`x86-core-vl82c420` now owns the address-neutral SCAMP, Block2 and EC/ED
+indexed storage mechanism. Its only gate is the source-backed four-read
+Block2 unlock sequence; actual I/O addresses, register semantics, cold-reset
+images and PC110 wiring remain outside this component. The Core test proves
+the exact unlock order, relock, SCAMP bit-seven alias, bank independence and
+warm retention. Focused x64/x86 builds and tests pass. The two complete
+parallel repository unit executions each reached all 653 cases; their only
+failures were pre-existing timeout-sensitive Lib/Emulator self-checks under
+load, and each failed case passed when immediately rerun alone. No product
+input changed, so no executable artifact refresh is applicable. S3 is closed;
+T565 remains open for the App-owned PC110 board binding.
+
 ## M5 T564 — Closed: public-component qualification
 
 The owner accepted final qualification on 2026-10-23.  S15 retained the

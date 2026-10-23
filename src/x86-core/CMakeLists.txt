@@ -16,6 +16,10 @@ add_library(x86-core-fpu STATIC fpu/fpu.c)
 target_include_directories(x86-core-fpu PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(x86-core-fpu PUBLIC types)
 
+add_library(x86-core-vl82c420 STATIC chips/vl82c420/vl82c420.c)
+target_include_directories(x86-core-vl82c420 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_link_libraries(x86-core-vl82c420 PUBLIC types)
+
 add_library(x86-core-cpu STATIC cpu/cpu.c cpu/cpu_bus.c cpu/cpu_instructions.c
     cpu/cpu_timing.c cpu/cpu_timing_model.c)
 target_include_directories(x86-core-cpu PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
