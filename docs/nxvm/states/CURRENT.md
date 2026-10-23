@@ -103,7 +103,7 @@ bounded contract and asset-ledger update. S2 is closed; T565 remains open.
 indexed storage mechanism. Its only gate is the source-backed four-read
 Block2 unlock sequence; actual I/O addresses, register semantics, cold-reset
 images and PC110 wiring remain outside this component. The Core test proves
-the exact unlock order, relock, full-byte SCAMP selection, bank independence and
+the exact unlock order, relock, SCAMP bit-seven alias, bank independence and
 warm retention. Focused x64/x86 builds and tests pass. The two complete
 parallel repository unit executions each reached all 653 cases; their only
 failures were pre-existing timeout-sensitive Lib/Emulator self-checks under

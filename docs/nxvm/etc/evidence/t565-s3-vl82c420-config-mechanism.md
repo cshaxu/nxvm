@@ -15,13 +15,12 @@ accessing Block2 through its index/data pair. Section 13i records a live dump
 using the same sequence. Its section 13j documents the live SCAMP indexed
 window and section 13k establishes EC/ED indexed DRAM geometry registers.
 
-The four-step ordering and Block2 gate are therefore modeled as source-backed
-behavior. The font-window source separately establishes a seven-bit font-bank
-selector; it does not establish a seven-bit SCAMP configuration index.
-SCAMP consequently retains the full supplied byte. The general opaque storage
-layer and its zero-filled construction state are L2 scaffolding only: they
-make no claim about a physical power-on register value. No default register
-value, bit meaning or cold-reset image is inferred here.
+The four-step ordering, Block2 gate and SCAMP seven-bit index alias are
+therefore modeled as source-backed behavior. The SCAMP access helper masks its
+index with `7Fh`; Block2 instead has 256 independent indices. The general
+opaque storage layer and its zero-filled construction state are L2 scaffolding
+only: they make no claim about a physical power-on register value. No default
+register value, bit meaning or cold-reset image is inferred here.
 
 ## Reset contract
 
@@ -35,7 +34,7 @@ defaults look factual.
 
 The Core test proves:
 
-- SCAMP retains independent index 00h and 80h storage;
+- SCAMP index bit 7 aliases to bit 0;
 - Block2 rejects index/data access until the exact four reads occur;
 - a wrong read resets the partial unlock sequence;
 - explicit relock blocks access again;

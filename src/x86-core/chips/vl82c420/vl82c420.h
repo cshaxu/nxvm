@@ -4,7 +4,7 @@
 #include "x86-core/chips/vl82c420/vl82c420_interface.h"
 
 struct x86_vl82c420 {
-    lib_u8 scamp[256];
+    lib_u8 scamp[128];
     lib_u8 block2[256];
     lib_u8 eced[256];
     lib_u8 selected[3];
