@@ -2,26 +2,34 @@
 
 ## Current Work
 
-## M5 T568 S1 — Active: PC110 F65535 and font-ROM admission audit
+## M5 T568 S2 — Active: PC110 observed font-ROM window
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T568 from the next ordered PC110 receiver after closed T567; one session performs coordinator and executor roles. |
-| Admission And Approval | The standing owner instruction to implement PC110 admits the queue head. This S audits and freezes an implementation boundary before any video/font code is admitted. |
-| Objective | Reconcile the current MyPC110 base, existing X86 NXVM video path, original F65535 sources, external ROM provenance and reference-model limits into one finite display/font implementation ledger. |
-| Non-goals | No display implementation, shared-frame change, renderer shortcut, external code import, raw ROM/font commit, firmware patch, product EXE, guest-boot claim or panel normalization. |
-| Reference Baseline | Closed T565/T566/T567, PC110 display proposal, T558 source/checklist evidence, current X86 NXVM video contracts, and read-only Open-Source-PC110/PC110-QEMU/PC110-EMU research. |
+| Identifier Mode | Continuation of T568 after closed S1; one session performs coordinator and executor roles. |
+| Admission And Approval | S1's source ledger and the standing PC110 implementation instruction admit only the directly observed font-ROM path. |
+| Objective | Compose the PC110 immutable 1 MiB font ROM through the observed 7-bit bank register at 1160h and 8 KiB DE000h window. |
+| Non-goals | No F65535 implementation, display capture, panel mode, 1161h--1163h guessed behavior, raw ROM commit, product EXE or guest-boot claim. |
+| Reference Baseline | T568 S1 ledger, existing Core port/memory-device contracts and App-local MyPC110 base composition. |
 | Candidate Proposal | [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md). |
-| Files And ABI Surface | Documentation/evidence, Current and Queue disposition only. Later S may nominate App-local PC110 and existing X86 Core/X86 NXVM files after proving the actual ownership boundary. |
+| Files And ABI Surface | `src/app-mypc110`, `test/app-mypc110`, task evidence and state only. No Lib, Emulator, X86 Core or X86 NXVM public surface changes. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy; current architecture/coding authorities; no second guest-frame or renderer owner. |
-| Verification | Trace current guest video, memory, frame and reset paths; verify every cited source identity and source grade; classify F65535, VRAM, panel, font window, ROM pairing and frame capacity as direct, labelled model or blocked. |
-| Expected Markers | One source-backed owner/route ledger; explicit DSTN/TFT pairing status; no speculative reuse of QEMU enable/reset assumptions; a bounded implementation cohort or named transfer. |
-| Asset Needs | Read-only external BYOB assets and research only. No binary is copied, transformed or embedded. |
-| Reporting Requirements | Record source grade, current-code route, precise gaps, proposed owner/test surface, rejected shortcuts and unexecuted guest/physical validation. |
-| Stop Conditions | A necessary behavior requires an unapproved Shared frame change, an unsourced panel/ROM pairing, conflicting source facts without a labelled model, or a second display owner. Transfer the exact row. |
-| Exit Criteria | The display/font scope is exhausted into implementation-ready, source-qualified rows or explicit transfers; documents and evidence are pushed. |
+| Verification | Direct App tests prove bank endpoints, bit-7 aliasing, immutable writes, ordinary non-window routing and no fabricated bank-register readback. |
+| Expected Markers | One App-owned font route with Core as sole port/memory dispatcher; no VADP, host path or second font cache. |
+| Asset Needs | Test bytes only. Real owner-managed bytes remain external and are not embedded or committed by this S. |
+| Reporting Requirements | Record source grade, exact route, rejected auxiliary behaviors and unexecuted guest validation. |
+| Stop Conditions | Any needed behavior requires an unapproved Shared change, guessed 1161h--1163h behavior, an unsourced ROM pairing or a second display owner. |
+| Exit Criteria | Both widths pass App-local route tests and all changed documentation/build gates; changes are reviewed, pushed and the next F65535 receiver remains explicit. |
 | Original Owner Request | Continue the PC110 programme after T567 closure. |
-| Similar-Issue Sweep | Check all candidate paths for accidental VADP/PC-AT reuse, external-ROM runtime loading, panel-specific host behavior or a duplicate frame truth. |
+| Similar-Issue Sweep | Check all App-local device routes for an external ROM path, VADP dependency, guessed auxiliary behavior or duplicate memory owner. |
+
+### S2 Delivery
+
+The [font-ROM window record](../etc/evidence/t568-s2-font-rom-window.md)
+captures the App-local `1160h`/`DE000h` route, its required overlap priority
+and the corrected stable composition lifetime. Both cached widths pass all
+four MyPC110 units. The unresolved F65535 chip/panel receiver remains next;
+no raw ROM, executable or guest claim is introduced.
 
 ### S1 Delivery
 

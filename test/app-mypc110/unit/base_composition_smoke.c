@@ -4,13 +4,16 @@
 int main(void)
 {
     static const lib_u8 bios[MYPC110_TFT_BIOS_BYTES] = {0};
+    static lib_u8 font[MYPC110_FONT_ROM_BYTES];
     static const lib_u8 make_break[] = {0x1cu, 0xf0u, 0x1cu};
     mypc110_base_composition composition = {0};
     lib_u32 value = 0u;
     lib_i32 failed = 0;
 
-    failed |= mypc110_base_composition_create(bios, sizeof(bios), &composition) !=
-        LIB_STATUS_OK;
+    font[0] = 0x55u;
+    font[MYPC110_FONT_BANK_BYTES] = 0xaau;
+    failed |= mypc110_base_composition_create(bios, sizeof(bios), font,
+        sizeof(font), &composition) != LIB_STATUS_OK;
     failed |= !failed && (composition.core == LIB_NULL || composition.board == LIB_NULL ||
         composition.configuration_chip == LIB_NULL);
     failed |= !failed && (!x86_core_machine_immutable_rom_mapping_contains(
@@ -25,6 +28,13 @@ int main(void)
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x92u,
             &value) != LIB_STATUS_UNSUPPORTED || x86_core_machine_bus_read(composition.core,
             0x3dau, &value) != LIB_STATUS_UNSUPPORTED);
+    failed |= !failed && (x86_core_machine_memory_read(composition.core,
+        MYPC110_FONT_PHYSICAL_START, &value, 1u) != LIB_STATUS_OK ||
+        value != 0x55u || x86_core_machine_bus_write(composition.core,
+            MYPC110_FONT_BANK_PORT, 0x81u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(composition.core,
+            MYPC110_FONT_PHYSICAL_START, &value, 1u) != LIB_STATUS_OK ||
+        value != 0xaau);
     failed |= !failed && (x86_core_machine_bus_write(composition.core, 0x64u, 0x60u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(composition.core, 0x60u, 0x01u) !=
         LIB_STATUS_OK || x86_nxvm_board_keyboard_receive_native_bytes(composition.board,

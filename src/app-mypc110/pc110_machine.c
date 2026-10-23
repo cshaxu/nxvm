@@ -38,9 +38,10 @@ void mypc110_base_composition_destroy(mypc110_base_composition *composition)
 }
 
 lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
-    lib_size tft_bios_bytes, mypc110_base_composition *out_composition)
+    lib_size tft_bios_bytes, const lib_u8 *font_rom, lib_size font_rom_bytes,
+    mypc110_base_composition *out_composition)
 {
-    mypc110_base_composition composition = {0};
+    mypc110_base_composition *composition;
     mypc110_tft_firmware firmware;
     x86_nxvm_board_plan *plan = LIB_NULL;
     lib_status status;
@@ -50,30 +51,36 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_composition = (mypc110_base_composition) {0};
-    status = x86_vl82c420_create(&composition.configuration_chip);
+    composition = out_composition;
+    status = mypc110_font_rom_create(font_rom, font_rom_bytes, &composition->font);
+    if (status == LIB_STATUS_OK) {
+        status = x86_vl82c420_create(&composition->configuration_chip);
+    }
     if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_plan_create(&mypc110_base_configuration, &plan);
     }
     if (status == LIB_STATUS_OK) {
-        status = x86_nxvm_board_create_from_plan(plan, &composition.core,
-            &composition.board);
+        status = x86_nxvm_board_create_from_plan(plan, &composition->core,
+            &composition->board);
     }
     if (status == LIB_STATUS_OK) {
-        status = x86_core_machine_bind_firmware_provider(composition.core,
+        status = x86_core_machine_bind_firmware_provider(composition->core,
             mypc110_tft_firmware_provider(), &firmware);
     }
     if (status == LIB_STATUS_OK) {
-        status = mypc110_config_install_routes(composition.core,
-            composition.configuration_chip);
+        status = mypc110_config_install_routes(composition->core,
+            composition->configuration_chip);
     }
     if (status == LIB_STATUS_OK) {
-        status = x86_core_machine_freeze_execution_providers(composition.core);
+        status = mypc110_font_rom_install(composition->core, &composition->font);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = x86_core_machine_freeze_execution_providers(composition->core);
     }
     x86_nxvm_board_plan_destroy(plan);
     if (status != LIB_STATUS_OK) {
-        mypc110_base_composition_destroy(&composition);
+        mypc110_base_composition_destroy(composition);
         return status;
     }
-    *out_composition = composition;
     return LIB_STATUS_OK;
 }

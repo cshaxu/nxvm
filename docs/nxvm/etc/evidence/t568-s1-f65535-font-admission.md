@@ -29,7 +29,7 @@ needed merely to expose the PC110 font window.
 | Panel | The original machine's internal panel is 640x480 indexed-color DSTN; TFT conversion uses a different BIOS pair. | L2 for pairing/model until exact selected-ROM observations are frozen. | App chooses the build-fixed identity; no host scaling policy. |
 | Frame capacity | Existing copied-frame storage can represent the expected indexed raster dimensions, but VADP cannot truthfully emit F65535 register/memory semantics. | Direct code audit. | Re-evaluate only after an F65535 capture contract exists; no Shared frame change is admitted. |
 | Font ROM identity | U36 is the 1 MiB IBM 84G7940/OKI MSM538032E DOS/V font ROM, distinct from BIOS flash. | L3 from the service/manual and live discovery record. | App-local immutable firmware binding. |
-| Font decode | Live capture records bank select at `1160h`, a 7-bit bank, an 8 KiB window at `DE000h`, 128 banks, and bank-zero `55 AA`/`FONT`. | L3 live-dump observation. | App-local Bowman font-window receiver. |
+| Font decode | Live capture records bank select at `1160h`, a 7-bit bank, an 8 KiB window at `DE000h`, 128 banks, and bank-zero `55 AA`/`FONT`; the BIOS/shadow range otherwise overlaps this address. | L3 live-dump observation. | App-local Bowman font-window replacement route. |
 | Auxiliary font ports | `1161h` scratch, `1162h` segment and `1163h` enable/reset behavior have incomplete independent behavioral proof. | L2 reference only. | Do not infer QEMU's reset/enable shortcuts; audit exact observed behavior before modelling them. |
 
 The primary research anchors are Open-Source-PC110 `Discovery/Live-Dump`
