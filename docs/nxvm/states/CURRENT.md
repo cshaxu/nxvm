@@ -77,7 +77,7 @@ governance and whitespace checks are the only applicable verification; guest,
 desktop and hardware validation are not claimed. Coordinator review accepts the
 bounded contract and asset-ledger update. S2 is closed; T565 remains open.
 
-## M5 T565 S3 — Active: VL82C420 configuration mechanism
+## M5 T565 S3 — Closed: VL82C420 configuration mechanism
 
 | Field | Required record |
 | --- | --- |
@@ -103,13 +103,33 @@ bounded contract and asset-ledger update. S2 is closed; T565 remains open.
 indexed storage mechanism. Its only gate is the source-backed four-read
 Block2 unlock sequence; actual I/O addresses, register semantics, cold-reset
 images and PC110 wiring remain outside this component. The Core test proves
-the exact unlock order, relock, SCAMP bit-seven alias, bank independence and
+the exact unlock order, relock, full-byte SCAMP selection, bank independence and
 warm retention. Focused x64/x86 builds and tests pass. The two complete
 parallel repository unit executions each reached all 653 cases; their only
 failures were pre-existing timeout-sensitive Lib/Emulator self-checks under
 load, and each failed case passed when immediately rerun alone. No product
 input changed, so no executable artifact refresh is applicable. S3 is closed;
 T565 remains open for the App-owned PC110 board binding.
+
+## M5 T565 S4 — Active: PC110 composition inventory and proven base routes
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open M5 T565 after closed S3; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner directed T565 to continue to closure and standing approval admits bounded in-scope S work. |
+| Objective | Turn the S1/S2 board ledger into a concrete, evidence-backed PC110 composition inventory. Reuse only neutral X86 Core/X86 NXVM construction and controller facilities whose ownership and route facts match the PC110; implement direct, isolated route tests only where a fully proven board endpoint can be attached without inventing configuration defaults. |
+| Non-goals | No AT profile reuse, executable, firmware boot claim, ROM shadow model, guessed chipset/SIO values, display/font/storage/input/power endpoint, QEMU/EMU source import, Shared Lib/Emulator change or App-to-App dependency. |
+| Reference Baseline | T565 S1/S2/S3 evidence; PC110 board/chipset source ledger; current `x86-nxvm` board/controller construction and four App plans. |
+| Files And ABI Surface | Evidence, task packet and, only if a direct verified route exists, App-local `src/app-mypc110`/`test/app-mypc110` construction files plus an existing neutral X86 NXVM construction receiver. No Core API change is presumed. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source/research policy; Core/X86 NXVM dependency direction and source-grade policy. |
+| Verification | Build a per-endpoint reuse/disposition ledger, prove all nominated route owners from current code and primary/reconstructed evidence, run direct tests for any admitted implementation, and run appropriate x64/x86 units/static/manifest gates. |
+| Expected Markers | One future PC110 plan/binding root, one route owner per admitted endpoint, no AT descriptor/slot reuse, no duplicate config bank and a named receiver/blocker for every non-admitted endpoint. |
+| Asset Needs | Read-only use of owner-managed PC110 TFT manifest and research checkouts. No external firmware enters Git or an executable during this S. |
+| Reporting Requirements | Record actual route evidence, retained/blocked endpoints, source grades, exact diff and all missing guest/desktop/hardware proof. |
+| Stop Conditions | Any proposed route needs an unqualified reset/decode default, an AT facade, a Shared contract, or an unresolved firmware identity. Stop that route rather than modeling a plausible substitute. |
+| Exit Criteria | Every PC110 base endpoint is either attached through a tested single owner or explicitly retained for its named later receiver; no hidden AT assumption or firmware claim; required gates pass and the scoped result is pushed. |
+| Original Owner Request | Continue the complete admitted PC110 board/chipset/firmware mapping task to closure. |
+| Similar-Issue Sweep | Compare each candidate route with every existing four-App plan to catch accidental descriptor, firmware-slot or controller-state reuse. |
 
 ## M5 T564 — Closed: public-component qualification
 

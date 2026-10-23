@@ -97,8 +97,7 @@ lib_status x86_vl82c420_select(x86_vl82c420 *chip,
     lib_status status = x86_vl82c420_access_status(chip, bank);
 
     if (status != LIB_STATUS_OK) return status;
-    chip->selected[bank] = bank == X86_VL82C420_BANK_SCAMP ?
-        (lib_u8)(index & 0x7fu) : index;
+    chip->selected[bank] = index;
     return LIB_STATUS_OK;
 }
 
