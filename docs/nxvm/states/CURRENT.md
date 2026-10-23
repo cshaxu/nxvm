@@ -39,7 +39,7 @@ firmware choices, and does not create a hidden placeholder implementation.
 Documentation governance and whitespace checks pass. S1 is closed; T565
 remains open for its next bounded board-evidence receiver.
 
-## M5 T565 S2 — Active: PC110 construction, reset and decode contract
+## M5 T565 S2 — Closed: PC110 construction, reset and decode contract
 
 | Field | Required record |
 | --- | --- |
@@ -68,10 +68,14 @@ firmware binding publishes through the neutral `x86-nxvm` construction path,
 while `x86-core` remains the sole executor, reset and ROM-map owner. The
 existing AT preparation helper is explicitly excluded. Each BRD/SIO row now
 has one later owner, evidence grade, falsification test and named blocker;
-unknown chipset/reset or firmware facts remain blocked rather than inferred.
-No source, ROM, media, executable or runtime behavior changed. Documentation
+unknown chipset/reset facts remain blocked rather than inferred. The owner has
+now admitted the local PC110-EMU TFT candidates into the external asset archive;
+only their future typed binding/build validation remains, while stock DSTN
+firmware is still unavailable.
+No repository source, executable or runtime behavior changed. Documentation
 governance and whitespace checks are the only applicable verification; guest,
-desktop and hardware validation are not claimed. S2 is ready for review.
+desktop and hardware validation are not claimed. Coordinator review accepts the
+bounded contract and asset-ledger update. S2 is closed; T565 remains open.
 
 ## M5 T564 — Closed: public-component qualification
 

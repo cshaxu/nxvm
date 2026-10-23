@@ -27,8 +27,8 @@ app-mypc110 machine plan
 
 There is no runtime model switch, second executor, BIOS interception or reuse
 of an AT descriptor as a PC110 disguise. DSTN and TFT remain separate
-build-fixed firmware pairings; their release admission is separately blocked
-on lawful external asset/provenance approval.
+build-fixed firmware pairings. The currently admitted TFT bytes live only in
+the owner-managed asset archive; the stock-DSTN pairing remains unavailable.
 
 ## Reset and decode disposition
 
@@ -43,13 +43,13 @@ on lawful external asset/provenance approval.
 
 ## Firmware contract
 
-The S1 candidate hashes remain research identities, not repository inputs or
-release masters. A later Firmware receiver must provide an owner-approved
-external asset record for every compiled pairing, retain master/derived hashes
-outside the repository and prove the selected panel/BIOS relationship. The
-future App passes bytes by a typed PC110 firmware binding; it does not select a
-slot in the AT helper, infer a firmware from an INI, or fall back across panel
-variants.
+The owner admitted the local PC110-EMU candidates as external TFT build inputs:
+`profiles-nxvm/ibm-pc110-tft/manifest.yaml` records the BIOS, font, power-MCU
+and keyboard-MCU hashes. They remain outside this repository and must be
+validated by the future build before embedding. A stock-DSTN master is still
+unavailable. The future App passes bytes by a typed PC110 firmware binding; it
+does not select a slot in the AT helper, infer a firmware from an INI, or fall
+back across panel variants.
 
 ## Implementation-ready versus blocked work
 
@@ -57,7 +57,7 @@ variants.
 | --- | --- |
 | Implementation-ready | Create the `app-mypc110` source/test root only when the first concrete board binding and its source-backed population are selected; use the existing neutral Core firmware provider and one construction lifetime. |
 | Implementation-ready | Add independent negative construction tests for duplicate/missing attachment ownership once a PC110 plan exists. |
-| Blocked | Chipset reset tables, ROM/shadow behavior, SIO reset defaults, panel-specific boot and all firmware embedding remain blocked on the rows named above. |
+| Blocked | Chipset reset tables, ROM/shadow behavior, SIO reset defaults and panel-specific boot remain blocked on the rows named above. TFT embedding is eligible only after its App binding and build-time asset validation exist; DSTN remains blocked on its missing master. |
 | Deferred | Display/font, PCMCIA/flash/storage, keyboard/pointer/power and audio/aux retain their existing receiver proposals. They may not create an alternate construction or decode owner. |
 
 ## Verification and limits
