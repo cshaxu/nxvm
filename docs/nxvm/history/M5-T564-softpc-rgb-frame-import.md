@@ -6,7 +6,8 @@ The owner accepted and closed S5 on 2026-10-22. Shared `09ebe0476`, MyNES
 `c79285fef`, and NXVM `abb2b10f2` deliver the import, ten EXEs and receiver
 qualification. The [S5 evidence](../etc/evidence/t564-s5-softpc-shared-import.md)
 records the one native Console failure and passing isolated retry; its cause
-remains unresolved. T564 remains open and S2 acceptance remains separate.
+remains unresolved. T564 remains open. The owner directed the overdue S2
+status closure on 2026-10-22; its original verification limits still apply.
 
 Owner-admitted on 2026-10-17 after T563 closure. S1 imports committed SoftPC
 dfc85aac4387600033d3ed11d7fb26e74b9eb631 and adapts all ten receiving EXEs.
@@ -57,5 +58,11 @@ blink coverage under the new reset contract. Final repository-only unit runs
 passed 697/697 on each architecture; the verifier took 37.20 seconds on x64.
 Documentation governance and scoped diff review passed. These test-only
 corrections do not change runnable inputs, so the eight P2 EXEs remain current.
-The owner INI edits were not included. S3 is closed; S2 acceptance and T564
-closure remain separate and are not implied by this record.
+The owner INI edits were not included. S3 is closed; S2 was subsequently
+closed by owner direction. T564 closure is not implied by these records.
+
+## S4 — Shared import audit
+
+The S4 audit was accepted for the S5 import and is closed. Its
+[evidence](../etc/evidence/t564-s4-softpc-shared-audit.md) retains the
+review baseline and findings; S5 qualification and limits are separate.

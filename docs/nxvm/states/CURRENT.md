@@ -36,7 +36,7 @@ owner's requested audit and queue disposition are complete; Td S182 is closed.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation of open T564 after S4 audit; single-session coordinator and executor. S2 remains delivered pending owner acceptance. |
+| Identifier Mode | Continuation of open T564 after S4 audit; single-session coordinator and executor. S2 was subsequently closed by owner direction. |
 | Admission And Approval | Owner authorizes verbatim import, build, release, testing, commit and push on 2026-10-22. |
 | Objective | Import the committed SoftPC Lib, Emulator, X86 Debug and X86 IBM PC source/test pairs byte for byte and qualify affected products. |
 | Non-goals | No sibling repository writes, uncommitted upstream import, user INI/media changes, or unrelated feature changes. |
@@ -66,12 +66,12 @@ failure, retest and verification limits. Two pre-existing owner INI changes
 were subsequently restored at the owner's request. The owner accepted and
 closed S5 on 2026-10-22; T564 remains open. The intermittent MyNES native
 Console failure remains a separately queued investigation, not a claimed fix.
-T564 S3 was accepted by the owner and closed on 2026-10-22. The
+T564 S3 was accepted by the owner and closed on 2026-10-22. S4's audit was
+accepted for S5 import and is closed. The
 [task history](../history/M5-T564-softpc-rgb-frame-import.md) records its
-delivery, corrective verification and closure. T564 remains open; S2's
-separate owner acceptance remains outstanding.
+delivery, corrective verification and closure. T564 remains open.
 
-## M5 T564 S2 — Delivered, awaiting owner acceptance
+## M5 T564 S2 — Closed
 
 | Field | Required record |
 | --- | --- |
@@ -92,7 +92,9 @@ separate owner acceptance remains outstanding.
 | Original Owner Request | Investigate reset then resume and stop then start hanging at cursor. |
 | Similar-Issue Sweep | Compare initial start, reset/resume, stop/start and other machine states without assuming they share a cause. |
 
-Delivered for owner acceptance: owner clarified that both paths eventually start,
+Closed by owner direction on 2026-10-22 after delivery; this status correction
+does not add desktop, RDP, or other verification beyond the evidence below.
+Delivery: owner clarified that both paths eventually start,
 but are slow, and reset/resume enters the hard disk/date prompt instead of the
 initial floppy boot. x64 deployed 0564 with the adjacent Window/overlay
 INI produced a 640x400 first Window, then a 9600x6000 client after
@@ -164,7 +166,7 @@ There is no active S packet and no successor task is admitted.
 
 | Task | Progress |
 | --- | --- |
-| T564 | S1 accepted and closed: committed SoftPC eight-tree import, sole PC/NES RGB/text receiving paths, ten qualified releases. T-level closure has not been requested. |
+| T564 | S1--S5 closed; S4 audit led to the S5 import. T-level closure has not been requested. |
 
 The complete S1 packet is retained in `b9433b31d`. The
 [proposal](../proposals/m5-softpc-rgb-frame-import.md),
