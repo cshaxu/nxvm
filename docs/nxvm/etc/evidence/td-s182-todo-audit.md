@@ -3,6 +3,9 @@
 Baseline: NXVM 92c66ac04, static inspection of the current TODO, Queue,
 Shared rules and selected production/test paths; no runtime or full CPU audit.
 An unchecked historical debt is not proof of a current defect or of repair.
+Owner-directed Td S183 subsequently corrected both Shared documentation
+items and removed them from the current TODO; their rows below are historical
+audit findings, not current unresolved entries.
 
 | Original item | Evidence and disposition |
 | --- | --- |

@@ -4,19 +4,6 @@ Only unplanned debt belongs here; [Queue](QUEUE.md) owns admitted candidate
 receivers. The [former debt disposition](../etc/history/retired-machine-plans/README.md)
 preserves every old entry and its retirement/transfer, not an assertion of repair.
 
-- [ ] **Shared package vocabulary (`TODO(Low)`).** Shared rules still enumerate
-  historical `lib/common/x86` paths. Current shared roots are the source/test
-  pairs for Lib, Emulator, X86 Debug, X86 IBM PC and X86 Core; the separate
-  X86 NXVM package owns NXVM-family chips, boards, Machine and Product after
-  T561 S8. T556 S8 finding A6 requires a separate Td to reconcile shared-rule
-  vocabulary; T561 does not modify docs/rules.
-- [ ] **Shared artifact wording (`TODO(Low)`).** Execution's historical fixed-
-  product paragraph still prescribes machine-key filenames, nested directories
-  and a generated INI. T557 explicitly records the owner's overriding contract:
-  product-prefixed lowercase EXEs and owner-maintained product INIs in the
-  existing flat App directories. Reconcile that paragraph in the same separate
-  Shared Td; do not regenerate owner configuration or restore obsolete names.
-
 ## CPU, Time, And Debugging Debt
 
 - [ ] **Internal descriptor vocabulary (`TODO(Low)`).** Preserve data layout

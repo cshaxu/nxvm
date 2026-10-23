@@ -2,6 +2,14 @@
 
 ## Current Work
 
+M5 Td S183 is closed: the owner directed correction of the two Shared documentation
+items omitted from Td S182. Shared documentation rules now identify the six
+current shared source/test package pairs, and Execution records the four PC
+Apps' lowercase product-specific EXE/INI layout. These are documentation-only
+corrections; no binaries, INIs or source code change. The two entries are
+removed from NXVM TODO; documentation governance checks passed for NXVM,
+MyNES and MyRaidenII. Shared delivery is `004169618`. T564 remains open.
+
 ## M5 Td S182 — Closed: NXVM documentation governance
 
 | Field | Required record |
