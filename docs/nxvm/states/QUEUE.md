@@ -78,6 +78,7 @@ the ordered candidates below remain unadmitted.
 8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 10. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+11. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)
