@@ -2,6 +2,32 @@
 
 ## Current Work
 
+## M1 T7 S117 — Closed: V30 execution-path decision
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after accepted S116; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner directed continued MyRaidenII execution-efficiency work, approved automatic in-scope S admission, and rejected speculative shortcuts. MyRaidenII owns the investigation; a Shared change requires a measured, owner-local candidate. |
+| Objective | Decide whether the remaining selected-set V30/Core cost contains one demonstrable duplicate or zero-work path eligible for removal; otherwise record that the remaining real-time gap requires a separately designed execution strategy. |
+| Non-goals | No JIT/dynarec, second executor, guest-clock/timing/semantic change, frame/audio shortcut, architecture-specific release exception, public API/layout change, protected-source import, or speculative production edit. |
+| Reference Baseline | The matched VBlank-relative Coin/Start route reaches 8,000,000 instructions, 133,667,500 guest ticks and frame digest `0364633fdce1196d`; ordinary x64 Release measured 20,223.1 ms, while the matching x86 route is slower. Release already uses `-O3`; S116 rejected IPO because it regressed x86 materially. |
+| Candidate Proposal | Inspect the actual retirement/refresh/timing/transaction path and available bounded attribution mechanisms. The reviewed candidate was a deterministic/no-observer `completed_observation` copy after timing selection. It is rejected: the public CPU observation contract preserves completed facts across asynchronous entry, so the copy cannot be made receiver-dependent. No source edit is eligible. |
+| Files And ABI Surface | MyRaidenII evidence and Current only. No source, test, public surface, artifact or diagnostic scratch changed. |
+| Applicable Rules | MyRaidenII architecture/coding/source policy and shared execution/architecture/coding/documentation rules: one guest clock and executor, deterministic ordering, protected-media containment, bounded diagnostics, inward dependencies and simplest correct result. |
+| Verification | Reviewed the public observation declaration, all source/test callers and the completed-refresh/asynchronous-entry order. Existing matched selected-set facts from S115/S116 remain the baseline; no source changed, so no rebuild or replay is relabelled as this S's verification. |
+| Expected Markers | Met by the evidence-backed no-eligible-cleanup result. |
+| Asset Needs | Read-only `O:\assets\raidenii\raiden2.zip` only through the verified staging wrapper; no ROM payload, screenshot, raw trace or profiler output is retained. |
+| Reporting Requirements | Record inspected owner paths, attribution method and limitations, checkpoint/timing facts, retained or removed source path, cleanup and unexecuted desktop/RDP/audio qualification. Do not call a benchmark gameplay qualification. |
+| Stop Conditions | Attribution is unreliable or exceeds budget; candidate requires prohibited design/timing change; no owner-local duplicate is shown; or a candidate fails to produce durable gain. |
+| Exit Criteria | Met by a documented no-change disposition. The real-time gap is not called solved and requires a separately approved execution-strategy design. |
+| Original Owner Request | Make MyRaidenII practically usable through real efficiency, not fake clocks, presentation shortcuts or a prolonged series of speculative micro-patches. |
+| Similar-Issue Sweep | Review refresh, decode, timing, prefetch, transaction, observation, board-attachment and no-observer paths; retain every operation that carries a distinct guest-visible or physical-qualification effect. |
+
+The [S117 execution-path decision](../etc/evidence/t7-s117-execution-path-decision.md)
+records why the only concrete candidate remains required by the public CPU
+contract.  It retains no source or artifact change and does not claim a
+real-time or gameplay result.
+
 ## M1 T7 S116 — Closed: V30 CPU sampled-cost attribution
 
 | Field | Required record |
