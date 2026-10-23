@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 Td S182 — Active: NXVM documentation governance
+## M5 Td S182 — Closed: NXVM documentation governance
 
 | Field | Required record |
 | --- | --- |
@@ -23,12 +23,14 @@
 | Original Owner Request | Close preceding S and admit a Td to govern NXVM project documentation. |
 | Similar-Issue Sweep | Review related current authorities and references; retain history rather than rewriting it. |
 
-The [preliminary 20-item audit](../etc/evidence/td-s182-todo-audit.md)
+The [20-item audit](../etc/evidence/td-s182-todo-audit.md)
 distinguishes verified current facts, historical observations and conditional
 future work. The PC App test encapsulation audit is queued at the tail without
 reordering existing candidates; the old verifier timeout statement is corrected.
-Shared issues are not repaired here. Detailed validation of unproven items and
-reconciliation of stale candidate proposal wording remain open in this Td.
+Shared issues are not repaired here. Two existing candidate proposals now use
+current App, component and INI names. Unproven historical issues remain explicitly
+conditional; reproducing or fixing them is outside this documentation Td. The
+owner's requested audit and queue disposition are complete; Td S182 is closed.
 
 ## M5 T564 S5 — Closed: verbatim SoftPC shared-package import
 

@@ -1,4 +1,4 @@
-# M5 Td S182: NXVM TODO preliminary disposition
+# M5 Td S182: NXVM TODO disposition
 
 Baseline: NXVM 92c66ac04, static inspection of the current TODO, Queue,
 Shared rules and selected production/test paths; no runtime or full CPU audit.
@@ -28,9 +28,10 @@ An unchecked historical debt is not proof of a current defect or of repair.
 | DevBox | No explicit product goal or trust boundary; retain exploratory item, no implementation queue. |
 
 The existing CPU differential and four-machine guest qualification candidates
-remain in their original order. Their descriptions still contain historical
-layout and INI terminology; an implementation task must reconcile those facts
-before use. A structural documentation gate alone does not prove these facts.
-No production or Shared file was modified. This ledger is preliminary: broad
-claims about absent defects, complete hardware correctness or the detailed
-semantics of all Shared failure paths require additional direct proof.
+remain in their original order; their current layout and INI descriptions were
+updated. The PC App test encapsulation candidate was appended. All other items
+remain conditional or unproven and are not duplicated as new NXVM candidates.
+The Shared async-wake and desktop issues also have a MyNES queue receiver.
+No production or Shared file was modified. A structural documentation gate
+does not prove absence of defects, hardware correctness or detailed Shared
+failure semantics; these limitations are dispositions, not Td blockers.

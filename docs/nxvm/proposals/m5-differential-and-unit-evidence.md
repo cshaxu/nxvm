@@ -10,13 +10,13 @@ making it a dependency of the emulator or resurrecting withdrawn product lines.
 The fixed-product cutover is complete. Differential tools observe the
 existing Core/Debug boundary and never select a profile, firmware or CPU at
 runtime. Repository-only unit tests remain file-free; product integration uses
-the selected external BYOB assets and adjacent NXVM.ini through the production
+the selected external BYOB assets and product-specific adjacent INI through the production
 route.
 
 The preceding [three-stage migration](../history/M5-T543-four-pc-apps-proposal.md) changes owners,
-not this task's purpose. Observe shared `x86/chips` CPU contracts through the
-existing public Debug/adapter route. Shared Core/chip/board tests belong to the
-matching `test/x86/{core,chips}` or `test/ibmpc/{board-common,board-at,board-xt}` component; specific machine and production-INI tests belong to
+not this task's purpose. Observe `x86-core` CPU contracts through the
+existing public Debug/adapter route. Shared CPU and PC hardware tests belong to
+their matching `test/x86-core` or `test/x86-nxvm` owners; specific machine and production-INI tests belong to
 their independent App. Never retain a dependency on removed app-nxvm internals.
 
 ## Batches

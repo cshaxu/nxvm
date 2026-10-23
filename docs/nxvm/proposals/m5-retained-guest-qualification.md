@@ -8,13 +8,13 @@ actual hardware and firmware. No machine is replaced or gated on Standard select
 ## Current Product Context
 
 The completed cutover establishes four product bindings: one selected Profile and external
-BYOB asset root at build time, one adjacent NXVM.ini for runtime media and
-presentation, and deployment only in `assets/nxvm/<profile>/`. This task
+BYOB asset root at build time, a product-specific adjacent INI for runtime media and
+presentation, and deployment in each App's `assets/<app>/` directory. This task
 extends that production behavior; it does not use retired YAML/catalog
 construction or manufacture firmware/CMOS/media substitutes.
 
 After the preceding [App split](../history/M5-T543-four-pc-apps-proposal.md), run these same
-scenarios against mypcxt, mypcat, mypcdeskpro386 and default-386 nxvm using
+scenarios against my5160, my5170, mydeskpro386 and nxvm using
 their admitted artifact/INI map. Preserve scenario identities and checkpoints;
 do not interpret changed executable paths as permission to drop coverage.
 
@@ -27,7 +27,7 @@ Standard Mode and 386 Enhanced Mode lifecycle in that dependency order.
 Record any unsupported prerequisite explicitly; do not broaden the hardware
 configuration dynamically to pass a later checkpoint.
 
-After the configuration cutover, use NXVM.ini and external readonly
+Use the corresponding App INI and external readonly
 masters/overlays through the production asset route. Preserve the original
 integration universe with an explicit per-row migration map. Move scenarios to
 the new structure and loader without removing their machine coverage or weakening
