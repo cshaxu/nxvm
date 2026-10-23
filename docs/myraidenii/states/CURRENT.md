@@ -2,23 +2,23 @@
 
 ## Current Work
 
-## M1 T7 S113 — Active: local execution-rendezvous efficiency
+## M1 T7 S113 — Closed: local execution-rendezvous efficiency
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation after bounded S112 diagnostic; single-session coordinator and executor. |
 | Admission And Approval | Owner requested an immediate investigation and practical improvement after observing that the selected game is too slow to use. The scope is limited to the MyRaidenII App; no Shared component may change. |
-| Objective | Remove the App-local excessive Emulator rendezvous cadence without changing guest timing, input route, rendering path, audio model, or lifecycle contract. |
-| Non-goals | No Lib/Emulator/X86 Core/X86 Debug/X86 IBMPC/X86 NXVM change; no CPU optimization, second clock, frame skip, audio-rate change, sound-model rewrite, new thread, queue, or product UX claim. |
+| Objective | Establish the single measured App-local steady-state bottleneck after the delivered rendezvous reduction, then remove only that proven excess work while preserving guest timing, input routing, rendering output, audio model and lifecycle contract. |
+| Non-goals | No Lib/Emulator/X86 Core/X86 Debug/X86 IBMPC/X86 NXVM change; no CPU shortcut, second clock, frame skip, audio-rate change, sound-model rewrite, new thread, queue, or product UX claim. |
 | Reference Baseline | The x64 selected-set probe executes 2,000,000 instructions / 33,287,472 guest ticks in 4,969 ms (about 0.42x of the nominal 16 MHz guest axis) while using 4,096-instruction Core runs. The production MyRaidenII Machine instead uses a 256-instruction run quantum and invokes the existing Emulator callback before and after every quantum. |
-| Candidate Proposal | Raise only the Machine's existing host-control instruction bound to 4,096, matching the already exercised probe bound; retain both existing callback positions and the sole Core run / audio / frame paths. |
-| Files And ABI Surface | `src/myraidenii/machine/driver.c`, the existing `test/myraidenii/unit/machine/driver_smoke.c`, Current/evidence and affected MyRaidenII build/test records. No public API or Shared source/test change. |
+| Candidate Proposal | The delivered 4,096-instruction bound remains. Use a bounded, untracked product-route measurement to separate Core execution, VBlank frame conversion and audio drain/pacing costs; implement only a proven MyRaidenII-local reduction of duplicate work. |
+| Files And ABI Surface | Initially diagnostic only under `build/t7-s113-profile`; later only the single proven MyRaidenII owner, its existing test, Current/evidence and affected build/test records. No public API or Shared source/test change. |
 | Applicable Rules | MyRaidenII architecture/coding/UI, shared execution/architecture/coding/documentation rules; sole guest clock, one Machine driver, one input route, VBlank-only frame publication and bounded host control. |
-| Verification | Extend the existing driver fixture to assert the one Core budget; build and run affected x64/x86 MyRaidenII units and the selected-set probe. Compare guest execution facts before/after; record the hosted speed boundary separately from desktop/RDP qualification. |
+| Verification | Measure Core-only and actual Machine-driver execution over the same bounded selected-set phase before altering source; then build and run affected x64/x86 MyRaidenII units and the selected-set probe. Compare guest execution facts before/after; record the hosted speed boundary separately from desktop/RDP qualification. |
 | Expected Markers | Exactly one existing Core run per driver turn with 4,096 instructions; unchanged two callback rendezvous per turn, lifecycle/input semantics, fault propagation and VBlank publication behavior. |
 | Asset Needs | Existing read-only owner ROMs only for the bounded selected-set probe; no retained protected payload. |
 | Reporting Requirements | Give measured baseline, actual diff, dual-width results, any measured gain, and desktop/RDP/audio limitations. Do not claim real-time gameplay unless it is actually measured. |
-| Stop Conditions | Evidence requires a Shared contract change, callback removal, guest-time alteration, audio/rendering shortcut, or the existing 4,096 bound changes lifecycle/input semantics. |
+| Stop Conditions | Evidence requires a Shared contract change, callback removal, guest-time alteration, audio/rendering shortcut, or the existing 4,096 bound changes lifecycle/input semantics. If measurement identifies no App-local duplicate work, record that Core execution is the limiting owner and transfer rather than guessing a quality tradeoff. |
 | Exit Criteria | The local bound and fixture proof are reviewed, focused dual-width validation passes, no prohibited component changes, and the result is committed/pushed for owner validation. |
 | Original Owner Request | Investigate why MyRaidenII is too slow to use and improve execution efficiency without destabilizing the emulator. |
 | Similar-Issue Sweep | Compare the direct selected-set probe, Machine run cadence, callback locations, audio drain/backpressure, VBlank frame copy and host pacing; retain distinct mechanisms unless evidence shows duplicate work. |
@@ -29,8 +29,12 @@ existing executor callbacks and every guest-time/audio/frame path.  The
 focused x64/x86 Driver unit and complete MyRaidenII unit selection each pass;
 the two-width owner-ROM selected-set probe also completes its bounded route.
 Both current `0.0.0007` release EXEs were rebuilt and deployed with checked PE
-identities.  Native Window/RDP responsiveness and audible output remain owner
-desktop validation; this S awaits that acceptance.
+identities.  Subsequent bounded steady-state isolation found that this App-local
+change cannot make the product usable: disabling Sound reduces the selected
+route from 23.65 s to 20.44 s, leaving the shared V30/Core execution path as
+the material owner.  The temporary diagnostic source was restored and its
+normal probe rebuilt.  P2 records that transfer; it does not claim desktop,
+RDP or audible-output qualification.
 
 ## M1 T7 S112 — Closed
 

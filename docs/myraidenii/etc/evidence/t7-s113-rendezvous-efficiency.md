@@ -63,3 +63,33 @@ component: `myraidenii_0_0_0007_x64.exe` is PE `0x8664`, SHA-256
 
 The native Window/RDP and audible-output qualifications remain owner desktop
 validation, not a consequence of the automated evidence above.
+
+## Follow-up steady-state isolation
+
+After owner feedback that the delivered quantum reduction was still not usable,
+the bounded x64 selected-set route was rerun through its existing external
+staging wrapper at 8,000,000 instructions with the established VBlank-relative
+Coin/Start sequence.  It completed in 23,650.1 ms for 133,667,500 guest ticks
+(about 0.35 of the declared 16 MHz guest axis), while producing 100,444 PCM
+frames, 4,948 YM register writes and four active OKI voices.  There was no
+Board or COP provider failure.
+
+To separate the Sound contribution without retaining a second production path,
+the existing diagnostic probe was temporarily built with its already documented
+optional Sound input omitted, run once, then restored and rebuilt from the
+tracked source.  That same bounded route completed in 20,438.7 ms.  Sound
+therefore accounts for roughly 13.5 percent of this measured boot/attract
+phase, not the missing factor required for real-time guest execution.
+
+The remaining roughly 20 seconds are V30 execution and its required Board
+advance (video/COP) path.  Window composition was sampled only four times in
+this direct diagnostic, so it cannot explain the Core-only deficit; actual
+Window work can only add cost.  A separate global-LTO diagnostic reduced the
+earlier 2,000,000-instruction route by about 9 percent, also insufficient and
+not a portable release remedy.
+
+Consequently no further App-local quality-reducing change is justified:
+lowering PCM rate, frame skipping, lying about the guest clock or weakening
+video/COP advancement would change the emulator rather than remove duplicate
+work.  The remaining performance owner is the shared X86 Core execution path.
+S113 records this transfer boundary; it does not alter Shared source.
