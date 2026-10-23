@@ -2,33 +2,33 @@
 
 ## Current Work
 
-## M5 T564 S6 — Delivered, awaiting owner acceptance: Lib Console rollback and native desktop isolation
+## M5 T564 S7 — Active: Emulator Machine wake failure contracts
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation of open T564; S1--S5 are closed; single-session coordinator and executor. |
-| Admission And Approval | Owner admitted S6 on 2026-10-22; Shared repairs remain subject to the established review boundary. |
-| Objective | Investigate current Console failure rollback and desktop-test isolation; repair proven Lib-owned defects without weakening behavior or assertions. |
-| Non-goals | No speculative fix, new framework, browser storage or Linux qualification; no unrelated product, media or INI changes. |
-| Reference Baseline | NXVM b69f738d1; imported SoftPC shared baseline and T564 S5 evidence; historical T538 and T539 observations. |
-| Candidate Proposal | T564 public-component quality program, S6; historical evidence t538-boot-pairs and t539-s21-lea-movx-migration. |
-| Files And ABI Surface | Lib Console Broker and Lib desktop tests if justified; required receiver tests, manifests and artifacts only if affected. No public ABI change presumed. |
-| Applicable Rules | NXVM guide and source policy; Execution, Architecture, Coding and Documentation rules; inward dependencies, minimal ownership and real native assertions. |
-| Verification | Reproduce or bound each historical observation on current code; focused failure injection and native desktop tests, x64/x86 full repository units, relevant integration and static gates; qualify every affected receiver and binary when production changes. |
-| Expected Markers | An explicit disposition for both historical cases, retained cooked-buffer history and viewport when rollback is supported, and preserved modal assertions without concurrent desktop interference. |
-| Asset Needs | Existing reusable Ninja/ccache graphs; disposable test data only; preserve owner INI and media. |
-| Reporting Requirements | Separate observed failure, reproduction, hypothesis and repair; report actual diff, desktop versus RDP limits, and artifact identities. |
-| Stop Conditions | Unresolved required failure, unapproved public API or external change, or inability to preserve native test assertions. |
-| Exit Criteria | Both cases and Lib strict-compilation exceptions dispositioned with evidence; required tests, review and any affected artifacts committed and pushed; owner acceptance. |
-| Original Owner Request | Admit S6 and explain which problems it will address. |
-| Similar-Issue Sweep | Inspect related Console handoff failure paths and desktop test registrations; do not assume a failed test proves production failure. |
+| Identifier Mode | Continuation of open T564; S1--S6 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner accepted S6 and admitted the next S on 2026-10-22; Shared changes remain subject to the established review boundary. |
+| Objective | Audit Emulator Machine asynchronous wake and event-operation failure handling for lifecycle, input, debug cancellation and shutdown; correct proven defects under the existing contract. |
+| Non-goals | No speculative fix, duplicate queue, recovery thread, new framework, unrelated product change, Linux or browser qualification. |
+| Reference Baseline | NXVM 9c455da4d and accepted T564 S6 evidence. |
+| Candidate Proposal | T564 public-component quality program, S7; inspect current code and historical evidence before deciding whether a defect exists. |
+| Files And ABI Surface | Emulator Machine and its tests if justified; relevant manifests and receiver tests only as needed. No public ABI expansion assumed; review Shared changes before implementation. |
+| Applicable Rules | NXVM guide and source policy; Execution, Architecture, Coding and Documentation rules; inward dependencies, single state owner, minimal failure handling and honest coverage. |
+| Verification | Inspect all scoped paths and existing failure tests; inject failures only where a real gap justifies them; x64/x86 full repository units, relevant integrations and static gates; qualify receivers and rebuild affected binaries if production changes. |
+| Expected Markers | Evidence-backed disposition of accepted work, wake failure, pending ownership, cancellation and shutdown paths; no false success or duplicate delivery and no weakened assertions. |
+| Asset Needs | Existing Ninja/ccache graphs and disposable test data; preserve owner INI, media and unrelated work. |
+| Reporting Requirements | Begin with an evidence-based brief; distinguish proven failure from hypothesis and report proposed scope, actual diff, tests, desktop limitations and affected artifact identities. |
+| Stop Conditions | Unresolved safety failure, unapproved Shared or public API expansion, external change, or inability to preserve existing behavior. |
+| Exit Criteria | Scoped wake paths and Emulator strict-compilation exceptions dispositioned with evidence; justified repairs and tests complete; required review, verification and affected artifacts committed and pushed; owner acceptance. |
+| Original Owner Request | Close S6, admit the next S and first provide its task brief. |
+| Similar-Issue Sweep | Inspect event signal, reset and wait results across lifecycle, input, debug cancellation and shutdown, distinguishing synchronous accepted work from actual failures. |
 
 The owner extended open T564 on 2026-10-22 to plan the public-component TODO
 classes and former PC App test-encapsulation candidate as S6--S13. The
 [updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
 sequence and conditional dispositions, reordered by owner direction as Lib,
 Emulator, X86 Debug, X86 IBM PC, X86 Core, then X86 NXVM. S1--S5 remain closed;
-S6 verification and review are recorded in the [S6 evidence](../etc/evidence/t564-s6-lib-console-review.md); no code repair or additional test was justified. Delivery awaits owner acceptance. Model40 throughput, DevBox exploration,
+The owner accepted and closed S6 on 2026-10-22; its [evidence](../etc/evidence/t564-s6-lib-console-review.md) records the audit and verification. S7 is active. Model40 throughput, DevBox exploration,
 Linux runtime verification and future browser storage remain in NXVM TODO;
 the latter two are excluded from T564 by owner direction. T564 is open.
 
