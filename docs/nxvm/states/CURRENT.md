@@ -2,6 +2,66 @@
 
 ## Current Work
 
+## M5 T564 S2 — Active: PC reset and restart repair
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S2 follows accepted S1. Single-session coordinator and executor. |
+| Admission And Approval | Owner requests investigation then approves repair, build, deployment, tests, commit and push on 2026-10-22; Shared x86-nxvm FDC and affected consumers are in scope. |
+| Objective | Repair FDC absolute time on machine cold reset and verify reset/resume and stop/start boot from the configured floppy. |
+| Non-goals | No unrelated Window geometry change, protected media mutation, CMOS policy change, or claim based solely on a state notification. |
+| Reference Baseline | Repository HEAD 2b54b51a5 and deployed NXVM 0564; preserve owner INI and disk images. |
+| Candidate Proposal | Bounded owner-directed investigation in open T564; compare first boot against reset/resume and stop/start using existing tests and isolated read-only or disposable media. |
+| Files And ABI Surface | Shared x86-nxvm FDC, its existing tests/manifests; NXVM boot regression, task records and affected product binaries. No public API change. |
+| Applicable Rules | Execution and documentation authorities; inward architecture and coding boundaries; owner-managed media must be protected. |
+| Verification | Prove full versus controller reset clock semantics and guest-visible floppy boot on both paths; build both architectures, run focused and full repository units, relevant integrations, manifest and documentation gates; deploy and verify affected EXEs. Separate real desktop from machine-level evidence. |
+| Expected Markers | Cold reset rebases FDC time; controller port reset preserves it; both sequences reach A:\> following a nontrivial prior run. |
+| Asset Needs | Existing deployed binary and INI are read-only; task-owned temporary diagnostics under build/t564-s2, 1 hour, 100 MiB, 10-minute no-progress budget; no protected media writes. |
+| Reporting Requirements | Explain each sequence, evidence, differences from initial boot, affected ownership, uncertainty and next action. |
+| Stop Conditions | Protected media mutation, unrelated Shared/API change, or unexplained failing required validation. |
+| Exit Criteria | Repair and regression complete, affected products rebuilt and tested, actual diff reviewed and scoped commits pushed; await owner acceptance; T564 remains open. |
+| Original Owner Request | Investigate reset then resume and stop then start hanging at cursor. |
+| Similar-Issue Sweep | Compare initial start, reset/resume, stop/start and other machine states without assuming they share a cause. |
+
+Delivered for owner acceptance: owner clarified that both paths eventually start,
+but are slow, and reset/resume enters the hard disk/date prompt instead of the
+initial floppy boot. x64 deployed 0564 with the adjacent Window/overlay
+INI produced a 640x400 first Window, then a 9600x6000 client after
+reset/resume in two observations. Reducing that client to 640x400 exposed DOS
+waiting at its date prompt; the large client could hide the rest of the guest
+screen. A stop/start observation showed a 640x400 client and the same date
+prompt, so its reported symptom is not yet explained. A direct Machine probe
+reached A:\> after both transitions, but bypassed Session and Window and cannot
+qualify the deployed interaction. Root cause and x86/RDP behavior remain under
+investigation. Core cold reset clears its elapsed ticks, whereas full FDC reset
+preserves the FDC's old absolute elapsed tick and ignores earlier ticks. A
+standalone probe confirmed 100 -> full reset 100 -> advance to 1 still 100;
+software controller reset correctly preserves the same timeline. The BIOS
+tries floppy first then hard disk when floppy boot fails. This identifies a
+credible timing defect and failure path; its complete causal chain still needs
+a real product regression. Machine-level counterfactual using the same INI:
+after an initial A:\> and 15 seconds of running, the original reset/resume
+and stop/start each failed to reach A:\> within 30 seconds in separate runs;
+an otherwise identical transient FDC object clearing its clock on full reset
+reached A:\> in 2.50 and 2.56 seconds respectively. This does not exercise
+Session or the real Window. HDC full reset already clears its time. Full FDC
+reset now rebases its clock; controller-only reset continues to preserve it.
+The deployed x64 application reached A:\> after both reset/resume and
+stop/start; the x86 and x64 lifecycle regressions also reached that prompt.
+All 697 unit tests passed on each architecture, and the DOS prompt and FDC
+read-track integrations passed on each. All eight PC executables were rebuilt.
+The anomalous Window geometry remains a separate unqualified observation, not
+part of this repair; RDP and deployed x86 desktop behavior were not verified.
+The initial large captures exceeded
+the temporary size budget; the two generated 230,400,054-byte BMPs were
+removed after making a small diagnostic copy. Owner media and INI were unchanged.
+
+## Suspended governance packet: M5 Td S181
+
+The owner requested the PC lifecycle investigation first. The previously
+delivered Td S181 remains unaccepted and is suspended, not closed; its packet
+and existing delivery are preserved below for later owner review.
+
 M5 Td S181 follow-up P5 onward is delivered for owner review after removal of
 audited duplicate tooling operations and isolation of cache-test statistics.
 The previous delivery was not accepted/closed. This standalone Shared task does not advance

@@ -1858,6 +1858,9 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_TARGETS)
     project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
 endforeach()
+# Three boot checkpoints plus two deliberate running intervals exceed the
+# generic single-boot timeout even when each checkpoint stays within budget.
+set_tests_properties(integration.vm-control-lifecycle-smoke PROPERTIES TIMEOUT 60)
 foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
     if(target STREQUAL "vm-dos-prompt-smoke" OR
         target STREQUAL "vm-dos-video-port-smoke" OR
