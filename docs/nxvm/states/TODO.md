@@ -70,19 +70,9 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   isolated repetition passed in 29.09 seconds without changing its budget.
   Admit a bounded test-efficiency investigation of repeated corpus copies
   and checker invocations, retaining every negative assertion and the same
-  dependency rules. This is a test-runtime reliability risk, not evidence of
+  dependency rules. T564 S3 subsequently raised its timeout to 300 seconds;
+  the former 30-second limit is historical, not the current budget. This is a test-runtime reliability risk, not evidence of
   a CPU timing regression or permission to weaken checks or tune the host.
-
-- [ ] **PC App test adapter encapsulation (`TODO(Medium)`).** T561 S9's final
-  sweep distinguishes the repaired X86 Core private CPU/Machine borrowing
-  from existing App tests that still include
-  `x86-nxvm/machine/machine_private.h`. Production Apps do not include it, and
-  neither standalone package test build depends on those App tests. Admit a
-  bounded NXVM test-owner review to classify observation, composition and
-  fault-injection uses, move lower-owner assertions to their package, and use
-  existing public operations for true App assertions. Do not add a public raw
-  Core getter, copy the layout into a fixture, or weaken existing assertions.
-  The risk is App test coupling to adapter layout, not a second runtime path.
 
 - [ ] **Common Machine wake failure (`TODO(Medium)`).** T542 S10's read-only
   sweep found ignored event-signal failures in start/resume/stop/reset/input

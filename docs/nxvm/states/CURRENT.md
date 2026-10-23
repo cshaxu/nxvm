@@ -23,6 +23,13 @@
 | Original Owner Request | Close preceding S and admit a Td to govern NXVM project documentation. |
 | Similar-Issue Sweep | Review related current authorities and references; retain history rather than rewriting it. |
 
+The [preliminary 20-item audit](../etc/evidence/td-s182-todo-audit.md)
+distinguishes verified current facts, historical observations and conditional
+future work. The PC App test encapsulation audit is queued at the tail without
+reordering existing candidates; the old verifier timeout statement is corrected.
+Shared issues are not repaired here. Detailed validation of unproven items and
+reconciliation of stale candidate proposal wording remain open in this Td.
+
 ## M5 T564 S5 — Closed: verbatim SoftPC shared-package import
 
 | Field | Required record |

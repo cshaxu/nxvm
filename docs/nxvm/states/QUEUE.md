@@ -78,6 +78,7 @@ the ordered candidates below remain unadmitted.
 8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 10. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+11. [PC App test adapter encapsulation audit](../proposals/m5-pc-app-test-encapsulation.md)
 
 On 2026-10-17 the owner selected former entry 10, MyArcade, renamed it
 [MyRaidenII](../../myraidenii/README.md) and transferred it to an independent
