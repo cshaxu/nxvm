@@ -2,6 +2,19 @@
 
 ## Current Work
 
+## M5 T566 S3 — Active: PC110 App-local base composition
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of T566 after closed S1--S2; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed T566 to completion. S1 and S2 explicitly transfer the typed firmware and configuration-route bindings to this App-local assembly cohort. |
+| Objective | Create the one minimal PC110 assembly root: 486SX Core, neutral PIC/PIT/DMA Board substrate, TFT firmware map and VL82C420 route adapter. |
+| Non-goals | No PC110 executable, reset alias, panel/display, keyboard, pointer, storage, RTC seed, PCMCIA, power, audio, POST or boot claim. |
+| Files And ABI Surface | `src/app-mypc110`, matching `test/app-mypc110`, build registration and PC110 evidence only. No Lib, Emulator, Core or public Shared interface change. |
+| Verification | Both stable Ninja/ccache widths build and run the three PC110 App units; direct Board neutral-controller regression remains green. |
+| Exit Criteria | One App owner creates and tears down the complete admitted base atomically; the test proves firmware mapping and absence of forced PC/AT endpoints; scope/evidence accurately transfer every unimplemented endpoint. |
+| Stop Conditions | Any required reset, input, display, storage or firmware behavior would need an invented PC/AT fallback or a new Shared contract. Transfer it to its named later receiver. |
+
 ## M5 T566 S2 — Closed: neutral X86 NXVM controller substrate
 
 | Field | Required record |
