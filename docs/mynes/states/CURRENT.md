@@ -2,6 +2,12 @@
 
 ## Current Work
 
+M7 Td S1 is complete: owner-directed MyNES documentation governance transfers all
+previous TODO entries to four ordered, unnumbered Queue proposals. This is
+governance only: no implementation task, binary, Shared change or repair claim
+is admitted. After this transfer the owner returns to the open NXVM T564;
+its status is owned by [NXVM Current](../../nxvm/states/CURRENT.md).
+
 NXVM-hosted T564 S1 admits MyNES as the receiver of committed SoftPC
 dfc85aac's RGB32/four-slot frame import. The Machine driver resolves its
 existing NES palette directly into the writable RGB frame; the indexed host
@@ -16,8 +22,8 @@ The current pair is in the [ten-artifact inventory](../../nxvm/etc/evidence/t564
 records scope, failures and final results. The owner accepted the complete
 T564 S1 delivery on 2026-10-17 and requested S1 closure. The
 [NXVM status](../../nxvm/states/CURRENT.md) records that closure while T564
-remains open with no active successor S. This does not resolve the
-existing RDP input or intermittent native Console TODOs; no new independent
+remains open; its current status is owned by NXVM Current. This does not resolve the
+existing RDP input or intermittent native Console candidates; no new independent
 MyNES S or manual RDP/physical-controller proof is claimed.
 
 ## Previous Receiving Baseline
@@ -33,20 +39,20 @@ records 655/655 whole units per width, including 45/45 MyNES units, plus
 manual RDP/owner-ROM diagnostic execution is not claimed. The current pair is
 in the [ten-artifact inventory](../../nxvm/etc/evidence/t563-s10-artifacts.json).
 The initial x64 native Console pause assertion failed; the unchanged complete
-receiving integration rerun passed. Existing TODO retains that unresolved
+receiving integration rerun passed. The Queue retains that unresolved
 intermittency, not a claimed input repair. No independent MyNES S is started;
 The owner accepted S10 on 2026-10-17; its closure and the separate complete
 T563 CPU audit are recorded in the NXVM packet. No new MyNES work is admitted.
 
 Earlier T562 S3's [correction evidence](../../nxvm/etc/evidence/t562-s3-correction.md)
 and [artifact inventory](../../nxvm/etc/evidence/t562-s3-correction-artifacts.json)
-remain historical. Its native-console intermittency stays in TODO; this import
+remain historical. Its native-console intermittency stays in the Queue; this import
 does not claim an RDP or physical-controller repair. Manual RDP input remains
 unqualified.
 
 No active MyNES S. On 2026-10-13 the owner requested T556 S10 closure.
 S10 is closed as a bounded diagnostic delivery with the unresolved repair
-transferred to [TODO](TODO.md#rdp-short-input-repair), not as a production fix.
+transferred to the [RDP input candidate](../proposals/rdp-mobile-input.md), not as a production fix.
 The [investigation](../etc/evidence/t556-s10-rdp-controller-investigation.md)
 retains dual-width reproduction, diagnostic delivery 3dc750be2 and verification
 limits. Actual mobile RDP input capture and repair acceptance remain unproven.
