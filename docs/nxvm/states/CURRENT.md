@@ -2,6 +2,36 @@
 
 ## Current Work
 
+## M5 T565 S1 — Active: PC110 board and firmware admission baseline
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New M5 T565 from the first admitted Queue candidate; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner explicitly admitted the Queue head on 2026-10-23. The approved task is `m5-pc110-board.md`; S1 is the proposal's bounded construction/mapping prerequisite. |
+| Objective | Freeze the exact PC110 board/firmware input batch and the concrete App/Core construction boundary required before implementing board, chipset or ROM mapping. Produce the coverage ledger and admission disposition for BRD-1--3/SIO-1--3 without claiming a bootable machine. |
+| Non-goals | No production chip/device implementation, no guessed reset constants, no external ROM acquisition, no firmware patch/application, no PC110 EXE, no INI/runtime model selector, no guest boot claim, no Shared-six change and no modification to the existing four PC Apps. |
+| Reference Baseline | T558 research delivery `7ea9084fe`, the PC110 programme and receiver checklists, the current four-App/Core source map, and the external BYOB asset/provenance policy. T559/T563 provide the closed 486 prerequisites; this task does not requalify them. |
+| Candidate Proposal | [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md), consuming its first construction/mapping boundary and the programme's board rows. |
+| Files And ABI Surface | Initially NXVM documentation/evidence only: `docs/nxvm/states/CURRENT.md` and new PC110 evidence records. Any later production S must explicitly name its App/Core surface after this S freezes it. No public ABI is eligible in S1. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; NXVM architecture/coding authorities; source/research policy; PC110 programme, board proposal, T558 S1 ownership audit, T558 S2 source-availability record and receiver checklists. Evidence must distinguish original manual, observed dump, model/reference and unresolved fact. |
+| Verification | Inventory current Core/App capabilities and direct consumers; verify all cited asset/manuscript identities against the external asset index without copying protected payloads; create a finite board/firmware ledger with owner, evidence grade, reset/decode status, direct/composed proof and next receiver for each required row; run documentation governance and link/path checks. |
+| Expected Markers | One declared PC110 construction root, two build-fixed DSTN/TFT firmware pairings, no runtime model selection, no second SMSC/configuration owner, and explicit bounded dispositions for unknown EC/ED, 4Fh, ROM/shadow and panel/firmware facts. |
+| Asset Needs | Read-only inspection of owner-managed `O:\repos.hobby\nxvm-assets` and pinned research references only. No ROM/media/manual payload is copied into the repository, emitted to an artifact or modified. |
+| Reporting Requirements | Record the complete S1 ledger batch, source grades and hashes/references where available; distinguish facts from unresolved choices; name every later receiver and block condition; report no source/artifact claim and all unexecuted hardware/guest validation. |
+| Stop Conditions | Missing lawful asset/provenance, unresolved board/firmware identity needed to select an implementation owner, required Shared-six change, conflicting primary evidence, or any demand to make an undocumented fallback succeed. Stop the affected batch and report/transfer it rather than guessing. |
+| Exit Criteria | A reviewed, finite construction/firmware/board ledger assigns each consumed BRD/SIO row to direct proof, an explicit later receiver, or a named blocking decision; no hidden AT-layout assumption remains; documentation gates pass and the admission record is pushed. |
+| Original Owner Request | "准入队列首位T任务". |
+| Similar-Issue Sweep | Review all current PC App construction/firmware declarations for an accidental AT-layout dependency or duplicate ROM/config owner; classify, do not modify, any unrelated issue. |
+
+### S1 Delivery
+
+The [board and firmware admission ledger](../etc/evidence/t565-s1-pc110-board-admission-ledger.md)
+reconfirms all three research revisions, candidate hashes and the absence of a
+PC110 input set in the approved external asset root.  It assigns the consumed
+BRD/SIO rows to explicit Board, Storage, Display, Input/Power or Firmware
+receivers.  No source, ROM, media, INI or artifact changed; no firmware or boot
+claim is made.
+
 ## M5 T564 — Closed: public-component qualification
 
 The owner accepted final qualification on 2026-10-23.  S15 retained the
