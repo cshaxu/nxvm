@@ -39,6 +39,40 @@ firmware choices, and does not create a hidden placeholder implementation.
 Documentation governance and whitespace checks pass. S1 is closed; T565
 remains open for its next bounded board-evidence receiver.
 
+## M5 T565 S2 — Active: PC110 construction, reset and decode contract
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open M5 T565 after accepted S1; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner approved automatic in-scope S admission for the admitted Queue-head task. S1's ledger explicitly transfers the construction/reset/decode batch here. |
+| Objective | Reconcile the exact existing Core construction/lifetime route with PC110 board evidence, and produce a minimal construction/reset/decode contract that states what can be implemented next, what must remain App-local, and which unresolved facts block a behavior. |
+| Non-goals | No production code, App directory, public API, ROM copy/embed/patch, executable, reset-value guess, synthesized chipset, QEMU/EMU source import, BIOS interception or guest boot claim. |
+| Reference Baseline | T565 S1 ledger; T558 ownership/source-availability/checklist records; current Core and four-App construction paths; the three pinned research checkouts read only. |
+| Candidate Proposal | [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md), specifically BRD-1--3 and SIO-1--3 construction/mapping preparation. |
+| Files And ABI Surface | Documentation/evidence only during S2. The result may nominate later `src/app-mypc110` and `test/app-mypc110` files but creates neither now. No public ABI is in scope. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; NXVM architecture/coding; source/research policy; T558 source availability, ownership audit and receiver checklist. Existing Core must remain the sole CPU/executor/controller timeline owner. |
+| Verification | Inspect every current constructor/reset/ROM-map call chain used by the four PC Apps; trace board evidence to named source pages/observations; classify each future PC110 operation as direct proof, L2 model candidate or blocked; verify no proposed owner requires a peer/App reverse dependency; run documentation governance and path/link review. |
+| Expected Markers | One build-fixed composition root; a typed firmware-binding boundary rather than AT slot reuse; a reset-reason map with no inferred register defaults; one claimed decode owner for each port/window; explicit deferrals for panel/font/storage/input endpoints. |
+| Asset Needs | Read-only external manual/research/ROM inspection only. No external payload crosses into the repository or approved asset archive. |
+| Reporting Requirements | Provide an evidence table naming the current construction entry points, proposed later owner, source grade, exact unknown and direct/composed falsification test. State all blocked choices and unexecuted guest/desktop proof. |
+| Stop Conditions | Any required PC110 behavior cannot be represented without an unapproved Shared-six/API change, primary/reconstructed evidence conflicts without a bounded L2 choice, or a firmware-dependent behavior lacks an admitted source input. Stop that row and transfer it instead of creating a placeholder. |
+| Exit Criteria | A reviewed construction/reset/decode contract exhausts this S2 batch into implementation-ready rows or named blockers, maintains one owner/timeline and no invented firmware/device behavior, and passes documentation governance. |
+| Original Owner Request | Admit and continue the first queued PC110 board/chipset/firmware mapping task. |
+| Similar-Issue Sweep | Check the four current Apps' construction/reset/ROM mapping paths for assumptions that would accidentally become a PC110 requirement; record only actual reuse candidates and constraints. |
+
+### S2 Delivery
+
+The [construction, reset and decode contract](../etc/evidence/t565-s2-pc110-construction-contract.md)
+confirms one legal future PC110 composition route: an App-local typed board and
+firmware binding publishes through the neutral `x86-nxvm` construction path,
+while `x86-core` remains the sole executor, reset and ROM-map owner. The
+existing AT preparation helper is explicitly excluded. Each BRD/SIO row now
+has one later owner, evidence grade, falsification test and named blocker;
+unknown chipset/reset or firmware facts remain blocked rather than inferred.
+No source, ROM, media, executable or runtime behavior changed. Documentation
+governance and whitespace checks are the only applicable verification; guest,
+desktop and hardware validation are not claimed. S2 is ready for review.
+
 ## M5 T564 — Closed: public-component qualification
 
 The owner accepted final qualification on 2026-10-23.  S15 retained the
