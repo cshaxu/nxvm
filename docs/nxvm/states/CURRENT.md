@@ -2,7 +2,28 @@
 
 ## Current Work
 
-## M5 T564 S7 — Active: Emulator Machine wake failure contracts
+## M5 T564 S8 — Active: X86 Debug assembler checkop audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation of open T564; S1--S7 closed; single-session coordinator and executor. |
+| Admission And Approval | Owner directs S7 closure after cached full build, unit and integration qualification and admission of the next S. |
+| Objective | Audit the assembler checkop path, its real callers and contracts, and establish whether a reproducible defect warrants repair. |
+| Non-goals | No speculative reassembly framework, duplicate execution path, unrelated Shared changes or weakened tests. |
+| Reference Baseline | S7 delivery through 366eb14b6 and its subsequent qualification record. |
+| Candidate Proposal | T564 public-component quality program, S8. |
+| Files And ABI Surface | X86 Debug assembler and existing tests only if justified; affected manifests, receivers and records as needed. Review any Shared interface expansion before implementing. |
+| Applicable Rules | NXVM guide and source policy; Execution, Architecture, Coding and Documentation rules; inward dependencies and minimal behavior. |
+| Verification | Reproduce any claimed defect before modifying code; extend existing tests only as warranted; full repository units on both architectures and relevant integration and receiver qualification for actual changes. |
+| Expected Markers | Evidence-backed checkop disposition, real callers and retained or repaired behavior. |
+| Asset Needs | Reuse current Ninja and ccache trees; preserve owner configuration and media. |
+| Reporting Requirements | Explain findings, proposed scope and estimated diff before implementation; distinguish actual defects from assumptions. |
+| Stop Conditions | Unapproved Shared API expansion, unresolved safety issue or unrelated change. |
+| Exit Criteria | Evidence-backed disposition, necessary changes and verification completed, actual diff reviewed and applicable delivery pushed; await owner acceptance. |
+| Original Owner Request | Close S7 after complete cached compilation and unit/integration tests; admit the next S. |
+| Similar-Issue Sweep | Inspect comparable assembler operand checking and its existing test coverage without inventing duplicate machinery. |
+
+## M5 T564 S7 — Closed: Emulator Machine wake failure contracts
 
 | Field | Required record |
 | --- | --- |
@@ -26,15 +47,18 @@
 S7's bounded Machine and Session repair and its verification are recorded in
 the [event failure review](../etc/evidence/t564-s7-event-failure-review.md).
 The owner accepted leaving simultaneous native synchronization failures as a
-documented limitation rather than adding recovery machinery. S7 remains open
-for delivery review and owner acceptance; T564 remains open.
+documented limitation rather than adding recovery machinery. Following the
+owner's closure direction, both cached builds, full dual-width units and the
+four-profile integration matrix were rerun; the evidence preserves the initial
+native desktop failure and successful real-session retry. S7 is closed; T564
+remains open and S8 is active.
 
 The owner extended open T564 on 2026-10-22 to plan the public-component TODO
 classes and former PC App test-encapsulation candidate as S6--S13. The
 [updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
 sequence and conditional dispositions, reordered by owner direction as Lib,
 Emulator, X86 Debug, X86 IBM PC, X86 Core, then X86 NXVM. S1--S5 remain closed;
-The owner accepted and closed S6 on 2026-10-22; its [evidence](../etc/evidence/t564-s6-lib-console-review.md) records the audit and verification. S7 is active. Model40 throughput, DevBox exploration,
+The owner accepted and closed S6 on 2026-10-22; its [evidence](../etc/evidence/t564-s6-lib-console-review.md) records the audit and verification. S8 is active. Model40 throughput, DevBox exploration,
 Linux runtime verification and future browser storage remain in NXVM TODO;
 the latter two are excluded from T564 by owner direction. T564 is open.
 

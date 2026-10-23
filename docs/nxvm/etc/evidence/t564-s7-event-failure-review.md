@@ -38,6 +38,38 @@ failure, and no combined platform-failure scenario was added to this task.
 - No Lib or x86 source was changed; no new API, thread, event or recovery path.
 - NXVM documentation governance passed; `git diff --check` passed.
 
+## Owner-requested complete qualification and closure
+
+Both persistent GCC/Ninja Release trees used the repository ccache launcher
+and built successfully. The full repository unit suite passed 697/697 for
+each architecture. An initial attempt to run both suites concurrently at
+eight jobs caused the x64 `lib.test-boundaries-selftest` to hit its own
+30-second timeout; those incomplete concurrent runs were interrupted. Each
+suite was then run alone at three jobs, and both completed successfully,
+including that test. This is not evidence that the initial timeout did not
+occur.
+
+All registered integration cases were run for each width, sharing the
+Lib/MyNES cases across the profile matrix: default PC 23/23, My5160 3/3,
+My5170 5/5, DeskPro PC-specific cases 6/6, plus Lib 4/4 and MyNES 12/12.
+The first x64 DeskPro batch was 21/22: the sandboxed native Window modal
+test failed. Its exact test passed on a separate real Windows-session retry;
+the x86 full DeskPro batch ran in that session and passed 22/22. Actual
+desktop tests were exercised, but manual product, physical audio and RDP
+acceptance are not claimed. No user configuration or media is intentionally
+modified.
+
+Profile switching rebuilt and deployed the default, My5160 and My5170 EXE
+pairs; their build timestamp changes are included in the closing NXVM
+delivery. The DeskPro, MyNES and MyRaidenII EXEs remain as delivered below.
+The original delivery hashes are retained as historical evidence.
+
+| Rebuilt product | x64 SHA-256 | x86 SHA-256 |
+| --- | --- | --- |
+| My5160 | `BF5C2782E3D1054244093353A0001A70CF9D0376354B3E11BDB4ED2FD0680DCA` | `F22F9061070B74A5C8569F58D06D8948415F8FA0D498F90D784602F3615DDC35` |
+| My5170 | `D5459A17554C27FFB930EC9EE31EB90B27F3B8632AF4D0161112897C601FB53B` | `D3D4EA737C947736843722BB1C1A42261EB51FF6C9AF1697C2E7D16D1A462154` |
+| NXVM | `98B61677AA230CAE1185DF9BEC8A1D774B992C26695191E56CAD214D91970FD1` | `C007450508844B9E5BE9FC7A243E303ED8CB825C11E02DACEEBD6D6BF11F1CE2` |
+
 ## Delivered EXE SHA-256
 
 | Product | x64 | x86 |
