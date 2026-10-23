@@ -2,6 +2,33 @@
 
 ## Current Work
 
+## M1 T7 S115 — Closed: V30/Core hot-path cost inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation after accepted S114; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner requested continued execution-efficiency work after S114 because MyRaidenII remains unusably slow, and approved automatic in-scope S admission on 2026-10-23. Target is Shared X86 Core; MyRaidenII is the measured receiver. |
+| Objective | Identify the next real, repeated V30/Core execution cost in the selected-set route and either remove exactly one duplicate/avoidable owner-local operation or record that no eligible cleanup remains. |
+| Non-goals | No JIT/dynarec, new executor, guest-clock or timing-model change, instruction semantic change, frame/audio shortcut, Lib/Emulator/X86 Debug/X86 IBMPC/X86 NXVM change, public API/opaque-layout change, or protected-source import. |
+| Reference Baseline | S114's final x64 selected-set route keeps the exact 8,000,000-instruction checkpoint at 133,667,500 guest ticks and completes in 18,359 ms; S114's x86 route reaches the identical guest checkpoint. |
+| Candidate Proposal | Inspect the existing successful V30 retirement, attachment and Board publication paths under a bounded profile. Select only a cost with a named sole owner, a concrete proof that it cannot affect a deterministic/no-observer receiver, and an existing regression owner. Do not replace real execution, decode, bus, timing, IRQ, audio or frame work with a measurement-only surrogate. |
+| Files And ABI Surface | Diagnostics only under `build/.ninja/t7-s115-profile`; if evidence proves a cleanup, only the owning `src/x86-core` files, existing `test/x86-core` coverage if needed, its manifest, and MyRaidenII evidence/status. No public header/API/layout is eligible. Any Shared production change requires receiver artifact review. |
+| Applicable Rules | Shared architecture/coding/execution/documentation rules; MyRaidenII architecture/source policy; one guest clock, one Core executor, deterministic ordering, inward dependencies, bounded ROM diagnostics, and no protected-output retention. |
+| Verification | Re-run the same bounded selected-set route on both widths for any production change; run affected X86 Core dual-width tests and complete repository-only unit suites. If Shared changes, rebuild/review receiving artifacts and keep owner-ROM execution evidence distinct from desktop/gameplay qualification. |
+| Expected Markers | Unchanged retired-instruction/tick/frame/sound/Board checkpoint, no new public contract or execution path, and either a repeatable host-time reduction beyond noise or an explicit no-eligible-change disposition. |
+| Asset Needs | Read-only owner archive `O:\assets\raidenii\raiden2.zip` only through the existing verified staging wrapper. Scratch is limited to `build/.ninja/t7-s115-profile` with the existing 30-minute / 300 MiB / 10-minute-no-progress budget; retain only neutral summaries. |
+| Reporting Requirements | Record inspected cost candidates, retained semantic owners, exact source/test diff, before/after measurements, quality review, all receiving verification and unexecuted desktop/RDP/audio checks. Do not describe a benchmark as gameplay qualification. |
+| Stop Conditions | Evidence requires a JIT/second executor/public contract, accuracy or quality downgrade, protected asset change, no eligible duplicate/avoidable work, or no durable measurable result. Record and transfer rather than ship a speculative micro-optimization. |
+| Exit Criteria | Met by a no-change disposition: the candidate was restored after it failed to show a durable gain, its required physical phases were identified, the focused dual-width X86 Core suite passed, and task scratch was removed. |
+| Original Owner Request | Continue improving MyRaidenII execution usability without wasting time on unnecessary test cycles or papering over guest behavior. |
+| Similar-Issue Sweep | Examine successful V30 retirement, CPU event/result publication, Core attachment deadlines, disabled trace/observer routes, and Board time dispatch for equivalent owner-local no-work paths; retain every operation with distinct guest-visible, physical-qualification or observer semantics. |
+
+The [S115 review](../etc/evidence/t7-s115-trace-phase-cost-review.md) records
+why generic transaction trace dispatch cannot be deleted: two phases carry
+Machine bus-locality semantics.  The narrower Release-only trial retained
+those phases but did not produce a durable selected-set speed gain, so its
+source was restored and no artifacts were refreshed.
+
 ## M1 T7 S114 — Closed: V30/Core execution efficiency
 
 | Field | Required record |
