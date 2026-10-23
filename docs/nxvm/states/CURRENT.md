@@ -2,60 +2,10 @@
 
 ## Current Work
 
-## M5 T564 S3 — Corrective verification: PC Window frame readiness
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation of open T564; single-session coordinator and executor. S2 remains delivered pending owner acceptance. |
-| Admission And Approval | Owner requests repair of default NXVM reset and MyDeskPro386 initial Window behavior on 2026-10-22. |
-| Objective | Prevent unready guest video geometry from creating or resizing a Window, without suppressing legitimate video modes. |
-| Non-goals | No unrelated media, INI, BIOS, Lib, Emulator, MyNES, SoftPC or guest video behavior changes. |
-| Reference Baseline | 3d4c4f2d0 plus owner-maintained INI changes; preserve all unrelated changes. |
-| Candidate Proposal | Existing T564 shared-frame integration, with owner-reported PC display defects at its receiver boundary. |
-| Files And ABI Surface | X86 NXVM video/Machine and matching tests/manifests, affected PC artifacts, and NXVM task records; no new public contract assumed. |
-| Applicable Rules | NXVM guide and execution, architecture and coding rules; guest video remains the unique geometry owner. |
-| Verification | Identify actual reset and first-start frames; exercise both paths and legitimate mode changes across PC profiles; dual-architecture focused tests, affected builds and integration, applicable manifest and governance checks. |
-| Expected Markers | No title-only Window from unready video; reset retains a usable previous frame; initialized guest mode is presented. |
-| Asset Needs | Preserve owner INIs and media; use existing reusable Ninja trees and task-owned disposable diagnostics, 1 hour and 100 MiB. |
-| Reporting Requirements | Distinguish actual tested Window paths, unit/integration evidence, untested RDP behavior and other profiles. |
-| Stop Conditions | Protected media changes, unexplained failure, or a need for unapproved Lib/Emulator/API changes. |
-| Exit Criteria | Both reported paths fixed, relevant regressions pass, actual diff reviewed and affected products published; push and await owner review. |
-| Original Owner Request | Repair default NXVM reset shrinking the Window and MyDeskPro386 start creating a title-only Window. |
-| Similar-Issue Sweep | Evaluate My5160, My5170 and legal video mode transitions as well as both affected products. |
-
-NXVM's real reset capture exposed a 1-column, 1-row, 1-scanline text frame.
-The EGA reset register state has no established scan totals; capture now leaves
-that precise unprogrammed text geometry unpublished instead of sending it to
-Window. It does not change guest registers, timing or the host renderer. A
-broader early attempt based only on missing totals was rejected after six EGA
-tests exposed valid capture paths; existing tests were preserved.
-
-The Model 40 integration observer attaches before machine start and checks the
-actual published frame stream through start, reset/resume and stop/start. Its
-first-start test failed against the original video code and passed with the
-repair. x64 and x86 Model 40 integration passed, as did both widths of the
-default lifecycle and video contract tests. The existing x64 video group
-passed 20/20. Real RDP/desktop interaction remains owner validation; a Machine
-frame observer is not a desktop Window measurement.
-
-Eight 0.5.0564 PC artifacts were rebuilt and their PE widths checked. The
-x86 X86-NXVM regression passed 231/231. On x64, 230/231 passed in the first
-parallel run; the negative verifier exceeded its 30-second budget, then passed
-alone in 29.11 seconds. This is not a clean first full run. Documentation governance
-passed. The two pre-existing owner INI edits are deliberately excluded.
-
-The owner accepted the delivered Window behavior on 2026-10-22. During the
-mandatory full-unit closure run, three App tests failed because they assumed
-the reset 1x1 EGA snapshot would be published. Corrective P3 updates those
-tests to assert the new unready-frame contract while retaining the original
-configured-display, palette, publication and blink checks. The existing
-whole-corpus negative verifier exceeded its 30-second budget twice; its
-assertions remain unchanged and its timeout is raised to the owner-approved
-300 seconds. Both architectures passed the three corrected tests and the
-complete repository-only unit suite, 697/697 per width. No runnable source or
-EXE input changed in this corrective batch, so the deployed eight EXEs remain
-current. The initial full runs and their failures are retained above and are
-not represented as passing runs.
+T564 S3 was accepted by the owner and closed on 2026-10-22. The
+[task history](../history/M5-T564-softpc-rgb-frame-import.md) records its
+delivery, corrective verification and closure. T564 remains open; S2's
+separate owner acceptance remains outstanding.
 
 ## M5 T564 S2 — Delivered, awaiting owner acceptance
 
