@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T564 S6 — Active: Lib Console rollback and native desktop isolation
+## M5 T564 S6 — Delivered, awaiting owner acceptance: Lib Console rollback and native desktop isolation
 
 | Field | Required record |
 | --- | --- |
@@ -28,7 +28,7 @@ classes and former PC App test-encapsulation candidate as S6--S13. The
 [updated proposal](../proposals/m5-softpc-rgb-frame-import.md) owns the planned
 sequence and conditional dispositions, reordered by owner direction as Lib,
 Emulator, X86 Debug, X86 IBM PC, X86 Core, then X86 NXVM. S1--S5 remain closed;
-S6 is active. Model40 throughput, DevBox exploration,
+S6 verification and review are recorded in the [S6 evidence](../etc/evidence/t564-s6-lib-console-review.md); no code repair or additional test was justified. Delivery awaits owner acceptance. Model40 throughput, DevBox exploration,
 Linux runtime verification and future browser storage remain in NXVM TODO;
 the latter two are excluded from T564 by owner direction. T564 is open.
 
