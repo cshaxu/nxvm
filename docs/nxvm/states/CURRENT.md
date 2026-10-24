@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T568 S5 — Active: PC110 F65535 standard-VGA and capture contract
+## M5 T568 S5 — Closed: PC110 F65535 standard-VGA and capture contract
 
 | Field | Required record |
 | --- | --- |
@@ -32,6 +32,26 @@ records the deliberately unimplemented graphics/panel/product bridge.  Both
 cached widths pass the direct chip, App route and X86-NXVM structural proof,
 and the full repository-only unit corpus passes 660/660 per width.
 No PC110 executable or firmware-boot claim is made by this delivery.
+
+## M5 T568 — Closed: PC110 F65535 display and font ROM
+
+T568 closes the bounded F65535/font receiver, not a runnable PC110 product.
+S1--S5 establish one App-local font window and one independent F65535 owner:
+the sourced `XR00=C1h` identity, 512 KiB VRAM, extension-index access and an
+L2 standard-VGA text capture path.  MyPC110 owns its Core routes; neither the
+PC/AT VADP nor a private host frame path is used.
+
+Both stable cached Ninja widths passed the complete repository-only unit corpus
+(660/660 each), then the owner-managed integration corpus (27/27 each).
+Documentation governance and component manifest/dependency gates passed.
+The F65535 addition reaches no admitted runnable PC App, so the generated
+timestamp-only NXVM 0564 binary changes were deliberately discarded instead
+of publishing a false PC110 release.
+
+Graphics/palette scanout beyond the current shared-frame capacity, physical
+panel behavior, real firmware POST, storage, power and a product frame bridge
+remain with their already queued PC110 storage, firmware-boot and product
+qualification receivers.  They are not approximated here.
 
 ## M5 T568 S4 — Delivered: PC110 F65535 register and VRAM foundation
 

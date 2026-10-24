@@ -71,7 +71,7 @@ the ordered candidates below remain unadmitted.
 The former first candidate, [PC110: board, chipset and firmware mapping](../history/M5-T565-pc110-board.md), is closed as M5 T565. Its accepted mapping foundation is retained in task history. The former next candidate, [PC110: minimal base composition](../history/M5-T566-pc110-base-composition.md), is closed as M5 T566; its typed neutral controller/App composition foundation is retained in task history. The ordered endpoint receivers below remain unadmitted.
 
 1. [PC110: keyboard, pointer and power](../history/M5-T567-pc110-input-power.md) is closed as M5 T567: keyboard/TrackPoint are delivered, while power is explicitly transferred rather than fabricated.
-2. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md) is active as M5 T568. S1/S2 deliver the ownership audit and observed App-local font window; the source-qualified F65535 receiver remains active before any display-controller/product claim.
+2. [PC110: F65535 display and font ROM](../history/M5-T568-pc110-display-proposal.md) is closed as M5 T568. It delivers the bounded F65535/font receiver; graphics/panel, real firmware boot and product publication remain with their existing ordered receivers.
 3. [PC110: power management and APM](../proposals/m5-pc110-power-apm.md)
 4. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
 5. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
