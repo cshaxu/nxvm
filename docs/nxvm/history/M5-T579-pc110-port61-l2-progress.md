@@ -10,4 +10,14 @@ external-firmware diagnostic pass on both widths.  This closes only S1's
 finite progress gate; it does not qualify POST, video, Setup, guest boot or a
 runnable PC110 artifact.
 
-The current packet owns the still-active S2 scope and completion facts.
+The current packet owns the still-active S3 scope and completion facts.
+
+## S2 closed delivery
+
+The bounded continuation found the actual BIOS's `3BCh--3BEh` control/status
+probe after the port-61 wait.  A MyPC110-only L2 LPT placeholder records the
+firmware's `21h` control write, returns `90h` by default and `D0h` while that
+probe is active.  It is based on independently reviewed PC110-EMU behavior,
+not represented as physical printer hardware.  Both widths pass the new unit
+contract and retire beyond the probe to `F000:55B2`.  S3 remains active for
+the next distinct finite boundary.

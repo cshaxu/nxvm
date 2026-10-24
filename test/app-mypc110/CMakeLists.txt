@@ -74,6 +74,17 @@ endif()
 add_test(NAME mypc110.unit/machine-construction COMMAND mypc110-machine-construction-smoke)
 set_tests_properties(mypc110.unit/machine-construction PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
 
+add_executable(mypc110-lpt-smoke unit/lpt_smoke.c)
+target_link_libraries(mypc110-lpt-smoke PRIVATE mypc110-board)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mypc110-lpt-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests mypc110-lpt-smoke)
+endif()
+add_test(NAME mypc110.unit/lpt COMMAND mypc110-lpt-smoke)
+set_tests_properties(mypc110.unit/lpt PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
+
 if(TARGET mypc110-real-firmware)
     add_executable(mypc110-real-firmware-post-diagnostic
         diagnostic/real_firmware_post_diagnostic.c)
@@ -90,5 +101,9 @@ if(TARGET mypc110-real-firmware)
     add_test(NAME mypc110.diagnostic/real-firmware-port61-progress
         COMMAND mypc110-real-firmware-post-diagnostic --port61-progress)
     set_tests_properties(mypc110.diagnostic/real-firmware-port61-progress PROPERTIES
+        LABELS "diagnostic;mypc110" TIMEOUT 60)
+    add_test(NAME mypc110.diagnostic/real-firmware-port61-follow
+        COMMAND mypc110-real-firmware-post-diagnostic --port61-follow)
+    set_tests_properties(mypc110.diagnostic/real-firmware-port61-follow PROPERTIES
         LABELS "diagnostic;mypc110" TIMEOUT 60)
 endif()

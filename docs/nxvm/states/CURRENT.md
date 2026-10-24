@@ -2,17 +2,17 @@
 
 ## Current Work
 
-## Active Task — M5 T579 S1
+## Active Task — M5 T579 S3
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T579 S1 after closed T578; one session performs coordinator and executor roles. |
+| Identifier Mode | Continuation T579 S3 after committed S1 and S2 deliveries; one session performs coordinator and executor roles. |
 | Admission And Approval | Owner directed PC110 implementation to continue and grants standing approval for ordinary scoped diagnostic, implementation, verification, commit and push work. |
-| Objective | Select and verify the smallest clearly-labelled L2 PC110 port-61 refresh-status source that lets the admitted real TFT firmware leave its post-reset wait loop. |
+| Objective | Starting after the admitted port-61 and LPT checkpoints, identify the next finite recurring wait or concrete App-owned device boundary in the real TFT BIOS path. |
 | Non-goals | No synthetic BIOS/IVT/BDA path, firmware-address special case, borrowed PC/AT ROM, second clock, new Shared/Core API, raw asset commit, POST/display/Setup/DOS boot or release claim. |
-| Reference Baseline | Closed T578 S1 `5f9813e90`: real 8042 reset then port-61 bit-4 wait loop at F000:EA86--EA90. |
+| Reference Baseline | T579 S2: real BIOS reaches `F000:55B2` after its bounded 3BCh--3BEh LPT probe. |
 | Candidate Proposal | [PC110 port-61 L2 progress](../proposals/m5-pc110-port61-l2-progress.md). |
-| Files And ABI Surface | MyPC110 plan, its app-owned tests/diagnostic, evidence/current/proposal only. Shared/Core and raw assets are excluded. |
+| Files And ABI Surface | MyPC110 diagnostic/evidence/current/proposal only until a next owner is proven. Shared/Core and raw assets are excluded. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM source policy. One executor and Core's sole tick axis remain mandatory. |
 | Verification | Dual-width App unit tests plus a bounded real-firmware post-reset progression diagnostic that proves retirement leaves the EA86--EA90 wait loop; documentation/whitespace gates. |
 | Expected Markers | One L2 source/period record, ordinary port-61 transitions on Core's tick axis and a post-reset retirement beyond the wait loop. |
@@ -44,6 +44,23 @@ Starting from the proved post-reset progress point, extend only the existing
 real-firmware diagnostic far enough to identify the next finite execution
 boundary and its owner.  Do not preselect a video, storage, power or firmware
 repair, and do not change product behavior until evidence isolates one.
+
+### S2 Closure
+
+The next owner is an App-local legacy LPT probe at ports `3BCh--3BEh`, not a
+shared video or storage defect.  MyPC110 now supplies the bounded L2 control
+and status behavior demonstrated by the actual BIOS path.  The real image
+passes from the port-61 loop through `F000:55B2` on x64 and x86; the App unit
+suite passes on both widths.  The retained evidence records the source grade,
+finite output values and next address.  This still makes no POST, display,
+Setup, guest-boot or artifact claim.
+
+### S3 Brief
+
+Starting after the now-proven LPT probe, extend the existing bounded firmware
+diagnostic only until it reaches the next distinct recurring wait or concrete
+unowned device boundary.  Reuse the sole executor and existing App routes;
+do not guess a device model from an address alone.
 
 ## Closed Task — M5 T578
 

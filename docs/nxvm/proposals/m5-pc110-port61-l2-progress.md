@@ -41,3 +41,14 @@ progression diagnostic.  Both runs enter the real port-61 loop and later
 retire at `F000:DD05`, with no delivered exception.  This resolves only the
 unprogrammed-PIT1 deadlock.  S2 retains the next live boundary as diagnosis;
 it does not presume that the BIOS now completes POST.
+
+## S2 result
+
+The first path beyond the port-61 loop reaches the BIOS's `3BCh--3BEh` status
+probe.  With unowned ports reading zero, the BIOS repeatedly writes `21h` to
+`3BEh` and waits for status bit 6 at `3BDh`.  A small App-local LPT placeholder
+now retains that control byte and supplies `90h` normally or `D0h` during the
+admitted probe.  This is an independently implemented L2 behavior based on
+PC110-EMU research; it is neither a physical-printer claim nor a shared board
+model.  Both widths retire past the probe to the next finite BIOS work at
+`F000:55B2`.
