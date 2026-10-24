@@ -2,6 +2,58 @@
 
 ## Current Work
 
+## M5 T574 S1 — Closed: MyPC110 C-segment ROM/shadow source gate
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed T573; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued PC110 implementation through closure and granted standing approval for ordinary PC110 implementation choices. T573 transferred this exact source-backed mapping receiver. |
+| Objective | Capture the real TFT firmware's VL82C420 mapping writes, then implement the smallest App-owned C-segment bank/shadow route that lets unchanged firmware reach its own video BIOS. |
+| Non-goals | No BIOS/interrupt interception, synthetic POST/Setup/DOS service, PC/AT facade, second executor, raw-ROM commit, external runtime ROM loader, or PC110 release claim. |
+| Reference Baseline | T573 trace evidence; [C-segment contract proposal](../proposals/m5-pc110-c-segment-shadow.md); App-local PC110 composition; existing X86 Core route contracts; approved TFT BIOS/font assets. |
+| Files And ABI Surface | `src/test/app-mypc110` diagnostic/unit code and App-local `pc110_firmware`/`pc110_config`/composition are eligible. A minimal X86 Core VL82C420 observation addition is eligible only if the App cannot otherwise learn the selected EC/ED register. Lib, Emulator, unrelated Apps and raw assets remain excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one firmware/decode owner; external protected bytes remain BYOB; PC110-QEMU/PC110-EMU are labelled L2 behavior references only. |
+| Verification | Both widths capture the actual C-segment configuration sequence using the ordinary executor; App tests prove reset/default map and each admitted mapping transition; both widths prove genuine C000 execution follows firmware configuration. Run affected unit/diagnostic, structural and documentation gates. |
+| Expected Markers | One App-owned dynamic mapping owner, one recorded BIOS transition sequence and a real C000 VBIOS entry after firmware configuration. No static alias, host IVT/BDA write or firmware-address special case. |
+| Asset Needs | Read-only `NXVM_PROFILE_ASSETS_ROOT/profiles-nxvm/ibm-pc110-tft` BIOS/font bytes and manifest only. Raw inputs remain outside Git and generated sources remain ignored. |
+| Reporting Requirements | Record source grade, reset/default map, observed port values, exact changed ownership, both-width results and remaining unqualified endpoints. Do not call an execution checkpoint a bootable PC110 or publish an EXE. |
+| Temporary Output | `build/t574-s1/` only for bounded diagnostic logs; delete it after copying the necessary compact facts into evidence. No reusable cache or user asset is touched. |
+| Stop Conditions | The firmware emits no reproducible mapping sequence, required mapping needs a guessed protocol, a necessary change would add synthetic guest behavior, or a Shared contract expansion cannot be minimal and owned. Record and transfer rather than fabricate. |
+| Exit Criteria | A source-labelled reset/default and runtime C-segment transition is implemented through one App-owned route, both widths execute real C000 code through the ordinary path, scoped regression/gates pass, and the next product-qualification receiver is updated with only proven facts. |
+| Original Owner Request | Continue the entire PC110 programme to closure using PC110-EMU, PC110-QEMU and Open-Source-PC110 only as research, with usable firmware drawn from approved external assets. |
+| Similar-Issue Sweep | Compare all C000/F000 mappings, reset overlays, EC/ED configuration writes, firmware provider lifetime and aliases; reject duplicate memory owners, static VBIOS aliases, PC/AT decode and duplicate selection state. |
+
+### S1 Brief
+
+Use the existing runtime trace facility to capture every PC110 configuration
+port write and the surrounding C-segment execution boundary before changing
+production code. If the observed transition is sufficient, put its mapping and
+shadow state entirely behind the App's existing firmware/configuration owner.
+Keep Core's routing mechanism neutral; do not make it recognize PC110 banks.
+
+### S1 Delivery And T574 Closure
+
+The normal real-firmware executor was traced for 8,000,018 instructions on
+both x64 and x86.  It reached one processor reset and the same later CPU
+exception, but emitted neither a captured candidate configuration-port access
+nor a C000 entry.  Consequently the required VL82C420 C-segment mapping
+protocol is not proved and is not implemented.  The App retains only the
+source-backed mutable F-segment shadow; it does not write a BDA warm-reset
+signature or add a static C-segment alias.  The exact source grades, commands,
+results and transfer limit are in
+[the S1 evidence](../etc/evidence/t574-s1-pc110-c-segment-trace.md).
+
+T574 is closed by the candidate's explicit source/proof stop condition.  This
+is not a POST, Setup, DOS-boot or release qualification claim; MyPC110 product
+qualification remains blocked on a lawful, reproducible protected-bootstrap or
+mapping contract.
+
+## Closed Task — M5 T574
+
+| Task | Status |
+| --- | --- |
+| T574 | Closed after S1's two-width source-gate trace; it rejected an unproven C-segment mapping rather than fabricating one. |
+
 ## M5 T573 S1 — Closed: MyPC110 real-firmware boundary trace
 
 | Field | Required record |

@@ -42,3 +42,14 @@ firmware ownership, prove C000 execution follows the genuine firmware path,
 and run affected units/diagnostics plus structural gates. No PC110 EXE is
 published until the separate product-qualification candidate is admitted and
 its own guest corpus passes.
+
+## T574 disposition
+
+T574 ran the required ordinary-executor trace on both widths.  The first reset
+arrives before any captured configuration-port transaction or C000 entry, so
+the required map-selection contract is not observable.  The receiver is
+closed by its source/proof stop condition; the evidence is
+[`t574-s1-pc110-c-segment-trace.md`](../etc/evidence/t574-s1-pc110-c-segment-trace.md).
+Do not reopen it by guessing a static C-segment alias.  A later receiver must
+first establish the protected-bootstrap boundary or obtain the exact mapping
+protocol.

@@ -1,7 +1,9 @@
 #include "app-mypc110/pc110_plan_interface.h"
 #include "lib/types/file.h"
 #include "x86-core/machine/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/retirement_observation_interface.h"
+#include "x86-core/machine/trace_interface.h"
 #include "x86-nxvm/machine/machine_private.h"
 #include "x86-nxvm/machine/waiting.h"
 
@@ -9,6 +11,14 @@ extern const x86_nxvm_machine_assets vm_app_firmware;
 
 #define MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS 8000000u
 #define MYPC110_POST_DIAGNOSTIC_QUANTUM 256u
+#define MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY 128u
+
+typedef struct mypc110_post_diagnostic_port_write {
+    lib_u32 linear_pc;
+    lib_u32 type;
+    lib_u16 port;
+    lib_u8 value;
+} mypc110_post_diagnostic_port_write;
 
 typedef struct mypc110_post_diagnostic_trace {
     x86_core_cpu_execution_point first_non_rom;
@@ -20,7 +30,36 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_u32 post_reset_int10_entries;
     lib_bool post_reset_active;
     lib_bool left_rom;
+    mypc110_post_diagnostic_port_write
+        configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
+    lib_size configuration_write_count;
 } mypc110_post_diagnostic_trace;
+
+static void mypc110_post_diagnostic_observe_trace(void *context,
+    const x86_core_machine_trace_event *event)
+{
+    mypc110_post_diagnostic_trace *trace = context;
+    lib_u16 port;
+
+    if (trace == LIB_NULL || event == LIB_NULL ||
+        (event->type != X86_CORE_MACHINE_TRACE_PORT_READ &&
+         event->type != X86_CORE_MACHINE_TRACE_PORT_WRITE) ||
+        event->detail != (lib_u32)LIB_STATUS_OK) {
+        return;
+    }
+    port = (lib_u16)event->address;
+    if (port != 0x0022u && port != 0x0024u && port != 0x0025u &&
+        port != 0x0074u && port != 0x0076u &&
+        port != 0x00ecu && port != 0x00edu && port != 0x0060u &&
+        port != 0x0061u && port != 0x0064u) {
+        return;
+    }
+    if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
+        trace->configuration_writes[trace->configuration_write_count++] =
+            (mypc110_post_diagnostic_port_write) {
+                event->linear_pc, event->type, port, (lib_u8)event->value};
+    }
+}
 
 static void mypc110_post_diagnostic_observe_retirement(void *context,
     const x86_core_machine_retirement_observation *observation)
@@ -69,6 +108,8 @@ int main(void)
     lib_u64 executed = 0u;
     lib_u32 processor_reset_count = 0u;
     lib_u32 reset_exception_count = 0u;
+    x86_core_cpu_fault_snapshot reset_exception = {0};
+    x86_core_cpu_debug_cpu_snapshot reset_cpu = {0};
     lib_bool advanced = LIB_FALSE;
     lib_u32 wait_count = 0u;
     lib_status status;
@@ -81,6 +122,12 @@ int main(void)
             machine->x86_core_machine,
             &(x86_core_machine_retirement_observation_provider){
                 .callback = mypc110_post_diagnostic_observe_retirement,
+                .context = &post_reset_trace});
+    }
+    if (status == LIB_STATUS_OK) {
+        status = x86_core_machine_set_trace_provider(machine->x86_core_machine,
+            &(x86_core_machine_trace_provider) {
+                .callback = mypc110_post_diagnostic_observe_trace,
                 .context = &post_reset_trace});
     }
     if (status == LIB_STATUS_OK) {
@@ -108,11 +155,14 @@ int main(void)
                     &reset_observation) == LIB_STATUS_OK) {
                 reset_exception_count =
                     reset_observation.diagnostic.delivered_exception_count;
+                reset_exception = reset_observation.diagnostic.last_delivered_exception;
             }
             (void)x86_core_machine_memory_read(machine->x86_core_machine,
                 0x00000472u, warm_signature, sizeof(warm_signature));
             (void)x86_core_machine_memory_read(machine->x86_core_machine,
                 0x000c0000u, c000_header, sizeof(c000_header));
+            (void)x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
+                X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &reset_cpu);
             continue;
         }
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
@@ -142,6 +192,37 @@ int main(void)
         post_reset_trace.post_reset_c000_entries,
         post_reset_trace.pre_reset_int10_entries,
         post_reset_trace.post_reset_int10_entries);
+    if (reset_exception.valid) {
+        lib_c_printf("PC110:POST:reset-exception=%08x code=%08x point=%04x:%08x bytes=%02x %02x %02x %02x stack=%04x:%08x flags=%08x\n",
+            reset_exception.exception_mask, reset_exception.exception_code,
+            reset_exception.point.cs, reset_exception.point.eip,
+            reset_exception.point.bytes[0u], reset_exception.point.bytes[1u],
+            reset_exception.point.bytes[2u], reset_exception.point.bytes[3u],
+            reset_exception.ss, reset_exception.esp, reset_exception.eflags);
+    }
+    if (reset_exception.valid) {
+        lib_c_printf("PC110:POST:reset-cpu cr0=%08x cs=%04x/%08x ss=%04x/%08x ds=%04x/%08x esp=%08x\n",
+            reset_cpu.cr0, reset_cpu.cs.selector, reset_cpu.cs.base,
+            reset_cpu.ss.selector, reset_cpu.ss.base,
+            reset_cpu.ds.selector, reset_cpu.ds.base, reset_cpu.esp);
+    }
+    if (reset_observation.diagnostic.first_fault.valid) {
+        const x86_core_cpu_fault_snapshot *fault =
+            &reset_observation.diagnostic.first_fault;
+
+        lib_c_printf("PC110:POST:first-fault=%08x code=%08x point=%04x:%08x stack=%04x:%08x\n",
+            fault->exception_mask, fault->exception_code, fault->point.cs,
+            fault->point.eip, fault->ss, fault->esp);
+    }
+    for (lib_size index = 0u; index < reset_observation.diagnostic.recent_count;
+        ++index) {
+        const x86_core_cpu_execution_point *point =
+            &reset_observation.diagnostic.recent[index];
+
+        lib_c_printf("PC110:POST:recent=%04x:%08x bytes=%02x %02x %02x %02x\n",
+            point->cs, point->eip, point->bytes[0u], point->bytes[1u],
+            point->bytes[2u], point->bytes[3u]);
+    }
     if (post_reset_exception.valid) {
         lib_c_printf("PC110:POST:state=%04x:%08x base=%08x eflags=%08x halted=%u\n",
             post_reset_observation.cpu.cs, post_reset_observation.cpu.eip,
@@ -160,6 +241,15 @@ int main(void)
                 post_reset_trace.first_non_rom.bytes[2u],
                 post_reset_trace.first_non_rom.bytes[3u]);
         }
+    }
+    for (lib_size index = 0u; index < post_reset_trace.configuration_write_count;
+        ++index) {
+        const mypc110_post_diagnostic_port_write *write =
+            &post_reset_trace.configuration_writes[index];
+
+        lib_c_printf("PC110:POST:port-%s pc=%08x port=%04x value=%02x\n",
+            write->type == X86_CORE_MACHINE_TRACE_PORT_READ ? "read" : "write",
+            write->linear_pc, write->port, write->value);
     }
     x86_nxvm_machine_destroy(machine);
     return status == LIB_STATUS_OK &&

@@ -48,6 +48,7 @@ void mypc110_base_composition_destroy(mypc110_base_composition *composition)
     x86_core_machine_destroy(composition->core);
     x86_f65535_destroy(composition->display_controller);
     x86_vl82c420_destroy(composition->configuration_chip);
+    mypc110_tft_firmware_destroy(&composition->firmware);
     *composition = (mypc110_base_composition) {0};
 }
 
@@ -56,16 +57,15 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
     mypc110_base_composition *out_composition)
 {
     mypc110_base_composition *composition;
-    mypc110_tft_firmware firmware;
     x86_nxvm_board_plan *plan = LIB_NULL;
     lib_status status;
 
-    if (out_composition == LIB_NULL || mypc110_tft_firmware_create(tft_bios,
-            tft_bios_bytes, &firmware) != LIB_STATUS_OK) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
+    if (out_composition == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_composition = (mypc110_base_composition) {0};
     composition = out_composition;
+    status = mypc110_tft_firmware_create(tft_bios, tft_bios_bytes,
+        &composition->firmware);
+    if (status != LIB_STATUS_OK) return status;
     status = mypc110_font_rom_create(font_rom, font_rom_bytes, &composition->font);
     if (status == LIB_STATUS_OK) {
         status = x86_vl82c420_create(&composition->configuration_chip);
@@ -74,10 +74,10 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
         status = x86_f65535_create(&composition->display_controller);
     }
     if (status == LIB_STATUS_OK) {
-    status = x86_nxvm_board_plan_create(&mypc110_base_configuration, &plan);
-    if (status == LIB_STATUS_OK) {
-        status = x86_nxvm_board_plan_set_topology(plan, &mypc110_base_topology);
-    }
+        status = x86_nxvm_board_plan_create(&mypc110_base_configuration, &plan);
+        if (status == LIB_STATUS_OK) {
+            status = x86_nxvm_board_plan_set_topology(plan, &mypc110_base_topology);
+        }
     }
     if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_create_from_plan(plan, &composition->core,
@@ -85,7 +85,7 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
     }
     if (status == LIB_STATUS_OK) {
         status = x86_core_machine_bind_firmware_provider(composition->core,
-            mypc110_tft_firmware_provider(), &firmware);
+            mypc110_tft_firmware_provider(), &composition->firmware);
     }
     if (status == LIB_STATUS_OK) {
         status = mypc110_config_install_routes(composition->core,

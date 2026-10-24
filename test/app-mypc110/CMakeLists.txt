@@ -86,5 +86,5 @@ if(TARGET mypc110-real-firmware)
     add_test(NAME mypc110.diagnostic/real-firmware-post
         COMMAND mypc110-real-firmware-post-diagnostic)
     set_tests_properties(mypc110.diagnostic/real-firmware-post PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 30)
+        LABELS "diagnostic;mypc110" TIMEOUT 60)
 endif()

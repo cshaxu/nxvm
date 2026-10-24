@@ -76,12 +76,13 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 4. [PC110: PCMCIA, flash and boot storage](../history/M5-T570-pc110-storage-proposal.md) is closed as M5 T570. Its source gate preserves immutable firmware read mapping and transfers unproven controller behavior to real-firmware boot rather than fabricating a PC/AT route.
 5. [PC110: audio and remaining peripherals](../history/M5-T571-pc110-audio-aux-proposal.md) is closed as M5 T571. Its source gate preserves real ES488/OPL2 observations and transfers unproven playback/Super-I/O/dock protocols to real-firmware execution.
 6. [PC110: real firmware POST, setup and guest boot](../history/M5-T572-pc110-firmware-boot-proposal.md) is closed as M5 T572. It establishes the normal real-firmware execution checkpoint but makes no POST, Setup, DOS-boot or published-product claim.
-7. [PC110: C-segment ROM and shadow contract](../proposals/m5-pc110-c-segment-shadow.md) follows closed T573. It must admit a complete source-backed VL82C420 POST mapping contract; it must not install a synthetic POST or boot path.
-8. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) remains blocked on the C-segment receiver and its existing source/asset gates.
-9. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-10. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-11. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-12. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+7. [PC110: C-segment ROM and shadow contract](../proposals/m5-pc110-c-segment-shadow.md) is closed as T574 by its source/proof stop condition.  It retained only the verified F-segment shadow and rejected an unproven C-segment alias.
+8. [PC110: protected bootstrap and real mapping admission](../proposals/m5-pc110-protected-bootstrap.md) must first classify the pre-C000 bootstrap failure with a lawful source or reproducible ordinary-executor trace.
+9. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) remains blocked on the protected-bootstrap receiver and its existing source/asset gates.
+10. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+13. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

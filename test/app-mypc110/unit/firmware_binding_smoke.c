@@ -10,10 +10,13 @@ int main(void)
     };
     mypc110_tft_firmware firmware;
     x86_core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
+    const lib_u8 shadow_patch = 0x44u;
     lib_bool failed = LIB_FALSE;
 
     bios[0] = 0x55u;
-    bios[MYPC110_TFT_BIOS_BYTES - 1u] = 0xaau;
+    bios[MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x11u;
+    bios[3u * MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x33u;
     failed |= mypc110_tft_firmware_create(LIB_NULL, MYPC110_TFT_BIOS_BYTES,
         &firmware) != LIB_STATUS_INVALID_ARGUMENT ||
         mypc110_tft_firmware_create(bios, MYPC110_TFT_BIOS_BYTES - 1u,
@@ -23,14 +26,25 @@ int main(void)
         x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         x86_core_machine_bind_firmware_provider(machine,
             mypc110_tft_firmware_provider(), &firmware) != LIB_STATUS_OK ||
+        mypc110_tft_firmware_install_routes(machine, &firmware) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
-        !x86_core_machine_immutable_rom_mapping_contains(machine,
-            MYPC110_TFT_BIOS_PHYSICAL_START, MYPC110_TFT_BIOS_BYTES) ||
-        x86_core_machine_immutable_rom_mapping_contains(machine,
-            MYPC110_TFT_BIOS_PHYSICAL_START - 1u, 1u) ||
-        !x86_core_machine_immutable_rom_mapping_contains(machine,
-            0xfffffff0u, 1u);
+        x86_core_machine_memory_read(machine, 0x000c0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x55u ||
+        x86_core_machine_memory_read(machine, 0x000d0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x11u ||
+        x86_core_machine_memory_read(machine, 0x000f0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x33u ||
+        x86_core_machine_memory_read(machine, 0xffff0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x33u ||
+        x86_core_machine_memory_write(machine, 0x000f0000u, &shadow_patch, 1u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x000f0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != shadow_patch ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x000f0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x33u;
     x86_core_machine_destroy(machine);
+    mypc110_tft_firmware_destroy(&firmware);
     return failed ? 1 : 0;
 }

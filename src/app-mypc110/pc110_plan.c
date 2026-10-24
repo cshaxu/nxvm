@@ -137,7 +137,9 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
     lib_status status;
 
     if (plan == LIB_NULL || core == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = mypc110_config_install_routes(core, plan->configuration_chip);
+    status = mypc110_tft_firmware_install_routes(core, &plan->firmware);
+    if (status == LIB_STATUS_OK)
+        status = mypc110_config_install_routes(core, plan->configuration_chip);
     if (status == LIB_STATUS_OK)
         status = mypc110_font_rom_install(core, &plan->font);
     if (status == LIB_STATUS_OK)
@@ -152,6 +154,7 @@ static void mypc110_machine_release(void *opaque)
     if (plan == LIB_NULL) return;
     x86_f65535_destroy(plan->display_controller);
     x86_vl82c420_destroy(plan->configuration_chip);
+    mypc110_tft_firmware_destroy(&plan->firmware);
     lib_release(plan);
 }
 
