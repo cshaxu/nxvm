@@ -3,6 +3,7 @@
 #include "x86-core/machine/memory_interface.h"
 
 #define MYPC110_SYSTEM_FLASH_OFFSET (3u * MYPC110_TFT_FIRMWARE_BANK_BYTES)
+#define MYPC110_VIDEO_FLASH_OFFSET (2u * MYPC110_TFT_FIRMWARE_BANK_BYTES)
 #define MYPC110_FLASH_PHYSICAL_START MYPC110_VIDEO_PHYSICAL_START
 #define MYPC110_SYSTEM_PHYSICAL_START 0x000f0000u
 #define MYPC110_RESET_PHYSICAL_START 0xffff0000u
@@ -54,7 +55,18 @@ static lib_status mypc110_tft_firmware_read(void *owner, lib_u32 physical,
     lib_status status;
 
     (void)observe_only;
-    if (destination == 0u) return LIB_STATUS_INVALID_ARGUMENT;
+    if (firmware == LIB_NULL || firmware->bios == LIB_NULL || destination == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (physical >= MYPC110_VIDEO_PHYSICAL_START &&
+        physical - MYPC110_VIDEO_PHYSICAL_START < MYPC110_VIDEO_SHADOW_BYTES) {
+        offset = (lib_size)(physical - MYPC110_VIDEO_PHYSICAL_START);
+        if (bytes > MYPC110_VIDEO_SHADOW_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
+        lib_memory_copy((void *)destination,
+            firmware->video_shadow_visible ? firmware->video_shadow + offset :
+                firmware->bios + MYPC110_VIDEO_FLASH_OFFSET + offset,
+            bytes);
+        return LIB_STATUS_OK;
+    }
     status = mypc110_tft_firmware_shadow(firmware, physical, bytes,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, &shadow, &offset);
     if (status != LIB_STATUS_OK) return status;
@@ -84,6 +96,16 @@ static lib_status mypc110_tft_firmware_query(void *owner, lib_u32 physical,
     lib_size offset;
     lib_u8 *shadow;
 
+    const mypc110_tft_firmware *firmware = owner;
+
+    if (firmware == LIB_NULL || firmware->bios == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (physical >= MYPC110_VIDEO_PHYSICAL_START &&
+        physical - MYPC110_VIDEO_PHYSICAL_START < MYPC110_VIDEO_SHADOW_BYTES &&
+        access == X86_CORE_MACHINE_MEMORY_ACCESS_READ) {
+        offset = (lib_size)(physical - MYPC110_VIDEO_PHYSICAL_START);
+        return bytes <= MYPC110_VIDEO_SHADOW_BYTES - offset ? LIB_STATUS_OK :
+            LIB_STATUS_UNSUPPORTED;
+    }
     return mypc110_tft_firmware_shadow(owner, physical, bytes, access,
         &shadow, &offset);
 }

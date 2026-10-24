@@ -16,6 +16,7 @@ int main(void)
 
     bios[0] = 0x55u;
     bios[MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x11u;
+    bios[2u * MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x22u;
     bios[3u * MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x33u;
     failed |= mypc110_tft_firmware_create(LIB_NULL, MYPC110_TFT_BIOS_BYTES,
         &firmware) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -30,7 +31,7 @@ int main(void)
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x000c0000u, &value, 1u) !=
-            LIB_STATUS_OK || value != 0x55u ||
+            LIB_STATUS_OK || value != 0x22u ||
         x86_core_machine_memory_read(machine, 0x000d0000u, &value, 1u) !=
             LIB_STATUS_OK || value != 0x11u ||
         x86_core_machine_memory_read(machine, 0x000f0000u, &value, 1u) !=

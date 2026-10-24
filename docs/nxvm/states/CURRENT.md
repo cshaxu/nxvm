@@ -2,6 +2,52 @@
 
 ## Current Work
 
+## Closed Task — M5 T576
+
+| Task | Status |
+| --- | --- |
+| T576 | Closed at the source-qualified PC110 video-initialization boundary; no synthetic BIOS/IVT path or PC110 product claim was made. |
+
+## M5 T576 S3 — Closed: MyPC110 protected control-transfer source gate
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | S3 follows committed T576 S2; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed PC110 implementation through closure and accepts bounded L2 external behavior where L3 evidence is unavailable. Ordinary diagnostic, implementation and verification work is standing-approved. |
+| Objective | Identify the first causal protected control/stack boundary after the resolved `F000:605F` data reload and before the real firmware's later invalid INT 10 dispatch. |
+| Non-goals | No broad loose mode, selector/address exceptions, CS/SS/far/interrupt relaxation without a traced generic contract, BIOS/IVT/BDA interception, PC/AT fallback, second executor, raw-ROM commit, boot claim or product artifact. |
+| Reference Baseline | T575/S1/T576 S2 evidence and the [retained control-transfer proposal](../history/M5-T576-pc110-control-transfer-source-gate-proposal.md); Open-Source-PC110, PC110-EMU and PC110-QEMU are L2 research only. |
+| Files And ABI Surface | Initially MyPC110 diagnostic/evidence/current/proposal only. X86 Core is eligible only after a trace isolates one generic CPU contract. Public/shared layers and unrelated Apps are excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one executor/segment owner; BYOB assets and no third-party source copying. |
+| Verification | Two-width ordered retirement/fault observations through the first causal boundary, then scoped tests only if a valid owner repair exists. |
+| Stop Conditions | Ambiguous trace, source-unproved hardware behavior, need for a broad compatibility scaffold, firmware-address special case, or changes beyond one isolated owner. Record and transfer rather than fabricate. |
+| Exit Criteria | One finite causally ordered boundary and owner disposition are recorded on both widths; all scoped tests/evidence pass; no false boot or release claim. |
+| Similar-Issue Sweep | Examine far call/jump/return, IRET, stack segment reload, exception delivery, reset boundaries, IVT reads and C-shadow route state without adding parallel execution. |
+
+### S3 Brief
+
+Extend the existing real-firmware diagnostic only enough to preserve a bounded
+ordered control/fault window after `F000:6060`.  Do not preselect the QEMU or
+PC110-EMU broad compatibility design; decide ownership only from the trace.
+
+### S3 Delivery
+
+The App firmware provider now maps unshadowed `C0000-CBFFF` from the actual
+TFT image's video bank rather than its non-video bank.  Existing EC/ED shadow
+ownership and reset behavior are unchanged.  Both widths reach the real
+`F000:4CA9` `INT 10h`; the ordinary IVT read at `0000:0040` is zero, so Core
+correctly transfers to the uninitialized vector.  This disproves a remaining
+generic protected control/stack receiver.
+
+No qualified PC110 video BIOS or board-initialization source exists in the
+admitted asset set.  QEMU's separate standard-VGA BIOS plus injected mode-set
+is L2 research, not an NXVM implementation contract.  S3 consequently closes
+at this source gate without fabricating an IVT/BIOS path.  The exact map,
+two-width observation and unqualified endpoint are recorded in
+[the S3 evidence](../etc/evidence/t576-s3-pc110-int10-video-boundary.md).
+The persistent x64/x86 Ninja graphs also pass the complete 661/661
+repository-only unit corpus.
+
 ## M5 T576 S2 — Closed: MyPC110 protected unreal-data reload
 
 | Field | Required record |

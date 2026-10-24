@@ -11,7 +11,7 @@ int main(void)
     lib_u32 value = 0u;
     lib_i32 failed = 0;
 
-    bios[0u] = 0x11u;
+    bios[2u * MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x11u;
     font[0] = 0x55u;
     font[MYPC110_FONT_BANK_BYTES] = 0xaau;
     failed |= mypc110_base_composition_create(bios, sizeof(bios), font,

@@ -57,7 +57,7 @@ int main(void)
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0xffu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
-                &byte, 1u) != LIB_STATUS_OK || byte != 0x55u ||
+                &byte, 1u) != LIB_STATUS_OK || byte != 0x22u ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00edu, 0x00u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0fu) != LIB_STATUS_OK ||
@@ -75,7 +75,7 @@ int main(void)
                 &byte, 1u) != LIB_STATUS_OK || byte != 0x33u ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
-                &byte, 1u) != LIB_STATUS_OK || byte != 0x55u;
+                &byte, 1u) != LIB_STATUS_OK || byte != 0x22u;
     }
     if (machine != LIB_NULL && chip != LIB_NULL) {
         failed |= x86_core_machine_remove_port_routes(machine, &firmware) != LIB_STATUS_OK ||

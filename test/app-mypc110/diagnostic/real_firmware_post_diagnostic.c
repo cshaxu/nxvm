@@ -12,6 +12,7 @@ extern const x86_nxvm_machine_assets vm_app_firmware;
 #define MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS 8000000u
 #define MYPC110_POST_DIAGNOSTIC_QUANTUM 256u
 #define MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY 128u
+#define MYPC110_POST_DIAGNOSTIC_INT10_LINEAR_PC 0x000f4ca9u
 
 typedef struct mypc110_post_diagnostic_port_write {
     lib_u32 linear_pc;
@@ -97,7 +98,7 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
     trace->previous = observation->point;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     const x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
@@ -113,16 +114,25 @@ int main(void)
     mypc110_post_diagnostic_trace post_reset_trace = {0};
     lib_u8 warm_signature[2u] = {0};
     lib_u8 c000_header[4u] = {0};
+    lib_u8 int10_vector[4u] = {0};
     lib_u64 executed = 0u;
     lib_u32 processor_reset_count = 0u;
     lib_u32 reset_exception_count = 0u;
     x86_core_cpu_fault_snapshot reset_exception = {0};
     x86_core_cpu_debug_cpu_snapshot reset_cpu = {0};
+    x86_core_cpu_debug_instruction_observation int10_instruction = {0};
     lib_u64 before_pop_ds_descriptor = 0u;
     lib_status before_pop_ds_memory_status = LIB_STATUS_INVALID_STATE;
+    lib_status int10_vector_status = LIB_STATUS_INVALID_STATE;
+    lib_status int10_instruction_status = LIB_STATUS_INVALID_STATE;
     lib_bool advanced = LIB_FALSE;
+    lib_bool int10_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--int10") == 0;
+    lib_bool int10_watchpoint_armed = LIB_FALSE;
     lib_u32 wait_count = 0u;
     lib_status status;
+
+    if (argc != 1 && !int10_checkpoint) return 2;
 
     status = mypc110_machine_construction_create(&config, &vm_app_firmware, &construction);
     if (status == LIB_STATUS_OK)
@@ -140,9 +150,10 @@ int main(void)
                 .callback = mypc110_post_diagnostic_observe_trace,
                 .context = &post_reset_trace});
     }
-    if (status == LIB_STATUS_OK) {
+    if (status == LIB_STATUS_OK && !int10_checkpoint) {
         status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
-            X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x000f6060u);
+            X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
+            0x000f6060u);
     }
     if (status == LIB_STATUS_OK) {
         x86_nxvm_machine_executor_state_start(&machine->control.state);
@@ -177,6 +188,12 @@ int main(void)
                 0x000c0000u, c000_header, sizeof(c000_header));
             (void)x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
                 X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &reset_cpu);
+            if (int10_checkpoint && !int10_watchpoint_armed) {
+                status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
+                    MYPC110_POST_DIAGNOSTIC_INT10_LINEAR_PC);
+                int10_watchpoint_armed = status == LIB_STATUS_OK;
+            }
             continue;
         }
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
@@ -206,6 +223,13 @@ int main(void)
     if (machine != LIB_NULL) x86_nxvm_machine_control_end_run(&machine->control);
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
+    if (machine != LIB_NULL && int10_checkpoint) {
+        int10_vector_status = x86_core_machine_memory_read(
+            machine->x86_core_machine, 0x00000040u, int10_vector,
+            sizeof(int10_vector));
+        int10_instruction_status = x86_core_machine_debug_capture_instruction_observation(
+            machine->x86_core_machine, &int10_instruction);
+    }
     lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u int10=%u/%u\n",
         (int)status, (lib_u32)result.reason, result.linear_pc, result.detail,
         (unsigned long long)executed, processor_reset_count, wait_count, advanced,
@@ -247,6 +271,17 @@ int main(void)
 
         lib_c_printf("PC110:POST:after-second-pop-ds ds=%04x/%08x es=%04x/%08x eip=%08x\n",
             cpu->ds.selector, cpu->ds.base, cpu->es.selector, cpu->es.base, cpu->eip);
+    }
+    if (int10_checkpoint) {
+        lib_c_printf("PC110:POST:int10-vector-status=%d vector=%02x%02x%02x%02x\n",
+            (int)int10_vector_status, int10_vector[3u], int10_vector[2u],
+            int10_vector[1u], int10_vector[0u]);
+        lib_c_printf("PC110:POST:int10-instruction-status=%d point=%04x:%08x linear=%08x bytes=%02x %02x watch=%u/%u/%08x\n",
+            (int)int10_instruction_status, int10_instruction.instruction_cs,
+            int10_instruction.instruction_eip, int10_instruction.instruction_linear,
+            int10_instruction.instruction_bytes[0u], int10_instruction.instruction_bytes[1u],
+            int10_instruction.watch_hit, (lib_u32)int10_instruction.watch_kind,
+            int10_instruction.watch_address);
     }
     if (reset_exception.valid) {
         lib_c_printf("PC110:POST:reset-cpu cr0=%08x cs=%04x/%08x ss=%04x/%08x ds=%04x/%08x esp=%08x\n",

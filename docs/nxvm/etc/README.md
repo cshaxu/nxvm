@@ -117,6 +117,11 @@ records the initial research inventory, evidence limits and implementation gates
 The [Core/App ownership audit](evidence/t558-s1-core-app-ownership.md) maps
 the four current machines, proposed PC110 owners and concrete planning risks.
 
+T576 S3: [PC110 INT 10 video boundary](evidence/t576-s3-pc110-int10-video-boundary.md)
+records the corrected TFT video-bank route, two-width ordinary INT dispatch,
+and the source-gated display-initialization handoff without a synthetic BIOS
+or IVT path.
+
 T557 S2: [cursor ownership](evidence/t557-s2-cursor-ownership.md) records the
 approved KVM mode contract, Core adaptation and receiving verification.
 
