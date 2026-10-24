@@ -2,6 +2,43 @@
 
 ## Current Work
 
+## Closed Task — M5 T578
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T578 S1 after closed T577; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner directed PC110 implementation to continue and grants standing approval for ordinary scoped diagnostic, implementation, verification, commit and push work. |
+| Objective | Identify the earliest single source-qualified video or board initialization contract after the corrected real TFT BIOS reset, without presuming an old INT 10h checkpoint is reachable. |
+| Non-goals | No synthetic IVT/BDA/BIOS path, guest-address special case, borrowed PC/AT video ROM, host fallback, second executor, raw asset commit, POST/display/Setup/DOS boot or release claim. |
+| Reference Baseline | Closed T577 S1 `2340a68b6`: real 8042 reset classification, asserted A20 and bounded absent-memory route. |
+| Candidate Proposal | [Video and board source gate](../proposals/m5-pc110-video-board-source-gate.md). |
+| Files And ABI Surface | Initially MyPC110 diagnostic/evidence/current/proposal only. App wiring is eligible only after one source-proven owner; Core/Shared are excluded until a trace proves a generic contract. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM source policy. One executor and normal interrupt path remain mandatory. |
+| Verification | Bounded dual-width real-firmware diagnostics, an explicit x64 reset trace, affected MyPC110 tests, and documentation/whitespace gates. |
+| Expected Markers | Ordered post-reset initialization observations and either one owner disposition or a finite source gate. |
+| Asset Needs | Read-only admitted TFT BIOS/font inputs only. |
+| Stop Conditions | Ambiguous trace, missing lawful device source, broad compatibility behavior, synthetic firmware behavior or a Shared/Core scope not proven generic. |
+| Exit Criteria | Met: the two-width standard diagnostic and explicit x64 reset trace record the first post-reset boundary; no unsupported owner repair or product claim was made. |
+| Similar-Issue Sweep | Video config, C000/E000/F000 routes, EC/ED activity, F65535 routes, vector writes, reset restoration and normal interrupt delivery. |
+
+### S1 Brief
+
+Freeze the existing real-firmware diagnostic's first post-reset boundary.  Do
+not preselect a video device model, a port-61 timing source, or an INT 10h
+result.
+
+### S1 Delivery
+
+Closed as a finite source gate.  The real image makes its ordinary 8042 reset,
+then remains in a port-61 bit-4 edge-wait loop before C000/E000/video ROM or
+the formerly assumed INT 10h checkpoint.  Available research does not prove
+the PC110 source or period for that bit.  The detailed two-width disposition,
+explicit x64 trace, and limits are in
+[`T578 S1 evidence`](../etc/evidence/t578-s1-pc110-video-board-source-gate.md).
+No production code or raw asset was changed.  The next lawful receiver must
+admit a clearly-labelled L2 port-61 timing decision before it can claim to
+advance real firmware.
+
 ## Closed Task — M5 T577
 
 | Field | Required record |
