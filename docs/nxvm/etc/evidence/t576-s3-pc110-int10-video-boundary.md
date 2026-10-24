@@ -1,4 +1,10 @@
-# T576 S3: PC110 INT 10 video boundary
+# T576 S3: PC110 INT 10 video boundary (superseded map conclusion)
+
+> **Corrected by T576 S4.** This record preserves the bounded INT observation,
+> but not its initial C000 bank conclusion. Stronger live-map evidence in the
+> already-admitted Open-Source-PC110 corpus identifies bank 2 at E000 and C000
+> as the reset-visible shadow destination. S4 restores that topology and repeats
+> the same bounded checkpoint.
 
 ## Scope
 
@@ -7,16 +13,14 @@ It uses the admitted external TFT firmware from the external PC110 asset bundle
 only at runtime.  No firmware byte, third-party source, IVT/BDA mutation,
 BIOS interception, QEMU patch, or Core compatibility policy is introduced.
 
-## Corrected App-owned mapping
+## Initial App-owned mapping hypothesis
 
-The 256 KiB TFT image contains distinct 64 KiB banks.  The immutable image at
-offset zero begins `55 AA 00 EB`; it is not the C-segment video firmware.  Its
-third bank begins `55 AA 47 EB` and contains the `VIDEO` / `IBM VGA Compatible
-BIOS` identification.  MyPC110 now owns the existing `C0000-CBFFF` replacement
-route and reads that bank while its observed EC/ED shadow is invisible.  The
-existing writable shadow remains the only route after the guest unlocks and
-fills it; reset discards that shadow.  This is a source-map correction inside
-the existing App firmware provider, not a generic Core alias.
+The 256 KiB TFT image contains distinct 64 KiB banks. The immutable image at
+offset zero begins `55 AA 00 EB`; bank 2 begins `55 AA 47 EB` and contains the
+`VIDEO` / `IBM VGA Compatible BIOS` identification. S3 initially treated the
+second fact as a C000 route correction. That conclusion is not retained: the
+subsequent source review proves that bank 2 belongs at E000 and C000 is its
+runtime shadow destination.
 
 ## Ordered dual-width result
 
@@ -53,12 +57,23 @@ reproducible boundary.
 ## Verification and limits
 
 - MyPC110's seven unit/diagnostic registrations pass on both persistent Ninja
-  widths after the map correction.
+  widths for the then-current interim map.
 - The optional INT checkpoint confirms the same control-transfer fact on both
   widths.
 - The complete repository-only unit suite passes **661/661** on x64 and x86
   through the persistent Ninja/ccache graphs.
 
-This is not a POST, Setup, DOS boot, display, or release qualification.  The
-next receiver must first admit a lawful PC110 video-firmware or board
-initialization source, with an explicit App-owned contract.
+## S4 corrected-map replay
+
+S4 preloads C000 from flash bank 2 at reset, exposes E000 directly from the
+same raw bank and preserves F000 as bank 3.  Both widths prove that C000 and
+E000 expose the bank-2 `55 AA 47 EB` header after reset; the existing EC/ED
+write/relock route remains the only later mutable-shadow transition.
+
+The repeated bounded `--int10` checkpoint reaches the same `F000:4CA9` `CD 10`
+with a zero vector on both widths.  Its retirement counters are zero for both
+`C0000–CFFFF` and `E0000–EFFFF`.  Thus the corrected video-map owner is
+verified, but it is not on the execution path before this terminal interrupt.
+The remaining missing video/board initialization source is unchanged.
+
+This is not a POST, Setup, DOS boot, display, or release qualification.

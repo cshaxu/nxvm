@@ -2,13 +2,43 @@
 
 ## Current Work
 
-## Closed Task — M5 T576
+## M5 T576 S4 — Active: MyPC110 video-bank map correction
 
-| Task | Status |
+| Field | Required record |
 | --- | --- |
-| T576 | Closed at the source-qualified PC110 video-initialization boundary; no synthetic BIOS/IVT path or PC110 product claim was made. |
+| Identifier Mode | Corrective S4 of the immediately preceding T576 closure after stronger already-admitted source evidence contradicted S3's C000 bank conclusion. |
+| Admission And Approval | Owner directed PC110 implementation through closure and has standing-approved ordinary App-local implementation, diagnostics and verification. This corrective scope is limited to the source-proven map; no new shared/Core authority is used. |
+| Objective | Restore the proven E000 bank-2 / F000 bank-3 / C000-shadow topology and trace the next ordinary real-image boundary. |
+| Non-goals | No IVT/BDA/BIOS injection, QEMU behavior copy, PC/AT ROM, loose CPU mode, new public API or product claim. |
+| Reference Baseline | S3 commit `76a09778b`, admitted TFT BYOB image and the already-reviewed Open-Source-PC110 live-map record. |
+| Candidate Proposal | [S4 map correction](../proposals/m5-pc110-video-bank-map-correction.md). |
+| Files And ABI Surface | MyPC110 provider, its App-owned tests/diagnostic, evidence/current/proposal only. Shared/Core and raw assets are excluded. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; App source policy. The firmware image remains external BYOB input. |
+| Verification | Two-width map assertions, bounded real-image diagnostic, complete repository-only x64/x86 units and documentation/whitespace gates. |
+| Expected Markers | C000 and E000 show the bank-2 option-ROM header; F000 shows bank 3; diagnostic reports no C/E execution before its unchanged INT 10 source gate. |
+| Asset Needs | Read-only admitted TFT BIOS/font assets only; no raw asset commit or PC110 executable publication. |
+| Reporting Requirements | Record actual map, two-width checkpoints, retained source gate, changed files and all unqualified endpoints. |
+| Stop Conditions | Need for a synthetic vector/BIOS, borrowed PC/AT video path, broad CPU relaxation, a shared/Core change or a boot claim. |
+| Exit Criteria | The contradicted C alias is removed, one correct map owner is tested, the next trace fact is recorded, and no boot/display claim is made. |
+| Original Owner Request | Continue the PC110 programme to closure using PC110-EMU, PC110-QEMU and Open-Source-PC110 only as research, with external usable firmware. |
+| Similar-Issue Sweep | C000/D000/E000/F000/reset map, EC/ED route state, font aperture precedence and the real image's C/E retirement before the terminal interrupt. |
 
-## M5 T576 S3 — Closed: MyPC110 protected control-transfer source gate
+### S4 Brief
+
+Open-Source-PC110's live source record places bank 2 at E000 and identifies
+C000 as its runtime shadow destination. Correct the App map before pursuing
+any further CPU or video theory.
+
+### S4 Delivery
+
+The provider now loads the C000 reset shadow from bank 2 while immutable flash
+continues to expose that bank at E000 and bank 3 at F000. The dual-width map
+tests prove the topology. The real-image checkpoint still reaches `F000:4CA9`
+with an all-zero INT 10 vector before executing either C000 or E000. This
+closes the mapping correction and records the source gate without a fabricated
+video initialization path or a PC110 boot claim.
+
+## M5 T576 S3 — Superseded by S4 map correction
 
 | Field | Required record |
 | --- | --- |
@@ -32,21 +62,9 @@ PC110-EMU broad compatibility design; decide ownership only from the trace.
 
 ### S3 Delivery
 
-The App firmware provider now maps unshadowed `C0000-CBFFF` from the actual
-TFT image's video bank rather than its non-video bank.  Existing EC/ED shadow
-ownership and reset behavior are unchanged.  Both widths reach the real
-`F000:4CA9` `INT 10h`; the ordinary IVT read at `0000:0040` is zero, so Core
-correctly transfers to the uninitialized vector.  This disproves a remaining
-generic protected control/stack receiver.
-
-No qualified PC110 video BIOS or board-initialization source exists in the
-admitted asset set.  QEMU's separate standard-VGA BIOS plus injected mode-set
-is L2 research, not an NXVM implementation contract.  S3 consequently closes
-at this source gate without fabricating an IVT/BIOS path.  The exact map,
-two-width observation and unqualified endpoint are recorded in
-[the S3 evidence](../etc/evidence/t576-s3-pc110-int10-video-boundary.md).
-The persistent x64/x86 Ninja graphs also pass the complete 661/661
-repository-only unit corpus.
+S3's initial C000 bank-2 conclusion was superseded before a PC110 product
+claim: the stronger live-map record identifies E000 as bank 2 and C000 as the
+shadow destination. S4 corrects that App route and repeats the bounded trace.
 
 ## M5 T576 S2 — Closed: MyPC110 protected unreal-data reload
 

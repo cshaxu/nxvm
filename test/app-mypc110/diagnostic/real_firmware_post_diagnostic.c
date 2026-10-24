@@ -27,6 +27,8 @@ typedef struct mypc110_post_diagnostic_trace {
     x86_core_cpu_execution_point previous;
     lib_u32 pre_reset_c000_entries;
     lib_u32 post_reset_c000_entries;
+    lib_u32 pre_reset_e000_entries;
+    lib_u32 post_reset_e000_entries;
     lib_u32 pre_reset_int10_entries;
     lib_u32 post_reset_int10_entries;
     x86_core_cpu_debug_cpu_snapshot before_pop_ds;
@@ -73,11 +75,18 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
     if (observation->point.linear_pc >= 0x000c0000u &&
-        observation->point.linear_pc < 0x000f0000u) {
+        observation->point.linear_pc < 0x000d0000u) {
         if (trace->post_reset_active)
             ++trace->post_reset_c000_entries;
         else
             ++trace->pre_reset_c000_entries;
+    }
+    if (observation->point.linear_pc >= 0x000e0000u &&
+        observation->point.linear_pc < 0x000f0000u) {
+        if (trace->post_reset_active)
+            ++trace->post_reset_e000_entries;
+        else
+            ++trace->pre_reset_e000_entries;
     }
     if (observation->point.linear_pc == 0x000f4ca9u) {
         if (trace->post_reset_active)
@@ -230,7 +239,7 @@ int main(int argc, char **argv)
         int10_instruction_status = x86_core_machine_debug_capture_instruction_observation(
             machine->x86_core_machine, &int10_instruction);
     }
-    lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u int10=%u/%u\n",
+    lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u int10=%u/%u\n",
         (int)status, (lib_u32)result.reason, result.linear_pc, result.detail,
         (unsigned long long)executed, processor_reset_count, wait_count, advanced,
         warm_signature[1u], warm_signature[0u],
@@ -244,6 +253,8 @@ int main(int argc, char **argv)
         post_reset_exception.point.bytes[2u], post_reset_exception.point.bytes[3u],
         post_reset_trace.pre_reset_c000_entries,
         post_reset_trace.post_reset_c000_entries,
+        post_reset_trace.pre_reset_e000_entries,
+        post_reset_trace.post_reset_e000_entries,
         post_reset_trace.pre_reset_int10_entries,
         post_reset_trace.post_reset_int10_entries);
     if (reset_exception.valid) {
@@ -335,6 +346,15 @@ int main(int argc, char **argv)
             write->linear_pc, write->port, write->value);
     }
     x86_nxvm_machine_destroy(machine);
+    if (int10_checkpoint) {
+        return status == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
+            int10_watchpoint_armed && int10_vector_status == LIB_STATUS_OK &&
+            int10_instruction_status == LIB_STATUS_OK &&
+            int10_instruction.instruction_linear ==
+                MYPC110_POST_DIAGNOSTIC_INT10_LINEAR_PC &&
+            int10_instruction.instruction_bytes[0u] == 0xcdu &&
+            int10_instruction.instruction_bytes[1u] == 0x10u ? 0 : 1;
+    }
     return status == LIB_STATUS_OK &&
         result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
         post_reset_trace.before_pop_ds_valid && post_reset_trace.after_pop_ds_valid &&

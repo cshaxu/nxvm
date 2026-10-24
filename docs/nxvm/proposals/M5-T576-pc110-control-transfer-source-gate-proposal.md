@@ -40,15 +40,15 @@ the exact boundary.  If not admitted, record a finite source/proof stop and
 transfer only the minimal next receiver.  Neither outcome is a PC110 boot or
 release claim.
 
-## Result
+## Corrected result
 
-The finite trace isolated an App-owned input-map error before the proposed
-control-transfer work: the unshadowed C route selected the image's first bank,
-while the TFT image's video firmware occupies its third bank.  The existing
-App replacement provider now selects that video bank and retains its existing
-EC/ED shadow path.
+The finite trace initially appeared to isolate an App-owned C-map error. That
+conclusion is superseded: stronger live-map evidence assigns bank 2 to E000
+and C000 to the shadow destination. Corrective S4 restores the proven map
+before relying on any successor trace.
 
-After this correction, both widths execute the real `CD 10` at `F000:4CA9`.
+After this correction, both widths execute the real `CD 10` at `F000:4CA9`
+without retiring C000 or E000 code first.
 The ordinary IVT entry at physical `0000:0040` is all zero, and the existing
 CPU INT path transfers there.  The traced result rules out a further generic
 protected code/stack/far-transfer receiver.  A qualified PC110 display

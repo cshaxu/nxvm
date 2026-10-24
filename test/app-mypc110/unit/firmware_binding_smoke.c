@@ -32,6 +32,8 @@ int main(void)
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0x000c0000u, &value, 1u) !=
             LIB_STATUS_OK || value != 0x22u ||
+        x86_core_machine_memory_read(machine, 0x000e0000u, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x22u ||
         x86_core_machine_memory_read(machine, 0x000d0000u, &value, 1u) !=
             LIB_STATUS_OK || value != 0x11u ||
         x86_core_machine_memory_read(machine, 0x000f0000u, &value, 1u) !=

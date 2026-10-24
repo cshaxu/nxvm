@@ -58,6 +58,8 @@ int main(void)
             value != 0xffu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != 0x22u ||
+            x86_core_machine_memory_read(machine, 0x000e0000u,
+                &byte, 1u) != LIB_STATUS_OK || byte != 0x22u ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00edu, 0x00u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0fu) != LIB_STATUS_OK ||
