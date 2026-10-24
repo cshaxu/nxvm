@@ -2,6 +2,41 @@
 
 ## Current Work
 
+## M5 T572 S1 — Closed: PC110 real-firmware POST admission
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed T571; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued PC110 implementation through to closure, with real external firmware and no synthetic BIOS, DOS or device fallback. |
+| Objective | Connect the admitted MyPC110 board composition to the existing Emulator/Machine/Product execution path, embed the approved TFT BIOS and font inputs at build time, and execute the guest from reset through a bounded real-firmware POST diagnostic. |
+| Non-goals | No POST completer, BIOS interception, fake storage/audio/power/PCMCIA device, external-ROM runtime loader, PC/AT facade, raw-firmware commit, or claim of completed DOS boot before the real checkpoint passes. |
+| Reference Baseline | Closed T565--T571 PC110 receivers; `app-mypc110` base composition; X86-NXVM Machine/Product construction; external PC110 research and the external TFT asset manifest. |
+| Candidate Proposal | [PC110: real firmware POST, setup and guest boot](../history/M5-T572-pc110-firmware-boot-proposal.md). |
+| Files And ABI Surface | `src/test/app-mypc110`, applicable X86-NXVM Machine construction only if its existing profile seam cannot express the App-local route, selected CMake/artifact wiring, manifest and current PC110 evidence/docs. Shared Lib/Emulator/X86 Core and unrelated Apps stay excluded unless evidence proves a real contract gap. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one execution/frame/firmware owner; external protected payloads remain BYOB. |
+| Verification | Validate frozen external asset hashes before generation; execute the real reset vector through the normal driver on both widths; prove no synthetic handler participates; run affected App/X86-NXVM units and structural gates. Publish no PC110 EXE until its actual product qualification is separately earned. |
+| Expected Markers | One App-owned PC110 machine binding, one X86-NXVM execution adapter, immutable embedded firmware bytes, one standard copied-frame path and a finite POST diagnostic that records the first real unsupported boundary rather than replacing it. |
+| Asset Needs | Read-only `NXVM_PROFILE_ASSETS_ROOT/profiles-nxvm/ibm-pc110-tft` BIOS/font bytes and manifest only. Raw inputs remain outside Git and generated embedding sources remain under ignored build output. |
+| Reporting Requirements | Record hashes, actual owner/diff, reset/POST result, source grades, executed versus unexecuted checkpoints, and any transferred hardware gap. Do not call a diagnostic boot a usable PC110 product. |
+| Stop Conditions | Invalid asset pairing/hash, a required undocumented device protocol, an unavoidable Shared contract change, or any proposed synthetic guest path. Record the exact first boundary and transfer it. |
+| Exit Criteria | Met for the bounded admission checkpoint: App-local product execution is real and bounded; both widths pass affected tests; generated artifact inputs are provenance-checked; the real-firmware checkpoint transfers the remaining guest boundary to the next receiver. |
+| Original Owner Request | Continue the entire PC110 programme to closure using PC110-EMU, PC110-QEMU and Open-Source-PC110 only as research, with usable firmware drawn from approved external assets. |
+| Similar-Issue Sweep | Compare all existing fixed PC App bindings, firmware embedding, driver/lifecycle/frame routes and PC110 board routes; reject duplicate Core creation, second frame paths, external firmware file access and PC/AT-only assumptions. |
+
+### S1 Delivery And T572 Closure
+
+The existing base composition created Core directly, while the normal product
+path created that same Core through `x86-nxvm/machine`. S1 makes the existing
+profile-construction seam carry the PC110-owned firmware, F65535, font and
+VL82C420 routes so the normal single executor owns reset, lifecycle and copied
+frames. The real TFT image passed the bounded eight-million-instruction and
+one-shutdown/reset checkpoint on both widths. It did not complete POST, Setup
+or DOS boot; no PC110 executable is published. The next [MyPC110 product and
+guest qualification](../proposals/m5-pc110-qualification.md) receiver owns a
+finite trace of the first remaining CPU-visible service, interrupt or device
+boundary. The provenance, generic CPU/Board fixes, exact checkpoint and
+transfer are recorded in [the S1 evidence](../etc/evidence/t572-s1-real-firmware-post.md).
+
 ## M5 T571 S1 — Closed: PC110 audio and auxiliary admission
 
 | Field | Required record |
