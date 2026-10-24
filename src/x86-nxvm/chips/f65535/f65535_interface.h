@@ -3,6 +3,7 @@
 #define X86_F65535_INTERFACE_H
 
 #include "lib/types/types_interface.h"
+#include "x86-nxvm/chips/video/video_values_interface.h"
 
 typedef struct x86_f65535 x86_f65535;
 
@@ -28,10 +29,29 @@ lib_status x86_f65535_extension_read(x86_f65535 *chip, lib_u16 port,
 lib_status x86_f65535_extension_write(x86_f65535 *chip, lib_u16 port,
     lib_u8 value);
 
+/* L2 standard-VGA compatibility surface.  F65535's standard VGA identity is
+ * directly sourced; the precise internal VGA implementation is a bounded
+ * compatibility model.  The Board still owns guest port and aperture routes. */
+lib_status x86_f65535_vga_read(x86_f65535 *chip, lib_u16 port,
+    lib_u8 *out_value);
+lib_status x86_f65535_vga_write(x86_f65535 *chip, lib_u16 port,
+    lib_u8 value);
+
 /* Offsets are within the controller's 512 KiB logical display memory. */
 lib_status x86_f65535_vram_read(const x86_f65535 *chip, lib_u32 offset,
     void *destination, lib_size bytes);
 lib_status x86_f65535_vram_write(x86_f65535 *chip, lib_u32 offset,
     const void *source, lib_size bytes);
+
+/* Standard-VGA CPU aperture access and copied text capture.  Graphics/panel
+ * scanout is intentionally outside this first compatibility receiver. */
+lib_status x86_f65535_memory_query(const x86_f65535 *chip, lib_u32 physical,
+    lib_size bytes, lib_bool write);
+lib_status x86_f65535_memory_read(x86_f65535 *chip, lib_u32 physical,
+    void *destination, lib_size bytes);
+lib_status x86_f65535_memory_write(x86_f65535 *chip, lib_u32 physical,
+    const void *source, lib_size bytes);
+lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
+    x86_video_snapshot *out_snapshot);
 
 #endif

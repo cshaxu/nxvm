@@ -2,7 +2,38 @@
 
 ## Current Work
 
-## M5 T568 S4 — Active: PC110 F65535 register and VRAM foundation
+## M5 T568 S5 — Active: PC110 F65535 standard-VGA and capture contract
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | S5 follows committed S4; one session performs coordinator and executor roles. |
+| Admission And Approval | S4 established that F65535 cannot be a VADP personality. The owner permits L2 models derived from external emulators when original manuals do not establish behavior, provided they are labelled as such. |
+| Objective | Establish the smallest separate standard-VGA register/memory/capture contract that can make a truthful F65535 frame available through the existing single copied-frame route. |
+| Non-goals | No VADP personality, host font replacement, panel timing or compensation guess, power model, second renderer/frame path, raw-ROM commit or runnable-product claim. |
+| Reference Baseline | S3 manual/live ledger, S4 foundation, C&T F65535 Revision 2.0, read-only PC110-EMU/PC110-QEMU research. |
+| Candidate Proposal | [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md). |
+| Files And ABI Surface | Candidate `x86-nxvm/chips/f65535` and matching test/App route only. Any Board/Machine bridge need is first recorded as an explicit receiver, not silently coupled to VADP. Lib/Emulator/X86 Core remain excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy; one frame publication owner. |
+| Verification | Register/planar-memory vectors, text/graphics capture vectors and proof that a later machine bridge has one owner. Both cached widths run affected units/manifests/gates. |
+| Stop Conditions | A capture requires a Shared frame/API change, relies on a guessed panel value, or needs a VADP/PC-AT facade. Record the exact receiver rather than manufacture a shortcut. |
+| Exit Criteria | A labelled L3/L2 contract, implementation only for bounded behavior, direct dual-width tests and an explicit remaining product bridge/panel receiver. |
+| Original Owner Request | Continue the PC110 programme after T567 closure. |
+| Similar-Issue Sweep | Compare existing video register/memory/capture logic only to identify facts and reusable shape; do not copy PC/AT personality or source code. |
+
+### S5 Delivery
+
+S5 adds an L2 standard-VGA text subset to the independent F65535 owner:
+standard register storage, planar/odd-even CPU aperture access and a direct
+copied text snapshot.  MyPC110 routes the documented standard port range and
+aperture through Core without using VADP or a private frame path.  The
+[S5 VGA/capture record](../etc/evidence/t568-s5-f65535-vga-capture.md)
+separates the L3 interface observations from the compatibility model and
+records the deliberately unimplemented graphics/panel/product bridge.  Both
+cached widths pass the direct chip, App route and X86-NXVM structural proof,
+and the full repository-only unit corpus passes 660/660 per width.
+No PC110 executable or firmware-boot claim is made by this delivery.
+
+## M5 T568 S4 — Delivered: PC110 F65535 register and VRAM foundation
 
 | Field | Required record |
 | --- | --- |

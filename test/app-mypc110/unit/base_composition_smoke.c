@@ -27,7 +27,7 @@ int main(void)
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x64u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x92u,
             &value) != LIB_STATUS_UNSUPPORTED || x86_core_machine_bus_read(composition.core,
-            0x3dau, &value) != LIB_STATUS_UNSUPPORTED);
+            0x3dau, &value) != LIB_STATUS_OK);
     failed |= !failed && (x86_core_machine_memory_read(composition.core,
         MYPC110_FONT_PHYSICAL_START, &value, 1u) != LIB_STATUS_OK ||
         value != 0x55u || x86_core_machine_bus_write(composition.core,

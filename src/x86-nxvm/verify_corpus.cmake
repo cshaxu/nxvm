@@ -23,6 +23,7 @@ foreach(chip IN ITEMS pit825x rtc146818 pic8259 dma8237 fdc8272 hdc video f65535
     set(edges_chips/${chip} lib/types)
 endforeach()
 list(APPEND edges_chips/kbc8042 x86-nxvm/chips/keyboard)
+list(APPEND edges_chips/f65535 x86-nxvm/chips/video)
 
 function(check_edge owner dependency)
     if(NOT dependency STREQUAL "x86-nxvm/${owner}" AND NOT dependency IN_LIST edges_${owner})

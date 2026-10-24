@@ -6,6 +6,7 @@ int main(void)
     static const lib_u8 bios[MYPC110_TFT_BIOS_BYTES] = {0};
     static const lib_u8 font[MYPC110_FONT_ROM_BYTES] = {0};
     mypc110_base_composition composition = {0};
+    x86_video_snapshot snapshot = {0};
     lib_u8 write = 0x5au;
     lib_u8 read = 0u;
     lib_u32 value = 0u;
@@ -20,14 +21,28 @@ int main(void)
         x86_core_machine_bus_read(composition.core,
             X86_F65535_EXTENSION_DATA_PORT, &value) != LIB_STATUS_OK ||
         value != X86_F65535_PC110_CHIP_VERSION ||
+        x86_core_machine_bus_write(composition.core, 0x03ceu, 6u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03cfu, 0x0eu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c4u, 4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c5u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 0x4fu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 7u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 0x1fu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 9u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 0x0fu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 18u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 0x8fu) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(composition.core,
-            MYPC110_DISPLAY_MEMORY_START + MYPC110_DISPLAY_MEMORY_BYTES - 1u,
+            0x000b8000u,
             &write, 1u) != LIB_STATUS_OK || x86_core_machine_memory_read(
-            composition.core, MYPC110_DISPLAY_MEMORY_START +
-            MYPC110_DISPLAY_MEMORY_BYTES - 1u, &read, 1u) != LIB_STATUS_OK ||
+            composition.core, 0x000b8000u, &read, 1u) != LIB_STATUS_OK ||
         read != write || x86_core_machine_memory_write(composition.core,
             MYPC110_DISPLAY_MEMORY_START + MYPC110_DISPLAY_MEMORY_BYTES,
-            &write, 1u) != LIB_STATUS_OK;
+            &write, 1u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(composition.display_controller,
+            &snapshot) != LIB_STATUS_OK || snapshot.columns != 80u ||
+        snapshot.rows != 25u || snapshot.characters[0] != write;
     mypc110_base_composition_destroy(&composition);
     return failed;
 }
