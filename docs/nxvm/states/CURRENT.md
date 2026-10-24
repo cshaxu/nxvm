@@ -2,26 +2,37 @@
 
 ## Current Work
 
-## M5 T568 S3 — Active: PC110 F65535 controller contract audit
+## M5 T568 S4 — Active: PC110 F65535 register and VRAM foundation
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation of T568 after closed S2; one session performs coordinator and executor roles. |
-| Admission And Approval | The owner requested T568 continue to closure. S1--S2 establish the font route; the original C&T F65535 manual and PC110 live-dump record admit this bounded register/VRAM ownership audit. |
-| Objective | Freeze the smallest truthful F65535 chip boundary, its reset/register/VRAM facts, the App-owned physical wiring and the exact source grade of panel behavior before any controller implementation. |
-| Non-goals | No controller implementation, display capture, panel timing inference, raw ROM commit, product EXE, guest-boot claim or change to Lib, Emulator, X86 Core or the existing PC/AT VADP. |
-| Reference Baseline | T568 S1/S2, C&T F65535 Revision 2.0 register manual, PC110 live-dump identity observation, existing X86 NXVM video/VADP ownership and App-local MyPC110 base composition. |
+| Identifier Mode | Continuation of T568 after closed S3; one session performs coordinator and executor roles. |
+| Admission And Approval | S3's C&T/manual and PC110 live-observation ledger admits only the independent controller's directly sourced identity, extension-index path, reset state and 512 KiB logical-VRAM foundation. |
+| Objective | Implement the smallest standalone F65535 chip mechanism and MyPC110 route binding: resettable 512 KiB VRAM, `3D6h`/`3D7h` extension index/data behavior and observed `XR00=C1h` identity. |
+| Non-goals | No VGA-compatible display engine, panel timing/compensation, panel power, unqualified register defaults, guest BIOS boot, raw ROM commit, product EXE or Lib/Emulator/X86 Core/VADP modification. |
+| Reference Baseline | T568 S3 ledger, C&T F65535 Revision 2.0 register manual, PC110 live-dump identity observation, Core port/memory route contracts and App-local MyPC110 base composition. |
 | Candidate Proposal | [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md). |
-| Files And ABI Surface | Task evidence, state and proposal refinement only. No source, test, public ABI or asset changes. |
+| Files And ABI Surface | New `src/test/x86-nxvm/chips/f65535` implementation/unit component and App-local MyPC110 route/composition test binding only. No Lib, Emulator, X86 Core, VADP or raw-asset change. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; source policy; current architecture/coding authorities; no second guest-frame or renderer owner. |
-| Verification | Reconcile every admitted register/memory fact against the actual manual and live observation; inspect the existing video/VADP surface for incompatible ownership; prove the proposed chip direction introduces neither a second renderer nor a VADP personality. |
-| Expected Markers | One distinct X86 NXVM F65535 chip candidate, one App-owned PC110 wiring receiver, explicit 512 KiB and `3D6h/3D7h` facts, and every unproven panel value retained as a labelled later model. |
-| Asset Needs | Read-only manuals, research and external asset metadata only. No firmware, media or ROM payload enters Git or an artifact. |
-| Reporting Requirements | Record exact source page/observation, L3/L2 distinctions, rejected reuse/shortcuts, candidate source/test surface and unexecuted guest/physical proof. |
-| Stop Conditions | Required behavior needs a Shared change, has no identified owner, conflicts with manual/live facts or would make a VADP personality falsely represent F65535. |
-| Exit Criteria | A reviewed source ledger and bounded S4 chip receiver exist; documentation gates pass and the audit P is pushed. |
+| Verification | Both widths prove exact VRAM bounds/reset, `XR00`, seven-bit index masking, read-only identity and App/Core route ownership. Existing MyPC110 and X86 NXVM units retain behavior. |
+| Expected Markers | One F65535 lifetime and register/VRAM owner, one App wiring owner, no VADP route, no second frame/renderer and no inferred panel behavior. |
+| Asset Needs | Unit bytes only; all real ROM/media remains external and uncommitted. |
+| Reporting Requirements | Record actual source/test diff, L3/L2 distinction, rejected controller scope and unexecuted guest/panel/desktop validation. |
+| Stop Conditions | A required behavior needs a Shared change, normal-VGA display semantics cannot be bounded from the foundation, or a panel value would be guessed. |
+| Exit Criteria | Both widths pass direct chip/App integration units and relevant static/manifest/docs gates; actual changes are reviewed and pushed; the next capture/panel receiver stays explicit. |
 | Original Owner Request | Continue the PC110 programme after T567 closure. |
 | Similar-Issue Sweep | Check all App-local device routes for an external ROM path, VADP dependency, guessed auxiliary behavior or duplicate memory owner. |
+
+### S4 Delivery
+
+S4 adds a bounded F65535 owner with sourced 512 KiB VRAM, `3D6h`/`3D7h`
+extension access, seven-bit index masking and the observed immutable
+`XR00=C1h` identity.  MyPC110 routes only the normal CPU aperture and those
+ports through Core; it neither impersonates VADP nor publishes a second frame.
+The [S4 foundation record](../etc/evidence/t568-s4-f65535-foundation.md)
+captures the L3 facts, direct dual-width tests and deliberate exclusions.
+The next receiver owns a separately admitted standard-VGA/capture audit; no
+guest, panel, BIOS or product-EXE claim is made by this delivery.
 
 ### S3 Delivery
 

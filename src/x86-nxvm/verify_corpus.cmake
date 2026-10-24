@@ -17,7 +17,7 @@ set(edges_machine lib/types lib/base lib/storage lib/kvm-base lib/kvm-window
     x86-core/machine x86-debug/product x86-nxvm/board-base x86-nxvm/chips/video)
 set(edges_product emulator/product lib/types lib/base lib/storage
     x86-ibmpc/product x86-nxvm/machine)
-foreach(chip IN ITEMS pit825x rtc146818 pic8259 dma8237 fdc8272 hdc video
+foreach(chip IN ITEMS pit825x rtc146818 pic8259 dma8237 fdc8272 hdc video f65535
         ps2mouse keyboard ppi8255 xtkeyboard kbc8042)
     list(APPEND components "chips/${chip}")
     set(edges_chips/${chip} lib/types)

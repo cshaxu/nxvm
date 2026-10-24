@@ -33,6 +33,7 @@ void mypc110_base_composition_destroy(mypc110_base_composition *composition)
 {
     if (composition == LIB_NULL) return;
     x86_core_machine_destroy(composition->core);
+    x86_f65535_destroy(composition->display_controller);
     x86_vl82c420_destroy(composition->configuration_chip);
     *composition = (mypc110_base_composition) {0};
 }
@@ -57,6 +58,9 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
         status = x86_vl82c420_create(&composition->configuration_chip);
     }
     if (status == LIB_STATUS_OK) {
+        status = x86_f65535_create(&composition->display_controller);
+    }
+    if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_plan_create(&mypc110_base_configuration, &plan);
     }
     if (status == LIB_STATUS_OK) {
@@ -73,6 +77,10 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
     }
     if (status == LIB_STATUS_OK) {
         status = mypc110_font_rom_install(composition->core, &composition->font);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = mypc110_display_install_routes(composition->core,
+            composition->display_controller);
     }
     if (status == LIB_STATUS_OK) {
         status = x86_core_machine_freeze_execution_providers(composition->core);
