@@ -386,6 +386,9 @@ lib_i32 x86_core_machine_neutral_config_is_valid(
           config->time_axis.kind != X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) &&
         (!config->cpu_80386_cr_mov_ignores_mod ||
          config->cpu_profile == X86_CORE_CPU_PROFILE_80386) &&
+        (config->protected_data_reload_policy == X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT ||
+         config->protected_data_reload_policy ==
+             X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE) &&
         config->address_decode.first <= config->address_decode.last &&
         x86_core_machine_clock_ratio_is_valid(&config->provider_clock) &&
         x86_core_machine_retirement_time_contract_is_valid(
@@ -451,6 +454,7 @@ lib_status x86_core_machine_neutral_create_with_test_allocation(
     }
     machine->cpu_80386_cr_mov_ignores_mod =
         config->cpu_80386_cr_mov_ignores_mod;
+    machine->protected_data_reload_policy = config->protected_data_reload_policy;
     if (x86_core_machine_timeline_initialize(&machine->timeline) != LIB_STATUS_OK) {
         lib_release(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -492,6 +496,7 @@ lib_status x86_core_machine_neutral_create_with_test_allocation(
     x86_core_cpu_execution_context_bind_profiles(
         machine->executor_cpu_execution, machine->cpu_profile,
         x86_fpu_get_profile(machine->fpu), machine->cpu_80386_cr_mov_ignores_mod,
+        machine->protected_data_reload_policy,
         &instruction_timing);
     x86_core_cpu_execution_context_bind_fpu(
         machine->executor_cpu_execution, machine->fpu);

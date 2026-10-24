@@ -1114,6 +1114,57 @@ static lib_i32 segment_test_pop_fault_atomicity(x86_core_cpu_profile cpu_profile
     return failed;
 }
 
+static lib_i32 segment_test_visible_data_cache_reload(x86_core_cpu_profile cpu_profile)
+{
+    static const lib_u8 code[] = {0x1fu, 0xf4u};
+    static const lib_u8 selector[] = {0x10u, 0x00u};
+    static const lib_u8 empty_descriptor[8] = {0u};
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    segment_cpu strict;
+    segment_cpu compatible;
+    t_cpu before;
+    t_cpu after;
+    lib_i32 failed = !segment_prepare(&strict, cpu_profile);
+
+    if (!failed) failed |= !segment_boot_protected(&strict) ||
+        !segment_write(&strict, SEG_GDT_ADDRESS + 0x10u, empty_descriptor,
+            sizeof(empty_descriptor)) ||
+        !segment_write(&strict, SEG_DATA_ADDRESS + 0x8000u, selector,
+            sizeof(selector)) || !segment_write(&strict, SEG_CODE_ADDRESS,
+            code, sizeof(code));
+    if (!failed) {
+        strict.chip.cpu.data.esp = 0x8000u;
+        strict.chip.cpu.data.eip = 0u;
+        strict.chip.cpu.data.flagHalt = LIB_FALSE;
+        before = strict.chip.cpu;
+        failed |= segment_execute(&strict, 8u) != LIB_STATUS_OK ||
+            !x86_core_cpu_is_shutdown(&strict.chip.execution) ||
+            strict.chip.cpu.data.esp != before.data.esp ||
+            lib_memory_compare(&strict.chip.cpu.data.ds, &before.data.ds,
+                sizeof(before.data.ds)) != 0;
+    }
+    if (!failed) failed |= !segment_prepare(&compatible, cpu_profile) ||
+        !segment_boot_protected(&compatible) ||
+        !segment_write(&compatible, SEG_GDT_ADDRESS + 0x10u, empty_descriptor,
+            sizeof(empty_descriptor)) ||
+        !segment_write(&compatible, SEG_DATA_ADDRESS + 0x8000u, selector,
+            sizeof(selector)) || !segment_write(&compatible, SEG_CODE_ADDRESS,
+            code, sizeof(code));
+    if (!failed) {
+        x86_core_cpu_execution_context_bind_profiles(&compatible.chip.execution,
+            cpu_profile, X86_FPU_PROFILE_NONE, LIB_FALSE,
+            X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE, &timing);
+        compatible.chip.cpu.data.esp = 0x8000u;
+        compatible.chip.cpu.data.eip = 0u;
+        compatible.chip.cpu.data.flagHalt = LIB_FALSE;
+        failed |= !segment_run_halt(&compatible, code, sizeof(code),
+            SEG_CODE_ADDRESS, &after) || after.data.ds.selector != 0x10u ||
+            after.data.ds.base != after.data.es.base ||
+            after.data.ds.limit != after.data.es.limit || after.data.ds.seg.executable;
+    }
+    return failed;
+}
+
 static lib_i32 segment_test_vm86_pop_fs_gs_timing(x86_core_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
@@ -1179,6 +1230,7 @@ lib_i32 main(void)
         {"protected",segment_test_protected_selector_forms},
         {"query",segment_test_selector_query_edges},
         {"atomic",segment_test_pop_fault_atomicity},
+        {"visible-cache",segment_test_visible_data_cache_reload},
         {"vm86-pop",segment_test_vm86_pop_fs_gs_timing}
     };
 

@@ -90,6 +90,7 @@ typedef struct x86_nxvm_board_config {
     /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
      * than 11b, using the r/m field as the general-register selector. */
     lib_u8 cpu_80386_cr_mov_ignores_mod;
+    x86_core_cpu_protected_data_reload_policy protected_data_reload_policy;
     x86_nxvm_board_a20_wrap_policy a20_wrap_policy;
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     lib_u32 ticks_per_instruction;

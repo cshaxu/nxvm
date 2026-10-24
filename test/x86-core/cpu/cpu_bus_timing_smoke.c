@@ -449,7 +449,8 @@ static lib_bool bus_debug_and_clock(void)
         return LIB_FALSE;
     const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     x86_core_cpu_execution_context_bind_profiles(&fixture.instruction.execution,
-        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE,
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
     return !x86_core_cpu_80486_bus_instruction_cost(&fixture.instruction.execution,
         1u, &rejected, &modeled) && rejected == 999u && modeled;
 }

@@ -2,6 +2,58 @@
 
 ## Current Work
 
+## M5 T575 S1 — Closed: MyPC110 protected-bootstrap segment-cache boundary
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Successor to closed T574; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued PC110 implementation through closure and granted standing approval for ordinary implementation, diagnosis, verification and task sequencing. |
+| Objective | Reproduce and classify the first protected-bootstrap transition that causes the admitted TFT firmware to leave F000 and fault before it reaches its video BIOS. |
+| Non-goals | No static C-segment alias, BDA/IVT write, BIOS/interrupt interception, PC/AT facade, guessed SCAMP protocol, second executor, raw-ROM commit or PC110 release claim. |
+| Reference Baseline | T574 two-width trace; [protected-bootstrap proposal](../proposals/m5-pc110-protected-bootstrap.md); App-local PC110 composition; existing CPU exception, memory and trace contracts; approved external TFT firmware/font assets. |
+| Files And ABI Surface | App diagnostic/evidence plus the minimal Core/X86-NXVM configuration contract proved by the ordinary trace. Lib, Emulator, unrelated Apps and raw assets remain excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one firmware/decode owner; external bytes remain BYOB; PC110-QEMU/PC110-EMU are L2 references only. |
+| Verification | Both widths produce a bounded instruction/exception/memory/port trace through the fault boundary. The strict default must still reject a zero descriptor; MyPC110 alone must complete the traced data-segment reload through its selected configuration. |
+| Expected Markers | One reproducible pre-fault execution sequence, one exact before/after segment-cache result and one explicit owner disposition. No artificial transition to C000. |
+| Asset Needs | Read-only `NXVM_PROFILE_ASSETS_ROOT/profiles-nxvm/ibm-pc110-tft` firmware/font and manifest only. |
+| Reporting Requirements | Record source grade, exact two-width trace, owner decision, actual changed surface and all unqualified endpoints. Do not claim POST, DOS, Setup or release qualification. |
+| Temporary Output | `build/t575-s1/` only for bounded logs/probes; delete after compact evidence is recorded. |
+| Stop Conditions | The trace remains ambiguous, a required protocol is unproved, implementation would synthesize guest behavior, or a Shared contract is not minimal/owned. Record and transfer rather than fabricate. |
+| Exit Criteria | The first protected-bootstrap failure is classified on both widths, its smallest evidence-backed owner fix is verified, and the next real boundary is recorded without fabricated continuation. |
+| Original Owner Request | Continue the PC110 programme to closure using PC110-EMU, PC110-QEMU and Open-Source-PC110 only as research, with external usable firmware. |
+| Similar-Issue Sweep | Compare protected-mode entry, segmentation, exception delivery, A20/KBC state, RAM/ROM map, controller reset state and configuration-port access; reject generic changes that merely make the BIOS proceed farther. |
+
+### S1 Brief
+
+Extend the existing real-firmware diagnostic only enough to capture the
+instruction, descriptor/segment state and relevant memory/port events that
+precede the first `F000:6044` exception and its reset aftermath.  Cross-check
+the exact path against documented CPU semantics and labelled L2 external
+behavior.  Select an implementation owner only after the trace isolates one.
+
+### S1 Delivery And T575 Closure
+
+The ordinary TFT-firmware trace identified a protected-mode `POP DS` at
+`F000:6044`: selector `0048` has an all-zero GDT descriptor while `ES` already
+holds a valid data cache for that same selector. Core retains strict loading by
+default and admits one explicit, board-selected L2 policy that copies only that
+existing visible data cache. MyPC110 is its sole consumer. Both widths execute
+the real instruction through `F000:6048`; no descriptor, BIOS service,
+C-segment route or PC/AT fallback is fabricated.
+
+Both stable Ninja/ccache graphs completed the 661-test repository-only unit
+suite and the 27-test external-ROM/disk integration suite. The Core/X86-NXVM
+change also rebuilt and verified all four receiving PC App pairs as 0.5.0575;
+their identities and hashes are recorded in the [S1 evidence](../etc/evidence/t575-s1-pc110-protected-bootstrap.md).
+MyPC110 remains an unqualified, non-published diagnostic App: this bounded
+receiver does not claim POST, Setup, DOS boot or a PC110 product release.
+
+## Closed Task — M5 T575
+
+| Task | Status |
+| --- | --- |
+| T575 | Closed after the strict-by-default protected data-cache receiver, two-width real-firmware trace, full repository qualification and receiving-PC artifact refresh. |
+
 ## M5 T574 S1 — Closed: MyPC110 C-segment ROM/shadow source gate
 
 | Field | Required record |

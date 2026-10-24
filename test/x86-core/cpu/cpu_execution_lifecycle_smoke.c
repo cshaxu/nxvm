@@ -93,7 +93,8 @@ static lib_i32 cpu_execution_context_reset_case(
     const lib_u32 flags_mask = test_case->profile < X86_CORE_CPU_PROFILE_80286 ?
         0x0fffu : test_case->profile == X86_CORE_CPU_PROFILE_80286 ? 0xffffu : 0x3ffffu;
     x86_core_cpu_execution_context_bind_profiles(context, test_case->profile,
-        X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        X86_FPU_PROFILE_NONE, LIB_FALSE, X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT,
+        &timing);
     x86_core_cpu_state_reset(context);
     return cpu->data.cs.selector != test_case->selector || cpu->data.eip != test_case->offset ||
         cpu->data.cs.base != test_case->code_base ||
@@ -127,9 +128,11 @@ static lib_i32 cpu_instance_case(const cpu_lifecycle_reset_case *test_case)
         return 1;
     }
     x86_core_cpu_execution_context_bind_profiles(first, test_case->profile,
-        X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        X86_FPU_PROFILE_NONE, LIB_FALSE, X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT,
+        &timing);
     x86_core_cpu_execution_context_bind_profiles(second, test_case->profile,
-        X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        X86_FPU_PROFILE_NONE, LIB_FALSE, X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT,
+        &timing);
     x86_core_cpu_state_initialize(first);
     x86_core_cpu_state_initialize(second);
     x86_core_cpu_state_reset(first);

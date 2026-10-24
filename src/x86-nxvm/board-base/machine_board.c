@@ -148,6 +148,7 @@ lib_status x86_nxvm_board_prepare_executor(
             X86_CORE_CPU_PROFILE_80386 : config->cpu_profile,
         .fpu_profile = config->fpu_profile,
         .cpu_80386_cr_mov_ignores_mod = config->cpu_80386_cr_mov_ignores_mod,
+        .protected_data_reload_policy = config->protected_data_reload_policy,
         .address_decode = {
             .first = config->a20_wrap_policy ==
                 X86_NXVM_BOARD_A20_WRAP_FIRST_TO_SECOND_MIB ?

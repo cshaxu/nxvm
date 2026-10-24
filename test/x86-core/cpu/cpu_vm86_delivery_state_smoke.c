@@ -267,7 +267,8 @@ static lib_bool vm86_state_irq(x86_core_cpu_profile profile)
     x86_core_cpu_execution_context_initialize(&fixture->execution,
         &fixture->cpu, &fixture->instructions, &bus, &state);
     x86_core_cpu_execution_context_bind_profiles(&fixture->execution,
-        profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        profile, X86_FPU_PROFILE_NONE, LIB_FALSE,
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
     x86_core_cpu_execution_context_bind_diagnostic_provider(&fixture->execution,
         &cpu_instruction_diagnostics, fixture);
     x86_core_cpu_execution_refresh(&fixture->execution);

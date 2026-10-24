@@ -182,6 +182,7 @@ typedef struct x86_core_machine_executor_config {
     x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
+    x86_core_cpu_protected_data_reload_policy protected_data_reload_policy;
     x86_core_machine_address_decode address_decode;
     lib_u32 ticks_per_instruction;
     x86_core_cpu_instruction_timing instruction_timing;

@@ -108,6 +108,7 @@ struct x86_core_machine {
     lib_u8 entry_plan_applied;
     x86_core_cpu_profile cpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
+    x86_core_cpu_protected_data_reload_policy protected_data_reload_policy;
     x86_fpu *fpu;
     /* The CPU owns its architectural/decoder layout.  The board owns exactly
      * one opaque execution lifetime and never mirrors those fields. */

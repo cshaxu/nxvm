@@ -56,6 +56,17 @@ typedef enum x86_core_cpu_profile {
     X86_CORE_CPU_PROFILE_V30
 } x86_core_cpu_profile;
 
+/* Strict protected-mode descriptor loading is the architectural default.
+ * The optional compatibility mode is an explicit L2 board choice for firmware
+ * which reloads a data segment from an all-zero descriptor while another
+ * visible data segment already holds the exact selector's valid cache.  It is
+ * deliberately narrower than a relaxed protected-mode implementation: it
+ * neither fabricates descriptors nor changes code, system or privilege rules. */
+typedef enum x86_core_cpu_protected_data_reload_policy {
+    X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT = 0,
+    X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE
+} x86_core_cpu_protected_data_reload_policy;
+
 /* CPU provenance is independent of the board's physical address decoder. */
 typedef enum x86_core_cpu_memory_access_provenance {
     X86_CORE_CPU_MEMORY_ACCESS_DATA = 0,
@@ -612,7 +623,9 @@ void x86_core_cpu_execution_context_bind_profiles(
     x86_core_cpu_execution_context *context,
     x86_core_cpu_profile cpu_profile,
     x86_fpu_profile fpu_profile,
-    lib_u8 cpu_80386_cr_mov_ignores_mod, const x86_core_cpu_instruction_timing *timing);
+    lib_u8 cpu_80386_cr_mov_ignores_mod,
+    x86_core_cpu_protected_data_reload_policy protected_data_reload_policy,
+    const x86_core_cpu_instruction_timing *timing);
 
 lib_i32 x86_core_cpu_read_linear(x86_core_cpu_execution_context *context,
     lib_u32 linear, void *out_data, lib_u8 size);

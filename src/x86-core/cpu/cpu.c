@@ -659,6 +659,7 @@ void x86_core_cpu_execution_context_initialize(
     context->cpu_profile = X86_CORE_CPU_PROFILE_80386;
     context->fpu_profile = X86_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = LIB_FALSE;
+    context->protected_data_reload_policy = X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT;
     context->fpu = LIB_NULL;
     context->instruction_wait_stall = LIB_FALSE;
     context->wait_state = CPU_WAIT_STATE_NONE;
@@ -669,7 +670,9 @@ void x86_core_cpu_execution_context_bind_profiles(
     x86_core_cpu_execution_context *context,
     x86_core_cpu_profile cpu_profile,
     x86_fpu_profile fpu_profile,
-    lib_u8 cpu_80386_cr_mov_ignores_mod, const x86_core_cpu_instruction_timing *timing)
+    lib_u8 cpu_80386_cr_mov_ignores_mod,
+    x86_core_cpu_protected_data_reload_policy protected_data_reload_policy,
+    const x86_core_cpu_instruction_timing *timing)
 {
     if (context == LIB_NULL) return;
     context->instruction_timing = *timing;
@@ -678,6 +681,7 @@ void x86_core_cpu_execution_context_bind_profiles(
     context->prefetch_capacity = cpu_profile_prefetch_capacity(cpu_profile);
     context->fpu_profile = fpu_profile;
     context->cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod;
+    context->protected_data_reload_policy = protected_data_reload_policy;
 }
 
 void x86_core_cpu_execution_context_bind_fpu(

@@ -63,7 +63,7 @@ if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "manifest missing path")
     message(FATAL_ERROR "Unlisted source not rejected: ${output}${error}")
 endif()
 foreach(body IN ITEMS
-        "x86_core_cpu_execution_context_bind_profiles(cpu, profile, 0, 0, timing)"
+        "x86_core_cpu_execution_context_bind_profiles(cpu, profile, 0, 0, 0, timing)"
         "machine->cpu_profile = profile")
     file(WRITE "${PROBE_ROOT}/machine/probe.c" "${body};\n")
     execute_process(COMMAND "${CMAKE_COMMAND}" "-DMACHINE_TEST_ROOT=${PROBE_ROOT}/machine"

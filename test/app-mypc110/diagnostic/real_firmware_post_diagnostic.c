@@ -28,6 +28,10 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_u32 post_reset_c000_entries;
     lib_u32 pre_reset_int10_entries;
     lib_u32 post_reset_int10_entries;
+    x86_core_cpu_debug_cpu_snapshot before_pop_ds;
+    lib_bool before_pop_ds_valid;
+    x86_core_cpu_debug_cpu_snapshot after_pop_ds;
+    lib_bool after_pop_ds_valid;
     lib_bool post_reset_active;
     lib_bool left_rom;
     mypc110_post_diagnostic_port_write
@@ -80,6 +84,10 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
         else
             ++trace->pre_reset_int10_entries;
     }
+    if (observation->point.linear_pc == 0x000f6043u) {
+        trace->before_pop_ds = observation->current_cpu;
+        trace->before_pop_ds_valid = LIB_TRUE;
+    }
     if (!trace->post_reset_active) return;
     if (!trace->left_rom && observation->point.cs != 0xf000u) {
         trace->left_rom = LIB_TRUE;
@@ -110,6 +118,8 @@ int main(void)
     lib_u32 reset_exception_count = 0u;
     x86_core_cpu_fault_snapshot reset_exception = {0};
     x86_core_cpu_debug_cpu_snapshot reset_cpu = {0};
+    lib_u64 before_pop_ds_descriptor = 0u;
+    lib_status before_pop_ds_memory_status = LIB_STATUS_INVALID_STATE;
     lib_bool advanced = LIB_FALSE;
     lib_u32 wait_count = 0u;
     lib_status status;
@@ -129,6 +139,10 @@ int main(void)
             &(x86_core_machine_trace_provider) {
                 .callback = mypc110_post_diagnostic_observe_trace,
                 .context = &post_reset_trace});
+    }
+    if (status == LIB_STATUS_OK) {
+        status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+            X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x000f6045u);
     }
     if (status == LIB_STATUS_OK) {
         x86_nxvm_machine_executor_state_start(&machine->control.state);
@@ -173,6 +187,22 @@ int main(void)
             break;
         }
     }
+    if (status == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
+        machine != LIB_NULL) {
+        status = x86_core_machine_debug_capture_cpu_snapshot(
+            machine->x86_core_machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
+            &post_reset_trace.after_pop_ds);
+        post_reset_trace.after_pop_ds_valid = status == LIB_STATUS_OK;
+    }
+    if (post_reset_trace.before_pop_ds_valid && machine != LIB_NULL) {
+        const x86_core_cpu_debug_cpu_snapshot *cpu =
+            &post_reset_trace.before_pop_ds;
+
+        before_pop_ds_memory_status = x86_core_machine_memory_read(
+            machine->x86_core_machine,
+            cpu->gdtr.base + 0x48u, &before_pop_ds_descriptor,
+            sizeof(before_pop_ds_descriptor));
+    }
     if (machine != LIB_NULL) x86_nxvm_machine_control_end_run(&machine->control);
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
@@ -199,6 +229,24 @@ int main(void)
             reset_exception.point.bytes[0u], reset_exception.point.bytes[1u],
             reset_exception.point.bytes[2u], reset_exception.point.bytes[3u],
             reset_exception.ss, reset_exception.esp, reset_exception.eflags);
+    }
+    if (post_reset_trace.before_pop_ds_valid) {
+        const x86_core_cpu_debug_cpu_snapshot *cpu =
+            &post_reset_trace.before_pop_ds;
+
+        lib_c_printf("PC110:POST:before-pop-ds cr0=%08x cs=%04x/%08x es=%04x/%08x ds=%04x/%08x ss=%04x/%08x esp=%08x eip=%08x gdtr=%04x/%08x/%08x descriptor48-status=%d value=%016llx\n",
+            cpu->cr0, cpu->cs.selector, cpu->cs.base,
+            cpu->es.selector, cpu->es.base, cpu->ds.selector, cpu->ds.base,
+            cpu->ss.selector, cpu->ss.base, cpu->esp, cpu->eip,
+            cpu->gdtr.selector, cpu->gdtr.base, cpu->gdtr.limit,
+            (int)before_pop_ds_memory_status,
+            (unsigned long long)before_pop_ds_descriptor);
+    }
+    if (post_reset_trace.after_pop_ds_valid) {
+        const x86_core_cpu_debug_cpu_snapshot *cpu = &post_reset_trace.after_pop_ds;
+
+        lib_c_printf("PC110:POST:after-pop-ds ds=%04x/%08x es=%04x/%08x eip=%08x\n",
+            cpu->ds.selector, cpu->ds.base, cpu->es.selector, cpu->es.base, cpu->eip);
     }
     if (reset_exception.valid) {
         lib_c_printf("PC110:POST:reset-cpu cr0=%08x cs=%04x/%08x ss=%04x/%08x ds=%04x/%08x esp=%08x\n",
@@ -253,6 +301,8 @@ int main(void)
     }
     x86_nxvm_machine_destroy(machine);
     return status == LIB_STATUS_OK &&
-        executed >= MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS &&
-        processor_reset_count != 0u ? 0 : 1;
+        result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
+        post_reset_trace.before_pop_ds_valid && post_reset_trace.after_pop_ds_valid &&
+        post_reset_trace.after_pop_ds.ds.selector == post_reset_trace.before_pop_ds.es.selector &&
+        post_reset_trace.after_pop_ds.ds.base == post_reset_trace.before_pop_ds.es.base ? 0 : 1;
 }

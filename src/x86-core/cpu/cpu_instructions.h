@@ -367,6 +367,7 @@ struct x86_core_cpu_execution_context {
     x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
+    x86_core_cpu_protected_data_reload_policy protected_data_reload_policy;
     x86_fpu *fpu;
 };
 

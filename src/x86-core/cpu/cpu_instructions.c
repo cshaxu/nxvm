@@ -2020,6 +2020,31 @@ static void _ksa_load_real_sreg(x86_core_cpu_execution_context *context,
         rsreg->seg.data.writable = LIB_TRUE;
     }
 }
+
+static lib_bool _ksa_reuse_visible_data_cache(
+    x86_core_cpu_execution_context *context, t_cpu_data_sreg *target,
+    lib_u16 selector, lib_u64 descriptor)
+{
+    t_cpu_data_sreg *const visible[] = {
+        &cpu_state.data.es, &cpu_state.data.ds, &cpu_state.data.ss,
+        &cpu_state.data.fs, &cpu_state.data.gs
+    };
+
+    if (context->protected_data_reload_policy !=
+            X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE ||
+        descriptor != 0u) return LIB_FALSE;
+    for (lib_size index = 0u; index < sizeof(visible) / sizeof(visible[0]); ++index) {
+        if (visible[index] == target || !visible[index]->flagValid ||
+            visible[index]->sregtype != SREG_DATA || visible[index]->seg.executable ||
+            visible[index]->selector != selector) continue;
+        *target = *visible[index];
+        target->sregtype = SREG_DATA;
+        target->selector = selector;
+        return LIB_TRUE;
+    }
+    return LIB_FALSE;
+}
+
 static void _ksa_load_sreg(x86_core_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u16 selector)
 {
     lib_u64 descriptor = 0u;
@@ -2090,6 +2115,13 @@ static void _ksa_load_sreg(x86_core_cpu_execution_context *context, t_cpu_data_s
             {
                 CPU_TRACE_BLOCK_BEGIN("selector(!null)");
                 CPU_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
+                if (_ksa_reuse_visible_data_cache(context, rsreg, selector, descriptor)) {
+                    CPU_TRACE_BLOCK_END;
+                    CPU_TRACE_BLOCK_END;
+                    CPU_TRACE_BLOCK_END;
+                    CPU_TRACE_CALL_END;
+                    return;
+                }
                 if (!_IsDescData(descriptor) && !_IsDescCodeReadable(descriptor))
                 {
                     CPU_TRACE_BLOCK_BEGIN("!DescData,!DescCodeReadable");

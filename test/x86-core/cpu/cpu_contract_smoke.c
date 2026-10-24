@@ -67,7 +67,7 @@ lib_i32 main(void)
             &cpu) != LIB_STATUS_OK) return 1;
     x86_core_cpu_execution_context_bind_profiles(cpu,
         X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_NONE, LIB_FALSE,
-        &timing);
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
     x86_core_cpu_state_initialize(cpu);
     x86_core_cpu_state_reset(cpu);
     x86_core_cpu_capture_state(cpu, &state);

@@ -105,7 +105,8 @@ static void cpu_instruction_prepare_with_bus(cpu_instruction_fixture *fixture,
     x86_core_cpu_execution_context_initialize(&fixture->execution,
         &fixture->cpu, &fixture->instructions, bus, bus_context);
     x86_core_cpu_execution_context_bind_profiles(&fixture->execution,
-        profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        profile, X86_FPU_PROFILE_NONE, LIB_FALSE,
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
     x86_core_cpu_state_initialize(&fixture->execution);
     x86_core_cpu_state_reset(&fixture->execution);
     x86_core_cpu_execution_context_bind_diagnostic_provider(
