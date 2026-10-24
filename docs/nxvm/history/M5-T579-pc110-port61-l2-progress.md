@@ -1,23 +1,30 @@
 # M5 T579 — PC110 port-61 L2 progress
 
-## S1 closed delivery
+## Closure
 
-The MyPC110 plan selects the existing elapsed-tick port-61 status source with
-a three-tick L2 period.  The ordinary TFT BIOS reset enters and then exits its
-unprogrammed-PIT1 wait loop at `F000:EA86--EA90`, reaching `F000:DD05` without
-a delivered exception on x64 and x86.  App unit tests and the bounded
-external-firmware diagnostic pass on both widths.  This closes only S1's
-finite progress gate; it does not qualify POST, video, Setup, guest boot or a
-runnable PC110 artifact.
+T579 is closed as a bounded real-firmware source-gate delivery.  It does not
+claim a runnable PC110 product, POST completion, display, Setup, DOS boot or a
+published executable.
 
-The current packet owns the still-active S3 scope and completion facts.
+## Delivered checkpoints
 
-## S2 closed delivery
+- S1, commit `fbf63faf8`, selected the existing Core-tick port-61 status source
+  for the real BIOS's pre-PIT1 wait.  The source is deliberately L2 and stays
+  App-local.
+- S2, commit `1492b8bb1`, added the finite PC110 LPT `3BCh--3BEh` behavior
+  exercised by the real BIOS and proved the image retires beyond that probe.
+- S3, commit `9c1614354`, added a bounded diagnostic showing that subsequent
+  RTC/CMOS initialization returns to the same port-61 wait rather than proving
+  a distinct unowned device requirement.
 
-The bounded continuation found the actual BIOS's `3BCh--3BEh` control/status
-probe after the port-61 wait.  A MyPC110-only L2 LPT placeholder records the
-firmware's `21h` control write, returns `90h` by default and `D0h` while that
-probe is active.  It is based on independently reviewed PC110-EMU behavior,
-not represented as physical printer hardware.  Both widths pass the new unit
-contract and retire beyond the probe to `F000:55B2`.  S3 remains active for
-the next distinct finite boundary.
+All MyPC110 unit tests and all three admitted external-TFT diagnostics passed
+on x64 and x86 for S3.  The external TFT image remains a read-only BYOB input;
+no raw firmware was committed and no PC110 release artifact was produced.
+
+## Residual work
+
+The [PC110 qualification receiver](../proposals/m5-pc110-qualification.md)
+retains product, display, Setup and guest-boot qualification.  Any future
+device work must first identify a finite owner and source/proof target; this
+task does not authorize a broad chipset model inferred from the observed
+`4Fh` index-mirror write.
