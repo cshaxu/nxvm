@@ -11,15 +11,18 @@
 
 lib_status x86_nxvm_machine_devices_initialize_media(x86_nxvm_machine *session)
 {
+    const x86_nxvm_board_media_geometry *geometry;
     lib_status status;
 
     if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = x86_nxvm_machine_fdd_allocate(x86_nxvm_board_floppy_geometry_get(
-        session->construction.media_kind), &session->floppy[0u]);
-    if (status != LIB_STATUS_OK) return status;
+    if (session->construction.floppy_slot_count != 0u) {
+        geometry = x86_nxvm_board_floppy_geometry_get(session->construction.media_kind);
+        if (geometry == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+        status = x86_nxvm_machine_fdd_allocate(geometry, &session->floppy[0u]);
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (session->construction.floppy_slot_count > 1u) {
-        status = x86_nxvm_machine_fdd_allocate(x86_nxvm_board_floppy_geometry_get(
-            session->construction.media_kind), &session->floppy[1u]);
+        status = x86_nxvm_machine_fdd_allocate(geometry, &session->floppy[1u]);
         if (status != LIB_STATUS_OK) return status;
     }
     if (session->construction.hdc_present) {
@@ -34,9 +37,12 @@ lib_status x86_nxvm_machine_devices_bind_media(x86_nxvm_machine *session)
     lib_status status;
 
     if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = x86_nxvm_board_media_registry_bind(session->media_registry,
-        X86_NXVM_MACHINE_MEDIA_FDD_ID, session->floppy[0u], x86_nxvm_machine_fdd_media_provider());
-    if (status != LIB_STATUS_OK) return status;
+    if (session->construction.floppy_slot_count != 0u) {
+        status = x86_nxvm_board_media_registry_bind(session->media_registry,
+            X86_NXVM_MACHINE_MEDIA_FDD_ID, session->floppy[0u],
+            x86_nxvm_machine_fdd_media_provider());
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (session->construction.floppy_slot_count > 1u) {
         status = x86_nxvm_board_media_registry_bind(session->media_registry,
             X86_NXVM_MACHINE_MEDIA_FDD_SECONDARY_ID, session->floppy[1u],
@@ -54,7 +60,8 @@ lib_status x86_nxvm_machine_devices_bind_media(x86_nxvm_machine *session)
 void x86_nxvm_machine_devices_reset(x86_nxvm_machine *session)
 {
     if (session == LIB_NULL) return;
-    x86_nxvm_machine_fdd_reset(session->floppy[0u]);
+    if (session->construction.floppy_slot_count != 0u)
+        x86_nxvm_machine_fdd_reset(session->floppy[0u]);
     if (session->construction.floppy_slot_count > 1u)
         x86_nxvm_machine_fdd_reset(session->floppy[1u]);
     if (session->construction.hdc_present) {

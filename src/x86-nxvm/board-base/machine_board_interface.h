@@ -133,6 +133,10 @@ typedef struct x86_nxvm_board_config {
      * It is an electrical input to the generic controller, not a profile name. */
     lib_u8 kbc_reset_output_port_configured;
     lib_u8 kbc_reset_output_port;
+    /* Optional system-controller self-test status visible at reset through
+     * 8042 port 64h bit 2.  It is a board electrical fact, not BIOS policy. */
+    lib_u8 kbc_reset_system_flag_configured;
+    lib_u8 kbc_reset_system_flag;
     x86_nxvm_board_keyboard_topology keyboard_topology;
     x86_nxvm_board_display_topology display_topology;
     x86_nxvm_board_system_facade system_facade;

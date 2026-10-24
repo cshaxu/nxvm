@@ -3958,8 +3958,8 @@ static void _d_modrm_table_memory(x86_core_cpu_execution_context *context,
 }
 /* Store one six-byte SGDT/SIDT pseudo-descriptor after a complete write check.
  * The 80286 manual calls byte six undefined, but physical 80286 software
- * observes FF there to distinguish a 286 from a 386.  Keep that observable
- * compatibility value at this sole table-register boundary. */
+ * observes FF there to distinguish a 286 from a 386.  Later processors keep
+ * the complete 32-bit table base in this six-byte form. */
 static void _m_write_table_pseudo_descriptor(
     x86_core_cpu_execution_context *context, lib_u16 limit,
     lib_u32 base)
@@ -18298,18 +18298,14 @@ static void INS_0F_01(x86_core_cpu_execution_context *context)
         CPU_TRACE_BLOCK_BEGIN("SGDT_M32_16");
         CPU_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         CPU_TRACE_CHECK_RETURN(_m_write_table_pseudo_descriptor(context,
-            cpu_state.data.gdtr.limit, _GetOperandSize == 2 ?
-            X86_CPU_MASK_U24(cpu_state.data.gdtr.base) :
-            cpu_state.data.gdtr.base));
+            cpu_state.data.gdtr.limit, cpu_state.data.gdtr.base));
         CPU_TRACE_BLOCK_END;
         break;
     case 1: /* SIDT_M32_16 */
         CPU_TRACE_BLOCK_BEGIN("SIDT_M32_16");
         CPU_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         CPU_TRACE_CHECK_RETURN(_m_write_table_pseudo_descriptor(context,
-            cpu_state.data.idtr.limit, _GetOperandSize == 2 ?
-            X86_CPU_MASK_U24(cpu_state.data.idtr.base) :
-            cpu_state.data.idtr.base));
+            cpu_state.data.idtr.limit, cpu_state.data.idtr.base));
         CPU_TRACE_BLOCK_END;
         break;
     case 2: /* LGDT_M32_16 */

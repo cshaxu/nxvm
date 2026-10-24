@@ -28,7 +28,9 @@ int main(void)
         !x86_core_machine_immutable_rom_mapping_contains(machine,
             MYPC110_TFT_BIOS_PHYSICAL_START, MYPC110_TFT_BIOS_BYTES) ||
         x86_core_machine_immutable_rom_mapping_contains(machine,
-            MYPC110_TFT_BIOS_PHYSICAL_START - 1u, 1u);
+            MYPC110_TFT_BIOS_PHYSICAL_START - 1u, 1u) ||
+        !x86_core_machine_immutable_rom_mapping_contains(machine,
+            0xfffffff0u, 1u);
     x86_core_machine_destroy(machine);
     return failed ? 1 : 0;
 }

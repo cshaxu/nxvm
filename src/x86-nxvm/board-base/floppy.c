@@ -11,7 +11,7 @@ static const x86_nxvm_board_media_geometry x86_nxvm_board_floppy_geometries[] = 
 const x86_nxvm_board_media_geometry *x86_nxvm_board_floppy_geometry_get(
     x86_nxvm_board_floppy_kind kind)
 {
-    return kind < sizeof(x86_nxvm_board_floppy_geometries) /
+    return (lib_u32)kind < sizeof(x86_nxvm_board_floppy_geometries) /
         sizeof(x86_nxvm_board_floppy_geometries[0]) ?
         &x86_nxvm_board_floppy_geometries[kind] : LIB_NULL;
 }
@@ -20,7 +20,7 @@ lib_u8 x86_nxvm_board_floppy_cmos_type_get(x86_nxvm_board_floppy_kind kind)
 {
     static const lib_u8 cmos_types[] = {0x40u, 0x20u, 0x10u, 0x30u};
 
-    return kind < sizeof(cmos_types) / sizeof(cmos_types[0]) ?
+    return (lib_u32)kind < sizeof(cmos_types) / sizeof(cmos_types[0]) ?
         cmos_types[kind] : 0u;
 }
 
@@ -76,7 +76,7 @@ x86_nxvm_board_fdc_channel_provider x86_nxvm_board_floppy_channel_get(
         X86_NXVM_BOARD_FLOPPY_35_1440K, X86_NXVM_BOARD_FLOPPY_525_1200K,
         X86_NXVM_BOARD_FLOPPY_525_360K, X86_NXVM_BOARD_FLOPPY_35_720K
     };
-    return kind < sizeof(kinds) / sizeof(kinds[0]) ?
+    return (lib_u32)kind < sizeof(kinds) / sizeof(kinds[0]) ?
         (x86_nxvm_board_fdc_channel_provider) {x86_nxvm_board_floppy_channel_sample, &kinds[kind]} :
         (x86_nxvm_board_fdc_channel_provider) {0};
 }

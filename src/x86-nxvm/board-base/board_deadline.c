@@ -76,11 +76,13 @@ void x86_nxvm_board_deadline_observe(void *owner, lib_u64 now,
 
     /* A frozen fallback ratio remains an L2 timing claim, but is still a
      * Core-local conversion for a programmed PIT wake edge. */
-    if (board->timing_declarations_copied) {
+    if (board->timing_declarations_copied && board->shared_vadp != LIB_NULL) {
         if (x86_video_ticks_until_event(board->shared_vadp->chip, &device_ticks) ==
                 LIB_STATUS_OK && board_consider_clock(&board->vadp_clock,
                     device_ticks, &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
+    }
+    if (board->timing_declarations_copied) {
         if (board_consider_pit(board->shared_pit, &board->pit_clock,
                 &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;

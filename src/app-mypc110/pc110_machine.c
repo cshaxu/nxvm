@@ -4,7 +4,7 @@
 #include "app-mypc110/pc110_firmware_interface.h"
 
 static const x86_nxvm_board_config mypc110_base_configuration = {
-    .memory_bytes = 4u * 1024u * 1024u,
+    .memory_bytes = 20u * 1024u * 1024u,
     .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
     .fpu_profile = X86_FPU_PROFILE_NONE,
     .ticks_per_instruction = 1u,
@@ -25,8 +25,21 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
     .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042_NEUTRAL,
+    .kbc_reset_system_flag_configured = 1u,
+    .kbc_reset_system_flag = 1u,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
     .system_facade = X86_NXVM_BOARD_SYSTEM_FACADE_NONE
+};
+
+static const x86_nxvm_board_plan_topology mypc110_base_topology = {
+    .rtc_cmos_present = LIB_TRUE,
+    .rtc_cmos = {
+        .index_port = 0x0070u,
+        .data_port = 0x0071u,
+        .irq = 8u,
+        .nmi_mask_bit = 0x80u,
+        .ticks_per_second = 32768u,
+        .timing = {8u, 65u, X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE}}
 };
 
 void mypc110_base_composition_destroy(mypc110_base_composition *composition)
@@ -61,7 +74,10 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
         status = x86_f65535_create(&composition->display_controller);
     }
     if (status == LIB_STATUS_OK) {
-        status = x86_nxvm_board_plan_create(&mypc110_base_configuration, &plan);
+    status = x86_nxvm_board_plan_create(&mypc110_base_configuration, &plan);
+    if (status == LIB_STATUS_OK) {
+        status = x86_nxvm_board_plan_set_topology(plan, &mypc110_base_topology);
+    }
     }
     if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_create_from_plan(plan, &composition->core,

@@ -355,9 +355,14 @@ static lib_bool configuration_and_serial(controller_fixture *f)
         failed |= x86_kbc8042_read_data(c) != (pin_values[i] & 3u);
     }
     x86_kbc8042_set_reset_output_port(c, 3u);
+    x86_kbc8042_set_reset_system_flag(c, LIB_TRUE);
     x86_kbc8042_set_command_response_status_polls(c, 2u);
     x86_kbc8042_reset(c);
     failed |= f->output != 3u;
+    failed |= (x86_kbc8042_read_status(c) & KBC_STATUS_SYS) == 0u;
+    x86_kbc8042_set_reset_system_flag(c, LIB_FALSE);
+    x86_kbc8042_reset(c);
+    failed |= (x86_kbc8042_read_status(c) & KBC_STATUS_SYS) != 0u;
     x86_kbc8042_write_command(c, 0x20u);
     failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
     failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;

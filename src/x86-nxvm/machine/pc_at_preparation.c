@@ -120,7 +120,9 @@ lib_status x86_nxvm_machine_pc_at_construction_create(const x86_nxvm_machine_con
     plan = (x86_nxvm_machine_pc_at_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     plan->construction.profile = (x86_nxvm_machine_profile_binding) {
-        plan, x86_nxvm_machine_pc_at_configure, LIB_NULL, x86_nxvm_machine_pc_at_release };
+        .context = plan,
+        .configure = x86_nxvm_machine_pc_at_configure,
+        .release = x86_nxvm_machine_pc_at_release};
     status = prepare(config, &plan->profile, &plan->construction);
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_plan_pc_at_rom(plan, config, assets);

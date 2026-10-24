@@ -85,7 +85,8 @@ lib_status vm_profile_machine_plan_create_xt(const x86_nxvm_machine_config *conf
     plan = (vm_profile_xt_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     plan->construction.profile = (x86_nxvm_machine_profile_binding) {
-        plan, LIB_NULL, LIB_NULL, vm_profile_xt_release };
+        .context = plan,
+        .release = vm_profile_xt_release};
     status = vm_profile_machine_plan_xt(plan, config, assets);
     return x86_nxvm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
 }

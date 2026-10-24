@@ -62,3 +62,29 @@ if(TARGET build-unit-tests)
 endif()
 add_test(NAME mypc110.unit/font-rom COMMAND mypc110-font-rom-smoke)
 set_tests_properties(mypc110.unit/font-rom PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
+
+add_executable(mypc110-machine-construction-smoke unit/machine_construction_smoke.c)
+target_link_libraries(mypc110-machine-construction-smoke PRIVATE mypc110-board)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mypc110-machine-construction-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests mypc110-machine-construction-smoke)
+endif()
+add_test(NAME mypc110.unit/machine-construction COMMAND mypc110-machine-construction-smoke)
+set_tests_properties(mypc110.unit/machine-construction PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
+
+if(TARGET mypc110-real-firmware)
+    add_executable(mypc110-real-firmware-post-diagnostic
+        diagnostic/real_firmware_post_diagnostic.c)
+    target_link_libraries(mypc110-real-firmware-post-diagnostic PRIVATE
+        mypc110-board mypc110-real-firmware)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-real-firmware-post-diagnostic PRIVATE
+            -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    add_test(NAME mypc110.diagnostic/real-firmware-post
+        COMMAND mypc110-real-firmware-post-diagnostic)
+    set_tests_properties(mypc110.diagnostic/real-firmware-post PROPERTIES
+        LABELS "diagnostic;mypc110" TIMEOUT 30)
+endif()

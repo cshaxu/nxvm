@@ -101,7 +101,10 @@ lib_status mydeskpro386_machine_plan_create(const x86_nxvm_machine_config *confi
     plan = (mydeskpro386_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     plan->construction.profile = (x86_nxvm_machine_profile_binding) {
-        plan, mydeskpro386_configure, mydeskpro386_notify, mydeskpro386_release };
+        .context = plan,
+        .configure = mydeskpro386_configure,
+        .notify = mydeskpro386_notify,
+        .release = mydeskpro386_release};
     plan->construction.fixed_geometry = LIB_TRUE;
     plan->construction.cylinders = 925u;
     plan->construction.heads = 5u;

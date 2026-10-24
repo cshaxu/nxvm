@@ -285,6 +285,13 @@ void x86_nxvm_board_kbc_set_reset_output_port(t_kbc *attachment, lib_u8 value)
     if (attachment != LIB_NULL) x86_kbc8042_set_reset_output_port(attachment->chip, value);
 }
 
+void x86_nxvm_board_kbc_set_reset_system_flag(t_kbc *attachment,
+    lib_bool enabled)
+{
+    if (attachment != LIB_NULL) x86_kbc8042_set_reset_system_flag(
+        attachment->chip, enabled);
+}
+
 void x86_nxvm_board_kbc_advance(t_kbc *attachment, lib_u64 ticks)
 {
     if (attachment != LIB_NULL) x86_kbc8042_advance(attachment->chip, ticks);

@@ -8,8 +8,15 @@ static lib_status mypc110_tft_firmware_configure(void *opaque,
     if (binding == LIB_NULL || binding->bios == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return x86_core_machine_firmware_register_immutable_rom(firmware,
+    lib_status status = x86_core_machine_firmware_register_immutable_rom(firmware,
         MYPC110_TFT_BIOS_PHYSICAL_START, binding->bios, MYPC110_TFT_BIOS_BYTES);
+
+    if (status != LIB_STATUS_OK) return status;
+    /* The 486SX begins at FFFF:FFF0, whose reset fetch is in the top 64 KiB
+     * of physical space.  This is an alias of the BIOS's real F0000-FFFFF
+     * window, not a PC/AT board facade or a firmware interception. */
+    return x86_core_machine_firmware_register_immutable_rom_alias(firmware,
+        0x000f0000u, 0xffff0000u, 0x00010000u);
 }
 
 static lib_status mypc110_tft_firmware_reset(void *opaque,

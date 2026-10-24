@@ -15,13 +15,14 @@ static lib_i32 sgdt_sidt_run(cpu_instruction_fixture *state,
 static void sgdt_sidt_expected(lib_u8 image[6], lib_u16 limit,
     lib_u32 base, lib_bool operand32, x86_core_cpu_profile profile)
 {
+    (void)operand32;
     image[0] = (lib_u8)limit;
     image[1] = (lib_u8)(limit >> 8u);
     image[2] = (lib_u8)base;
     image[3] = (lib_u8)(base >> 8u);
     image[4] = (lib_u8)(base >> 16u);
     image[5] = profile == X86_CORE_CPU_PROFILE_80286 ? 0xffu :
-        operand32 ? (lib_u8)(base >> 24u) : 0u;
+        (lib_u8)(base >> 24u);
 }
 
 static lib_i32 sgdt_sidt_case(x86_core_cpu_profile profile,
@@ -201,16 +202,56 @@ static lib_i32 sgdt_sidt_test_segments_and_vm86(x86_core_cpu_profile profile)
     return 1;
 }
 
+/* Real PC110 firmware loads a 32-bit all-ones descriptor through an ES:BP
+ * operand, then reads it back with ordinary SGDT/SIDT and compares all six
+ * bytes.  Exercise that mixed-size path directly rather than teaching the
+ * machine layer about a firmware-specific self-test. */
+static lib_i32 sgdt_sidt_test_mixed_size_round_trip(
+    x86_core_cpu_profile profile)
+{
+    static const lib_u8 code[] = {
+        0x66u,0x26u,0x0fu,0x01u,0x5eu,0x00u,
+        0x66u,0x26u,0x0fu,0x01u,0x56u,0x00u,
+        0xbdu,0xa0u,0xd8u,
+        0x26u,0x0fu,0x01u,0x4eu,0x00u,
+        0xbdu,0xa6u,0xd8u,
+        0x26u,0x0fu,0x01u,0x46u,0x00u
+    };
+    cpu_instruction_fixture state;
+    lib_u8 source[6], idt[6], gdt[6];
+
+    cpu_instruction_prepare(&state, profile);
+    x86_core_cpu_execution_load_segment(&state.execution, &state.cpu.data.es,
+        0x0040u);
+    state.cpu.data.ebp = 0xd0a0u;
+    lib_memory_set(source, 0xaau, sizeof(source));
+    lib_memory_copy(state.memory + 0xd4a0u, source, sizeof(source));
+    lib_memory_set(state.memory + 0xdca0u, 0u, sizeof(idt) + sizeof(gdt));
+    lib_memory_copy(state.memory, code, sizeof(code));
+    for (lib_u8 instruction = 0u; instruction != 6u; ++instruction) {
+        x86_core_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.fault.valid) return 0;
+    }
+    lib_memory_copy(idt, state.memory + 0xdca0u, sizeof(idt));
+    lib_memory_copy(gdt, state.memory + 0xdca6u, sizeof(gdt));
+    return state.cpu.data.eip == sizeof(code) &&
+        lib_memory_compare(source, idt, sizeof(source)) == 0 &&
+        lib_memory_compare(source, gdt, sizeof(source)) == 0;
+}
+
 lib_i32 main(void)
 {
     lib_i32 values = sgdt_sidt_test_values();
     lib_i32 rejections = sgdt_sidt_test_rejections();
     lib_i32 routes = sgdt_sidt_test_segments_and_vm86(X86_CORE_CPU_PROFILE_80386) &&
         sgdt_sidt_test_segments_and_vm86(X86_CORE_CPU_PROFILE_80486SX);
+    lib_i32 round_trip = sgdt_sidt_test_mixed_size_round_trip(
+        X86_CORE_CPU_PROFILE_80386) && sgdt_sidt_test_mixed_size_round_trip(
+        X86_CORE_CPU_PROFILE_80486SX);
 
-    if (!values || !rejections || !routes) {
-        lib_c_fprintf(lib_c_stderr, "SGDT-SIDT CPU failed values=%d reject=%d routes=%d\n",
-            values, rejections, routes);
+    if (!values || !rejections || !routes || !round_trip) {
+        lib_c_fprintf(lib_c_stderr, "SGDT-SIDT CPU failed values=%d reject=%d routes=%d round-trip=%d\n",
+            values, rejections, routes, round_trip);
         return 1;
     }
     lib_c_printf("%s\n", "SGDT-SIDT-CPU:OK");

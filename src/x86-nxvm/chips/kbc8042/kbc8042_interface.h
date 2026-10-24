@@ -70,6 +70,11 @@ lib_bool x86_kbc8042_aux_enabled(const x86_kbc8042 *controller);
 void x86_kbc8042_set_input_port(x86_kbc8042 *controller, lib_u8 value);
 void x86_kbc8042_set_test_inputs(x86_kbc8042 *controller, lib_u8 value);
 void x86_kbc8042_set_reset_output_port(x86_kbc8042 *controller, lib_u8 value);
+/* Some controller implementations complete their own power-on test before
+ * host reset.  This frozen electrical reset state controls only status bit 2;
+ * it does not synthesize a guest command reply or alter other command bits. */
+void x86_kbc8042_set_reset_system_flag(x86_kbc8042 *controller,
+    lib_bool enabled);
 void x86_kbc8042_set_command_response_timing(x86_kbc8042 *controller, lib_u32 ticks);
 void x86_kbc8042_set_command_response_status_polls(x86_kbc8042 *controller, lib_u8 polls);
 void x86_kbc8042_set_serial_delivery_timing(x86_kbc8042 *controller, lib_u32 ticks);

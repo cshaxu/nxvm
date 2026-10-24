@@ -74,5 +74,6 @@ struct x86_kbc8042 {
     x86_kbc8042_link link;
     lib_bool aux_present;
     lib_u8 reset_output_port;
+    lib_bool reset_system_flag;
 };
 #endif

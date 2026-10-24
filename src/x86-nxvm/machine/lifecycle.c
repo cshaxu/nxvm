@@ -54,6 +54,11 @@ lib_status x86_nxvm_machine_bind_execution_provider(x86_nxvm_machine *machine)
     status = x86_core_machine_bind_firmware_provider(machine->x86_core_machine,
         firmware_provider, firmware_context);
     if (status != LIB_STATUS_OK) return status;
+    if (machine->construction.profile.after_firmware != LIB_NULL) {
+        status = machine->construction.profile.after_firmware(
+            machine->construction.profile.context, machine->x86_core_machine);
+        if (status != LIB_STATUS_OK) return status;
+    }
     status = x86_core_machine_bind_execution_provider(machine->x86_core_machine,
         &x86_nxvm_machine_execution_provider, machine);
     if (status != LIB_STATUS_OK) return status;

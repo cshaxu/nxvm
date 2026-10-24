@@ -195,7 +195,8 @@ static lib_status x86_nxvm_machine_remove_fdd_direct(x86_nxvm_machine *session)
 {
     lib_status status;
 
-    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || session->construction.floppy_slot_count == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (x86_nxvm_machine_control_is_running(&session->control)) return LIB_STATUS_INVALID_STATE;
     status = x86_nxvm_machine_fdd_remove_for(session->floppy[0u]);
     if (status == LIB_STATUS_OK) session->floppy_image_path[0u][0] = '\0';
@@ -206,6 +207,7 @@ lib_status x86_nxvm_machine_set_emulator_media(x86_nxvm_machine *session, const 
     lib_storage_medium_mode mode)
 {
     if (session == LIB_NULL || !session->active) return LIB_STATUS_INVALID_STATE;
+    if (session->construction.floppy_slot_count == 0u) return LIB_STATUS_UNSUPPORTED;
     if (path != LIB_NULL && path[0] != '\0')
         return x86_nxvm_machine_insert_floppy_at(session, 0u, path, mode);
     return x86_nxvm_machine_remove_fdd_direct(session);
@@ -267,13 +269,20 @@ lib_status x86_nxvm_machine_storage_initialize(x86_nxvm_machine *machine)
         x86_nxvm_machine_storage_finalize(machine);
         return status;
     }
-    x86_nxvm_machine_bind_display(machine);
+    if (machine->construction.display_snapshot_provider != LIB_NULL) {
+        x86_nxvm_board_display_provider_slot_bind(machine->display_provider,
+            machine->construction.display_snapshot_context,
+            machine->construction.display_snapshot_provider);
+        x86_nxvm_board_display_provider_slot_freeze(machine->display_provider);
+    } else {
+        x86_nxvm_machine_bind_display(machine);
+    }
     topology = machine->construction.topology;
     status = x86_nxvm_machine_apply_cmos_seed(machine, &topology);
     if (status != LIB_STATUS_OK) { x86_nxvm_machine_storage_finalize(machine); return status; }
     topology.display.text_glyphs = machine->construction.text_glyphs;
     status = x86_nxvm_board_plan_set_topology(machine->x86_nxvm_board_plan, &topology);
-    if (status == LIB_STATUS_OK) {
+    if (status == LIB_STATUS_OK && machine->construction.floppy_slot_count != 0u) {
         status = x86_nxvm_board_plan_bind_media_registry(machine->x86_nxvm_board_plan,
             machine->media_registry);
     }
@@ -294,7 +303,7 @@ lib_status x86_nxvm_machine_storage_initialize(x86_nxvm_machine *machine)
     }
     status = x86_nxvm_board_create_from_plan(machine->x86_nxvm_board_plan,
         &machine->x86_core_machine, &machine->board);
-    if (status == LIB_STATUS_OK) {
+    if (status == LIB_STATUS_OK && machine->construction.floppy_slot_count != 0u) {
         status = x86_nxvm_board_get_fdc_dma_request_binding(machine->board,
             &machine->fdc_dma_request);
     }
@@ -340,8 +349,10 @@ lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
         return LIB_STATUS_NO_MEMORY;
     }
     session->construction = *construction;
-    if (construction->floppy_slot_count == 0u ||
-        construction->floppy_slot_count > X86_NXVM_MACHINE_FLOPPY_SLOT_COUNT ||
+    if (construction->floppy_slot_count > X86_NXVM_MACHINE_FLOPPY_SLOT_COUNT ||
+        (construction->floppy_slot_count != 0u &&
+         x86_nxvm_board_floppy_geometry_get(construction->media_kind) == LIB_NULL) ||
+        (config->floppy_image[0u] != LIB_NULL && construction->floppy_slot_count == 0u) ||
         (construction->fixed_geometry && (!construction->hdc_present ||
             construction->cylinders == 0u || construction->heads == 0u ||
             construction->sectors == 0u)) ||
@@ -353,7 +364,7 @@ lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
         x86_nxvm_machine_destroy(session); return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = x86_nxvm_machine_initialize(session);
-    if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return status; }
+    if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return LIB_STATUS_NO_MEMORY; }
     for (lib_size slot = 0u; slot < construction->floppy_slot_count; ++slot) {
         if (x86_nxvm_machine_config_floppy(config, slot) == LIB_NULL) continue;
         status = x86_nxvm_machine_insert_floppy_at(session, slot,
@@ -367,7 +378,8 @@ lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
             x86_nxvm_machine_config_fixed_disk_mode(config, 0u));
         if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return status; }
     }
-    if (config->create_fdd) x86_nxvm_machine_fdd_create_for(session->floppy[0u]);
+    if (config->create_fdd && construction->floppy_slot_count != 0u)
+        x86_nxvm_machine_fdd_create_for(session->floppy[0u]);
     if (construction->hdc_present && config->create_hdd_cylinders != 0u) {
         status = x86_nxvm_machine_hdd_create(session->fixed_disk[0u], config->create_hdd_cylinders);
         if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return status; }

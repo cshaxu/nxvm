@@ -97,6 +97,8 @@ struct x86_nxvm_board_state {
     lib_u32 kbc_serial_delivery_ticks;
     lib_u8 kbc_input_port_configured;
     lib_u8 kbc_input_port;
+    lib_u8 kbc_reset_system_flag_configured;
+    lib_u8 kbc_reset_system_flag;
     x86_nxvm_board_keyboard_topology keyboard_topology;
     x86_nxvm_board_display_topology display_topology;
     x86_nxvm_board_system_facade system_facade;

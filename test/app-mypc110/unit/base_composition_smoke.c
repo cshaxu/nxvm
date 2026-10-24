@@ -18,7 +18,7 @@ int main(void)
         composition.configuration_chip == LIB_NULL);
     failed |= !failed && (!x86_core_machine_immutable_rom_mapping_contains(
         composition.core, MYPC110_TFT_BIOS_PHYSICAL_START, MYPC110_TFT_BIOS_BYTES) ||
-        x86_core_machine_immutable_rom_mapping_contains(composition.core,
+        !x86_core_machine_immutable_rom_mapping_contains(composition.core,
             0xfffffff0u, 1u));
     failed |= !failed && x86_core_machine_reset(composition.core) != LIB_STATUS_OK;
     failed |= !failed && (x86_core_machine_bus_read(composition.core, 0x20u, &value) !=

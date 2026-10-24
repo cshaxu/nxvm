@@ -17,12 +17,15 @@ typedef enum x86_nxvm_machine_profile_event {
 } x86_nxvm_machine_profile_event;
 
 /* Frozen integration operations, not per-field configuration callbacks.
- * configure runs once before Core publication. notify runs only after a
- * successful full reset or after Core teardown. release runs last, after
- * Core routes, registries and media have ceased using the context. */
+ * configure runs once before Core publication. after_firmware runs once after
+ * immutable firmware mapping but before execution providers freeze. notify
+ * runs only after a successful full reset or after Core teardown. release
+ * runs last, after Core routes, registries and media have ceased using the
+ * context. */
 typedef struct x86_nxvm_machine_profile_binding {
     void *context;
     lib_status (*configure)(void *context, x86_nxvm_board_plan *plan);
+    lib_status (*after_firmware)(void *context, x86_core_machine *core);
     void (*notify)(void *context, x86_nxvm_machine_profile_event event);
     void (*release)(void *context);
 } x86_nxvm_machine_profile_binding;
@@ -46,6 +49,10 @@ typedef struct x86_nxvm_machine_construction {
     lib_u8 cmos_seed[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
     lib_bool cmos_seed_present;
     x86_video_text_glyph_config text_glyphs;
+    /* A non-VADP board supplies its one display snapshot source here.  The
+     * Machine binds and freezes it in the existing board display slot. */
+    x86_nxvm_board_display_snapshot_provider display_snapshot_provider;
+    void *display_snapshot_context;
     const x86_core_machine_firmware_provider *firmware_provider;
     void *firmware_context;
     x86_nxvm_machine_profile_binding profile;

@@ -137,8 +137,11 @@ void x86_nxvm_board_after_internal_advance(void *owner,
         source_ticks);
     x86_core_machine_trace_record(board->core, X86_NXVM_BOARD_TRACE_KBC_ADVANCE,
         0u, (lib_u32)kbc_ticks, 0u);
-    vadp_ticks = x86_core_machine_clock_domain_advance(&board->vadp_clock, source_ticks);
-    x86_nxvm_board_vadp_advance(board->shared_vadp, vadp_ticks);
-    x86_core_machine_trace_record(board->core, X86_NXVM_BOARD_TRACE_VADP_ADVANCE,
-        0u, (lib_u32)vadp_ticks, 0u);
+    if (board->shared_vadp != LIB_NULL) {
+        vadp_ticks = x86_core_machine_clock_domain_advance(&board->vadp_clock,
+            source_ticks);
+        x86_nxvm_board_vadp_advance(board->shared_vadp, vadp_ticks);
+        x86_core_machine_trace_record(board->core, X86_NXVM_BOARD_TRACE_VADP_ADVANCE,
+            0u, (lib_u32)vadp_ticks, 0u);
+    }
 }

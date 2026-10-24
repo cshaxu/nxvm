@@ -8,8 +8,10 @@
 
 typedef struct construction_probe {
     lib_status configure_status;
+    lib_status after_firmware_status;
     lib_status reset_status;
     lib_size configure_count;
+    lib_size after_firmware_count;
     lib_size firmware_count;
     lib_size reset_count;
     lib_size reset_notice_count;
@@ -25,6 +27,15 @@ static lib_status configure_plan(void *context, x86_nxvm_board_plan *plan)
     lib_test_assert(plan != LIB_NULL && !probe->released);
     ++probe->configure_count;
     return probe->configure_status;
+}
+
+static lib_status configure_after_firmware(void *context, x86_core_machine *core)
+{
+    construction_probe *probe = context;
+
+    lib_test_assert(core != LIB_NULL && !probe->released);
+    ++probe->after_firmware_count;
+    return probe->after_firmware_status;
 }
 
 static lib_status configure_firmware(void *context,
@@ -102,7 +113,9 @@ static x86_nxvm_machine_construction prepare(construction_probe *probe)
         .memory_reconfigurable = LIB_TRUE,
         .firmware_provider = &firmware,
         .firmware_context = probe,
-        .profile = {probe, configure_plan, notify_profile, release_profile}
+        .profile = {.context = probe, .configure = configure_plan,
+            .after_firmware = configure_after_firmware,
+            .notify = notify_profile, .release = release_profile}
     };
     return value;
 }
@@ -186,11 +199,32 @@ static void check_partial_media_cleanup(void)
     x86_nxvm_machine_finalize(&partial);
 }
 
+static void check_no_floppy_media_contract(void)
+{
+    construction_probe probe = {0};
+    x86_nxvm_machine_construction construction = prepare(&probe);
+    const x86_nxvm_machine_config runtime = {0};
+    x86_nxvm_machine *machine = LIB_NULL;
+
+    construction.floppy_slot_count = 0u;
+    construction.topology.fdc_present = LIB_FALSE;
+    lib_test_assert(x86_nxvm_machine_create(&runtime, &construction, &machine) ==
+        LIB_STATUS_OK);
+    lib_test_assert(x86_nxvm_machine_set_emulator_media(machine, LIB_NULL,
+        LIB_STORAGE_MEDIUM_OVERLAY) == LIB_STATUS_UNSUPPORTED);
+    lib_test_assert(x86_nxvm_machine_set_emulator_media(machine, "not-a-floppy.img",
+        LIB_STORAGE_MEDIUM_OVERLAY) == LIB_STATUS_UNSUPPORTED);
+    x86_nxvm_machine_destroy(machine);
+    lib_test_assert(probe.released && probe.release_count == 1u);
+}
+
 static void check_transaction(lib_status configure_status,
-    lib_status reset_status)
+    lib_status after_firmware_status, lib_status reset_status)
 {
     construction_probe probe = {
-        .configure_status = configure_status, .reset_status = reset_status
+        .configure_status = configure_status,
+        .after_firmware_status = after_firmware_status,
+        .reset_status = reset_status
     };
     x86_nxvm_machine_construction construction = prepare(&probe);
     const x86_nxvm_machine_config runtime = {0};
@@ -200,7 +234,8 @@ static void check_transaction(lib_status configure_status,
     lib_status status = x86_nxvm_machine_create(&runtime, &construction, &machine);
 
     lib_test_assert(probe.configure_count == 1u);
-    if (configure_status != LIB_STATUS_OK || reset_status != LIB_STATUS_OK) {
+    if (configure_status != LIB_STATUS_OK || after_firmware_status != LIB_STATUS_OK ||
+        reset_status != LIB_STATUS_OK) {
         lib_test_assert(status != LIB_STATUS_OK && machine == LIB_NULL);
         lib_test_assert(probe.released && probe.release_count == 1u);
         lib_test_assert(probe.detach_count == 1u);
@@ -208,7 +243,8 @@ static void check_transaction(lib_status configure_status,
         return;
     }
     lib_test_assert(status == LIB_STATUS_OK && machine != LIB_NULL);
-    lib_test_assert(!probe.released && probe.firmware_count == 1u);
+    lib_test_assert(!probe.released && probe.firmware_count == 1u &&
+        probe.after_firmware_count == 1u);
     lib_test_assert(probe.reset_count == 1u && probe.reset_notice_count == 1u);
     /* Caller storage may change: the published owner consumed copied values. */
     construction.core_config.memory_bytes = 0u;
@@ -237,11 +273,13 @@ lib_i32 main(void)
     lib_test_assert(x86_nxvm_machine_create(&runtime, &construction, LIB_NULL) ==
         LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(!probe.released && probe.configure_count == 0u);
-    check_transaction(LIB_STATUS_OK, LIB_STATUS_OK);
-    check_transaction(LIB_STATUS_INVALID_ARGUMENT, LIB_STATUS_OK);
-    check_transaction(LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
+    check_transaction(LIB_STATUS_OK, LIB_STATUS_OK, LIB_STATUS_OK);
+    check_transaction(LIB_STATUS_INVALID_ARGUMENT, LIB_STATUS_OK, LIB_STATUS_OK);
+    check_transaction(LIB_STATUS_OK, LIB_STATUS_INVALID_ARGUMENT, LIB_STATUS_OK);
+    check_transaction(LIB_STATUS_OK, LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
     check_floppy_lifecycle();
     check_partial_media_cleanup();
+    check_no_floppy_media_contract();
     probe = (construction_probe) {0};
     construction = prepare(&probe);
     const x86_nxvm_machine_config missing_media = {
@@ -252,7 +290,7 @@ lib_i32 main(void)
     lib_test_assert(machine == LIB_NULL && probe.release_count == 1u);
     probe = (construction_probe) {0};
     construction = prepare(&probe);
-    construction.media_kind = (x86_nxvm_board_floppy_kind)LIB_UINT32_MAX;
+    construction.media_kind = (x86_nxvm_board_floppy_kind)99;
     lib_test_assert(x86_nxvm_machine_create(&runtime, &construction, &machine) ==
         LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(machine == LIB_NULL && probe.release_count == 1u);

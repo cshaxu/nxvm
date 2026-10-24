@@ -36,6 +36,8 @@ lib_status x86_nxvm_board_kbc_ticks_until_event(const t_kbc *controller,
 lib_u8 x86_nxvm_board_kbc_get_native_scan_set(const t_kbc *controller);
 void x86_nxvm_board_kbc_set_input_port(t_kbc *controller, lib_u8 value);
 void x86_nxvm_board_kbc_set_reset_output_port(t_kbc *controller, lib_u8 value);
+void x86_nxvm_board_kbc_set_reset_system_flag(t_kbc *controller,
+    lib_bool enabled);
 void x86_nxvm_board_kbc_set_typematic_timing(t_kbc *controller,
     lib_u32 initial_ticks, lib_u32 repeat_ticks);
 void x86_nxvm_board_kbc_set_command_response_timing(t_kbc *controller,

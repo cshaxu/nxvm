@@ -272,6 +272,9 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
     board->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
     board->kbc_input_port_configured = config->kbc_input_port_configured;
     board->kbc_input_port = config->kbc_input_port;
+    board->kbc_reset_system_flag_configured =
+        config->kbc_reset_system_flag_configured;
+    board->kbc_reset_system_flag = config->kbc_reset_system_flag;
     /* Firmware-less fixtures may supply reset bytes from ordinary board RAM.
      * Firmware-backed machines install the reset-only ROM overlay later. */
     if (x86_core_machine_get_memory_bytes(machine, &installed_bytes) != LIB_STATUS_OK ||
@@ -775,7 +778,7 @@ lib_status x86_nxvm_board_construct_profile(x86_nxvm_board_state *board,
 
     if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) ||
         board->profile_binding.context != LIB_NULL) return LIB_STATUS_INVALID_STATE;
-    if (factory == LIB_NULL || board->planar_parity != LIB_NULL)
+    if (factory == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     const x86_nxvm_board_profile_services services = {
         board->core, board->shared_pit,
@@ -809,6 +812,10 @@ void x86_nxvm_board_reset_devices(void *owner)
         if (board->kbc_input_port_configured) {
             x86_nxvm_board_kbc_set_input_port(board->shared_kbc,
                 board->kbc_input_port);
+        }
+        if (board->kbc_reset_system_flag_configured) {
+            x86_nxvm_board_kbc_set_reset_system_flag(board->shared_kbc,
+                board->kbc_reset_system_flag != 0u);
         }
     }
     x86_nxvm_board_dma_reset(board->shared_dma);
@@ -1124,7 +1131,6 @@ lib_status x86_nxvm_board_configure_planar_parity(x86_nxvm_board_state *board,
 
     if (board == LIB_NULL || !x86_core_machine_configuration_is_open(board->core) || board->planar_parity != LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
-    if (board->profile_binding.context != LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_nxvm_board_at_parity_create(board->core, board->shared_pit, config,
         x86_nxvm_board_at_speaker_output, board, &board->planar_parity);
     if (status != LIB_STATUS_OK) return status;
