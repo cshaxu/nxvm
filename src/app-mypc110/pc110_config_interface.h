@@ -5,7 +5,9 @@
 #include "x86-core/chips/vl82c420/vl82c420_interface.h"
 #include "x86-core/machine/port_interface.h"
 
+typedef struct mypc110_tft_firmware mypc110_tft_firmware;
+
 lib_status mypc110_config_install_routes(x86_core_machine *machine,
-    x86_vl82c420 *chip);
+    mypc110_tft_firmware *firmware, x86_vl82c420 *chip);
 
 #endif

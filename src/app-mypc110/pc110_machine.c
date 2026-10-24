@@ -89,8 +89,12 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
             mypc110_tft_firmware_provider(), &composition->firmware);
     }
     if (status == LIB_STATUS_OK) {
+        status = mypc110_tft_firmware_install_routes(composition->core,
+            &composition->firmware);
+    }
+    if (status == LIB_STATUS_OK) {
         status = mypc110_config_install_routes(composition->core,
-            composition->configuration_chip);
+            &composition->firmware, composition->configuration_chip);
     }
     if (status == LIB_STATUS_OK) {
         status = mypc110_font_rom_install(composition->core, &composition->font);

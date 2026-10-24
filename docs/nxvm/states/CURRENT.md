@@ -2,6 +2,51 @@
 
 ## Current Work
 
+## M5 T576 S1 — Closed: MyPC110 C-segment video-ROM shadow
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Successor to closed T575; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed continued PC110 implementation through closure and gave standing approval for ordinary PC110 implementation, verification and task sequencing. The owner also accepts labelled L2 external emulator/research behavior when no L3 manual contract is available. |
+| Objective | Implement the smallest App-owned C0000 video shadow using the observed TFT EC/ED transition, then prove its route state and reset behavior on both widths. |
+| Non-goals | No Core chipset special case, firmware-address dispatch, BIOS/interrupt interception, PC/AT fallback, BDA/IVT mutation, second executor, raw-ROM commit, guest boot claim or PC110 release artifact. |
+| Reference Baseline | Closed T575 evidence; [C-segment video-shadow proposal](../proposals/m5-pc110-c-segment-video-shadow.md); App-local firmware composition; Open-Source-PC110 `Discovery/65535/readme.md`, `Discovery/BIOS-Flash/readme.md` and `Discovery/Chipset/readme.md` as L2 research only. |
+| Files And ABI Surface | `src/test/app-mypc110` firmware owner, diagnostic, evidence/current/queue/proposal records and their structural registration. Core routes are consumed unchanged. Lib, Emulator, X86 Core/X86-NXVM and unrelated Apps are excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one firmware/decode owner; external protected bytes stay BYOB; no third-party source copying. |
+| Verification | Unit C000/F000/reset map coverage and the existing two-width real-TFT protected-bootstrap checkpoint, plus affected diagnostic/structural/manifest gates. |
+| Expected Markers | Raw C000 before the observed sequence, writable shadow after it, raw C000 after reset, and the retained post-bootstrap checkpoint. No product-qualification claim. |
+| Asset Needs | Read-only `NXVM_PROFILE_ASSETS_ROOT/profiles-nxvm/ibm-pc110-tft` BIOS/font and manifest only. |
+| Reporting Requirements | Record L2 source grade, mapping model, actual changed surface, two-width facts and unqualified endpoints. Do not call this POST, Setup, DOS boot or PC110 release qualification. |
+| Temporary Output | `build/t576-s1/` only for bounded diagnostics; remove it after recording compact evidence. |
+| Stop Conditions | Mapping conflicts with the actual image, real execution still never reaches C000, a needed change leaves the App boundary, or implementation would fabricate guest behavior. Record and transfer rather than fabricate. |
+| Exit Criteria | One App-owned video shadow route and its reset behavior are directly tested; both widths show the finite next protected-segment boundary before C000 execution; evidence and scoped gates are complete. |
+| Original Owner Request | Continue the PC110 programme to closure using PC110-EMU, PC110-QEMU and Open-Source-PC110 only as research, with external usable firmware. |
+| Similar-Issue Sweep | Inspect C000/D000/E000/F000/reset mappings, font overlap precedence, reset restoration, provider lifetime and all existing firmware routes; reject duplicate owners and static PC/AT aliases. |
+
+### S1 Brief
+
+Use the existing MyPC110 firmware provider and existing Core replacement routes.
+Model only the observed EC/ED C-shadow transition, retaining raw immutable
+flash before the guest opens and fills the shadow.  The real-firmware
+diagnostic retains T575's exact finite protected-bootstrap checkpoint; a later
+S must resolve that independent CPU boundary before it can prove C execution.
+
+### S1 Delivery
+
+The App now owns exactly one 48 KiB `C0000–CBFFF` shadow.  It remains hidden
+behind immutable flash at reset, accepts the guest's copy only while the
+observed EC/ED ROMSET/CAXS/CCBL sequence permits it, becomes visible after
+relock, and is discarded by reset.  `CC000–CFFFF` is deliberately outside this
+route.  No Core, Lib, Emulator, X86-NXVM or ROM byte changed.
+
+All seven MyPC110 unit/diagnostic tests pass in both persistent Ninja graphs.
+The real TFT diagnostic still completes T575's `F000:6044` checkpoint but then
+stops at a separate protected-segment reload at `F000:605F`; it has not reached
+C000.  That finite boundary is transferred to the next T576 S rather than
+covered by an invented descriptor or execution shortcut.  The source grade,
+mapping model and exact verification are in
+[the S1 evidence](../etc/evidence/t576-s1-pc110-c-segment-shadow.md).
+
 ## M5 T575 S1 — Closed: MyPC110 protected-bootstrap segment-cache boundary
 
 | Field | Required record |
