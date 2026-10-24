@@ -2,6 +2,42 @@
 
 ## Current Work
 
+## M5 T570 S1 — Closed: PC110 storage and flash admission
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed T569; one session performs coordinator and executor roles. |
+| Admission And Approval | The ordered PC110 programme continues. This S freezes implementable PCMCIA, flash and boot-storage facts before touching device routes. |
+| Objective | Establish a finite storage/flash cohort with complete CPU-visible decode, media, reset, removal/error and ownership contracts. |
+| Non-goals | No synthetic INT 13h, host decompression, implicit first floppy, raw firmware/media commit, flash-master mutation, generic card manager, runnable PC110 EXE or guest-boot claim. |
+| Reference Baseline | PC110 storage proposal; current MyPC110 base and VL82C420 routes; Open-Source-PC110, PC110-EMU and PC110-QEMU read-only research; existing X86-NXVM media contracts. |
+| Candidate Proposal | [PC110: PCMCIA, flash and boot storage](../history/M5-T570-pc110-storage-proposal.md). |
+| Files And ABI Surface | Documentation/evidence and task/Queue disposition only during S1. Later work may name App-local PC110 routes and already owned Core/X86-NXVM storage mechanisms; no interface is presumed. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one media/flash owner and no App-to-peer dependency. |
+| Verification | Inventory current Core/X86-NXVM storage contracts and each researched PC110 decode; classify direct, model-only, blocked and conflicting paths. |
+| Stop Conditions | Required behavior lacks lawful source/asset, needs a Shared contract, conflicts with existing controller ownership or cannot express errors/removal. Transfer it without a placeholder. |
+| Exit Criteria | Every selected storage/flash row is admitted with a bounded owner/proof or transferred to a named receiver; no guessed boot path remains. |
+| Original Owner Request | Continue implementing PC110 in ordered receivers. |
+| Similar-Issue Sweep | Compare all PC110 storage/flash candidates against current FDC/HDC/media/firmware routes for duplicate ownership or implicit PC/AT assumptions. |
+
+### S1 Delivery And T570 Closure
+
+The [storage/flash source gate](../etc/evidence/t570-s1-storage-source-gate.md)
+confirms that flash read mapping is already singular and correct, while the
+known PCMCIA, CF/ATA and dock-floppy facts do not establish the controller
+registers, decode, reset, IRQ/DMA, removal or error contracts required for a
+truthful route.  PC110-EMU's corresponding port handlers are explicit
+placeholders and PC110-QEMU's software boot completer is outside the machine
+boundary.  T570 therefore adds no PC/AT-shaped fallback, no synthetic boot
+path and no production/test code.  The real-firmware boot receiver owns the
+required traces; the PC110 program remains active.
+
+## M5 T570 — Closed: PC110 storage and flash disposition
+
+T570 preserves the one-owner immutable firmware mapping and transfers the
+unproven PCMCIA, ATA/CF and dock-floppy behavior to real-firmware execution.
+It closes a source gate, not the PC110 product goal.
+
 ## M5 T569 S1 — Closed: PC110 APM and power protocol admission
 
 | Field | Required record |
