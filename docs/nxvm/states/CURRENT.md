@@ -2,32 +2,43 @@
 
 ## Current Work
 
-## Active Task — M5 T580 S2
+## Active Task — M5 T580 S4
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T580 S2 after committed S1 ledger; one session performs coordinator and executor roles. |
+| Identifier Mode | T580 S4 after bounded S3 real-firmware classification; one session performs coordinator and executor roles. |
 | Admission And Approval | The owner continues the standing PC110 implementation objective and authorizes ordinary scoped research, implementation, verification, commit and push work. |
-| Objective | Admit the verified TFT PC110 input to one ordinary X86-NXVM Product composition route: App binding, adjacent runtime INI, lifecycle ownership and focused construction proof. |
-| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of guest boot before the admitted proofs exist. |
-| Reference Baseline | Closed T579 (`33abaaba7`): real TFT firmware leaves the first port-61 wait, completes the bounded LPT probe, then returns to that wait. |
+| Objective | Give the existing F65535 VGA input-status register its smallest source-labelled L2 vertical-retrace behavior, then prove that the real TFT BIOS can advance beyond its C000 video-ROM initialization boundary. |
+| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, panel emulation, graphics renderer, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of guest boot before the admitted proof exists. |
+| Reference Baseline | S3's 100-million-instruction real-firmware run reaches the real C000 video ROM and repeatedly delivers interrupts while F65535 input-status `3DAh` is permanently zero. |
 | Candidate Proposal | [MyPC110 product and guest qualification](../proposals/m5-pc110-qualification.md). |
-| Files And ABI Surface | App-MyPC110 binding/entry/build/test sources and NXVM product-selection declarations only. Existing Lib, Emulator and PC110 raw inputs remain unchanged. |
+| Files And ABI Surface | Existing X86-NXVM F65535 component and its tests, MyPC110 real-firmware diagnostic/evidence/task records. Lib, Emulator, Core, X86-NXVM Product and raw inputs remain unchanged. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout/UI and source/research policy; T558 receiver checklists and PC110 qualification proposal. |
-| Verification | Configure the selected TFT graph using its external hash-validated inputs; exercise construction/bind/lifecycle teardown through the existing Product/Machine path; run affected App/Core/Product tests on both widths plus manifest/whitespace/documentation gates. |
-| Expected Markers | One TFT-only App identity and binding that reaches the existing Product composition route, plus a focused lifecycle proof without a release or boot claim. |
+| Verification | Add a focused F65535 status-read regression and run the ordinary executor against the real TFT image on both widths through the C000 initialization checkpoint. Compare the result to the retained source and preserve only observed progress. |
+| Expected Markers | `3DAh` retains the attribute flip-flop reset and yields a changing vertical-retrace bit; the real C000 ROM makes bounded forward progress without a synthetic BIOS branch. |
 | Asset Needs | Read-only external TFT BIOS/font manifest only. No ROM, CMOS, disk or snapshot content enters Git. |
-| Stop Conditions | A required input becomes unavailable, a product route would require a second runner/parser or an unproven Shared contract, or a test proves that the existing Machine adapter cannot construct the App. Record and transfer rather than fabricate a fallback. |
-| Exit Criteria | MyPC110 has one TFT-only build-selected Product composition route and adjacent INI ownership, its normal create/bind/destroy path is proven on both widths, and no artifact/DSTN/boot claim leaks into code or documents. |
+| Stop Conditions | A required behavior expands beyond ordinary input-status semantics, a claimed device behavior lacks a source/finite probe, or a proposed repair requires a synthetic firmware or a Shared contract that has not been independently shown generic. Record and transfer rather than fabricate a fallback. |
+| Exit Criteria | The status register has one documented L2 owner, two-width chip/App evidence proves its finite behavior and real-firmware result, and no product/boot claim is expanded. |
 | Original Owner Request | Continue implementing PC110 through its actual product end state. |
 | Similar-Issue Sweep | All MyPC110 sources/tests/build routes, external asset manifests, emulator/product composition boundaries, four-PC publication conventions, PC110-specific firmware model selection and retained PC110 research receivers. |
 
-### S2 Brief
+### S4 Brief
 
-Connect the already-admitted TFT-only App construction to the one existing
-X86-NXVM Product route.  Reuse its INI parser, Emulator composition and
-lifecycle owner; do not introduce a PC110 runner, runtime model selector or
-release artifact.
+Implement only the F65535 input-status behavior reached by the S3 trace.  It
+must be a controller-local register result rather than a firmware-address
+special case, second clock, or rendering path.
+
+### S3 Closure
+
+The extended two-width real-TFT probe establishes that the previous port-61
+cycle is not the current stop boundary: after 100 million ordinary
+instructions it is in the real C000 video ROM, with no Core fault and over
+one million C000 retirements.  The current F65535 path returns zero for every
+input-status read.  The retained PC110-QEMU research documents this same BIOS
+far-call to `C000:0003` and models the VGA `3DAh` vertical-retrace bit as a
+changing status bit.  That is a finite X86-NXVM F65535 L2 receiver, not a
+reason to copy its firmware-address intercepts.  The detailed boundary and
+limits are in [`T580 S3 evidence`](../etc/evidence/t580-s3-f65535-status-gate.md).
 
 ### S2 Closure
 
