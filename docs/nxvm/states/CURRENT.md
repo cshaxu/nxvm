@@ -2,6 +2,49 @@
 
 ## Current Work
 
+## Active Task — M5 T580 S1
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T580 S1 after closed T579; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner continues the standing PC110 implementation objective and authorizes ordinary scoped research, implementation, verification, commit and push work. |
+| Objective | Freeze the exact runnable-PC110 qualification batch: four build-fixed executable identities, lawful external DSTN/TFT inputs, App-to-Emulator integration, runtime INI ownership, and finite guest proof gates. |
+| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, speculative chipset catch-all, borrowed PC/AT ROM, or claim of guest boot before the admitted proofs exist. |
+| Reference Baseline | Closed T579 (`33abaaba7`): real TFT firmware leaves the first port-61 wait, completes the bounded LPT probe, then returns to that wait. |
+| Candidate Proposal | [MyPC110 product and guest qualification](../proposals/m5-pc110-qualification.md). |
+| Files And ABI Surface | S1 changes only NXVM task/evidence records. Later S scopes must name the specific MyPC110/App/Core surface they consume; Shared public components and raw assets are excluded unless a concrete proof requires them. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout/UI and source/research policy; T558 receiver checklists and PC110 qualification proposal. |
+| Verification | Inspect actual App/build/test/asset routes and all T558 qualification rows; reconcile each requirement to a current owner, source grade, proof target, dependency and disposition. Run documentation governance and link/whitespace review. |
+| Expected Markers | One durable convergence ledger with no implicit product claim; an explicit next implementation batch whose owners, sources and tests are already known. |
+| Asset Needs | Read-only external PC110 firmware/font/media manifests only. No ROM, CMOS, disk or snapshot content enters Git in S1. |
+| Stop Conditions | A required build input is unavailable or unlawful, a needed behavior lacks a finite owner/source/proof, or a Shared change is required before an App-owned receiver can proceed. Record and transfer the gap rather than fabricate a fallback. |
+| Exit Criteria | The full qualification universe is enumerated and each member is accepted for a bounded successor, deferred with an admission gate, or rejected with evidence; no unresolved member is hidden behind a later BIOS checkpoint. |
+| Original Owner Request | Continue implementing PC110 through its actual product end state. |
+| Similar-Issue Sweep | All MyPC110 sources/tests/build routes, external asset manifests, emulator/product composition boundaries, four-PC publication conventions, PC110-specific firmware model selection and retained PC110 research receivers. |
+
+### S1 Brief
+
+Convert the broad product candidate into a finite evidence-led qualification
+ledger before changing product behavior.  Reconcile what the current App can
+actually construct and execute with the four required executable identities
+and two hardware personalities; do not convert early firmware progress into a
+boot claim.
+
+### S1 Closure
+
+The qualification universe is now frozen in the
+[`T580 S1 ledger`](../etc/evidence/t580-s1-pc110-qualification-ledger.md).
+The current App is a TFT-only board/diagnostic library: it has no process
+entry, product binding, INI, profile selection or artifact route.  The
+external TFT ROM and font are admitted BYOB inputs; the only PC110-EMU ROM has
+the same TFT hash.  No verified original DSTN ROM or reversible byte patch is
+available, so the original-DSTN artifacts cannot be honestly built yet.
+
+S2 will add only the TFT product composition/build boundary and prove its
+normal construction/lifecycle path without claiming that the real firmware
+boots.  The later DSTN receiver will reuse that one route after a separately
+admitted lawful, verified input arrives.
+
 ## Closed Task — M5 T579
 
 | Field | Required record |
