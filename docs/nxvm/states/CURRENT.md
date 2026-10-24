@@ -2,6 +2,41 @@
 
 ## Current Work
 
+## M5 T569 S1 — Closed: PC110 APM and power protocol admission
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed T568; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner-directed PC110 programme continues in Queue order. T567 transferred power/APM rather than fabricating it; this S is the required source-gate audit. |
+| Objective | Establish whether any PC110 CPU-visible APM, suspend, power-off or wake behavior has a complete enough contract for a bounded implementation receiver. |
+| Non-goals | No U6 emulator, `0ECh`/`0EDh` power alias, BIOS interrupt interception, host lifecycle alias, always-ready mailbox, raw firmware import/execution, runnable product or PC110 EXE claim. |
+| Reference Baseline | T567 S3 power disposition; Open-Source-PC110 current BIOS/chipset research; PC110-EMU/QEMU as read-only L2 references; current MyPC110/VL82C420/Core source. |
+| Candidate Proposal | [PC110: power management and APM](../proposals/m5-pc110-power-apm.md). |
+| Files And ABI Surface | Documentation/evidence and task/Queue disposition only unless a complete CPU-visible contract admits one existing owner. No public interface is presumed. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one lifecycle/frame/CPU-event owner. |
+| Verification | Trace each candidate call/register to current source ownership; record request, reply/error, reset, lifecycle and wake semantics with source grade; prove any proposed receiver has one owner and no conflict with `VL82C420`. |
+| Stop Conditions | Incomplete protocol, reliance on host lifecycle, protected firmware execution, or a needed Shared contract. Transfer the exact missing behavior rather than invent success. |
+| Exit Criteria | Every inspected APM/power row is either admitted with a bounded owner and proof or transferred to a named receiver; evidence, Queue and task history remain truthful. |
+| Original Owner Request | Continue implementing PC110 in ordered receivers. |
+| Similar-Issue Sweep | Inspect all current PC110, VL82C420 and Core power/suspend hooks; distinguish CPU-visible semantics from physical wiring and host lifecycle. |
+
+### S1 Delivery
+
+The [power/APM source gate](../etc/evidence/t569-s1-power-apm-source-gate.md)
+confirms that existing VL82C420 routing is correct and that no complete
+guest-visible suspend/wake or APM device contract is available.  It admits no
+invented MCU, I/O window or lifecycle alias.  The real-firmware boot receiver
+owns the missing execution traces and any later App-local power implementation.
+
+## M5 T569 — Closed: PC110 power management and APM disposition
+
+T569 closes its source gate without a production device.  The currently known
+APM status route belongs to the real BIOS, `0ECh/0EDh` remain VL82C420
+configuration, and the observed Block2 suspend write lacks a complete wake and
+resume contract.  The task therefore preserves the existing one-owner routes
+and transfers power behavior to the real-firmware boot receiver rather than
+fabricating a mailbox or host-lifecycle mapping.
+
 ## M5 T568 S5 — Closed: PC110 F65535 standard-VGA and capture contract
 
 | Field | Required record |

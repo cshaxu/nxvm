@@ -72,7 +72,7 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 
 1. [PC110: keyboard, pointer and power](../history/M5-T567-pc110-input-power.md) is closed as M5 T567: keyboard/TrackPoint are delivered, while power is explicitly transferred rather than fabricated.
 2. [PC110: F65535 display and font ROM](../history/M5-T568-pc110-display-proposal.md) is closed as M5 T568. It delivers the bounded F65535/font receiver; graphics/panel, real firmware boot and product publication remain with their existing ordered receivers.
-3. [PC110: power management and APM](../proposals/m5-pc110-power-apm.md)
+3. [PC110: power management and APM](../history/M5-T569-pc110-power-apm-proposal.md) is closed as M5 T569. Its source gate rejects a fabricated power device; real-firmware boot owns the missing guest-visible trace.
 4. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
 5. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
 6. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
