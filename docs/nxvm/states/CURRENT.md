@@ -2,33 +2,42 @@
 
 ## Current Work
 
-## Active Task — M5 T580 S1
+## Active Task — M5 T580 S2
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T580 S1 after closed T579; one session performs coordinator and executor roles. |
+| Identifier Mode | T580 S2 after committed S1 ledger; one session performs coordinator and executor roles. |
 | Admission And Approval | The owner continues the standing PC110 implementation objective and authorizes ordinary scoped research, implementation, verification, commit and push work. |
-| Objective | Freeze the exact runnable-PC110 qualification batch: four build-fixed executable identities, lawful external DSTN/TFT inputs, App-to-Emulator integration, runtime INI ownership, and finite guest proof gates. |
-| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, speculative chipset catch-all, borrowed PC/AT ROM, or claim of guest boot before the admitted proofs exist. |
+| Objective | Admit the verified TFT PC110 input to one ordinary X86-NXVM Product composition route: App binding, adjacent runtime INI, lifecycle ownership and focused construction proof. |
+| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of guest boot before the admitted proofs exist. |
 | Reference Baseline | Closed T579 (`33abaaba7`): real TFT firmware leaves the first port-61 wait, completes the bounded LPT probe, then returns to that wait. |
 | Candidate Proposal | [MyPC110 product and guest qualification](../proposals/m5-pc110-qualification.md). |
-| Files And ABI Surface | S1 changes only NXVM task/evidence records. Later S scopes must name the specific MyPC110/App/Core surface they consume; Shared public components and raw assets are excluded unless a concrete proof requires them. |
+| Files And ABI Surface | App-MyPC110 binding/entry/build/test sources and NXVM product-selection declarations only. Existing Lib, Emulator and PC110 raw inputs remain unchanged. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout/UI and source/research policy; T558 receiver checklists and PC110 qualification proposal. |
-| Verification | Inspect actual App/build/test/asset routes and all T558 qualification rows; reconcile each requirement to a current owner, source grade, proof target, dependency and disposition. Run documentation governance and link/whitespace review. |
-| Expected Markers | One durable convergence ledger with no implicit product claim; an explicit next implementation batch whose owners, sources and tests are already known. |
-| Asset Needs | Read-only external PC110 firmware/font/media manifests only. No ROM, CMOS, disk or snapshot content enters Git in S1. |
-| Stop Conditions | A required build input is unavailable or unlawful, a needed behavior lacks a finite owner/source/proof, or a Shared change is required before an App-owned receiver can proceed. Record and transfer the gap rather than fabricate a fallback. |
-| Exit Criteria | The full qualification universe is enumerated and each member is accepted for a bounded successor, deferred with an admission gate, or rejected with evidence; no unresolved member is hidden behind a later BIOS checkpoint. |
+| Verification | Configure the selected TFT graph using its external hash-validated inputs; exercise construction/bind/lifecycle teardown through the existing Product/Machine path; run affected App/Core/Product tests on both widths plus manifest/whitespace/documentation gates. |
+| Expected Markers | One TFT-only App identity and binding that reaches the existing Product composition route, plus a focused lifecycle proof without a release or boot claim. |
+| Asset Needs | Read-only external TFT BIOS/font manifest only. No ROM, CMOS, disk or snapshot content enters Git. |
+| Stop Conditions | A required input becomes unavailable, a product route would require a second runner/parser or an unproven Shared contract, or a test proves that the existing Machine adapter cannot construct the App. Record and transfer rather than fabricate a fallback. |
+| Exit Criteria | MyPC110 has one TFT-only build-selected Product composition route and adjacent INI ownership, its normal create/bind/destroy path is proven on both widths, and no artifact/DSTN/boot claim leaks into code or documents. |
 | Original Owner Request | Continue implementing PC110 through its actual product end state. |
 | Similar-Issue Sweep | All MyPC110 sources/tests/build routes, external asset manifests, emulator/product composition boundaries, four-PC publication conventions, PC110-specific firmware model selection and retained PC110 research receivers. |
 
-### S1 Brief
+### S2 Brief
 
-Convert the broad product candidate into a finite evidence-led qualification
-ledger before changing product behavior.  Reconcile what the current App can
-actually construct and execute with the four required executable identities
-and two hardware personalities; do not convert early firmware progress into a
-boot claim.
+Connect the already-admitted TFT-only App construction to the one existing
+X86-NXVM Product route.  Reuse its INI parser, Emulator composition and
+lifecycle owner; do not introduce a PC110 runner, runtime model selector or
+release artifact.
+
+### S2 Closure
+
+MyPC110 now has one TFT-only App entry and immutable binding through the
+existing X86-NXVM Product/Machine route.  Its adjacent `mypc110.ini` owns only
+the shared runtime grammar; external TFT firmware/font selection remains a
+build input.  The preview target is compile-only and was exercised through the
+real Product factory on both widths.  It does not deploy an EXE, add a DSTN
+path or claim firmware boot.  The exact surface and test set are retained in
+[`T580 S2 evidence`](../etc/evidence/t580-s2-tft-product-preview.md).
 
 ### S1 Closure
 

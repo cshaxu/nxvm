@@ -36,4 +36,21 @@ if(COMMAND nxvm_require_manifest)
         "${mypc110_real_firmware_source}")
     target_link_libraries(mypc110-real-firmware PRIVATE types)
     target_include_directories(mypc110-real-firmware PRIVATE "${CMAKE_SOURCE_DIR}/src")
+
+    add_library(mypc110-product STATIC product_binding.c)
+    target_include_directories(mypc110-product PUBLIC "${CMAKE_SOURCE_DIR}/src"
+        "${CMAKE_BINARY_DIR}/generated")
+    target_link_libraries(mypc110-product PUBLIC mypc110-board mypc110-real-firmware
+        x86-nxvm-product)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-product PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+
+    # This checks the real App entry and its embedded BYOB inputs without
+    # declaring a deployed PC110 artifact before guest qualification.
+    add_executable(mypc110-product-preview EXCLUDE_FROM_ALL main.c)
+    target_link_libraries(mypc110-product-preview PRIVATE mypc110-product)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-product-preview PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
 endif()

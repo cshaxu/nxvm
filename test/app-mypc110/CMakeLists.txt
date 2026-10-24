@@ -85,6 +85,22 @@ endif()
 add_test(NAME mypc110.unit/lpt COMMAND mypc110-lpt-smoke)
 set_tests_properties(mypc110.unit/lpt PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
 
+if(TARGET mypc110-product)
+    add_executable(mypc110-product-composition-smoke unit/product_composition_smoke.c)
+    target_link_libraries(mypc110-product-composition-smoke PRIVATE mypc110-product)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-product-composition-smoke PRIVATE
+            -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    add_dependencies(mypc110-product-composition-smoke mypc110-product-preview)
+    if(TARGET build-unit-tests)
+        add_dependencies(build-unit-tests mypc110-product-composition-smoke)
+    endif()
+    add_test(NAME mypc110.unit/product-composition COMMAND mypc110-product-composition-smoke)
+    set_tests_properties(mypc110.unit/product-composition PROPERTIES
+        LABELS "unit;mypc110" TIMEOUT 30)
+endif()
+
 if(TARGET mypc110-real-firmware)
     add_executable(mypc110-real-firmware-post-diagnostic
         diagnostic/real_firmware_post_diagnostic.c)

@@ -8,8 +8,9 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 The product/shared-corpus layout is current. My5160, My5170 and default NXVM
 are flat Apps; only default's `firmware` owns project-authored guest firmware
 source and its build tools. MyDeskPro386 is also flat, with cohesive D4,
-construction, firmware and product files. `pc110` remains a future profile only when its separate
-evidence task admits real source files.
+construction, firmware and product files. MyPC110 owns its separately admitted
+TFT construction and prepublication Product preview; it remains outside the
+published machine set until its qualification receivers admit a release.
 
 ```text
 src/
@@ -32,6 +33,8 @@ src/
   app-nxvm/             fixed default AT App: main, product binding,
                          machine plan/configuration/construction and firmware map
     firmware/           project-owned BIOS source and offline ROM construction
+  app-mypc110/          TFT PC110 qualification App: board construction,
+                         firmware binding and prepublication Product preview
 ```
 
 Keep machine-specific declarations beside the fixed App's construction source.
@@ -165,11 +168,11 @@ The four fixed Apps consume the sole X86 NXVM Machine/Product implementation;
 they do not supply libraries to one another. Portable Debug/Xasm32 tooling
 remains in x86-debug; NXVM PC mechanisms live in x86-nxvm, and immutable model choices
 and D4 remain in each App.
-`app-mypc110` is an admitted, deliberately non-runnable base composition:
-it owns its fixed 486SX construction, external firmware binding and PC110
-decode choices, while each unqualified endpoint is admitted by its own
-evidence receiver. It is not a PC/AT facade and must not claim a product
-executable, display, storage or guest boot before those receivers qualify.
+`app-mypc110` is an admitted TFT-only prepublication composition: it owns its
+fixed 486SX construction, external firmware binding, Product entry/binding and
+PC110 decode choices, while each unqualified endpoint is admitted by its own
+evidence receiver. Its preview verifies the normal Product/Machine route but
+does not publish a product executable or claim display, storage or guest boot.
 
 Each App has its own source, profile assertions, integration registration and
 flat artifact root. PC-family docs/nxvm, tools/nxvm, version and MTSP stay

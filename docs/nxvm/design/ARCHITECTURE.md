@@ -320,8 +320,10 @@ The accepted prerequisites are [T539 chips](../history/M5-T539-independent-share
 [T543](../history/M5-T543-four-pc-apps.md) records the four fixed App cutover:
 app-my5160, app-my5170, app-mydeskpro386 and app-nxvm. Current owns acceptance.
 Their source/test/assets owners are parallel; the PC-family documentation,
-tools, version and task sequence remain unified. Later PC110 requires its
-own hardware qualification before an App is created.
+tools, version and task sequence remain unified. The separately admitted
+TFT-only `app-mypc110` reuses the same Product/Machine route for construction
+qualification only; its original-DSTN input, artifact publication and guest
+qualification remain separately gated.
 
 Shared tests follow their source owner; model-specific assertions and external
 integration cases follow their App. One external test observer and INI fixture
