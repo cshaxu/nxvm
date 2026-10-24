@@ -17,7 +17,8 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
     .memory_bytes = 20u * 1024u * 1024u,
     .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
     .fpu_profile = X86_FPU_PROFILE_NONE,
-    .protected_data_reload_policy = X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE,
+    .protected_data_reload_policy =
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE_OR_REAL_ADDRESS,
     .ticks_per_instruction = 1u,
     .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
     .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 33000000u},

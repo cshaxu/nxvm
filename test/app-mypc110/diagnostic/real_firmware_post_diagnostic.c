@@ -142,7 +142,7 @@ int main(void)
     }
     if (status == LIB_STATUS_OK) {
         status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
-            X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x000f6045u);
+            X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x000f6060u);
     }
     if (status == LIB_STATUS_OK) {
         x86_nxvm_machine_executor_state_start(&machine->control.state);
@@ -245,7 +245,7 @@ int main(void)
     if (post_reset_trace.after_pop_ds_valid) {
         const x86_core_cpu_debug_cpu_snapshot *cpu = &post_reset_trace.after_pop_ds;
 
-        lib_c_printf("PC110:POST:after-pop-ds ds=%04x/%08x es=%04x/%08x eip=%08x\n",
+        lib_c_printf("PC110:POST:after-second-pop-ds ds=%04x/%08x es=%04x/%08x eip=%08x\n",
             cpu->ds.selector, cpu->ds.base, cpu->es.selector, cpu->es.base, cpu->eip);
     }
     if (reset_exception.valid) {
@@ -303,6 +303,6 @@ int main(void)
     return status == LIB_STATUS_OK &&
         result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
         post_reset_trace.before_pop_ds_valid && post_reset_trace.after_pop_ds_valid &&
-        post_reset_trace.after_pop_ds.ds.selector == post_reset_trace.before_pop_ds.es.selector &&
-        post_reset_trace.after_pop_ds.ds.base == post_reset_trace.before_pop_ds.es.base ? 0 : 1;
+        post_reset_trace.after_pop_ds.ds.selector == 0x0008u &&
+        post_reset_trace.after_pop_ds.ds.base == 0x00000080u ? 0 : 1;
 }

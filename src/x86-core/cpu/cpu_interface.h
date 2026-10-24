@@ -57,14 +57,14 @@ typedef enum x86_core_cpu_profile {
 } x86_core_cpu_profile;
 
 /* Strict protected-mode descriptor loading is the architectural default.
- * The optional compatibility mode is an explicit L2 board choice for firmware
- * which reloads a data segment from an all-zero descriptor while another
- * visible data segment already holds the exact selector's valid cache.  It is
- * deliberately narrower than a relaxed protected-mode implementation: it
- * neither fabricates descriptors nor changes code, system or privilege rules. */
+ * Optional L2 modes admit only all-zero descriptor data reloads.  The first
+ * reuses an existing matching visible cache; the second additionally uses
+ * ordinary real-address data attributes when no such cache exists.  Neither
+ * mode changes code, stack, nonzero descriptor, system or privilege rules. */
 typedef enum x86_core_cpu_protected_data_reload_policy {
     X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT = 0,
-    X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE
+    X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE,
+    X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE_OR_REAL_ADDRESS
 } x86_core_cpu_protected_data_reload_policy;
 
 /* CPU provenance is independent of the board's physical address decoder. */

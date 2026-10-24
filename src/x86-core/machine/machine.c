@@ -388,7 +388,9 @@ lib_i32 x86_core_machine_neutral_config_is_valid(
          config->cpu_profile == X86_CORE_CPU_PROFILE_80386) &&
         (config->protected_data_reload_policy == X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT ||
          config->protected_data_reload_policy ==
-             X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE) &&
+             X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE ||
+         config->protected_data_reload_policy ==
+             X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE_OR_REAL_ADDRESS) &&
         config->address_decode.first <= config->address_decode.last &&
         x86_core_machine_clock_ratio_is_valid(&config->provider_clock) &&
         x86_core_machine_retirement_time_contract_is_valid(

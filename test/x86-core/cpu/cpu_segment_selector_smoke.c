@@ -1122,6 +1122,7 @@ static lib_i32 segment_test_visible_data_cache_reload(x86_core_cpu_profile cpu_p
     const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     segment_cpu strict;
     segment_cpu compatible;
+    segment_cpu real_address;
     t_cpu before;
     t_cpu after;
     lib_i32 failed = !segment_prepare(&strict, cpu_profile);
@@ -1161,6 +1162,28 @@ static lib_i32 segment_test_visible_data_cache_reload(x86_core_cpu_profile cpu_p
             SEG_CODE_ADDRESS, &after) || after.data.ds.selector != 0x10u ||
             after.data.ds.base != after.data.es.base ||
             after.data.ds.limit != after.data.es.limit || after.data.ds.seg.executable;
+    }
+    if (!failed) failed |= !segment_prepare(&real_address, cpu_profile) ||
+        !segment_boot_protected(&real_address) ||
+        !segment_write(&real_address, SEG_GDT_ADDRESS + 0x10u, empty_descriptor,
+            sizeof(empty_descriptor)) ||
+        !segment_write(&real_address, SEG_DATA_ADDRESS + 0x8000u, selector,
+            sizeof(selector)) || !segment_write(&real_address, SEG_CODE_ADDRESS,
+            code, sizeof(code));
+    if (!failed) {
+        x86_core_cpu_execution_context_bind_profiles(&real_address.chip.execution,
+            cpu_profile, X86_FPU_PROFILE_NONE, LIB_FALSE,
+            X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE_OR_REAL_ADDRESS,
+            &timing);
+        real_address.chip.cpu.data.es.selector = 0x0018u;
+        real_address.chip.cpu.data.esp = 0x8000u;
+        real_address.chip.cpu.data.eip = 0u;
+        real_address.chip.cpu.data.flagHalt = LIB_FALSE;
+        failed |= !segment_run_halt(&real_address, code, sizeof(code),
+            SEG_CODE_ADDRESS, &after) || after.data.ds.selector != 0x10u ||
+            after.data.ds.base != 0x00000100u ||
+            after.data.ds.limit != 0x0000ffffu || after.data.ds.seg.executable ||
+            !after.data.ds.seg.data.writable;
     }
     return failed;
 }

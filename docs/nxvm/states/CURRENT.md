@@ -2,6 +2,48 @@
 
 ## Current Work
 
+## M5 T576 S2 — Closed: MyPC110 protected unreal-data reload
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | S2 follows committed T576 S1; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner directed the PC110 T through closure, accepts labelled L2 external emulator/research behavior where no L3 manual contract exists, and gives standing approval for ordinary implementation and verification. |
+| Objective | Admit the smallest strict-by-default CPU L2 policy needed by the real TFT firmware's next protected-mode data reload at `F000:605F`, then determine its next finite boundary through the ordinary executor. |
+| Non-goals | No code/stack/far-transfer relaxation, hardware-specific selector base, firmware-address dispatch, BIOS/interrupt interception, PC/AT fallback, second executor, raw-ROM commit, guest boot claim or PC110 release artifact. |
+| Reference Baseline | T575 protected-cache evidence; T576 S1 C-shadow evidence; [unreal-data proposal](../proposals/m5-pc110-protected-unreal-data.md); external Open-Source-PC110, PC110-EMU and PC110-QEMU as L2 research only. |
+| Files And ABI Surface | X86 Core CPU policy/config/tests, MyPC110 configuration/diagnostic/tests and current/evidence/proposal records only. Lib, Emulator, X86-NXVM and unrelated Apps are excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; strict default and one CPU descriptor owner; external protected bytes stay BYOB; no third-party source copying. |
+| Verification | Dual-width Core policy tests and real-TFT diagnostic must advance beyond `F000:605F`, plus affected MyPC110 and structural gates. |
+| Expected Markers | Strict rejects zero descriptors; the opt-in policy first retains valid matching visible cache then uses real-address data attributes only for an all-zero descriptor; no PC110-named CPU branch. |
+| Asset Needs | Read-only admitted TFT firmware/font and manifest. |
+| Reporting Requirements | Record exact pre/post data segment state, source grade, policy boundary, dual-width facts and all unqualified endpoints. Do not call advancement a boot or product qualification. |
+| Temporary Output | `build/t576-s2/` only for bounded diagnostics; remove it after compact evidence is recorded. |
+| Stop Conditions | Any need to relax CS/SS/far transfer, introduce hardware selector special cases, fabricate device behavior, or leave the stated CPU/App boundary. |
+| Exit Criteria | The data-reload boundary is verified or rejected on both widths, the strict default is preserved, all scoped gates pass, and the next receiver is explicit. |
+| Similar-Issue Sweep | All data segment reload paths, invalid descriptor handling, existing policy consumers, Core configuration validity, snapshot/diagnostic observations and MyPC110 policy selection. |
+
+### S2 Brief
+
+Implement only the declared data-reload policy.  Use existing segment-loader
+and real-address attribute routines; do not duplicate descriptor preparation.
+Update the real-firmware diagnostic only to move its finite checkpoint past the
+now-resolved instruction and report the next actual boundary.
+
+### S2 Delivery
+
+X86 Core now has one explicit L2 policy that preserves the T575 visible-cache
+receiver and otherwise uses the existing real-address initializer for an
+all-zero protected data descriptor.  MyPC110 is the sole consumer.  Both
+widths execute the real BIOS through `F000:605F` and stop at `F000:6060` with
+`DS=0008`, base `00000080`; strict and cache-only behavior remain covered.
+
+A bounded no-watchpoint investigation proceeds past that data reload but later
+re-enters the existing uninitialized `INT 10h` vector path without executing
+C000 or programming EC/ED.  The next legitimate work would require a wider
+code/stack/far-control L2 model, which is expressly outside S2.  It is
+transferred rather than hidden behind a broad compatibility mode.  The exact
+proof and limits are in [the S2 evidence](../etc/evidence/t576-s2-pc110-protected-unreal-data.md).
+
 ## M5 T576 S1 — Closed: MyPC110 C-segment video-ROM shadow
 
 | Field | Required record |
