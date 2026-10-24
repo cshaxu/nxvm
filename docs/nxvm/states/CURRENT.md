@@ -2,6 +2,47 @@
 
 ## Current Work
 
+## Closed Task — M5 T577
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T577 S1 after closed T576; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner requested continued PC110 implementation through closure and grants standing approval for ordinary scoped diagnostic, implementation, verification, commit and push work. |
+| Objective | Capture the final real-firmware retirement window before the first shutdown/reset after the admitted data reload, then identify its smallest valid owner or source-gated disposition. |
+| Non-goals | No CPU relaxation, firmware-address special case, BIOS/IVT/BDA injection, borrowed PC/AT ROM, broad compatibility mode, second executor, raw asset commit or boot claim. |
+| Reference Baseline | Closed T576 S4 `732486b34`: corrected C000-shadow/E000-bank map, dual-width source gate and admitted external TFT BYOB image. |
+| Candidate Proposal | [Protected-reset source gate](../proposals/m5-pc110-protected-reset-source-gate.md). |
+| Files And ABI Surface | Initially MyPC110 diagnostic/tests/evidence/current/proposal only. Core is eligible only after the trace isolates one complete generic CPU contract; Shared and raw assets are excluded. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM source policy. One executor and one diagnostic route remain mandatory. |
+| Verification | Bounded dual-width reset trace, affected MyPC110 tests, full repository-only x64/x86 unit suites and documentation/whitespace gates. |
+| Expected Markers | One ordered final retirement window, the actual shutdown/reset fact and an owner disposition; no fabricated advancement. |
+| Asset Needs | Read-only admitted TFT BIOS/font assets only. |
+| Reporting Requirements | Record exact two-width facts, source grade, actual changed surface, owner disposition and all unqualified endpoints. |
+| Stop Conditions | Ambiguous trace, needed broad compatibility behavior, missing source for an App device, shared scope beyond a proven generic contract or any artificial guest continuation. |
+| Exit Criteria | Met: the first reset is classified on both widths, scoped verification passes and no product/boot claim is made. |
+| Original Owner Request | Continue PC110 implementation to closure using the external PC110 projects as L2 research and external usable firmware. |
+| Similar-Issue Sweep | Protected far call/return, IRET, segment reload, stack transition, exception delivery, reset delivery, map routes and existing fault observation without adding a parallel execution path. |
+
+### S1 Brief
+
+The already-corrected map is not the immediate execution blocker. Extend only
+the existing MyPC110 diagnostic so it preserves the last bounded retirement
+window before the ordinary shutdown/reset. Do not select an implementation
+owner until that window proves one.
+
+### S1 Delivery
+
+The bounded diagnostic disproved the assumed CPU shutdown: the actual reset is
+the firmware's ordinary `FEh` command to the existing 8042.  Its trace exposed
+two App-owned omissions, now repaired without changing Core or any shared
+component: reset begins with the 8042 A20 output asserted, and the exact
+64-KiB firmware memory-limit probe above fixed RAM is an L2 open-bus route.
+The retained two-width proof and its limits are in
+[`T577 S1 evidence`](../etc/evidence/t577-s1-pc110-protected-reset-source-gate.md).
+
+T577 is closed at this corrected reset boundary.  It does not qualify PC110
+POST, display, Setup, DOS boot, or a published PC110 product.
+
 ## Closed Task — M5 T576
 
 | Task | Status |

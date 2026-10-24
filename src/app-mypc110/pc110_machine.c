@@ -26,7 +26,12 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
     .shared_pit_personality = X86_PIT_PERSONALITY_8254,
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
-    .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042_NEUTRAL,
+    .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
+    /* PC110's 8042 output owns A20G and reset.  The firmware enters protected
+     * mode before its first extended-memory probe, so reset starts with A20G
+     * asserted while reset remains released. */
+    .kbc_reset_output_port_configured = 1u,
+    .kbc_reset_output_port = 0x03u,
     .kbc_reset_system_flag_configured = 1u,
     .kbc_reset_system_flag = 1u,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
@@ -34,6 +39,10 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
 };
 
 static const x86_nxvm_board_plan_topology mypc110_base_topology = {
+    /* The admitted BIOS probes the first 64 KiB beyond installed RAM to find
+     * the limit.  Model only that observed probe window as L2 open bus. */
+    .absent_memory_count = 1u,
+    .absent_memory = {{0x01400000u, 0x00010000u, 0xffu}},
     .rtc_cmos_present = LIB_TRUE,
     .rtc_cmos = {
         .index_port = 0x0070u,

@@ -29,7 +29,9 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
     .shared_pit_personality = X86_PIT_PERSONALITY_8254,
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
-    .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042_NEUTRAL,
+    .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
+    .kbc_reset_output_port_configured = 1u,
+    .kbc_reset_output_port = 0x03u,
     .kbc_reset_system_flag_configured = 1u,
     .kbc_reset_system_flag = 1u,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
@@ -40,6 +42,10 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
  * 70h/71h pair and routes its interrupt through IRQ8.  This is board decode,
  * not a PC/AT facade: the TFT BIOS itself owns all CMOS setup values. */
 static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
+    /* The admitted BIOS probes the first 64 KiB beyond installed RAM to find
+     * the limit.  Model only that observed probe window as L2 open bus. */
+    .absent_memory_count = 1u,
+    .absent_memory = {{0x01400000u, 0x00010000u, 0xffu}},
     /* PC110 firmware polls the conventional system-control timer status at
      * 61h.  This is only the port/timer/speaker wiring: zero memory bytes
      * deliberately excludes the PC/AT parity-memory behavior. */

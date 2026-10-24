@@ -1,5 +1,6 @@
 #include "app-mypc110/pc110_machine_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
+#include "x86-nxvm/board-base/machine_board_interface.h"
 
 int main(void)
 {
@@ -7,8 +8,11 @@ int main(void)
     static lib_u8 font[MYPC110_FONT_ROM_BYTES];
     static const lib_u8 make_break[] = {0x1cu, 0xf0u, 0x1cu};
     static const lib_u8 shadow_patch = 0x44u;
+    static const lib_u8 high_memory_pattern[] = {0x55u, 0xaau, 0x55u, 0xaau};
     mypc110_base_composition composition = {0};
     lib_u32 value = 0u;
+    lib_u8 byte = 0u;
+    lib_bool a20_enabled = LIB_FALSE;
     lib_i32 failed = 0;
 
     bios[2u * MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x11u;
@@ -19,12 +23,24 @@ int main(void)
     failed |= !failed && (composition.core == LIB_NULL || composition.board == LIB_NULL ||
         composition.configuration_chip == LIB_NULL);
     failed |= !failed && x86_core_machine_reset(composition.core) != LIB_STATUS_OK;
+    failed |= !failed && (x86_nxvm_board_observe_a20(composition.board,
+        &a20_enabled) != LIB_STATUS_OK || !a20_enabled);
+    failed |= !failed && (x86_core_machine_memory_write(composition.core,
+        0x013f0000u, high_memory_pattern, sizeof(high_memory_pattern)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(composition.core, 0x013f0000u, &value,
+            sizeof(value)) != LIB_STATUS_OK || value != 0xaa55aa55u);
     failed |= !failed && (x86_core_machine_memory_read(composition.core,
-        0x000c0000u, &value, 1u) != LIB_STATUS_OK || value != 0x11u ||
+        0x01400000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xffu ||
+        x86_core_machine_memory_write(composition.core, 0x01400000u,
+            &shadow_patch, 1u) != LIB_STATUS_OK || x86_core_machine_memory_read(
+                composition.core, 0x01400000u, &byte, 1u) != LIB_STATUS_OK ||
+        byte != 0xffu);
+    failed |= !failed && (x86_core_machine_memory_read(composition.core,
+        0x000c0000u, &byte, 1u) != LIB_STATUS_OK || byte != 0x11u ||
         x86_core_machine_memory_write(composition.core, 0x000c0000u,
             &shadow_patch, 1u) != LIB_STATUS_OK || x86_core_machine_memory_read(
-                composition.core, 0x000c0000u, &value, 1u) != LIB_STATUS_OK ||
-        value != 0x11u);
+                composition.core, 0x000c0000u, &byte, 1u) != LIB_STATUS_OK ||
+        byte != 0x11u);
     failed |= !failed && (x86_core_machine_bus_read(composition.core, 0x20u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x40u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
