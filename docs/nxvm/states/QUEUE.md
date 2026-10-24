@@ -74,7 +74,7 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 2. [PC110: F65535 display and font ROM](../history/M5-T568-pc110-display-proposal.md) is closed as M5 T568. It delivers the bounded F65535/font receiver; graphics/panel, real firmware boot and product publication remain with their existing ordered receivers.
 3. [PC110: power management and APM](../history/M5-T569-pc110-power-apm-proposal.md) is closed as M5 T569. Its source gate rejects a fabricated power device; real-firmware boot owns the missing guest-visible trace.
 4. [PC110: PCMCIA, flash and boot storage](../history/M5-T570-pc110-storage-proposal.md) is closed as M5 T570. Its source gate preserves immutable firmware read mapping and transfers unproven controller behavior to real-firmware boot rather than fabricating a PC/AT route.
-5. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
+5. [PC110: audio and remaining peripherals](../history/M5-T571-pc110-audio-aux-proposal.md) is closed as M5 T571. Its source gate preserves real ES488/OPL2 observations and transfers unproven playback/Super-I/O/dock protocols to real-firmware execution.
 6. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
 7. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
 8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)

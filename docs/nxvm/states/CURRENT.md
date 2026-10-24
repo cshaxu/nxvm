@@ -2,6 +2,40 @@
 
 ## Current Work
 
+## M5 T571 S1 — Closed: PC110 audio and auxiliary admission
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed T570; one session performs coordinator and executor roles. |
+| Admission And Approval | The ordered PC110 programme continues. This source gate separates independently implementable audio/auxiliary devices from physical inventory and external placeholders. |
+| Objective | Admit only PC110 audio and remaining peripheral behavior with a complete CPU-visible decode, configuration, reset, IRQ/DMA, ownership and failure contract. |
+| Non-goals | No speaker-only completion claim, host-audibility test, synthetic interrupt, host-side modem/serial/dock behavior, raw firmware/media import, product EXE or guest-boot claim. |
+| Reference Baseline | PC110 audio/auxiliary proposal; T570 source-gate outcome; current MyPC110 composition; Open-Source-PC110, PC110-EMU and PC110-QEMU read-only research; existing X86-NXVM audio/peripheral contracts. |
+| Candidate Proposal | [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md). |
+| Files And ABI Surface | S1 changes documentation/evidence and task/Queue disposition only. A later receiver may name App-local PC110 routes and an existing independent owner; no interface is presumed. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one device/lifecycle/media owner and no App-to-peer dependency. |
+| Verification | Inventory actual PC110 devices and source-qualified CPU-facing contracts; classify direct, model-only, blocked and conflicting paths against existing mechanisms. |
+| Stop Conditions | An endpoint lacks lawful source or reset/configuration/IRQ/DMA semantics, conflicts with existing ownership, requires a Shared contract or depends on host output. Transfer it without a placeholder. |
+| Exit Criteria | Every selected audio/auxiliary row is admitted with a bounded owner/proof or transferred to a named receiver; no physical connection is misrepresented as a device protocol. |
+| Original Owner Request | Continue implementing PC110 in ordered receivers. |
+| Similar-Issue Sweep | Compare every candidate against current PC speaker, ESS/OPL, serial/parallel/IR/modem/dock and board routes for accidental PC/AT assumptions or duplicated ownership. |
+
+### S1 Delivery And T571 Closure
+
+The [audio/auxiliary source gate](../etc/evidence/t571-s1-audio-aux-source-gate.md)
+preserves the real ES488 SB2 reset/version and OPL2-status observations while
+rejecting an incomplete PCM/DMA/IRQ/output model and all physical-only
+Super-I/O/dock endpoints. Neither PC110-EMU's explicit placeholders nor
+PC110-QEMU's PC-speaker route is a valid substitute. T571 therefore leaves
+public audio and the App composition unchanged, and transfers configuration
+and observed transactions to real-firmware execution.
+
+## M5 T571 — Closed: PC110 audio and auxiliary disposition
+
+T571 closes its source gate without misrepresenting discovery-level wiring as
+a runnable audio or peripheral protocol. The PC110 program proceeds to real
+firmware POST, setup and guest-boot evidence.
+
 ## M5 T570 S1 — Closed: PC110 storage and flash admission
 
 | Field | Required record |
