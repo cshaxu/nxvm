@@ -62,6 +62,19 @@ diagnostic only until it reaches the next distinct recurring wait or concrete
 unowned device boundary.  Reuse the sole executor and existing App routes;
 do not guess a device model from an address alone.
 
+### S3 Closure
+
+The post-LPT path performs ordinary PC110 RTC/CMOS accesses through `70h/71h`
+and the platform's `4Fh` index mirror, then returns to the already-admitted
+port-61 wait at `F000:EA86--EA90`.  The existing board RTC route owns the
+conventional pair; the observed `4Fh` write is not itself a wait or a proven
+missing execution dependency.  A new bounded two-width diagnostic proves that
+the real image reaches the LPT checkpoint and later re-enters the same
+port-61 loop.  No new finite unowned boundary is therefore established, so
+this task stops rather than guessing a chipset model.  The source grade,
+trace result and deferred PC110 work are retained in
+[`T579 S3 evidence`](../etc/evidence/t579-s3-lpt-cycle-source-gate.md).
+
 ## Closed Task — M5 T578
 
 | Field | Required record |

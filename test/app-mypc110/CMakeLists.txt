@@ -106,4 +106,8 @@ if(TARGET mypc110-real-firmware)
         COMMAND mypc110-real-firmware-post-diagnostic --port61-follow)
     set_tests_properties(mypc110.diagnostic/real-firmware-port61-follow PROPERTIES
         LABELS "diagnostic;mypc110" TIMEOUT 60)
+    add_test(NAME mypc110.diagnostic/real-firmware-lpt-cycle
+        COMMAND mypc110-real-firmware-post-diagnostic --lpt-cycle)
+    set_tests_properties(mypc110.diagnostic/real-firmware-lpt-cycle PROPERTIES
+        LABELS "diagnostic;mypc110" TIMEOUT 60)
 endif()

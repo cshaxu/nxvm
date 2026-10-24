@@ -52,3 +52,14 @@ admitted probe.  This is an independently implemented L2 behavior based on
 PC110-EMU research; it is neither a physical-printer claim nor a shared board
 model.  Both widths retire past the probe to the next finite BIOS work at
 `F000:55B2`.
+
+## S3 result
+
+A bounded follow-up proves that the real post-LPT path enters conventional
+RTC/CMOS setup (`70h/71h`, with the PC110's `4Fh` index mirror) and returns to
+the original port-61 wait.  Existing Board routes already own the conventional
+RTC pair.  The observed mirror write is neither a wait nor evidence that an
+unimplemented chipset model blocks progress.  This is therefore a source gate,
+not authorization to guess a broad VL82C420 model.  Later PC110 work must
+admit a specific device owner and proof target before expanding beyond this
+checkpoint.
