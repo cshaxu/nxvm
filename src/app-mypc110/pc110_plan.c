@@ -46,15 +46,20 @@ static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
      * the limit.  Model only that observed probe window as L2 open bus. */
     .absent_memory_count = 1u,
     .absent_memory = {{0x01400000u, 0x00010000u, 0xffu}},
-    /* PC110 firmware polls the conventional system-control timer status at
-     * 61h.  This is only the port/timer/speaker wiring: zero memory bytes
-     * deliberately excludes the PC/AT parity-memory behavior. */
+    /* PC110 firmware polls port 61h bit 4 immediately after its 8042 reset,
+     * before it programs PIT channel 1.  L2 research (PC110-EMU) likewise
+     * supplies a changing read bit for this early firmware wait.  Use the
+     * existing Core-tick source rather than inventing a second clock.  Three
+     * ticks avoids aliasing the observed four-instruction polling loop; this
+     * is execution compatibility, not a physical refresh-frequency claim.
+     * Zero memory bytes deliberately excludes PC/AT parity-memory behavior. */
     .planar_parity_present = LIB_TRUE,
     .planar_parity = {
         .port = X86_NXVM_BOARD_PC_AT_PORT_B,
         .memory_bytes = 0u,
         .refresh_status_source =
-            X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1},
+            X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
+        .refresh_status_toggle_ticks = 3u},
     .rtc_cmos_present = LIB_TRUE,
     .rtc_cmos = {
         .index_port = 0x0070u,
@@ -71,10 +76,9 @@ static lib_status mypc110_machine_capture_display(void *context,
     return x86_f65535_capture_snapshot((x86_f65535 *)context, out_snapshot);
 }
 
-/* The PC110 firmware deliberately enters CPU shutdown as its warm-reset
- * handoff.  Core already models a board-accepted shutdown as a processor-only
- * reset, preserving RAM and board state.  This binding selects that existing
- * electrical route without adding a BIOS or device special case. */
+/* Preserve the existing board-owned processor-reset route if architectural
+ * shutdown is later observed.  The admitted BIOS's first reset is the normal
+ * 8042 FEh command; this binding makes no contrary firmware claim. */
 static void mypc110_machine_profile_reset(void *context,
     x86_nxvm_board_reset_phase phase)
 {

@@ -2,6 +2,49 @@
 
 ## Current Work
 
+## Active Task — M5 T579 S1
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T579 S1 after closed T578; one session performs coordinator and executor roles. |
+| Admission And Approval | Owner directed PC110 implementation to continue and grants standing approval for ordinary scoped diagnostic, implementation, verification, commit and push work. |
+| Objective | Select and verify the smallest clearly-labelled L2 PC110 port-61 refresh-status source that lets the admitted real TFT firmware leave its post-reset wait loop. |
+| Non-goals | No synthetic BIOS/IVT/BDA path, firmware-address special case, borrowed PC/AT ROM, second clock, new Shared/Core API, raw asset commit, POST/display/Setup/DOS boot or release claim. |
+| Reference Baseline | Closed T578 S1 `5f9813e90`: real 8042 reset then port-61 bit-4 wait loop at F000:EA86--EA90. |
+| Candidate Proposal | [PC110 port-61 L2 progress](../proposals/m5-pc110-port61-l2-progress.md). |
+| Files And ABI Surface | MyPC110 plan, its app-owned tests/diagnostic, evidence/current/proposal only. Shared/Core and raw assets are excluded. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM source policy. One executor and Core's sole tick axis remain mandatory. |
+| Verification | Dual-width App unit tests plus a bounded real-firmware post-reset progression diagnostic that proves retirement leaves the EA86--EA90 wait loop; documentation/whitespace gates. |
+| Expected Markers | One L2 source/period record, ordinary port-61 transitions on Core's tick axis and a post-reset retirement beyond the wait loop. |
+| Asset Needs | Read-only admitted TFT BIOS/font inputs only. |
+| Stop Conditions | Need for a second clock, synthetic firmware behavior, an unproven Shared/Core repair, failure to leave the loop, or a claim beyond the verified checkpoint. |
+| Exit Criteria | The app-local L2 source is explicit, its two-width tests and real-image progression prove the intended boundary, and all later boot/display/product claims remain deferred. |
+| Similar-Issue Sweep | Port 61 read/write semantics, PIT wiring, A20/reset state, parity-memory exclusion, guest wait loops and board timing-source selection. |
+
+### S1 Brief
+
+Replace only MyPC110's unprogrammed PIT1 status selection with the existing
+elapsed-tick status source.  Choose and document its finite L2 period from
+actual real-image execution; do not claim physical timing accuracy.
+
+### S1 Closure
+
+MyPC110 now selects the existing three-tick elapsed-status source.  The real
+TFT image enters and leaves the actual `F000:EA86--EA90` loop on both widths,
+reaching `F000:DD05` with no delivered exception.  This is an App-local L2
+gate only; its exact result and source limits are retained in
+[`T579 S1 evidence`](../etc/evidence/t579-s1-pc110-port61-l2-progress.md).
+The six App unit tests pass on both widths; the bounded external-firmware
+diagnostic also passes on both widths.  No PC110 executable, POST, display,
+Setup or guest-boot qualification follows from this checkpoint.
+
+### S2 Brief
+
+Starting from the proved post-reset progress point, extend only the existing
+real-firmware diagnostic far enough to identify the next finite execution
+boundary and its owner.  Do not preselect a video, storage, power or firmware
+repair, and do not change product behavior until evidence isolates one.
+
 ## Closed Task — M5 T578
 
 | Field | Required record |

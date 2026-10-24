@@ -87,4 +87,8 @@ if(TARGET mypc110-real-firmware)
         COMMAND mypc110-real-firmware-post-diagnostic)
     set_tests_properties(mypc110.diagnostic/real-firmware-post PROPERTIES
         LABELS "diagnostic;mypc110" TIMEOUT 60)
+    add_test(NAME mypc110.diagnostic/real-firmware-port61-progress
+        COMMAND mypc110-real-firmware-post-diagnostic --port61-progress)
+    set_tests_properties(mypc110.diagnostic/real-firmware-port61-progress PROPERTIES
+        LABELS "diagnostic;mypc110" TIMEOUT 60)
 endif()

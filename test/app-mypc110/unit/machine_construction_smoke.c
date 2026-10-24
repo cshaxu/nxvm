@@ -29,6 +29,11 @@ int main(void)
 
     if (mypc110_machine_construction_create(&config, &assets, &construction) != LIB_STATUS_OK)
         failed = 1;
+    else if (construction.topology.planar_parity.refresh_status_source !=
+            X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE ||
+        construction.topology.planar_parity.refresh_status_toggle_ticks != 3u ||
+        construction.topology.planar_parity.memory_bytes != 0u)
+        failed = 2;
     else {
         lib_status status = x86_nxvm_machine_create(&config, &construction, &machine);
         if (status != LIB_STATUS_OK) failed = 10 + (int)status;

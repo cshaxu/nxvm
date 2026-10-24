@@ -38,6 +38,8 @@ typedef struct mypc110_post_diagnostic_trace {
     x86_core_cpu_debug_cpu_snapshot after_pop_ds;
     lib_bool after_pop_ds_valid;
     lib_bool post_reset_active;
+    lib_bool entered_port61_wait;
+    lib_bool left_port61_wait;
     lib_bool left_rom;
     mypc110_post_diagnostic_port_write
         configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
@@ -52,10 +54,10 @@ static void mypc110_post_diagnostic_observe_trace(void *context,
 
     if (trace == LIB_NULL || event == LIB_NULL ||
         (event->type != X86_CORE_MACHINE_TRACE_PORT_READ &&
-         event->type != X86_CORE_MACHINE_TRACE_PORT_WRITE) ||
-        event->detail != (lib_u32)LIB_STATUS_OK) {
+         event->type != X86_CORE_MACHINE_TRACE_PORT_WRITE)) {
         return;
     }
+    if (event->detail != (lib_u32)LIB_STATUS_OK) return;
     port = (lib_u16)event->address;
     if (port != 0x0022u && port != 0x0024u && port != 0x0025u &&
         port != 0x0074u && port != 0x0076u &&
@@ -102,6 +104,12 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
         trace->before_pop_ds_valid = LIB_TRUE;
     }
     if (!trace->post_reset_active) return;
+    if (observation->point.linear_pc >= 0x000fea86u &&
+        observation->point.linear_pc <= 0x000fea90u) {
+        trace->entered_port61_wait = LIB_TRUE;
+    } else if (trace->entered_port61_wait) {
+        trace->left_port61_wait = LIB_TRUE;
+    }
     if (!trace->left_rom && observation->point.cs != 0xf000u) {
         trace->left_rom = LIB_TRUE;
         trace->predecessor = trace->previous;
@@ -136,10 +144,12 @@ int main(int argc, char **argv)
     lib_bool advanced = LIB_FALSE;
     lib_bool reset_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--after-reset") == 0;
+    lib_bool port61_progress_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--port61-progress") == 0;
     lib_u32 wait_count = 0u;
     lib_status status;
 
-    if (argc != 1 && !reset_checkpoint) return 2;
+    if (argc != 1 && !reset_checkpoint && !port61_progress_checkpoint) return 2;
 
     status = mypc110_machine_construction_create(&config, &vm_app_firmware, &construction);
     if (status == LIB_STATUS_OK)
@@ -157,7 +167,7 @@ int main(int argc, char **argv)
                 .callback = mypc110_post_diagnostic_observe_trace,
                 .context = &post_reset_trace});
     }
-    if (status == LIB_STATUS_OK && !reset_checkpoint) {
+    if (status == LIB_STATUS_OK && !reset_checkpoint && !port61_progress_checkpoint) {
         status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
             0x000f6060u);
@@ -168,7 +178,8 @@ int main(int argc, char **argv)
     while (status == LIB_STATUS_OK && executed < MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS) {
         status = x86_core_machine_run(machine->x86_core_machine,
             (x86_core_machine_run_budget) {.instructions =
-                processor_reset_count != 0u && !post_reset_exception.valid ? 1u :
+                processor_reset_count != 0u && !post_reset_exception.valid &&
+                    !port61_progress_checkpoint ? 1u :
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
@@ -180,6 +191,7 @@ int main(int argc, char **argv)
             post_reset_observation = observation;
         }
         if (status != LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) break;
+        if (port61_progress_checkpoint && post_reset_trace.left_port61_wait) break;
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
             post_reset_trace.post_reset_active = LIB_TRUE;
@@ -224,7 +236,7 @@ int main(int argc, char **argv)
     if (machine != LIB_NULL) x86_nxvm_machine_control_end_run(&machine->control);
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
-    lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u\n",
+    lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u port61-wait=%u/%u\n",
         (int)status, (lib_u32)result.reason, result.linear_pc, result.detail,
         (unsigned long long)executed, processor_reset_count, wait_count, advanced,
         warm_signature[1u], warm_signature[0u],
@@ -239,7 +251,8 @@ int main(int argc, char **argv)
         post_reset_trace.pre_reset_c000_entries,
         post_reset_trace.post_reset_c000_entries,
         post_reset_trace.pre_reset_e000_entries,
-        post_reset_trace.post_reset_e000_entries);
+        post_reset_trace.post_reset_e000_entries,
+        post_reset_trace.entered_port61_wait, post_reset_trace.left_port61_wait);
     if (reset_exception.valid) {
         lib_c_printf("PC110:POST:reset-exception=%08x code=%08x point=%04x:%08x bytes=%02x %02x %02x %02x stack=%04x:%08x flags=%08x\n",
             reset_exception.exception_mask, reset_exception.exception_code,
@@ -342,6 +355,10 @@ int main(int argc, char **argv)
         return status == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
             processor_reset_count == 1u && c000_header[0u] == 0x55u &&
             c000_header[1u] == 0xaau && !observation.diagnostic.first_fault.valid ? 0 : 1;
+    }
+    if (port61_progress_checkpoint) {
+        return status == LIB_STATUS_OK && processor_reset_count == 1u &&
+            post_reset_trace.entered_port61_wait && post_reset_trace.left_port61_wait ? 0 : 1;
     }
     return status == LIB_STATUS_OK &&
         result.reason == X86_CORE_MACHINE_STOP_PAUSED &&
