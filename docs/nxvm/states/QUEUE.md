@@ -78,7 +78,7 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 6. [PC110: real firmware POST, setup and guest boot](../history/M5-T572-pc110-firmware-boot-proposal.md) is closed as M5 T572. It establishes the normal real-firmware execution checkpoint but makes no POST, Setup, DOS-boot or published-product claim.
 7. [PC110: C-segment ROM and shadow contract](../proposals/m5-pc110-c-segment-shadow.md) is closed as T574 by its source/proof stop condition.  It retained only the verified F-segment shadow and rejected an unproven C-segment alias.
 8. [PC110: protected bootstrap and real mapping admission](../proposals/m5-pc110-protected-bootstrap.md) is closed as T575: the real TFT path now crosses its proven, strict-by-default protected data-cache boundary without fabricated descriptors. Its next C-segment mapping boundary remains separately unproved.
-9. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) remains blocked on active T576 S4's source-proven video-map correction and its succeeding video-initialization trace. It needs a lawful PC110 display-firmware or board-initialization contract; no synthetic IVT/BIOS fallback is admitted.
+9. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) remains blocked after T576's corrected, source-gated video-initialization trace. It needs a lawful PC110 display-firmware or board-initialization contract; no synthetic IVT/BIOS fallback is admitted.
 10. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)

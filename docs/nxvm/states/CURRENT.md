@@ -2,7 +2,13 @@
 
 ## Current Work
 
-## M5 T576 S4 — Active: MyPC110 video-bank map correction
+## Closed Task — M5 T576
+
+| Task | Status |
+| --- | --- |
+| T576 | Closed at the corrected, source-qualified PC110 video-initialization gate. No synthetic BIOS/IVT path or PC110 product claim was made. |
+
+## M5 T576 S4 — Closed: MyPC110 video-bank map correction
 
 | Field | Required record |
 | --- | --- |
