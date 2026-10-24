@@ -76,11 +76,12 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 4. [PC110: PCMCIA, flash and boot storage](../history/M5-T570-pc110-storage-proposal.md) is closed as M5 T570. Its source gate preserves immutable firmware read mapping and transfers unproven controller behavior to real-firmware boot rather than fabricating a PC/AT route.
 5. [PC110: audio and remaining peripherals](../history/M5-T571-pc110-audio-aux-proposal.md) is closed as M5 T571. Its source gate preserves real ES488/OPL2 observations and transfers unproven playback/Super-I/O/dock protocols to real-firmware execution.
 6. [PC110: real firmware POST, setup and guest boot](../history/M5-T572-pc110-firmware-boot-proposal.md) is closed as M5 T572. It establishes the normal real-firmware execution checkpoint but makes no POST, Setup, DOS-boot or published-product claim.
-7. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) must start by tracing the first remaining real CPU-visible service, interrupt or device boundary from T572's bounded checkpoint; it must not install a synthetic POST or boot path.
-8. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-9. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-10. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-11. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+7. [PC110: C-segment ROM and shadow contract](../proposals/m5-pc110-c-segment-shadow.md) follows closed T573. It must admit a complete source-backed VL82C420 POST mapping contract; it must not install a synthetic POST or boot path.
+8. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) remains blocked on the C-segment receiver and its existing source/asset gates.
+9. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+10. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+11. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+12. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

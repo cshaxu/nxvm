@@ -2,6 +2,56 @@
 
 ## Current Work
 
+## M5 T573 S1 — Closed: MyPC110 real-firmware boundary trace
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New task after closed T572; one session performs coordinator and executor roles. |
+| Admission And Approval | The owner's standing instruction, “老规矩实现PC110”, continues the next queued MyPC110 qualification receiver. T572's accepted transfer requires this first finite trace before any feature or product claim. |
+| Objective | Identify, reproduce and classify the first remaining CPU-visible service, interrupt or device boundary reached by the admitted real TFT PC110 firmware after T572's bounded checkpoint. |
+| Non-goals | No synthetic POST/Setup/DOS service, BIOS interception, PC/AT facade, guessed controller protocol, PC110 executable release, raw asset commit, external runtime loader or broad product-qualification claim. |
+| Reference Baseline | Closed T572 implementation/evidence; queued [MyPC110 qualification proposal](../proposals/m5-pc110-qualification.md); App-local PC110 composition; X86 Core/X86-NXVM existing execution and trace contracts; approved external TFT BIOS/font inputs. |
+| Candidate Proposal | [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md). |
+| Files And ABI Surface | Initially App-local diagnostic/evidence and matching tests only. Existing X86 Core/X86-NXVM owner code is eligible only when the trace proves a generic defect or a complete, source-backed device contract; Lib, Emulator and unrelated Apps remain excluded. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one executor/frame/firmware owner; external protected inputs remain BYOB; a bounded trace is diagnostic evidence, not guest qualification. |
+| Verification | Reproduce the real firmware path on both widths through normal Machine execution; retain a finite trace with instruction/address, exception/interrupt or port/memory operation evidence; distinguish an existing generic defect from an absent source-backed PC110 endpoint; run affected diagnostic/unit and structural gates. |
+| Expected Markers | One finite, reproducible failure boundary and one owner disposition: existing-owner fix with evidence, source-backed next receiver, or explicit blocker. No silent continuation or fake success marker. |
+| Asset Needs | Read-only `NXVM_PROFILE_ASSETS_ROOT/profiles-nxvm/ibm-pc110-tft` BIOS/font bytes and manifest only. Raw inputs remain outside Git and generated sources remain ignored. |
+| Reporting Requirements | Record both-width trace facts, the exact boundary, source grade, owner decision, actual changed surface and unexecuted qualification rows. Do not call an instruction budget or diagnostic trace a bootable PC110. |
+| Stop Conditions | Missing lawful source for the boundary, a required unapproved Shared contract change, ambiguous/non-reproducible trace, proposed synthetic guest behavior or an external asset mismatch. Record and transfer rather than fabricate. |
+| Exit Criteria | The first post-T572 boundary is reproduced and classified on both widths, its owner disposition is explicit, and all in-scope diagnostics/evidence/gates pass. Any actual implementation remains a later bounded S. |
+| Original Owner Request | Continue the entire PC110 programme to closure using PC110-EMU, PC110-QEMU and Open-Source-PC110 only as research, with usable firmware drawn from approved external assets. |
+| Similar-Issue Sweep | Compare the traced boundary against existing PC110 composition, KBC/RTC/PIT/port-61/F65535/firmware routes and current generic Core exception/trace mechanisms; reject duplicate traces, second executors, hidden PC/AT routes and firmware-address special cases. |
+
+### S1 Brief
+
+Start with the existing real-firmware diagnostic and normal X86-NXVM executor.
+Extend only an existing diagnostic observation route if needed to make the
+first remaining boundary finite and reproducible; do not add a production
+fallback. Establish the complete observed batch before selecting any hardware
+repair. A diagnosis that merely advances another instruction budget is not a
+valid result.
+
+### S1 Delivery And T573 Closure
+
+The normal real-firmware executor reaches a finite, reproducible boundary on
+both host widths: after a genuine processor-only reset, the BIOS executes
+`INT 10h` at `F000:4CA9` with no executed C000 video BIOS and a zero IVT
+target. The bounded diagnostic, rejected warm-signature and static-bank probes,
+source grades, and explicit owner disposition are in [the S1 evidence](../etc/evidence/t573-s1-pc110-warm-reset-trace.md).
+
+T573 closes its first-boundary source gate without a fabricated guest service,
+PC/AT fallback, firmware-address special case, or PC110 release artifact. The
+new [C-segment ROM/shadow contract candidate](../proposals/m5-pc110-c-segment-shadow.md)
+owns the only admissible next receiver. The later product-qualification
+candidate remains blocked on that contract and its existing source/asset gates.
+
+## Closed Task — M5 T573
+
+| Task | Status |
+| --- | --- |
+| T573 | Closed after S1's finite real-firmware boundary classification and explicit transfer; this is not a POST, Setup, DOS-boot or product-qualification claim. |
+
 ## M5 T572 S1 — Closed: PC110 real-firmware POST admission
 
 | Field | Required record |
