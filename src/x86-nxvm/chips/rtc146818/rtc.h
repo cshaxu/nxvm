@@ -17,6 +17,7 @@ typedef struct x86_rtc_calendar {
 
 struct x86_rtc {
     lib_u8 registers[X86_RTC_REGISTER_COUNT];
+    lib_u8 register_count;
     x86_rtc_calendar calendar;
     x86_rtc_output_provider output;
     void *output_context;

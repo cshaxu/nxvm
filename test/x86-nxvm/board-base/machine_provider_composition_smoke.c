@@ -65,7 +65,7 @@ lib_i32 main(void)
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const x86_rtc_config rtc_config = {1u, 0u, 0u};
+    const x86_rtc_config rtc_config = {1u, 0u, 0u, LIB_FALSE};
     const x86_core_machine_entry_plan_preload preload = { 0x0200u, halt, sizeof(halt) };
     x86_core_machine_entry_plan plan = { 0 };
     x86_core_machine_run_budget budget = { 1u, 0u };

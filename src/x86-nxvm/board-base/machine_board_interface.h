@@ -202,6 +202,8 @@ typedef struct x86_nxvm_board_rtc_cmos_config {
      * configuration checksum.  A session-provided board seed owns its
      * complete NVRAM image, including 2Eh/2Fh, and clears this flag. */
     lib_u8 derive_configuration_checksum;
+    /* False preserves the classic six-bit CMOS address decode. */
+    lib_bool extended_registers;
 } x86_nxvm_board_rtc_cmos_config;
 
 #include "x86-nxvm/board-at/parity_interface.h"

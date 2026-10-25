@@ -15,7 +15,7 @@ static void output(void *context, lib_bool asserted)
 
 static void check_month_inputs(void)
 {
-    const x86_rtc_config config = {1u, 0u, 0u};
+    const x86_rtc_config config = {1u, 0u, 0u, LIB_FALSE};
     lib_u32 binary, month;
     for (binary = 0u; binary < 2u; ++binary) {
         for (month = 0u; month < 256u; ++month) {
@@ -52,7 +52,7 @@ static void check_divider_rates(void)
         {0u, 256u, 128u, 8192u, 4096u, 2048u, 1024u, 512u,
             256u, 128u, 64u, 32u, 16u, 8u, 4u, 2u}
     };
-    const x86_rtc_config config = {65536u, 0u, 0u};
+    const x86_rtc_config config = {65536u, 0u, 0u, LIB_FALSE};
     for (lib_u8 divider = 0u; divider < 8u; ++divider) {
         for (lib_u8 rate = 0u; rate < 16u; ++rate) {
             x86_rtc *rtc = LIB_NULL;
@@ -97,7 +97,7 @@ static void check_divider_rates(void)
 static void check_update_bases(void)
 {
     for (lib_u8 divider = 0u; divider < 3u; ++divider) {
-        const x86_rtc_config config = {1000000u, 0u, 0u};
+        const x86_rtc_config config = {1000000u, 0u, 0u, LIB_FALSE};
         x86_rtc *rtc = LIB_NULL;
         lib_u64 ticks = 0u;
         lib_u32 duration = divider == 2u ? 1984u : 248u;
@@ -123,7 +123,7 @@ static void check_update_bases(void)
 
 static void check_set_phase(void)
 {
-    const x86_rtc_config config = {7u, 1u, 1u};
+    const x86_rtc_config config = {7u, 1u, 1u, LIB_FALSE};
     x86_rtc *rtc = LIB_NULL;
     lib_u64 ticks = 0u;
     lib_test_assert(x86_rtc_create(&config, LIB_NULL, LIB_NULL, &rtc) == LIB_STATUS_OK);
@@ -147,7 +147,7 @@ static void check_set_phase(void)
 
 static void check_phase_continuity(void)
 {
-    const x86_rtc_config config = {65536u, 8u, 65u};
+    const x86_rtc_config config = {65536u, 8u, 65u, LIB_FALSE};
     for (lib_u8 divider = 0u; divider < 3u; ++divider) {
         for (lib_u8 rate = 1u; rate < 16u; ++rate) {
             x86_rtc *whole = LIB_NULL, *split = LIB_NULL;
@@ -199,7 +199,7 @@ static void check_flags_and_enables(void)
         X86_RTC_REG_C_UF | X86_RTC_REG_C_PF,
         X86_RTC_REG_C_UF | X86_RTC_REG_C_AF,
         X86_RTC_REG_C_UF | X86_RTC_REG_C_AF | X86_RTC_REG_C_PF};
-    const x86_rtc_config config = {32768u, 8u, 65u};
+    const x86_rtc_config config = {32768u, 8u, 65u, LIB_FALSE};
     /* AF occurs during an update; AF without UF is not independently reachable. */
     for (lib_u8 scenario = 0u; scenario < 48u; ++scenario) {
         lib_u8 expected = flags[scenario / 8u];
@@ -237,22 +237,27 @@ static void check_flags_and_enables(void)
 
 static void check_ram_reset(void)
 {
-    const x86_rtc_config config = {32768u, 8u, 65u};
-    x86_rtc *rtc = LIB_NULL;
-    lib_test_assert(x86_rtc_create(&config, LIB_NULL, LIB_NULL, &rtc) == LIB_STATUS_OK);
-    for (lib_u8 index = 0x0eu; index < X86_RTC_REGISTER_COUNT; ++index) {
-        x86_rtc_write_register(rtc, index, (lib_u8)(index ^ 0xa5u));
+    for (lib_u8 extended = LIB_FALSE; extended <= LIB_TRUE; ++extended) {
+        const x86_rtc_config config = {32768u, 8u, 65u, extended};
+        const lib_u8 count = extended ? X86_RTC_REGISTER_COUNT :
+            X86_RTC_DEFAULT_REGISTER_COUNT;
+        x86_rtc *rtc = LIB_NULL;
+
+        lib_test_assert(x86_rtc_create(&config, LIB_NULL, LIB_NULL, &rtc) == LIB_STATUS_OK);
+        for (lib_u8 index = 0x0eu; index < count; ++index)
+            x86_rtc_write_register(rtc, index, (lib_u8)(index ^ 0xa5u));
+        x86_rtc_write_register(rtc, count, 0x5au);
+        lib_test_assert(x86_rtc_read_register(rtc, count) == 0u);
+        x86_rtc_reset(rtc);
+        for (lib_u8 index = 0x0eu; index < count; ++index)
+            lib_test_assert(x86_rtc_read_register(rtc, index) == (lib_u8)(index ^ 0xa5u));
+        x86_rtc_destroy(rtc);
     }
-    x86_rtc_reset(rtc);
-    for (lib_u8 index = 0x0eu; index < X86_RTC_REGISTER_COUNT; ++index) {
-        lib_test_assert(x86_rtc_read_register(rtc, index) == (lib_u8)(index ^ 0xa5u));
-    }
-    x86_rtc_destroy(rtc);
 }
 
 static void check_zero_elapsed(void)
 {
-    const x86_rtc_config config = {32768u, 8u, 65u};
+    const x86_rtc_config config = {32768u, 8u, 65u, LIB_FALSE};
     for (lib_u8 scenario = 0u; scenario < 4u; ++scenario) {
         x86_rtc *rtc = LIB_NULL;
         output_probe probe = {LIB_FALSE, 0u};
@@ -278,12 +283,15 @@ static void check_zero_elapsed(void)
 
 lib_i32 main(void)
 {
-    const x86_rtc_config config = {32768u, 8u, 65u};
-    const x86_rtc_config invalid = {0u, 0u, 0u};
+    const x86_rtc_config config = {32768u, 8u, 65u, LIB_FALSE};
+    const x86_rtc_config invalid = {0u, 0u, 0u, LIB_FALSE};
+    const x86_rtc_config invalid_extended = {32768u, 8u, 65u, 2u};
     x86_rtc *rtc = LIB_NULL;
     output_probe probe = {LIB_FALSE, 0u};
     lib_u64 ticks = 123u;
     lib_test_assert(x86_rtc_create(&invalid, LIB_NULL, LIB_NULL, &rtc) ==
+        LIB_STATUS_INVALID_ARGUMENT && rtc == LIB_NULL);
+    lib_test_assert(x86_rtc_create(&invalid_extended, LIB_NULL, LIB_NULL, &rtc) ==
         LIB_STATUS_INVALID_ARGUMENT && rtc == LIB_NULL);
     lib_test_assert(x86_rtc_create(&config, output, &probe, &rtc) == LIB_STATUS_OK);
     lib_test_assert(x86_rtc_ticks_until_irq(rtc, &ticks) == LIB_STATUS_INVALID_STATE);

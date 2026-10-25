@@ -669,6 +669,9 @@ static lib_i32 x86_nxvm_board_rtc_cmos_config_is_valid(
     if (config == LIB_NULL || config->data_port !=
         (lib_u16)(config->index_port + 1u) || config->nmi_mask_bit == 0u ||
         config->ticks_per_second == 0u || config->default_count > X86_NXVM_BOARD_RTC_DEFAULT_CAPACITY ||
+        (config->extended_registers != LIB_FALSE &&
+         config->extended_registers != LIB_TRUE) ||
+        (config->extended_registers && config->nmi_mask_bit != 0x80u) ||
         (config->timing.provenance != X86_NXVM_BOARD_RTC_TIMING_L2_RATIO &&
          config->timing.provenance != X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE) ||
         (config->timing.provenance == X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE &&
@@ -680,7 +683,8 @@ static lib_i32 x86_nxvm_board_rtc_cmos_config_is_valid(
     for (index = 0u; index < config->default_count; ++index) {
         lib_u8 register_index = config->defaults[index].index;
 
-        if (register_index >= X86_RTC_REGISTER_COUNT ||
+        if (register_index >= (config->extended_registers ? X86_RTC_REGISTER_COUNT :
+                X86_RTC_DEFAULT_REGISTER_COUNT) ||
             register_index == X86_RTC_REG_A ||
             register_index == X86_RTC_REG_B ||
             register_index == X86_RTC_REG_C ||
@@ -718,7 +722,8 @@ static lib_status x86_nxvm_board_rtc_cmos_port_write(void *owner,
         (void)x86_core_machine_set_nmi_mask(board->core,
             (value & board->rtc_cmos_config.nmi_mask_bit) != 0u ?
             LIB_TRUE : LIB_FALSE);
-        board->rtc_selected_register = (lib_u8)(value & 0x3fu);
+        board->rtc_selected_register = (lib_u8)(value &
+            (board->rtc_cmos_config.extended_registers ? 0x7fu : 0x3fu));
         return LIB_STATUS_OK;
     }
     if (port == board->rtc_cmos_config.data_port) {
@@ -1091,6 +1096,7 @@ lib_status x86_nxvm_board_configure_rtc_cmos(x86_nxvm_board_state *board,
     rtc_config.ticks_per_second = config->ticks_per_second;
     rtc_config.uip_lead_ticks = config->timing.uip_lead_ticks;
     rtc_config.update_ticks = config->timing.update_ticks;
+    rtc_config.extended_registers = config->extended_registers;
     status = x86_nxvm_board_pic_irq_source_bind(&board->rtc_irq_source,
         board->shared_pic_master, board->shared_pic_slave, config->irq);
     if (status != LIB_STATUS_OK) return status;

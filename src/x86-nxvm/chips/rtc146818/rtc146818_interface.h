@@ -3,8 +3,10 @@
 #define X86_RTC146818_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-/* MC146818-compatible RTC/CMOS registers occupy 00h--3Fh. */
-#define X86_RTC_REGISTER_COUNT 0x40u
+/* Classic MC146818 registers occupy 00h--3Fh; compatible extended NVRAM
+ * occupies 00h--7Fh. Construction selects the implemented address space. */
+#define X86_RTC_DEFAULT_REGISTER_COUNT 0x40u
+#define X86_RTC_REGISTER_COUNT 0x80u
 
 #define X86_RTC_SECOND       0x00u
 #define X86_RTC_SECOND_ALARM 0x01u
@@ -41,6 +43,8 @@ typedef struct x86_rtc_config {
     lib_u32 ticks_per_second;
     lib_u32 uip_lead_ticks;
     lib_u32 update_ticks;
+    /* False selects classic 64 registers; true selects compatible 128. */
+    lib_bool extended_registers;
 } x86_rtc_config;
 
 /* One execution owner, no concurrent calls. Config is copied; the output

@@ -32,7 +32,7 @@ lib_i32 main(void)
     x86_nxvm_board_pic_bus *slave = LIB_NULL;
     x86_rtc *rtc = LIB_NULL;
     x86_nxvm_board_pic_irq_source *irq_source = LIB_NULL;
-    x86_rtc_config config = {50000u, 0u, 0u};
+    x86_rtc_config config = {50000u, 0u, 0u, LIB_FALSE};
     lib_i32 failed = 0;
 
     const x86_core_machine_executor_config executor_config = {

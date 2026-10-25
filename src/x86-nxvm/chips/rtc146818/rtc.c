@@ -201,7 +201,7 @@ static lib_bool rtc_uip_active(const x86_rtc *rtc)
 
 lib_u8 x86_rtc_read_register(x86_rtc *rtc, lib_u8 reg)
 {
-    if (rtc == LIB_NULL || reg >= X86_RTC_REGISTER_COUNT) return 0u;
+    if (rtc == LIB_NULL || reg >= rtc->register_count) return 0u;
     switch (reg) {
     case X86_RTC_SECOND: return rtc_encode(rtc, rtc->calendar.second);
     case X86_RTC_MINUTE: return rtc_encode(rtc, rtc->calendar.minute);
@@ -230,7 +230,7 @@ void x86_rtc_write_register(x86_rtc *rtc, lib_u8 reg,
 {
     lib_bool was_reset;
 
-    if (rtc == LIB_NULL || reg >= X86_RTC_REGISTER_COUNT) return;
+    if (rtc == LIB_NULL || reg >= rtc->register_count) return;
     was_reset = (rtc->registers[X86_RTC_REG_A] & 0x60u) == 0x60u;
     if (reg == X86_RTC_HOUR || reg == X86_RTC_DAY_WEEK ||
         reg == X86_RTC_DAY_MONTH || reg == X86_RTC_MONTH || reg == X86_RTC_YEAR) {
@@ -272,11 +272,15 @@ lib_status x86_rtc_create(const x86_rtc_config *config,
     x86_rtc *rtc;
     if (out_rtc == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_rtc = LIB_NULL;
-    if (config == LIB_NULL || config->ticks_per_second == 0u) {
+    if (config == LIB_NULL || config->ticks_per_second == 0u ||
+        (config->extended_registers != LIB_FALSE &&
+         config->extended_registers != LIB_TRUE)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     rtc = lib_allocate_zero(1u, sizeof(*rtc));
     if (rtc == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    rtc->register_count = config->extended_registers ? X86_RTC_REGISTER_COUNT :
+        X86_RTC_DEFAULT_REGISTER_COUNT;
     rtc->ticks_per_second = config->ticks_per_second;
     rtc->uip_lead_ticks = rtc_phase_ticks(config->uip_lead_ticks,
         rtc->ticks_per_second, 244u);

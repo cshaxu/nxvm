@@ -14,7 +14,7 @@ static void rtc_output(void *context, lib_bool asserted)
 
 static void rtc_initialize(rtc_fixture *fixture)
 {
-    const x86_rtc_config config = {4u, 0u, 0u};
+    const x86_rtc_config config = {4u, 0u, 0u, LIB_FALSE};
     fixture->irq = LIB_FALSE;
     lib_test_assert(x86_rtc_create(&config, rtc_output, fixture,
         &fixture->rtc) == LIB_STATUS_OK);
@@ -56,7 +56,7 @@ static lib_i32 rtc_cmos_test_calendar_and_reset(void)
 static lib_i32 rtc_cmos_test_phase_and_divider(void)
 {
     rtc_fixture fixture;
-    x86_rtc_config config = {32768u, 8u, 65u};
+    x86_rtc_config config = {32768u, 8u, 65u, LIB_FALSE};
     lib_i32 failed = 0;
 
     fixture.irq = LIB_FALSE;
@@ -122,7 +122,7 @@ static lib_i32 rtc_cmos_test_alarm_deadline(void)
 
 static void rtc_cmos_test_daylight(void)
 {
-    const x86_rtc_config config = {32768u, 8u, 65u};
+    const x86_rtc_config config = {32768u, 8u, 65u, LIB_FALSE};
     /* Five independent binary axes, without nested execution loops. */
     for (lib_u8 scenario = 0u; scenario < 32u; ++scenario) {
         lib_bool binary = (scenario & 1u) != 0u;
@@ -171,7 +171,7 @@ static lib_u8 calendar_value(lib_u8 value, lib_bool binary)
 
 static void rtc_cmos_test_alarm_wildcards(void)
 {
-    const x86_rtc_config config = {4u, 1u, 1u};
+    const x86_rtc_config config = {4u, 1u, 1u, LIB_FALSE};
     static const lib_u8 alarm_registers[] = {
         X86_RTC_SECOND_ALARM, X86_RTC_MINUTE_ALARM, X86_RTC_HOUR_ALARM
     };
@@ -229,7 +229,7 @@ static void rtc_cmos_test_month_rollover(void)
 {
     static const lib_u8 days[] = {31u, 28u, 31u, 30u, 31u, 30u,
         31u, 31u, 30u, 31u, 30u, 31u};
-    const x86_rtc_config config = {4u, 1u, 1u};
+    const x86_rtc_config config = {4u, 1u, 1u, LIB_FALSE};
     for (lib_u32 scenario = 0u; scenario < 4800u; ++scenario) {
         lib_u8 month = (lib_u8)(scenario % 12u + 1u);
         lib_u8 year = (lib_u8)(scenario / 12u % 100u);
@@ -269,7 +269,7 @@ static void rtc_cmos_test_month_rollover(void)
 
 static void rtc_cmos_test_hour_rollover(void)
 {
-    const x86_rtc_config config = {4u, 1u, 1u};
+    const x86_rtc_config config = {4u, 1u, 1u, LIB_FALSE};
     for (lib_u8 scenario = 0u; scenario < 96u; ++scenario) {
         lib_u8 hour = (lib_u8)(scenario % 24u);
         lib_u8 next = (lib_u8)((hour + 1u) % 24u);
@@ -302,7 +302,7 @@ static void rtc_cmos_test_hour_rollover(void)
 
 static void rtc_cmos_test_daylight_alarm_horizon(void)
 {
-    const x86_rtc_config config = {4u, 1u, 1u};
+    const x86_rtc_config config = {4u, 1u, 1u, LIB_FALSE};
     for (lib_u8 scenario = 0u; scenario < 4u; ++scenario) {
         lib_bool binary = (scenario & 1u) != 0u;
         lib_bool clock24 = (scenario & 2u) != 0u;

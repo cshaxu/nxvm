@@ -48,7 +48,7 @@ static lib_status rtc_cmos_initialize(rtc_cmos_fixture *fixture)
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = (2u * 1024u * 1024u)
     };
-    x86_rtc_config config = {4u, 0u, 0u};
+    x86_rtc_config config = {4u, 0u, 0u, LIB_FALSE};
     lib_status status;
 
     lib_memory_set(fixture, 0, sizeof(*fixture));
@@ -123,7 +123,7 @@ static lib_i32 rtc_cmos_test_events_and_irq8(void)
     return failed;
 }
 
-static lib_i32 rtc_cmos_test_cmos_adapter(void)
+static lib_i32 rtc_cmos_test_cmos_adapter(lib_bool extended)
 {
     x86_nxvm_board_config config = { 0 };
     x86_nxvm_board_rtc_cmos_config rtc_config = { 0 };
@@ -149,6 +149,23 @@ static lib_i32 rtc_cmos_test_cmos_adapter(void)
     }
     rtc_config.timing = (x86_nxvm_board_rtc_timing_plan) {1u, 1u,
         X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE};
+    rtc_config.extended_registers = 2u;
+    if (!failed && x86_nxvm_board_configure_rtc_cmos(board, &rtc_config) !=
+            LIB_STATUS_INVALID_ARGUMENT) failed = 1;
+    rtc_config.extended_registers = extended;
+    if (extended) {
+        rtc_config.nmi_mask_bit = 0x40u;
+        if (!failed && x86_nxvm_board_configure_rtc_cmos(board, &rtc_config) !=
+                LIB_STATUS_INVALID_ARGUMENT) failed = 1;
+        rtc_config.nmi_mask_bit = 0x80u;
+    }
+    rtc_config.defaults[1] = (x86_nxvm_board_rtc_default_byte) {0x7fu, 0xa5u};
+    rtc_config.default_count = 2u;
+    if (!extended) {
+        if (!failed && x86_nxvm_board_configure_rtc_cmos(board, &rtc_config) !=
+                LIB_STATUS_INVALID_ARGUMENT) failed = 1;
+        rtc_config.default_count = 1u;
+    }
     if (failed ||
         x86_nxvm_board_configure_rtc_cmos(board, &rtc_config) != LIB_STATUS_OK ||
         test_x86_nxvm_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
@@ -164,6 +181,21 @@ static lib_i32 rtc_cmos_test_cmos_adapter(void)
             LIB_STATUS_OK || masked) {
         failed = 1;
     }
+    if (!failed && (x86_core_machine_bus_write(machine, 0x70u, 0x3bu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x71u, 0x55u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x70u, 0x7bu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x71u, 0xaau) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x70u, 0x3bu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0x71u, &value) != LIB_STATUS_OK ||
+        value != (extended ? 0x55u : 0xaau) ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x70u, 0xfbu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0x71u, &value) != LIB_STATUS_OK ||
+        value != 0xaau || x86_core_machine_get_nmi_mask(machine, &masked) !=
+            LIB_STATUS_OK || !masked)) failed = 1;
+    if (!failed && extended && (x86_core_machine_bus_write(machine, 0x70u, 0x7fu) !=
+        LIB_STATUS_OK || x86_core_machine_bus_read(machine, 0x71u, &value) !=
+        LIB_STATUS_OK || value != 0xa5u)) failed = 1;
     x86_core_machine_destroy(machine);
     return failed;
 }
@@ -173,7 +205,8 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     failed |= rtc_cmos_test_events_and_irq8();
-    failed |= rtc_cmos_test_cmos_adapter();
+    failed |= rtc_cmos_test_cmos_adapter(LIB_FALSE);
+    failed |= rtc_cmos_test_cmos_adapter(LIB_TRUE);
     if (failed != 0) return 1;
     lib_c_printf("RTC-CMOS:OK\n");
     return 0;
