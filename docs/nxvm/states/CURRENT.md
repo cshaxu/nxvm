@@ -2,45 +2,26 @@
 
 ## Current Work
 
-## M5 T580 S52 — SL power/status and suspend/wake contract
+## M5 T580 — Open after accepted S52
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — next unused S52 after accepted S51. |
-| Admission And Approval | Standing owner authorization to complete PC110 autonomously, including approved X86 NXVM chip/Board changes. Coordinator review admits the reproduced 64/128-register RTC/Board receiver below, with Shared and NXVM targets; Lib, Emulator and other Apps' private code are excluded. Any further Shared boundary requires concrete review before implementation. |
-| Objective | Reconcile cold FB status, B8 resume cause, FF suspend control and existing mode-22 protocol as a complete power/retention/wake contract, using actual firmware and source-labelled SL references; select and prove only a justified receiver. |
-| Non-goals | No forced status bit, synthetic wake, BIOS redirect, host service/decompressor, second clock/state owner, protected input mutation or premature product publication. |
-| Reference Baseline | Clean pushed 013b58329; accepted S50 receiver and S51 actual cold-power observations. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md) and its unchanged complete product ledger. |
-| Files And ABI Surface | Existing X86 NXVM RTC config gains a normalized extended-register selection; existing Board config carries it, retaining default 64-register decode. One RTC-owned array serves the selected 64/128 space. PC110 selects 128. Existing RTC, Board and App fixtures cover isolation/retention and real guest I/O. Estimated production +25–45/-8–15 and tests +50–90/-15–25, plus mechanical default initializer adaptation and manifests; no new function, executor, state manager or test executable. Temporary existing-harness samplers are removed. |
-| Applicable Rules | Product guide Task Reading Set; shared Execution/Architecture/Coding/Documentation; concrete architecture/layout; source policy. One guest executor, state owner and clock; immutable external ROM; references are not implementation imports. |
-| Verification | Both widths prove the pre-fix 3B/7B alias and post-fix isolation through actual PC110 guest I/O; verify classic decode, complete selected RAM retention, IRQ/NMI behavior and configuration rejection. Run complete dual-width repository units, real BIOS prefix/power comparison, manifests/boundaries/docs, affected eight PC artifact builds and four previews. No PC110 release or full boot claim from a fixed register receiver. |
-| Expected Markers | A coherent evidenced cold/suspend/wake/retention contract or precise unresolved boundary, never an instruction ceiling or arbitrary forced normal-boot branch counted as success. |
-| Asset Needs | Existing pinned TFT BIOS/font, Intel SL manuals and read-only PC110 references. No new protected image acquisition. |
-| Reporting Requirements | Sources and confidence, owner/design and exclusions, actual deltas, verification limits and remaining boot/product gates. |
-| Stop Conditions | build/t580-s52-power is S-owned scratch, maximum 32 MiB; the admitted Shared capacity repair expands the original 2400 s research budget to 4800 s for full dual-width qualification and eight receiving artifacts. Individual guest observation remains maximum 33M instructions/300 s/64 KiB output. Remove copied research output after facts/hashes are archived and owned processes exit. Contradictory source or a further Shared extension stops speculative implementation, not independent research. |
-| Exit Criteria | Whole admitted power-contract batch has a reconciled design/disposition and any justified repair proof; actual diff review, applicable verification, cleanup, commit/push and coordinator acceptance. T580 remains open for all original guest/product gates. |
-| Original Owner Request | Continue PC110 through correct, minimal implementation using explicit L2 references when physical/original evidence is unavailable. |
-| Similar-Issue Sweep | Cold/processor reset, config/status ownership, all FB/B8/FF/mode-22 callers, SMM/HLT entry, real wake sources and retained RAM/CMOS/SMRAM; no generic HLT or unrelated product alteration. |
+Coordinator actual-change review accepts Shared `3ca0a166f` and NXVM
+`91d2a6056` for the bounded RTC receiver and power-contract disposition.
+PC110 now selects independent upper CMOS bytes through the existing Chip/Board
+path; old machines retain classic defaults. Both widths pass all 712 units,
+actual CPU I/O isolation, the original timer/SMI/FDC integration and four
+real deployed INI identities. Eight receiving PC EXEs are refreshed; the four
+PC110 previews remain unpublished. The [S52 evidence](../etc/evidence/t580-s52-power-contract.md)
+records +110/-41 source/test lines, source grades, artifact hashes, review
+limits and cleanup of 24 files/27,077,174 bytes. No active S packet remains.
 
-Coordinator design review: real CPU IN/OUT probes confirm 3B/7B aliasing on
-both widths. Board fixes the address at six bits and RTC holds only 64 bytes,
-while the actual BIOS and both pinned reference models use the upper space.
-The admitted L2 correction preserves all old Board defaults and has one
-register owner. It does not assume that fixing NVRAM also fixes FB/wake.
-
-Executor delivery: Shared `3ca0a166f` implements the selected RTC/Board
-capacity receiver; the NXVM delivery selects it and refreshes the eight PC
-EXEs. Both widths prove guest-IN/OUT isolation and pass all 712 unit cases,
-the original timer/SMI/FDC integration and four deployed INI identities.
-Both repaired BIOS observations reach the same genuine suspend endpoint,
-not boot. The [evidence](../etc/evidence/t580-s52-power-contract.md) records
-actual +110/-41 source/test lines, four unpublished previews, exact artifact
-hashes and the complete power-contract disposition. All 24 task-temporary
-files are safely removed; owner inputs and other Apps remain unchanged.
-Coordinator actual-change review/acceptance is pending. T580's physical
-wake/status/retention, Setup/guest and full product gates remain open; neither
-the NVRAM repair nor unit qualification is a completed PC110 product.
+This acceptance is not a completed power implementation or PC110 product.
+The unchanged BIOS still requests suspend on both widths, with no armed RTC
+alarm. FB/B8/FF status, a named physical wake input, retention/reset and real
+firmware restoration remain one receiver inside T580. The next admission
+must handle that whole contract rather than force FB high, invent a wake,
+change generic HLT or demand a physical-unit dump. Source-labelled L2 remains
+allowed. All original Setup/boot/guest/panel/input/live-product/source and
+publication gates retain their unchanged ledger entries; T580 stays open.
 
 ## M5 T580 — Open after accepted S51
 
@@ -52,7 +33,7 @@ suspend HLT; this is neither a checksum deadlock nor boot qualification.
 Rejected diagnostic attempts/timeouts are separately recorded. Temporary
 code/logs are removed; retained source/test/artifact delta is zero. Restored
 App units pass 11/11 per width, and the complete unchanged unit corpus keeps
-S50 qualification. S52 above is the next active packet.
+S50 qualification. S52 is also accepted above; no active S remains.
 
 S50's [Flash receiver](../etc/evidence/t580-s50-lower-flash-selection.md) and
 S49's [FDC receiver](../etc/evidence/t580-s49-integrated-fdc.md) remain accepted.
