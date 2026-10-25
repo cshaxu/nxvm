@@ -76,6 +76,21 @@ observed, so this remains a bounded receiver correction rather than POST,
 boot, or artifact qualification. The source grades and exact limits are in
 [S29 evidence](../etc/evidence/t580-s29-dma-page-boot-ipl-latch.md).
 
+## S30 — EC/ED configuration gate
+
+The existing MyPC110 EC/ED receiver now follows the source-recorded access
+gate: `FBh` opens, `F9h` closes and reset starts closed.  Its one bit belongs
+to the existing firmware binding because that binding already owns the selected
+EC/ED register, data effects and C-segment shadow behavior.  A closed window
+reads `FFh` and ignores writes, preserving normal hardware I/O without turning
+an unavailable config window into a Core fault.
+
+Both host widths pass the 253-test affected X86-NXVM/MyPC110 corpus.  The
+existing real-firmware trace is extended only to record gate ports if reached;
+it does not yet reach them.  No Shared/Core contract, ROM byte, new timer,
+host service, product artifact or POST/guest claim is introduced.  Full
+provenance and limits are in [S30 evidence](../etc/evidence/t580-s30-eced-config-gate.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

@@ -2,6 +2,24 @@
 
 ## Current Work
 
+## M5 T580 S30 — Closed: PC110 EC/ED configuration gate
+
+| Field | Required record |
+| --- | --- |
+| Objective | Restore the source-recorded `FBh` open / `F9h` close gate around the existing PC110 `ECh`/`EDh` configuration window. |
+| Boundary | MyPC110 configuration adapter, firmware-owned reset state, its unit/diagnostic coverage and T580 evidence only. No Shared/Core contract, ROM mutation, release artifact or synthetic chipset behavior. |
+| Evidence | Open-Source-PC110 records the gated protocol and a live sweep; the existing App is the sole owner of EC/ED index/data state and its C-segment shadow side effect. |
+| Design | Store one reset-closed bit on the existing firmware binding. A closed window returns `FFh` for reads and ignores writes; `FBh` opens and `F9h` closes. |
+| Verification | Exercise closed, open, closed-again and reset states through the actual ports; retain gate ports in the existing real-firmware trace filter. Build and run the affected x64/x86 X86-NXVM/MyPC110 corpus. |
+| Limit | The established real-firmware checkpoint does not yet observe either gate port. This does not claim POST, setup, guest boot, panel qualification or publishable MyPC110 artifacts. |
+
+### S30 Closure
+
+The App no longer exposes EC/ED permanently. Its existing firmware binding
+resets the gate closed and remains the only owner of the index, selected data
+and shadow-write side effect. Both established host widths pass all 253
+affected X86-NXVM/MyPC110 tests. See the [S30 evidence](../etc/evidence/t580-s30-eced-config-gate.md).
+
 ## M5 T580 S29 — Closed: PC110 DMA-page / Boot/IPL receiver
 
 | Field | Required record |

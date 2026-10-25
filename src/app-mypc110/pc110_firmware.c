@@ -129,6 +129,7 @@ static lib_status mypc110_firmware_reset(void *opaque,
         binding->bios + MYPC110_VIDEO_FLASH_OFFSET,
         MYPC110_VIDEO_SHADOW_BYTES);
     binding->eced_index = 0u;
+    binding->eced_config_open = LIB_FALSE;
     binding->video_shadow_writable = LIB_FALSE;
     lib_memory_copy(binding->system_shadow,
         binding->bios + MYPC110_SYSTEM_FLASH_OFFSET,

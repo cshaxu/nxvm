@@ -19,6 +19,7 @@ typedef struct mypc110_firmware {
     lib_u8 *system_shadow;
     x86_vl82c420 *configuration_chip;
     lib_u8 eced_index;
+    lib_bool eced_config_open;
     lib_bool video_shadow_writable;
 } mypc110_firmware;
 

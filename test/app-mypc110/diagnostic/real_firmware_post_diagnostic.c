@@ -96,7 +96,8 @@ static void mypc110_post_diagnostic_observe_trace(void *context,
     port = (lib_u16)event->address;
     if (port != 0x0022u && port != 0x0024u && port != 0x0025u &&
         port != 0x0074u && port != 0x0076u &&
-        port != 0x00ecu && port != 0x00edu && port != 0x0060u &&
+        port != 0x00ecu && port != 0x00edu && port != 0x00f9u &&
+        port != 0x00fbu && port != 0x0060u &&
         port != 0x0061u && port != 0x0064u && port != 0x03c4u &&
         port != 0x03c5u) {
         return;

@@ -12,6 +12,8 @@
 #define MYPC110_SCAMP_DATA_PORT 0x0076u
 #define MYPC110_ECED_INDEX_PORT 0x00ecu
 #define MYPC110_ECED_DATA_PORT 0x00edu
+#define MYPC110_ECED_CONFIG_CLOSE_PORT 0x00f9u
+#define MYPC110_ECED_CONFIG_OPEN_PORT 0x00fbu
 
 /* L2 cold image: Open-Source-PC110 live VL82C420 captures, not imported
  * implementation code.  The source files' SHA-256 values are recorded in
@@ -109,6 +111,11 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     chip = firmware->configuration_chip;
+    if ((port == MYPC110_ECED_INDEX_PORT || port == MYPC110_ECED_DATA_PORT) &&
+        !firmware->eced_config_open) {
+        *out_value = 0xffu;
+        return LIB_STATUS_OK;
+    }
     switch (port) {
     case MYPC110_BLOCK2_UNLOCK_FC23_PORT:
         x86_vl82c420_observe_unlock_read(chip,
@@ -162,6 +169,16 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     chip = firmware->configuration_chip;
+    if (port == MYPC110_ECED_CONFIG_OPEN_PORT) {
+        firmware->eced_config_open = LIB_TRUE;
+        return LIB_STATUS_OK;
+    }
+    if (port == MYPC110_ECED_CONFIG_CLOSE_PORT) {
+        firmware->eced_config_open = LIB_FALSE;
+        return LIB_STATUS_OK;
+    }
+    if ((port == MYPC110_ECED_INDEX_PORT || port == MYPC110_ECED_DATA_PORT) &&
+        !firmware->eced_config_open) return LIB_STATUS_OK;
     if (port == MYPC110_BLOCK2_LOCK_PORT) {
         if ((value & 0x0100u) != 0u) x86_vl82c420_relock(chip);
         return LIB_STATUS_OK;
@@ -210,6 +227,8 @@ lib_status mypc110_config_install_routes(x86_core_machine *machine,
         {MYPC110_SCAMP_DATA_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_ECED_INDEX_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_ECED_DATA_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
+        {MYPC110_ECED_CONFIG_CLOSE_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
+        {MYPC110_ECED_CONFIG_OPEN_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_UNLOCK_FC23_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_UNLOCK_F023_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_UNLOCK_C023_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
