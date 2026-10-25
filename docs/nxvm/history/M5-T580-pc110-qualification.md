@@ -35,3 +35,12 @@ and reaches the memory-flag wait calling the 15EE/AX=5380/BH=84 service. It does
 not reach a boot interrupt within 200M instructions. No production or test
 change remains after removing the sampler. [S45 evidence](../etc/evidence/t580-s45-post-timer-reset.md)
 records the actual copied observations and the complete next receiver batch.
+
+## S46: SMI/SMRAM mechanism audit
+
+The [S46 audit](../etc/evidence/t580-s46-smi-smram-receiver-audit.md)
+proves that the existing CPU can take SMI but the App has not prepared the
+handler's active memory view. It rejects isolated pin, cold-constant and
+C-shadow candidate changes, all of which were withdrawn. The next coherent
+repair boundary is the complete board cold-decode/SMRAM/SMI mechanism, not a
+host BIOS service or another instruction-specific patch.
