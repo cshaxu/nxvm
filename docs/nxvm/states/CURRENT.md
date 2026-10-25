@@ -2,42 +2,14 @@
 
 ## Current Work
 
-## Active Task — M5 T580 S6
+## Open Task — M5 T580
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T580 S6 after accepted S5 C000-return classification; one session performs coordinator and executor roles. |
-| Admission And Approval | The owner continues the standing PC110 implementation objective and authorizes ordinary scoped research, implementation, verification, commit and push work. |
-| Objective | Starting at S5's C000 return, capture a finite sample of the first post-C000 port-61 polling loop and classify its status source before selecting any further hardware repair. |
-| Non-goals | No blind instruction-budget success, fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, panel emulation, graphics renderer, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of POST, Setup or guest boot. |
-| Reference Baseline | S5 proves that C000 returns through `F000:3F6C` to the known port-61 wait without a new access class or Core fault. |
-| Candidate Proposal | [MyPC110 product and guest qualification](../proposals/m5-pc110-qualification.md). |
-| Files And ABI Surface | App-MyPC110 diagnostic registration, evidence and task records only. Existing Core/F65535 behavior is frozen unless the complete bounded trace proves a generic or controller-local owner. Lib, Emulator, X86-NXVM Product and raw inputs remain unchanged. |
-| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout/UI and source/research policy; T558 receiver checklists and PC110 qualification proposal. |
-| Verification | Extend the existing ordinary executor diagnostic only enough to recognize the first port-61 wait entered after C000 return and retain sixteen actual status reads on x64 and x86. Compare them with the frozen receiver ledger; do not implement from an address alone. |
-| Expected Markers | One reproducible C000-return-to-port-61 status sample and one explicit owner disposition, or a source-gated transfer with no fabricated continuation. |
-| Asset Needs | Read-only external TFT BIOS/font manifest only. No ROM, CMOS, disk or snapshot content enters Git. |
-| Stop Conditions | A required behavior expands beyond ordinary input-status semantics, a claimed device behavior lacks a source/finite probe, or a proposed repair requires a synthetic firmware or a Shared contract that has not been independently shown generic. Record and transfer rather than fabricate a fallback. |
-| Exit Criteria | The complete finite post-C000 port-61 status sample is recorded and either identifies an evidence-qualified owner or is transferred as an explicit source gate; no product/boot claim is expanded. |
-| Original Owner Request | Continue implementing PC110 through its actual product end state. |
-| Similar-Issue Sweep | All MyPC110 sources/tests/build routes, external asset manifests, emulator/product composition boundaries, four-PC publication conventions, PC110-specific firmware model selection and retained PC110 research receivers. |
-
-### S6 Brief
-
-Do not extend a blind instruction budget. Reuse the existing real-firmware
-diagnostic to recognize only the first port-61 polling loop reached after the
-S5 C000 return and retain a finite sample of its actual status reads, then
-reconcile every observed access class against the T580 ledger before proposing
-a repair.
-
-### S6 Delivery
-
-The two-width real-TFT sample records actual post-C000 port-61 reads on the
-sole Core tick axis. Their `23h/33h` bit-4 transition proves that the existing
-elapsed-tick source is live; the firmware remains in its own finite delay loop,
-not a stalled device path. The complete evidence is in
-[the S6 record](../etc/evidence/t580-s6-post-c000-port61-sample.md). No new
-hardware receiver is opened.
+| Latest accepted delivery | S6 records the finite real-TFT post-C000 port-61 status sample. |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md) and [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md). |
+| Remaining convergence | The qualification ledger still requires source-qualified panel/display, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent lawful BIOS/font input. |
+| Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, or synthetic firmware paths as a substitute. |
 
 ### S5 Closure
 

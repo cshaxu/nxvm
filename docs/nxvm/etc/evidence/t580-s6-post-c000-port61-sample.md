@@ -41,3 +41,13 @@ does not qualify firmware POST, panel output, Easy-Setup, storage, a guest OS,
 or the unavailable original-DSTN variant. A later T580 receiver must start
 from a named qualification checkpoint rather than treating the next arbitrary
 retirement as a hardware defect.
+
+## Verification
+
+- `mypc110.diagnostic/real-firmware-c000-port61-follow` passed on x64 in
+  29.37 seconds and on x86 in 35.80 seconds against the admitted external TFT
+  firmware input.
+- The MyPC110 unit selection passed on both widths (8 tests on each).
+- Documentation governance and `git diff --check` passed. This is a bounded
+  diagnostic result; it does not claim desktop, panel, storage, guest, or
+  original-DSTN qualification.
