@@ -8,14 +8,14 @@
 | --- | --- |
 | Identifier Mode | T580 S4 after bounded S3 real-firmware classification; one session performs coordinator and executor roles. |
 | Admission And Approval | The owner continues the standing PC110 implementation objective and authorizes ordinary scoped research, implementation, verification, commit and push work. |
-| Objective | Give the existing F65535 VGA input-status register its smallest source-labelled L2 vertical-retrace behavior, then prove that the real TFT BIOS can advance beyond its C000 video-ROM initialization boundary. |
+| Objective | Repair the App-local C000 video-bank read map exposed by the real-TFT trace, retain the smallest source-labelled F65535 input-status L2 behavior, then prove that the real TFT BIOS advances beyond its C000 video-ROM initialization boundary. |
 | Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, panel emulation, graphics renderer, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of guest boot before the admitted proof exists. |
-| Reference Baseline | S3's 100-million-instruction real-firmware run reaches the real C000 video ROM and repeatedly delivers interrupts while F65535 input-status `3DAh` is permanently zero. |
+| Reference Baseline | S3's 100-million-instruction real-firmware run reaches C000 through the raw bank-zero bytes (`55 AA 00 EB`) rather than the selected C&T video bank (`55 AA 47 EB`), then repeatedly delivers invalid-opcode exceptions. |
 | Candidate Proposal | [MyPC110 product and guest qualification](../proposals/m5-pc110-qualification.md). |
-| Files And ABI Surface | Existing X86-NXVM F65535 component and its tests, MyPC110 real-firmware diagnostic/evidence/task records. Lib, Emulator, Core, X86-NXVM Product and raw inputs remain unchanged. |
+| Files And ABI Surface | Existing X86-NXVM F65535 component/tests, App-MyPC110 firmware-map/configuration tests and real-firmware diagnostic/evidence/task records, plus the existing X86-Core port dispatcher and its direct regression after the trace proved a width-generic defect. Lib, Emulator, X86-NXVM Product and raw inputs remain unchanged. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout/UI and source/research policy; T558 receiver checklists and PC110 qualification proposal. |
 | Verification | Add a focused F65535 status-read regression and run the ordinary executor against the real TFT image on both widths through the C000 initialization checkpoint. Compare the result to the retained source and preserve only observed progress. |
-| Expected Markers | `3DAh` retains the attribute flip-flop reset and yields a changing vertical-retrace bit; the real C000 ROM makes bounded forward progress without a synthetic BIOS branch. |
+| Expected Markers | C000 reads retain the selected video bank through observed writable-shadow transitions; `3DAh` retains the attribute flip-flop reset and yields a changing vertical-retrace bit; the real C000 ROM makes bounded forward progress without a synthetic BIOS branch. |
 | Asset Needs | Read-only external TFT BIOS/font manifest only. No ROM, CMOS, disk or snapshot content enters Git. |
 | Stop Conditions | A required behavior expands beyond ordinary input-status semantics, a claimed device behavior lacks a source/finite probe, or a proposed repair requires a synthetic firmware or a Shared contract that has not been independently shown generic. Record and transfer rather than fabricate a fallback. |
 | Exit Criteria | The status register has one documented L2 owner, two-width chip/App evidence proves its finite behavior and real-firmware result, and no product/boot claim is expanded. |
@@ -24,9 +24,27 @@
 
 ### S4 Brief
 
-Implement only the F65535 input-status behavior reached by the S3 trace.  It
-must be a controller-local register result rather than a firmware-address
+Repair only the selected C000 video-bank read invariant reached by the S3
+trace and the F65535 input-status behavior it uses.  They must remain an
+App-local map and a controller-local register result, not a firmware-address
 special case, second clock, or rendering path.
+
+### S4 Delivery
+
+The C000 owner now distinguishes ordinary writable shadow data from immutable
+selected-video-bank instruction fetches.  The F65535 compatibility owner
+supplies only the register behavior reached by that path; the trace also
+corrected generic Core lane masking and narrow-port latch width behavior.  The
+x64 and x86 real-image CTests each cross the actual former C000 port boundary
+after about 10.17 million ordinary instructions, with no Core fault.  This
+bounded result is documented in [the S4
+evidence](../etc/evidence/t580-s4-c000-video-progress.md); it is not a POST,
+display, Setup or boot qualification.
+
+The stable x64 and x86 Ninja trees each pass the complete repository-only
+unit suite (663 selected tests).  The corresponding external-firmware C000
+diagnostic passes again on both widths.  No executable publication is part of
+this bounded diagnostic S.
 
 ### S3 Closure
 

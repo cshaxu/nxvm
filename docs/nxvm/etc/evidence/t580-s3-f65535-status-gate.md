@@ -35,12 +35,18 @@ a changing vertical-retrace bit (`PC110-EMU`,
 `Sources/PC110Core/pc110_core.c`, `f65535_vga_read`).  These are research
 references only: no code is imported.
 
-NXVM already maps the external image's video bank at C000 and reaches the
-observed entry.  Its F65535 implementation resets the attribute flip-flop at
-`3DAh` but returns zero unconditionally.  Thus the next bounded receiver is
-the existing `x86-nxvm/chips/f65535` input-status operation.
+NXVM's construction initially selects the same video bank, but the trace
+proves that an EC/ED writable-shadow transition later lets read lookup fall
+through to raw bank-zero bytes: C000 reports `55 AA 00 EB`, whereas the
+selected C&T bank is `55 AA 47 EB`.  It then executes those wrong bytes after
+relocation and repeatedly delivers invalid-opcode exceptions.  This is the
+immediate App-local firmware-map defect.  The existing F65535 implementation
+also resets the attribute flip-flop at `3DAh` but returns zero
+unconditionally; that is the adjacent, finite chip-level L2 behavior, not
+the evidence-backed explanation for the current malformed C000 path.
 
-The next S may implement only a controller-local L2 changing vertical
+The next S may retain the selected C000 bank for reads while independently
+controlling writes, and implement only a controller-local L2 changing vertical
 retrace bit while retaining the existing flip-flop reset.  It must not add a
 renderer, host clock, BIOS-address exception, QEMU-style POST interception,
 or a product-release claim.  The period and exact panel timing remain

@@ -11,8 +11,8 @@
 #define MYPC110_VIDEO_PHYSICAL_START 0x000c0000u
 
 /* One App-owned PC110 firmware map. The TFT Flash image remains immutable;
- * the C000 video shadow is admitted only by the observed EC/ED sequence, and
- * the F000 system shadow remains writable from reset. */
+ * the C000 video image is always the selected video bank, while the observed
+ * EC/ED sequence controls whether that shadow may be patched. */
 typedef struct mypc110_tft_firmware {
     const lib_u8 *bios;
     lib_u8 *video_shadow;
@@ -20,9 +20,6 @@ typedef struct mypc110_tft_firmware {
     x86_vl82c420 *configuration_chip;
     lib_u8 eced_index;
     lib_bool video_shadow_writable;
-    lib_bool video_shadow_visible;
-    lib_bool video_shadow_access;
-    lib_bool video_shadow_cacheable;
 } mypc110_tft_firmware;
 
 lib_status mypc110_tft_firmware_create(const lib_u8 *bios, lib_size bytes,

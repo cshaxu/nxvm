@@ -10,9 +10,12 @@
 extern const x86_nxvm_machine_assets vm_app_firmware;
 
 #define MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS 8000000u
+#define MYPC110_POST_DIAGNOSTIC_C000_INSTRUCTIONS 12000000u
 #define MYPC110_POST_DIAGNOSTIC_QUANTUM 256u
+#define MYPC110_POST_DIAGNOSTIC_C000_QUANTUM 4096u
 #define MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY 128u
 #define MYPC110_POST_DIAGNOSTIC_RETIREMENT_CAPACITY 16u
+#define MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY 16u
 #define MYPC110_POST_DIAGNOSTIC_PORT61_FOLLOW_CAPACITY 32u
 #define MYPC110_POST_DIAGNOSTIC_DATA_SELECTOR_BASE 0x0000d8a0u
 
@@ -32,6 +35,9 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_u32 pre_reset_e000_entries;
     lib_u32 post_reset_e000_entries;
     x86_core_cpu_execution_point
+        c000_retirements[MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY];
+    lib_size c000_retirement_count;
+    x86_core_cpu_execution_point
         pre_reset_retirements[MYPC110_POST_DIAGNOSTIC_RETIREMENT_CAPACITY];
     lib_size pre_reset_retirement_count;
     x86_core_cpu_debug_cpu_snapshot before_pop_ds;
@@ -46,6 +52,8 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_size port61_follow_retirement_count;
     lib_bool entered_lpt_checkpoint;
     lib_bool returned_to_port61_wait;
+    lib_bool c000_only;
+    lib_bool crossed_c000_port_boundary;
     lib_bool left_rom;
     mypc110_post_diagnostic_port_write
         configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
@@ -63,12 +71,12 @@ static void mypc110_post_diagnostic_observe_trace(void *context,
          event->type != X86_CORE_MACHINE_TRACE_PORT_WRITE)) {
         return;
     }
-    if (event->detail != (lib_u32)LIB_STATUS_OK) return;
     port = (lib_u16)event->address;
     if (port != 0x0022u && port != 0x0024u && port != 0x0025u &&
         port != 0x0074u && port != 0x0076u &&
         port != 0x00ecu && port != 0x00edu && port != 0x0060u &&
-        port != 0x0061u && port != 0x0064u) {
+        port != 0x0061u && port != 0x0064u && port != 0x03c4u &&
+        port != 0x03c5u) {
         return;
     }
     if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
@@ -85,6 +93,15 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
     lib_size index;
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
+    if (trace->c000_only) {
+        if (trace->post_reset_active && observation->point.linear_pc >= 0x000c0000u &&
+            observation->point.linear_pc < 0x000d0000u) {
+            ++trace->post_reset_c000_entries;
+            if (observation->point.linear_pc > 0x000c6000u)
+                trace->crossed_c000_port_boundary = LIB_TRUE;
+        }
+        return;
+    }
     if (!trace->post_reset_active) {
         index = trace->pre_reset_retirement_count %
             MYPC110_POST_DIAGNOSTIC_RETIREMENT_CAPACITY;
@@ -97,6 +114,12 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
             ++trace->post_reset_c000_entries;
         else
             ++trace->pre_reset_c000_entries;
+        if (trace->post_reset_active) {
+            index = trace->c000_retirement_count %
+                MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY;
+            trace->c000_retirements[index] = observation->point;
+            ++trace->c000_retirement_count;
+        }
     }
     if (observation->point.linear_pc >= 0x000e0000u &&
         observation->point.linear_pc < 0x000f0000u) {
@@ -168,11 +191,19 @@ int main(int argc, char **argv)
         lib_text_compare(argv[1], "--port61-follow") == 0;
     lib_bool lpt_cycle_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--lpt-cycle") == 0;
+    lib_bool c000_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--c000") == 0;
+    lib_u64 instruction_limit;
     lib_u32 wait_count = 0u;
     lib_status status;
 
     if (argc != 1 && !reset_checkpoint && !port61_progress_checkpoint &&
-        !port61_follow_checkpoint && !lpt_cycle_checkpoint) return 2;
+        !port61_follow_checkpoint && !lpt_cycle_checkpoint &&
+        !c000_checkpoint) return 2;
+    instruction_limit = c000_checkpoint ?
+        MYPC110_POST_DIAGNOSTIC_C000_INSTRUCTIONS :
+        MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS;
+    post_reset_trace.c000_only = c000_checkpoint;
 
     status = mypc110_machine_construction_create(&config, &vm_app_firmware, &construction);
     if (status == LIB_STATUS_OK)
@@ -191,7 +222,7 @@ int main(int argc, char **argv)
                 .context = &post_reset_trace});
     }
     if (status == LIB_STATUS_OK && !reset_checkpoint && !port61_progress_checkpoint &&
-        !port61_follow_checkpoint && !lpt_cycle_checkpoint) {
+        !port61_follow_checkpoint && !lpt_cycle_checkpoint && !c000_checkpoint) {
         status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
             0x000f6060u);
@@ -199,12 +230,13 @@ int main(int argc, char **argv)
     if (status == LIB_STATUS_OK) {
         x86_nxvm_machine_executor_state_start(&machine->control.state);
     }
-    while (status == LIB_STATUS_OK && executed < MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS) {
+    while (status == LIB_STATUS_OK && executed < instruction_limit) {
         status = x86_core_machine_run(machine->x86_core_machine,
             (x86_core_machine_run_budget) {.instructions =
                 processor_reset_count != 0u && !post_reset_exception.valid &&
                     !port61_progress_checkpoint && !port61_follow_checkpoint &&
-                    !lpt_cycle_checkpoint ? 1u :
+                    !lpt_cycle_checkpoint && !c000_checkpoint ? 1u :
+                c000_checkpoint ? MYPC110_POST_DIAGNOSTIC_C000_QUANTUM :
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
@@ -221,6 +253,7 @@ int main(int argc, char **argv)
             post_reset_trace.port61_follow_retirement_count >=
                 MYPC110_POST_DIAGNOSTIC_PORT61_FOLLOW_CAPACITY) break;
         if (lpt_cycle_checkpoint && post_reset_trace.returned_to_port61_wait) break;
+        if (c000_checkpoint && post_reset_trace.crossed_c000_port_boundary) break;
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
             post_reset_trace.post_reset_active = LIB_TRUE;
@@ -265,8 +298,10 @@ int main(int argc, char **argv)
     if (machine != LIB_NULL) x86_nxvm_machine_control_end_run(&machine->control);
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
-    lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u port61-wait=%u/%u\n",
+    lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x fault=%08x/%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u port61-wait=%u/%u\n",
         (int)status, (lib_u32)result.reason, result.linear_pc, result.detail,
+        observation.diagnostic.first_fault.exception_mask,
+        observation.diagnostic.first_fault.exception_code,
         (unsigned long long)executed, processor_reset_count, wait_count, advanced,
         warm_signature[1u], warm_signature[0u],
         c000_header[0u], c000_header[1u], c000_header[2u], c000_header[3u],
@@ -290,6 +325,17 @@ int main(int argc, char **argv)
             reset_exception.point.bytes[2u], reset_exception.point.bytes[3u],
             reset_exception.ss, reset_exception.esp, reset_exception.eflags);
     }
+    if (observation.diagnostic.first_fault.valid) {
+        const x86_core_cpu_fault_snapshot *fault =
+            &observation.diagnostic.first_fault;
+
+        lib_c_printf("PC110:POST:fault=%08x code=%08x point=%04x:%08x bytes=%02x %02x %02x %02x eax=%08x edx=%08x flags=%08x\n",
+            fault->exception_mask, fault->exception_code,
+            fault->point.cs, fault->point.eip,
+            fault->point.bytes[0u], fault->point.bytes[1u],
+            fault->point.bytes[2u], fault->point.bytes[3u],
+            fault->eax, fault->edx, fault->eflags);
+    }
     if (post_reset_trace.before_pop_ds_valid) {
         const x86_core_cpu_debug_cpu_snapshot *cpu =
             &post_reset_trace.before_pop_ds;
@@ -301,6 +347,25 @@ int main(int argc, char **argv)
             cpu->gdtr.selector, cpu->gdtr.base, cpu->gdtr.limit,
             (int)before_pop_ds_memory_status,
             (unsigned long long)before_pop_ds_descriptor);
+    }
+    if (c000_checkpoint) {
+        const lib_size retained = post_reset_trace.c000_retirement_count <
+            MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY ?
+            post_reset_trace.c000_retirement_count :
+            MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY;
+        const lib_size first = post_reset_trace.c000_retirement_count >
+            MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY ?
+            post_reset_trace.c000_retirement_count %
+            MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY : 0u;
+
+        for (lib_size index = 0u; index < retained; ++index) {
+            const x86_core_cpu_execution_point *point =
+                &post_reset_trace.c000_retirements[(first + index) %
+                    MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY];
+            printf("PC110:POST:c000=%04x:%08x bytes=%02x %02x %02x %02x\n",
+                point->cs, point->eip, point->bytes[0u], point->bytes[1u],
+                point->bytes[2u], point->bytes[3u]);
+        }
     }
     if (post_reset_trace.after_pop_ds_valid) {
         const x86_core_cpu_debug_cpu_snapshot *cpu = &post_reset_trace.after_pop_ds;
@@ -413,6 +478,12 @@ int main(int argc, char **argv)
         return status == LIB_STATUS_OK && processor_reset_count == 1u &&
             post_reset_trace.entered_lpt_checkpoint &&
             post_reset_trace.returned_to_port61_wait ? 0 : 1;
+    }
+    if (c000_checkpoint) {
+        return status == LIB_STATUS_OK && processor_reset_count == 1u &&
+            post_reset_trace.post_reset_c000_entries != 0u &&
+            post_reset_trace.crossed_c000_port_boundary &&
+            !observation.diagnostic.first_fault.valid ? 0 : 1;
     }
     return status == LIB_STATUS_OK &&
         result.reason == X86_CORE_MACHINE_STOP_PAUSED &&

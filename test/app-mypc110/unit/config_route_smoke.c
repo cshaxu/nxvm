@@ -14,6 +14,7 @@ int main(void)
     lib_u32 value = 0u;
     lib_u8 byte = 0u;
     const lib_u8 patch = 0x5au;
+    const lib_u8 locked_patch = 0xa5u;
     lib_bool failed = LIB_FALSE;
 
     bios[0u] = 0x55u;
@@ -62,14 +63,14 @@ int main(void)
                 &byte, 1u) != LIB_STATUS_OK || byte != 0x22u ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00edu, 0x00u) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00ecu, 0x0fu) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00edu, 0x2au) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00ecu, 0x15u) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00edu, 0x2au) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &patch, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
+                &byte, 1u) != LIB_STATUS_OK || byte != patch ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00edu, 0x20u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, MYPC110_VIDEO_PHYSICAL_START,
+                &locked_patch, 1u) != LIB_STATUS_OK ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != patch ||
             x86_core_machine_memory_read(machine,

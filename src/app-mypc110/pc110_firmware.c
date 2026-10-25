@@ -19,10 +19,8 @@ static lib_status mypc110_tft_firmware_shadow(const mypc110_tft_firmware *firmwa
         out_shadow == LIB_NULL || out_offset == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (physical >= MYPC110_VIDEO_PHYSICAL_START &&
         physical - MYPC110_VIDEO_PHYSICAL_START < MYPC110_VIDEO_SHADOW_BYTES) {
-        if ((access == X86_CORE_MACHINE_MEMORY_ACCESS_READ &&
-                !firmware->video_shadow_visible) ||
-            (access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
-                !firmware->video_shadow_writable)) {
+        if (access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
+            !firmware->video_shadow_writable) {
             return LIB_STATUS_UNSUPPORTED;
         }
         offset = (lib_size)(physical - MYPC110_VIDEO_PHYSICAL_START);
@@ -61,6 +59,23 @@ static lib_status mypc110_tft_firmware_read(void *owner, lib_u32 physical,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, &shadow, &offset);
     if (status != LIB_STATUS_OK) return status;
     lib_memory_copy((void *)destination, shadow + offset, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status mypc110_tft_firmware_read_instruction(void *owner,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    const mypc110_tft_firmware *firmware = owner;
+    lib_size offset;
+
+    (void)observe_only;
+    if (firmware == LIB_NULL || firmware->bios == LIB_NULL || destination == 0u ||
+        physical < MYPC110_VIDEO_PHYSICAL_START) return LIB_STATUS_UNSUPPORTED;
+    offset = (lib_size)(physical - MYPC110_VIDEO_PHYSICAL_START);
+    if (offset > MYPC110_VIDEO_SHADOW_BYTES ||
+        bytes > MYPC110_VIDEO_SHADOW_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
+    lib_memory_copy((void *)destination,
+        firmware->bios + MYPC110_VIDEO_FLASH_OFFSET + offset, bytes);
     return LIB_STATUS_OK;
 }
 
@@ -125,9 +140,6 @@ static lib_status mypc110_tft_firmware_reset(void *opaque,
         MYPC110_VIDEO_SHADOW_BYTES);
     binding->eced_index = 0u;
     binding->video_shadow_writable = LIB_FALSE;
-    binding->video_shadow_visible = LIB_TRUE;
-    binding->video_shadow_access = LIB_FALSE;
-    binding->video_shadow_cacheable = LIB_FALSE;
     lib_memory_copy(binding->system_shadow,
         binding->bios + MYPC110_SYSTEM_FLASH_OFFSET,
         MYPC110_TFT_FIRMWARE_BANK_BYTES);
@@ -173,16 +185,6 @@ void mypc110_tft_firmware_note_eced_write(mypc110_tft_firmware *firmware,
     if (firmware == LIB_NULL) return;
     if (index == 0x0cu) {
         firmware->video_shadow_writable = (value & 0x20u) == 0u;
-        if (firmware->video_shadow_writable) {
-            firmware->video_shadow_visible = LIB_FALSE;
-        } else if (firmware->video_shadow_access &&
-            firmware->video_shadow_cacheable) {
-            firmware->video_shadow_visible = LIB_TRUE;
-        }
-    } else if (index == 0x0fu) {
-        firmware->video_shadow_access = (value & 0x3fu) == 0x2au;
-    } else if (index == 0x15u) {
-        firmware->video_shadow_cacheable = (value & 0x3fu) == 0x2au;
     }
 }
 
@@ -217,6 +219,11 @@ lib_status mypc110_tft_firmware_install_routes(x86_core_machine *machine,
     if (firmware == LIB_NULL || firmware->bios == LIB_NULL ||
         firmware->video_shadow == LIB_NULL || firmware->system_shadow == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    return x86_core_machine_install_memory_device_routes(machine, routes,
+    lib_status status = x86_core_machine_install_memory_device_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, firmware);
+
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_set_memory_instruction_read(machine, firmware,
+            mypc110_tft_firmware_read_instruction);
+    return status;
 }
