@@ -6,10 +6,30 @@
 
 | Field | Required record |
 | --- | --- |
-| Latest accepted delivery | S24 adds the documented TFT EC Block-B static receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; neither establishes a product release qualification. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md) and [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md). |
-| Remaining convergence | Real POST/setup/guest progression still lacks a demonstrated firmware transition beyond the established delay path and a complete power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. Original-DSTN remains gated by the absent verified BIOS/font input. |
+| Latest accepted delivery | S25 records a traceable external DSTN panel-derived input. S24 adds the documented TFT EC Block-B static receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; none establishes a product release qualification. |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md), [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md) and [S25 DSTN input](../etc/evidence/t580-s25-dstn-panel-derived-input.md). |
+| Remaining convergence | Real POST/setup/guest progression still lacks a demonstrated firmware transition beyond the established delay path and a complete power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. A derived DSTN panel candidate now exists, but a factory-original DSTN BIOS/font input and independent DSTN qualification remain absent. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, synthetic firmware paths or metadata-only MCU models as a substitute. |
+
+## M5 T580 S25 — Active: DSTN panel-input provenance
+
+| Field | Required record |
+| --- | --- |
+| Objective | Establish whether the newly published, live-captured 18-byte stock-DSTN panel table can produce one explicitly derived external firmware candidate from the already admitted TFT image, without claiming a recovered factory ROM or a working PC110 product. |
+| Boundary | External `nxvm-assets` candidate, MyPC110 provenance/evidence and narrowly necessary App build-input preparation only. No Shared/Core change, MCU/power/PCIC model, ROM-address behavior, product artifact publication or guest-qualification claim. |
+| Evidence | The selected Open-Source-PC110 `Discovery/65535` stock-table record and Multi-Patcher source must agree byte-for-byte; the existing TFT master remains immutable. |
+| Verification | Record input/output hashes, exact changed offsets, round-trip table identity and unchanged bytes outside the 18 documented locations. If an App build input is prepared, build and execute only its affected MyPC110 tests on both widths. |
+| Limit | A panel-table-derived BIOS candidate is not an original raw DSTN dump, complete hardware model, POST/Setup/DOS proof or publishable executable. |
+
+### S25 Closure
+
+The external asset archive now contains a hash-recorded, explicitly derived
+DSTN-panel candidate. It differs from the admitted TFT parent only at the 18
+external-source-recorded F65535 table bytes; its provenance and mechanical
+comparison are recorded in [the S25 evidence](../etc/evidence/t580-s25-dstn-panel-derived-input.md).
+The App remains TFT-only because neither candidate has yet passed the separate
+PC110 build, panel and guest qualification gates. No repository source, public
+contract or product artifact changed.
 
 ## M5 T580 S24 — Closed: EC Block-B static receiver
 
