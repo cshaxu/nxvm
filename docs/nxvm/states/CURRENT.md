@@ -91,7 +91,7 @@ production, public-interface, asset or release input changed. The evidence
 records why live SCAMP values are not a cold-state basis. The next S must
 start from documented C000 option-ROM/F65535 return semantics.
 
-## Active Subtask — M5 T580 S15
+## M5 T580 S15 — Closed: executable C000 shadow
 
 | Field | Required record |
 | --- | --- |
@@ -123,6 +123,27 @@ instruction callback. Both widths passed all eight MyPC110 unit tests and the
 unchanged real-firmware C000-to-port-61 diagnostic. The evidence records the
 boundary: this is not POST, panel, power, storage, guest, or DSTN
 qualification.
+
+## M5 T580 S16 — Closed: port-61 wait audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S16. |
+| Admission And Approval | Standing approval for bounded PC110 research and any proven App/Core repair. |
+| Objective | Determine whether the admitted real-TFT firmware's reached `F000:3F6C` port-61 wait is a correctly modeled finite delay or exposes one existing PIT/port-61 timing defect. |
+| Non-goals | No arbitrary retirement success threshold, synthetic firmware path, guessed SCAMP state, LCD/panel/power/PCMCIA model, guest boot, or original-DSTN claim. |
+| Files And ABI Surface | Initially evidence and direct diagnostics only; production scope is admitted only for a reproduced owner-local defect. |
+| Verification | Compare the firmware loop's observed port contract with the existing board implementation; use both widths and existing diagnostics; retain a regression only for a concrete semantic boundary. |
+| Exit Criteria | Record either a source/semantic-backed owner repair with two-width proof, or a no-repair disposition that preserves the reached boundary without a speculative model. |
+
+### S16 Closure
+
+The reached post-C000 loop is an existing finite firmware delay, not a stuck
+receiver: the real TFT diagnostic sees port-61 bit 4 change and the existing
+two-width regression observes the subsequent return. The MyPC110 plan's
+three-tick Core-axis status source is the only required owner and matches the
+Board implementation. No production repair or new diagnostic is justified;
+the retained evidence records the values and the no-repair disposition.
 
 ### S11 Closure
 
