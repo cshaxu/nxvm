@@ -13,6 +13,16 @@ at 0580 and the Core-linked MyRaidenII pair at 0007. See the
 S47/T580 remain open for complete SMRAM/SMIACT/initialization reconciliation;
 no PC110 boot or product release is claimed.
 
+Coordinator actual-change review accepts the bounded write-width prerequisite
+and App protocol delivery: Shared P1 `d603e81e7`, NXVM P2 `2fe38e9af` and
+receiving MyRaidenII P3 `98b49cfde` are pushed. Review confirms one existing
+callback path, unchanged reads/error propagation, mechanical legacy adapters,
+actual CPU unlock/lock/reset tests and unchanged Lib/Emulator/owner inputs.
+The receiver evidence names the remaining CPU-only SMRAM and SMIACT contract
+gaps explicitly; this acceptance does not close S47's complete cold-memory
+batch or T580. No extra desktop/guest qualification is inferred from unit or
+INI identity tests.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation — M5 T580 S47, after accepted S46. |
