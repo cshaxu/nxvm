@@ -87,13 +87,17 @@ lib_status x86_nxvm_product_compose_machine(const x86_nxvm_product_machine_bindi
     if (out_machine == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = (x86_nxvm_product_machine){0};
-    if (binding == LIB_NULL || binding->prepare == LIB_NULL)
+    if (binding == LIB_NULL || binding->prepare == LIB_NULL ||
+        (binding->initial_speed != X86_NXVM_MACHINE_SPEED_STANDARD &&
+         binding->initial_speed != X86_NXVM_MACHINE_SPEED_TURBO))
         return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_nxvm_product_configure_machine(binding, request, &config);
     if (status == LIB_STATUS_OK)
         status = binding->prepare(&config, binding->firmware, &construction);
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_create(&config, &construction, &machine);
+    if (status == LIB_STATUS_OK)
+        status = x86_nxvm_machine_set_speed(machine, binding->initial_speed);
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_describe_emulator_driver(machine, &driver);
     if (status != LIB_STATUS_OK) {

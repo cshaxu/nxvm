@@ -14,6 +14,9 @@ typedef struct x86_nxvm_product_machine_binding {
     const char *name;
     x86_core_cpu_profile cpu;
     x86_fpu_profile fpu;
+    /* Product-selected runner policy.  Standard remains the zero/default
+     * value, so existing bindings retain their established behavior. */
+    x86_nxvm_machine_speed initial_speed;
     x86_nxvm_machine_floppy_format floppy_format;
     lib_size bios_count;
     const x86_nxvm_machine_assets *firmware;

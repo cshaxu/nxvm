@@ -82,6 +82,7 @@ lib_status x86_nxvm_machine_set_speed(x86_nxvm_machine *machine, x86_nxvm_machin
 lib_i32 main(void)
 {
     const x86_nxvm_product_machine_binding binding = {.name = "fixture", .cpu = X86_CORE_CPU_PROFILE_80386,
+        .initial_speed = X86_NXVM_MACHINE_SPEED_TURBO,
         .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_1200K, .bios_count = 2u, .prepare = prepare};
     x86_nxvm_product_request request = {.display = "console", .floppy = {"disk"},
         .floppy_count = 1u, .floppy_mode = {LIB_STORAGE_MEDIUM_READONLY},
@@ -124,6 +125,7 @@ lib_i32 main(void)
         observed.fixed_disk_mode[0] != LIB_STORAGE_MEDIUM_OVERLAY) return 4;
     phase = 0u;
     if (x86_nxvm_product_compose_machine(&binding, &request, &machine) != LIB_STATUS_OK ||
+        speed != X86_NXVM_MACHINE_SPEED_TURBO ||
         machine.information(machine.context, machine.composition.machine, &info) != LIB_STATUS_OK ||
         info.machine_name != binding.name || lib_text_compare(info.cpu_name, "80386") != 0 ||
         info.memory_bytes != 1024u || info.fixed_disk_cylinders != 40u ||
