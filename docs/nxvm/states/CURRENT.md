@@ -2,6 +2,65 @@
 
 ## Current Work
 
+## M5 T580 — Active: PC110 qualification is source-gated
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S37 closed; T580 remains active. |
+| Admission And Approval | The owner directed autonomous T580 execution on 2026-10-25. S36 established that another undifferentiated complete-delay execution budget has no practical diagnostic value. |
+| Objective | Preserve the source-gated PC110 qualification boundary until new evidence supports a bounded receiver. |
+| Non-goals | No longer instruction-run probe, production route, guessed mailbox or power-MCU reply, BIOS interception, Shared/Core ABI change, firmware/media change, artifact or boot claim. |
+| Reference Baseline | `3dceb3c42` plus S35 route inventory and S36 timeout evidence. |
+| Candidate Proposal | S37 reconciled selected BIOS EC-A helpers and Open-Source-PC110 records; the only complete mailbox subset is already owned. |
+| Files And ABI Surface | Documentation/evidence only; no source/test/build/asset change is admitted without new evidence. |
+| Applicable Rules | `docs/rules/EXECUTION.md` coverage-ledger and diagnostic-containment rules; source policy; Architecture/Coding single-owner and no-synthetic-route constraints. |
+| Verification | S37 cross-checked BIOS-visible EC-A helpers, existing App routes and source records. Documentation governance and diff checks apply. |
+| Expected Markers | Explicit source-gated disposition and retained owner map. |
+| Asset Needs | Existing hash-pinned external TFT BIOS and research repositories read-only; no download, derivation, movement or commit. |
+| Reporting Requirements | Distinguish source facts from reference-emulator behavior; zero production/test/artifact diff is retained. |
+| Stop Conditions | Required guessed value, BIOS interception, incomplete protocol, Shared/Core change or absent source keeps T580 source-gated. |
+| Exit Criteria | New evidence defines a source-backed receiver or an owner explicitly authorizes a bounded L2 model. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | S37 examined all selected-BIOS EC-A helper pairs; do not create an overlapping trace framework. |
+
+### S37 Closure
+
+The EC-A reconciliation found that the currently implemented `15E8h`/`15ECh`
+ready/write mailbox is the only complete source-backed subset. `15EAh`/`15EBh`
+and `15EEh`/`15EFh` lack reset and protocol semantics, so no receiver is added.
+See the [S37 evidence](../etc/evidence/t580-s37-ec-a-contract-reconciliation.md).
+
+## M5 T580 S36 — Closed: PC110 durable complete-delay observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S36. |
+| Admission And Approval | The owner directed autonomous T580 execution on 2026-10-25. S34's 20M experiment lost its terminal output after the child exited, so its result is not evidence; this S repeats that one bounded observation with durable task-owned output. |
+| Objective | Determine whether the selected BIOS's real `F000:53D0h` routine returns through `F000:5405h` and identify its real caller on both host widths. |
+| Non-goals | No production receiver, timing shortcut, BIOS interception, guessed I/O reply, Shared/Core/App ABI change, firmware/media change, release artifact, or POST/boot claim. |
+| Reference Baseline | `3dceb3c42` (S35), S33 outer-delay return, S34 no-result disposition, and selected TFT BIOS hash. |
+| Candidate Proposal | Temporarily restore one unregistered diagnostic mode with a fixed 20M-retirement containment. Run under a hidden background process that persists stdout/stderr as S-local disposable evidence. Success requires actual entry, `F000:5405h` return and first caller; containment is never success. |
+| Files And ABI Surface | Temporary `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c` only, its S36 evidence/status/proposal, and disposable `build/t580-s36/` logs. The temporary mode is removed before P regardless of result. No production/public ABI/CMake/manifest change. |
+| Applicable Rules | `docs/rules/EXECUTION.md` coverage and diagnostic-containment rules; `ARCHITECTURE.md` single time owner; `CODING.md` no synthetic route; source policy. |
+| Verification | Build each existing Ninja width, execute the named mode in a hidden background process, verify the process's terminal exit and both captured outputs, then remove temporary source/logs and run governance/diff checks. |
+| Expected Markers | `PC110:POST:c000-port61-delay=entered:1 ... returned:1 caller=...` on both widths, or a retained bounded no-return marker. |
+| Asset Needs | Existing hash-pinned external TFT BIOS only; no download, derivation, movement, or commit of firmware/media. |
+| Reporting Requirements | Record x64/x86 exit/result, wall time, exact return/caller if any, temporary source removal, logs removed or retained only as summarized evidence, and no production/artifact claim. |
+| Stop Conditions | Timeout containment, missing/ambiguous result, inconsistent width result, source/test scope expansion, need for a guessed device value, or any production change ends the mode with a no-result disposition. |
+| Exit Criteria | A durable real return/caller fact replaces S34's no-result, or both bounded observations explicitly produce no return; no temporary code/log persists and no unapproved behavior is introduced. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | Reuse exactly the one temporary complete-routine diagnostic and one output-capture mechanism; do not add overlapping trace frameworks or follow arbitrary post-return instructions. |
+
+### S36 Closure
+
+The two durable runs remained host-width-consistent for about 40 minutes but
+did not return from the whole BIOS delay routine before the S-local wall-time
+containment. They therefore provide no entry/return/caller fact and are not
+treated as a no-return fact. All temporary diagnostic code, Scheduled Tasks
+and logs were removed. S33 remains the retained dynamic boundary; S37 returns
+to source-backed receiver-contract research. See the
+[S36 evidence](../etc/evidence/t580-s36-complete-delay-timeout.md).
+
 ## M5 T580 S35 — Closed: PC110 post-delay receiver inventory
 
 | Field | Required record |

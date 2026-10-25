@@ -170,6 +170,35 @@ them. This is an explicit product-qualification block, not a missing test or
 a license to copy PC110-EMU/QEMU synthetic values. See
 [S35 evidence](../etc/evidence/t580-s35-post-delay-receiver-inventory.md).
 
+## S36 — durable complete-delay observation
+
+S36 repeats S34's one complete-routine observation only because S34's extended
+run lost its completed terminal output. The identical 20M containment runs in
+an observable background process, preserving its result long enough to decide
+whether `F000:53D0h` actually returns at `F000:5405h`. It retains no test code
+or output log afterward. No guessed interface follows from a no-return result.
+
+### S36 Closure
+
+The durable x64/x86 observation ran for about 40 minutes with CPU-time parity
+and no fault or early exit, but neither completed the diagnostic's run loop
+before wall-time containment. Since its result is emitted only at loop exit,
+there is no entry/return/caller fact; the result is not a BIOS no-return claim.
+The temporary mode and all task-local launch/output files were removed. The
+whole delay routine is unsuitable as a practical diagnostic boundary; S37
+returns to static, source-backed receiver-contract research. See the
+[S36 evidence](../etc/evidence/t580-s36-complete-delay-timeout.md).
+
+## S37 — EC-A guest-visible receiver contract (closed: source-gated)
+
+S37 reconciled the selected BIOS EC-A helper family with current App routes and
+Open-Source-PC110 evidence. The `15E8h`/`15ECh` ready/write mailbox is already
+implemented. The BIOS-visible `15EAh`/`15EBh` and `15EEh`/`15EFh` pairs lack
+the reset, operation and failure semantics needed for a receiver. No guessed
+indexed file, zero-response route, QEMU synthetic register bank or BIOS
+intercept is admitted. See the
+[S37 evidence](../etc/evidence/t580-s37-ec-a-contract-reconciliation.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.
