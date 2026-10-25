@@ -196,7 +196,7 @@ It cannot select a new PC110 receiver, so no duplicate diagnostic is retained.
 The source-qualified cold configuration image is recorded separately in the
 [S19 evidence](../etc/evidence/t580-s19-cold-config-image.md).
 
-## M5 T580 S19 — Active: L2 chipset cold image
+## M5 T580 S19 — Closed: L2 chipset cold image
 
 | Field | Required record |
 | --- | --- |
@@ -216,6 +216,25 @@ and the resulting qualification limit are recorded in the
 [S19 evidence](../etc/evidence/t580-s19-cold-config-image.md).  This fixes
 the invalid zero-filled baseline only; it does not claim POST completion,
 panel/power behavior, storage boot or original-DSTN support.
+
+## M5 T580 S20 — Closed: rejected RAM-test return checkpoint
+
+| Field | Required record |
+| --- | --- |
+| Objective | Determine whether the observed `F000:6060..6068` RAM-test helper can select a later actual I/O receiver. |
+| Boundary | Temporary existing MyPC110 diagnostic only; no production route, public interface, firmware or artifact input. |
+| Evidence | [S20 RAM-test checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md). |
+| Exit | The temporary capture was removed because neither host width established the proposed semantic transition. |
+
+### S20 Closure
+
+The earlier `F000:6064` execute-watch observation was a stopped-at-entry
+diagnostic boundary, not proof that the BIOS completed the surrounding helper.
+The temporary two-width capture required retirement of `F000:6068`, departure
+from that helper, and one subsequent port operation. Neither width met that
+condition before returning to the already-qualified finite port-61 delay
+loop. It therefore selects no receiver and leaves no failing diagnostic,
+production change or PC110 release claim.
 
 ### S11 Closure
 
