@@ -107,73 +107,15 @@ static lib_status mypc110_machine_capture_display(void *context,
     return x86_f65535_capture_snapshot((x86_f65535 *)context, out_snapshot);
 }
 
-/* Preserve the existing board-owned processor-reset route if architectural
- * shutdown is later observed.  The admitted BIOS's first reset is the normal
- * 8042 FEh command; this binding makes no contrary firmware claim. */
-static void mypc110_machine_profile_reset(void *context,
-    x86_nxvm_board_reset_phase phase)
-{
-    (void)context;
-    (void)phase;
-}
-
-static void mypc110_machine_profile_refresh_nmi(void *context)
-{
-    (void)context;
-}
-
-static lib_bool mypc110_machine_profile_refresh_request(void *context,
-    lib_u8 *out_address)
-{
-    (void)context;
-    (void)out_address;
-    return LIB_FALSE;
-}
-
-static void mypc110_machine_profile_refresh_complete(void *context)
-{
-    (void)context;
-}
-
-static lib_bool mypc110_machine_profile_next_deadline(void *context,
-    lib_u64 now, lib_u64 *out_tick)
-{
-    (void)context;
-    (void)now;
-    (void)out_tick;
-    return LIB_FALSE;
-}
-
-static void mypc110_machine_profile_finalize(void *context)
-{
-    (void)context;
-}
-
-static lib_status mypc110_machine_profile_create(
-    const x86_nxvm_board_profile_services *services, void *context,
-    x86_nxvm_board_profile_binding *out_binding)
-{
-    if (services == LIB_NULL || services->core == LIB_NULL || context == LIB_NULL ||
-        out_binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_binding = (x86_nxvm_board_profile_binding) {
-        .context = context,
-        .reset = mypc110_machine_profile_reset,
-        .refresh_nmi = mypc110_machine_profile_refresh_nmi,
-        .refresh_request = mypc110_machine_profile_refresh_request,
-        .refresh_complete = mypc110_machine_profile_refresh_complete,
-        .next_deadline = mypc110_machine_profile_next_deadline,
-        .finalize = mypc110_machine_profile_finalize,
-        .shutdown_resets = LIB_TRUE};
-    return LIB_STATUS_OK;
-}
 
 static lib_status mypc110_machine_configure(void *opaque,
     x86_nxvm_board_plan *board_plan)
 {
+    mypc110_machine_plan *plan = opaque;
     lib_status status;
 
     status = x86_nxvm_board_plan_bind_profile_factory(board_plan,
-        mypc110_machine_profile_create, opaque);
+        mypc110_firmware_profile_create, &plan->firmware);
     if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_plan_configure_hdc(board_plan,
             X86_NXVM_MACHINE_MEDIA_HDD_ID, X86_NXVM_BOARD_MEDIA_ID_INVALID,

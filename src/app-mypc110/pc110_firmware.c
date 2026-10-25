@@ -30,6 +30,15 @@ static lib_status mypc110_firmware_decode(const mypc110_firmware *firmware,
         *out_flash = LIB_TRUE;
         return LIB_STATUS_OK;
     }
+    if (physical >= MYPC110_SMRAM_PHYSICAL_START &&
+        physical - MYPC110_SMRAM_PHYSICAL_START < MYPC110_SMRAM_BYTES) {
+        if ((firmware->memory_control & 8u) == 0u && !firmware->smram_active)
+            return LIB_STATUS_UNSUPPORTED;
+        *out_offset = MYPC110_FIRMWARE_BYTES + physical - MYPC110_SMRAM_PHYSICAL_START;
+        *out_internal = LIB_TRUE;
+        *out_flash = LIB_FALSE;
+        return LIB_STATUS_OK;
+    }
     if (physical < MYPC110_VIDEO_PHYSICAL_START || physical >= 0x00100000u)
         return LIB_STATUS_UNSUPPORTED;
     if (firmware->configuration_chip == LIB_NULL) return LIB_STATUS_INVALID_STATE;
@@ -62,6 +71,12 @@ static lib_status mypc110_firmware_query(void *owner, lib_u32 physical,
     lib_bool internal;
     lib_bool flash;
 
+    if (physical >= MYPC110_SMRAM_PHYSICAL_START &&
+        physical - MYPC110_SMRAM_PHYSICAL_START < MYPC110_SMRAM_BYTES) {
+        if (bytes == 0u || bytes > MYPC110_SMRAM_BYTES -
+                (physical - MYPC110_SMRAM_PHYSICAL_START)) return LIB_STATUS_UNSUPPORTED;
+        return mypc110_firmware_decode(owner, physical, access, &offset, &internal, &flash);
+    }
     if (physical < MYPC110_VIDEO_PHYSICAL_START ||
         (physical >= 0x00100000u && physical < MYPC110_RESET_PHYSICAL_START) ||
         bytes == 0u || bytes > (physical >= MYPC110_RESET_PHYSICAL_START ?
@@ -177,7 +192,9 @@ static lib_status mypc110_firmware_reset(void *opaque,
                 X86_VL82C420_BANK_ECED, 0u);
     }
     if (status != LIB_STATUS_OK) return status;
-    lib_memory_set(binding->shadow, 0u, MYPC110_FIRMWARE_BYTES);
+    lib_memory_set(binding->shadow, 0u, MYPC110_FIRMWARE_BYTES + MYPC110_SMRAM_BYTES);
+    binding->memory_control = 0u;
+    binding->smram_active = LIB_FALSE;
     binding->cpu_unlock_step = 0u;
     binding->cpu_power_mode = 0u;
     x86_vl82c420_reset_protocol(binding->configuration_chip);
@@ -194,7 +211,7 @@ lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
     if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES || out_firmware == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_firmware = (mypc110_firmware) {0};
-    out_firmware->shadow = lib_allocate_zero(1u, MYPC110_FIRMWARE_BYTES);
+    out_firmware->shadow = lib_allocate_zero(1u, MYPC110_FIRMWARE_BYTES + MYPC110_SMRAM_BYTES);
     if (out_firmware->shadow == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     out_firmware->bios = bios;
     return LIB_STATUS_OK;
@@ -216,6 +233,9 @@ lib_status mypc110_firmware_install_routes(x86_core_machine *machine,
     mypc110_firmware *firmware)
 {
     const x86_core_machine_memory_device_route routes[] = {
+        {MYPC110_SMRAM_PHYSICAL_START, MYPC110_SMRAM_BYTES,
+            mypc110_firmware_callbacks,
+            X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY, LIB_NULL},
         {MYPC110_VIDEO_PHYSICAL_START, MYPC110_FIRMWARE_BYTES,
             mypc110_firmware_callbacks,
             X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL},
@@ -226,6 +246,79 @@ lib_status mypc110_firmware_install_routes(x86_core_machine *machine,
 
     if (firmware == LIB_NULL || firmware->bios == LIB_NULL || firmware->shadow == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    return x86_core_machine_install_memory_device_routes(machine, routes,
+    lib_status status = x86_core_machine_install_memory_device_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, firmware);
+    if (status == LIB_STATUS_OK) firmware->machine = machine;
+    return status;
+}
+
+void mypc110_firmware_system_management_active(void *context, lib_bool active)
+{
+    mypc110_firmware *firmware = context;
+
+    if (firmware->smram_active == active) return;
+    firmware->smram_active = active;
+    x86_core_machine_signal_memory_decode_change(firmware->machine,
+        MYPC110_SMRAM_PHYSICAL_START, MYPC110_SMRAM_BYTES);
+}
+
+/* Preserve the existing board-owned processor-reset route if architectural
+ * shutdown is later observed.  The admitted BIOS's first reset is the normal
+ * 8042 FEh command; this binding makes no contrary firmware claim. */
+static void mypc110_firmware_profile_reset(void *context,
+    x86_nxvm_board_reset_phase phase)
+{
+    (void)context;
+    (void)phase;
+}
+
+static void mypc110_firmware_profile_refresh_nmi(void *context)
+{
+    (void)context;
+}
+
+static lib_bool mypc110_firmware_profile_refresh_request(void *context,
+    lib_u8 *out_address)
+{
+    (void)context;
+    (void)out_address;
+    return LIB_FALSE;
+}
+
+static void mypc110_firmware_profile_refresh_complete(void *context)
+{
+    (void)context;
+}
+
+static lib_bool mypc110_firmware_profile_next_deadline(void *context,
+    lib_u64 now, lib_u64 *out_tick)
+{
+    (void)context;
+    (void)now;
+    (void)out_tick;
+    return LIB_FALSE;
+}
+
+static void mypc110_firmware_profile_finalize(void *context)
+{
+    (void)context;
+}
+
+lib_status mypc110_firmware_profile_create(
+    const x86_nxvm_board_profile_services *services, void *context,
+    x86_nxvm_board_profile_binding *out_binding)
+{
+    if (services == LIB_NULL || services->core == LIB_NULL || context == LIB_NULL ||
+        out_binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_binding = (x86_nxvm_board_profile_binding) {
+        .context = context,
+        .reset = mypc110_firmware_profile_reset,
+        .refresh_nmi = mypc110_firmware_profile_refresh_nmi,
+        .refresh_request = mypc110_firmware_profile_refresh_request,
+        .refresh_complete = mypc110_firmware_profile_refresh_complete,
+        .next_deadline = mypc110_firmware_profile_next_deadline,
+        .finalize = mypc110_firmware_profile_finalize,
+        .shutdown_resets = LIB_TRUE,
+        .system_management_active = mypc110_firmware_system_management_active};
+    return LIB_STATUS_OK;
 }

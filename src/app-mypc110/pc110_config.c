@@ -1,5 +1,6 @@
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
+#include "x86-core/machine/machine_interface.h"
 
 #define MYPC110_CPU_POWER_MODE_PORT 0x0022u
 #define MYPC110_CPU_CONFIG_PORT 0x0023u
@@ -14,6 +15,8 @@
 #define MYPC110_ECED_DATA_PORT 0x00edu
 #define MYPC110_ECED_CONFIG_CLOSE_PORT 0x00f9u
 #define MYPC110_ECED_CONFIG_OPEN_PORT 0x00fbu
+#define MYPC110_MEMORY_CONTROL_PORT 0x0302u
+#define MYPC110_ASMI_PORT 0x15eeu
 
 /* L2 cold image: Open-Source-PC110 live VL82C420 captures, not imported
  * implementation code.  The source files' SHA-256 values are recorded in
@@ -116,6 +119,10 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
     case MYPC110_CPU_POWER_MODE_PORT:
         *out_value = firmware->cpu_power_mode;
         return LIB_STATUS_OK;
+    case MYPC110_MEMORY_CONTROL_PORT:
+        *out_value = (firmware->cpu_power_mode & 0x0eu) == 0x0au ?
+            firmware->memory_control : 0xffffu;
+        return LIB_STATUS_OK;
     case MYPC110_BLOCK2_UNLOCK_FC23_PORT:
         x86_vl82c420_observe_unlock_read(chip,
             X86_VL82C420_UNLOCK_READ_FC23);
@@ -173,13 +180,28 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     chip = firmware->configuration_chip;
+    if (port == MYPC110_ASMI_PORT) {
+        x86_vl82c420_write_asmi(chip, port);
+        return x86_core_machine_set_smi(firmware->machine, x86_vl82c420_smi_asserted(chip));
+    }
+    if (port == MYPC110_MEMORY_CONTROL_PORT) {
+        if ((firmware->cpu_power_mode & 0x0eu) != 0x0au) return LIB_STATUS_OK;
+        if (access_bytes != 1u && access_bytes != 2u) return LIB_STATUS_UNSUPPORTED;
+        lib_u16 control = access_bytes == 1u ?
+            (lib_u16)((firmware->memory_control & 0xff00u) | value) : (lib_u16)value;
+        if (control != firmware->memory_control) {
+            firmware->memory_control = control;
+            x86_core_machine_signal_memory_decode_change(firmware->machine,
+                MYPC110_SMRAM_PHYSICAL_START, MYPC110_SMRAM_BYTES);
+        }
+        return LIB_STATUS_OK;
+    }
     /* L2 SL-compatible configuration protocol, distinct from Block 2's
      * indexed-register unlock. The final write must be a word access. */
     if (port == MYPC110_CPU_CONFIG_PORT) {
         if (access_bytes == 1u && (value & 1u) != 0u) {
             firmware->cpu_power_mode &= (lib_u16)~1u;
             firmware->cpu_unlock_step = 0u;
-            x86_vl82c420_relock(chip);
         } else {
             firmware->cpu_unlock_step = access_bytes == 1u &&
                 (value & 0x80u) == 0u ? 1u : 0u;
@@ -204,9 +226,9 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
             firmware->cpu_power_mode = (lib_u16)(value | 1u);
         }
         if (access_bytes == 2u && (value & 0x0100u) != 0u) {
+            /* CPU configuration lock is independent of Block 2's protocol. */
             firmware->cpu_power_mode &= (lib_u16)~1u;
             firmware->cpu_unlock_step = 0u;
-            x86_vl82c420_relock(chip);
         }
         return LIB_STATUS_OK;
     }
@@ -237,6 +259,8 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         lib_status status = x86_vl82c420_write_selected(chip, bank,
             (lib_u8)value);
 
+        if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_BLOCK2)
+            return x86_core_machine_set_smi(firmware->machine, x86_vl82c420_smi_asserted(chip));
         return status == LIB_STATUS_INVALID_STATE &&
             bank == X86_VL82C420_BANK_BLOCK2 ? LIB_STATUS_OK : status;
     }
@@ -245,7 +269,10 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
 lib_status mypc110_config_install_routes(x86_core_machine *machine,
     mypc110_firmware *firmware, x86_vl82c420 *chip)
 {
+    lib_status status;
     const x86_core_machine_port_route port_routes[] = {
+        {MYPC110_MEMORY_CONTROL_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
+        {MYPC110_ASMI_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_CPU_POWER_MODE_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_INDEX_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_DATA_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
@@ -264,7 +291,9 @@ lib_status mypc110_config_install_routes(x86_core_machine *machine,
     if (machine == LIB_NULL || firmware == LIB_NULL || chip == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    firmware->configuration_chip = chip;
-    return x86_core_machine_install_port_routes(machine, port_routes,
+    if (firmware->machine != machine) return LIB_STATUS_INVALID_STATE;
+    status = x86_core_machine_install_port_routes(machine, port_routes,
         sizeof(port_routes) / sizeof(port_routes[0]));
+    if (status == LIB_STATUS_OK) firmware->configuration_chip = chip;
+    return status;
 }

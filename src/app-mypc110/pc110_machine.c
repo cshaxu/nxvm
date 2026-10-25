@@ -96,6 +96,10 @@ lib_status mypc110_base_composition_create(const lib_u8 *bios,
         }
     }
     if (status == LIB_STATUS_OK) {
+        status = x86_nxvm_board_plan_bind_profile_factory(plan,
+            mypc110_firmware_profile_create, &composition->firmware);
+    }
+    if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_create_from_plan(plan, &composition->core,
             &composition->board);
     }

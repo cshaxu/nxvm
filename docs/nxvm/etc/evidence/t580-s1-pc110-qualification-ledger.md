@@ -125,3 +125,15 @@ initializer predicate as repaired, not the complete cold-memory/SMRAM member:
 CPU-only isolation, Board SMIACT forwarding, trigger/acknowledge and RSM are
 still open. The boot-only lower Flash bank view also remains unqualified.
 No other frozen product row changes disposition and no PC110 EXE is published.
+
+The final S47 active-view continuation implements the remaining cold-receiver
+members: one CPU-only SMRAM overlay, Board-to-App SMIACT, guest preparation,
+independent configuration locks, source-qualified ASMI, W0C acknowledgement,
+rearm and real RSM. Both widths execute the registered vendor service and
+return before passing timer calibration with delta 166C. Core/chip/App units
+and all 712 repository unit cases per width pass; receiving artifacts rebuild.
+Shared implementation is `794380f69`; the App, evidence and PC receiving
+artifacts are delivered together by the NXVM continuation. Final coordinator
+review still determines acceptance of this batch. The boot-only lower Flash
+view and all later POST/Setup/guest/panel/product members remain unqualified;
+none is hidden by accepting this one cold-initialization receiver.

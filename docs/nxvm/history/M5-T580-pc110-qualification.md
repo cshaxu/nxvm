@@ -68,3 +68,17 @@ timer integration passes with delta 166E after one processor reset. The
 [S47 evidence](../etc/evidence/t580-s47-cold-initialization-contract.md)
 separates this direct proof from still-open SMRAM isolation, SMIACT forwarding,
 trigger/RSM and boot-only Flash selection. S47 and T580 remain active.
+
+The final S47 continuation uses Shared `794380f69` for CPU/DMA-qualified
+memory routing, bounded cache-view invalidation, existing SMIACT forwarding,
+chip ASMI and the missing F65535 DAC status read. The App owns the separate
+SMRAM contents and hardware decode. Full BIOS caller reconciliation rejects
+the draft's bit-7 trigger and establishes source mask 20 from the initializer
+that registers the vendor handler and enables ASMI. The actual BIOS executes
+that service, acknowledges it and returns through RSM on both host widths;
+timer delta is 166C. All 712 repository unit cases pass per width, all four
+receiving PC INI identities pass and the affected eight PC/two MyRaidenII
+artifacts rebuild. Lib, Emulator and MyNES stay unchanged. Evidence and actual
+source/test counts are in the [S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md).
+This is receiver delivery pending coordinator acceptance, not complete POST,
+guest or PC110 product qualification.

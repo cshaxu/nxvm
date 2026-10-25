@@ -497,3 +497,217 @@ The Core already emits SMIACT; Board's profile contract does not forward it.
 The shared memory query currently cannot distinguish CPU and DMA initiators.
 These are genuine remaining contract boundaries, not reasons to inject the
 handler, unconditionally trigger SMI or declare this decoder a full boot fix.
+
+## Active-view and ASMI receiver continuation
+
+Continuation baseline: `af5e1ff04`. The existing CPU output already brackets
+state save and RSM restore; Board now forwards that physical SMIACT level to
+the App's firmware binding. One additional CPU-only overlay mode uses the
+existing memory resolver. CPU instruction/data/inspection accesses see the
+selected SMRAM view; DMA resolves its ordinary RAM route, including aliases.
+The App extends its one shadow allocation by 64 KiB, not by a second execution
+path or handler cache. IBU-selected 302 bit 3 opens the view during preparation;
+SMIACT keeps it selected during SMM. Full reset clears transient contents and
+controls; processor-only reset does not call the firmware full-reset provider.
+
+One bounded decode-change notification invalidates CPU cache/prefetch contents
+from the old view. It reuses the existing range invalidation algorithm but is
+not subject to the NW bit that suppresses ordinary write snooping. It neither
+executes an instruction nor advances time. Public device callbacks and the
+existing four-lane access-width contract remain unchanged. Lib and Emulator
+are not modified.
+
+### Source reconciliation and rejected draft
+
+- Original *Intel's SL Architecture: Designing Portable Applications* (1993),
+  printed pp. 169--170 (PDF 188--189), distinguishes CPU SMRAM from ordinary
+  memory used by DMA. Its pp. 59/84 establish ASMI's indexed address at 84/85
+  and B5 bit 2 enable. The archived PDF hash remains
+  `3BFEA5A3C1B3BDC6A03BF2E622F24A4522123E3D0AB810386E02E3C72A94755B`.
+- The actual CPU-lock sequence must not relock the independently unlocked
+  Block 2 bank. Removing that coupling allows the initializer's real writes
+  to reach B6=90 rather than disappear behind FF read-back.
+- The unchanged selected BIOS's complete initializer at Flash offsets
+  2B3DF--2B47B registers the vendor handler at 3800:2774 for source mask 20,
+  then configures 84/85 and B5 bit 2. Its dispatcher at 2EB4B acknowledges
+  B7 sources with `~mask & 7F`. This is the direct evidence for the retained
+  L2 bit-5 ASMI model, B7 W0C acknowledgement and FA=1 rearm. It is not a
+  claim of a complete VL82C420 silicon register specification.
+- An uncommitted bit-7 draft was rejected. Mask 80 invokes power management,
+  eventually writing FF=82 and halting at 3800:1333. This is a wrong-source
+  experiment, not proof of a BIOS hang or authority to bypass HLT. Neither
+  the failed trial nor the test fixture's missing required attachment finalizer
+  is retained as a product defect.
+- The wrong-source trial also exercised an existing missing F65535 DAC status
+  read. The archived C&T 65535 Revision 2.0 register reference, printed
+  pp. 77--78, specifies 3C7 read status 00 after a 3C8 index write and 11 after
+  a 3C7 index write. SHA-256:
+  `ACB95E9BD56786227B6B9201B3BFF317ADBD224D1A587FBF8DB515FB5A648A91`.
+  The five-line chip correction and existing DAC regression retain this real
+  operation, without claiming it caused the rejected ASMI branch.
+
+The extra original Intel 241325-001 November 1992 data book was acquired from
+the [Bitsavers mirror](https://bitsavers.trailing-edge.com/components/intel/80486/241325-001_Intel486_SL_82360__Microprocessor_SuperSet_Data_Book_199211.pdf)
+and archived externally as `manuals-nxvm/cpu/intel-486sl-82360-241325-001-1992.pdf`,
+SHA-256 `7E6A936BD8BA057ED642F7E3777C9A20A9944F30300F8A65F4B3E83AC75BE16F`.
+It supplies electrical/background material, not an ASMI status-bit definition;
+no register claim or implementation is derived from its absence of that table.
+No external source, ROM, font or manual is imported into tracked repository code.
+
+### Actual unchanged-firmware proof
+
+The bounded x64 grouped replay confirms the prepared handler, naturally
+triggered after initialization by 15EE with AX=5380/BX=8301. The dispatcher
+reads B7=20, writes 5F, invokes 3800:2774 and executes RSM at 3800:5BC8.
+RSM returns to F000:DD11 with the original AX/BX; no fault or delivered
+exception occurs. The run exits normally after 6,385,235 retirements with
+zero resets. These are observed guest operations, not host callbacks that
+implement the firmware service.
+
+The temporary `--smi-contract` mode and selected-port print sampler are removed.
+The existing timer integration instead requires initialized copy, actual ASMI
+request, vendor handler entry, RSM and timer pass in one execution. The existing
+App configuration fixture proves CPU-only open/close, DMA read/write isolation,
+the actual CPU port-unlock sequence, SMI entry, acknowledgement/rearm, RSM
+register restoration and full reset. Core memory and CPU-cache fixtures cover
+the neutral route and NW-independent decode change; no new test target,
+framework, alternate clock or firmware-address production exception is added.
+
+### Continuation review and regression
+
+Both final host-width executions report:
+
+```text
+PC110:TIMER:passed=1 failed=0 delta=166c executed=11860908
+pc=fffffff0 status=0 copied=1 initialized=1 asmi=1/1 rsm=1
+```
+
+The initial enhanced integrations pass in 34.40 s (x64) and 40.49 s (x86).
+After the last App construction precondition cleanup, the x86 replay passes
+again in 39.88 s. The source delta does not change the successful route:
+configuration installation now requires this firmware's memory routes on the
+same Core, and only publishes the borrowed chip after port installation
+succeeds. Both App unit sets pass 11/11, including rejection before memory
+installation and full-reset SMRAM clearing.
+
+The 711 ordinary repository units pass per width: x64 381.20 s, x86 137.84 s.
+The compiler-spawning Types layout self-test is excluded from those aggregates
+and scheduled separately; its qualification is recorded separately rather than
+silently included in 711. All four source/test manifests changed here validate;
+both Core/NXVM dependency/platform verification targets and NXVM documentation
+governance pass. Whitespace checks pass. No warning suppression is added or
+removed, and existing CPU instruction-file exceptions are not requalified as
+strict-warning-free by this delivery.
+
+Actual C/H change against `af5e1ff04`, from `git diff --numstat`, excludes
+manifests, README, task documents and generated/artifact files:
+
+| Owner | Paths | Added | Deleted | Net |
+| --- | ---: | ---: | ---: | ---: |
+| src/x86-core | 11 | 139 | 42 | +97 |
+| test/x86-core | 11 | 121 | 32 | +89 |
+| src/x86-nxvm | 4 | 15 | 0 | +15 |
+| test/x86-nxvm | 1 | 5 | 0 | +5 |
+| src/app-mypc110 | 6 | 146 | 67 | +79 |
+| test/app-mypc110 | 2 | 107 | 10 | +97 |
+| Total | 35 | 533 | 151 | +382 |
+
+Production is +300/-109, net +191; tests +233/-42, net +191. The positive
+production delta implements the previously absent initiator-qualified memory
+view, cache transition and chip source protocol. Most App profile callbacks
+are moved from the old plan owner, not added parallel callbacks. Test growth
+extends five existing behavior fixtures and the one actual firmware replay;
+the other RAM-test edits are mechanical private-signature migration. No new
+test executable or test framework is introduced.
+
+Actual-change review checks all added/removed C/H hunks and their call sites:
+the sole resolver filters CPU-only providers in every applicable lookup pass;
+DMA preflight and data use the same initiator qualification; provider declines
+and errors retain existing behavior. Ordinary DMA snooping still honors NW,
+whereas a changed memory view does not. Board forwards one existing CPU output;
+the App owns the resulting decode. Initial ASMI is disabled until the guest
+enables it. Pending source, acknowledgement and rearm stay chip-owned, including
+a request between acknowledgement and rearm. Neither App constructor owns a
+second CPU, SMI queue, clock or firmware copy service. Lib, Emulator,
+X86 Debug, X86 IBMPC, MyNES and external ROM/font/media/configuration masters
+remain unchanged.
+
+This qualifies the cold-memory/SMRAM/ASMI receiver, not whole POST, Setup,
+DOS/Windows, live PC110 panel/input, desktop, RDP or a PC110 release. The
+boot-only lower Flash view and remaining product/guest ledger rows are not
+accepted by reaching RSM or the timer checkpoint.
+
+### Final qualification and receiving artifacts
+
+The isolated Types layout self-tests pass in 104.24 s (x64) and 128.85 s (x86),
+completing all 712 current unit cases per width. The final x64 BIOS replay
+passes in 34.50 s, retaining the identical 166C/ASMI/RSM result; the final x86
+replay above passes in 39.88 s. These final runs include the App construction
+precondition correction. Both complete App unit sets pass after the final
+assertions. Subsequent `build-unit-tests` builds in both stable trees report
+`ninja: no work to do`; no second build graph or cache reset is used.
+
+Four real deployed PC products pass the executable-adjacent INI identity
+integration on each width, including wrong-name rejection and INI-relative
+media paths. The four PC pairs retain 0580 and the Core-linked MyRaidenII pair
+retains 0007. PE machine widths are checked for all ten affected artifacts;
+the MyRaidenII receiving files are stripped of compiler debug information.
+MyNES does not link Core and its deployed pair remains unchanged.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `assets/my5160/my5160_0_5_0580_x64.exe` | `56F9E50F0E2DA03AF39DB966AE7861E91159645FAD4189ED90EF8B409AB396D6` |
+| `assets/my5160/my5160_0_5_0580_x86.exe` | `A83DE76FC89BB294093280495B9C439F26333813D4C655BA3CD94C2A6F6F02C4` |
+| `assets/my5170/my5170_0_5_0580_x64.exe` | `C7600E739D9FF4A201F8D6D36D11E87E96AAA8108B7CE6A884238816A388752A` |
+| `assets/my5170/my5170_0_5_0580_x86.exe` | `75160E358A8D4D6833E73A035251D5EAFC0F502650737AEF1323E27F9DF4097D` |
+| `assets/mydeskpro386/mydeskpro386_0_5_0580_x64.exe` | `B70046EB266142C99E1B3883AF77C2F9C399615A68C8FB5D062F59487B39EADB` |
+| `assets/mydeskpro386/mydeskpro386_0_5_0580_x86.exe` | `ADA8C3313EE18E05647132C8BF09E1CA99CA20A06067C97E4EFE925CF216BD89` |
+| `assets/nxvm/nxvm_0_5_0580_x64.exe` | `1AED78193A79733F73BF71A39821B3EB3E4C3EF97474BC51A6482209AE51C332` |
+| `assets/nxvm/nxvm_0_5_0580_x86.exe` | `7EE66D812544C6DE2EBB36C97D1C6A37B931C0DC6B66BD17BBA310DA09FF253E` |
+| `assets/myraidenii/myraidenii_0_0_0007_x64.exe` | `31C09F8E8674182720126952F4D7B775E9CA0E1C3B4B1CDC944152AE42CBD76E` |
+| `assets/myraidenii/myraidenii_0_0_0007_x86.exe` | `E24D9FB666AE005C94459D26539B8D2A72DEC54FCF20A87898F10553F331977A` |
+
+No PC110 preview is deployed or relabelled as a qualified product. The existing
+TFT and separately labelled derived-DSTN previews rebuild only under the two
+stable Ninja trees. Owner INIs, snapshots, disk media, ROM and font masters
+are unchanged. Native automatic unit/INI checks are not owner desktop, RDP,
+PC110 guest or MyRaidenII game-play acceptance. Other guest integrations are
+not rerun by this bounded S47 continuation.
+
+For the whole S47, against original baseline `98889bc39`, tracked C/H changes
+are 39 production paths +577/-296 (net +281) and 49 test paths +533/-128
+(net +405): 88 paths, +1110/-424, net +686. This includes the earlier approved
+write-width and shadow deliveries, not merely the final continuation table.
+
+### Temporary-output disposition
+
+The x64 ordinary-unit aggregate is retained as its terminal result above;
+CTest's rotating native log is not a promised durable raw transcript. The
+following S-owned verification logs have their results copied above and hashes
+recorded before removal after process exit. Raw logs are not fixtures or
+permanent cache content.
+
+| Temporary log | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `x64-app-unit.log` | 1650 | `A06E81F96773131614637586B66563B32F80DBAEBD0D9B22E57356D72E1FF8B7` |
+| `x64-final-build.log` | 3168 | `33B1DBE447A43A715F45D6F93FF68416A2BAB153BE3A1B85BAD032CFE075BDD8` |
+| `x64-final-timer.log` | 394 | `81D23C46E104F9649C83C069C42ABECD83B8F195A412A45971C324402F2BB4CA` |
+| `x64-types-layout.log` | 357 | `9E75B6B1923971B1B4E6F2B5AC3E182A71E9965822DC7C23C21D661B35F170B9` |
+| `x86-app-unit.log` | 1650 | `D4B5D9077EEE892B4A84A8A6CDA2C37296712F7EB5A861B4B9360ABE94C1A2B2` |
+| `x86-final-build.log` | 2219 | `5940A87A7BE2CF8CE5945468500B55CC830534361BD2E282F09905D06C10283B` |
+| `x86-final-timer.log` | 394 | `44C2B4E084EC6E44761F1EBDE50F32F72D0235F40C6ED59C7CA194021FAC6FBE` |
+| `x86-types-layout.log` | 357 | `C5B6ABA824BF27FD23E4F176D853DB22C65EAF859370E1514C40EDAD931A848F` |
+| `x86-unit.log` | 121556 | `787D6544CCE3243DA4256A1BC35BB4347645B0BC520B171A9F244D81AF190606` |
+
+After terminal completion, the real cleanup tool previewed and removed those
+nine logs (131,745 bytes). Four PDF scratch files (4,841,153 bytes) were removed
+after preserving the original externally and recording source hashes. Eleven
+owned, no-longer-registered diagnostic EXE copies from earlier S47 probes
+(25,716,665 bytes) were removed from the two existing test output directories
+after checking current Ninja targets and absence of matching live processes.
+Total disposable cleanup is 30,689,563 bytes. Current integration/previews,
+valid Ninja/ccache products and all owner inputs are preserved.
+
+Shared receiver implementation is pushed as `794380f69`. The companion NXVM
+delivery carries App source, this complete evidence and the eight PC release
+files; MyRaidenII's two receiving artifacts use the next separate-target P.

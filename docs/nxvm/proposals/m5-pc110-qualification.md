@@ -311,6 +311,15 @@ The [S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md)
 preserves sources, superseded observations and exact proof limits. Historical
 S30 closure is not rewritten and no partial proof permits PC110 publication.
 
+The final S47 continuation implements CPU-only active SMRAM, Board SMIACT
+forwarding and the registered ASMI source/acknowledge/rearm protocol. Both
+widths now execute the real vendor handler and RSM, then pass the existing
+timer milestone with delta 166C; full unit and affected-artifact qualification
+is recorded in the same evidence. Accept this complete cold-receiver batch
+only after actual-change review. Boot-only lower Flash selection and later
+POST/Setup/guest/panel/product qualification remain T580 members; this does
+not authorize PC110 publication or treat those rows as accepted.
+
 S43 supersedes S36--S42's assumed complete-delay throughput diagnosis. A
 sampled normal execution reaches the actual PIT calibration and an intentional
 error halt. Its count difference, `4EFF`, violates the BIOS's `1614..1868`

@@ -2,6 +2,12 @@
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
+#include "x86-core/machine/attachment_interface.h"
+
+static void config_route_finalize(void *owner)
+{
+    (void)owner;
+}
 
 static lib_bool config_route_execute(x86_core_machine *machine,
     const lib_u8 *code, lib_size bytes, lib_u64 instructions)
@@ -32,9 +38,9 @@ int main(void)
         0x86u, 0xe0u, 0xe6u, 0x22u, 0xe7u, 0x22u};
     const lib_u8 byte_only[] = {0xb0u, 0x00u, 0xe6u, 0x23u,
         0xb0u, 0x80u, 0xe6u, 0x22u, 0xe6u, 0x22u};
-    const lib_u8 lock[] = {0xb8u, 0x00u, 0x01u, 0xe7u, 0x22u};
+    const lib_u8 cpu_lock[] = {0xb8u, 0x00u, 0x01u, 0xe7u, 0x22u};
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
+        .memory_bytes = 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
     };
     x86_core_machine *machine = LIB_NULL;
     x86_vl82c420 *chip = LIB_NULL;
@@ -60,11 +66,17 @@ int main(void)
         mypc110_firmware_create(bios, sizeof(bios), &firmware) != LIB_STATUS_OK ||
         x86_vl82c420_create(&chip) != LIB_STATUS_OK ||
         mypc110_config_initialize_cold_image(chip) != LIB_STATUS_OK ||
+        mypc110_config_install_routes(machine, &firmware, chip) != LIB_STATUS_INVALID_STATE ||
+        firmware.configuration_chip != LIB_NULL ||
         x86_core_machine_bind_firmware_provider(machine,
             mypc110_firmware_provider(), &firmware) != LIB_STATUS_OK ||
         mypc110_firmware_install_routes(machine, &firmware) != LIB_STATUS_OK ||
         mypc110_config_install_routes(machine, &firmware, chip) != LIB_STATUS_OK ||
         mypc110_config_install_routes(machine, &firmware, chip) != LIB_STATUS_INVALID_STATE ||
+        x86_core_machine_bind_attachment(machine, &(x86_core_machine_attachment){
+            .context = &firmware,
+            .finalize_devices = config_route_finalize,
+            .system_management_active = mypc110_firmware_system_management_active}) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
@@ -79,7 +91,7 @@ int main(void)
             x86_core_machine_bus_write(machine, 0x0022u, 0x0au) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
             value != 0x0bu ||
-            !config_route_execute(machine, lock, sizeof(lock), 2u) ||
+            !config_route_execute(machine, cpu_lock, sizeof(cpu_lock), 2u) ||
             x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
             value != 0x0100u ||
             x86_core_machine_bus_write(machine, 0x0074u, 0x7au) != LIB_STATUS_OK ||
@@ -114,7 +126,7 @@ int main(void)
             x86_core_machine_bus_write(machine, 0x0024u, 0xb8u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0x00u ||
-            !config_route_execute(machine, lock, sizeof(lock), 2u) ||
+            !config_route_execute(machine, cpu_lock, sizeof(cpu_lock), 2u) ||
             x86_core_machine_bus_write(machine, 0x0074u, 0x80u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x0076u, 0x5au) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x0074u, 0u) != LIB_STATUS_OK ||
@@ -126,10 +138,10 @@ int main(void)
             x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
             value != 0x29u ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
-            value != 0xffu ||
+            value != 0x00u ||
             x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
-            value != 0xffu ||
+            value != 0x00u ||
             x86_core_machine_bus_read(machine, 0xfc23u, &value) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0xc023u, &value) != LIB_STATUS_OK ||
@@ -138,9 +150,16 @@ int main(void)
             x86_core_machine_bus_write(machine, 0x0025u, 0x6cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0x6cu ||
-            !config_route_execute(machine, lock, sizeof(lock), 2u) ||
+            !config_route_execute(machine, cpu_lock, sizeof(cpu_lock), 2u) ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
-            value != 0xffu ||
+            value != 0x6cu ||
+            x86_core_machine_bus_write(machine, 0x0023u, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0x0100u ||
+            x86_core_machine_bus_read(machine, 0x0023u, &value) != LIB_STATUS_OK ||
+            value != 0x7fu ||
+            x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
+            value != 0x6cu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != 0xffu ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
@@ -193,6 +212,71 @@ int main(void)
             value != 0xccu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != 0xffu;
+    }
+    if (!failed) {
+        const lib_u8 handler[] = {
+            0xbau, 0x24u, 0u, 0xb0u, 0xb7u, 0xeeu, 0x42u,
+            0xb0u, 0xdfu, 0xeeu, 0x4au, 0xb0u, 0xfau, 0xeeu,
+            0x42u, 0xb0u, 1u, 0xeeu, 0x0fu, 0xaau};
+        const lib_u8 smi_configuration[][2u] = {
+            {0xfau, 1u}, {0x84u, 0xeeu}, {0x85u, 0x15u},
+            {0xb5u, 4u}, {0xb6u, 0x80u}};
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
+        lib_u16 dma = 0u;
+
+        failed |= x86_core_machine_memory_write(machine, 0x30000u,
+                &(lib_u8){0xaau}, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x302u, 8u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xaau ||
+            !config_route_execute(machine, unlock, sizeof(unlock), 5u) ||
+            x86_core_machine_bus_write(machine, 0x22u, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x302u, 8u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0u ||
+            x86_core_machine_memory_write(machine, 0x30000u,
+                &(lib_u8){0xbbu}, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x38000u, handler, sizeof(handler)) != LIB_STATUS_OK ||
+            x86_core_machine_dma_memory_cycle(machine, 0x30000u, 1u, 2u,
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, &dma, LIB_NULL, LIB_NULL, LIB_NULL) !=
+                LIB_STATUS_OK || dma != 0xaau;
+        dma = 0xccu;
+        failed |= !failed && (x86_core_machine_dma_memory_cycle(machine, 0x30000u, 1u, 2u,
+                X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &dma, LIB_NULL, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xbbu ||
+            x86_core_machine_bus_write(machine, 0x302u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xccu ||
+            !config_route_execute(machine, cpu_lock, sizeof(cpu_lock), 2u) ||
+            x86_core_machine_bus_read(machine, 0xfc23u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xc023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x23u, &value) != LIB_STATUS_OK);
+        for (lib_size index = 0u; !failed && index < sizeof(smi_configuration) / sizeof(smi_configuration[0]); ++index)
+            failed |= x86_core_machine_bus_write(machine, 0x24u, smi_configuration[index][0]) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0x25u, smi_configuration[index][1]) != LIB_STATUS_OK;
+        failed |= !failed && (x86_core_machine_debug_capture_cpu_snapshot(machine,
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15eeu, 0x80u) != LIB_STATUS_OK ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+            !firmware.smram_active || result.linear_pc != 0x38000u ||
+            x86_core_machine_dma_memory_cycle(machine, 0x30000u, 1u, 2u,
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, &dma, LIB_NULL, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+            dma != 0xccu);
+        for (lib_u8 instruction = 0u; !failed && instruction < 13u; ++instruction)
+            failed |= x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+                LIB_STATUS_OK || result.executed != 1u;
+        failed |= !failed && (firmware.smram_active || x86_vl82c420_smi_asserted(chip) ||
+            x86_core_machine_debug_capture_cpu_snapshot(machine,
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            after.eip != before.eip || after.cs.base != before.cs.base ||
+            after.eax != before.eax || after.edx != before.edx ||
+            x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xccu ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK || firmware.memory_control != 0u ||
+            firmware.smram_active || x86_vl82c420_smi_asserted(chip) ||
+            !config_route_execute(machine, unlock, sizeof(unlock), 5u) ||
+            x86_core_machine_bus_write(machine, 0x22u, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x302u, 8u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0u ||
+            x86_core_machine_memory_read(machine, 0x38000u, &byte, 1u) != LIB_STATUS_OK || byte != 0u);
     }
     if (machine != LIB_NULL && chip != LIB_NULL) {
         failed |= x86_core_machine_remove_port_routes(machine, &firmware) != LIB_STATUS_OK ||
