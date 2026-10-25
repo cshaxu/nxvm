@@ -41,7 +41,8 @@ int main(void)
     if (!failed && x86_nxvm_machine_get_reset_vector(machine, &reset) != LIB_STATUS_OK)
         failed = 3;
     else if (!failed && (x86_nxvm_machine_get_information(machine, &information) !=
-            LIB_STATUS_OK || information.memory_bytes != 20u * 1024u * 1024u))
+            LIB_STATUS_OK || information.memory_bytes != 20u * 1024u * 1024u ||
+            !information.fixed_disk_present))
         failed = 6;
     else if (!failed && (reset.cs != 0xf000u || reset.ip != 0xfff0u))
         failed = 4;

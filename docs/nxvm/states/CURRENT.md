@@ -34,6 +34,31 @@ X86-NXVM unit set (97 tests) and complete MyPC110 unit set (8 tests). This is
 not proof that the admitted real firmware reaches mode 12, completes POST, or
 has a qualified LCD/power or guest/storage path.
 
+### S10 Brief
+
+Connect the PC110's source-qualified standard ATA task-file receiver through
+the existing X86-NXVM Board and Machine media route. The receiver is limited
+to the confirmed 1F0h--1F7h task file and IRQ14 attachment; it reuses the
+existing ATA PIO controller, media registry and fixed-disk owner. It must not
+introduce a PCMCIA model, a synthetic disk, a new clock, or a guest-boot
+claim. The construction path must also bind its media registry when ATA is
+the only media consumer. Prove the resulting App board accepts its existing
+ATA ports on both host widths and record the L2 limit.
+
+### S10 Closure
+
+MyPC110 now gives its existing Board plan the source-qualified ATA PIO task
+file (`1F0h`--`1F7h`, alternate status/control at `3F6h`) and IRQ14, while
+reusing the existing fixed-disk media owner. X86-NXVM construction now binds
+the existing media registry whenever either a floppy or ATA controller is a
+consumer, so an ATA-only profile has no hidden floppy prerequisite. The
+MyPC110 construction contract verifies the resulting fixed-disk topology.
+
+Both host widths passed the complete X86-NXVM set (234 tests), complete
+MyPC110 set (8 tests), and the two relevant manifest checks. This is an L2
+receiver only: it does not establish PC-Card behavior, disk geometry, ATA
+mechanical timing, a guest boot, POST completion, or original-DSTN support.
+
 ### S5 Closure
 
 S5 is accepted as a finite return classification. Both host widths leave the

@@ -282,7 +282,8 @@ lib_status x86_nxvm_machine_storage_initialize(x86_nxvm_machine *machine)
     if (status != LIB_STATUS_OK) { x86_nxvm_machine_storage_finalize(machine); return status; }
     topology.display.text_glyphs = machine->construction.text_glyphs;
     status = x86_nxvm_board_plan_set_topology(machine->x86_nxvm_board_plan, &topology);
-    if (status == LIB_STATUS_OK && machine->construction.floppy_slot_count != 0u) {
+    if (status == LIB_STATUS_OK && (machine->construction.floppy_slot_count != 0u ||
+        machine->construction.hdc_present)) {
         status = x86_nxvm_board_plan_bind_media_registry(machine->x86_nxvm_board_plan,
             machine->media_registry);
     }

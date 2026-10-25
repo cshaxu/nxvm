@@ -6,6 +6,7 @@
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_lpt_interface.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
+#include "x86-nxvm/machine/media/media_interface.h"
 
 typedef struct mypc110_machine_plan {
     mypc110_tft_firmware firmware;
@@ -71,6 +72,27 @@ static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
         .ticks_per_second = 32768u,
         .timing = {8u, 65u, X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE}}
 };
+
+/* PC110's internal CF/PC-Card storage reaches a standard ATA task file at
+ * 1F0h--1F7h and IRQ14. The selected firmware is CHS-only, but later software
+ * may issue IDENTIFY/LBA commands directly; this describes the controller
+ * interface, not a BIOS policy or inserted medium. No source gives an ATA
+ * service duration on the Core tick axis, so zero retains the existing
+ * immediate-owner model rather than inventing a mechanical time. */
+static const x86_nxvm_board_hdc_config mypc110_machine_hdc = {
+    .protocol = X86_NXVM_BOARD_HDC_PROTOCOL_ATA_PIO,
+    .irq = 14u,
+    .bus.task_file = {
+        .data_port = 0x01f0u,
+        .error_features_port = 0x01f1u,
+        .sector_count_port = 0x01f2u,
+        .sector_number_port = 0x01f3u,
+        .cylinder_low_port = 0x01f4u,
+        .cylinder_high_port = 0x01f5u,
+        .drive_head_port = 0x01f6u,
+        .status_command_port = 0x01f7u,
+        .alternate_status_device_control_port = 0x03f6u,
+        .lba28_supported = LIB_TRUE}};
 
 static lib_status mypc110_machine_capture_display(void *context,
     x86_video_snapshot *out_snapshot)
@@ -141,8 +163,16 @@ static lib_status mypc110_machine_profile_create(
 static lib_status mypc110_machine_configure(void *opaque,
     x86_nxvm_board_plan *board_plan)
 {
-    return x86_nxvm_board_plan_bind_profile_factory(board_plan,
+    lib_status status;
+
+    status = x86_nxvm_board_plan_bind_profile_factory(board_plan,
         mypc110_machine_profile_create, opaque);
+    if (status == LIB_STATUS_OK) {
+        status = x86_nxvm_board_plan_configure_hdc(board_plan,
+            X86_NXVM_MACHINE_MEDIA_HDD_ID, X86_NXVM_BOARD_MEDIA_ID_INVALID,
+            &mypc110_machine_hdc);
+    }
+    return status;
 }
 
 static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine *core)
@@ -207,7 +237,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .floppy_kind = X86_NXVM_BOARD_FLOPPY_35_1440K,
         .media_kind = X86_NXVM_BOARD_FLOPPY_35_1440K,
         .floppy_slot_count = 0u,
-        .hdc_present = LIB_FALSE,
+        .hdc_present = LIB_TRUE,
         .memory_reconfigurable = LIB_FALSE,
         .display_snapshot_provider = mypc110_machine_capture_display,
         .display_snapshot_context = plan->display_controller,
