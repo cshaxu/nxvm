@@ -65,18 +65,8 @@ static lib_status mypc110_tft_firmware_read(void *owner, lib_u32 physical,
 static lib_status mypc110_tft_firmware_read_instruction(void *owner,
     lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    const mypc110_tft_firmware *firmware = owner;
-    lib_size offset;
-
-    (void)observe_only;
-    if (firmware == LIB_NULL || firmware->bios == LIB_NULL || destination == 0u ||
-        physical < MYPC110_VIDEO_PHYSICAL_START) return LIB_STATUS_UNSUPPORTED;
-    offset = (lib_size)(physical - MYPC110_VIDEO_PHYSICAL_START);
-    if (offset > MYPC110_VIDEO_SHADOW_BYTES ||
-        bytes > MYPC110_VIDEO_SHADOW_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
-    lib_memory_copy((void *)destination,
-        firmware->bios + MYPC110_VIDEO_FLASH_OFFSET + offset, bytes);
-    return LIB_STATUS_OK;
+    return mypc110_tft_firmware_read(owner, physical, destination, bytes,
+        observe_only);
 }
 
 static lib_status mypc110_tft_firmware_write(void *owner, lib_u32 physical,

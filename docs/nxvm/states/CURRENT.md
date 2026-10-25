@@ -59,7 +59,7 @@ MyPC110 set (8 tests), and the two relevant manifest checks. This is an L2
 receiver only: it does not establish PC-Card behavior, disk geometry, ATA
 mechanical timing, a guest boot, POST completion, or original-DSTN support.
 
-## Active Subtask — M5 T580 S14
+## M5 T580 S14 — Closed: post-C000 observation
 
 | Field | Required record |
 | --- | --- |
@@ -90,6 +90,39 @@ mistakenly treating a retirement ceiling as a hardware requirement. No
 production, public-interface, asset or release input changed. The evidence
 records why live SCAMP values are not a cold-state basis. The next S must
 start from documented C000 option-ROM/F65535 return semantics.
+
+## Active Subtask — M5 T580 S15
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S15. |
+| Admission And Approval | The owner directed PC110 work to continue and grants standing approval for bounded App/Core implementation, verification, commit and push work. |
+| Objective | Make the selected PC110 C000 video shadow one executable memory owner: instruction fetch must observe the same writable shadow already observed by data reads and writes. |
+| Non-goals | No new memory map, BIOS special case, synthetic ROM content, F65535 panel model, Shared contract, original-DSTN path, guest boot or release claim. |
+| Reference Baseline | S14 commit `971020a4a`; the App already makes the C000 shadow writable through the existing EC/ED route, but its instruction callback copies from immutable raw Flash. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), using the selected TFT firmware map and its source-qualified writable-video-shadow contract. |
+| Files And ABI Surface | `src/app-mypc110/pc110_firmware.c`, direct App firmware/config-route tests and Current; no public interface or component dependency change. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; one C000 memory owner for data and instruction access. |
+| Verification | Test locked and unlocked C000 writes through the existing EC/ED control route, then execute from the C000 shadow through the ordinary Core instruction path on x64 and x86. |
+| Expected Markers | Before unlock, a write cannot alter the selected shadow; after unlock, data read and executed instruction agree; reset restores the selected raw bank. |
+| Asset Needs | No new asset. Existing TFT firmware remains external and unmodified. |
+| Reporting Requirements | Record the owner mismatch, actual code/test diff, two-width result and the unchanged guest/panel qualification boundary. |
+| Stop Conditions | A need for a second memory route, raw firmware mutation, shared-interface change, unproven ROM behavior or a failure outside the C000 shadow contract. |
+| Exit Criteria | One App-local shadow owner serves both data and instruction access; direct two-width tests and relevant existing diagnostics pass; review is clean. |
+| Original Owner Request | Continue the entire PC110 task, using external PC110 projects and lawful firmware as L2 evidence where appropriate. |
+| Similar-Issue Sweep | Check every App-local firmware instruction callback for a data/instruction backing-store split; retain any intentional immutable route only when documented and tested. |
+
+### S15 Closure
+
+The selected C000 video shadow now has one App-local backing-store owner:
+instruction fetch delegates to the same existing callback as data reads. The
+direct configuration regression proves that a locked write cannot alter the
+shadow, an EC/ED-enabled write is subsequently both readable and executable,
+and reset restores the raw selected bank. The App-local sweep found no second
+instruction callback. Both widths passed all eight MyPC110 unit tests and the
+unchanged real-firmware C000-to-port-61 diagnostic. The evidence records the
+boundary: this is not POST, panel, power, storage, guest, or DSTN
+qualification.
 
 ### S11 Closure
 
