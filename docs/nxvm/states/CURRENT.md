@@ -145,6 +145,36 @@ three-tick Core-axis status source is the only required owner and matches the
 Board implementation. No production repair or new diagnostic is justified;
 the retained evidence records the values and the no-repair disposition.
 
+## M5 T580 S17 — Closed: rejected post-DD05 checkpoint
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S17. |
+| Admission And Approval | The owner directed PC110 work to continue and granted standing approval for bounded App/Core implementation, verification, commit and push work. |
+| Objective | Verify the proposed `F000:DD05` post-reset checkpoint and, only if reached on both widths, identify its first subsequent real I/O receiver without retaining a budget-only success probe. |
+| Non-goals | No guessed SCAMP cold image, synthetic firmware path, panel/power/PCMCIA model, host renderer, second executor, guest boot claim or artifact publication. |
+| Reference Baseline | S16 commit `95dca6598`: real TFT firmware completes the C000-to-port-61 return and establishes a finite delay boundary on both widths. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), consuming one source- or semantic-checkpoint-bounded receiver only. |
+| Files And ABI Surface | Initially the existing App-local real-firmware diagnostic, Current and one evidence record; production/App changes are admitted only after a reproduced owner-local defect or receiver. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; diagnostic code observes existing routes only and Core remains the sole execution/tick owner. |
+| Verification | Start a bounded all-port capture only after the real `F000:DD05` checkpoint; run both host widths and retain a test only if its success condition is a matching semantic event rather than retirement count. |
+| Expected Markers | One matching I/O direction, port, value and execution point on x64/x86, or a documented no-receiver disposition with the temporary probe removed. |
+| Asset Needs | Existing hash-validated external TFT BIOS/font only; no raw input is copied or modified. |
+| Reporting Requirements | Record the selected receiver's provenance/owner or why no receiver can be selected; distinguish research evidence from product qualification. |
+| Stop Conditions | Host divergence, fault, missing asset, a need for synthetic device behavior or Shared/Core contract expansion without a reproduced defect. |
+| Exit Criteria | The capture's conclusion is two-width and semantic; no speculative production patch or failing/budget-only test remains; documentation and actual-diff review are clean. |
+| Original Owner Request | Continue the complete PC110 task while using external PC110 research only as L2 evidence where appropriate. |
+| Similar-Issue Sweep | Inspect the same post-checkpoint capture for every previously unmodeled port class before declaring one receiver unique. |
+
+### S17 Closure
+
+The temporary all-port capture was armed only after a proposed `F000:DD05`
+checkpoint.  On both x64 and x86, eight million containment instructions did
+not reach that point and ended in the known firmware delay region, without a
+Core fault.  It therefore selected no receiver and was removed rather than
+retained as a budget-success test.  No production, public-interface, asset or
+artifact input changed.  See [the S17 evidence](../etc/evidence/t580-s17-post-dd05-port-observation.md).
+
 ### S11 Closure
 
 The diagnostic probe recorded no `3D6h/3D7h` extension writes on either host
@@ -159,7 +189,7 @@ firmware event rather than extending a retirement budget or injecting the
 table. The S10 x64/x86 16-test real-firmware regression remains the retained
 proof for the reached path.
 
-## Active Subtask — M5 T580 S12
+## M5 T580 S12 — Closed: post-C000 event source gate
 
 | Field | Required record |
 | --- | --- |
@@ -193,7 +223,7 @@ advance panel, power, PCMCIA, guest or lifecycle qualification from this path.
 The result is transferred to the qualification ledger rather than hidden as a
 failed test or treated as evidence for a speculative device model.
 
-## Active Subtask — M5 T580 S13
+## M5 T580 S13 — Closed: original-DSTN asset reconciliation
 
 | Field | Required record |
 | --- | --- |
