@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T580 S44 — Active: PC110 PIT/refresh clock relationship
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S44. |
+| Admission And Approval | Owner-directed autonomous implementation; source-based timing upgrades are preapproved. |
+| Objective | Repair the App-owned PIT/refresh ratio and verify the unchanged firmware's actual calibration pass branch. |
+| Non-goals | No BIOS interception, forced registers/flags, new clock owner, Lib/Emulator/CPU changes or boot claim. |
+| Reference Baseline | `de788ecb7`, S43 sampled calibration failure and current external TFT BIOS. |
+| Candidate Proposal | PC110 qualification real-firmware progression batch. |
+| Files And ABI Surface | App construction/clock declarations, existing App firmware harness moved to integration, its registration and NXVM records only; no public API expansion. Initial estimate source/test +45/-12 lines, before removing superseded diagnostic state. |
+| Applicable Rules | Source-labelled L2 clock relationship; single Core timeline; existing rational clock domain; existing fixture; preserve owner INI/ROM/media. |
+| Verification | Dual-width construction units and real BIOS timer calibration; complete repository-only units before S closure; preview rebuilds remain prepublication. |
+| Expected Markers | Actual F000:698F pass path with delta in 1614..1868, or a precise failing timer/IRQ boundary. |
+| Asset Needs | Existing external immutable TFT BIOS/font; no new acquisition. |
+| Reporting Requirements | Actual delta, source grade, normal reset preservation, actual diff, verification limits and any later BIOS boundary. |
+| Stop Conditions | 600 seconds or 200 million instructions per run, 64 KiB output; stop on BIOS halt or fault, never spin indefinitely on device deadlines. |
+| Exit Criteria | Correct clocks, owned regression and real unchanged-BIOS calibration proof; all applicable closure checks. |
+| Original Owner Request | Continue PC110 implementation through to usable fixed products. |
+| Similar-Issue Sweep | Both App construction forms and PIT/RTC consumers must use the same declared 33 MHz time axis; unrelated peripheral ratios remain separately unqualified. |
+
 ## M5 T580 S43 — Closed: live delay-counter diagnosis
 
 | Field | Required record |
@@ -122,13 +143,13 @@ fact. The temporary mode was removed. This neither establishes a BIOS
 non-return nor selects a missing receiver. See the
 [S38 evidence](../etc/evidence/t580-s38-observer-free-delay-boundary.md).
 
-## M5 T580 — Active: PC110 qualification is source-gated
+## M5 T580 — Active: real-firmware product qualification
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S37 closed; T580 remains active. |
+| Identifier Mode | Continuation — M5 T580 S44 is active; T580 remains open. |
 | Admission And Approval | The owner directed autonomous T580 execution on 2026-10-25. S36 established that another undifferentiated complete-delay execution budget has no practical diagnostic value. |
-| Objective | Preserve the source-gated PC110 qualification boundary until new evidence supports a bounded receiver. |
+| Objective | Complete the PC110 qualification ledger through actual firmware and product behavior; S43 supersedes the delay-throughput assumption with a measured PIT calibration failure, repaired in S44. |
 | Non-goals | No longer instruction-run probe, production route, guessed mailbox or power-MCU reply, BIOS interception, Shared/Core ABI change, firmware/media change, artifact or boot claim. |
 | Reference Baseline | `3dceb3c42` plus S35 route inventory and S36 timeout evidence. |
 | Candidate Proposal | S37 reconciled selected BIOS EC-A helpers and Open-Source-PC110 records; the only complete mailbox subset is already owned. |

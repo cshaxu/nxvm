@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_plan_interface.h"
+#include "app-mypc110/pc110_clock.h"
 
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
@@ -28,10 +29,11 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
         X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE_OR_REAL_ADDRESS,
     .ticks_per_instruction = 1u,
     .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
-    .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 33000000u},
+    .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, MYPC110_CPU_CLOCK_HZ},
     .clock_plan = {
-        .dma = {1u, 1u, 0u}, .pit = {1u, 1u, 0u},
-        .auxiliary_pit = {1u, 1u, 0u}, .rtc = {1u, 1u, 0u},
+        .dma = {1u, 1u, 0u}, .pit = {MYPC110_PIT_INPUT_HZ, MYPC110_CPU_CLOCK_HZ, 0u},
+        .auxiliary_pit = {1u, 1u, 0u},
+        .rtc = {MYPC110_RTC_INPUT_HZ, MYPC110_CPU_CLOCK_HZ, 0u},
         .vadp = {1u, 1u, 0u}, .kbc = {1u, 1u, 0u}, .provider = {1u, 1u, 0u}},
     .shared_pit_personality = X86_PIT_PERSONALITY_8254,
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
@@ -54,12 +56,10 @@ static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
      * the limit.  Model only that observed probe window as L2 open bus. */
     .absent_memory_count = 1u,
     .absent_memory = {{0x01400000u, 0x00010000u, 0xffu}},
-    /* PC110 firmware polls port 61h bit 4 immediately after its 8042 reset,
-     * before it programs PIT channel 1.  L2 research (PC110-EMU) likewise
-     * supplies a changing read bit for this early firmware wait.  Use the
-     * existing Core-tick source rather than inventing a second clock.  Three
-     * ticks avoids aliasing the observed four-instruction polling loop; this
-     * is execution compatibility, not a physical refresh-frequency claim.
+    /* L2 nominal refresh period: 18 PIT inputs at 1.193182 MHz, rounded to
+     * 498 ticks on the 33 MHz Core axis. The firmware observes this signal
+     * before programming channel 1 and later compares it with PIT counter 0.
+     * Keep both consumers on the same declared time axis.
      * Zero memory bytes deliberately excludes PC/AT parity-memory behavior. */
     .planar_parity_present = LIB_TRUE,
     .planar_parity = {
@@ -67,7 +67,7 @@ static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
         .memory_bytes = 0u,
         .refresh_status_source =
             X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
-        .refresh_status_toggle_ticks = 3u},
+        .refresh_status_toggle_ticks = MYPC110_REFRESH_SOURCE_TICKS},
     .rtc_cmos_present = LIB_TRUE,
     .rtc_cmos = {
         .index_port = 0x0070u,

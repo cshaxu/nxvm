@@ -4,6 +4,7 @@
 #include "lib/kvm-console/frame_interface.h"
 #include "lib/kvm-window/frame_interface.h"
 #include "x86-nxvm/machine/machine_interface.h"
+#include "x86-core/machine/clock_interface.h"
 
 int main(void)
 {
@@ -25,15 +26,22 @@ int main(void)
     static kvm_window_frame_storage frame;
     static kvm_console_text_frame console;
     lib_bool produced = LIB_FALSE;
+    x86_core_machine_clock_domain pit_clock;
     int failed = 0;
 
     if (mypc110_machine_construction_create(&config, &assets, &construction) != LIB_STATUS_OK)
         failed = 1;
     else if (construction.topology.planar_parity.refresh_status_source !=
             X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE ||
-        construction.topology.planar_parity.refresh_status_toggle_ticks != 3u ||
         construction.topology.planar_parity.memory_bytes != 0u)
         failed = 2;
+    else if (x86_core_machine_clock_domain_initialize(&pit_clock,
+            &construction.core_config.clock_plan.pit) != LIB_STATUS_OK)
+        failed = 7;
+    else if (x86_core_machine_clock_domain_advance(&pit_clock,
+            320u * construction.topology.planar_parity.refresh_status_toggle_ticks)
+            < 0x1614u || pit_clock.delivered_ticks > 0x1868u)
+        failed = 8;
     else {
         lib_status status = x86_nxvm_machine_create(&config, &construction, &machine);
         if (status != LIB_STATUS_OK) failed = 10 + (int)status;

@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_machine_interface.h"
+#include "app-mypc110/pc110_clock.h"
 
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
@@ -11,15 +12,14 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
         X86_CORE_CPU_PROTECTED_DATA_RELOAD_VISIBLE_CACHE_OR_REAL_ADDRESS,
     .ticks_per_instruction = 1u,
     .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
-    /* 33 MHz is a source-backed CPU fact; these controller ratios are only
-     * neutral L2 construction units until the PC110 device receivers qualify
-     * their own clocks and routes. */
-    .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 33000000u},
+    /* PIT and RTC consume the same source-labelled L2 board clock plan as
+     * Product construction; the remaining ratios remain construction units. */
+    .time_axis = {X86_CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, MYPC110_CPU_CLOCK_HZ},
     .clock_plan = {
         .dma = {1u, 1u, 0u},
-        .pit = {1u, 1u, 0u},
+        .pit = {MYPC110_PIT_INPUT_HZ, MYPC110_CPU_CLOCK_HZ, 0u},
         .auxiliary_pit = {1u, 1u, 0u},
-        .rtc = {1u, 1u, 0u},
+        .rtc = {MYPC110_RTC_INPUT_HZ, MYPC110_CPU_CLOCK_HZ, 0u},
         .vadp = {1u, 1u, 0u},
         .kbc = {1u, 1u, 0u},
         .provider = {1u, 1u, 0u}},

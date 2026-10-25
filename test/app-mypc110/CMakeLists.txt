@@ -139,44 +139,18 @@ foreach(variant IN ITEMS tft dstn)
 endforeach()
 
 if(TARGET mypc110-real-firmware-tft)
-    add_executable(mypc110-real-firmware-post-diagnostic
-        diagnostic/real_firmware_post_diagnostic.c)
-    target_link_libraries(mypc110-real-firmware-post-diagnostic PRIVATE
+    add_executable(mypc110-real-firmware-post-integration
+        integration/real_firmware_post_integration.c)
+    target_link_libraries(mypc110-real-firmware-post-integration PRIVATE
         mypc110-board mypc110-real-firmware-tft)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(mypc110-real-firmware-post-diagnostic PRIVATE
+        target_compile_options(mypc110-real-firmware-post-integration PRIVATE
             -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
     endif()
-    add_test(NAME mypc110.diagnostic/real-firmware-post
-        COMMAND mypc110-real-firmware-post-diagnostic)
-    set_tests_properties(mypc110.diagnostic/real-firmware-post PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-port61-progress
-        COMMAND mypc110-real-firmware-post-diagnostic --port61-progress)
-    set_tests_properties(mypc110.diagnostic/real-firmware-port61-progress PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-port61-follow
-        COMMAND mypc110-real-firmware-post-diagnostic --port61-follow)
-    set_tests_properties(mypc110.diagnostic/real-firmware-port61-follow PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-lpt-cycle
-        COMMAND mypc110-real-firmware-post-diagnostic --lpt-cycle)
-    set_tests_properties(mypc110.diagnostic/real-firmware-lpt-cycle PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-c000
-        COMMAND mypc110-real-firmware-post-diagnostic --c000)
-    set_tests_properties(mypc110.diagnostic/real-firmware-c000 PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-c000-follow
-        COMMAND mypc110-real-firmware-post-diagnostic --c000-follow)
-    set_tests_properties(mypc110.diagnostic/real-firmware-c000-follow PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-c000-port61-follow
-        COMMAND mypc110-real-firmware-post-diagnostic --c000-port61-follow)
-    set_tests_properties(mypc110.diagnostic/real-firmware-c000-port61-follow PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-c000-port61-outer
-        COMMAND mypc110-real-firmware-post-diagnostic --c000-port61-outer)
-    set_tests_properties(mypc110.diagnostic/real-firmware-c000-port61-outer PROPERTIES
-        LABELS "diagnostic;mypc110" TIMEOUT 180)
+    # This unchanged-BIOS milestone executes the former reset, C000, LPT and
+    # refresh-delay prefixes. Earlier views remain manual diagnostic modes.
+    add_test(NAME mypc110.integration/real-firmware-timer
+        COMMAND mypc110-real-firmware-post-integration --timer)
+    set_tests_properties(mypc110.integration/real-firmware-timer PROPERTIES
+        LABELS "integration;mypc110" TIMEOUT 600)
 endif()

@@ -1,3 +1,5 @@
+/* External, embedded-BIOS qualification; earlier observation modes remain
+ * available for manual investigation through this same execution harness. */
 #include "app-mypc110/pc110_plan_interface.h"
 #include "lib/types/file.h"
 #include "x86-core/machine/machine_interface.h"
@@ -37,6 +39,10 @@ typedef struct mypc110_post_diagnostic_port_read {
 } mypc110_post_diagnostic_port_read;
 
 typedef struct mypc110_post_diagnostic_trace {
+    lib_bool timer_checkpoint;
+    lib_bool timer_passed;
+    lib_bool timer_failed;
+    lib_u16 timer_delta;
     x86_core_cpu_execution_point first_non_rom;
     x86_core_cpu_execution_point predecessor;
     x86_core_cpu_execution_point previous;
@@ -73,12 +79,6 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_bool observed_post_c000_port61_return;
     lib_bool left_post_c000_port61_wait;
     x86_core_cpu_execution_point first_after_post_c000_port61_wait;
-    lib_bool entered_post_c000_port61_outer;
-    lib_u8 post_c000_port61_outer_initial_bl;
-    lib_u32 post_c000_port61_outer_iterations;
-    lib_bool observed_post_c000_port61_outer_return;
-    lib_bool captured_post_c000_port61_outer_caller;
-    x86_core_cpu_execution_point post_c000_port61_outer_caller;
     mypc110_post_diagnostic_port_read
         post_c000_port61_reads[MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY];
     lib_size post_c000_port61_read_count;
@@ -122,6 +122,15 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
     lib_size index;
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
+    if (trace->timer_checkpoint) {
+        if (observation->point.linear_pc == 0x000f6981u)
+            trace->timer_delta = (lib_u16)observation->current_cpu.ebx;
+        if (observation->point.linear_pc == 0x000f698fu)
+            trace->timer_passed = LIB_TRUE;
+        if (observation->point.linear_pc == 0x000f6999u)
+            trace->timer_failed = LIB_TRUE;
+        return;
+    }
     if (trace->c000_only) {
         if (trace->post_reset_active && observation->point.linear_pc >= 0x000c0000u &&
             observation->point.linear_pc < 0x000d0000u) {
@@ -198,24 +207,6 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
         trace->first_after_post_c000_port61_wait = observation->point;
     }
     if (trace->follow_c000_port61 && trace->left_c000_after_boundary &&
-        observation->point.linear_pc == 0x000fea38u) {
-        trace->entered_post_c000_port61_outer = LIB_TRUE;
-        trace->post_c000_port61_outer_initial_bl =
-            (lib_u8)observation->current_cpu.ebx;
-    }
-    if (trace->entered_post_c000_port61_outer &&
-        observation->point.linear_pc == 0x000fea55u)
-        ++trace->post_c000_port61_outer_iterations;
-    if (trace->entered_post_c000_port61_outer &&
-        observation->point.linear_pc == 0x000fea7fu)
-        trace->observed_post_c000_port61_outer_return = LIB_TRUE;
-    if (trace->observed_post_c000_port61_outer_return &&
-        !trace->captured_post_c000_port61_outer_caller &&
-        observation->point.linear_pc != 0x000fea7fu) {
-        trace->captured_post_c000_port61_outer_caller = LIB_TRUE;
-        trace->post_c000_port61_outer_caller = observation->point;
-    }
-    if (trace->follow_c000_port61 && trace->left_c000_after_boundary &&
         observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
         observation->io_port == 0x0061u &&
         trace->post_c000_port61_read_count <
@@ -277,8 +268,8 @@ int main(int argc, char **argv)
         lib_text_compare(argv[1], "--c000-follow") == 0;
     lib_bool c000_port61_follow_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--c000-port61-follow") == 0;
-    lib_bool c000_port61_outer_checkpoint = argc == 2 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--c000-port61-outer") == 0;
+    lib_bool timer_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--timer") == 0;
     lib_u64 instruction_limit;
     lib_u32 wait_count = 0u;
     lib_status status;
@@ -286,16 +277,17 @@ int main(int argc, char **argv)
     if (argc != 1 && !reset_checkpoint && !port61_progress_checkpoint &&
         !port61_follow_checkpoint && !lpt_cycle_checkpoint &&
         !c000_checkpoint && !c000_follow_checkpoint && !c000_port61_follow_checkpoint &&
-        !c000_port61_outer_checkpoint) return 2;
-    instruction_limit = c000_port61_follow_checkpoint || c000_port61_outer_checkpoint ?
+        !timer_checkpoint) return 2;
+    instruction_limit = c000_port61_follow_checkpoint ?
         MYPC110_POST_DIAGNOSTIC_C000_PORT61_FOLLOW_INSTRUCTIONS :
         (c000_checkpoint || c000_follow_checkpoint ?
             MYPC110_POST_DIAGNOSTIC_C000_INSTRUCTIONS :
             MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS);
+    if (timer_checkpoint) instruction_limit = 200000000u;
+    post_reset_trace.timer_checkpoint = timer_checkpoint;
     post_reset_trace.c000_only = c000_checkpoint || c000_follow_checkpoint ||
-        c000_port61_follow_checkpoint || c000_port61_outer_checkpoint;
-    post_reset_trace.follow_c000_port61 = c000_port61_follow_checkpoint ||
-        c000_port61_outer_checkpoint;
+        c000_port61_follow_checkpoint;
+    post_reset_trace.follow_c000_port61 = c000_port61_follow_checkpoint;
 
     status = mypc110_machine_construction_create(&config, &vm_app_firmware, &construction);
     if (status == LIB_STATUS_OK)
@@ -307,16 +299,15 @@ int main(int argc, char **argv)
                 .callback = mypc110_post_diagnostic_observe_retirement,
                 .context = &post_reset_trace});
     }
-    if (status == LIB_STATUS_OK) {
+    if (status == LIB_STATUS_OK && !timer_checkpoint) {
         status = x86_core_machine_set_trace_provider(machine->x86_core_machine,
             &(x86_core_machine_trace_provider) {
                 .callback = mypc110_post_diagnostic_observe_trace,
                 .context = &post_reset_trace});
     }
-    if (status == LIB_STATUS_OK && !reset_checkpoint && !port61_progress_checkpoint &&
+    if (status == LIB_STATUS_OK && !timer_checkpoint && !reset_checkpoint && !port61_progress_checkpoint &&
         !port61_follow_checkpoint && !lpt_cycle_checkpoint && !c000_checkpoint &&
-        !c000_follow_checkpoint && !c000_port61_follow_checkpoint &&
-        !c000_port61_outer_checkpoint) {
+        !c000_follow_checkpoint && !c000_port61_follow_checkpoint) {
         status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
             0x000f6060u);
@@ -327,17 +318,19 @@ int main(int argc, char **argv)
     while (status == LIB_STATUS_OK && executed < instruction_limit) {
         status = x86_core_machine_run(machine->x86_core_machine,
             (x86_core_machine_run_budget) {.instructions =
+                timer_checkpoint ? MYPC110_POST_DIAGNOSTIC_C000_QUANTUM :
                 processor_reset_count != 0u && !post_reset_exception.valid &&
                     !port61_progress_checkpoint && !port61_follow_checkpoint &&
                     !lpt_cycle_checkpoint && !c000_checkpoint &&
-                    !c000_follow_checkpoint && !c000_port61_follow_checkpoint &&
-                    !c000_port61_outer_checkpoint ? 1u :
-                c000_checkpoint || c000_follow_checkpoint || c000_port61_follow_checkpoint ||
-                    c000_port61_outer_checkpoint ?
+                    !c000_follow_checkpoint && !c000_port61_follow_checkpoint ? 1u :
+                c000_checkpoint || c000_follow_checkpoint || c000_port61_follow_checkpoint ?
                     MYPC110_POST_DIAGNOSTIC_C000_QUANTUM :
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
+        if (timer_checkpoint && (post_reset_trace.timer_passed ||
+                post_reset_trace.timer_failed ||
+                result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)) break;
         if (processor_reset_count != 0u && !post_reset_exception.valid &&
             x86_core_machine_capture_observation(machine->x86_core_machine,
                 &observation) == LIB_STATUS_OK &&
@@ -356,8 +349,6 @@ int main(int argc, char **argv)
         if (c000_port61_follow_checkpoint &&
             post_reset_trace.post_c000_port61_read_count >=
                 MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY) break;
-        if (c000_port61_outer_checkpoint &&
-            post_reset_trace.captured_post_c000_port61_outer_caller) break;
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
             post_reset_trace.post_reset_active = LIB_TRUE;
@@ -376,7 +367,14 @@ int main(int argc, char **argv)
             continue;
         }
         if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            x86_core_cpu_debug_cpu_snapshot cpu = {0};
+
             ++wait_count;
+            status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu);
+            /* A POST error's CLI/HLT is terminal for this diagnostic. */
+            if (status != LIB_STATUS_OK ||
+                (cpu.eflags & X86_CORE_CPU_DEBUG_EFLAGS_IF) == 0u) break;
             status = x86_nxvm_machine_waiting_advance(machine, &result, &advanced);
             if (status != LIB_STATUS_OK || !advanced) break;
         } else if (result.reason != X86_CORE_MACHINE_STOP_BUDGET) {
@@ -402,6 +400,13 @@ int main(int argc, char **argv)
     if (machine != LIB_NULL) x86_nxvm_machine_control_end_run(&machine->control);
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
+    if (timer_checkpoint) {
+        lib_c_printf("PC110:TIMER:passed=%u failed=%u delta=%04x executed=%llu pc=%08x status=%d\n",
+            post_reset_trace.timer_passed, post_reset_trace.timer_failed,
+            post_reset_trace.timer_delta, (unsigned long long)executed,
+            result.linear_pc, (int)status);
+        lib_c_fflush(lib_c_stdout);
+    }
     lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x fault=%08x/%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u port61-wait=%u/%u\n",
         (int)status, (lib_u32)result.reason, result.linear_pc, result.detail,
         observation.diagnostic.first_fault.exception_mask,
@@ -452,8 +457,7 @@ int main(int argc, char **argv)
             (int)before_pop_ds_memory_status,
             (unsigned long long)before_pop_ds_descriptor);
     }
-    if (c000_checkpoint || c000_follow_checkpoint || c000_port61_follow_checkpoint ||
-        c000_port61_outer_checkpoint) {
+    if (c000_checkpoint || c000_follow_checkpoint || c000_port61_follow_checkpoint) {
         const lib_size retained = post_reset_trace.c000_retirement_count <
             MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY ?
             post_reset_trace.c000_retirement_count :
@@ -467,7 +471,7 @@ int main(int argc, char **argv)
             const x86_core_cpu_execution_point *point =
                 &post_reset_trace.c000_retirements[(first + index) %
                     MYPC110_POST_DIAGNOSTIC_C000_RETIREMENT_CAPACITY];
-            printf("PC110:POST:c000=%04x:%08x bytes=%02x %02x %02x %02x\n",
+            lib_c_printf("PC110:POST:c000=%04x:%08x bytes=%02x %02x %02x %02x\n",
                 point->cs, point->eip, point->bytes[0u], point->bytes[1u],
                 point->bytes[2u], point->bytes[3u]);
         }
@@ -492,19 +496,6 @@ int main(int argc, char **argv)
         }
         lib_c_printf("PC110:POST:c000-port61-first-ecx=%08x\n",
             post_reset_trace.first_post_c000_port61_ecx);
-    }
-    if (c000_port61_outer_checkpoint) {
-        lib_c_printf("PC110:POST:c000-port61-outer=entered:%u initial-bl=%02x iterations=%u returned:%u caller=%04x:%08x bytes=%02x %02x %02x %02x\n",
-            post_reset_trace.entered_post_c000_port61_outer,
-            post_reset_trace.post_c000_port61_outer_initial_bl,
-            post_reset_trace.post_c000_port61_outer_iterations,
-            post_reset_trace.observed_post_c000_port61_outer_return,
-            post_reset_trace.post_c000_port61_outer_caller.cs,
-            post_reset_trace.post_c000_port61_outer_caller.eip,
-            post_reset_trace.post_c000_port61_outer_caller.bytes[0u],
-            post_reset_trace.post_c000_port61_outer_caller.bytes[1u],
-            post_reset_trace.post_c000_port61_outer_caller.bytes[2u],
-            post_reset_trace.post_c000_port61_outer_caller.bytes[3u]);
     }
     if (post_reset_trace.after_pop_ds_valid) {
         const x86_core_cpu_debug_cpu_snapshot *cpu = &post_reset_trace.after_pop_ds;
@@ -599,6 +590,12 @@ int main(int argc, char **argv)
         }
     }
     x86_nxvm_machine_destroy(machine);
+    if (timer_checkpoint) {
+        return status == LIB_STATUS_OK && post_reset_trace.timer_passed &&
+            !post_reset_trace.timer_failed &&
+            post_reset_trace.timer_delta >= 0x1614u &&
+            post_reset_trace.timer_delta <= 0x1868u ? 0 : 1;
+    }
     if (reset_checkpoint) {
         return status == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
             processor_reset_count == 1u && c000_header[0u] == 0x55u &&
@@ -637,15 +634,6 @@ int main(int argc, char **argv)
             post_reset_trace.entered_post_c000_port61_wait &&
             post_reset_trace.post_c000_port61_read_count >=
                 MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY &&
-            !observation.diagnostic.first_fault.valid ? 0 : 1;
-    }
-    if (c000_port61_outer_checkpoint) {
-        return post_reset_trace.entered_post_c000_port61_outer &&
-            post_reset_trace.post_c000_port61_outer_initial_bl == 0x70u &&
-            post_reset_trace.post_c000_port61_outer_iterations == 0x70u &&
-            post_reset_trace.observed_post_c000_port61_outer_return &&
-            post_reset_trace.captured_post_c000_port61_outer_caller &&
-            post_reset_trace.post_c000_port61_outer_caller.linear_pc == 0x000f53ddu &&
             !observation.diagnostic.first_fault.valid ? 0 : 1;
     }
     return status == LIB_STATUS_OK &&

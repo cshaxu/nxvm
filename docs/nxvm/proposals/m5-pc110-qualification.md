@@ -298,6 +298,19 @@ outstanding source gate.
 
 ## Verification And Exit
 
+S43 supersedes S36--S42's assumed complete-delay throughput diagnosis. A
+sampled normal execution reaches the actual PIT calibration and an intentional
+error halt. Its count difference, `4EFF`, violates the BIOS's `1614..1868`
+range. IRQ0 delivery and its BIOS flag are functioning.
+
+S44 corrects the App's existing PIT/RTC clock ratios and nominal refresh
+period on the one 33 MHz Core axis. Both host widths now execute the unchanged
+TFT BIOS through its real timer pass branch with delta `1668`. This is a
+source-labelled L2 board model and one qualified POST stage; remaining POST,
+panel, storage, guest and product-release requirements remain open. See the
+[S43 diagnosis](../etc/evidence/t580-s43-real-pit-calibration-failure.md) and
+[S44 proof](../etc/evidence/t580-s44-pit-refresh-clock.md).
+
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.
 
 Use direct owner tests plus the real production connection, full repository

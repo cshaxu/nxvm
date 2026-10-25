@@ -86,3 +86,22 @@ S2 may add the missing **TFT-only** App entry, binding, profile declaration,
 INI template and focused composition/lifecycle tests.  It must use the one
 existing X86-NXVM Product path; it may not publish a PC110 EXE, claim real BIOS
 boot, add a model selector or manufacture the missing original-DSTN asset.
+
+## S44 receiver reconciliation
+
+The earlier inventory above records its admission baseline. At S44 the same
+frozen members have these dispositions; no product requirement is removed.
+
+| Member | Current proof and remaining receiver |
+| --- | --- |
+| TFT x64/x86 | Fixed App, embedded inputs, composition units and previews exist. Both widths pass the unchanged BIOS timer calibration; later POST and release qualification remain open. |
+| Original DSTN x64/x86 | A separately labelled, panel-table-derived preview pair exists. It is not a recovered factory dump or independent DSTN guest/panel qualification. |
+| Product entry/binding | Both fixed variants use the normal X86-NXVM Product/Emulator route. Full live lifecycle/UX and release acceptance remain required. |
+| INI/runtime identity | One adjacent App-selected mypc110.ini exists and is preserved; it does not select ROM or panel at runtime. |
+| Real firmware progress | S43 locates the PIT/refresh calibration failure; S44 repairs its App clock relationship and proves delta 1668 on both widths, within the BIOS range. Remaining POST/Setup/boot milestones remain with T580. |
+| Display/panel | F65535/font/graphics mechanisms exist. Actual panel output and independent TFT/DSTN display qualification remain open. |
+| Storage/guest corpus | App ATA wiring exists; boot media, real guest progression and required storage/PCMCIA coverage remain open. |
+| Input/power | Existing keyboard/pointer construction remains. Live input, Fn/inking and power/APM coverage retain their receiver/source prerequisites. |
+
+See [the S44 clock proof](t580-s44-pit-refresh-clock.md). A timer calibration
+pass advances only that firmware substage, not the final product predicate.
