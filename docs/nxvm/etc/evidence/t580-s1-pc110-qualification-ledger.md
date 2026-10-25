@@ -174,3 +174,13 @@ inside an SMM checksum loop, with no INT 19h; that is neither boot success
 nor proof of a deadlock. All remaining original source, Setup/boot, selected
 guest, panel/input/power, live lifecycle and publication members retain their
 T580 receiver. The coverage universe and completion predicate are unchanged.
+
+## S51 cold-power handoff reconciliation
+
+The [S51 diagnosis](t580-s51-cold-power-handoff.md) proves the actual cold FB
+clear and later zero-valued suspend guard on both widths; x64 completes the
+checksum and reaches firmware-requested suspend/HLT. This identifies the next
+complete power/status/wake/retention contract, not a generic CPU HLT defect
+or permission to force FB high. The hardware semantics of FB/B8/FF and mode
+22h require source reconciliation before repair. Bounded L2 remains allowed;
+the source/Setup/boot/guest/live-product and publication rows remain open.

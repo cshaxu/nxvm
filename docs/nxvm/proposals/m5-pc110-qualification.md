@@ -298,6 +298,18 @@ outstanding source gate.
 
 ## Verification And Exit
 
+### S51 cold-power handoff disposition
+
+[S51](../etc/evidence/t580-s51-cold-power-handoff.md) proves that real cold
+initialization clears Block 2 FB, and both host widths later take the same
+zero-valued suspend guard. The x64 checksum completes and the firmware itself
+requests suspend/HLT, without a terminal Core fault. This is not a completed
+boot, an input-event deadlock, or evidence for forcing FB high. The next
+coherent receiver defines hardware power/status, wake and retention across
+FB/B8/FF and the existing mode-22h protocol. No Shared interface or speculative
+production fix is selected before that contract; all original qualification
+members remain required.
+
 ### S50 lower-Flash receiver
 
 The [S50 receiver](../etc/evidence/t580-s50-lower-flash-selection.md) adds
