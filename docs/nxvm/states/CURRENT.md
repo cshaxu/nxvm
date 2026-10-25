@@ -2,55 +2,29 @@
 
 ## Current Work
 
-## M5 T580 S51 — Post-FDC cold POST and suspend-route reconciliation
+## M5 T580 — Open after accepted S51
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S51, next unused S after accepted S50. |
-| Admission And Approval | Owner's standing autonomous PC110 implementation request, including evidence-based App fixes without further permission; no Shared implementation change admitted here. |
-| Objective | Reconcile the complete post-FDC normal POST versus power/suspend handoff: actual SMM request/dispatcher, saved state, source/predicate, checksum/exit and subsequent normal boot route. Implement only an App-owned receiver demonstrated missing by that evidence, after revising this packet with its concrete contract. |
-| Non-goals | No firmware interception, invented wake/service/guest flag, host decompressor, ROM/INI/media mutation, second clock/queue, Shared API change, physical-accuracy claim or premature publication. A sampled checksum instruction is not a deadlock. |
-| Reference Baseline | Clean pushed 267b67a0b; accepted [S50 receiver](../etc/evidence/t580-s50-lower-flash-selection.md), S49 real FDC proof, unchanged admitted TFT image and pinned read-only hardware/reference sources. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), consuming the complete post-initialization cold/power handoff and boot-route batch of its [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md). |
-| Files And ABI Surface | First audit uses the existing actual-BIOS harness temporarily, estimated +100–180/-0–15 then removed; retained App production/test change remains zero until a concrete owner/protocol and revised estimate are recorded. Existing execute watchpoint brackets the already-qualified prefix, with copied retirement state only after the actual guard; no guest instruction or timeline is skipped. Evidence/current/history only if no repair is justified. No new public interface or test executable. |
-| Applicable Rules | Architecture one state/clock/execution owner and inward dependencies; Coding existing copied observations/fixtures, no BIOS-specific production branch or parallel implementation; Execution finite semantic batch, cached background observations and exact cleanup/review; source policy immutable external inputs and labelled L2 references; Documentation one active packet and unchanged T predicate. |
-| Verification | Actual guest CPU execution after established timer/FDC prefixes; bounded copied register/I/O snapshots at real dispatcher and power entry/exit, classification of normal cold versus resume choices, source cross-check. Corroborate a meaningful endpoint on x86. Remove temporary sampler and rebuild original harness; retain S50 complete unit qualification for unchanged code, rerun complete dual-width units if retained production/tests change. Run applicable boundaries/docs and affected preview builds. |
-| Expected Markers | Exact first suspend request/source/predicate and its caller, checksum completion/exit or actual INT 19h; distinguish firmware-requested power behavior from missing host input or an instruction ceiling. No successful-boot claim from the earlier FDC prefix. |
-| Asset Needs | Existing hash-pinned TFT BIOS/font and external PC110 references only. No new protected binary or owner configuration/media change. |
-| Reporting Requirements | State the actual cause or unresolved contract, source/model grade, justified owner and minimal design before repair; actual retained/removed code delta, dual-width proof and remaining product gates. |
-| Stop Conditions | Each observation at most 33 million instructions or 180 seconds, 64 KiB output; verification phase at most 2400 seconds. The initial 32M sample proves 28,165 of 32,768 checksum iterations, so the additional 1M contains that known finite completion and power exit; it is not a repair or success criterion. build/t580-s51-handoff is S-owned, at most 4 MiB; preserve facts/hashes and clean after owned process exit. Stop speculative repair on contradictory sources or a needed Shared contract; continue independent evidence work. |
-| Exit Criteria | Whole handoff batch has an evidenced diagnosis and owner/design disposition, with any admitted repair proved; no first-PC patch or invented return. Temporary code removed, actual diff reviewed, applicable verification/cleanup, commit/push and coordinator acceptance. T580 remains open for every unqualified product/guest member. |
-| Original Owner Request | Continue PC110 autonomously through correct implementation and governance; use labelled reference-based L2 where original hardware sources are unavailable, without synthetic firmware shortcuts. |
-| Similar-Issue Sweep | Cold versus processor-only reset, SMM source/acknowledge/rearm and saved context, BIOS cold/resume branches, EC/planar readback, checksum/HLT/return and all identified normal boot/Setup callers. |
+S51 is closed after coordinator actual-change review of audit `bae92d9e1`.
+Its [cold-power diagnosis](../etc/evidence/t580-s51-cold-power-handoff.md)
+proves the firmware's initial FB clear and subsequent zero-valued suspend
+guard on both widths. x64 completes the checksum and reaches the actual
+suspend HLT; this is neither a checksum deadlock nor boot qualification.
+Rejected diagnostic attempts/timeouts are separately recorded. Temporary
+code/logs are removed; retained source/test/artifact delta is zero. Restored
+App units pass 11/11 per width, and the complete unchanged unit corpus keeps
+S50 qualification. No active S packet remains.
 
-Executor audit delivery: [S51 evidence](../etc/evidence/t580-s51-cold-power-handoff.md)
-records both actual cold FB clears and later suspend guards, x64's complete
-checksum/power exit, rejected diagnostic attempts and the required coherent
-power/status/wake contract. No justified production repair is selected yet.
-All temporary code/logs are removed; source/test/artifact delta is zero.
-Both restored App unit sets pass 11/11; the unchanged complete unit corpus
-retains S50 qualification. Coordinator actual-change acceptance is pending.
+S50's [Flash receiver](../etc/evidence/t580-s50-lower-flash-selection.md) and
+S49's [FDC receiver](../etc/evidence/t580-s49-integrated-fdc.md) remain accepted.
+Published Apps, owner inputs and Shared trees are unchanged by S51.
+The next coherent receiver must define hardware power/status, wake and
+retention across FB/B8/FF and mode 22h before choosing a repair. Forcing FB
+high or changing generic HLT is not an admitted shortcut. Source-labelled,
+falsifiable L2 remains allowed; no owner physical-unit trace is demanded.
 
-## M5 T580 — Open after accepted S50
-
-S50 is closed after coordinator actual-change review of `d3180e0f8`.
-The [Flash receiver](../etc/evidence/t580-s50-lower-flash-selection.md)
-adds one App-owned port-98 latch to the existing E/F decoder. Existing
-fixtures prove lower/upper selection, shadow independence, guest copying,
-restoration and reset behavior. All 712 repository units per width have
-passing evidence, including unchanged reruns of initial static timeouts;
-both actual-BIOS timer/SMI/FDC prefix integrations and four previews pass.
-Shared trees, published Apps and owner inputs are unchanged. Temporary
-sampler/logs are removed; S51 is admitted above.
-
-S49's [integrated FDC](../etc/evidence/t580-s49-integrated-fdc.md) and S48's
-[route reconciliation](../etc/evidence/t580-s48-post-initialization-route.md)
-remain accepted. The real BIOS has not reached Setup bulk-copy/loader or
-INT 19h in the bounded normal sample; its final SMM checksum instruction
-does not prove a deadlock. T580 retains the unchanged Setup/boot/guest,
-source/panel/input/power, live lifecycle and product-publication gates.
-The next admission reconciles the complete post-FDC cold/power handoff;
-it must not substitute a successful prefix for whole-machine qualification.
+T580 retains its original Setup/boot/guest, source/panel/input/power, live
+lifecycle and publication gates. No preview or successful prefix qualifies
+a PC110 product; the original coverage and closure requirements are unchanged.
 
 ## M5 T580 — Open after accepted S47
 
