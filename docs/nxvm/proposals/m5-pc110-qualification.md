@@ -277,6 +277,25 @@ X86-NXVM/MyPC110 suite passed 116/116 on each width.  This is an execution
 policy verification only; the external BIOS remains source-gated rather than
 declared boot-qualified.
 
+## S42 — MyPC110 runner-path containment
+
+S42 exercises the actual embedded-TFT preview through the normal Product,
+Emulator and Turbo runner path for one fixed, hidden interval.  It may establish
+only that the policy reaches the running process without an early fault; it
+cannot turn elapsed wall time into a POST, Setup, DOS, display or release
+claim.  The copied executable, adjacent INI and captured output are task-local
+build outputs and are removed after the observation.  No firmware, receiver,
+Core or Shared behavior is changed.
+
+### S42 Closure
+
+The native cooked-console reader does not accept the attempted redirected
+command-pipe harness as a real monitor interaction. It terminated without a
+reader transaction or guest result, so it cannot qualify the normal product
+path. The task-local executable copy, INI and logs were removed after the INI
+hash was verified. This does not alter S41's construction-policy proof or the
+outstanding source gate.
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

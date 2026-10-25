@@ -2,6 +2,25 @@
 
 ## Current Work
 
+## M5 T580 S42 — Closed: MyPC110 runner-path containment
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S42. |
+| Objective | Exercise the real, embedded TFT App through its normal Turbo runner for one bounded interval, proving only that the policy reaches the product execution path without an early fault or synthetic firmware action. |
+| Scope | Task-local copied preview executable and INI only; no source, asset, external firmware or model change. Capture process liveness and output, then remove the temporary harness. |
+| Verification | Run hidden and bounded; record process state and output. This is not a POST, Setup, DOS, display or artifact qualification. |
+| Stop Conditions | Any need to alter firmware, fake input/device data, add an observer or extend the run merely to wait out the known delay closes the containment without a new claim. |
+
+### S42 Closure
+
+The command-pipe harness is not a valid observation mechanism for this native
+cooked-console App: it exits without producing a console-reader transaction or
+guest result. Retaining it would test redirected host input rather than the
+real Window/Console path. The copied preview, INI and logs were removed with
+the reviewed build-cleanup tool. S42 makes no runner or guest-progress claim;
+the source-gated receiver boundary remains the only honest T580 disposition.
+
 ## M5 T580 S41 — Closed: MyPC110 execution-policy qualification
 
 | Field | Required record |
