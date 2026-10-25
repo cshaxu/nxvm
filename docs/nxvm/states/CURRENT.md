@@ -236,6 +236,27 @@ condition before returning to the already-qualified finite port-61 delay
 loop. It therefore selects no receiver and leaves no failing diagnostic,
 production change or PC110 release claim.
 
+## M5 T580 S21 — Closed: external MCU and POST model boundary
+
+| Field | Required record |
+| --- | --- |
+| Objective | Determine whether the available PC110 reference projects and external MCU images select a lawful, CPU-visible production receiver. |
+| Boundary | Read-only source/asset audit and evidence only; no reference source import, ROM commit, address intercept, synthetic interrupt, or PC110 release. |
+| Evidence | [S21 external-model boundary](../etc/evidence/t580-s21-external-model-boundary.md). |
+| Exit | The reviewed references provide research leads but no implementation-grade machine contract; their synthetic paths are explicitly rejected. |
+
+### S21 Closure
+
+The external power and keyboard MCU images are available as BYOB inputs, but
+the reviewed reference implementations do not execute either MCU through a
+CPU-visible PC110 board contract. Their POST helpers complete loops at named
+ROM addresses, synthesize disk/interrupt state, or expose firmware metadata.
+Those mechanisms are useful research evidence only and cannot enter MyPC110.
+The remaining qualification gates therefore remain explicit: a trace or
+source-defined CPU-visible power/MCU contract, and an independently observable
+real-firmware post-POST checkpoint. No production path, asset mapping or
+release claim changed.
+
 ### S11 Closure
 
 The diagnostic probe recorded no `3D6h/3D7h` extension writes on either host
