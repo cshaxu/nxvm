@@ -2,37 +2,18 @@
 
 ## Current Work
 
-## M5 T580 S46 — Active: PC110 software-SMI and SMRAM receiver
+## M5 T580 S46 — Closed: SMI/SMRAM receiver audit, repair outstanding
 
-| Field | Required record |
+Accepted audit `5ae0cfbd3` proves CPU SMI entry but a missing prepared handler
+view, and identifies the skipped initialization branch with its actual SCAMP
+writes. It rejects and removes the isolated trigger, constant and C-shadow
+experiments. Restored x64 previews build and App units pass 11/11; retained
+production/test delta is zero. The [S46 record](../etc/evidence/t580-s46-smi-smram-receiver-audit.md)
+defines the complete cold-decode/SMRAM/SMI repair batch without a boot claim.
+
+| Task | Progress |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S46. |
-| Admission And Approval | Owner-directed autonomous PC110 implementation; consumes S45's observed wait rather than another unsampled delay run. |
-| Objective | Reconcile the complete software-SMI, SMIACT/SMRAM, source acknowledgement and RSM chain behind the observed 15EE service, then repair its actual board owner when the contract is established. |
-| Non-goals | No BIOS interception, forced wait flag, reference-emulator service stub, second executor/time owner, Lib or Emulator modification. |
-| Reference Baseline | Accepted S45 at 99999d585, S44 clock proof and pinned original firmware/reference repositories. |
-| Candidate Proposal | PC110 qualification; frozen real-firmware progression, board/power and display/memory receiver rows in its convergence ledger. |
-| Files And ABI Surface | App PC110 firmware/configuration/plan and existing tests; inspect existing X86 Core SMI and Board profile contracts. Any necessary Shared contract extension requires a concrete design and authority review before editing. |
-| Applicable Rules | One real CPU path; physical board signals own decoding; explicit L2 source grades; no execution from a synthetic BIOS service; source-policy provenance and bounded diagnostics. |
-| Verification | First inspect both firmware sides of the service and pinned chipset evidence. If needed, extend only the existing harness for copied CPU/memory facts with a semantic stop and finite budgets. Repair proof uses the existing App fixture plus unchanged BIOS replay on both widths. |
-| Expected Markers | Defined trigger, actual handler fetch, one state-save/restore boundary, source clear/rearm and exit to the waiting caller; no forced progress marker. |
-| Asset Needs | Existing immutable TFT BIOS/font and separately labelled DSTN-derived input; no new protected downloads or media mutation. |
-| Reporting Requirements | Complete owner/data-flow design and estimated diff before production edits; exact source grades, actual changes, dual-width proof, unresolved product rows and any public-contract decision. |
-| Stop Conditions | Conflicting trigger/decode facts or a required unapproved public contract stops that implementation, not independent investigation. Each diagnostic is bounded to 200M instructions, 600 seconds and 64 KiB output, with owned-process cleanup. |
-| Exit Criteria | Reconciled whole receiver batch with reproducible proof or explicit exact contract gap; no speculative controller reply, leftover sampler or boot/release overclaim. |
-| Original Owner Request | Implement PC110 through the normal governance, verification and publication lifecycle without repeated unnecessary approval requests. |
-| Similar-Issue Sweep | Reconcile 15EE command families, SMI sources/clears/rearm, SMRAM initialization and active decode, CPU reset versus SRESET, and borrowed callback lifetime together. |
-
-### S46 Delivery
-
-The complete receiver audit rejects an unconditional SMI pulse, a one-bit cold
-image change and C-shadow unseeding as individually sufficient fixes. The
-actual CPU enters SMM but finds zero bytes at 38000; the inspected BIOS
-initialization route is skipped after a guest-written SCAMP 01 value of 82.
-All experimental source/test changes are removed, restored previews build and
-the 11 x64 App units pass. [S46 evidence](../etc/evidence/t580-s46-smi-smram-receiver-audit.md)
-records the exact remaining cold-decode/SMRAM initialization batch. There is no
-Shared edit or new POST/guest/release claim.
+| T580 S46 | Bounded receiver audit accepted; implementation and product qualification remain open. Next admission consumes the complete cold-memory/SMRAM initialization batch, not a single trigger patch. |
 
 ## M5 T580 S45 — Closed: post-timer reset and service wait
 
