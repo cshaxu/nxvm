@@ -42,6 +42,7 @@ typedef struct {
     lib_u32 physical_start;
     lib_uptr bytes;
     x86_core_machine_memory_device_read read;
+    x86_core_machine_memory_device_instruction_read read_instruction;
     x86_core_machine_memory_device_write write;
     x86_core_machine_memory_device_query query;
     x86_core_machine_memory_device_failure_observer failure;
@@ -95,6 +96,10 @@ struct x86_core_machine_memory_test_allocation {
 
 lib_status x86_core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
     lib_uptr destination, lib_uptr size);
+/* CPU instruction fetches select a provider's optional immutable executable
+ * source.  Providers without one retain ordinary read behavior. */
+lib_status x86_core_machine_memory_read_instruction_physical(t_ram *ram,
+    lib_u32 physical, lib_uptr destination, lib_uptr size);
 /* Same physical route and bytes, without device or parity side effects.
  * reset_fetch first selects the architected reset alias, as CPU fetch does. */
 lib_status x86_core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical,

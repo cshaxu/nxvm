@@ -23,6 +23,7 @@ struct x86_f65535 {
     lib_u8 dac_component;
     lib_u8 pel_mask;
     lib_u8 misc_output;
+    lib_bool vertical_retrace;
     lib_u64 generation;
     lib_u64 captured_generation;
     lib_bool captured;

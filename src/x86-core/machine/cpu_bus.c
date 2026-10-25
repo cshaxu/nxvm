@@ -36,6 +36,10 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
     status = reset_fetch ?
         x86_core_machine_memory_read_reset_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes) :
+        (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+         provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ?
+        x86_core_machine_memory_read_instruction_physical(&machine->executor_memory,
+            address, (lib_uptr)destination, bytes) :
         x86_core_machine_memory_read_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes);
     if (status == LIB_STATUS_UNSUPPORTED) {
@@ -128,8 +132,8 @@ static lib_status x86_core_machine_cpu_bus_transfer_port(void *opaque,
     /* Prepare the write latch before transaction admission and device access. */
     if (write) {
         switch (bytes) {
-        case 1u: ports->data.ioByte = (lib_u8)*value; break;
-        case 2u: ports->data.ioWord = (lib_u16)*value; break;
+        case 1u: ports->data.ioDWord = (lib_u8)*value; break;
+        case 2u: ports->data.ioDWord = (lib_u16)*value; break;
         case 4u: ports->data.ioDWord = *value; break;
         default: return LIB_STATUS_INVALID_ARGUMENT;
         }

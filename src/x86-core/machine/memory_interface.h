@@ -68,6 +68,13 @@ typedef enum x86_core_machine_memory_route {
 typedef lib_status (*x86_core_machine_memory_device_read)(void *owner,
     lib_u32 physical, lib_uptr destination,
     lib_uptr bytes, lib_bool observe_only);
+/* Optional instruction-fetch source for a decoded memory provider.  When it
+ * is absent, instruction fetches use read.  It exists for hardware whose ROM
+ * remains executable while the same physical window exposes writable shadow
+ * RAM to data accesses. */
+typedef lib_status (*x86_core_machine_memory_device_instruction_read)(void *owner,
+    lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes, lib_bool observe_only);
 /* UNSUPPORTED declines without effects. Other write errors may retain an
  * accepted prefix; Core cancellation cannot undo device publication. */
 typedef lib_status (*x86_core_machine_memory_device_write)(void *owner,
@@ -117,6 +124,11 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
     const x86_core_machine_memory_parity_config *parity, void *owner);
 lib_status x86_core_machine_remove_memory_device_routes(x86_core_machine *machine,
     const void *owner);
+/* Select an optional immutable executable source for all routes owned by this
+ * composition.  Returning UNSUPPORTED falls back to the route's ordinary
+ * read callback.  The setter is construction-only. */
+lib_status x86_core_machine_set_memory_instruction_read(x86_core_machine *machine,
+    const void *owner, x86_core_machine_memory_device_instruction_read read);
 /* Copy bytes through the observational route without changing guest state. */
 lib_status x86_core_machine_memory_inspect(const x86_core_machine *machine,
     lib_u32 physical, void *out_data, lib_size size);

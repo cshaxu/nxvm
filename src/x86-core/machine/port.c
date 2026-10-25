@@ -135,7 +135,8 @@ static lib_status x86_core_machine_port_execute_write_current(t_port *port,
                 lib_u32 value = port->data.ioDWord;
                 for (lane = 0u; lane < port->data.access_bytes; ++lane) {
                     lib_status status = provider->write_provider(provider->owner,
-                        (lib_u16)(port_id + lane), value >> (lane * 8u));
+                        (lib_u16)(port_id + lane),
+                        (value >> (lane * 8u)) & 0xffu);
                     if (status != LIB_STATUS_OK) return status;
                 }
             } else {

@@ -3,29 +3,9 @@ if(NOT DEFINED LIBRARY_ROOT OR NOT DEFINED TEST_WORK_DIR)
 endif()
 cmake_policy(SET CMP0057 NEW)
 set(fixture "${TEST_WORK_DIR}/types-layout-fixture")
+file(REMOVE_RECURSE "${fixture}")
 file(MAKE_DIRECTORY "${fixture}")
-file(REMOVE "${fixture}/CMakeLists.txt")
-file(REMOVE "${fixture}/types/input_values.h")
-foreach(component types base console console-broker storage audio/pcm audio/midi kvm-base kvm-window kvm-console)
-    file(REMOVE "${fixture}/${component}/edge.h")
-endforeach()
 file(COPY "${LIBRARY_ROOT}/types" DESTINATION "${fixture}")
-# A failed/aborted negative probe must not poison the next positive control.
-# These are the only scratch files owned by this self-test.
-file(REMOVE "${fixture}/consumer.c" "${fixture}/base/consumer.c" "${fixture}/types/probe.h"
-    "${fixture}/types/win32/probe.h" "${fixture}/kvm-base/probe_interface.h"
-    "${fixture}/kvm-window/win32/probe.c"
-    "${fixture}/kvm-base/win32/probe_interface.h"
-    "${fixture}/console-broker/win32/encoding_probe.c"
-    "${fixture}/console-broker/win32/lock_probe.c"
-    "${fixture}/kvm-window/win32/encoding_probe.c"
-    "${fixture}/kvm-window/input_probe.c"
-    "${fixture}/kvm-console/input_probe.c"
-    "${fixture}/audio/pcm/probe_interface.h"
-    "${fixture}/audio/pcm/win32/probe_interface.h"
-    "${fixture}/audio/pcm/win32/probe.c")
-file(REMOVE "${fixture}/base/win32/path_probe.c" "${fixture}/storage/win32/path_probe.c"
-    "${fixture}/storage/file.c")
 set(probe "${fixture}/types/probe.h")
 foreach(retired IN ITEMS kvm-base/mailbox_wake_interface.h
         kvm-base/win32/mailbox.c kvm-base/linux/mailbox.c)

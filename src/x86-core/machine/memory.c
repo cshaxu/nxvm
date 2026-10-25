@@ -564,7 +564,8 @@ void x86_core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
     ram->connect.write_observer_count = retained;
 }
 static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physical,
-    lib_uptr destination, lib_uptr byte, lib_bool observe_only)
+    lib_uptr destination, lib_uptr byte, lib_bool observe_only,
+    lib_bool instruction_fetch)
 {
     lib_size offset;
     const x86_core_machine_memory_device_provider *provider;
@@ -592,7 +593,7 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
                 for (index = 0u; index < byte; ++index) {
                     status = x86_core_machine_memory_read_routed(ram,
                         physical + (lib_u32)index, destination + index, 1u,
-                        observe_only);
+                        observe_only, instruction_fetch);
                     if (status != LIB_STATUS_OK) return status;
                 }
                 return LIB_STATUS_OK;
@@ -600,8 +601,15 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
         }
     }
     if (provider != LIB_NULL) {
-        status = provider->read(provider->owner, provider_physical, destination,
-            byte, observe_only);
+        x86_core_machine_memory_device_read read = instruction_fetch &&
+            provider->read_instruction != LIB_NULL ? provider->read_instruction : provider->read;
+
+        status = read(provider->owner, provider_physical, destination, byte,
+            observe_only);
+        if (status == LIB_STATUS_UNSUPPORTED && read != provider->read) {
+            status = provider->read(provider->owner, provider_physical, destination,
+                byte, observe_only);
+        }
         if (status != LIB_STATUS_UNSUPPORTED) {
             x86_core_machine_memory_note_provider_failure(provider, provider_physical,
                 byte, X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
@@ -634,7 +642,14 @@ lib_status x86_core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes)
 {
     return x86_core_machine_memory_read_routed(ram, physical, destination, bytes,
-        LIB_FALSE);
+        LIB_FALSE, LIB_FALSE);
+}
+
+lib_status x86_core_machine_memory_read_instruction_physical(t_ram *ram,
+    lib_u32 physical, lib_uptr destination, lib_uptr bytes)
+{
+    return x86_core_machine_memory_read_routed(ram, physical, destination, bytes,
+        LIB_FALSE, LIB_TRUE);
 }
 
 lib_status x86_core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical,
@@ -658,7 +673,7 @@ lib_status x86_core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical
         if (status != LIB_STATUS_UNSUPPORTED) return status;
     }
     return x86_core_machine_memory_read_routed(ram, physical, destination, bytes,
-        LIB_TRUE);
+        LIB_TRUE, LIB_FALSE);
 }
 
 lib_status x86_core_machine_memory_read_reset_physical(t_ram *ram,

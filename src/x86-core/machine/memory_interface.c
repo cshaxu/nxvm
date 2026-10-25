@@ -130,6 +130,25 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
     return status;
 }
 
+lib_status x86_core_machine_set_memory_instruction_read(x86_core_machine *machine,
+    const void *owner, x86_core_machine_memory_device_instruction_read read)
+{
+    lib_bool found = LIB_FALSE;
+
+    if (!x86_core_machine_configuration_is_open(machine) || owner == LIB_NULL ||
+        read == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_size index = 0u;
+        index < machine->executor_memory.connect.device_provider_count; ++index) {
+        x86_core_machine_memory_device_provider *provider =
+            &machine->executor_memory.connect.device_providers[index];
+
+        if (provider->owner != owner) continue;
+        provider->read_instruction = read;
+        found = LIB_TRUE;
+    }
+    return found ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
+}
+
 lib_status x86_core_machine_remove_memory_device_routes(x86_core_machine *machine,
     const void *owner)
 {

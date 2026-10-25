@@ -46,6 +46,30 @@ int main(void)
         &value) != LIB_STATUS_OK || value != 0u ||
         x86_f65535_vram_read(chip, X86_F65535_VRAM_BYTES - 1u, &value,
             1u) != LIB_STATUS_OK || value != 0u;
+    failed |= x86_f65535_vga_write(chip, 0x03c0u, 0x05u) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03dau, &value) != LIB_STATUS_OK ||
+        value != 0x09u ||
+        x86_f65535_vga_read(chip, 0x03dau, &value) != LIB_STATUS_OK ||
+        value != 0x01u ||
+        x86_f65535_vga_write(chip, 0x03c0u, 0x06u) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03c1u, &value) != LIB_STATUS_OK ||
+        value != 0u;
+    failed |= x86_f65535_vga_write(chip, 0x03c4u, 0x05u) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03c4u, &value) != LIB_STATUS_OK ||
+        value != 0x05u ||
+        x86_f65535_vga_read(chip, 0x03c2u, &value) != LIB_STATUS_OK ||
+        value != 0u ||
+        x86_f65535_vga_write(chip, 0x03c8u, 0x3au) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03c8u, &value) != LIB_STATUS_OK ||
+        value != 0x3au ||
+        x86_f65535_vga_write(chip, 0x03ceu, 0x08u) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03ceu, &value) != LIB_STATUS_OK ||
+        value != 0x08u ||
+        x86_f65535_vga_write(chip, 0x03c2u, 0x67u) != LIB_STATUS_OK ||
+        x86_f65535_vga_write(chip, 0x03ccu, 0u) != LIB_STATUS_OK ||
+        x86_f65535_vga_write(chip, 0x03dau, 0u) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03ccu, &value) != LIB_STATUS_OK ||
+        value != 0x67u;
     /* Live PC110 observations show ordinary VGA mode 03h uses B8000h,
      * 80 columns, 400 scan lines and 16 raster rows.  This exercises the
      * bounded compatibility model, not a panel mode or VGA graphics engine. */

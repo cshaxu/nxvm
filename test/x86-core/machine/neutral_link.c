@@ -168,7 +168,8 @@ static lib_status bank_read(void *owner, lib_u16 port, lib_u64 tick, lib_u32 *ou
 static lib_status bank_write(void *owner, lib_u16 port, lib_u32 value)
 {
     bank_probe *probe = owner;
-    if (port < 0x2000u || port > 0x2001u) return LIB_STATUS_INVALID_ARGUMENT;
+    if (port < 0x2000u || port > 0x2001u || value > 0xffu)
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++probe->writes;
     probe->values[port - 0x2000u] = (lib_u8)value;
     return LIB_STATUS_OK;

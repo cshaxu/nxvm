@@ -189,6 +189,83 @@ static lib_i32 registration_standard_transaction(void)
     return failed;
 }
 
+typedef struct instruction_read_provider {
+    lib_u8 data;
+    lib_u8 instruction;
+    lib_bool decline_instruction;
+} instruction_read_provider;
+
+static lib_status instruction_read_data(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    instruction_read_provider *provider = owner;
+
+    (void)observe_only;
+    if (provider == LIB_NULL || physical != 0x000c0000u || destination == 0u ||
+        bytes != 1u) return LIB_STATUS_UNSUPPORTED;
+    *(lib_u8 *)destination = provider->data;
+    return LIB_STATUS_OK;
+}
+
+static lib_status instruction_read_executable(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    instruction_read_provider *provider = owner;
+
+    (void)observe_only;
+    if (provider == LIB_NULL || physical != 0x000c0000u || destination == 0u ||
+        bytes != 1u || provider->decline_instruction) return LIB_STATUS_UNSUPPORTED;
+    *(lib_u8 *)destination = provider->instruction;
+    return LIB_STATUS_OK;
+}
+
+static lib_status instruction_read_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)access;
+    return owner != LIB_NULL && physical == 0x000c0000u && bytes == 1u ?
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_i32 instruction_read_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    instruction_read_provider provider = {0x11u, 0x22u, LIB_FALSE};
+    const x86_core_machine_memory_device_route route = {0x000c0000u, 1u,
+        {instruction_read_data, overlay_write, instruction_read_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, LIB_NULL};
+    x86_core_machine *machine = LIB_NULL;
+    lib_u8 value = 0u;
+    lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) failed |= x86_core_machine_set_memory_instruction_read(machine,
+        &provider, instruction_read_executable) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_core_machine_install_memory_device_routes(machine, &route, 1u,
+            LIB_NULL, LIB_NULL, &provider) != LIB_STATUS_OK ||
+        x86_core_machine_set_memory_instruction_read(machine, &provider,
+            instruction_read_executable) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    if (!failed) failed |= x86_core_machine_cpu_bus.read_memory(machine, 0x000c0000u,
+        &value, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+            LIB_STATUS_OK || value != provider.data;
+    value = 0u;
+    if (!failed) failed |= x86_core_machine_cpu_bus.read_memory(machine, 0x000c0000u,
+        &value, 1u, X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH, LIB_FALSE,
+        LIB_FALSE, 0u) != LIB_STATUS_OK || value != provider.instruction;
+    provider.decline_instruction = LIB_TRUE;
+    value = 0u;
+    if (!failed) failed |= x86_core_machine_cpu_bus.read_memory(machine, 0x000c0000u,
+        &value, 1u, X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, LIB_FALSE,
+        LIB_FALSE, 0u) != LIB_STATUS_OK || value != provider.data;
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
 /* Registry representation is checked here, at Machine's owner. Outer device
  * tests exercise their own configuration and callbacks through public APIs. */
 static lib_i32 registration_atomicity(lib_u32 mode)
@@ -509,7 +586,7 @@ lib_i32 main(void)
     lib_u8 write = 0xa5u;
     lib_i32 failed = parity_delivery_contract() || registration_allocation_failure() ||
         registration_growth_and_priority() || registration_standard_transaction() ||
-        registration_failure_observer_contract();
+        registration_failure_observer_contract() || instruction_read_contract();
 
     for (lib_u32 mode = 0u; mode < 5u; ++mode)
         failed |= registration_atomicity(mode);

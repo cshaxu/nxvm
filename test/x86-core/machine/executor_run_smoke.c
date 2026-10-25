@@ -937,8 +937,11 @@ static lib_status executor_locked_port_read(void *opaque, lib_u16 port,
 static lib_status executor_locked_port_write(void *opaque, lib_u16 port, lib_u32 value)
 {
     executor_locked_port_probe *probe=opaque;
+    const lib_u32 shift = 8u * (port - 0x1234u);
+
+    if (value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     if (++probe->calls==probe->fail) return LIB_STATUS_IO_ERROR;
-    probe->value |= (value&0xffu) << (8u*(port-0x1234u));
+    probe->value = (probe->value & ~(0xffu << shift)) | (value << shift);
     return LIB_STATUS_OK;
 }
 
@@ -973,6 +976,24 @@ static lib_bool executor_locked_ports(void)
             failed=failed || probe.calls!=(fail ? fail : bytes) ||
                 (write && probe.value!=(0x44332211u&mask)) ||
                 (!write && !fail && value!=(0x44332211u&mask));
+            if (!failed && !locked && write && bytes == 2u && fail == 0u) {
+                probe.calls = 0u;
+                probe.value = 0u;
+                value = 0x44332211u;
+                failed = x86_core_machine_cpu_bus.transfer_port(machine, 0x1234u,
+                    2u, LIB_TRUE, &value) != LIB_STATUS_OK;
+                if (!failed)
+                    x86_core_machine_cpu_bus.complete_port(machine, 0x1234u,
+                        2u, LIB_TRUE);
+                value = 0xaau;
+                if (!failed)
+                    failed = x86_core_machine_cpu_bus.transfer_port(machine, 0x1234u,
+                        1u, LIB_TRUE, &value) != LIB_STATUS_OK;
+                if (!failed)
+                    x86_core_machine_cpu_bus.complete_port(machine, 0x1234u,
+                        1u, LIB_TRUE);
+                failed = failed || probe.value != 0x000022aau;
+            }
             if (locked) {
                 failed=failed || lib_memory_compare(&before,&machine->transaction,sizeof(before));
                 x86_core_machine_cpu_bus.complete_memory_lock(machine,fail==0u);

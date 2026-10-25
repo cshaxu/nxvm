@@ -160,6 +160,10 @@ lib_status x86_f65535_vga_read(x86_f65535 *chip, lib_u16 port,
     if (port == 0x03c1u) {
         *out_value = x86_f65535_indexed_read(chip->attribute,
             sizeof(chip->attribute), chip->attribute_index);
+    } else if (port == 0x03c2u) {
+        *out_value = 0u;
+    } else if (port == 0x03c4u) {
+        *out_value = chip->sequencer_index;
     } else if (port == 0x03ccu) {
         *out_value = chip->misc_output;
     } else if (port == 0x03c5u) {
@@ -167,12 +171,16 @@ lib_status x86_f65535_vga_read(x86_f65535 *chip, lib_u16 port,
             sizeof(chip->sequencer), chip->sequencer_index);
     } else if (port == 0x03c6u) {
         *out_value = chip->pel_mask;
+    } else if (port == 0x03c8u) {
+        *out_value = chip->dac_write_index;
     } else if (port == 0x03c9u) {
         *out_value = chip->dac[chip->dac_read_index][chip->dac_component];
         if (++chip->dac_component == 3u) {
             chip->dac_component = 0u;
             ++chip->dac_read_index;
         }
+    } else if (port == 0x03ceu) {
+        *out_value = chip->graphics_index;
     } else if (port == 0x03cfu) {
         *out_value = x86_f65535_indexed_read(chip->graphics,
             sizeof(chip->graphics), chip->graphics_index);
@@ -180,8 +188,14 @@ lib_status x86_f65535_vga_read(x86_f65535 *chip, lib_u16 port,
         *out_value = x86_f65535_indexed_read(chip->crtc,
             sizeof(chip->crtc), chip->crtc_index);
     } else if (port == 0x03dau) {
+        /* The real PC110 video BIOS polls Input Status 1 while it initializes
+         * the C000 option ROM.  This is a controller-local L2 status source:
+         * a read resets the Attribute Controller flip-flop and presents an
+         * alternating vertical-retrace bit.  It deliberately models neither
+         * panel timing nor a host clock. */
         chip->attribute_data = LIB_FALSE;
-        *out_value = 0u;
+        chip->vertical_retrace = !chip->vertical_retrace;
+        *out_value = 0x01u | (chip->vertical_retrace ? 0x08u : 0u);
     } else {
         return LIB_STATUS_UNSUPPORTED;
     }
@@ -210,6 +224,11 @@ lib_status x86_f65535_vga_write(x86_f65535 *chip, lib_u16 port,
             chip->misc_output = value;
             x86_f65535_note_change(chip);
         }
+    } else if (port == 0x03ccu || port == 0x03dau) {
+        /* Input Status/Miscellaneous Output readback is at 3CCh.  The
+         * PC110 TFT video BIOS also writes this read-only alias and Input
+         * Status 1.  Retain controller state and accept those writes as
+         * no-ops. */
     } else if (port == 0x03c4u) {
         chip->sequencer_index = value & 0x07u;
     } else if (port == 0x03c5u) {
