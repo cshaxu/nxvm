@@ -1,5 +1,17 @@
 # M5 T580 S1 — MyPC110 qualification ledger
 
+## S48 post-initialization batch reconciliation
+
+[S48 observations](t580-s48-post-initialization-route.md) retain three actual
+processor resets and subsequent working ASMI/vendor/RSM service on unchanged
+firmware. Both widths remain before INT 19h. The BIOS resets a floppy
+controller and waits for its IRQ-completion flag, but the App plan installs
+no FDC. This is a missing controller/IRQ receiver, not permission to force a
+firmware flag. A separate guest port-98 bit-2 toggle/copy/restore sequence
+identifies the lower Flash receiver. FDC reset/IRQ/empty-drive wiring is the
+next cohesive implementation batch; Flash/Setup/boot-sector/guest/live
+product rows remain unqualified, not removed or counted as completed POST.
+
 ## Frozen product universe
 
 The product target remains four build-fixed artifacts, not runtime-selected

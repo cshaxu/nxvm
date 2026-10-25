@@ -298,6 +298,17 @@ outstanding source gate.
 
 ## Verification And Exit
 
+### S48 post-initialization reconciliation
+
+The [S48 audit](../etc/evidence/t580-s48-post-initialization-route.md) separates
+working later ASMI/vendor/RSM from the missing FDC reset/IRQ receiver and the
+independent lower Flash selection sequence. Both unchanged-firmware widths
+remain before INT 19h. The next implementation batch reuses existing Board
+FDC/PIC/DMA contracts, proving reset completion and empty-drive behavior;
+it cannot fabricate the BIOS wait flag or inherit another board personality.
+Flash/Setup, selected storage/guest, live panel/input/lifecycle and release
+remain original T580 obligations.
+
 ### S47 receiver reconciliation
 
 Actual unchanged-BIOS execution supersedes the S30 hard EC/ED gate assumption:

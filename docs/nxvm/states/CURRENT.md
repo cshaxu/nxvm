@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T580 S48 — Post-initialization POST and boot-route reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S48, next unused S after accepted S47. |
+| Admission And Approval | Owner-directed autonomous PC110 implementation; existing instruction to continue through T closure, reaffirmed on 2026-10-25. No new Shared implementation is admitted by this diagnostic packet. |
+| Objective | Reconcile the complete post-initialization batch in the qualification ledger: staged processor resets, firmware services, Flash view selection and actual boot-route entry. Identify coherent receiver requirements before further implementation. |
+| Non-goals | No firmware interception, synthetic service, guest flag/register forcing, ROM/media/INI mutation, product publication or Lib/Emulator change. An instruction/wall budget is not POST success. |
+| Reference Baseline | Clean pushed 9fb5d7d33; accepted S47 cold receiver and actual vendor ASMI/RSM proof. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), consuming the post-initialization and boot-route batch of its [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md). |
+| Files And ABI Surface | Existing App integration harness may receive a temporary bounded sampler; NXVM evidence/current/history only retained for audit. Estimated temporary test +30–80/-0 lines, removed after evidence; production and public ABI +0/-0. |
+| Applicable Rules | Execution coverage convergence, bounded background diagnostics and actual-change review; Architecture one execution/time/data owner; Coding reuse existing fixture and no duplicate production path; source policy external immutable firmware and read-only references; Documentation single active packet. |
+| Verification | Reuse original x64 Ninja/ccache tree and actual embedded TFT BIOS. Continue normal execution through reset boundaries; record semantic checkpoints, bounded instruction/I/O snapshots and terminal disposition. Corroborate a meaningful new checkpoint on x86; run documentation and whitespace gates for retained documentation-only delivery. |
+| Expected Markers | Actual timer pass and vendor return followed by classified reset/service/Flash activity; INT 19h, boot-block transfer or an exact bounded non-success disposition. No ceiling-as-success result. |
+| Asset Needs | Existing admitted external TFT BIOS/font, pinned PC110-EMU/PC110-QEMU/Open-Source-PC110 references. No new protected input or owner configuration change. |
+| Reporting Requirements | Initial plan/estimate, observed progress and final exact proof limits; distinguish whole batch inventory from one repaired prefix and preserve sources, output hashes and remaining receiver. |
+| Stop Conditions | Each owned observation at most 200 million instructions or 600 seconds and 64 KiB output; stop on terminal fault/CLI-HLT or actual boot-route milestone. Temporary directory build/t580-s48-route, this S owner, at most 4 MiB; archive required facts then remove it after process exit. |
+| Exit Criteria | Complete affected route inventory, actual unchanged-firmware observations, explicit accepted/unqualified dispositions and a coherent next implementation design; temporary sampler removed, actual diff reviewed, applicable gates pass, commit/push and coordinator acceptance. This S cannot qualify the product merely by reaching farther. |
+| Original Owner Request | Continue the complete PC110 T autonomously using existing external reference/firmware assets and normal compile/test/release governance. |
+| Similar-Issue Sweep | Compare cold versus processor-only reset, C/E/F/SMRAM views, configured ASMI dispatch and all identified firmware boot-entry callers; retain separate storage/panel/input/product obligations. |
+
 ## M5 T580 — Open after accepted S47
 
 S47 is closed after coordinator actual-change review of Shared `794380f69`,
@@ -15,7 +36,7 @@ MyRaidenII EXEs are refreshed; MyNES, Lib, Emulator and owner inputs are unchang
 The [S47 evidence](../etc/evidence/t580-s47-cold-initialization-contract.md)
 records source grades, complete proof, actual diff, artifact hashes and limits;
 the [history](../history/M5-T580-pc110-qualification.md) retains its packet.
-No active S packet remains after closure. T580 stays open: boot-only lower
+S48 is admitted above after closure. T580 stays open: boot-only lower
 Flash selection, later POST/Setup/guest, live panel/input/lifecycle and PC110
 release qualification retain their [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
 receivers. Next admission reconciles the complete post-initialization firmware
