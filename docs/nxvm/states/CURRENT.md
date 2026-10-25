@@ -59,6 +59,41 @@ MyPC110 set (8 tests), and the two relevant manifest checks. This is an L2
 receiver only: it does not establish PC-Card behavior, disk geometry, ATA
 mechanical timing, a guest boot, POST completion, or original-DSTN support.
 
+## Active Subtask — M5 T580 S11
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S11. |
+| Admission And Approval | The owner directed PC110 work to continue through T580 and grants standing approval for bounded App/Core implementation, verification, commit and push work. |
+| Objective | Determine whether the selected TFT firmware reaches its source-documented F65535 panel-table initialization by the existing C000-to-port-61 semantic checkpoint. |
+| Non-goals | No LCD scanout, host panel renderer, panel clock, power/PCMCIA model, firmware-address special case, original-DSTN path, guest boot or release claim. |
+| Reference Baseline | S10 commit `7cf22664a`; its x64/x86 real-firmware diagnostic set completes the admitted C000-to-port-61 return path. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), using its source-qualified panel receiver ledger. |
+| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, Current and one evidence record only; no production or public-interface change. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; diagnostic code may observe existing routes only. |
+| Verification | Rebuild the existing real-firmware diagnostic and run the complete MyPC110 x64/x86 diagnostic set; verify all 16 sourced XR writes occur in the real image before the existing return checkpoint. |
+| Expected Markers | Either the existing `3D6h/3D7h` route records the complete TFT XR table, or both hosts establish that the table has not executed by this fixed semantic checkpoint. |
+| Asset Needs | Existing external, hash-validated TFT BIOS and Kanji font under `nxvm-assets`; neither is tracked or modified. |
+| Reporting Requirements | Record source grade, exact observed register set, x64/x86 result, retained boundary and no-production-diff conclusion. |
+| Stop Conditions | A source/image mismatch, missing asset, failure before the existing checkpoint, any need for panel scanout/power behavior, or any Shared/Core production change. |
+| Exit Criteria | Both widths yield the same sourced table disposition through the existing real-firmware route; documentation and actual-diff review are clean. |
+| Original Owner Request | Continue the entire PC110 task, using the external PC110 projects and lawful external firmware as L2 evidence where appropriate. |
+| Similar-Issue Sweep | All table registers are asserted together; no selective one-register claim, duplicate trace route or synthetic register injection remains. |
+
+### S11 Closure
+
+The diagnostic probe recorded no `3D6h/3D7h` extension writes on either host
+before the already-proved post-C000 port-61 return: every one of the 16
+source-listed TFT table registers remained unseen. The identical result at
+the same semantic checkpoint rules out treating the published TFT table as a
+currently executed panel receiver. The temporary tracer was removed; no
+production or test path changes remain from this result.
+
+The next panel/power receiver must be selected from a later, source-defined
+firmware event rather than extending a retirement budget or injecting the
+table. The S10 x64/x86 16-test real-firmware regression remains the retained
+proof for the reached path.
+
 ### S5 Closure
 
 S5 is accepted as a finite return classification. Both host widths leave the
