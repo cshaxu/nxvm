@@ -2,6 +2,37 @@
 
 ## Current Work
 
+## M5 T580 S45 — Active: post-timer reset classification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S45. |
+| Admission And Approval | Owner-directed autonomous PC110 implementation; follows accepted S44. |
+| Objective | Classify actual post-timer resets and follow the unchanged BIOS to its boot interrupt or next terminal using complete copied instruction/I/O boundaries. The first sampled reset follows CMOS shutdown code 02 and the BIOS KBC reset routine, with no detected CPU fault. |
+| Non-goals | No forced firmware state, new receiver, public interface, guest-time shortcut or boot claim. |
+| Reference Baseline | `95cd914ef`; dual-width actual timer pass and the unchanged external TFT BIOS. |
+| Candidate Proposal | PC110 qualification; consume its real-firmware progression and lifecycle/reset rows. |
+| Files And ABI Surface | Temporary extension of the existing App integration harness plus retained NXVM evidence; no production or public API change. |
+| Applicable Rules | One CPU/Core path; copied diagnostic observations; pinned external sources; finite evidence with no per-instruction log stream. |
+| Verification | Build and run the existing integration executable in stable Ninja trees. Retain the last 16 post-timer retirements, CPU snapshot and at most 128 actual port operations. |
+| Expected Markers | BIOS boot interrupt, explicit reset I/O, actual shutdown/fault predecessor, or another named terminal with copied state. |
+| Asset Needs | Existing TFT BIOS/font, immutable and external. |
+| Reporting Requirements | Actual terminal, source classification, whole reset boundary, remaining boot/guest requirements and any repair owner. |
+| Stop Conditions | Actual boot interrupt, BIOS halt/fault, four processor resets, 200 million instructions or 600 seconds; output bounded to 64 KiB. |
+| Exit Criteria | Classify the reset with reproducible semantic evidence; remove temporary sampler; retain current passing unit baseline when no source change remains. |
+| Original Owner Request | Implement PC110 to its complete fixed-product end state. |
+| Similar-Issue Sweep | Distinguish explicit KBC reset, CPU shutdown, cold-reset repetition and failed return/interrupt execution across the post-timer boundary. |
+
+### S45 Delivery
+
+The actual BIOS passes the timer and continues through three CPU resets.
+At the 200M-instruction containment it is polling a memory flag through the
+F000:A966 wait while repeatedly issuing AX=5380/BH=84 via port 15EE. No boot
+interrupt or terminal execution fault was observed. The first post-timer
+reset follows CMOS shutdown 02 and the BIOS KBC reset routine; the existing
+Core reset preserves board/RAM state. Temporary sampler code is removed;
+production/test delta is zero. See [S45 evidence](../etc/evidence/t580-s45-post-timer-reset.md).
+
 ## M5 T580 S44 — Closed: PC110 PIT/refresh clock relationship
 
 Accepted implementation `1f30224c3` corrects the App-owned L2 clock ratios.

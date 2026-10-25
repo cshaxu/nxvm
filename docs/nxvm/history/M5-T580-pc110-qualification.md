@@ -27,3 +27,11 @@ The [S44 evidence](../etc/evidence/t580-s44-pit-refresh-clock.md) and
 retain source grades, retained manual views and open product requirements.
 Preview construction is verified; complete POST, display, guest and release
 qualification remain open. No PC110 product is published by this delivery.
+
+## S45: post-timer reset and firmware service wait
+
+The bounded x64 continuation passes three processor-reset boundaries
+and reaches the memory-flag wait calling the 15EE/AX=5380/BH=84 service. It does
+not reach a boot interrupt within 200M instructions. No production or test
+change remains after removing the sampler. [S45 evidence](../etc/evidence/t580-s45-post-timer-reset.md)
+records the actual copied observations and the complete next receiver batch.
