@@ -199,6 +199,27 @@ indexed file, zero-response route, QEMU synthetic register bank or BIOS
 intercept is admitted. See the
 [S37 evidence](../etc/evidence/t580-s37-ec-a-contract-reconciliation.md).
 
+## S38 — observer-free complete-delay boundary
+
+S36's retirement observer invokes App diagnostic work for every instruction,
+so its wall time cannot establish normal execution cost or firmware
+non-return. S38 temporarily adds one mode to the existing real-firmware
+diagnostic. It installs the existing execute watchpoint at static return
+address `F000:5405h`, deliberately installs neither trace nor retirement
+observers, and retains only the existing machine result and copied CPU
+snapshot. The same finite containment runs on x64 and x86. A hit proves only
+that this BIOS control-flow boundary is reached under the existing machine;
+it neither qualifies POST nor authorizes a synthetic receiver. The temporary
+mode and raw output are removed before P.
+
+### S38 Closure
+
+The observer-free x64 run did not reach the static return boundary during its
+180-second containment. Repeating the same long wait on x86 would add no
+semantic fact, so it was not run. The temporary mode was removed and the
+source-gated qualification boundary remains; see
+[the S38 evidence](../etc/evidence/t580-s38-observer-free-delay-boundary.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

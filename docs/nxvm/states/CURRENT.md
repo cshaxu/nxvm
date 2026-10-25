@@ -2,6 +2,28 @@
 
 ## Current Work
 
+## M5 T580 S38 — Closed: PC110 observer-free complete-delay boundary
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S38. |
+| Admission And Approval | The owner directed autonomous continuation on 2026-10-25 after S36 showed the per-retirement observer made the complete delay impractical. |
+| Objective | Determine whether the selected TFT BIOS reaches the already-static `F000:5405h` return boundary when no retirement or trace observer is installed. |
+| Non-goals | No production change, firmware interception, timing shortcut, guessed receiver, Shared/Core ABI change, artifact, POST or boot claim. |
+| Candidate Proposal | Temporarily add one existing-diagnostic mode that installs only the existing execute watchpoint at `F000:5405h`; run it with a finite instruction containment on both host widths. |
+| Files And ABI Surface | Temporary `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, this packet and S-local evidence only. The mode and all raw output are removed before P. |
+| Verification | Reuse the stable x64/x86 Ninja graphs; inspect the existing Core stop reason and copied CPU snapshot. A watchpoint hit is the only success marker; a budget/fault is a bounded result, not a product claim. |
+| Stop Conditions | Any need for a receiver, device value, BIOS interception, production/ABI change, inconsistent host-width result or unbounded run ends this diagnostic without implementation. |
+| Exit Criteria | Record a durable x64/x86 watchpoint or bounded no-hit disposition, remove temporary diagnostic material, and restore a clean source tree. |
+
+### S38 Closure
+
+The observer-free x64 containment did not reach `F000:5405h` in 180 seconds.
+It was deliberately stopped; a duplicate x86 wait would not add a semantic
+fact. The temporary mode was removed. This neither establishes a BIOS
+non-return nor selects a missing receiver. See the
+[S38 evidence](../etc/evidence/t580-s38-observer-free-delay-boundary.md).
+
 ## M5 T580 — Active: PC110 qualification is source-gated
 
 | Field | Required record |
