@@ -2,6 +2,13 @@
 
 ## Current Work
 
+### Receiving artifact update from NXVM T580 S47
+
+The admitted NXVM cross-target packet refreshes the Core-linked 0007 pair
+without changing MyRaidenII source or its T7 qualification status. Both widths
+pass the existing 13 unit cases. The [receiving record](../etc/evidence/nxvm-t580-s47-core-write-width.md)
+retains PE identity, hashes and the untested gameplay/desktop boundaries.
+
 ## M1 T7 S118 — Closed: App-root layout normalization
 
 | Field | Required record |
