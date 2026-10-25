@@ -2,169 +2,24 @@
 
 ## Current Work
 
-## M5 T580 S47 — Active: complete PC110 cold-memory initialization batch
+## M5 T580 — Open after accepted S47
 
-Approved write-width prerequisite and App configuration receiver are implemented;
-Shared P1 is `d603e81e7`. Both widths have passing evidence for all 712 unit
-cases (including explicitly recorded timeout/cache reruns), unchanged BIOS timer
-calibration and four deployed PC INI identities. Eight PC EXEs are refreshed
-at 0580 and the Core-linked MyRaidenII pair at 0007. See the
-[S47 verification and remaining contract boundary](../etc/evidence/t580-s47-cold-initialization-contract.md).
-The active-view receiver is implemented in Shared P8 `794380f69` and its
-App continuation. Both widths pass all 712 repository unit cases, actual BIOS
-ASMI/vendor-handler/RSM/timer and four receiving PC INI identities. Eight PC
-and two Core-linked MyRaidenII artifacts are refreshed. S47 awaits final
-coordinator acceptance; T580's later POST/guest/product rows remain open.
-No PC110 boot or product release is claimed.
+S47 is closed after coordinator actual-change review of Shared `794380f69`,
+NXVM `782f09ebb` and MyRaidenII `5ed407b4b`. The complete cold-initialization
+receiver now has CPU-only SMRAM, SMIACT, independent locks, ASMI source/acknowledge/
+rearm and actual vendor-handler/RSM proof. Both widths pass all 712 repository
+unit cases and the enhanced unchanged-BIOS timer integration (delta 166C),
+plus four real PC INI identities. The eight PC and two affected Core-linked
+MyRaidenII EXEs are refreshed; MyNES, Lib, Emulator and owner inputs are unchanged.
 
-Coordinator actual-change review accepts the bounded write-width prerequisite
-and App protocol delivery: Shared P1 `d603e81e7`, NXVM P2 `2fe38e9af` and
-receiving MyRaidenII P3 `98b49cfde` are pushed. Review confirms one existing
-callback path, unchanged reads/error propagation, mechanical legacy adapters,
-actual CPU unlock/lock/reset tests and unchanged Lib/Emulator/owner inputs.
-The receiver evidence names the remaining CPU-only SMRAM and SMIACT contract
-gaps explicitly; this acceptance does not close S47's complete cold-memory
-batch or T580. No extra desktop/guest qualification is inferred from unit or
-INI identity tests.
-
-The receiver now implements one register-qualified C--F shadow decoder instead
-of prefilled C/F buffers and a shadow-write Boolean. The unchanged BIOS reaches
-its initializer, copies the 38000 handler and returns on both host widths.
-The existing timer integration also requires the copy and initialization
-markers; both widths pass. The previously assumed F9 hard gate is retired as
-an unproven L2 model contradicted by the actual caller sequence. The
-[S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md)
-preserves both the superseded observation and the new proof. The active-view
-continuation now implements CPU-only SMRAM, SMIACT and ASMI acknowledgement/
-rearm, with actual vendor-handler and RSM proof on both host widths. Final
-regression/publication review is in progress; no boot qualification is implied.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S47, after accepted S46. |
-| Admission And Approval | Owner's continuing autonomous PC110 implementation direction, followed by explicit approval of the existing port-callback access-width extension. Apply its narrower write-only form. No change to Lib/Emulator or protected inputs is admitted. |
-| Objective | Reconcile the entire cold ROM/shadow/SMRAM initialization route and its board controls, then repair the established App-owned mechanism rather than repeating isolated SMI pulses or initial-value changes. |
-| Non-goals | No firmware PC hook, injected handler, fabricated BIOS result, host-written wait flag, replacement CPU path, second clock or claim that a sampled prefix qualifies boot. |
-| Reference Baseline | 98889bc39; unchanged external TFT BIOS, S44 clock proof, S45 wait and S46 rejected hypotheses. |
-| Candidate Proposal | MyPC110 qualification; consume the complete board/memory/real-firmware receiver batch in the existing qualification ledger. |
-| Files And ABI Surface | Targets Shared, NXVM and receiving MyRaidenII artifacts, delivered in separate P commits: add access_bytes only to the existing X86 Core port write callback, propagate real width or split-lane width 1, migrate X86 NXVM/DeskPro/PC110 production and test callers, update matching manifests; PC110 firmware/configuration/plan and existing tests remain the cold-initialization receiver. Refresh four PC pairs at current T580 version, synchronizing the stale family version header; MyRaidenII retains 0007. MyNES has no Core link and remains untouched. Lib/Emulator stay unchanged. No second callback path or inferred width from value. |
-| Applicable Rules | One ROM/RAM decode owner and real CPU path; complete-batch source reconciliation; L2 inference labelled separately from exact source facts; no protected source import. |
-| Verification | Inspect full firmware initialization and all current App controls before modification. Existing Core tests prove unsplit 1/2/4-byte and split one-byte write callbacks, unchanged values and errors. Run affected Core/Board/App tests in both stable Ninja trees and rebuild every affected admitted PC artifact; MyNES/MyRaidenII inputs are reviewed and unaffected consumers need no manufactured artifact. The grouped C/E/control/copy observation is retained as evidence. Proven PC110 repairs require focused dual-width App regressions and unchanged-BIOS replay. |
-| Expected Markers | Actual initialization entry/return or the complete rejecting predicates, all relevant decode-control writes and copied destination state; for repair, actual handler fetch and RSM return through the existing CPU path. |
-| Asset Needs | Existing immutable embedded TFT BIOS/font and separately labelled DSTN-derived input; preserve external masters and owner mypc110.ini. |
-| Reporting Requirements | Whole-batch design and estimated source/test delta before retained changes; actual source grades, review, verification and remaining qualification rows. No per-instruction mini-S or new permanent framework. [S47 observation and approved width contract](../etc/evidence/t580-s47-cold-initialization-contract.md) records the grouped observation and write-only migration estimate +100--180/-60--110 source/test lines. |
-| Stop Conditions | Any guessed control-register side effect or required unapproved Shared contract stops that implementation. Diagnostics stop at the semantic boundary, 200M instructions, 600 seconds or 64 KiB output. Own and confirm exit of each background process. |
-| Exit Criteria | A complete, source-labelled receiver repair with its actual-path proof, or an exact reconciled contract gap without speculative production code; temporary diagnostics removed, evidence retained and applicable gates run. |
-| Original Owner Request | Implement PC110 through usable, verified fixed products under the established build/test/publication rules. |
-| Similar-Issue Sweep | Audit C/E/F ROM and shadow sources, both constructor/reset paths, protected bootstrap aliases, SMRAM initialization/active decode, reset persistence, trigger and clear/rearm as one mechanism. |
-
-### S47 decoder implementation brief
-
-Under the owner's continuing X86 Core/chip and App implementation authorization,
-replace the App's prefabricated C and always-writable F paths with one C--F
-shadow allocation and register-qualified per-16-KiB access. The complete cold
-decoder batch includes external C/D absence, source-recorded E/F Flash banks,
-C/E/F access fields, high reset Flash alias, full-reset decode and CPU-only-reset
-preservation. External Flash stays immutable; the guest performs copies. Use
-the existing route owner and one side-effect-free indexed-register read in the
-chip; delete App index/write-state mirrors and the old write-notification API.
-Existing chip/App fixtures cover all four access choices, boundaries, actual
-instruction/data reads and reset. Preserve the separately open SMRAM/SMIACT and
-trigger receiver rather than claim the whole S repaired from a decoder unit.
-Estimated source delta +150--230/-110--170, existing tests +90--150/-25--60;
-Lib/Emulator and owner inputs remain out of scope. Firmware-path evidence and
-source grades must determine retention, not just passing synthetic tests.
-
-The first decoder replay exposes an in-scope protocol conflict: the real
-F3B72/F3BE9 return closes the formerly assumed F9 gate, then its caller invokes
-F3C52 with ordinary EC/ED accesses and no FB. The old model returns FF and
-discards the required writes. Reconcile the complete caller/return sequence
-against the always-accessible reference models; retire that unproven hard gate
-and its Boolean as L2 compatibility, rather than add a BIOS-address exception.
-S30's historical evidence remains intact and is explicitly superseded for this
-mechanism. The diagnostic is stopped once this conflict is proved, not called
-a failed firmware qualification or allowed to consume its whole time budget.
-
-The implemented decoder uses Shared P6 `86976f86d` for the observational chip
-read. Both stable graphs rebuild the affected App units and TFT/DSTN previews;
-all 712 current unit cases pass on each host width. The existing real-BIOS
-timer integration passes with copy/initializer markers and delta 166E on both
-widths. Actual C/H delta against `24bfb9ce9` is +313/-216, net +97 across 12
-paths; production is net +3 and the rest is existing-test coverage. No admitted
-published App links the changed VL82C420 library; earlier S47 artifacts remain
-current and PC110 previews remain unpublished. The next complete receiver is
-CPU-only SMRAM visibility, Board SMIACT forwarding and qualified source/return,
-not an unconditional SMI pulse or a host-written service result.
-
-### S47 active-view design reconciliation
-
-Before retaining the SMRAM/source receiver, collect the unchanged BIOS's complete
-OMDCR/unit-selection, Block 2 source/enable/rearm and software-port sequence up
-to initialized service dispatch in one bounded observation. The existing App
-integration harness owns this temporary sampler (600 s, 200M retirements,
-64 KiB output); remove it after preserving source-labelled conclusions.
-Original SL pages 169--170 require CPU-only SMRAM while DMA still accesses
-ordinary RAM. Compare extending the existing route-mode admission with widening
-every device callback; prefer the narrower single resolver, no extra clock or
-public parallel callback. No speculative trigger or Shared memory contract is
-implemented until that whole decode/source design is reconciled.
-
-The grouped retirement stream identifies another existing coupling defect:
-the initializer's ordinary CPU-lock word write (22h=0101) also relocks Block 2
-in the App. Subsequent firmware Block 2 reads return FF and writes disappear,
-despite no corresponding indexed-bank lock. Original SL's separate CPU and
-82360 configuration mechanisms plus the complete caller sequence reject this
-coupling. Remove those two cross-lock calls, retain the CPU's own lock/status
-and the chip's explicit/reset protocol, and revise the existing route assertions
-to prove independence. Estimated retained App source -2 lines, existing tests
-+10--20/-5--10; no Shared change. Reconcile B6 global enable, B7 source, FA
-rearm and OMDCR together before implementing any SMI trigger.
-
-The corrected indexed sequence now reaches B6=90 after initialization (rather
-than discarded writes/FF reads), while the earlier 15EE request runs with B6=0.
-Original SL pages 59/84 identify ASMI at index 84/85 and B5 bit 2; the unchanged
-firmware registers its vendor ASMI service for mask 20 in the same initializer.
-Reconcile these as an explicit L2 ASMI receiver:
-chip owns B5/B6 enable, B7 pending/acknowledgement and FA rearm; App wires its
-configured software port to the existing Core SMI input, never a BIOS-PC gate.
-
-Under standing X86 Core/chip/Board implementation authorization, the cohesive
-active-memory receiver may add one CPU-only overlay mode to the existing Core
-route enum, carry CPU/DMA admission privately through the same resolver, and
-forward the existing SMIACT output through Board's profile binding. Keep public
-device callback signatures unchanged. One bounded decode-change notification
-at Core/CPU invalidates stale cache/prefetch state; reuse the cache-range owner,
-without honoring a snoop-disable bit for a changed memory view. The App's one
-firmware allocation includes the distinct 64 KiB SMRAM view, controlled by
-IBU-selected 302 bit 3 or physical SMIACT. Full reset clears transient view and
-signal state; CPU-only reset preserves guest-prepared contents. Lib/Emulator
-remain untouched. Estimated source +220--330/-60--110, existing tests
-+110--180/-20--45. Every affected admitted PC/MyRaidenII artifact must rebuild;
-no PC110 release or S47 closure without actual BIOS SMI/RSM and regressions.
-
-The rejected bit-7 trigger trial reaches the prepared power handler, reads
-B7=80 and acknowledges it with 7F. Its guest video-state save exposes one concrete missing
-F65535 DAC operation: read 3C7 is registered but returns UNSUPPORTED. Sweep all
-four DAC ports at that chip, add the ordinary read/write-mode status latch
-(3 in read mode, 0 in write mode), and extend its existing protocol fixture.
-Estimated extra source +5--8 and tests +8--15; no API, renderer or BIOS-address
-exception. The SMM path is not accepted until the real handler returns.
-
-Whole-caller review rejects the draft's B7=80 ASMI assignment: the unchanged
-initializer at Flash 2 B3FF registers its vendor service with source mask 20,
-then programs 84/85 and B5 bit 2 in the same function. Mask 80 instead reaches
-the suspend path ending in FF=82/HLT. Use the source-qualified L2 bit-5 request,
-preserve W0C acknowledgement and FA rearm, and require actual service/return
-observations before accepting the receiver. The rejected bit-7 trial is not
-a product or firmware defect and does not justify bypassing the guest HLT.
-
-Both widths now pass the enhanced unchanged-BIOS integration: initialized copy,
-natural ASMI, vendor service entry, RSM and timer delta 166C. Whole-repository
-unit regression and receiving artifacts are still under verification. Task-local
-verification logs, if needed, belong only to `build/t580-s47-verify` (S47 owner,
-2400-second phase budget, 8 MiB); preserve results/hashes in evidence and remove
-them after the associated native processes exit. The PDF scratch directory was
-removed after source hashes and the externally archived original were recorded.
+The [S47 evidence](../etc/evidence/t580-s47-cold-initialization-contract.md)
+records source grades, complete proof, actual diff, artifact hashes and limits;
+the [history](../history/M5-T580-pc110-qualification.md) retains its packet.
+No active S packet remains after closure. T580 stays open: boot-only lower
+Flash selection, later POST/Setup/guest, live panel/input/lifecycle and PC110
+release qualification retain their [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
+receivers. Next admission reconciles the complete post-initialization firmware
+and boot route; it must not count the successful prefix as product completion.
 
 ## M5 T580 S46 — Closed: SMI/SMRAM receiver audit, repair outstanding
 

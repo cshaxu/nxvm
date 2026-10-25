@@ -315,8 +315,8 @@ The final S47 continuation implements CPU-only active SMRAM, Board SMIACT
 forwarding and the registered ASMI source/acknowledge/rearm protocol. Both
 widths now execute the real vendor handler and RSM, then pass the existing
 timer milestone with delta 166C; full unit and affected-artifact qualification
-is recorded in the same evidence. Accept this complete cold-receiver batch
-only after actual-change review. Boot-only lower Flash selection and later
+is recorded in the same evidence. Coordinator actual-change review accepts
+this complete cold-receiver batch. Boot-only lower Flash selection and later
 POST/Setup/guest/panel/product qualification remain T580 members; this does
 not authorize PC110 publication or treat those rows as accepted.
 

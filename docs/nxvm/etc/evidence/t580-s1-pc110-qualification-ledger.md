@@ -133,7 +133,7 @@ rearm and real RSM. Both widths execute the registered vendor service and
 return before passing timer calibration with delta 166C. Core/chip/App units
 and all 712 repository unit cases per width pass; receiving artifacts rebuild.
 Shared implementation is `794380f69`; the App, evidence and PC receiving
-artifacts are delivered together by the NXVM continuation. Final coordinator
-review still determines acceptance of this batch. The boot-only lower Flash
+artifacts are delivered by NXVM `782f09ebb`, with MyRaidenII `5ed407b4b`.
+Coordinator actual-change review accepts this cold-receiver batch. The boot-only lower Flash
 view and all later POST/Setup/guest/panel/product members remain unqualified;
 none is hidden by accepting this one cold-initialization receiver.
