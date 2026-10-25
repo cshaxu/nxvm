@@ -17,6 +17,14 @@ transaction used by that utility. It does **not** establish an MCU command
 grammar, a mandatory busy interval, an APM return convention, reset semantics
 or a real-firmware POST transaction.
 
+The selected external TFT BIOS independently contains the same interface:
+its F000-bank helpers write command at `F4435h`, write data at `F4444h`, poll
+status bit 1 at `F4468h` before writes, and poll status bit 0 at `F4480h`
+before reads. The bounded disassembly shows its read helper does not issue
+`in al,15E8h` while bit 0 is clear; it follows the firmware's existing
+port-61 timeout route instead. Therefore ready status `00h` is sufficient for
+the evidenced write path and does not require an invented inbound message.
+
 MyPC110 therefore installs one App-local mailbox receiver. It reports the
 proven ready state and records byte writes. It deliberately does not execute
 an MCU image, infer a busy duration, synthesize an APM response, special-case
