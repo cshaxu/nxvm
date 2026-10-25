@@ -130,4 +130,8 @@ if(TARGET mypc110-real-firmware)
         COMMAND mypc110-real-firmware-post-diagnostic --c000)
     set_tests_properties(mypc110.diagnostic/real-firmware-c000 PROPERTIES
         LABELS "diagnostic;mypc110" TIMEOUT 60)
+    add_test(NAME mypc110.diagnostic/real-firmware-c000-follow
+        COMMAND mypc110-real-firmware-post-diagnostic --c000-follow)
+    set_tests_properties(mypc110.diagnostic/real-firmware-c000-follow PROPERTIES
+        LABELS "diagnostic;mypc110" TIMEOUT 60)
 endif()

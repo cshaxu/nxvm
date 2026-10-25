@@ -28,6 +28,13 @@ Do not extend a blind instruction budget.  Reuse the existing real-firmware
 diagnostic to retain a finite post-C000 trace window, then reconcile every
 observed access class against the T580 ledger before proposing a repair.
 
+### S5 Delivery
+
+The two-width trace leaves C000 at the same `F000:3F6C` return point and then
+reaches the already-known port-61 wait without a new fault or access class.
+The finite result is retained in [the S5 evidence](../etc/evidence/t580-s5-c000-return.md).
+It opens no new hardware receiver.
+
 ### S4 Closure
 
 The C000 owner now distinguishes ordinary writable shadow data from immutable
