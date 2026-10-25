@@ -83,9 +83,9 @@ set_tests_properties(
     emulator.test-manifest
     PROPERTIES LABELS "unit;emulator" TIMEOUT 30)
 
-# The verifier configures isolated CMake fixtures. On a cold 32-bit cache it
-# can exceed the ordinary unit-test budget while competing with the suite.
-set_tests_properties(emulator.verifier-negative PROPERTIES TIMEOUT 60)
+# The verifier configures isolated CMake fixtures. Its verified contract is
+# bounded fixture completion, not a 30-second wall-clock race with the suite.
+set_tests_properties(emulator.verifier-negative PROPERTIES TIMEOUT 300)
 shared_verify_test_registration(emulator)
 
 # One suite-owned build entry for importing products.  CTest registration and

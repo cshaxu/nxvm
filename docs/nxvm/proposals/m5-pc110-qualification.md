@@ -109,6 +109,25 @@ host widths. It is the existing BIOS outer delay loop and does not select a new
 device receiver. The stronger caller test replaces the former local-return
 test; detailed output and limits are in [S31 evidence](../etc/evidence/t580-s31-post-c000-port61-caller.md).
 
+## S32 — outer-delay counter fact
+
+S32 strengthens the one admitted caller diagnostic rather than speculating
+about the static outer-loop count. It records the low `BL` value from the
+retirement snapshot at the first established `F000:EA5Bh` caller on both host
+widths. That fact determines whether completing the loop is a finite,
+semantic next checkpoint; it is not itself a completion, receiver, POST or
+guest-boot claim. No production code, timing model, ROM/media input or public
+contract is in scope.
+
+### S32 Closure
+
+Both host widths report `BL=6Fh` at the established `EA5Bh` caller, after the
+routine's `dec bl`; the preceding value is `70h`.  The remaining approximately
+111 repetitions would only re-exercise the already-owned port-61 wait and
+would make a registered diagnostic hour-scale.  S32 therefore retains the
+single strengthened caller checkpoint and rejects a complete-loop test as
+non-semantic test bloat.  See [the S32 record](../etc/evidence/t580-s32-outer-delay-counter.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

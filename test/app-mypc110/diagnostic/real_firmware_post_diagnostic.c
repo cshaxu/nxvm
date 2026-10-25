@@ -75,6 +75,7 @@ typedef struct mypc110_post_diagnostic_trace {
     x86_core_cpu_execution_point first_after_post_c000_port61_wait;
     lib_bool captured_post_c000_port61_caller;
     x86_core_cpu_execution_point post_c000_port61_caller;
+    lib_u8 post_c000_port61_caller_bl;
     mypc110_post_diagnostic_port_read
         post_c000_port61_reads[MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY];
     lib_size post_c000_port61_read_count;
@@ -199,6 +200,7 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
         observation->point.linear_pc != 0x000fea85u) {
         trace->captured_post_c000_port61_caller = LIB_TRUE;
         trace->post_c000_port61_caller = observation->point;
+        trace->post_c000_port61_caller_bl = (lib_u8)observation->current_cpu.ebx;
     }
     if (trace->follow_c000_port61 && trace->left_c000_after_boundary &&
         observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
@@ -479,9 +481,10 @@ int main(int argc, char **argv)
             post_reset_trace.first_post_c000_port61_ecx);
     }
     if (c000_port61_caller_checkpoint) {
-        lib_c_printf("PC110:POST:c000-port61-caller=%04x:%08x bytes=%02x %02x %02x %02x\n",
+        lib_c_printf("PC110:POST:c000-port61-caller=%04x:%08x bl=%02x bytes=%02x %02x %02x %02x\n",
             post_reset_trace.post_c000_port61_caller.cs,
             post_reset_trace.post_c000_port61_caller.eip,
+            post_reset_trace.post_c000_port61_caller_bl,
             post_reset_trace.post_c000_port61_caller.bytes[0u],
             post_reset_trace.post_c000_port61_caller.bytes[1u],
             post_reset_trace.post_c000_port61_caller.bytes[2u],

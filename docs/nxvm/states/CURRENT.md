@@ -2,6 +2,42 @@
 
 ## Current Work
 
+## M5 T580 S32 — Closed: PC110 outer-delay counter fact
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S32. |
+| Admission And Approval | The owner directed T580 to continue autonomously on 2026-10-25. This is a diagnostic-only semantic checkpoint following S31. |
+| Objective | Record the real low `BL` counter value at S31's established post-`EA80h` caller (`F000:EA5Bh`) before deciding whether a complete outer-loop diagnostic is bounded and useful. |
+| Non-goals | No production receiver, timing shortcut, Shared/Core/App ABI, firmware/media change, device model, release artifact or guest-qualification claim. |
+| Reference Baseline | `8958da82e` (S31), selected TFT BIOS hash recorded in S26, and the existing `c000-port61-caller` diagnostic. |
+| Candidate Proposal | Extend the existing caller checkpoint by copying the already supplied retirement CPU snapshot's low `EBX` byte at the first real caller. The existing CTest is strengthened in place; the former output/contract is not duplicated. |
+| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c` and T580 status/proposal/evidence. Full-suite verification also corrects the existing Lib/Emulator static-fixture time budgets and their manifests: `test/{lib,emulator}/CMakeLists.txt`, `test/{lib,emulator}/MANIFEST.sha256`. No production source or public ABI changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md` S-contract and test-bloat rules; `ARCHITECTURE.md` single Core time owner; `CODING.md` diagnostic-copy/no-synthetic-route rules; source policy research boundary. |
+| Verification | Build both Ninja widths; run the existing strengthened named MyPC110 diagnostic on x64/x86; inspect the caller/counter fact; run the required repository-only unit suite before P. |
+| Expected Markers | `PC110:POST:c000-port61-caller=... bl=..` on both widths. The counter fact is diagnostic evidence only, not a loop-completion or firmware-progress claim. |
+| Asset Needs | Existing external hash-pinned TFT BIOS only; no asset creation, download, movement or commit. |
+| Reporting Requirements | Record exact caller/counter, disposition for a possible later full-loop checkpoint, production diff (expected zero), diagnostic/doc line counts, x64/x86 results and unqualified limits. |
+| Stop Conditions | A missing established caller, an inconsistent width result, a need for guessed firmware/device behavior, Core/Shared production change, or a non-source-backed receiver stops implementation and records no-result evidence. |
+| Exit Criteria | The real caller has a reproducible counter fact on both widths; no unapproved production behavior is introduced; required diagnostic/unit evidence and documentation are complete. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | Strengthen the sole caller diagnostic rather than adding a second counter probe or a second trace framework; retain only semantic facts used to choose a later receiver/checkpoint. |
+
+### S32 Closure
+
+The established real caller reports `BL=6Fh` on both widths, directly after
+the BIOS `dec bl`; its prior loop value is `70h`.  Completing the remaining
+roughly 111 identical port-61 wait iterations would not select a receiver and
+would create an hour-scale registered diagnostic.  S32 therefore retains the
+single strengthened caller test and records that rejection as a test-quality
+disposition.  No production source, ABI, firmware/media input or release
+artifact changed.  See the [S32 evidence](../etc/evidence/t580-s32-outer-delay-counter.md).
+
+The complete unit suite initially exposed three valid isolated CMake checks
+whose inherited 30-second budget was below their measured duration. Their
+existing time limit is raised to the approved 300 seconds; both widths then
+pass 667/667. This alters no source/test assertion or product behavior.
+
 ## M5 T580 S31 — Closed: PC110 post-C000 port-61 caller boundary
 
 | Field | Required record |
