@@ -2,6 +2,39 @@
 
 ## Current Work
 
+## M5 T580 S33 — Closed: PC110 outer-delay completion correction
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S33. |
+| Admission And Approval | The owner directed T580 to continue autonomously on 2026-10-25. S32's wall-time extrapolation used startup cost rather than measured loop cost, so this corrective semantic checkpoint is required before retaining its no-test disposition. |
+| Objective | Run the already entered, real `BL=70h` BIOS outer delay to its actual `EA7Fh` return and record the real return receiver, without treating an instruction ceiling as success. |
+| Non-goals | No production receiver, timing shortcut, Shared/Core/App ABI, firmware/media change, device model, release artifact or guest-qualification claim. |
+| Reference Baseline | `4b6326c19` (S32), selected TFT BIOS hash recorded in S26, static `F000:53DAh` caller map and the existing post-C000 diagnostic. |
+| Candidate Proposal | Replace the current caller CTest in place with one outer-return checkpoint. Record EA38 entry `BL`, EA55 iteration count, EA7F return and the first returned-to caller; retain one bounded containment ceiling only. |
+| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, `test/app-mypc110/CMakeLists.txt`, T580 status/proposal/evidence only. No production source, public ABI or component manifest exists on this App-local test tree. |
+| Applicable Rules | `docs/rules/EXECUTION.md` S-contract/diagnostic containment/test-bloat rules; `ARCHITECTURE.md` single Core time owner; `CODING.md` diagnostic-copy/no-synthetic-route rules; source policy research boundary. |
+| Verification | Build both Ninja widths; run the replacement named MyPC110 diagnostic on x64/x86; inspect entry/count/return facts; run the required repository-only unit suite before P. |
+| Expected Markers | `PC110:POST:c000-port61-outer=... initial-bl=70 iterations=112 caller=...` on both widths. Success is semantic completion, never a retirement count. |
+| Asset Needs | Existing external hash-pinned TFT BIOS only; no asset creation, download, movement or commit. |
+| Reporting Requirements | Record exact caller/counter/return facts, actual loop run times, corrected S32 disposition, production diff (expected zero), x64/x86 results and unqualified limits. |
+| Stop Conditions | Missing semantic return, inconsistent width fact, a need for guessed firmware/device behavior, Core/Shared production change, or a non-source-backed receiver stops implementation and records no-result evidence. |
+| Exit Criteria | Real outer-loop entry and return are reproducible on both widths; the prior performance extrapolation is corrected; no unapproved production behavior is introduced; required diagnostic/unit evidence and documentation are complete. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | Replace the sole caller case rather than retain overlapping slow diagnostics; distinguish measured loop work from preceding BIOS startup before deriving a test budget. |
+
+### S33 Closure
+
+The single replacement checkpoint completes the real outer delay on both
+widths: it enters `EA38h` with `BL=70h`, observes all 112 `EA55h` tails,
+returns through `EA7Fh`, and lands at `F000:53DDh`. The former caller-only
+branch was removed. Final named diagnostics take 40.01 seconds on x64 and
+45.73 seconds on x86; full repository-only units pass 667/667 on both widths.
+S32's startup-inclusive hour-scale inference is superseded. This selects no
+production receiver and does not qualify POST, setup, storage, panel behavior,
+guest boot, or a MyPC110 artifact. See the
+[S33 evidence](../etc/evidence/t580-s33-outer-delay-return.md).
+
 ## M5 T580 S32 — Closed: PC110 outer-delay counter fact
 
 | Field | Required record |
@@ -26,12 +59,12 @@
 ### S32 Closure
 
 The established real caller reports `BL=6Fh` on both widths, directly after
-the BIOS `dec bl`; its prior loop value is `70h`.  Completing the remaining
-roughly 111 identical port-61 wait iterations would not select a receiver and
-would create an hour-scale registered diagnostic.  S32 therefore retains the
-single strengthened caller test and records that rejection as a test-quality
-disposition.  No production source, ABI, firmware/media input or release
-artifact changed.  See the [S32 evidence](../etc/evidence/t580-s32-outer-delay-counter.md).
+the BIOS `dec bl`; its prior loop value is `70h`. Its hour-scale wall-time
+extrapolation was corrected by S33: it included pre-loop firmware startup, not
+the loop's measured cost. S33 replaces this superseded caller checkpoint with
+one outer-return checkpoint. No production source, ABI, firmware/media input
+or release artifact changed. See the [S32 evidence](../etc/evidence/t580-s32-outer-delay-counter.md)
+and the [S33 correction](../etc/evidence/t580-s33-outer-delay-return.md).
 
 The complete unit suite initially exposed three valid isolated CMake checks
 whose inherited 30-second budget was below their measured duration. Their

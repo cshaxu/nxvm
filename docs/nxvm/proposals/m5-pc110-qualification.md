@@ -122,11 +122,20 @@ contract is in scope.
 ### S32 Closure
 
 Both host widths report `BL=6Fh` at the established `EA5Bh` caller, after the
-routine's `dec bl`; the preceding value is `70h`.  The remaining approximately
-111 repetitions would only re-exercise the already-owned port-61 wait and
-would make a registered diagnostic hour-scale.  S32 therefore retains the
-single strengthened caller checkpoint and rejects a complete-loop test as
-non-semantic test bloat.  See [the S32 record](../etc/evidence/t580-s32-outer-delay-counter.md).
+routine's `dec bl`; the preceding value is `70h`. S32's hour-scale wall-time
+extrapolation was later corrected: it included pre-loop startup time rather
+than the measured outer-loop duration. S33 replaces the caller checkpoint with
+one outer-return checkpoint. See [the S32 record](../etc/evidence/t580-s32-outer-delay-counter.md)
+and [the S33 correction](../etc/evidence/t580-s33-outer-delay-return.md).
+
+## S33 — outer-delay completion correction
+
+S32 established the counter value but incorrectly extrapolated full-loop wall
+time from pre-loop firmware startup. S33 replaces the one caller test with one
+real outer-return checkpoint. It must observe EA38 entry, all `EA55h` loop
+tails, `EA7Fh` return and the actual returned-to caller on both widths. The
+instruction limit is containment only. No timing shortcut or production device
+model is admitted.
 
 ## Verification And Exit
 
