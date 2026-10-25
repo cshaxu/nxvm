@@ -2,6 +2,37 @@
 
 ## Current Work
 
+## M5 T580 S43 — Closed: live delay-counter diagnosis
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S43. |
+| Admission And Approval | Owner-directed autonomous PC110 implementation, reaffirmed on 2026-10-25. |
+| Objective | Determine whether the real BIOS delay is progressing by recording PC, CX, DX and guest time at normal bounded execution boundaries. |
+| Non-goals | No firmware mutation, register forcing, synthetic receiver, loop skipping or boot claim. |
+| Reference Baseline | `1c7d27e82`, S33 outer-return proof and S36/S39 incomplete timeout observations. |
+| Candidate Proposal | Current PC110 qualification proposal; consume its real-firmware progression batch. |
+| Files And ABI Surface | Existing App-local diagnostic and NXVM evidence only; no public API or production change. |
+| Applicable Rules | Execution bounded diagnostics and coverage ledger; Architecture single execution/time owner; Coding reuse existing fixture; source policy external BIOS read-only. |
+| Verification | Build existing diagnostic in stable Ninja trees; run one persistent pollable x64 process with explicit stdout flush. Inspect counters before deciding on a receiver or performance change. |
+| Expected Markers | PC/CX/DX/tick samples and either the actual delay return or an exact bounded disposition. |
+| Asset Needs | Existing hash-pinned external TFT firmware and font. |
+| Reporting Requirements | Distinguish actual counter progress, stopped execution and host throughput; correct unsupported prior conclusions. |
+| Stop Conditions | 16 million retired instructions or 120 seconds; no output trace beyond 64 KiB. Stop owned process if containment expires. |
+| Exit Criteria | Durable sampled facts, actual-change review and appropriate verification; temporary diagnostic mode removed after diagnosis. |
+| Original Owner Request | Implement PC110 autonomously through the normal task lifecycle. |
+| Similar-Issue Sweep | Inspect all callers of the shared delay and both DH/DL countdown stages; do not infer a protocol gap from an unsampled timeout. |
+
+### S43 Closure
+
+The unchanged TFT firmware reaches its PIT/refresh calibration, then deliberately
+halts at `F000:6999`. IRQ0 arrives and sets its BIOS flag; the calibration delta
+is `0x4EFF`, outside the firmware's `0x1614..0x1868` range. Earlier complete-delay
+timeout claims did not establish throughput as the cause: their instruction
+ceiling cannot terminate a halted guest that retires no instructions while the
+harness keeps advancing to device deadlines. S44 owns the App clock correction.
+The temporary sampler was removed. See [S43 evidence](../etc/evidence/t580-s43-real-pit-calibration-failure.md).
+
 ## M5 T580 S42 — Closed: MyPC110 runner-path containment
 
 | Field | Required record |
