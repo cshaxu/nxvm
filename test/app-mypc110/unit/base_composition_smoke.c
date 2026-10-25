@@ -48,6 +48,19 @@ int main(void)
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x92u,
             &value) != LIB_STATUS_UNSUPPORTED || x86_core_machine_bus_read(composition.core,
             0x3dau, &value) != LIB_STATUS_OK);
+    for (lib_u16 port = 0x0080u; !failed && port <= 0x008fu; ++port) {
+        failed |= x86_core_machine_bus_read(composition.core, port, &value) !=
+                LIB_STATUS_OK || value != 0u ||
+            x86_core_machine_bus_write(composition.core, port,
+                (lib_u32)(port ^ 0x005au)) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(composition.core, port, &value) !=
+                LIB_STATUS_OK || value != (lib_u32)(port ^ 0x005au);
+    }
+    failed |= !failed && x86_core_machine_reset(composition.core) != LIB_STATUS_OK;
+    for (lib_u16 port = 0x0080u; !failed && port <= 0x008fu; ++port) {
+        failed |= x86_core_machine_bus_read(composition.core, port, &value) !=
+            LIB_STATUS_OK || value != 0u;
+    }
     failed |= !failed && (x86_core_machine_memory_read(composition.core,
         MYPC110_FONT_PHYSICAL_START, &value, 1u) != LIB_STATUS_OK ||
         value != 0x55u || x86_core_machine_bus_write(composition.core,

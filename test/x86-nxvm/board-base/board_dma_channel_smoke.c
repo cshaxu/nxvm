@@ -228,7 +228,7 @@ static lib_bool dma_construction_rollback(void)
     lib_bool failed = LIB_FALSE;
     if (test_dma_core_create(&machine) != LIB_STATUS_OK) return LIB_TRUE;
     failed |= x86_core_machine_install_port_routes(machine, &route, 1u) != LIB_STATUS_OK;
-    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u) != LIB_STATUS_INVALID_STATE;
+    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u, LIB_FALSE) != LIB_STATUS_INVALID_STATE;
     failed |= bus != LIB_NULL;
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= x86_core_machine_reset(machine) != LIB_STATUS_OK;
@@ -241,7 +241,7 @@ static lib_bool dma_construction_rollback(void)
     machine = LIB_NULL;
     if (test_dma_core_create(&machine) != LIB_STATUS_OK) return LIB_TRUE;
     dma_fail_allocation = LIB_TRUE;
-    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u) != LIB_STATUS_NO_MEMORY;
+    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u, LIB_FALSE) != LIB_STATUS_NO_MEMORY;
     failed |= bus != LIB_NULL;
     dma_fail_allocation = LIB_FALSE;
     failed |= test_dma_initialize(&bus, machine, 2u) != LIB_STATUS_OK;

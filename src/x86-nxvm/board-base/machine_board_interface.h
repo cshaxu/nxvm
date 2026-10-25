@@ -103,6 +103,9 @@ typedef struct x86_nxvm_board_config {
     /* Product profiles select one or two controllers explicitly.  Zero is
      * retained only for direct Core fixture compatibility and resolves to two. */
     lib_u8 dma_controller_count;
+    /* False retains ordinary PC DMA page registers at 80h--8Fh; true selects
+     * a board-qualified independent scratch file for that entire range. */
+    lib_bool dma_page_ports_plain_scratch;
     x86_core_machine_time_axis time_axis;
     x86_nxvm_board_pic_irq_timing pic_irq_timing;
     x86_core_machine_l1_compatibility_policy l1_compatibility_policy;

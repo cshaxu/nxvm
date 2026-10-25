@@ -26,6 +26,7 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
     .shared_pit_personality = X86_PIT_PERSONALITY_8254,
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
+    .dma_page_ports_plain_scratch = LIB_TRUE,
     .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
     /* PC110's 8042 output owns A20G and reset.  The firmware enters protected
      * mode before its first extended-memory probe, so reset starts with A20G

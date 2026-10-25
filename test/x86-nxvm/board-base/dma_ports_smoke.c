@@ -1,7 +1,7 @@
 #include "x86-core/machine/machine_interface.h"
 #include "x86-nxvm/board-base/dma_bus_interface.h"
 
-static lib_i32 check_bus(lib_u8 controllers)
+static lib_i32 check_bus(lib_u8 controllers, lib_bool page_ports_plain_scratch)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = 2u * 1024u * 1024u,
@@ -16,9 +16,10 @@ static lib_i32 check_bus(lib_u8 controllers)
     lib_i32 failed = 1;
     lib_u8 owner = 0u;
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
-        x86_nxvm_board_dma_initialize(&bus, machine, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_nxvm_board_dma_initialize(&bus, machine, 0u, LIB_FALSE) != LIB_STATUS_INVALID_ARGUMENT ||
         bus != LIB_NULL ||
-        x86_nxvm_board_dma_initialize(&bus, machine, controllers) != LIB_STATUS_OK ||
+        x86_nxvm_board_dma_initialize(&bus, machine, controllers,
+            page_ports_plain_scratch) != LIB_STATUS_OK ||
         x86_nxvm_board_dma_bind_channel(bus, 2u, &provider, &owner, &request) != LIB_STATUS_OK ||
         x86_nxvm_board_dma_bind_channel(bus, 2u, &provider, &owner, &duplicate) != LIB_STATUS_INVALID_STATE ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -41,11 +42,18 @@ static lib_i32 check_bus(lib_u8 controllers)
     if (x86_core_machine_bus_write(machine, 0x0du, 0u) != LIB_STATUS_OK ||
         x86_core_machine_bus_read(machine, 0x81u, &value) != LIB_STATUS_OK ||
         value != 0x12u) goto done;
-    if (controllers == 2u &&
+    if (controllers == 2u && !page_ports_plain_scratch &&
         (x86_core_machine_bus_write(machine, 0x89u, 0x34u) != LIB_STATUS_OK ||
          x86_core_machine_bus_write(machine, 0xdau, 0u) != LIB_STATUS_OK ||
          x86_core_machine_bus_read(machine, 0x89u, &value) != LIB_STATUS_OK ||
          value != 0x34u)) goto done;
+    if (page_ports_plain_scratch) {
+        for (lib_u16 port = 0x80u; port <= 0x8fu; ++port) {
+            if (x86_core_machine_bus_write(machine, port, port) != LIB_STATUS_OK ||
+                x86_core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK ||
+                value != port) goto done;
+        }
+    }
     x86_nxvm_board_dma_reset(bus);
     if (x86_core_machine_bus_read(machine, 0x81u, &value) != LIB_STATUS_OK ||
         value != 0u || request.core_token == 0u) goto done;
@@ -58,5 +66,6 @@ done:
 
 lib_i32 main(void)
 {
-    return check_bus(1u) | check_bus(2u);
+    return check_bus(1u, LIB_FALSE) | check_bus(2u, LIB_FALSE) |
+        check_bus(2u, LIB_TRUE);
 }

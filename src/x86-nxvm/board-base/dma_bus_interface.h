@@ -26,9 +26,13 @@ typedef struct x86_nxvm_board_dma_channel_provider {
  * pages and latch; provider contexts are borrowed until finalization.
  * Core copies port routes atomically. Stop providers and dispatch before
  * finalize, including Core attachment teardown before routes are discarded.
- * Failure publishes no bus. Reset preserves provider bindings and nonce. */
+ * Failure publishes no bus. Reset preserves provider bindings and nonce.
+ * page_ports_plain_scratch selects one frozen board personality for 80h--8Fh:
+ * false keeps standard DMA page registers; true selects sixteen independent
+ * zero-reset read/write bytes. */
 lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
-    x86_core_machine *machine, lib_u8 controller_count);
+    x86_core_machine *machine, lib_u8 controller_count,
+    lib_bool page_ports_plain_scratch);
 void x86_nxvm_board_dma_finalize(x86_nxvm_board_dma_bus *bus);
 void x86_nxvm_board_dma_reset(x86_nxvm_board_dma_bus *bus);
 void x86_nxvm_board_dma_advance_transaction(x86_nxvm_board_dma_bus *bus,

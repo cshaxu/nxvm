@@ -75,7 +75,10 @@ static lib_status dma_port_read(void *owner, lib_u16 port_id, lib_u64 tick,
 
     if (primary == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     value = (lib_u8)*out_value;
-    if (port_id < 0x10u) {
+    if (primary->connect.page_ports_plain_scratch &&
+        port_id >= 0x80u && port_id <= 0x8fu) {
+        value = primary->data.page_scratch[port_id & 0x0fu];
+    } else if (port_id < 0x10u) {
         x86_dma_read_register(primary->device, (lib_u8)port_id, &value);
     } else if (port_id >= 0xc0u && port_id <= 0xdeu && !(port_id & 1u)) {
         x86_dma_read_register(primary->connect.peer->device,
@@ -97,6 +100,11 @@ static lib_status dma_port_write(void *owner, lib_u16 port_id, lib_u32 value)
     t_dma *primary = owner;
     t_dma *dma;
     lib_u8 selector;
+    if (primary->connect.page_ports_plain_scratch &&
+        port_id >= 0x80u && port_id <= 0x8fu) {
+        primary->data.page_scratch[port_id & 0x0fu] = (lib_u8)value;
+        return LIB_STATUS_OK;
+    }
     if (port_id == 0x80u || port_id == 0x84u || port_id == 0x85u ||
         port_id == 0x86u || port_id == 0x88u ||
         (port_id >= 0x8cu && port_id <= 0x8eu)) {
@@ -308,7 +316,8 @@ void x86_nxvm_board_dma_request_terminate(x86_nxvm_board_dma_bus *bus,
 
 
 lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
-    x86_core_machine *machine, lib_u8 controller_count)
+    x86_core_machine *machine, lib_u8 controller_count,
+    lib_bool page_ports_plain_scratch)
 {
     static const lib_u16 primary_page_ports[] = {
         0x0081, 0x0082, 0x0083
@@ -331,7 +340,9 @@ lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
     if (out_bus == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_bus = LIB_NULL;
     if (machine == LIB_NULL ||
-        (controller_count != 1u && controller_count != 2u)) {
+        (controller_count != 1u && controller_count != 2u) ||
+        (page_ports_plain_scratch != LIB_FALSE &&
+         page_ports_plain_scratch != LIB_TRUE)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     bus = lib_allocate_zero(1u, sizeof(*bus));
@@ -341,6 +352,7 @@ lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
     secondary = &bus->secondary;
     primary->connect.latch = latch;
     primary->connect.peer = secondary;
+    primary->connect.page_ports_plain_scratch = page_ports_plain_scratch;
     secondary->connect.latch = latch;
     secondary->connect.peer = primary;
     status = x86_dma_create(&primary->device);
@@ -356,13 +368,21 @@ lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
             index <= 8u || index == 13u ? dma_port_read : LIB_NULL,
             dma_port_write, primary, LIB_FALSE, 0u};
     }
-    for (index = 0; index < sizeof(primary_page_ports) /
-            sizeof(primary_page_ports[0]);
-         ++index) {
-        routes[count++] = (x86_core_machine_port_route) {primary_page_ports[index],
-            dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
+    if (page_ports_plain_scratch) {
+        for (index = 0u; index < 0x10u; ++index) {
+            routes[count++] = (x86_core_machine_port_route) {
+                (lib_u16)(0x0080u + index), dma_port_read, dma_port_write,
+                primary, LIB_FALSE, 0x0090u};
+        }
+    } else {
+        for (index = 0; index < sizeof(primary_page_ports) /
+                sizeof(primary_page_ports[0]);
+             ++index) {
+            routes[count++] = (x86_core_machine_port_route) {primary_page_ports[index],
+                dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
+        }
     }
-    if (controller_count == 2u) {
+    if (controller_count == 2u && !page_ports_plain_scratch) {
         for (index = 0; index < sizeof(spare_page_ports) /
             sizeof(spare_page_ports[0]); ++index) {
             routes[count++] = (x86_core_machine_port_route) {spare_page_ports[index],
@@ -373,6 +393,8 @@ lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
             routes[count++] = (x86_core_machine_port_route) {secondary_page_ports[index],
                 dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
         }
+    }
+    if (controller_count == 2u) {
         for (index = 0u; index < 0x10u; ++index) {
             routes[count++] = (x86_core_machine_port_route) {
                 (lib_u16)(0x00c0u + index * 2u),

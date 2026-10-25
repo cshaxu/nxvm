@@ -16,7 +16,8 @@ static inline lib_status test_dma_core_create(x86_core_machine **out_machine)
 static inline lib_status test_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
     x86_core_machine *machine, lib_u8 controllers)
 {
-    lib_status status = x86_nxvm_board_dma_initialize(out_bus, machine, controllers);
+    lib_status status = x86_nxvm_board_dma_initialize(out_bus, machine, controllers,
+        LIB_FALSE);
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_freeze_execution_providers(machine);
     if (status == LIB_STATUS_OK) status = x86_core_machine_reset(machine);

@@ -123,6 +123,8 @@ lib_i32 x86_nxvm_board_config_is_valid(
         (config->pic_topology == X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED ||
          config->pic_topology == X86_NXVM_BOARD_PIC_TOPOLOGY_SINGLE) &&
         config->dma_controller_count <= X86_NXVM_BOARD_DMA_CONTROLLER_COUNT &&
+        (config->dma_page_ports_plain_scratch == LIB_FALSE ||
+         config->dma_page_ports_plain_scratch == LIB_TRUE) &&
         (config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042 ||
          config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_XT_PPI ||
          config->keyboard_topology == X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_NONE ||
@@ -346,7 +348,7 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
     }
     {
         lib_status status = x86_nxvm_board_dma_initialize(&board->shared_dma,
-            machine, dma_controller_count);
+            machine, dma_controller_count, config->dma_page_ports_plain_scratch);
         if (status == LIB_STATUS_OK) {
             status = x86_nxvm_board_pic_initialize(&board->shared_pic_master,
                 &board->shared_pic_slave, machine, config->pic_topology);

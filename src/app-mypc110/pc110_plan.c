@@ -36,6 +36,7 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
     .shared_pit_personality = X86_PIT_PERSONALITY_8254,
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
+    .dma_page_ports_plain_scratch = LIB_TRUE,
     .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
     .kbc_reset_output_port_configured = 1u,
     .kbc_reset_output_port = 0x03u,

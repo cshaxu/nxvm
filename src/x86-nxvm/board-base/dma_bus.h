@@ -8,6 +8,7 @@ typedef struct t_dma {
     struct {
         lib_u8 page[VDMA_CHANNEL_COUNT];
         lib_u8 page_spare[8];
+        lib_u8 page_scratch[16];
     } data;
     struct {
         t_latch *latch;
@@ -17,6 +18,7 @@ typedef struct t_dma {
         x86_nxvm_board_dma_device_provider close_provider[VDMA_CHANNEL_COUNT];
         void *device_owner[VDMA_CHANNEL_COUNT];
         lib_uptr request_token;
+        lib_bool page_ports_plain_scratch;
     } connect;
 } t_dma;
 struct x86_nxvm_board_dma_bus {

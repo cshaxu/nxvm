@@ -41,9 +41,9 @@ lib_i32 main(void)
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
     failed |= x86_core_machine_install_port_provider(machine, 0xd4u, 0xd4u,
         &provider, &marker) != LIB_STATUS_OK;
-    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u) != LIB_STATUS_INVALID_STATE;
+    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u, LIB_FALSE) != LIB_STATUS_INVALID_STATE;
     failed |= bus != LIB_NULL ||
-        x86_nxvm_board_dma_initialize(&bus, machine, 2u) != LIB_STATUS_INVALID_STATE ||
+        x86_nxvm_board_dma_initialize(&bus, machine, 2u, LIB_FALSE) != LIB_STATUS_INVALID_STATE ||
         bus != LIB_NULL ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -56,10 +56,10 @@ lib_i32 main(void)
 
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
     reject_routes = LIB_TRUE;
-    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u) != LIB_STATUS_NO_MEMORY;
+    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u, LIB_FALSE) != LIB_STATUS_NO_MEMORY;
     failed |= bus != LIB_NULL;
     reject_routes = LIB_FALSE;
-    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u) != LIB_STATUS_OK;
+    failed |= x86_nxvm_board_dma_initialize(&bus, machine, 2u, LIB_FALSE) != LIB_STATUS_OK;
     failed |= x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_bus_read(machine, 0u, &(lib_u32){0u}) != LIB_STATUS_OK ||

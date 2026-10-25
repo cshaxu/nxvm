@@ -50,6 +50,32 @@ latch candidate but does not define its reset state, so no receiver was added.
 The temporary probe was removed.  Full evidence is in
 [the S28 record](../etc/evidence/t580-s28-post-delay-boundary.md).
 
+## S29 — DMA-page / Boot/IPL receiver
+
+The PC110's `80h`--`8Fh` range is not admitted as the normal PC/AT DMA-page
+alias: the reviewed PC110 sources identify `8Bh` as a passive Boot/IPL latch,
+while two independent reference implementations model the entire range as a
+zero-reset plain read/write scratch file.  The selected TFT BIOS contains its
+own `out 8Bh,0` followed by `INT 19h` at `F000:52BA`; that is a semantic
+observation target, not a host shortcut.
+
+The allowed implementation is one Board configuration fact selecting the
+plain-scratch personality and one Board-owned 16-byte store. Existing boards
+retain the standard DMA page mapping. This does not create a PC110 App-owned
+overlay, a second route, a guessed nonzero reset image, or any synthetic boot
+service. The real-firmware diagnostic may stop only on the observed write.
+
+### S29 Closure
+
+The S29 Board-Base correction selects a PC110-only, zero-reset plain byte
+file for `80h`--`8Fh`, while retaining normal DMA page registers and both
+8237 control ranges for ordinary PC-family configurations. Both host widths
+pass the 253 affected X86-NXVM/MyPC110 tests. The selected firmware's later
+`out 8Bh,0; int 19h` is statically established but not yet dynamically
+observed, so this remains a bounded receiver correction rather than POST,
+boot, or artifact qualification. The source grades and exact limits are in
+[S29 evidence](../etc/evidence/t580-s29-dma-page-boot-ipl-latch.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

@@ -43,14 +43,15 @@ static void board_test_destroy(x86_core_machine *machine)
 }
 
 static lib_status board_test_dma(x86_nxvm_board_dma_bus **out_bus,
-    x86_core_machine *machine, lib_u8 count)
+    x86_core_machine *machine, lib_u8 count, lib_bool page_ports_plain_scratch)
 {
     if (rejected_device == 1u) {
         rejection_reached = LIB_TRUE;
         *out_bus = LIB_NULL;
         return LIB_STATUS_NO_MEMORY;
     }
-    return x86_nxvm_board_dma_initialize(out_bus, machine, count);
+    return x86_nxvm_board_dma_initialize(out_bus, machine, count,
+        page_ports_plain_scratch);
 }
 
 static lib_status board_test_pic(x86_nxvm_board_pic_bus **out_master,

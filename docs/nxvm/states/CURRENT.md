@@ -2,6 +2,29 @@
 
 ## Current Work
 
+## M5 T580 S29 — Closed: PC110 DMA-page / Boot/IPL receiver
+
+| Field | Required record |
+| --- | --- |
+| Objective | Replace the PC/AT DMA-page alias at PC110 ports `80h`--`8Fh` with the source-qualified PC110 plain read/write scratch file, including its `8Bh` Boot/IPL latch, and observe the TFT BIOS's real `out 8Bh,0; int 19h` boundary without treating an instruction count as success. |
+| Boundary | `x86-nxvm` Board DMA wiring, MyPC110 plan/tests/diagnostic, and T580 evidence only. No Lib/Emulator/Core change, firmware mutation, external media import, host BIOS interception, nonzero latch invention or PC110 release artifact. |
+| Evidence | Open-Source-PC110 identifies `8Bh` as the passive Boot/IPL latch; PC110-EMU and PC110-QEMU independently model `80h`--`8Fh` as zero-reset plain scratch. The selected TFT BIOS statically reaches `F000:52BA` only through its own real code, where it writes zero to `8Bh` before `INT 19h`. |
+| Design | Add one copied Board configuration fact selecting the existing DMA-page range's plain-scratch personality. Existing PC-family boards retain their current DMA page mapping. PC110 receives one Board-owned 16-byte zero-reset file; no App side table, routing override, timer, retry path or new executor is introduced. |
+| Verification | Exercise both DMA personalities, isolation and reset through their actual ports; build/test x64/x86 affected labels. The existing bounded real-firmware diagnostics establish the preceding post-C000 boundary, but do not yet observe the later `8Bh` write; that remains an explicit source-gated no-result. |
+| Stop condition | Any need for a guessed latch value, a Shared Core/Lib/Emulator contract, a synthetic `INT 19h` route, protected media, or a budget-only firmware claim stops the implementation and records evidence. |
+
+### S29 Closure
+
+`x86-nxvm` now owns one configuration-selected plain scratch personality for
+PC110 ports `80h`--`8Fh`; normal PC-family Board configurations retain their
+DMA page routes. The second 8237 control range remains present in both
+two-controller personalities. x64 and x86 each pass the 253-test affected
+X86-NXVM/MyPC110 label, including the actual PC110 composition and existing
+real-firmware diagnostics. This establishes the passive latch boundary only;
+it does not claim that POST reached `out 8Bh`, that `INT 19h` booted media, or
+that MyPC110 is artifact-qualified. See the
+[S29 evidence](../etc/evidence/t580-s29-dma-page-boot-ipl-latch.md).
+
 ## M5 T580 S28 — Closed: post-delay execution boundary
 
 | Field | Required record |
@@ -17,7 +40,7 @@
 | Field | Required record |
 | --- | --- |
 | Latest accepted delivery | S25 records a traceable external DSTN panel-derived input. S24 adds the documented TFT EC Block-B static receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; none establishes a product release qualification. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md), [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md), [S25 DSTN input](../etc/evidence/t580-s25-dstn-panel-derived-input.md) and [S28 post-delay boundary](../etc/evidence/t580-s28-post-delay-boundary.md). |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md), [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md), [S25 DSTN input](../etc/evidence/t580-s25-dstn-panel-derived-input.md), [S28 post-delay boundary](../etc/evidence/t580-s28-post-delay-boundary.md) and [S29 DMA-page/Boot/IPL](../etc/evidence/t580-s29-dma-page-boot-ipl-latch.md). |
 | Remaining convergence | Real POST/setup/guest progression still lacks a demonstrated firmware transition beyond the established delay path and a complete power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. A derived DSTN panel candidate now exists, but a factory-original DSTN BIOS/font input and independent DSTN qualification remain absent. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, synthetic firmware paths or metadata-only MCU models as a substitute. |
 
