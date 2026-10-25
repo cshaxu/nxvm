@@ -322,3 +322,60 @@ T580 retains lower Flash/Setup/boot/guest/live product qualification.
 | Exit Criteria | Complete admitted receiver or a consolidated exact non-acceptance/design correction; no partial checkpoint counts as full repair. Actual diff reviewed, applicable tests/gates pass, previews built, owner inputs preserved, commit/push and coordinator acceptance. T580 remains open for Flash/Setup/boot/guest/live product qualification. |
 | Original Owner Request | Implement PC110 autonomously through compile/test/release governance and complete T580 without synthetic firmware behavior. |
 | Similar-Issue Sweep | Controller absence versus external drive/media absence; IRQ assertion/deassertion/PIC acknowledgement, reset timing, DMA binding and configuration endpoints; both composition paths and cold versus processor-only reset. |
+
+## S50 accepted lower-Flash receiver
+
+Coordinator actual-change review accepts implementation `d3180e0f8`.
+The review reads all changed production, test and governance files, checks the
+packet against the original PC110 request and confirms that the one App latch
+feeds only the existing external E/F decoder. The model explicitly separates
+shadow, high reset alias, cold reset and processor-only reset. No Shared,
+owner asset, host loader or published product is changed.
+
+Both widths have passing evidence for every one of the 712 repository unit
+cases, with initial static timeouts and unchanged failed-item reruns separately
+reported. The actual BIOS timer/SMI/FDC integrations, existing App fixtures,
+four preview PE identities, dependency/document checks and clean incremental
+builds pass. The actual source/test delta is +74/-0, net +74. Seven temporary
+logs (250,232 bytes) are archived by facts/hashes then safely removed; the
+temporary sampler has no retained diff. See
+[S50 evidence](../etc/evidence/t580-s50-lower-flash-selection.md).
+
+S50 closes the functional lower-bank receiver, not actual Setup bulk-copy,
+loader or boot qualification. The normal sample ends in the SMM checksum
+loop without INT 19h; that is not treated as a deadlock or product success.
+T580 remains open under its unchanged ledger. The next coherent investigation
+must reconcile normal cold POST versus the later power/suspend route and
+its real predicates, rather than add a firmware-address bypass.
+
+### S50 retained pre-acceptance packet
+
+## M5 T580 S50 — Guest-owned lower Flash selection
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S50 after accepted S49. |
+| Admission And Approval | Owner's standing autonomous PC110 implementation authorization; App-local existing port/memory contracts only. No Shared implementation change admitted. |
+| Objective | Complete the S48-identified port-98 lower/upper Flash toggle, independent shadow selection, guest copy/restore and reset-retention receiver; reconcile actual normal firmware progression after S49. |
+| Non-goals | No host decompressor, synthetic loader/service/jump, lower-ROM aliases in C/D, writable Flash, owner INI/ROM/media changes, new API/clock/queue or premature publication. |
+| Reference Baseline | Clean pushed d347ce8b6; [S48 route evidence](../etc/evidence/t580-s48-post-initialization-route.md), [S49 FDC proof](../etc/evidence/t580-s49-integrated-fdc.md), immutable admitted TFT image and external hardware references. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), lower Flash/copy/restore batch in its [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md). |
+| Files And ABI Surface | App firmware/configuration owner and existing firmware/configuration tests plus existing real BIOS harness; NXVM evidence/current/history. Estimate production +15–35/-0–5 and tests +25–70/-0–15. No public Shared ABI or new test executable. |
+| Applicable Rules | Architecture one register/decoder owner and unchanged guest execution; Coding existing Types and fixtures, no loader bypass; Execution finite semantic coverage, stable cached graphs, bounded background proof and cleanup; source policy immutable external inputs; Documentation single packet and truthful unresolved gates. |
+| Verification | Both widths: complete repository-only unit suite, upper/lower external Flash reads, shadow independence, restore, full versus processor-only reset; actual unchanged BIOS receiver or exact semantic disposition. Rebuild both fixed PC110 previews, inspect PE widths; run affected boundaries/document gates. Published other Apps remain unchanged for App-only inputs. |
+| Expected Markers | Guest control toggles select the original lower two banks and restore upper banks without mutating Flash/shadow. Actual firmware copy/checksum/loader entry is separate from complete Setup/boot qualification; no retirement-ceiling success. |
+| Asset Needs | Existing hash-pinned external TFT BIOS/font and source records only. No new guest media or owner configuration changes. |
+| Reporting Requirements | State the L2 decoder/reset assumptions, actual source/test delta, normal firmware milestones, dual-width results and every remaining product/source gate. |
+| Stop Conditions | Reconcile contradictory decoder evidence before implementation; no speculative fallback. Each firmware observation at most 32 million instructions or 180 seconds, output 64 KiB; verification phase at most 2400 seconds. build/t580-s50-flash is S-owned, at most 4 MiB, remove after copied results/hashes and process exit. |
+| Exit Criteria | Whole admitted toggle/copy/restore/reset batch has direct proof or a consolidated exact unresolved contract; actual-diff review, applicable tests/gates, previews, commit/push and coordinator acceptance. T580 retains all unqualified Setup/boot/guest/live product members. |
+| Original Owner Request | Continue complete PC110 implementation autonomously through normal governance without firmware fabrication. |
+| Similar-Issue Sweep | Both low external E/F banks, high reset alias, internal shadow reads/writes, decoder cache invalidation, cold and processor-only reset, and all known port-98 callers. |
+
+Executor delivery: the App-owned receiver and existing fixture extensions are
+implemented; [S50 evidence](../etc/evidence/t580-s50-lower-flash-selection.md)
+records +74/-0 source/test lines, passing evidence for all 712 units per
+width (initial static-check timeouts and unchanged reruns explicitly retained),
+dual-width actual-BIOS prefix regressions and four verified preview identities.
+Temporary code/logs are removed; published Apps and owner inputs are unchanged.
+Coordinator actual-change acceptance is still required. The real Setup bulk
+copy/loader and remaining T580 product gates are not qualified by this receiver.

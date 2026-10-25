@@ -2,57 +2,26 @@
 
 ## Current Work
 
-## M5 T580 S50 — Guest-owned lower Flash selection
+## M5 T580 — Open after accepted S50
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S50 after accepted S49. |
-| Admission And Approval | Owner's standing autonomous PC110 implementation authorization; App-local existing port/memory contracts only. No Shared implementation change admitted. |
-| Objective | Complete the S48-identified port-98 lower/upper Flash toggle, independent shadow selection, guest copy/restore and reset-retention receiver; reconcile actual normal firmware progression after S49. |
-| Non-goals | No host decompressor, synthetic loader/service/jump, lower-ROM aliases in C/D, writable Flash, owner INI/ROM/media changes, new API/clock/queue or premature publication. |
-| Reference Baseline | Clean pushed d347ce8b6; [S48 route evidence](../etc/evidence/t580-s48-post-initialization-route.md), [S49 FDC proof](../etc/evidence/t580-s49-integrated-fdc.md), immutable admitted TFT image and external hardware references. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), lower Flash/copy/restore batch in its [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md). |
-| Files And ABI Surface | App firmware/configuration owner and existing firmware/configuration tests plus existing real BIOS harness; NXVM evidence/current/history. Estimate production +15–35/-0–5 and tests +25–70/-0–15. No public Shared ABI or new test executable. |
-| Applicable Rules | Architecture one register/decoder owner and unchanged guest execution; Coding existing Types and fixtures, no loader bypass; Execution finite semantic coverage, stable cached graphs, bounded background proof and cleanup; source policy immutable external inputs; Documentation single packet and truthful unresolved gates. |
-| Verification | Both widths: complete repository-only unit suite, upper/lower external Flash reads, shadow independence, restore, full versus processor-only reset; actual unchanged BIOS receiver or exact semantic disposition. Rebuild both fixed PC110 previews, inspect PE widths; run affected boundaries/document gates. Published other Apps remain unchanged for App-only inputs. |
-| Expected Markers | Guest control toggles select the original lower two banks and restore upper banks without mutating Flash/shadow. Actual firmware copy/checksum/loader entry is separate from complete Setup/boot qualification; no retirement-ceiling success. |
-| Asset Needs | Existing hash-pinned external TFT BIOS/font and source records only. No new guest media or owner configuration changes. |
-| Reporting Requirements | State the L2 decoder/reset assumptions, actual source/test delta, normal firmware milestones, dual-width results and every remaining product/source gate. |
-| Stop Conditions | Reconcile contradictory decoder evidence before implementation; no speculative fallback. Each firmware observation at most 32 million instructions or 180 seconds, output 64 KiB; verification phase at most 2400 seconds. build/t580-s50-flash is S-owned, at most 4 MiB, remove after copied results/hashes and process exit. |
-| Exit Criteria | Whole admitted toggle/copy/restore/reset batch has direct proof or a consolidated exact unresolved contract; actual-diff review, applicable tests/gates, previews, commit/push and coordinator acceptance. T580 retains all unqualified Setup/boot/guest/live product members. |
-| Original Owner Request | Continue complete PC110 implementation autonomously through normal governance without firmware fabrication. |
-| Similar-Issue Sweep | Both low external E/F banks, high reset alias, internal shadow reads/writes, decoder cache invalidation, cold and processor-only reset, and all known port-98 callers. |
+S50 is closed after coordinator actual-change review of `d3180e0f8`.
+The [Flash receiver](../etc/evidence/t580-s50-lower-flash-selection.md)
+adds one App-owned port-98 latch to the existing E/F decoder. Existing
+fixtures prove lower/upper selection, shadow independence, guest copying,
+restoration and reset behavior. All 712 repository units per width have
+passing evidence, including unchanged reruns of initial static timeouts;
+both actual-BIOS timer/SMI/FDC prefix integrations and four previews pass.
+Shared trees, published Apps and owner inputs are unchanged. Temporary
+sampler/logs are removed; no active S packet remains.
 
-Executor delivery: the App-owned receiver and existing fixture extensions are
-implemented; [S50 evidence](../etc/evidence/t580-s50-lower-flash-selection.md)
-records +74/-0 source/test lines, passing evidence for all 712 units per
-width (initial static-check timeouts and unchanged reruns explicitly retained),
-dual-width actual-BIOS prefix regressions and four verified preview identities.
-Temporary code/logs are removed; published Apps and owner inputs are unchanged.
-Coordinator actual-change acceptance is still required. The real Setup bulk
-copy/loader and remaining T580 product gates are not qualified by this receiver.
-
-## M5 T580 — Open after accepted S49
-
-S49 is closed after coordinator actual-change review of `53ef8f1c1`.
-The [integrated FDC receiver](../etc/evidence/t580-s49-integrated-fdc.md)
-passes actual DOR reset, IRQ-wait return and four SENSE results on x64/x86;
-the earlier initialized-copy/ASMI/RSM/timer proof remains required and passes.
-Production adds 17 App-only immutable topology lines; Shared and published
-Apps/owner assets are unchanged. Existing App/Board units and four previews
-pass. S50 is admitted above. T580 stays open for the already identified
-lower Flash toggle/copy/restore route, Setup/boot/guest and live product gates.
-
-## M5 T580 — Open after accepted S48
-
-S48 is closed after coordinator actual-change review of `368a765f2`.
-Its [route audit](../etc/evidence/t580-s48-post-initialization-route.md) proves
-the later ASMI/vendor/RSM path and identifies the absent FDC reset/IRQ receiver
-plus the independent lower Flash toggle/copy/restore route. Both host widths
-remain before INT 19h; all product/guest requirements remain in the ledger.
-Temporary code is removed, App units pass 11/11 per width, no artifacts or
-owner inputs change. S49 subsequently qualifies the existing FDC/PIC/DMA path,
-not a synthetic BIOS completion flag, as summarized above.
+S49's [integrated FDC](../etc/evidence/t580-s49-integrated-fdc.md) and S48's
+[route reconciliation](../etc/evidence/t580-s48-post-initialization-route.md)
+remain accepted. The real BIOS has not reached Setup bulk-copy/loader or
+INT 19h in the bounded normal sample; its final SMM checksum instruction
+does not prove a deadlock. T580 retains the unchanged Setup/boot/guest,
+source/panel/input/power, live lifecycle and product-publication gates.
+The next admission reconciles the complete post-FDC cold/power handoff;
+it must not substitute a successful prefix for whole-machine qualification.
 
 ## M5 T580 — Open after accepted S47
 
