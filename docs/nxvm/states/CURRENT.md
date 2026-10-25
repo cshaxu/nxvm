@@ -2,34 +2,33 @@
 
 ## Current Work
 
-## Active Task — M5 T580 S4
+## Active Task — M5 T580 S5
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T580 S4 after bounded S3 real-firmware classification; one session performs coordinator and executor roles. |
+| Identifier Mode | T580 S5 after accepted S4 C000 checkpoint closure; one session performs coordinator and executor roles. |
 | Admission And Approval | The owner continues the standing PC110 implementation objective and authorizes ordinary scoped research, implementation, verification, commit and push work. |
-| Objective | Repair the App-local C000 video-bank read map exposed by the real-TFT trace, retain the smallest source-labelled F65535 input-status L2 behavior, then prove that the real TFT BIOS advances beyond its C000 video-ROM initialization boundary. |
-| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, panel emulation, graphics renderer, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of guest boot before the admitted proof exists. |
-| Reference Baseline | S3's 100-million-instruction real-firmware run reaches C000 through the raw bank-zero bytes (`55 AA 00 EB`) rather than the selected C&T video bank (`55 AA 47 EB`), then repeatedly delivers invalid-opcode exceptions. |
+| Objective | Starting from S4's real TFT C000 checkpoint, inventory and classify the next bounded, CPU-visible post-C000 execution boundary before selecting any further hardware repair. |
+| Non-goals | No fabricated BIOS/IVT path, runtime model/ROM switching, raw protected asset commit, executable publication, panel emulation, graphics renderer, speculative chipset catch-all, borrowed PC/AT ROM, original-DSTN variant, or claim of POST, Setup or guest boot. |
+| Reference Baseline | S4 proves the real selected C&T bank crosses the former `C000:6000` port boundary on both widths without a Core fault. |
 | Candidate Proposal | [MyPC110 product and guest qualification](../proposals/m5-pc110-qualification.md). |
-| Files And ABI Surface | Existing X86-NXVM F65535 component/tests, App-MyPC110 firmware-map/configuration tests and real-firmware diagnostic/evidence/task records, plus the existing X86-Core port dispatcher and its direct regression after the trace proved a width-generic defect. Lib, Emulator, X86-NXVM Product and raw inputs remain unchanged. |
+| Files And ABI Surface | Initially App-MyPC110 diagnostic, evidence and task records only. Existing Core/F65535 behavior is frozen unless the complete bounded trace proves a generic or controller-local owner. Lib, Emulator, X86-NXVM Product and raw inputs remain unchanged. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout/UI and source/research policy; T558 receiver checklists and PC110 qualification proposal. |
-| Verification | Add a focused F65535 status-read regression and run the ordinary executor against the real TFT image on both widths through the C000 initialization checkpoint. Compare the result to the retained source and preserve only observed progress. |
-| Expected Markers | C000 reads retain the selected video bank through observed writable-shadow transitions; `3DAh` retains the attribute flip-flop reset and yields a changing vertical-retrace bit; the real C000 ROM makes bounded forward progress without a synthetic BIOS branch. |
+| Verification | Extend the existing ordinary executor diagnostic only enough to capture one finite post-C000 retirement/port/exception boundary on x64 and x86. Compare it with the frozen receiver ledger; do not implement from an address alone. |
+| Expected Markers | One reproducible post-C000 trace window and one explicit owner disposition, or a source-gated transfer with no fabricated continuation. |
 | Asset Needs | Read-only external TFT BIOS/font manifest only. No ROM, CMOS, disk or snapshot content enters Git. |
 | Stop Conditions | A required behavior expands beyond ordinary input-status semantics, a claimed device behavior lacks a source/finite probe, or a proposed repair requires a synthetic firmware or a Shared contract that has not been independently shown generic. Record and transfer rather than fabricate a fallback. |
-| Exit Criteria | The status register has one documented L2 owner, two-width chip/App evidence proves its finite behavior and real-firmware result, and no product/boot claim is expanded. |
+| Exit Criteria | The next bounded post-C000 class is fully recorded and either assigned to one evidence-qualified owner or transferred as an explicit source gate; no product/boot claim is expanded. |
 | Original Owner Request | Continue implementing PC110 through its actual product end state. |
 | Similar-Issue Sweep | All MyPC110 sources/tests/build routes, external asset manifests, emulator/product composition boundaries, four-PC publication conventions, PC110-specific firmware model selection and retained PC110 research receivers. |
 
-### S4 Brief
+### S5 Brief
 
-Repair only the selected C000 video-bank read invariant reached by the S3
-trace and the F65535 input-status behavior it uses.  They must remain an
-App-local map and a controller-local register result, not a firmware-address
-special case, second clock, or rendering path.
+Do not extend a blind instruction budget.  Reuse the existing real-firmware
+diagnostic to retain a finite post-C000 trace window, then reconcile every
+observed access class against the T580 ledger before proposing a repair.
 
-### S4 Delivery
+### S4 Closure
 
 The C000 owner now distinguishes ordinary writable shadow data from immutable
 selected-video-bank instruction fetches.  The F65535 compatibility owner

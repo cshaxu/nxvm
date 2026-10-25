@@ -35,6 +35,17 @@ executable.  The four existing PC Apps demonstrate the intended direction:
 each App supplies a fixed product name, adjacent INI name, machine binding and
 build-selected firmware; `x86-nxvm/product` owns the common parser/lifecycle.
 
+## S4 C000 checkpoint disposition
+
+The TFT BIOS's selected C&T video image is now an immutable instruction source
+for the App-local C000 route while ordinary data reads remain the writable
+shadow required by copied BIOS tables.  The real image crosses the former
+`C000:6000` width-sensitive port boundary on x64 and x86.  F65535's finite
+input-status reads and the two traced Core port-width defects are accepted
+receivers with regressions.  This is a progress checkpoint only: it does not
+qualify POST, panel output, Easy-Setup, storage, guest boot or the unavailable
+DSTN member.  S5 owns classification of the next bounded post-C000 trace.
+
 ## S2 boundary
 
 S2 may add the missing **TFT-only** App entry, binding, profile declaration,
