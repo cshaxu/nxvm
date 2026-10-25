@@ -2,6 +2,38 @@
 
 ## Current Work
 
+## M5 T580 S35 — Closed: PC110 post-delay receiver inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S35. |
+| Admission And Approval | The owner directed T580 to continue autonomously on 2026-10-25. S34 closed without retaining an unbounded whole-delay probe; the next step is a finite source/owner inventory, not another instruction-budget experiment. |
+| Objective | Reconcile the selected TFT BIOS's post-delay interfaces with the currently implemented PC110 routes, and identify the earliest source-backed missing receiver or an explicit source-gated block. |
+| Non-goals | No production route, BIOS interception, QEMU/PC110-EMU special case, guessed power/MCU reply, media import, Shared/Core ABI change, artifact, POST, Setup, or guest-boot claim. |
+| Reference Baseline | `497e53e18` (S34), S33's retained outer-delay return, the selected external TFT BIOS identity recorded in S26, the existing App route map, and the PC110 programme ledger. |
+| Candidate Proposal | Inspect only real host-visible routes: 8042 at `60h/64h`, admitted EC windows, C-segment/F-segment mappings, storage/LPT paths and their reset values. Cross-check Open-Source-PC110 wire/firmware evidence and treat PC110-EMU/QEMU interception as non-importable reference evidence only. |
+| Files And ABI Surface | T580 status/proposal/evidence only unless a complete source-backed owner and minimal boundary are found; no source/test/build/asset file is in scope for this inventory. |
+| Applicable Rules | `docs/rules/EXECUTION.md` coverage-ledger and diagnostic-containment rules; `ARCHITECTURE.md` one owner per route; `CODING.md` no synthetic firmware route; source policy research boundary. |
+| Verification | Reconcile each inspected BIOS-visible route against App source and named external evidence; run documentation governance and diff checks. No build/test is claimed unless implementation is separately admitted. |
+| Expected Markers | A finite table identifying each route as implemented/source-backed, source-backed but unimplemented with an owner, or insufficiently specified. Any external special case is explicitly rejected as a product implementation source. |
+| Asset Needs | Read existing external sources and the hash-pinned TFT BIOS only; no download, derivation, movement, or commit of firmware/media. |
+| Reporting Requirements | Record each route, source grade, existing owner, missing fact, and disposition; distinguish source facts from emulator reference behavior and report a zero production/test/artifact diff if none is warranted. |
+| Stop Conditions | A necessary guessed register value, a need for BIOS interception or external code import, absent source-backed protocol, or a required Shared/Core change ends the inventory with an explicit transfer/block instead of implementation. |
+| Exit Criteria | The finite post-delay candidate routes are reconciled with one source-backed next receiver or an explicit no-receiver disposition; no implementation claim is made from a trace budget. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | Check all current PC110 App-installed I/O/memory routes and the corresponding external evidence; do not inspect only the first apparent BIOS delay or copy reference-emulator hooks. |
+
+### S35 Closure
+
+The finite inventory found no missing route with a complete source-backed
+contract. The existing App owns the conventional 8042 path, EC/ED captured
+bank, both admitted EC windows, C/F shadows, ATA, LPT and the PC110 plain
+`80h`--`8Fh` file. Open-Source-PC110 confirms the wiring but leaves the U6
+power protocol/thresholds and custom-ASIC register behavior incomplete.
+PC110-EMU/QEMU cross the next stages with synthetic values and BIOS execution
+intercepts, which are explicitly excluded. No production/test/asset change is
+warranted. See the [S35 inventory](../etc/evidence/t580-s35-post-delay-receiver-inventory.md).
+
 ## M5 T580 S34 — Closed: PC110 complete delay-routine boundary
 
 | Field | Required record |

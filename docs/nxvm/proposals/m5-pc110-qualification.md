@@ -150,6 +150,26 @@ treated as evidence. S33 remains the one admitted dynamic delay checkpoint;
 there is no source-backed receiver or product change. See
 [S34 evidence](../etc/evidence/t580-s34-complete-delay-no-result.md).
 
+## S35 — post-delay receiver inventory
+
+S35 consumes a finite inventory rather than following more instructions: the
+real 8042, admitted EC windows, firmware mappings, storage and LPT routes are
+reconciled against the selected TFT BIOS and PC110 source records. Open-Source-
+PC110 can establish wiring and protocol facts. PC110-EMU and PC110-QEMU are
+reference evidence only: their BIOS interceptions and synthetic boot paths are
+not implementation sources. A route without a complete source-backed contract
+is transferred as blocked rather than filled with a guessed reply.
+
+### S35 Closure
+
+The inventory confirms that every currently installed PC110 route has its
+named source and owner, but no next receiver has a complete protocol. The
+remaining power/ASIC paths are source-gated: their known wiring cannot define
+the guest-visible values, sequencing, or failure behavior needed to model
+them. This is an explicit product-qualification block, not a missing test or
+a license to copy PC110-EMU/QEMU synthetic values. See
+[S35 evidence](../etc/evidence/t580-s35-post-delay-receiver-inventory.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.
