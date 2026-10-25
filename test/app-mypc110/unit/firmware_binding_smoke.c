@@ -84,6 +84,43 @@ lib_i32 main(void)
         }
     }
     if (!failed) {
+        x86_core_machine_run_result reset = {0};
+
+        failed |= x86_core_machine_bus_read(machine, 0x98u, &value) != LIB_STATUS_OK ||
+            value != 0u || !firmware_register(machine, 0x11u, 0u) ||
+            !firmware_register(machine, 0x12u, 0u) ||
+            x86_core_machine_bus_write(machine, 0x98u, 4u) != LIB_STATUS_OK;
+        for (lib_u32 bank = 0u; !failed && bank < 2u; ++bank) {
+            for (lib_u32 block = 0u; !failed && block < 4u; ++block) {
+                const lib_u32 address = 0xe0000u + bank * 0x10000u + block * 0x4000u;
+                const lib_u8 expected = (lib_u8)(0x80u + bank * 4u + block);
+                const lib_u8 patch = 0x22u;
+
+                failed |= x86_core_machine_memory_write(machine, address, &patch, 1u) !=
+                        LIB_STATUS_OK ||
+                    x86_core_machine_memory_read(machine, address, &value, 1u) !=
+                        LIB_STATUS_OK || value != expected;
+            }
+        }
+        failed |= x86_core_machine_memory_read(machine, 0xffff0000u, &value, 1u) !=
+                LIB_STATUS_OK || value != 0x8cu ||
+            !firmware_register(machine, 0x11u, 0xaau) ||
+            x86_core_machine_memory_read(machine, 0xe0000u, &value, 1u) !=
+                LIB_STATUS_OK || value != 0x77u;
+        x86_core_machine_signal_processor_reset(machine);
+        failed |= x86_core_machine_run(machine,
+                (x86_core_machine_run_budget){.instructions = 1u}, &reset) != LIB_STATUS_OK ||
+            reset.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
+            x86_core_machine_bus_read(machine, 0x98u, &value) != LIB_STATUS_OK || value != 4u ||
+            x86_core_machine_bus_write(machine, 0x98u, 0u) != LIB_STATUS_OK ||
+            !firmware_register(machine, 0x11u, 0u) ||
+            x86_core_machine_memory_read(machine, 0xe0000u, &value, 1u) !=
+                LIB_STATUS_OK || value != 0x88u ||
+            x86_core_machine_memory_read(machine, 0xf0000u, &value, 1u) !=
+                LIB_STATUS_OK || value != 0x8cu ||
+            x86_core_machine_bus_write(machine, 0x98u, 4u) != LIB_STATUS_OK;
+    }
+    if (!failed) {
         const lib_u8 cross[] = {0x90u, 0x91u};
         lib_u8 copied[2u] = {0};
 
@@ -110,6 +147,7 @@ lib_i32 main(void)
             x86_core_machine_memory_read(machine, 0xffff0000u, &value, 1u) !=
                 LIB_STATUS_OK || value != 0x8cu ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x98u, &value) != LIB_STATUS_OK || value != 0u ||
             x86_core_machine_memory_read(machine, 0xc0000u, &value, 1u) !=
                 LIB_STATUS_OK || value != 0xffu ||
             x86_core_machine_memory_read(machine, 0xf0000u, &value, 1u) !=

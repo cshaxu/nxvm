@@ -298,6 +298,18 @@ outstanding source gate.
 
 ## Verification And Exit
 
+### S50 lower-Flash receiver
+
+The [S50 receiver](../etc/evidence/t580-s50-lower-flash-selection.md) adds
+App-owned port-98 selection to the sole external E/F decoder. Existing
+fixtures prove lower/upper banks, independent shadow, guest-executed copying,
+restoration and reset behavior. This is a source-labelled L2 functional model;
+actual normal firmware has not yet reached its Setup bulk-copy/loader path.
+A bounded sample ends in the later SMM checksum loop, not INT 19h and not a
+proven deadlock. The real Setup/boot consumer and all original guest/live
+product gates remain required; receiver implementation alone does not qualify
+publication.
+
 ### S49 integrated-controller proof
 
 The [S49 receiver](../etc/evidence/t580-s49-integrated-fdc.md) uses the existing

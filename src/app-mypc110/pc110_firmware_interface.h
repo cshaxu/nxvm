@@ -23,6 +23,7 @@ typedef struct mypc110_firmware {
     x86_vl82c420 *configuration_chip;
     x86_core_machine *machine;
     lib_u8 cpu_unlock_step;
+    lib_u8 planar_control;
     lib_u16 cpu_power_mode;
     lib_u16 memory_control;
     lib_bool smram_active;

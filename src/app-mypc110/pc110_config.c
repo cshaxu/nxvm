@@ -17,6 +17,7 @@
 #define MYPC110_ECED_CONFIG_OPEN_PORT 0x00fbu
 #define MYPC110_MEMORY_CONTROL_PORT 0x0302u
 #define MYPC110_ASMI_PORT 0x15eeu
+#define MYPC110_PLANAR_CONTROL_PORT 0x0098u
 
 /* L2 cold image: Open-Source-PC110 live VL82C420 captures, not imported
  * implementation code.  The source files' SHA-256 values are recorded in
@@ -116,6 +117,9 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
     }
     chip = firmware->configuration_chip;
     switch (port) {
+    case MYPC110_PLANAR_CONTROL_PORT:
+        *out_value = firmware->planar_control;
+        return LIB_STATUS_OK;
     case MYPC110_CPU_POWER_MODE_PORT:
         *out_value = firmware->cpu_power_mode;
         return LIB_STATUS_OK;
@@ -180,6 +184,15 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     chip = firmware->configuration_chip;
+    if (port == MYPC110_PLANAR_CONTROL_PORT) {
+        if (access_bytes != 1u || value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
+        const lib_u8 previous = firmware->planar_control;
+        firmware->planar_control = (lib_u8)value;
+        if (((previous ^ value) & 4u) != 0u)
+            x86_core_machine_signal_memory_decode_change(firmware->machine,
+                0x000e0000u, 2u * MYPC110_FIRMWARE_BANK_BYTES);
+        return LIB_STATUS_OK;
+    }
     if (port == MYPC110_ASMI_PORT) {
         x86_vl82c420_write_asmi(chip, port);
         return x86_core_machine_set_smi(firmware->machine, x86_vl82c420_smi_asserted(chip));
@@ -271,6 +284,7 @@ lib_status mypc110_config_install_routes(x86_core_machine *machine,
 {
     lib_status status;
     const x86_core_machine_port_route port_routes[] = {
+        {MYPC110_PLANAR_CONTROL_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_MEMORY_CONTROL_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_ASMI_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_CPU_POWER_MODE_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},

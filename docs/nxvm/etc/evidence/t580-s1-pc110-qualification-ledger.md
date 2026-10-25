@@ -160,3 +160,17 @@ artifacts are delivered by NXVM `782f09ebb`, with MyRaidenII `5ed407b4b`.
 Coordinator actual-change review accepts this cold-receiver batch. The boot-only lower Flash
 view and all later POST/Setup/guest/panel/product members remain unqualified;
 none is hidden by accepting this one cold-initialization receiver.
+
+## S49--S50 receiver reconciliation
+
+The existing FDC/PIC/DMA receiver now completes the unchanged BIOS's DOR reset,
+IRQ wait and four reset SENSE results on both widths; see
+[S49](t580-s49-integrated-fdc.md). The independent lower-Flash selection now
+has App-owned port-98/E/F decoding and direct existing-fixture proof of guest
+copying, restoration, shadow independence and reset behavior; see
+[S50](t580-s50-lower-flash-selection.md). Its actual BIOS Setup bulk-copy and
+loader consumer is still unqualified. The bounded normal-route sample ends
+inside an SMM checksum loop, with no INT 19h; that is neither boot success
+nor proof of a deadlock. All remaining original source, Setup/boot, selected
+guest, panel/input/power, live lifecycle and publication members retain their
+T580 receiver. The coverage universe and completion predicate are unchanged.

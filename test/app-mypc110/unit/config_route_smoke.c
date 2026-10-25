@@ -39,6 +39,10 @@ int main(void)
     const lib_u8 byte_only[] = {0xb0u, 0x00u, 0xe6u, 0x23u,
         0xb0u, 0x80u, 0xe6u, 0x22u, 0xe6u, 0x22u};
     const lib_u8 cpu_lock[] = {0xb8u, 0x00u, 0x01u, 0xe7u, 0x22u};
+    const lib_u8 flash_toggle[] = {0xbau, 0x98u, 0x00u, 0xecu, 0x34u, 0x04u, 0xeeu};
+    const lib_u8 flash_copy[] = {0xbau, 0x98u, 0x00u, 0xecu, 0x34u, 0x04u, 0xeeu,
+        0xb8u, 0x00u, 0xe0u, 0x8eu, 0xd8u, 0xbeu, 0x00u, 0x00u, 0xacu,
+        0xbfu, 0x00u, 0x20u, 0x26u, 0x88u, 0x05u, 0x31u, 0xc0u, 0x8eu, 0xd8u};
     const x86_core_machine_executor_config config = {
         .memory_bytes = 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
     };
@@ -79,6 +83,18 @@ int main(void)
             .system_management_active = mypc110_firmware_system_management_active}) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    if (!failed) {
+        failed |= x86_core_machine_bus_write(machine, 0xecu, 0x0cu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0xedu, 0x09u) != LIB_STATUS_OK ||
+            !config_route_execute(machine, flash_copy, sizeof(flash_copy), 12u) ||
+            x86_core_machine_bus_read(machine, 0x98u, &value) != LIB_STATUS_OK || value != 4u ||
+            x86_core_machine_memory_read(machine, 0x2000u, &byte, 1u) != LIB_STATUS_OK ||
+            byte != bios[0u] ||
+            !config_route_execute(machine, flash_toggle, sizeof(flash_toggle), 4u) ||
+            x86_core_machine_bus_read(machine, 0x98u, &value) != LIB_STATUS_OK || value != 0u ||
+            x86_core_machine_bus_write(machine, 0xecu, 0x0cu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0xedu, MYPC110_RESET_ROMSET) != LIB_STATUS_OK;
+    }
     if (!failed) {
         failed |= x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
             value != 0u ||

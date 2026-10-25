@@ -61,6 +61,10 @@ static lib_status mypc110_firmware_decode(const mypc110_firmware *firmware,
         /* Leave external D accesses to the font window or open-bus fallback. */
         return LIB_STATUS_UNSUPPORTED;
     }
+    /* The BIOS RAM trampoline toggles planar bit 2 to copy lower Flash,
+     * then restores it. Internal shadow and the high reset alias are separate. */
+    if (*out_flash && (firmware->planar_control & 4u) != 0u)
+        *out_offset ^= 2u * MYPC110_FIRMWARE_BANK_BYTES;
     return LIB_STATUS_OK;
 }
 
@@ -196,6 +200,7 @@ static lib_status mypc110_firmware_reset(void *opaque,
     binding->memory_control = 0u;
     binding->smram_active = LIB_FALSE;
     binding->cpu_unlock_step = 0u;
+    binding->planar_control = 0u;
     binding->cpu_power_mode = 0u;
     x86_vl82c420_reset_protocol(binding->configuration_chip);
     return LIB_STATUS_OK;
