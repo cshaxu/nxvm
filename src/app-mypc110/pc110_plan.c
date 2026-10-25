@@ -93,6 +93,9 @@ static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
         .data_port = 0x0071u,
         .irq = 8u,
         .nmi_mask_bit = 0x80u,
+        /* L2: unchanged BIOS and both reference models address independent
+         * upper CMOS bytes; do not alias them onto classic RTC registers. */
+        .extended_registers = LIB_TRUE,
         .ticks_per_second = 32768u,
         .timing = {8u, 65u, X86_NXVM_BOARD_RTC_TIMING_L3_SOURCE}}
 };

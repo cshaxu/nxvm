@@ -184,3 +184,21 @@ complete power/status/wake/retention contract, not a generic CPU HLT defect
 or permission to force FB high. The hardware semantics of FB/B8/FF and mode
 22h require source reconciliation before repair. Bounded L2 remains allowed;
 the source/Setup/boot/guest/live-product and publication rows remain open.
+
+## S52 RTC space and power-boundary reconciliation
+
+The [S52 receiver](t580-s52-power-contract.md) repairs a separately reproduced
+CMOS 3B/7B address alias. Existing RTC/Board construction selects the old
+64-register or compatible 128-register space, with PC110 selecting 128.
+Both widths prove actual guest IN/OUT isolation and pass the complete 712-unit
+corpus, original timer/SMI/FDC integration and all four deployed INI identities.
+The eight PC receiving EXEs are refreshed; four PC110 previews remain
+unpublished. No other source, media, panel or product gate is advanced.
+
+The two repaired real-BIOS observations are identical at the genuine suspend
+endpoint after 32,019,249 instructions. RTC AIE is not enabled, so an already
+armed automatic alarm cannot be assumed as the missing first wake. FB/B8/FF
+status/write rules, the named physical event, retention/reset and real BIOS
+restoration remain one power receiver inside T580, not a generic HLT change
+or a demand for owner hardware. No fixed FB bit or synthetic wake is admitted.
+The complete original qualification universe and completion predicate remain.

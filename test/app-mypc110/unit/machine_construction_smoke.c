@@ -26,8 +26,15 @@ int main(void)
     emulator_machine_driver driver = {0};
     const x86_debug_request ports[] = {
         {.operation = X86_DEBUG_READ_PORT, .port = 0x03f4u, .bytes = 1u},
-        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x03f2u, .address = 0x0cu, .bytes = 1u}};
-    const lib_u32 expected[] = {0x80u, 0u};
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x03f2u, .address = 0x0cu, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x3bu, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x71u, .address = 0x55u, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x7bu, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x71u, .address = 0xaau, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x3bu, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u}};
+    const lib_u32 expected[] = {0x80u, 0u, 0u, 0u, 0u, 0u, 0xaau, 0u, 0x55u};
     x86_debug_response response = {0};
     lib_size response_bytes = 0u;
     static kvm_window_frame_storage frame;
@@ -42,7 +49,8 @@ int main(void)
             X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE ||
         construction.topology.planar_parity.memory_bytes != 0u)
         failed = 2;
-    else if (!construction.topology.fdc_present || !construction.topology.dma_present ||
+    else if (!construction.topology.rtc_cmos.extended_registers ||
+        !construction.topology.fdc_present || !construction.topology.dma_present ||
         construction.topology.fdc.ready_mask != 0x0fu ||
         construction.topology.fdc_drives.double_sided_mask != 0x0fu ||
         construction.topology.fdc_drives.installed_mask != 0u)

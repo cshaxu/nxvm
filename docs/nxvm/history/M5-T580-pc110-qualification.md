@@ -433,3 +433,21 @@ power/status/wake contract. No justified production repair is selected yet.
 All temporary code/logs are removed; source/test/artifact delta is zero.
 Both restored App unit sets pass 11/11; the unchanged complete unit corpus
 retains S50 qualification. Coordinator actual-change acceptance is pending.
+
+## S52 executor delivery — RTC address space and power disposition
+
+Shared `3ca0a166f` extends the existing RTC/Board descriptor with classic-zero
+versus compatible-128 register selection. The App selects 128 and existing
+fixtures cover address isolation, reset retention, defaults and NMI separation.
+The two actual CPU I/O probes change from AA/AA to 55/AA without a second
+CMOS receiver. Total retained source/tests are +110/-41; no Lib/Emulator,
+X86 Core or other App private implementation changes.
+
+Both complete unit sets pass 712/712, the original timer/SMI/FDC integration
+passes and eight receiving PC products rebuild with their actual INI identity
+checks. The unchanged BIOS still requests suspend; no guest boot or PC110
+product qualification is claimed. Four previews stay unpublished. The
+[complete evidence](../etc/evidence/t580-s52-power-contract.md) retains the
+source/contract comparison, actual hashes, remaining whole power receiver
+and safe cleanup of 24 files/27,077,174 bytes. Coordinator actual-diff
+acceptance is pending.
