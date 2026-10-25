@@ -1,5 +1,16 @@
 # M5 T580 S1 — MyPC110 qualification ledger
 
+## S49 integrated-controller receiver
+
+[S49 proof](t580-s49-integrated-fdc.md) wires the existing FDC at standard
+ports/IRQ6/DMA2 with the original SMC's fixed compatible status inputs, while
+retaining no external dock drive or inserted medium. Both actual TFT BIOS
+widths now assert/release DOR reset, return through the IRQ wait and match
+all four SENSE reset results. The same integration retains earlier copy/SMI/
+RSM/timer predicates. This closes that complete reset/IRQ receiver only;
+extended Super-I/O configuration, dock hardware, lower Flash, Setup/boot,
+selected storage/guest and live product qualification remain explicit members.
+
 ## S48 post-initialization batch reconciliation
 
 [S48 observations](t580-s48-post-initialization-route.md) retain three actual

@@ -298,6 +298,16 @@ outstanding source gate.
 
 ## Verification And Exit
 
+### S49 integrated-controller proof
+
+The [S49 receiver](../etc/evidence/t580-s49-integrated-fdc.md) uses the existing
+Board/controller/PIC/DMA path and original SMC fixed-status evidence. Both
+actual TFT BIOS widths complete the FDC reset/IRQ/four-SENSE transaction with
+no inserted drive or medium, retaining the earlier initialization/timer proof.
+Shared trees and previously published Apps are unchanged. This is not full
+SMC, POST, Setup, storage boot or PC110 product qualification; the lower Flash
+and remaining ledger receivers continue under this T's original predicate.
+
 ### S48 post-initialization reconciliation
 
 The [S48 audit](../etc/evidence/t580-s48-post-initialization-route.md) separates

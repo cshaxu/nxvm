@@ -39,6 +39,11 @@ typedef struct mypc110_post_diagnostic_port_read {
 } mypc110_post_diagnostic_port_read;
 
 typedef struct mypc110_post_diagnostic_trace {
+    lib_bool fdc_checkpoint;
+    lib_bool fdc_reset_asserted;
+    lib_bool fdc_reset_released;
+    lib_bool fdc_wait_returned;
+    lib_bool fdc_reset_completed;
     lib_bool timer_checkpoint;
     lib_bool asmi_requested;
     lib_bool asmi_serviced;
@@ -128,6 +133,18 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
     if (trace->timer_checkpoint) {
+        if (trace->fdc_checkpoint && trace->timer_passed) {
+            if (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE &&
+                observation->io_port == 0x03f2u) {
+                if (observation->io_value == 0x08u) trace->fdc_reset_asserted = LIB_TRUE;
+                if (trace->fdc_reset_asserted && observation->io_value == 0x0cu)
+                    trace->fdc_reset_released = LIB_TRUE;
+            }
+            if (trace->fdc_reset_released && observation->point.linear_pc == 0x000fc971u)
+                trace->fdc_wait_returned = LIB_TRUE;
+            if (trace->fdc_wait_returned && observation->point.linear_pc == 0x000fbd07u)
+                trace->fdc_reset_completed = LIB_TRUE;
+        }
         if (trace->initialized && observation->io_port == 0x15eeu &&
             observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE)
             trace->asmi_requested = LIB_TRUE;
@@ -284,8 +301,10 @@ int main(int argc, char **argv)
         lib_text_compare(argv[1], "--c000-follow") == 0;
     lib_bool c000_port61_follow_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--c000-port61-follow") == 0;
-    lib_bool timer_checkpoint = argc == 2 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--timer") == 0;
+    lib_bool fdc_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--fdc-reset") == 0;
+    lib_bool timer_checkpoint = fdc_checkpoint || (argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--timer") == 0);
     lib_u64 instruction_limit;
     lib_u32 wait_count = 0u;
     lib_status status;
@@ -300,6 +319,8 @@ int main(int argc, char **argv)
             MYPC110_POST_DIAGNOSTIC_C000_INSTRUCTIONS :
             MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS);
     if (timer_checkpoint) instruction_limit = 200000000u;
+    if (fdc_checkpoint) instruction_limit = 32000000u;
+    post_reset_trace.fdc_checkpoint = fdc_checkpoint;
     post_reset_trace.timer_checkpoint = timer_checkpoint;
     post_reset_trace.c000_only = c000_checkpoint || c000_follow_checkpoint ||
         c000_port61_follow_checkpoint;
@@ -344,7 +365,8 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
-        if (timer_checkpoint && (post_reset_trace.timer_passed ||
+        if (fdc_checkpoint && post_reset_trace.fdc_reset_completed) break;
+        if (timer_checkpoint && !fdc_checkpoint && (post_reset_trace.timer_passed ||
                 post_reset_trace.timer_failed ||
                 result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)) break;
         if (processor_reset_count != 0u && !post_reset_exception.valid &&
@@ -608,6 +630,12 @@ int main(int argc, char **argv)
         }
     }
     x86_nxvm_machine_destroy(machine);
+    if (fdc_checkpoint) {
+        lib_c_printf("PC110:FDC-RESET:asserted=%u released=%u irq-return=%u senses-complete=%u\n",
+            post_reset_trace.fdc_reset_asserted, post_reset_trace.fdc_reset_released,
+            post_reset_trace.fdc_wait_returned, post_reset_trace.fdc_reset_completed);
+        if (!post_reset_trace.fdc_reset_completed) return 1;
+    }
     if (timer_checkpoint) {
         return status == LIB_STATUS_OK && post_reset_trace.timer_passed &&
             post_reset_trace.copied_handler && post_reset_trace.initialized &&

@@ -5,6 +5,7 @@
 #include "lib/kvm-window/frame_interface.h"
 #include "x86-nxvm/machine/machine_interface.h"
 #include "x86-core/machine/clock_interface.h"
+#include "x86-debug/product/protocol_interface.h"
 
 int main(void)
 {
@@ -23,6 +24,12 @@ int main(void)
     x86_nxvm_machine_reset_vector reset = {0};
     x86_nxvm_machine_information information = {0};
     emulator_machine_driver driver = {0};
+    const x86_debug_request ports[] = {
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x03f4u, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x03f2u, .address = 0x0cu, .bytes = 1u}};
+    const lib_u32 expected[] = {0x80u, 0u};
+    x86_debug_response response = {0};
+    lib_size response_bytes = 0u;
     static kvm_window_frame_storage frame;
     static kvm_console_text_frame console;
     lib_bool produced = LIB_FALSE;
@@ -35,6 +42,11 @@ int main(void)
             X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE ||
         construction.topology.planar_parity.memory_bytes != 0u)
         failed = 2;
+    else if (!construction.topology.fdc_present || !construction.topology.dma_present ||
+        construction.topology.fdc.ready_mask != 0x0fu ||
+        construction.topology.fdc_drives.double_sided_mask != 0x0fu ||
+        construction.topology.fdc_drives.installed_mask != 0u)
+        failed = 9;
     else if (x86_core_machine_clock_domain_initialize(&pit_clock,
             &construction.core_config.clock_plan.pit) != LIB_STATUS_OK)
         failed = 7;
@@ -58,6 +70,13 @@ int main(void)
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
                 &produced) != LIB_STATUS_OK || !produced))
         failed = 5;
+    for (lib_size index = 0u; !failed && index < sizeof(ports) / sizeof(ports[0]); ++index) {
+        if (driver.execute_debug(driver.context, &ports[index], sizeof(ports[index]),
+                &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+                response_bytes != sizeof(response) || response.value != expected[index] ||
+                construction.floppy_slot_count != 0u || information.floppy_media_inserted)
+            failed = 20 + (int)index;
+    }
     x86_nxvm_machine_destroy(machine);
     return failed;
 }

@@ -52,6 +52,23 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
  * 70h/71h pair and routes its interrupt through IRQ8.  This is board decode,
  * not a PC/AT facade: the TFT BIOS itself owns all CMOS setup values. */
 static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
+    .dma_present = LIB_TRUE,
+    .dma = {2u, X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
+        X86_NXVM_BOARD_DMA_CASCADE_CHANNEL},
+    /* L2 U22 standard-compatible FDC view, independent of the absent dock
+     * drive. SMC Table 19 fixes the legacy ST3 READY/TS positions high. */
+    .fdc_present = LIB_TRUE,
+    .fdc = {
+        .dor_port = 0x03f2u,
+        .status_port = 0x03f4u,
+        .data_port = 0x03f5u,
+        .direction_port = 0x03f7u,
+        .control_port = 0x03f7u,
+        .irq = 6u,
+        .dma_channel = 2u,
+        .ready_mask = 0x0fu,
+        .clock_ticks_per_second = MYPC110_CPU_CLOCK_HZ},
+    .fdc_drives = {.double_sided_mask = 0x0fu},
     /* The admitted BIOS probes the first 64 KiB beyond installed RAM to find
      * the limit.  Model only that observed probe window as L2 open bus. */
     .absent_memory_count = 2u,

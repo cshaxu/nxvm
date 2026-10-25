@@ -147,10 +147,10 @@ if(TARGET mypc110-real-firmware-tft)
         target_compile_options(mypc110-real-firmware-post-integration PRIVATE
             -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
     endif()
-    # This unchanged-BIOS milestone executes the former reset, C000, LPT and
-    # refresh-delay prefixes. Earlier views remain manual diagnostic modes.
-    add_test(NAME mypc110.integration/real-firmware-timer
-        COMMAND mypc110-real-firmware-post-integration --timer)
-    set_tests_properties(mypc110.integration/real-firmware-timer PROPERTIES
-        LABELS "integration;mypc110" TIMEOUT 600)
+    # One unchanged-BIOS receiver covers the earlier timer/SMI prefixes and
+    # the integrated controller's reset, IRQ and four SENSE results.
+    add_test(NAME mypc110.integration/real-firmware-fdc-reset
+        COMMAND mypc110-real-firmware-post-integration --fdc-reset)
+    set_tests_properties(mypc110.integration/real-firmware-fdc-reset PROPERTIES
+        LABELS "integration;mypc110" TIMEOUT 180)
 endif()
