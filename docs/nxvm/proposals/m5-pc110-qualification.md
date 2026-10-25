@@ -91,6 +91,24 @@ it does not yet reach them.  No Shared/Core contract, ROM byte, new timer,
 host service, product artifact or POST/guest claim is introduced.  Full
 provenance and limits are in [S30 evidence](../etc/evidence/t580-s30-eced-config-gate.md).
 
+## S31 — post-C000 port-61 caller boundary
+
+S31 consumes the next real-firmware checkpoint after S28/S30. The established
+diagnostic proves one `F000:EA80h` port-61 service return but intentionally
+stops at its local `ret`. Static `EA38h` code is not assumed to be the active
+caller. S31 may extend that same diagnostic to record the actual next
+instruction after the real service return. The instruction ceiling remains
+containment only. No production receiver, timing shortcut, ROM mutation,
+artifact or guest claim is admitted; a no-caller or already-owned-route result
+closes the S with evidence rather than inventing a device model.
+
+### S31 Closure
+
+The actual caller is `F000:EA5Bh` (`dec bl; jnz EA55h`), confirmed on both
+host widths. It is the existing BIOS outer delay loop and does not select a new
+device receiver. The stronger caller test replaces the former local-return
+test; detailed output and limits are in [S31 evidence](../etc/evidence/t580-s31-post-c000-port61-caller.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

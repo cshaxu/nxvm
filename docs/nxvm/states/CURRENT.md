@@ -2,6 +2,36 @@
 
 ## Current Work
 
+## M5 T580 S31 — Closed: PC110 post-C000 port-61 caller boundary
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S31. |
+| Admission And Approval | The owner directed T580 to continue autonomously on 2026-10-25. This S is a diagnostic-only continuation inside the established source/semantic-checkpoint rule. |
+| Objective | Identify the actual caller reached after the admitted post-C000 `F000:EA80h` port-61 service return, then retain only a real semantic boundary that can select a source-backed receiver. |
+| Non-goals | No production device route, Shared/Core/App interface, ROM/media mutation, timing shortcut, synthetic firmware action, release artifact, or guest-qualification claim. |
+| Reference Baseline | `f4cfa9f25` (S30); existing `mypc110-real-firmware-post-diagnostic`, S28's static/observed EA38--EA92 path, and the selected TFT BIOS hash recorded in S26. |
+| Candidate Proposal | Extend the existing one diagnostic binary only: after its established EA80 return, record the actual post-`ret` caller point. The static EA38 routine is not assumed to be this caller. A containment ceiling protects execution but is never success. |
+| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, its existing CMake registration and T580 evidence/status/proposal only. No production source, public ABI or component manifest exists on this App-local test tree. |
+| Applicable Rules | `docs/rules/EXECUTION.md` S-contract, coverage and evidence rules; `ARCHITECTURE.md` single Core time owner; `CODING.md` diagnostic-copy and no synthetic-route rules; source policy research boundary. |
+| Verification | Build both Ninja widths; run the existing and new named MyPC110 diagnostics on x64/x86; inspect emitted register/return/I/O facts; run the required repository-only unit suite before P. |
+| Expected Markers | A successful checkpoint must prove the established EA80 return and record its actual caller. A bounded no-caller result is recorded as no receiver, not success. |
+| Asset Needs | Existing external hash-pinned TFT BIOS only; no asset creation, download, movement or commit. |
+| Reporting Requirements | Record exact observed caller, receiver disposition, production diff (expected zero), diagnostic/doc line counts, x64/x86 results and unqualified limits. |
+| Stop Conditions | Missing dynamic semantic return, a need for guessed port values/device behavior, an arbitrary budget claim, Core/Shared change, or a non-source-backed receiver stops implementation and records a no-result. |
+| Exit Criteria | The returned EA80 service has an actual-caller or bounded no-caller disposition on both widths; any selected receiver is separately source-gated; no unapproved production behavior is introduced; required diagnostic/unit evidence and documentation are complete. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | Reuse the existing diagnostic runner rather than adding a second tracing framework; audit all newly captured trace paths for whether they are a real device receiver or an already-owned route. |
+
+### S31 Closure
+
+The real TFT path returns from `EA80h` to `F000:EA5Bh`, the BIOS's actual
+`dec bl; jnz EA55h` outer delay tail, on both host widths. This is an
+already-owned finite delay route, not a new receiver. The stronger caller
+checkpoint replaces the former local-return diagnostic without increasing the
+diagnostic count. Repository-only unit suites pass 667/667 on x64 and x86.
+See the [S31 evidence](../etc/evidence/t580-s31-post-c000-port61-caller.md).
+
 ## M5 T580 S30 — Closed: PC110 EC/ED configuration gate
 
 | Field | Required record |

@@ -175,8 +175,8 @@ if(TARGET mypc110-real-firmware-tft)
         COMMAND mypc110-real-firmware-post-diagnostic --c000-port61-follow)
     set_tests_properties(mypc110.diagnostic/real-firmware-c000-port61-follow PROPERTIES
         LABELS "diagnostic;mypc110" TIMEOUT 60)
-    add_test(NAME mypc110.diagnostic/real-firmware-c000-port61-return
-        COMMAND mypc110-real-firmware-post-diagnostic --c000-port61-return)
-    set_tests_properties(mypc110.diagnostic/real-firmware-c000-port61-return PROPERTIES
+    add_test(NAME mypc110.diagnostic/real-firmware-c000-port61-caller
+        COMMAND mypc110-real-firmware-post-diagnostic --c000-port61-caller)
+    set_tests_properties(mypc110.diagnostic/real-firmware-c000-port61-caller PROPERTIES
         LABELS "diagnostic;mypc110" TIMEOUT 60)
 endif()
