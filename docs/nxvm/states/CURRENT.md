@@ -6,9 +6,9 @@
 
 | Field | Required record |
 | --- | --- |
-| Latest accepted delivery | S19 supplies the TFT composition's source-qualified VL82C420 cold image. S20 and S21 reject two non-semantic/synthetic routes; neither is a product feature or release qualification. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md) and [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md). |
-| Remaining convergence | Real POST/setup/guest progression still lacks an x86-visible PC110 power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. Original-DSTN remains gated by the absent verified BIOS/font input. |
+| Latest accepted delivery | S23 adds the documented TFT EC mailbox receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; neither establishes a product release qualification. |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md) and [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md). |
+| Remaining convergence | Real POST/setup/guest progression still lacks a demonstrated firmware transition beyond the established delay path and a complete power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. Original-DSTN remains gated by the absent verified BIOS/font input. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, synthetic firmware paths or metadata-only MCU models as a substitute. |
 
 ### S9 Brief
@@ -256,6 +256,25 @@ The remaining qualification gates therefore remain explicit: a trace or
 source-defined CPU-visible power/MCU contract, and an independently observable
 real-firmware post-POST checkpoint. No production path, asset mapping or
 release claim changed.
+
+## M5 T580 S23 — Closed: EC mailbox receiver
+
+| Field | Required record |
+| --- | --- |
+| Objective | Install the externally documented PC110 EC mailbox through the ordinary App/Core port route. |
+| Boundary | App-local source, unit test and evidence only; no Shared/Core API, firmware-address behavior, MCU execution, APM emulation, clock, asset or release artifact. |
+| Evidence | [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md). |
+| Exit | The documented `15E8h`/`15ECh` ready-and-write contract is tested on both host widths without claiming POST or power qualification. |
+
+### S23 Closure
+
+MyPC110 now owns one EC mailbox receiver, independent of the firmware map and
+the standard board controllers. `15ECh` returns the documented ready state;
+`15ECh` and `15E8h` accept the documented command/data byte sequence. The
+receiver neither invents MCU behavior nor consumes a second clock. Both host
+widths build the altered App board and pass the direct mailbox, base-composition
+and construction regressions. This is a source-backed compatibility receiver,
+not proof that the selected BIOS reaches it or completes POST.
 
 ### S11 Closure
 

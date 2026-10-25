@@ -3,6 +3,7 @@
 
 #include "lib/types/types_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
+#include "app-mypc110/pc110_ec_mailbox_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "x86-core/chips/vl82c420/vl82c420_interface.h"
@@ -14,6 +15,7 @@ typedef struct mypc110_base_composition {
     x86_nxvm_board_state *board;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
+    mypc110_ec_mailbox ec_mailbox;
     mypc110_font_rom font;
     mypc110_tft_firmware firmware;
 } mypc110_base_composition;
