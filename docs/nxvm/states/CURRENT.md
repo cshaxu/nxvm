@@ -2,6 +2,34 @@
 
 ## Current Work
 
+## M5 T580 S34 — Closed: PC110 complete delay-routine boundary
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S34. |
+| Admission And Approval | The owner directed T580 to continue autonomously on 2026-10-25. S33 proved the inner `EA38h` loop returns quickly enough to make the containing BIOS routine the next and final useful delay boundary. |
+| Objective | Determine whether the real `F000:53D0h` delay routine returns through `F000:5405h`, and record the actual return receiver without using an arbitrary retirement count as progress. |
+| Non-goals | No production receiver, timing shortcut, Shared/Core/App ABI, firmware/media change, device model, release artifact or guest-qualification claim. |
+| Reference Baseline | `4a2ab9d88` (S33), selected TFT BIOS hash recorded in S26, and static `F000:53D0h` control flow. |
+| Candidate Proposal | Extend the existing one diagnostic binary with a temporary, unregistered complete-routine mode. Record entry `DX`, the `F000:5405h` `ret`, and its actual returned-to caller on both widths. Retain it only if it is bounded and semantic; otherwise remove it and record no-result evidence. |
+| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, `test/app-mypc110/CMakeLists.txt` only if the checkpoint qualifies, T580 status/proposal/evidence only. No production source, public ABI or component manifest. |
+| Applicable Rules | `docs/rules/EXECUTION.md` S-contract/diagnostic containment/test-bloat rules; `ARCHITECTURE.md` single Core time owner; `CODING.md` diagnostic-copy/no-synthetic-route rules; source policy research boundary. |
+| Verification | Both Ninja widths built the temporary mode. The 13M bounded run established entry `DX=0102h` but no routine return. The later 20M run produced no retained semantic result after its completed child output became unavailable, so its temporary source is removed. |
+| Stop Conditions | Missing semantic return, inconsistent width fact, a need for guessed firmware/device behavior, a run beyond the declared containment, Core/Shared production change, or no source-backed receiver ends the mode and records no-result evidence. |
+| Exit Criteria | Either a reproducible whole-routine return/caller fact replaces S33's narrower test, or the temporary mode is removed with a bounded no-result; no unapproved production behavior is introduced. |
+| Original Owner Request | Continue the whole PC110 qualification task without repeated routine approvals, while maintaining source-backed receiver boundaries. |
+| Similar-Issue Sweep | Expand the one existing diagnostic only to the smallest complete static routine; do not retain an overlapping inner-loop test or follow arbitrary post-return instruction counts. |
+
+### S34 Closure
+
+The 13M containment run enters the complete delay routine with `DX=0102h` and
+does not reach `F000:5405h`. A later 20M temporary experiment could not yield
+a retained semantic result after its child had exited but its terminal result
+was unavailable. It is therefore not evidence of completion, duration, POST
+progress, or a receiver. The mode is removed in full; S33 remains the sole
+admitted dynamic delay checkpoint. No production, ABI, firmware/media, or
+artifact changed. See the [S34 evidence](../etc/evidence/t580-s34-complete-delay-no-result.md).
+
 ## M5 T580 S33 — Closed: PC110 outer-delay completion correction
 
 | Field | Required record |

@@ -137,6 +137,19 @@ tails, `EA7Fh` return and the actual returned-to caller on both widths. The
 instruction limit is containment only. No timing shortcut or production device
 model is admitted.
 
+## S34 — complete delay-routine boundary (closed: no retained receiver)
+
+S33 proves the `EA38h` subroutine returns to `F000:53DDh`; static firmware
+shows that this point remains inside the enclosing `F000:53D0h` delay routine,
+which returns at `F000:5405h`. S34 temporarily extended the one diagnostic to
+record the routine's `DX`, `ret`, and returned-to caller. At the prior 13M
+containment it established `DX=0102h` and no routine return; the later 20M
+experiment did not yield a retained semantic result after its terminal session
+lost the completed child output. The temporary mode was removed rather than
+treated as evidence. S33 remains the one admitted dynamic delay checkpoint;
+there is no source-backed receiver or product change. See
+[S34 evidence](../etc/evidence/t580-s34-complete-delay-no-result.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.
