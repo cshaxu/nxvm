@@ -177,12 +177,14 @@ static lib_status video_read(void *context, lib_u16 address, lib_u64 tick,
     return status;
 }
 
-static lib_status video_write(void *context, lib_u16 address, lib_u32 value)
+static lib_status video_write(void *context, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
     t_vadp *adapter = context;
     const lib_status status = x86_video_register_write(adapter->chip,
         video_register(address), (lib_u8)value);
 
+    (void)access_bytes;
     if (status == LIB_STATUS_OK) video_refresh_interrupt(adapter);
     return status;
 }

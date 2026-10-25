@@ -633,8 +633,9 @@ static lib_status x86_nxvm_board_read_a20(void *owner, lib_u16 port_id, lib_u64 
 }
 
 static lib_status x86_nxvm_board_write_a20(void *owner, lib_u16 port_id,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     const x86_nxvm_board_state *board = owner;
     (void)port_id;
     return x86_core_machine_signal_address_clear_mask(board->core,
@@ -699,10 +700,11 @@ static lib_status x86_nxvm_board_rtc_cmos_port_read(void *owner,
 }
 
 static lib_status x86_nxvm_board_rtc_cmos_port_write(void *owner,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
     x86_nxvm_board_state *board = (x86_nxvm_board_state *)owner;
 
+    (void)access_bytes;
     if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == board->rtc_cmos_config.index_port) {
         (void)x86_core_machine_set_nmi_mask(board->core,

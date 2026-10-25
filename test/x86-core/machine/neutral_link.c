@@ -25,8 +25,10 @@ static lib_status neutral_port_read(void *owner, lib_u16 port, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status neutral_port_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status neutral_port_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     neutral_probe *probe = owner;
     if (port != 0x1234u) return LIB_STATUS_INVALID_ARGUMENT;
     if (probe->port_status != LIB_STATUS_OK) return probe->port_status;
@@ -165,10 +167,11 @@ static lib_status bank_read(void *owner, lib_u16 port, lib_u64 tick, lib_u32 *ou
     *out = probe->values[port - 0x2000u];
     return LIB_STATUS_OK;
 }
-static lib_status bank_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status bank_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     bank_probe *probe = owner;
-    if (port < 0x2000u || port > 0x2001u || value > 0xffu)
+    if (port < 0x2000u || port > 0x2001u || value > 0xffu || access_bytes != 1u)
         return LIB_STATUS_INVALID_ARGUMENT;
     ++probe->writes;
     probe->values[port - 0x2000u] = (lib_u8)value;

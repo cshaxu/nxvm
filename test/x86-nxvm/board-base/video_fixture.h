@@ -63,8 +63,9 @@ static inline lib_status test_video_probe_read(void *owner, lib_u16 port,
 }
 
 static inline lib_status test_video_probe_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)owner; (void)port; (void)value;
     return LIB_STATUS_OK;
 }

@@ -24,10 +24,11 @@ static lib_status port_strings_board_read(void *opaque, lib_u16 port, lib_u64 ti
 }
 
 static lib_status port_strings_board_write(void *opaque, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     port_strings_board_probe *probe = (port_strings_board_probe *)opaque;
 
+    (void)access_bytes;
     if (port != 0x00e0u) return LIB_STATUS_INVALID_ARGUMENT;
     ++probe->writes;
     probe->last_write = value;

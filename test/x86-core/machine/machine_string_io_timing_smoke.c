@@ -47,10 +47,11 @@ static lib_status string_io_timing_port_read(void *owner, lib_u16 port, lib_u64 
 }
 
 static lib_status string_io_timing_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     string_io_timing_state *state = (string_io_timing_state *)owner;
 
+    (void)access_bytes;
     if (state == LIB_NULL || port != STRING_IO_TIMING_PORT) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }

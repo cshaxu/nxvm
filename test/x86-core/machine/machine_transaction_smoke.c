@@ -100,10 +100,11 @@ static lib_status transaction_port_read(void *opaque,
 }
 
 static lib_status transaction_port_write(void *opaque,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
+    (void)access_bytes;
     (void)port;
     if (probe == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     probe->port_value = value;

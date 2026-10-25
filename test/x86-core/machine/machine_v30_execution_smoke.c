@@ -71,10 +71,12 @@ static lib_status execution_read(void *opaque, lib_u16 port, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status execution_write(void *opaque, lib_u16 port, lib_u32 value)
+static lib_status execution_write(void *opaque, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     v30_execution_probe *probe = opaque;
 
+    (void)access_bytes;
     if (port != 0x55u) return LIB_STATUS_INVALID_ARGUMENT;
     ++probe->writes;
     if (probe->device_status != LIB_STATUS_OK) return probe->device_status;

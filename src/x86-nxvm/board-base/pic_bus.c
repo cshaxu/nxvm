@@ -65,10 +65,12 @@ static lib_status pic_bus_read(void *owner, lib_u16 port_id, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status pic_bus_write(void *owner, lib_u16 port_id, lib_u32 value)
+static lib_status pic_bus_write(void *owner, lib_u16 port_id,
+    lib_u8 access_bytes, lib_u32 value)
 {
     x86_nxvm_board_pic_bus *bus = owner;
 
+    (void)access_bytes;
     if (bus == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     return x86_nxvm_board_pic_write_register(bus, (lib_u8)(port_id & 1u),
         (lib_u8)value);

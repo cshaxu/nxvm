@@ -95,8 +95,10 @@ static lib_status dma_port_read(void *owner, lib_u16 port_id, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status dma_port_write(void *owner, lib_u16 port_id, lib_u32 value)
+static lib_status dma_port_write(void *owner, lib_u16 port_id,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     t_dma *primary = owner;
     t_dma *dma;
     lib_u8 selector;

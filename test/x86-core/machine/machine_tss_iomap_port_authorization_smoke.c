@@ -48,10 +48,11 @@ static lib_status iomap_port_read(void *opaque, lib_u16 port, lib_u64 tick,
 }
 
 static lib_status iomap_port_write(void *opaque, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
+    (void)access_bytes;
     if (state == LIB_NULL || (port != 0x00e0u && port != 0x00e1u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }

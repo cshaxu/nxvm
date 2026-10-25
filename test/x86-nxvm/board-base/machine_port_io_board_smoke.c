@@ -27,10 +27,11 @@ static lib_status port_io_board_read(void *opaque, lib_u16 port, lib_u64 tick,
 }
 
 static lib_status port_io_board_write(void *opaque, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     port_io_board_probe *probe = (port_io_board_probe *)opaque;
 
+    (void)access_bytes;
     if (probe->fail) return LIB_STATUS_INVALID_ARGUMENT;
     ++probe->writes;
     probe->last_port = port;

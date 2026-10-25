@@ -53,8 +53,10 @@ static lib_status parity_port_read(void *context, lib_u16 port, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status parity_port_write(void *context, lib_u16 port, lib_u32 value)
+static lib_status parity_port_write(void *context, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     x86_nxvm_board_at_parity *parity = context;
     if (parity == LIB_NULL || port != parity->config.port)
         return LIB_STATUS_INVALID_ARGUMENT;

@@ -19,6 +19,7 @@ typedef lib_status (*x86_core_machine_port_read_provider)(
 typedef lib_status (*x86_core_machine_port_write_provider)(
     void *owner,
     lib_u16 port,
+    lib_u8 access_bytes,
     lib_u32 value);
 
 typedef struct x86_core_machine_port_provider {
@@ -28,7 +29,9 @@ typedef struct x86_core_machine_port_provider {
 
 /* Read tick is the Core guest time at dispatch, copied unchanged to each
  * byte lane and wired-OR contributor. A provider must not derive another
- * clock. Writes consume their settled device state.
+ * clock. Write access_bytes is 1, 2 or 4 for an unsplit access, or 1 for
+ * each split eight-bit lane. Values and provider errors are not transformed.
+ * Writes consume their settled device state.
  * The Core owns route storage. The caller retains each callback context until
  * its routes are removed or the machine is destroyed. */
 typedef struct x86_core_machine_port_route {

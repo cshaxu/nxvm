@@ -84,8 +84,10 @@ lib_bool test_kbc_bat_ready(const t_kbc *kbc)
     return x86_keyboard_get_signals(kbc->connect.keyboard).bat_ready;
 }
 
-static lib_status kbc_existing_write(void *owner, lib_u16 address, lib_u32 value)
+static lib_status kbc_existing_write(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     (void)value;
     *(lib_u8 *)owner = 0x5au;

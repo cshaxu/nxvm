@@ -16,8 +16,10 @@ static lib_status dma_route_install(x86_core_machine *machine,
 #include "x86-nxvm/board-base/dma_bus.c"
 #undef x86_core_machine_install_port_routes
 
-static lib_status conflicting_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status conflicting_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)port;
     (void)value;
     *(lib_u8 *)owner = 0x5au;

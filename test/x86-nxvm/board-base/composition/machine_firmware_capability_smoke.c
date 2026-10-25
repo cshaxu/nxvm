@@ -21,8 +21,8 @@ static lib_status firmware_probe_port_read(void *owner, lib_u16 port, lib_u64 ti
     lib_u32 *out_value)
 { firmware_probe *probe = owner; (void)port; probe->read_tick = tick; if (probe->port_status != LIB_STATUS_OK) return probe->port_status; *out_value = probe->port_value; return LIB_STATUS_OK; }
 static lib_status firmware_probe_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
-{ firmware_probe *probe = owner; (void)port; if (probe->port_status != LIB_STATUS_OK) return probe->port_status; probe->port_value = value; return LIB_STATUS_OK; }
+    lib_u8 access_bytes, lib_u32 value)
+{ (void)access_bytes; firmware_probe *probe = owner; (void)port; if (probe->port_status != LIB_STATUS_OK) return probe->port_status; probe->port_value = value; return LIB_STATUS_OK; }
 
 typedef struct firmware_failed_probe {
     x86_core_machine_firmware_context *expired;

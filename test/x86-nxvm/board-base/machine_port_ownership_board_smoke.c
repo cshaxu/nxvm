@@ -44,11 +44,12 @@ static lib_status x86_nxvm_test_port_probe_read(void *owner, lib_u16 port, lib_u
 }
 
 static lib_status x86_nxvm_test_port_probe_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     x86_nxvm_test_port_probe_state *state =
         (x86_nxvm_test_port_probe_state *)owner;
 
+    (void)access_bytes;
     if (state == LIB_NULL || (port != 0x00e0u && port != 0x03f2u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }

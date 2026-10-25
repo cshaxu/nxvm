@@ -8,6 +8,8 @@ typedef struct machine_port_probe {
     lib_u64 read_tick;
     lib_u32 reads;
     lib_bool inconsistent_tick;
+    lib_u8 write_bytes;
+    lib_u32 writes;
 } machine_port_probe;
 
 static lib_status machine_port_read(void *owner, lib_u16 port, lib_u64 tick,
@@ -26,13 +28,15 @@ static lib_status machine_port_read(void *owner, lib_u16 port, lib_u64 tick,
 }
 
 static lib_status machine_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     machine_port_probe *state = (machine_port_probe *)owner;
 
     (void)port;
     if (state == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     state->value = value;
+    state->write_bytes = access_bytes;
+    ++state->writes;
     return LIB_STATUS_OK;
 }
 
@@ -136,12 +140,16 @@ static lib_i32 machine_port_read_time(void)
     machine_port_probe lane = {.value = 0x5au};
     machine_port_probe contributor = {.value = 0x80u};
     const x86_core_machine_port_route bank = {
-        .address = 0x100u, .read = machine_port_read, .owner = &lane,
+        .address = 0x100u, .read = machine_port_read,
+        .write = machine_port_write, .owner = &lane,
         .byte_lane_end = 0x104u
     };
     const x86_core_machine_port_route wired_or = {
         .address = 0x100u, .read = machine_port_read, .owner = &contributor,
         .wired_or_read = LIB_TRUE
+    };
+    const x86_core_machine_port_route unsplit = {
+        .address = 0x200u, .write = machine_port_write, .owner = &contributor
     };
     const lib_u64 tick = 0x100000003ull;
     lib_i32 failed;
@@ -149,6 +157,7 @@ static lib_i32 machine_port_read_time(void)
     x86_core_machine_port_initialize(&ports);
     failed = x86_core_machine_port_add_route(&ports, &bank) != LIB_STATUS_OK ||
         x86_core_machine_port_add_route(&ports, &wired_or) != LIB_STATUS_OK ||
+        x86_core_machine_port_add_route(&ports, &unsplit) != LIB_STATUS_OK ||
         x86_core_machine_port_execute_read_width(&ports, 0x100u, 4u, tick) !=
             LIB_STATUS_OK || ports.data.ioDWord != 0x5a5a5adau ||
         lane.reads != 4u || contributor.reads != 1u ||
@@ -158,6 +167,20 @@ static lib_i32 machine_port_read_time(void)
     lane.reads = contributor.reads = 0u;
     failed |= x86_core_machine_port_read(&ports, 0x100u) != 0xdau ||
         lane.read_tick != 0u || contributor.read_tick != 0u;
+    for (lib_u8 bytes = 1u; bytes <= 4u; bytes *= 2u) {
+        const lib_u32 prior_writes = contributor.writes;
+
+        ports.data.ioDWord = 0x44332211u;
+        failed |= x86_core_machine_port_execute_write_width(&ports,
+            0x200u, bytes) != LIB_STATUS_OK ||
+            contributor.write_bytes != bytes ||
+            contributor.writes != prior_writes + 1u ||
+            contributor.value != 0x44332211u;
+    }
+    ports.data.ioDWord = 0x44332211u;
+    failed |= x86_core_machine_port_execute_write_width(&ports, 0x100u,
+        4u) != LIB_STATUS_OK || lane.write_bytes != 1u ||
+        lane.writes != 4u || lane.value != 0x44u;
     x86_core_machine_port_finalize(&ports);
     return failed;
 }
@@ -218,5 +241,6 @@ lib_i32 main(void)
         machine_port_read_time() || machine_port_allocation_prefixes()) return 1;
     lib_c_printf("PORT-REGISTRATION:OK\n");
     lib_c_printf("PORT-READ-TIMESTAMP:OK\n");
+    lib_c_printf("PORT-WRITE-WIDTH:OK\n");
     return 0;
 }

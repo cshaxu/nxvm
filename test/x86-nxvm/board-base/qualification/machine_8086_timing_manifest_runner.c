@@ -68,8 +68,9 @@ static lib_status timing_manifest_port_read(void *owner, lib_u16 port, lib_u64 t
 }
 
 static lib_status timing_manifest_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)owner;
     return port == 0x00e0u && value <= 0xffffu ? LIB_STATUS_OK :
         LIB_STATUS_INVALID_ARGUMENT;

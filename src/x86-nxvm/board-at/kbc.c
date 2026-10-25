@@ -174,10 +174,12 @@ static lib_status kbc_port_read(void *owner, lib_u16 address, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status kbc_port_write(void *owner, lib_u16 address, lib_u32 value)
+static lib_status kbc_port_write(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
     t_kbc *attachment = owner;
 
+    (void)access_bytes;
     if (attachment == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (address == 0x60u) x86_kbc8042_write_data(attachment->chip, (lib_u8)value);
     else x86_kbc8042_write_command(attachment->chip, (lib_u8)value);

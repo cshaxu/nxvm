@@ -934,12 +934,13 @@ static lib_status executor_locked_port_read(void *opaque, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_status executor_locked_port_write(void *opaque, lib_u16 port, lib_u32 value)
+static lib_status executor_locked_port_write(void *opaque, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     executor_locked_port_probe *probe=opaque;
     const lib_u32 shift = 8u * (port - 0x1234u);
 
-    if (value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
+    if (value > 0xffu || access_bytes != 1u) return LIB_STATUS_INVALID_ARGUMENT;
     if (++probe->calls==probe->fail) return LIB_STATUS_IO_ERROR;
     probe->value = (probe->value & ~(0xffu << shift)) | (value << shift);
     return LIB_STATUS_OK;

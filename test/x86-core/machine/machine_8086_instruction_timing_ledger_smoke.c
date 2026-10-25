@@ -31,10 +31,11 @@ static lib_status timing_8086_port_read(void *owner, lib_u16 port, lib_u64 tick,
 }
 
 static lib_status timing_8086_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     timing_8086_state *state = (timing_8086_state *)owner;
 
+    (void)access_bytes;
     if (state == LIB_NULL || port != 0x00e0u || value > 0xffffu) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }

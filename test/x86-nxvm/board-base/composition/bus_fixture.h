@@ -15,8 +15,9 @@ static inline lib_status test_x86_nxvm_machine_fixture_probe_read(void *owner,
 }
 
 static inline lib_status test_x86_nxvm_machine_fixture_probe_write(void *owner,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)owner;
     (void)port;
     (void)value;

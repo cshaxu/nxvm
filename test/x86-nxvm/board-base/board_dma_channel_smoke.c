@@ -208,8 +208,10 @@ static void x86_nxvm_test_dma_phase_terminal(void *owner, t_latch *latch)
     ++fixture->terminals;
 }
 
-static lib_status dma_conflicting_port(void *owner, lib_u16 address, lib_u32 value)
+static lib_status dma_conflicting_port(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     (void)value;
     *(lib_u8 *)owner = 0x5au;

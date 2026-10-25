@@ -10,8 +10,9 @@ typedef struct debug_port_probe { lib_status status; lib_u32 value; } debug_port
 static lib_status debug_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out)
 { (void)tick; debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; *out = probe->value; return LIB_STATUS_OK; }
-static lib_status debug_port_write(void *owner, lib_u16 port, lib_u32 value)
-{ debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; probe->value = value; return LIB_STATUS_OK; }
+static lib_status debug_port_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
+{ (void)access_bytes; debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; probe->value = value; return LIB_STATUS_OK; }
 
 static lib_i32 debug_observation_contract(x86_core_machine *machine)
 {

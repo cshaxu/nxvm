@@ -415,10 +415,11 @@ static lib_status x86_nxvm_board_fdc_port_read(void *owner, lib_u16 id, lib_u64 
 }
 
 static lib_status x86_nxvm_board_fdc_port_write(void *owner, lib_u16 id,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     x86_nxvm_board_fdc *fdc = owner;
 
+    (void)access_bytes;
     if (fdc == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (id == fdc->connect.config.dor_port) {
         fdc->data.dor = (lib_u8)value;

@@ -33,26 +33,34 @@ static lib_status pit_read_2(void *owner, lib_u16 address, lib_u64 tick,
     return pit_read_counter(owner, 2u, out_value);
 }
 
-static lib_status pit_write_0(void *owner, lib_u16 address, lib_u32 value)
+static lib_status pit_write_0(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     return x86_pit_write_register(owner, 0u, (lib_u8)value);
 }
 
-static lib_status pit_write_1(void *owner, lib_u16 address, lib_u32 value)
+static lib_status pit_write_1(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     return x86_pit_write_register(owner, 1u, (lib_u8)value);
 }
 
-static lib_status pit_write_2(void *owner, lib_u16 address, lib_u32 value)
+static lib_status pit_write_2(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     return x86_pit_write_register(owner, 2u, (lib_u8)value);
 }
 
-static lib_status pit_write_3(void *owner, lib_u16 address, lib_u32 value)
+static lib_status pit_write_3(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     return x86_pit_write_register(owner, 3u, (lib_u8)value);
 }

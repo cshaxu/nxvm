@@ -13,8 +13,10 @@ static lib_status registration_read(void *owner, lib_u16 address, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status registration_write(void *owner, lib_u16 address, lib_u32 value)
+static lib_status registration_write(void *owner, lib_u16 address,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     (void)address;
     *(lib_u8 *)owner = (lib_u8)value;
     return LIB_STATUS_OK;

@@ -25,10 +25,11 @@ static lib_status legacy_lock_port_read(void *owner,
 }
 
 static lib_status legacy_lock_port_write(void *owner,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
     legacy_lock_machine *state = (legacy_lock_machine *)owner;
 
+    (void)access_bytes;
     if (state == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     state->last_port = port;

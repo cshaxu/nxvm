@@ -35,10 +35,11 @@ lib_status port_assembly_read(void *owner, lib_u16 port, lib_u64 tick,
 }
 
 lib_status port_assembly_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     port_assembly_probe_state *state = (port_assembly_probe_state *)owner;
 
+    (void)access_bytes;
     (void)port;
     if (state == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     state->value = value;

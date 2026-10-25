@@ -28,10 +28,11 @@ static lib_status port_read(
 static lib_status port_write(
     void *owner,
     lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     port_fixture *fixture = (port_fixture *)owner;
 
+    (void)access_bytes;
     fixture->last_port = port;
     fixture->value = value;
     if (fixture->machine != LIB_NULL) {

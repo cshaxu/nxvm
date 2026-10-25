@@ -12,7 +12,8 @@ typedef struct port_assembly_probe_state {
 
 lib_status port_assembly_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value);
-lib_status port_assembly_write(void *owner, lib_u16 port, lib_u32 value);
+lib_status port_assembly_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value);
 
 lib_i32 port_assembly_fresh_default_create(void);
 lib_i32 port_assembly_port_b_time(void);

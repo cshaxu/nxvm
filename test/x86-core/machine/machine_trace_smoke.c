@@ -34,10 +34,12 @@ static lib_status port_read(void *owner, lib_u16 port, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status port_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status port_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
+    (void)access_bytes;
     (void)port;
     fixture->port_value = value;
     return LIB_STATUS_OK;

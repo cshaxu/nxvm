@@ -55,8 +55,10 @@ static lib_status lifecycle_port_read(void *opaque, lib_u16 port, lib_u64 tick,
     return probe->transfer_status;
 }
 
-static lib_status lifecycle_port_write(void *opaque, lib_u16 port, lib_u32 value)
+static lib_status lifecycle_port_write(void *opaque, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     lifecycle_probe *probe = opaque;
     (void)port;
     (void)value;

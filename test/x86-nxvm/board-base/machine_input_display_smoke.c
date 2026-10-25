@@ -86,10 +86,12 @@ static lib_i32 input_display_guards_at(input_display_guard_probe *probe,
             LIB_STATUS_INVALID_ARGUMENT;
 }
 
-static lib_status input_display_guard_running(void *owner, lib_u16 port, lib_u32 value)
+static lib_status input_display_guard_running(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     input_display_guard_probe *probe = owner;
 
+    (void)access_bytes;
     (void)port;
     (void)value;
     ++probe->running_calls;

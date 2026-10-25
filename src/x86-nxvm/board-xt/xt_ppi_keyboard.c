@@ -153,12 +153,13 @@ static lib_status x86_nxvm_board_xt_ppi_keyboard_read(void *owner,
 }
 
 static lib_status x86_nxvm_board_xt_ppi_keyboard_write(void *owner,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
     x86_nxvm_board_xt_ppi_keyboard *keyboard = owner;
     lib_u8 byte = (lib_u8)value;
     lib_status status;
 
+    (void)access_bytes;
     if (keyboard == LIB_NULL || port < keyboard->config.port_a ||
         port > keyboard->config.control_port) return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_ppi8255_write(keyboard->ppi, (lib_u8)(port - keyboard->config.port_a), byte);

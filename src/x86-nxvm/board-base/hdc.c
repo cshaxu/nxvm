@@ -189,8 +189,10 @@ static lib_status hdc_port_read(void *context, lib_u16 port, lib_u64 tick,
     return x86_hdc_read(hdc->chips[hdc->selected_controller], reg, out);
 }
 
-static lib_status hdc_port_write(void *context, lib_u16 port, lib_u32 value)
+static lib_status hdc_port_write(void *context, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     x86_nxvm_board_hdc *hdc = context;
     x86_hdc_register reg;
     lib_status status;

@@ -154,11 +154,12 @@ static lib_status timing_80386_manifest_port_read(void *opaque,
 }
 
 static lib_status timing_80386_manifest_port_write(void *opaque,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
     timing_80386_manifest_port_state *state =
         (timing_80386_manifest_port_state *)opaque;
 
+    (void)access_bytes;
     if (state == LIB_NULL || port != 0x00e0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }

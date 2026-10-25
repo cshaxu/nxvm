@@ -211,10 +211,11 @@ static lib_status corpus_port_read(void *owner, lib_u16 port, lib_u64 tick,
 }
 
 static lib_status corpus_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
+    (void)access_bytes;
     if (state == LIB_NULL || state->event_count >=
             sizeof(state->events) / sizeof(state->events[0])) {
         return LIB_STATUS_INVALID_ARGUMENT;

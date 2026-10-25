@@ -31,10 +31,12 @@ static lib_status oas_port_read(void *owner, lib_u16 port, lib_u64 tick,
     return LIB_STATUS_OK;
 }
 
-static lib_status oas_port_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status oas_port_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     oas_port_state *state = (oas_port_state *)owner;
 
+    (void)access_bytes;
     if (state == LIB_NULL || port != 0x00e0u || value > 0xffu)
         return LIB_STATUS_INVALID_ARGUMENT;
     ++state->writes;
