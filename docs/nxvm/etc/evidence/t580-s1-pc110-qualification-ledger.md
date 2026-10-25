@@ -55,6 +55,15 @@ firmware is still in its own delay body; the exact sample and its limits are in
 [the S6 evidence](t580-s6-post-c000-port61-sample.md). This does not advance
 any display, panel, Setup, storage or guest qualification row.
 
+## S7 post-C000 delay-return disposition
+
+The same post-C000 real-TFT path enters `F000:EA86` with `ECX=040Bh`, executes
+the delay routine's `F000:EA92` return and resumes at its caller's
+`F000:EA84` epilogue on both widths. The port-61 polling body is therefore a
+completed BIOS delay, not a missing hardware receiver. The exact bounded trace
+is in [the S7 evidence](t580-s7-post-c000-delay-return.md). This opens no
+display, panel, Setup, storage or guest qualification row.
+
 ## S2 boundary
 
 S2 may add the missing **TFT-only** App entry, binding, profile declaration,

@@ -6,8 +6,8 @@
 
 | Field | Required record |
 | --- | --- |
-| Latest accepted delivery | S6 records the finite real-TFT post-C000 port-61 status sample. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md) and [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md). |
+| Latest accepted delivery | S7 proves the named real-TFT post-C000 delay returns; it is not a hardware stop. |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md) and [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md). |
 | Remaining convergence | The qualification ledger still requires source-qualified panel/display, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent lawful BIOS/font input. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, or synthetic firmware paths as a substitute. |
 
