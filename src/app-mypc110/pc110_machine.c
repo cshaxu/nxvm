@@ -114,6 +114,10 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
             &composition->ec_mailbox);
     }
     if (status == LIB_STATUS_OK) {
+        status = mypc110_ec_block_install_routes(composition->core,
+            &composition->ec_block);
+    }
+    if (status == LIB_STATUS_OK) {
         status = mypc110_font_rom_install(composition->core, &composition->font);
     }
     if (status == LIB_STATUS_OK) {

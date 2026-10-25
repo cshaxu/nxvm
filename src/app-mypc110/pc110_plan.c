@@ -2,6 +2,7 @@
 
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
+#include "app-mypc110/pc110_ec_block_interface.h"
 #include "app-mypc110/pc110_ec_mailbox_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
@@ -13,6 +14,7 @@ typedef struct mypc110_machine_plan {
     mypc110_tft_firmware firmware;
     mypc110_font_rom font;
     mypc110_lpt lpt;
+    mypc110_ec_block ec_block;
     mypc110_ec_mailbox ec_mailbox;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
@@ -189,6 +191,8 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
             plan->configuration_chip);
     if (status == LIB_STATUS_OK)
         status = mypc110_ec_mailbox_install_routes(core, &plan->ec_mailbox);
+    if (status == LIB_STATUS_OK)
+        status = mypc110_ec_block_install_routes(core, &plan->ec_block);
     if (status == LIB_STATUS_OK)
         status = mypc110_font_rom_install(core, &plan->font);
     if (status == LIB_STATUS_OK)

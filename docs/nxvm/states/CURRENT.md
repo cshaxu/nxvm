@@ -6,10 +6,31 @@
 
 | Field | Required record |
 | --- | --- |
-| Latest accepted delivery | S23 adds the documented TFT EC mailbox receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; neither establishes a product release qualification. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md) and [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md). |
+| Latest accepted delivery | S24 adds the documented TFT EC Block-B static receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; neither establishes a product release qualification. |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md) and [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md). |
 | Remaining convergence | Real POST/setup/guest progression still lacks a demonstrated firmware transition beyond the established delay path and a complete power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. Original-DSTN remains gated by the absent verified BIOS/font input. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, synthetic firmware paths or metadata-only MCU models as a substitute. |
+
+## M5 T580 S24 — Closed: EC Block-B static receiver
+
+| Field | Required record |
+| --- | --- |
+| Objective | Supply the documented TFT BIOS's Block-B EC index/data receiver through one App-local static L2 capture. |
+| Boundary | MyPC110 source/test and evidence only; no Shared/Core interface, dynamic battery/power, MCU, second clock, firmware-address behavior, raw asset, or artifact publication. |
+| Evidence | [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md). |
+| Verification | Build and execute the complete MyPC110 label on x64 and x86; exercise representative capture values, documented wrapping, unsupported data writes, and invalid byte-width input. |
+| Limit | The static capture is compatibility data, not a physical EC/power model or POST/guest qualification. |
+
+### S24 Closure
+
+MyPC110 now installs the source-recorded Block-B receiver at `35EAh`/`35EBh`
+in both its base and planned construction forms. The one-register receiver
+accepts an index write and exposes only the captured 32-entry read file with
+documented wrapping. It deliberately has no writable data register, dynamic
+power state, busy interval, MCU execution or separate time owner. Both widths
+pass the complete MyPC110 label: ten App units and eight bounded real-firmware
+diagnostics. This does not prove a full firmware transition, POST, Easy-Setup,
+panel/power, storage/guest lifecycle or DSTN qualification.
 
 ### S9 Brief
 
