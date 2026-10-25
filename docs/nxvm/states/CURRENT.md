@@ -175,6 +175,48 @@ Core fault.  It therefore selected no receiver and was removed rather than
 retained as a budget-success test.  No production, public-interface, asset or
 artifact input changed.  See [the S17 evidence](../etc/evidence/t580-s17-post-dd05-port-observation.md).
 
+## M5 T580 S18 — Closed: post-C000 first-I/O disposition
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S18. |
+| Objective | Determine whether the first post-`F000:EA86..EA92` I/O selects an unmodeled receiver. |
+| Non-goals | No panel/power/PCMCIA model, shared/Core interface change, raw-firmware commit or guest-boot claim. |
+| Reference Baseline | S17 commit `c61584331`; S16 proves the finite port-61 loop returns on both host widths. |
+| Files And ABI Surface | Current and one evidence record only. |
+| Evidence Rule | The prior return boundary plus the verified BIOS bytes determine the immediate I/O; do not retain a duplicate diagnostic. |
+| Verification | Confirm the returned code sequence uses only the existing port-61 receiver. |
+| Exit Criteria | Record the disposition; no redundant probe remains. |
+
+### S18 Closure
+
+The first I/O after the established `F000:EA86..EA92` wait return is the
+existing port-61 receiver (`F000:EA76` read, followed by `F000:EA7C` write).
+It cannot select a new PC110 receiver, so no duplicate diagnostic is retained.
+The source-qualified cold configuration image is recorded separately in the
+[S19 evidence](../etc/evidence/t580-s19-cold-config-image.md).
+
+## M5 T580 S19 — Active: L2 chipset cold image
+
+| Field | Required record |
+| --- | --- |
+| Objective | Supply the current 20 MiB TFT composition with an App-owned, source-qualified VL82C420 L2 cold image through the existing chip API. |
+| Boundary | MyPC110 source/test and evidence only; no Shared/Core public change, no new hardware receiver, raw asset, or artifact publication. |
+| Verification | Build both widths; assert representative SCAMP, block2 and EC/ED values through the actual routes and retain them across machine reset. |
+| Limit | This is a compatibility baseline from external live captures, not a physical power-on/timing proof or POST/guest qualification. |
+
+### S19 Closure
+
+MyPC110 now initializes the existing VL82C420 through one App-local L2 cold
+image, before either base composition path constructs the machine.  The image
+does not add a Core contract or another route; warm reset continues to retain
+the banks.  Both widths pass all eight MyPC110 units and reach identical
+bounded real-firmware checkpoints without a fault.  The external captures
+and the resulting qualification limit are recorded in the
+[S19 evidence](../etc/evidence/t580-s19-cold-config-image.md).  This fixes
+the invalid zero-filled baseline only; it does not claim POST completion,
+panel/power behavior, storage boot or original-DSTN support.
+
 ### S11 Closure
 
 The diagnostic probe recorded no `3D6h/3D7h` extension writes on either host

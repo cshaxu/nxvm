@@ -82,6 +82,9 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
         status = x86_vl82c420_create(&composition->configuration_chip);
     }
     if (status == LIB_STATUS_OK) {
+        status = mypc110_config_initialize_cold_image(composition->configuration_chip);
+    }
+    if (status == LIB_STATUS_OK) {
         status = x86_f65535_create(&composition->display_controller);
     }
     if (status == LIB_STATUS_OK) {

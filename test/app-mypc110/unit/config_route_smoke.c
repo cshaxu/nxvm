@@ -32,6 +32,7 @@ int main(void)
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         mypc110_tft_firmware_create(bios, sizeof(bios), &firmware) != LIB_STATUS_OK ||
         x86_vl82c420_create(&chip) != LIB_STATUS_OK ||
+        mypc110_config_initialize_cold_image(chip) != LIB_STATUS_OK ||
         x86_core_machine_bind_firmware_provider(machine,
             mypc110_tft_firmware_provider(), &firmware) != LIB_STATUS_OK ||
         mypc110_tft_firmware_install_routes(machine, &firmware) != LIB_STATUS_OK ||
@@ -40,7 +41,30 @@ int main(void)
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        failed |= x86_core_machine_bus_write(machine, 0x0074u, 0x80u) != LIB_STATUS_OK ||
+        failed |= x86_core_machine_bus_write(machine, 0x0074u, 0x7au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_OK ||
+            value != 0x53u ||
+            x86_core_machine_bus_write(machine, 0x0074u, 0x7bu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_OK ||
+            value != 0x4cu ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
+            value != 0xccu ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
+            value != 0x29u ||
+            x86_core_machine_bus_read(machine, 0xfc23u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xc023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x0024u, 0xb0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
+            value != 0xbau ||
+            x86_core_machine_bus_write(machine, 0x0024u, 0xb8u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
+            value != 0x00u ||
+            x86_core_machine_bus_write(machine, 0x0022u, 0x0100u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x0074u, 0x80u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x0076u, 0x5au) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x0074u, 0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_OK ||
@@ -95,6 +119,12 @@ int main(void)
             x86_core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x0074u, 0x7au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_OK ||
+            value != 0x53u ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
+            value != 0xccu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != 0xf4u;
     }

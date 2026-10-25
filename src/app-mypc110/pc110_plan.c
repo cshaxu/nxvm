@@ -226,6 +226,8 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     if (status == LIB_STATUS_OK)
         status = mypc110_font_rom_create(assets->font.data, assets->font.bytes, &plan->font);
     if (status == LIB_STATUS_OK) status = x86_vl82c420_create(&plan->configuration_chip);
+    if (status == LIB_STATUS_OK)
+        status = mypc110_config_initialize_cold_image(plan->configuration_chip);
     if (status == LIB_STATUS_OK) status = x86_f65535_create(&plan->display_controller);
     if (status != LIB_STATUS_OK) {
         mypc110_machine_release(plan);
