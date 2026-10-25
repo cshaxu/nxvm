@@ -7,7 +7,7 @@
 | Field | Required record |
 | --- | --- |
 | Latest accepted delivery | S9 adds bounded F65535 standard-VGA mode-12 copied scanout; it does not model a front LCD or physical panel. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md) and [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md). |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md) and [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md). |
 | Remaining convergence | The ledger still requires panel/power, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent verified BIOS/font input. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, or synthetic firmware paths as a substitute. |
 
@@ -59,26 +59,37 @@ MyPC110 set (8 tests), and the two relevant manifest checks. This is an L2
 receiver only: it does not establish PC-Card behavior, disk geometry, ATA
 mechanical timing, a guest boot, POST completion, or original-DSTN support.
 
-## Active Subtask — M5 T580 S11
+## Active Subtask — M5 T580 S14
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S11. |
+| Identifier Mode | Continuation — M5 T580 S14. |
 | Admission And Approval | The owner directed PC110 work to continue through T580 and grants standing approval for bounded App/Core implementation, verification, commit and push work. |
-| Objective | Determine whether the selected TFT firmware reaches its source-documented F65535 panel-table initialization by the existing C000-to-port-61 semantic checkpoint. |
-| Non-goals | No LCD scanout, host panel renderer, panel clock, power/PCMCIA model, firmware-address special case, original-DSTN path, guest boot or release claim. |
-| Reference Baseline | S10 commit `7cf22664a`; its x64/x86 real-firmware diagnostic set completes the admitted C000-to-port-61 return path. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), using its source-qualified panel receiver ledger. |
-| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, Current and one evidence record only; no production or public-interface change. |
+| Objective | Audit the real-firmware diagnostic's post-C000 observation boundary and determine whether it selects a further real port receiver without a synthetic port or firmware shortcut. |
+| Non-goals | No LCD scanout, mailbox/power/PCMCIA model, host panel renderer, firmware-address special case, original-DSTN path, guest boot or release claim. |
+| Reference Baseline | S13 commit `a6d17b967`; the selected TFT BIOS returns from `C000:0003` to `F000:3F6C`, but the existing trace discarded every port outside its preselected whitelist. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), using its source-qualified receiver ledger. |
+| Files And ABI Surface | Existing App-local real-firmware diagnostic during investigation, Current and one evidence record; no production or public-interface change. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; diagnostic code may observe existing routes only. |
-| Verification | Rebuild the existing real-firmware diagnostic and run the complete MyPC110 x64/x86 diagnostic set; verify all 16 sourced XR writes occur in the real image before the existing return checkpoint. |
-| Expected Markers | Either the existing `3D6h/3D7h` route records the complete TFT XR table, or both hosts establish that the table has not executed by this fixed semantic checkpoint. |
+| Verification | Widen the existing diagnostic only for the investigation, run its bounded x64/x86 observation, then remove an inconclusive probe rather than retaining a failing CTest. |
+| Expected Markers | Either a two-width semantic receiver is selected, or the evidence records that no later receiver was observed and the probe is not retained. |
 | Asset Needs | Existing external, hash-validated TFT BIOS and Kanji font under `nxvm-assets`; neither is tracked or modified. |
-| Reporting Requirements | Record source grade, exact observed register set, x64/x86 result, retained boundary and no-production-diff conclusion. |
-| Stop Conditions | A source/image mismatch, missing asset, failure before the existing checkpoint, any need for panel scanout/power behavior, or any Shared/Core production change. |
-| Exit Criteria | Both widths yield the same sourced table disposition through the existing real-firmware route; documentation and actual-diff review are clean. |
+| Reporting Requirements | Record the retained boundary and whether a further receiver is actually selected. |
+| Stop Conditions | A source/image mismatch, host divergence, missing asset, any need for synthetic hardware behavior, or any Shared/Core production change. |
+| Exit Criteria | The evidence distinguishes an actual selected receiver from an inconclusive observation; no failing probe remains; documentation and actual-diff review are clean. |
 | Original Owner Request | Continue the entire PC110 task, using the external PC110 projects and lawful external firmware as L2 evidence where appropriate. |
 | Similar-Issue Sweep | All table registers are asserted together; no selective one-register claim, duplicate trace route or synthetic register injection remains. |
+
+### S14 Closure
+
+The temporary all-port observation was run on both widths after the established
+`C000:0003` return. Within its bounded run, the TFT BIOS returned to the
+existing port-61 wait loop and issued no later port operation. That does not
+select a receiver, so the temporary failing CTest was removed rather than
+mistakenly treating a retirement ceiling as a hardware requirement. No
+production, public-interface, asset or release input changed. The evidence
+records why live SCAMP values are not a cold-state basis. The next S must
+start from documented C000 option-ROM/F65535 return semantics.
 
 ### S11 Closure
 
