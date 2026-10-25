@@ -2,6 +2,24 @@
 
 ## Current Work
 
+## M5 T580 S39 — Closed: PC110 real-delay progress measurement
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S39. |
+| Objective | Obtain a bounded, durable progress measurement for the selected TFT BIOS's real complete port-61 delay without installing a per-retirement observer or changing guest behavior. |
+| Scope | One temporary mode in the existing App-local diagnostic; it uses the existing execute watchpoint at `F000:5405h` and reports only per-million executed-instruction progress. No production, Shared/Core ABI, firmware, asset or artifact change. |
+| Verification | Build and run the existing diagnostic from the stable x64/x86 Ninja graphs in one persistent, pollable session per width. A hit, fault or exact instruction containment is recorded; raw output and mode are removed before P. |
+| Stop Conditions | Any production change, guessed receiver, BIOS interception, source expansion, inconsistent width result or a wall/no-progress containment ends this S without implementation. |
+
+### S39 Closure
+
+The progress markers were stdout-buffered and the observer-free x64 process
+still did not reach `F000:5405h` within 180 seconds. The temporary mode was
+removed. This confirms an interpreter-throughput limitation rather than an
+identified PC110 route gap; see the
+[S39 evidence](../etc/evidence/t580-s39-delay-progress-containment.md).
+
 ## M5 T580 S38 — Closed: PC110 observer-free complete-delay boundary
 
 | Field | Required record |

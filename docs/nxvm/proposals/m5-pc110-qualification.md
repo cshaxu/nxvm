@@ -220,6 +220,24 @@ semantic fact, so it was not run. The temporary mode was removed and the
 source-gated qualification boundary remains; see
 [the S38 evidence](../etc/evidence/t580-s38-observer-free-delay-boundary.md).
 
+## S39 — real-delay progress measurement
+
+S39 replaces S38's silent no-observer containment with one temporary,
+App-local diagnostic mode that reports only each completed million instructions
+while continuing to execute the original BIOS unchanged. It reuses the existing
+Core execute watchpoint at `F000:5405h`; no address intercept, device reply,
+timing shortcut or observer is installed. The reports identify whether the
+remaining work is finite interpreter throughput or a semantic stop, and are
+removed with the mode before P.
+
+### S39 Closure
+
+The progress markers were buffered until process exit and the x64 observer-free
+process still did not hit `F000:5405h` within 180 seconds. No duplicate x86
+wait was run. Together with S38 this identifies interpreter throughput, not a
+missing PC110 device route; see
+[the S39 evidence](../etc/evidence/t580-s39-delay-progress-containment.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.
