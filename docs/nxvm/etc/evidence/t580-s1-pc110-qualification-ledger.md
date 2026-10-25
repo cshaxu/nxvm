@@ -21,10 +21,16 @@ models:
 `O:/repos.hobby/nxvm-assets/profiles-nxvm/ibm-pc110-tft` contains the admitted
 TFT system BIOS (`232101c8…5232312`) and Kanji font
 (`9829fdb8…71784c`).  `PC110-EMU/Roms/pc110_bios.bin` has the same BIOS hash.
-Open-Source-PC110's TFT material documents a forward DSTN-to-TFT patch but
-states that a confirmed unpatched DSTN video-BIOS dump is still required for
-the reverse patch.  These are research/asset facts only; no external bytes or
-third-party source enter this repository.
+S13 also checked every full firmware candidate in PC110-EMU, PC110-QEMU and
+Open-Source-PC110. The latter repository's
+`Mods/LBA-BIOS-Patch/PC110_BIOS_lba.BIN` is distinct
+(`6c859ad2…2bec1d`) but its own README identifies it as an LBA-modified image
+which has never been run. It is not original-DSTN input. Its TFT material
+documents a forward DSTN-to-TFT patch and explicitly states that a confirmed
+unpatched DSTN video-BIOS dump is still required for the reverse patch.
+Accordingly, no discovered image supplies the original member. These are
+research/asset facts only; no external bytes or third-party source enter this
+repository.
 
 ## Current code reconciliation
 

@@ -8,7 +8,7 @@
 | --- | --- |
 | Latest accepted delivery | S9 adds bounded F65535 standard-VGA mode-12 copied scanout; it does not model a front LCD or physical panel. |
 | Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md) and [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md). |
-| Remaining convergence | The ledger still requires panel/power, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent lawful BIOS/font input. |
+| Remaining convergence | The ledger still requires panel/power, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent verified BIOS/font input. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, or synthetic firmware paths as a substitute. |
 
 ### S9 Brief
@@ -127,6 +127,27 @@ T580 therefore retains the reached firmware boundary but cannot honestly
 advance panel, power, PCMCIA, guest or lifecycle qualification from this path.
 The result is transferred to the qualification ledger rather than hidden as a
 failed test or treated as evidence for a speculative device model.
+
+## Active Subtask — M5 T580 S13
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S13. |
+| Objective | Reconcile every available external PC110 firmware candidate against the required original-DSTN asset gate, so later work cannot mistake a modified or TFT image for the original model. |
+| Non-goals | No byte derivation, reverse patch, firmware import, runtime loader, product build, hardware model or source-code change. |
+| Evidence boundary | Compare only external hashes and the repositories' own source documentation; preserve every raw input outside this repository. |
+| Exit Criteria | Record the identity and suitability of each discovered candidate, update the qualification ledger, and leave the original-DSTN receiver explicitly blocked unless a verified raw input exists. |
+
+### S13 Closure
+
+The three admitted research repositories provide no verified original-DSTN
+firmware input. PC110-EMU's sole full BIOS matches the already admitted TFT
+hash. Open-Source-PC110's only other full image is an LBA-modified BIOS whose
+own README says it has not been run; its TFT documentation explicitly says a
+confirmed unpatched DSTN dump is still required for a reverse patch. No image
+was copied, derived or embedded. The four-artifact release target therefore
+remains blocked by an external BYOB input rather than being silently narrowed
+or filled with a guessed firmware image.
 
 ### S5 Closure
 
