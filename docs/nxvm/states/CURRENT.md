@@ -23,6 +23,15 @@ gaps explicitly; this acceptance does not close S47's complete cold-memory
 batch or T580. No extra desktop/guest qualification is inferred from unit or
 INI identity tests.
 
+The post-delivery x64 replay confirms actual 0081/7F unlock/status read-back
+and newly executed Block 2 configuration, but both initializer branches still
+skip the handler preparation. Original VL82C480 pages 20--21 identify separate
+ROM location and per-16-KiB read/write-source controls, absent from the App's
+current single shadow-write Boolean. The [updated S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md#post-delivery-replay-and-shadow-decode-reconciliation)
+preserves the capped-observation limits, source hashes and whole decoder
+design batch. Temporary test delta +80/-5 is removed. No product rebuild is
+due for a removed diagnostic; PC110 qualification remains open.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation — M5 T580 S47, after accepted S46. |

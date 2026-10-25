@@ -278,3 +278,101 @@ extension needs its concrete design and review; the approved write-width
 change does not implicitly approve a speculative memory API. The SCAMP
 predicate remains unresolved, not silently given guessed W1C semantics.
 T580 and its product qualification remain open.
+
+## Post-delivery replay and shadow-decode reconciliation
+
+Baseline `54dfcea04`. One temporary mode in the existing integration harness
+replays the unchanged TFT BIOS through the first post-timer service write.
+It observes real retirements and never injects SMI, changes guest registers,
+patches firmware or fabricates a service response. Its source delta was
++80/-5, removed in full afterward. The native x64 process exits normally
+within approximately three minutes; no duplicate x86 diagnostic was needed
+to decide the next receiver boundary.
+
+### New actual-path facts
+
+- The first word read of 22h is zero; after the real byte/word unlock, the
+  BIOS reads 0081, selects 008B/0083/008F and finally relocks with 0101.
+- CFGSTAT now reads 7F. The BIOS proceeds into the Block 2 programming path,
+  writing, among others, 60=00, 61=09, 84=EE, 85=15, B8=80 and FA=01.
+  These are newly observed firmware writes, not host-seeded success values.
+- At F424D the first SCAMP predicate reads 02; the F4250 result has ZF set
+  and skips the early initializer. F3F4A executes later. At F4CF2 the same
+  register reads 82 with CF set, skipping the later initializer.
+- The selected initializer and handler checkpoints do not execute. The final
+  observational read at 38000 returns five zero bytes.
+- The run reaches its first post-timer 15EE write with timer pass recorded,
+  59,993,605 retirements, three processor resets and status 0.
+
+The diagnostic counted 609 selected I/O events but printed only the first
+128. Therefore its printed I/O sequence is explicitly incomplete, not a
+complete control trace. The separately observed branch, timer and terminal
+facts above are retained independently of that output cap. Absence of a fixed
+physical checkpoint still does not exclude relocated aliases.
+
+### Additional original source
+
+The VLSI VL82C480 Product Specification, scan stamped August 12, 1993, was
+acquired on 2026-10-25 into the external manual archive from
+<https://bitsavers.trailing-edge.com/components/vti/pc/VL82C480.pdf>.
+SHA-256: `dc7205bc3d05d327b7f33e7ba2edc83846149dff623a84414a8f426ce1a2e7be`.
+The relevant original pages were rendered and visually inspected, rather than
+trusting the image-only PDF's empty text extraction:
+
+- Printed page 3 distinguishes four ROM/slot-bus versus system-board-DRAM
+  read/write choices on 16 KiB boundaries.
+- Printed page 20 defines ROMSET[6:4] as ROMMOV location control, not a
+  standalone shadow-write lock. It separately identifies MBIOS and flash
+  programming control.
+- Printed page 21 defines each AAXS--FAXS two-bit field: 00 external read/write,
+  01 external read/internal write, 10 internal read/external write and 11
+  internal read/write.
+
+Those are exact VL82C480 facts. Applying them to VL82C420 remains L2 and needs
+the actual PC110 BIOS and live register-map anchors; no full chip equivalence
+is claimed. The read-only Open-Source-PC110 `Discovery/Chipset/readme.md`
+SHA-256 `70e05e07fdfcf5786a5de6ab5787b6726032016151e0a6a19b1b61e65794f806`
+records EC/ED CAXS=0F, EAXS=11 and FAXS=12 from firmware and live read-back.
+Its informal ROMSET open/relock shorthand cannot substitute for the original
+location-field definition. The 86Box VL82C480 reference at commit
+`4fef696a4eead1d55a28d6ac0e5bd2864e5454da`, file
+`src/chipset/vl82c480.c`, SHA-256
+`b4bd4f1b4d3e13707f51772ad0806f0b9ce0a026b279bbaafac6022ee56f8a5e`,
+independently models separate access fields and ROM select. It is a behavioral
+cross-check, not imported source or proof of PC110-specific ROM wiring.
+
+### Concrete discrepancy and next complete design batch
+
+The current App has only `video_shadow_writable`, derived from ROMSET bit 5.
+It always reads the prefilled C shadow, always reads/writes the F shadow and
+does not consume CAXS/EAXS/FAXS access selections. Thus the complete four-way,
+16 KiB read-source/write-target mechanism is absent, not merely an incorrect
+initial byte. The current all-C/F behavior must not be supplemented with another
+special-case SMI buffer or a guessed SCAMP bit-7 rule.
+
+The next receiver design must replace that mechanism coherently:
+
+1. Keep immutable Flash, internal shadow storage and ROM location selection
+   distinct. Derive each access from the chip-owned segment field plus the
+   source-qualified board ROM decode; do not mirror the indexed registers in
+   another App array or alter the selected-index latch during a memory query.
+2. Define cold state, CPU-only reset and full reset for all C/E/F windows,
+   including the existing high reset alias. A register write changes decode,
+   not pre-copied guest instructions. Guest firmware performs shadow copies.
+3. Reconcile both initializer callers, the C/E copy and patch sequence, actual
+   SMRAM preparation, SMIACT view and source acknowledgement as one batch.
+   Do not publish a partial shadow change as a complete cold-boot repair.
+4. Reuse existing route and CPU execution owners. Only after the complete
+   decode table is specified should any minimal chip observation, memory
+   initiator or Board SMIACT contract extension be admitted and counted.
+5. Extend existing App fixtures with table-driven 00/01/10/11 checks, 16 KiB
+   boundaries, instruction/data consistency, reset and immutable-input proof;
+   use actual unchanged-BIOS initialization/copy/SMI/RSM as the final receiver
+   proof. A synthetic mode check alone cannot qualify firmware boot.
+
+This research changes the next action from adding a software-SMI trigger to
+completing the shadow/ROM decoder design first. It establishes no final ROMMOV
+truth table for PC110 and therefore retains no speculative production edit.
+Lib, Emulator, all other Apps, owner INIs and release artifacts are unchanged
+in this diagnostic continuation. Temporary diagnostic code and rendered manual
+pages are removed; the original manual remains in the external archive.
