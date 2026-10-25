@@ -43,6 +43,29 @@ int main(void)
         x86_f65535_capture_snapshot(composition.display_controller,
             &snapshot) != LIB_STATUS_OK || snapshot.columns != 80u ||
         snapshot.rows != 25u || snapshot.characters[0] != write;
+    /* Exercise the board's existing standard-VGA route into F65535 mode 12
+     * capture, without introducing an App-local display path. */
+    failed |= x86_core_machine_bus_write(composition.core, 0x03ceu, 6u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03cfu, 5u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c4u, 4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c5u, 4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 79u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 7u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 18u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 0xdfu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d4u, 19u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03d5u, 40u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c4u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c5u, 15u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(composition.core, 0x000a0000u,
+            &write, 1u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(composition.display_controller,
+            &snapshot) != LIB_STATUS_OK ||
+        snapshot.kind != X86_VIDEO_KIND_VGA_640X480X16 ||
+        snapshot.pixel_width != 640u || snapshot.pixel_height != 480u ||
+        snapshot.pixels[1] != 15u;
     mypc110_base_composition_destroy(&composition);
     return failed;
 }

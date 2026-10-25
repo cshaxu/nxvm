@@ -99,6 +99,30 @@ int main(void)
         snapshot.buffer_changed != LIB_FALSE ||
         write_indexed(chip, 0x03ceu, 0x03cfu, 6u, 0x0fu) != LIB_STATUS_OK ||
         x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED;
+    /* Mode 12h is planar A0000h storage: write a top-left colour through the
+     * standard sequencer map mask, then verify copied 640 by 480 scanout. */
+    failed |= write_indexed(chip, 0x03ceu, 0x03cfu, 6u, 0x05u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x04u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 79u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 7u, 0x02u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 18u, 0xdfu) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 40u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 2u, 1u) != LIB_STATUS_OK ||
+        x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 2u, 2u) != LIB_STATUS_OK ||
+        x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 2u, 4u) != LIB_STATUS_OK ||
+        x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 2u, 8u) != LIB_STATUS_OK ||
+        x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        snapshot.kind != X86_VIDEO_KIND_VGA_640X480X16 ||
+        snapshot.pixel_width != 640u || snapshot.pixel_height != 480u ||
+        snapshot.pixels[0] != 15u || snapshot.pixels[1] != 0u ||
+        snapshot.palette_rgb[15u] != 0x00ffffffu ||
+        snapshot.buffer_changed != LIB_TRUE ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        snapshot.buffer_changed != LIB_FALSE;
     x86_f65535_destroy(chip);
     return failed;
 }

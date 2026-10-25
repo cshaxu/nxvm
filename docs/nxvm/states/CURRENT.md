@@ -6,10 +6,33 @@
 
 | Field | Required record |
 | --- | --- |
-| Latest accepted delivery | S8 selects the missing F65535 mode-12 copied-scanout receiver; it does not model a front LCD or physical panel. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md) and [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md). |
-| Remaining convergence | S9 owns bounded F65535 mode-12 capture. The ledger still requires panel/power, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent lawful BIOS/font input. |
+| Latest accepted delivery | S9 adds bounded F65535 standard-VGA mode-12 copied scanout; it does not model a front LCD or physical panel. |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md) and [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md). |
+| Remaining convergence | The ledger still requires panel/power, storage/guest and lifecycle UX receivers. Original-DSTN remains gated by the absent lawful BIOS/font input. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, or synthetic firmware paths as a substitute. |
+
+### S9 Brief
+
+Implement the selected L2 F65535 standard-VGA mode-12 copied scanout:
+640 by 480 indexed, four-plane graphics delivered through the existing
+X86-NXVM Machine frame path.  The receiver owns only the standard VGA state
+already retained by F65535.  It must not add a host renderer, front-LCD/panel
+model, firmware-address behavior, a new Lib/Emulator contract, or an
+alternative presentation route.  Extend existing F65535, Machine-frame and
+MyPC110 board-route tests; preserve text capture and failure destination
+semantics.  Verify both host widths and record the L2 limit before closure.
+
+### S9 Closure
+
+F65535 now copies only source-qualified standard VGA mode-12 state: the
+existing four A0000h planes, 80-character CRTC width, 480 displayed lines,
+40-word stride and 64 KiB A0000h map become one existing indexed graphics
+snapshot. The existing Machine conversion route publishes that snapshot;
+there is no panel renderer, physical panel timing, firmware-address behavior,
+or Lib/Emulator contract change. x64 and x86 each pass the complete
+X86-NXVM unit set (97 tests) and complete MyPC110 unit set (8 tests). This is
+not proof that the admitted real firmware reaches mode 12, completes POST, or
+has a qualified LCD/power or guest/storage path.
 
 ### S5 Closure
 

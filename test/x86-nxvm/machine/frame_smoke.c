@@ -122,6 +122,16 @@ lib_i32 main(void)
     if (x86_nxvm_machine_frame_from_display(&source, 9u, &destination, &console) != LIB_STATUS_INVALID_ARGUMENT ||
         lib_memory_compare(before, &destination, sizeof(destination)) != 0) return 1;
 
+    source.kind = X86_VIDEO_KIND_VGA_640X480X16;
+    source.pixel_width = 640u;
+    source.pixel_height = 480u;
+    source.pixels[0] = 15u;
+    source.palette_rgb[15u] = 0x00ffffffu;
+    if (x86_nxvm_machine_frame_from_display(&source, 9u, &destination, &console) != LIB_STATUS_OK ||
+        !destination.frame.graphics || destination.data.graphics->width != 640u ||
+        destination.data.graphics->height != 480u ||
+        destination.data.graphics->pixels[0] != 0x00ffffffu) return 1;
+
     source.kind = X86_VIDEO_KIND_TEXT_PIXELS;
     source.columns = 0u;
     source.rows = 0u;

@@ -16,7 +16,8 @@ typedef struct x86_f65535 x86_f65535;
 
 /* One execution owner. The component owns only controller-local register and
  * VRAM state; a board owns CPU port/memory route selection and presentation.
- * Normal VGA/panel scanout remains a later receiver. */
+ * Standard VGA text and the bounded mode-12 copied scanout are supported;
+ * panel scanout remains a later receiver. */
 lib_status x86_f65535_create(x86_f65535 **out_chip);
 void x86_f65535_destroy(x86_f65535 *chip);
 void x86_f65535_reset(x86_f65535 *chip);
@@ -43,8 +44,8 @@ lib_status x86_f65535_vram_read(const x86_f65535 *chip, lib_u32 offset,
 lib_status x86_f65535_vram_write(x86_f65535 *chip, lib_u32 offset,
     const void *source, lib_size bytes);
 
-/* Standard-VGA CPU aperture access and copied text capture.  Graphics/panel
- * scanout is intentionally outside this first compatibility receiver. */
+/* Standard-VGA CPU aperture access and copied text/mode-12 capture.  Panel
+ * scanout remains outside this compatibility receiver. */
 lib_status x86_f65535_memory_query(const x86_f65535 *chip, lib_u32 physical,
     lib_size bytes, lib_bool write);
 lib_status x86_f65535_memory_read(x86_f65535 *chip, lib_u32 physical,

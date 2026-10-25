@@ -4,8 +4,12 @@
 #define X86_F65535_VGA_APERTURE_START 0x000a0000u
 #define X86_F65535_VGA_APERTURE_END 0x000c0000u
 #define X86_F65535_VGA_PLANE_BYTES (X86_F65535_VRAM_BYTES / 4u)
+#define X86_F65535_MODE12_COLUMNS 80u
+#define X86_F65535_MODE12_WIDTH 640u
+#define X86_F65535_MODE12_HEIGHT 480u
+#define X86_F65535_MODE12_STRIDE_BYTES 80u
 
-static const lib_u32 x86_f65535_text_palette[16u] = {
+static const lib_u32 x86_f65535_rgbi_palette[16u] = {
     0x000000u, 0x0000aau, 0x00aa00u, 0x00aaaau,
     0xaa0000u, 0xaa00aau, 0xaa5500u, 0xaaaaaau,
     0x555555u, 0x5555ffu, 0x55ff55u, 0x55ffffu,
@@ -76,6 +80,49 @@ static lib_u32 x86_f65535_vertical_display_end(const x86_f65535 *chip)
     value |= (lib_u32)(chip->crtc[7u] & 0x02u) << 7u;
     value |= (lib_u32)(chip->crtc[7u] & 0x40u) << 3u;
     return value;
+}
+
+static lib_status x86_f65535_capture_mode12_snapshot(x86_f65535 *chip,
+    x86_video_snapshot *out_snapshot, lib_bool changed)
+{
+    const lib_u32 columns = (lib_u32)chip->crtc[1u] + 1u;
+    const lib_u32 height = x86_f65535_vertical_display_end(chip) + 1u;
+    const lib_u32 stride = (lib_u32)chip->crtc[19u] * 2u;
+    const lib_u32 start = (((lib_u32)chip->crtc[12u] << 8u) |
+        chip->crtc[13u]) * 2u;
+    lib_u32 pixel;
+
+    /* This receiver deliberately recognizes only standard VGA mode 12:
+     * 80 CRTC characters, 40 word offset and 640 by 480 four-plane output.
+     * Other F65535 graphics/panel modes still have no scanout owner. */
+    if (columns != X86_F65535_MODE12_COLUMNS ||
+        height != X86_F65535_MODE12_HEIGHT ||
+        stride != X86_F65535_MODE12_STRIDE_BYTES ||
+        (chip->graphics[6u] & 0x0cu) != 0x04u ||
+        start + stride * X86_F65535_MODE12_HEIGHT >
+            X86_F65535_VGA_PLANE_BYTES) return LIB_STATUS_UNSUPPORTED;
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = X86_VIDEO_KIND_VGA_640X480X16;
+    out_snapshot->pixel_width = X86_F65535_MODE12_WIDTH;
+    out_snapshot->pixel_height = X86_F65535_MODE12_HEIGHT;
+    for (pixel = 0u; pixel < 16u; ++pixel)
+        out_snapshot->palette_rgb[pixel] = x86_f65535_rgbi_palette[pixel];
+    for (pixel = 0u; pixel < X86_F65535_MODE12_WIDTH *
+        X86_F65535_MODE12_HEIGHT; ++pixel) {
+        const lib_u32 offset = start +
+            (pixel / X86_F65535_MODE12_WIDTH) * stride +
+            (pixel % X86_F65535_MODE12_WIDTH) / 8u;
+        const lib_u8 bit = (lib_u8)(0x80u >> (pixel & 7u));
+        lib_u8 color = 0u;
+
+        for (lib_u8 plane = 0u; plane < 4u; ++plane)
+            if ((x86_f65535_plane(chip, plane)[offset] & bit) != 0u)
+                color |= (lib_u8)(1u << plane);
+        out_snapshot->pixels[pixel] = color;
+    }
+    out_snapshot->buffer_changed = changed;
+    out_snapshot->cursor_changed = LIB_FALSE;
+    return LIB_STATUS_OK;
 }
 
 static lib_u8 x86_f65535_indexed_read(const lib_u8 *registers,
@@ -369,6 +416,7 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
     lib_u32 start;
     lib_u32 cursor;
     lib_bool changed;
+    lib_status status;
     lib_u32 index;
 
     if (chip == LIB_NULL || out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -379,7 +427,14 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
     start = ((lib_u32)chip->crtc[12u] << 8u) | chip->crtc[13u];
     cursor = ((lib_u32)chip->crtc[14u] << 8u) | chip->crtc[15u];
     changed = !chip->captured || chip->captured_generation != chip->generation;
-    if ((chip->graphics[6u] & 1u) != 0u || columns == 0u ||
+    if ((chip->graphics[6u] & 1u) != 0u) {
+        status = x86_f65535_capture_mode12_snapshot(chip, out_snapshot, changed);
+        if (status != LIB_STATUS_OK) return status;
+        chip->captured = LIB_TRUE;
+        chip->captured_generation = chip->generation;
+        return LIB_STATUS_OK;
+    }
+    if (columns == 0u ||
         columns > X86_VIDEO_MAX_COLUMNS || cell_height == 0u ||
         cell_height > X86_VIDEO_TEXT_GLYPH_ROWS || displayed_scanlines == 0u ||
         displayed_scanlines % cell_height != 0u || rows == 0u ||
@@ -405,7 +460,7 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
         out_snapshot->cursor_y = (lib_u8)(relative / columns);
     }
     for (index = 0u; index < 16u; ++index)
-        out_snapshot->palette_rgb[index] = x86_f65535_text_palette[index];
+        out_snapshot->palette_rgb[index] = x86_f65535_rgbi_palette[index];
     for (index = 0u; index < X86_VIDEO_TEXT_GLYPH_COUNT; ++index) {
         lib_u32 row;
 
