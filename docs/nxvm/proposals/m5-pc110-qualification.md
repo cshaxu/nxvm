@@ -298,6 +298,19 @@ outstanding source gate.
 
 ## Verification And Exit
 
+### S47 receiver reconciliation
+
+Actual unchanged-BIOS execution supersedes the S30 hard EC/ED gate assumption:
+the caller uses the bank after F9 without FB. S47 removes that Boolean and
+uses source-labelled, register-qualified C--F shadow access; the guest performs
+all copies. Initializer entry, handler copy, return and timer pass are proved
+on both host widths. This does not close the complete receiver: CPU-only
+SMRAM visibility, SMIACT forwarding, trigger/acknowledge/rearm, RSM and the
+boot-only lower Flash bank view retain their qualification requirements.
+The [S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md)
+preserves sources, superseded observations and exact proof limits. Historical
+S30 closure is not rewritten and no partial proof permits PC110 publication.
+
 S43 supersedes S36--S42's assumed complete-delay throughput diagnosis. A
 sampled normal execution reaches the actual PIT calibration and an intentional
 error halt. Its count difference, `4EFF`, violates the BIOS's `1614..1868`

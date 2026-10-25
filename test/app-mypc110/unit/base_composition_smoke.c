@@ -36,11 +36,12 @@ int main(void)
                 composition.core, 0x01400000u, &byte, 1u) != LIB_STATUS_OK ||
         byte != 0xffu);
     failed |= !failed && (x86_core_machine_memory_read(composition.core,
-        0x000c0000u, &byte, 1u) != LIB_STATUS_OK || byte != 0x11u ||
+        0x000c0000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xffu ||
         x86_core_machine_memory_write(composition.core, 0x000c0000u,
             &shadow_patch, 1u) != LIB_STATUS_OK || x86_core_machine_memory_read(
                 composition.core, 0x000c0000u, &byte, 1u) != LIB_STATUS_OK ||
-        byte != 0x11u);
+        byte != 0xffu || x86_core_machine_memory_read(composition.core,
+            0x000d0000u, &byte, 1u) != LIB_STATUS_OK || byte != 0xffu);
     failed |= !failed && (x86_core_machine_bus_read(composition.core, 0x20u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x40u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x60u, &value) !=

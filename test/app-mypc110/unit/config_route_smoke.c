@@ -54,7 +54,7 @@ int main(void)
     lib_bool failed = LIB_FALSE;
 
     bios[0u] = 0x55u;
-    bios[MYPC110_VIDEO_SHADOW_BYTES] = 0x33u;
+    bios[48u * 1024u] = 0x33u;
     bios[2u * MYPC110_FIRMWARE_BANK_BYTES] = 0xf4u;
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         mypc110_firmware_create(bios, sizeof(bios), &firmware) != LIB_STATUS_OK ||
@@ -90,7 +90,7 @@ int main(void)
             value != 0x4cu ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
-            value != 0xffu ||
+            value != 0xccu ||
             x86_core_machine_bus_write(machine, 0x00fbu, 0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
@@ -101,7 +101,7 @@ int main(void)
             x86_core_machine_bus_write(machine, 0x00f9u, 0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
-            value != 0xffu ||
+            value != 0xccu ||
             x86_core_machine_bus_write(machine, 0x00fbu, 0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0xfc23u, &value) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
@@ -142,26 +142,28 @@ int main(void)
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0xffu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
-                &byte, 1u) != LIB_STATUS_OK || byte != 0xf4u ||
+                &byte, 1u) != LIB_STATUS_OK || byte != 0xffu ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x00edu, 0x09u) != LIB_STATUS_OK ||
             x86_core_machine_memory_read(machine, 0x000e0000u,
                 &byte, 1u) != LIB_STATUS_OK || byte != 0xf4u ||
-            x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00edu, 0x00u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x0fu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x00edu, 0xffu) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &patch, 1u) != LIB_STATUS_OK ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != patch ||
-            x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00edu, 0x20u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x0fu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x00edu, 0x2au) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &locked_patch, 1u) != LIB_STATUS_OK ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &byte, 1u) != LIB_STATUS_OK || byte != patch ||
             x86_core_machine_memory_read(machine,
-                MYPC110_VIDEO_PHYSICAL_START + MYPC110_VIDEO_SHADOW_BYTES,
-                &byte, 1u) != LIB_STATUS_OK || byte != 0x33u ||
-            x86_core_machine_bus_write(machine, 0x00ecu, 0x0cu) != LIB_STATUS_OK ||
-            x86_core_machine_bus_write(machine, 0x00edu, 0x00u) != LIB_STATUS_OK ||
+                MYPC110_VIDEO_PHYSICAL_START + 48u * 1024u,
+                &byte, 1u) != LIB_STATUS_OK || byte != 0xffu ||
+            x86_core_machine_bus_write(machine, 0x00ecu, 0x0fu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x00edu, 0xffu) != LIB_STATUS_OK ||
             x86_core_machine_memory_write(machine, MYPC110_VIDEO_PHYSICAL_START,
                 &instruction_patch, 1u) != LIB_STATUS_OK ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
@@ -184,13 +186,13 @@ int main(void)
             value != 0x53u ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
-            value != 0xffu ||
+            value != 0xccu ||
             x86_core_machine_bus_write(machine, 0x00fbu, 0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x00ecu, 0x03u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x00edu, &value) != LIB_STATUS_OK ||
             value != 0xccu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
-                &byte, 1u) != LIB_STATUS_OK || byte != 0xf4u;
+                &byte, 1u) != LIB_STATUS_OK || byte != 0xffu;
     }
     if (machine != LIB_NULL && chip != LIB_NULL) {
         failed |= x86_core_machine_remove_port_routes(machine, &firmware) != LIB_STATUS_OK ||

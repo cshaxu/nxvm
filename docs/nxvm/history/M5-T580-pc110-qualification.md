@@ -59,3 +59,12 @@ The [S47 evidence](../etc/evidence/t580-s47-cold-initialization-contract.md)
 records the actual delta, cache repair, test qualifications and artifact hashes.
 The complete SMRAM/SMIACT/initializer/trigger receiver remains open; this
 delivery does not establish full POST, DOS or a publishable PC110 product.
+
+The subsequent S47 shadow receiver implements the per-16-KiB C--F access
+fields and source-labelled E/F Flash view, retiring App index/write-state
+mirrors, prefilled guest shadow and the F9 hard-gate hypothesis. Both widths
+execute the unchanged initializer, handler copy and return; enhanced existing
+timer integration passes with delta 166E after one processor reset. The
+[S47 evidence](../etc/evidence/t580-s47-cold-initialization-contract.md)
+separates this direct proof from still-open SMRAM isolation, SMIACT forwarding,
+trigger/RSM and boot-only Flash selection. S47 and T580 remain active.

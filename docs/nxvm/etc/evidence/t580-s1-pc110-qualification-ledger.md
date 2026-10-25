@@ -116,3 +116,12 @@ remain one receiver batch, not accepted subcomponents of an assumed boot.
 The [S47 record](t580-s47-cold-initialization-contract.md) identifies the missing
 contracts, source grades, exact test results and receiving artifact hashes.
 All other frozen qualification rows retain their S44 dispositions above.
+
+The later S47 decoder receiver replaces prefilled C/F and the unproven F9
+hard gate with register-qualified shadow access. Both widths now execute the
+actual initializer, handler copy and return; the existing timer integration
+requires those markers and passes. This disposes the previously skipped
+initializer predicate as repaired, not the complete cold-memory/SMRAM member:
+CPU-only isolation, Board SMIACT forwarding, trigger/acknowledge and RSM are
+still open. The boot-only lower Flash bank view also remains unqualified.
+No other frozen product row changes disposition and no PC110 EXE is published.

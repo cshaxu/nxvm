@@ -2,86 +2,56 @@
 
 #include "x86-core/machine/memory_interface.h"
 
-#define MYPC110_SYSTEM_FLASH_OFFSET (3u * MYPC110_FIRMWARE_BANK_BYTES)
-#define MYPC110_VIDEO_FLASH_OFFSET (2u * MYPC110_FIRMWARE_BANK_BYTES)
-#define MYPC110_FLASH_PHYSICAL_START MYPC110_VIDEO_PHYSICAL_START
-#define MYPC110_SYSTEM_PHYSICAL_START 0x000f0000u
+#define MYPC110_FLASH_PHYSICAL_START 0x000e0000u
 #define MYPC110_RESET_PHYSICAL_START 0xffff0000u
+#define MYPC110_SHADOW_BLOCK_BYTES (16u * 1024u)
 
-static lib_status mypc110_firmware_shadow(const mypc110_firmware *firmware,
-    lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access,
-    lib_u8 **out_shadow, lib_size *out_offset)
+/* L2 PC110 decode: external Flash banks 2/3 occupy E/F, not C/D.
+ * Segment fields select internal shadow independently for reads and writes.
+ * ROMSET selects the external E Flash view; it is not a shadow-write lock. */
+static lib_status mypc110_firmware_decode(const mypc110_firmware *firmware,
+    lib_u32 physical, x86_core_machine_memory_access access,
+    lib_size *out_offset, lib_bool *out_internal, lib_bool *out_flash)
 {
-    lib_size offset;
+    lib_u8 field;
+    lib_u8 romset;
+    lib_status status;
 
     if (firmware == LIB_NULL || firmware->bios == LIB_NULL ||
-        firmware->video_shadow == LIB_NULL || firmware->system_shadow == LIB_NULL ||
-        out_shadow == LIB_NULL || out_offset == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (physical >= MYPC110_VIDEO_PHYSICAL_START &&
-        physical - MYPC110_VIDEO_PHYSICAL_START < MYPC110_VIDEO_SHADOW_BYTES) {
-        if (access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE &&
-            !firmware->video_shadow_writable) {
-            return LIB_STATUS_UNSUPPORTED;
-        }
-        offset = (lib_size)(physical - MYPC110_VIDEO_PHYSICAL_START);
-        if (bytes > MYPC110_VIDEO_SHADOW_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
-        *out_shadow = firmware->video_shadow;
-        *out_offset = offset;
-        return LIB_STATUS_OK;
-    }
-    if ((physical >= MYPC110_SYSTEM_PHYSICAL_START &&
-         physical - MYPC110_SYSTEM_PHYSICAL_START < MYPC110_FIRMWARE_BANK_BYTES) ||
-        (physical >= MYPC110_RESET_PHYSICAL_START &&
-         physical - MYPC110_RESET_PHYSICAL_START < MYPC110_FIRMWARE_BANK_BYTES)) {
-        offset = (lib_size)(physical >= MYPC110_RESET_PHYSICAL_START ?
-            physical - MYPC110_RESET_PHYSICAL_START :
-            physical - MYPC110_SYSTEM_PHYSICAL_START);
-        if (bytes > MYPC110_FIRMWARE_BANK_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
-        *out_shadow = firmware->system_shadow;
-        *out_offset = offset;
-        return LIB_STATUS_OK;
-    }
-    return LIB_STATUS_UNSUPPORTED;
-}
-
-static lib_status mypc110_firmware_read(void *owner, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
-{
-    const mypc110_firmware *firmware = owner;
-    lib_size offset;
-    lib_u8 *shadow;
-    lib_status status;
-
-    (void)observe_only;
-    if (firmware == LIB_NULL || firmware->bios == LIB_NULL || destination == 0u)
+        firmware->shadow == LIB_NULL || out_offset == LIB_NULL ||
+        out_internal == LIB_NULL || out_flash == LIB_NULL ||
+        (access != X86_CORE_MACHINE_MEMORY_ACCESS_READ &&
+         access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE))
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = mypc110_firmware_shadow(firmware, physical, bytes,
-        X86_CORE_MACHINE_MEMORY_ACCESS_READ, &shadow, &offset);
+    if (physical >= MYPC110_RESET_PHYSICAL_START) {
+        *out_offset = 3u * MYPC110_FIRMWARE_BANK_BYTES +
+            (physical - MYPC110_RESET_PHYSICAL_START);
+        *out_internal = LIB_FALSE;
+        *out_flash = LIB_TRUE;
+        return LIB_STATUS_OK;
+    }
+    if (physical < MYPC110_VIDEO_PHYSICAL_START || physical >= 0x00100000u)
+        return LIB_STATUS_UNSUPPORTED;
+    if (firmware->configuration_chip == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    *out_offset = physical - MYPC110_VIDEO_PHYSICAL_START;
+    status = x86_vl82c420_read_register(firmware->configuration_chip,
+        X86_VL82C420_BANK_ECED, (lib_u8)(0x0fu + (*out_offset >> 16u)), &field);
     if (status != LIB_STATUS_OK) return status;
-    lib_memory_copy((void *)destination, shadow + offset, bytes);
-    return LIB_STATUS_OK;
-}
-
-static lib_status mypc110_firmware_read_instruction(void *owner,
-    lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
-{
-    return mypc110_firmware_read(owner, physical, destination, bytes,
-        observe_only);
-}
-
-static lib_status mypc110_firmware_write(void *owner, lib_u32 physical,
-    lib_uptr source, lib_uptr bytes)
-{
-    mypc110_firmware *firmware = owner;
-    lib_size offset;
-    lib_u8 *shadow;
-    lib_status status;
-
-    if (source == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    status = mypc110_firmware_shadow(firmware, physical, bytes,
-        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &shadow, &offset);
-    if (status != LIB_STATUS_OK) return status;
-    lib_memory_copy(shadow + offset, (const void *)source, bytes);
+    field = (field >> (2u * ((physical >> 14u) & 3u))) & 3u;
+    *out_internal = (field & (access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ?
+        1u : 2u)) != 0u;
+    *out_flash = LIB_FALSE;
+    if (*out_internal) return LIB_STATUS_OK;
+    if (physical >= 0x000f0000u) *out_flash = LIB_TRUE;
+    else if (physical >= 0x000e0000u) {
+        status = x86_vl82c420_read_register(firmware->configuration_chip,
+            X86_VL82C420_BANK_ECED, 0x0cu, &romset);
+        if (status != LIB_STATUS_OK) return status;
+        *out_flash = (romset & 0x30u) == 0u;
+    } else if (physical >= 0x000d0000u) {
+        /* Leave external D accesses to the font window or open-bus fallback. */
+        return LIB_STATUS_UNSUPPORTED;
+    }
     return LIB_STATUS_OK;
 }
 
@@ -89,15 +59,87 @@ static lib_status mypc110_firmware_query(void *owner, lib_u32 physical,
     lib_uptr bytes, x86_core_machine_memory_access access)
 {
     lib_size offset;
-    lib_u8 *shadow;
+    lib_bool internal;
+    lib_bool flash;
 
-    return mypc110_firmware_shadow(owner, physical, bytes, access,
-        &shadow, &offset);
+    if (physical < MYPC110_VIDEO_PHYSICAL_START ||
+        (physical >= 0x00100000u && physical < MYPC110_RESET_PHYSICAL_START) ||
+        bytes == 0u || bytes > (physical >= MYPC110_RESET_PHYSICAL_START ?
+            (lib_u64)LIB_UINT32_MAX + 1u - physical : 0x00100000ull - physical))
+        return LIB_STATUS_UNSUPPORTED;
+    while (bytes != 0u) {
+        lib_uptr chunk = MYPC110_SHADOW_BLOCK_BYTES -
+            (physical & (MYPC110_SHADOW_BLOCK_BYTES - 1u));
+        lib_status status = mypc110_firmware_decode(owner, physical, access,
+            &offset, &internal, &flash);
+
+        if (status != LIB_STATUS_OK) return status;
+        if (chunk > bytes) chunk = bytes;
+        physical += (lib_u32)chunk;
+        bytes -= chunk;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status mypc110_firmware_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    const mypc110_firmware *firmware = owner;
+    lib_status status;
+
+    (void)observe_only;
+    if (destination == 0u) return LIB_STATUS_INVALID_ARGUMENT;
+    while (bytes != 0u) {
+        lib_size offset;
+        lib_bool internal;
+        lib_bool flash;
+        lib_uptr chunk = MYPC110_SHADOW_BLOCK_BYTES -
+            (physical & (MYPC110_SHADOW_BLOCK_BYTES - 1u));
+
+        status = mypc110_firmware_decode(firmware, physical,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &offset, &internal, &flash);
+        if (status != LIB_STATUS_OK) return status;
+        if (chunk > bytes) chunk = bytes;
+        if (internal || flash)
+            lib_memory_copy((void *)destination,
+                (internal ? firmware->shadow : firmware->bios) + offset, chunk);
+        else lib_memory_set((void *)destination, 0xffu, chunk);
+        physical += (lib_u32)chunk;
+        destination += chunk;
+        bytes -= chunk;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status mypc110_firmware_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    mypc110_firmware *firmware = owner;
+    lib_status status;
+
+    if (source == 0u) return LIB_STATUS_INVALID_ARGUMENT;
+    while (bytes != 0u) {
+        lib_size offset;
+        lib_bool internal;
+        lib_bool flash;
+        lib_uptr chunk = MYPC110_SHADOW_BLOCK_BYTES -
+            (physical & (MYPC110_SHADOW_BLOCK_BYTES - 1u));
+
+        status = mypc110_firmware_decode(firmware, physical,
+            X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &offset, &internal, &flash);
+        if (status != LIB_STATUS_OK) return status;
+        if (chunk > bytes) chunk = bytes;
+        if (internal)
+            lib_memory_copy(firmware->shadow + offset, (const void *)source, chunk);
+        physical += (lib_u32)chunk;
+        source += chunk;
+        bytes -= chunk;
+    }
+    return LIB_STATUS_OK;
 }
 
 static const x86_core_machine_memory_device_callbacks mypc110_firmware_callbacks = {
-    mypc110_firmware_read, mypc110_firmware_write,
-    mypc110_firmware_query
+    mypc110_firmware_read, mypc110_firmware_write, mypc110_firmware_query
 };
 
 static lib_status mypc110_firmware_configure(void *opaque,
@@ -105,89 +147,63 @@ static lib_status mypc110_firmware_configure(void *opaque,
 {
     const mypc110_firmware *binding = opaque;
 
-    if (binding == LIB_NULL || binding->bios == LIB_NULL ||
-        binding->video_shadow == LIB_NULL || binding->system_shadow == LIB_NULL) {
+    if (binding == LIB_NULL || binding->bios == LIB_NULL || binding->shadow == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    /* Raw Flash remains immutable at C0000--FFFFF.  App-owned replacement
-     * routes expose the independently evidenced C000 video and F000 system
-     * shadows; all remaining bytes retain their raw immutable owner. */
     return x86_core_machine_firmware_register_immutable_rom(firmware,
-        MYPC110_FLASH_PHYSICAL_START, binding->bios, MYPC110_FIRMWARE_BYTES);
+        MYPC110_FLASH_PHYSICAL_START,
+        binding->bios + 2u * MYPC110_FIRMWARE_BANK_BYTES,
+        2u * MYPC110_FIRMWARE_BANK_BYTES);
 }
 
 static lib_status mypc110_firmware_reset(void *opaque,
     x86_core_machine_firmware_context *firmware)
 {
     mypc110_firmware *binding = opaque;
+    lib_status status;
 
     (void)firmware;
-    if (binding == LIB_NULL || binding->bios == LIB_NULL ||
-        binding->video_shadow == LIB_NULL || binding->system_shadow == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    lib_memory_copy(binding->video_shadow,
-        binding->bios + MYPC110_VIDEO_FLASH_OFFSET,
-        MYPC110_VIDEO_SHADOW_BYTES);
-    binding->eced_index = 0u;
+    if (binding == LIB_NULL || binding->bios == LIB_NULL || binding->shadow == LIB_NULL ||
+        binding->configuration_chip == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = x86_vl82c420_select(binding->configuration_chip,
+        X86_VL82C420_BANK_ECED, 0x0cu);
+    if (status == LIB_STATUS_OK)
+        status = x86_vl82c420_write_selected(binding->configuration_chip,
+            X86_VL82C420_BANK_ECED, MYPC110_RESET_ROMSET);
+    for (lib_u8 index = 0x0du; status == LIB_STATUS_OK && index <= 0x18u; ++index) {
+        status = x86_vl82c420_select(binding->configuration_chip,
+            X86_VL82C420_BANK_ECED, index);
+        if (status == LIB_STATUS_OK)
+            status = x86_vl82c420_write_selected(binding->configuration_chip,
+                X86_VL82C420_BANK_ECED, 0u);
+    }
+    if (status != LIB_STATUS_OK) return status;
+    lib_memory_set(binding->shadow, 0u, MYPC110_FIRMWARE_BYTES);
     binding->cpu_unlock_step = 0u;
     binding->cpu_power_mode = 0u;
-    if (binding->configuration_chip != LIB_NULL)
-        x86_vl82c420_reset_protocol(binding->configuration_chip);
-    binding->eced_config_open = LIB_FALSE;
-    binding->video_shadow_writable = LIB_FALSE;
-    lib_memory_copy(binding->system_shadow,
-        binding->bios + MYPC110_SYSTEM_FLASH_OFFSET,
-        MYPC110_FIRMWARE_BANK_BYTES);
+    x86_vl82c420_reset_protocol(binding->configuration_chip);
     return LIB_STATUS_OK;
 }
 
 static const x86_core_machine_firmware_provider mypc110_provider = {
-    mypc110_firmware_configure,
-    mypc110_firmware_reset,
-    LIB_NULL
+    mypc110_firmware_configure, mypc110_firmware_reset, LIB_NULL
 };
 
 lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
     mypc110_firmware *out_firmware)
 {
-    if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES ||
-        out_firmware == LIB_NULL) {
+    if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES || out_firmware == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    }
     *out_firmware = (mypc110_firmware) {0};
-    out_firmware->video_shadow = lib_allocate_zero(1u,
-        MYPC110_VIDEO_SHADOW_BYTES);
-    if (out_firmware->video_shadow == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    out_firmware->system_shadow = lib_allocate_zero(1u,
-        MYPC110_FIRMWARE_BANK_BYTES);
-    if (out_firmware->system_shadow == LIB_NULL) {
-        lib_release(out_firmware->video_shadow);
-        *out_firmware = (mypc110_firmware) {0};
-        return LIB_STATUS_NO_MEMORY;
-    }
+    out_firmware->shadow = lib_allocate_zero(1u, MYPC110_FIRMWARE_BYTES);
+    if (out_firmware->shadow == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     out_firmware->bios = bios;
-    lib_memory_copy(out_firmware->video_shadow,
-        bios + MYPC110_VIDEO_FLASH_OFFSET, MYPC110_VIDEO_SHADOW_BYTES);
-    lib_memory_copy(out_firmware->system_shadow,
-        bios + MYPC110_SYSTEM_FLASH_OFFSET,
-        MYPC110_FIRMWARE_BANK_BYTES);
     return LIB_STATUS_OK;
-}
-
-void mypc110_firmware_note_eced_write(mypc110_firmware *firmware,
-    lib_u8 index, lib_u8 value)
-{
-    if (firmware == LIB_NULL) return;
-    if (index == 0x0cu) {
-        firmware->video_shadow_writable = (value & 0x20u) == 0u;
-    }
 }
 
 void mypc110_firmware_destroy(mypc110_firmware *firmware)
 {
     if (firmware == LIB_NULL) return;
-    lib_release(firmware->video_shadow);
-    lib_release(firmware->system_shadow);
+    lib_release(firmware->shadow);
     *firmware = (mypc110_firmware) {0};
 }
 
@@ -200,10 +216,7 @@ lib_status mypc110_firmware_install_routes(x86_core_machine *machine,
     mypc110_firmware *firmware)
 {
     const x86_core_machine_memory_device_route routes[] = {
-        {MYPC110_VIDEO_PHYSICAL_START, MYPC110_VIDEO_SHADOW_BYTES,
-            mypc110_firmware_callbacks,
-            X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL},
-        {MYPC110_SYSTEM_PHYSICAL_START, MYPC110_FIRMWARE_BANK_BYTES,
+        {MYPC110_VIDEO_PHYSICAL_START, MYPC110_FIRMWARE_BYTES,
             mypc110_firmware_callbacks,
             X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL},
         {MYPC110_RESET_PHYSICAL_START, MYPC110_FIRMWARE_BANK_BYTES,
@@ -211,14 +224,8 @@ lib_status mypc110_firmware_install_routes(x86_core_machine *machine,
             X86_CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY, LIB_NULL}
     };
 
-    if (firmware == LIB_NULL || firmware->bios == LIB_NULL ||
-        firmware->video_shadow == LIB_NULL || firmware->system_shadow == LIB_NULL)
+    if (firmware == LIB_NULL || firmware->bios == LIB_NULL || firmware->shadow == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    lib_status status = x86_core_machine_install_memory_device_routes(machine, routes,
+    return x86_core_machine_install_memory_device_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, firmware);
-
-    if (status == LIB_STATUS_OK)
-        status = x86_core_machine_set_memory_instruction_read(machine, firmware,
-            mypc110_firmware_read_instruction);
-    return status;
 }

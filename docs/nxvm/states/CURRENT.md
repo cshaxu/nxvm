@@ -23,14 +23,15 @@ gaps explicitly; this acceptance does not close S47's complete cold-memory
 batch or T580. No extra desktop/guest qualification is inferred from unit or
 INI identity tests.
 
-The post-delivery x64 replay confirms actual 0081/7F unlock/status read-back
-and newly executed Block 2 configuration, but both initializer branches still
-skip the handler preparation. Original VL82C480 pages 20--21 identify separate
-ROM location and per-16-KiB read/write-source controls, absent from the App's
-current single shadow-write Boolean. The [updated S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md#post-delivery-replay-and-shadow-decode-reconciliation)
-preserves the capped-observation limits, source hashes and whole decoder
-design batch. Temporary test delta +80/-5 is removed. No product rebuild is
-due for a removed diagnostic; PC110 qualification remains open.
+The receiver now implements one register-qualified C--F shadow decoder instead
+of prefilled C/F buffers and a shadow-write Boolean. The unchanged BIOS reaches
+its initializer, copies the 38000 handler and returns on both host widths.
+The existing timer integration also requires the copy and initialization
+markers; both widths pass. The previously assumed F9 hard gate is retired as
+an unproven L2 model contradicted by the actual caller sequence. The
+[S47 record](../etc/evidence/t580-s47-cold-initialization-contract.md)
+preserves both the superseded observation and the new proof. SMRAM isolation,
+SMIACT, trigger/acknowledge and RSM remain open; no boot qualification is implied.
 
 | Field | Required record |
 | --- | --- |
@@ -50,6 +51,44 @@ due for a removed diagnostic; PC110 qualification remains open.
 | Exit Criteria | A complete, source-labelled receiver repair with its actual-path proof, or an exact reconciled contract gap without speculative production code; temporary diagnostics removed, evidence retained and applicable gates run. |
 | Original Owner Request | Implement PC110 through usable, verified fixed products under the established build/test/publication rules. |
 | Similar-Issue Sweep | Audit C/E/F ROM and shadow sources, both constructor/reset paths, protected bootstrap aliases, SMRAM initialization/active decode, reset persistence, trigger and clear/rearm as one mechanism. |
+
+### S47 decoder implementation brief
+
+Under the owner's continuing X86 Core/chip and App implementation authorization,
+replace the App's prefabricated C and always-writable F paths with one C--F
+shadow allocation and register-qualified per-16-KiB access. The complete cold
+decoder batch includes external C/D absence, source-recorded E/F Flash banks,
+C/E/F access fields, high reset Flash alias, full-reset decode and CPU-only-reset
+preservation. External Flash stays immutable; the guest performs copies. Use
+the existing route owner and one side-effect-free indexed-register read in the
+chip; delete App index/write-state mirrors and the old write-notification API.
+Existing chip/App fixtures cover all four access choices, boundaries, actual
+instruction/data reads and reset. Preserve the separately open SMRAM/SMIACT and
+trigger receiver rather than claim the whole S repaired from a decoder unit.
+Estimated source delta +150--230/-110--170, existing tests +90--150/-25--60;
+Lib/Emulator and owner inputs remain out of scope. Firmware-path evidence and
+source grades must determine retention, not just passing synthetic tests.
+
+The first decoder replay exposes an in-scope protocol conflict: the real
+F3B72/F3BE9 return closes the formerly assumed F9 gate, then its caller invokes
+F3C52 with ordinary EC/ED accesses and no FB. The old model returns FF and
+discards the required writes. Reconcile the complete caller/return sequence
+against the always-accessible reference models; retire that unproven hard gate
+and its Boolean as L2 compatibility, rather than add a BIOS-address exception.
+S30's historical evidence remains intact and is explicitly superseded for this
+mechanism. The diagnostic is stopped once this conflict is proved, not called
+a failed firmware qualification or allowed to consume its whole time budget.
+
+The implemented decoder uses Shared P6 `86976f86d` for the observational chip
+read. Both stable graphs rebuild the affected App units and TFT/DSTN previews;
+all 712 current unit cases pass on each host width. The existing real-BIOS
+timer integration passes with copy/initializer markers and delta 166E on both
+widths. Actual C/H delta against `24bfb9ce9` is +313/-216, net +97 across 12
+paths; production is net +3 and the rest is existing-test coverage. No admitted
+published App links the changed VL82C420 library; earlier S47 artifacts remain
+current and PC110 previews remain unpublished. The next complete receiver is
+CPU-only SMRAM visibility, Board SMIACT forwarding and qualified source/return,
+not an unconditional SMI pulse or a host-written service result.
 
 ## M5 T580 S46 — Closed: SMI/SMRAM receiver audit, repair outstanding
 

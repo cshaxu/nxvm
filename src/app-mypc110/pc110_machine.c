@@ -42,8 +42,9 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
 static const x86_nxvm_board_plan_topology mypc110_base_topology = {
     /* The admitted BIOS probes the first 64 KiB beyond installed RAM to find
      * the limit.  Model only that observed probe window as L2 open bus. */
-    .absent_memory_count = 1u,
-    .absent_memory = {{0x01400000u, 0x00010000u, 0xffu}},
+    .absent_memory_count = 2u,
+    .absent_memory = {{0x01400000u, 0x00010000u, 0xffu},
+        {0x000d0000u, 0x00010000u, 0xffu}},
     .rtc_cmos_present = LIB_TRUE,
     .rtc_cmos = {
         .index_port = 0x0070u,

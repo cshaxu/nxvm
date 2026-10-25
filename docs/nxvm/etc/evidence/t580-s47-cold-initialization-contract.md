@@ -376,3 +376,124 @@ truth table for PC110 and therefore retains no speculative production edit.
 Lib, Emulator, all other Apps, owner INIs and release artifacts are unchanged
 in this diagnostic continuation. Temporary diagnostic code and rendered manual
 pages are removed; the original manual remains in the external archive.
+
+## Register-qualified shadow decoder receiver
+
+This continuation starts at `24bfb9ce9`. The earlier observations above describe
+their respective baselines; they are not claims about the decoder below.
+
+### Retained mechanism and source limits
+
+One App-owned, cold-zero 256 KiB shadow replaces the prefilled C and permanently
+writable F allocations. The chip remains the sole indexed-register owner. A
+bounded observational `x86_vl82c420_read_register()` reads the existing bank
+without changing its selected index, unlock protocol or bank permissions.
+Selected I/O reads use that same operation. App memory queries no longer mirror
+the EC/ED index or derive a shadow-write Boolean from ROMSET.
+
+Each 16 KiB C--F field selects external/internal reads and writes independently.
+C external reads return FF. D external accesses decline to the existing font
+route or explicit unpopulated-memory fallback. E external reads expose Flash
+bank 2 when the admitted ROMSET location bits are clear; F external reads expose
+bank 3. External writes never change immutable Flash. The high reset alias
+always selects the immutable F bank, independently of mutable low shadow.
+Instruction fetch and data read use the same provider; the former forwarding
+instruction callback and setter are removed. Full reset clears shadow and
+restores the cold access fields; processor-only reset preserves them through
+the existing Core reset distinction.
+
+The additional read-only Open-Source-PC110 `Discovery/BIOS-Flash/readme.md`,
+SHA-256 `a4a1885b2036fca5ac6062583b74b45a3350f8ec65dadb8d535606dd14c7e123`,
+records hardware probes of runtime E/F Flash banks 2/3, C shadow and absent D.
+It also explicitly distinguishes the boot-only lower bank 0/1 view. That
+boot-only selection is **not yet implemented**; runtime mapping evidence is not
+claimed as a full cold-ROM truth table or Easy-Setup qualification.
+The related VLSI 480 access fields, PC110 register anchors and actual BIOS copy
+path support this receiver as L2, not a recovered VL82C420 silicon specification.
+
+The first decoder replay also disproves S30's assumed F9 hard gate: F3BE9
+writes F9 and returns to F3B43, whose F3C52 call uses EC/ED without another FB.
+The hard gate returns FF and discards required register writes, yielding
+ROMSET 8F/AF and CAXS EA rather than the programmed copy/lock sequence. The
+diagnostic was stopped once that conflict was established. The App now accepts
+F9/FB as L2 compatibility strobes without inventing inaccessible-bank semantics;
+its gate Boolean is deleted. This explicitly supersedes that S30 model, not
+its historical evidence. Read-only reference models agree on accessible EC/ED:
+
+- PC110-EMU `81235b5fdf7d17ae180fc5cb6148e44bcbb87b4c`,
+  `Sources/PC110Core/pc110_core.c`, SHA-256
+  `d484454beb37a9d3eef5cf716fcef80e8131772c82532df3a411704c57bf898a`.
+- PC110-QEMU `bae390ebf21665ec97860d28e26ec46f1fe8f4e9`,
+  `qemu/hw-misc/pc110-chipset.c`, SHA-256
+  `950985a7c280f10d9e028317f853a0b0d53d4bd771fb8283ef3f85a95682028b`.
+
+These implementations are behavioral references only; no source is imported.
+
+### Actual unchanged-firmware result
+
+Both host widths execute the guest's E/F relocation, C copy/patch and F patch
+sequences. CAXS ends at 2A; the guest changes the Option ROM header from
+55-AA-47 to 55-AA-60. The early SCAMP predicate now takes the initializer path
+without a host-forced flag. The BIOS reaches E900:0006, E907B and the E912F
+copy, opens 302 bit 3, prepares the handler at 38000, closes 302 and returns
+through F3457. The bounded temporary sampler reports on both widths:
+
+```text
+COLD:done service=1 initializer-return=1 executed=6381568 resets=0
+status=0 reason=1 pc=000f47c6 handler-status=0 handler=ea005b0038
+```
+
+The temporary sampler was removed in full. The existing timer integration now
+also requires the actual completed-copy and initializer-return observations,
+not merely a final successful timer count. It passes in 37.70 s on x64 and
+44.73 s on x86, with both reporting:
+
+```text
+PC110:TIMER:passed=1 failed=0 delta=166e executed=11844085
+pc=fffffff0 status=0 copied=1 initialized=1
+```
+
+It records one processor reset and no delivered exception. The earlier path
+needed about 59.9M retirements and three resets; eliminating the incorrect
+decode path is not instruction skipping or a host-speed timing model.
+Neither result proves an SMI/RSM transaction, isolated SMRAM, complete POST,
+Setup, guest boot, display, desktop or RDP behavior.
+
+### Regression, review and retained boundaries
+
+The existing firmware fixture uses a table over three windows, four fields and
+four access choices, plus boundary writes, immutable Flash, non-mutating index
+read-back, high alias and full reset. Existing configuration and construction
+fixtures retain actual CPU fetch/OUT and font/open-bus checks. The changed chip
+fixture checks null output, index masking, lock rejection and preservation of
+the selected index. No test target or framework is added.
+
+Both stable Ninja graphs build the affected App units and both TFT/DSTN
+previews. All 711 ordinary unit cases pass per width (229.13/230.78 s), with
+the compiler-spawning Types self-test scheduled separately to avoid competing
+build subprocesses. Their isolated runs pass in 104.41 s (x64) and 113.86 s
+(x86), completing all 712 current cases on each width. Source/test Core manifests,
+dependency/platform gate and whitespace checks pass.
+
+Actual C/H delta against this continuation baseline, excluding manifests,
+documentation and artifacts: 12 paths, +313/-216, net +97. Shared is +26/-1;
+NXVM is +287/-215. The increase is primarily table-driven regression coverage;
+production alone is +173/-170, net +3. The shadow allocation is one owner, not
+an additional handler cache. Separate read and write chunk loops retain their
+different effects; both consume the same decoder. Both existing App constructor
+paths receive the D fallback; neither adds a new construction path.
+
+The source change in Shared affects only the VL82C420 library. No currently
+published PC, MyNES or MyRaidenII executable links that library; PC-family
+product-target incremental checking reports no work. Their accepted earlier
+S47 artifacts remain current, so no timestamp-only binary refresh is made.
+The affected PC110 previews rebuild, but remain unpublished pending real product
+qualification. Lib, Emulator, other App sources, owner INIs and external input
+masters are unchanged.
+
+The complete S47 receiver remains open for CPU-only SMRAM decode, SMIACT
+forwarding, qualified software source/acknowledge/rearm and actual RSM return.
+The Core already emits SMIACT; Board's profile contract does not forward it.
+The shared memory query currently cannot distinguish CPU and DMA initiators.
+These are genuine remaining contract boundaries, not reasons to inject the
+handler, unconditionally trigger SMI or declare this decoder a full boot fix.

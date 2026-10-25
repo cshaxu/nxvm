@@ -18,7 +18,8 @@
 /* L2 cold image: Open-Source-PC110 live VL82C420 captures, not imported
  * implementation code.  The source files' SHA-256 values are recorded in
  * T580 S19 evidence.  The source's no-module EC/ED[03] is replaced by the
- * documented 16 MiB module value because this App constructs 20 MiB. */
+ * documented 16 MiB module value because this App constructs 20 MiB.
+ * Shadow access fields start external; guest firmware prepares internal RAM. */
 static const lib_u8 mypc110_cold_scamp[] = {
     0x00u, 0xbbu, 0x80u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0x6fu, 0x7eu, 0x50u,
     0x80u, 0x00u, 0x00u, 0x90u, 0xf0u, 0xe4u, 0xa1u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
@@ -50,8 +51,8 @@ static const lib_u8 mypc110_cold_block2[] = {
 };
 
 static const lib_u8 mypc110_cold_eced[] = {
-    0x42u, 0xd5u, 0x0bu, 0xccu, 0x06u, 0xa8u, 0x1au, 0xecu, 0x38u, 0x00u, 0x03u, 0x00u, 0x29u, 0x00u, 0x00u, 0x2au,
-    0x00u, 0x00u, 0xaau, 0x55u, 0x55u, 0x6au, 0x55u, 0x55u, 0xaau, 0x1au, 0x04u, 0x08u, 0x74u, 0x00u, 0x00u, 0x00u,
+    0x42u, 0xd5u, 0x0bu, 0xccu, 0x06u, 0xa8u, 0x1au, 0xecu, 0x38u, 0x00u, 0x03u, 0x00u, MYPC110_RESET_ROMSET, 0x00u, 0x00u, 0x00u,
+    0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x1au, 0x04u, 0x08u, 0x74u, 0x00u, 0x00u, 0x00u,
     0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u,
     0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x10u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
 };
@@ -111,11 +112,6 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     chip = firmware->configuration_chip;
-    if ((port == MYPC110_ECED_INDEX_PORT || port == MYPC110_ECED_DATA_PORT) &&
-        !firmware->eced_config_open) {
-        *out_value = 0xffu;
-        return LIB_STATUS_OK;
-    }
     switch (port) {
     case MYPC110_CPU_POWER_MODE_PORT:
         *out_value = firmware->cpu_power_mode;
@@ -214,16 +210,10 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         }
         return LIB_STATUS_OK;
     }
-    if (port == MYPC110_ECED_CONFIG_OPEN_PORT) {
-        firmware->eced_config_open = LIB_TRUE;
-        return LIB_STATUS_OK;
-    }
-    if (port == MYPC110_ECED_CONFIG_CLOSE_PORT) {
-        firmware->eced_config_open = LIB_FALSE;
-        return LIB_STATUS_OK;
-    }
-    if ((port == MYPC110_ECED_INDEX_PORT || port == MYPC110_ECED_DATA_PORT) &&
-        !firmware->eced_config_open) return LIB_STATUS_OK;
+    /* L2 compatibility strobes. The unchanged BIOS accesses EC/ED after F9;
+     * reference models keep the bank accessible. Do not invent a hard gate. */
+    if (port == MYPC110_ECED_CONFIG_OPEN_PORT ||
+        port == MYPC110_ECED_CONFIG_CLOSE_PORT) return LIB_STATUS_OK;
     if (value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == MYPC110_BLOCK2_INDEX_PORT) {
         lib_status status = x86_vl82c420_select(chip,
@@ -235,7 +225,6 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
             X86_VL82C420_BANK_SCAMP, (lib_u8)value);
     }
     if (port == MYPC110_ECED_INDEX_PORT) {
-        firmware->eced_index = (lib_u8)value;
         return x86_vl82c420_select(chip,
             X86_VL82C420_BANK_ECED, (lib_u8)value);
     }
@@ -248,10 +237,6 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         lib_status status = x86_vl82c420_write_selected(chip, bank,
             (lib_u8)value);
 
-        if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_ECED) {
-            mypc110_firmware_note_eced_write(firmware,
-                firmware->eced_index, (lib_u8)value);
-        }
         return status == LIB_STATUS_INVALID_STATE &&
             bank == X86_VL82C420_BANK_BLOCK2 ? LIB_STATUS_OK : status;
     }

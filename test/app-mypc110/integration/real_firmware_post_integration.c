@@ -40,6 +40,8 @@ typedef struct mypc110_post_diagnostic_port_read {
 
 typedef struct mypc110_post_diagnostic_trace {
     lib_bool timer_checkpoint;
+    lib_bool initialized;
+    lib_bool copied_handler;
     lib_bool timer_passed;
     lib_bool timer_failed;
     lib_u16 timer_delta;
@@ -123,6 +125,10 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
     if (trace->timer_checkpoint) {
+        if (observation->point.linear_pc == 0x000e912fu &&
+            observation->current_cpu.ecx == 0u) trace->copied_handler = LIB_TRUE;
+        if (observation->point.linear_pc == 0x000f3457u)
+            trace->initialized = LIB_TRUE;
         if (observation->point.linear_pc == 0x000f6981u)
             trace->timer_delta = (lib_u16)observation->current_cpu.ebx;
         if (observation->point.linear_pc == 0x000f698fu)
@@ -401,10 +407,11 @@ int main(int argc, char **argv)
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
     if (timer_checkpoint) {
-        lib_c_printf("PC110:TIMER:passed=%u failed=%u delta=%04x executed=%llu pc=%08x status=%d\n",
+        lib_c_printf("PC110:TIMER:passed=%u failed=%u delta=%04x executed=%llu pc=%08x status=%d copied=%u initialized=%u\n",
             post_reset_trace.timer_passed, post_reset_trace.timer_failed,
             post_reset_trace.timer_delta, (unsigned long long)executed,
-            result.linear_pc, (int)status);
+            result.linear_pc, (int)status, post_reset_trace.copied_handler,
+            post_reset_trace.initialized);
         lib_c_fflush(lib_c_stdout);
     }
     lib_c_printf("PC110:POST:status=%d reason=%u pc=%08x detail=%08x fault=%08x/%08x executed=%llu resets=%u waits=%u advanced=%u warm=%02x%02x c000-header=%02x%02x%02x%02x exceptions=%u first=%08x/%08x post-reset=%08x/%04x:%08x bytes=%02x %02x %02x %02x c000=%u/%u e000=%u/%u port61-wait=%u/%u\n",
@@ -592,6 +599,7 @@ int main(int argc, char **argv)
     x86_nxvm_machine_destroy(machine);
     if (timer_checkpoint) {
         return status == LIB_STATUS_OK && post_reset_trace.timer_passed &&
+            post_reset_trace.copied_handler && post_reset_trace.initialized &&
             !post_reset_trace.timer_failed &&
             post_reset_trace.timer_delta >= 0x1614u &&
             post_reset_trace.timer_delta <= 0x1868u ? 0 : 1;
