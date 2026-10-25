@@ -94,6 +94,40 @@ firmware event rather than extending a retirement budget or injecting the
 table. The S10 x64/x86 16-test real-firmware regression remains the retained
 proof for the reached path.
 
+## Active Subtask — M5 T580 S12
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S12. |
+| Admission And Approval | The owner directed PC110 work to continue through T580 and grants standing approval for bounded App/Core implementation, verification, commit and push work. |
+| Objective | Identify the first real port operation after the established C000-to-port-61 return, so the next PC110 receiver has one observed owner rather than a guessed device. |
+| Non-goals | No production device behavior, LCD/power/PCMCIA model, firmware injection, second executor, raw instruction-count success condition, guest boot or artifact claim. |
+| Reference Baseline | S11 commit `97295cb2c`: both widths return from C000 to `F000:EA84`, while the F65535 panel table is still unexecuted. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), consuming the next source-gated panel/power/storage/lifecycle receiver disposition. |
+| Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, Current and one evidence record; no production or public-interface change. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; Core remains the sole execution/tick owner. |
+| Verification | Rebuild the existing diagnostic and run the new semantic checkpoint on x64/x86, then run the complete MyPC110 x64/x86 diagnostic set if it reaches a source-defined event. |
+| Expected Markers | One identical first post-return trace event (direction, port, value and instruction point) on both host widths; the fixed containment ceiling is never success. |
+| Asset Needs | Existing external hash-validated TFT BIOS/font only. |
+| Reporting Requirements | Record the exact two-width event and its candidate owner, or record why no event is reached; retain no speculative production patch. |
+| Stop Conditions | Host divergence, fault, missing asset, a need for a second clock or synthetic firmware behavior, or an undetermined event class outside current App evidence. |
+| Exit Criteria | Two widths establish one matching first event or a bounded source gate, all affected diagnostic tests pass, and actual-change review identifies no production path. |
+| Original Owner Request | Continue the entire PC110 task using external PC110 projects and lawful external firmware as L2 research where suitable. |
+| Similar-Issue Sweep | The tracer records any port direction, not a preselected device family; it has one post-return owner and no duplicate execution path. |
+
+### S12 Closure
+
+Both hosts left the same `F000:EA84` wait return and executed to the fixed
+containment ceiling without one additional port operation. They instead
+remained in identical ROM code at `F000:3F6C`, with no fault. The temporary
+event tracer and its CTest were removed: an instruction ceiling cannot select
+a new receiver, and no unowned port or panel/power operation was observed.
+
+T580 therefore retains the reached firmware boundary but cannot honestly
+advance panel, power, PCMCIA, guest or lifecycle qualification from this path.
+The result is transferred to the qualification ledger rather than hidden as a
+failed test or treated as evidence for a speculative device model.
+
 ### S5 Closure
 
 S5 is accepted as a finite return classification. Both host widths leave the
