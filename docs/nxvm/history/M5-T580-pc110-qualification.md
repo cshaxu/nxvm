@@ -286,3 +286,39 @@ qualification; T580 continues with the existing FDC receiver first.
 | Exit Criteria | Complete affected route inventory, actual unchanged-firmware observations, explicit accepted/unqualified dispositions and a coherent next implementation design; temporary sampler removed, actual diff reviewed, applicable gates pass, commit/push and coordinator acceptance. This S cannot qualify the product merely by reaching farther. |
 | Original Owner Request | Continue the complete PC110 T autonomously using existing external reference/firmware assets and normal compile/test/release governance. |
 | Similar-Issue Sweep | Compare cold versus processor-only reset, C/E/F/SMRAM views, configured ASMI dispatch and all identified firmware boot-entry callers; retain separate storage/panel/input/product obligations. |
+
+## S49 accepted integrated-controller receiver
+
+Coordinator actual-change review accepts `53ef8f1c1`: one immutable App
+topology adds the standard-compatible integrated FDC, IRQ6 and DMA2 with
+source-checked SMC fixed status inputs, no external drive/media and no Shared
+change. Both real TFT BIOS widths complete DOR reset, actual IRQ wait return
+and four reset SENSE results while retaining the earlier timer/SMI proof.
+The final App units, existing Board FDC regressions, four preview builds/PE
+widths, boundaries and documentation checks pass. Exact +73/-9 source/test
+lines, rejected drafts, source grades, hashes and safe cleanup are recorded
+in [S49 evidence](../etc/evidence/t580-s49-integrated-fdc.md). S49 closes;
+T580 retains lower Flash/Setup/boot/guest/live product qualification.
+
+### S49 retained pre-acceptance packet
+
++## M5 T580 S49 — Integrated FDC reset and IRQ receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S49, next unused S after accepted S48. |
+| Admission And Approval | Owner's standing autonomous PC110 implementation authorization, reaffirmed 2026-10-25; reuse existing inward Board/chip contracts. No Lib/Emulator or other Shared implementation is admitted. |
+| Objective | Complete the S48-identified integrated-controller receiver: App-owned FDC port/IRQ6/DMA2 wiring, reset completion, guest acknowledgement and empty-drive behavior, then classify the real unchanged-BIOS consumer. |
+| Non-goals | No inserted media, fabricated IRQ/completion flag, BIOS interception, hardware drive-presence lie, new controller/API/queue, lower Flash implementation, owner INI/ROM modification or premature PC110 publication. |
+| Reference Baseline | Clean pushed 6c474e957; [S48 route evidence](../etc/evidence/t580-s48-post-initialization-route.md), existing standard-compatible FDC/PIC/DMA contracts and external SMC U22 hardware evidence. |
+| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md); consume integrated-FDC reset/IRQ/empty-drive batch of the [ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md). |
+| Files And ABI Surface | App pc110_plan.c and existing App composition/integration tests plus NXVM evidence/history/current. Estimate production +25–55/-0–5 and tests +20–60/-0–15; no public ABI change. Reuse fixture; no new test target. |
+| Applicable Rules | Architecture one controller/IRQ/time/media owner and App-only board composition; Coding existing contracts/Types, no duplicate controller or framework; Execution finite semantic coverage, background cache reuse, exact review/count and cleanup; source policy read-only external references/immutable BIOS; Documentation one active packet. |
+| Verification | Stable x64/x86 Ninja/ccache builds; existing App unit verifies the actual production driver ingress without media, existing Board tests cover controller reset/SENSE behavior, and unchanged-BIOS consumer proves DOR/IRQ/guest acknowledgement wiring. Run affected dependency/document gates and build both fixed PC110 previews; existing published PC/MyNES/MyRaidenII artifacts are unchanged unless actual linked production inputs change. |
+| Expected Markers | FDC MSR and DOR route present without media; reset release produces real IRQ6 and guest confirmation; no host memory mutation. Real BIOS crosses its FDC reset wait or yields an exact source-qualified remaining controller predicate, not ceiling-as-success. |
+| Asset Needs | Existing immutable TFT BIOS/font and external hardware/reference records. No new protected inputs or changes to owner media/INI. |
+| Reporting Requirements | Initial design/estimate, findings if the existing interface cannot express the receiver, exact source grades, actual production/test counts, dual-width results and remaining product boundaries. |
+| Stop Conditions | Stop on an unexpressible boundary or contradictory hardware source before adding a workaround. Each firmware run at most 32 million instructions or 180 seconds, output 64 KiB; task-owned build/t580-s49-fdc at most 4 MiB, archive required facts/hashes then remove after owned process exit. |
+| Exit Criteria | Complete admitted receiver or a consolidated exact non-acceptance/design correction; no partial checkpoint counts as full repair. Actual diff reviewed, applicable tests/gates pass, previews built, owner inputs preserved, commit/push and coordinator acceptance. T580 remains open for Flash/Setup/boot/guest/live product qualification. |
+| Original Owner Request | Implement PC110 autonomously through compile/test/release governance and complete T580 without synthetic firmware behavior. |
+| Similar-Issue Sweep | Controller absence versus external drive/media absence; IRQ assertion/deassertion/PIC acknowledgement, reset timing, DMA binding and configuration endpoints; both composition paths and cold versus processor-only reset. |
