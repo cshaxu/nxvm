@@ -64,6 +64,16 @@ completed BIOS delay, not a missing hardware receiver. The exact bounded trace
 is in [the S7 evidence](t580-s7-post-c000-delay-return.md). This opens no
 display, panel, Setup, storage or guest qualification row.
 
+## S8 display-receiver disposition
+
+Research now identifies the first display receiver without treating a
+host-rendered front panel as machine behavior. The F65535's standard VGA
+mode-12 (`640x480x16`) copied scanout is absent from the current component,
+while the existing X86-NXVM snapshot/frame path can already carry the required
+indexed pixels. S9 owns that bounded L2 receiver; front LCD/power, physical
+panel timing, original-DSTN input, storage and guest rows remain separate. The
+source grades and boundaries are in [the S8 evidence](t580-s8-pc110-display-receiver.md).
+
 ## S2 boundary
 
 S2 may add the missing **TFT-only** App entry, binding, profile declaration,
