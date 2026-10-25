@@ -129,6 +129,10 @@ static lib_status mypc110_firmware_reset(void *opaque,
         binding->bios + MYPC110_VIDEO_FLASH_OFFSET,
         MYPC110_VIDEO_SHADOW_BYTES);
     binding->eced_index = 0u;
+    binding->cpu_unlock_step = 0u;
+    binding->cpu_power_mode = 0u;
+    if (binding->configuration_chip != LIB_NULL)
+        x86_vl82c420_reset_protocol(binding->configuration_chip);
     binding->eced_config_open = LIB_FALSE;
     binding->video_shadow_writable = LIB_FALSE;
     lib_memory_copy(binding->system_shadow,

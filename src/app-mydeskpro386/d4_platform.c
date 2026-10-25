@@ -3,7 +3,8 @@
 
 static lib_status d4_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value);
-static lib_status d4_port_write(void *owner, lib_u16 port, lib_u32 value);
+static lib_status d4_port_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value);
 static void d4_refresh_output(void *owner, lib_u8 asserted);
 static void d4_failsafe_output(void *owner, lib_u8 asserted);
 
@@ -311,10 +312,11 @@ static lib_status d4_port_read(void *owner,
 }
 
 static lib_status d4_port_write(void *owner,
-    lib_u16 port, lib_u32 value)
+    lib_u16 port, lib_u8 access_bytes, lib_u32 value)
 {
     mydeskpro386_d4_platform *platform = (mydeskpro386_d4_platform *)owner;
 
+    (void)access_bytes;
     if (platform == LIB_NULL ||
         port != platform->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     platform->d4_platform_port_b = (lib_u8)value & 0x3fu;

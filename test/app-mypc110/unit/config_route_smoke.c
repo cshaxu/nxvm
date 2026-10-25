@@ -3,9 +3,36 @@
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
 
+static lib_bool config_route_execute(x86_core_machine *machine,
+    const lib_u8 *code, lib_size bytes, lib_u64 instructions)
+{
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0u,
+            [X86_CORE_CPU_DEBUG_EIP] = 0x1000u}
+    };
+    x86_core_machine_run_result result = {0};
+
+    if (x86_core_machine_memory_write(machine, 0x1000u, code, bytes) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK)
+        return LIB_FALSE;
+    for (lib_u64 index = 0u; index < instructions; ++index) {
+        if (x86_core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
+            result.executed != 1u || result.reason != X86_CORE_MACHINE_STOP_BUDGET)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
     static lib_u8 bios[MYPC110_FIRMWARE_BYTES];
+    const lib_u8 unlock[] = {0xb8u, 0x00u, 0x80u, 0xe6u, 0x23u,
+        0x86u, 0xe0u, 0xe6u, 0x22u, 0xe7u, 0x22u};
+    const lib_u8 byte_only[] = {0xb0u, 0x00u, 0xe6u, 0x23u,
+        0xb0u, 0x80u, 0xe6u, 0x22u, 0xe6u, 0x22u};
+    const lib_u8 lock[] = {0xb8u, 0x00u, 0x01u, 0xe7u, 0x22u};
     const x86_core_machine_executor_config config = {
         .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX
     };
@@ -41,7 +68,21 @@ int main(void)
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        failed |= x86_core_machine_bus_write(machine, 0x0074u, 0x7au) != LIB_STATUS_OK ||
+        failed |= x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0u ||
+            !config_route_execute(machine, byte_only, sizeof(byte_only), 5u) ||
+            x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0u ||
+            !config_route_execute(machine, unlock, sizeof(unlock), 5u) ||
+            x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0x81u ||
+            x86_core_machine_bus_write(machine, 0x0022u, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0x0bu ||
+            !config_route_execute(machine, lock, sizeof(lock), 2u) ||
+            x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0x0100u ||
+            x86_core_machine_bus_write(machine, 0x0074u, 0x7au) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_OK ||
             value != 0x53u ||
             x86_core_machine_bus_write(machine, 0x0074u, 0x7bu) != LIB_STATUS_OK ||
@@ -66,13 +107,14 @@ int main(void)
             x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0xc023u, &value) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0023u, &value) != LIB_STATUS_OK ||
+            value != 0x7fu ||
             x86_core_machine_bus_write(machine, 0x0024u, 0xb0u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0xbau ||
             x86_core_machine_bus_write(machine, 0x0024u, 0xb8u) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0x00u ||
-            x86_core_machine_bus_write(machine, 0x0022u, 0x0100u) != LIB_STATUS_OK ||
+            !config_route_execute(machine, lock, sizeof(lock), 2u) ||
             x86_core_machine_bus_write(machine, 0x0074u, 0x80u) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x0076u, 0x5au) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0x0074u, 0u) != LIB_STATUS_OK ||
@@ -96,7 +138,7 @@ int main(void)
             x86_core_machine_bus_write(machine, 0x0025u, 0x6cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0x6cu ||
-            x86_core_machine_bus_write(machine, 0x0022u, 0x0100u) != LIB_STATUS_OK ||
+            !config_route_execute(machine, lock, sizeof(lock), 2u) ||
             x86_core_machine_bus_read(machine, 0x0025u, &value) != LIB_STATUS_OK ||
             value != 0xffu ||
             x86_core_machine_memory_read(machine, MYPC110_VIDEO_PHYSICAL_START,
@@ -127,7 +169,16 @@ int main(void)
             x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             x86_core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            x86_core_machine_bus_read(machine, 0xfc23u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xc023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0023u, &value) != LIB_STATUS_OK ||
+            value != 0x7fu ||
             x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x0022u, &value) != LIB_STATUS_OK ||
+            value != 0u ||
+            x86_core_machine_bus_read(machine, 0x0023u, &value) != LIB_STATUS_OK ||
+            value != 0xffu ||
             x86_core_machine_bus_write(machine, 0x0074u, 0x7au) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_OK ||
             value != 0x53u ||

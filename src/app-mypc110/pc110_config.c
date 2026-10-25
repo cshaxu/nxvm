@@ -1,11 +1,11 @@
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 
-#define MYPC110_BLOCK2_LOCK_PORT 0x0022u
+#define MYPC110_CPU_POWER_MODE_PORT 0x0022u
+#define MYPC110_CPU_CONFIG_PORT 0x0023u
 #define MYPC110_BLOCK2_UNLOCK_FC23_PORT 0xfc23u
 #define MYPC110_BLOCK2_UNLOCK_F023_PORT 0xf023u
 #define MYPC110_BLOCK2_UNLOCK_C023_PORT 0xc023u
-#define MYPC110_BLOCK2_UNLOCK_0023_PORT 0x0023u
 #define MYPC110_BLOCK2_INDEX_PORT 0x0024u
 #define MYPC110_BLOCK2_DATA_PORT 0x0025u
 #define MYPC110_SCAMP_INDEX_PORT 0x0074u
@@ -117,6 +117,9 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
         return LIB_STATUS_OK;
     }
     switch (port) {
+    case MYPC110_CPU_POWER_MODE_PORT:
+        *out_value = firmware->cpu_power_mode;
+        return LIB_STATUS_OK;
     case MYPC110_BLOCK2_UNLOCK_FC23_PORT:
         x86_vl82c420_observe_unlock_read(chip,
             X86_VL82C420_UNLOCK_READ_FC23);
@@ -132,10 +135,14 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
             X86_VL82C420_UNLOCK_READ_C023);
         *out_value = 0xffu;
         return LIB_STATUS_OK;
-    case MYPC110_BLOCK2_UNLOCK_0023_PORT:
+    case MYPC110_CPU_CONFIG_PORT:
         x86_vl82c420_observe_unlock_read(chip,
             X86_VL82C420_UNLOCK_READ_0023);
-        *out_value = 0xffu;
+        status = x86_vl82c420_read_selected(chip,
+            X86_VL82C420_BANK_BLOCK2, &value);
+        if (status != LIB_STATUS_OK && status != LIB_STATUS_INVALID_STATE)
+            return status;
+        *out_value = status == LIB_STATUS_OK ? 0x7fu : 0xffu;
         return LIB_STATUS_OK;
     case MYPC110_BLOCK2_DATA_PORT:
         bank = X86_VL82C420_BANK_BLOCK2;
@@ -158,7 +165,8 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status mypc110_config_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     mypc110_firmware *firmware = owner;
     x86_vl82c420 *chip;
@@ -169,6 +177,43 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     chip = firmware->configuration_chip;
+    /* L2 SL-compatible configuration protocol, distinct from Block 2's
+     * indexed-register unlock. The final write must be a word access. */
+    if (port == MYPC110_CPU_CONFIG_PORT) {
+        if (access_bytes == 1u && (value & 1u) != 0u) {
+            firmware->cpu_power_mode &= (lib_u16)~1u;
+            firmware->cpu_unlock_step = 0u;
+            x86_vl82c420_relock(chip);
+        } else {
+            firmware->cpu_unlock_step = access_bytes == 1u &&
+                (value & 0x80u) == 0u ? 1u : 0u;
+        }
+        return LIB_STATUS_OK;
+    }
+    if (port == MYPC110_CPU_POWER_MODE_PORT) {
+        if ((firmware->cpu_power_mode & 1u) == 0u) {
+            if (firmware->cpu_unlock_step == 1u && access_bytes == 1u &&
+                (value & 0x80u) != 0u) {
+                firmware->cpu_unlock_step = 2u;
+            } else {
+                if (firmware->cpu_unlock_step == 2u && access_bytes == 2u &&
+                    (value & 0x8000u) == 0u)
+                    firmware->cpu_power_mode = (lib_u16)(value | 1u);
+                firmware->cpu_unlock_step = 0u;
+            }
+        } else if (access_bytes == 1u) {
+            firmware->cpu_power_mode = (lib_u16)(
+                (firmware->cpu_power_mode & 0xff00u) | (value & 0xfeu) | 1u);
+        } else if (access_bytes == 2u) {
+            firmware->cpu_power_mode = (lib_u16)(value | 1u);
+        }
+        if (access_bytes == 2u && (value & 0x0100u) != 0u) {
+            firmware->cpu_power_mode &= (lib_u16)~1u;
+            firmware->cpu_unlock_step = 0u;
+            x86_vl82c420_relock(chip);
+        }
+        return LIB_STATUS_OK;
+    }
     if (port == MYPC110_ECED_CONFIG_OPEN_PORT) {
         firmware->eced_config_open = LIB_TRUE;
         return LIB_STATUS_OK;
@@ -179,10 +224,6 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
     }
     if ((port == MYPC110_ECED_INDEX_PORT || port == MYPC110_ECED_DATA_PORT) &&
         !firmware->eced_config_open) return LIB_STATUS_OK;
-    if (port == MYPC110_BLOCK2_LOCK_PORT) {
-        if ((value & 0x0100u) != 0u) x86_vl82c420_relock(chip);
-        return LIB_STATUS_OK;
-    }
     if (value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == MYPC110_BLOCK2_INDEX_PORT) {
         lib_status status = x86_vl82c420_select(chip,
@@ -220,7 +261,7 @@ lib_status mypc110_config_install_routes(x86_core_machine *machine,
     mypc110_firmware *firmware, x86_vl82c420 *chip)
 {
     const x86_core_machine_port_route port_routes[] = {
-        {MYPC110_BLOCK2_LOCK_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
+        {MYPC110_CPU_POWER_MODE_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_INDEX_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_DATA_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_SCAMP_INDEX_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
@@ -232,7 +273,7 @@ lib_status mypc110_config_install_routes(x86_core_machine *machine,
         {MYPC110_BLOCK2_UNLOCK_FC23_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_UNLOCK_F023_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_UNLOCK_C023_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
-        {MYPC110_BLOCK2_UNLOCK_0023_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u}
+        {MYPC110_CPU_CONFIG_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u}
     };
 
     if (machine == LIB_NULL || firmware == LIB_NULL || chip == LIB_NULL) {

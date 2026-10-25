@@ -44,3 +44,18 @@ handler's active memory view. It rejects isolated pin, cold-constant and
 C-shadow candidate changes, all of which were withdrawn. The next coherent
 repair boundary is the complete board cold-decode/SMRAM/SMI mechanism, not a
 host BIOS service or another instruction-specific patch.
+
+## S47: port-width prerequisite and configuration receiver
+
+Owner-approved Shared P1 `d603e81e7` preserves actual write widths through the
+existing port callback; read callbacks remain unchanged. The App receiver
+implements the source-labelled L2 SL-compatible byte/word unlock and reset
+protocol, verified by actual CPU OUT instructions. Both widths retain timer
+calibration success, and all 712 current unit cases have passing evidence
+with explicitly recorded reruns. Eight receiving PC artifacts are refreshed
+at 0580; MyRaidenII receives a separate same-version artifact refresh.
+
+The [S47 evidence](../etc/evidence/t580-s47-cold-initialization-contract.md)
+records the actual delta, cache repair, test qualifications and artifact hashes.
+The complete SMRAM/SMIACT/initializer/trigger receiver remains open; this
+delivery does not establish full POST, DOS or a publishable PC110 product.

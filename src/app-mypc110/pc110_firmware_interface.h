@@ -10,7 +10,9 @@
 #define MYPC110_VIDEO_SHADOW_BYTES (48u * 1024u)
 #define MYPC110_VIDEO_PHYSICAL_START 0x000c0000u
 
-/* One App-owned PC110 firmware map. The selected immutable Flash image remains immutable;
+/* One App-owned PC110 firmware map and its SL-compatible decode controls.
+ * CPU configuration lock/mode is distinct from the chip's Block 2 unlock.
+ * The selected immutable Flash image remains immutable;
  * the C000 video image is always the selected video bank, while the observed
  * EC/ED sequence controls whether that shadow may be patched. */
 typedef struct mypc110_firmware {
@@ -19,6 +21,8 @@ typedef struct mypc110_firmware {
     lib_u8 *system_shadow;
     x86_vl82c420 *configuration_chip;
     lib_u8 eced_index;
+    lib_u8 cpu_unlock_step;
+    lib_u16 cpu_power_mode;
     lib_bool eced_config_open;
     lib_bool video_shadow_writable;
 } mypc110_firmware;

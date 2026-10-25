@@ -38,10 +38,11 @@ static lib_status mypc110_font_write(void *owner, lib_u32 physical,
 }
 
 static lib_status mypc110_font_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
     mypc110_font_rom *font = owner;
 
+    (void)access_bytes;
     if (font == LIB_NULL || font->bytes == LIB_NULL ||
         port != MYPC110_FONT_BANK_PORT || value > 0xffu) {
         return LIB_STATUS_INVALID_ARGUMENT;

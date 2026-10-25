@@ -15,10 +15,12 @@ static lib_status mypc110_ec_mailbox_read(void *owner, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_status mypc110_ec_mailbox_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status mypc110_ec_mailbox_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     mypc110_ec_mailbox *mailbox = owner;
 
+    (void)access_bytes;
     if (mailbox == LIB_NULL || value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == MYPC110_EC_COMMAND_STATUS_PORT) mailbox->command = (lib_u8)value;
     else if (port == MYPC110_EC_DATA_PORT) mailbox->data = (lib_u8)value;

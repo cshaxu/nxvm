@@ -15,8 +15,9 @@ static lib_status mypc110_display_port_read(void *owner, lib_u16 port,
 }
 
 static lib_status mypc110_display_port_write(void *owner, lib_u16 port,
-    lib_u32 value)
+    lib_u8 access_bytes, lib_u32 value)
 {
+    (void)access_bytes;
     if (value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     return x86_f65535_vga_write(owner, port, (lib_u8)value);
 }

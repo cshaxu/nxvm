@@ -32,10 +32,12 @@ static lib_status mypc110_lpt_read(void *owner, lib_u16 port,
     }
 }
 
-static lib_status mypc110_lpt_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status mypc110_lpt_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     mypc110_lpt *lpt = owner;
 
+    (void)access_bytes;
     if (lpt == LIB_NULL || value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     if (port != MYPC110_LPT_CONTROL_PORT) return LIB_STATUS_UNSUPPORTED;
     lpt->control = (lib_u8)value;

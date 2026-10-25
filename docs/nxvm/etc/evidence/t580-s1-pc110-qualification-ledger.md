@@ -105,3 +105,14 @@ frozen members have these dispositions; no product requirement is removed.
 
 See [the S44 clock proof](t580-s44-pit-refresh-clock.md). A timer calibration
 pass advances only that firmware substage, not the final product predicate.
+
+## S47 receiver reconciliation
+
+The cold-initialization member is still open. The approved write-width
+prerequisite and App configuration protocol now have actual CPU route proof;
+both host widths retain timer calibration success. Complete CPU-only SMRAM
+decode, Board-to-App SMIACT wiring, initializer predicates and trigger/acknowledge
+remain one receiver batch, not accepted subcomponents of an assumed boot.
+The [S47 record](t580-s47-cold-initialization-contract.md) identifies the missing
+contracts, source grades, exact test results and receiving artifact hashes.
+All other frozen qualification rows retain their S44 dispositions above.

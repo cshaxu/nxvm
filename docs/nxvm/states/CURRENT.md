@@ -2,6 +2,36 @@
 
 ## Current Work
 
+## M5 T580 S47 — Active: complete PC110 cold-memory initialization batch
+
+Approved write-width prerequisite and App configuration receiver are implemented;
+Shared P1 is `d603e81e7`. Both widths have passing evidence for all 712 unit
+cases (including explicitly recorded timeout/cache reruns), unchanged BIOS timer
+calibration and four deployed PC INI identities. Eight PC EXEs are refreshed
+at 0580 and the Core-linked MyRaidenII pair at 0007. See the
+[S47 verification and remaining contract boundary](../etc/evidence/t580-s47-cold-initialization-contract.md).
+S47/T580 remain open for complete SMRAM/SMIACT/initialization reconciliation;
+no PC110 boot or product release is claimed.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S47, after accepted S46. |
+| Admission And Approval | Owner's continuing autonomous PC110 implementation direction, followed by explicit approval of the existing port-callback access-width extension. Apply its narrower write-only form. No change to Lib/Emulator or protected inputs is admitted. |
+| Objective | Reconcile the entire cold ROM/shadow/SMRAM initialization route and its board controls, then repair the established App-owned mechanism rather than repeating isolated SMI pulses or initial-value changes. |
+| Non-goals | No firmware PC hook, injected handler, fabricated BIOS result, host-written wait flag, replacement CPU path, second clock or claim that a sampled prefix qualifies boot. |
+| Reference Baseline | 98889bc39; unchanged external TFT BIOS, S44 clock proof, S45 wait and S46 rejected hypotheses. |
+| Candidate Proposal | MyPC110 qualification; consume the complete board/memory/real-firmware receiver batch in the existing qualification ledger. |
+| Files And ABI Surface | Targets Shared, NXVM and receiving MyRaidenII artifacts, delivered in separate P commits: add access_bytes only to the existing X86 Core port write callback, propagate real width or split-lane width 1, migrate X86 NXVM/DeskPro/PC110 production and test callers, update matching manifests; PC110 firmware/configuration/plan and existing tests remain the cold-initialization receiver. Refresh four PC pairs at current T580 version, synchronizing the stale family version header; MyRaidenII retains 0007. MyNES has no Core link and remains untouched. Lib/Emulator stay unchanged. No second callback path or inferred width from value. |
+| Applicable Rules | One ROM/RAM decode owner and real CPU path; complete-batch source reconciliation; L2 inference labelled separately from exact source facts; no protected source import. |
+| Verification | Inspect full firmware initialization and all current App controls before modification. Existing Core tests prove unsplit 1/2/4-byte and split one-byte write callbacks, unchanged values and errors. Run affected Core/Board/App tests in both stable Ninja trees and rebuild every affected admitted PC artifact; MyNES/MyRaidenII inputs are reviewed and unaffected consumers need no manufactured artifact. The grouped C/E/control/copy observation is retained as evidence. Proven PC110 repairs require focused dual-width App regressions and unchanged-BIOS replay. |
+| Expected Markers | Actual initialization entry/return or the complete rejecting predicates, all relevant decode-control writes and copied destination state; for repair, actual handler fetch and RSM return through the existing CPU path. |
+| Asset Needs | Existing immutable embedded TFT BIOS/font and separately labelled DSTN-derived input; preserve external masters and owner mypc110.ini. |
+| Reporting Requirements | Whole-batch design and estimated source/test delta before retained changes; actual source grades, review, verification and remaining qualification rows. No per-instruction mini-S or new permanent framework. [S47 observation and approved width contract](../etc/evidence/t580-s47-cold-initialization-contract.md) records the grouped observation and write-only migration estimate +100--180/-60--110 source/test lines. |
+| Stop Conditions | Any guessed control-register side effect or required unapproved Shared contract stops that implementation. Diagnostics stop at the semantic boundary, 200M instructions, 600 seconds or 64 KiB output. Own and confirm exit of each background process. |
+| Exit Criteria | A complete, source-labelled receiver repair with its actual-path proof, or an exact reconciled contract gap without speculative production code; temporary diagnostics removed, evidence retained and applicable gates run. |
+| Original Owner Request | Implement PC110 through usable, verified fixed products under the established build/test/publication rules. |
+| Similar-Issue Sweep | Audit C/E/F ROM and shadow sources, both constructor/reset paths, protected bootstrap aliases, SMRAM initialization/active decode, reset persistence, trigger and clear/rearm as one mechanism. |
+
 ## M5 T580 S46 — Closed: SMI/SMRAM receiver audit, repair outstanding
 
 Accepted audit `5ae0cfbd3` proves CPU SMI entry but a missing prepared handler

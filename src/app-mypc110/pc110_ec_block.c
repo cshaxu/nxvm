@@ -25,10 +25,12 @@ static lib_status mypc110_ec_block_read(void *owner, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_status mypc110_ec_block_write(void *owner, lib_u16 port, lib_u32 value)
+static lib_status mypc110_ec_block_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
 {
     mypc110_ec_block *block = owner;
 
+    (void)access_bytes;
     if (block == LIB_NULL || value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
     if (port != MYPC110_EC_BLOCK_INDEX_PORT) return LIB_STATUS_UNSUPPORTED;
     block->index = (lib_u8)value;
