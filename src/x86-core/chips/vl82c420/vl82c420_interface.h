@@ -24,8 +24,8 @@ typedef enum x86_vl82c420_unlock_read {
 lib_status x86_vl82c420_create(x86_vl82c420 **out_chip);
 void x86_vl82c420_destroy(x86_vl82c420 *chip);
 
-/* Reset only transient protocol state. Bank contents persist across a warm
- * reset; a later board binding supplies any source-qualified cold image. */
+/* Reset transient indexed-access/SMI latches and pending status. Configuration
+ * bank contents persist; the board supplies any source-qualified cold image. */
 void x86_vl82c420_reset_protocol(x86_vl82c420 *chip);
 void x86_vl82c420_observe_unlock_read(x86_vl82c420 *chip,
     x86_vl82c420_unlock_read read);
@@ -41,5 +41,11 @@ lib_status x86_vl82c420_read_register(const x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 index, lib_u8 *out_value);
 lib_status x86_vl82c420_write_selected(x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 value);
+
+/* L2 SL-compatible ASMI: B5 bit 2, B6 bit 7 and the programmed 84/85 port
+ * qualify a request. B7 bit 5 holds ASMI status; FA=1 rearms the physical output.
+ * Hardware signaling is independent of the indexed-software access lock. */
+void x86_vl82c420_write_asmi(x86_vl82c420 *chip, lib_u16 port);
+lib_bool x86_vl82c420_smi_asserted(const x86_vl82c420 *chip);
 
 #endif

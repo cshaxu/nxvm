@@ -62,6 +62,11 @@ int main(void)
         x86_f65535_vga_write(chip, 0x03c8u, 0x3au) != LIB_STATUS_OK ||
         x86_f65535_vga_read(chip, 0x03c8u, &value) != LIB_STATUS_OK ||
         value != 0x3au ||
+        x86_f65535_vga_read(chip, 0x03c7u, &value) != LIB_STATUS_OK || value != 0u ||
+        x86_f65535_vga_write(chip, 0x03c7u, 0x3au) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03c7u, &value) != LIB_STATUS_OK || value != 3u ||
+        x86_f65535_vga_write(chip, 0x03c8u, 0x3au) != LIB_STATUS_OK ||
+        x86_f65535_vga_read(chip, 0x03c7u, &value) != LIB_STATUS_OK || value != 0u ||
         x86_f65535_vga_write(chip, 0x03ceu, 0x08u) != LIB_STATUS_OK ||
         x86_f65535_vga_read(chip, 0x03ceu, &value) != LIB_STATUS_OK ||
         value != 0x08u ||

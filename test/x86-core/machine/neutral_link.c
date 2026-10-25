@@ -371,7 +371,7 @@ static lib_i32 neutral_firmware_alias_contract(void)
         x86_core_machine_bind_firmware_provider(machine, &firmware, &probe) != LIB_STATUS_IO_ERROR ||
         machine->immutable_rom_mapping_count != 0u || machine->firmware_provider != LIB_NULL ||
         x86_core_machine_memory_query_physical(&machine->executor_memory, 0x1000u, 1u,
-            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route, LIB_TRUE) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) goto done;
     probe.firmware_fail = LIB_FALSE;
     if (x86_core_machine_bind_firmware_provider(machine, &firmware, &probe) != LIB_STATUS_OK ||

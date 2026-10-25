@@ -697,6 +697,11 @@ void x86_core_cpu_execution_invalidate_prefetch(
 void x86_core_cpu_signal_cache_write(x86_core_cpu_execution_context *context,
     lib_u32 physical, lib_size bytes);
 
+/* A board decode change replaces cached bytes, not a snooped memory write.
+ * Discard the old view even with NW set; never execute or advance time. */
+void x86_core_cpu_execution_invalidate_memory_view(
+    x86_core_cpu_execution_context *context, lib_u32 physical, lib_size bytes);
+
 void x86_core_cpu_execution_refresh(
     x86_core_cpu_execution_context *context);
 

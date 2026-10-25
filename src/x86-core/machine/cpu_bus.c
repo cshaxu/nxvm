@@ -41,10 +41,10 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
         x86_core_machine_memory_read_instruction_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes) :
         x86_core_machine_memory_read_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes);
+            address, (lib_uptr)destination, bytes, LIB_TRUE);
     if (status == LIB_STATUS_UNSUPPORTED) {
         status = x86_core_machine_memory_read_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes);
+            address, (lib_uptr)destination, bytes, LIB_TRUE);
     }
     if (!locked) {
         if (status == LIB_STATUS_OK) x86_core_machine_transaction_commit(&machine->transaction);
@@ -88,7 +88,7 @@ static lib_status x86_core_machine_cpu_bus_write_memory(void *opaque,
         machine->transaction.value = bytes;
     }
     status = x86_core_machine_memory_write_physical(&machine->executor_memory,
-        address, (lib_uptr)source, bytes);
+        address, (lib_uptr)source, bytes, LIB_TRUE);
     if (locked) {
         machine->transaction.address = lock_address;
         machine->transaction.value = 0u;

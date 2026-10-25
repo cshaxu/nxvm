@@ -21,6 +21,7 @@ struct x86_f65535 {
     lib_u8 dac_read_index;
     lib_u8 dac_write_index;
     lib_u8 dac_component;
+    lib_bool dac_read_mode;
     lib_u8 pel_mask;
     lib_u8 misc_output;
     lib_bool vertical_retrace;

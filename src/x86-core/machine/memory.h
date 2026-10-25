@@ -51,6 +51,7 @@ typedef struct {
     /* Immutable reset-ROM alias decoded at its raw physical address before
      * ordinary address-line decoding. */
     lib_u8 raw_decode;
+    lib_bool cpu_only;
     /* A selected board decode that replaces an otherwise valid lower route. */
     lib_u8 replacement;
     /* An open-bus board window used only when no installed device decodes the
@@ -95,7 +96,7 @@ struct x86_core_machine_memory_test_allocation {
 
 
 lib_status x86_core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
-    lib_uptr destination, lib_uptr size);
+    lib_uptr destination, lib_uptr size, lib_bool cpu_access);
 /* CPU instruction fetches select a provider's optional immutable executable
  * source.  Providers without one retain ordinary read behavior. */
 lib_status x86_core_machine_memory_read_instruction_physical(t_ram *ram,
@@ -112,10 +113,11 @@ lib_status x86_core_machine_memory_read_reset_physical(t_ram *ram,
     lib_u32 physical, lib_uptr destination,
     lib_uptr size);
 lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
-    lib_uptr source, lib_uptr size);
+    lib_uptr source, lib_uptr size, lib_bool cpu_access);
 lib_status x86_core_machine_memory_query_physical(const t_ram *ram,
     lib_u32 physical, lib_uptr size,
-    x86_core_machine_memory_access access, x86_core_machine_memory_route *out_route);
+    x86_core_machine_memory_access access, x86_core_machine_memory_route *out_route,
+    lib_bool cpu_access);
 lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
     lib_u32 physical, lib_bool reset_fetch, lib_bool check_fill,
     lib_u32 *out_address, lib_bool *out_fill_enabled);

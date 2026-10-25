@@ -59,13 +59,13 @@ static lib_i32 firmware_rollback_contract(void)
         machine->immutable_rom_mapping_count != mappings_before ||
         machine->firmware_provider != LIB_NULL;
     failed |= x86_core_machine_memory_query_physical(&machine->executor_memory,
-        0xd0000u, 1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+        0xd0000u, 1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route, LIB_TRUE) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
     failed |= x86_core_machine_memory_read_physical(&machine->executor_memory,
-        0xd0000u, (lib_uptr)&observed, 1u) != LIB_STATUS_OK || observed != prior;
+        0xd0000u, (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK || observed != prior;
     for (lib_u32 address = 0xe0000u; address <= 0xf0000u; address += 0x10000u)
         failed |= x86_core_machine_memory_query_physical(&machine->executor_memory,
-            address, 1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
+            address, 1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route, LIB_TRUE) != LIB_STATUS_OK ||
             route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
     x86_core_machine_destroy(machine);
     return failed;

@@ -95,7 +95,10 @@ typedef enum x86_core_machine_memory_provider_mode {
     X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY,
     X86_CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY,
     X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT,
-    X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
+    X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK,
+    /* CPU physical overlay before ordinary aliases/address-line decoding.
+     * DMA never sees this provider; its ordinary RAM/device route is retained. */
+    X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY
 } x86_core_machine_memory_provider_mode;
 
 typedef struct x86_core_machine_memory_device_route {
@@ -163,6 +166,12 @@ lib_status x86_core_machine_signal_address_clear_mask(x86_core_machine *machine,
     lib_u32 clear_mask);
 lib_status x86_core_machine_observe_address_clear_mask(const x86_core_machine *machine,
     lib_u32 *out_clear_mask);
+
+/* Owning execution thread, including a board output callback. Invalidate old
+ * CPU cache/prefetch bytes when a provider changes its physical memory view.
+ * This is not a guest write or a DMA snoop and does not advance guest time. */
+void x86_core_machine_signal_memory_decode_change(x86_core_machine *machine,
+    lib_u32 physical, lib_size bytes);
 
 /* One Core-owned DMA memory transaction. Device effects occur only between
  * begin and memory, or between memory and commit, respectively. */

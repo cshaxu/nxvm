@@ -669,14 +669,13 @@ static void _kma_cache_report(x86_core_cpu_execution_context *context,
     lib_memory_copy(context->cache_read, line->data, sizeof(line->data));
 }
 
-void x86_core_cpu_signal_cache_write(x86_core_cpu_execution_context *context,
+static void _kma_invalidate_cache_range(x86_core_cpu_execution_context *context,
     lib_u32 physical, lib_size bytes)
 {
     lib_u64 end, remaining;
 
     if (context == LIB_NULL || bytes == 0u ||
-        context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
-        (cpu_state.data.cr0 & VCPU_CR0_NW) != 0u) return;
+        context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return;
     x86_core_cpu_bus_invalidate(context);
     remaining = (lib_u64)LIB_UINT32_MAX + 1u - physical;
     end = (lib_u64)physical + (bytes > remaining ? remaining : bytes);
@@ -696,6 +695,21 @@ void x86_core_cpu_signal_cache_write(x86_core_cpu_execution_context *context,
                 line->valid = LIB_FALSE;
         }
     }
+}
+
+void x86_core_cpu_signal_cache_write(x86_core_cpu_execution_context *context,
+    lib_u32 physical, lib_size bytes)
+{
+    if (context == LIB_NULL || (cpu_state.data.cr0 & VCPU_CR0_NW) != 0u) return;
+    _kma_invalidate_cache_range(context, physical, bytes);
+}
+
+void x86_core_cpu_execution_invalidate_memory_view(
+    x86_core_cpu_execution_context *context, lib_u32 physical, lib_size bytes)
+{
+    if (context == LIB_NULL || bytes == 0u) return;
+    _kma_invalidate_cache_range(context, physical, bytes);
+    x86_core_cpu_execution_invalidate_prefetch(context);
 }
 
 void x86_core_cpu_execution_invalidate_tlb(

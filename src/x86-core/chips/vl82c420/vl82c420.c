@@ -64,6 +64,9 @@ void x86_vl82c420_reset_protocol(x86_vl82c420 *chip)
     if (chip == LIB_NULL) return;
     chip->unlock_progress = 0u;
     chip->block2_unlocked = LIB_FALSE;
+    chip->smi_armed = LIB_FALSE;
+    chip->smi_asserted = LIB_FALSE;
+    chip->block2[0xb7u] = 0u;
     for (index = 0u; index < sizeof(chip->selected); ++index) {
         chip->selected[index] = 0u;
     }
@@ -124,7 +127,19 @@ lib_status x86_vl82c420_read_register(const x86_vl82c420 *chip,
     if (status != LIB_STATUS_OK) return status;
     data = x86_vl82c420_bank_data_const(chip, bank);
     *out_value = data[bank == X86_VL82C420_BANK_SCAMP ? index & 0x7fu : index];
+    if (bank == X86_VL82C420_BANK_BLOCK2 && index == 0xfau) *out_value = 0xffu;
     return LIB_STATUS_OK;
+}
+
+static void x86_vl82c420_update_smi(x86_vl82c420 *chip)
+{
+    if ((chip->block2[0xb5u] & 4u) == 0u ||
+        (chip->block2[0xb6u] & 0x80u) == 0u || chip->block2[0xb7u] == 0u)
+        chip->smi_asserted = LIB_FALSE;
+    else if (chip->smi_armed) {
+        chip->smi_armed = LIB_FALSE;
+        chip->smi_asserted = LIB_TRUE;
+    }
 }
 
 lib_status x86_vl82c420_write_selected(x86_vl82c420 *chip,
@@ -135,6 +150,31 @@ lib_status x86_vl82c420_write_selected(x86_vl82c420 *chip,
 
     if (status != LIB_STATUS_OK) return status;
     data = x86_vl82c420_bank_data(chip, bank);
-    data[chip->selected[bank]] = value;
+    if (bank == X86_VL82C420_BANK_BLOCK2 && chip->selected[bank] == 0xb7u) {
+        data[0xb7u] &= value;
+    } else if (bank == X86_VL82C420_BANK_BLOCK2 && chip->selected[bank] == 0xfau) {
+        if (value == 1u) {
+            chip->smi_armed = LIB_TRUE;
+            chip->smi_asserted = LIB_FALSE;
+        }
+    } else {
+        data[chip->selected[bank]] = value;
+    }
+    if (bank == X86_VL82C420_BANK_BLOCK2) x86_vl82c420_update_smi(chip);
     return LIB_STATUS_OK;
+}
+
+void x86_vl82c420_write_asmi(x86_vl82c420 *chip, lib_u16 port)
+{
+    if (chip == LIB_NULL || (chip->block2[0xb5u] & 4u) == 0u ||
+        (chip->block2[0xb6u] & 0x80u) == 0u ||
+        (port & 0xfffeu) != (((lib_u32)chip->block2[0x84u] |
+            ((lib_u32)chip->block2[0x85u] << 8u)) & 0xfffeu)) return;
+    chip->block2[0xb7u] |= 0x20u;
+    x86_vl82c420_update_smi(chip);
+}
+
+lib_bool x86_vl82c420_smi_asserted(const x86_vl82c420 *chip)
+{
+    return chip != LIB_NULL && chip->smi_asserted;
 }

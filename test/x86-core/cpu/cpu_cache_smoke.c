@@ -1189,6 +1189,10 @@ static lib_bool cache_snoop_write(void)
             !fixture->execution.cache[0][1].valid) return LIB_FALSE;
         x86_core_cpu_signal_cache_write(&fixture->execution, 0u, 0x4000u);
         if (fixture->execution.cache[0][1].valid != (nw != 0u)) return LIB_FALSE;
+        x86_core_cpu_execution_invalidate_memory_view(&fixture->execution, 0x3000u, 16u);
+        if (fixture->execution.cache[0][1].valid ||
+            fixture->execution.cache[0][0].valid != (nw != 0u) ||
+            fixture->execution.cache[1][0].valid != (nw != 0u)) return LIB_FALSE;
     }
     return LIB_TRUE;
 }

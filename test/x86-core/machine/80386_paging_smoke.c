@@ -640,19 +640,19 @@ static lib_i32 paging_permission_install(x86_core_machine *machine,
 {
     return x86_core_machine_memory_write_physical(&machine->executor_memory,
                TEST_PAGE_DIRECTORY, lib_pointer_to_uptr(&(pde_code)),
-               sizeof(pde_code)) == LIB_STATUS_OK &&
+               sizeof(pde_code), LIB_TRUE) == LIB_STATUS_OK &&
         x86_core_machine_memory_write_physical(&machine->executor_memory,
             TEST_PAGE_DIRECTORY + 4u, lib_pointer_to_uptr(&(pde_data)),
-            sizeof(pde_data)) == LIB_STATUS_OK &&
+            sizeof(pde_data), LIB_TRUE) == LIB_STATUS_OK &&
         x86_core_machine_memory_write_physical(&machine->executor_memory,
-            TEST_PAGE_TABLE + 7u * 4u, lib_pointer_to_uptr(&(pte_code)), sizeof(pte_code)) ==
+            TEST_PAGE_TABLE + 7u * 4u, lib_pointer_to_uptr(&(pte_code)), sizeof(pte_code), LIB_TRUE) ==
                 LIB_STATUS_OK &&
         x86_core_machine_memory_write_physical(&machine->executor_memory,
             TEST_PAGE_TABLE + 4u * 4u, lib_pointer_to_uptr(&(pte_stack)),
-            sizeof(pte_stack)) == LIB_STATUS_OK &&
+            sizeof(pte_stack), LIB_TRUE) == LIB_STATUS_OK &&
         x86_core_machine_memory_write_physical(&machine->executor_memory,
             TEST_PAGE_TABLE_SECOND + 3u * 4u, lib_pointer_to_uptr(&(pte_data)),
-            sizeof(pte_data)) == LIB_STATUS_OK;
+            sizeof(pte_data), LIB_TRUE) == LIB_STATUS_OK;
 }
 
 static lib_i32 paging_permission_read(x86_core_machine *machine, lib_u32 physical,

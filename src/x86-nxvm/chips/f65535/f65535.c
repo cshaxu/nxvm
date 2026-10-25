@@ -218,6 +218,8 @@ lib_status x86_f65535_vga_read(x86_f65535 *chip, lib_u16 port,
             sizeof(chip->sequencer), chip->sequencer_index);
     } else if (port == 0x03c6u) {
         *out_value = chip->pel_mask;
+    } else if (port == 0x03c7u) {
+        *out_value = chip->dac_read_mode ? 3u : 0u;
     } else if (port == 0x03c8u) {
         *out_value = chip->dac_write_index;
     } else if (port == 0x03c9u) {
@@ -289,9 +291,11 @@ lib_status x86_f65535_vga_write(x86_f65535 *chip, lib_u16 port,
     } else if (port == 0x03c7u) {
         chip->dac_read_index = value;
         chip->dac_component = 0u;
+        chip->dac_read_mode = LIB_TRUE;
     } else if (port == 0x03c8u) {
         chip->dac_write_index = value;
         chip->dac_component = 0u;
+        chip->dac_read_mode = LIB_FALSE;
     } else if (port == 0x03c9u) {
         lib_u8 *entry = chip->dac[chip->dac_write_index];
 

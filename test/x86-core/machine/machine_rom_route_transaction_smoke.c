@@ -131,7 +131,7 @@ static lib_i32 run_case(lib_u32 mode)
         machine->executor_memory.connect.device_provider_count != provider_count ||
         machine->firmware_provider != LIB_NULL;
     failed |= x86_core_machine_memory_read_physical(&machine->executor_memory,
-        0x000d0000u, (lib_uptr)&observed, 1u) != LIB_STATUS_OK ||
+        0x000d0000u, (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK ||
         observed != prior_image;
 
     x86_core_machine_memory_unregister_owner(&machine->executor_memory, &filler);

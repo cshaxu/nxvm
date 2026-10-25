@@ -339,7 +339,7 @@ lib_i32 main(void)
         state_probe.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_DMA ||
         state_probe.kind != X86_CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE;
     failed |= x86_core_machine_memory_read_physical(&dma_machine.executor_memory, 0x11234u,
-        (lib_uptr)&data, 1u) != LIB_STATUS_OK || data != 0xa5u;
+        (lib_uptr)&data, 1u, LIB_TRUE) != LIB_STATUS_OK || data != 0xa5u;
 
     dma_probe.machine = &dma_machine;
     failed |= x86_core_machine_dma_memory_cycle(&dma_machine, 0x200000u, 1u, 2u,

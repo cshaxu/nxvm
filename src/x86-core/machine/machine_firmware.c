@@ -114,7 +114,7 @@ lib_status x86_core_machine_firmware_memory_read(
     }
     return x86_core_machine_firmware_operation_result(firmware,
         x86_core_machine_memory_read_physical(&firmware->machine->executor_memory,
-            physical, (lib_uptr)out_data, size));
+            physical, (lib_uptr)out_data, size, LIB_TRUE));
 }
 
 lib_status x86_core_machine_firmware_memory_write(
@@ -128,7 +128,7 @@ lib_status x86_core_machine_firmware_memory_write(
     }
     return x86_core_machine_firmware_operation_result(firmware,
         x86_core_machine_memory_write_physical(&firmware->machine->executor_memory,
-            physical, (lib_uptr)data, size));
+            physical, (lib_uptr)data, size, LIB_TRUE));
 }
 
 lib_status x86_core_machine_firmware_port_read(

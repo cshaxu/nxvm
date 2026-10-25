@@ -23,6 +23,11 @@ and bounded attachment callbacks; it has no PC default, second host worker or
 compatibility Core path. Immutable ROM mapping is a byte/route mechanism, not
 a BIOS implementation or a firmware selection policy.
 
+The existing memory route resolver admits CPU-only physical overlays; DMA
+retains ordinary memory decoding. A board-owned decode transition may invalidate
+the affected CPU cache/prefetch view without advancing time. This is distinct
+from a snooped memory write and does not honor the write-snoop disable bit.
+
 Production targets are `x86-core-cpu`, `x86-core-fpu` and `x86-core-machine`.
 `x86-core-machine-observable` is the same execution source built with existing
 trace observation enabled for owner tests. `x86-core-verify` checks

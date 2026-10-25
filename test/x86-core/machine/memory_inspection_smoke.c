@@ -395,7 +395,7 @@ static lib_bool inspection_cache_execution(void)
             machine->transaction.owner != X86_CORE_MACHINE_TRANSACTION_OWNER_NONE ||
             device.denied_dma_cycles != 2u || device.dma_lock_error;
         failed |= x86_core_machine_memory_read_physical(&machine->executor_memory,
-            0x3000u, (lib_uptr)&value, sizeof(value)) != LIB_STATUS_OK ||
+            0x3000u, (lib_uptr)&value, sizeof(value), LIB_TRUE) != LIB_STATUS_OK ||
             value != 0x3333u;
         inspection_unsnooped_write(machine, 0x3000u, &poison, sizeof(poison));
         inspection_cpu_set(cpu, X86_CORE_CPU_DEBUG_CR0, VCPU_CR0_CD | VCPU_CR0_NW, &failed);
@@ -532,7 +532,7 @@ lib_i32 main(void)
         failed |= x86_core_machine_cpu_bus.query_cache_memory(machine, 0x1000u,
             X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.fill_enabled;
         failed |= x86_core_machine_memory_read_physical(memory, 0x1001u,
-            (lib_uptr)bytes, 1u) != LIB_STATUS_IO_ERROR || probe.reads != 0u;
+            (lib_uptr)bytes, 1u, LIB_TRUE) != LIB_STATUS_IO_ERROR || probe.reads != 0u;
         probe.query_status = LIB_STATUS_OK;
         failed |= x86_core_machine_signal_address_clear_mask(machine, 0u) != LIB_STATUS_OK;
         failed |= x86_core_machine_cpu_bus.query_cache_memory(machine, 0x103010u,
@@ -604,7 +604,7 @@ lib_i32 main(void)
     failed |= lib_memory_compare(bytes, expected, sizeof(bytes)) != 0 ||
         probe.reads != 0u || probe.parity != 0u;
     failed |= x86_core_machine_memory_read_physical(memory, 0x1000u,
-        (lib_uptr)bytes, sizeof(bytes)) != LIB_STATUS_OK;
+        (lib_uptr)bytes, sizeof(bytes), LIB_TRUE) != LIB_STATUS_OK;
     failed |= lib_memory_compare(bytes, expected, sizeof(bytes)) != 0 ||
         probe.reads != 2u || probe.parity == 0u;
     probe.reads = probe.parity = 0u;
@@ -645,11 +645,11 @@ lib_i32 main(void)
         lib_u32 cr0;
 
         failed |= x86_core_machine_memory_write_physical(memory, 0x3000u,
-            (lib_uptr)&directory, sizeof(directory)) != LIB_STATUS_OK;
+            (lib_uptr)&directory, sizeof(directory), LIB_TRUE) != LIB_STATUS_OK;
         failed |= x86_core_machine_memory_write_physical(memory, 0x4000u,
-            (lib_uptr)&page, sizeof(page)) != LIB_STATUS_OK;
+            (lib_uptr)&page, sizeof(page), LIB_TRUE) != LIB_STATUS_OK;
         failed |= x86_core_machine_memory_write_physical(memory, 0x5000u,
-            (lib_uptr)&nop, sizeof(nop)) != LIB_STATUS_OK;
+            (lib_uptr)&nop, sizeof(nop), LIB_TRUE) != LIB_STATUS_OK;
         failed |= x86_core_machine_debug_patch_registers(machine, &setup) != LIB_STATUS_OK ||
             x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_CR0,
                 &cr0) != LIB_STATUS_OK ||

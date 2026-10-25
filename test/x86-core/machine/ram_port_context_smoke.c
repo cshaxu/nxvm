@@ -105,30 +105,30 @@ lib_i32 main(void)
     result |= x86_core_machine_memory_allocate_for(&first_memory, 2u * 1024u * 1024u) !=
         LIB_STATUS_OK;
     result |= x86_core_machine_memory_write_physical(&first_memory, 0u,
-        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= x86_core_machine_memory_read_physical(&first_memory, 0u,
-        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= observed != value;
     result |= x86_core_machine_memory_read_physical(&second_memory, 0u,
-        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= observed != 0u;
     result |= first_memory.connect.installed_bytes != 2u * 1024u * 1024u;
     result |= x86_core_machine_memory_write_physical(&first_memory,
-        2u * 1024u * 1024u, (lib_uptr)&value, 1u) !=
+        2u * 1024u * 1024u, (lib_uptr)&value, 1u, LIB_TRUE) !=
         LIB_STATUS_INTERNAL_ERROR;
     result |= x86_core_machine_memory_write_physical(&first_memory, 0x00100000u,
-        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK;
     observed = 0u;
     result |= x86_core_machine_memory_read_physical(&first_memory, 0u,
-        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= observed != value;
     first_memory.data.address_clear_mask = 0u;
     value = 0xa5u;
     result |= x86_core_machine_memory_write_physical(&first_memory, 0x00100000u,
-        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK;
     observed = 0u;
     result |= x86_core_machine_memory_read_physical(&first_memory, 0x00100000u,
-        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= observed != value;
     result |= x86_core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
         0x000ffff0u, 16u, LIB_FALSE) != LIB_STATUS_OK;
@@ -141,10 +141,10 @@ lib_i32 main(void)
     }
     value = 0xebu;
     result |= x86_core_machine_memory_write_physical(&first_memory, 0x000ffff0u,
-        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK;
     observed = 0u;
     result |= x86_core_machine_memory_read_physical(&first_memory, 0xfffffff0u,
-        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= observed != value;
     x86_core_machine_memory_freeze_mappings(&first_memory);
     result |= x86_core_machine_memory_register_mapping(&first_memory, 0xfff00000u,
@@ -157,7 +157,7 @@ lib_i32 main(void)
     x86_core_machine_memory_reset(&first_memory);
     observed = 0xffu;
     result |= x86_core_machine_memory_read_physical(&first_memory, 0u,
-        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
+        (lib_uptr)&observed, 1u, LIB_TRUE) != LIB_STATUS_OK;
     result |= observed != 0u;
 
     x86_core_machine_memory_finalize(&second_memory);

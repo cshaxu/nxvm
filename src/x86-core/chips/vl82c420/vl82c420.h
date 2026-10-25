@@ -10,6 +10,8 @@ struct x86_vl82c420 {
     lib_u8 selected[3];
     lib_u8 unlock_progress;
     lib_bool block2_unlocked;
+    lib_bool smi_armed;
+    lib_bool smi_asserted;
 };
 
 #endif

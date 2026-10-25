@@ -132,11 +132,11 @@ static lib_i32 registration_growth_and_priority(void)
         LIB_NULL) != LIB_STATUS_OK;
     x86_core_machine_memory_freeze_mappings(&memory);
     failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
-        (lib_uptr)&value, 1u) != LIB_STATUS_OK || value != first.value;
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != first.value;
     first.decline = LIB_TRUE;
     value = 0u;
     failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
-        (lib_uptr)&value, 1u) != LIB_STATUS_OK || value != overlay.value;
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != overlay.value;
     failed |= x86_core_machine_memory_register_device_provider(&memory, 0x9000u,
         1u, overlay_read, overlay_write, overlay_query, &filler,
         LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
@@ -566,6 +566,52 @@ static lib_i32 parity_delivery_contract(void)
     return failed;
 }
 
+static lib_i32 cpu_overlay_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386};
+    const x86_core_machine_memory_alias_config alias = {0x200u, 0x300u, 16u};
+    const x86_core_machine_memory_device_route route = {
+        0x200u, 1u, {overlay_read, overlay_write, overlay_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY, LIB_NULL};
+    x86_core_machine *machine = LIB_NULL;
+    lib_u8 overlay = 0u;
+    lib_u8 read = 0u;
+    lib_u16 dma = 0u;
+    lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) failed |= x86_core_machine_install_memory_aliases(machine,
+            &alias, 1u, LIB_TRUE) != LIB_STATUS_OK ||
+        x86_core_machine_install_memory_device_routes(machine, &route, 1u,
+            LIB_NULL, LIB_NULL, &overlay) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x200u, &(lib_u8){0x11u}, 1u) != LIB_STATUS_OK;
+    overlay = 0x33u;
+    if (!failed) failed |= x86_core_machine_memory_read(machine, 0x200u, &read, 1u) !=
+            LIB_STATUS_OK || read != 0x33u ||
+        x86_core_machine_memory_read_instruction_physical(&machine->executor_memory,
+            0x200u, (lib_uptr)&read, 1u) != LIB_STATUS_OK || read != 0x33u ||
+        x86_core_machine_dma_memory_cycle(machine, 0x200u, 1u, 2u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &dma, LIB_NULL, LIB_NULL, LIB_NULL) !=
+            LIB_STATUS_OK || dma != 0x11u;
+    dma = 0x66u;
+    if (!failed) failed |= x86_core_machine_dma_memory_cycle(machine, 0x200u, 1u, 2u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &dma, LIB_NULL, LIB_NULL, LIB_NULL) !=
+            LIB_STATUS_OK || overlay != 0x33u;
+    overlay = 0xffu;
+    if (!failed) failed |= x86_core_machine_memory_read(machine, 0x200u, &read, 1u) !=
+            LIB_STATUS_IO_ERROR ||
+        x86_core_machine_dma_memory_cycle(machine, 0x200u, 1u, 2u,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &dma, LIB_NULL, LIB_NULL, LIB_NULL) !=
+            LIB_STATUS_OK || dma != 0x66u;
+    overlay = 0u;
+    if (!failed) failed |= x86_core_machine_memory_read(machine, 0x200u, &read, 1u) !=
+        LIB_STATUS_OK || read != 0x66u;
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const x86_core_machine_executor_config config = {
@@ -586,7 +632,8 @@ lib_i32 main(void)
     lib_u8 write = 0xa5u;
     lib_i32 failed = parity_delivery_contract() || registration_allocation_failure() ||
         registration_growth_and_priority() || registration_standard_transaction() ||
-        registration_failure_observer_contract() || instruction_read_contract();
+        registration_failure_observer_contract() || instruction_read_contract() ||
+        cpu_overlay_contract();
 
     for (lib_u32 mode = 0u; mode < 5u; ++mode)
         failed |= registration_atomicity(mode);

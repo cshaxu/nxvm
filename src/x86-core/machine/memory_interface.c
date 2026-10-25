@@ -99,10 +99,14 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
                 route->callbacks.write, route->callbacks.query, owner, route->failure);
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY:
+        case X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY:
             status = x86_core_machine_memory_register_raw_overlay_device_provider(
                 memory, route->physical_start, route->bytes,
                 route->callbacks.read, route->callbacks.write,
                 route->callbacks.query, owner, route->failure);
+            if (status == LIB_STATUS_OK)
+                memory->connect.device_providers[memory->connect.device_provider_count - 1u].cpu_only =
+                    route->mode == X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY;
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT:
             status = x86_core_machine_memory_register_replacement_device_provider(memory,
@@ -194,7 +198,7 @@ lib_status x86_core_machine_memory_read(
     {
         lib_status status = x86_core_machine_memory_read_physical(
             (t_ram *)&machine->executor_memory, physical,
-            (lib_uptr)out_data, size);
+            (lib_uptr)out_data, size, LIB_TRUE);
 
         x86_core_machine_trace_record((x86_core_machine *)machine,
             X86_CORE_MACHINE_TRACE_MEMORY_READ, physical, (lib_u32)size,
@@ -224,7 +228,7 @@ lib_status x86_core_machine_memory_write(
     }
     {
         lib_status status = x86_core_machine_memory_write_physical(
-            &machine->executor_memory, physical, (lib_uptr)data, size);
+            &machine->executor_memory, physical, (lib_uptr)data, size, LIB_TRUE);
 
         if (status == LIB_STATUS_OK) {
             x86_core_cpu_execution_invalidate_prefetch(
@@ -256,7 +260,7 @@ lib_status x86_core_machine_memory_query(
         return LIB_STATUS_INVALID_STATE;
     }
     return x86_core_machine_memory_query_physical(&machine->executor_memory, physical,
-        size, access, out_route);
+        size, access, out_route, LIB_TRUE);
 }
 
 lib_status x86_core_machine_set_address_clear_mask(
@@ -296,6 +300,14 @@ lib_status x86_core_machine_observe_address_clear_mask(const x86_core_machine *m
     return LIB_STATUS_OK;
 }
 
+void x86_core_machine_signal_memory_decode_change(x86_core_machine *machine,
+    lib_u32 physical, lib_size bytes)
+{
+    if (machine == LIB_NULL) return;
+    x86_core_cpu_execution_invalidate_memory_view(machine->executor_cpu_execution,
+        physical, bytes);
+}
+
 lib_status x86_core_machine_dma_memory_cycle(x86_core_machine *machine,
     lib_u32 physical, lib_u8 bytes, lib_u8 channel,
     x86_core_machine_memory_access access, lib_u16 *value,
@@ -310,7 +322,7 @@ lib_status x86_core_machine_dma_memory_cycle(x86_core_machine *machine,
          access != X86_CORE_MACHINE_MEMORY_ACCESS_WRITE))
         return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_core_machine_memory_query_physical(&machine->executor_memory,
-        physical, bytes, access, &route);
+        physical, bytes, access, &route, LIB_FALSE);
     if (status != LIB_STATUS_OK) return status;
     status = x86_core_machine_transaction_begin(&machine->transaction,
         X86_CORE_MACHINE_TRANSACTION_OWNER_DMA,
@@ -323,9 +335,9 @@ lib_status x86_core_machine_dma_memory_cycle(x86_core_machine *machine,
         before_memory(device_owner, channel, value);
     status = access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ?
         x86_core_machine_memory_write_physical(&machine->executor_memory,
-            physical, (lib_uptr)value, bytes) :
+            physical, (lib_uptr)value, bytes, LIB_FALSE) :
         x86_core_machine_memory_read_physical(&machine->executor_memory,
-            physical, (lib_uptr)value, bytes);
+            physical, (lib_uptr)value, bytes, LIB_FALSE);
     if (status != LIB_STATUS_OK) {
         x86_core_machine_transaction_cancel(&machine->transaction);
         return status;

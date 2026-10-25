@@ -552,7 +552,7 @@ static void invalidation_dma_advance(void *owner, lib_u64 ticks)
     /* Inject cancellation after an accepted prefix, or before any write. */
     if (fixture->mode == 2u)
         fixture->status = x86_core_machine_memory_write_physical(&machine->executor_memory,
-            0x8000u, (lib_uptr)&value, 1u);
+            0x8000u, (lib_uptr)&value, 1u, LIB_TRUE);
     x86_core_machine_transaction_cancel(&machine->transaction);
 }
 

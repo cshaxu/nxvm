@@ -16,6 +16,13 @@ static lib_bool x86_nxvm_board_keyboard_is_8042(
 static lib_status x86_nxvm_board_register_reset_rom_alias(void *owner);
 static lib_status x86_nxvm_board_memory_admission(void *owner,
     lib_size memory_bytes);
+static void x86_nxvm_board_system_management_active(void *owner, lib_bool active)
+{
+    x86_nxvm_board_state *board = owner;
+
+    if (board->profile_binding.system_management_active != LIB_NULL)
+        board->profile_binding.system_management_active(board->profile_binding.context, active);
+}
 static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile);
 
 lib_status x86_nxvm_board_bind_profile(x86_nxvm_board_state *board,
@@ -235,6 +242,7 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
         .refresh_nmi = x86_nxvm_board_refresh_nmi,
         .finalize_devices = x86_nxvm_board_finalize_devices,
         .firmware = x86_nxvm_board_register_reset_rom_alias,
+        .system_management_active = x86_nxvm_board_system_management_active,
         .context = board
     };
 

@@ -32,6 +32,8 @@ typedef struct x86_nxvm_board_profile_binding {
     void (*finalize)(void *context);
     lib_bool owns_refresh_output;
     lib_bool shutdown_resets;
+    /* Forward the existing physical CPU output; the profile owns its decode. */
+    void (*system_management_active)(void *context, lib_bool active);
 } x86_nxvm_board_profile_binding;
 
 /* Scoped construction inputs, not a runtime board getter. Handles are
