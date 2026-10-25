@@ -46,6 +46,15 @@ receivers with regressions.  This is a progress checkpoint only: it does not
 qualify POST, panel output, Easy-Setup, storage, guest boot or the unavailable
 DSTN member.  S5 owns classification of the next bounded post-C000 trace.
 
+## S6 post-C000 port-61 disposition
+
+The subsequent real-TFT sample observes alternating port-61 bit 4 values after
+the C000 return on both host widths. The existing elapsed-tick source therefore
+remains the owner and no new PIT, F65535 or Core receiver is justified. The
+firmware is still in its own delay body; the exact sample and its limits are in
+[the S6 evidence](t580-s6-post-c000-port61-sample.md). This does not advance
+any display, panel, Setup, storage or guest qualification row.
+
 ## S2 boundary
 
 S2 may add the missing **TFT-only** App entry, binding, profile declaration,
