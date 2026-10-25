@@ -2,6 +2,36 @@
 
 ## Current Work
 
+## M5 T580 S41 — Closed: MyPC110 execution-policy qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S41. |
+| Objective | Make the qualified PC110 App use the existing Turbo runner policy during BIOS POST, without changing the Core time axis, port receiver, firmware bytes or CPU semantics. |
+| Scope | Add one validated optional initial-speed field to the existing X86-NXVM product binding, select Turbo only for MyPC110, and cover its factory propagation. S40's Core loop-compaction concept is explicitly deferred as a separate general-performance effort. |
+| Verification | Build both host widths from the stable Ninja graphs; run affected X86-NXVM and MyPC110 unit tests; confirm the App binding chooses Turbo and the other bindings preserve zero/default Standard. |
+| Stop Conditions | Any need for a BIOS address intercept, fake port value, additional guest clock, scheduler path or changed default for another App rejects this policy change. |
+
+### S41 Closure
+
+The App now selects the existing Turbo runner policy at construction.  Both
+stable Ninja graphs built successfully, and the affected X86-NXVM/MyPC110 test
+selection passed on x64 (116/116) and x86 (116/116).  This validates policy
+propagation and preserves Standard as the default for every other binding.  It
+does not claim that the external BIOS has reached a boot boundary: the
+source-gated receiver qualification remains the T580 blocker.
+
+## M5 T580 S40 — Closed: generic BIOS-delay acceleration design
+
+S40 confirmed that Core cannot safely reuse its stopped/paused deadline advance
+while a CPU instruction stream is active.  The selected BIOS loop repeatedly
+observes port 61, and Core has no device-neutral contract that can predict when
+an arbitrary I/O read changes; compacting it would require a new general loop
+execution model, not a PC110 fix.  QEMU's address intercept is therefore still
+rejected.  The immediate bounded action is S41's existing Turbo policy; any
+generic trace/loop compiler is a separate Core performance task.  See the
+[S40 evidence](../etc/evidence/t580-s40-generic-delay-acceleration-design.md).
+
 ## M5 T580 S39 — Closed: PC110 real-delay progress measurement
 
 | Field | Required record |

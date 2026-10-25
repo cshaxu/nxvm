@@ -238,6 +238,45 @@ wait was run. Together with S38 this identifies interpreter throughput, not a
 missing PC110 device route; see
 [the S39 evidence](../etc/evidence/t580-s39-delay-progress-containment.md).
 
+## S40 — generic BIOS-delay acceleration design
+
+The next useful path is not another PC110 route or QEMU-style firmware
+intercept. S40 audits whether the existing X86 Core can identify and compact a
+strictly generic, interrupt-disabled counted I/O delay loop while preserving
+the Core-owned clock, the actual port read contract and architectural register
+effects. Any design tied to a BIOS address, PC110 profile, artificial port
+value, duplicate scheduler or extra execution path is rejected. This S is
+design-only until a single owner and proof obligations are established.
+
+### S40 Closure
+
+The audit rejects a PC110-local acceleration.  `x86_core_machine_run()`
+publishes elapsed guest time after every retired instruction; its only
+deadline-advance API is intentionally invalid while running.  The BIOS loop
+reads port 61 on every candidate iteration, so a generic shortcut also needs a
+device-neutral prediction contract and a CPU-side loop execution model that
+preserves NMI, I/O and register boundaries.  Neither exists today.  This is a
+separate X86 Core performance feature, not a firmware or board repair.
+
+## S41 — MyPC110 Turbo execution policy
+
+MyPC110 may use the existing X86-NXVM Turbo runner policy from construction:
+it increases only the host rendezvous quantum and removes host pacing; Core
+continues to retire instructions and publish the one guest time axis normally.
+The policy is explicit in the App binding, preserves Standard as every other
+binding's zero/default value, and remains user-selectable through the existing
+`speed` command.  It adds no firmware-address rule, guessed device value, new
+clock, scheduling path or Core behavior.
+
+### S41 Closure
+
+The constructor binding now validates and propagates an existing initial
+runner-speed selection.  MyPC110 selects Turbo, while zero-valued bindings
+remain Standard.  The x64 and x86 stable Ninja graphs built, and the relevant
+X86-NXVM/MyPC110 suite passed 116/116 on each width.  This is an execution
+policy verification only; the external BIOS remains source-gated rather than
+declared boot-qualified.
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

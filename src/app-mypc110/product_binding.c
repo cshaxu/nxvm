@@ -9,6 +9,10 @@ const x86_nxvm_product_machine_binding vm_app_machine = {
     .name = MYPC110_MACHINE_KEY,
     .cpu = X86_CORE_CPU_PROFILE_80486SX,
     .fpu = X86_FPU_PROFILE_NONE,
+    /* The selected PC110 firmware performs long, intentional port-61 delay
+     * loops during POST.  Reuse the existing non-pacing runner policy rather
+     * than special-casing BIOS code; the user may still select standard. */
+    .initial_speed = X86_NXVM_MACHINE_SPEED_TURBO,
     .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_1440K,
     .bios_count = 1u,
     .firmware = &vm_app_firmware,
