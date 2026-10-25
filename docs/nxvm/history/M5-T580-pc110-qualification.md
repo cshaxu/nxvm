@@ -12,3 +12,18 @@ S1 is an evidence-led convergence audit.  It must enumerate every qualification
 member and place each in a bounded successor, a source/asset-gated transfer or
 an evidenced rejection.  It cannot turn the existing partial firmware trace
 into a product acceptance or add a guessed fallback.
+
+## S43--S44: actual timer calibration receiver
+
+S43's sampled execution identifies a deliberate BIOS error halt and a rejected
+PIT/refresh delta, superseding the unsampled delay-throughput interpretation.
+S44 implementation `1f30224c3` corrects only the App's clock configuration and
+existing firmware harness. Both widths report timer pass with delta 1668;
+current unit coverage is 712 cases per width, with x64 timeout reruns explicitly
+recorded. The code/build-registration delta is +100/-119, net -19.
+
+The [S44 evidence](../etc/evidence/t580-s44-pit-refresh-clock.md) and
+[original qualification ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
+retain source grades, retained manual views and open product requirements.
+Preview construction is verified; complete POST, display, guest and release
+qualification remain open. No PC110 product is published by this delivery.

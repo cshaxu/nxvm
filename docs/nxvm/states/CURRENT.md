@@ -2,26 +2,18 @@
 
 ## Current Work
 
-## M5 T580 S44 — Active: PC110 PIT/refresh clock relationship
+## M5 T580 S44 — Closed: PC110 PIT/refresh clock relationship
 
-| Field | Required record |
+Accepted implementation `1f30224c3` corrects the App-owned L2 clock ratios.
+Both host widths pass the real timer integration and all 712 current unit
+cases have passing evidence. Source/test/build-registration delta is +100/-119,
+net -19. All Shared packages and owner assets remain unchanged. The
+[S44 record](../etc/evidence/t580-s44-pit-refresh-clock.md) retains the scope,
+source grades, actual review, verification and unqualified later milestones.
+
+| Task | Progress |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S44. |
-| Admission And Approval | Owner-directed autonomous implementation; source-based timing upgrades are preapproved. |
-| Objective | Repair the App-owned PIT/refresh ratio and verify the unchanged firmware's actual calibration pass branch. |
-| Non-goals | No BIOS interception, forced registers/flags, new clock owner, Lib/Emulator/CPU changes or boot claim. |
-| Reference Baseline | `de788ecb7`, S43 sampled calibration failure and current external TFT BIOS. |
-| Candidate Proposal | PC110 qualification real-firmware progression batch. |
-| Files And ABI Surface | App construction/clock declarations, existing App firmware harness moved to integration, its registration and NXVM records only; no public API expansion. Initial estimate source/test +45/-12 lines, before removing superseded diagnostic state. |
-| Applicable Rules | Source-labelled L2 clock relationship; single Core timeline; existing rational clock domain; existing fixture; preserve owner INI/ROM/media. |
-| Verification | Dual-width construction units and real BIOS timer calibration; complete repository-only units before S closure; preview rebuilds remain prepublication. |
-| Expected Markers | Actual F000:698F pass path with delta in 1614..1868, or a precise failing timer/IRQ boundary. |
-| Asset Needs | Existing external immutable TFT BIOS/font; no new acquisition. |
-| Reporting Requirements | Actual delta, source grade, normal reset preservation, actual diff, verification limits and any later BIOS boundary. |
-| Stop Conditions | 600 seconds or 200 million instructions per run, 64 KiB output; stop on BIOS halt or fault, never spin indefinitely on device deadlines. |
-| Exit Criteria | Correct clocks, owned regression and real unchanged-BIOS calibration proof; all applicable closure checks. |
-| Original Owner Request | Continue PC110 implementation through to usable fixed products. |
-| Similar-Issue Sweep | Both App construction forms and PIT/RTC consumers must use the same declared 33 MHz time axis; unrelated peripheral ratios remain separately unqualified. |
+| T580 S44 | Closed after App clock correction and dual-width timer proof; T580 remains open for later POST, panel, guest, lifecycle and product release qualification. |
 
 ## M5 T580 S43 — Closed: live delay-counter diagnosis
 
