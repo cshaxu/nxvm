@@ -55,6 +55,24 @@ MyPC110 unit/diagnostic tests.  The repository unit suite also passes 667/667
 on each width.  No PC110 release artifact was deployed: panel, POST, Setup,
 DOS and lifecycle qualification remain T580 work.
 
+## M5 T580 S27 — Closed: post-delay real-I/O observation
+
+| Field | Required record |
+| --- | --- |
+| Objective | Observe the first actual I/O operation after the admitted post-C000 port-61 delay return, then select at most one source-backed receiver from that fact. |
+| Boundary | App-local diagnostic and evidence only. No production port route, external model import, fixed instruction-count success condition or Shared/Core change. |
+| Verification | Run the TFT real BIOS on both established host widths. Capture the first post-return I/O or explicitly retain a no-event result; do not call an instruction budget guest progress. |
+| Limit | A trace point alone is diagnostic evidence, not POST, Setup, DOS, panel, MCU/power or release qualification. |
+
+### S27 Delivery
+
+The temporary x64 trace reached `F000:EA84` and ran through the existing
+13,000,000-instruction containment limit without a later I/O event.  The
+observation selected no receiver, so its temporary diagnostic path was removed.
+In particular, it does not justify connecting FDC37C665IR or inventing a
+guest-visible EC/ED gate.  The [S27 evidence](../etc/evidence/t580-s27-post-delay-no-receiver.md)
+records the bounded result and retained limits.
+
 ## M5 T580 S24 — Closed: EC Block-B static receiver
 
 | Field | Required record |
