@@ -105,6 +105,17 @@ lib_status x86_vl82c420_select(x86_vl82c420 *chip,
 lib_status x86_vl82c420_read_selected(const x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 *out_value)
 {
+    lib_status status;
+
+    if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = x86_vl82c420_access_status(chip, bank);
+    if (status != LIB_STATUS_OK) return status;
+    return x86_vl82c420_read_register(chip, bank, chip->selected[bank], out_value);
+}
+
+lib_status x86_vl82c420_read_register(const x86_vl82c420 *chip,
+    x86_vl82c420_bank bank, lib_u8 index, lib_u8 *out_value)
+{
     const lib_u8 *data;
     lib_status status;
 
@@ -112,7 +123,7 @@ lib_status x86_vl82c420_read_selected(const x86_vl82c420 *chip,
     status = x86_vl82c420_access_status(chip, bank);
     if (status != LIB_STATUS_OK) return status;
     data = x86_vl82c420_bank_data_const(chip, bank);
-    *out_value = data[chip->selected[bank]];
+    *out_value = data[bank == X86_VL82C420_BANK_SCAMP ? index & 0x7fu : index];
     return LIB_STATUS_OK;
 }
 

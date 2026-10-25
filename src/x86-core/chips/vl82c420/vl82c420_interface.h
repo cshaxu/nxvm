@@ -35,6 +35,10 @@ lib_status x86_vl82c420_select(x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 index);
 lib_status x86_vl82c420_read_selected(const x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 *out_value);
+/* Observational board decode: preserve all selected indices and unlock state.
+ * The same bank access rules and SCAMP index mask apply as to indexed I/O. */
+lib_status x86_vl82c420_read_register(const x86_vl82c420 *chip,
+    x86_vl82c420_bank bank, lib_u8 index, lib_u8 *out_value);
 lib_status x86_vl82c420_write_selected(x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 value);
 
