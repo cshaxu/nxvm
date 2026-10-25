@@ -40,6 +40,16 @@ These are planning boundaries, not allocated S identifiers. Split an oversized
 batch before admission; never use letter-suffixed S numbers or an endless
 first-failing-BIOS-instruction repair sequence.
 
+## S28 Closure — Post-Delay Execution Boundary
+
+S28 records the real TFT BIOS retirement sequence immediately after the
+established `F000:EA84` delay return, on both host widths.  It proves that the
+apparent stall is a finite BIOS port-61 delay and that the subsequent executed
+routes are already owned.  The source record identifies a later `8Bh` boot/IPL
+latch candidate but does not define its reset state, so no receiver was added.
+The temporary probe was removed.  Full evidence is in
+[the S28 record](../etc/evidence/t580-s28-post-delay-boundary.md).
+
 ## Verification And Exit
 
 Full required repository units and external integrations pass on x86/x64; affected prior Apps remain valid, releases/hashes/PE widths and retained EXE pairs are verified. Every PC110 domain is accepted or owner-disposed, manual limits are recorded, and owner acceptance closes the product claim.

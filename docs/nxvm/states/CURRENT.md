@@ -2,16 +2,26 @@
 
 ## Current Work
 
+## M5 T580 S28 — Closed: post-delay execution boundary
+
+| Field | Required record |
+| --- | --- |
+| Objective | Starting from the admitted real TFT BIOS return at `F000:EA84`, identify the next repeated execution boundary or actual device operation without treating an instruction ceiling as firmware progress. |
+| Boundary | MyPC110 diagnostic and NXVM evidence only. No production receiver, Shared/Core change, firmware mutation, external media import or product artifact publication. |
+| Method | Extend the existing bounded real-firmware diagnostic with a copied retirement ring only after the returned delay frame. Run both established host widths, classify the observed control flow, then remove any probe that does not select a concrete source-backed receiver. |
+| Stop condition | Any required synthetic BIOS action, inferred device value, external model import, or lack of a reproducible semantic boundary stops this S with evidence rather than an implementation claim. |
+| Delivery | The temporary trace showed a finite port-61 delay and only existing receiver routes after it; no reset value or new port was inferred. The trace was removed after x64/x86 observation. See [S28 evidence](../etc/evidence/t580-s28-post-delay-boundary.md). |
+
 ## Open Task — M5 T580
 
 | Field | Required record |
 | --- | --- |
 | Latest accepted delivery | S25 records a traceable external DSTN panel-derived input. S24 adds the documented TFT EC Block-B static receiver. S20 rejects a non-semantic checkpoint and S21 rejects synthetic reference-emulator shortcuts; none establishes a product release qualification. |
-| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md), [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md) and [S25 DSTN input](../etc/evidence/t580-s25-dstn-panel-derived-input.md). |
+| Evidence | [S5 C000 return](../etc/evidence/t580-s5-c000-return.md), [S6 port-61 sample](../etc/evidence/t580-s6-post-c000-port61-sample.md), [S7 delay return](../etc/evidence/t580-s7-post-c000-delay-return.md), [S8 display receiver](../etc/evidence/t580-s8-pc110-display-receiver.md), [S9 mode-12 capture](../etc/evidence/t580-s9-f65535-mode12-capture.md), [S14 post-C000 observation](../etc/evidence/t580-s14-post-c000-observation.md), [S19 cold image](../etc/evidence/t580-s19-cold-config-image.md), [S20 checkpoint](../etc/evidence/t580-s20-ram-test-checkpoint.md), [S21 model boundary](../etc/evidence/t580-s21-external-model-boundary.md), [S23 EC mailbox](../etc/evidence/t580-s23-ec-mailbox-receiver.md), [S24 EC Block B](../etc/evidence/t580-s24-ec-block-b-receiver.md), [S25 DSTN input](../etc/evidence/t580-s25-dstn-panel-derived-input.md) and [S28 post-delay boundary](../etc/evidence/t580-s28-post-delay-boundary.md). |
 | Remaining convergence | Real POST/setup/guest progression still lacks a demonstrated firmware transition beyond the established delay path and a complete power/MCU or later firmware contract; panel/power, storage/guest and lifecycle UX remain unqualified. A derived DSTN panel candidate now exists, but a factory-original DSTN BIOS/font input and independent DSTN qualification remain absent. |
 | Next coordination rule | Admit only a source- or semantic-checkpoint-bounded receiver. Do not use arbitrary instruction counts, ROM-address behavior, QEMU postboot shortcuts, synthetic firmware paths or metadata-only MCU models as a substitute. |
 
-## M5 T580 S25 — Active: DSTN panel-input provenance
+## M5 T580 S25 — Closed: DSTN panel-input provenance
 
 | Field | Required record |
 | --- | --- |
