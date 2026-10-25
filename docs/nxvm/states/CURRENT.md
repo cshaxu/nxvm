@@ -31,6 +31,30 @@ The App remains TFT-only because neither candidate has yet passed the separate
 PC110 build, panel and guest qualification gates. No repository source, public
 contract or product artifact changed.
 
+## M5 T580 S26 — Closed: fixed panel build pairings
+
+| Field | Required record |
+| --- | --- |
+| Objective | Replace the single TFT-only preview construction with two fixed MyPC110 build pairings: one uses the admitted TFT BIOS and one uses the S25 DSTN-derived input. |
+| Boundary | `app-mypc110`, its unit tests, CMake input declarations and NXVM evidence only. No Shared/Core API, runtime model selector, product artifact deployment, MCU/power/PCIC model, guest claim or fallback path. |
+| Design | Each generated firmware object has one selected immutable BIOS. Each product binding links exactly one such object and owns its matching fixed profile identity. The existing common board, font route and adjacent `mypc110.ini` are shared; no executable infers a panel from INI. |
+| Verification | Verify each asset hash and both CMake input routes; build the two preview targets and run MyPC110 units on x64/x86. Then run the required repository unit suite before closure. |
+| Limit | Building both pairings establishes only build identity. It does not qualify DSTN/TFT panel output, real POST/Setup/DOS, power/MCU/PCIC, lifecycle UX or artifact publication. |
+
+### S26 Delivery
+
+`app-mypc110` now builds independent `tft` and `dstn` preview pairings.  Each
+links one generated immutable firmware object, has a fixed machine identity and
+does not select a BIOS or panel at runtime.  The App-local firmware map was
+renamed from `mypc110_tft_firmware` to `mypc110_firmware`, because the map has
+no TFT-specific behavior.  The [S26 evidence](../etc/evidence/t580-s26-fixed-panel-pairings.md)
+records both external input hashes and the qualification boundary.
+
+Both established Ninja/ccache widths build the pairings and pass all 19
+MyPC110 unit/diagnostic tests.  The repository unit suite also passes 667/667
+on each width.  No PC110 release artifact was deployed: panel, POST, Setup,
+DOS and lifecycle qualification remain T580 work.
+
 ## M5 T580 S24 — Closed: EC Block-B static receiver
 
 | Field | Required record |

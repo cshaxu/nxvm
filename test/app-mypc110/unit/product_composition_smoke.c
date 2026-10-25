@@ -2,6 +2,14 @@
 #include "x86-nxvm/product/factory_interface.h"
 #include "x86-nxvm/product/ini_interface.h"
 
+#ifndef MYPC110_EXPECTED_MACHINE_NAME
+#error "The MyPC110 product-composition test needs one fixed machine identity."
+#endif
+
+#ifndef MYPC110_EXPECTED_PANEL_VALUE
+#error "The MyPC110 product-composition test needs one fixed panel byte."
+#endif
+
 int main(void)
 {
     lib_u8 document[] = "[machine]\n"
@@ -26,8 +34,11 @@ int main(void)
         machine.composition.driver.copy_frame == LIB_NULL ||
         machine.information(machine.context, machine.composition.machine,
             &information) != LIB_STATUS_OK ||
-        lib_text_compare(information.machine_name, "ibm-pc110-tft") != 0 ||
-        information.memory_bytes != 20u * 1024u * 1024u) {
+        lib_text_compare(information.machine_name, MYPC110_EXPECTED_MACHINE_NAME) != 0 ||
+        information.memory_bytes != 20u * 1024u * 1024u ||
+        vm_app_machine.firmware == LIB_NULL || vm_app_machine.firmware->bios[0].data == LIB_NULL ||
+        vm_app_machine.firmware->bios[0].bytes != 256u * 1024u ||
+        vm_app_machine.firmware->bios[0].data[0x20af6u] != MYPC110_EXPECTED_PANEL_VALUE) {
         failed = 2;
     }
     if (machine.composition.destroy(machine.composition.machine) != LIB_STATUS_OK)

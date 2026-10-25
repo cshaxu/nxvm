@@ -19,14 +19,14 @@ typedef struct mypc110_base_composition {
     mypc110_ec_block ec_block;
     mypc110_ec_mailbox ec_mailbox;
     mypc110_font_rom font;
-    mypc110_tft_firmware firmware;
+    mypc110_firmware firmware;
 } mypc110_base_composition;
 
 /* Creates only the source-backed base: 486SX Core, standard controllers,
  * TFT firmware map and VL82C420 routes.  It intentionally has no reset alias,
  * input, panel, storage, RTC seed or execution-provider contract. */
-lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
-    lib_size tft_bios_bytes, const lib_u8 *font_rom, lib_size font_rom_bytes,
+lib_status mypc110_base_composition_create(const lib_u8 *bios,
+    lib_size bios_bytes, const lib_u8 *font_rom, lib_size font_rom_bytes,
     mypc110_base_composition *out_composition);
 void mypc110_base_composition_destroy(mypc110_base_composition *composition);
 

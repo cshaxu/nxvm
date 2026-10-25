@@ -97,7 +97,7 @@ lib_status mypc110_config_initialize_cold_image(x86_vl82c420 *chip)
 static lib_status mypc110_config_read(void *owner, lib_u16 port,
     lib_u64 tick, lib_u32 *out_value)
 {
-    mypc110_tft_firmware *firmware = owner;
+    mypc110_firmware *firmware = owner;
     x86_vl82c420 *chip;
     x86_vl82c420_bank bank;
     lib_u8 value;
@@ -153,7 +153,7 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
 
 static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
 {
-    mypc110_tft_firmware *firmware = owner;
+    mypc110_firmware *firmware = owner;
     x86_vl82c420 *chip;
     x86_vl82c420_bank bank;
 
@@ -191,7 +191,7 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
             (lib_u8)value);
 
         if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_ECED) {
-            mypc110_tft_firmware_note_eced_write(firmware,
+            mypc110_firmware_note_eced_write(firmware,
                 firmware->eced_index, (lib_u8)value);
         }
         return status == LIB_STATUS_INVALID_STATE &&
@@ -200,7 +200,7 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port, lib_u32 value)
 }
 
 lib_status mypc110_config_install_routes(x86_core_machine *machine,
-    mypc110_tft_firmware *firmware, x86_vl82c420 *chip)
+    mypc110_firmware *firmware, x86_vl82c420 *chip)
 {
     const x86_core_machine_port_route port_routes[] = {
         {MYPC110_BLOCK2_LOCK_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},

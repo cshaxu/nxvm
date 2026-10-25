@@ -3,7 +3,7 @@
 
 int main(void)
 {
-    static const lib_u8 bios[MYPC110_TFT_BIOS_BYTES] = {0};
+    static const lib_u8 bios[MYPC110_FIRMWARE_BYTES] = {0};
     static const lib_u8 font[MYPC110_FONT_ROM_BYTES] = {0};
     mypc110_base_composition composition = {0};
     x86_video_snapshot snapshot = {0};

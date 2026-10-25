@@ -7,7 +7,7 @@
 
 int main(void)
 {
-    static lib_u8 bios[MYPC110_TFT_BIOS_BYTES];
+    static lib_u8 bios[MYPC110_FIRMWARE_BYTES];
     static lib_u8 font[MYPC110_FONT_ROM_BYTES];
     const x86_nxvm_machine_assets assets = {
         .bios = {{bios, sizeof(bios)}, {LIB_NULL, 0u}},

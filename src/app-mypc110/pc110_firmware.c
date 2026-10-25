@@ -2,13 +2,13 @@
 
 #include "x86-core/machine/memory_interface.h"
 
-#define MYPC110_SYSTEM_FLASH_OFFSET (3u * MYPC110_TFT_FIRMWARE_BANK_BYTES)
-#define MYPC110_VIDEO_FLASH_OFFSET (2u * MYPC110_TFT_FIRMWARE_BANK_BYTES)
+#define MYPC110_SYSTEM_FLASH_OFFSET (3u * MYPC110_FIRMWARE_BANK_BYTES)
+#define MYPC110_VIDEO_FLASH_OFFSET (2u * MYPC110_FIRMWARE_BANK_BYTES)
 #define MYPC110_FLASH_PHYSICAL_START MYPC110_VIDEO_PHYSICAL_START
 #define MYPC110_SYSTEM_PHYSICAL_START 0x000f0000u
 #define MYPC110_RESET_PHYSICAL_START 0xffff0000u
 
-static lib_status mypc110_tft_firmware_shadow(const mypc110_tft_firmware *firmware,
+static lib_status mypc110_firmware_shadow(const mypc110_firmware *firmware,
     lib_u32 physical, lib_uptr bytes, x86_core_machine_memory_access access,
     lib_u8 **out_shadow, lib_size *out_offset)
 {
@@ -30,13 +30,13 @@ static lib_status mypc110_tft_firmware_shadow(const mypc110_tft_firmware *firmwa
         return LIB_STATUS_OK;
     }
     if ((physical >= MYPC110_SYSTEM_PHYSICAL_START &&
-         physical - MYPC110_SYSTEM_PHYSICAL_START < MYPC110_TFT_FIRMWARE_BANK_BYTES) ||
+         physical - MYPC110_SYSTEM_PHYSICAL_START < MYPC110_FIRMWARE_BANK_BYTES) ||
         (physical >= MYPC110_RESET_PHYSICAL_START &&
-         physical - MYPC110_RESET_PHYSICAL_START < MYPC110_TFT_FIRMWARE_BANK_BYTES)) {
+         physical - MYPC110_RESET_PHYSICAL_START < MYPC110_FIRMWARE_BANK_BYTES)) {
         offset = (lib_size)(physical >= MYPC110_RESET_PHYSICAL_START ?
             physical - MYPC110_RESET_PHYSICAL_START :
             physical - MYPC110_SYSTEM_PHYSICAL_START);
-        if (bytes > MYPC110_TFT_FIRMWARE_BANK_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
+        if (bytes > MYPC110_FIRMWARE_BANK_BYTES - offset) return LIB_STATUS_UNSUPPORTED;
         *out_shadow = firmware->system_shadow;
         *out_offset = offset;
         return LIB_STATUS_OK;
@@ -44,10 +44,10 @@ static lib_status mypc110_tft_firmware_shadow(const mypc110_tft_firmware *firmwa
     return LIB_STATUS_UNSUPPORTED;
 }
 
-static lib_status mypc110_tft_firmware_read(void *owner, lib_u32 physical,
+static lib_status mypc110_firmware_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    const mypc110_tft_firmware *firmware = owner;
+    const mypc110_firmware *firmware = owner;
     lib_size offset;
     lib_u8 *shadow;
     lib_status status;
@@ -55,55 +55,55 @@ static lib_status mypc110_tft_firmware_read(void *owner, lib_u32 physical,
     (void)observe_only;
     if (firmware == LIB_NULL || firmware->bios == LIB_NULL || destination == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = mypc110_tft_firmware_shadow(firmware, physical, bytes,
+    status = mypc110_firmware_shadow(firmware, physical, bytes,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, &shadow, &offset);
     if (status != LIB_STATUS_OK) return status;
     lib_memory_copy((void *)destination, shadow + offset, bytes);
     return LIB_STATUS_OK;
 }
 
-static lib_status mypc110_tft_firmware_read_instruction(void *owner,
+static lib_status mypc110_firmware_read_instruction(void *owner,
     lib_u32 physical, lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    return mypc110_tft_firmware_read(owner, physical, destination, bytes,
+    return mypc110_firmware_read(owner, physical, destination, bytes,
         observe_only);
 }
 
-static lib_status mypc110_tft_firmware_write(void *owner, lib_u32 physical,
+static lib_status mypc110_firmware_write(void *owner, lib_u32 physical,
     lib_uptr source, lib_uptr bytes)
 {
-    mypc110_tft_firmware *firmware = owner;
+    mypc110_firmware *firmware = owner;
     lib_size offset;
     lib_u8 *shadow;
     lib_status status;
 
     if (source == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    status = mypc110_tft_firmware_shadow(firmware, physical, bytes,
+    status = mypc110_firmware_shadow(firmware, physical, bytes,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &shadow, &offset);
     if (status != LIB_STATUS_OK) return status;
     lib_memory_copy(shadow + offset, (const void *)source, bytes);
     return LIB_STATUS_OK;
 }
 
-static lib_status mypc110_tft_firmware_query(void *owner, lib_u32 physical,
+static lib_status mypc110_firmware_query(void *owner, lib_u32 physical,
     lib_uptr bytes, x86_core_machine_memory_access access)
 {
     lib_size offset;
     lib_u8 *shadow;
 
-    return mypc110_tft_firmware_shadow(owner, physical, bytes, access,
+    return mypc110_firmware_shadow(owner, physical, bytes, access,
         &shadow, &offset);
 }
 
-static const x86_core_machine_memory_device_callbacks mypc110_tft_firmware_callbacks = {
-    mypc110_tft_firmware_read, mypc110_tft_firmware_write,
-    mypc110_tft_firmware_query
+static const x86_core_machine_memory_device_callbacks mypc110_firmware_callbacks = {
+    mypc110_firmware_read, mypc110_firmware_write,
+    mypc110_firmware_query
 };
 
-static lib_status mypc110_tft_firmware_configure(void *opaque,
+static lib_status mypc110_firmware_configure(void *opaque,
     x86_core_machine_firmware_context *firmware)
 {
-    const mypc110_tft_firmware *binding = opaque;
+    const mypc110_firmware *binding = opaque;
 
     if (binding == LIB_NULL || binding->bios == LIB_NULL ||
         binding->video_shadow == LIB_NULL || binding->system_shadow == LIB_NULL) {
@@ -113,13 +113,13 @@ static lib_status mypc110_tft_firmware_configure(void *opaque,
      * routes expose the independently evidenced C000 video and F000 system
      * shadows; all remaining bytes retain their raw immutable owner. */
     return x86_core_machine_firmware_register_immutable_rom(firmware,
-        MYPC110_FLASH_PHYSICAL_START, binding->bios, MYPC110_TFT_BIOS_BYTES);
+        MYPC110_FLASH_PHYSICAL_START, binding->bios, MYPC110_FIRMWARE_BYTES);
 }
 
-static lib_status mypc110_tft_firmware_reset(void *opaque,
+static lib_status mypc110_firmware_reset(void *opaque,
     x86_core_machine_firmware_context *firmware)
 {
-    mypc110_tft_firmware *binding = opaque;
+    mypc110_firmware *binding = opaque;
 
     (void)firmware;
     if (binding == LIB_NULL || binding->bios == LIB_NULL ||
@@ -132,32 +132,32 @@ static lib_status mypc110_tft_firmware_reset(void *opaque,
     binding->video_shadow_writable = LIB_FALSE;
     lib_memory_copy(binding->system_shadow,
         binding->bios + MYPC110_SYSTEM_FLASH_OFFSET,
-        MYPC110_TFT_FIRMWARE_BANK_BYTES);
+        MYPC110_FIRMWARE_BANK_BYTES);
     return LIB_STATUS_OK;
 }
 
-static const x86_core_machine_firmware_provider mypc110_tft_provider = {
-    mypc110_tft_firmware_configure,
-    mypc110_tft_firmware_reset,
+static const x86_core_machine_firmware_provider mypc110_provider = {
+    mypc110_firmware_configure,
+    mypc110_firmware_reset,
     LIB_NULL
 };
 
-lib_status mypc110_tft_firmware_create(const lib_u8 *bios, lib_size bytes,
-    mypc110_tft_firmware *out_firmware)
+lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
+    mypc110_firmware *out_firmware)
 {
-    if (bios == LIB_NULL || bytes != MYPC110_TFT_BIOS_BYTES ||
+    if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES ||
         out_firmware == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_firmware = (mypc110_tft_firmware) {0};
+    *out_firmware = (mypc110_firmware) {0};
     out_firmware->video_shadow = lib_allocate_zero(1u,
         MYPC110_VIDEO_SHADOW_BYTES);
     if (out_firmware->video_shadow == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     out_firmware->system_shadow = lib_allocate_zero(1u,
-        MYPC110_TFT_FIRMWARE_BANK_BYTES);
+        MYPC110_FIRMWARE_BANK_BYTES);
     if (out_firmware->system_shadow == LIB_NULL) {
         lib_release(out_firmware->video_shadow);
-        *out_firmware = (mypc110_tft_firmware) {0};
+        *out_firmware = (mypc110_firmware) {0};
         return LIB_STATUS_NO_MEMORY;
     }
     out_firmware->bios = bios;
@@ -165,11 +165,11 @@ lib_status mypc110_tft_firmware_create(const lib_u8 *bios, lib_size bytes,
         bios + MYPC110_VIDEO_FLASH_OFFSET, MYPC110_VIDEO_SHADOW_BYTES);
     lib_memory_copy(out_firmware->system_shadow,
         bios + MYPC110_SYSTEM_FLASH_OFFSET,
-        MYPC110_TFT_FIRMWARE_BANK_BYTES);
+        MYPC110_FIRMWARE_BANK_BYTES);
     return LIB_STATUS_OK;
 }
 
-void mypc110_tft_firmware_note_eced_write(mypc110_tft_firmware *firmware,
+void mypc110_firmware_note_eced_write(mypc110_firmware *firmware,
     lib_u8 index, lib_u8 value)
 {
     if (firmware == LIB_NULL) return;
@@ -178,31 +178,31 @@ void mypc110_tft_firmware_note_eced_write(mypc110_tft_firmware *firmware,
     }
 }
 
-void mypc110_tft_firmware_destroy(mypc110_tft_firmware *firmware)
+void mypc110_firmware_destroy(mypc110_firmware *firmware)
 {
     if (firmware == LIB_NULL) return;
     lib_release(firmware->video_shadow);
     lib_release(firmware->system_shadow);
-    *firmware = (mypc110_tft_firmware) {0};
+    *firmware = (mypc110_firmware) {0};
 }
 
-const x86_core_machine_firmware_provider *mypc110_tft_firmware_provider(void)
+const x86_core_machine_firmware_provider *mypc110_firmware_provider(void)
 {
-    return &mypc110_tft_provider;
+    return &mypc110_provider;
 }
 
-lib_status mypc110_tft_firmware_install_routes(x86_core_machine *machine,
-    mypc110_tft_firmware *firmware)
+lib_status mypc110_firmware_install_routes(x86_core_machine *machine,
+    mypc110_firmware *firmware)
 {
     const x86_core_machine_memory_device_route routes[] = {
         {MYPC110_VIDEO_PHYSICAL_START, MYPC110_VIDEO_SHADOW_BYTES,
-            mypc110_tft_firmware_callbacks,
+            mypc110_firmware_callbacks,
             X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL},
-        {MYPC110_SYSTEM_PHYSICAL_START, MYPC110_TFT_FIRMWARE_BANK_BYTES,
-            mypc110_tft_firmware_callbacks,
+        {MYPC110_SYSTEM_PHYSICAL_START, MYPC110_FIRMWARE_BANK_BYTES,
+            mypc110_firmware_callbacks,
             X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL},
-        {MYPC110_RESET_PHYSICAL_START, MYPC110_TFT_FIRMWARE_BANK_BYTES,
-            mypc110_tft_firmware_callbacks,
+        {MYPC110_RESET_PHYSICAL_START, MYPC110_FIRMWARE_BANK_BYTES,
+            mypc110_firmware_callbacks,
             X86_CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY, LIB_NULL}
     };
 
@@ -214,6 +214,6 @@ lib_status mypc110_tft_firmware_install_routes(x86_core_machine *machine,
 
     if (status == LIB_STATUS_OK)
         status = x86_core_machine_set_memory_instruction_read(machine, firmware,
-            mypc110_tft_firmware_read_instruction);
+            mypc110_firmware_read_instruction);
     return status;
 }

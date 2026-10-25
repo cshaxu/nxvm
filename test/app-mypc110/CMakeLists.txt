@@ -107,27 +107,42 @@ endif()
 add_test(NAME mypc110.unit/ec-block COMMAND mypc110-ec-block-smoke)
 set_tests_properties(mypc110.unit/ec-block PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
 
-if(TARGET mypc110-product)
-    add_executable(mypc110-product-composition-smoke unit/product_composition_smoke.c)
-    target_link_libraries(mypc110-product-composition-smoke PRIVATE mypc110-product)
-    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(mypc110-product-composition-smoke PRIVATE
-            -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+foreach(variant IN ITEMS tft dstn)
+    if(TARGET mypc110-product-${variant})
+        add_executable(mypc110-${variant}-product-composition-smoke
+            unit/product_composition_smoke.c)
+        target_link_libraries(mypc110-${variant}-product-composition-smoke PRIVATE
+            mypc110-product-${variant})
+        if(variant STREQUAL "tft")
+            target_compile_definitions(mypc110-${variant}-product-composition-smoke PRIVATE
+                MYPC110_EXPECTED_MACHINE_NAME="ibm-pc110-tft"
+                MYPC110_EXPECTED_PANEL_VALUE=0x00u)
+        else()
+            target_compile_definitions(mypc110-${variant}-product-composition-smoke PRIVATE
+                MYPC110_EXPECTED_MACHINE_NAME="ibm-pc110-dstn-derived"
+                MYPC110_EXPECTED_PANEL_VALUE=0x15u)
+        endif()
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+            target_compile_options(mypc110-${variant}-product-composition-smoke PRIVATE
+                -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+        endif()
+        add_dependencies(mypc110-${variant}-product-composition-smoke
+            mypc110-${variant}-preview)
+        if(TARGET build-unit-tests)
+            add_dependencies(build-unit-tests mypc110-${variant}-product-composition-smoke)
+        endif()
+        add_test(NAME mypc110.unit/${variant}-product-composition
+            COMMAND mypc110-${variant}-product-composition-smoke)
+        set_tests_properties(mypc110.unit/${variant}-product-composition PROPERTIES
+            LABELS "unit;mypc110" TIMEOUT 30)
     endif()
-    add_dependencies(mypc110-product-composition-smoke mypc110-product-preview)
-    if(TARGET build-unit-tests)
-        add_dependencies(build-unit-tests mypc110-product-composition-smoke)
-    endif()
-    add_test(NAME mypc110.unit/product-composition COMMAND mypc110-product-composition-smoke)
-    set_tests_properties(mypc110.unit/product-composition PROPERTIES
-        LABELS "unit;mypc110" TIMEOUT 30)
-endif()
+endforeach()
 
-if(TARGET mypc110-real-firmware)
+if(TARGET mypc110-real-firmware-tft)
     add_executable(mypc110-real-firmware-post-diagnostic
         diagnostic/real_firmware_post_diagnostic.c)
     target_link_libraries(mypc110-real-firmware-post-diagnostic PRIVATE
-        mypc110-board mypc110-real-firmware)
+        mypc110-board mypc110-real-firmware-tft)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(mypc110-real-firmware-post-diagnostic PRIVATE
             -UNDEBUG -Wall -Wextra -Wpedantic -Werror)

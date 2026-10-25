@@ -4,7 +4,7 @@
 
 int main(void)
 {
-    static lib_u8 bios[MYPC110_TFT_BIOS_BYTES];
+    static lib_u8 bios[MYPC110_FIRMWARE_BYTES];
     static lib_u8 font[MYPC110_FONT_ROM_BYTES];
     static const lib_u8 make_break[] = {0x1cu, 0xf0u, 0x1cu};
     static const lib_u8 shadow_patch = 0x44u;
@@ -15,7 +15,7 @@ int main(void)
     lib_bool a20_enabled = LIB_FALSE;
     lib_i32 failed = 0;
 
-    bios[2u * MYPC110_TFT_FIRMWARE_BANK_BYTES] = 0x11u;
+    bios[2u * MYPC110_FIRMWARE_BANK_BYTES] = 0x11u;
     font[0] = 0x55u;
     font[MYPC110_FONT_BANK_BYTES] = 0xaau;
     failed |= mypc110_base_composition_create(bios, sizeof(bios), font,

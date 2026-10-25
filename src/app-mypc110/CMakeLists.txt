@@ -11,47 +11,60 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mypc110-board PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-if(COMMAND nxvm_require_manifest)
-    nxvm_require_manifest(ibm-pc110-tft)
-    nxvm_require_profile_asset("ibm-pc110-tft/firmware/pc110-tft-bios-1995-09-19.rom" 262144
-        "232101c88466f311bcc32fbc215a4d7569f695ce19f9c07ca67ce2aee5232312")
-    nxvm_require_profile_asset("ibm-pc110-tft/firmware/pc110-kanji-font.rom" 1048576
+function(mypc110_add_firmware_variant variant machine_key product_name bios_path bios_hash)
+    nxvm_require_profile_asset("${bios_path}" 262144 "${bios_hash}")
+    set(font_path "${machine_key}/firmware/pc110-kanji-font.rom")
+    nxvm_require_profile_asset("${font_path}" 1048576
         "9829fdb8281c12022dc3b77686044ed1a5213ab526ce4329f2841cd64171784c")
-    set(mypc110_real_firmware_source
-        "${CMAKE_BINARY_DIR}/generated/app-mypc110/firmware.c")
-    add_custom_command(OUTPUT "${mypc110_real_firmware_source}"
+    set(firmware_source "${CMAKE_BINARY_DIR}/generated/app-mypc110/${variant}_firmware.c")
+    add_custom_command(OUTPUT "${firmware_source}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/generated/app-mypc110"
         COMMAND "${CMAKE_COMMAND}"
-            "-DINPUT_BIOS_0=${NXVM_PROFILE_ASSETS_ROOT}/ibm-pc110-tft/firmware/pc110-tft-bios-1995-09-19.rom"
+            "-DINPUT_BIOS_0=${NXVM_PROFILE_ASSETS_ROOT}/${bios_path}"
             -DINPUT_BIOS_1=LIB_NULL -DINPUT_VIDEO=LIB_NULL -DINPUT_CMOS=LIB_NULL
-            "-DINPUT_FONT=${NXVM_PROFILE_ASSETS_ROOT}/ibm-pc110-tft/firmware/pc110-kanji-font.rom"
-            "-DOUTPUT=${mypc110_real_firmware_source}"
+            "-DINPUT_FONT=${NXVM_PROFILE_ASSETS_ROOT}/${font_path}"
+            "-DOUTPUT=${firmware_source}"
             -P "${CMAKE_SOURCE_DIR}/src/x86-nxvm/product/embed_firmware.cmake"
         DEPENDS
-            "${NXVM_PROFILE_ASSETS_ROOT}/ibm-pc110-tft/firmware/pc110-tft-bios-1995-09-19.rom"
-            "${NXVM_PROFILE_ASSETS_ROOT}/ibm-pc110-tft/firmware/pc110-kanji-font.rom"
+            "${NXVM_PROFILE_ASSETS_ROOT}/${bios_path}"
+            "${NXVM_PROFILE_ASSETS_ROOT}/${font_path}"
             "${CMAKE_SOURCE_DIR}/src/x86-nxvm/product/embed_firmware.cmake"
-        COMMENT "Embedding validated PC110 TFT firmware for bounded diagnostics"
+        COMMENT "Embedding validated MyPC110 ${variant} firmware"
         VERBATIM)
-    add_library(mypc110-real-firmware STATIC EXCLUDE_FROM_ALL
-        "${mypc110_real_firmware_source}")
-    target_link_libraries(mypc110-real-firmware PRIVATE types)
-    target_include_directories(mypc110-real-firmware PRIVATE "${CMAKE_SOURCE_DIR}/src")
+    add_library(mypc110-real-firmware-${variant} STATIC EXCLUDE_FROM_ALL
+        "${firmware_source}")
+    target_link_libraries(mypc110-real-firmware-${variant} PRIVATE types)
+    target_include_directories(mypc110-real-firmware-${variant} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
-    add_library(mypc110-product STATIC product_binding.c)
-    target_include_directories(mypc110-product PUBLIC "${CMAKE_SOURCE_DIR}/src"
+    add_library(mypc110-product-${variant} STATIC product_binding.c)
+    target_include_directories(mypc110-product-${variant} PUBLIC "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_BINARY_DIR}/generated")
-    target_link_libraries(mypc110-product PUBLIC mypc110-board mypc110-real-firmware
-        x86-nxvm-product)
+    target_compile_definitions(mypc110-product-${variant} PRIVATE
+        MYPC110_MACHINE_KEY="${machine_key}")
+    target_link_libraries(mypc110-product-${variant} PUBLIC mypc110-board
+        mypc110-real-firmware-${variant} x86-nxvm-product)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(mypc110-product PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        target_compile_options(mypc110-product-${variant} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 
-    # This checks the real App entry and its embedded BYOB inputs without
-    # declaring a deployed PC110 artifact before guest qualification.
-    add_executable(mypc110-product-preview EXCLUDE_FROM_ALL main.c)
-    target_link_libraries(mypc110-product-preview PRIVATE mypc110-product)
+    # Preview binaries prove a fixed App entry and embedded BYOB inputs; they
+    # are not deployed artifacts until guest qualification is complete.
+    add_executable(mypc110-${variant}-preview EXCLUDE_FROM_ALL main.c)
+    target_compile_definitions(mypc110-${variant}-preview PRIVATE
+        MYPC110_PRODUCT_NAME="${product_name}")
+    target_link_libraries(mypc110-${variant}-preview PRIVATE mypc110-product-${variant})
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(mypc110-product-preview PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        target_compile_options(mypc110-${variant}-preview PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
+endfunction()
+
+if(COMMAND nxvm_require_manifest)
+    nxvm_require_manifest(ibm-pc110-tft)
+    nxvm_require_manifest(ibm-pc110-dstn-derived)
+    mypc110_add_firmware_variant(tft "ibm-pc110-tft" "MyPC110 TFT"
+        "ibm-pc110-tft/firmware/pc110-tft-bios-1995-09-19.rom"
+        "232101c88466f311bcc32fbc215a4d7569f695ce19f9c07ca67ce2aee5232312")
+    mypc110_add_firmware_variant(dstn "ibm-pc110-dstn-derived" "MyPC110 DSTN"
+        "ibm-pc110-dstn-derived/firmware/pc110-dstn-derived-2026-07-27.rom"
+        "aa2ab27a8cc4fee059238fdbd4bd869f209f5f1c3a67096fc8704ca795857121")
 endif()

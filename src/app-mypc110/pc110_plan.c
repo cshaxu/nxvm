@@ -11,7 +11,7 @@
 #include "x86-nxvm/machine/media/media_interface.h"
 
 typedef struct mypc110_machine_plan {
-    mypc110_tft_firmware firmware;
+    mypc110_firmware firmware;
     mypc110_font_rom font;
     mypc110_lpt lpt;
     mypc110_ec_block ec_block;
@@ -185,7 +185,7 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
     lib_status status;
 
     if (plan == LIB_NULL || core == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = mypc110_tft_firmware_install_routes(core, &plan->firmware);
+    status = mypc110_firmware_install_routes(core, &plan->firmware);
     if (status == LIB_STATUS_OK)
         status = mypc110_config_install_routes(core, &plan->firmware,
             plan->configuration_chip);
@@ -209,7 +209,7 @@ static void mypc110_machine_release(void *opaque)
     if (plan == LIB_NULL) return;
     x86_f65535_destroy(plan->display_controller);
     x86_vl82c420_destroy(plan->configuration_chip);
-    mypc110_tft_firmware_destroy(&plan->firmware);
+    mypc110_firmware_destroy(&plan->firmware);
     lib_release(plan);
 }
 
@@ -223,13 +223,13 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     if (out_construction == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_construction = (x86_nxvm_machine_construction){0};
     if (config == LIB_NULL || assets == LIB_NULL || assets->bios[0u].data == LIB_NULL ||
-        assets->bios[0u].bytes != MYPC110_TFT_BIOS_BYTES ||
+        assets->bios[0u].bytes != MYPC110_FIRMWARE_BYTES ||
         assets->font.data == LIB_NULL || assets->font.bytes != MYPC110_FONT_ROM_BYTES) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     plan = lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    status = mypc110_tft_firmware_create(assets->bios[0u].data, assets->bios[0u].bytes,
+    status = mypc110_firmware_create(assets->bios[0u].data, assets->bios[0u].bytes,
         &plan->firmware);
     if (status == LIB_STATUS_OK)
         status = mypc110_font_rom_create(assets->font.data, assets->font.bytes, &plan->font);
@@ -251,7 +251,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .memory_reconfigurable = LIB_FALSE,
         .display_snapshot_provider = mypc110_machine_capture_display,
         .display_snapshot_context = plan->display_controller,
-        .firmware_provider = mypc110_tft_firmware_provider(),
+        .firmware_provider = mypc110_firmware_provider(),
         .firmware_context = &plan->firmware,
         .profile = {.context = plan, .configure = mypc110_machine_configure,
             .after_firmware = mypc110_machine_after_firmware,

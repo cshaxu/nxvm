@@ -59,12 +59,12 @@ void mypc110_base_composition_destroy(mypc110_base_composition *composition)
     x86_core_machine_destroy(composition->core);
     x86_f65535_destroy(composition->display_controller);
     x86_vl82c420_destroy(composition->configuration_chip);
-    mypc110_tft_firmware_destroy(&composition->firmware);
+    mypc110_firmware_destroy(&composition->firmware);
     *composition = (mypc110_base_composition) {0};
 }
 
-lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
-    lib_size tft_bios_bytes, const lib_u8 *font_rom, lib_size font_rom_bytes,
+lib_status mypc110_base_composition_create(const lib_u8 *bios,
+    lib_size bios_bytes, const lib_u8 *font_rom, lib_size font_rom_bytes,
     mypc110_base_composition *out_composition)
 {
     mypc110_base_composition *composition;
@@ -74,7 +74,7 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
     if (out_composition == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_composition = (mypc110_base_composition) {0};
     composition = out_composition;
-    status = mypc110_tft_firmware_create(tft_bios, tft_bios_bytes,
+    status = mypc110_firmware_create(bios, bios_bytes,
         &composition->firmware);
     if (status != LIB_STATUS_OK) return status;
     status = mypc110_font_rom_create(font_rom, font_rom_bytes, &composition->font);
@@ -99,10 +99,10 @@ lib_status mypc110_base_composition_create(const lib_u8 *tft_bios,
     }
     if (status == LIB_STATUS_OK) {
         status = x86_core_machine_bind_firmware_provider(composition->core,
-            mypc110_tft_firmware_provider(), &composition->firmware);
+            mypc110_firmware_provider(), &composition->firmware);
     }
     if (status == LIB_STATUS_OK) {
-        status = mypc110_tft_firmware_install_routes(composition->core,
+        status = mypc110_firmware_install_routes(composition->core,
             &composition->firmware);
     }
     if (status == LIB_STATUS_OK) {
