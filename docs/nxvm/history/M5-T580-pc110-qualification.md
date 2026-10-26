@@ -899,3 +899,30 @@ four cold-prefix exceptions only.  The derived oracle, frames and logs are
 removed after their hashes are recorded.  This is not a normal F1-selection,
 persistence, guest-boot, physical-panel, desktop or release claim.  See
 [S66 evidence](../etc/evidence/t580-s66-real-easysetup-handoff.md).
+
+## S67 executor delivery — extended CMOS-seed receiver
+
+S67 replaces the earlier no-payload disposition with a source-backed,
+external-only 128-byte live CMOS capture recovered from the retained
+Open-Source-PC110 historical evidence.  The sole existing Machine seed path
+now preserves either a 64-byte classic image or the explicitly selected
+128-byte extended image; it applies only configuration registers `0Eh` onward
+to the Board and rejects extended data on a classic decode.  Core retains sole
+ownership of live calendar/status state, and the original DSTN build does not
+inherit the TFT capture.
+
+Both x64 and x86 unit proofs cover accepted sizes, rejected malformed sizes,
+the classic-decode rejection, and real Board delivery at `0Eh`, `3Fh`, `40h`
+and `7Fh`.  The unchanged selected TFT BIOS reaches the same Easy-Setup
+handoff, 640×480 frame, two ordinary Enter transactions and fifth reset on
+both widths.  This closes the seed receiver only: it does not establish
+universal CMOS power-on state, durable Setup persistence, authentic media
+boot, PCIC behavior, panel identity, DSTN behavior, desktop use, or PC110
+publication.  See [S67 evidence](../etc/evidence/t580-s67-pc110-extended-cmos-seed.md).
+
+The S67 receiving sweep has one explicit non-green result: the pre-existing
+x86 Model40 floppy boot matrix misses its established 300,000 ms guest
+terminal budget on two runs and remains unfinished at 330,000 ms.  The
+observed FDC progress varies by run.  This is retained as the existing
+Model40 x86 throughput qualification concern; it is neither attributed to the
+PC110 seed route nor counted as a passing integration result.

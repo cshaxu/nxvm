@@ -266,6 +266,26 @@ static void check_no_floppy_media_contract(void)
     lib_test_assert(probe.released && probe.release_count == 1u);
 }
 
+static void check_cmos_seed_decode_contract(void)
+{
+    x86_nxvm_machine machine = {0};
+    x86_nxvm_board_plan_topology topology = {.rtc_cmos_present = LIB_TRUE};
+
+    machine.construction.cmos_seed_present = LIB_TRUE;
+    machine.construction.cmos_seed_bytes = X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES;
+    machine.construction.cmos_seed[0x0eu] = 0x1eu;
+    machine.construction.cmos_seed[0x7fu] = 0x7fu;
+    lib_test_assert(x86_nxvm_machine_apply_cmos_seed(&machine, &topology) ==
+        LIB_STATUS_INVALID_STATE);
+    topology.rtc_cmos.extended_registers = LIB_TRUE;
+    lib_test_assert(x86_nxvm_machine_apply_cmos_seed(&machine, &topology) == LIB_STATUS_OK);
+    lib_test_assert(topology.rtc_cmos.default_count == 114u &&
+        topology.rtc_cmos.defaults[0u].index == 0x0eu &&
+        topology.rtc_cmos.defaults[0u].value == 0x1eu &&
+        topology.rtc_cmos.defaults[113u].index == 0x7fu &&
+        topology.rtc_cmos.defaults[113u].value == 0x7fu);
+}
+
 static void check_transaction(lib_status configure_status,
     lib_status after_firmware_status, lib_status reset_status)
 {
@@ -341,6 +361,7 @@ lib_i32 main(void)
     check_partial_media_cleanup();
     check_fixed_disk_slot_contract();
     check_no_floppy_media_contract();
+    check_cmos_seed_decode_contract();
     probe = (construction_probe) {0};
     construction = prepare(&probe);
     const x86_nxvm_machine_config missing_media = {

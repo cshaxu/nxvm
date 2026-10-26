@@ -83,6 +83,7 @@ static void finishing(void)
 {
     static lib_u8 font[X86_NXVM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES];
     lib_u8 seed[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    lib_u8 extended_seed[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
     const x86_nxvm_machine_config config = {0};
     const x86_nxvm_machine_assets absent = {0};
     x86_nxvm_machine_assets assets = {0};
@@ -90,6 +91,8 @@ static void finishing(void)
     lib_size releases = 0u;
 
     for (lib_size index = 0u; index < sizeof(seed); ++index) seed[index] = (lib_u8)index;
+    for (lib_size index = 0u; index < sizeof(extended_seed); ++index)
+        extended_seed[index] = (lib_u8)(index ^ 0xa5u);
     for (lib_size index = 0u; index < sizeof(font); ++index)
         font[index] = (lib_u8)(index ^ (index >> 8u));
     candidate.profile = (x86_nxvm_machine_profile_binding){.context = &releases, .release = release_candidate};
@@ -106,6 +109,7 @@ static void finishing(void)
     lib_test_assert(x86_nxvm_machine_construction_finish(&candidate, &config, &assets,
         LIB_STATUS_OK, &published) == LIB_STATUS_OK && releases == 1u);
     lib_test_assert(published.cmos_seed_present && published.text_glyphs.present);
+    lib_test_assert(published.cmos_seed_bytes == sizeof(seed));
     lib_test_assert(lib_memory_compare(published.cmos_seed, seed, sizeof(seed)) == 0);
     for (lib_size character = 0u; character < X86_VIDEO_TEXT_GLYPH_COUNT; ++character) {
         lib_test_assert(lib_memory_compare(&published.text_glyphs.bytes[character * 16u],
@@ -115,6 +119,17 @@ static void finishing(void)
     }
     published.profile.release(published.profile.context);
     lib_test_assert(releases == 2u);
+
+    assets.cmos_seed = (x86_nxvm_machine_asset_bytes){extended_seed, sizeof(extended_seed)};
+    lib_test_assert(x86_nxvm_machine_construction_begin(&config, &assets, &published) == LIB_STATUS_OK);
+    lib_test_assert(x86_nxvm_machine_construction_finish(&candidate, &config, &assets,
+        LIB_STATUS_OK, &published) == LIB_STATUS_OK && releases == 2u);
+    lib_test_assert(published.cmos_seed_present &&
+        published.cmos_seed_bytes == sizeof(extended_seed));
+    lib_test_assert(lib_memory_compare(published.cmos_seed, extended_seed,
+        sizeof(extended_seed)) == 0);
+    published.profile.release(published.profile.context);
+    lib_test_assert(releases == 3u);
 }
 
 static void failures(void)
@@ -130,6 +145,8 @@ static void failures(void)
         {{&byte, 0u}, {LIB_NULL, 0u}, LIB_STATUS_OK, LIB_FALSE},
         {{&byte, X86_NXVM_MACHINE_CMOS_SEED_BYTES - 1u}, {LIB_NULL, 0u}, LIB_STATUS_OK, LIB_FALSE},
         {{&byte, X86_NXVM_MACHINE_CMOS_SEED_BYTES + 1u}, {LIB_NULL, 0u}, LIB_STATUS_OK, LIB_FALSE},
+        {{&byte, X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES - 1u}, {LIB_NULL, 0u}, LIB_STATUS_OK, LIB_FALSE},
+        {{&byte, X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES + 1u}, {LIB_NULL, 0u}, LIB_STATUS_OK, LIB_FALSE},
         {{LIB_NULL, 0u}, {LIB_NULL, 1u}, LIB_STATUS_OK, LIB_FALSE},
         {{LIB_NULL, 0u}, {&byte, 0u}, LIB_STATUS_OK, LIB_FALSE},
         {{LIB_NULL, 0u}, {&byte, X86_NXVM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES - 1u}, LIB_STATUS_OK, LIB_FALSE},

@@ -11,6 +11,7 @@
 #define X86_NXVM_MACHINE_FLOPPY_SLOT_COUNT 2u
 #define X86_NXVM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
 #define X86_NXVM_MACHINE_CMOS_SEED_BYTES 64u
+#define X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES 128u
 
 typedef enum x86_nxvm_machine_profile_event {
     X86_NXVM_MACHINE_PROFILE_RESET_COMPLETED,
@@ -38,7 +39,9 @@ typedef struct x86_nxvm_machine_profile_binding {
 
 /* Prepared values are copied into the sole Machine owner. Firmware/context
  * pointers refer to the transferred Profile lifetime; there is no model ID.
- * CMOS supplies only 0Eh-3Fh configuration; Core owns live RTC registers. */
+ * CMOS supplies only configuration bytes beginning at 0Eh; Core owns live RTC
+ * registers.  Classic boards accept 64 bytes, while an explicitly extended
+ * board may accept the full 128-byte address space. */
 typedef struct x86_nxvm_machine_construction {
     x86_nxvm_board_config core_config;
     x86_nxvm_board_controller_timing_rules timing_rules;
@@ -56,7 +59,8 @@ typedef struct x86_nxvm_machine_construction {
     lib_u16 cylinders;
     lib_u8 heads;
     lib_u8 sectors;
-    lib_u8 cmos_seed[X86_NXVM_MACHINE_CMOS_SEED_BYTES];
+    lib_u8 cmos_seed[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
+    lib_size cmos_seed_bytes;
     lib_bool cmos_seed_present;
     x86_video_text_glyph_config text_glyphs;
     /* A non-VADP board supplies its one display snapshot source here.  The

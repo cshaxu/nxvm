@@ -175,7 +175,7 @@ typedef struct x86_nxvm_board_controller_timing_rules {
 #define X86_NXVM_BOARD_RTC_DEFAULT_COUNT 6u
 /* A board seed contributes the MC146818 NVRAM window 0Eh--3Fh. Calendar and
  * status registers remain RTC-chip-owned. */
-#define X86_NXVM_BOARD_RTC_DEFAULT_CAPACITY 50u
+#define X86_NXVM_BOARD_RTC_DEFAULT_CAPACITY 114u
 
 /* Board composition supplies a copied RTC phase scale.  L3 means the values
  * are a direct selected-board conversion; L2 means a board ratio estimate.

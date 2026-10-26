@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_plan_interface.h"
+#include "x86-nxvm/machine/preparation_interface.h"
 #include "app-mypc110/pc110_clock.h"
 
 #include "app-mypc110/pc110_config_interface.h"
@@ -58,7 +59,8 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
 
 /* The PC110 exposes its MC146818-compatible CMOS through the conventional
  * 70h/71h pair and routes its interrupt through IRQ8.  This is board decode,
- * not a PC/AT facade: the TFT BIOS itself owns all CMOS setup values. */
+ * not a PC/AT facade.  Board applies the selected external configuration
+ * defaults while the TFT BIOS remains their ordinary consumer and writer. */
 static const x86_nxvm_board_plan_topology mypc110_machine_topology = {
     .dma_present = LIB_TRUE,
     .dma = {2u, X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
@@ -243,6 +245,9 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     x86_nxvm_machine_construction *out_construction)
 {
     mypc110_machine_plan *plan;
+    x86_nxvm_machine_construction candidate = {0};
+    x86_nxvm_machine_profile_binding profile;
+    x86_nxvm_machine_assets generic_assets;
     lib_status status;
 
     if (out_construction == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -254,6 +259,11 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     }
     plan = lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    profile = (x86_nxvm_machine_profile_binding) {
+        .context = plan, .configure = mypc110_machine_configure,
+        .after_firmware = mypc110_machine_after_firmware,
+        .release = mypc110_machine_release,
+        .handle_key = mypc110_machine_handle_key};
     status = mypc110_firmware_create(assets->bios[0u].data, assets->bios[0u].bytes,
         &plan->firmware);
     if (status == LIB_STATUS_OK)
@@ -263,11 +273,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         status = mypc110_config_initialize_cold_image(plan->configuration_chip);
     if (status == LIB_STATUS_OK) status = x86_f65535_create(&plan->display_controller);
     if (status == LIB_STATUS_OK) status = x86_rb5c396_create(&plan->pcic_controller);
-    if (status != LIB_STATUS_OK) {
-        mypc110_machine_release(plan);
-        return status;
-    }
-    *out_construction = (x86_nxvm_machine_construction) {
+    candidate = (x86_nxvm_machine_construction) {
         .core_config = mypc110_machine_configuration,
         .topology = mypc110_machine_topology,
         .floppy_kind = X86_NXVM_BOARD_FLOPPY_35_1440K,
@@ -289,9 +295,11 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .display_snapshot_context = plan->display_controller,
         .firmware_provider = mypc110_firmware_provider(),
         .firmware_context = &plan->firmware,
-        .profile = {.context = plan, .configure = mypc110_machine_configure,
-            .after_firmware = mypc110_machine_after_firmware,
-            .release = mypc110_machine_release,
-            .handle_key = mypc110_machine_handle_key}};
-    return LIB_STATUS_OK;
+        .profile = profile};
+    /* PC110's font slot is its 1 MiB Kanji ROM, not the optional generic
+     * 8 KiB text generator.  The App-local font owner already consumed it. */
+    generic_assets = *assets;
+    generic_assets.font = (x86_nxvm_machine_asset_bytes) {LIB_NULL, 0u};
+    return x86_nxvm_machine_construction_finish(&candidate, config, &generic_assets,
+        status, out_construction);
 }

@@ -143,14 +143,22 @@ lib_status x86_nxvm_machine_apply_cmos_seed(const x86_nxvm_machine *session,
     if (session == LIB_NULL || topology == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (!session->construction.cmos_seed_present) return LIB_STATUS_OK;
     if (!topology->rtc_cmos_present) return LIB_STATUS_INVALID_STATE;
+    if (session->construction.cmos_seed_bytes != X86_NXVM_MACHINE_CMOS_SEED_BYTES &&
+        session->construction.cmos_seed_bytes != X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    if (session->construction.cmos_seed_bytes == X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES &&
+        !topology->rtc_cmos.extended_registers) {
+        return LIB_STATUS_INVALID_STATE;
+    }
     /* A seed is a board configuration image, not a replacement RTC state:
-     * copy only the manual-defined CMOS NVRAM 0Eh--3Fh.  It is the sole
+     * copy only writable configuration bytes from 0Eh onward.  It is the sole
      * owner of board configuration, including the firmware checksum. */
-    for (index = 0u; index < X86_NXVM_BOARD_RTC_DEFAULT_CAPACITY; ++index) {
+    for (index = 0u; index < session->construction.cmos_seed_bytes - 0x0eu; ++index) {
         topology->rtc_cmos.defaults[index] = (x86_nxvm_board_rtc_default_byte) {
             (lib_u8)(0x0eu + index), session->construction.cmos_seed[0x0eu + index] };
     }
-    topology->rtc_cmos.default_count = X86_NXVM_BOARD_RTC_DEFAULT_CAPACITY;
+    topology->rtc_cmos.default_count = session->construction.cmos_seed_bytes - 0x0eu;
     topology->rtc_cmos.derive_configuration_checksum = LIB_FALSE;
     return LIB_STATUS_OK;
 }

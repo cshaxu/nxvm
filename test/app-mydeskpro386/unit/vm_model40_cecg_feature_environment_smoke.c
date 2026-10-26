@@ -49,10 +49,10 @@ lib_i32 main(void)
             failed |= test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine,
                 0x07c6u) != 0x0du;
         }
-        test_x86_nxvm_machine_fixture_write_port(session->x86_core_machine,
-            0x07c6u, 0xffu);
-        failed |= test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine,
-            0x07c6u) != 0x0du;
+        failed |= x86_core_machine_bus_write(session->x86_core_machine, 0x07c6u,
+            0xffu) != LIB_STATUS_UNSUPPORTED ||
+            test_x86_nxvm_machine_fixture_read_bus(session->x86_core_machine,
+                0x07c6u) != 0x0du;
     }
     if (!failed) {
         x86_nxvm_machine_reset(session);

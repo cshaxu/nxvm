@@ -11,23 +11,31 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mypc110-board PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-function(mypc110_add_firmware_variant variant machine_key product_name bios_path bios_hash)
+function(mypc110_add_firmware_variant variant machine_key product_name bios_path bios_hash cmos_path cmos_hash)
     nxvm_require_profile_asset("${bios_path}" 262144 "${bios_hash}")
     set(font_path "${machine_key}/firmware/pc110-kanji-font.rom")
     nxvm_require_profile_asset("${font_path}" 1048576
         "9829fdb8281c12022dc3b77686044ed1a5213ab526ce4329f2841cd64171784c")
+    set(cmos_input LIB_NULL)
+    set(cmos_dependency)
+    if(NOT cmos_path STREQUAL "LIB_NULL")
+        nxvm_require_profile_asset("${cmos_path}" 128 "${cmos_hash}")
+        set(cmos_input "${NXVM_PROFILE_ASSETS_ROOT}/${cmos_path}")
+        set(cmos_dependency "${NXVM_PROFILE_ASSETS_ROOT}/${cmos_path}")
+    endif()
     set(firmware_source "${CMAKE_BINARY_DIR}/generated/app-mypc110/${variant}_firmware.c")
     add_custom_command(OUTPUT "${firmware_source}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/generated/app-mypc110"
         COMMAND "${CMAKE_COMMAND}"
             "-DINPUT_BIOS_0=${NXVM_PROFILE_ASSETS_ROOT}/${bios_path}"
-            -DINPUT_BIOS_1=LIB_NULL -DINPUT_VIDEO=LIB_NULL -DINPUT_CMOS=LIB_NULL
+            -DINPUT_BIOS_1=LIB_NULL -DINPUT_VIDEO=LIB_NULL "-DINPUT_CMOS=${cmos_input}"
             "-DINPUT_FONT=${NXVM_PROFILE_ASSETS_ROOT}/${font_path}"
             "-DOUTPUT=${firmware_source}"
             -P "${CMAKE_SOURCE_DIR}/src/x86-nxvm/product/embed_firmware.cmake"
         DEPENDS
             "${NXVM_PROFILE_ASSETS_ROOT}/${bios_path}"
             "${NXVM_PROFILE_ASSETS_ROOT}/${font_path}"
+            ${cmos_dependency}
             "${CMAKE_SOURCE_DIR}/src/x86-nxvm/product/embed_firmware.cmake"
         COMMENT "Embedding validated MyPC110 ${variant} firmware"
         VERBATIM)
@@ -63,8 +71,11 @@ if(COMMAND nxvm_require_manifest)
     nxvm_require_manifest(ibm-pc110-dstn-derived)
     mypc110_add_firmware_variant(tft "ibm-pc110-tft" "MyPC110 TFT"
         "ibm-pc110-tft/firmware/pc110-tft-bios-1995-09-19.rom"
-        "232101c88466f311bcc32fbc215a4d7569f695ce19f9c07ca67ce2aee5232312")
+        "232101c88466f311bcc32fbc215a4d7569f695ce19f9c07ca67ce2aee5232312"
+        "ibm-pc110-tft/cmos/pc110-tft-live-2026-07-02.cmos"
+        "87275449615d5027094e7e7491aa88a8fdba4a876dede0eaada75ecf08940509")
     mypc110_add_firmware_variant(dstn "ibm-pc110-dstn-derived" "MyPC110 DSTN"
         "ibm-pc110-dstn-derived/firmware/pc110-dstn-derived-2026-07-27.rom"
-        "aa2ab27a8cc4fee059238fdbd4bd869f209f5f1c3a67096fc8704ca795857121")
+        "aa2ab27a8cc4fee059238fdbd4bd869f209f5f1c3a67096fc8704ca795857121"
+        LIB_NULL "")
 endif()

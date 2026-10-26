@@ -33,8 +33,13 @@ static lib_status x86_nxvm_machine_prepare_cmos(x86_nxvm_machine_construction *c
     x86_nxvm_machine_asset_bytes source)
 {
     if (source.data == LIB_NULL && source.bytes == 0u) return LIB_STATUS_OK;
-    if (x86_nxvm_machine_asset_copy(candidate->cmos_seed, X86_NXVM_MACHINE_CMOS_SEED_BYTES,
+    if (source.bytes != X86_NXVM_MACHINE_CMOS_SEED_BYTES &&
+        source.bytes != X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (x86_nxvm_machine_asset_copy(candidate->cmos_seed, source.bytes,
             source) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    candidate->cmos_seed_bytes = source.bytes;
     candidate->cmos_seed_present = LIB_TRUE;
     return LIB_STATUS_OK;
 }

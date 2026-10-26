@@ -75,8 +75,10 @@ int main(void)
 {
     static lib_u8 bios[MYPC110_FIRMWARE_BYTES];
     static lib_u8 font[MYPC110_FONT_ROM_BYTES];
+    static lib_u8 cmos[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
     const x86_nxvm_machine_assets assets = {
         .bios = {{bios, sizeof(bios)}, {LIB_NULL, 0u}},
+        .cmos_seed = {cmos, sizeof(cmos)},
         .font = {font, sizeof(font)}};
     const x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
@@ -115,6 +117,10 @@ int main(void)
     x86_core_machine_clock_domain pit_clock;
     int failed = 0;
 
+    cmos[0x0eu] = 0xe1u;
+    cmos[0x3fu] = 0xf3u;
+    cmos[0x40u] = 0x44u;
+    cmos[0x7fu] = 0x7eu;
     if (mypc110_machine_construction_create(&config, &assets, &construction) != LIB_STATUS_OK)
         failed = 1;
     else if (construction.topology.planar_parity.refresh_status_source !=
@@ -125,6 +131,8 @@ int main(void)
         !construction.core_config.system_control_port_present)
         failed = 2;
     else if (!construction.topology.rtc_cmos.extended_registers ||
+        !construction.cmos_seed_present ||
+        construction.cmos_seed_bytes != X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES ||
         !construction.topology.fdc_present || !construction.topology.dma_present ||
         construction.topology.fdc.ready_mask != 0x0fu ||
         construction.topology.fdc_drives.double_sided_mask != 0x0fu ||
@@ -157,6 +165,27 @@ int main(void)
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
                 &produced) != LIB_STATUS_OK || !produced))
         failed = 5;
+    if (!failed) {
+        const x86_debug_request cmos_reads[] = {
+            {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x0eu, .bytes = 1u},
+            {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u},
+            {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x3fu, .bytes = 1u},
+            {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u},
+            {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x40u, .bytes = 1u},
+            {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u},
+            {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x7fu, .bytes = 1u},
+            {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u}};
+        const lib_u32 expected_cmos[] = {0u, 0xe1u, 0u, 0xf3u, 0u, 0x44u, 0u, 0x7eu};
+
+        for (lib_size index = 0u; index < sizeof(cmos_reads) / sizeof(cmos_reads[0]); ++index) {
+            if (driver.execute_debug(driver.context, &cmos_reads[index], sizeof(cmos_reads[index]),
+                    &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+                response_bytes != sizeof(response) || response.value != expected_cmos[index]) {
+                failed = 50 + (int)index;
+                break;
+            }
+        }
+    }
     for (lib_size index = 0u; !failed && index < sizeof(ports) / sizeof(ports[0]); ++index) {
         if (driver.execute_debug(driver.context, &ports[index], sizeof(ports[index]),
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
