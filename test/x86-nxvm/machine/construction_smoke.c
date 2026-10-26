@@ -17,6 +17,8 @@ typedef struct construction_probe {
     lib_size reset_notice_count;
     lib_size detach_count;
     lib_size release_count;
+    lib_size key_count;
+    lib_bool last_key_pressed;
     lib_bool released;
 } construction_probe;
 
@@ -82,6 +84,16 @@ static void release_profile(void *context)
     ++probe->release_count;
 }
 
+static lib_bool handle_key(void *context, const kvm_input_event *event)
+{
+    construction_probe *probe = context;
+
+    lib_test_assert(!probe->released && event->type == KVM_EVENT_KEY);
+    ++probe->key_count;
+    probe->last_key_pressed = event->data.key.pressed;
+    return event->data.key.key == BASE_KEY_F12;
+}
+
 static const x86_core_machine_firmware_provider firmware = {
     configure_firmware, reset_firmware, LIB_NULL
 };
@@ -115,7 +127,8 @@ static x86_nxvm_machine_construction prepare(construction_probe *probe)
         .firmware_context = probe,
         .profile = {.context = probe, .configure = configure_plan,
             .after_firmware = configure_after_firmware,
-            .notify = notify_profile, .release = release_profile}
+            .notify = notify_profile, .release = release_profile,
+            .handle_key = handle_key}
     };
     return value;
 }
@@ -249,12 +262,24 @@ static void check_transaction(lib_status configure_status,
     /* Caller storage may change: the published owner consumed copied values. */
     construction.core_config.memory_bytes = 0u;
     construction.floppy_slot_count = 0u;
+    construction.profile.handle_key = LIB_NULL;
     lib_test_assert(x86_nxvm_machine_get_information(machine, &information) == LIB_STATUS_OK);
     lib_test_assert(information.memory_bytes == (2u * 1024u * 1024u));
     lib_test_assert(x86_nxvm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
     lib_test_assert(driver.context == machine && driver.reset(driver.context));
     lib_test_assert(probe.configure_count == 1u && probe.firmware_count == 1u);
     lib_test_assert(probe.reset_count == 2u && probe.reset_notice_count == 2u);
+    kvm_input_event key = {.type = KVM_EVENT_KEY,
+        .data.key = {.key = BASE_KEY_F12, .pressed = LIB_TRUE}};
+    driver.deliver_input(driver.context, &key);
+    lib_test_assert(probe.key_count == 1u && probe.last_key_pressed);
+    key.data.key.pressed = LIB_FALSE;
+    driver.deliver_input(driver.context, &key);
+    lib_test_assert(probe.key_count == 2u && !probe.last_key_pressed);
+    key.data.key.key = 'A';
+    key.data.key.pressed = LIB_TRUE;
+    driver.deliver_input(driver.context, &key);
+    lib_test_assert(probe.key_count == 3u && probe.last_key_pressed);
     check_memory_replacement(machine);
     x86_nxvm_machine_destroy(machine);
     lib_test_assert(probe.released && probe.release_count == 1u);

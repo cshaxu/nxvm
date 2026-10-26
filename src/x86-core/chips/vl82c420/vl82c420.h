@@ -12,6 +12,8 @@ struct x86_vl82c420 {
     lib_bool block2_unlocked;
     lib_bool smi_armed;
     lib_bool smi_asserted;
+    lib_bool resume_button_asserted;
+    lib_bool resume_smi_pending;
 };
 
 #endif

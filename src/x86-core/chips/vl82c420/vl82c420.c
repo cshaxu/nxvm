@@ -66,6 +66,7 @@ void x86_vl82c420_reset_protocol(x86_vl82c420 *chip)
     chip->block2_unlocked = LIB_FALSE;
     chip->smi_armed = LIB_FALSE;
     chip->smi_asserted = LIB_FALSE;
+    chip->resume_smi_pending = LIB_FALSE;
     chip->block2[0xb7u] = 0u;
     for (index = 0u; index < sizeof(chip->selected); ++index) {
         chip->selected[index] = 0u;
@@ -134,7 +135,8 @@ lib_status x86_vl82c420_read_register(const x86_vl82c420 *chip,
 static void x86_vl82c420_update_smi(x86_vl82c420 *chip)
 {
     if ((chip->block2[0xb5u] & 4u) == 0u ||
-        (chip->block2[0xb6u] & 0x80u) == 0u || chip->block2[0xb7u] == 0u)
+        (chip->block2[0xb6u] & 0x80u) == 0u ||
+        (chip->block2[0xb7u] == 0u && !chip->resume_smi_pending))
         chip->smi_asserted = LIB_FALSE;
     else if (chip->smi_armed) {
         chip->smi_armed = LIB_FALSE;
@@ -159,6 +161,8 @@ lib_status x86_vl82c420_write_selected(x86_vl82c420 *chip,
         }
     } else {
         data[chip->selected[bank]] = value;
+        if (bank == X86_VL82C420_BANK_BLOCK2 && chip->selected[bank] == 0xfbu &&
+            (value & 8u) == 0u) chip->resume_smi_pending = LIB_FALSE;
     }
     if (bank == X86_VL82C420_BANK_BLOCK2) x86_vl82c420_update_smi(chip);
     return LIB_STATUS_OK;
@@ -177,4 +181,27 @@ void x86_vl82c420_write_asmi(x86_vl82c420 *chip, lib_u16 port)
 lib_bool x86_vl82c420_smi_asserted(const x86_vl82c420 *chip)
 {
     return chip != LIB_NULL && chip->smi_asserted;
+}
+
+lib_bool x86_vl82c420_suspend_refresh_enabled(const x86_vl82c420 *chip)
+{
+    return chip != LIB_NULL && (chip->block2[0xffu] & 0x82u) == 0x82u;
+}
+
+lib_bool x86_vl82c420_set_resume_button(x86_vl82c420 *chip, lib_bool asserted)
+{
+    if (chip == LIB_NULL) return LIB_FALSE;
+    const lib_bool resume = asserted && !chip->resume_button_asserted &&
+        x86_vl82c420_suspend_refresh_enabled(chip);
+    chip->resume_button_asserted = asserted;
+    if (resume) {
+        chip->block2[0xffu] &= (lib_u8)~0x80u;
+        chip->block2[0xb8u] |= 8u;
+        chip->block2[0xfbu] |= 8u;
+        /* Resume RESET precedes software re-entry. The firmware's FA strobe
+         * must rearm SMI; a cold readback image is not a hardware event. */
+        chip->resume_smi_pending = LIB_TRUE;
+        chip->smi_armed = chip->smi_asserted = LIB_FALSE;
+    }
+    return resume;
 }

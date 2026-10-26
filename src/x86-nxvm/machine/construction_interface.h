@@ -3,6 +3,7 @@
 
 #include "lib/types/types_interface.h"
 #include "lib/storage/medium_interface.h"
+#include "lib/kvm-base/event_interface.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-nxvm/board-base/floppy_interface.h"
 #include "x86-core/machine/firmware_interface.h"
@@ -28,6 +29,11 @@ typedef struct x86_nxvm_machine_profile_binding {
     lib_status (*after_firmware)(void *context, x86_core_machine *core);
     void (*notify)(void *context, x86_nxvm_machine_profile_event event);
     void (*release)(void *context);
+    /* Optional physical-key wiring, on the owning executor after publication.
+     * True consumes the borrowed event; false retains normal keyboard delivery.
+     * It must report physical-operation failures through the existing Core
+     * fault path, not retain the event or create another input queue. */
+    lib_bool (*handle_key)(void *context, const kvm_input_event *event);
 } x86_nxvm_machine_profile_binding;
 
 /* Prepared values are copied into the sole Machine owner. Firmware/context

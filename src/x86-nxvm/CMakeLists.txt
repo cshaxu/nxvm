@@ -99,7 +99,7 @@ add_library(x86-nxvm-machine STATIC machine/preparation.c machine/debug.c
     machine/fault.c machine/runner.c machine/waiting.c machine/machine_devices.c
     machine/machine_info.c)
 target_include_directories(x86-nxvm-machine PUBLIC ${X86_NXVM_SOURCE_ROOT})
-target_link_libraries(x86-nxvm-machine PUBLIC types base storage emulator-machine
+target_link_libraries(x86-nxvm-machine PUBLIC types base storage kvm-base emulator-machine
     x86-nxvm-machine-media x86-nxvm-machine-conversion x86-nxvm-board-base x86-core-machine)
 
 add_library(x86-nxvm-product STATIC product/factory.c product/ini.c product/startup.c)

@@ -48,4 +48,14 @@ lib_status x86_vl82c420_write_selected(x86_vl82c420 *chip,
 void x86_vl82c420_write_asmi(x86_vl82c420 *chip, lib_u16 port);
 lib_bool x86_vl82c420_smi_asserted(const x86_vl82c420 *chip);
 
+/* L2 functional suspend refresh: FF bits 7 and 1 request clock stop.
+ * A new physical button assertion while requested latches B8/FB bit 3,
+ * clears FF bit 7 and returns true for board-owned processor RESET.
+ * Resume SMI waits for the existing enable/EOSMI protocol; FB bit 3 clear
+ * acknowledges that event. A cold register image never creates an event.
+ * Reads do not create a cause; guest writes acknowledge the retained bits.
+ * The board serializes these operations with guest I/O on its executor. */
+lib_bool x86_vl82c420_suspend_refresh_enabled(const x86_vl82c420 *chip);
+lib_bool x86_vl82c420_set_resume_button(x86_vl82c420 *chip, lib_bool asserted);
+
 #endif

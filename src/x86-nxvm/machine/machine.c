@@ -24,6 +24,9 @@ static lib_status x86_nxvm_machine_deliver_key(x86_nxvm_machine *session,
     lib_status status = LIB_STATUS_OK;
 
     if (session == LIB_NULL || !session->active) return LIB_STATUS_INVALID_ARGUMENT;
+    if (session->construction.profile.handle_key != LIB_NULL &&
+        session->construction.profile.handle_key(session->construction.profile.context, event))
+        return LIB_STATUS_OK;
     {
         x86_nxvm_machine_keyboard_sequence sequence;
         lib_u8 native_scan_set;
