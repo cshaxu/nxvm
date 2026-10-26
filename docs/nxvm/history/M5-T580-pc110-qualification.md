@@ -876,3 +876,13 @@ XR write. The existing standard-VGA palette path therefore remains the only
 evidenced colour owner; no RGB/BGR swap, panel interpretation or production
 display change is justified. The temporary diagnostic change was removed.
 See [S65 evidence](../etc/evidence/t580-s65-f65535-panel-table-audit.md).
+
+## S65 coordinator acceptance
+
+Coordinator review accepts `aba6329a8`: it contains only the active-packet
+transition, one evidence record and the historical disposition. The temporary
+diagnostic path was removed before commit; no production, shared interface,
+firmware, media or artifact changed. The existing x64 FDC real-firmware
+integration passes after the restored harness. T580 remains open for the
+separate Setup, guest/storage, PCIC, panel, input/lifecycle and publication
+receivers already named by its convergence ledger.
