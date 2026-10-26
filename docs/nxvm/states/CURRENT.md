@@ -49,6 +49,14 @@ X86 Core/Debug/IBMPC, MyNES/MyRaidenII, owner INI and external ROM/font/media
 are unchanged. All 90 owned scratch files/13,302,526 bytes are removed after
 task-exit/hash review; stable Ninja/ccache remain.
 
+S58 adds the source-labelled empty two-slot RB5C396 controller at the actual
+3E0h/3E1h route, with no card, storage, IRQ/window or guest claim. Final-tree
+unit qualification is 714/714 on each width. Existing real-firmware
+FDC-reset/boot-handoff integrations pass x64 in 42.24/225.02 s and x86 in
+54.59/306.85 s; they remain bounded non-regression evidence, not PCIC
+consumption or product qualification. See the [S58 record](../etc/evidence/t580-s58-pcic-receiver.md)
+and [task history](../history/M5-T580-pc110-qualification.md).
+
 ## Remaining T580 Qualification
 
 The [proposal](../proposals/m5-pc110-qualification.md) and

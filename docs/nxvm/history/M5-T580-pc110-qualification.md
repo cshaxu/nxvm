@@ -716,3 +716,25 @@ external-input mutation, other-App pollution or new rendering path occurs.
 All owned work exits and scratch is removed. The packet moves to retained
 history; S57 closes with a clean workspace after this governance P. T580
 remains open for its original complete receiver universe.
+
+## S58 executor delivery — RB5C396 empty-controller receiver
+
+S58 adds the one source-labelled, empty two-slot RB5C396 receiver at the
+actual TFT-BIOS 3E0h/3E1h index/data route. `x86-nxvm` owns the controller's
+index, two socket register banks, documented IDs, read-only fields and
+board-provided socket input levels. `app-mypc110` owns only the existing
+byte-port adapter and reset wiring. Reset clears controller-local state
+without fabricating a card transition or changing physical socket inputs.
+
+The implementation is deliberately not a PC Card, storage, IRQ/window,
+PCMCIA-ATA, DOS, Setup, panel or product-release claim. The source record
+and explicit limits are in [S58 evidence](../etc/evidence/t580-s58-pcic-receiver.md).
+
+After the final production reset wiring, both host widths pass all 714
+registered unit routes. The existing real-firmware FDC-reset and boot-handoff
+integrations also pass on x64 (42.24 s and 225.02 s) and x86 (54.59 s and
+306.85 s). Those integrations show no regression in their named firmware
+checkpoints; they do not prove that the retained BIOS UI consumed the new
+PCIC receiver. Commits `0b0e1f42c` and `1c357a14f` are pushed. No PC110
+artifact is published, per the admitted packet; T580 remains open for its
+unchanged qualification universe.
