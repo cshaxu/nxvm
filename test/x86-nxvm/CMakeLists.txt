@@ -54,6 +54,7 @@ shared_register_test(x86-nxvm chips/video/compaq_ega_personality x86-nxvm-chip-v
 shared_register_test(x86-nxvm chips/video/compaq_cecg_odd_even_page x86-nxvm-chip-video)
 shared_register_test(x86-nxvm chips/video/ega_planar x86-nxvm-chip-video)
 shared_register_test(x86-nxvm chips/f65535/f65535_contract x86-nxvm-chip-f65535)
+shared_register_test(x86-nxvm chips/rb5c396/rb5c396_contract x86-nxvm-chip-rb5c396)
 shared_register_test(x86-nxvm chips/ps2mouse/mouse_contract x86-nxvm-chip-ps2mouse)
 shared_register_test(x86-nxvm chips/keyboard/keyboard_contract x86-nxvm-chip-keyboard)
 shared_register_test(x86-nxvm chips/kbc8042/controller_contract "x86-nxvm-chip-kbc8042;x86-nxvm-chip-keyboard;x86-nxvm-chip-ps2mouse")
