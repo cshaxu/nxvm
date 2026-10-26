@@ -590,6 +590,13 @@ void x86_kbc8042_set_reset_system_flag(x86_kbc8042 *controller,
     }
 }
 
+void x86_kbc8042_set_reset_command_byte(x86_kbc8042 *controller, lib_u8 value)
+{
+    if (controller == LIB_NULL) return;
+    controller->reset_command_byte_configured = LIB_TRUE;
+    controller->reset_command_byte = value;
+}
+
 void x86_kbc8042_reset(x86_kbc8042 *controller)
 {
     lib_u32 command_response_ticks;
@@ -617,8 +624,11 @@ void x86_kbc8042_reset(x86_kbc8042 *controller)
     if (controller->reset_system_flag) {
         controller->data.command_byte |= KBC_COMMAND_SYSTEM;
     }
+    if (controller->reset_command_byte_configured)
+        controller->data.command_byte = controller->reset_command_byte;
     controller->data.output_port = controller->reset_output_port;
-    controller->data.aux_enabled = controller->aux_present;
+    controller->data.aux_enabled = controller->aux_present &&
+        (controller->data.command_byte & KBC_COMMAND_DISABLE_AUX) == 0u;
     controller->data.input_port = 0x80u;
     controller->data.output_inhibit_released = LIB_TRUE;
     x86_kbc8042_apply_output_port(controller, controller->data.output_port);

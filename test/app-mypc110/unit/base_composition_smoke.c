@@ -25,6 +25,12 @@ int main(void)
     failed |= !failed && (composition.core == LIB_NULL || composition.board == LIB_NULL ||
         composition.configuration_chip == LIB_NULL);
     failed |= !failed && x86_core_machine_reset(composition.core) != LIB_STATUS_OK;
+    failed |= !failed && (x86_core_machine_bus_write(composition.core, 0x64u, 0x20u) !=
+        LIB_STATUS_OK || x86_core_machine_advance_to_next_deadline(composition.core,
+            &advanced) != LIB_STATUS_OK || !advanced ||
+        x86_core_machine_bus_read(composition.core, 0x60u, &value) != LIB_STATUS_OK ||
+        value != 0x65u || x86_nxvm_board_mouse_receive_relative(composition.board,
+            1, 1, 0u) != LIB_STATUS_INVALID_STATE);
     failed |= !failed && (x86_nxvm_board_observe_a20(composition.board,
         &a20_enabled) != LIB_STATUS_OK || !a20_enabled);
     failed |= !failed && (x86_core_machine_memory_write(composition.core,
@@ -106,6 +112,16 @@ int main(void)
         x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
         LIB_STATUS_OK || value != 0xfau || x86_core_machine_bus_read(composition.core,
             0x60u, &value) != LIB_STATUS_OK || value != 0x00u ||
+        x86_core_machine_bus_write(composition.core, 0x64u, 0xd4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x60u, 0xe9u) != LIB_STATUS_OK ||
+        x86_core_machine_advance_to_next_deadline(composition.core, &advanced) !=
+        LIB_STATUS_OK || !advanced ||
+        x86_core_machine_bus_read(composition.core, 0x60u, &value) != LIB_STATUS_OK ||
+        value != 0xfau || x86_core_machine_bus_read(composition.core, 0x60u,
+            &value) != LIB_STATUS_OK || value != 0x00u ||
+        x86_core_machine_bus_read(composition.core, 0x60u, &value) != LIB_STATUS_OK ||
+        value != 0x02u || x86_core_machine_bus_read(composition.core, 0x60u,
+            &value) != LIB_STATUS_OK || value != 0x64u ||
         x86_core_machine_bus_write(composition.core, 0x64u, 0xd4u) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(composition.core, 0x60u, 0xf4u) != LIB_STATUS_OK ||
         x86_core_machine_advance_to_next_deadline(composition.core, &advanced) !=

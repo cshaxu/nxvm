@@ -450,6 +450,10 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
             x86_nxvm_board_kbc_set_reset_output_port(board->shared_kbc,
                 config->kbc_reset_output_port);
         }
+        if (config->kbc_reset_command_byte_configured) {
+            x86_nxvm_board_kbc_set_reset_command_byte(board->shared_kbc,
+                config->kbc_reset_command_byte);
+        }
         x86_nxvm_board_kbc_set_typematic_timing(board->shared_kbc,
             board->kbc_typematic_initial_ticks,
             board->kbc_typematic_repeat_ticks);

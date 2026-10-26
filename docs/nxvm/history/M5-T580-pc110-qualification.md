@@ -840,3 +840,13 @@ relinks are recorded in the [S63 evidence](../etc/evidence/t580-s63-font-window.
 No Shared component, payload, asset, firmware, INI or PC110 release artifact
 changed. DOS/V consumption, panel output, configuration persistence, guest
 boot, PCIC/media behavior and product qualification remain open.
+
+## S64 executor delivery — 8042/TrackPoint reset receiver
+
+S64 adds one board-selected 8042 reset command-byte fact to the existing
+configuration family. MyPC110 now starts from the observed `65h` state, so AUX
+reports are rejected until the guest sends `A8h`; the normal `F2h`, `E9h` and
+`F4h` standard PS/2 path is unchanged. Generic unconfigured 8042 behavior
+retains its existing `43h` default. The receiver is source-labelled L2 and
+does not model U75 firmware, physical pointer behavior or any new input path.
+See [S64 evidence](../etc/evidence/t580-s64-kbc-trackpoint-reset.md).

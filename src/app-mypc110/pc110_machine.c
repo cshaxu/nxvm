@@ -34,8 +34,9 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
      * asserted while reset remains released. */
     .kbc_reset_output_port_configured = 1u,
     .kbc_reset_output_port = 0x03u,
-    .kbc_reset_system_flag_configured = 1u,
-    .kbc_reset_system_flag = 1u,
+    /* L2 live state: IRQ1/SYS/translation set; AUX and IRQ12 masked. */
+    .kbc_reset_command_byte_configured = 1u,
+    .kbc_reset_command_byte = 0x65u,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
     .system_facade = X86_NXVM_BOARD_SYSTEM_FACADE_NONE,
     .system_control_port_present = LIB_TRUE

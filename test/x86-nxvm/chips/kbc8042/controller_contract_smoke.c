@@ -220,6 +220,23 @@ static lib_bool transport(controller_fixture *f)
     return failed;
 }
 
+static lib_bool reset_command_byte(void)
+{
+    controller_fixture fixture = {0};
+    lib_bool failed = create(&fixture) != LIB_STATUS_OK;
+    if (!failed) {
+        x86_kbc8042_set_reset_command_byte(fixture.controller, 0x65u);
+        x86_kbc8042_reset(fixture.controller);
+        x86_kbc8042_write_command(fixture.controller, 0x20u);
+        failed |= x86_kbc8042_read_data(fixture.controller) != 0x65u ||
+            x86_kbc8042_aux_enabled(fixture.controller);
+        x86_kbc8042_write_command(fixture.controller, 0xa8u);
+        failed |= !x86_kbc8042_aux_enabled(fixture.controller);
+    }
+    destroy(&fixture);
+    return failed;
+}
+
 static lib_bool selected_command_extension(controller_fixture *f)
 {
     x86_kbc8042 *c = f->controller;
@@ -822,6 +839,7 @@ int main(void)
         return 1;
     }
     failed = transport(&fixture);
+    failed |= reset_command_byte();
     failed |= selected_command_extension(&fixture);
     failed |= !generic_commands_remain_unhandled();
     failed |= parameter_interleaving(&fixture);
