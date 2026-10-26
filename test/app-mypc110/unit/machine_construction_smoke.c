@@ -58,7 +58,8 @@ int main(void)
             X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE ||
         construction.topology.planar_parity.memory_bytes != 0u ||
         construction.core_config.kbc_command_response_ticks != MYPC110_KBC_COMMAND_RESPONSE_TICKS ||
-        construction.core_config.kbc_command_response_status_polls != 0u)
+        construction.core_config.kbc_command_response_status_polls != 0u ||
+        !construction.core_config.system_control_port_present)
         failed = 2;
     else if (!construction.topology.rtc_cmos.extended_registers ||
         !construction.topology.fdc_present || !construction.topology.dma_present ||

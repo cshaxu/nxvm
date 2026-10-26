@@ -100,7 +100,7 @@ typedef struct mypc110_post_diagnostic_trace {
         post_c000_port61_reads[MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY];
     lib_size post_c000_port61_read_count;
     lib_bool left_rom;
-    lib_bool keyboard_trace;
+    lib_bool control_trace;
     mypc110_post_diagnostic_port_write
         configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
     lib_size configuration_write_count;
@@ -205,13 +205,13 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
     lib_size index;
 
     if (trace == LIB_NULL || observation == LIB_NULL) return;
-    if (trace->keyboard_trace) {
+    if (trace->control_trace) {
         const lib_u16 port = observation->io_port;
 
         if ((observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
-                port == 0x0060u) ||
+                (port == 0x0060u || port == 0x0092u)) ||
             (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE &&
-                (port == 0x0060u || port == 0x0064u))) {
+                (port == 0x0060u || port == 0x0064u || port == 0x0092u))) {
             if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY)
                 trace->configuration_writes[trace->configuration_write_count++] =
                     (mypc110_post_diagnostic_port_write){observation->point.linear_pc,
@@ -454,6 +454,7 @@ int main(int argc, char **argv)
     lib_bool ata_boot_sector = LIB_FALSE;
     lib_bool setup_entry = LIB_FALSE;
     lib_bool setup_bytes_match = LIB_FALSE;
+    lib_bool setup_reset_completed = LIB_FALSE;
     lib_u8 setup_input_count = 0u;
     static lib_u8 setup_expected[MYPC110_SETUP_IMAGE_BYTES];
     static lib_u8 setup_actual[MYPC110_SETUP_IMAGE_BYTES];
@@ -486,7 +487,7 @@ int main(int argc, char **argv)
     if (boot_checkpoint) instruction_limit = 100000000u;
     if (setup_checkpoint) instruction_limit = 120000000u;
     post_reset_trace.fdc_checkpoint = fdc_checkpoint;
-    post_reset_trace.keyboard_trace = setup_checkpoint;
+    post_reset_trace.control_trace = setup_checkpoint;
     post_reset_trace.timer_checkpoint = timer_checkpoint;
     post_reset_trace.c000_only = c000_checkpoint || c000_follow_checkpoint ||
         c000_port61_follow_checkpoint;
@@ -750,6 +751,13 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY) break;
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
+            if (setup_checkpoint && setup_entry && setup_input_count == 2u) {
+                setup_reset_completed = result.linear_pc == 0xfffffff0u;
+                lib_c_printf("PC110:SETUP:processor-reset=%u pc=%08x resets=%u\n",
+                    setup_reset_completed, result.linear_pc, processor_reset_count);
+                mypc110_post_diagnostic_print_ports(&post_reset_trace);
+                break;
+            }
             if (power_checkpoint && button_sent) {
                 /* Processor reset clears CPU-owned debugger controls. */
                 status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
@@ -1066,7 +1074,7 @@ int main(int argc, char **argv)
         return status == LIB_STATUS_OK && button_sent &&
             post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
             (!boot_checkpoint || (setup_checkpoint ? setup_entry : boot_handoff)) &&
-            (!setup_checkpoint || setup_bytes_match) &&
+            (!setup_checkpoint || (setup_bytes_match && (argc != 4 || setup_reset_completed))) &&
             (!ata_checkpoint || ata_boot_sector) &&
             retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
             !observation.diagnostic.first_fault.valid ? 0 : 1;

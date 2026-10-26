@@ -24,7 +24,8 @@ endforeach()
 
 foreach(required "x86_core_machine_signal_address_clear_mask(board->core"
     "x86_core_machine_observe_address_clear_mask(board->core"
-    "x86_nxvm_board_observe_a20(owner"
+    "x86_nxvm_board_apply_a20(board)"
+    "*out_value = board->system_control"
     "x86_nxvm_board_kbc_signal_a20"
     "X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK"
     "x86_core_machine_install_memory_device_routes(board->core, &route, 1u")
@@ -33,6 +34,13 @@ foreach(required "x86_core_machine_signal_address_clear_mask(board->core"
         message(FATAL_ERROR "Board A20/fallback route is missing ${required}")
     endif()
 endforeach()
+
+string(REGEX MATCHALL "x86_core_machine_signal_address_clear_mask\\("
+    a20_publications "${board}")
+list(LENGTH a20_publications a20_publication_count)
+if(NOT a20_publication_count EQUAL 1)
+    message(FATAL_ERROR "Board A20 must have one effective-mask publication owner")
+endif()
 
 foreach(required "attachment->connect.set_a20"
     "x86_core_machine_signal_address_clear_mask(machine, clear_mask)"

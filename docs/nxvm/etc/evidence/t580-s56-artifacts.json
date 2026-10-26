@@ -1,0 +1,134 @@
+[
+  {
+    "path": "assets/my5160/my5160_0_5_0580_x64.exe",
+    "kind": "published",
+    "architecture": "x64",
+    "task_version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1543544,
+    "sha256": "08B02D837404B333375D271D2E7F7AF516D402778C2752B8F67D00AF0DA8F4DD",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0580_x86.exe",
+    "kind": "published",
+    "architecture": "x86",
+    "task_version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1681089,
+    "sha256": "F2A5FBFEEF89710B0529C900BA3182402DDFF6F4D3F60307E9F6C4AFB22D9942",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0580_x64.exe",
+    "kind": "published",
+    "architecture": "x64",
+    "task_version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1557142,
+    "sha256": "7C1148C8B585D49DD8B8E08331C593F21CFF95773AC4780C36F3ECD55620FB15",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0580_x86.exe",
+    "kind": "published",
+    "architecture": "x86",
+    "task_version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1693946,
+    "sha256": "67379263BEF180C1872EF88C1BC711DED2435530E83D1F6FBAC231DCA6294B4B",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x64.exe",
+    "kind": "published",
+    "architecture": "x64",
+    "task_version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1543804,
+    "sha256": "DA7DCB17DCA568667F1CC56FB17A58B91F7B9DAB4356FDDFA0F3866871398337",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x86.exe",
+    "kind": "published",
+    "architecture": "x86",
+    "task_version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1681175,
+    "sha256": "D6C27D4BD8C8995A924D4E73E50892BFB8DB15B419733E9DCFDD52AA6E4F4B55",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0580_x64.exe",
+    "kind": "published",
+    "architecture": "x64",
+    "task_version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1556288,
+    "sha256": "05DAD4C9D647A17558DAEB46AAE2906B1C78EA30BD2EE8887D39BB2302B2EB52",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0580_x86.exe",
+    "kind": "published",
+    "architecture": "x86",
+    "task_version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1693244,
+    "sha256": "5D4414DADC742B26FBEF74FB734E45C3DA583D566CA2775962FBB3E6CB4BE875",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "build/.ninja/gcc-x64-release/src/app-mypc110/mypc110-tft-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "tft",
+    "architecture": "x64",
+    "pe_machine": "8664",
+    "bytes": 2812841,
+    "sha256": "ED6B9E509DA222B89795C636CD0D85FD69B855F3EA470F8531BAB19D0E5EF6EE",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "build/.ninja/gcc-x64-release/src/app-mypc110/mypc110-dstn-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "dstn",
+    "architecture": "x64",
+    "pe_machine": "8664",
+    "bytes": 2812841,
+    "sha256": "BBCBCA76ECAC40E7CA5929F5FEB85014AA45E4D17BA6E596B269F2E6D72626D6",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "build/.ninja/gcc-x86-release/src/app-mypc110/mypc110-tft-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "tft",
+    "architecture": "x86",
+    "pe_machine": "014C",
+    "bytes": 2970765,
+    "sha256": "F57CCE9F0D48D6EC409209E7A7D83ACBD9057E98A4E52A13DD78A58B9FC065CF",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  },
+  {
+    "path": "build/.ninja/gcc-x86-release/src/app-mypc110/mypc110-dstn-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "dstn",
+    "architecture": "x86",
+    "pe_machine": "014C",
+    "bytes": 2970765,
+    "sha256": "96023C6729FD0125BD4F2D81BBDA1F50029FA1D7179573F9FE4513FF3B668673",
+    "runtime_version_literal": "0.5.0580",
+    "version_evidence": "embedded runtime literal"
+  }
+]

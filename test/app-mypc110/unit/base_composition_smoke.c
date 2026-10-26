@@ -49,7 +49,7 @@ int main(void)
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x64u, &value) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x92u,
-            &value) != LIB_STATUS_UNSUPPORTED || x86_core_machine_bus_read(composition.core,
+            &value) != LIB_STATUS_OK || value != 0u || x86_core_machine_bus_read(composition.core,
             0x3dau, &value) != LIB_STATUS_OK);
     for (lib_u16 port = 0x0080u; !failed && port <= 0x008fu; ++port) {
         failed |= x86_core_machine_bus_read(composition.core, port, &value) !=

@@ -37,7 +37,8 @@ static const x86_nxvm_board_config mypc110_base_configuration = {
     .kbc_reset_system_flag_configured = 1u,
     .kbc_reset_system_flag = 1u,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
-    .system_facade = X86_NXVM_BOARD_SYSTEM_FACADE_NONE
+    .system_facade = X86_NXVM_BOARD_SYSTEM_FACADE_NONE,
+    .system_control_port_present = LIB_TRUE
 };
 
 static const x86_nxvm_board_plan_topology mypc110_base_topology = {

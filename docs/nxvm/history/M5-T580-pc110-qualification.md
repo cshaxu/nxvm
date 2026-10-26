@@ -642,3 +642,24 @@ unpublished preview identities and ten unchanged published identities are
 verified. No owned process or scratch remains; Shared, public API, owner
 inputs and unrelated Apps are unchanged. S55 closes after this governance
 P; T580 stays open for its explicitly retained receivers.
+
+## S56 executor delivery - System-control A20 and processor reset
+
+The single existing Board route now owns independent keyboard/fast A20
+inputs, their effective OR, system-control readback, reset edge/rearm and
+cold-reset initialization. One public config Boolean admits this route on
+PC110 without a PC/AT facade; no Lib/Emulator or CPU/Core change is needed.
+Both unchanged original BIOS replays service Setup's reset request and reach
+FFFF:FFF0 after 144,097,170 instructions/five resets with no new Core fault.
+This does not prove configuration persistence or post-restart guest boot.
+
+The [S56 record](../etc/evidence/t580-s56-system-control.md) retains actual
+changes, sources, failed test setups and exact verification limits. C/H
+delta is +162/-34, net +128; the affected static check is +9/-1. All 712 units
+per width, eight receiving INI identities, eight profile boots, four additional
+integrations per width and specialized checks pass. Eight PC EXEs are deployed
+and four PC110 previews remain unpublished in the
+[inventory](../etc/evidence/t580-s56-artifacts.json). Owner inputs, MyNES and
+MyRaidenII are unchanged. All 98 scratch files/7,013,740 bytes are removed
+with the official hash-reviewed cleaner; both caches remain. Executor
+delivery awaits coordinator actual-change acceptance; T580 remains open.

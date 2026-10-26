@@ -396,3 +396,13 @@ guest/product receiver class. Software restart reaches the BIOS's 92h reset
 request, which currently has no App route; it is not saved-configuration or
 guest qualification. These findings refine the next T580 repair batch and do
 not change any original milestone or authorize PC110 publication.
+
+S56 completes the retained Board system-control receiver: independent KBC
+and fast A20 inputs, port-92 latch/readback, rising processor-reset request,
+rearm and cold-versus-processor retention. The unchanged original Setup
+now requests an actual fifth processor reset on both widths, ending at
+FFFF:FFF0 rather than the unserviced ABC2 HLT. Its
+[direct proof and review](../etc/evidence/t580-s56-system-control.md) also
+records full units, receiving builds/integrations and unpublished previews.
+Normal saved Setup/restart, storage/guest, PCIC, F65535 palette/planar/panel,
+DSTN/live lifecycle and four-artifact product gates remain unaccepted.

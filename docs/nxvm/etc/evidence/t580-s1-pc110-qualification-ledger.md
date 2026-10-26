@@ -258,3 +258,19 @@ storage/guest checkpoints, real Setup selection/loading/UI, panel/live input,
 model identity, lifecycle/desktop and final four-artifact qualification.
 Those members remain explicitly unaccepted at the existing App/product
 owners; the finite S54 disposition does not transfer or erase them.
+
+## S56 system-control receiver qualification
+
+The [S56 record](t580-s56-system-control.md) directly proves the complete
+Board-owned 92h/A20/reset mechanism and its existing PC/AT and neutral-PC110
+selectors. Both widths execute the unchanged Setup's ordinary Enter/restart
+request through the real CPU reset vector. The two A20 inputs no longer
+overwrite each other, and processor-only reset retains Board/RAM/RTC.
+All 712 units per width, receiving PC builds/INI identities, four profile
+boots and affected integrations pass; four PC110 previews remain unpublished.
+
+This accepts reset servicing, not normal post-restart configuration save,
+selected storage/guest, PCIC/card handling, VGA/panel or product release.
+The ERROR/Easy-Setup pink-versus-blue discrepancy is a concrete F65535
+Attribute/DAC/PEL scanout acceptance item within the existing display row.
+No original domain is removed or transferred to a smaller completion claim.
