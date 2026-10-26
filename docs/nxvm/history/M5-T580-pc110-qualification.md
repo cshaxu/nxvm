@@ -803,3 +803,12 @@ S61 also rejects the locally available PC110-QEMU and PC110-EMU disk images as
 SunDisk substitutes: their capacities/partition geometry do not fit the
 source-recorded 7,872-sector primary.  No truncation or media conversion is
 admitted.
+
+The reported blue Easy-Setup/ERROR background is retained as a configuration
+and pre-entry-initialization qualification gap, not solved by reversing RGB in
+F65535.  The existing RGB path produces S57's `BE9E96` rose value unchanged.
+PC110-QEMU's direct-loader palette overwrite and PC110-EMU's presentation
+overrides are L2 diagnostic comparisons only and are not imported: both would
+modify or reinterpret guest presentation rather than model the missing source
+input.  A current unmodified-BIOS frame plus the exact extended CMOS/default
+capture is required before a receiver can be admitted.
