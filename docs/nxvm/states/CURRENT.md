@@ -2,6 +2,87 @@
 
 ## Current Work
 
+## M5 T580 S53 — PC110 power/status and retained-wake receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; numeric S53 after accepted S52; one-session coordinator/executor. |
+| Admission And Approval | Owner's continuing instruction to implement PC110 through T closure, automatic in-scope S admission and Core/chip/board implementation approval; source-labelled L2 is permitted. No permission to force a BIOS result or change Lib/Emulator is inferred. |
+| Objective | Reconcile and implement the complete power receiver batch: cold FB/B8 status, guest FF command and mode-22 qualification, named physical wake input, retained CPU/board reset and unchanged firmware restoration. Consume the existing T580 convergence ledger's power receiver without shrinking its boot/product obligations. |
+| Non-goals | No firmware edits, BIOS-PC interception, forced FB status, generic HLT change, automatic wake merely on suspend, second executor/clock, imported reference implementation, user INI/media change or unqualified PC110 publication. |
+| Reference Baseline | Clean pushed d206cddfa; S51/S52 actual cold/suspend and RTC findings; pinned external PC110-EMU, PC110-QEMU and Open-Source-PC110; original Intel SL references identified by S52 hashes. |
+| Candidate Proposal | ../proposals/m5-pc110-qualification.md; power batch in ../etc/evidence/t580-s1-pc110-qualification-ledger.md; preceding ../etc/evidence/t580-s52-power-contract.md. |
+| Files And ABI Surface | NXVM: existing app-mypc110 configuration/firmware/plan/EC mailbox and matching tests plus task evidence. Shared: existing x86-core VL82C420 Chip and x86-nxvm Machine input/profile receiver. The latter appends one optional whole-key handler to the copied profile binding; Machine remains the sole input dispatcher and executor. PC110 consumes F12 as its preview resume-button binding; all other keys and profiles retain their existing route. Lib and Emulator are excluded. Initial hardware estimate was production +80--140/-10--35 and tests +80--180/-10--30; actual power delta and the earlier EC batch are separately recorded. Refined driver-wiring estimate is production +25--45/-0--5 and existing tests +35--60/-0--5. The changed family Machine receives eight existing PC artifacts at final qualification; MyNES/MyRaidenII do not link it. |
+| Applicable Rules | NXVM guide, CONTRIBUTING, shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING/UI and source-policy; architecture-governance then coding-governance skills. Preserve single ownership, opaque public boundaries, Types vocabulary, source grades and normal Product execution. |
+| Verification | First inventory all bank-qualified power reads/writes and reset consumers; distinguish reset, RSM and hardware wake. Reuse the existing real-firmware harness for bounded observations, not a second path. Before a receiver is accepted prove cold/no-event/qualified wake/acknowledgement/retention/restoration together on x64/x86; then affected regressions, both complete unit corpora, dependency/Types/manifest/docs gates and receiving artifact builds. Unexecuted desktop/RDP/full guest gates remain explicit. |
+| Expected Markers | No first-PC or budget-as-success marker. Require actual guest suspend request, stable no-event state, explicit named event and firmware-owned restoration before claiming power behavior; retain the established timer/SMI/FDC markers and original T completion predicate. |
+| Asset Needs | Read-only admitted external TFT/DSTN firmware and font, existing manuals and pinned reference checkouts. No new ROM acquisition or raw binary enters Git. |
+| Reporting Requirements | Report concrete source findings and design before production changes, refined estimated and actual source/test delta, tests/failures, ownership, remaining gates and artifact qualification. Evidence belongs to ../etc/evidence/t580-s53-power-receiver.md. |
+| Stop Conditions | Stop the affected speculative change if source or executed behavior contradicts its contract; keep investigating safe alternatives. No physical-unit dump is a blanket requirement. A necessary Lib/Emulator change or unapproved source acquisition requires owner review. |
+| Exit Criteria | Complete batch has a falsifiable source-labelled contract and both-width receiver proof, actual-diff review, required receiving artifacts and pushed target-separated implementation; later coordinator governance closure. Do not close from a new halt address, a synthetic wake or passing fixtures alone. |
+| Original Owner Request | Implement PC110 under the existing project architecture and ordinary build/test/publish/commit/push workflow; external references may support bounded L2, not firmware-specific shortcuts. |
+| Similar-Issue Sweep | Inventory FB/B8/FF across distinct Block-2/SCAMP/CMOS banks, reset and SMI callbacks, physical event owners and all construction paths. Preserve distinct bank meanings and state lifetimes; remove any admitted duplicate power owner instead of layering a bypass. Temporary outputs only build/t580-s53-power, owned by this S, 256 MiB; first observations 180 s, corrected complete-consumer observations up to 300 s and 40 million retirements. Use one comparison per width/model and only an evidenced corrective diagnostic for a faulty observer; no repetitive stress runs. Record facts/hashes and use the official preview-first cleaner after owned processes exit. |
+
+The post-wake observer now uses the existing execution watchpoint/step contract
+at restoration entry and RSM instead of per-retirement CPU snapshots. A bounded
+60-million total-retirement observation includes the demonstrated refresh-edge
+delay (a 16-bit CX countdown, up to 65,536 transitions at the existing 498-tick
+refresh period); native time remains 300 seconds. This is containment only:
+the unchanged actual restoration/RSM predicate, not reaching the ceiling,
+determines success. Prior incomplete runs remain explicitly unqualified.
+
+First whole-prefix observation is recorded in
+[S53 evidence](../etc/evidence/t580-s53-power-receiver.md). The unchanged x64
+BIOS reaches genuine suspend and additionally exposes seven finite failed EC
+response waits. This is not an implemented wake receiver, a completed S or
+boot qualification; the complete command/reply and power receiver remains active.
+
+The second phase has an App-only EC reply implementation in progress, based
+on the original controller's reconciled command tables and RAM initialization.
+Both focused mailbox units pass. The x64 unchanged BIOS consumes its defined
+replies without the old response waits, reaching the same genuine suspend
+endpoint after 27,893,750 instructions rather than 32,019,249. This is a
+repaired transaction, not boot success. The corrected RAM-page model's complete
+EC consumer replay now agrees byte-for-byte on both widths at that endpoint;
+all eleven App units and the original FDC/timer/SMI integration pass per width.
+That EC-only phase rebuilt four unpublished previews and changed three App
+C/H paths, +189/-21 including tests, without Shared or deployed-App changes.
+The subsequent power candidate also changes the Shared Chip as described below.
+The complete power/wake receiver remains unaccepted. No implementation P or
+release is made from this incomplete S; the next work retains FB/B8/FF,
+the named real input, reset retention and firmware restoration as one batch.
+
+The next source reconciliation identifies FF=82h/HLT as the SL suspend-refresh
+sequence (original reference Listing 10.1), not automatic resume. A bounded
+L2 Chip button-edge/status receiver and App stop-clock/processor-reset wiring
+are being implemented in the existing owners. The only new shared operations
+are the Chip's suspend-refresh output and physical resume-button input;
+Lib/Emulator remain excluded. Actual firmware restoration and production
+input delivery remain required, not inferred from the new fixture checks.
+
+The new Chip/App candidate passes thirteen scoped cases per width, including
+normal-refresh status and full-cold versus retained-reset behavior. Actual
+firmware observations progress through the original resume dispatch, refresh
+wait, checksum and restoration entry. The corrected observer now proves, on
+both widths, stable no-event stop, one qualified button/reset, all 512 retained
+CPU bytes, actual RSM and return to F000:DD11 after 48,828,526 retirements with
+no added exception. Earlier failed/rejected observers remain in S53 evidence.
+This is not full boot or normal Product input qualification. That production
+input connection and the required full-repository gates remain pending;
+there is no S53 implementation P or publication yet. The subsequent optional
+profile-key receiver also changes the shared family Machine: eight existing
+PC artifacts now require rebuilding before delivery. Its two construction
+tests pass on both widths. The actual F12 driver/firmware replay now passes
+on both widths with the same retained-image/RSM proof. Each width now has
+passing results for all 712 distinct units: initial parallel invocations
+time out in unchanged static checks, which pass on serial recheck without
+budget/code changes. The failed attempts remain recorded, not relabeled.
+All eight receiving PC artifacts are rebuilt and pass PE/real-INI identity
+checks in the same cached graphs. The registered retained-power integration
+passes at 186.98 seconds x64 and 248.64 seconds x86. Complete target-separated
+implementation delivery and coordinator acceptance are next; no PC110
+publication or complete guest/product claim is made.
+
 ## M5 T580 — Open after accepted S52
 
 Coordinator actual-change review accepts Shared `3ca0a166f` and NXVM

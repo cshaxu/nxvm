@@ -202,3 +202,27 @@ status/write rules, the named physical event, retention/reset and real BIOS
 restoration remain one power receiver inside T580, not a generic HLT change
 or a demand for owner hardware. No fixed FB bit or synthetic wake is admitted.
 The complete original qualification universe and completion predicate remain.
+
+## S53 active power/EC reconciliation
+
+The [active receiver evidence](t580-s53-power-receiver.md) distinguishes a
+second, concrete defect from missing power wake: the existing EC mailbox had
+no response implementation for the BIOS's defined queries. Seven transactions
+exhausted their finite guest response waits. Original controller command tables
+and initialization now define an App-only reply/RAM receiver, with focused
+both-width units passing and a normal x64 BIOS consumer observation. It still
+reaches genuine suspend; the physical wake/status/retention/restoration batch
+and all original product predicates remain open. This is not S53 acceptance.
+The reference's stale missing-reset-vector claim is explicitly superseded by
+its later corrected map and the supplied images' actual reset vectors; it
+does not form an owner-asset prerequisite for this receiver.
+
+The implemented physical receiver now passes actual F12 Machine-driver and
+unchanged-BIOS retained-reset/restoration/RSM replay on both widths, including
+all 512 retained CPU bytes and no extra exception. This proves the complete
+bounded power transaction, not a live keyboard, guest or product release.
+S53 remains unaccepted pending receiving artifacts and actual-change review.
+All 712 units per width now have passing results, including serial rechecks
+of the unchanged static cases that timed out under concurrent load. Original
+failed attempts remain recorded; no Lib change or budget relaxation is made.
+The original T-level universe and product predicates remain unchanged.

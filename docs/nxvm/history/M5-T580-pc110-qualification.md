@@ -511,3 +511,30 @@ files are safely removed; owner inputs and other Apps remain unchanged.
 Coordinator actual-change review/acceptance is pending. T580's physical
 wake/status/retention, Setup/guest and full product gates remain open; neither
 the NVRAM repair nor unit qualification is a completed PC110 product.
+
+## S53 implementation — complete bounded power receiver
+
+After accepted S52, the coordinator admits the complete EC/power/status/wake/
+retention/restoration batch on d206cddfa. Original controller records support
+one App reply/RAM receiver; SL references and actual BIOS support the named
+L2 suspend/explicit-button/retained-reset/SMI transaction. No firmware change,
+forced status, automatic wake, host service, new clock or executor is used.
+
+Shared `85a65c3a8` adds the Chip receiver and optional copied Machine key
+binding. The NXVM implementation supplies PC110's F12 binding and EC/reset
+integration, extends existing owner fixtures and the sole real-BIOS harness,
+and refreshes all eight receiving PC EXEs. Both widths prove all 512 retained
+CPU bytes and actual BIOS RSM. Registered power CTest passes at 186.98 s x64
+and 248.64 s x86. All 712 distinct units per width have passing results;
+initial static timeouts and unchanged-budget serial corrections are retained,
+not relabeled. Four actual INI identities pass per width, owner INI hashes
+stay unchanged, and the four PC110 previews remain unpublished.
+
+The [S53 evidence](../etc/evidence/t580-s53-power-receiver.md) records sources,
+actual C/H +540/-43 (net +497), public/state ownership, artifact hashes,
+failed observers and verification limits. The official cleaner removes 28
+owned temporary files/3,011,103 bytes after every controller exits; stable
+Ninja/ccache trees remain. Lib, Emulator, Debugger, IBM-PC Product, MyNES and
+MyRaidenII source/test trees remain unchanged. Coordinator review is pending.
+This is not live panel/input/RDP, Setup, full guest or PC110 publication
+qualification; all original T580 product predicates remain open.

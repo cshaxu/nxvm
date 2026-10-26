@@ -294,6 +294,43 @@ int main(void)
             x86_core_machine_memory_read(machine, 0x30000u, &byte, 1u) != LIB_STATUS_OK || byte != 0u ||
             x86_core_machine_memory_read(machine, 0x38000u, &byte, 1u) != LIB_STATUS_OK || byte != 0u);
     }
+    if (!failed) {
+        /* A physical button is not monitor resume. No event means no reset;
+         * a new asserted edge resumes through RESET without clearing RAM. */
+        failed |= x86_core_machine_bus_read(machine, 0xfc23u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xf023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0xc023u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x23u, &value) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0x2200u, &patch, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x24u, 0xb8u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x25u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x24u, 0xfbu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x25u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x704u, &value) != LIB_STATUS_OK || value != 1u ||
+            mypc110_firmware_set_resume_button(&firmware, LIB_TRUE) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x24u, 0xffu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x25u, 0x82u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x704u, &value) != LIB_STATUS_OK || value != 0u ||
+            mypc110_firmware_set_resume_button(&firmware, LIB_TRUE) != LIB_STATUS_OK ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+                LIB_STATUS_OK || result.executed != 0u ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            mypc110_firmware_set_resume_button(&firmware, LIB_FALSE) != LIB_STATUS_OK ||
+            mypc110_firmware_set_resume_button(&firmware, LIB_TRUE) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x704u, &value) != LIB_STATUS_OK || value != 1u ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u}, &result) !=
+                LIB_STATUS_OK || result.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
+            x86_core_machine_memory_read(machine, 0x2200u, &byte, 1u) != LIB_STATUS_OK || byte != patch ||
+            x86_core_machine_bus_write(machine, 0x24u, 0xb8u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x25u, &value) != LIB_STATUS_OK || (value & 8u) == 0u ||
+            x86_core_machine_bus_write(machine, 0x24u, 0xfbu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x25u, &value) != LIB_STATUS_OK || (value & 8u) == 0u;
+        failed |= !failed && (x86_core_machine_bus_write(machine, 0x24u, 0xffu) !=
+                LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x25u, 0x82u) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_vl82c420_suspend_refresh_enabled(chip));
+    }
     if (machine != LIB_NULL && chip != LIB_NULL) {
         failed |= x86_core_machine_remove_port_routes(machine, &firmware) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_UNSUPPORTED;

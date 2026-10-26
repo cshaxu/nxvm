@@ -33,8 +33,16 @@ int main(void)
         {.operation = X86_DEBUG_WRITE_PORT, .port = 0x71u, .address = 0xaau, .bytes = 1u},
         {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u},
         {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x3bu, .bytes = 1u},
-        {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u}};
-    const lib_u32 expected[] = {0x80u, 0u, 0u, 0u, 0u, 0u, 0xaau, 0u, 0x55u};
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x71u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0xfc23u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0xf023u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0xc023u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x23u, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x24u, .address = 0xffu, .bytes = 1u},
+        {.operation = X86_DEBUG_WRITE_PORT, .port = 0x25u, .address = 0x82u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x704u, .bytes = 1u}};
+    const lib_u32 expected[] = {0x80u, 0u, 0u, 0u, 0u, 0u, 0xaau, 0u, 0x55u,
+        0xffu, 0xffu, 0xffu, 0x7fu, 0u, 0u, 0u};
     x86_debug_response response = {0};
     lib_size response_bytes = 0u;
     static kvm_window_frame_storage frame;
@@ -84,6 +92,18 @@ int main(void)
                 response_bytes != sizeof(response) || response.value != expected[index] ||
                 construction.floppy_slot_count != 0u || information.floppy_media_inserted)
             failed = 20 + (int)index;
+    }
+    if (!failed) {
+        kvm_input_event key = {.type = KVM_EVENT_KEY,
+            .data.key = {.key = BASE_KEY_F12, .pressed = LIB_TRUE}};
+        const x86_debug_request refresh = {.operation = X86_DEBUG_READ_PORT,
+            .port = 0x704u, .bytes = 1u};
+        driver.deliver_input(driver.context, &key);
+        key.data.key.pressed = LIB_FALSE;
+        driver.deliver_input(driver.context, &key);
+        if (driver.execute_debug(driver.context, &refresh, sizeof(refresh),
+                &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+            response.value != 1u) failed = 40;
     }
     x86_nxvm_machine_destroy(machine);
     return failed;

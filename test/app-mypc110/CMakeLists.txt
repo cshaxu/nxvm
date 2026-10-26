@@ -153,4 +153,9 @@ if(TARGET mypc110-real-firmware-tft)
         COMMAND mypc110-real-firmware-post-integration --fdc-reset)
     set_tests_properties(mypc110.integration/real-firmware-fdc-reset PROPERTIES
         LABELS "integration;mypc110" TIMEOUT 180)
+    # Separate retained-power contract, using the same real BIOS and driver.
+    add_test(NAME mypc110.integration/real-firmware-power-resume
+        COMMAND mypc110-real-firmware-post-integration --resume-button)
+    set_tests_properties(mypc110.integration/real-firmware-power-resume PROPERTIES
+        LABELS "integration;mypc110" TIMEOUT 300)
 endif()

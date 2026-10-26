@@ -11,6 +11,8 @@
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-nxvm/machine/media/media_interface.h"
 
+#define MYPC110_POWER_INPUT_FAULT 0x50575200u
+
 typedef struct mypc110_machine_plan {
     mypc110_firmware firmware;
     mypc110_font_rom font;
@@ -178,6 +180,19 @@ static void mypc110_machine_release(void *opaque)
     lib_release(plan);
 }
 
+static lib_bool mypc110_machine_handle_key(void *opaque, const kvm_input_event *event)
+{
+    mypc110_machine_plan *plan = opaque;
+
+    if (event->data.key.key != BASE_KEY_F12) return LIB_FALSE;
+    const lib_status status = mypc110_firmware_set_resume_button(&plan->firmware,
+        event->data.key.pressed);
+    if (status != LIB_STATUS_OK)
+        (void)x86_core_machine_report_fault(plan->firmware.machine,
+            MYPC110_POWER_INPUT_FAULT | (lib_u32)status);
+    return LIB_TRUE;
+}
+
 lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *config,
     const x86_nxvm_machine_assets *assets,
     x86_nxvm_machine_construction *out_construction)
@@ -220,6 +235,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .firmware_context = &plan->firmware,
         .profile = {.context = plan, .configure = mypc110_machine_configure,
             .after_firmware = mypc110_machine_after_firmware,
-            .release = mypc110_machine_release}};
+            .release = mypc110_machine_release,
+            .handle_key = mypc110_machine_handle_key}};
     return LIB_STATUS_OK;
 }

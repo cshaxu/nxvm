@@ -35,6 +35,13 @@ PC110 uses the same monitor, lifecycle, input and debugger. Hardware-specific
 setup belongs to its firmware and documented configuration, not another
 control Console or VDM/DOS-launch interface.
 
+The prepublication PC110 host binding reserves F12 make/break for its virtual
+resume-button level. While the guest has requested firmware suspend, a new
+press wakes that hardware path; it does not resume a monitor-paused machine
+or send F12 to the guest. Other keys and the shared PC hotkeys retain their
+normal meanings. This is an emulator binding, not an original PC110 key map;
+it does not qualify a published PC110 product or a working suspend toggle.
+
 ## Presentation And Debugging
 
 Retain Console/Window presentation, Common's existing `console_control`

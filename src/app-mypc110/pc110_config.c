@@ -16,6 +16,7 @@
 #define MYPC110_ECED_CONFIG_CLOSE_PORT 0x00f9u
 #define MYPC110_ECED_CONFIG_OPEN_PORT 0x00fbu
 #define MYPC110_MEMORY_CONTROL_PORT 0x0302u
+#define MYPC110_MEMORY_REFRESH_STATUS_PORT 0x0704u
 #define MYPC110_ASMI_PORT 0x15eeu
 #define MYPC110_PLANAR_CONTROL_PORT 0x0098u
 
@@ -117,6 +118,11 @@ static lib_status mypc110_config_read(void *owner, lib_u16 port,
     }
     chip = firmware->configuration_chip;
     switch (port) {
+    case MYPC110_MEMORY_REFRESH_STATUS_PORT:
+        /* L2 functional REFNORM: resume firmware waits for normal refresh
+         * after clearing suspend refresh. No host delay or read-count rule. */
+        *out_value = x86_vl82c420_suspend_refresh_enabled(chip) ? 0u : 1u;
+        return LIB_STATUS_OK;
     case MYPC110_PLANAR_CONTROL_PORT:
         *out_value = firmware->planar_control;
         return LIB_STATUS_OK;
@@ -272,11 +278,29 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         lib_status status = x86_vl82c420_write_selected(chip, bank,
             (lib_u8)value);
 
-        if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_BLOCK2)
-            return x86_core_machine_set_smi(firmware->machine, x86_vl82c420_smi_asserted(chip));
+        if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_BLOCK2) {
+            status = x86_core_machine_set_smi(firmware->machine, x86_vl82c420_smi_asserted(chip));
+            if (status == LIB_STATUS_OK)
+                status = x86_core_machine_set_stop_clock(firmware->machine,
+                    x86_vl82c420_suspend_refresh_enabled(chip));
+        }
         return status == LIB_STATUS_INVALID_STATE &&
             bank == X86_VL82C420_BANK_BLOCK2 ? LIB_STATUS_OK : status;
     }
+}
+
+lib_status mypc110_firmware_set_resume_button(mypc110_firmware *firmware,
+    lib_bool asserted)
+{
+    if (firmware == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (firmware->machine == LIB_NULL || firmware->configuration_chip == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    if (x86_vl82c420_set_resume_button(firmware->configuration_chip, asserted)) {
+        lib_status status = x86_core_machine_set_stop_clock(firmware->machine, LIB_FALSE);
+        if (status != LIB_STATUS_OK) return status;
+        x86_core_machine_signal_processor_reset(firmware->machine);
+    }
+    return LIB_STATUS_OK;
 }
 
 lib_status mypc110_config_install_routes(x86_core_machine *machine,
@@ -286,6 +310,7 @@ lib_status mypc110_config_install_routes(x86_core_machine *machine,
     const x86_core_machine_port_route port_routes[] = {
         {MYPC110_PLANAR_CONTROL_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_MEMORY_CONTROL_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
+        {MYPC110_MEMORY_REFRESH_STATUS_PORT, mypc110_config_read, LIB_NULL, firmware, LIB_FALSE, 0u},
         {MYPC110_ASMI_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_CPU_POWER_MODE_PORT, mypc110_config_read, mypc110_config_write, firmware, LIB_FALSE, 0u},
         {MYPC110_BLOCK2_INDEX_PORT, LIB_NULL, mypc110_config_write, firmware, LIB_FALSE, 0u},

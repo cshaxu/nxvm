@@ -3,14 +3,22 @@
 
 #include "x86-core/machine/machine_interface.h"
 
-/* L2: documented PC110 software polls 15ECh until status bits 0--1 are
- * clear, then sends a command at 15ECh and data at 15E8h.  The documented
- * protocol does not establish a required busy duration or command grammar,
- * so this receiver exposes the proven ready state and records writes without
- * inventing an MCU execution model. */
+#define MYPC110_EC_RAM_BYTES 512u
+
+/* L2 functional host-mailbox transactions, not an executing MCU. Commands
+ * 05/21/FC return defined controller data; D0--D2 read its 40h--23Fh RAM.
+ * D4/D5 write page 1 and D6 writes page 2 in the selected controller image.
+ * One reply latch owns OBF; writes complete immediately (IBF clear). GPIO,
+ * serial charging traffic and unsolicited input remain separate receivers.
+ * Construction initializes retained EC RAM; a CPU reset does not clear it. */
 typedef struct mypc110_ec_mailbox {
     lib_u8 command;
     lib_u8 data;
+    lib_u16 address;
+    lib_u8 parameter_count;
+    lib_u8 reply;
+    lib_bool reply_pending;
+    lib_u8 ram[MYPC110_EC_RAM_BYTES];
 } mypc110_ec_mailbox;
 
 lib_status mypc110_ec_mailbox_install_routes(x86_core_machine *machine,

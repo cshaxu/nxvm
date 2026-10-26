@@ -1,6 +1,7 @@
 /* External, embedded-BIOS qualification; earlier observation modes remain
  * available for manual investigation through this same execution harness. */
 #include "app-mypc110/pc110_plan_interface.h"
+#include "app-mypc110/pc110_firmware_interface.h"
 #include "lib/types/file.h"
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/debug_interface.h"
@@ -39,6 +40,8 @@ typedef struct mypc110_post_diagnostic_port_read {
 } mypc110_post_diagnostic_port_read;
 
 typedef struct mypc110_post_diagnostic_trace {
+    lib_bool power_restore_entered;
+    lib_bool power_restore_completed;
     lib_bool fdc_checkpoint;
     lib_bool fdc_reset_asserted;
     lib_bool fdc_reset_released;
@@ -303,7 +306,15 @@ int main(int argc, char **argv)
         lib_text_compare(argv[1], "--c000-port61-follow") == 0;
     lib_bool fdc_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--fdc-reset") == 0;
-    lib_bool timer_checkpoint = fdc_checkpoint || (argc == 2 && argv != LIB_NULL &&
+    lib_bool power_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--resume-button") == 0;
+    lib_bool button_sent = LIB_FALSE;
+    lib_u8 suspended_cpu_image[512u] = {0};
+    lib_u8 restored_cpu_image[512u] = {0};
+    lib_bool retained_cpu_image = LIB_FALSE;
+    mypc110_firmware *power_firmware = LIB_NULL;
+    emulator_machine_driver power_driver = {0};
+    lib_bool timer_checkpoint = power_checkpoint || fdc_checkpoint || (argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--timer") == 0);
     lib_u64 instruction_limit;
     lib_u32 wait_count = 0u;
@@ -320,6 +331,7 @@ int main(int argc, char **argv)
             MYPC110_POST_DIAGNOSTIC_INSTRUCTIONS);
     if (timer_checkpoint) instruction_limit = 200000000u;
     if (fdc_checkpoint) instruction_limit = 32000000u;
+    if (power_checkpoint) instruction_limit = 60000000u;
     post_reset_trace.fdc_checkpoint = fdc_checkpoint;
     post_reset_trace.timer_checkpoint = timer_checkpoint;
     post_reset_trace.c000_only = c000_checkpoint || c000_follow_checkpoint ||
@@ -327,9 +339,12 @@ int main(int argc, char **argv)
     post_reset_trace.follow_c000_port61 = c000_port61_follow_checkpoint;
 
     status = mypc110_machine_construction_create(&config, &vm_app_firmware, &construction);
+    if (status == LIB_STATUS_OK) power_firmware = construction.firmware_context;
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_create(&config, &construction, &machine);
-    if (status == LIB_STATUS_OK) {
+    if (status == LIB_STATUS_OK && power_checkpoint)
+        status = x86_nxvm_machine_describe_emulator_driver(machine, &power_driver);
+    if (status == LIB_STATUS_OK && !power_checkpoint) {
         status = x86_core_machine_set_retirement_observation_provider(
             machine->x86_core_machine,
             &(x86_core_machine_retirement_observation_provider){
@@ -365,8 +380,69 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
+        if (power_checkpoint && result.reason == X86_CORE_MACHINE_STOP_PAUSED && button_sent) {
+            const lib_u32 expected = post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u;
+            x86_core_cpu_debug_instruction_observation retired = {0};
+            status = x86_core_machine_debug_capture_instruction_observation(
+                machine->x86_core_machine, &retired);
+            if (status != LIB_STATUS_OK || !retired.watch_hit || retired.watch_address != expected) break;
+            status = x86_core_machine_debug_clear_watchpoint(machine->x86_core_machine,
+                X86_CORE_CPU_DEBUG_WATCH_EXECUTE);
+            if (status == LIB_STATUS_INVALID_STATE) {
+                /* The watch hit may precede its physical retirement tail.
+                 * One normal step must finish that tail, not execute new code. */
+                x86_core_cpu_debug_cpu_snapshot before_tail = {0};
+                x86_core_cpu_debug_cpu_snapshot after_tail = {0};
+                status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &before_tail);
+                if (status == LIB_STATUS_OK)
+                    status = x86_core_machine_debug_step(machine->x86_core_machine, &result);
+                if (status == LIB_STATUS_OK)
+                    status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
+                        X86_CORE_CPU_SNAPSHOT_CURRENT, &after_tail);
+                if (status != LIB_STATUS_OK || result.executed != 1u ||
+                    before_tail.cs.base != after_tail.cs.base || before_tail.eip != after_tail.eip) break;
+                status = x86_core_machine_debug_clear_watchpoint(machine->x86_core_machine,
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE);
+            }
+            if (status != LIB_STATUS_OK) break;
+            lib_c_printf("PC110:POWER:retired-watch=%08x pc=%08x\n", expected, result.linear_pc);
+            if (!post_reset_trace.power_restore_entered) {
+                post_reset_trace.power_restore_entered = LIB_TRUE;
+                status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x3dbc5u);
+                continue;
+            }
+            x86_core_cpu_debug_cpu_snapshot resumed_cpu = {0};
+            lib_u32 step = 0u;
+            /* Execution watchpoints report after the CALL. Follow its real
+             * EOSMI helper to the RSM boundary without changing guest state. */
+            for (; status == LIB_STATUS_OK && step < 128u; ++step) {
+                status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &resumed_cpu);
+                if (status != LIB_STATUS_OK || resumed_cpu.cs.base + resumed_cpu.eip == 0x3dbc8u) break;
+                status = x86_core_machine_debug_step(machine->x86_core_machine, &result);
+            }
+            if (status != LIB_STATUS_OK || step == 128u) break;
+            status = x86_core_machine_memory_read(machine->x86_core_machine,
+                0x3fe00u, restored_cpu_image, sizeof(restored_cpu_image));
+            retained_cpu_image = status == LIB_STATUS_OK && lib_memory_compare(
+                suspended_cpu_image, restored_cpu_image, sizeof(restored_cpu_image)) == 0;
+            if (!retained_cpu_image) break;
+            status = x86_core_machine_debug_step(machine->x86_core_machine, &result);
+            if (status == LIB_STATUS_OK)
+                status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &resumed_cpu);
+            post_reset_trace.power_restore_completed = status == LIB_STATUS_OK && result.executed == 1u &&
+                result.reason == X86_CORE_MACHINE_STOP_BUDGET;
+            lib_c_printf("PC110:POWER:rsm status=%d executed=%llu return=%04x:%08x flags=%08x retained=%u\n",
+                status, (unsigned long long)result.executed, resumed_cpu.cs.selector,
+                resumed_cpu.eip, resumed_cpu.eflags, retained_cpu_image);
+            break;
+        }
+        if (power_checkpoint && post_reset_trace.power_restore_completed) break;
         if (fdc_checkpoint && post_reset_trace.fdc_reset_completed) break;
-        if (timer_checkpoint && !fdc_checkpoint && (post_reset_trace.timer_passed ||
+        if (timer_checkpoint && !fdc_checkpoint && !power_checkpoint && (post_reset_trace.timer_passed ||
                 post_reset_trace.timer_failed ||
                 result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)) break;
         if (processor_reset_count != 0u && !post_reset_exception.valid &&
@@ -389,6 +465,11 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY) break;
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
+            if (power_checkpoint && button_sent) {
+                /* Processor reset clears CPU-owned debugger controls. */
+                status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x39336u);
+            }
             post_reset_trace.post_reset_active = LIB_TRUE;
             if (x86_core_machine_capture_observation(machine->x86_core_machine,
                     &reset_observation) == LIB_STATUS_OK) {
@@ -408,6 +489,30 @@ int main(int argc, char **argv)
             x86_core_cpu_debug_cpu_snapshot cpu = {0};
 
             ++wait_count;
+            if (power_checkpoint && !button_sent &&
+                x86_vl82c420_suspend_refresh_enabled(power_firmware->configuration_chip)) {
+                const lib_u32 suspended_pc = result.linear_pc;
+                status = x86_core_machine_run(machine->x86_core_machine,
+                    (x86_core_machine_run_budget){4096u, 0u}, &result);
+                if (status != LIB_STATUS_OK || result.executed != 0u ||
+                    result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) break;
+                lib_c_printf("PC110:POWER:no-event pc=%08x repeat=%08x executed=%llu\n",
+                    suspended_pc, result.linear_pc, (unsigned long long)result.executed);
+                lib_c_fflush(lib_c_stdout);
+                status = x86_core_machine_memory_read(machine->x86_core_machine,
+                    0x3fe00u, suspended_cpu_image, sizeof(suspended_cpu_image));
+                if (status == LIB_STATUS_OK) {
+                    kvm_input_event key = {.type = KVM_EVENT_KEY,
+                        .data.key = {.key = BASE_KEY_F12, .pressed = LIB_TRUE}};
+                    power_driver.deliver_input(power_driver.context, &key);
+                    key.data.key.pressed = LIB_FALSE;
+                    power_driver.deliver_input(power_driver.context, &key);
+                    if (x86_vl82c420_suspend_refresh_enabled(power_firmware->configuration_chip))
+                        status = LIB_STATUS_INVALID_STATE;
+                }
+                button_sent = status == LIB_STATUS_OK;
+                continue;
+            }
             status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu);
             /* A POST error's CLI/HLT is terminal for this diagnostic. */
@@ -630,6 +735,16 @@ int main(int argc, char **argv)
         }
     }
     x86_nxvm_machine_destroy(machine);
+    if (power_checkpoint) {
+        lib_c_printf("PC110:POWER:button=%u restore=%u rsm=%u status=%d pc=%08x resets=%u executed=%llu\n",
+            button_sent, post_reset_trace.power_restore_entered,
+            post_reset_trace.power_restore_completed, status, result.linear_pc,
+            processor_reset_count, (unsigned long long)executed);
+        return status == LIB_STATUS_OK && button_sent &&
+            post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
+            retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
+            !observation.diagnostic.first_fault.valid ? 0 : 1;
+    }
     if (fdc_checkpoint) {
         lib_c_printf("PC110:FDC-RESET:asserted=%u released=%u irq-return=%u senses-complete=%u\n",
             post_reset_trace.fdc_reset_asserted, post_reset_trace.fdc_reset_released,

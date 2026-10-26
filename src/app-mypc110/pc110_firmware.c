@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_firmware_interface.h"
+#include "app-mypc110/pc110_config_interface.h"
 
 #include "x86-core/machine/memory_interface.h"
 
@@ -183,18 +184,9 @@ static lib_status mypc110_firmware_reset(void *opaque,
     (void)firmware;
     if (binding == LIB_NULL || binding->bios == LIB_NULL || binding->shadow == LIB_NULL ||
         binding->configuration_chip == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = x86_vl82c420_select(binding->configuration_chip,
-        X86_VL82C420_BANK_ECED, 0x0cu);
-    if (status == LIB_STATUS_OK)
-        status = x86_vl82c420_write_selected(binding->configuration_chip,
-            X86_VL82C420_BANK_ECED, MYPC110_RESET_ROMSET);
-    for (lib_u8 index = 0x0du; status == LIB_STATUS_OK && index <= 0x18u; ++index) {
-        status = x86_vl82c420_select(binding->configuration_chip,
-            X86_VL82C420_BANK_ECED, index);
-        if (status == LIB_STATUS_OK)
-            status = x86_vl82c420_write_selected(binding->configuration_chip,
-                X86_VL82C420_BANK_ECED, 0u);
-    }
+    /* Full machine reset uses the same cold register image as construction.
+     * Processor-only resume never enters this firmware-reset operation. */
+    status = mypc110_config_initialize_cold_image(binding->configuration_chip);
     if (status != LIB_STATUS_OK) return status;
     lib_memory_set(binding->shadow, 0u, MYPC110_FIRMWARE_BYTES + MYPC110_SMRAM_BYTES);
     binding->memory_control = 0u;
