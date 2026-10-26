@@ -1,12 +1,23 @@
-# Project Status
+# M5 T580 — Open after accepted S64
 
-## Current Work
-
-## M5 T580 — retained progress
-
-| Task | Progress |
+| Field | Required record |
 | --- | --- |
-| T580 S63 | Accepted after actual-diff review. App-local Font-ROM bank/readback/enable aperture is in `98c812bb6`; both x64 and x86 repository unit suites pass 714/714. Four PC110 previews were rebuilt but remain unpublished. No active S packet between acceptance and the next admission. T580 remains open. |
+| Identifier Mode | Retained status — S64 implementation `40be5c4f2` is accepted; T580 remains open. |
+| Admission And Approval | Owner has directed autonomous continuation of PC110 implementation (2026-10-26). The existing T580 source policy permits L2 external research as a behavioral reference, but no imported third-party source, firmware or media. |
+| Objective | Model the source-recorded PC110 8042 power-on command-byte fact so the existing standard PS/2 TrackPoint route begins with AUX disabled and IRQ12 masked. |
+| Non-goals | No TrackPoint firmware model, mouse protocol rewrite, private host input path, ROM/media import, persistence claim, desktop validation, release artifact publication or generic device framework. |
+| Reference Baseline | Clean `07d942657`; S63 font-window receiver accepted. `Open-Source-PC110/Discovery/Trackpoint/readme.md` §§5/7a records command byte `65h`, AUX disabled, and standard PS/2 responses. Current generic reset produces `47h` when AUX is present. |
+| Candidate Proposal | Extend the existing board-selected 8042 reset configuration family with an optional frozen command byte. Generic controller behavior remains its present default when unconfigured. MyPC110 selects `65h`; Board applies it after its ordinary 8042 reset. Existing AUX enable (`A8h`) and standard PS/2 commands remain the one route. |
+| Files And ABI Surface | Expected: `src/x86-nxvm/chips/kbc8042/*`, `src/x86-nxvm/board-at/*`, `src/x86-nxvm/board-base/*`, `src/app-mypc110/pc110_machine.c`, existing owner tests under `test/x86-nxvm` and `test/app-mypc110`, manifests, evidence/history. This is an additive x86-nxvm public configuration field/setter; Lib and Emulator are untouched. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; and `docs/nxvm/etc/operations/policy/source-policy.md`. Keep dependency direction; one owner/route; use `lib_*` types/status; source grade L2; no protected payload. |
+| Verification | Prove generic unconfigured reset remains `47h`; prove PC110 reset reads `65h`, `A8h` enables AUX, `FFh/F2h/E9h/F4h` retain documented responses and mouse packets remain gated until reporting enabled. Run focused x86-nxvm and MyPC110 tests x64/x86, then full repository unit suites x64/x86; manifests, dependency/type/docs gates and diff review. Rebuild unpublished PC110 previews only. |
+| Expected Markers | `PC110:BASE:composition:OK`; focused KBC reset configuration marker; full unit suites report all registered tests passing on both widths. |
+| Asset Needs | Read-only external source text only; no ROM/font/media asset is consumed or altered. |
+| Reporting Requirements | Record exact L2 source boundary, generic/default preservation, changed source/test line delta, focused and full verification separately, preview rebuild status, and remaining unqualified domains. |
+| Stop Conditions | Stop if the required fact needs a second input path, changes ordinary PC reset semantics, requires invented TrackPoint firmware, source payload import, or a Lib/Emulator change. Report any public-contract conflict before expanding scope. |
+| Exit Criteria | Met by implementation `40be5c4f2` and this governance record: one configured reset route owns the PC110 fact; generic and PC110 public-port proofs pass; unit, manifest, documentation and receiving-artifact gates pass. The external native-MIDI host integration remains explicitly non-passing because this host has no endpoint. T580 remains open. |
+| Original Owner Request | Continue PC110 implementation toward real behavior; use the three external PC110 research repositories as L2 evidence without importing protected assets. |
+| Similar-Issue Sweep | Review all KBC reset customization fields and all MyPC110 KBC/aux callers. Preserve generic defaults; do not create a competing mouse/keyboard initialization mechanism. |
 
 ## Verified Baseline
 
@@ -82,3 +93,15 @@ No remaining original domain is removed or called complete.
 [Retained status](../history/M5-T580-retained-status.md) preserves prior
 packets as history, not concurrent active work.
 [Queue](QUEUE.md) retains unrelated ordered candidates.
+
+## S64 acceptance
+
+Implementation `40be5c4f2` is accepted after actual-change review. The
+optional reset byte stays in the existing board-to-KBC configuration route;
+the generic `43h` default is preserved, and PC110's `65h` disables AUX until
+the guest sends the ordinary `A8h` command. All 714 unit tests pass on both
+widths; complete 755-test host runs retain only the unrelated
+`lib.integration/native_midi_output` host-endpoint failure. Eight existing PC
+artifacts are rebuilt and PE-width checked; four MyPC110 previews stay
+unpublished. The active packet will be replaced only when the next bounded
+T580 receiver is admitted.

@@ -850,3 +850,19 @@ reports are rejected until the guest sends `A8h`; the normal `F2h`, `E9h` and
 retains its existing `43h` default. The receiver is source-labelled L2 and
 does not model U75 firmware, physical pointer behavior or any new input path.
 See [S64 evidence](../etc/evidence/t580-s64-kbc-trackpoint-reset.md).
+
+## S64 coordinator acceptance
+
+Coordinator review accepts implementation `40be5c4f2`. The changed controller
+has one optional board-selected reset byte, preserves the unconfigured `43h`
+path, and derives AUX admission from the command byte rather than introducing
+a second mouse route. The direct generic and public PC110 proofs cover the
+observed `65h` state and standard PS/2 sequence on both widths. Both 714-test
+unit suites pass; the complete 755-test host runs have one pre-existing
+external `native_midi_output` setup failure because this host exposes no MIDI
+output endpoint. That non-PC110 integration is recorded, not treated as a
+passing gate or a reason to alter Lib.
+
+All eight current 0.5.0580 receiving-PC artifacts were rebuilt and PE-width
+checked. MyPC110 previews remain unpublished. T580 remains open for the
+separate qualification domains listed in the proposal and S1 ledger.
