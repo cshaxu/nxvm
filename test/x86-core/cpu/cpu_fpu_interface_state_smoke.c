@@ -160,8 +160,11 @@ static lib_bool fpu_sx_expect_exception(cpu_instruction_fixture *fixture,
     const lib_u8 *code, lib_u8 bytes, lib_u8 mode, lib_u8 vector)
 {
     t_cpu before, after;
-    lib_u32 frame[9] = {0};
+    lib_u32 frame[10] = {0};
     const lib_bool vm86 = mode == 5u;
+    const lib_u8 error_words = vector == 13u ? 1u : 0u;
+    const lib_u8 frame_bytes = (lib_u8)(((vm86 ? 9u : 3u) + error_words) * 4u);
+    const lib_u32 *saved = frame + error_words;
     const lib_u8 cpl = vm86 ? 3u : (lib_u8)(mode - 1u);
     lib_status status;
 
@@ -178,7 +181,7 @@ static lib_bool fpu_sx_expect_exception(cpu_instruction_fixture *fixture,
         fixture->delivered_exception.point.eip != before.data.eip ||
         fixture->delivered_exception.eflags != before.data.eflags ||
         after.data.eip != 0x300u || after.data.cs.selector != (vm86 ? 8u : 8u | cpl) ||
-        after.data.esp != (vm86 ? 0x1000u - sizeof(frame) : before.data.esp - 12u) ||
+        after.data.esp != (vm86 ? 0x1000u : before.data.esp) - frame_bytes ||
         after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
         after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
         after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
@@ -188,16 +191,17 @@ static lib_bool fpu_sx_expect_exception(cpu_instruction_fixture *fixture,
             (lib_u32)status, fixture->fault.exception_mask,
             fixture->delivered_exception.exception_mask, after.data.eip,
             (lib_u32)after.data.cs.selector, after.data.esp,
-            (lib_u32)(vm86 ? 0x1000u - sizeof(frame) : before.data.esp - 12u));
+            (lib_u32)((vm86 ? 0x1000u : before.data.esp) - frame_bytes));
         return LIB_FALSE;
     }
     lib_memory_copy(frame, fixture->memory + after.data.ss.base + after.data.esp,
-        vm86 ? sizeof(frame) : 12u);
-    if (frame[0] != before.data.eip || frame[1] != before.data.cs.selector ||
-        frame[2] != (before.data.eflags | VCPU_EFLAGS_RF)) return LIB_FALSE;
-    return !vm86 || (frame[3] == before.data.esp && frame[4] == before.data.ss.selector &&
-        frame[5] == before.data.es.selector && frame[6] == before.data.ds.selector &&
-        frame[7] == before.data.fs.selector && frame[8] == before.data.gs.selector);
+        frame_bytes);
+    if ((error_words && frame[0] != 0u) || saved[0] != before.data.eip ||
+        saved[1] != before.data.cs.selector ||
+        saved[2] != (before.data.eflags | VCPU_EFLAGS_RF)) return LIB_FALSE;
+    return !vm86 || (saved[3] == before.data.esp && saved[4] == before.data.ss.selector &&
+        saved[5] == before.data.es.selector && saved[6] == before.data.ds.selector &&
+        saved[7] == before.data.fs.selector && saved[8] == before.data.gs.selector);
 }
 
 static lib_bool fpu_state_sx_escapes(void)
@@ -242,10 +246,21 @@ static lib_bool fpu_state_sx_escapes(void)
                 code[bytes++] = 0xffu;
                 code[bytes++] = 0x7fu;
             }
-            /* A missing operand route must not win over absent-FPU #NM. */
+            /* EM/TS win over the operand; otherwise its segment is checked. */
             probe.instruction.cpu.data.ds.limit = 0u;
         }
-        if (!fpu_sx_expect_exception(&probe.instruction, code, bytes, mode, 7u) ||
+        lib_bool accepted;
+        if ((controls & 3u) != 0u || memory) {
+            accepted = fpu_sx_expect_exception(&probe.instruction, code, bytes,
+                mode, (controls & 3u) != 0u ? 7u : 13u);
+        } else {
+            t_cpu after;
+            accepted = cpu_instruction_run(&probe.instruction, code, bytes,
+                &after) == LIB_STATUS_OK && !probe.instruction.fault.valid &&
+                !probe.instruction.delivered_exception.valid &&
+                after.data.eip == bytes;
+        }
+        if (!accepted ||
             probe.operand_reads != 0u || probe.commands != 0u) {
             lib_c_fprintf(lib_c_stderr,
                 "SX ESC: opcode=%x controls=%u code32=%u prefixes=%u memory=%u mode=%u\n",
@@ -253,6 +268,99 @@ static lib_bool fpu_state_sx_escapes(void)
                 (lib_u32)prefixes, (lib_u32)memory, (lib_u32)mode);
             return LIB_FALSE;
         }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool fpu_state_sx_absent_operands(void)
+{
+    /* Standard memory forms, grouped by their independently expected widths.
+     * FNSTENV/FNSAVE exercise both operand-size layouts below. */
+    static const struct {
+        lib_u8 opcode, group, bytes;
+        lib_bool write;
+    } forms[] = {
+        {0xd8u,0u,4u,LIB_FALSE}, {0xd9u,0u,4u,LIB_FALSE},
+        {0xd9u,2u,4u,LIB_TRUE}, {0xd9u,3u,4u,LIB_TRUE},
+        {0xd9u,4u,14u,LIB_FALSE}, {0xd9u,5u,2u,LIB_FALSE},
+        {0xd9u,6u,14u,LIB_TRUE}, {0xd9u,7u,2u,LIB_TRUE},
+        {0xdau,7u,4u,LIB_FALSE}, {0xdbu,0u,4u,LIB_FALSE},
+        {0xdbu,2u,4u,LIB_TRUE}, {0xdbu,3u,4u,LIB_TRUE},
+        {0xdbu,5u,10u,LIB_FALSE}, {0xdbu,7u,10u,LIB_TRUE},
+        {0xdcu,0u,8u,LIB_FALSE}, {0xddu,0u,8u,LIB_FALSE},
+        {0xddu,2u,8u,LIB_TRUE}, {0xddu,3u,8u,LIB_TRUE},
+        {0xddu,4u,94u,LIB_FALSE}, {0xddu,6u,94u,LIB_TRUE},
+        {0xddu,7u,2u,LIB_TRUE}, {0xdeu,7u,2u,LIB_FALSE},
+        {0xdfu,0u,2u,LIB_FALSE}, {0xdfu,2u,2u,LIB_TRUE},
+        {0xdfu,3u,2u,LIB_TRUE}, {0xdfu,4u,10u,LIB_FALSE},
+        {0xdfu,5u,8u,LIB_FALSE}, {0xdfu,6u,10u,LIB_TRUE},
+        {0xdfu,7u,8u,LIB_TRUE}, {0xd9u,1u,0u,LIB_FALSE},
+        {0xdbu,1u,0u,LIB_FALSE}, {0xdbu,4u,0u,LIB_FALSE},
+        {0xdbu,6u,0u,LIB_FALSE}, {0xddu,1u,0u,LIB_FALSE},
+        {0xddu,5u,0u,LIB_FALSE}, {0xdfu,1u,0u,LIB_FALSE}
+    };
+    for (lib_size form = 0u; form < sizeof(forms) / sizeof(forms[0]); ++form)
+    for (lib_u8 arithmetic = 0u;
+        arithmetic < ((forms[form].opcode & 1u) ? 1u : 8u); ++arithmetic)
+    for (lib_u8 mode = 0u; mode < 6u; ++mode)
+    for (lib_u8 operand32 = 0u; operand32 < 2u; ++operand32)
+    for (lib_u8 address32 = 0u; address32 < 2u; ++address32) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u8 code[9], size = 0u, bytes = forms[form].bytes;
+
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        if (mode != 0u)
+            cpu_instruction_prepare_protected_exception(&fixture, mode - 1u);
+        fixture.cpu.data.ds = fixture.cpu.data.ss;
+        fixture.cpu.data.ds.sregtype = SREG_DATA;
+        fixture.cpu.data.cr0 &= ~(VCPU_CR0_EM | VCPU_CR0_TS);
+        lib_memory_set(fixture.memory + 0x7ffu, 0x5au, 110u);
+        if (operand32) code[size++] = 0x66u;
+        if (address32) code[size++] = 0x67u;
+        code[size++] = forms[form].opcode;
+        const lib_u8 group = (forms[form].opcode & 1u) ?
+            forms[form].group : arithmetic;
+        code[size++] = (lib_u8)((group << 3u) |
+            (address32 ? 5u : 6u));
+        code[size++] = 0u;
+        code[size++] = 8u;
+        if (address32) { code[size++] = 0u; code[size++] = 0u; }
+        if (operand32) {
+            if (bytes == 14u) bytes = 28u;
+            else if (bytes == 94u) bytes = 108u;
+        }
+        if (cpu_instruction_run(&fixture, code, size, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            after.data.eip != size || fixture.memory[0x7ffu] != 0x5au ||
+            fixture.memory[0x800u + bytes] != 0x5au) return LIB_FALSE;
+        for (lib_u8 index = 0u; index < bytes; ++index)
+            if (fixture.memory[0x800u + index] !=
+                (forms[form].write ? 0xffu : 0x5au)) return LIB_FALSE;
+        if (!forms[form].write && fixture.writes != 0u) return LIB_FALSE;
+        if (forms[form].write && mode == 0u) {
+            /* Full-range validation must precede the first store word. */
+            cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+            fixture.cpu.data.cr0 = VCPU_CR0_ET;
+            fixture.cpu.data.ds.limit = 0x800u + bytes - 2u;
+            lib_memory_set(fixture.memory + 0x800u, 0x5au, 108u);
+            if (!cpu_instruction_expect_real_fault(&fixture, code, size, 13u))
+                return LIB_FALSE;
+            for (lib_u8 index = 0u; index < bytes; ++index)
+                if (fixture.memory[0x800u + index] != 0x5au) return LIB_FALSE;
+        }
+    }
+    {
+        const lib_u8 status[] = {0xdfu,0xe0u};
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.cr0 = VCPU_CR0_ET;
+        fixture.cpu.data.eax = 0x12345678u;
+        if (cpu_instruction_run(&fixture, status, sizeof(status), &after) !=
+            LIB_STATUS_OK || after.data.eax != 0x1234ffffu ||
+            fixture.fault.valid || fixture.delivered_exception.valid)
+            return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -412,6 +520,9 @@ int main(void)
         X86_FPU_PROFILE_8087, VCPUINS_EXCEPT_FPU_UNSUPPORTED);
     failed |= fpu_state_vm86();
     failed |= !fpu_state_sx_escapes();
+    failed |= !fpu_state_sx_absent_operands();
+    failed |= fpu_state_success(fninit, sizeof(fninit),
+        X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE);
     failed |= !fpu_state_sx_wait();
     failed |= !fpu_state_sx_lock_priority();
     if (failed) return 1;

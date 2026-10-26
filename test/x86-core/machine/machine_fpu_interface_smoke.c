@@ -127,12 +127,13 @@ static lib_i32 fpu_interface_success(const lib_u8 *code, lib_size size,
     lib_u32 cr0)
 {
     fpu_interface_machine state;
-    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic = {0};
     x86_core_cpu_debug_cpu_snapshot before;
-    x86_core_cpu_debug_cpu_snapshot after;
-    lib_status status;
+    x86_core_cpu_debug_cpu_snapshot after = {0};
+    lib_status status = LIB_STATUS_INTERNAL_ERROR;
     lib_i32 failed = !fpu_interface_prepare(profile, fpu_profile, &state);
 
+    if (failed) lib_c_fprintf(lib_c_stderr, "FPU prepare: profile=%u\n", (lib_u32)profile);
     if (!failed) {
         test_x86_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
         before = fpu_interface_capture(state.machine);
@@ -160,9 +161,57 @@ static lib_i32 fpu_interface_success(const lib_u8 *code, lib_size size,
                 sizeof(after.fs)) != 0 ||
             lib_memory_compare(&after.gs, &before.gs,
                 sizeof(after.gs)) != 0;
+        if (failed) lib_c_fprintf(lib_c_stderr,
+            "FPU success: profile=%u opcode=%02x status=%u eip=%x fault=%x delivered=%x flags=%x/%x\n",
+            (lib_u32)profile, code[0], (lib_u32)status, after.eip,
+            diagnostic.first_fault.exception_mask,
+            diagnostic.last_delivered_exception.exception_mask,
+            after.eflags, before.eflags);
     }
     x86_core_machine_destroy(state.machine);
     return !failed;
+}
+
+static lib_bool fpu_interface_absent_memory(void)
+{
+    static const lib_u8 commands[][5] = {
+        {0xdbu,0xe3u},
+        {0xddu,0x3eu,0u,0x80u},
+        {0x66u,0xddu,0x36u,0u,0x80u}
+    };
+    static const lib_u8 sizes[] = {2u,4u,5u};
+    fpu_interface_machine state;
+    x86_core_cpu_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    lib_status status;
+    lib_u8 data[110u];
+    lib_bool accepted = fpu_interface_prepare(X86_CORE_CPU_PROFILE_80486SX,
+        X86_FPU_PROFILE_NONE, &state);
+
+    if (accepted) {
+        test_x86_core_machine_fixture_write_register(state.machine,
+            X86_CORE_CPU_DEBUG_CR0, VCPU_CR0_ET);
+        lib_memory_set(data, 0x5au, sizeof(data));
+        accepted = x86_core_machine_memory_write(state.machine, 0x7fffu,
+            data, sizeof(data)) == LIB_STATUS_OK;
+    }
+    for (lib_u8 command = 0u; accepted && command < 3u; ++command) {
+        test_x86_core_machine_fixture_write_register(state.machine,
+            X86_CORE_CPU_DEBUG_EIP, 0u);
+        accepted = fpu_interface_run(&state, commands[command], sizes[command],
+            &after, &diagnostic, &status) && status == LIB_STATUS_OK &&
+            after.eip == sizes[command] && !diagnostic.first_fault.valid &&
+            !diagnostic.last_delivered_exception.valid;
+    }
+    if (accepted) {
+        accepted = x86_core_machine_memory_read(state.machine, 0x7fffu,
+            data, sizeof(data)) == LIB_STATUS_OK &&
+            data[0] == 0x5au && data[109u] == 0x5au;
+        for (lib_u8 index = 1u; accepted && index < 109u; ++index)
+            accepted = data[index] == 0xffu;
+    }
+    x86_core_machine_destroy(state.machine);
+    return accepted;
 }
 
 static lib_i32 fpu_interface_mf(void)
@@ -817,7 +866,7 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     for (profile = X86_CORE_CPU_PROFILE_8086;
-        profile <= X86_CORE_CPU_PROFILE_80386; ++profile) {
+        profile <= X86_CORE_CPU_PROFILE_80486SX; ++profile) {
         failed |= !fpu_interface_success(wait, sizeof(wait), profile,
             X86_FPU_PROFILE_NONE, 0u);
         failed |= !fpu_interface_success(fninit, sizeof(fninit), profile,
@@ -831,6 +880,7 @@ lib_i32 main(void)
     }
     failed |= !fpu_interface_success(fninit, sizeof(fninit),
         X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087, 0u);
+    failed |= !fpu_interface_absent_memory();
     failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
     failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_80186,

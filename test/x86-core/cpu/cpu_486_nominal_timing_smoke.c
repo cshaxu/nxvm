@@ -1741,11 +1741,11 @@ static lib_bool special_instruction_models(void)
     for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
     for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
     for (lib_u8 carry = 0u; carry < 2u; ++carry)
-    for (lib_u8 form = 0u; form < 10u; ++form) {
+    for (lib_u8 form = 0u; form < 18u; ++form) {
         cpu_instruction_fixture fixture;
         lib_u8 code[10], bytes = 0u;
         t_cpu after;
-        const lib_bool memory = form >= 6u;
+        const lib_bool memory = form >= 6u && form < 10u;
         const lib_bool address32 = code32 != ((prefixes & 2u) != 0u);
 
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
@@ -1758,7 +1758,10 @@ static lib_bool special_instruction_models(void)
         fixture.cpu.data.eflags |= carry ? VCPU_EFLAGS_CF : 0u;
         if (prefixes & 1u) code[bytes++] = 0x66u;
         if (prefixes & 2u) code[bytes++] = 0x67u;
-        if (form < 2u) code[bytes++] = form == 0u ? 0x9bu : 0xd6u;
+        if (form >= 10u) {
+            code[bytes++] = (lib_u8)(0xd8u + form - 10u);
+            code[bytes++] = 0xc0u;
+        } else if (form < 2u) code[bytes++] = form == 0u ? 0x9bu : 0xd6u;
         else {
             code[bytes++] = 0x0fu;
             code[bytes++] = (lib_u8)(0x10u + ((form - 2u) & 3u));

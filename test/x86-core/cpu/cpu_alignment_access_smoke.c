@@ -127,7 +127,12 @@ static const alignment_form alignment_forms[] = {
     {{0x66u,0xa5u},2u,0u,4u,LIB_FALSE},
     {{0x66u,0xa7u},2u,0u,4u,LIB_FALSE},
     {{0x62u,0x06u,0u,0x90u},4u,2u,2u,LIB_FALSE},
-    {{0xc5u,0x06u,0u,0x90u},4u,2u,2u,LIB_FALSE}
+    {{0xc5u,0x06u,0u,0x90u},4u,2u,2u,LIB_FALSE},
+    {{0xddu,0x3eu,0u,0x90u},4u,2u,2u,LIB_FALSE},
+    {{0xd9u,0x1eu,0u,0x90u},4u,2u,4u,LIB_FALSE},
+    {{0xddu,0x1eu,0u,0x90u},4u,2u,8u,LIB_FALSE},
+    {{0xdbu,0x2eu,0u,0x90u},4u,2u,2u,LIB_FALSE},
+    {{0x66u,0xd9u,0x36u,0u,0x90u},5u,3u,4u,LIB_FALSE}
 };
 
 static lib_bool alignment_case(lib_size form, lib_u8 residue, lib_bool vm86)
@@ -172,14 +177,14 @@ static lib_bool alignment_case(lib_size form, lib_u8 residue, lib_bool vm86)
 
 static lib_bool alignment_access_order(void)
 {
-    for (lib_u8 scenario = 0u; scenario < 7u; ++scenario) {
+    for (lib_u8 scenario = 0u; scenario < 9u; ++scenario) {
         alignment_fixture fixture;
         cpu_instruction_fixture *instruction = &fixture.instruction;
         const lib_bool pair = scenario >= 4u && scenario < 6u;
         const lib_u32 exception = scenario == 2u ? VCPUINS_EXCEPT_GP :
             scenario == 1u || scenario == 3u ? VCPUINS_EXCEPT_AC : VCPUINS_EXCEPT_PF;
         const lib_u32 error = exception == VCPUINS_EXCEPT_PF ?
-            (scenario == 0u ? 6u : 4u) : 0u;
+            (scenario == 0u || scenario == 7u ? 6u : 4u) : 0u;
         lib_u8 code[5u] = {0xa5u};
         lib_u8 bytes = 1u;
         lib_u32 entry = 0x2007u;
@@ -205,6 +210,12 @@ static lib_bool alignment_access_order(void)
             instruction->cpu.data.ecx = 0u;
             instruction->cpu.data.esi = 0x9001u;
             instruction->cpu.data.edi = 0xa001u;
+        }
+        if (scenario >= 7u) {
+            const lib_u8 absent_fpu[] = {scenario == 7u ? 0xddu : 0xd9u,
+                scenario == 7u ? 0x36u : 0x26u, 0xf8u, 0x9fu};
+            lib_memory_copy(code, absent_fpu, sizeof(absent_fpu));
+            bytes = sizeof(absent_fpu);
         }
         lib_memory_copy(instruction->memory + 0x1000u, &entry, 4u);
         for (lib_u32 page = 0u; page < 16u; ++page) {

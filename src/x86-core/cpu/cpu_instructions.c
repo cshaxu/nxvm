@@ -9846,10 +9846,64 @@ static void FPU_ESCAPE(x86_core_cpu_execution_context *context)
     {
         CPU_TRACE_CHECK_RETURN(_SetExcept_NM(0));
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ||
-        _GetCR0_EM || _GetCR0_TS)
+    if (_GetCR0_EM || _GetCR0_TS)
     {
         CPU_TRACE_CHECK_RETURN(_SetExcept_NM(0));
+    }
+    else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
+    {
+        /* Absent-FPU L2: EM-clear detection is not an unconditional #NM.
+         * Signed widths describe reads (+) and Intel-like all-ones stores
+         * (-); zero leaves reserved encodings without invented effects. */
+        static const lib_i8 memory_bytes[8][8] = {
+            { 4, 4, 4, 4, 4, 4, 4, 4 },
+            { 4, 0, -4, -4, 14, 2, -14, -2 },
+            { 4, 4, 4, 4, 4, 4, 4, 4 },
+            { 4, 0, -4, -4, 0, 10, 0, -10 },
+            { 8, 8, 8, 8, 8, 8, 8, 8 },
+            { 8, 0, -8, -8, 94, 0, -94, -2 },
+            { 2, 2, 2, 2, 2, 2, 2, 2 },
+            { 2, 0, -2, -2, 10, 8, -10, -8 }
+        };
+        if (instruction_state.data.flagMem)
+        {
+            const lib_i8 transfer = memory_bytes[escape_opcode - 0xd8u]
+                [(modrm >> 3u) & 7u];
+            const lib_bool write = transfer < 0;
+            lib_u8 bytes = (lib_u8)(write ? -transfer : transfer);
+            lib_u8 alignment;
+            lib_u16 value = 0xffffu;
+            if (bytes == 0u) {
+                CPU_TRACE_CALL_END;
+                return;
+            }
+            if (_GetOperandSize == 4u) {
+                if (bytes == 14u) bytes = 28u;
+                else if (bytes == 94u) bytes = 108u;
+            }
+            alignment = bytes == 28u || bytes == 108u ? 4u :
+                bytes == 10u || bytes == 14u || bytes == 94u ? 2u : bytes;
+            CPU_TRACE_CHECK_RETURN(_m_test_logical(context,
+                instruction_state.data.mrm.rsreg,
+                instruction_state.data.mrm.offset, bytes, write));
+            CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context,
+                instruction_state.data.mrm.rsreg->base +
+                    instruction_state.data.mrm.offset,
+                alignment, _GetCPL, 0u));
+            CPU_TRACE_CHECK_RETURN(_kma_test_linear(context,
+                instruction_state.data.mrm.rsreg->base +
+                    instruction_state.data.mrm.offset,
+                bytes, write, _GetCPL, 0u));
+            if (write) {
+                for (lib_u8 offset = 0u; offset < bytes; offset += 2u)
+                    CPU_TRACE_CHECK_RETURN(_m_write_logical(context,
+                        instruction_state.data.mrm.rsreg,
+                        instruction_state.data.mrm.offset + offset,
+                        X86_CPU_REFERENCE_OF(value), 2u));
+            }
+        }
+        else if (escape_opcode == 0xdfu && modrm == 0xe0u)
+            _WriteGPR16(ax) = 0xffffu;
     }
     else
     {

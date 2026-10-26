@@ -5203,6 +5203,11 @@ lib_bool x86_core_cpu_80486_l2_instruction_cost(
         /* PRM 26-280 gives 1--3, not an exact no-FPU SX value. This L2
          * model selects the upper endpoint for a successful WAIT only. */
         ticks = 3u;
+    } else if (opcode >= 0xd8u && opcode <= 0xdfu &&
+        (data->oldcpu.data.cr0 & (VCPU_CR0_EM | VCPU_CR0_TS)) == 0u) {
+        /* No numeric device: use the one-clock no-op decode envelope as L2.
+         * Actual stores, fetch, prefixes and waits keep their existing owners. */
+        ticks = 1u;
     } else if (opcode == 0xd6u || (opcode == 0x0fu && prefixes + 2u < data->oplen &&
             data->opcodes[prefixes + 1u] >= 0x10u &&
             data->opcodes[prefixes + 1u] <= 0x13u)) {

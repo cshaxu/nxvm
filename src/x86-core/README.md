@@ -9,6 +9,14 @@ CPU links FPU honestly. Selecting `X86_FPU_PROFILE_NONE` does not install a gues
 coprocessor. Public contracts are the adjacent `*_interface.h` files; all other
 headers and layouts are private to their owner.
 
+The 486SX absent-FPU ESC path uses an explicit L2 compatibility model when
+CR0.EM/TS are clear: register commands have no numeric effect, FNSTSW AX
+reports ones, and valid memory forms retain protection checks with Intel-like
+all-ones stores. Environment/save lengths follow operand size. This models
+firmware detection without adding an FPU; undocumented bus values are not
+claimed silicon-exact. EM/TS still cause #NM, WAIT retains its own predicate,
+and earlier CPU/FPU personalities are unchanged.
+
 Only Lib Types and this package are allowed dependencies. CPU may consume FPU's
 public interface; FPU does not depend on CPU. Machine consumes their public
 contracts and owns the single guest timeline, bus transactions, memory/port

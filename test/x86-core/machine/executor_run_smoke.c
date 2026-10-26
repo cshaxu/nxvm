@@ -30,9 +30,11 @@ static lib_bool executor_sx_fpu_interface(void)
             ((controls & 2u) ? VCPU_CR0_TS : 0u) |
             ((controls & 4u) ? VCPU_CR0_MP : 0u) |
             ((controls & 8u) ? VCPU_CR0_NE : 0u);
-        const lib_bool nm = operation < 8u || (controls & 6u) == 6u;
+        const lib_bool nm = operation < 8u ? (controls & 3u) != 0u :
+            (controls & 6u) == 6u;
         const lib_u8 code[] = {operation < 8u ? (lib_u8)(0xd8u + operation) : 0x9bu,
-            operation < 8u ? 0xc0u : 0x90u};
+            operation < 8u ? 0xc0u : 0x90u, 0x90u};
+        const lib_u32 next_eip = operation < 8u ? 2u : 1u;
         const x86_core_cpu_debug_register_patch entry = {
             .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
                 X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
@@ -68,7 +70,8 @@ static lib_bool executor_sx_fpu_interface(void)
         }
         if (!failed) {
             failed = diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid != nm ||
-                after.eip != (nm ? vector[0] : 1u) || after.esp != (nm ? 0x7ffau : 0x8000u) ||
+                result.executed != (nm ? 0u : 1u) ||
+                after.eip != (nm ? vector[0] : next_eip) || after.esp != (nm ? 0x7ffau : 0x8000u) ||
                 after.eax != before.eax || after.ebx != before.ebx || after.ecx != before.ecx ||
                 after.edx != before.edx || after.ebp != before.ebp || after.esi != before.esi ||
                 after.edi != before.edi || after.eflags != before.eflags;
@@ -83,7 +86,7 @@ static lib_bool executor_sx_fpu_interface(void)
             failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != (nm ? X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT : X86_CORE_MACHINE_STOP_BUDGET) ||
                 x86_core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
-                    &after) != LIB_STATUS_OK || after.eip != (nm ? vector[0] + 1u : 2u);
+                    &after) != LIB_STATUS_OK || after.eip != (nm ? vector[0] + 1u : next_eip + 1u);
         }
         x86_core_machine_destroy(machine);
         if (failed) {
