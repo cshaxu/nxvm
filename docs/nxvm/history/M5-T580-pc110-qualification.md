@@ -920,6 +920,16 @@ universal CMOS power-on state, durable Setup persistence, authentic media
 boot, PCIC behavior, panel identity, DSTN behavior, desktop use, or PC110
 publication.  See [S67 evidence](../etc/evidence/t580-s67-pc110-extended-cmos-seed.md).
 
+## S67 coordinator acceptance
+
+Actual-change review accepts `9fdfc29d8` for its bounded S67 contract. The
+implementation has one seed route, accepts only 64 or 128 bytes, rejects an
+extended seed on a classic board, and leaves the raw capture outside Git. The
+actual source/test paths match the packet; there is no Lib, Emulator, x86-core,
+x86-debug, x86-ibmpc, ROM or runtime-selector change. The non-green Model40
+x86 integration is an explicitly retained, pre-existing qualification item and
+does not invalidate the focused seed proof or establish a PC110 release claim.
+
 The S67 receiving sweep has one explicit non-green result: the pre-existing
 x86 Model40 floppy boot matrix misses its established 300,000 ms guest
 terminal budget on two runs and remains unfinished at 330,000 ms.  The

@@ -1,34 +1,23 @@
-# M5 T580 S67 — Active: source-backed PC110 extended CMOS seed
+# M5 T580 S68 — Active: TFT Easy-Setup input/reset semantic boundary
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S67. |
-| Admission And Approval | Owner approved autonomous continuation of PC110 implementation and external BYOB assets. S67 follows accepted S66 (`daf38c36e`); its newly located source is the locally retained historical Open-Source-PC110 commit `b0a5a3bcf88079dd53c13eb06136fcac04c95be6`, not an imported source dependency. |
-| Objective | Qualify the existing single CMOS-seed route for the PC110's documented extended `70h/71h` address space using the exact 128-byte live capture, retaining Core as the sole live RTC owner, then determine by actual unchanged-firmware replay whether a valid configuration seed advances normal Setup. |
-| Non-goals | No ROM/BIOS modification, PC hook, synthetic F1, host service, second RTC/register image, guest media substitution, PCIC implementation, display/panel override, raw protected payload in this repository, or PC110 release publication. DSTN does not inherit the TFT capture. |
-| Reference Baseline | `5c18d73fe`; S61's prior source gate, S66 real Easy-Setup handoff evidence, current `x86-nxvm` 64-byte seed route, and the owner-managed `nxvm-assets/profiles-nxvm` archive. |
-| Candidate Proposal | Extend the existing seed representation to accept only 64-byte classic or 128-byte extended payloads; preserve the input length through Machine construction; materialize defaults only for configuration registers `0Eh..last-byte`; reject a 128-byte seed on a non-extended board. The Board default array expands only to its real maximum of 114 writable configuration registers. TFT CMake input selects an external hash-checked seed; DSTN remains unseeded. |
-| Files And ABI Surface | `src/x86-nxvm/machine/{construction_interface.h,preparation.c,machine.c}`, `src/x86-nxvm/board-base/machine_board_interface.h`, existing x86-nxvm tests/manifests, `src/app-mypc110/CMakeLists.txt`, PC110 tests/manifest, and external TFT profile manifest/seed. The existing asset view and construction structs gain the copied seed length; no Lib, Emulator, Core, ROM, INI, or runtime public API changes. |
-| Applicable Rules | Docs guide Task Reading Set; execution lifecycle and actual-diff review; architecture's one writable RTC owner and BYOB packaging boundary; coding rules for `lib_*` vocabulary and minimal single path; source policy for read-only research and external raw payloads. |
-| Verification | Prove 64-byte legacy and 128-byte extended acceptance; reject malformed lengths and extended data on classic decode; prove `0Eh`, `3Fh`, `40h`, and `7Fh` default delivery through the existing Board route; configure/build x64/x86; run affected x86-nxvm and MyPC110 units; replay unchanged TFT BIOS through existing real-firmware diagnostic and record exact checkpoints. |
-| Expected Markers | Seed SHA-256, copied-length/default-count assertions, selected extended-register reads, and dual-width real-firmware disposition. A reachability limit is containment, never successful configuration or boot. |
-| Asset Needs | One 128-byte TFT CMOS seed in external `nxvm-assets/profiles-nxvm/ibm-pc110-tft`, provenance and SHA-256 recorded there. It is materialized byte-for-byte from the local historical live capture; no raw payload enters Git. |
-| Reporting Requirements | Record source provenance, exact diff counts, x64/x86 results, unchanged paths, and whether normal configuration progresses. State every remaining qualification gap explicitly. |
-| Stop Conditions | Stop before inventing missing values, accepting a stale date/calendar as RTC ownership, applying TFT state to DSTN, or interpreting an execution budget as boot success. Keep scratch only under `build/t580-s67`; remove it after recording permissible evidence. |
-| Exit Criteria | One reviewed implementation P with focused dual-width proof, asset-manifest validation, actual unchanged-firmware replay, evidence/current/history update, clean worktree and push. S67 closes only the seed receiver/disposition, not PC110 qualification or release. |
+| Identifier Mode | Continuation — M5 T580 S68. |
+| Admission And Approval | Owner approved autonomous continuation of the active PC110 implementation task. S67 is accepted through `9fdfc29d8`; this diagnostic consumes the next unresolved Easy-Setup input/reset member from the T580 ledger. |
+| Objective | Establish, using the unchanged selected TFT firmware and existing external source evidence, what semantic path the current real Easy-Setup screen takes after ordinary keyboard input and its observed processor reset. Determine whether the result identifies a complete, source-backed receiver or must remain a bounded disposition. |
+| Non-goals | No BIOS/ROM patch, forced F1/Enter outcome, fabricated CMOS values, host UI interception, model-selector, runtime media substitution, new execution path, or PC110 publication. No code change merely to make a chosen screen advance. |
+| Reference Baseline | `9fdfc29d8`; S66 real Setup-loader handoff, S67 external TFT seed receiver, current `test/app-mypc110/integration/real_firmware_post_integration.c`, and owner-managed external TFT BIOS/seed. |
+| Candidate Proposal | First audit the diagnostic's exact input injection point, post-input control flow, reset reason and persisted Board/CMOS effects. Correlate those facts with selected firmware/source records. If evidence identifies an already-owned defect with a complete contract, revise this packet before repair; otherwise record a source-bounded disposition and leave implementation unchanged. |
+| Files And ABI Surface | Initially read-only: existing MyPC110 real-firmware diagnostic, App construction and external source/archive evidence. A later repair, if justified, requires an explicit packet revision naming only its owner, tests and ABI surface. |
+| Applicable Rules | Docs guide Task Reading Set; execution lifecycle and evidence-led convergence; architecture's single RTC/configuration owner; coding/source rules; no firmware/media import into Git. |
+| Verification | Reproduce the existing transfer on x64/x86; capture only existing CPU/Board/CMOS observations around each injected input and reset; inspect static source/firmware context; distinguish a checkpoint from successful Setup/persistence/boot. No benchmark or retirement bound is success by itself. |
+| Expected Markers | Input make/break delivery point, guest PC/reset observation, reset vector/reason, relevant configuration deltas, and an evidence-backed disposition. |
+| Asset Needs | Existing external TFT BIOS, 1 MiB font and optional external 128-byte seed only. No new protected asset is imported. |
+| Reporting Requirements | Record exact input transaction and reset semantics, source grade, both-width result, unchanged paths and next owner/receiver if unresolved. State whether any proposed repair has a complete contract. |
+| Stop Conditions | Stop before interpreting a reset as saved configuration, treating a display frame as normal Setup completion, inferring a hardware protocol from a single screen, or adding a synthetic route. If the remaining semantics are underdetermined, record and transfer them. |
+| Exit Criteria | One evidence-backed disposition or a separately admitted, fully specified repair; task-owned scratch cleaned; no PC110 product/release claim. |
 | Original Owner Request | Continue the PC110 T autonomously using existing external reference and BYOB assets, with normal compile/test/release governance. |
-| Similar-Issue Sweep | Compare all seed consumers and Board RTC-default callers; preserve classic profiles, non-extended decode, RTC calendar ownership, and both PC110 variants. |
-
-## S67 execution record
-
-The implementation and source-boundary evidence are ready for owner review.
-Both full unit suites pass (669/669 x64 and 669/669 x86); focused real TFT
-firmware replay reaches the established Setup handoff/reset checkpoints on
-both widths. Eight receiving-PC artifacts are rebuilt and PE-width checked.
-The selected x86 DeskPro floppy matrix remains explicitly non-green after two
-300,000 ms runs and one 330,000 ms diagnostic: it is the existing Model40 x86
-throughput qualification concern, not a PC110-seed result. S67 therefore does
-not claim a fully green all-profile integration sweep or PC110 publication.
+| Similar-Issue Sweep | Check both host widths and both injected Enter transactions; distinguish CMOS configuration, reset control and keyboard delivery owners rather than adding a PC110-only input path. |
 
 # M5 T580 — Open after accepted S66
 
