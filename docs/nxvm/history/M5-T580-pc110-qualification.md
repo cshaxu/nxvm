@@ -663,3 +663,15 @@ and four PC110 previews remain unpublished in the
 MyRaidenII are unchanged. All 98 scratch files/7,013,740 bytes are removed
 with the official hash-reviewed cleaner; both caches remain. Executor
 delivery awaits coordinator actual-change acceptance; T580 remains open.
+
+## S56 coordinator actual-change acceptance
+
+Coordinator reads the actual Shared `dde5da6de` and NXVM `88124376c` diffs,
+including their source/test/manifest changes, root gate, receiving artifacts
+and evidence. It accepts the complete bounded A20/system-control/reset
+receiver after both route variants, both physical inputs, edge/rearm,
+retention/cold reset and real unchanged-BIOS reset proof. The original
+product gates remain open; the pink-background feedback is retained at
+F65535 rather than treated as a host inversion. All scoped checks, input
+hashes, artifacts and task-exit/cleanup are verified. The exact packet moves
+to retained history; S56 closes with no active packet. T580 remains open.
