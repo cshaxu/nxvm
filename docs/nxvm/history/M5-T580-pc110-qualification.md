@@ -886,3 +886,16 @@ firmware, media or artifact changed. The existing x64 FDC real-firmware
 integration passes after the restored harness. T580 remains open for the
 separate Setup, guest/storage, PCIC, panel, input/lifecycle and publication
 receivers already named by its convergence ledger.
+
+## S66 executor delivery — real Easy-Setup handoff and first frame
+
+S66 reuses the existing real-firmware diagnostic without changing product
+code.  A scratch-only oracle derived from the selected immutable TFT BIOS
+confirms on x64 and x86 that the guest itself produces all 232,185 Setup bytes,
+retires the original `9000:009E -> 5000:0000` transfer, publishes a 640×480
+graphics frame, consumes two ordinary Enter make/break pairs, and reaches its
+subsequent real reset.  Both widths have identical frame hashes and the known
+four cold-prefix exceptions only.  The derived oracle, frames and logs are
+removed after their hashes are recorded.  This is not a normal F1-selection,
+persistence, guest-boot, physical-panel, desktop or release claim.  See
+[S66 evidence](../etc/evidence/t580-s66-real-easysetup-handoff.md).

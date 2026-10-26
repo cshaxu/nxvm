@@ -1,4 +1,18 @@
-# M5 T580 — Open after accepted S65
+# M5 T580 — Open after accepted S66
+
+S66 is accepted at the next task commit.  The unchanged selected TFT BIOS now
+has direct dual-width evidence for full guest-side Easy-Setup decompression,
+the original `9000:009E -> 5000:0000` handoff, a valid 640×480 graphics frame,
+ordinary two-Enter delivery and the firmware's subsequent reset.  The
+scratch-only comparison oracle, frames and logs are removed after hash review;
+no production or Shared code changed.  See [S66 evidence](../etc/evidence/t580-s66-real-easysetup-handoff.md).
+
+The result closes only that loader/first-frame receiver.  Normal F1 branch
+selection and configuration persistence, selected guest/media boot, PCIC,
+physical panel identity, live desktop behavior, original DSTN qualification,
+and PC110 artifact publication remain unqualified.
+
+## Verified Baseline
 
 S65 is accepted at `aba6329a8`. It traced the selected TFT BIOS through its
 ordinary recovery, POST and `INT 19h` route and found no F65535 XR index/data
