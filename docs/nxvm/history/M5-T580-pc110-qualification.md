@@ -583,3 +583,16 @@ official cleaner removes 41 owned logs/399,400 bytes after task exit;
 the stable caches remain. Executor delivery awaits coordinator acceptance.
 Setup, actual storage/guest, display/live input, lifecycle and PC110
 publication retain their original unqualified ledger rows.
+
+## S54 coordinator actual-change acceptance
+
+Coordinator review accepts Shared `48fe7a544`, NXVM `d7fd63518` and
+MyRaidenII receiving `47a4c9092` after reading their actual diffs, unchanged
+public/ownership boundaries, source grades, finite route dispositions,
+complete unit outcomes, real-BIOS proof and deployed identities. The earlier
+failed attempts, timing-model limits and remaining original gates remain
+explicit. Both manifests, both affected documentation gates and whitespace
+checks pass. All receiving artifacts match the recorded SHA-256/PE/version;
+owner INI and MyNES remain byte-identical. No task-owned native work or
+scratch remains. S54 closes, not T580. The pre-acceptance packet moves to
+retained history and Current holds only compact latest accepted progress.
