@@ -596,3 +596,35 @@ checks pass. All receiving artifacts match the recorded SHA-256/PE/version;
 owner INI and MyNES remain byte-identical. No task-owned native work or
 scratch remains. S54 closes, not T580. The pre-acceptance packet moves to
 retained history and Current holds only compact latest accepted progress.
+
+## S55 executor delivery - Loader, keyboard ordering and remaining route
+
+The actual selected-medium investigation is extended through the unchanged
+BIOS's own compressed Setup recovery. Both host widths compare every one
+of its 232,185 decoded bytes before first Setup execution, consume ordinary
+Enter input and remove the observed 00301 keyboard error after selecting the
+existing timed KBC response in the PC110 App. The poll-dependent candidate
+is explicitly retired because it cannot release an IRQ-only response.
+The final nominal 100 us model is L2, sourced from an external controller
+service cadence; no Shared implementation, public API or second clock changes.
+
+Both widths end at the same firmware software-reset request after two input
+stages: 144,097,172 instructions, four resets, four known exceptions and no
+Core fault. The absent 92h reset route is identified; its correct Board-owned
+A20/reset receiver, two-slot storage, PCIC, VGA/panel and original product
+gates stay open at their named T580 owners. This is the complete observed
+failure-class disposition allowed by the S55 packet, not an ATA, DOS or
+configuration-save qualification. Detailed sources, failed attempts, full
+results and regression ownership remain in [S55 evidence](../etc/evidence/t580-s55-ata-guest-route.md).
+
+All 712 repository units per width pass; both registered firmware integrations
+pass with unchanged budgets, including boot handoff at 236.77 s x64 and
+352.18 s x86. Four unpublished previews are rebuilt and inventoried; all ten
+S54 published identities, MyNES, owner INI and external inputs remain unchanged.
+Actual C/H delta is +310/-23, net +287, across six paths, with production
+only +6/-0 in three App configuration files. Three test-local helpers retain
+actual loader/sector, transcript and frame evidence in the existing harness.
+No new production state/helper/interface or test framework is introduced.
+The official cleaner removes 128 owned files/14,332,369 bytes after verified
+task exit and protected-file hash review. Executor requests coordinator
+actual-change acceptance; S55 and T580 are not closed by this delivery.

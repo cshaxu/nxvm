@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_plan_interface.h"
+#include "app-mypc110/pc110_clock.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "lib/kvm-console/frame_interface.h"
@@ -55,7 +56,9 @@ int main(void)
         failed = 1;
     else if (construction.topology.planar_parity.refresh_status_source !=
             X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE ||
-        construction.topology.planar_parity.memory_bytes != 0u)
+        construction.topology.planar_parity.memory_bytes != 0u ||
+        construction.core_config.kbc_command_response_ticks != MYPC110_KBC_COMMAND_RESPONSE_TICKS ||
+        construction.core_config.kbc_command_response_status_polls != 0u)
         failed = 2;
     else if (!construction.topology.rtc_cmos.extended_registers ||
         !construction.topology.fdc_present || !construction.topology.dma_present ||

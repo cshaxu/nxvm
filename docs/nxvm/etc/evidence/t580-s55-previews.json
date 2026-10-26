@@ -1,0 +1,38 @@
+[
+  {
+    "path": "build/.ninja/gcc-x64-release/src/app-mypc110/mypc110-tft-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "tft",
+    "architecture": "x64",
+    "pe_machine": "8664",
+    "bytes": 2812808,
+    "sha256": "F5BA880C15A1813CDBDFFC5357C11B31C4BC35F5B48EF03D541596FA560FF586"
+  },
+  {
+    "path": "build/.ninja/gcc-x64-release/src/app-mypc110/mypc110-dstn-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "dstn",
+    "architecture": "x64",
+    "pe_machine": "8664",
+    "bytes": 2812808,
+    "sha256": "11BB4C6721DFD585FA995FF96FD64A9EBF3CC77662B05D4477812AAFDFD139DF"
+  },
+  {
+    "path": "build/.ninja/gcc-x86-release/src/app-mypc110/mypc110-tft-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "tft",
+    "architecture": "x86",
+    "pe_machine": "014C",
+    "bytes": 2970220,
+    "sha256": "C8FB456FDA45EEADD5E1730617350F8244BDADEE239958DC44F82E9204E9B9C1"
+  },
+  {
+    "path": "build/.ninja/gcc-x86-release/src/app-mypc110/mypc110-dstn-preview.exe",
+    "kind": "unpublished-preview",
+    "variant": "dstn",
+    "architecture": "x86",
+    "pe_machine": "014C",
+    "bytes": 2970220,
+    "sha256": "A876B3C4E183DD4BBF3D07B36104C99CEC5F490A3FBCF09210755AD7E9EE7551"
+  }
+]

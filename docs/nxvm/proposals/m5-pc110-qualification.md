@@ -387,3 +387,12 @@ architecture/configuration. Rebuild and deploy every affected admitted App pair;
 no PC110 artifact claims runnable qualification before real-firmware proof.
 Record actual source/test diff, source grades, review, unresolved scope and
 artifact identities; preserve owner INI, ROM masters, disks and snapshots.
+
+S55 records real loader output comparison and a PC110-only timed keyboard
+response selection, with original-firmware and direct deadline/input proof.
+The [S55 route disposition](../etc/evidence/t580-s55-ata-guest-route.md#final-timed-response-observations-and-bounded-disposition)
+retains the complete remaining system-control, storage, PCIC, VGA/panel and
+guest/product receiver class. Software restart reaches the BIOS's 92h reset
+request, which currently has no App route; it is not saved-configuration or
+guest qualification. These findings refine the next T580 repair batch and do
+not change any original milestone or authorize PC110 publication.

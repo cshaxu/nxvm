@@ -42,6 +42,9 @@ static const x86_nxvm_board_config mypc110_machine_configuration = {
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
     .dma_page_ports_plain_scratch = LIB_TRUE,
     .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
+    /* Let completed-write polling precede ACK, without requiring a guest
+     * status read to release an IRQ-driven reply. */
+    .kbc_command_response_ticks = MYPC110_KBC_COMMAND_RESPONSE_TICKS,
     .kbc_reset_output_port_configured = 1u,
     .kbc_reset_output_port = 0x03u,
     .kbc_reset_system_flag_configured = 1u,

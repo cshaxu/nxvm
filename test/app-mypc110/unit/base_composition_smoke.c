@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_machine_interface.h"
+#include "lib/types/file.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 
@@ -13,6 +14,7 @@ int main(void)
     lib_u32 value = 0u;
     lib_u8 byte = 0u;
     lib_bool a20_enabled = LIB_FALSE;
+    lib_bool advanced = LIB_FALSE;
     lib_i32 failed = 0;
 
     bios[2u * MYPC110_FIRMWARE_BANK_BYTES] = 0x11u;
@@ -69,6 +71,22 @@ int main(void)
         x86_core_machine_memory_read(composition.core,
             MYPC110_FONT_PHYSICAL_START, &value, 1u) != LIB_STATUS_OK ||
         value != 0xaau);
+    /* The BIOS drains early OBF before waiting for the reset ACK. The first
+     * completed-write status sample must not expose that ACK for draining. */
+    if (!failed) {
+        failed = x86_core_machine_bus_write(composition.core, 0x64u, 0x60u) !=
+            LIB_STATUS_OK || x86_core_machine_bus_write(composition.core, 0x60u, 0x6du) !=
+            LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
+            LIB_STATUS_OK || value != 0xaau ||
+            x86_core_machine_bus_write(composition.core, 0x60u, 0xffu) !=
+            LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x64u, &value) !=
+            LIB_STATUS_OK || (value & 3u) != 0u ||
+            x86_core_machine_advance_to_next_deadline(composition.core, &advanced) !=
+            LIB_STATUS_OK || !advanced || x86_core_machine_bus_read(composition.core, 0x60u,
+                &value) != LIB_STATUS_OK || value != 0xfau;
+        if (failed) lib_c_printf("PC110:KBC:reset-order failed value=%08x\n", value);
+    }
+    failed |= !failed && x86_core_machine_reset(composition.core) != LIB_STATUS_OK;
     failed |= !failed && (x86_core_machine_bus_write(composition.core, 0x64u, 0x60u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(composition.core, 0x60u, 0x01u) !=
         LIB_STATUS_OK || x86_nxvm_board_keyboard_receive_native_bytes(composition.board,
@@ -81,11 +99,17 @@ int main(void)
     failed |= !failed && (x86_core_machine_bus_write(composition.core, 0x64u, 0xa8u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(composition.core, 0x64u, 0xd4u) !=
         LIB_STATUS_OK || x86_core_machine_bus_write(composition.core, 0x60u, 0xf2u) !=
-        LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
+        LIB_STATUS_OK || x86_core_machine_bus_read(composition.core, 0x64u, &value) !=
+        LIB_STATUS_OK || (value & 1u) != 0u ||
+        x86_core_machine_advance_to_next_deadline(composition.core, &advanced) !=
+        LIB_STATUS_OK || !advanced ||
+        x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
         LIB_STATUS_OK || value != 0xfau || x86_core_machine_bus_read(composition.core,
             0x60u, &value) != LIB_STATUS_OK || value != 0x00u ||
         x86_core_machine_bus_write(composition.core, 0x64u, 0xd4u) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(composition.core, 0x60u, 0xf4u) != LIB_STATUS_OK ||
+        x86_core_machine_advance_to_next_deadline(composition.core, &advanced) !=
+        LIB_STATUS_OK || !advanced ||
         x86_core_machine_bus_read(composition.core, 0x60u, &value) != LIB_STATUS_OK ||
         value != 0xfau || x86_nxvm_board_mouse_receive_relative(composition.board,
             5, -3, 1u) != LIB_STATUS_OK || x86_core_machine_bus_read(composition.core,
@@ -94,6 +118,7 @@ int main(void)
         value != 0x05u || x86_core_machine_bus_read(composition.core, 0x60u, &value) !=
         LIB_STATUS_OK || value != 0xfdu);
 
+    if (failed) lib_c_printf("PC110:BASE:composition failed value=%08x\n", value);
     mypc110_base_composition_destroy(&composition);
     return failed;
 }
