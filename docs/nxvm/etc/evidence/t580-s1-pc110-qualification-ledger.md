@@ -231,3 +231,30 @@ Shared `85a65c3a8` and NXVM `a8561555e` are pushed. The registered retained-
 power test passes on both widths, all eight PC artifacts and INI identities
 are verified, and all 28 scratch files are removed. This accepts the bounded
 EC/power receiver, not the original live-input/guest/product gates.
+
+## S54 ordinary POST and real bootstrap disposition
+
+The complete post-restoration route batch is reconciled in
+[S54 evidence](t580-s54-post-restoration-route.md). A generic CPU defect,
+unconditional SX #NM for EM/TS-clear ESC, prevented the BIOS's no-FPU
+probe. The corrected explicit L2 absence model and existing L2 timing owner
+are independently tested across opcode, operand, control and protection
+contexts. No FPU, ROM patch, intercepted BIOS PC, second executor or guest
+clock is supplied.
+
+Both host widths now execute retained wake, the same 512 CPU-save bytes,
+actual RSM, ordinary POST and the original CD19 at F000:52BD, entering
+F000:E6F2 after 56,679,591 instructions and four processor resets, with
+the same four delivered exceptions. The expanded full route takes 302.96 s
+x86 / 224.16 s x64; its justified 360-second budget and earlier honest
+timeouts are documented separately from functional success. Existing FDC,
+timer and ASMI regressions also pass both widths. All 712 distinct units
+per width have passing evidence, including the corrected legacy executor
+assertion after its recorded initial failure.
+
+This accepts an ordinary firmware bootstrap handoff, not DOS boot or product
+publication. The untouched original universe still requires actual selected
+storage/guest checkpoints, real Setup selection/loading/UI, panel/live input,
+model identity, lifecycle/desktop and final four-artifact qualification.
+Those members remain explicitly unaccepted at the existing App/product
+owners; the finite S54 disposition does not transfer or erase them.

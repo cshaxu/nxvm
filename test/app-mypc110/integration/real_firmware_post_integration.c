@@ -3,6 +3,7 @@
 #include "app-mypc110/pc110_plan_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "lib/types/file.h"
+#include "lib/base/clock_interface.h"
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/retirement_observation_interface.h"
@@ -19,6 +20,7 @@ extern const x86_nxvm_machine_assets vm_app_firmware;
 #define MYPC110_POST_DIAGNOSTIC_C000_PORT61_FOLLOW_INSTRUCTIONS 13000000u
 #define MYPC110_POST_DIAGNOSTIC_QUANTUM 256u
 #define MYPC110_POST_DIAGNOSTIC_C000_QUANTUM 4096u
+#define MYPC110_POST_DIAGNOSTIC_POWER_QUANTUM 65536u
 #define MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY 128u
 #define MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY 16u
 #define MYPC110_POST_DIAGNOSTIC_RETIREMENT_CAPACITY 16u
@@ -266,6 +268,22 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
     trace->previous = observation->point;
 }
 
+static void mypc110_post_diagnostic_boot_progress(
+    x86_core_machine *machine, lib_u64 executed)
+{
+    x86_core_machine_observation observation = {0};
+    lib_u64 milliseconds = 0u;
+    const lib_status clock = base_clock_milliseconds(&milliseconds);
+    const lib_status capture = x86_core_machine_capture_observation(machine,
+        &observation);
+
+    lib_c_printf("PC110:BOOT:progress clock=%d host-ms=%llu capture=%d executed=%llu pc=%04x:%08x exceptions=%u\n",
+        clock, (unsigned long long)milliseconds, capture,
+        (unsigned long long)executed, observation.cpu.cs, observation.cpu.eip,
+        observation.diagnostic.delivered_exception_count);
+    lib_c_fflush(lib_c_stdout);
+}
+
 int main(int argc, char **argv)
 {
     const x86_nxvm_machine_config config = {
@@ -306,8 +324,12 @@ int main(int argc, char **argv)
         lib_text_compare(argv[1], "--c000-port61-follow") == 0;
     lib_bool fdc_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--fdc-reset") == 0;
-    lib_bool power_checkpoint = argc == 2 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--resume-button") == 0;
+    lib_bool boot_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--resume-boot") == 0;
+    lib_bool power_checkpoint = boot_checkpoint || (argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--resume-button") == 0);
+    lib_bool boot_handoff = LIB_FALSE;
+    lib_u64 boot_report = 0u;
     lib_bool button_sent = LIB_FALSE;
     lib_u8 suspended_cpu_image[512u] = {0};
     lib_u8 restored_cpu_image[512u] = {0};
@@ -332,6 +354,7 @@ int main(int argc, char **argv)
     if (timer_checkpoint) instruction_limit = 200000000u;
     if (fdc_checkpoint) instruction_limit = 32000000u;
     if (power_checkpoint) instruction_limit = 60000000u;
+    if (boot_checkpoint) instruction_limit = 100000000u;
     post_reset_trace.fdc_checkpoint = fdc_checkpoint;
     post_reset_trace.timer_checkpoint = timer_checkpoint;
     post_reset_trace.c000_only = c000_checkpoint || c000_follow_checkpoint ||
@@ -367,9 +390,12 @@ int main(int argc, char **argv)
     if (status == LIB_STATUS_OK) {
         x86_nxvm_machine_executor_state_start(&machine->control.state);
     }
+    if (boot_checkpoint && status == LIB_STATUS_OK)
+        mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
     while (status == LIB_STATUS_OK && executed < instruction_limit) {
         status = x86_core_machine_run(machine->x86_core_machine,
             (x86_core_machine_run_budget) {.instructions =
+                power_checkpoint ? MYPC110_POST_DIAGNOSTIC_POWER_QUANTUM :
                 timer_checkpoint ? MYPC110_POST_DIAGNOSTIC_C000_QUANTUM :
                 processor_reset_count != 0u && !post_reset_exception.valid &&
                     !port61_progress_checkpoint && !port61_follow_checkpoint &&
@@ -380,8 +406,14 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
+        if (boot_checkpoint && post_reset_trace.power_restore_completed &&
+            executed >= boot_report) {
+            mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
+            boot_report = executed + 1000000u;
+        }
         if (power_checkpoint && result.reason == X86_CORE_MACHINE_STOP_PAUSED && button_sent) {
-            const lib_u32 expected = post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u;
+            const lib_u32 expected = post_reset_trace.power_restore_completed ? 0xf52bdu :
+                post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u;
             x86_core_cpu_debug_instruction_observation retired = {0};
             status = x86_core_machine_debug_capture_instruction_observation(
                 machine->x86_core_machine, &retired);
@@ -407,6 +439,14 @@ int main(int argc, char **argv)
             }
             if (status != LIB_STATUS_OK) break;
             lib_c_printf("PC110:POWER:retired-watch=%08x pc=%08x\n", expected, result.linear_pc);
+            if (post_reset_trace.power_restore_completed) {
+                boot_handoff = retired.instruction_linear == 0xf52bdu &&
+                    retired.instruction_byte_count >= 2u &&
+                    retired.instruction_bytes[0u] == 0xcdu && retired.instruction_bytes[1u] == 0x19u;
+                lib_c_printf("PC110:BOOT:int19=%u target=%04x:%08x\n",
+                    boot_handoff, retired.cs, retired.eip);
+                break;
+            }
             if (!post_reset_trace.power_restore_entered) {
                 post_reset_trace.power_restore_entered = LIB_TRUE;
                 status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
@@ -438,9 +478,20 @@ int main(int argc, char **argv)
             lib_c_printf("PC110:POWER:rsm status=%d executed=%llu return=%04x:%08x flags=%08x retained=%u\n",
                 status, (unsigned long long)result.executed, resumed_cpu.cs.selector,
                 resumed_cpu.eip, resumed_cpu.eflags, retained_cpu_image);
+            lib_c_fflush(lib_c_stdout);
+            if (boot_checkpoint && post_reset_trace.power_restore_completed) {
+                /* Bound the new phase, not just the expensive cold prefix,
+                 * so containment returns a usable final CPU observation. */
+                instruction_limit = executed + 8000000u;
+                mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
+                boot_report = executed + 1000000u;
+                status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0xf52bdu);
+                continue;
+            }
             break;
         }
-        if (power_checkpoint && post_reset_trace.power_restore_completed) break;
+        if (power_checkpoint && !boot_checkpoint && post_reset_trace.power_restore_completed) break;
         if (fdc_checkpoint && post_reset_trace.fdc_reset_completed) break;
         if (timer_checkpoint && !fdc_checkpoint && !power_checkpoint && (post_reset_trace.timer_passed ||
                 post_reset_trace.timer_failed ||
@@ -468,7 +519,8 @@ int main(int argc, char **argv)
             if (power_checkpoint && button_sent) {
                 /* Processor reset clears CPU-owned debugger controls. */
                 status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
-                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x39336u);
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
+                    post_reset_trace.power_restore_completed ? 0xf52bdu : 0x39336u);
             }
             post_reset_trace.post_reset_active = LIB_TRUE;
             if (x86_core_machine_capture_observation(machine->x86_core_machine,
@@ -511,6 +563,8 @@ int main(int argc, char **argv)
                         status = LIB_STATUS_INVALID_STATE;
                 }
                 button_sent = status == LIB_STATUS_OK;
+                if (boot_checkpoint)
+                    mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
                 continue;
             }
             status = x86_core_machine_debug_capture_cpu_snapshot(machine->x86_core_machine,
@@ -543,6 +597,24 @@ int main(int argc, char **argv)
     if (machine != LIB_NULL) x86_nxvm_machine_control_end_run(&machine->control);
     if (machine != LIB_NULL)
         (void)x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
+    if (boot_checkpoint && machine != LIB_NULL) {
+        x86_core_cpu_debug_cpu_snapshot cpu = {0};
+        lib_u8 bytes[16u] = {0};
+        lib_status capture = x86_core_machine_debug_capture_cpu_snapshot(
+            machine->x86_core_machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu);
+        lib_c_printf("PC110:BOOT:state=%d %04x:%08x base=%08x cr0=%08x flags=%08x ax=%08x bx=%08x cx=%08x dx=%08x ds=%04x/%08x ss=%04x/%08x sp=%08x\n",
+            capture, cpu.cs.selector, cpu.eip, cpu.cs.base, cpu.cr0, cpu.eflags,
+            cpu.eax, cpu.ebx, cpu.ecx, cpu.edx, cpu.ds.selector, cpu.ds.base,
+            cpu.ss.selector, cpu.ss.base, cpu.esp);
+        if (capture == LIB_STATUS_OK)
+            capture = x86_core_machine_memory_read(machine->x86_core_machine,
+                cpu.cs.base + cpu.eip, bytes, sizeof(bytes));
+        lib_c_printf("PC110:BOOT:code=%d", capture);
+        if (capture == LIB_STATUS_OK)
+            for (lib_size index = 0u; index < sizeof(bytes); ++index)
+                lib_c_printf(" %02x", bytes[index]);
+        lib_c_printf("\n");
+    }
     if (timer_checkpoint) {
         lib_c_printf("PC110:TIMER:passed=%u failed=%u delta=%04x executed=%llu pc=%08x status=%d copied=%u initialized=%u asmi=%u/%u rsm=%u\n",
             post_reset_trace.timer_passed, post_reset_trace.timer_failed,
@@ -742,6 +814,7 @@ int main(int argc, char **argv)
             processor_reset_count, (unsigned long long)executed);
         return status == LIB_STATUS_OK && button_sent &&
             post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
+            (!boot_checkpoint || boot_handoff) &&
             retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
             !observation.diagnostic.first_fault.valid ? 0 : 1;
     }

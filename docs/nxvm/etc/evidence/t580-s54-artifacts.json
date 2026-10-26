@@ -1,0 +1,82 @@
+[
+  {
+    "path": "assets/my5160/my5160_0_5_0580_x64.exe",
+    "architecture": "x64",
+    "version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1543511,
+    "sha256": "CAF4A92C6ED862B5D85205F7EAB8EE7A171D67A508F12F5CFF3B10BCA6BCA390"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0580_x86.exe",
+    "architecture": "x86",
+    "version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1681056,
+    "sha256": "C1962B3877C1836C31CFA9B6EFC7DD5197C530A77FD86AD019E3715A4A2CBA88"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0580_x64.exe",
+    "architecture": "x64",
+    "version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1557109,
+    "sha256": "9EA96CB2C8F949E3B4D1DCFBB3065DCF737958CA7FC43B11E519CA0601A46BFE"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0580_x86.exe",
+    "architecture": "x86",
+    "version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1693913,
+    "sha256": "186E9A7A7C0D055FB4AE270F3D06561AFAEBC4B5CA833EA6CD99B22FD52426FC"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x64.exe",
+    "architecture": "x64",
+    "version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1543771,
+    "sha256": "563AF80D35262CBB55827372478DAB2630F351A0F9029B7CBF4FFBCE794CE978"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x86.exe",
+    "architecture": "x86",
+    "version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1681142,
+    "sha256": "F9D9486BFA8BD00B09EDF9168F598A8E45449F87FAD714A4FC14CA069D432391"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0580_x64.exe",
+    "architecture": "x64",
+    "version": "0.5.0580",
+    "pe_machine": "8664",
+    "bytes": 1556255,
+    "sha256": "3DD9CF56BFD1219193BBF772AA37E4FF19FB4C222A69CC5E03C69B4435EDEEA8"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0580_x86.exe",
+    "architecture": "x86",
+    "version": "0.5.0580",
+    "pe_machine": "014C",
+    "bytes": 1693211,
+    "sha256": "F8BE84D6FC61ED917FACB62309053908B9B2C3EB7634B34B83472869597C0765"
+  },
+  {
+    "path": "assets/myraidenii/myraidenii_0_0_0007_x64.exe",
+    "architecture": "x64",
+    "version": "0.0.0007",
+    "pe_machine": "8664",
+    "bytes": 947190,
+    "sha256": "D7CCAD7858B1F59B10C1C9B6D1EC5B76C4F52714E730A04A7BF9753941A4CA4E"
+  },
+  {
+    "path": "assets/myraidenii/myraidenii_0_0_0007_x86.exe",
+    "architecture": "x86",
+    "version": "0.0.0007",
+    "pe_machine": "014C",
+    "bytes": 1021135,
+    "sha256": "AD23D6F897966A30337A58C7756CAF70901DB9C07CA360F0FA302243ACBF1DC1"
+  }
+]

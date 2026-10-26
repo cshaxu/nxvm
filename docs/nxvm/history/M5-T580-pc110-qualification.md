@@ -556,3 +556,30 @@ The pre-acceptance packet and earlier status notes are preserved in
 repaired. Current is reduced to the one latest T580 progress record so old
 packets cannot be mistaken for concurrent active work. Scratch is absent,
 the stable caches remain, and all implementation/receiving P commits are pushed.
+
+## S54 implementation — ordinary POST/bootstrap handoff
+
+Shared P1 `48fe7a544` is pushed. The admitted post-restoration route inventory
+exposes a repeated #NM at the
+original BIOS's FNINIT. S54 corrects the CPU-owned 486SX absent-FPU class
+and missing successful-ESC L2 cost allocation, without a BIOS-PC branch,
+numeric FPU, ROM modification, new interface or Lib/Emulator change.
+The source conflict and explicit compatibility-model limits remain in the
+[S54 evidence](../etc/evidence/t580-s54-post-restoration-route.md).
+
+Both widths execute the original retained wake/RSM and ordinary POST to
+the real INT19 handler, at the same 56,679,591 instructions, four resets,
+four exceptions and identical 512 retained bytes. Registered boot tests pass
+in 224.16 s x64 and 302.96 s x86 under the evidenced 360 s complete-work
+budget; the earlier 300 s failures are not reclassified. FDC/timer/ASMI and
+all 712 distinct repository units per width have passing evidence, including
+the documented initial x64 executor assertion failure and corrected retest.
+
+Eight PC and two explicitly receiving MyRaidenII artifacts are rebuilt and
+verified; all eight PC INI identity integrations pass. Four PC110 previews
+stay unpublished, MyNES and owner INI contents stay unchanged. Actual C/H
+delta is +342/-32 (net +310), with no new production helper/state/API. The
+official cleaner removes 41 owned logs/399,400 bytes after task exit;
+the stable caches remain. Executor delivery awaits coordinator acceptance.
+Setup, actual storage/guest, display/live input, lifecycle and PC110
+publication retain their original unqualified ledger rows.

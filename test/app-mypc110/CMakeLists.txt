@@ -153,9 +153,10 @@ if(TARGET mypc110-real-firmware-tft)
         COMMAND mypc110-real-firmware-post-integration --fdc-reset)
     set_tests_properties(mypc110.integration/real-firmware-fdc-reset PROPERTIES
         LABELS "integration;mypc110" TIMEOUT 180)
-    # Separate retained-power contract, using the same real BIOS and driver.
-    add_test(NAME mypc110.integration/real-firmware-power-resume
-        COMMAND mypc110-real-firmware-post-integration --resume-button)
-    set_tests_properties(mypc110.integration/real-firmware-power-resume PROPERTIES
-        LABELS "integration;mypc110" TIMEOUT 300)
+    # Retained power plus ordinary POST/INT19, through one real BIOS replay.
+    # Keep this CPU-bound whole route isolated from other CTest workloads.
+    add_test(NAME mypc110.integration/real-firmware-boot-handoff
+        COMMAND mypc110-real-firmware-post-integration --resume-boot)
+    set_tests_properties(mypc110.integration/real-firmware-boot-handoff PROPERTIES
+        LABELS "integration;mypc110" TIMEOUT 360 RUN_SERIAL TRUE)
 endif()

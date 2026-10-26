@@ -16,6 +16,14 @@ handoff behavior, but it does not claim complete numeric formats, arithmetic,
 environment save/restore, exception delivery or timing.  This candidate does
 not retroactively promote that boundary to full x87 support.
 
+The T580 S54 absent-FPU investigation additionally identifies a retained
+CPU-side debt for earlier 286/386 profiles: their no-device path consumes
+ESC without the generation-specific control-store and pointer behavior
+reported by independent hardware research. The queued design audit above
+must qualify that complete absence/presence boundary before changing those
+profiles; the SX L2 receiver is not silently generalized to them. See
+[S54 sources and finite scope](../etc/evidence/t580-s54-post-restoration-route.md).
+
 ## Required Design Gate
 
 Before implementation, select the exact first coprocessor personality and
