@@ -701,3 +701,18 @@ unpublished rebuilt PC110 previews. Owner INI/ROM/font/media, MyNES and
 MyRaidenII are unchanged. All 90 owned scratch files/13,302,526 bytes are
 removed with the hash-reviewed cleaner; both caches remain. Executor
 delivery requests actual-change coordinator acceptance; T580 stays open.
+
+## S57 coordinator actual-change acceptance
+
+Coordinator reads Shared `7cca77dcf` and NXVM `2326fa3c0`, including final
+source/test/manifest diffs, caller migration, review corrections, all failed
+attempts, the normal-domain equivalence rationale for the last range guard,
+actual-frame/log proof and twelve artifact identities. It accepts the named
+standard planar/colour/inspection/range receiver after exact final-tree
+units/gates and scoped current firmware regression. It does not replace
+the original normal Setup/guest/panel/DSTN/live-product predicates with the
+restored colour or a reset vector. No Lib/Emulator or CPU/Core change,
+external-input mutation, other-App pollution or new rendering path occurs.
+All owned work exits and scratch is removed. The packet moves to retained
+history; S57 closes with a clean workspace after this governance P. T580
+remains open for its original complete receiver universe.
