@@ -67,8 +67,7 @@ lib_status x86_nxvm_machine_construction_begin(const x86_nxvm_machine_config *co
 {
     if (out_construction == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_construction = (x86_nxvm_machine_construction){0};
-    if (config == LIB_NULL || assets == LIB_NULL ||
-        config->fixed_disk_image[1u] != LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (config == LIB_NULL || assets == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     return LIB_STATUS_OK;
 }
 

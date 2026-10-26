@@ -207,9 +207,44 @@ static void check_partial_media_cleanup(void)
         LIB_STATUS_OK);
     lib_test_assert(x86_nxvm_machine_hdd_allocate(&partial.fixed_disk[0u]) ==
         LIB_STATUS_OK);
+    lib_test_assert(x86_nxvm_machine_hdd_allocate(&partial.fixed_disk[1u]) ==
+        LIB_STATUS_OK);
     x86_nxvm_machine_finalize(&partial);
-    lib_test_assert(partial.floppy[0u] == LIB_NULL && partial.fixed_disk[0u] == LIB_NULL);
+    lib_test_assert(partial.floppy[0u] == LIB_NULL && partial.fixed_disk[0u] == LIB_NULL &&
+        partial.fixed_disk[1u] == LIB_NULL);
     x86_nxvm_machine_finalize(&partial);
+}
+
+static void check_fixed_disk_slot_contract(void)
+{
+    construction_probe probe = {0};
+    x86_nxvm_machine_construction construction = prepare(&probe);
+    const x86_nxvm_machine_config empty = {0};
+    const x86_nxvm_machine_config second_on_single = {
+        .fixed_disk_image = {LIB_NULL, "second.img"}};
+    x86_nxvm_machine *machine = LIB_NULL;
+    x86_nxvm_board_media_info information = {0};
+    x86_nxvm_board_media_result result = X86_NXVM_BOARD_MEDIA_RESULT_PERMANENT;
+
+    construction.hdc_present = LIB_TRUE;
+    construction.fixed_disk_slot_count = 2u;
+    lib_test_assert(x86_nxvm_machine_create(&empty, &construction, &machine) == LIB_STATUS_OK);
+    lib_test_assert(machine->fixed_disk[0u] != LIB_NULL && machine->fixed_disk[1u] != LIB_NULL);
+    lib_test_assert(x86_nxvm_board_media_query(machine->media_registry,
+        X86_NXVM_MACHINE_MEDIA_HDD_ID, &information, &result) == LIB_STATUS_OK &&
+        result == X86_NXVM_BOARD_MEDIA_RESULT_ABSENT);
+    lib_test_assert(x86_nxvm_board_media_query(machine->media_registry,
+        X86_NXVM_MACHINE_MEDIA_HDD_SECONDARY_ID, &information, &result) == LIB_STATUS_OK &&
+        result == X86_NXVM_BOARD_MEDIA_RESULT_ABSENT);
+    x86_nxvm_machine_destroy(machine);
+    lib_test_assert(probe.released && probe.release_count == 1u);
+
+    probe = (construction_probe){0};
+    construction = prepare(&probe);
+    construction.hdc_present = LIB_TRUE;
+    construction.fixed_disk_slot_count = 1u;
+    lib_test_assert(x86_nxvm_machine_create(&second_on_single, &construction, &machine) ==
+        LIB_STATUS_INVALID_ARGUMENT && machine == LIB_NULL && probe.release_count == 1u);
 }
 
 static void check_no_floppy_media_contract(void)
@@ -304,6 +339,7 @@ lib_i32 main(void)
     check_transaction(LIB_STATUS_OK, LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
     check_floppy_lifecycle();
     check_partial_media_cleanup();
+    check_fixed_disk_slot_contract();
     check_no_floppy_media_contract();
     probe = (construction_probe) {0};
     construction = prepare(&probe);

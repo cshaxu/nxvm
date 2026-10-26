@@ -182,7 +182,7 @@ static lib_status mypc110_machine_configure(void *opaque,
         mypc110_machine_profile_create, plan);
     if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_plan_configure_hdc(board_plan,
-            X86_NXVM_MACHINE_MEDIA_HDD_ID, X86_NXVM_BOARD_MEDIA_ID_INVALID,
+            X86_NXVM_MACHINE_MEDIA_HDD_ID, X86_NXVM_MACHINE_MEDIA_HDD_SECONDARY_ID,
             &mypc110_machine_hdc);
     }
     return status;
@@ -273,6 +273,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .floppy_kind = X86_NXVM_BOARD_FLOPPY_35_1440K,
         .media_kind = X86_NXVM_BOARD_FLOPPY_35_1440K,
         .floppy_slot_count = 0u,
+        .fixed_disk_slot_count = 2u,
         .hdc_present = LIB_TRUE,
         .memory_reconfigurable = LIB_FALSE,
         .display_snapshot_provider = mypc110_machine_capture_display,

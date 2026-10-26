@@ -25,8 +25,8 @@ lib_status x86_nxvm_machine_devices_initialize_media(x86_nxvm_machine *session)
         status = x86_nxvm_machine_fdd_allocate(geometry, &session->floppy[1u]);
         if (status != LIB_STATUS_OK) return status;
     }
-    if (session->construction.hdc_present) {
-        status = x86_nxvm_machine_hdd_allocate(&session->fixed_disk[0u]);
+    for (lib_size slot = 0u; slot < session->construction.fixed_disk_slot_count; ++slot) {
+        status = x86_nxvm_machine_hdd_allocate(&session->fixed_disk[slot]);
         if (status != LIB_STATUS_OK) return status;
     }
     return LIB_STATUS_OK;
@@ -49,9 +49,10 @@ lib_status x86_nxvm_machine_devices_bind_media(x86_nxvm_machine *session)
             x86_nxvm_machine_fdd_media_provider());
         if (status != LIB_STATUS_OK) return status;
     }
-    if (session->construction.hdc_present) {
+    for (lib_size slot = 0u; slot < session->construction.fixed_disk_slot_count; ++slot) {
         status = x86_nxvm_board_media_registry_bind(session->media_registry,
-            X86_NXVM_MACHINE_MEDIA_HDD_ID, session->fixed_disk[0u], x86_nxvm_machine_hdd_media_provider());
+            slot == 0u ? X86_NXVM_MACHINE_MEDIA_HDD_ID : X86_NXVM_MACHINE_MEDIA_HDD_SECONDARY_ID,
+            session->fixed_disk[slot], x86_nxvm_machine_hdd_media_provider());
         if (status != LIB_STATUS_OK) return status;
     }
     return x86_nxvm_board_media_registry_freeze(session->media_registry);
@@ -64,9 +65,8 @@ void x86_nxvm_machine_devices_reset(x86_nxvm_machine *session)
         x86_nxvm_machine_fdd_reset(session->floppy[0u]);
     if (session->construction.floppy_slot_count > 1u)
         x86_nxvm_machine_fdd_reset(session->floppy[1u]);
-    if (session->construction.hdc_present) {
-        x86_nxvm_machine_hdd_reset(session->fixed_disk[0u]);
-    }
+    for (lib_size slot = 0u; slot < session->construction.fixed_disk_slot_count; ++slot)
+        x86_nxvm_machine_hdd_reset(session->fixed_disk[slot]);
 }
 
 void x86_nxvm_machine_devices_finalize(x86_nxvm_machine *session)

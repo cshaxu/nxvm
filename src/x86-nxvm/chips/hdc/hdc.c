@@ -116,6 +116,12 @@ static lib_i32 x86_hdc_is_xebec_xt(const x86_hdc *hdc)
         X86_HDC_PROTOCOL_XEBEC_XT;
 }
 
+static lib_i32 x86_hdc_is_ata_pio(const x86_hdc *hdc)
+{
+    return hdc != LIB_NULL && hdc->config.protocol ==
+        X86_HDC_PROTOCOL_ATA_PIO;
+}
+
 static lib_i32 x86_hdc_task_file_is_writable(const x86_hdc *hdc)
 {
     return hdc != LIB_NULL && (hdc->data.status &
@@ -325,7 +331,7 @@ static lib_i32 x86_hdc_resolve_sector(x86_hdc *hdc,
             return 0;
         }
         lba = x86_hdc_lba(hdc);
-        if (!x86_hdc_selected_master(hdc) ||
+        if ((!x86_hdc_selected_master(hdc) && !x86_hdc_is_ata_pio(hdc)) ||
             (lib_u64)lba >= x86_hdc_sector_capacity(&info) ||
             info.geometry.bytes_per_sector != sizeof(hdc->data.record.data)) {
             x86_hdc_fail(hdc, X86_HDC_ERROR_ID_NOT_FOUND);
@@ -339,7 +345,7 @@ static lib_i32 x86_hdc_resolve_sector(x86_hdc *hdc,
     head = x86_hdc_current_head(hdc);
     sector = hdc->data.sector_number;
     geometry = x86_hdc_address_geometry(hdc, &info, x86_hdc_selected_unit(hdc));
-    if ((!x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
+    if ((!x86_hdc_is_ata_pio(hdc) && !x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
             !x86_hdc_selected_master(hdc)) ||
         sector == 0u || cylinder >= geometry.cylinders ||
         head >= geometry.heads || sector > geometry.sectors_per_track ||
@@ -426,7 +432,7 @@ static void x86_hdc_identify(x86_hdc *hdc)
     lib_u16 word;
 
     if (hdc == LIB_NULL || !x86_hdc_media_info(hdc, &info, &media_result) ||
-        !x86_hdc_selected_master(hdc) ||
+        (!x86_hdc_selected_master(hdc) && !x86_hdc_is_ata_pio(hdc)) ||
         !info.present || info.geometry.bytes_per_sector != sizeof(hdc->data.record.data)) {
         x86_hdc_fail(hdc, X86_HDC_ERROR_ABORT);
         return;
@@ -736,7 +742,7 @@ static void x86_hdc_execute_command(x86_hdc *hdc, lib_u8 command)
     if (hdc == LIB_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
-    if ((!x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
+    if ((!x86_hdc_is_ata_pio(hdc) && !x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
             !x86_hdc_selected_master(hdc)) ||
         (!x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
             (hdc->data.drive_head & 0x40u) != 0u &&

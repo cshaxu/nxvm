@@ -738,3 +738,21 @@ checkpoints; they do not prove that the retained BIOS UI consumed the new
 PCIC receiver. Commits `0b0e1f42c` and `1c357a14f` are pushed. No PC110
 artifact is published, per the admitted packet; T580 remains open for its
 unchanged qualification universe.
+
+## S59 executor delivery — ATA two-device construction route
+
+S59 makes the existing two-slot fixed-disk configuration real without adding
+a second storage path. Construction now declares the physical HDC slot count;
+Machine allocates, binds, resets and inserts every declared slot through its
+existing registry route. MyPC110 declares two slots and connects the already
+reserved secondary media ID to ATA slave selection. The existing ATA chip's
+four stale master-only guards now consume its existing Drive/Head unit route
+for slave CHS/LBA/IDENTIFY operations. Existing one-device PC plans declare
+one slot, and fixed geometry remains master-only.
+
+Both widths pass the focused Machine, Board HDC and MyPC110 units plus X86-NXVM
+source/test manifest gates. Existing unchanged-firmware FDC-reset and
+boot-handoff checkpoints pass x64 in 50.33/270.45 s and x86 in 57.00/314.03 s.
+Those checks are strictly non-regression evidence; they do not qualify a
+SunDisk/CF, PC Card storage, Setup persistence, guest boot, panel or release.
+See [S59 evidence](../etc/evidence/t580-s59-ata-two-device-route.md).

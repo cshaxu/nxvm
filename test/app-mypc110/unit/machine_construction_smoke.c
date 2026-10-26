@@ -67,6 +67,8 @@ int main(void)
         construction.topology.fdc_drives.double_sided_mask != 0x0fu ||
         construction.topology.fdc_drives.installed_mask != 0u)
         failed = 9;
+    else if (construction.fixed_disk_slot_count != 2u)
+        failed = 42;
     else if (x86_core_machine_clock_domain_initialize(&pit_clock,
             &construction.core_config.clock_plan.pit) != LIB_STATUS_OK)
         failed = 7;

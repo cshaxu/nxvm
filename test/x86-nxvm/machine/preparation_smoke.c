@@ -169,7 +169,7 @@ static void failures(void)
     lib_test_assert(x86_nxvm_machine_construction_begin(&config, LIB_NULL, &published) ==
         LIB_STATUS_INVALID_ARGUMENT && published.profile.context == LIB_NULL);
     config.fixed_disk_image[1u] = "second";
-    lib_test_assert(x86_nxvm_machine_construction_begin(&config, &assets, &published) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(x86_nxvm_machine_construction_begin(&config, &assets, &published) == LIB_STATUS_OK);
     lib_test_assert(x86_nxvm_machine_construction_begin(&config, &assets, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     published = candidate;
     lib_test_assert(x86_nxvm_machine_construction_finish(LIB_NULL, &config, &assets,

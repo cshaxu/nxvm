@@ -226,24 +226,24 @@ lib_i32 x86_nxvm_machine_eject_fdd(x86_nxvm_machine *session)
     emulator_machine_set_removable_media(session->executor, LIB_NULL,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 static lib_status x86_nxvm_machine_insert_hdd_at_startup(x86_nxvm_machine *session,
-    const char *path, lib_storage_medium_mode mode)
+    lib_size slot, const char *path, lib_storage_medium_mode mode)
 {
     char candidate[sizeof(session->fixed_disk_image_path[0u])];
     lib_status status;
 
-    if (session == LIB_NULL || !session->construction.hdc_present)
+    if (session == LIB_NULL || slot >= session->construction.fixed_disk_slot_count)
         return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_nxvm_machine_copy_path(candidate, sizeof(candidate), path);
     if (status == LIB_STATUS_OK)
-        status = x86_nxvm_machine_hdd_insert(session->fixed_disk[0u], candidate, mode);
+        status = x86_nxvm_machine_hdd_insert(session->fixed_disk[slot], candidate, mode);
     if (status != LIB_STATUS_OK) return status;
-    if (session->construction.fixed_geometry) {
-        status = x86_nxvm_machine_hdd_set_geometry(session->fixed_disk[0u],
+    if (slot == 0u && session->construction.fixed_geometry) {
+        status = x86_nxvm_machine_hdd_set_geometry(session->fixed_disk[slot],
             session->construction.cylinders, session->construction.heads,
             session->construction.sectors);
         if (status != LIB_STATUS_OK) return status;
     }
-    lib_memory_copy(session->fixed_disk_image_path[0u], candidate, lib_text_length(candidate) + 1u);
+    lib_memory_copy(session->fixed_disk_image_path[slot], candidate, lib_text_length(candidate) + 1u);
     return LIB_STATUS_OK;
 }
 
@@ -354,17 +354,20 @@ lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
     }
     session->construction = *construction;
     if (construction->floppy_slot_count > X86_NXVM_MACHINE_FLOPPY_SLOT_COUNT ||
+        construction->fixed_disk_slot_count > X86_NXVM_MACHINE_FIXED_DISK_SLOT_COUNT ||
+        (construction->hdc_present != (construction->fixed_disk_slot_count != 0u)) ||
         (construction->floppy_slot_count != 0u &&
          x86_nxvm_board_floppy_geometry_get(construction->media_kind) == LIB_NULL) ||
         (config->floppy_image[0u] != LIB_NULL && construction->floppy_slot_count == 0u) ||
         (construction->fixed_geometry && (!construction->hdc_present ||
             construction->cylinders == 0u || construction->heads == 0u ||
             construction->sectors == 0u)) ||
-        (config->floppy_image[1u] != LIB_NULL && construction->floppy_slot_count < 2u)) {
+        (config->floppy_image[1u] != LIB_NULL && construction->floppy_slot_count < 2u) ||
+        (config->fixed_disk_image[0u] != LIB_NULL && construction->fixed_disk_slot_count == 0u) ||
+        (config->fixed_disk_image[1u] != LIB_NULL && construction->fixed_disk_slot_count < 2u)) {
         x86_nxvm_machine_destroy(session); return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (!construction->hdc_present &&
-        (x86_nxvm_machine_config_fixed_disk(config, 0u) != LIB_NULL || config->create_hdd_cylinders != 0u)) {
+    if (construction->fixed_disk_slot_count == 0u && config->create_hdd_cylinders != 0u) {
         x86_nxvm_machine_destroy(session); return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = x86_nxvm_machine_initialize(session);
@@ -376,15 +379,16 @@ lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
             x86_nxvm_machine_config_floppy_mode(config, slot));
         if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return status; }
     }
-    if (x86_nxvm_machine_config_fixed_disk(config, 0u) != LIB_NULL) {
-        status = x86_nxvm_machine_insert_hdd_at_startup(session,
-            x86_nxvm_machine_config_fixed_disk(config, 0u),
-            x86_nxvm_machine_config_fixed_disk_mode(config, 0u));
+    for (lib_size slot = 0u; slot < construction->fixed_disk_slot_count; ++slot) {
+        if (x86_nxvm_machine_config_fixed_disk(config, slot) == LIB_NULL) continue;
+        status = x86_nxvm_machine_insert_hdd_at_startup(session, slot,
+            x86_nxvm_machine_config_fixed_disk(config, slot),
+            x86_nxvm_machine_config_fixed_disk_mode(config, slot));
         if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return status; }
     }
     if (config->create_fdd && construction->floppy_slot_count != 0u)
         x86_nxvm_machine_fdd_create_for(session->floppy[0u]);
-    if (construction->hdc_present && config->create_hdd_cylinders != 0u) {
+    if (construction->fixed_disk_slot_count != 0u && config->create_hdd_cylinders != 0u) {
         status = x86_nxvm_machine_hdd_create(session->fixed_disk[0u], config->create_hdd_cylinders);
         if (status != LIB_STATUS_OK) { x86_nxvm_machine_destroy(session); return status; }
     }

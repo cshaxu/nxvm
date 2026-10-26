@@ -61,6 +61,7 @@ static lib_status vm_profile_machine_plan_xt(vm_profile_xt_machine_plan *plan,
     plan->construction.topology = plan->profile.topology;
     plan->construction.floppy_kind = X86_NXVM_BOARD_FLOPPY_525_360K;
     plan->construction.floppy_slot_count = 1u;
+    plan->construction.fixed_disk_slot_count = source.xebec_present ? 1u : 0u;
     plan->construction.hdc_present = source.xebec_present;
     return LIB_STATUS_OK;
 }

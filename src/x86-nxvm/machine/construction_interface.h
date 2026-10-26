@@ -46,6 +46,10 @@ typedef struct x86_nxvm_machine_construction {
     x86_nxvm_board_floppy_kind floppy_kind;
     x86_nxvm_board_floppy_kind media_kind;
     lib_u8 floppy_slot_count;
+    /* Physical fixed-disk units exposed by the selected board/HDC topology.
+     * Config may name two slots, but it cannot create a slave unit that the
+     * selected board does not wire. */
+    lib_u8 fixed_disk_slot_count;
     lib_bool hdc_present;
     lib_bool memory_reconfigurable;
     lib_bool fixed_geometry;

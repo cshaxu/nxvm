@@ -55,6 +55,7 @@ static lib_status vm_profile_machine_plan_model40(mydeskpro386_machine_plan *pla
     }
     plan->construction.floppy_kind = X86_NXVM_BOARD_FLOPPY_525_1200K;
     plan->construction.floppy_slot_count = 2u;
+    plan->construction.fixed_disk_slot_count = 1u;
     plan->construction.hdc_present = LIB_TRUE;
     return LIB_STATUS_OK;
 }

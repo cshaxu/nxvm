@@ -35,6 +35,7 @@ static lib_status vm_profile_prepare_default(const x86_nxvm_machine_config *conf
     construction->topology = profile->topology;
     construction->floppy_kind = construction->media_kind;
     construction->floppy_slot_count = 1u;
+    construction->fixed_disk_slot_count = profile->descriptor.hdc_present ? 1u : 0u;
     construction->hdc_present = profile->descriptor.hdc_present;
     construction->memory_reconfigurable = LIB_TRUE;
     return LIB_STATUS_OK;

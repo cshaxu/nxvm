@@ -371,6 +371,11 @@ lib_i32 main(void)
         .forced_read_result = X86_NXVM_BOARD_MEDIA_RESULT_OK,
         .forced_write_result = X86_NXVM_BOARD_MEDIA_RESULT_OK
     };
+    x86_nxvm_test_hdc_fixture_media slave = {
+        .generation = 1u, .present = LIB_TRUE,
+        .forced_read_result = X86_NXVM_BOARD_MEDIA_RESULT_OK,
+        .forced_write_result = X86_NXVM_BOARD_MEDIA_RESULT_OK
+    };
     x86_nxvm_board_media_registry *registry = LIB_NULL;
     x86_nxvm_board_hdc_topology topology = {0};
     x86_core_machine *machine = LIB_NULL;
@@ -385,6 +390,8 @@ lib_i32 main(void)
 
     media.sector[0][0] = 0x34u;
     media.sector[0][1] = 0x12u;
+    slave.sector[0][0] = 0x78u;
+    slave.sector[0][1] = 0x56u;
     if (x86_nxvm_board_media_registry_create(&registry) != LIB_STATUS_OK ||
         x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
@@ -392,8 +399,10 @@ lib_i32 main(void)
         if (hdc == LIB_NULL ||
             x86_nxvm_board_media_registry_bind(registry, 1u, &media,
                 &x86_nxvm_test_hdc_fixture_provider) != LIB_STATUS_OK ||
+            x86_nxvm_board_media_registry_bind(registry, 2u, &slave,
+                &x86_nxvm_test_hdc_fixture_provider) != LIB_STATUS_OK ||
             x86_nxvm_board_media_registry_freeze(registry) != LIB_STATUS_OK ||
-            x86_nxvm_board_media_registry_bind(registry, 2u, &media,
+            x86_nxvm_board_media_registry_bind(registry, 3u, &media,
                 &x86_nxvm_test_hdc_fixture_provider) != LIB_STATUS_INVALID_STATE) {
             failed |= 0x02;
         } else {
@@ -405,6 +414,7 @@ lib_i32 main(void)
                 failed |= 0x04;
             }
             topology.config = hdc_plan;
+            topology.slave_media_id = 2u;
             if (!failed && (x86_nxvm_board_configure_hdc(board, &topology) != LIB_STATUS_OK ||
                 x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
                 x86_core_machine_reset(machine) != LIB_STATUS_OK)) {
@@ -493,6 +503,19 @@ lib_i32 main(void)
                     status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR)) {
                     failed |= 0x100;
                 }
+                media.present = LIB_TRUE;
+                if (!x86_nxvm_test_hdc_program_chs(machine, &hdc_config) ||
+                    !x86_nxvm_test_hdc_write(machine, hdc_config.drive_head_port, 0xb0u) ||
+                    !x86_nxvm_test_hdc_command(machine, board, &hdc_config, 0x20u) ||
+                    !x86_nxvm_test_hdc_drain(machine, board, &hdc_config, &word) || word != 0x5678u ||
+                    !x86_nxvm_test_hdc_program_chs(machine, &hdc_config) ||
+                    !x86_nxvm_test_hdc_write(machine, hdc_config.drive_head_port, 0xf0u) ||
+                    !x86_nxvm_test_hdc_write(machine, hdc_config.sector_number_port, 0u) ||
+                    !x86_nxvm_test_hdc_command(machine, board, &hdc_config, 0x20u) ||
+                    !x86_nxvm_test_hdc_drain(machine, board, &hdc_config, &word) || word != 0x5678u ||
+                    !x86_nxvm_test_hdc_command(machine, board, &hdc_config, 0xecu) ||
+                    !x86_nxvm_test_hdc_drain(machine, board, &hdc_config, &word) || word != 0x0040u ||
+                    slave.read_count != 2u) failed |= 0x20000;
             }
         }
     }
