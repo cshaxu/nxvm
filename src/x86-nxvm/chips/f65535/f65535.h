@@ -18,8 +18,8 @@ struct x86_f65535 {
     lib_u8 crtc[25];
     lib_u8 attribute[21];
     lib_u8 dac[256][3];
-    lib_u8 dac_read_index;
-    lib_u8 dac_write_index;
+    lib_u8 dac_index;
+    lib_u8 dac_address;
     lib_u8 dac_component;
     lib_bool dac_read_mode;
     lib_u8 pel_mask;
@@ -28,6 +28,7 @@ struct x86_f65535 {
     lib_u64 generation;
     lib_u64 captured_generation;
     lib_bool captured;
+    lib_u8 latches[4];
 };
 
 #endif
