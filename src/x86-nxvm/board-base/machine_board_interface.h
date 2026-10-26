@@ -145,6 +145,10 @@ typedef struct x86_nxvm_board_config {
     x86_nxvm_board_display_topology display_topology;
     x86_nxvm_board_system_facade system_facade;
     x86_nxvm_board_xt_ppi_keyboard_config xt_ppi_keyboard;
+    /* Select the existing 92h A20/reset port without the PC/AT facade.
+     * The facade retains its existing decode; both use one Board owner.
+     * Functional L2 behavior does not assert physical reset-pulse timing. */
+    lib_bool system_control_port_present;
 } x86_nxvm_board_config;
 
 /* Construction-plan qualifications consume copied Core values. They are not

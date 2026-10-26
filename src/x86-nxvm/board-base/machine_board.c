@@ -5,6 +5,7 @@
 
 #define X86_NXVM_BOARD_A20_BIT 0x02u
 #define X86_NXVM_BOARD_A20_ADDRESS_BIT 0x00100000u
+#define X86_NXVM_BOARD_SYSTEM_RESET_BIT 0x01u
 
 static lib_bool x86_nxvm_board_keyboard_is_8042(
     x86_nxvm_board_keyboard_topology topology)
@@ -87,11 +88,20 @@ static void x86_nxvm_board_kbc_request_reset(void *owner)
     x86_core_machine_signal_processor_reset(machine);
 }
 
+static lib_status x86_nxvm_board_apply_a20(const x86_nxvm_board_state *board)
+{
+    return x86_core_machine_signal_address_clear_mask(board->core,
+        board->keyboard_a20_enabled || (board->system_control & X86_NXVM_BOARD_A20_BIT) != 0u ?
+            0u : X86_NXVM_BOARD_A20_ADDRESS_BIT);
+}
+
 static void x86_nxvm_board_kbc_signal_a20(void *owner, lib_bool enabled)
 {
-    const x86_nxvm_board_state *board = owner;
-    (void)x86_core_machine_signal_address_clear_mask(board->core,
-        enabled ? 0u : X86_NXVM_BOARD_A20_ADDRESS_BIT);
+    x86_nxvm_board_state *board = owner;
+
+    board->keyboard_a20_enabled = enabled;
+    /* Core backing is installed before this controller is connected. */
+    (void)x86_nxvm_board_apply_a20(board);
 }
 
 static void x86_nxvm_board_kbc_irq_output(void *owner, lib_bool auxiliary,
@@ -142,6 +152,8 @@ lib_i32 x86_nxvm_board_config_is_valid(
          config->display_topology == X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE) &&
         (config->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT ||
          config->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_NONE) &&
+        (config->system_control_port_present == LIB_FALSE ||
+         config->system_control_port_present == LIB_TRUE) &&
         (!config->auxiliary_pit_present || config->auxiliary_pit_base_port <= 0xfffcu);
 }
 
@@ -307,8 +319,9 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
             return status;
         }
     }
-    if (board->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT) {
-        lib_status status = x86_nxvm_board_register_a20_port(board);
+    if (board->system_facade == X86_NXVM_BOARD_SYSTEM_FACADE_PC_AT ||
+        config->system_control_port_present) {
+        lib_status status = x86_nxvm_board_register_system_control_port(board);
         if (status != LIB_STATUS_OK) {
             x86_core_machine_destroy(machine);
             return status;
@@ -625,39 +638,44 @@ lib_status x86_nxvm_board_observe_a20(const x86_nxvm_board_state *board,
     return status;
 }
 
-static lib_status x86_nxvm_board_read_a20(void *owner, lib_u16 port_id, lib_u64 tick,
+static lib_status x86_nxvm_board_read_system_control(void *owner, lib_u16 port_id, lib_u64 tick,
     lib_u32 *out_value)
 {
-    (void)tick;
-    lib_bool enabled;
-    lib_status status;
+    const x86_nxvm_board_state *board = owner;
 
+    (void)tick;
     (void)port_id;
     if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = x86_nxvm_board_observe_a20(owner, &enabled);
-    if (status != LIB_STATUS_OK) return status;
-    *out_value = enabled ? X86_NXVM_BOARD_A20_BIT : 0u;
+    *out_value = board->system_control;
     return LIB_STATUS_OK;
 }
 
-static lib_status x86_nxvm_board_write_a20(void *owner, lib_u16 port_id,
+static lib_status x86_nxvm_board_write_system_control(void *owner, lib_u16 port_id,
     lib_u8 access_bytes, lib_u32 value)
 {
+    x86_nxvm_board_state *board = owner;
+    const lib_u8 previous = board->system_control;
+    lib_status status;
+
     (void)access_bytes;
-    const x86_nxvm_board_state *board = owner;
     (void)port_id;
-    return x86_core_machine_signal_address_clear_mask(board->core,
-        (value & X86_NXVM_BOARD_A20_BIT) != 0u ?
-            0u : X86_NXVM_BOARD_A20_ADDRESS_BIT);
+    board->system_control = (lib_u8)(value &
+        (X86_NXVM_BOARD_A20_BIT | X86_NXVM_BOARD_SYSTEM_RESET_BIT));
+    status = x86_nxvm_board_apply_a20(board);
+    if (status != LIB_STATUS_OK) return status;
+    if ((board->system_control & X86_NXVM_BOARD_SYSTEM_RESET_BIT) != 0u &&
+        (previous & X86_NXVM_BOARD_SYSTEM_RESET_BIT) == 0u)
+        x86_core_machine_signal_processor_reset(board->core);
+    return LIB_STATUS_OK;
 }
 
-lib_status x86_nxvm_board_register_a20_port(x86_nxvm_board_state *board)
+lib_status x86_nxvm_board_register_system_control_port(x86_nxvm_board_state *board)
 {
     x86_core_machine_port_route route;
 
     if (board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    route = (x86_core_machine_port_route) {0x0092u, x86_nxvm_board_read_a20,
-        x86_nxvm_board_write_a20, board, LIB_FALSE, 0u};
+    route = (x86_core_machine_port_route) {0x0092u, x86_nxvm_board_read_system_control,
+        x86_nxvm_board_write_system_control, board, LIB_FALSE, 0u};
     return x86_core_machine_install_port_routes(board->core, &route, 1u);
 }
 
@@ -819,6 +837,9 @@ lib_status x86_nxvm_board_construct_profile(x86_nxvm_board_state *board,
 void x86_nxvm_board_reset_devices(void *owner)
 {
     x86_nxvm_board_state *board = owner;
+
+    board->system_control = 0u;
+    board->keyboard_a20_enabled = LIB_FALSE;
     if (board->profile_binding.reset != LIB_NULL)
         board->profile_binding.reset(board->profile_binding.context,
             X86_NXVM_BOARD_RESET_BEFORE_DEVICES);

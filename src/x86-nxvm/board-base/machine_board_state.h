@@ -102,6 +102,8 @@ struct x86_nxvm_board_state {
     x86_nxvm_board_keyboard_topology keyboard_topology;
     x86_nxvm_board_display_topology display_topology;
     x86_nxvm_board_system_facade system_facade;
+    lib_u8 system_control;
+    lib_bool keyboard_a20_enabled;
     x86_nxvm_board_display_port_topology display_ports;
     lib_u8 display_configured;
     x86_nxvm_board_dma_wiring dma_wiring;
@@ -150,7 +152,7 @@ lib_bool x86_nxvm_board_pic_pending(void *owner);
 lib_u8 x86_nxvm_board_pic_acknowledge(void *owner);
 void x86_nxvm_board_after_internal_advance(void *owner,
     lib_u64 source_ticks, lib_u64 due_tick);
-lib_status x86_nxvm_board_register_a20_port(x86_nxvm_board_state *board);
+lib_status x86_nxvm_board_register_system_control_port(x86_nxvm_board_state *board);
 void x86_nxvm_board_after_pit_reset(x86_nxvm_board_state *board);
 void x86_nxvm_board_refresh_nmi(void *owner);
 void x86_nxvm_board_configure_xt_ppi_speaker(x86_nxvm_board_state *board);

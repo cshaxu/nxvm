@@ -1,5 +1,6 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
+#include "lib/types/test.h"
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/debug_interface.h"
 #include "../executor_fixture.h"
@@ -66,9 +67,15 @@ lib_i32 main(void)
     const lib_u8 program[] = {
         0xb0u, 0xd1u, 0xe6u, 0x64u, /* KBC output-port command */
         0xb0u, 0x03u, 0xe6u, 0x60u, /* Enable A20 through KBC */
-        0xe4u, 0x92u, 0xa2u, 0x00u, 0x02u, /* Preserve port 92h */
+        0xe4u, 0x92u, 0xa2u, 0x00u, 0x02u, /* Preserve independent fast gate */
         0xbau, 0x34u, 0x12u, 0xeeu, /* Observe while genuinely running */
-        0xb0u, 0x00u, 0xe6u, 0x92u, 0xf4u /* Disable A20 and halt */
+        0xb0u, 0xd1u, 0xe6u, 0x64u,
+        0xb0u, 0x01u, 0xe6u, 0x60u, /* Release keyboard A20 */
+        0xb0u, 0x00u, 0xe6u, 0x92u, 0xf4u /* Release fast A20 and halt */
+    };
+    const lib_u8 reset_program[] = {
+        0xb0u, 0x02u, 0xe6u, 0x92u,
+        0xb0u, 0x03u, 0xe6u, 0x92u, 0xf4u
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -153,7 +160,7 @@ lib_i32 main(void)
         first_port.running_mask_status != LIB_STATUS_INVALID_STATE ||
         first_port.running_clear_mask != 0u ||
         x86_core_machine_memory_read(first, 0x200u, &value, 1u) != LIB_STATUS_OK ||
-        value != 0x02u;
+        value != 0x00u;
     result |= expect_status(x86_core_machine_observe_address_clear_mask(first, &clear_mask), LIB_STATUS_OK);
     result |= clear_mask != 0x00100000u;
 
@@ -168,8 +175,65 @@ lib_i32 main(void)
                             LIB_STATUS_OK);
     result |= port_value != 0xa5a5u || first_port.last_port != 0x1234u ||
               second_port.value != 0u;
+    lib_test_assert(result == 0);
+
+    /* Either electrical source may keep A20 enabled after the other drops. */
+    result |= x86_core_machine_bus_write(first, 0x92u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x64u, 0xd1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x60u, 3u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x64u, 0xd1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x60u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_observe_address_clear_mask(first, &clear_mask) != LIB_STATUS_OK ||
+        clear_mask != 0u;
+    lib_test_assert(result == 0);
+    /* A processor reset retains board registers and RAM. Only an edge
+     * requests it; a repeated high bit must permit the following HLT. */
+    result |= x86_core_machine_bus_write(first, 0x20u, 0x11u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x21u, 0x08u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x21u, 0x04u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x21u, 0x01u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x21u, 0x5au) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(first, 0x21u, &port_value) != LIB_STATUS_OK ||
+        port_value != 0x5au;
+    lib_test_assert(result == 0);
+    result |= x86_core_machine_bus_write(first, 0x92u, 3u) != LIB_STATUS_OK ||
+        x86_core_machine_run(first, (x86_core_machine_run_budget){1u, 0u}, &run) !=
+            LIB_STATUS_OK || run.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
+        run.executed != 0u ||
+        x86_core_machine_bus_read(first, 0x21u, &port_value) != LIB_STATUS_OK ||
+        port_value != 0x5au ||
+        x86_core_machine_memory_read(first, 0x2000u, &value, 1u) != LIB_STATUS_OK ||
+        value != program[0u] ||
+        x86_core_machine_bus_read(first, 0x92u, &port_value) != LIB_STATUS_OK ||
+        port_value != 3u;
+    lib_test_assert(result == 0);
+    result |= x86_core_machine_memory_write(first, 0x2000u, &(lib_u8){0xf4u}, 1u) !=
+            LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(first, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x92u, 0xffu) != LIB_STATUS_OK ||
+        x86_core_machine_run(first, (x86_core_machine_run_budget){1u, 0u}, &run) !=
+            LIB_STATUS_OK || run.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        run.executed != 1u ||
+        x86_core_machine_bus_read(first, 0x92u, &port_value) != LIB_STATUS_OK ||
+        port_value != 3u;
+    lib_test_assert(result == 0);
+    result |= x86_core_machine_bus_write(first, 0x92u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(first, 0x92u, 3u) != LIB_STATUS_OK ||
+        x86_core_machine_run(first, (x86_core_machine_run_budget){1u, 0u}, &run) !=
+            LIB_STATUS_OK || run.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
+        run.executed != 0u;
+    lib_test_assert(result == 0);
+    result |= x86_core_machine_memory_write(first, 0x2000u, reset_program,
+        sizeof(reset_program)) != LIB_STATUS_OK ||
+        x86_core_machine_debug_patch_registers(first, &entry) != LIB_STATUS_OK ||
+        x86_core_machine_run(first, (x86_core_machine_run_budget){8u, 0u}, &run) !=
+            LIB_STATUS_OK || run.reason != X86_CORE_MACHINE_STOP_RESET_REQUESTED ||
+        run.executed != 4u;
+    lib_test_assert(result == 0);
 
     result |= expect_status(x86_core_machine_reset(first), LIB_STATUS_OK);
+    result |= x86_core_machine_bus_read(first, 0x92u, &port_value) != LIB_STATUS_OK ||
+        port_value != 0u;
     value = 0xffu;
     result |= expect_status(x86_core_machine_memory_read(first, 0u, &value, 1u),
                             LIB_STATUS_OK);

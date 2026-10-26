@@ -49,5 +49,31 @@ int main(void)
 
     x86_core_machine_destroy(machine);
     x86_nxvm_board_plan_destroy(plan);
+
+    /* Explicit system control does not require a PC/AT facade or display. */
+    x86_nxvm_board_config present = configuration;
+    present.system_control_port_present = LIB_TRUE;
+    machine = LIB_NULL;
+    plan = LIB_NULL;
+    failed |= !failed && x86_nxvm_board_plan_create(&present, &plan) != LIB_STATUS_OK;
+    failed |= !failed && x86_nxvm_board_create_from_plan(plan, &machine, &board) !=
+        LIB_STATUS_OK;
+    failed |= !failed && (x86_core_machine_freeze_execution_providers(machine) !=
+        LIB_STATUS_OK || x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x92u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, 0x92u, &value) != LIB_STATUS_OK || value != 2u ||
+        x86_core_machine_bus_read(machine, 0x3dau, &value) != LIB_STATUS_UNSUPPORTED);
+    x86_core_machine_destroy(machine);
+    x86_nxvm_board_plan_destroy(plan);
+    plan = LIB_NULL;
+    machine = LIB_NULL;
+    board = LIB_NULL;
+    present.system_control_port_present = 2u;
+    lib_test_assert(!failed);
+    failed |= !failed && x86_nxvm_board_plan_create(&present, &plan) != LIB_STATUS_OK;
+    failed |= !failed && (x86_nxvm_board_create_from_plan(plan, &machine, &board) !=
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL || board != LIB_NULL);
+    x86_core_machine_destroy(machine);
+    x86_nxvm_board_plan_destroy(plan);
     return failed;
 }
