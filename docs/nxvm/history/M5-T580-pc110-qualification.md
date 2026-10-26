@@ -826,3 +826,17 @@ repair, guest-image patch or host palette override.  Main Setup/persistence,
 extended-CMOS source capture, panel identity and desktop/RDP validation remain
 unqualified and are retained as separate T580 work.  See the S62 review for
 the exact source/diff proof.
+
+## S63 executor delivery — Font-ROM aperture receiver
+
+S63 completes the externally observed Font-ROM register and aperture receiver:
+the 7-bit bank, unused and segment readbacks, bit-0 enable state, disabled
+`DE000h` open-bus reads and immutable selected 8 KiB bank are all handled by
+one App-local object with one port provider and one existing memory route.
+The source supports only post-initialization live behavior, so this delivery
+does not claim a power-on reset value or invent writable scratch behavior for
+`1161h`. Full repository unit qualification and the unpublished preview
+relinks are recorded in the [S63 evidence](../etc/evidence/t580-s63-font-window.md).
+No Shared component, payload, asset, firmware, INI or PC110 release artifact
+changed. DOS/V consumption, panel output, configuration persistence, guest
+boot, PCIC/media behavior and product qualification remain open.

@@ -23,6 +23,10 @@ static lib_status mypc110_font_read(void *owner, lib_u32 physical,
     if (mypc110_font_query(owner, physical, bytes,
             X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK ||
         destination == 0u) return LIB_STATUS_UNSUPPORTED;
+    if (!font->enabled) {
+        lib_memory_set((void *)destination, 0xffu, bytes);
+        return LIB_STATUS_OK;
+    }
     lib_memory_copy((void *)destination,
         font->bytes + (lib_size)font->bank * MYPC110_FONT_BANK_BYTES + offset,
         bytes);
@@ -37,17 +41,47 @@ static lib_status mypc110_font_write(void *owner, lib_u32 physical,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE);
 }
 
+static lib_status mypc110_font_port_read(void *owner, lib_u16 port,
+    lib_u64 tick, lib_u32 *out_value)
+{
+    const mypc110_font_rom *font = owner;
+
+    (void)tick;
+    if (font == LIB_NULL || font->bytes == LIB_NULL || out_value == LIB_NULL ||
+        port < MYPC110_FONT_PORT_START || port >= MYPC110_FONT_PORT_END) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    switch (port) {
+    case MYPC110_FONT_BANK_PORT:
+        *out_value = font->bank;
+        break;
+    case MYPC110_FONT_UNUSED_PORT:
+        *out_value = 0xffu;
+        break;
+    case MYPC110_FONT_SEGMENT_PORT:
+        *out_value = MYPC110_FONT_SEGMENT;
+        break;
+    default:
+        *out_value = font->enabled ? 1u : 0u;
+        break;
+    }
+    return LIB_STATUS_OK;
+}
+
 static lib_status mypc110_font_port_write(void *owner, lib_u16 port,
     lib_u8 access_bytes, lib_u32 value)
 {
     mypc110_font_rom *font = owner;
 
-    (void)access_bytes;
     if (font == LIB_NULL || font->bytes == LIB_NULL ||
-        port != MYPC110_FONT_BANK_PORT || value > 0xffu) {
+        access_bytes != 1u || port < MYPC110_FONT_PORT_START ||
+        port >= MYPC110_FONT_PORT_END || value > 0xffu) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    font->bank = (lib_u8)value & (MYPC110_FONT_BANK_COUNT - 1u);
+    if (port == MYPC110_FONT_BANK_PORT)
+        font->bank = (lib_u8)value & (MYPC110_FONT_BANK_COUNT - 1u);
+    else if (port == MYPC110_FONT_ENABLE_PORT)
+        font->enabled = (value & 1u) != 0u;
     return LIB_STATUS_OK;
 }
 
@@ -56,16 +90,15 @@ lib_status mypc110_font_rom_create(const lib_u8 *bytes, lib_size byte_count,
 {
     if (bytes == LIB_NULL || byte_count != MYPC110_FONT_ROM_BYTES ||
         out_font == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_font = (mypc110_font_rom) {.bytes = bytes, .bank = 0u};
+    *out_font = (mypc110_font_rom) {.bytes = bytes, .bank = 0u, .enabled = LIB_TRUE};
     return LIB_STATUS_OK;
 }
 
 lib_status mypc110_font_rom_install(x86_core_machine *machine,
     mypc110_font_rom *font)
 {
-    const x86_core_machine_port_route port = {
-        MYPC110_FONT_BANK_PORT, LIB_NULL, mypc110_font_port_write,
-        font, LIB_FALSE, 0u
+    const x86_core_machine_port_provider port = {
+        mypc110_font_port_read, mypc110_font_port_write
     };
     const x86_core_machine_memory_device_route memory = {
         MYPC110_FONT_PHYSICAL_START, MYPC110_FONT_BANK_BYTES,
@@ -79,7 +112,8 @@ lib_status mypc110_font_rom_install(x86_core_machine *machine,
     if (machine == LIB_NULL || font == LIB_NULL || font->bytes == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    status = x86_core_machine_install_port_routes(machine, &port, 1u);
+    status = x86_core_machine_install_port_provider(machine, MYPC110_FONT_PORT_START,
+        MYPC110_FONT_PORT_END - 1u, &port, font);
     if (status != LIB_STATUS_OK) return status;
     status = x86_core_machine_install_memory_device_routes(machine, &memory, 1u,
         LIB_NULL, LIB_NULL, font);

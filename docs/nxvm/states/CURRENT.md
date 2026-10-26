@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T580 S62 — PC110 unmodified-Setup palette capture
+## M5 T580 S63 — PC110 Font-ROM window receiver
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S62, next unused numeric S after S61's accepted external-asset transfer; one-session coordinator/executor. |
-| Admission And Approval | The owner's continuing instruction to implement PC110 and explicit report of a blue ERROR/Easy-Setup display authorize a bounded diagnostic of the existing App-local real-firmware integration. No Shared, production, payload or external-project source change is admitted. |
-| Objective | Establish whether the current, unmodified TFT BIOS path produces the reported blue Easy-Setup/ERROR frame, and record actual RGB frame data before selecting any colour or configuration receiver. |
-| Non-goals | No BIOS/Setup patch, palette constant/theme override, BIOS-PC interception, synthetic theme selection, CMOS fabrication, new renderer, production interface, external payload import, product publication or guest qualification. Do not copy PC110-QEMU/PC110-EMU implementation. |
-| Reference Baseline | Pushed `59fa5c354`. S57's existing F65535 RGB path resolves actual DAC values as `0x00RRGGBB`, while S61 confirms the real extended CMOS image is absent. PC110-QEMU reports direct-loader blue-theme behavior but fixes it by modifying the guest image, which is excluded. |
-| Candidate Proposal | Extend only the existing `mypc110-real-firmware-post-integration` diagnostic with a bounded capture invocation that follows its actual F12 → power restore → BIOS Setup entry path without requiring the removed 232,185-byte comparison oracle. Emit a temporary PPM and palette/hash observation, then remove temporary-only diagnostic mechanics unless a reusable regression has a concrete owner. |
-| Files And ABI Surface | Admitted: `test/app-mypc110/integration/real_firmware_post_integration.c` only if needed for the bounded diagnostic; `docs/nxvm/{states,etc/evidence,history}`. No `src/`, Lib, Emulator, X86 Core/Debug/NXVM, ROM, INI or external media change. |
-| Applicable Rules | `docs/nxvm/README.md`; `docs/nxvm/design/{ARCHITECTURE,CODING,UI}.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; `docs/nxvm/etc/operations/policy/source-policy.md`; T580 proposal and convergence ledger. Preserve the sole Core RTC owner, BYOB payload policy, inward dependencies and external-payload boundary. |
-| Verification | Run the focused MyPC110 integration on x64 then x86 from the reusable Ninja trees. Verify capture follows real Setup entry, retains the existing production frame path, records image dimensions, dominant RGB values and a SHA-256, and does not change ROM/RAM/CMOS inputs. Run affected unit/manifest gates if a test source edit remains. |
-| Expected Markers | One frame per host width after the same real BIOS entry, equal dimensions/content hash when deterministic, a direct statement whether the dominant background is rose (`BE9E96`) or blue, and clear distinction between observed output and external L2 comparison. |
-| Asset Needs | Existing immutable TFT BIOS/font assets only. Temporary PPM/log belongs under a named `build/t580-s62-*` scratch directory and is deleted after its hash/counts are recorded. No new external file is fetched or retained. |
-| Reporting Requirements | Record the exact invocation, observed pixels/hash, source grade and any mismatch. State whether a source-backed configuration/initialization receiver exists; do not call a blue frame a renderer defect without data. |
-| Stop Conditions | Stop if capture requires a BIOS patch, address intercept, absent oracle, invented CMOS bytes, or a new production contract. Remove temporary diagnostics and report the exact blocker rather than leaving test-only behavior. |
-| Exit Criteria | The real path either yields a deterministic frame disposition with no production change, or proves an exact blocking prerequisite. Temporary artifacts are removed, docs gate/review pass, workspace is clean or contains one reviewable P, and T580 remains open. |
-| Original Owner Request | “老规矩实现PC110”, then the reported blue/pink PC110 screen discrepancy and “加油”. Owner permits autonomous in-scope evidence work, but not fabricated firmware/media behavior. |
-| Similar-Issue Sweep | Confirm the diagnostic does not create a second Setup runner, output path or palette resolver; inspect both ERROR and Easy-Setup frame acquisition points and retain only the existing F65535 → Machine → Window route. |
+| Identifier Mode | Continuation — M5 T580 S63, next unused numeric S after S62's evidence-only closure; one-session coordinator/executor. |
+| Admission And Approval | The owner’s standing instruction to continue PC110 implementation authorizes a source-backed App-local receiver. It changes neither Shared components nor external payloads. |
+| Objective | Complete the observed 1 MiB PC110 font-ROM banking window: 7-bit bank readback, fixed segment/readback, enable state and the conditional DE000h aperture. |
+| Non-goals | No font bytes, BIOS/ROM modification, invented 1161h scratch semantics, remappable segment, generic ROM-window framework, guest hook, panel/scanout change or PC110 publication. |
+| Reference Baseline | Pushed `5d406de16`. Current `mypc110_font_rom` writes only 1160h and permanently claims DE000h; Open-Source-PC110 live documentation records the full 1160h–1163h geometry and disabled-window FF behavior. |
+| Candidate Proposal | Keep one App-local font object and one existing port/memory provider. Add only source-observed register facts: 1160h bank R/W with bit 7 ignored; 1161h reads FF; 1162h reads DE; 1163h is bit-0 enable/readback. The provider owns disabled reads and returns their observed FF open-bus value, avoiding an unrelated ordinary-RAM fallback. |
+| Files And ABI Surface | `src/app-mypc110/pc110_font.{c,h}`; `test/app-mypc110/unit/font_rom_smoke.c`; their CMake/manifest only if required; evidence/history/current. No Lib, Emulator, X86 Core/Debug/IBMPC/NXVM public interface, firmware, INI or external assets. |
+| Applicable Rules | `docs/nxvm/README.md`; `docs/nxvm/design/{ARCHITECTURE,CODING}.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; source policy; T580 proposal/ledger. Preserve immutable external font ownership, inward dependencies and one provider route. |
+| Verification | Expand the existing font unit to prove bank aliases/readback, fixed unsupported/segment reads, enable readback and enabled versus disabled DE000h open-bus behavior. Run MyPC110 units x64/x86, repository units x64/x86, manifests and documentation gate. Rebuild PC110 previews only if production input changes; do not publish an unqualified PC110 product. |
+| Expected Markers | One port-provider installation handles the four-byte range; bank 80h aliases 00h; disabled reads return the observed open-bus FF value; enabling restores the selected immutable bank. The source records post-initialization live values, not an independent reset contract. |
+| Asset Needs | Existing external immutable TFT font only; no acquisition, write or payload retention. Scratch, if used, is `build/t580-s63-*` and is deleted before closure. |
+| Reporting Requirements | Record source grade, exact register behavior, production/test diff, two-width results and retained limits. State that this does not qualify DOS/V use, panel output, configuration persistence, guest boot or release. |
+| Stop Conditions | Stop if correct behavior requires undocumented 1161h writes, an invented remappable physical address, modified font data, Shared interface or a second memory route. |
+| Exit Criteria | Existing unit ownership proves all observed register and aperture states, affected gates pass in both widths, documentation/change review completes, artifacts stay correctly unmodified or are recorded, and one reviewable P is pushed. T580 remains open. |
+| Original Owner Request | “老规矩实现PC110” and continuing “加油”; routine source-backed App-local receivers are autonomously admitted. |
+| Similar-Issue Sweep | Inspect every PC110 memory/port aperture for an always-enabled or unsupported-control analogue; repair only the same fully observed Font-ROM mechanism, not unrelated windows. |
 
 ## Verified Baseline
 

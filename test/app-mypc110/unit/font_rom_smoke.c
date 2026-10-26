@@ -19,6 +19,7 @@ int main(void)
     image[1] = 0xaau;
     image[2u * MYPC110_FONT_BANK_BYTES] = 0x31u;
     image[2u * MYPC110_FONT_BANK_BYTES + MYPC110_FONT_BANK_BYTES - 1u] = 0x7cu;
+    image[64u * MYPC110_FONT_BANK_BYTES] = 0x64u;
     failed |= mypc110_font_rom_create(LIB_NULL, sizeof(image), &font) !=
         LIB_STATUS_INVALID_ARGUMENT || mypc110_font_rom_create(image,
             sizeof(image) - 1u, &font) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -29,8 +30,17 @@ int main(void)
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, MYPC110_FONT_PHYSICAL_START,
             bytes, sizeof(bytes)) != LIB_STATUS_OK || bytes[0] != 0x55u ||
-        bytes[1] != 0xaau || x86_core_machine_bus_write(machine,
+        bytes[1] != 0xaau || x86_core_machine_bus_read(machine,
+            MYPC110_FONT_BANK_PORT, &value) != LIB_STATUS_OK || value != 0u ||
+        x86_core_machine_bus_read(machine, MYPC110_FONT_UNUSED_PORT, &value) !=
+            LIB_STATUS_OK || value != 0xffu || x86_core_machine_bus_read(machine,
+            MYPC110_FONT_SEGMENT_PORT, &value) != LIB_STATUS_OK ||
+        value != MYPC110_FONT_SEGMENT || x86_core_machine_bus_read(machine,
+            MYPC110_FONT_ENABLE_PORT, &value) != LIB_STATUS_OK || value != 1u ||
+        x86_core_machine_bus_write(machine,
             MYPC110_FONT_BANK_PORT, 0x82u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, MYPC110_FONT_BANK_PORT, &value) !=
+            LIB_STATUS_OK || value != 2u ||
         x86_core_machine_memory_read(machine, MYPC110_FONT_PHYSICAL_START,
             &bytes[0], 1u) != LIB_STATUS_OK || bytes[0] != 0x31u ||
         x86_core_machine_memory_read(machine, MYPC110_FONT_PHYSICAL_START +
@@ -39,14 +49,31 @@ int main(void)
             MYPC110_FONT_PHYSICAL_START, &write, 1u) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, MYPC110_FONT_PHYSICAL_START,
             &bytes[0], 1u) != LIB_STATUS_OK || bytes[0] != 0x31u ||
+        x86_core_machine_bus_write(machine, MYPC110_FONT_ENABLE_PORT, 0u) !=
+            LIB_STATUS_OK || x86_core_machine_bus_read(machine,
+            MYPC110_FONT_ENABLE_PORT, &value) != LIB_STATUS_OK || value != 0u ||
+        x86_core_machine_memory_read(machine, MYPC110_FONT_PHYSICAL_START,
+            &bytes[0], 1u) != LIB_STATUS_OK || bytes[0] != 0xffu ||
+        x86_core_machine_bus_write(machine, MYPC110_FONT_UNUSED_PORT, 0x12u) !=
+            LIB_STATUS_OK || x86_core_machine_bus_write(machine,
+            MYPC110_FONT_SEGMENT_PORT, 0x00u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(machine, MYPC110_FONT_UNUSED_PORT, &value) !=
+            LIB_STATUS_OK || value != 0xffu || x86_core_machine_bus_read(machine,
+            MYPC110_FONT_SEGMENT_PORT, &value) != LIB_STATUS_OK ||
+        value != MYPC110_FONT_SEGMENT || x86_core_machine_bus_write(machine,
+            MYPC110_FONT_ENABLE_PORT, 0xffu) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, MYPC110_FONT_PHYSICAL_START,
+            &bytes[0], 1u) != LIB_STATUS_OK || bytes[0] != 0x31u ||
+        x86_core_machine_bus_write(machine, MYPC110_FONT_BANK_PORT, 0xc0u) !=
+            LIB_STATUS_OK || x86_core_machine_memory_read(machine,
+            MYPC110_FONT_PHYSICAL_START, &bytes[0], 1u) != LIB_STATUS_OK ||
+        bytes[0] != 0x64u ||
         x86_core_machine_memory_query(machine, MYPC110_FONT_PHYSICAL_START,
             1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
         x86_core_machine_memory_query(machine, MYPC110_FONT_PHYSICAL_START - 1u,
             1u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
-        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        x86_core_machine_bus_read(machine, MYPC110_FONT_BANK_PORT, &value) !=
-            LIB_STATUS_UNSUPPORTED;
+        route != X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
     x86_core_machine_destroy(machine);
     return failed ? 1 : 0;
 }
