@@ -41,3 +41,14 @@ selected firmware consumes the supplied configuration.
 
 Normal Easy-Setup persistence, guest boot, PC Card mapping and product
 publication remain unqualified.  No production/test code changed in S61.
+
+## Existing Easy-Setup diagnostic boundary
+
+The existing `mypc110-real-firmware-post-integration --setup` mode also cannot
+substitute for the missing seed.  It deliberately requires a scratch-only,
+232,185-byte loader comparison oracle, which S55 removed after recording its
+hash and results.  Current external assets contain the selected BIOS/font but
+not that oracle or an authentic internal-disk image.  Reconstructing it from a
+different execution path would turn this source/asset audit into a new
+diagnostic design and still would not establish CMOS persistence.  It is not
+performed here.

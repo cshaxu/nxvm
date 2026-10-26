@@ -794,3 +794,7 @@ contain the cited exact 128-byte capture.  No source code was expanded with
 invented bytes.  The required external, hash-recorded source payload and the
 single-route follow-up are retained in the S61 evidence; normal Setup
 persistence remains open.
+
+The existing Easy-Setup diagnostic's comparison oracle was deliberately
+scratch-only and has been removed, so it cannot be reused as a configuration
+seed or current runtime proof.  S61 makes no production change.
