@@ -675,3 +675,29 @@ product gates remain open; the pink-background feedback is retained at
 F65535 rather than treated as a host inversion. All scoped checks, input
 hashes, artifacts and task-exit/cleanup are verified. The exact packet moves
 to retained history; S56 closes with no active packet. T580 remains open.
+
+## S57 executor delivery - F65535 planar and programmed colour
+
+The existing F65535 owns four CPU read latches, read comparison and all four
+write modes, map/address masks, Attribute/DAC/PEL resolution and fixed text
+glyph slots/A-B selection. App forwards Core's existing inspection flag
+through the changed read signature; no new public function, enum, renderer,
+clock or worker. Actual review removes an unsupported mode-3 ROP exception
+and reproduces/fixes an x64 aperture-length overflow with existing Types.
+C/H delta is +319/-65, net +254, with production +124/-64.
+
+The [S57 record](../etc/evidence/t580-s57-f65535-planar-colour.md) retains
+every candidate/review boundary and exact final verification. Both host
+widths draw byte-identical ERROR/date-time frames with BE9E96 background,
+then complete the observed fifth-reset request. Full final-tree 712 units
+per width, strict/types/dependency/manifest gates, eight receiving INI
+identities and scoped firmware regressions pass. Normal-path replays are
+explicitly distinguished from final preflight-only verification; there is
+no broad desktop, RDP, panel, normal Setup or selected-guest claim.
+
+The [inventory](../etc/evidence/t580-s57-artifacts.json) verifies eight
+published PC receiver relinks (only timestamp/checksum changes) and four
+unpublished rebuilt PC110 previews. Owner INI/ROM/font/media, MyNES and
+MyRaidenII are unchanged. All 90 owned scratch files/13,302,526 bytes are
+removed with the hash-reviewed cleaner; both caches remain. Executor
+delivery requests actual-change coordinator acceptance; T580 stays open.

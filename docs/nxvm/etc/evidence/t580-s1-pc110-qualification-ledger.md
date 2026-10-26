@@ -274,3 +274,22 @@ selected storage/guest, PCIC/card handling, VGA/panel or product release.
 The ERROR/Easy-Setup pink-versus-blue discrepancy is a concrete F65535
 Attribute/DAC/PEL scanout acceptance item within the existing display row.
 No original domain is removed or transferred to a smaller completion claim.
+
+## S57 standard planar and programmed-colour qualification
+
+The [S57 record](t580-s57-f65535-planar-colour.md) proves CPU aperture
+latches/read-compare/write modes, address/map selection, inspection isolation,
+programmed Attribute/DAC/PEL copied colour and fixed text glyph slots at the
+existing F65535 owner. Both real TFT BIOS widths draw identical ERROR and
+date/time frames with programmed BE9E96 background and complete the observed
+input/reset transaction. The initial mode-3 exception is removed by actual
+review, and the final aperture overflow guard is tested at all four windows.
+The record explicitly distinguishes full normal-path replays from final
+preflight-only regression and does not count old candidate results as final.
+
+All 712 final units per width and relevant gates pass; eight published PC
+receivers and four unpublished PC110 previews are verified. The original
+normal main Setup/save/restart, selected storage/guest, PCIC/card, panel/live
+input/DSTN/lifecycle and four-artifact publication members remain open. This
+is the complete named planar/colour batch, not all F65535 modes or whole-T
+acceptance. No domain is erased by the restored background colour.

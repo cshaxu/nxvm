@@ -1,5 +1,6 @@
 #include "app-mypc110/pc110_machine_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
+#include "lib/types/test.h"
 
 int main(void)
 {
@@ -21,6 +22,12 @@ int main(void)
         x86_core_machine_bus_read(composition.core,
             X86_F65535_EXTENSION_DATA_PORT, &value) != LIB_STATUS_OK ||
         value != X86_F65535_PC110_CHIP_VERSION ||
+        x86_core_machine_bus_write(composition.core, 0x03ceu, 8u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03cfu, 0xffu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03ceu, 5u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03cfu, 0x10u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c4u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(composition.core, 0x03c5u, 3u) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(composition.core, 0x03ceu, 6u) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(composition.core, 0x03cfu, 0x0eu) != LIB_STATUS_OK ||
         x86_core_machine_bus_write(composition.core, 0x03c4u, 4u) != LIB_STATUS_OK ||
@@ -43,6 +50,7 @@ int main(void)
         x86_f65535_capture_snapshot(composition.display_controller,
             &snapshot) != LIB_STATUS_OK || snapshot.columns != 80u ||
         snapshot.rows != 25u || snapshot.characters[0] != write;
+    lib_test_assert(failed == 0);
     /* Exercise the board's existing standard-VGA route into F65535 mode 12
      * capture, without introducing an App-local display path. */
     failed |= x86_core_machine_bus_write(composition.core, 0x03ceu, 6u) != LIB_STATUS_OK ||
@@ -66,6 +74,18 @@ int main(void)
         snapshot.kind != X86_VIDEO_KIND_VGA_640X480X16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 480u ||
         snapshot.pixels[1] != 15u;
+    lib_test_assert(failed == 0);
+    /* Core inspection must not replace the chip's last real CPU-read latch. */
+    lib_test_assert(x86_core_machine_memory_read(composition.core, 0xa0000u,
+        &read, 1u) == LIB_STATUS_OK && read == write);
+    lib_test_assert(x86_core_machine_memory_inspect(composition.core, 0xa0010u,
+        &read, 1u) == LIB_STATUS_OK && read == 0u);
+    lib_test_assert(x86_core_machine_bus_write(composition.core, 0x03ceu, 5u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(composition.core, 0x03cfu, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(composition.core, 0xa0001u,
+        &write, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_f65535_memory_read(composition.display_controller, 0xa0001u,
+        &read, 1u, LIB_TRUE) == LIB_STATUS_OK && read == write);
     mypc110_base_composition_destroy(&composition);
     return failed;
 }

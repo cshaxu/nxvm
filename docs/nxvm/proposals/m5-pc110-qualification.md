@@ -406,3 +406,13 @@ FFFF:FFF0 rather than the unserviced ABC2 HLT. Its
 records full units, receiving builds/integrations and unpublished previews.
 Normal saved Setup/restart, storage/guest, PCIC, F65535 palette/planar/panel,
 DSTN/live lifecycle and four-artifact product gates remain unaccepted.
+
+S57 completes the named standard planar/colour/inspection receiver at F65535,
+including documented CPU latches/write modes and programmed Attribute/DAC/PEL
+scanout. The real ERROR and date/time frames use BE9E96 rather than fixed
+RGBI blue and match exactly between host widths. The
+[S57 record](../etc/evidence/t580-s57-f65535-planar-colour.md) preserves the
+mode-3 review correction, range-overflow reproduction/fix, exact verification
+scope and artifact identities. This does not qualify the normal main Setup
+menu, persisted settings, selected guest, PCIC or physical panel. Original
+product/release gates remain unchanged; PC110 previews are not published.
