@@ -763,3 +763,23 @@ briefly exposed a stale `vm-hdc-port-smoke` executable; rebuilding the unit
 graph and rerunning it made the same source pass, so no assertion or source
 was weakened.  This closes S59's admitted construction route only.  T580's
 unqualified firmware/media/product domains remain open.
+
+## S60 executor delivery — PC110 primary ATA geometry
+
+S60 consumes the existing master-only exact-geometry construction contract in
+the MyPC110 plan.  The locally inspected Open-Source-PC110 live-dump record
+provides the L2 fact for the soldered SunDisk primary: 123 cylinders, two
+heads and 32 sectors per track (4,030,464 bytes).  No controller, media route,
+CMOS seed, slave geometry, guest behavior or public interface changes.
+
+The existing MyPC110 construction test now proves a disposable exact-size file
+reaches the real Machine/Board ATA master route with 123 cylinders, while a
+one-sector file is rejected by the existing exact-size guard.  It does not
+claim either file is authentic media.  Both widths pass the full 14-test
+MyPC110 labelled suite, including unchanged real-firmware FDC-reset and
+boot-handoff regressions: x64 in 45.91/231.73 seconds and x86 in 53.51/318.12
+seconds.  After a fresh full Ninja relink, all repository-only units pass
+714/714 on x64 (61.36 seconds) and x86 (59.03 seconds).  No PC110 artifact is
+published.  Authentic SunDisk/CF inputs, BIOS storage consumption,
+CMOS/Setup persistence, PCIC mapping, selected guest and release qualification
+remain open.

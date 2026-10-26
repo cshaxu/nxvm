@@ -275,6 +275,15 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .floppy_slot_count = 0u,
         .fixed_disk_slot_count = 2u,
         .hdc_present = LIB_TRUE,
+        /* L2: Open-Source-PC110's live INT 13h and ATA IDENTIFY captures
+         * record the soldered primary SunDisk as 123 cylinders, two heads
+         * and 32 sectors/track.  This consumes Machine's existing
+         * master-only exact-geometry contract; the removable slave is not
+         * assigned a guessed geometry. */
+        .fixed_geometry = LIB_TRUE,
+        .cylinders = 123u,
+        .heads = 2u,
+        .sectors = 32u,
         .memory_reconfigurable = LIB_FALSE,
         .display_snapshot_provider = mypc110_machine_capture_display,
         .display_snapshot_context = plan->display_controller,

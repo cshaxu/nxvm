@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T580 S59 — PC110 ATA two-device construction route
+## M5 T580 S60 — PC110 ATA master CHS construction fact
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S59, next unused numeric S after S58 executor delivery; one-session coordinator/executor. |
-| Admission And Approval | The owner’s continuing instruction to implement PC110 through the open T580 qualification goal, including autonomous in-scope X86-NXVM/App repair. This consumes the S55 ledger’s explicit two-device ATA construction gap. Lib, Emulator, X86 Core, external media and PCIC behavior are excluded. |
-| Objective | Make the already declared two-slot X86-NXVM fixed-disk configuration real: allocate, registry-bind, reset and startup-insert each declared slot through the existing single media/HDC route. Bind MyPC110’s standard ATA HDC to the existing secondary registry ID, so a valid `fixed_disk1` reaches ATA slave selection. |
-| Non-goals | No config grammar or cross-package API; no new HDC, queue, storage backend, device manager, PCIC/CF mapping, fixed geometry guess, guest boot claim, media/ROM mutation, artifact publication or changes to Lib, Emulator, X86 Core, X86 Debug or IBM PC. |
-| Reference Baseline | Clean pushed `ce05cf632` after S58. Product INI already parses `fixed_disk0` and `fixed_disk1`; Product forwards both slots; Board HDC already accepts master/slave media IDs. Machine rejects slot 1 and only services slot 0; MyPC110 currently leaves the Board HDC slave ID invalid. |
-| Candidate Proposal | Make the exposed fixed-disk count an explicit X86-NXVM construction fact, exactly as floppy-slot count already is. Remove the slot-1 rejection and apply that count consistently in Machine allocation, registry binding, reset, validation and startup insertion. Each existing fixed-machine plan declares its actual one-slot or two-slot HDC topology; MyPC110 alone declares two and binds its already reserved secondary ID. Complete the existing ATA chip's Drive/Head slave branch where stale master-only guards reject it. Preserve the existing master-only fixed-geometry contract. No second controller or per-App media path is added. |
-| Files And ABI Surface | Admitted production surface: `src/x86-nxvm/machine/{construction_interface.h,preparation.c,machine_devices.c,machine.c}`, `src/x86-nxvm/chips/hdc/hdc.c`; the four existing one-slot App plans `src/app-{my5160,my5170,mydeskpro386,nxvm}/machine_plan.c`; and `src/app-mypc110/pc110_plan.c`. Admitted test surface: existing `test/x86-nxvm/machine/{preparation_smoke.c,construction_smoke.c}`, `test/x86-nxvm/board-base/board_hdc_smoke.c` and `test/app-mypc110/unit/machine_construction_smoke.c`, their CMake/manifest only if required. Architecture/current/history/evidence updates are admitted. Existing public configuration fields and Board HDC contract are consumed unchanged. |
+| Identifier Mode | Continuation — M5 T580 S60, next unused numeric S after the completed S59 construction route; one-session coordinator/executor. |
+| Admission And Approval | The owner’s continuing instruction to implement PC110 through open T580 permits autonomous, in-scope App/X86-NXVM repair. This consumes S55's retained primary-geometry receiver. Lib, Emulator, X86 Core, X86 Debug, external media and PCIC behavior remain excluded. |
+| Objective | Make the selected PC110 plan consume the existing master-only fixed-geometry construction contract for a correctly sized primary SunDisk image: 123 cylinders, two heads and 32 sectors per track. Demonstrate that a matching BYOB image reaches the existing HDC path with that CHS geometry, while the second ATA slot remains independently unconfigured. |
+| Non-goals | No configuration grammar or public API change; no new HDC, queue, storage backend, device manager, PCIC/CF mapping, CMOS seed, guest boot claim, external media/ROM mutation, artifact publication or fixed geometry for the slave. Do not treat an arbitrary 50 MB image as a SunDisk or relax the existing exact-size geometry check. |
+| Reference Baseline | Clean pushed `b0cf67865` after S59. S59 makes both declared disk slots real and routes the secondary ID to ATA slave. The existing Machine contract can set an exact CHS geometry only for physical master slot zero, but MyPC110 currently does not select it and therefore falls back to generic 16x63 translation for every attached master. |
+| Candidate Proposal | In `app-mypc110` only, declare the source-recorded 123x2x32 master geometry through the existing construction fields. Extend the existing MyPC110 construction test with a disposable, exact-size synthetic medium and prove the resulting real Machine/Board ATA master geometry; retain existing two-slot and absent-slave assertions. No change to the generic slot route or ATA chip is required. |
+| Files And ABI Surface | Admitted production surface: `src/app-mypc110/pc110_plan.c` only. Admitted test surface: existing `test/app-mypc110/unit/machine_construction_smoke.c`, its manifest only if required. Evidence/current/history updates are admitted. The existing X86-NXVM construction and HDC interfaces are consumed unchanged. |
 | Applicable Rules | `docs/nxvm/README.md`; `docs/nxvm/design/{ARCHITECTURE,CODING,UI}.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; `docs/nxvm/etc/operations/policy/source-policy.md`; `src/x86-nxvm/README.md`; T580 proposal and convergence ledger. Preserve one media registry and HDC route, inward dependencies, BYOB inputs, existing stable Ninja/ccache graphs and protected external inputs. |
-| Verification | Direct tests prove slot 1 is accepted, allocated, bound to the secondary ID, reset and inserted without changing master behavior; MyPC110’s production plan exposes both IDs. Run affected x64/x86 X86-NXVM/MyPC110 units, the existing Board HDC dual-drive tests, and selected real-firmware integrations. No test is called guest/storage/product qualification beyond its actual checkpoint. |
-| Expected Markers | Evidence maps every former slot-0-only site to the one counted path and identifies fixed geometry as master-only. Tests distinguish master/slave selection through the real Board HDC, not an App-only duplicate. |
-| Asset Needs | Existing source and tests only. External BIOS/media are read-only and optional for integrations; no raw firmware, media, third-party source or Windows component enters the repository or executable. |
-| Reporting Requirements | Report actual source/test delta, exact dual-slot behavior, test results, source ownership, and every retained limitation: authentic SunDisk/CF inputs, BIOS storage consumption, PCIC card mapping, selected guest and publication remain unqualified. |
-| Stop Conditions | Stop before implementation if the existing Board HDC cannot address the secondary registry ID, if fixed geometry cannot be kept master-only without a new contract, or if a required change crosses the admitted component boundary. Do not fabricate a disk, geometry or boot success. |
-| Exit Criteria | Both slots use the one declared Machine/registry/HDC route with no cross-package API expansion, direct x64/x86 proofs pass, actual changes are reviewed and documented, and the worktree is clean or a complete reviewable P remains. T580 and product publication remain open. |
+| Verification | Direct tests prove plan declaration, exact geometry publication through the real Machine/Board ATA master route, fixed-size rejection, and unchanged secondary absence. Run changed App/X86-NXVM x64/x86 units and manifests, then review actual diff. An external-BIOS regression is non-regression evidence only and is run only if the matching external prerequisites are present. |
+| Expected Markers | Evidence cites the directly inspected Open-Source-PC110 live ATA/INT13 findings, distinguishes its L2 provenance from firmware-manual facts, and proves the selected geometry is never applied to the slave or an incorrectly sized image. |
+| Asset Needs | Existing source/tests only. A test-local synthetic 4,030,464-byte medium is disposable; it is not a SunDisk image. External BIOS/media stay read-only; no raw firmware, media, third-party source or Windows component enters the repository or executable. |
+| Reporting Requirements | Report actual source/test delta, exact master geometry behavior, test results, source ownership and retained limits: authentic SunDisk/CF inputs, BIOS storage consumption, CMOS/Setup persistence, PCIC mapping, selected guest and publication remain unqualified. |
+| Stop Conditions | Stop before implementation if exact master geometry needs a new cross-package contract, if the actual geometry source contradicts the current master-only contract, or if a real media input is required to make the unit proof meaningful. Do not fabricate an image, CMOS result or boot success. |
+| Exit Criteria | MyPC110 selects the pre-existing exact master geometry route; direct x64/x86 proof and required source/test manifest gates pass; actual changes are reviewed/documented; worktree is clean or a complete reviewable P remains. T580 and product publication remain open. |
 | Original Owner Request | “老规矩实现PC110”, followed by “加油”; owner permits source-labelled L2 model work and autonomous in-scope S admission, but not fabricated firmware/media behavior. |
-| Similar-Issue Sweep | Inspect every fixed-disk slot use in Machine, Product forwarding, board HDC master/slave topology and all fixed-machine plans. Do not repair only MyPC110 while retaining a contradictory generic two-slot declaration. |
+| Similar-Issue Sweep | Inspect all MyPC110 construction paths and every master-only geometry application. Confirm this consumes rather than duplicates the existing Machine contract, leaves slave geometry untouched, and does not alter other PC plans. |
 
 ## Verified Baseline
 
@@ -65,6 +65,17 @@ the existing real-firmware FDC-reset/boot-handoff non-regressions recorded in
 the S59 evidence.  It does not qualify authentic SunDisk/CF inputs, BIOS
 storage consumption, PCIC storage, Setup persistence, selected-guest boot,
 panel behavior, desktop use, or product publication.
+
+S60 selects the source-recorded primary SunDisk geometry through the existing
+master-only Machine construction route: **123x2x32**.  Its disposable
+exact-size/short-size proof and full MyPC110 labelled regression pass on x64
+and x86; the unchanged real-firmware FDC-reset/boot-handoff checks pass in
+45.91/231.73 seconds x64 and 53.51/318.12 seconds x86.  After fresh relinks,
+the full repository-only unit suite passes **714/714** on x64 (61.36 seconds)
+and x86 (59.03 seconds).  This does not qualify real SunDisk/CF media, BIOS
+storage consumption, Setup persistence, PCIC storage, selected guest or a
+PC110 release; no PC110 executable is published.  See the
+[S60 evidence](../etc/evidence/t580-s60-pc110-master-geometry.md).
 
 ## Remaining T580 Qualification
 
