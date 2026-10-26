@@ -798,3 +798,8 @@ persistence remains open.
 The existing Easy-Setup diagnostic's comparison oracle was deliberately
 scratch-only and has been removed, so it cannot be reused as a configuration
 seed or current runtime proof.  S61 makes no production change.
+
+S61 also rejects the locally available PC110-QEMU and PC110-EMU disk images as
+SunDisk substitutes: their capacities/partition geometry do not fit the
+source-recorded 7,872-sector primary.  No truncation or media conversion is
+admitted.

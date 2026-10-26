@@ -52,3 +52,15 @@ not that oracle or an authentic internal-disk image.  Reconstructing it from a
 different execution path would turn this source/asset audit into a new
 diagnostic design and still would not establish CMOS persistence.  It is not
 performed here.
+
+## Candidate-media cross-check
+
+The local PC110-QEMU `disks/Personaware-disk.img` is not a substitute for the
+missing PC110 primary-media input.  It is 4,194,304 bytes (8,192 sectors), and
+its MBR declares an active FAT12 partition beginning at LBA 32 with 8,160
+sectors.  The source-recorded SunDisk geometry permits only 7,872 total
+sectors.  Truncating the QEMU image to the SunDisk capacity would therefore
+truncate its declared partition, even though its discarded tail currently
+contains zero bytes.  PC110-EMU's `Disk1.img` is larger still at 8,011,776
+bytes.  Neither is an admissible primary-media input for the exact geometry
+route.
