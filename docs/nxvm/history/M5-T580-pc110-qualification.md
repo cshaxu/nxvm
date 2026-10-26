@@ -628,3 +628,17 @@ No new production state/helper/interface or test framework is introduced.
 The official cleaner removes 128 owned files/14,332,369 bytes after verified
 task exit and protected-file hash review. Executor requests coordinator
 actual-change acceptance; S55 and T580 are not closed by this delivery.
+
+## S55 coordinator actual-change acceptance
+
+Coordinator reads the actual `6964e8280` source/test and documentation diff,
+reviews the retired poll candidate against IRQ-only delivery, the two App
+construction paths, bounded actual-BIOS evidence and complete remaining-class
+disposition. It accepts the finite loader and keyboard receiver, not ATA/DOS,
+configuration save, physical latency, panel/DSTN or whole-T qualification.
+The exact pre-acceptance packet is preserved in retained status. Both full
+unit suites, unchanged-budget registered integrations, input hashes, four
+unpublished preview identities and ten unchanged published identities are
+verified. No owned process or scratch remains; Shared, public API, owner
+inputs and unrelated Apps are unchanged. S55 closes after this governance
+P; T580 stays open for its explicitly retained receivers.
