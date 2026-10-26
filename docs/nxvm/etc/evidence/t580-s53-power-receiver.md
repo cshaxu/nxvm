@@ -3,7 +3,8 @@
 Shared implementation is pushed as `85a65c3a8`. The subsequent NXVM S53
 implementation commit identifies the App source, evidence and eight receiving
 artifacts built from this same frozen candidate. Governance acceptance follows
-actual-change review; neither implementation commit closes T580.
+actual-change review and accepts Shared `85a65c3a8` plus NXVM `a8561555e`;
+neither implementation commit closes T580.
 
 ## Production input receiver continuation
 

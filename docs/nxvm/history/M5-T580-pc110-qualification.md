@@ -538,3 +538,21 @@ Ninja/ccache trees remain. Lib, Emulator, Debugger, IBM-PC Product, MyNES and
 MyRaidenII source/test trees remain unchanged. Coordinator review is pending.
 This is not live panel/input/RDP, Setup, full guest or PC110 publication
 qualification; all original T580 product predicates remain open.
+
+## S53 coordinator actual-change acceptance
+
+The coordinator switches roles after executor delivery and reviews the pushed
+Shared `85a65c3a8` and NXVM `a8561555e` diffs, ownership, copied callback
+lifetime, existing callers, manifests, whole unit outcomes including failed
+attempts, registered actual-BIOS power proof, eight artifact hashes and INI
+retention. The complete bounded EC/power transaction is accepted. There is no
+new executor, queue, clock, BIOS-specific production branch, Lib/Emulator
+change or hidden publication. C/H +540/-43 and CMake +6/-1 are justified by
+the missing receiver and its existing-fixture/real-consumer regressions.
+
+S53 closes; T580 remains open for its unchanged complete product universe.
+The pre-acceptance packet and earlier status notes are preserved in
+[retained status](M5-T580-retained-status.md), with only relocated Queue links
+repaired. Current is reduced to the one latest T580 progress record so old
+packets cannot be mistaken for concurrent active work. Scratch is absent,
+the stable caches remain, and all implementation/receiving P commits are pushed.

@@ -221,8 +221,13 @@ The implemented physical receiver now passes actual F12 Machine-driver and
 unchanged-BIOS retained-reset/restoration/RSM replay on both widths, including
 all 512 retained CPU bytes and no extra exception. This proves the complete
 bounded power transaction, not a live keyboard, guest or product release.
-S53 remains unaccepted pending receiving artifacts and actual-change review.
+S53 is accepted after receiving artifacts and coordinator actual-change review.
 All 712 units per width now have passing results, including serial rechecks
 of the unchanged static cases that timed out under concurrent load. Original
 failed attempts remain recorded; no Lib change or budget relaxation is made.
 The original T-level universe and product predicates remain unchanged.
+
+Shared `85a65c3a8` and NXVM `a8561555e` are pushed. The registered retained-
+power test passes on both widths, all eight PC artifacts and INI identities
+are verified, and all 28 scratch files are removed. This accepts the bounded
+EC/power receiver, not the original live-input/guest/product gates.
