@@ -57,6 +57,15 @@ FDC-reset/boot-handoff integrations pass x64 in 42.24/225.02 s and x86 in
 consumption or product qualification. See the [S58 record](../etc/evidence/t580-s58-pcic-receiver.md)
 and [task history](../history/M5-T580-pc110-qualification.md).
 
+S59 completes the declared ATA two-device construction route.  After a fresh
+Ninja relink of every unit target, the complete repository-only unit suite
+passes **714/714** on both x64 and x86 (212.88 s and 73.32 s respectively).
+That qualification includes the focused ATA slave construction proofs and
+the existing real-firmware FDC-reset/boot-handoff non-regressions recorded in
+the S59 evidence.  It does not qualify authentic SunDisk/CF inputs, BIOS
+storage consumption, PCIC storage, Setup persistence, selected-guest boot,
+panel behavior, desktop use, or product publication.
+
 ## Remaining T580 Qualification
 
 The [proposal](../proposals/m5-pc110-qualification.md) and

@@ -756,3 +756,10 @@ boot-handoff checkpoints pass x64 in 50.33/270.45 s and x86 in 57.00/314.03 s.
 Those checks are strictly non-regression evidence; they do not qualify a
 SunDisk/CF, PC Card storage, Setup persistence, guest boot, panel or release.
 See [S59 evidence](../etc/evidence/t580-s59-ata-two-device-route.md).
+
+After a fresh full Ninja relink, the complete repository-only unit suite also
+passes 714/714 on both x64 (212.88 s) and x86 (73.32 s).  A pre-relink run
+briefly exposed a stale `vm-hdc-port-smoke` executable; rebuilding the unit
+graph and rerunning it made the same source pass, so no assertion or source
+was weakened.  This closes S59's admitted construction route only.  T580's
+unqualified firmware/media/product domains remain open.
