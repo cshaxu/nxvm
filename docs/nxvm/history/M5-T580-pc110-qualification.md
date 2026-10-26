@@ -812,3 +812,17 @@ overrides are L2 diagnostic comparisons only and are not imported: both would
 modify or reinterpret guest presentation rather than model the missing source
 input.  A current unmodified-BIOS frame plus the exact extended CMOS/default
 capture is required before a receiver can be admitted.
+
+## S62 executor disposition — unmodified Setup palette review
+
+S62 confirms that S57's direct, unchanged-TFT-BIOS ERROR/date-time capture is
+still the exact current F65535 → Machine → Window source route.  On both host
+widths its 640×480 ERROR frame has the same recorded SHA-256 and dominant
+`BE9E96` rose background.  No second temporary diagnostic is retained merely
+to repeat that result after S57's comparison-only scratch oracle was removed.
+
+The user-reported blue frame is therefore not evidence for a generic RGB/BGR
+repair, guest-image patch or host palette override.  Main Setup/persistence,
+extended-CMOS source capture, panel identity and desktop/RDP validation remain
+unqualified and are retained as separate T580 work.  See the S62 review for
+the exact source/diff proof.
