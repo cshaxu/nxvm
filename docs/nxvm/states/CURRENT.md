@@ -2,26 +2,11 @@
 
 ## Current Work
 
-## M5 T580 S63 — PC110 Font-ROM window receiver
+## M5 T580 — retained progress
 
-| Field | Required record |
+| Task | Progress |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S63, next unused numeric S after S62's evidence-only closure; one-session coordinator/executor. |
-| Admission And Approval | The owner’s standing instruction to continue PC110 implementation authorizes a source-backed App-local receiver. It changes neither Shared components nor external payloads. |
-| Objective | Complete the observed 1 MiB PC110 font-ROM banking window: 7-bit bank readback, fixed segment/readback, enable state and the conditional DE000h aperture. |
-| Non-goals | No font bytes, BIOS/ROM modification, invented 1161h scratch semantics, remappable segment, generic ROM-window framework, guest hook, panel/scanout change or PC110 publication. |
-| Reference Baseline | Pushed `5d406de16`. Current `mypc110_font_rom` writes only 1160h and permanently claims DE000h; Open-Source-PC110 live documentation records the full 1160h–1163h geometry and disabled-window FF behavior. |
-| Candidate Proposal | Keep one App-local font object and one existing port/memory provider. Add only source-observed register facts: 1160h bank R/W with bit 7 ignored; 1161h reads FF; 1162h reads DE; 1163h is bit-0 enable/readback. The provider owns disabled reads and returns their observed FF open-bus value, avoiding an unrelated ordinary-RAM fallback. |
-| Files And ABI Surface | `src/app-mypc110/pc110_font.{c,h}`; `test/app-mypc110/unit/font_rom_smoke.c`; their CMake/manifest only if required; evidence/history/current. No Lib, Emulator, X86 Core/Debug/IBMPC/NXVM public interface, firmware, INI or external assets. |
-| Applicable Rules | `docs/nxvm/README.md`; `docs/nxvm/design/{ARCHITECTURE,CODING}.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; source policy; T580 proposal/ledger. Preserve immutable external font ownership, inward dependencies and one provider route. |
-| Verification | Expand the existing font unit to prove bank aliases/readback, fixed unsupported/segment reads, enable readback and enabled versus disabled DE000h open-bus behavior. Run MyPC110 units x64/x86, repository units x64/x86, manifests and documentation gate. Rebuild PC110 previews only if production input changes; do not publish an unqualified PC110 product. |
-| Expected Markers | One port-provider installation handles the four-byte range; bank 80h aliases 00h; disabled reads return the observed open-bus FF value; enabling restores the selected immutable bank. The source records post-initialization live values, not an independent reset contract. |
-| Asset Needs | Existing external immutable TFT font only; no acquisition, write or payload retention. Scratch, if used, is `build/t580-s63-*` and is deleted before closure. |
-| Reporting Requirements | Record source grade, exact register behavior, production/test diff, two-width results and retained limits. State that this does not qualify DOS/V use, panel output, configuration persistence, guest boot or release. |
-| Stop Conditions | Stop if correct behavior requires undocumented 1161h writes, an invented remappable physical address, modified font data, Shared interface or a second memory route. |
-| Exit Criteria | Existing unit ownership proves all observed register and aperture states, affected gates pass in both widths, documentation/change review completes, artifacts stay correctly unmodified or are recorded, and one reviewable P is pushed. T580 remains open. |
-| Original Owner Request | “老规矩实现PC110” and continuing “加油”; routine source-backed App-local receivers are autonomously admitted. |
-| Similar-Issue Sweep | Inspect every PC110 memory/port aperture for an always-enabled or unsupported-control analogue; repair only the same fully observed Font-ROM mechanism, not unrelated windows. |
+| T580 S63 | Accepted after actual-diff review. App-local Font-ROM bank/readback/enable aperture is in `98c812bb6`; both x64 and x86 repository unit suites pass 714/714. Four PC110 previews were rebuilt but remain unpublished. No active S packet between acceptance and the next admission. T580 remains open. |
 
 ## Verified Baseline
 
