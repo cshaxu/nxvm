@@ -783,3 +783,14 @@ seconds.  After a fresh full Ninja relink, all repository-only units pass
 published.  Authentic SunDisk/CF inputs, BIOS storage consumption,
 CMOS/Setup persistence, PCIC mapping, selected guest and release qualification
 remain open.
+
+## S61 executor disposition — extended-CMOS seed prerequisite
+
+S61 audited the existing 64-byte `0Eh`–`3Fh` Machine seed against the Board's
+matching 50-default capacity and the documented PC110 extended CMOS range.
+The source record demonstrates real persisted values in `40h`–`7Fh`, but the
+locally pinned research checkout and external PC110 asset profiles do not
+contain the cited exact 128-byte capture.  No source code was expanded with
+invented bytes.  The required external, hash-recorded source payload and the
+single-route follow-up are retained in the S61 evidence; normal Setup
+persistence remains open.
