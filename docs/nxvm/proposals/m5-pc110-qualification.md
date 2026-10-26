@@ -416,3 +416,10 @@ mode-3 review correction, range-overflow reproduction/fix, exact verification
 scope and artifact identities. This does not qualify the normal main Setup
 menu, persisted settings, selected guest, PCIC or physical panel. Original
 product/release gates remain unchanged; PC110 previews are not published.
+
+S58 supplies the documented empty two-slot RB5C396 controller at the actual
+3E0h/3E1h index/data ports.  It models the two selector banks, identification,
+socket input status, controller-local registers and reset without inventing a
+PC Card or media mapping.  Card windows, card IRQ delivery, selected storage
+and guest qualification remain separate T580 receivers; see the
+[S58 record](../etc/evidence/t580-s58-pcic-receiver.md).

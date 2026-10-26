@@ -2,9 +2,26 @@
 
 ## Current Work
 
-| Task | Progress |
+## M5 T580 S58 — PC110 dual-slot PCIC receiver reconciliation
+
+| Field | Required record |
 | --- | --- |
-| M5 T580 S57 | Accepted Shared `7cca77dcf` and NXVM `2326fa3c0`: F65535 planar/colour/inspection, range safety and receiving qualification. No active S packet between acceptance and the next admission. T580 remains open. |
+| Identifier Mode | Continuation — M5 T580 S58, next unused numeric S after accepted S57; one-session coordinator/executor. |
+| Admission And Approval | The owner’s persistent instruction to implement PC110 through the open T580 qualification goal, including autonomous in-scope App/X86-NXVM research and implementation. Lib and Emulator are excluded. A necessary new Shared public boundary must be reported before implementation. |
+| Objective | Reconcile the TFT BIOS’s actual 3E0h/3E1h PCIC probing with the documented two-slot Ricoh RB5C396 contract and the existing PC110 App/Core routes. Implement one complete, source-labelled receiver only if the evidence establishes its register, card, IRQ/window/reset and ownership behavior; otherwise preserve the explicit source-gated disposition. |
+| Non-goals | No BIOS-PC intercept, one-off ID reply, CMOS success seed, ROM/media mutation, synthetic card insertion, host PCMCIA API, Lib/Emulator change, external source import, guessed error-code attribution, guest/DOS claim or PC110 artifact publication. |
+| Reference Baseline | Clean pushed `bca752a03`, accepted S57. The unchanged TFT BIOS reaches real ERROR/date-time frames; S55 records BIOS index scans at 3E0h/3E1h and absent App PCIC routing. The frozen T580 ledger keeps PCIC/card as an open qualification row. |
+| Candidate Proposal | Use the original Ricoh EA-028-9804 manual and allowed external references only as evidence. First inventory the BIOS access sequence, RB5C396 register spaces, two-socket identity, card-detect/status, memory/I/O windows, IRQ signalling and reset requirements against current `app-mypc110`, `x86-nxvm/board-base` and Core APIs. Select one existing owner or report the smallest required X86-NXVM contract before code. A receiver, if justified, owns no duplicated guest time/queue and is wired only through existing Core port/memory/IRQ routes. |
+| Files And ABI Surface | Admitted production surface: `src/x86-nxvm/chips/rb5c396/{rb5c396.c,rb5c396.h,rb5c396_interface.h}`, `src/x86-nxvm/CMakeLists.txt`, `src/app-mypc110/{pc110_plan.c,pc110_pcic.c,pc110_pcic_interface.h,CMakeLists.txt}`. Admitted test surface: `test/x86-nxvm/chips/rb5c396/rb5c396_contract_smoke.c`, `test/x86-nxvm/CMakeLists.txt`, `test/app-mypc110/{unit/pc110_pcic_smoke.c,integration/real_firmware_post_integration.c,CMakeLists.txt}`, plus affected manifests/evidence/proposal/current/history. The receiver owns only indexed controller state and physical-slot inputs; App owns PC110 port decode. No Lib/Emulator/Core surface is admitted. |
+| Applicable Rules | `docs/nxvm/README.md`; `docs/nxvm/design/{ARCHITECTURE,CODING,UI}.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; `docs/nxvm/etc/operations/policy/source-policy.md`; `src/x86-nxvm/README.md`; T580 proposal and convergence ledger. Preserve inward dependencies, one owner per state/route, existing stable Ninja/ccache graphs, BYOB source policy and protected external inputs. |
+| Verification | Before any implementation, record the complete BIOS probe transcript and a source-to-register/route matrix. If a receiver is admitted: direct chip/board/App tests cover both slots, absent/present card states, documented readonly identity, register selection, window ownership, IRQ/reset and real BIOS probe on x64/x86. Rebuild affected existing graphs and run affected unit/integration tests. No test or trace is called a guest/product qualification beyond its actual checkpoint. |
+| Expected Markers | An evidence record names source grade, exact documented register facts, current route gaps, selected owner and each unmodelled contract member. A passing receiver, if any, is identified by real PCIC register/state checks rather than a BIOS-PC special case. |
+| Asset Needs | Read-only external EA-028-9804 manual and current owner-provided TFT BIOS only. No ROM, media, Windows component or third-party source enters the repository or executable. |
+| Reporting Requirements | Report the BIOS fact, exact receiver decision, proposed public boundary before any new Shared API, actual source/test diff, verification and every unproven PCIC/card/guest boundary. |
+| Stop Conditions | Stop before implementation if the documented register/card/IRQ/window/reset contract cannot be completed, or if required ownership is outside App/X86-NXVM and has no approved public boundary. Do not replace missing evidence with a successful BIOS probe value. |
+| Exit Criteria | Either: (a) one coherent two-slot receiver is implemented, source-labelled, tested on both host widths and mapped into the T580 ledger; or (b) the complete unresolved PCIC class is source-gated with evidence and transferred to the earliest legitimate receiver. In both cases, worktree is clean or only a reviewable complete P remains; whole T580/product publication stays open. |
+| Original Owner Request | “老规矩实现PC110”, with autonomous S admission and explicit direction to use available source/reference evidence for functional L2 rather than block on physical hardware proof. |
+| Similar-Issue Sweep | Audit both PCIC sockets and all BIOS-visible selector/data/IRQ/window paths, not only the first 3E0h ID read. Reconcile existing PC/AT port routes so PC110-specific state does not alter the other fixed PC Apps. |
 
 ## Verified Baseline
 

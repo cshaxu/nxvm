@@ -109,6 +109,25 @@ int main(void)
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
             response.value != 1u) failed = 40;
     }
+    if (!failed) {
+        const x86_debug_request select = {.operation = X86_DEBUG_WRITE_PORT,
+            .port = 0x03e0u, .address = 0x18u, .bytes = 1u};
+        const x86_debug_request write = {.operation = X86_DEBUG_WRITE_PORT,
+            .port = 0x03e1u, .address = 0x5au, .bytes = 1u};
+        const x86_debug_request read = {.operation = X86_DEBUG_READ_PORT,
+            .port = 0x03e1u, .bytes = 1u};
+
+        if (driver.execute_debug(driver.context, &select, sizeof(select),
+                &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+            driver.execute_debug(driver.context, &write, sizeof(write),
+                &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+            !driver.reset(driver.context) ||
+            driver.execute_debug(driver.context, &select, sizeof(select),
+                &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+            driver.execute_debug(driver.context, &read, sizeof(read),
+                &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+            response.value != 0u) failed = 41;
+    }
     x86_nxvm_machine_destroy(machine);
     return failed;
 }

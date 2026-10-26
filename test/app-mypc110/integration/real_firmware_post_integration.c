@@ -188,7 +188,7 @@ static void mypc110_post_diagnostic_observe_trace(void *context,
         port != 0x00ecu && port != 0x00edu && port != 0x00f9u &&
         port != 0x00fbu && port != 0x0060u &&
         port != 0x0061u && port != 0x0064u && port != 0x03c4u &&
-        port != 0x03c5u) {
+        port != 0x03c5u && port != 0x03e0u && port != 0x03e1u) {
         return;
     }
     if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
@@ -209,9 +209,11 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
         const lib_u16 port = observation->io_port;
 
         if ((observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
-                (port == 0x0060u || port == 0x0092u)) ||
+                (port == 0x0060u || port == 0x0092u ||
+                 port == 0x03e0u || port == 0x03e1u)) ||
             (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE &&
-                (port == 0x0060u || port == 0x0064u || port == 0x0092u))) {
+                (port == 0x0060u || port == 0x0064u || port == 0x0092u ||
+                 port == 0x03e0u || port == 0x03e1u))) {
             if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY)
                 trace->configuration_writes[trace->configuration_write_count++] =
                     (mypc110_post_diagnostic_port_write){observation->point.linear_pc,

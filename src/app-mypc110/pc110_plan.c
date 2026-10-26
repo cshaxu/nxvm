@@ -8,6 +8,7 @@
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_lpt_interface.h"
+#include "app-mypc110/pc110_pcic_interface.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-nxvm/machine/media/media_interface.h"
 
@@ -21,6 +22,7 @@ typedef struct mypc110_machine_plan {
     mypc110_ec_mailbox ec_mailbox;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
+    x86_rb5c396 *pcic_controller;
 } mypc110_machine_plan;
 
 static const x86_nxvm_board_config mypc110_machine_configuration = {
@@ -133,6 +135,42 @@ static lib_status mypc110_machine_capture_display(void *context,
     return x86_f65535_capture_snapshot((x86_f65535 *)context, out_snapshot);
 }
 
+/* The board owns reset ordering.  PCIC state is controller-local, while the
+ * physical socket levels remain owned by the App's slot-input contract. */
+static void mypc110_machine_profile_reset(void *opaque,
+    x86_nxvm_board_reset_phase phase)
+{
+    mypc110_machine_plan *plan = opaque;
+
+    if (plan != LIB_NULL && phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES)
+        x86_rb5c396_reset(plan->pcic_controller);
+}
+
+static void mypc110_machine_profile_system_management_active(void *opaque,
+    lib_bool active)
+{
+    mypc110_machine_plan *plan = opaque;
+
+    if (plan != LIB_NULL)
+        mypc110_firmware_system_management_active(&plan->firmware, active);
+}
+
+static lib_status mypc110_machine_profile_create(
+    const x86_nxvm_board_profile_services *services, void *opaque,
+    x86_nxvm_board_profile_binding *out_binding)
+{
+    mypc110_machine_plan *plan = opaque;
+    lib_status status;
+
+    if (plan == LIB_NULL || out_binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = mypc110_firmware_profile_create(services, &plan->firmware, out_binding);
+    if (status != LIB_STATUS_OK) return status;
+    out_binding->context = plan;
+    out_binding->reset = mypc110_machine_profile_reset;
+    out_binding->system_management_active =
+        mypc110_machine_profile_system_management_active;
+    return LIB_STATUS_OK;
+}
 
 static lib_status mypc110_machine_configure(void *opaque,
     x86_nxvm_board_plan *board_plan)
@@ -141,7 +179,7 @@ static lib_status mypc110_machine_configure(void *opaque,
     lib_status status;
 
     status = x86_nxvm_board_plan_bind_profile_factory(board_plan,
-        mypc110_firmware_profile_create, &plan->firmware);
+        mypc110_machine_profile_create, plan);
     if (status == LIB_STATUS_OK) {
         status = x86_nxvm_board_plan_configure_hdc(board_plan,
             X86_NXVM_MACHINE_MEDIA_HDD_ID, X86_NXVM_BOARD_MEDIA_ID_INVALID,
@@ -170,6 +208,8 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
         status = mypc110_lpt_install_routes(core, &plan->lpt);
     if (status == LIB_STATUS_OK)
         status = mypc110_display_install_routes(core, plan->display_controller);
+    if (status == LIB_STATUS_OK)
+        status = mypc110_pcic_install_routes(core, plan->pcic_controller);
     return status;
 }
 
@@ -179,6 +219,7 @@ static void mypc110_machine_release(void *opaque)
 
     if (plan == LIB_NULL) return;
     x86_f65535_destroy(plan->display_controller);
+    x86_rb5c396_destroy(plan->pcic_controller);
     x86_vl82c420_destroy(plan->configuration_chip);
     mypc110_firmware_destroy(&plan->firmware);
     lib_release(plan);
@@ -221,6 +262,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     if (status == LIB_STATUS_OK)
         status = mypc110_config_initialize_cold_image(plan->configuration_chip);
     if (status == LIB_STATUS_OK) status = x86_f65535_create(&plan->display_controller);
+    if (status == LIB_STATUS_OK) status = x86_rb5c396_create(&plan->pcic_controller);
     if (status != LIB_STATUS_OK) {
         mypc110_machine_release(plan);
         return status;

@@ -293,3 +293,15 @@ normal main Setup/save/restart, selected storage/guest, PCIC/card, panel/live
 input/DSTN/lifecycle and four-artifact publication members remain open. This
 is the complete named planar/colour batch, not all F65535 modes or whole-T
 acceptance. No domain is erased by the restored background colour.
+
+## S58 RB5C396 empty-controller receiver
+
+S58 adds the documented two-socket Ricoh RB5C396 index/data receiver at
+3E0h/3E1h.  It distinguishes the two socket register banks, controller-device
+selection, read-only identification and the board-owned physical socket input
+levels.  Both slots are initially empty; there is no synthetic PC Card, card
+window, card IRQ, card storage or host-side medium.  Consequently this closes
+only the missing controller-port receiver.  PCIC card insertion, mapping and
+selected-guest qualification remain explicit T580 members.  The exact source,
+model and verification limits are in
+[the S58 record](t580-s58-pcic-receiver.md).
