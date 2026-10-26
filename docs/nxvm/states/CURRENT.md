@@ -1,6 +1,6 @@
 # M5 T580 — Open after accepted S66
 
-S66 is accepted at the next task commit.  The unchanged selected TFT BIOS now
+S66 is accepted at `daf38c36e`.  The unchanged selected TFT BIOS now
 has direct dual-width evidence for full guest-side Easy-Setup decompression,
 the original `9000:009E -> 5000:0000` handoff, a valid 640×480 graphics frame,
 ordinary two-Enter delivery and the firmware's subsequent reset.  The
