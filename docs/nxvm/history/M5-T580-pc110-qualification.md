@@ -936,3 +936,15 @@ terminal budget on two runs and remains unfinished at 330,000 ms.  The
 observed FDC progress varies by run.  This is retained as the existing
 Model40 x86 throughput qualification concern; it is neither attributed to the
 PC110 seed route nor counted as a passing integration result.
+
+## S68 executor delivery — Easy-Setup input and reset
+
+The unchanged TFT firmware was replayed on both host widths with an existing
+diagnostic extended only to observe keyboard and RTC port activity. Both
+runs returned zero: the ERROR screen (`00173`, `00163`) precedes the first
+Enter, the date/time editor precedes the second, and the guest consumes both
+make/break pairs before RTC writes and a processor reset. The current build
+trees' unit suites pass 669/669 per width. No product or Shared code and no
+released executable changed. [S68 evidence](../etc/evidence/t580-s68-easysetup-input-reset.md)
+records the actual register observation and the outstanding error-log,
+post-reset persistence and main-menu boundaries.

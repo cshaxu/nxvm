@@ -305,3 +305,13 @@ only the missing controller-port receiver.  PCIC card insertion, mapping and
 selected-guest qualification remain explicit T580 members.  The exact source,
 model and verification limits are in
 [the S58 record](t580-s58-pcic-receiver.md).
+
+## S68 Easy-Setup input and reset observation
+
+[S68](t580-s68-easysetup-input-reset.md) establishes on both host widths that
+two ordinary Enter transactions move the selected TFT firmware from its
+`00173`/`00163` ERROR screen to the date/time editor and then to RTC port
+writes and processor reset. This disposes the observed keyboard-delivery
+question only. The source of the errors, genuine main-menu selection,
+post-reset configuration persistence and selected guest boot remain open at
+their original T580 receivers; this observation does not qualify a product.

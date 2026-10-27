@@ -29,6 +29,7 @@ extern const x86_nxvm_machine_assets vm_app_firmware;
 #define MYPC110_POST_DIAGNOSTIC_PORT61_FOLLOW_CAPACITY 32u
 #define MYPC110_POST_DIAGNOSTIC_DATA_SELECTOR_BASE 0x0000d8a0u
 #define MYPC110_SETUP_IMAGE_BYTES 232185u
+#define MYPC110_SETUP_INPUT_BYTES 4u
 
 typedef struct mypc110_post_diagnostic_port_write {
     lib_u32 linear_pc;
@@ -101,6 +102,10 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_size post_c000_port61_read_count;
     lib_bool left_rom;
     lib_bool control_trace;
+    lib_u8 setup_input_deliveries;
+    lib_u8 setup_input_bytes[MYPC110_SETUP_INPUT_BYTES];
+    lib_size setup_input_byte_count;
+    lib_size setup_cmos_write_count;
     mypc110_post_diagnostic_port_write
         configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
     lib_size configuration_write_count;
@@ -188,7 +193,9 @@ static void mypc110_post_diagnostic_observe_trace(void *context,
         port != 0x00ecu && port != 0x00edu && port != 0x00f9u &&
         port != 0x00fbu && port != 0x0060u &&
         port != 0x0061u && port != 0x0064u && port != 0x03c4u &&
-        port != 0x03c5u && port != 0x03e0u && port != 0x03e1u) {
+        port != 0x03c5u && port != 0x03e0u && port != 0x03e1u &&
+        (trace->setup_input_deliveries == 0u ||
+         (port != 0x0070u && port != 0x0071u))) {
         return;
     }
     if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
@@ -207,19 +214,32 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
     if (trace == LIB_NULL || observation == LIB_NULL) return;
     if (trace->control_trace) {
         const lib_u16 port = observation->io_port;
+        const lib_bool setup_rtc_port = trace->setup_input_deliveries != 0u &&
+            (port == 0x0070u || port == 0x0071u);
 
         if ((observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
-                (port == 0x0060u || port == 0x0092u ||
-                 port == 0x03e0u || port == 0x03e1u)) ||
+                (port == 0x0060u || port == 0x0092u || port == 0x03e0u ||
+                 port == 0x03e1u)) ||
             (observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE &&
                 (port == 0x0060u || port == 0x0064u || port == 0x0092u ||
-                 port == 0x03e0u || port == 0x03e1u))) {
+                 port == 0x03e0u || port == 0x03e1u)) || setup_rtc_port) {
             if (trace->configuration_write_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY)
                 trace->configuration_writes[trace->configuration_write_count++] =
                     (mypc110_post_diagnostic_port_write){observation->point.linear_pc,
                         observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ ?
                             X86_CORE_MACHINE_TRACE_PORT_READ : X86_CORE_MACHINE_TRACE_PORT_WRITE,
                         port, (lib_u8)observation->io_value};
+        }
+        if (trace->setup_input_deliveries != 0u &&
+            observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_READ &&
+            port == 0x0060u && trace->setup_input_byte_count < MYPC110_SETUP_INPUT_BYTES) {
+            trace->setup_input_bytes[trace->setup_input_byte_count++] =
+                (lib_u8)observation->io_value;
+        }
+        if (trace->setup_input_deliveries != 0u &&
+            observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE &&
+            (port == 0x0070u || port == 0x0071u)) {
+            ++trace->setup_cmos_write_count;
         }
         return;
     }
@@ -524,14 +544,14 @@ int main(int argc, char **argv)
         status = x86_nxvm_machine_create(&config, &construction, &machine);
     if (status == LIB_STATUS_OK && power_checkpoint)
         status = x86_nxvm_machine_describe_emulator_driver(machine, &power_driver);
-    if (status == LIB_STATUS_OK && (!power_checkpoint || setup_checkpoint)) {
+    if (status == LIB_STATUS_OK && !power_checkpoint) {
         status = x86_core_machine_set_retirement_observation_provider(
             machine->x86_core_machine,
             &(x86_core_machine_retirement_observation_provider){
                 .callback = mypc110_post_diagnostic_observe_retirement,
                 .context = &post_reset_trace});
     }
-    if (status == LIB_STATUS_OK && !timer_checkpoint) {
+    if (status == LIB_STATUS_OK && !timer_checkpoint && !setup_checkpoint) {
         status = x86_core_machine_set_trace_provider(machine->x86_core_machine,
             &(x86_core_machine_trace_provider) {
                 .callback = mypc110_post_diagnostic_observe_trace,
@@ -547,7 +567,7 @@ int main(int argc, char **argv)
     if (status == LIB_STATUS_OK) {
         x86_nxvm_machine_executor_state_start(&machine->control.state);
     }
-    if (boot_checkpoint && status == LIB_STATUS_OK)
+    if (boot_checkpoint && !setup_checkpoint && status == LIB_STATUS_OK)
         mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
     while (status == LIB_STATUS_OK && executed < instruction_limit) {
         status = x86_core_machine_run(machine->x86_core_machine,
@@ -578,6 +598,7 @@ int main(int argc, char **argv)
             if (status != LIB_STATUS_OK) break;
             kvm_input_event key = {.type = KVM_EVENT_KEY,
                 .data.key = {.key = BASE_KEY_ENTER, .pressed = LIB_TRUE}};
+            post_reset_trace.setup_input_deliveries = setup_input_count + 1u;
             power_driver.deliver_input(power_driver.context, &key);
             key.data.key.pressed = LIB_FALSE;
             power_driver.deliver_input(power_driver.context, &key);
@@ -586,7 +607,7 @@ int main(int argc, char **argv)
             lib_c_printf("PC110:SETUP:enter-delivered count=%u executed=%llu\n",
                 (unsigned int)setup_input_count, (unsigned long long)executed);
         }
-        if (boot_checkpoint && post_reset_trace.power_restore_completed &&
+        if (boot_checkpoint && !setup_checkpoint && post_reset_trace.power_restore_completed &&
             executed >= boot_report) {
             mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
             boot_report = executed + 1000000u;
@@ -631,8 +652,18 @@ int main(int argc, char **argv)
                 lib_c_printf("PC110:SETUP:entry=%u target=%04x:%08x bytes=%u matched=%u\n",
                     setup_entry, retired.cs, retired.eip,
                     MYPC110_SETUP_IMAGE_BYTES, setup_bytes_match);
-                mypc110_post_diagnostic_print_ports(&post_reset_trace);
                 if (argc == 4 && setup_entry && setup_bytes_match) {
+                    status = x86_core_machine_set_retirement_observation_provider(
+                        machine->x86_core_machine,
+                        &(x86_core_machine_retirement_observation_provider){
+                            .callback = mypc110_post_diagnostic_observe_retirement,
+                            .context = &post_reset_trace});
+                    if (status == LIB_STATUS_OK)
+                        status = x86_core_machine_set_trace_provider(machine->x86_core_machine,
+                            &(x86_core_machine_trace_provider) {
+                                .callback = mypc110_post_diagnostic_observe_trace,
+                                .context = &post_reset_trace});
+                    if (status != LIB_STATUS_OK) break;
                     instruction_limit = executed + 20000000u;
                     continue;
                 }
@@ -719,7 +750,8 @@ int main(int argc, char **argv)
                 /* Bound the new phase, not just the expensive cold prefix,
                  * so containment returns a usable final CPU observation. */
                 instruction_limit = setup_checkpoint ? 120000000u : executed + 8000000u;
-                mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
+                if (!setup_checkpoint)
+                    mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
                 boot_report = executed + 1000000u;
                 status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
                     X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
@@ -757,6 +789,11 @@ int main(int argc, char **argv)
                 setup_reset_completed = result.linear_pc == 0xfffffff0u;
                 lib_c_printf("PC110:SETUP:processor-reset=%u pc=%08x resets=%u\n",
                     setup_reset_completed, result.linear_pc, processor_reset_count);
+                lib_c_printf("PC110:SETUP:input-bytes=%llu values=%02x %02x %02x %02x cmos-writes=%llu\n",
+                    (unsigned long long)post_reset_trace.setup_input_byte_count,
+                    post_reset_trace.setup_input_bytes[0u], post_reset_trace.setup_input_bytes[1u],
+                    post_reset_trace.setup_input_bytes[2u], post_reset_trace.setup_input_bytes[3u],
+                    (unsigned long long)post_reset_trace.setup_cmos_write_count);
                 mypc110_post_diagnostic_print_ports(&post_reset_trace);
                 break;
             }
@@ -810,7 +847,7 @@ int main(int argc, char **argv)
                         status = LIB_STATUS_INVALID_STATE;
                 }
                 button_sent = status == LIB_STATUS_OK;
-                if (boot_checkpoint)
+                if (boot_checkpoint && !setup_checkpoint)
                     mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
                 continue;
             }
@@ -1076,7 +1113,14 @@ int main(int argc, char **argv)
         return status == LIB_STATUS_OK && button_sent &&
             post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
             (!boot_checkpoint || (setup_checkpoint ? setup_entry : boot_handoff)) &&
-            (!setup_checkpoint || (setup_bytes_match && (argc != 4 || setup_reset_completed))) &&
+            (!setup_checkpoint || (setup_bytes_match && (argc != 4 ||
+                (setup_reset_completed && post_reset_trace.setup_input_byte_count ==
+                    MYPC110_SETUP_INPUT_BYTES &&
+                 post_reset_trace.setup_input_bytes[0u] == 0x1cu &&
+                 post_reset_trace.setup_input_bytes[1u] == 0x9cu &&
+                 post_reset_trace.setup_input_bytes[2u] == 0x1cu &&
+                 post_reset_trace.setup_input_bytes[3u] == 0x9cu &&
+                 post_reset_trace.setup_cmos_write_count != 0u)))) &&
             (!ata_checkpoint || ata_boot_sector) &&
             retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
             !observation.diagnostic.first_fault.valid ? 0 : 1;
