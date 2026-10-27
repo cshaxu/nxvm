@@ -226,7 +226,6 @@ static lib_i32 arpl_board_irq(void)
             test_pic_bind_source(&source,
                 board->shared_pic_master, board->shared_pic_slave, 0u);
             x86_nxvm_board_pic_irq_source_assert(source);
-            x86_nxvm_board_pic_irq_source_deassert(source);
             failed = x86_core_machine_run(machine,
                 (x86_core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
@@ -237,6 +236,7 @@ static lib_i32 arpl_board_irq(void)
                 x86_core_machine_debug_read_memory(machine,
                     after.ss.base + (lib_u16)after.esp, frame,
                     sizeof(frame)) != LIB_STATUS_OK;
+            x86_nxvm_board_pic_irq_source_deassert(source);
         }
         if (!failed)
             failed = diagnostic.first_fault.valid || after.eip != 0x100u ||

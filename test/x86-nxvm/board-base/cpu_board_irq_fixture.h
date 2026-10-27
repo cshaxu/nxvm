@@ -94,7 +94,6 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
                 board->shared_pic_master, board->shared_pic_slave, 0u) !=
                 LIB_STATUS_OK) { failed = 1; goto done; }
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed = x86_core_machine_run(machine,
                 (x86_core_machine_run_budget){entry->budget,0u}, &result) !=
                 LIB_STATUS_OK ||
@@ -105,6 +104,7 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
             x86_core_machine_debug_read_memory(machine,
                 out->after.ss.base + (lib_u16)out->after.esp,
                 &out->frame_ip, sizeof(out->frame_ip)) != LIB_STATUS_OK;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
         if (!failed) {
             out->isr = test_pic_read(board->shared_pic_master, 0x0bu);
             out->irr = test_pic_read(board->shared_pic_master, 0x0au);

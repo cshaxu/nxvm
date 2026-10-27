@@ -176,12 +176,12 @@ static lib_i32 control_board_irq(void)
             test_pic_bind_source(&source, context.board->shared_pic_master,
                 context.board->shared_pic_slave, 0u);
             x86_nxvm_board_pic_irq_source_assert(source);
-            x86_nxvm_board_pic_irq_source_deassert(source);
             failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){2u,0u},
                 &result) != LIB_STATUS_OK || x86_core_machine_debug_capture_cpu_snapshot(
                 machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 x86_core_machine_debug_read_memory(machine, after.ss.base +
                 (lib_u16)after.esp, &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK;
+            x86_nxvm_board_pic_irq_source_deassert(source);
         }
         if (!failed)
             failed = result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||

@@ -75,7 +75,6 @@ static lib_i32 hardware_delivery_real_priority(void)
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         status = x86_core_machine_run(state.machine, (x86_core_machine_run_budget){ 8u, 0u },
             &result);
         failed |= status != LIB_STATUS_OK ||
@@ -91,6 +90,7 @@ static lib_i32 hardware_delivery_real_priority(void)
                 LIB_STATUS_OK ||
             frame[0] != 1u || frame[1] != 0u ||
             frame[2] != (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x02u);
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     x86_core_machine_destroy(state.machine);
     return !failed;
@@ -118,7 +118,6 @@ static lib_i32 hardware_delivery_protected_priority(void)
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed |= !ie_install_gate(&state, 0x02u, 0x0008u,
                 (lib_u8)(0x80u | IE_INTGATE_32)) ||
             !ie_write(&state, IE_CODE_BASE, program, sizeof(program)) ||
@@ -132,6 +131,7 @@ static lib_i32 hardware_delivery_protected_priority(void)
             !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
             frame[0] != 1u || frame[1] != 0x0008u ||
             frame[2] != (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF);
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     x86_core_machine_destroy(state.machine);
     return !failed;
@@ -182,7 +182,6 @@ static lib_i32 hardware_delivery_vm86_priority(lib_i32 mask_nmi)
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed |= !hardware_delivery_vm86_install_gate(&state, 0x20u) ||
             x86_core_machine_memory_write(state.machine, 0x2000u,
                 (const lib_u8[]){ 0x90u }, 1u) != LIB_STATUS_OK;
@@ -201,6 +200,7 @@ static lib_i32 hardware_delivery_vm86_priority(lib_i32 mask_nmi)
                 sizeof(frame)) != LIB_STATUS_OK || frame[0] != 1u ||
             frame[1] != 0x0200u || frame[2] != (X86_CORE_CPU_DEBUG_EFLAGS_VM |
                 X86_CORE_CPU_DEBUG_EFLAGS_IF);
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     x86_core_machine_destroy(state.machine);
     return !failed;

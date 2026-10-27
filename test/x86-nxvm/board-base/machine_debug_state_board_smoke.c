@@ -242,12 +242,12 @@ static lib_i32 debug_board_test_pic_order(void)
         test_pic_bind_source(&source, context.board->shared_pic_master,
             context.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(source);
-        x86_nxvm_board_pic_irq_source_deassert(source);
         failed = !debug_board_run(machine, mov_dr_nop, sizeof(mov_dr_nop),
             &result, &after, &diagnostic) || result.reason !=
                 X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
             after.eip != 0x0101u ||
             (test_pic_read(context.board->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) == 0u;
+        x86_nxvm_board_pic_irq_source_deassert(source);
     }
     x86_core_machine_destroy(machine);
     return !failed;
@@ -423,7 +423,6 @@ static lib_i32 debug_board_test_trap_priority(void)
         test_pic_bind_source(&source, context.board->shared_pic_master,
             context.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(source);
-        x86_nxvm_board_pic_irq_source_deassert(source);
         failed = !debug_board_run(machine, nop, sizeof(nop), &result, &after,
             &diagnostic) || result.reason !=
                 X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -432,6 +431,7 @@ static lib_i32 debug_board_test_trap_priority(void)
             after.eip != 0x0101u ||
             (test_pic_read(context.board->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) != 0u ||
             (test_pic_read(context.board->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
+        x86_nxvm_board_pic_irq_source_deassert(source);
     }
     x86_core_machine_destroy(machine);
     return !failed;

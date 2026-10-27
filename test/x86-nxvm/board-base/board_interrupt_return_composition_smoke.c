@@ -82,11 +82,11 @@ static lib_i32 interrupt_return_composition_real_irq_after_iret(void)
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed |= x86_core_machine_run(state.machine,
                 (x86_core_machine_run_budget){ 8u, 0u }, &result) != LIB_STATUS_OK ||
             x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
         after = cli_sti_capture(state.machine);
         if (!failed) failed |= result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || after.eip != irq_offset + 1u ||

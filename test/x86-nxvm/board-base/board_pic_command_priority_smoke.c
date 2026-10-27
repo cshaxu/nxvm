@@ -72,7 +72,6 @@ static void pic_command_priority_raise(pic_command_priority_fixture *fixture,
         lib_test_assert(LIB_FALSE);
     }
     x86_nxvm_board_pic_irq_source_assert(*source);
-    x86_nxvm_board_pic_irq_source_deassert(*source);
 }
 
 static lib_i32 pic_command_priority_test_cascade_selection(void)

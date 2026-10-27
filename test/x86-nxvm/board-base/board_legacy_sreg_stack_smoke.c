@@ -245,7 +245,7 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
         if(!failed) {
             test_pic_program_vector(state.board->shared_pic_master, 0x20u);
             test_pic_bind_source(&source,state.board->shared_pic_master,state.board->shared_pic_slave,0u);
-            x86_nxvm_board_pic_irq_source_assert(source);x86_nxvm_board_pic_irq_source_deassert(source);
+            x86_nxvm_board_pic_irq_source_assert(source);
             failed|=x86_core_machine_run(state.machine,(x86_core_machine_run_budget){3u,0u},&result)!=LIB_STATUS_OK ||
                 result.reason!=X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 x86_core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
@@ -263,6 +263,7 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
                 form==0u?1u:form==1u?0u:2u) ||
                 !legacy_sreg_stack_real_cache(legacy_sreg_stack_target(&after,
                 form==0u?1u:form==1u?0u:2u), 0u)));
+            x86_nxvm_board_pic_irq_source_deassert(source);
         }
         x86_core_machine_destroy(state.machine);if(failed)return 0;
     }return 1;

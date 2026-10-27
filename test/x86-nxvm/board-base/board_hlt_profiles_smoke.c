@@ -380,9 +380,9 @@ static lib_i32 hlt_test_irq(void)
             state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(source);
-        x86_nxvm_board_pic_irq_source_deassert(source);
         failed = x86_core_machine_run(state.machine,
             (x86_core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
+        x86_nxvm_board_pic_irq_source_deassert(source);
         failed |= result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = cli_sti_capture(state.machine);
         failed |= after.eip != offset + 1u;
@@ -426,7 +426,6 @@ static lib_i32 hlt_test_irq(void)
             state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(source);
-        x86_nxvm_board_pic_irq_source_deassert(source);
         failed = x86_core_machine_run(state.machine,
             (x86_core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
         failed |= result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -438,6 +437,7 @@ static lib_i32 hlt_test_irq(void)
         failed |= !hlt_sregs_preserved(&before, &after);
         failed |= !(((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
         failed |= (((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u);
+        x86_nxvm_board_pic_irq_source_deassert(source);
     }
     x86_core_machine_destroy(state.machine);
     return !failed;

@@ -159,10 +159,13 @@ lib_i32 test_board_pic_unmask_delay_matches(x86_nxvm_board_state *board,
         x86_nxvm_board_pic_irq_source_bind(&source, bus,
             board->shared_pic_slave, 1u) != LIB_STATUS_OK) return 1;
     x86_nxvm_board_pic_irq_source_assert(source);
-    x86_nxvm_board_pic_irq_source_deassert(source);
-    if (x86_nxvm_board_pic_write_register(bus, 1u, 0u) != LIB_STATUS_OK) return 1;
+    if (x86_nxvm_board_pic_write_register(bus, 1u, 0u) != LIB_STATUS_OK) {
+        x86_nxvm_board_pic_irq_source_deassert(source);
+        return 1;
+    }
     failed = x86_nxvm_board_pic_ticks_until_event(bus,
         board->shared_pic_slave, &ticks) != LIB_STATUS_OK ||
         ticks != expected_ticks ? 0x0012 : 0;
+    x86_nxvm_board_pic_irq_source_deassert(source);
     return failed;
 }

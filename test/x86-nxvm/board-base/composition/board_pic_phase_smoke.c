@@ -169,7 +169,6 @@ static lib_i32 pic_phase_cascaded_bus(void)
         test_pic_bind_source(&irq, state.master,
             state.slave, 14u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         x86_nxvm_board_pic_refresh(state.master,
             state.slave);
         failed |= !x86_nxvm_board_pic_scan_interrupt(state.master, state.slave) ||
@@ -184,6 +183,7 @@ static lib_i32 pic_phase_cascaded_bus(void)
             test_pic_read(state.master, 0x0bu) != 0x04u ||
             test_pic_read(state.slave, 0x0bu) != 0x40u ||
             !pic_phase_has_acknowledgement_before_frame(&state);
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     x86_core_machine_destroy(state.machine);
     return failed;
@@ -238,7 +238,6 @@ lib_i32 main(void)
         test_pic_bind_source(&irq, state.master,
             state.slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed |= !x86_nxvm_board_pic_scan_interrupt(
             state.master, state.slave) ||
             x86_core_machine_run(state.machine, (x86_core_machine_run_budget){ 8u, 0u },
@@ -247,8 +246,9 @@ lib_i32 main(void)
             x86_core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != 0x0101u ||
             (((test_pic_read(state.master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u) || !(((test_pic_read(state.master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
-            !pic_phase_has_acknowledgement_before_frame(&state) ||
-            x86_core_machine_reset(state.machine) != LIB_STATUS_OK;
+            !pic_phase_has_acknowledgement_before_frame(&state);
+        x86_nxvm_board_pic_irq_source_deassert(irq);
+        failed |= x86_core_machine_reset(state.machine) != LIB_STATUS_OK;
         if (!failed) {
             pic_phase_reset(&state);
             failed |= state.reset_status != LIB_STATUS_OK;

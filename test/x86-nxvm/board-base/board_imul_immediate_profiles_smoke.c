@@ -153,7 +153,6 @@ static lib_i32 imul_irq_no_shadow(void)
             test_pic_bind_source(&source_irq,
                 board->shared_pic_master, board->shared_pic_slave, 0u);
             x86_nxvm_board_pic_irq_source_assert(source_irq);
-            x86_nxvm_board_pic_irq_source_deassert(source_irq);
             failed = x86_core_machine_run(machine,
                     (x86_core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -182,6 +181,7 @@ static lib_i32 imul_irq_no_shadow(void)
                 (((frame_flags) & (X86_CORE_CPU_DEBUG_EFLAGS_OF)) != 0u) ||
                 !(((test_pic_read(board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
                 (((test_pic_read(board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
+            x86_nxvm_board_pic_irq_source_deassert(source_irq);
         }
         x86_core_machine_destroy(machine);
         if (failed) return 0;

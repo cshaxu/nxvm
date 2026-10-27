@@ -435,7 +435,6 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
             test_pic_bind_source(&source,
                 state.board->shared_pic_master, state.board->shared_pic_slave, 0u);
             x86_nxvm_board_pic_irq_source_assert(source);
-            x86_nxvm_board_pic_irq_source_deassert(source);
         } else if (!failed) {
             failed |= !x86_core_machine_signal_nmi(state.machine);
         }
@@ -443,6 +442,8 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
             before = ie_capture(state.machine);
             failed |= !ie_run_external(&state, reject, &after, &diagnostic);
         }
+        if (!nmi && source != LIB_NULL)
+            x86_nxvm_board_pic_irq_source_deassert(source);
         if (!failed && !reject) {
             failed |= after.cs.selector != 0x000bu ||
                 after.esp != IE_STACK_BASE - 12u ||

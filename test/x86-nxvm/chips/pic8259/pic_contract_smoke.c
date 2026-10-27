@@ -151,7 +151,50 @@ static lib_bool initialization_and_level(void)
     return failed;
 }
 
+static lib_bool edge_input_lifetime(void)
+{
+    x86_pic *pic = LIB_NULL;
+    x86_pic_request request = {0};
+    x86_pic_register_state registers = {0};
+    lib_bool failed = LIB_FALSE;
+    if (x86_pic_create(LIB_TRUE, &pic) != LIB_STATUS_OK) return LIB_TRUE;
+    program(pic, 0x20u, 0u, 1u);
+
+    /* A masked request is observable while the line is high, but a falling
+     * line before acknowledgement cannot become a later IRQ0. */
+    x86_pic_write_register(pic, 1u, 1u);
+    x86_pic_set_inputs(pic, 1u, 1u, 0u);
+    failed |= x86_pic_capture_registers(pic, &registers) != LIB_STATUS_OK || registers.irr != 1u;
+    x86_pic_set_inputs(pic, 0u, 0u, 0u);
+    failed |= x86_pic_capture_registers(pic, &registers) != LIB_STATUS_OK || registers.irr != 0u;
+    x86_pic_write_register(pic, 1u, 0u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+    failed |= x86_pic_acknowledge(pic).vector != 0x27u;
+
+    /* If the CPU has seen an eligible request but the line drops before
+     * acknowledgement, its subsequent acknowledge receives default IRQ7. */
+    x86_pic_set_inputs(pic, 1u, 1u, 0u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_OK || request.vector != 0x20u;
+    x86_pic_set_inputs(pic, 0u, 0u, 0u);
+    failed |= x86_pic_acknowledge(pic).vector != 0x27u;
+
+    /* A held request remains eligible after unmask; after acknowledgement
+     * and EOI, a new low-to-high transition is a new request. */
+    x86_pic_write_register(pic, 1u, 1u);
+    x86_pic_set_inputs(pic, 1u, 1u, 0u);
+    x86_pic_write_register(pic, 1u, 0u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_OK || request.vector != 0x20u;
+    failed |= x86_pic_acknowledge(pic).vector != 0x20u;
+    x86_pic_write_register(pic, 0u, 0x20u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+    x86_pic_set_inputs(pic, 0u, 0u, 0u);
+    x86_pic_set_inputs(pic, 1u, 1u, 0u);
+    failed |= x86_pic_acknowledge(pic).vector != 0x20u;
+    x86_pic_destroy(pic);
+    return failed;
+}
+
 int main(void)
 {
-    return single_chip() | cascade() | initialization_and_level();
+    return single_chip() | cascade() | initialization_and_level() | edge_input_lifetime();
 }

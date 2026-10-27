@@ -272,10 +272,10 @@ static lib_i32 les_lds_test_irq(void)
             test_pic_bind_source(&irq, state.board->shared_pic_master,
                 state.board->shared_pic_slave, 0u);
             x86_nxvm_board_pic_irq_source_assert(irq);
-            x86_nxvm_board_pic_irq_source_deassert(irq);
             failed |= x86_core_machine_run(state.machine,
                 (x86_core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            x86_nxvm_board_pic_irq_source_deassert(irq);
             failed |= x86_core_machine_debug_capture_cpu_snapshot(state.machine,
                 X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed) failed |= x86_core_machine_memory_read(state.machine,

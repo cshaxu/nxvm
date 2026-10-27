@@ -235,7 +235,6 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
                 state.board->shared_pic_master,
                 state.board->shared_pic_slave, 0u);
             x86_nxvm_board_pic_irq_source_assert(source);
-            x86_nxvm_board_pic_irq_source_deassert(source);
             failed |= x86_core_machine_run(state.machine,
                 (x86_core_machine_run_budget){form == 0u ? 3u : 2u, 0u},
                 &result) != LIB_STATUS_OK ||
@@ -248,6 +247,7 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
                 !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
                 (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u) ||
                 sreg_mov_sreg(&after, target)->selector != 0x2000u;
+            x86_nxvm_board_pic_irq_source_deassert(source);
         }
         x86_core_machine_destroy(state.machine);
         if (failed) return 0;

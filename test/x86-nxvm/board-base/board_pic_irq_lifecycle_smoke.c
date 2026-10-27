@@ -103,33 +103,33 @@ lib_i32 main(void)
     if (failed) goto cleanup;
 
     x86_nxvm_board_pic_irq_source_assert(irq6);
-    x86_nxvm_board_pic_irq_source_deassert(irq6);
     failed |= !x86_nxvm_board_pic_scan_interrupt(master, slave);
     failed |= x86_nxvm_board_pic_get_interrupt(master, slave) != 0x0eu;
+    x86_nxvm_board_pic_irq_source_deassert(irq6);
     failed |= (test_pic_read(master, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
     failed |= x86_core_machine_bus_write(port, 0x0020u, 0x20u) != LIB_STATUS_OK;
 
     x86_nxvm_board_pic_irq_source_assert(irq6);
-    x86_nxvm_board_pic_irq_source_deassert(irq6);
     x86_nxvm_board_pic_irq_source_assert(irq1);
-    x86_nxvm_board_pic_irq_source_deassert(irq1);
     failed |= x86_nxvm_board_pic_get_interrupt(master, slave) != 0x09u;
+    x86_nxvm_board_pic_irq_source_deassert(irq1);
     failed |= x86_core_machine_bus_write(port, 0x0020u, 0x20u) != LIB_STATUS_OK;
     failed |= x86_nxvm_board_pic_get_interrupt(master, slave) != 0x0eu;
+    x86_nxvm_board_pic_irq_source_deassert(irq6);
     failed |= x86_core_machine_bus_write(port, 0x0020u, 0x20u) != LIB_STATUS_OK;
 
     failed |= x86_core_machine_bus_write(port, 0x0021u, VPIC_OCW1_IMR(6u)) != LIB_STATUS_OK;
     x86_nxvm_board_pic_irq_source_assert(irq6);
-    x86_nxvm_board_pic_irq_source_deassert(irq6);
     failed |= x86_nxvm_board_pic_scan_interrupt(master, slave);
     failed |= x86_core_machine_bus_write(port, 0x0021u, 0u) != LIB_STATUS_OK;
     failed |= x86_nxvm_board_pic_get_interrupt(master, slave) != 0x0eu;
+    x86_nxvm_board_pic_irq_source_deassert(irq6);
     failed |= x86_core_machine_bus_write(port, 0x0020u, 0x20u) != LIB_STATUS_OK;
 
     x86_nxvm_board_pic_irq_source_assert(irq14);
-    x86_nxvm_board_pic_irq_source_deassert(irq14);
     x86_nxvm_board_pic_refresh(master, slave);
     failed |= x86_nxvm_board_pic_get_interrupt(master, slave) != 0x76u;
+    x86_nxvm_board_pic_irq_source_deassert(irq14);
     failed |= (test_pic_read(master, 0x0bu) & VPIC_ISR_IRQ(2u)) == 0u ||
         (test_pic_read(slave, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
     failed |= x86_core_machine_bus_write(port, 0x00a0u, 0x20u) != LIB_STATUS_OK;

@@ -48,7 +48,6 @@ int main(void)
     }
     if (!failed) {
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed = x86_core_machine_run(state.machine,
                 (x86_core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -58,6 +57,7 @@ int main(void)
             (after.eflags & X86_CORE_CPU_DEBUG_EFLAGS_IF) != 0u ||
             (test_pic_read(state.board->shared_pic_master, 0x0bu) & 1u) == 0u ||
             (test_pic_read(state.board->shared_pic_master, 0x0au) & 1u) != 0u;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     test_protected_16_destroy(&state);
     if (failed) return 1;

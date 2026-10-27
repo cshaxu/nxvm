@@ -55,7 +55,6 @@ static void pic_ocw3_raise(pic_ocw3_fixture *fixture,
         lib_test_assert(LIB_FALSE);
     }
     x86_nxvm_board_pic_irq_source_assert(*source);
-    x86_nxvm_board_pic_irq_source_deassert(*source);
 }
 
 static lib_i32 pic_ocw3_test_read_and_poll(void)

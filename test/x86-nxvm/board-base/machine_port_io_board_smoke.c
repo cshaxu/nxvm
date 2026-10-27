@@ -153,7 +153,6 @@ static lib_i32 port_io_board_irq(lib_bool input)
         test_pic_bind_source(&irq, board->shared_pic_master,
             board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed = x86_core_machine_run(machine, (x86_core_machine_run_budget){2u,0u},
             &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -162,6 +161,7 @@ static lib_i32 port_io_board_irq(lib_bool input)
             x86_core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     if (!failed)
         failed = after.eip != 0x101u ||

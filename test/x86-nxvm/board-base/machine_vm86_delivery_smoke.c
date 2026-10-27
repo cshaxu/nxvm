@@ -167,7 +167,6 @@ static lib_i32 vm86_delivery_irq0(void)
         lib_memory_set(&irq, 0, sizeof(irq)); test_pic_program_vector(state.board->shared_pic_master, 0x20u);
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u); x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed |= test_x86_nxvm_machine_fixture_run_after_delivery(state.machine, (x86_core_machine_run_budget){4u,0u}, &result) != LIB_STATUS_OK ||
             x86_core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK || diagnostic.first_fault.valid ||
         vm86_capture(state.machine).eip != 0x101u || vm86_capture(state.machine).esp != VM86_STACK_TOP - 36u ||
@@ -183,6 +182,7 @@ static lib_i32 vm86_delivery_irq0(void)
             frame[1u] != 0x0200u || frame[2u] != (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
             frame[3u] != 0x1234u || frame[4u] != 0x0300u || frame[5u] != 0x0500u ||
             frame[6u] != 0x0400u || frame[7u] != 0x0600u || frame[8u] != 0x0700u;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     x86_core_machine_destroy(state.machine); return !failed;
 }
@@ -204,7 +204,6 @@ static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
         test_pic_bind_source(&irq, state.board->shared_pic_master,
             state.board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed |= test_x86_nxvm_machine_fixture_run_after_delivery(state.machine,
             (x86_core_machine_run_budget){ 3u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != X86_CORE_MACHINE_STOP_BUDGET ||
@@ -217,6 +216,7 @@ static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
             vm86_capture(state.machine).esp != 0x00001234u ||
             !(((test_pic_read(state.board->shared_pic_master, 0x0bu)) & (VPIC_ISR_IRQ(0u))) != 0u) ||
             (((test_pic_read(state.board->shared_pic_master, 0x0au)) & (VPIC_IRR_IRQ(0u))) != 0u);
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     x86_core_machine_destroy(state.machine);
     return !failed;

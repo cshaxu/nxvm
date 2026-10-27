@@ -191,8 +191,8 @@ static lib_i32 pic_lifecycle_test_edge_empty_and_bind(void)
         test_pic_read(fixture.master, 0x0bu) != 0u || test_pic_read(fixture.slave, 0x0bu) != 0u;
     pic_lifecycle_bind(&fixture, &source, 1u);
     x86_nxvm_board_pic_irq_source_assert(source);
-    x86_nxvm_board_pic_irq_source_deassert(source);
     failed |= x86_nxvm_board_pic_get_interrupt(fixture.master, fixture.slave) != 0x09u;
+    x86_nxvm_board_pic_irq_source_deassert(source);
     pic_lifecycle_eoi(&fixture, LIB_FALSE);
     failed |= x86_nxvm_board_pic_scan_interrupt(fixture.master, fixture.slave);
     pic_lifecycle_finalize(&fixture);

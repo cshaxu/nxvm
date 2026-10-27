@@ -96,7 +96,6 @@ static inline lib_bool protected_pic_board_raise(protected_pic_board_fixture *bo
     if (x86_nxvm_board_pic_irq_source_bind(&source, board->board->shared_pic_master,
             board->board->shared_pic_slave, 0u) != LIB_STATUS_OK) return LIB_FALSE;
     x86_nxvm_board_pic_irq_source_assert(source);
-    x86_nxvm_board_pic_irq_source_deassert(source);
     return LIB_TRUE;
 }
 

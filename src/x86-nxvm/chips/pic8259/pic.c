@@ -453,8 +453,10 @@ void x86_pic_set_inputs(x86_pic *pic, lib_u8 levels,
     lib_u8 asserted_requests, lib_u8 cascade_lines)
 {
     if (pic == LIB_NULL) return;
+    /* The request latch follows a falling input until INTA freezes it.
+     * This also applies when the edge-triggered input is masked. */
+    pic->data.irr &= ~(pic->input_levels & ~levels);
     if (pic_is_level(pic)) {
-        pic->data.irr &= ~(pic->input_levels & ~levels);
         pic->data.irr |= levels;
     }
     pic->input_levels = levels;

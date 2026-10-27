@@ -537,8 +537,8 @@ lib_i32 main(void)
     test_kbc_port_write(port, 0x0064u, 0xaeu);
     failed |= x86_nxvm_board_kbc_submit_native_byte(kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= (test_pic_read(pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u;
-    failed |= x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0x1eu;
     failed |= x86_nxvm_board_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
+    failed |= x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0x1eu;
     test_kbc_port_write(port, 0x0020u, 0x20u);
 
     failed |= x86_nxvm_board_kbc_submit_native_byte(kbc, 0x1eu) != LIB_STATUS_OK;
@@ -553,19 +553,19 @@ lib_i32 main(void)
     test_kbc_port_write(port, 0x0064u, 0x60u);
     test_kbc_port_write(port, 0x0060u, 0x41u);
     test_kbc_port_write(port, 0x0060u, 0xf2u);
+    failed |= x86_nxvm_board_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     failed |= x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0xfau ||
         x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0xabu ||
         x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0x41u;
-    failed |= x86_nxvm_board_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     test_kbc_port_write(port, 0x0020u, 0x20u);
     test_kbc_port_write(port, 0x0064u, 0x60u);
     test_kbc_port_write(port, 0x0060u, 0x01u);
 
     test_kbc_port_write(port, 0x0060u, 0xf2u);
+    failed |= x86_nxvm_board_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     failed |= x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0xfau;
     failed |= x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0xabu;
     failed |= x86_nxvm_test_kbc_read_byte(port, 0x0060u) != 0x83u;
-    failed |= x86_nxvm_board_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     test_kbc_port_write(port, 0x0020u, 0x20u);
     test_kbc_port_write(port, 0x0064u, 0xaau);
     failed |= (x86_nxvm_test_kbc_read_byte(port, 0x0064u) & TEST_KBC_STATUS_SYS) == 0u ||

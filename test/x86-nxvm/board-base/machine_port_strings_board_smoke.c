@@ -125,7 +125,6 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
         test_pic_bind_source(&irq, board->shared_pic_master,
             board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed = x86_core_machine_run(machine,
             (x86_core_machine_run_budget){repeat ? 4u : 2u,0u}, &result) !=
             LIB_STATUS_OK || result.reason !=
@@ -138,6 +137,7 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
             x86_core_machine_debug_read_memory(machine,
                 input ? 0x30020u : 0x20010u, &observed,
                 sizeof(observed)) != LIB_STATUS_OK;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
     }
     if (!failed)
         failed = after.eip != 0x101u || frame_ip != (repeat ? 0u : 1u) ||

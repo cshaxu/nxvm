@@ -66,7 +66,6 @@ static lib_i32 movs_irq_case(lib_bool repeated)
         test_pic_bind_source(&irq, board->shared_pic_master,
             board->shared_pic_slave, 0u);
         x86_nxvm_board_pic_irq_source_assert(irq);
-        x86_nxvm_board_pic_irq_source_deassert(irq);
         failed = x86_core_machine_run(machine,
                 (x86_core_machine_run_budget){count + 1u, 0u},
                 &result) != LIB_STATUS_OK ||
@@ -80,6 +79,7 @@ static lib_i32 movs_irq_case(lib_bool repeated)
                 count) != LIB_STATUS_OK ||
             x86_core_machine_debug_read_memory(machine, 0x10010u, source_after,
                 count) != LIB_STATUS_OK;
+        x86_nxvm_board_pic_irq_source_deassert(irq);
         if (!failed)
             failed = after.eip != 0x101u || frame_ip != (repeated ? 0u : 1u) ||
                 after.esi != 0x11u || after.edi != 0x21u ||
