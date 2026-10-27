@@ -1,3 +1,31 @@
+# M5 T580 S75 — Delivered: PC110 system-loader handoff
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S75. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation and S74 was accepted at `d9b4cf893`. |
+| Objective | Follow the genuine selected TFT BIOS and disk boot chain through loading and executing the initial DOS system loader; independently compare guest-loaded bytes with the documented test disk. |
+| Non-goals | No BIOS or disk interception, synthetic guest-memory injection, ROM modification, external media writes, Lib/Emulator change, or claim that loader entry proves DOS startup. |
+| Baseline | [S74 evidence](../etc/evidence/t580-s74-partition-boot.md) proves both host widths reach the actual partition sector and x64 reaches the selected disk's system-file comparison. |
+| Candidate Proposal | Extend the existing bounded diagnostic to observe the first system loader at its disk-defined handoff, with independently read expected bytes; investigate and repair only any evidenced receiver defect. |
+| Files And ABI Surface | Existing MyPC110 diagnostic, responsible App or X86-NXVM/Core source and associated tests only when justified. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Hidden bounded background execution using stable x64/x86 Ninja trees, independent disk evidence, affected regressions and manifests according to actual changes. |
+| Asset Needs | Reuse the S73 task-owned reviewed test master and Setup oracle as read-only inputs with overlays; retain their external originals untouched. |
+| Reporting Requirements | Distinguish partition entry, loader entry, DOS prompt and desktop; record input and output hashes, actual tests and remaining gaps. |
+| Stop Conditions | No guest boot-code injection, external image mutation or unsupported physical-accuracy claim. |
+| Exit Criteria | Real loader handoff proven at both widths or the specific next failure identified and repaired with relevant verification. |
+| Original Owner Request | Complete PC110 implementation, both panel variants and four released executables. |
+| Similar-Issue Sweep | Check disk geometry and shared receiver callers without speculative product-specific changes. |
+
+S75 delivery: the unchanged TFT BIOS and selected disk loaded and executed
+the independently checked 1,536-byte system loader on both host widths.
+Both widths built, passed all 12 MyPC110 units and rejected missing media.
+See [S75 evidence](../etc/evidence/t580-s75-system-loader.md); only the App
+diagnostic and task records changed, with no production or release binary
+changes. DOS prompt, original panel, Window colour and PC110 release remain
+open under T580.
+
 # M5 T580 S74 — Accepted: PC110 partition boot receiver
 
 | Field | Required record |

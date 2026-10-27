@@ -546,8 +546,11 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool system_files_checkpoint = argc == 6 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-pair-system-files") == 0;
+    const lib_bool loader_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-system-loader") == 0;
+    const lib_bool system_files_checkpoint = loader_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-system-files") == 0);
     const lib_bool partition_checkpoint = system_files_checkpoint ||
         (argc == 6 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup-pair-partition-boot") == 0);
@@ -630,6 +633,7 @@ int main(int argc, char **argv)
     lib_bool ata_boot_sector = LIB_FALSE;
     lib_bool partition_boot_sector = LIB_FALSE;
     lib_bool system_files_reached = LIB_FALSE;
+    lib_bool loader_reached = LIB_FALSE;
     lib_bool setup_entry = LIB_FALSE;
     lib_bool setup_bytes_match = LIB_FALSE;
     lib_bool setup_reset_completed = LIB_FALSE;
@@ -639,6 +643,7 @@ int main(int argc, char **argv)
     static lib_u8 setup_actual[MYPC110_SETUP_IMAGE_BYTES];
     lib_u8 expected_sector[512u] = {0};
     lib_u8 expected_partition[512u] = {0};
+    lib_u8 expected_loader[1536u] = {0};
     lib_u64 boot_report = 0u;
     lib_bool button_sent = LIB_FALSE;
     lib_bool setup_wake_sent = LIB_FALSE;
@@ -716,6 +721,39 @@ int main(int argc, char **argv)
             if (status == LIB_STATUS_OK &&
                 (expected_partition[510u] != 0x55u || expected_partition[511u] != 0xaau))
                 status = LIB_STATUS_INVALID_ARGUMENT;
+            if (status == LIB_STATUS_OK && loader_checkpoint) {
+                const lib_u32 bytes_per_sector = (lib_u32)expected_partition[11u] |
+                    ((lib_u32)expected_partition[12u] << 8u);
+                const lib_u32 sectors_per_cluster = expected_partition[13u];
+                const lib_u32 reserved = (lib_u32)expected_partition[14u] |
+                    ((lib_u32)expected_partition[15u] << 8u);
+                const lib_u32 root_entries = (lib_u32)expected_partition[17u] |
+                    ((lib_u32)expected_partition[18u] << 8u);
+                const lib_u32 fat_sectors = (lib_u32)expected_partition[22u] |
+                    ((lib_u32)expected_partition[23u] << 8u);
+                const lib_u64 root_lba = (lib_u64)partition_lba + reserved +
+                    expected_partition[16u] * fat_sectors;
+                lib_u8 root_entry[32u] = {0};
+                if (bytes_per_sector != 512u || sectors_per_cluster == 0u ||
+                    root_entries == 0u || (lib_u64)root_lba * 512u + sizeof(root_entry) >
+                        lib_storage_medium_byte_count(medium))
+                    status = LIB_STATUS_INVALID_ARGUMENT;
+                else
+                    status = lib_storage_medium_read_at(medium, (lib_u64)root_lba * 512u,
+                        root_entry, sizeof(root_entry));
+                const lib_u32 cluster = (lib_u32)root_entry[26u] |
+                    ((lib_u32)root_entry[27u] << 8u);
+                const lib_u64 loader_lba = (lib_u64)root_lba +
+                    ((lib_u64)root_entries * 32u + 511u) / 512u +
+                    (cluster >= 2u ? (lib_u64)(cluster - 2u) * sectors_per_cluster : 0u);
+                if (status == LIB_STATUS_OK && (cluster < 2u ||
+                    lib_memory_compare(root_entry, "IBMBIO  COM", 11u) != 0 ||
+                    loader_lba * 512u + sizeof(expected_loader) > lib_storage_medium_byte_count(medium)))
+                    status = LIB_STATUS_INVALID_ARGUMENT;
+                if (status == LIB_STATUS_OK)
+                    status = lib_storage_medium_read_at(medium, loader_lba * 512u,
+                        expected_loader, sizeof(expected_loader));
+            }
         }
         const lib_status closed = lib_storage_medium_destroy(&medium);
         if (status == LIB_STATUS_OK) status = closed;
@@ -821,7 +859,8 @@ int main(int argc, char **argv)
             const lib_u32 expected = setup_wake_pending ?
                 (post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u) :
                 boot_handoff && ata_checkpoint ?
-                (system_files_checkpoint && partition_boot_sector ? 0x7d05u : 0x7c00u) :
+                (loader_checkpoint && system_files_reached ? 0x700u :
+                 system_files_checkpoint && partition_boot_sector ? 0x7d05u : 0x7c00u) :
                 setup_resume_checkpoint && setup_reset_completed ?
                 0xf52bdu : setup_checkpoint && post_reset_trace.power_restore_completed ?
                 0x9009eu :
@@ -890,10 +929,26 @@ int main(int argc, char **argv)
             }
             if (boot_handoff) {
                 lib_u8 actual_sector[512u] = {0};
+                if (loader_checkpoint && system_files_reached) {
+                    lib_u8 actual_loader[sizeof(expected_loader)] = {0};
+                    status = x86_core_machine_memory_read(machine->x86_core_machine,
+                        0x700u, actual_loader, sizeof(actual_loader));
+                    loader_reached = status == LIB_STATUS_OK && retired.instruction_linear == 0x700u &&
+                        lib_memory_compare(actual_loader, expected_loader, sizeof(actual_loader)) == 0;
+                    lib_c_printf("PC110:ATA:system-loader=%u target=%04x:%08x\n",
+                        loader_reached, retired.cs, retired.eip);
+                    break;
+                }
                 if (system_files_checkpoint && partition_boot_sector) {
                     system_files_reached = retired.instruction_linear == 0x7d05u;
                     lib_c_printf("PC110:ATA:system-files=%u target=%04x:%08x\n",
                         system_files_reached, retired.cs, retired.eip);
+                    if (loader_checkpoint && system_files_reached) {
+                        status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+                            X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0x700u);
+                        instruction_limit = executed + 30000000u;
+                        continue;
+                    }
                     break;
                 }
                 status = x86_core_machine_memory_read(machine->x86_core_machine,
@@ -1463,6 +1518,7 @@ int main(int argc, char **argv)
             (!ata_checkpoint || ata_boot_sector) &&
             (!partition_checkpoint || partition_boot_sector) &&
             (!system_files_checkpoint || system_files_reached) &&
+            (!loader_checkpoint || loader_reached) &&
             retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
             !observation.diagnostic.first_fault.valid;
         lib_c_printf("PC110:POWER:button=%u restore=%u rsm=%u status=%d pc=%08x resets=%u executed=%llu\n",
