@@ -1081,3 +1081,19 @@ neither the BIOS checksum proof nor the Product smoke proves guest boot.
 All owned processes exited; 205 reviewed scratch files totaling 4,385,919
 bytes were removed after recording the guest CMOS and oracle hashes. T580
 remains open.
+
+## S73 coordinator acceptance — real BIOS to MBR
+
+Actual-change review accepts Shared `43f87360a` and NXVM `2056af519`.
+ATA Recalibrate no longer aborts the original firmware's POST; the real TFT
+BIOS reads and executes the independently checked primary MBR on both host
+widths, using the documented geometry-adjusted test image and secondary
+overlay. The affected X86-NXVM and PC110 receivers and the eight PC product
+artifacts pass the recorded bounded checks. The exact x64 diagnostic binary
+boundary, unbootable configurations, external media hashes and final tracked
+source/test delta remain in [S73 evidence](../etc/evidence/t580-s73-pc110-ata-slave.md).
+The MBR checkpoint is not a DOS, Personaware, DSTN or display qualification.
+The task-local source disk, independent Setup oracle and diagnostic outputs
+remain temporarily needed by the immediately following boot-chain receiver;
+they are not deployed or committed and will be reviewed and removed after
+that receiver finishes. No owned S73 process remains. T580 remains open.

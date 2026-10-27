@@ -1,25 +1,11 @@
-# M5 T580 S73 — Active: PC110 ATA slave boot receiver
+# M5 T580 — Open after S73
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S73. |
-| Admission And Approval | Owner approved autonomous PC110 implementation and reference-based L2 modeling; S72 accepted in `4ecacbb9f`. |
-| Objective | Exercise genuine PC110 BIOS discovery and bootstrap with the available owner-supplied Personaware disk attached through the existing ATA slave route; identify and repair any evidenced receiver defect in this bounded boot path. |
-| Non-goals | No firmware patch, host BIOS/disk interception, synthetic guest state, modification or distribution of the supplied disk, Lib/Emulator changes, or claim of a booted guest from sector entry alone. |
-| Reference Baseline | S55 BIOS/ATA evidence, S59 two-unit construction, S60 physical master geometry, S72 CMOS persistence and the current original firmware. |
-| Candidate Proposal | Extend the existing real-firmware diagnostic to attach an explicitly selected disk in slot 1 using overlay, independently read its first sector and observe real BIOS ATA/INT13 and execution. Compare the slave-only run with a separately identified blank, geometry-correct temporary master in the existing hardware path; neither substitutes for original factory media. Repair only the responsible existing device or board owner if a reproduced mismatch is found. |
-| Files And ABI Surface | Existing MyPC110 diagnostic and App/ X86-NXVM receivers and corresponding tests as evidence requires; no Lib/Emulator change. |
-| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. External reference code is behavioral evidence, not copied implementation. |
-| Verification | Run bounded hidden background work in stable Ninja/ccache trees. Record source-labelled media size and hashes before and after, actual ATA and BIOS checkpoints, and guest-visible output; verify both widths for the selected receiver and relevant regressions. Use overlay and task-local output only. |
-| Expected Markers | Real guest BIOS selects a genuine configured storage unit and executes its independently verified boot sector, or the first reproducible owner-specific storage failure is located with direct evidence; this marker is not a DOS/Personaware completion claim. |
-| Asset Needs | Existing owner-supplied PC110 BIOS, CMOS and local Personaware disk; all raw firmware and guest media remain external and unmodified. |
-| Reporting Requirements | Record provenance, selected slot/geometry, source/test delta, validation and unresolved firmware, disk, RTC, panel and product-qualification limits. |
-| Stop Conditions | Never write the external image or inject guest boot code; do not misrepresent PC110-QEMU's host POST/INT13 hooks as a native BIOS boot. |
-| Exit Criteria | The boot-sector receiver is directly validated or its specific next failing owner is established, with source and dual-width evidence appropriate to the finding. |
-| Original Owner Request | Complete actual PC110 implementation, including both hardware variants and four published executables. |
-| Similar-Issue Sweep | Check primary and secondary ATA slot geometry and selected boot policy without changing other machines. |
-
-# M5 T580 — Open after S72
+S73 is accepted: Shared `43f87360a` implements ATA Recalibrate and NXVM
+`2056af519` records real-firmware dual-width BIOS-to-MBR handoff, receiving
+regressions and eight rebuilt PC artifacts. The accepted pair uses an
+explicitly documented, resized test master and the original read-only slave;
+this is not DOS or desktop qualification. Further boot, RTC, display and
+PC110 release work remains open. See [S73 evidence](../etc/evidence/t580-s73-pc110-ata-slave.md).
 
 S72 Shared `54a2518de` and NXVM `9c0a31a54` are accepted for configuration
 RAM persistence. Real TFT Setup/save and separate original-BIOS checksum
