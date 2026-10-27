@@ -1017,3 +1017,31 @@ pass under the documented x86-only budgets. The eight PC artifacts and both
 test manifests match the evidence. Lib and Emulator were not changed. S70
 closes without asserting complete PC110 boot or full-repository qualification;
 the second post-Setup power wait and the remaining T580 ledger stay open.
+
+## S71 corrective qualification finding
+
+After S70 acceptance, inspection of the actual x86 Ninja command showed its
+Release cache had empty `CMAKE_C_FLAGS_RELEASE`; CPU objects and all four
+S70 x86 PC artifacts were consequently built without compiler optimization.
+The x86 functional results above are valid only for that unoptimized graph,
+and the S70 x86 artifacts do not satisfy the required optimized-Release
+contract. S71 corrects and requalifies those artifacts and receiving tests.
+The x64 graph used `-O3 -DNDEBUG` and is unaffected. The exact origin of the
+empty cached value has not been established. See
+[S71 evidence](../etc/evidence/t580-s71-postsetup-power.md).
+
+## S71 executor delivery — real post-Setup resume and optimized x86
+
+Both widths completed the unchanged TFT firmware's Setup-save reset, second
+physical F12 wake, retained CPU-state restoration and INT 19h handoff. This
+is not proof of a booted guest. The stable x86 Release tree was corrected to
+`-O3 -DNDEBUG`; 669 x86 units, four PC profile receivers and both existing
+PC110 firmware integration cases passed. The four x86 PC executables were
+rebuilt; their hashes and the unchanged x64 identities are in the
+[artifact inventory](../etc/evidence/t580-s71-artifacts.json). The original
+DeskPro 300-second limit passed after optimization. The x86 PC110 handoff
+case passed under its former 1080-second limit in 355.89 seconds, and its
+new 600-second registration was verified but not rerun. The actual tracked
+build/test delta is +55/-23 lines across three files; no production C, Lib or
+Emulator source changed. Details and remaining qualification boundaries are
+in the [S71 evidence](../etc/evidence/t580-s71-postsetup-power.md).

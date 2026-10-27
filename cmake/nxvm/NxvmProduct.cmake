@@ -1,6 +1,14 @@
 option(PROJECT_ENABLE_BOCHX_RESEARCH
     "Build the local-only Bochx experiment manifest validator" OFF)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release" AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    set(nxvm_release_flags "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
+    if(NOT nxvm_release_flags MATCHES "(^|[ \t])-O(1|2|3|s|z|fast)([ \t]|$)" OR
+       nxvm_release_flags MATCHES "(^|[ \t])-O0([ \t]|$)")
+        message(FATAL_ERROR "NXVM Release requires optimized C compiler flags")
+    endif()
+endif()
+
 include("${CMAKE_SOURCE_DIR}/src/x86-nxvm/product/build.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/NxvmTimingTests.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/NxvmRepositoryTests.cmake")
@@ -1765,12 +1773,6 @@ function(project_add_ini_boot_case session_file)
     if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
         set(project_ini_boot_arguments 300000)
         set(project_ini_boot_timeout 310)
-        # The x86 receiver reached the installer in 357 seconds on the
-        # current host; leave bounded headroom without changing guest timing.
-        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-            set(project_ini_boot_arguments 480000)
-            set(project_ini_boot_timeout 490)
-        endif()
     endif()
     get_property(project_ini_boot_registered_cases GLOBAL
         PROPERTY PROJECT_INI_BOOT_REGISTERED_CASES)

@@ -168,10 +168,10 @@ if(TARGET mypc110-real-firmware-tft)
     # Keep this CPU-bound whole route isolated from other CTest workloads.
     add_test(NAME mypc110.integration/real-firmware-boot-handoff
         COMMAND mypc110-real-firmware-post-integration --resume-boot)
-    # The x86 host executes the unchanged guest much more slowly; retain a
-    # bounded budget above the measured successful 719-second handoff.
+    # The optimized x86 guest handoff measured 356 seconds; retain bounded
+    # host headroom without changing the guest or the x64 budget.
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(mypc110_boot_timeout 1080)
+        set(mypc110_boot_timeout 600)
     else()
         set(mypc110_boot_timeout 360)
     endif()

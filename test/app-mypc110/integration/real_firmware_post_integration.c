@@ -580,6 +580,8 @@ int main(int argc, char **argv)
     lib_u8 expected_sector[512u] = {0};
     lib_u64 boot_report = 0u;
     lib_bool button_sent = LIB_FALSE;
+    lib_bool setup_wake_sent = LIB_FALSE;
+    lib_bool setup_wake_pending = LIB_FALSE;
     lib_u8 suspended_cpu_image[512u] = {0};
     lib_u8 restored_cpu_image[512u] = {0};
     lib_bool retained_cpu_image = LIB_FALSE;
@@ -715,12 +717,14 @@ int main(int argc, char **argv)
             lib_c_printf("PC110:SETUP:enter-delivered count=%u executed=%llu\n",
                 (unsigned int)setup_input_count, (unsigned long long)executed);
         }
-        if (boot_checkpoint && !setup_checkpoint && executed >= boot_report) {
+        if (boot_checkpoint && executed >= boot_report) {
             mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
             boot_report = executed + 1000000u;
         }
         if (power_checkpoint && result.reason == X86_CORE_MACHINE_STOP_PAUSED && button_sent) {
-            const lib_u32 expected = setup_resume_checkpoint && setup_reset_completed ?
+            const lib_u32 expected = setup_wake_pending ?
+                (post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u) :
+                setup_resume_checkpoint && setup_reset_completed ?
                 0xf52bdu : setup_checkpoint && post_reset_trace.power_restore_completed ?
                 0x9009eu : boot_handoff ? 0x7c00u :
                 post_reset_trace.power_restore_completed ? 0xf52bdu :
@@ -750,7 +754,7 @@ int main(int argc, char **argv)
             }
             if (status != LIB_STATUS_OK) break;
             lib_c_printf("PC110:POWER:retired-watch=%08x pc=%08x\n", expected, result.linear_pc);
-            if (setup_resume_checkpoint && setup_reset_completed) {
+            if (setup_resume_checkpoint && setup_reset_completed && !setup_wake_pending) {
                 setup_postreset_handoff = retired.instruction_linear == 0xf52bdu;
                 lib_c_printf("PC110:SETUP:postreset-int19=%u target=%04x:%08x\n",
                     setup_postreset_handoff, retired.cs, retired.eip);
@@ -861,15 +865,21 @@ int main(int argc, char **argv)
                 resumed_cpu.eip, resumed_cpu.eflags, retained_cpu_image);
             lib_c_fflush(lib_c_stdout);
             if (boot_checkpoint && post_reset_trace.power_restore_completed) {
+                if (setup_wake_pending) {
+                    setup_wake_pending = LIB_FALSE;
+                    lib_c_printf("PC110:SETUP:postreset-rsm=1\n");
+                }
                 /* Bound the new phase, not just the expensive cold prefix,
                  * so containment returns a usable final CPU observation. */
-                instruction_limit = setup_checkpoint ? 120000000u : executed + 8000000u;
+                instruction_limit = setup_resume_checkpoint && setup_reset_completed ?
+                    executed + 20000000u : setup_checkpoint ? 120000000u : executed + 8000000u;
                 if (!setup_checkpoint)
                     mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
                 boot_report = executed + 1000000u;
                 status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
                     X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
-                    setup_checkpoint ? 0x9009eu : 0xf52bdu);
+                    setup_resume_checkpoint && setup_reset_completed ? 0xf52bdu :
+                        setup_checkpoint ? 0x9009eu : 0xf52bdu);
                 continue;
             }
             break;
@@ -900,6 +910,10 @@ int main(int argc, char **argv)
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
             if (setup_resume_checkpoint && setup_reset_completed) {
+                status = x86_core_machine_capture_observation(machine->x86_core_machine,
+                    &reset_observation);
+                if (status != LIB_STATUS_OK) break;
+                reset_exception_count = reset_observation.diagnostic.delivered_exception_count;
                 lib_c_printf("PC110:SETUP:postreset-reset pc=%08x resets=%u\n",
                     result.linear_pc, processor_reset_count);
                 lib_c_printf("PC110:SETUP:postreset-last-io=%08x/%u/%04x/%02x\n",
@@ -909,7 +923,8 @@ int main(int argc, char **argv)
                     post_reset_trace.setup_postreset_last_io.value);
                 if (result.linear_pc == 0xfffffff0u && processor_reset_count < 16u) {
                     status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
-                        X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0xf52bdu);
+                        X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
+                        setup_wake_pending ? 0x39336u : 0xf52bdu);
                     if (status == LIB_STATUS_OK) continue;
                 }
                 break;
@@ -960,9 +975,11 @@ int main(int argc, char **argv)
             x86_core_cpu_debug_cpu_snapshot cpu = {0};
 
             ++wait_count;
-            if (power_checkpoint && !button_sent &&
+            if (power_checkpoint && (!button_sent ||
+                (setup_resume_checkpoint && setup_reset_completed && !setup_wake_sent)) &&
                 x86_vl82c420_suspend_refresh_enabled(power_firmware->configuration_chip)) {
                 const lib_u32 suspended_pc = result.linear_pc;
+                const lib_bool post_setup_wake = button_sent;
                 status = x86_core_machine_run(machine->x86_core_machine,
                     (x86_core_machine_run_budget){4096u, 0u}, &result);
                 if (status != LIB_STATUS_OK || result.executed != 0u ||
@@ -974,6 +991,14 @@ int main(int argc, char **argv)
                 status = x86_core_machine_memory_read(machine->x86_core_machine,
                     0x3fe00u, suspended_cpu_image, sizeof(suspended_cpu_image));
                 if (status == LIB_STATUS_OK) {
+                    if (post_setup_wake) {
+                        lib_c_printf("PC110:SETUP:postreset-suspend pc=%08x\n", suspended_pc);
+                        post_reset_trace.power_restore_entered = LIB_FALSE;
+                        post_reset_trace.power_restore_completed = LIB_FALSE;
+                        retained_cpu_image = LIB_FALSE;
+                        setup_wake_sent = LIB_TRUE;
+                        setup_wake_pending = LIB_TRUE;
+                    }
                     kvm_input_event key = {.type = KVM_EVENT_KEY,
                         .data.key = {.key = BASE_KEY_F12, .pressed = LIB_TRUE}};
                     power_driver.deliver_input(power_driver.context, &key);
@@ -1275,11 +1300,7 @@ int main(int argc, char **argv)
     if (cmos_origin_checkpoint)
         return status == LIB_STATUS_OK && post_reset_trace.cmos_trace_completed ? 0 : 1;
     if (power_checkpoint) {
-        lib_c_printf("PC110:POWER:button=%u restore=%u rsm=%u status=%d pc=%08x resets=%u executed=%llu\n",
-            button_sent, post_reset_trace.power_restore_entered,
-            post_reset_trace.power_restore_completed, status, result.linear_pc,
-            processor_reset_count, (unsigned long long)executed);
-        return status == LIB_STATUS_OK && button_sent &&
+        const lib_bool passed = status == LIB_STATUS_OK && button_sent &&
             post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
             (!boot_checkpoint || (setup_checkpoint ? setup_entry : boot_handoff)) &&
             (!setup_checkpoint || (setup_bytes_match && (argc != 4 ||
@@ -1290,10 +1311,19 @@ int main(int argc, char **argv)
                  post_reset_trace.setup_input_bytes[2u] == 0x1cu &&
                  post_reset_trace.setup_input_bytes[3u] == 0x9cu &&
                  post_reset_trace.setup_cmos_write_count != 0u &&
-                 (!setup_resume_checkpoint || setup_postreset_handoff))))) &&
+                 (!setup_resume_checkpoint || (!setup_wake_pending &&
+                    setup_postreset_handoff)))))) &&
             (!ata_checkpoint || ata_boot_sector) &&
             retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
-            !observation.diagnostic.first_fault.valid ? 0 : 1;
+            !observation.diagnostic.first_fault.valid;
+        lib_c_printf("PC110:POWER:button=%u restore=%u rsm=%u status=%d pc=%08x resets=%u executed=%llu\n",
+            button_sent, post_reset_trace.power_restore_entered,
+            post_reset_trace.power_restore_completed, status, result.linear_pc,
+            processor_reset_count, (unsigned long long)executed);
+        lib_c_printf("PC110:POWER:result=%u exceptions=%u baseline=%u fault=%u\n",
+            passed, observation.diagnostic.delivered_exception_count,
+            reset_exception_count, observation.diagnostic.first_fault.valid);
+        return passed ? 0 : 1;
     }
     if (fdc_checkpoint) {
         lib_c_printf("PC110:FDC-RESET:asserted=%u released=%u irq-return=%u senses-complete=%u\n",
