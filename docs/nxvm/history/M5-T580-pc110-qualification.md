@@ -948,3 +948,12 @@ trees' unit suites pass 669/669 per width. No product or Shared code and no
 released executable changed. [S68 evidence](../etc/evidence/t580-s68-easysetup-input-reset.md)
 records the actual register observation and the outstanding error-log,
 post-reset persistence and main-menu boundaries.
+
+## S68 coordinator acceptance
+
+Actual-change review accepts `8d3ca6ccc` for the diagnostic packet. The sole
+code change is the existing MyPC110 test harness; observation begins at the
+real handoff and does not supply firmware data or alter injected input. Both
+widths and the unit suites passed, and task scratch was removed after hash
+review. The 128-entry trace cap and reset-before-persistence boundary remain
+explicit in the evidence. T580 remains open.

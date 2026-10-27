@@ -1,25 +1,9 @@
-# M5 T580 S68 — Active: TFT Easy-Setup input/reset semantic boundary
+# M5 T580 — Open after accepted S68
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S68. |
-| Admission And Approval | Owner approved autonomous continuation of the active PC110 implementation task. S67 is accepted through `9fdfc29d8`; this diagnostic consumes the next unresolved Easy-Setup input/reset member from the T580 ledger. |
-| Objective | Establish, using the unchanged selected TFT firmware and existing external source evidence, what semantic path the current real Easy-Setup screen takes after ordinary keyboard input and its observed processor reset. Determine whether the result identifies a complete, source-backed receiver or must remain a bounded disposition. |
-| Non-goals | No BIOS/ROM patch, forced F1/Enter outcome, fabricated CMOS values, host UI interception, model-selector, runtime media substitution, new execution path, or PC110 publication. No code change merely to make a chosen screen advance. |
-| Reference Baseline | `9fdfc29d8`; S66 real Setup-loader handoff, S67 external TFT seed receiver, current `test/app-mypc110/integration/real_firmware_post_integration.c`, and owner-managed external TFT BIOS/seed. |
-| Candidate Proposal | First audit the diagnostic's exact input injection point, post-input control flow, reset reason and persisted Board/CMOS effects. A test-only extension may capture those existing observations at the 8042 consumption boundary; it must not change guest inputs, timing or App production behavior. Correlate facts with selected firmware/source records. If evidence identifies an already-owned defect with a complete contract, revise this packet before repair; otherwise record a source-bounded disposition and leave implementation unchanged. |
-| Files And ABI Surface | Existing MyPC110 real-firmware diagnostic and its test CMake registration may receive bounded observation-only changes; App construction and external source/archive evidence are read-only. No production source/API/ABI change is admitted. A repair requires an explicit packet revision naming its owner, tests and surface. |
-| Applicable Rules | Docs guide Task Reading Set; execution lifecycle and evidence-led convergence; architecture's single RTC/configuration owner; coding/source rules; no firmware/media import into Git. |
-| Verification | Reproduce the existing transfer on x64/x86; capture only existing CPU/Board/CMOS observations around each injected input and reset; inspect static source/firmware context; distinguish a checkpoint from successful Setup/persistence/boot. No benchmark or retirement bound is success by itself. |
-| Expected Markers | Input make/break delivery point, guest PC/reset observation, reset vector/reason, relevant configuration deltas, and an evidence-backed disposition. |
-| Asset Needs | Existing external TFT BIOS, 1 MiB font and optional external 128-byte seed only. No new protected asset is imported. |
-| Reporting Requirements | Record exact input transaction and reset semantics, source grade, both-width result, unchanged paths and next owner/receiver if unresolved. State whether any proposed repair has a complete contract. |
-| Stop Conditions | Stop before interpreting a reset as saved configuration, treating a display frame as normal Setup completion, inferring a hardware protocol from a single screen, or adding a synthetic route. If the remaining semantics are underdetermined, record and transfer them. |
-| Exit Criteria | One evidence-backed disposition or a separately admitted, fully specified repair; task-owned scratch cleaned; no PC110 product/release claim. |
-| Original Owner Request | Continue the PC110 T autonomously using existing external reference and BYOB assets, with normal compile/test/release governance. |
-| Similar-Issue Sweep | Check both host widths and both injected Enter transactions; distinguish CMOS configuration, reset control and keyboard delivery owners rather than adding a PC110-only input path. |
-
-# M5 T580 — Open after accepted S66
+S68 is accepted at `8d3ca6ccc`. Both host widths replay the unchanged TFT
+firmware's ERROR → date/time → reset input path, with actual 8042 reads and
+RTC port writes. Main-menu entry, error origins, post-reset persistence, guest
+boot and product publication remain open. See [S68 evidence](../etc/evidence/t580-s68-easysetup-input-reset.md).
 
 S66 is accepted at `daf38c36e`.  The unchanged selected TFT BIOS now
 has direct dual-width evidence for full guest-side Easy-Setup decompression,
