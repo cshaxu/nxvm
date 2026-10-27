@@ -1,3 +1,24 @@
+# M5 T580 S70 — Active: post-Setup timer and IRQ path
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S70. |
+| Admission And Approval | Owner approved autonomous PC110 implementation, automatic S sequencing and use of external emulator behavior as L2; S69 delivered at `fc4bf1238`. |
+| Objective | Determine and correctly repair the receiver or timing that leads unchanged TFT firmware to `102` after Setup saves valid CMOS and requests CPU reset. Continue the genuine guest path as far as the affected batch allows. |
+| Non-goals | Do not suppress PIC requests, patch or intercept BIOS execution, fabricate guest state, change Lib/Emulator, modify external media or declare PC110 ready based on a single checkpoint. |
+| Reference Baseline | S69 dual-width CMOS and post-reset evidence, T580 qualification ledger, selected TFT firmware and source-labelled PC110 reference models. |
+| Candidate Proposal | Intel 8259A data sheet 231468-003 Fig. 9 and edge/level requirements describe a request latch following its input while not frozen for acknowledge. The existing PIC clears a falling input only in level mode, which can deliver a deasserted IRQ0 after unmask. Correct the existing chip input transition, retain its single input/acknowledge path, and test masked and live transitions; do not add a PC110 case. Verify the unchanged TFT firmware and other PC receivers. |
+| Files And ABI Surface | `src/x86-nxvm/chips/pic8259/pic.c`, its existing test corpus and manifests as necessary, NXVM task records and existing MyPC110 diagnostic and test registration. The x86 firmware boot-handoff and DeskPro boot receiver budgets may reflect measured successful runtimes; original timeouts remain documented. No new public API, type, state or Lib/Emulator change. |
+| Applicable Rules | NXVM Task Reading Set, source/research policy, architecture, coding and execution rules; retain existing component ownership and protect unrelated changes. |
+| Verification | Confirm the Intel edge-latch and acknowledgement semantics, test masked assertion/deassertion, held assertion, repeated transitions and level mode through existing PIC/Board paths on both widths, then replay unchanged TFT firmware and PC receiver regressions. Rebuild affected PC artifacts and apply the product release gates; record any failure without treating it as qualification. |
+| Expected Markers | A source-labelled receiver/contract and real firmware progression beyond the previously observed `102`, or explicitly identified unresolved behavior without a false passing result. |
+| Asset Needs | Existing owner-managed PC110 TFT BIOS, font and CMOS seed; no protected payload is committed. |
+| Reporting Requirements | Record actual evidence, source grade, affected components, diff, tests, remaining failure modes and unchanged user assets. |
+| Stop Conditions | Do not infer PC110 hardware behavior from forced firmware hooks or mask an 8259 edge merely to pass; revise the packet before production changes. |
+| Exit Criteria | Dispose the complete S70 timer/IRQ batch with an evidenced repair and verification or an explicit unresolved receiver; preserve the remaining T580 ledger and clean owned scratch. |
+| Original Owner Request | Continue PC110 implementation through real product qualification; use external emulator implementations as L2 where appropriate. |
+| Similar-Issue Sweep | Compare cold versus CPU-only reset and both host widths; retain behavior of other PC machines and distinguish separate CMOS persistence. |
+
 # M5 T580 — Open after S69 investigation
 
 S69 identifies the captured CMOS checksum mismatch and the firmware's `173`

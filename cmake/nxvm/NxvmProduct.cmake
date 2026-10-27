@@ -1765,6 +1765,12 @@ function(project_add_ini_boot_case session_file)
     if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
         set(project_ini_boot_arguments 300000)
         set(project_ini_boot_timeout 310)
+        # The x86 receiver reached the installer in 357 seconds on the
+        # current host; leave bounded headroom without changing guest timing.
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set(project_ini_boot_arguments 480000)
+            set(project_ini_boot_timeout 490)
+        endif()
     endif()
     get_property(project_ini_boot_registered_cases GLOBAL
         PROPERTY PROJECT_INI_BOOT_REGISTERED_CASES)

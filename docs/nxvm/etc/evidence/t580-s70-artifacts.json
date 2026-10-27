@@ -1,0 +1,56 @@
+{
+  "baseline": "fc4bf1238",
+  "source_pic_sha256": "E5209C47C8349A691A07012A8EC45A124AFA930AF7FB8BFB563EF7EFAD4F49A3",
+  "model40_x86_boot": "Initial 300-second candidate and baseline timed out; candidate extended run passed and registered 480-second CTest passed in 370.32 seconds.",
+  "artifacts": [
+    {
+      "path": "assets/nxvm/nxvm_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1557461,
+      "sha256": "4E833A3EEDCC3AD0B0A2FADA592B727D3A23E0DCCF7962A5FAE833DEA02A35F0"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1773810,
+      "sha256": "B6B0D8F2B6DD4946206F7FD8FF91C6F053879734ADF16EA27CBC0360F51EC009"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1545741,
+      "sha256": "92CB0AB956108720506794677EC5B8A4FE32A74D1715415381DC66320F3AE6E6"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1760801,
+      "sha256": "CA6DE0F4989633CEB372F87D3252BD2AB8A001E3721C2DA71879E4F188677A67"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1558315,
+      "sha256": "685820807401A38DA05C1076ACF722FC3DD94703C8E2EAEC90C4E4E99EE954EE"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1774464,
+      "sha256": "079E716A9188FADBEB4662DCECAFB5BFC1AA4305A221D47578FCCC69C3CB316A"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1544977,
+      "sha256": "63E43D8B220EB73E7EB483D026C60DE74436C2B4D5FEE76784E42537700DE3C6"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1762816,
+      "sha256": "A26EF7A9CD91B5553E21B8A62139C3C90A0705B3F7EFB59A1599645D707B34C0"
+    }
+  ],
+  "shared_implementation_commit": "3d692e367"
+}

@@ -976,3 +976,34 @@ rewritten. Both architectures build the diagnostic and pass the short
 checksum observation; the post-reset boot remains a documented failure.
 No full repository or desktop qualification is claimed. See
 [S69 evidence](../etc/evidence/t580-s69-post-error-investigation.md).
+
+## S70 executor delivery — post-Setup timer and IRQ
+
+Shared implementation `3d692e367` makes the existing 8259 input owner
+retract an unacknowledged request when
+its input falls in edge mode, consistent with the original Intel request-latch
+contract; no PC110-specific interrupt shortcut is introduced. On x64 the
+unchanged TFT firmware passes the previously observed `102` branch and later
+reaches a second power wait, not a completed post-Setup boot. The full
+X86-NXVM unit selection passes 233/233 on each host width; existing test
+stimuli now hold IRQ inputs through acknowledgement or pending-state checks.
+
+Both host widths pass the registered real-firmware FDC-reset and boot-handoff
+checkpoints. The original x86 360-second boot-handoff timeout is retained in
+the evidence; the same executable subsequently reached genuine F12, RSM and
+INT 19h in approximately 719 seconds, and the registered rerun passes in
+745.24 seconds under an x86-specific 1080-second budget. All four PC product
+profiles build and pass INI identity and floppy-boot receiving tests on both
+widths. The initial x86 DeskPro 300-second failure and same-host old-PIC
+control also remain recorded; its measured 357-second direct success led to
+a 480-second x86-only guest bound and a passing 370.32-second registered
+rerun. No guest timing or x64 budget changed.
+
+Eight affected PC artifacts were rebuilt with their existing identity and
+checked for PE width; see [S70 inventory](../etc/evidence/t580-s70-artifacts.json).
+The counted tracked implementation delta, excluding manifests, documentation
+and binaries, is one production file +3/-1 and 54 test/config files +130/-73.
+Lib and Emulator are unchanged. This is bounded PIC and receiving evidence,
+not full-tree, desktop, Setup persistence, post-Setup boot or PC110 product
+qualification. Sources, hashes and unresolved results are in
+[S70 evidence](../etc/evidence/t580-s70-reset-interrupt-investigation.md).

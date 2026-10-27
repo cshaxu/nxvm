@@ -715,8 +715,7 @@ int main(int argc, char **argv)
             lib_c_printf("PC110:SETUP:enter-delivered count=%u executed=%llu\n",
                 (unsigned int)setup_input_count, (unsigned long long)executed);
         }
-        if (boot_checkpoint && !setup_checkpoint && post_reset_trace.power_restore_completed &&
-            executed >= boot_report) {
+        if (boot_checkpoint && !setup_checkpoint && executed >= boot_report) {
             mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
             boot_report = executed + 1000000u;
         }
