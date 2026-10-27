@@ -1045,3 +1045,12 @@ new 600-second registration was verified but not rerun. The actual tracked
 build/test delta is +55/-23 lines across three files; no production C, Lib or
 Emulator source changed. Details and remaining qualification boundaries are
 in the [S71 evidence](../etc/evidence/t580-s71-postsetup-power.md).
+
+## S71 coordinator acceptance
+
+Actual-change review accepts `f23baaa30` for the scoped firmware handoff and
+x86 Release correction. The tested 1080-second registration and final
+600-second registration remain distinguished in the evidence; no completed
+guest boot or desktop qualification is claimed. The owned background jobs
+exited, and 63 reviewed scratch files totaling 6,245,660 bytes were removed.
+T580 remains open for its other qualification domains.

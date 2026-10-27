@@ -1,25 +1,11 @@
-# M5 T580 S71 — Active: post-Setup power and boot continuation
+# M5 T580 — Open after S71
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S71. |
-| Admission And Approval | Owner approved autonomous PC110 implementation and automatic S sequencing; S70 accepted in `33435d7ac`. |
-| Objective | Follow the unchanged TFT firmware after Setup saves CMOS and resets, determine why it enters the second power wait, and continue the actual user power and guest boot path to the next semantic boundary. Correct the newly discovered unoptimized x86 Release configuration and requalify its affected artifacts and receivers. |
-| Non-goals | No automatic product key injection, firmware interception or patched ROM, invented CMOS contents, Lib/Emulator changes, false boot or release claim. |
-| Reference Baseline | S69 real Setup/reset and S70 PIC evidence; real suspend/button/RSM receiver evidence from S53/S54 and current owner-managed TFT firmware and CMOS. |
-| Candidate Proposal | First classify the second wait from actual CPU, suspend-refresh and firmware state. If it is a real suspend, extend the existing integration diagnostic to deliver an explicit second physical F12 make/break only after that state has been observed; verify the existing receiver and actual firmware restoration before drawing any conclusion. Repair an actual receiver only if the observed path and source justify it. |
-| Files And ABI Surface | Existing MyPC110 diagnostic, NXVM task records and the actual App or X86-NXVM receiver only if evidence requires; NXVM build qualification and four x86 PC artifacts for the Release correction. No new public API or shared Lib/Emulator modification without separate review. |
-| Applicable Rules | NXVM Task Reading Set, source/research, architecture, coding and execution rules. Preserve owner INI and media. |
-| Verification | Use bounded, hidden background work and stable Ninja/ccache trees. S71 owns `build/t580-s71`: x64/x86 replay has respective 1,800/3,600-second wall limits, a 300-second no-progress limit and a 64 MiB output limit; stop and wait for the owned process on excess. Verify real x86 Release compile commands use optimization, requalify its affected unit, firmware and product/profile receivers, and rebuild the four x86 PC artifacts. Record source-labelled checkpoints, actual inputs and failures. |
-| Expected Markers | The real reason for the second wait and the next genuine firmware/boot outcome, or a specific unqualified receiver with evidence; no forced program-counter transition. |
-| Asset Needs | Existing owner-managed TFT firmware, CMOS and the reviewed Setup comparison oracle; never commit protected firmware, ROM, media or oracle. |
-| Reporting Requirements | Record actual source/test delta, timing, commands, exit statuses, remaining DSTN/panel/color, persistence, media and desktop boundaries. |
-| Stop Conditions | Do not infer successful restoration from a sent key; do not mutate ROM/CMOS to bypass a firmware error. |
-| Exit Criteria | Dispose this bounded post-Setup power/boot batch with a real verified receiver or an explicitly located remaining issue; requalify the x86 optimized Release artifacts and receivers, and preserve the complete T580 qualification ledger. |
-| Original Owner Request | Complete PC110 implementation through real dual-model product qualification; use other emulators as L2 where appropriate. |
-| Similar-Issue Sweep | Distinguish cold boot, first resume and post-Setup reset; do not regress the other PC models. |
-
-# M5 T580 — Open after S70
+S71 implementation `f23baaa30` is accepted for the bounded real-firmware
+post-Setup power path and optimized x86 Release correction. Both widths reach
+the real INT 19h handoff after the second wake; 669 x86 units and the affected
+PC receivers pass, and the four optimized x86 PC artifacts are published.
+The [S71 evidence](../etc/evidence/t580-s71-postsetup-power.md) preserves the
+exact timeout and remaining qualification boundaries. T580 remains open.
 
 S70 is accepted: Shared `3d692e367` corrects the 8259 input lifetime and
 NXVM `3a1c703a0` records dual-width receiver evidence and eight rebuilt PC
@@ -28,12 +14,11 @@ boot-handoff checkpoints pass per width, and all eight PC profile identity
 and boot receivers pass under their final measured budgets. Earlier timeouts
 and the old-PIC control remain documented, not relabelled as passes.
 
-The unchanged TFT BIOS passed the previously observed `102` branch in the
-x64 post-Setup replay but later reached another power wait. The x86 replay of
-that particular post-Setup path, configuration persistence across processes,
-main Setup, actual guest/media boot, PCIC, panel identity and color, DSTN,
-desktop behavior and PC110 product publication remain unqualified. T580
-remains open. See [S70 evidence](../etc/evidence/t580-s70-reset-interrupt-investigation.md).
+The unchanged TFT BIOS passed the previously observed `102` branch and the
+subsequent power wait on both widths in S71. Configuration persistence across
+processes, main Setup, actual guest/media boot, PCIC, panel identity and color,
+DSTN, desktop behavior and PC110 product publication remain unqualified. See
+[S70 evidence](../etc/evidence/t580-s70-reset-interrupt-investigation.md).
 
 ## Verified Baseline
 
