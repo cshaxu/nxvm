@@ -130,6 +130,9 @@ static lib_i32 rtc_cmos_test_cmos_adapter(lib_bool extended)
     x86_core_machine *machine = LIB_NULL;
     x86_nxvm_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
+    lib_u8 cmos[X86_RTC_REGISTER_COUNT - (X86_RTC_REG_D + 1u)] = {0};
+    const lib_size cmos_count = (extended ? X86_RTC_REGISTER_COUNT :
+        X86_RTC_DEFAULT_REGISTER_COUNT) - (X86_RTC_REG_D + 1u);
     lib_i32 masked = 0;
     lib_i32 failed = 0;
 
@@ -196,6 +199,11 @@ static lib_i32 rtc_cmos_test_cmos_adapter(lib_bool extended)
     if (!failed && extended && (x86_core_machine_bus_write(machine, 0x70u, 0x7fu) !=
         LIB_STATUS_OK || x86_core_machine_bus_read(machine, 0x71u, &value) !=
         LIB_STATUS_OK || value != 0xa5u)) failed = 1;
+    if (!failed && (x86_nxvm_board_capture_cmos(board, cmos, cmos_count - 1u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        x86_nxvm_board_capture_cmos(board, cmos, cmos_count) != LIB_STATUS_OK ||
+        cmos[0x3bu - (X86_RTC_REG_D + 1u)] != (extended ? 0x55u : 0xaau) ||
+        (extended && cmos[0x7fu - (X86_RTC_REG_D + 1u)] != 0xa5u))) failed = 1;
     x86_core_machine_destroy(machine);
     return failed;
 }

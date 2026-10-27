@@ -21,6 +21,8 @@ typedef struct x86_nxvm_product_information {
 typedef struct x86_nxvm_product_machine {
     emulator_product_machine composition;
     const void *context;
+    /* Only a successfully published machine may persist its configuration. */
+    lib_bool configuration_save_ready;
     lib_status (*information)(const void *context, const void *machine,
         x86_nxvm_product_information *out_info);
     lib_status (*get_speed)(const void *machine, x86_nxvm_machine_speed *out_speed);

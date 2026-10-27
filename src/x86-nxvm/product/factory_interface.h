@@ -6,6 +6,7 @@
 #include "x86-ibmpc/product/command_interface.h"
 #include "x86-nxvm/product/machine_interface.h"
 #include "x86-nxvm/machine/input_interface.h"
+#include "x86-nxvm/machine/machine_interface.h"
 
 /* Fixed composition values and assets outlive Product. prepare interprets the
  * selected Profile and publishes copied construction plus its context on
@@ -22,6 +23,8 @@ typedef struct x86_nxvm_product_machine_binding {
     const x86_nxvm_machine_assets *firmware;
     lib_status (*prepare)(const x86_nxvm_machine_config *config,
         const x86_nxvm_machine_assets *assets, x86_nxvm_machine_construction *out_construction);
+    /* Called after worker shutdown and unbinding, before Machine destruction. */
+    lib_status (*save_configuration)(x86_nxvm_machine *machine);
 } x86_nxvm_product_machine_binding;
 
 lib_status x86_nxvm_product_configure_machine(const x86_nxvm_product_machine_binding *binding,

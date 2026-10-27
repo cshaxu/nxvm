@@ -12,12 +12,20 @@
 static lib_status x86_nxvm_product_bind_composed(void *opaque, emulator_machine *emulator)
 {
     x86_nxvm_product_machine *machine = opaque;
-    return machine->composition.bind(machine->composition.machine, emulator);
+    lib_status status = machine->composition.bind(machine->composition.machine, emulator);
+    if (status == LIB_STATUS_OK && emulator != LIB_NULL)
+        machine->configuration_save_ready = LIB_TRUE;
+    return status;
 }
 
 static lib_status x86_nxvm_product_destroy_composed(void *opaque)
 {
     x86_nxvm_product_machine *machine = opaque;
+    const x86_nxvm_product_machine_binding *binding = machine->context;
+    lib_status status = LIB_STATUS_OK;
+    if (machine->configuration_save_ready && binding->save_configuration != LIB_NULL)
+        status = binding->save_configuration(machine->composition.machine);
+    if (status != LIB_STATUS_OK) return status;
     return machine->composition.destroy(machine->composition.machine);
 }
 

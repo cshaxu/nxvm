@@ -431,6 +431,26 @@ void x86_nxvm_machine_destroy(x86_nxvm_machine *session)
     lib_release(session);
 }
 
+lib_status x86_nxvm_machine_capture_cmos(x86_nxvm_machine *session,
+    lib_u8 *bytes, lib_size byte_count)
+{
+    lib_u8 image[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES] = {0};
+    lib_status status;
+    lib_size expected;
+
+    if (session == LIB_NULL || bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (session->executor != LIB_NULL || session->board == LIB_NULL ||
+        !session->construction.topology.rtc_cmos_present)
+        return LIB_STATUS_INVALID_STATE;
+    expected = session->construction.topology.rtc_cmos.extended_registers ?
+        X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES : X86_NXVM_MACHINE_CMOS_SEED_BYTES;
+    if (byte_count != expected) return LIB_STATUS_INVALID_ARGUMENT;
+    status = x86_nxvm_board_capture_cmos(session->board, image + 0x0eu,
+        expected - 0x0eu);
+    if (status == LIB_STATUS_OK) lib_memory_copy(bytes, image, expected);
+    return status;
+}
+
 lib_status x86_nxvm_machine_get_reset_vector(const x86_nxvm_machine *session,
     x86_nxvm_machine_reset_vector *out_vector)
 {

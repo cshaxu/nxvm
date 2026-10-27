@@ -6,10 +6,19 @@ static lib_u32 binds;
 static lib_u32 unbinds;
 static lib_u32 destroys;
 static lib_u32 runs;
+static lib_u32 saves;
 static lib_bool reject_bind;
 static lib_bool reject_configuration;
+static lib_bool reject_save;
 static lib_bool valid;
-static const x86_nxvm_product_machine_binding binding = {.name = "fixture"};
+static lib_status save_configuration(x86_nxvm_machine *machine)
+{
+    valid = valid && (void *)machine == &candidate && unbinds == saves + 1u;
+    ++saves;
+    return reject_save ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+}
+static const x86_nxvm_product_machine_binding binding = {
+    .name = "fixture", .save_configuration = save_configuration};
 
 static lib_status bind_machine(void *machine, emulator_machine *emulator)
 {
@@ -83,8 +92,9 @@ lib_i32 x86_ibmpc_product_run(const x86_ibmpc_product_definition *definition)
     status = machine.bind(machine.machine, (emulator_machine *)&candidate);
     if (status == LIB_STATUS_OK)
         valid = valid && machine.bind(machine.machine, LIB_NULL) == LIB_STATUS_OK;
-    valid = valid && machine.destroy(machine.machine) == LIB_STATUS_OK;
-    return status == LIB_STATUS_OK ? 0 : 1;
+    const lib_status destroyed = machine.destroy(machine.machine);
+    valid = valid && destroyed == (reject_save ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK);
+    return status == LIB_STATUS_OK && destroyed == LIB_STATUS_OK ? 0 : 1;
 }
 
 lib_i32 main(void)
@@ -108,5 +118,10 @@ lib_i32 main(void)
     if (x86_nxvm_product_run(long_name, "nxvm.ini", &binding) != 1 ||
         !valid || runs != 2u || destroys != 3u)
         return 4;
+    reject_bind = LIB_FALSE;
+    reject_save = LIB_TRUE;
+    if (x86_nxvm_product_run("fixture", "nxvm.ini", &binding) != 1 ||
+        !valid || runs != 3u || saves != 2u || destroys != 3u)
+        return 5;
     return 0;
 }

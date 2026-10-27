@@ -53,6 +53,10 @@ lib_status x86_nxvm_machine_describe_emulator_driver(x86_nxvm_machine *session,
  * that non-owning link during ordered teardown. */
 lib_status x86_nxvm_machine_bind_emulator_machine(x86_nxvm_machine *session,
     emulator_machine *emulator_machine);
+/* Caller ensures quiescence; a bound Emulator machine is rejected. Bytes
+ * 00h--0Dh are zero; the live RTC retains ownership of those registers. */
+lib_status x86_nxvm_machine_capture_cmos(x86_nxvm_machine *session,
+    lib_u8 *bytes, lib_size byte_count);
 lib_status x86_nxvm_machine_reconfigure_memory(x86_nxvm_machine *session,
     lib_size memory_bytes);
 lib_status x86_nxvm_machine_get_speed(const x86_nxvm_machine *session,
