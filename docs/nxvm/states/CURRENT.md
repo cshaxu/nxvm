@@ -1,3 +1,33 @@
+# M5 T580 S74 — Delivered: PC110 partition boot receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S74. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation, source-labelled L2 references, and S73 closed at `a916220f9`. |
+| Objective | Continue the genuine TFT BIOS handoff through the actual MBR and its active partition boot sector, identify and repair any evidenced device, board or CPU receiver defect, and retain the remaining DOS/Personaware path for T580. |
+| Non-goals | No host BIOS/disk interception, ROM patch, synthetic guest memory, external media writes, Lib/Emulator modification, or claim that reaching the partition sector proves DOS startup. |
+| Baseline | [S73 evidence](../etc/evidence/t580-s73-pc110-ata-slave.md): dual-width real BIOS to matching primary MBR, validated ATA Recalibrate, and identified task-local geometry-adjusted test image. |
+| Candidate Proposal | Extend the existing diagnostic after its verified MBR entry, follow the guest's ordinary INT 13h and the second 7C00h handoff, and independently compare the selected partition sector. Then observe the next finite DOS execution checkpoint and repair only a demonstrated existing owner. |
+| Files And ABI Surface | Existing MyPC110 diagnostics, affected App or X86-NXVM/Core implementation and tests only if evidence requires; no new public contract without the existing owner authorization. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Hidden, finite background work in stable Ninja/ccache trees; x64/x86 direct guest and independent disk evidence; affected receiver regressions, manifests and artifacts as required by actual changes. |
+| Asset Needs | Reuse S73's reviewed task-local test image and Setup oracle for this immediate continuation, each as a read-only input with overlay. Preserve and hash the source external image; remove task-local inputs after the receiver no longer needs them. |
+| Reporting Requirements | Distinguish MBR, partition boot sector, DOS and desktop results; record source/test delta, provenance, budget, output hashes, failures and retained qualification gaps. |
+| Stop Conditions | Never alter external master media or inject guest boot code; do not treat a timeout or sector handoff as OS success. |
+| Exit Criteria | Actual MBR-to-partition transfer is proven on both widths, or a specific next failing owner is established and repaired within this bounded receiver; record subsequent DOS checkpoint honestly. |
+| Original Owner Request | Complete actual PC110 implementation, both hardware variants and four published executables. |
+| Similar-Issue Sweep | Check boot read geometry and shared ATA callers without changing other machines speculatively. |
+
+S74 delivery: the independently compared MBR and active partition boot sector
+were executed under the real TFT BIOS on both host widths. The x64 follow-up
+also reached the selected disk's successful system-file-name check. Both
+widths built, MyPC110 units passed 12/12 each, and missing-media preflight
+failed correctly on each. See [S74 evidence](../etc/evidence/t580-s74-partition-boot.md)
+for exact binary boundaries, hashes, provenance and remaining limitations.
+Only the App diagnostic and task documentation changed; no production source
+or released product binary changed. DOS, DSTN, Window colour and PC110
+publication remain open under T580.
+
 # M5 T580 — Open after S73
 
 S73 is accepted: Shared `43f87360a` implements ATA Recalibrate and NXVM
