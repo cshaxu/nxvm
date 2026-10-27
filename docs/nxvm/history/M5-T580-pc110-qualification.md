@@ -1109,3 +1109,14 @@ colour or PC110 release. See the [S74 evidence](../etc/evidence/t580-s74-partiti
 for test-binary boundaries and input hashes. The task-owned disk and oracle
 remain needed by the immediately following system-loader receiver. T580
 remains open.
+
+## S75 coordinator acceptance — system loader
+
+Actual-change review accepts `7c48ea4f5`: real TFT firmware and the selected
+disk execute the independently compared first three loader sectors on both
+host widths. Both builds and 12 MyPC110 units per width pass; missing primary
+media is rejected. This diagnostic-only delivery does not establish a DOS
+prompt, original-panel or Window colour behavior, or PC110 product release.
+The retained input hashes, execution boundaries and explicit wrapper
+limitation are in [S75 evidence](../etc/evidence/t580-s75-system-loader.md).
+T580 remains open; the task-owned test input is retained for the next receiver.

@@ -1,4 +1,4 @@
-# M5 T580 S75 — Delivered: PC110 system-loader handoff
+# M5 T580 S75 — Accepted: PC110 system-loader handoff
 
 | Field | Required record |
 | --- | --- |
