@@ -61,6 +61,49 @@ that wait as a hang. This remains a bounded observation, not proof of a
 completed DOS boot. The context log SHA-256 is
 `307ad138841457d1c1ba9caab699f122cfa0a15a4ac096d92a327e7a1404eb56`.
 
+A longer bounded x64 continuation executed 400 million instructions after
+the loader. It passed the earlier timer sample but then repeatedly entered
+0048:023E and 3000:8000, with the delivered-exception count rising above
+290,000; the Core reported no terminal fault. At the final sample the BIOS
+tick had advanced to 06B0h and no new display frame was produced. This is a
+reproducible later startup failure, not merely a too-short timer budget; it
+does not identify the responsible exception or owner. The long-run log
+SHA-256 is `7cf7015f0c462ae2388890b5a6deb638b9b447f6f274e55af6310b85aa6e3e64`.
+
+A bounded storm probe stopped at 1,000 delivered exceptions. Its most recent
+exception is #GP with IDT error B2h at the VM86 instruction `INT 16h`, with
+AH=01h, followed by a conditional branch. This is the BIOS nonblocking key
+availability query. It supports the hypothesis that guest software is waiting
+for input, but does not prove which key or whether a display is visible. The
+display provider reported no new frame at that stop; that is not evidence of
+the current contents of the last visible frame. The exact probe log SHA-256 is
+`df14bc5d7fba12dc2e4f01ba9bcd3cafd35b6a2962b25cb5f9ff8475e03caa13`.
+
+The F65535 graphics snapshot implementation currently recognizes only VGA
+mode 12; other modes return unsupported. The lack of a produced frame is
+consistent with a possible unsupported mode but does not identify the active
+register configuration. That remains a separate scanout investigation.
+
+An active follow-up will send one Enter make/break through the existing
+Machine input driver when the guest first executes its BIOS key-availability
+query, then collect the outcome and the F65535 register banks after guest
+execution stops. A just-started earlier version that waited for 1,000
+exceptions was terminated before completion so this equivalent observation
+need not wait through the extra guest polling; it is not counted as a pass.
+Register inspection occurs only after guest execution ends.
+
+The x64 input probe sent Enter at an earlier `INT 16h/AH=01h` query at
+B3AC:0A8B, not the later 0FF2:0735 query. It continued into the timer
+path, so this is not proof that the later wait consumed the key. At the
+stop the actual graphics registers included CRTC horizontal display end
+4Fh, vertical display end DAh with overflow 3Eh, and offset 40h; graphics
+register 6 was 05h. The current capture therefore rejects the selected
+planar configuration: the programmed dimensions are 640 by 475 with
+128-byte stride, not the hard-coded 640 by 480 with 80-byte stride. This
+is source and register evidence for an incomplete scanout receiver; it is
+not yet a verified display fix. The probe log SHA-256 is
+`bef1522368d8e6a73152b1d12d82292da825bd262a4edf77d31028a4e47900c7`.
+
 The original failing log SHA-256 is
 `dd392e4dfede9cdc0f1c6a1746339c01501f3cff55bb30efdeba3dfc6a418dd4`;
 its raw guest frame SHA-256 is

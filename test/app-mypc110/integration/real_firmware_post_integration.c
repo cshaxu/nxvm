@@ -9,6 +9,7 @@
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/retirement_observation_interface.h"
 #include "x86-core/machine/trace_interface.h"
+#include "x86-nxvm/chips/f65535/f65535_interface.h"
 #include "x86-nxvm/machine/machine_private.h"
 #include "x86-nxvm/machine/display.h"
 #include "x86-nxvm/machine/waiting.h"
@@ -546,8 +547,14 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool os_exception_checkpoint = argc == 6 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-pair-os-exception") == 0;
+    const lib_bool os_key_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-os-key") == 0;
+    const lib_bool os_storm_checkpoint = os_key_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-os-storm") == 0);
+    const lib_bool os_exception_checkpoint = os_storm_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-os-exception") == 0);
     const lib_bool os_checkpoint = os_exception_checkpoint ||
         (argc == 6 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup-pair-os-progress") == 0);
@@ -641,6 +648,7 @@ int main(int argc, char **argv)
     lib_bool system_files_reached = LIB_FALSE;
     lib_bool loader_reached = LIB_FALSE;
     lib_bool os_exception_logged = LIB_FALSE;
+    lib_bool os_key_sent = LIB_FALSE;
     lib_bool setup_entry = LIB_FALSE;
     lib_bool setup_bytes_match = LIB_FALSE;
     lib_bool setup_reset_completed = LIB_FALSE;
@@ -1114,6 +1122,40 @@ int main(int argc, char **argv)
                 os_exception_logged = LIB_TRUE;
             }
         }
+        if (os_storm_checkpoint && loader_reached && os_exception_logged && !os_key_sent &&
+            status == LIB_STATUS_OK) {
+            status = x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
+            if (status != LIB_STATUS_OK) break;
+            const x86_core_cpu_fault_snapshot *exception =
+                &observation.diagnostic.last_delivered_exception;
+            if ((os_key_checkpoint && exception->valid &&
+                    exception->point.bytes[0u] == 0xcdu && exception->point.bytes[1u] == 0x16u &&
+                    ((exception->eax >> 8u) & 0xffu) == 1u) ||
+                (!os_key_checkpoint && observation.diagnostic.delivered_exception_count >= 1000u)) {
+                lib_c_printf("PC110:OS:%s count=%u mask=%08x code=%08x point=%04x:%08x bytes=%02x %02x %02x %02x flags=%08x eax=%08x edx=%08x ss=%04x esp=%08x\n",
+                    os_key_checkpoint ? "input-wait" : "storm",
+                    observation.diagnostic.delivered_exception_count,
+                    exception->exception_mask, exception->exception_code,
+                    exception->point.cs, exception->point.eip,
+                    exception->point.bytes[0u], exception->point.bytes[1u],
+                    exception->point.bytes[2u], exception->point.bytes[3u],
+                    exception->eflags, exception->eax, exception->edx,
+                    exception->ss, exception->esp);
+                if (os_key_checkpoint) {
+                    kvm_input_event key = {.type = KVM_EVENT_KEY,
+                        .data.key = {.key = BASE_KEY_ENTER, .pressed = LIB_TRUE}};
+                    power_driver.deliver_input(power_driver.context, &key);
+                    key.data.key.pressed = LIB_FALSE;
+                    power_driver.deliver_input(power_driver.context, &key);
+                    os_key_sent = LIB_TRUE;
+                    instruction_limit = executed + 50000000u;
+                    lib_c_printf("PC110:OS:key-enter=1 executed=%llu\n",
+                        (unsigned long long)executed);
+                    continue;
+                }
+                break;
+            }
+        }
         if (fdc_checkpoint && post_reset_trace.fdc_reset_completed) break;
         if (timer_checkpoint && !fdc_checkpoint && !power_checkpoint && (post_reset_trace.timer_passed ||
                 post_reset_trace.timer_failed ||
@@ -1505,6 +1547,23 @@ int main(int argc, char **argv)
         status = mypc110_post_diagnostic_write_frame(machine, &power_driver, setup_frame_path);
     }
     if (setup_resume_checkpoint && machine != LIB_NULL) {
+        if (os_key_checkpoint && construction.display_snapshot_context != LIB_NULL) {
+            x86_f65535 *display = (x86_f65535 *)construction.display_snapshot_context;
+            const lib_u16 index_ports[] = {0x03d4u, 0x03ceu, 0x03c4u};
+            const lib_u16 data_ports[] = {0x03d5u, 0x03cfu, 0x03c5u};
+            const lib_u8 counts[] = {25u, 9u, 5u};
+            for (lib_u32 bank = 0u; bank < 3u; ++bank) {
+                lib_c_printf("PC110:OS:video-bank=%u", bank);
+                for (lib_u32 i = 0u; i < counts[bank]; ++i) {
+                    lib_u8 value = 0u;
+                    lib_status read_status = x86_f65535_vga_write(display, index_ports[bank], (lib_u8)i);
+                    if (read_status == LIB_STATUS_OK)
+                        read_status = x86_f65535_vga_read(display, data_ports[bank], &value);
+                    lib_c_printf(" %02x/%d", value, read_status);
+                }
+                lib_c_printf("\n");
+            }
+        }
         if (os_exception_checkpoint) {
             x86_core_cpu_debug_cpu_snapshot snapshot = {0};
             lib_u8 code[32u] = {0};

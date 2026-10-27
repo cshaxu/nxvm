@@ -29,8 +29,22 @@ The subsequent context capture found an empty VM86 INT 1Ch IDT gate, so the
 observed IDT-related #GP is consistent with the CPU check. The later loop
 reads the BIOS timer byte at 0000:046Ch rather than polling the 02F8h port;
 the 50-million-instruction run ended after only three ticks while the guest
-waits for more than nineteen. A longer bounded real-guest replay is underway; this
-does not yet establish DOS startup.
+waits for more than nineteen. A longer real-guest replay passed that wait
+but then showed a sustained exception storm without a new display frame;
+its responsible path remains under investigation. DOS startup is not proven.
+
+The storm sample is VM86 `INT 16h` with AH=01h, a keyboard availability
+query. An active bounded probe sends one Enter through the existing Machine
+driver at that query and inspects display registers after execution. No new
+frame was produced previously, but that does not establish the currently
+visible image; unsupported F65535 graphics modes remain a separate candidate.
+
+The input probe's Enter was sent at an earlier query, so its outcome does not
+prove that the later wait consumed input. Its captured CRTC and graphics
+registers identify a 640-by-475, 128-byte-stride planar configuration that
+the current fixed mode-12 scanout rejects. The next step is a bounded planar
+receiver repair with an independent register-driven test, followed by real
+firmware validation. See the S76 evidence for the exact observation.
 
 # M5 T580 S75 — Accepted: PC110 system-loader handoff
 
