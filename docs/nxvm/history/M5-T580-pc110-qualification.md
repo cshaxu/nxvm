@@ -957,3 +957,22 @@ real handoff and does not supply firmware data or alter injected input. Both
 widths and the unit suites passed, and task scratch was removed after hash
 review. The 128-entry trace cap and reset-before-persistence boundary remain
 explicit in the evidence. T580 remains open.
+
+## S69 executor delivery and coordinator review
+
+The selected TFT BIOS itself compares its captured CMOS configuration sum
+`056D` with `0391` and selects error `173`; its invalid-time path selects
+`163`. The same checksum checkpoint succeeds as an observation on both host
+widths. An x64 real Setup replay subsequently observes the firmware write a
+matching `032E` checksum before CPU reset. Both host widths then reproduce
+the distinct `102` timer-test failure after the reset; the pending IRQ0 is a
+new PIT edge after PIC initialization, not a request surviving it. The
+model-specific receiver and process-lifetime CMOS persistence remain open.
+
+The actual change is a bounded extension of the existing MyPC110 integration
+diagnostic plus task evidence; no production or Shared component, external
+media, INI or published executable changes. The source-backed seed is not
+rewritten. Both architectures build the diagnostic and pass the short
+checksum observation; the post-reset boot remains a documented failure.
+No full repository or desktop qualification is claimed. See
+[S69 evidence](../etc/evidence/t580-s69-post-error-investigation.md).

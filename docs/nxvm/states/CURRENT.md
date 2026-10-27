@@ -1,4 +1,11 @@
-# M5 T580 — Open after accepted S68
+# M5 T580 — Open after S69 investigation
+
+S69 identifies the captured CMOS checksum mismatch and the firmware's `173`
+and `163` paths; both host widths reproduce the later `102` timer-test failure.
+The actual CMOS is repaired by the guest within the same machine, but process-
+lifetime persistence and the PC110-specific timer/interrupt behavior remain
+unresolved. See [S69 evidence](../etc/evidence/t580-s69-post-error-investigation.md).
+T580 remains open and no PC110 product is published.
 
 S68 is accepted at `8d3ca6ccc`. Both host widths replay the unchanged TFT
 firmware's ERROR → date/time → reset input path, with actual 8042 reads and

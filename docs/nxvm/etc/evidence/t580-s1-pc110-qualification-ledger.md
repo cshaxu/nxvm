@@ -315,3 +315,16 @@ writes and processor reset. This disposes the observed keyboard-delivery
 question only. The source of the errors, genuine main-menu selection,
 post-reset configuration persistence and selected guest boot remain open at
 their original T580 receivers; this observation does not qualify a product.
+
+## S69 POST-error origin and reset continuation
+
+[S69](t580-s69-post-error-investigation.md) maps `173` to the selected
+firmware's CMOS checksum mismatch and `163` to its invalid-time path. Both
+architectures observe `056D` against the captured checksum `0391`; the guest
+subsequently writes a valid `032E` checksum and reaches CPU reset on x64.
+The post-reset continuation instead reaches `102` on both architectures:
+PIT0 raises a new IRQ0 while masked before the BIOS timer test. This evidence
+does not establish which PC110-specific receiver or timing needs correction.
+Configuration persistence across process restarts, reset-to-boot, the DSTN
+variant and full PC110 qualification remain open; the source capture is not
+rewritten and the failure is not counted as a successful boot.
