@@ -265,11 +265,12 @@ lib_status x86_f65535_vga_read(x86_f65535 *chip, lib_u16 port,
         /* The real PC110 video BIOS polls Input Status 1 while it initializes
          * the C000 option ROM.  This is a controller-local L2 status source:
          * a read resets the Attribute Controller flip-flop and presents an
-         * alternating vertical-retrace bit.  It deliberately models neither
-         * panel timing nor a host clock. */
+         * alternating active-display and vertical-retrace states. During
+         * retrace display is disabled; the active state clears both bits.
+         * This deliberately models neither panel timing nor a host clock. */
         chip->attribute_data = LIB_FALSE;
         chip->vertical_retrace = !chip->vertical_retrace;
-        *out_value = 0x01u | (chip->vertical_retrace ? 0x08u : 0u);
+        *out_value = chip->vertical_retrace ? 0x09u : 0u;
     } else {
         return LIB_STATUS_UNSUPPORTED;
     }

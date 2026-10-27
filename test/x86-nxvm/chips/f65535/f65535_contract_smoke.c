@@ -167,7 +167,7 @@ int main(void)
         x86_f65535_vga_read(chip, 0x03dau, &value) != LIB_STATUS_OK ||
         value != 0x09u ||
         x86_f65535_vga_read(chip, 0x03dau, &value) != LIB_STATUS_OK ||
-        value != 0x01u ||
+        value != 0x00u ||
         x86_f65535_vga_write(chip, 0x03c0u, 0x06u) != LIB_STATUS_OK ||
         x86_f65535_vga_read(chip, 0x03c1u, &value) != LIB_STATUS_OK ||
         value != 0u;
