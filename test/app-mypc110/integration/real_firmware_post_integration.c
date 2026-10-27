@@ -546,8 +546,14 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool loader_checkpoint = argc == 6 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-pair-system-loader") == 0;
+    const lib_bool os_exception_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-os-exception") == 0;
+    const lib_bool os_checkpoint = os_exception_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-os-progress") == 0);
+    const lib_bool loader_checkpoint = os_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-system-loader") == 0);
     const lib_bool system_files_checkpoint = loader_checkpoint ||
         (argc == 6 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup-pair-system-files") == 0);
@@ -937,6 +943,13 @@ int main(int argc, char **argv)
                         lib_memory_compare(actual_loader, expected_loader, sizeof(actual_loader)) == 0;
                     lib_c_printf("PC110:ATA:system-loader=%u target=%04x:%08x\n",
                         loader_reached, retired.cs, retired.eip);
+                    if (os_checkpoint && loader_reached) {
+                        instruction_limit = executed + 50000000u;
+                        lib_c_printf("PC110:OS:continue=%llu limit=%llu\n",
+                            (unsigned long long)executed,
+                            (unsigned long long)instruction_limit);
+                        continue;
+                    }
                     break;
                 }
                 if (system_files_checkpoint && partition_boot_sector) {
@@ -1073,6 +1086,22 @@ int main(int argc, char **argv)
             break;
         }
         if (power_checkpoint && !boot_checkpoint && post_reset_trace.power_restore_completed) break;
+        if (os_exception_checkpoint && loader_reached && status == LIB_STATUS_OK) {
+            status = x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
+            if (status != LIB_STATUS_OK) break;
+            if (observation.diagnostic.delivered_exception_count > reset_exception_count) {
+                const x86_core_cpu_fault_snapshot *exception =
+                    &observation.diagnostic.last_delivered_exception;
+                lib_c_printf("PC110:OS:exception count=%u mask=%08x code=%08x point=%04x:%08x bytes=%02x %02x %02x %02x flags=%08x\n",
+                    observation.diagnostic.delivered_exception_count,
+                    exception->exception_mask, exception->exception_code,
+                    exception->point.cs, exception->point.eip,
+                    exception->point.bytes[0u], exception->point.bytes[1u],
+                    exception->point.bytes[2u], exception->point.bytes[3u],
+                    exception->eflags);
+                break;
+            }
+        }
         if (fdc_checkpoint && post_reset_trace.fdc_reset_completed) break;
         if (timer_checkpoint && !fdc_checkpoint && !power_checkpoint && (post_reset_trace.timer_passed ||
                 post_reset_trace.timer_failed ||
@@ -1502,6 +1531,10 @@ int main(int argc, char **argv)
     if (cmos_origin_checkpoint)
         return status == LIB_STATUS_OK && post_reset_trace.cmos_trace_completed ? 0 : 1;
     if (power_checkpoint) {
+        if (os_checkpoint)
+            lib_c_printf("PC110:OS:stop=%d pc=%08x executed=%llu limit=%llu status=%d\n",
+                result.reason, result.linear_pc, (unsigned long long)executed,
+                (unsigned long long)instruction_limit, status);
         const lib_bool passed = status == LIB_STATUS_OK && button_sent &&
             post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
             (!boot_checkpoint || (setup_checkpoint ? setup_entry : boot_handoff)) &&

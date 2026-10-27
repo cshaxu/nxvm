@@ -1,3 +1,30 @@
+# M5 T580 S76 — Active: PC110 operating-system progression
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S76. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation and S75 was accepted at `57bae0c18`. |
+| Objective | Follow the real TFT BIOS and validated loader beyond its first instruction, capture actual system output and execution state, and identify and fix any evidenced next owner defect. |
+| Non-goals | No firmware interception, injected guest state, external image writes, Shared Lib/Emulator changes, or unsupported claim that a bounded run reached a DOS prompt. |
+| Baseline | [S75 evidence](../etc/evidence/t580-s75-system-loader.md) establishes matching initial loader execution on both host widths. |
+| Candidate Proposal | Continue the existing real-firmware diagnostic after loader handoff for a finite instruction budget, capture the actual guest display and machine stop reason, then use evidence to select any further repair. |
+| Files And ABI Surface | Existing PC110 diagnostic and responsible App or X86-NXVM/Core code only if the observed behavior requires a repair. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Hidden bounded background execution using stable Ninja trees; x64 first, matching x86 and affected regressions when justified. |
+| Asset Needs | S73 task-owned derived test disk and Setup oracle, read-only inputs and guest overlays; retain external originals unmodified. |
+| Reporting Requirements | Distinguish actual guest screen, loader progression, DOS prompt, display and desktop results; record exact bounds, hashes and remaining gaps. |
+| Stop Conditions | Do not inject guest code, mutate external images, or treat reaching an instruction budget as operating-system success. |
+| Exit Criteria | A real DOS boot checkpoint is independently demonstrated or a specific evidenced next failing owner is repaired and validated. |
+| Original Owner Request | Complete PC110 implementation, original and TFT variants, and four published executables. |
+| Similar-Issue Sweep | Check the actual responsible loader, disk and display routes without speculative special cases. |
+
+The former F65535 status-port wait is corrected by Shared `e3bb44fc1`;
+targeted dual-width controller and real-firmware FDC checks pass. The x64
+post-loader replay passed that wait but later accumulated exceptions and
+entered another loop; a bounded follow-up captures its exception context.
+See [S76 evidence](../etc/evidence/t580-s76-status-port.md). S76 remains
+active and no DOS or PC110 release qualification is claimed.
+
 # M5 T580 S75 — Accepted: PC110 system-loader handoff
 
 | Field | Required record |
