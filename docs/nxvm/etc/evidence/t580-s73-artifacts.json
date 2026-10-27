@@ -1,0 +1,53 @@
+{
+  "source": "43f87360a",
+  "artifacts": [
+    {
+      "path": "assets/my5160/my5160_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1547919,
+      "sha256": "09DA755B74B2EF6A7E9483C4884FF5E714B4740F17BA8D91CB5309407C70B803"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1684956,
+      "sha256": "3489D26CE7BD475794F80AB2CDF1D889B2F3A4CD0F23E8B04A075BCCEAD09046"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1560493,
+      "sha256": "03D30B4D7A22E9E4DC5A97593F46B53E48FBFAE68A942372DEA1C1D5A471C504"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1697813,
+      "sha256": "DE9BFD968870009FFCA5B10AD2AB1534746C85258C5DBD5C89DA3AFC572F4967"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1546643,
+      "sha256": "BC061865586CA4054361B38E464F992AB1D555D3B9A2ACE2851EDE737C5A8DC9"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1685042,
+      "sha256": "AC1FAD05987E87E18E1C8B256CE76CC5FB308E1163DE515CB1AB9F9492DA9AC1"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0580_x64.exe",
+      "architecture": "x64",
+      "bytes": 1559127,
+      "sha256": "4FC92012CAA5951F1DFB9D822355BE46D5B37514AA055C5C0DFA1577EDC8FE90"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0580_x86.exe",
+      "architecture": "x86",
+      "bytes": 1697111,
+      "sha256": "3A1300323B210B90A1B72FA8F78291E77EDE3109273F76487866007246D12C50"
+    }
+  ]
+}

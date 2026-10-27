@@ -118,6 +118,7 @@ typedef struct mypc110_post_diagnostic_trace {
         configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
     lib_size configuration_write_count;
     lib_size boot_trace_count;
+    lib_size boot_ata_trace_count;
     lib_u64 boot_ticks;
     lib_u32 boot_irq0_entry;
     lib_u32 boot_irq8_entry;
@@ -256,6 +257,15 @@ static void mypc110_post_diagnostic_observe_retirement(void *context,
         const lib_u16 port = observation->io_port;
         const lib_bool setup_rtc_port = trace->setup_input_deliveries != 0u &&
             (port == 0x0070u || port == 0x0071u);
+
+        if (observation->io_direction != X86_CORE_MACHINE_RETIREMENT_IO_NONE &&
+            ((port >= 0x1f1u && port <= 0x1f7u) || port == 0x3f6u) &&
+            trace->boot_ata_trace_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
+            lib_c_printf("PC110:ATA:post-io pc=%08x port=%04x direction=%u bytes=%u value=%08x\n",
+                observation->point.linear_pc, port, observation->io_direction,
+                observation->io_bytes, observation->io_value);
+            ++trace->boot_ata_trace_count;
+        }
 
         if (setup_rtc_port && port == 0x0070u &&
             observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE)
@@ -499,6 +509,16 @@ static void mypc110_post_diagnostic_observe_boot(void *context,
     if (observation->point.linear_pc == trace->boot_irq0_entry) ++trace->boot_irq0_count;
     if (observation->point.linear_pc == trace->boot_irq8_entry) ++trace->boot_irq8_count;
     if (observation->point.linear_pc == 0x38000u) ++trace->boot_smi_count;
+    if (observation->io_direction != X86_CORE_MACHINE_RETIREMENT_IO_NONE &&
+        ((port >= 0x1f0u && port <= 0x1f7u) || port == 0x3f6u)) {
+        if (trace->boot_ata_trace_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
+            lib_c_printf("PC110:ATA:io pc=%08x port=%04x direction=%u bytes=%u value=%08x\n",
+                observation->point.linear_pc, port, observation->io_direction,
+                observation->io_bytes, observation->io_value);
+            ++trace->boot_ata_trace_count;
+        }
+        return;
+    }
     if (trace->boot_trace_count >= MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY)
         return;
     if (observation->point.bytes[0u] == 0xcdu &&
@@ -511,8 +531,7 @@ static void mypc110_post_diagnostic_observe_boot(void *context,
             (lib_u16)observation->instruction_entry_cpu.edx);
         ++trace->boot_trace_count;
     } else if (observation->io_direction != X86_CORE_MACHINE_RETIREMENT_IO_NONE &&
-        ((port >= 0x1f0u && port <= 0x1f7u) || port == 0x3f6u ||
-            port == 0x3e0u || port == 0x3e1u || port == 0x8bu)) {
+        (port == 0x3e0u || port == 0x3e1u || port == 0x8bu)) {
         lib_c_printf("PC110:ATA:io pc=%08x port=%04x direction=%u bytes=%u value=%08x\n",
             observation->point.linear_pc, port, observation->io_direction,
             observation->io_bytes, observation->io_value);
@@ -527,19 +546,40 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool setup_resume_checkpoint = (argc == 4 || argc == 5) && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-postreset") == 0;
+    const lib_bool setup_pair_master_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-master-boot") == 0;
+    const lib_bool setup_pair_checkpoint = setup_pair_master_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-boot") == 0);
+    const lib_bool setup_master_checkpoint = argc == 5 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-master-boot") == 0;
+    const lib_bool setup_slave_checkpoint = setup_pair_checkpoint ||
+        (argc == 5 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-slave-boot") == 0);
+    const lib_bool setup_media_checkpoint = setup_slave_checkpoint || setup_master_checkpoint;
+    const lib_bool setup_resume_checkpoint = setup_media_checkpoint ||
+        ((argc == 4 || argc == 5) && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-postreset") == 0);
     const lib_bool setup_checkpoint = (cmos_origin_checkpoint && !cmos_restore_checkpoint) || setup_resume_checkpoint ||
         ((argc == 3 || argc == 4) && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup") == 0);
-    const lib_bool ata_checkpoint = argc == 3 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--ata-boot") == 0;
+    const lib_bool ata_slave_checkpoint = setup_slave_checkpoint ||
+        (argc == 3 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--ata-slave-boot") == 0);
+    const lib_bool ata_checkpoint = ata_slave_checkpoint || setup_master_checkpoint || (argc == 3 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--ata-boot") == 0);
     const x86_nxvm_machine_config config = {
         .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .bios_count = 1u,
-        .fixed_disk_image = {ata_checkpoint ? argv[2] : LIB_NULL},
-        .fixed_disk_mode = {LIB_STORAGE_MEDIUM_OVERLAY}};
+        .fixed_disk_image = {setup_pair_checkpoint ? argv[5] :
+            ata_checkpoint && !ata_slave_checkpoint ? argv[2] : LIB_NULL,
+            ata_slave_checkpoint ? argv[2] : LIB_NULL},
+        .fixed_disk_mode = {LIB_STORAGE_MEDIUM_OVERLAY, LIB_STORAGE_MEDIUM_OVERLAY}};
+    const char *setup_reference_path = setup_media_checkpoint ? argv[3] :
+        setup_checkpoint ? argv[2] : LIB_NULL;
+    const char *setup_frame_path = setup_media_checkpoint ? argv[4] :
+        setup_checkpoint && argc >= 4 ? argv[3] : LIB_NULL;
     x86_nxvm_machine_construction construction = {0};
     x86_nxvm_machine_assets selected_firmware = vm_app_firmware;
     lib_u8 restored_cmos[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
@@ -641,7 +681,8 @@ int main(int argc, char **argv)
     }
     if (ata_checkpoint) {
         lib_storage_medium *medium = LIB_NULL;
-        status = lib_storage_medium_open(argv[2], LIB_STORAGE_MEDIUM_READONLY, &medium);
+        status = lib_storage_medium_open(setup_pair_master_checkpoint ? argv[5] : argv[2],
+            LIB_STORAGE_MEDIUM_READONLY, &medium);
         if (status == LIB_STATUS_OK)
             status = lib_storage_medium_read_at(medium, 0u, expected_sector,
                 sizeof(expected_sector));
@@ -650,7 +691,7 @@ int main(int argc, char **argv)
     }
     if (setup_checkpoint) {
         lib_storage_medium *reference = LIB_NULL;
-        status = lib_storage_medium_open(argv[2], LIB_STORAGE_MEDIUM_READONLY, &reference);
+        status = lib_storage_medium_open(setup_reference_path, LIB_STORAGE_MEDIUM_READONLY, &reference);
         if (status == LIB_STATUS_OK &&
             lib_storage_medium_byte_count(reference) != sizeof(setup_expected))
             status = LIB_STATUS_INVALID_ARGUMENT;
@@ -673,7 +714,7 @@ int main(int argc, char **argv)
                 .context = &post_reset_trace});
     if (status == LIB_STATUS_OK && power_checkpoint)
         status = x86_nxvm_machine_describe_emulator_driver(machine, &power_driver);
-    if (status == LIB_STATUS_OK && !power_checkpoint && !cmos_origin_checkpoint) {
+    if (status == LIB_STATUS_OK && (!power_checkpoint || setup_media_checkpoint) && !cmos_origin_checkpoint) {
         status = x86_core_machine_set_retirement_observation_provider(
             machine->x86_core_machine,
             &(x86_core_machine_retirement_observation_provider){
@@ -721,7 +762,7 @@ int main(int argc, char **argv)
             setup_entry && argc >= 4 && setup_input_count < 2u && executed >= instruction_limit) {
             char before_path[512u];
             const lib_i32 length = lib_c_snprintf(before_path, sizeof(before_path),
-                "%s.before-%u.ppm", argv[3], (unsigned int)setup_input_count);
+                "%s.before-%u.ppm", setup_frame_path, (unsigned int)setup_input_count);
 
             if (length < 0 || (lib_size)length >= sizeof(before_path)) {
                 status = LIB_STATUS_LIMIT_EXCEEDED;
@@ -748,9 +789,10 @@ int main(int argc, char **argv)
         if (power_checkpoint && result.reason == X86_CORE_MACHINE_STOP_PAUSED && button_sent) {
             const lib_u32 expected = setup_wake_pending ?
                 (post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u) :
+                boot_handoff && ata_checkpoint ? 0x7c00u :
                 setup_resume_checkpoint && setup_reset_completed ?
                 0xf52bdu : setup_checkpoint && post_reset_trace.power_restore_completed ?
-                0x9009eu : boot_handoff ? 0x7c00u :
+                0x9009eu :
                 post_reset_trace.power_restore_completed ? 0xf52bdu :
                 post_reset_trace.power_restore_entered ? 0x3dbc5u : 0x39336u;
             x86_core_cpu_debug_instruction_observation retired = {0};
@@ -778,13 +820,15 @@ int main(int argc, char **argv)
             }
             if (status != LIB_STATUS_OK) break;
             lib_c_printf("PC110:POWER:retired-watch=%08x pc=%08x\n", expected, result.linear_pc);
-            if (setup_resume_checkpoint && setup_reset_completed && !setup_wake_pending) {
+            if (setup_resume_checkpoint && setup_reset_completed && !setup_wake_pending &&
+                !boot_handoff) {
                 setup_postreset_handoff = retired.instruction_linear == 0xf52bdu;
                 lib_c_printf("PC110:SETUP:postreset-int19=%u target=%04x:%08x\n",
                     setup_postreset_handoff, retired.cs, retired.eip);
-                break;
+                if (!setup_media_checkpoint || !setup_postreset_handoff) break;
             }
-            if (setup_checkpoint && post_reset_trace.power_restore_completed) {
+            if (setup_checkpoint && post_reset_trace.power_restore_completed &&
+                !setup_postreset_handoff) {
                 setup_entry = retired.instruction_linear == 0x9009eu &&
                     retired.cs == 0x5000u && retired.eip == 0u;
                 status = x86_core_machine_memory_read(machine->x86_core_machine,
@@ -795,6 +839,7 @@ int main(int argc, char **argv)
                     setup_entry, retired.cs, retired.eip,
                     MYPC110_SETUP_IMAGE_BYTES, setup_bytes_match);
                 if (argc >= 4 && setup_entry && setup_bytes_match) {
+                    if (ata_checkpoint) post_reset_trace.configuration_write_count = 0u;
                     status = x86_core_machine_set_retirement_observation_provider(
                         machine->x86_core_machine,
                         &(x86_core_machine_retirement_observation_provider){
@@ -830,7 +875,12 @@ int main(int argc, char **argv)
                 lib_c_printf("PC110:BOOT:int19=%u target=%04x:%08x\n",
                     boot_handoff, retired.cs, retired.eip);
                 if (ata_checkpoint && boot_handoff) {
-                    instruction_limit = 100000000u;
+                    /* Bound the observed slave bootstrap phase itself. Its
+                     * finite floppy retry sequence outlives the old total
+                     * cold-start ceiling before the BIOS reaches drive 80h. */
+                    instruction_limit = setup_media_checkpoint || ata_slave_checkpoint ? executed + 100000000u :
+                        100000000u;
+                    post_reset_trace.boot_ata_trace_count = 0u;
                     mypc110_post_diagnostic_boot_progress(machine->x86_core_machine, executed);
                     lib_u16 vector[2u] = {0};
                     status = x86_core_machine_memory_read(machine->x86_core_machine,
@@ -948,7 +998,7 @@ int main(int argc, char **argv)
                 if (result.linear_pc == 0xfffffff0u && processor_reset_count < 16u) {
                     status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
                         X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
-                        setup_wake_pending ? 0x39336u : 0xf52bdu);
+                        setup_wake_pending ? 0x39336u : boot_handoff ? 0x7c00u : 0xf52bdu);
                     if (status == LIB_STATUS_OK) continue;
                 }
                 break;
@@ -1297,7 +1347,7 @@ int main(int argc, char **argv)
     }
     if (setup_checkpoint && !setup_resume_checkpoint && argc == 4 && setup_entry && setup_bytes_match &&
         status == LIB_STATUS_OK) {
-        status = mypc110_post_diagnostic_write_frame(machine, &power_driver, argv[3]);
+        status = mypc110_post_diagnostic_write_frame(machine, &power_driver, setup_frame_path);
     }
     if (setup_resume_checkpoint && machine != LIB_NULL) {
         kvm_window_frame_storage frame = {0};
@@ -1319,8 +1369,17 @@ int main(int argc, char **argv)
             }
         kvm_window_frame_release(&frame);
         kvm_console_frame_release(&console);
+        if (setup_media_checkpoint) {
+            char final_path[512u];
+            const lib_i32 length = lib_c_snprintf(final_path, sizeof(final_path),
+                "%s.final.ppm", setup_frame_path);
+            const lib_status final_status = length < 0 || (lib_size)length >= sizeof(final_path) ?
+                LIB_STATUS_LIMIT_EXCEEDED :
+                mypc110_post_diagnostic_write_frame(machine, &power_driver, final_path);
+            lib_c_printf("PC110:SETUP:final-frame=%d\n", final_status);
+        }
     }
-    if (setup_resume_checkpoint && argc == 5 && status == LIB_STATUS_OK &&
+    if (setup_resume_checkpoint && !setup_media_checkpoint && argc == 5 && status == LIB_STATUS_OK &&
         setup_postreset_handoff) {
         status = mypc110_cmos_save(argv[4], machine);
         lib_c_printf("PC110:SETUP:cmos-save=%d\n", status);
