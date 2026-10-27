@@ -1097,3 +1097,15 @@ The task-local source disk, independent Setup oracle and diagnostic outputs
 remain temporarily needed by the immediately following boot-chain receiver;
 they are not deployed or committed and will be reviewed and removed after
 that receiver finishes. No owned S73 process remains. T580 remains open.
+
+## S74 coordinator acceptance — real partition boot
+
+Actual-change review accepts `07c178a4b` for the existing PC110 diagnostic
+and task evidence. Both widths execute the matching active partition sector;
+the x64 follow-up reaches the selected disk's system-file-name success branch.
+Both widths build, pass 12 MyPC110 units and reject missing primary media.
+These results do not establish DOS startup, original-panel behavior, desktop
+colour or PC110 release. See the [S74 evidence](../etc/evidence/t580-s74-partition-boot.md)
+for test-binary boundaries and input hashes. The task-owned disk and oracle
+remain needed by the immediately following system-loader receiver. T580
+remains open.

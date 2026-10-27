@@ -1,4 +1,4 @@
-# M5 T580 S74 — Delivered: PC110 partition boot receiver
+# M5 T580 S74 — Accepted: PC110 partition boot receiver
 
 | Field | Required record |
 | --- | --- |
