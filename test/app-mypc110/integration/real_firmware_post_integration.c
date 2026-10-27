@@ -640,6 +640,7 @@ int main(int argc, char **argv)
     lib_bool partition_boot_sector = LIB_FALSE;
     lib_bool system_files_reached = LIB_FALSE;
     lib_bool loader_reached = LIB_FALSE;
+    lib_bool os_exception_logged = LIB_FALSE;
     lib_bool setup_entry = LIB_FALSE;
     lib_bool setup_bytes_match = LIB_FALSE;
     lib_bool setup_reset_completed = LIB_FALSE;
@@ -944,7 +945,7 @@ int main(int argc, char **argv)
                     lib_c_printf("PC110:ATA:system-loader=%u target=%04x:%08x\n",
                         loader_reached, retired.cs, retired.eip);
                     if (os_checkpoint && loader_reached) {
-                        instruction_limit = executed + 50000000u;
+                        instruction_limit = executed + 400000000u;
                         lib_c_printf("PC110:OS:continue=%llu limit=%llu\n",
                             (unsigned long long)executed,
                             (unsigned long long)instruction_limit);
@@ -1086,7 +1087,8 @@ int main(int argc, char **argv)
             break;
         }
         if (power_checkpoint && !boot_checkpoint && post_reset_trace.power_restore_completed) break;
-        if (os_exception_checkpoint && loader_reached && status == LIB_STATUS_OK) {
+        if (os_exception_checkpoint && loader_reached && !os_exception_logged &&
+            status == LIB_STATUS_OK) {
             status = x86_core_machine_capture_observation(machine->x86_core_machine, &observation);
             if (status != LIB_STATUS_OK) break;
             if (observation.diagnostic.delivered_exception_count > reset_exception_count) {
@@ -1099,7 +1101,17 @@ int main(int argc, char **argv)
                     exception->point.bytes[0u], exception->point.bytes[1u],
                     exception->point.bytes[2u], exception->point.bytes[3u],
                     exception->eflags);
-                break;
+                x86_core_cpu_debug_cpu_snapshot snapshot = {0};
+                lib_u8 gate[8u] = {0};
+                const lib_status snapshot_status = x86_core_machine_debug_capture_cpu_snapshot(
+                    machine->x86_core_machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot);
+                const lib_status gate_status = snapshot_status == LIB_STATUS_OK ?
+                    x86_core_machine_debug_read_linear(machine->x86_core_machine,
+                        snapshot.idtr.base + 0x1cu * 8u, gate, sizeof(gate)) : snapshot_status;
+                lib_c_printf("PC110:OS:idt snapshot=%d base=%08x limit=%08x gate=%d bytes=%02x %02x %02x %02x %02x %02x %02x %02x\n",
+                    snapshot_status, snapshot.idtr.base, snapshot.idtr.limit, gate_status,
+                    gate[0u], gate[1u], gate[2u], gate[3u], gate[4u], gate[5u], gate[6u], gate[7u]);
+                os_exception_logged = LIB_TRUE;
             }
         }
         if (fdc_checkpoint && post_reset_trace.fdc_reset_completed) break;
@@ -1493,6 +1505,19 @@ int main(int argc, char **argv)
         status = mypc110_post_diagnostic_write_frame(machine, &power_driver, setup_frame_path);
     }
     if (setup_resume_checkpoint && machine != LIB_NULL) {
+        if (os_exception_checkpoint) {
+            x86_core_cpu_debug_cpu_snapshot snapshot = {0};
+            lib_u8 code[32u] = {0};
+            const lib_status snapshot_status = x86_core_machine_debug_capture_cpu_snapshot(
+                machine->x86_core_machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot);
+            const lib_u32 address = snapshot.cs.base + snapshot.eip;
+            const lib_status code_status = snapshot_status == LIB_STATUS_OK && address >= 16u ?
+                x86_core_machine_debug_read_linear(machine->x86_core_machine,
+                    address - 16u, code, sizeof(code)) : LIB_STATUS_INVALID_STATE;
+            lib_c_printf("PC110:OS:code-context status=%d start=%08x", code_status, address - 16u);
+            for (lib_u32 i = 0u; i < sizeof(code); ++i) lib_c_printf(" %02x", code[i]);
+            lib_c_printf("\n");
+        }
         kvm_window_frame_storage frame = {0};
         kvm_console_text_frame console = {0};
         lib_bool produced = LIB_FALSE;

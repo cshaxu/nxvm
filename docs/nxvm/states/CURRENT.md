@@ -25,6 +25,13 @@ entered another loop; a bounded follow-up captures its exception context.
 See [S76 evidence](../etc/evidence/t580-s76-status-port.md). S76 remains
 active and no DOS or PC110 release qualification is claimed.
 
+The subsequent context capture found an empty VM86 INT 1Ch IDT gate, so the
+observed IDT-related #GP is consistent with the CPU check. The later loop
+reads the BIOS timer byte at 0000:046Ch rather than polling the 02F8h port;
+the 50-million-instruction run ended after only three ticks while the guest
+waits for more than nineteen. A longer bounded real-guest replay is underway; this
+does not yet establish DOS startup.
+
 # M5 T580 S75 — Accepted: PC110 system-loader handoff
 
 | Field | Required record |

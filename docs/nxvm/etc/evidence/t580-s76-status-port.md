@@ -25,7 +25,8 @@ flip-flop reset remains in the same read path. No function, state, timebase,
 host clock, firmware patch or guest-specific test is added to production.
 The existing controller contract test asserts both values. Both host widths
 built and passed that test, and their existing real-firmware FDC reset
-integration tests passed in 46.78 s and 60.84 s respectively.
+integration tests passed in 46.78 s and 60.84 s respectively. Both affected
+source and test manifests also pass their actual verifiers.
 
 The x64 real-firmware replay reached the matching system loader and moved
 beyond the former 03DAh loop. Afterward the guest delivered many exceptions
@@ -39,6 +40,26 @@ raster timing.
 
 The fixed replay log SHA-256 is
 `098926113c2e87dab744493d2597c27c6a62063506588e67f7ae1839d75f540a`.
+
+A subsequent x64 exception probe stopped at the first newly observed
+exception: #GP (`mask=00002000`, error `00E2h`) at the firmware's `INT 1Ch`,
+with VM set in EFLAGS. At that earlier point the guest text display reads
+`Starting PC DOS...`. A VM86 monitor can deliberately use such faults for
+interrupt emulation; this observation alone does not prove an x86 defect.
+The log SHA-256 is
+`eb94b66b50f0db185a4422afd97fe1e7fc1155f1abff5e72405dd44953e014d4`.
+
+The subsequent context probe read the actual 1Ch IDT entry as eight zero
+bytes, so the observed IDT-related #GP is consistent with the CPU's gate
+checks. Its later loop is not repeated I/O at 02F8h: disassembly of the
+captured bytes shows `mov al,[bx]; sub al,cl; cmp ah,al; jnc` repeating.
+At the sample DS:BX addresses BIOS timer byte 0000:046Ch, CL is 32h, AH is
+13h, and the BIOS timer is 0335h. Thus the elapsed timer value is three
+ticks while the guest waits for more than 19; timer progress is present.
+The previous 50-million-instruction continuation is too short to classify
+that wait as a hang. This remains a bounded observation, not proof of a
+completed DOS boot. The context log SHA-256 is
+`307ad138841457d1c1ba9caab699f122cfa0a15a4ac096d92a327e7a1404eb56`.
 
 The original failing log SHA-256 is
 `dd392e4dfede9cdc0f1c6a1746339c01501f3cff55bb30efdeba3dfc6a418dd4`;
