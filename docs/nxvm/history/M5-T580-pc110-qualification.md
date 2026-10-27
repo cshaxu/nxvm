@@ -1007,3 +1007,13 @@ Lib and Emulator are unchanged. This is bounded PIC and receiving evidence,
 not full-tree, desktop, Setup persistence, post-Setup boot or PC110 product
 qualification. Sources, hashes and unresolved results are in
 [S70 evidence](../etc/evidence/t580-s70-reset-interrupt-investigation.md).
+
+## S70 coordinator acceptance
+
+Actual-change review accepts Shared `3d692e367` and NXVM `3a1c703a0` for
+the bounded PIC/receiver batch. The original 300- and 360-second failures
+remain recorded; measured longer x86 executions and final registered CTests
+pass under the documented x86-only budgets. The eight PC artifacts and both
+test manifests match the evidence. Lib and Emulator were not changed. S70
+closes without asserting complete PC110 boot or full-repository qualification;
+the second post-Setup power wait and the remaining T580 ledger stay open.
