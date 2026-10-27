@@ -1,25 +1,14 @@
-# M5 T580 S72 — Active: PC110 CMOS persistence
+# M5 T580 — Open after S72
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation — M5 T580 S72. |
-| Admission And Approval | Owner approved autonomous PC110 implementation and sequential S admission; S71 accepted in `e10c0c945`. |
-| Objective | Audit and implement genuine PC110 CMOS configuration persistence across process lifetimes, retaining the guest RTC as the sole live owner. |
-| Non-goals | No invented valid CMOS, BIOS interception, automatic input, protected asset changes, new Lib/Emulator contracts or false guest-boot claims. |
-| Reference Baseline | S71 real TFT Setup, reset and INT 19h handoff; S1 convergence ledger and existing RTC, machine construction and storage ownership. |
-| Candidate Proposal | First inspect actual RTC, Machine and App lifecycle and file contracts. Select one safe save/load route for guest-written configuration with explicit ownership and failure handling; use the supplied firmware seed only as initial input. Reuse existing storage facilities and prove the route without modifying owner data. |
-| Files And ABI Surface | MyPC110 App, X86-NXVM existing machine/board/RTC interfaces and corresponding tests where required; task records and PC release artifacts if affected. Do not modify Lib or Emulator. |
-| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy; preserve owner configuration, media and firmware. |
-| Verification | Bounded hidden background work using existing Ninja and ccache. Verify round-trip, initial absence, malformed data, error paths, reset and lifecycle on x64/x86; use disposable data and real firmware where applicable. Run affected unit and integration receivers, verify affected artifact identities and update task evidence. |
-| Expected Markers | Guest-written CMOS survives shutdown and a fresh process, remains visible to the real firmware, and invalid or failed persistence is reported without silently inventing configuration. |
-| Asset Needs | Existing owner-managed firmware and CMOS seed, disposable task data only; never commit protected firmware, media or configuration. |
-| Reporting Requirements | Record concrete source/test delta, paths and ownership, actual validation, failure handling and remaining boot, display, DSTN and product-release limits. |
-| Stop Conditions | Do not change Lib or Emulator, patch ROM, overwrite the original CMOS seed or claim a booted guest without proof. |
-| Exit Criteria | One reviewed persistence path and direct dual-width verification, or a documented specific remaining issue with its responsible receiver; no loss of S71 evidence. |
-| Original Owner Request | Complete PC110 implementation through genuine dual-model product qualification and publication. |
-| Similar-Issue Sweep | Check initial construction, reset, stop, destruction and both display variants for state lifetime and ownership. |
-
-# M5 T580 — Open after S71
+S72 Shared `54a2518de` and NXVM `9c0a31a54` are accepted for configuration
+RAM persistence. Real TFT Setup/save and separate original-BIOS checksum
+replays pass on both host widths; Product file handling is exercised by both
+variants. The affected units, PC identity receivers, eight rebuilt PC EXEs
+and specialized gates are recorded in the
+[S72 evidence](../etc/evidence/t580-s72-cmos-persistence.md). The existing
+Storage operation is not crash-atomic, and RTC calendar/off-time persistence
+remains unqualified. T580 stays open for real guest boot, both panel models,
+desktop behavior and PC110 publication.
 
 S71 implementation `f23baaa30` is accepted for the bounded real-firmware
 post-Setup power path and optimized x86 Release correction. Both widths reach
@@ -36,9 +25,9 @@ and boot receivers pass under their final measured budgets. Earlier timeouts
 and the old-PIC control remain documented, not relabelled as passes.
 
 The unchanged TFT BIOS passed the previously observed `102` branch and the
-subsequent power wait on both widths in S71. Configuration persistence across
-processes, main Setup, actual guest/media boot, PCIC, panel identity and color,
-DSTN, desktop behavior and PC110 product publication remain unqualified. See
+subsequent power wait on both widths in S71. RTC calendar persistence, main
+Setup, actual guest/media boot, PCIC, panel identity and color, DSTN, desktop
+behavior and PC110 product publication remain unqualified. See
 [S70 evidence](../etc/evidence/t580-s70-reset-interrupt-investigation.md).
 
 ## Verified Baseline

@@ -1071,3 +1071,13 @@ rebuilt PC artifacts and the specialized gates passed as detailed in the
 [artifact inventory](../etc/evidence/t580-s72-artifacts.json). PC110 guest
 boot, RTC clock persistence, DSTN/display qualification and product release
 remain open; Lib and Emulator are unchanged.
+
+## S72 coordinator acceptance
+
+Actual-change review accepts Shared `54a2518de` and NXVM `9c0a31a54` for
+the configuration-RAM persistence boundary. The existing truncate/write
+durability limit and the distinct RTC-calendar gap remain explicitly open;
+neither the BIOS checksum proof nor the Product smoke proves guest boot.
+All owned processes exited; 205 reviewed scratch files totaling 4,385,919
+bytes were removed after recording the guest CMOS and oracle hashes. T580
+remains open.
