@@ -3,6 +3,8 @@
 #include "x86-nxvm/machine/lifecycle.h"
 #include "x86-nxvm/machine/media/media_interface.h"
 #include "x86-nxvm/machine/machine_private.h"
+#include "x86-nxvm/machine/media/hdd_interface.h"
+#include "x86-core/machine/port_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
 
@@ -20,6 +22,7 @@ typedef struct construction_probe {
     lib_size key_count;
     lib_bool last_key_pressed;
     lib_bool released;
+    lib_bool ata;
 } construction_probe;
 
 static lib_status configure_plan(void *context, x86_nxvm_board_plan *plan)
@@ -28,6 +31,18 @@ static lib_status configure_plan(void *context, x86_nxvm_board_plan *plan)
 
     lib_test_assert(plan != LIB_NULL && !probe->released);
     ++probe->configure_count;
+    if (probe->ata) {
+        const x86_nxvm_board_hdc_config config = {
+            .protocol = X86_NXVM_BOARD_HDC_PROTOCOL_ATA_PIO,
+            .irq = 14u,
+            .bus.task_file = {.data_port = 0x1f0u, .error_features_port = 0x1f1u,
+                .sector_count_port = 0x1f2u, .sector_number_port = 0x1f3u,
+                .cylinder_low_port = 0x1f4u, .cylinder_high_port = 0x1f5u,
+                .drive_head_port = 0x1f6u, .status_command_port = 0x1f7u,
+                .alternate_status_device_control_port = 0x3f6u}};
+        return x86_nxvm_board_plan_configure_hdc(plan, X86_NXVM_MACHINE_MEDIA_HDD_ID,
+            X86_NXVM_MACHINE_MEDIA_HDD_SECONDARY_ID, &config);
+    }
     return probe->configure_status;
 }
 
@@ -217,7 +232,7 @@ static void check_partial_media_cleanup(void)
 
 static void check_fixed_disk_slot_contract(void)
 {
-    construction_probe probe = {0};
+    construction_probe probe = {.ata = LIB_TRUE};
     x86_nxvm_machine_construction construction = prepare(&probe);
     const x86_nxvm_machine_config empty = {0};
     const x86_nxvm_machine_config second_on_single = {
@@ -225,6 +240,9 @@ static void check_fixed_disk_slot_contract(void)
     x86_nxvm_machine *machine = LIB_NULL;
     x86_nxvm_board_media_info information = {0};
     x86_nxvm_board_media_result result = X86_NXVM_BOARD_MEDIA_RESULT_PERMANENT;
+    lib_u8 sector[512u] = {0x34u, 0x12u};
+    lib_u32 value = 0u;
+    x86_core_machine_run_result run = {0};
 
     construction.hdc_present = LIB_TRUE;
     construction.fixed_disk_slot_count = 2u;
@@ -236,6 +254,23 @@ static void check_fixed_disk_slot_contract(void)
     lib_test_assert(x86_nxvm_board_media_query(machine->media_registry,
         X86_NXVM_MACHINE_MEDIA_HDD_SECONDARY_ID, &information, &result) == LIB_STATUS_OK &&
         result == X86_NXVM_BOARD_MEDIA_RESULT_ABSENT);
+    /* The master is absent; the secondary media is an in-memory overlay. */
+    lib_test_assert(x86_nxvm_machine_hdd_replace_bytes(machine->fixed_disk[1u],
+        sector, sizeof(sector)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(machine->x86_core_machine, 0x1f6u, 0xb0u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(machine->x86_core_machine, 0x1f2u, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(machine->x86_core_machine, 0x1f3u, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(machine->x86_core_machine, 0x1f4u, 0u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(machine->x86_core_machine, 0x1f5u, 0u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_write(machine->x86_core_machine, 0x1f7u, 0x20u) == LIB_STATUS_OK);
+    /* ATA commands complete on the ordinary Core/device time path. */
+    lib_test_assert(x86_core_machine_run(machine->x86_core_machine,
+        (x86_core_machine_run_budget){.instructions = 1u}, &run) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_bus_read(machine->x86_core_machine, 0x1f7u, &value) == LIB_STATUS_OK);
+    if ((value & 0x08u) == 0u) lib_c_fprintf(lib_c_stderr, "ATA slave status=%02x\n", value);
+    lib_test_assert((value & 0x08u) != 0u);
+    lib_test_assert(x86_core_machine_bus_read(machine->x86_core_machine, 0x1f0u, &value) == LIB_STATUS_OK &&
+        value == 0x1234u);
     x86_nxvm_machine_destroy(machine);
     lib_test_assert(probe.released && probe.release_count == 1u);
 

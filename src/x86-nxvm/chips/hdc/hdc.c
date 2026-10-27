@@ -784,6 +784,21 @@ static void x86_hdc_execute_command(x86_hdc *hdc, lib_u8 command)
         x86_hdc_complete(hdc, LIB_TRUE);
         return;
     }
+    if (x86_hdc_is_ata_pio(hdc) &&
+        (command & X86_HDC_COMMAND_RECALIBRATE_MASK) == X86_HDC_COMMAND_RECALIBRATE_VALUE) {
+        x86_hdc_medium info;
+        x86_hdc_record_result result;
+        if (!x86_hdc_media_info(hdc, &info, &result) || !info.present) {
+            x86_hdc_fail(hdc, X86_HDC_ERROR_ABORT);
+            return;
+        }
+        hdc->data.cylinder_low = 0u;
+        hdc->data.cylinder_high = 0u;
+        hdc->data.sector_number = (hdc->data.drive_head & 0x40u) != 0u ? 0u : 1u;
+        hdc->data.drive_head &= 0xf0u;
+        x86_hdc_complete(hdc, LIB_TRUE);
+        return;
+    }
     if (x86_hdc_is_compaq_wd_40mb(hdc) || x86_hdc_is_ibm_wd1003(hdc)) {
         if (command == X86_HDC_COMMAND_FORMAT_TRACK) {
             x86_hdc_begin_format(hdc);

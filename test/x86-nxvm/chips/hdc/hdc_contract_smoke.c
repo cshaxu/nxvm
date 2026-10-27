@@ -1334,6 +1334,44 @@ static lib_i32 run_wd_parameters(x86_hdc_protocol protocol)
     return failed;
 }
 
+static lib_i32 run_ata_recalibrate(void)
+{
+    fixture f = {.unit_mask = 3u};
+    x86_hdc *hdc = LIB_NULL;
+    x86_hdc_observation observation;
+    lib_u32 value = 0u;
+    lib_i32 failed = 0;
+
+    if (create(X86_HDC_PROTOCOL_ATA_PIO, &f, &hdc) != LIB_STATUS_OK) return 1;
+    for (lib_u32 unit = 0u; unit < 2u; ++unit) {
+        for (lib_u32 lba = 0u; lba < 2u; ++lba) {
+            const lib_u8 drive = (lib_u8)(0xa5u | (unit << 4u) | (lba << 6u));
+            if (x86_hdc_write(hdc, X86_HDC_REGISTER_DRIVE_HEAD, drive) != LIB_STATUS_OK ||
+                x86_hdc_write(hdc, X86_HDC_REGISTER_CYLINDER_LOW, 0x7fu) != LIB_STATUS_OK ||
+                x86_hdc_write(hdc, X86_HDC_REGISTER_CYLINDER_HIGH, 0x03u) != LIB_STATUS_OK ||
+                x86_hdc_write(hdc, X86_HDC_REGISTER_SECTOR_NUMBER, 7u) != LIB_STATUS_OK ||
+                x86_hdc_write(hdc, X86_HDC_REGISTER_STATUS_COMMAND, unit ? 0x1fu : 0x10u) != LIB_STATUS_OK)
+                failed = 1;
+            x86_hdc_advance_at(hdc, 0u);
+            if (!f.irq || x86_hdc_read(hdc, X86_HDC_REGISTER_STATUS_COMMAND, &value) != LIB_STATUS_OK ||
+                value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) || f.irq ||
+                x86_hdc_capture(hdc, &observation) != LIB_STATUS_OK ||
+                observation.cylinder_low != 0u || observation.cylinder_high != 0u ||
+                observation.sector_number != (lba ? 0u : 1u) ||
+                observation.drive_head != (drive & 0xf0u)) failed = 1;
+        }
+    }
+    f.unit_mask = 1u;
+    if (x86_hdc_write(hdc, X86_HDC_REGISTER_DRIVE_HEAD, 0xb0u) != LIB_STATUS_OK ||
+        x86_hdc_write(hdc, X86_HDC_REGISTER_STATUS_COMMAND, 0x10u) != LIB_STATUS_OK) failed = 1;
+    x86_hdc_advance_at(hdc, 0u);
+    if (x86_hdc_read(hdc, X86_HDC_REGISTER_ERROR_FEATURES, &value) != LIB_STATUS_OK ||
+        value != X86_HDC_ERROR_ABORT || f.reads != 0u || f.writes != 0u) failed = 1;
+    x86_hdc_destroy(hdc);
+    if (failed) lib_c_fprintf(lib_c_stderr, "HDC ATA recalibrate failed\n");
+    return failed;
+}
+
 static lib_i32 run_ata_parameters(void)
 {
     const x86_hdc_geometry medium = {
@@ -1631,6 +1669,7 @@ lib_i32 main(void)
     failed |= run_xebec_ecc(LIB_TRUE);
     failed |= run_wd_parameters(X86_HDC_PROTOCOL_IBM_WD1003_ST506);
     failed |= run_wd_parameters(X86_HDC_PROTOCOL_COMPAQ_WD_40MB);
+    failed |= run_ata_recalibrate();
     failed |= run_ata_parameters();
     for (lib_u32 write = 0u; write < 2u; ++write) {
         failed |= run_large_lba(0x00800000u, (lib_bool)write);
