@@ -1054,3 +1054,20 @@ x86 Release correction. The tested 1080-second registration and final
 guest boot or desktop qualification is claimed. The owned background jobs
 exited, and 63 reviewed scratch files totaling 6,245,660 bytes were removed.
 T580 remains open for its other qualification domains.
+
+## S72 executor delivery — PC110 CMOS configuration persistence
+
+The PC110 App saves and restores each variant's executable-adjacent CMOS
+configuration file. The guest RTC remains the live owner; only the quiescent
+configuration RAM is captured, after successful Product binding and before
+Machine destruction. Empty files are initial sentinels; malformed nonempty
+files and I/O failures report errors. The existing Storage truncate/write
+operation is not crash-atomic, and RTC calendar/off-time behavior is outside
+this delivery. The two real TFT firmware Setup/save runs and independent BIOS
+checksum replays passed on both host widths. Affected X86-NXVM and PC110
+tests, actual Product file-handling tests, the PC identity receivers, eight
+rebuilt PC artifacts and the specialized gates passed as detailed in the
+[S72 evidence](../etc/evidence/t580-s72-cmos-persistence.md) and
+[artifact inventory](../etc/evidence/t580-s72-artifacts.json). PC110 guest
+boot, RTC clock persistence, DSTN/display qualification and product release
+remain open; Lib and Emulator are unchanged.

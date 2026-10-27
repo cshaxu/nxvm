@@ -1,4 +1,5 @@
 #include "app-mypc110/pc110_plan_interface.h"
+#include "app-mypc110/pc110_cmos.h"
 #include "app-mypc110/pc110_clock.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
@@ -71,11 +72,22 @@ static int mypc110_check_master_geometry(const x86_nxvm_machine_assets *assets)
     return failed;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     static lib_u8 bios[MYPC110_FIRMWARE_BYTES];
     static lib_u8 font[MYPC110_FONT_ROM_BYTES];
     static lib_u8 cmos[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
+    static lib_u8 captured[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
+    static lib_u8 loaded[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
+    const lib_bool save_for_restart = argc == 3 &&
+        lib_text_compare(argv[1], "--save-cmos") == 0;
+    const lib_bool check_restart = argc == 3 &&
+        lib_text_compare(argv[1], "--check-cmos") == 0;
+    const lib_bool check_bios = argc == 3 &&
+        lib_text_compare(argv[1], "--check-bios-cmos") == 0;
+    const char *cmos_path = (save_for_restart || check_restart || check_bios) ? argv[2] :
+        "mypc110-test-configuration.cmos";
+    lib_bool cmos_present = LIB_FALSE;
     const x86_nxvm_machine_assets assets = {
         .bios = {{bios, sizeof(bios)}, {LIB_NULL, 0u}},
         .cmos_seed = {cmos, sizeof(cmos)},
@@ -117,6 +129,22 @@ int main(void)
     x86_core_machine_clock_domain pit_clock;
     int failed = 0;
 
+    if (argc != 1 && !save_for_restart && !check_restart && !check_bios) return 1;
+    if (check_bios) {
+        lib_u16 sum = 0u;
+        if (mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_OK ||
+            !cmos_present) return 1;
+        for (lib_size index = 0x10u; index < 0x2eu; ++index)
+            sum = (lib_u16)(sum + loaded[index]);
+        lib_c_printf("PC110:CMOS-RESTART:sum=%04x stored=%02x%02x\n",
+            sum, loaded[0x2eu], loaded[0x2fu]);
+        return sum == (lib_u16)(((lib_u16)loaded[0x2eu] << 8u) | loaded[0x2fu]) ? 0 : 1;
+    }
+    if (check_restart) {
+        return mypc110_cmos_load(cmos_path, loaded, &cmos_present) == LIB_STATUS_OK &&
+            cmos_present && loaded[0x0eu] == 0xe1u && loaded[0x3bu] == 0x55u &&
+            loaded[0x7bu] == 0xaau && loaded[0x7fu] == 0x7eu ? 0 : 1;
+    }
     cmos[0x0eu] = 0xe1u;
     cmos[0x3fu] = 0xf3u;
     cmos[0x40u] = 0x44u;
@@ -193,6 +221,33 @@ int main(void)
                 construction.floppy_slot_count != 0u || information.floppy_media_inserted)
             failed = 20 + (int)index;
     }
+    if (!failed && (x86_nxvm_machine_capture_cmos(machine, captured, sizeof(captured) - 1u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        x86_nxvm_machine_capture_cmos(machine, captured, sizeof(captured)) != LIB_STATUS_OK ||
+        captured[0x0du] != 0u || captured[0x0eu] != 0xe1u ||
+        captured[0x3bu] != 0x55u || captured[0x7bu] != 0xaau ||
+        captured[0x7fu] != 0x7eu)) failed = 60;
+    if (!failed && (mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_OK ||
+        cmos_present || mypc110_cmos_save(cmos_path, machine) != LIB_STATUS_OK ||
+        mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_OK ||
+        !cmos_present || lib_memory_compare(captured, loaded, sizeof(captured)) != 0))
+        failed = 62;
+    if (!failed && !save_for_restart) {
+        lib_storage_file_writer *writer = LIB_NULL;
+        lib_status status = lib_storage_file_writer_open(cmos_path,
+            LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer);
+        if (status == LIB_STATUS_OK) status = lib_storage_file_writer_write(writer, captured, 1u);
+        if (writer != LIB_NULL && lib_storage_file_writer_close(writer) != LIB_STATUS_OK)
+            status = LIB_STATUS_IO_ERROR;
+        if (status != LIB_STATUS_OK ||
+            mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_INVALID_ARGUMENT ||
+            mypc110_cmos_load("missing-pc110-test-dir/state.cmos", loaded, &cmos_present) !=
+                LIB_STATUS_IO_ERROR ||
+            mypc110_cmos_save("missing-pc110-test-dir/state.cmos", machine) !=
+                LIB_STATUS_IO_ERROR ||
+            x86_nxvm_machine_capture_cmos(machine, loaded, sizeof(loaded)) !=
+                LIB_STATUS_OK) failed = 64;
+    }
     if (!failed) {
         kvm_input_event key = {.type = KVM_EVENT_KEY,
             .data.key = {.key = BASE_KEY_F12, .pressed = LIB_TRUE}};
@@ -225,6 +280,21 @@ int main(void)
             response.value != 0u) failed = 41;
     }
     x86_nxvm_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (!failed) {
+        x86_nxvm_machine_assets recovered = assets;
+        lib_u8 recaptured[sizeof(captured)];
+
+        recovered.cmos_seed.data = captured;
+        if (mypc110_machine_construction_create(&config, &recovered, &construction) !=
+                LIB_STATUS_OK ||
+            x86_nxvm_machine_create(&config, &construction, &machine) != LIB_STATUS_OK ||
+            x86_nxvm_machine_capture_cmos(machine, recaptured, sizeof(recaptured)) !=
+                LIB_STATUS_OK ||
+            lib_memory_compare(captured, recaptured, sizeof(captured)) != 0) failed = 61;
+        x86_nxvm_machine_destroy(machine);
+    }
+    if (!save_for_restart && lib_c_remove(cmos_path) != 0 && !failed) failed = 63;
     if (!failed) failed = mypc110_check_master_geometry(&assets);
     return failed;
 }

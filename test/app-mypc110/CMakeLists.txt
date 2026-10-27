@@ -149,6 +149,23 @@ foreach(variant IN ITEMS tft dstn)
     endif()
 endforeach()
 
+if(WIN32 AND TARGET mypc110-tft-preview AND TARGET mypc110-dstn-preview)
+    add_executable(mypc110-cmos-product-smoke
+        integration/cmos_product_smoke.c "${CMAKE_SOURCE_DIR}/test/setup/console_process.c")
+    target_include_directories(mypc110-cmos-product-smoke PRIVATE "${CMAKE_SOURCE_DIR}")
+    target_link_libraries(mypc110-cmos-product-smoke PRIVATE storage)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-cmos-product-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    foreach(variant IN ITEMS tft dstn)
+        add_test(NAME mypc110.integration/${variant}-cmos-product
+            COMMAND mypc110-cmos-product-smoke $<TARGET_FILE:mypc110-${variant}-preview>
+                ${variant} "${CMAKE_BINARY_DIR}")
+        set_tests_properties(mypc110.integration/${variant}-cmos-product PROPERTIES
+            LABELS "integration;mypc110" TIMEOUT 30 RUN_SERIAL TRUE)
+    endforeach()
+endif()
+
 if(TARGET mypc110-real-firmware-tft)
     add_executable(mypc110-real-firmware-post-integration
         integration/real_firmware_post_integration.c)

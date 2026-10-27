@@ -1,6 +1,7 @@
 /* External, embedded-BIOS qualification; earlier observation modes remain
  * available for manual investigation through this same execution harness. */
 #include "app-mypc110/pc110_plan_interface.h"
+#include "app-mypc110/pc110_cmos.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "lib/types/file.h"
 #include "lib/base/clock_interface.h"
@@ -104,6 +105,8 @@ typedef struct mypc110_post_diagnostic_trace {
     lib_bool control_trace;
     lib_u8 cmos_trace_index;
     lib_bool cmos_trace_completed;
+    lib_bool cmos_restore_check;
+    lib_u16 cmos_expected_checksum;
     lib_u8 setup_input_deliveries;
     lib_u8 setup_input_bytes[MYPC110_SETUP_INPUT_BYTES];
     lib_size setup_input_byte_count;
@@ -133,6 +136,10 @@ static void mypc110_post_diagnostic_observe_cmos(void *context,
             (lib_u16)observation->current_cpu.edx, (lib_u16)observation->current_cpu.ecx,
             observation->control_outcome, (unsigned long long)observation->timeline_ticks);
         lib_c_fflush(lib_c_stdout);
+        if (trace->cmos_restore_check &&
+            (lib_u16)observation->current_cpu.edx == trace->cmos_expected_checksum &&
+            (lib_u16)observation->current_cpu.ecx == trace->cmos_expected_checksum)
+            trace->cmos_trace_completed = LIB_TRUE;
     }
     if (observation->io_port == 0x70u &&
         observation->io_direction == X86_CORE_MACHINE_RETIREMENT_IO_WRITE) {
@@ -142,7 +149,7 @@ static void mypc110_post_diagnostic_observe_cmos(void *context,
         lib_c_printf("PC110:CMOS:diag pc=%08x direction=%u value=%02x ticks=%llu\n",
             observation->point.linear_pc, observation->io_direction,
             (lib_u8)observation->io_value, (unsigned long long)observation->timeline_ticks);
-        if ((lib_u8)observation->io_value == 0x40u)
+        if (!trace->cmos_restore_check && (lib_u8)observation->io_value == 0x40u)
             trace->cmos_trace_completed = LIB_TRUE;
         lib_c_fflush(lib_c_stdout);
     }
@@ -515,11 +522,14 @@ static void mypc110_post_diagnostic_observe_boot(void *context,
 
 int main(int argc, char **argv)
 {
-    const lib_bool cmos_origin_checkpoint = argc == 3 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--cmos-checksum") == 0;
-    const lib_bool setup_resume_checkpoint = argc == 4 && argv != LIB_NULL &&
+    const lib_bool cmos_restore_checkpoint = argc == 3 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--restore-cmos") == 0;
+    const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
+        (argc == 3 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--cmos-checksum") == 0);
+    const lib_bool setup_resume_checkpoint = (argc == 4 || argc == 5) && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--setup-postreset") == 0;
-    const lib_bool setup_checkpoint = cmos_origin_checkpoint || setup_resume_checkpoint ||
+    const lib_bool setup_checkpoint = (cmos_origin_checkpoint && !cmos_restore_checkpoint) || setup_resume_checkpoint ||
         ((argc == 3 || argc == 4) && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup") == 0);
     const lib_bool ata_checkpoint = argc == 3 && argv != LIB_NULL &&
@@ -531,6 +541,8 @@ int main(int argc, char **argv)
         .fixed_disk_image = {ata_checkpoint ? argv[2] : LIB_NULL},
         .fixed_disk_mode = {LIB_STORAGE_MEDIUM_OVERLAY}};
     x86_nxvm_machine_construction construction = {0};
+    x86_nxvm_machine_assets selected_firmware = vm_app_firmware;
+    lib_u8 restored_cmos[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
     x86_nxvm_machine *machine = LIB_NULL;
     x86_core_machine_run_result result = {0};
     x86_core_machine_observation observation = {0};
@@ -596,7 +608,7 @@ int main(int argc, char **argv)
     if (argc != 1 && !reset_checkpoint && !port61_progress_checkpoint &&
         !port61_follow_checkpoint && !lpt_cycle_checkpoint &&
         !c000_checkpoint && !c000_follow_checkpoint && !c000_port61_follow_checkpoint &&
-        !timer_checkpoint) return 2;
+        !timer_checkpoint && !cmos_restore_checkpoint) return 2;
     instruction_limit = c000_port61_follow_checkpoint ?
         MYPC110_POST_DIAGNOSTIC_C000_PORT61_FOLLOW_INSTRUCTIONS :
         (c000_checkpoint || c000_follow_checkpoint ?
@@ -615,6 +627,18 @@ int main(int argc, char **argv)
     post_reset_trace.follow_c000_port61 = c000_port61_follow_checkpoint;
 
     status = LIB_STATUS_OK;
+    if (cmos_restore_checkpoint) {
+        lib_bool present = LIB_FALSE;
+        status = mypc110_cmos_load(argv[2], restored_cmos, &present);
+        if (status == LIB_STATUS_OK && !present) status = LIB_STATUS_INVALID_STATE;
+        if (status == LIB_STATUS_OK) {
+            selected_firmware.cmos_seed = (x86_nxvm_machine_asset_bytes){
+                restored_cmos, sizeof(restored_cmos)};
+            post_reset_trace.cmos_restore_check = LIB_TRUE;
+            post_reset_trace.cmos_expected_checksum = (lib_u16)(
+                ((lib_u16)restored_cmos[0x2eu] << 8u) | restored_cmos[0x2fu]);
+        }
+    }
     if (ata_checkpoint) {
         lib_storage_medium *medium = LIB_NULL;
         status = lib_storage_medium_open(argv[2], LIB_STORAGE_MEDIUM_READONLY, &medium);
@@ -637,7 +661,7 @@ int main(int argc, char **argv)
         if (status == LIB_STATUS_OK) status = closed;
     }
     if (status == LIB_STATUS_OK)
-        status = mypc110_machine_construction_create(&config, &vm_app_firmware, &construction);
+        status = mypc110_machine_construction_create(&config, &selected_firmware, &construction);
     if (status == LIB_STATUS_OK) power_firmware = construction.firmware_context;
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_create(&config, &construction, &machine);
@@ -649,7 +673,7 @@ int main(int argc, char **argv)
                 .context = &post_reset_trace});
     if (status == LIB_STATUS_OK && power_checkpoint)
         status = x86_nxvm_machine_describe_emulator_driver(machine, &power_driver);
-    if (status == LIB_STATUS_OK && !power_checkpoint) {
+    if (status == LIB_STATUS_OK && !power_checkpoint && !cmos_origin_checkpoint) {
         status = x86_core_machine_set_retirement_observation_provider(
             machine->x86_core_machine,
             &(x86_core_machine_retirement_observation_provider){
@@ -664,7 +688,7 @@ int main(int argc, char **argv)
     }
     if (status == LIB_STATUS_OK && !timer_checkpoint && !reset_checkpoint && !port61_progress_checkpoint &&
         !port61_follow_checkpoint && !lpt_cycle_checkpoint && !c000_checkpoint &&
-        !c000_follow_checkpoint && !c000_port61_follow_checkpoint) {
+        !c000_follow_checkpoint && !c000_port61_follow_checkpoint && !cmos_restore_checkpoint) {
         status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
             X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
             0x000f6060u);
@@ -694,7 +718,7 @@ int main(int argc, char **argv)
             break;
         }
         if (status == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_BUDGET &&
-            setup_entry && argc == 4 && setup_input_count < 2u && executed >= instruction_limit) {
+            setup_entry && argc >= 4 && setup_input_count < 2u && executed >= instruction_limit) {
             char before_path[512u];
             const lib_i32 length = lib_c_snprintf(before_path, sizeof(before_path),
                 "%s.before-%u.ppm", argv[3], (unsigned int)setup_input_count);
@@ -770,7 +794,7 @@ int main(int argc, char **argv)
                 lib_c_printf("PC110:SETUP:entry=%u target=%04x:%08x bytes=%u matched=%u\n",
                     setup_entry, retired.cs, retired.eip,
                     MYPC110_SETUP_IMAGE_BYTES, setup_bytes_match);
-                if (argc == 4 && setup_entry && setup_bytes_match) {
+                if (argc >= 4 && setup_entry && setup_bytes_match) {
                     status = x86_core_machine_set_retirement_observation_provider(
                         machine->x86_core_machine,
                         &(x86_core_machine_retirement_observation_provider){
@@ -1296,6 +1320,11 @@ int main(int argc, char **argv)
         kvm_window_frame_release(&frame);
         kvm_console_frame_release(&console);
     }
+    if (setup_resume_checkpoint && argc == 5 && status == LIB_STATUS_OK &&
+        setup_postreset_handoff) {
+        status = mypc110_cmos_save(argv[4], machine);
+        lib_c_printf("PC110:SETUP:cmos-save=%d\n", status);
+    }
     x86_nxvm_machine_destroy(machine);
     if (cmos_origin_checkpoint)
         return status == LIB_STATUS_OK && post_reset_trace.cmos_trace_completed ? 0 : 1;
@@ -1303,7 +1332,7 @@ int main(int argc, char **argv)
         const lib_bool passed = status == LIB_STATUS_OK && button_sent &&
             post_reset_trace.power_restore_entered && post_reset_trace.power_restore_completed &&
             (!boot_checkpoint || (setup_checkpoint ? setup_entry : boot_handoff)) &&
-            (!setup_checkpoint || (setup_bytes_match && (argc != 4 ||
+            (!setup_checkpoint || (setup_bytes_match && (argc < 4 ||
                 (setup_reset_completed && post_reset_trace.setup_input_byte_count ==
                     MYPC110_SETUP_INPUT_BYTES &&
                  post_reset_trace.setup_input_bytes[0u] == 0x1cu &&

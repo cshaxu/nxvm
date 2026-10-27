@@ -1,4 +1,5 @@
 #include "app-mypc110/product_binding_interface.h"
+#include "app-mypc110/pc110_plan_interface.h"
 #include "x86-nxvm/product/factory_interface.h"
 #include "x86-nxvm/product/ini_interface.h"
 
@@ -21,12 +22,17 @@ int main(void)
     x86_nxvm_product_request request = {0};
     x86_nxvm_product_machine machine = {0};
     x86_nxvm_product_information information = {0};
+    x86_nxvm_product_machine_binding binding = vm_app_machine;
     int failed = 0;
 
+    /* This unit test owns no executable-adjacent user state. The registered
+     * Product integration tests exercise the actual file-backed binding. */
+    binding.prepare = mypc110_machine_construction_create;
+    binding.save_configuration = LIB_NULL;
     if (x86_nxvm_product_ini_parse((const lib_u8 *)".",
             (const lib_u8 *)"mypc110.ini", document, &request) != LIB_STATUS_OK ||
         request.memory_bytes != 20u * 1024u * 1024u ||
-        x86_nxvm_product_compose_machine(&vm_app_machine, &request, &machine) !=
+        x86_nxvm_product_compose_machine(&binding, &request, &machine) !=
             LIB_STATUS_OK) {
         return 1;
     }
