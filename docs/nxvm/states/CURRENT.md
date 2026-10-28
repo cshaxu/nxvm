@@ -1,4 +1,25 @@
-# M5 T580 S85 — Delivered for owner review: Window scale and shared corpus review
+# M5 T580 S86 — Active: PC110 product boot and Setup observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S86. |
+| Admission And Approval | Owner accepted S85 and requested continued PC110 work. |
+| Objective | Trace actual PC110 product execution toward Setup and determine whether its displayed colours match guest framebuffer data. |
+| Non-goals | No foreground processes, owner media or configuration edits, firmware patching, or unapproved Shared changes. |
+| Reference Baseline | S57 palette evidence, S78/S79 firmware boot, S83 lifecycle, S84/S85 product Window evidence. |
+| Candidate Proposal | Use bounded background product and guest-path probes to trace the existing firmware, device and display path; repair confirmed in-scope defects. |
+| Files And ABI Surface | PC110 App and tests, task evidence; shared changes require established approval. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Actual product path, isolated guest state, matching framebuffer and Window observations, applicable dual-width tests. |
+| Expected Markers | Identifiable startup progression, Setup display and guest colour evidence or a precisely localized defect. |
+| Asset Needs | Existing approved external ROM and task-owned temporary configuration/media; preserve owner inputs. |
+| Reporting Requirements | Separate actual guest, frame, Window, RDP and desktop evidence and unresolved gaps. |
+| Stop Conditions | No forced guest state, protected media modification or unsupported precision claims. |
+| Exit Criteria | Confirmed product behaviour and colour path with required verification, or an evidenced narrow receiver for continuation. |
+| Original Owner Request | Complete PC110 implementation and investigate unexpected blue Setup/Error pages. |
+| Similar-Issue Sweep | Compare original and TFT variants, guest output and shared display boundaries. |
+
+# M5 T580 S85 — Accepted: initial Window scale correction
 
 | Field | Required record |
 | --- | --- |
