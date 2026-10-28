@@ -119,6 +119,7 @@ typedef struct mypc110_post_diagnostic_trace {
         configuration_writes[MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY];
     lib_size configuration_write_count;
     lib_size boot_trace_count;
+    lib_size inking_trace_count;
     lib_size boot_ata_trace_count;
     lib_u64 boot_ticks;
     lib_u32 boot_irq0_entry;
@@ -510,6 +511,21 @@ static void mypc110_post_diagnostic_observe_boot(void *context,
     if (observation->point.linear_pc == trace->boot_irq0_entry) ++trace->boot_irq0_count;
     if (observation->point.linear_pc == trace->boot_irq8_entry) ++trace->boot_irq8_count;
     if (observation->point.linear_pc == 0x38000u) ++trace->boot_smi_count;
+    if (trace->inking_trace_count < 64u &&
+        ((observation->io_direction != X86_CORE_MACHINE_RETIREMENT_IO_NONE &&
+          (port == 0x05e0u || port == 0x05e1u || port == 0x05e2u ||
+           port == 0x15e0u || port == 0x15e1u || port == 0x15e2u ||
+           port == 0x25e0u || port == 0x25e1u || port == 0x25e2u ||
+           port == 0x35e0u || port == 0x35e1u || port == 0x35e2u)) ||
+         (observation->point.bytes[0u] == 0xcdu && observation->point.bytes[1u] == 0x15u &&
+          (lib_u16)observation->instruction_entry_cpu.eax == 0x5380u))) {
+        lib_c_printf("PC110:INK:pc=%08x port=%04x dir=%u value=%08x ax=%04x bx=%04x cx=%04x\n",
+            observation->point.linear_pc, port, observation->io_direction,
+            observation->io_value, (lib_u16)observation->instruction_entry_cpu.eax,
+            (lib_u16)observation->instruction_entry_cpu.ebx,
+            (lib_u16)observation->instruction_entry_cpu.ecx);
+        ++trace->inking_trace_count;
+    }
     if (observation->io_direction != X86_CORE_MACHINE_RETIREMENT_IO_NONE &&
         ((port >= 0x1f0u && port <= 0x1f7u) || port == 0x3f6u)) {
         if (trace->boot_ata_trace_count < MYPC110_POST_DIAGNOSTIC_PORT_CAPACITY) {
@@ -547,8 +563,11 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool os_late_key_checkpoint = argc == 6 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-pair-os-late-key") == 0;
+    const lib_bool os_inking_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-os-inking") == 0;
+    const lib_bool os_late_key_checkpoint = os_inking_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-os-late-key") == 0);
     const lib_bool os_key_checkpoint = os_late_key_checkpoint ||
         (argc == 6 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup-pair-os-key") == 0);
@@ -652,6 +671,8 @@ int main(int argc, char **argv)
     lib_bool loader_reached = LIB_FALSE;
     lib_bool os_exception_logged = LIB_FALSE;
     lib_bool os_key_sent = LIB_FALSE;
+    lib_u8 os_inking_events = 0u;
+    lib_u64 os_inking_next = 0u;
     lib_bool setup_entry = LIB_FALSE;
     lib_bool setup_bytes_match = LIB_FALSE;
     lib_bool setup_reset_completed = LIB_FALSE;
@@ -956,6 +977,16 @@ int main(int argc, char **argv)
                     lib_c_printf("PC110:ATA:system-loader=%u target=%04x:%08x\n",
                         loader_reached, retired.cs, retired.eip);
                     if (os_checkpoint && loader_reached) {
+                        if (os_inking_checkpoint) {
+                            /* The loader is verified. The Core fault provider
+                             * still records delivered exceptions while the
+                             * per-retirement observer is absent. Restore it
+                             * before driver input to observe actual port I/O. */
+                            status = x86_core_machine_set_retirement_observation_provider(
+                                machine->x86_core_machine, LIB_NULL);
+                            if (status != LIB_STATUS_OK) break;
+                            lib_c_printf("PC110:INK:retirement-observation=off\n");
+                        }
                         instruction_limit = executed + 400000000u;
                         lib_c_printf("PC110:OS:continue=%llu limit=%llu\n",
                             (unsigned long long)executed,
@@ -1146,13 +1177,23 @@ int main(int argc, char **argv)
                     exception->eflags, exception->eax, exception->edx,
                     exception->ss, exception->esp);
                 if (os_key_checkpoint) {
+                    if (os_inking_checkpoint) {
+                        status = x86_core_machine_set_retirement_observation_provider(
+                            machine->x86_core_machine,
+                            &(x86_core_machine_retirement_observation_provider){
+                                .callback = mypc110_post_diagnostic_observe_boot,
+                                .context = &post_reset_trace});
+                        if (status != LIB_STATUS_OK) break;
+                        lib_c_printf("PC110:INK:retirement-observation=on\n");
+                    }
                     kvm_input_event key = {.type = KVM_EVENT_KEY,
                         .data.key = {.key = BASE_KEY_ENTER, .pressed = LIB_TRUE}};
                     power_driver.deliver_input(power_driver.context, &key);
                     key.data.key.pressed = LIB_FALSE;
                     power_driver.deliver_input(power_driver.context, &key);
                     os_key_sent = LIB_TRUE;
-                    instruction_limit = executed + 50000000u;
+                    instruction_limit = executed + (os_inking_checkpoint ? 100000000u : 50000000u);
+                    if (os_inking_checkpoint) os_inking_next = executed + 10000000u;
                     lib_c_printf("PC110:OS:key-enter=1 executed=%llu\n",
                         (unsigned long long)executed);
                     continue;
@@ -1172,6 +1213,38 @@ int main(int argc, char **argv)
             post_reset_observation = observation;
         }
         if (status != LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_FAULT) break;
+        if (os_inking_checkpoint && os_key_sent && os_inking_events < 8u &&
+            executed >= os_inking_next) {
+            const lib_i32 corners[4][2] = {{5, 5}, {250, 5}, {5, 250}, {250, 250}};
+            lib_u32 control = 0u;
+            status = x86_core_machine_bus_read(machine->x86_core_machine, 0x15e2u, &control);
+            if (status != LIB_STATUS_OK) break;
+            if ((control & 0xfeu) == 0x38u) {
+                const lib_u8 corner = os_inking_events / 2u;
+                if ((os_inking_events & 1u) == 0u) {
+                    char frame_path[512u];
+                    const lib_i32 length = lib_c_snprintf(frame_path, sizeof(frame_path),
+                        "%s.corner-%u.ppm", setup_frame_path, (unsigned int)corner);
+                    if (length < 0 || (lib_size)length >= sizeof(frame_path)) {
+                        status = LIB_STATUS_LIMIT_EXCEEDED;
+                        break;
+                    }
+                    status = mypc110_post_diagnostic_write_frame(machine, &power_driver, frame_path);
+                    if (status != LIB_STATUS_OK) break;
+                }
+                kvm_input_event point = {.type = KVM_EVENT_MOUSE,
+                    .data.mouse = {.relative = LIB_FALSE,
+                        .absolute_x = corners[corner][0], .absolute_y = corners[corner][1],
+                        .buttons = (os_inking_events & 1u) == 0u ? BASE_MOUSE_BUTTON_LEFT : 0u}};
+                power_driver.deliver_input(power_driver.context, &point);
+                ++os_inking_events;
+                os_inking_next = executed + ((os_inking_events & 1u) != 0u ?
+                    1000000u : 10000000u);
+                lib_c_printf("PC110:INK:host-event=%u corner=%u executed=%llu\n",
+                    os_inking_events, corner, (unsigned long long)executed);
+                lib_c_fflush(lib_c_stdout);
+            }
+        }
         if (port61_progress_checkpoint && post_reset_trace.left_port61_wait) break;
         if (port61_follow_checkpoint &&
             post_reset_trace.port61_follow_retirement_count >=

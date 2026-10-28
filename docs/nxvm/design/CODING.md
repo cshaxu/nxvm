@@ -33,8 +33,8 @@ src/
   app-nxvm/             fixed default AT App: main, product binding,
                          machine plan/configuration/construction and firmware map
     firmware/           project-owned BIOS source and offline ROM construction
-  app-mypc110/          TFT PC110 qualification App: board construction,
-                         firmware binding and prepublication Product preview
+  app-mypc110/          DSTN and TFT PC110 qualification App: board construction,
+                         firmware bindings and prepublication Product previews
 ```
 
 Keep machine-specific declarations beside the fixed App's construction source.

@@ -118,9 +118,11 @@ int main(int argc, char **argv)
         {.operation = X86_DEBUG_READ_PORT, .port = 0x23u, .bytes = 1u},
         {.operation = X86_DEBUG_WRITE_PORT, .port = 0x24u, .address = 0xffu, .bytes = 1u},
         {.operation = X86_DEBUG_WRITE_PORT, .port = 0x25u, .address = 0x82u, .bytes = 1u},
-        {.operation = X86_DEBUG_READ_PORT, .port = 0x704u, .bytes = 1u}};
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x704u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x15e1u, .bytes = 1u},
+        {.operation = X86_DEBUG_READ_PORT, .port = 0x15e2u, .bytes = 1u}};
     const lib_u32 expected[] = {0x80u, 0u, 0u, 0u, 0u, 0u, 0xaau, 0u, 0x55u,
-        0xffu, 0xffu, 0xffu, 0x7fu, 0u, 0u, 0u};
+        0xffu, 0xffu, 0xffu, 0x7fu, 0u, 0u, 0u, 0xffu, 0xc0u};
     x86_debug_response response = {0};
     lib_size response_bytes = 0u;
     static kvm_window_frame_storage frame;
@@ -220,6 +222,35 @@ int main(int argc, char **argv)
                 response_bytes != sizeof(response) || response.value != expected[index] ||
                 construction.floppy_slot_count != 0u || information.floppy_media_inserted)
             failed = 20 + (int)index;
+    }
+    if (!failed) {
+        const x86_debug_request enable = {.operation = X86_DEBUG_WRITE_PORT,
+            .port = 0x15e2u, .address = 0x38u, .bytes = 1u};
+        const x86_debug_request read = {.operation = X86_DEBUG_READ_PORT,
+            .port = 0x15e0u, .bytes = 1u};
+        x86_debug_request ack = {.operation = X86_DEBUG_WRITE_PORT,
+            .port = 0x15e2u, .bytes = 1u};
+        kvm_input_event mouse = {.type = KVM_EVENT_MOUSE,
+            .data.mouse = {.relative = LIB_TRUE, .delta_x = 3, .delta_y = -4,
+                .buttons = BASE_MOUSE_BUTTON_LEFT}};
+        const lib_u8 expected_inking[] = {0x91u, 3u, 60u, 0x90u, 3u, 60u};
+        if (driver.execute_debug(driver.context, &enable, sizeof(enable), &response,
+                sizeof(response), &response_bytes) != LIB_STATUS_OK) failed = 70;
+        driver.deliver_input(driver.context, &mouse);
+        mouse.data.mouse.delta_x = mouse.data.mouse.delta_y = 0;
+        mouse.data.mouse.buttons = 0u;
+        driver.deliver_input(driver.context, &mouse);
+        for (lib_size i = 0u; !failed && i < sizeof(expected_inking); ++i) {
+            if (driver.execute_debug(driver.context, &read, sizeof(read), &response,
+                    sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+                response.value != expected_inking[i]) { failed = 71; break; }
+            ack.address = 0x39u;
+            if (driver.execute_debug(driver.context, &ack, sizeof(ack), &response,
+                    sizeof(response), &response_bytes) != LIB_STATUS_OK) { failed = 72; break; }
+            ack.address = 0x38u;
+            if (driver.execute_debug(driver.context, &ack, sizeof(ack), &response,
+                    sizeof(response), &response_bytes) != LIB_STATUS_OK) failed = 73;
+        }
     }
     if (!failed && (x86_nxvm_machine_capture_cmos(machine, captured, sizeof(captured) - 1u) !=
             LIB_STATUS_INVALID_ARGUMENT ||

@@ -8,12 +8,14 @@
 #include "app-mypc110/pc110_ec_mailbox_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
+#include "app-mypc110/pc110_inking_interface.h"
 #include "app-mypc110/pc110_lpt_interface.h"
 #include "app-mypc110/pc110_pcic_interface.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-nxvm/machine/media/media_interface.h"
 
 #define MYPC110_POWER_INPUT_FAULT 0x50575200u
+#define MYPC110_INKING_INPUT_FAULT 0x494e4b00u
 
 typedef struct mypc110_machine_plan {
     mypc110_firmware firmware;
@@ -21,9 +23,11 @@ typedef struct mypc110_machine_plan {
     mypc110_lpt lpt;
     mypc110_ec_block ec_block;
     mypc110_ec_mailbox ec_mailbox;
+    mypc110_inking inking;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
     x86_rb5c396 *pcic_controller;
+    lib_i32 pen_x, pen_y;
 } mypc110_machine_plan;
 
 static const x86_nxvm_board_config mypc110_machine_configuration = {
@@ -144,8 +148,10 @@ static void mypc110_machine_profile_reset(void *opaque,
 {
     mypc110_machine_plan *plan = opaque;
 
-    if (plan != LIB_NULL && phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES)
+    if (plan != LIB_NULL && phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
         x86_rb5c396_reset(plan->pcic_controller);
+        mypc110_inking_reset(&plan->inking);
+    }
 }
 
 static void mypc110_machine_profile_system_management_active(void *opaque,
@@ -164,9 +170,14 @@ static lib_status mypc110_machine_profile_create(
     mypc110_machine_plan *plan = opaque;
     lib_status status;
 
-    if (plan == LIB_NULL || out_binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (plan == LIB_NULL || services == LIB_NULL || out_binding == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    plan->inking.configuration = plan->configuration_chip;
+    plan->inking.pic_master = services->pic_master;
+    plan->inking.pic_slave = services->pic_slave;
     status = mypc110_firmware_profile_create(services, &plan->firmware, out_binding);
     if (status != LIB_STATUS_OK) return status;
+    plan->firmware.inking = &plan->inking;
     out_binding->context = plan;
     out_binding->reset = mypc110_machine_profile_reset;
     out_binding->system_management_active =
@@ -205,6 +216,8 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
     if (status == LIB_STATUS_OK)
         status = mypc110_ec_block_install_routes(core, &plan->ec_block);
     if (status == LIB_STATUS_OK)
+        status = mypc110_inking_install_routes(core, &plan->inking, 0x15e0u);
+    if (status == LIB_STATUS_OK)
         status = mypc110_font_rom_install(core, &plan->font);
     if (status == LIB_STATUS_OK)
         status = mypc110_lpt_install_routes(core, &plan->lpt);
@@ -227,11 +240,30 @@ static void mypc110_machine_release(void *opaque)
     lib_release(plan);
 }
 
-static lib_bool mypc110_machine_handle_key(void *opaque, const kvm_input_event *event)
+static lib_bool mypc110_machine_handle_input(void *opaque, const kvm_input_event *event)
 {
     mypc110_machine_plan *plan = opaque;
 
-    if (event->data.key.key != BASE_KEY_F12) return LIB_FALSE;
+    if (event->type == KVM_EVENT_MOUSE) {
+        const lib_i64 x = event->data.mouse.relative ?
+            (lib_i64)plan->pen_x + event->data.mouse.delta_x : event->data.mouse.absolute_x;
+        const lib_i64 y = event->data.mouse.relative ?
+            (lib_i64)plan->pen_y + event->data.mouse.delta_y : event->data.mouse.absolute_y;
+        plan->pen_x = x < 0 ? 0 : x > 255 ? 255 : (lib_i32)x;
+        plan->pen_y = y < 0 ? 0 : y > 255 ? 255 : (lib_i32)y;
+        if ((plan->inking.control & 0xfeu) == 0x38u) {
+            const lib_status status = mypc110_inking_sample(&plan->inking,
+                (lib_u8)plan->pen_x, (lib_u8)plan->pen_y,
+                (event->data.mouse.buttons & BASE_MOUSE_BUTTON_LEFT) != 0u);
+            if (status != LIB_STATUS_OK && status != LIB_STATUS_INVALID_STATE)
+                (void)x86_core_machine_report_fault(plan->firmware.machine,
+                    MYPC110_INKING_INPUT_FAULT | (lib_u32)status);
+        }
+        /* The pointing stick and signature pad remain separate guest devices. */
+        return LIB_FALSE;
+    }
+    if (event->type != KVM_EVENT_KEY || event->data.key.key != BASE_KEY_F12)
+        return LIB_FALSE;
     const lib_status status = mypc110_firmware_set_resume_button(&plan->firmware,
         event->data.key.pressed);
     if (status != LIB_STATUS_OK)
@@ -259,11 +291,13 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     }
     plan = lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    plan->pen_x = 128;
+    plan->pen_y = 64;
     profile = (x86_nxvm_machine_profile_binding) {
         .context = plan, .configure = mypc110_machine_configure,
         .after_firmware = mypc110_machine_after_firmware,
         .release = mypc110_machine_release,
-        .handle_key = mypc110_machine_handle_key};
+        .handle_input = mypc110_machine_handle_input};
     status = mypc110_firmware_create(assets->bios[0u].data, assets->bios[0u].bytes,
         &plan->firmware);
     if (status == LIB_STATUS_OK)

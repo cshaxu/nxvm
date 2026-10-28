@@ -42,6 +42,12 @@ or send F12 to the guest. Other keys and the shared PC hotkeys retain their
 normal meanings. This is an emulator binding, not an original PC110 key map;
 it does not qualify a published PC110 product or a working suspend toggle.
 
+The prepublication inking-pad adapter uses host pointer movement to move a
+bounded virtual pen and the left button for pen contact while the guest has
+enabled the pad. The same pointer events continue to the guest's independent
+PS/2 pointing device. This L2 binding is not a claim of physical pen timing;
+real-driver calibration and desktop interaction remain to be validated.
+
 ## Presentation And Debugging
 
 Retain Console/Window presentation, Common's existing `console_control`

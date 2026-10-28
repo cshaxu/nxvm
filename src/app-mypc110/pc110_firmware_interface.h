@@ -13,6 +13,8 @@
 #define MYPC110_SMRAM_PHYSICAL_START 0x00030000u
 #define MYPC110_SMRAM_BYTES (64u * 1024u)
 
+typedef struct mypc110_inking mypc110_inking;
+
 /* One App-owned PC110 firmware map and its SL-compatible decode controls.
  * CPU configuration lock/mode is distinct from the chip's Block 2 unlock.
  * Flash is immutable. One cold-zero shadow holds C--F; chipset access fields
@@ -21,6 +23,7 @@ typedef struct mypc110_firmware {
     const lib_u8 *bios;
     lib_u8 *shadow;
     x86_vl82c420 *configuration_chip;
+    mypc110_inking *inking;
     x86_core_machine *machine;
     lib_u8 cpu_unlock_step;
     lib_u8 planar_control;

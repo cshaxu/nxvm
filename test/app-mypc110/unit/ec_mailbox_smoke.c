@@ -37,7 +37,8 @@ int main(void)
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        const lib_u8 query[][2] = {{0x05u, 0x21u}, {0x21u, 0xf0u}, {0xfcu, 0x30u}};
+        const lib_u8 query[][2] = {{0x05u, 0x21u}, {0x10u, 0xaau},
+            {0x21u, 0xf0u}, {0xfcu, 0x30u}};
         const lib_u8 initial_ram[][2] = {
             {0x40u, 0x30u}, {0xd0u, 0u}, {0xd1u, 0x10u},
             {0xd2u, 0u}, {0xffu, 0xffu}};
@@ -47,6 +48,11 @@ int main(void)
             failed |= x86_core_machine_bus_write(machine, 0x15ecu,
                 query[index][0]) != LIB_STATUS_OK || !read_reply(machine, query[index][1]);
         }
+        /* The controller remains powered across a CPU-only reset. Its 11h
+         * no-op must not discard the 10h completion waiting in DBB1. */
+        failed |= x86_core_machine_bus_write(machine, 0x15ecu, 0x10u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15ecu, 0x11u) != LIB_STATUS_OK ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK || !read_reply(machine, 0xaau);
         for (lib_size index = 0u; index < sizeof(initial_ram) / sizeof(initial_ram[0]); ++index)
             failed |= !read_ram(machine, 0u, initial_ram[index][0], initial_ram[index][1]);
         failed |= !read_ram(machine, 1u, 0x12u, 0xffu) ||

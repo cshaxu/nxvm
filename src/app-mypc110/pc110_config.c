@@ -1,5 +1,6 @@
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
+#include "app-mypc110/pc110_inking_interface.h"
 #include "x86-core/machine/machine_interface.h"
 
 #define MYPC110_CPU_POWER_MODE_PORT 0x0022u
@@ -275,8 +276,22 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
     else if (port == MYPC110_ECED_DATA_PORT) bank = X86_VL82C420_BANK_ECED;
     else return LIB_STATUS_UNSUPPORTED;
     {
+        lib_u8 inking_before = 0u;
+        if (bank == X86_VL82C420_BANK_SCAMP && firmware->inking != LIB_NULL) {
+            lib_status status = x86_vl82c420_read_register(chip, bank, 0x16u,
+                &inking_before);
+            if (status != LIB_STATUS_OK) return status;
+        }
         lib_status status = x86_vl82c420_write_selected(chip, bank,
             (lib_u8)value);
+
+        if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_SCAMP &&
+            firmware->inking != LIB_NULL) {
+            lib_u8 inking_after;
+            status = x86_vl82c420_read_register(chip, bank, 0x16u, &inking_after);
+            if (status == LIB_STATUS_OK && inking_before != inking_after)
+                mypc110_inking_reset(firmware->inking);
+        }
 
         if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_BLOCK2) {
             status = x86_core_machine_set_smi(firmware->machine, x86_vl82c420_smi_asserted(chip));

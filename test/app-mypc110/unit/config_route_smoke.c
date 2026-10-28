@@ -1,5 +1,6 @@
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_firmware_interface.h"
+#include "app-mypc110/pc110_inking_interface.h"
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/attachment_interface.h"
@@ -48,7 +49,9 @@ int main(void)
     };
     x86_core_machine *machine = LIB_NULL;
     x86_vl82c420 *chip = LIB_NULL;
+    x86_nxvm_board_pic_bus *master = LIB_NULL, *slave = LIB_NULL;
     mypc110_firmware firmware = {0};
+    mypc110_inking inking = {0};
     lib_u32 value = 0u;
     lib_u8 byte = 0u;
     const lib_u8 patch = 0x5au;
@@ -67,6 +70,9 @@ int main(void)
     bios[48u * 1024u] = 0x33u;
     bios[2u * MYPC110_FIRMWARE_BANK_BYTES] = 0xf4u;
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        x86_nxvm_board_pic_initialize(&master, &slave, machine,
+            X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
+        x86_nxvm_board_pic_irq_source_bind(&inking.irq, master, slave, 10u) != LIB_STATUS_OK ||
         mypc110_firmware_create(bios, sizeof(bios), &firmware) != LIB_STATUS_OK ||
         x86_vl82c420_create(&chip) != LIB_STATUS_OK ||
         mypc110_config_initialize_cold_image(chip) != LIB_STATUS_OK ||
@@ -83,6 +89,19 @@ int main(void)
             .system_management_active = mypc110_firmware_system_management_active}) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK;
+    if (!failed) {
+        firmware.inking = &inking;
+        inking.control = 0x38u;
+        inking.pending = LIB_TRUE;
+        x86_nxvm_board_pic_irq_source_assert(inking.irq);
+        failed |= x86_core_machine_bus_write(machine, 0x74u, 0x16u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x76u, 0xa1u) != LIB_STATUS_OK ||
+            !inking.pending || !x86_nxvm_board_pic_irq_source_is_asserted(inking.irq) ||
+            x86_core_machine_bus_write(machine, 0x76u, 0xe2u) != LIB_STATUS_OK ||
+            inking.pending || inking.control != 0xc0u ||
+            x86_nxvm_board_pic_irq_source_is_asserted(inking.irq) ||
+            x86_core_machine_bus_write(machine, 0x76u, 0xa1u) != LIB_STATUS_OK;
+    }
     if (!failed) {
         failed |= x86_core_machine_bus_write(machine, 0xecu, 0x0cu) != LIB_STATUS_OK ||
             x86_core_machine_bus_write(machine, 0xedu, 0x09u) != LIB_STATUS_OK ||
@@ -335,6 +354,7 @@ int main(void)
         failed |= x86_core_machine_remove_port_routes(machine, &firmware) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, 0x0076u, &value) != LIB_STATUS_UNSUPPORTED;
     }
+    x86_nxvm_board_pic_finalize(master, slave);
     x86_core_machine_destroy(machine);
     mypc110_firmware_destroy(&firmware);
     x86_vl82c420_destroy(chip);

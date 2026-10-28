@@ -40,6 +40,11 @@ static lib_status mypc110_ec_mailbox_write(void *owner, lib_u16 port,
         case 0x05u:
             mypc110_ec_mailbox_reply(mailbox, 0x21u);
             break;
+        case 0x10u:
+            /* L2: the selected controller's 10h handler posts AAh on DBB1.
+             * Its other peripheral effects are outside this mailbox model. */
+            mypc110_ec_mailbox_reply(mailbox, 0xaau);
+            break;
         case 0x21u:
             mypc110_ec_mailbox_reply(mailbox,
                 (lib_u8)(mailbox->ram[0xcfu - MYPC110_EC_RAM_START] | 0xf0u));

@@ -8,6 +8,19 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../src/app-mypc110" mypc110)
 endif()
 
+# Reuse the same firmware diagnostic for the separately embedded DSTN BIOS.
+# It is not a qualification test until that firmware's checkpoints are proven.
+if(TARGET mypc110-real-firmware-dstn)
+    add_executable(mypc110-dstn-firmware-diagnostic EXCLUDE_FROM_ALL
+        integration/real_firmware_post_integration.c)
+    target_link_libraries(mypc110-dstn-firmware-diagnostic PRIVATE
+        mypc110-board mypc110-real-firmware-dstn)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-dstn-firmware-diagnostic PRIVATE
+            -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+    endif()
+endif()
+
 add_executable(mypc110-config-route-smoke unit/config_route_smoke.c)
 target_link_libraries(mypc110-config-route-smoke PRIVATE mypc110-board)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -84,6 +97,17 @@ if(TARGET build-unit-tests)
 endif()
 add_test(NAME mypc110.unit/lpt COMMAND mypc110-lpt-smoke)
 set_tests_properties(mypc110.unit/lpt PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
+
+add_executable(mypc110-inking-smoke unit/inking_smoke.c)
+target_link_libraries(mypc110-inking-smoke PRIVATE mypc110-board)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mypc110-inking-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests mypc110-inking-smoke)
+endif()
+add_test(NAME mypc110.unit/inking COMMAND mypc110-inking-smoke)
+set_tests_properties(mypc110.unit/inking PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
 
 add_executable(mypc110-pcic-smoke unit/pc110_pcic_smoke.c)
 target_link_libraries(mypc110-pcic-smoke PRIVATE mypc110-board)

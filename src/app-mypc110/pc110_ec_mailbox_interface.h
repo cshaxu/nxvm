@@ -6,7 +6,7 @@
 #define MYPC110_EC_RAM_BYTES 512u
 
 /* L2 functional host-mailbox transactions, not an executing MCU. Commands
- * 05/21/FC return defined controller data; D0--D2 read its 40h--23Fh RAM.
+ * 05/10/21/FC return defined controller data; D0--D2 read its 40h--23Fh RAM.
  * D4/D5 write page 1 and D6 writes page 2 in the selected controller image.
  * One reply latch owns OBF; writes complete immediately (IBF clear). GPIO,
  * serial charging traffic and unsolicited input remain separate receivers.

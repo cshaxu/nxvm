@@ -1,3 +1,57 @@
+# M5 T580 S77 — Active: PC110 inking device and input boundary
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S77. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation and S76 was accepted at `7fa26dc31`. |
+| Objective | Investigate and implement the PC110 inking-device boundary needed by the genuine driver and calibration flow, using documented hardware or labelled L2 reference evidence. |
+| Non-goals | No host BIOS interception, guest-memory injection, external media modification, fake calibration success, or Lib/Emulator changes without an independently justified contract. |
+| Baseline | [S76 evidence](../etc/evidence/t580-s76-status-port.md) records real PC DOS driver output and its first inking-calibration request; input consumption is not yet proven. |
+| Candidate Proposal | Map existing Machine input, port and IRQ owners against the independently documented inking protocol; implement a single bounded hardware receiver and its input adapter, then verify the real guest path. |
+| Files And ABI Surface | PC110 App and appropriate X86-NXVM/Core receiver and tests if warranted; public contract extensions only under existing owner authorization. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Deterministic protocol tests, affected dual-width builds and real-firmware/driver receiver as evidence warrants; hidden bounded background work in existing Ninja trees. |
+| Asset Needs | Reuse the reviewed task-owned test master and Setup oracle as read-only inputs with overlays; preserve external originals. |
+| Reporting Requirements | Distinguish protocol, host input, actual calibration, pointing-device driver, DOS startup and desktop validation. |
+| Stop Conditions | Do not invent the digitizer protocol, substitute a PS/2 mouse for inking, modify guest software or claim unobserved hardware precision. |
+| Exit Criteria | The documented inking interface and real driver calibration are demonstrated, or a specific next unimplemented owner is located and addressed. |
+| Original Owner Request | Complete PC110 implementation, original and TFT variants, and four published executables. |
+| Similar-Issue Sweep | Keep PS/2 relative pointing and inking samples independent and audit both routes for real caller ownership. |
+
+The implementation covers the documented inking receiver and the separately
+source-supported EC 10h completion. Shared P1 `2f853d2db` supplies the
+generic input/IRQ attachment and is pushed. The App implementation, tests,
+records and affected PC artifacts form the NXVM implementation P; coordinator
+review must retain the negative mouse result and the optional diagnostic's
+exit 1 rather than treating either as a passing result.
+
+The protocol, input/IRQ implementation and its dual-width unit verification are
+recorded in [S77 evidence](../etc/evidence/t580-s77-inking-boundary.md).
+The real TFT driver has accepted all four calibration points and reached the
+same Personaware launcher frame on x86 and x64; the older power diagnostic
+still returns failure on its unchanged exception-count predicate. Mouse-driver
+investigation and desktop presentation remain outstanding.
+The current mouse follow-up records the actual C201h SMI and EC mailbox
+instructions in a bounded background guest replay. A proposed FFh mailbox
+reply was rejected and removed after an isolated trace showed that it did
+not explain the observed failure; see S77 evidence for the distinction.
+The subsequent real trace confirms the guest's SMM lock branch. The selected
+controller firmware's 10h handler emits an AAh completion, now modeled by
+the App mailbox; all 13 PC110 units, real-firmware FDC/reset and boot-handoff
+tests pass on both host architectures. The separate DSTN firmware's FDC/reset
+and boot-handoff diagnostics passed on both widths. The candidate's real x64
+guest mouse trace still returns C201h failure with the SMM EC lock set; the
+10h completion is therefore not a demonstrated fix for that failure. A
+shorter real-firmware handoff probe confirmed that the lock is already 01h
+before DOS starts; power restoration is the next investigation boundary.
+The follow-up observed the mailbox transition from available at suspend to
+empty before RSM while the lock remained set. A bounded real-firmware trace
+identified 3E5DDh as the consumer; the observed restoration did not execute
+the known lock-clear points. A shorter resume-only trace confirmed both
+original callbacks are invoked: the first sends 0Ah/9Bh and 11h, while the
+second fails to observe the input needed to clear the lock. The controller
+event remains under investigation; temporary observers were removed.
+
 # M5 T580 S76 — Accepted: PC110 operating-system progression
 
 | Field | Required record |
@@ -22,8 +76,8 @@ The former F65535 status-port wait is corrected by Shared `e3bb44fc1`;
 targeted dual-width controller and real-firmware FDC checks pass. The x64
 post-loader replay passed that wait but later accumulated exceptions and
 entered another loop; a bounded follow-up captures its exception context.
-See [S76 evidence](../etc/evidence/t580-s76-status-port.md). S76 remains
-active and no DOS or PC110 release qualification is claimed.
+See [S76 evidence](../etc/evidence/t580-s76-status-port.md). At this checkpoint
+S76 was still active and no DOS or PC110 release qualification had been claimed.
 
 The subsequent context capture found an empty VM86 INT 1Ch IDT gate, so the
 observed IDT-related #GP is consistent with the CPU check. The later loop
