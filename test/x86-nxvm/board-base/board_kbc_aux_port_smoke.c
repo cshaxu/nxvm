@@ -77,6 +77,9 @@ lib_i32 main(void)
     failed |= x86_nxvm_board_pic_scan_interrupt(master, slave);
     failed |= read_port(port, 0x0060u) != 0x00u;
 
+    /* BIOS C206h uses E6h through the 8042 auxiliary channel. */
+    send_aux_command(port, 0xe6u);
+    failed |= !take_aux_byte(port, master, slave, 0xfau);
     send_aux_command(port, 0xf2u);
     failed |= !take_aux_byte(port, master, slave, 0xfau);
     failed |= !take_aux_byte(port, master, slave, 0x00u);

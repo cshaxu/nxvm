@@ -98,6 +98,9 @@ lib_status x86_ps2_mouse_write(x86_ps2_mouse *mouse, lib_u8 value,
     case 0xe8u:
         mouse->pending_parameter = MOUSE_PARAMETER_RESOLUTION;
         break;
+    case 0xe6u:
+        /* The current movement model already uses 1:1 scaling. */
+        break;
     case 0xe9u:
         out_reply->bytes[1] = (lib_u8)(mouse->buttons |
             (mouse->reporting_enabled ? 0x20u : 0u));

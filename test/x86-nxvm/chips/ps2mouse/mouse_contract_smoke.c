@@ -38,7 +38,7 @@ static lib_bool commands(x86_ps2_mouse *mouse)
         case 0xffu: count = 3u; second = 0xaau; break;
         case 0xf2u: count = 2u; break;
         case 0xe9u: count = 4u; third = 2u; fourth = 100u; break;
-        case 0xf6u: case 0xf5u: case 0xf4u: case 0xf3u: case 0xe8u: break;
+        case 0xf6u: case 0xf5u: case 0xf4u: case 0xf3u: case 0xe8u: case 0xe6u: break;
         default: first = 0xfeu; break;
         }
         failed |= !reply_is(mouse, (lib_u8)value, count, first, second, third, fourth);
