@@ -55,6 +55,15 @@ it must not substitute an invented frame-readiness test for the host scale fix.
 The reset description on printed page 47 describes SR00 reset-control bits;
 it does not by itself prove the initial value of every sequencer register.
 
+For follow-up design, the existing Machine conversion resolves indexed
+graphics through `palette_rgb`, and copies the text palette and cursor state
+to both Window and Console frames. Thus an F65535-only change that merely
+zeros the palette would hide the graphic pixels but would also need to handle
+the text cursor, and cannot automatically guarantee blank output when a host
+Console rejects palette changes. Screen Off must be tested at the chip and
+actual receiver boundaries, with guest memory preserved and output restored
+after clearing SR01 bit 5. No change to this behavior is made by S84.
+
 A candidate minimal Shared fix is to avoid treating a native-enforced
 minimum as a user-selected enlargement during the *initial automatic* resize:
 record the smaller of actual client width and source width for the initial
