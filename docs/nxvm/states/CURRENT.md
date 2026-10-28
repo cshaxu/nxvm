@@ -1,11 +1,11 @@
-# M5 T580 S85 — Delivered, awaiting owner validation: initial Window scale correction
+# M5 T580 S85 — Delivered for owner review: Window scale and shared corpus review
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation — M5 T580 S85. |
-| Admission And Approval | Owner accepted S84 and approved the reviewed Shared Lib correction and full cached build/test and release. |
+| Admission And Approval | Owner accepted S84, approved the Shared Lib correction and requested focused review of snap restore, test fixture ownership, timeout budgets and cross-repository synchronization before acceptance. |
 | Objective | Prevent native minimum Window width from becoming the initial automatic frame scale. |
-| Non-goals | No new API or persistent state; do not change guest video semantics, owner media or configuration. |
+| Non-goals | No new public API, second window state machine or recovery framework; do not change guest video semantics, owner media or configuration. |
 | Reference Baseline | S84 same-run PC110 Window trace and DeskPro EGA readiness record. |
 | Candidate Proposal | Limit the initial automatic scale to natural frame size while retaining fit-down and subsequent manual scaling. |
 | Files And ABI Surface | Lib Window implementation, existing Lib Window test, both manifests, NXVM/PC110, MyNES and MyRaidenII receiving artifacts and task evidence; no ABI changes. |
@@ -29,15 +29,22 @@ itself select a scale; an actual WM_SIZING interaction commits its result on
 WM_EXITSIZEMOVE. Existing explicit natural-size and maximize operations retain
 their paths. Snapped-frame adaptation uses the current snapped region without
 replacing the scale for ordinary windows. Focused tests pass on both widths.
-The final production revision passed 759/759 registered non-MIDI tests per
+The P1 production revision passed 759/759 registered non-MIDI tests per
 width; the strengthened snap assertion was separately rerun on both widths.
 Lib production and test manifests pass on both widths; both build trees report
 no work on an incremental rebuild.
-The final PC110 TFT x64 deployed binary was observed through an isolated
+The P2 PC110 TFT x64 deployed binary was observed through an isolated
 background copy: before the probe resized it, its RDP client was 640x400.
 The probe's later debug handshake failed, so this is not a boot or setup-colour
 qualification. The [S85 evidence](../etc/evidence/t580-s85-window-scale.md)
 records product scope and verification limits.
+
+The owner subsequently identified an untested snap-restore-to-next-frame
+contract. A controlled existing fixture reproduced the loss of restored
+scale; the current correction treats the native snap-to-restored state
+transition as a distinct event. Both focused architecture tests pass; native
+drag message ordering remains unverified. Earlier P1/P2 are superseded by the
+corrective Shared and receiving-artifact commits.
 
 Both earlier full suites passed 759/760; the native MIDI output test failed
 in each architecture and in independent single-test reruns. A direct WinMM
@@ -46,6 +53,11 @@ owner connected RDP, the native MIDI integration test passed separately on
 both x86 and x64. The initial full runs and individual later passes are distinct
 evidence; they are not a single uninterrupted 760-test passing run. Owner
 inputs were preserved.
+
+The later complete review run passed 760/760 on each width with RDP connected.
+It used the earlier configured timeout budgets. After the owner selected 60
+seconds, all three affected checks passed again on each width after
+reconfiguration. Physical snap/drag and cold-cache timing remain unverified.
 
 # M5 T580 S84 — Accepted: PC110 deployed Window observation
 
