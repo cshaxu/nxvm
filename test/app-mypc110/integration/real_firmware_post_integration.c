@@ -563,8 +563,11 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool os_inking_checkpoint = argc == 6 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-pair-os-inking") == 0;
+    const lib_bool os_ps2_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-os-ps2") == 0;
+    const lib_bool os_inking_checkpoint = os_ps2_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-os-inking") == 0);
     const lib_bool os_late_key_checkpoint = os_inking_checkpoint ||
         (argc == 6 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup-pair-os-late-key") == 0);
@@ -673,6 +676,8 @@ int main(int argc, char **argv)
     lib_bool os_key_sent = LIB_FALSE;
     lib_u8 os_inking_events = 0u;
     lib_u64 os_inking_next = 0u;
+    lib_bool os_final_frame_written = LIB_FALSE;
+    lib_u8 os_pointer_phase = 0u;
     lib_bool setup_entry = LIB_FALSE;
     lib_bool setup_bytes_match = LIB_FALSE;
     lib_bool setup_reset_completed = LIB_FALSE;
@@ -1245,6 +1250,33 @@ int main(int argc, char **argv)
                 lib_c_fflush(lib_c_stdout);
             }
         }
+        if (os_inking_checkpoint && os_inking_events == 8u && os_pointer_phase < 2u &&
+            executed >= os_inking_next) {
+            char frame_path[512u];
+            const lib_i32 length = lib_c_snprintf(frame_path, sizeof(frame_path),
+                "%s.pointer-%u.ppm", setup_frame_path, (unsigned int)os_pointer_phase);
+            if (length < 0 || (lib_size)length >= sizeof(frame_path)) {
+                status = LIB_STATUS_LIMIT_EXCEEDED;
+                break;
+            }
+            status = mypc110_post_diagnostic_write_frame(machine, &power_driver, frame_path);
+            if (status != LIB_STATUS_OK) break;
+            if (os_pointer_phase == 0u) {
+                if (os_ps2_checkpoint) {
+                    status = x86_nxvm_board_mouse_receive_relative(machine->board, 40, -20, 0u);
+                    if (status != LIB_STATUS_OK) break;
+                } else {
+                    const kvm_input_event motion = {.type = KVM_EVENT_MOUSE,
+                        .data.mouse = {.relative = LIB_TRUE, .delta_x = 40, .delta_y = 20}};
+                    power_driver.deliver_input(power_driver.context, &motion);
+                }
+                os_inking_next = executed + 5000000u;
+            }
+            ++os_pointer_phase;
+            lib_c_printf("PC110:POINTER:phase=%u executed=%llu\n", os_pointer_phase,
+                (unsigned long long)executed);
+            lib_c_fflush(lib_c_stdout);
+        }
         if (port61_progress_checkpoint && post_reset_trace.left_port61_wait) break;
         if (port61_follow_checkpoint &&
             post_reset_trace.port61_follow_retirement_count >=
@@ -1680,6 +1712,7 @@ int main(int argc, char **argv)
             const lib_status final_status = length < 0 || (lib_size)length >= sizeof(final_path) ?
                 LIB_STATUS_LIMIT_EXCEEDED :
                 mypc110_post_diagnostic_write_frame(machine, &power_driver, final_path);
+            os_final_frame_written = final_status == LIB_STATUS_OK;
             lib_c_printf("PC110:SETUP:final-frame=%d\n", final_status);
         }
     }
@@ -1713,7 +1746,10 @@ int main(int argc, char **argv)
             (!partition_checkpoint || partition_boot_sector) &&
             (!system_files_checkpoint || system_files_reached) &&
             (!loader_checkpoint || loader_reached) &&
-            retained_cpu_image && observation.diagnostic.delivered_exception_count == reset_exception_count &&
+            retained_cpu_image &&
+            (os_inking_checkpoint || observation.diagnostic.delivered_exception_count == reset_exception_count) &&
+            (!os_inking_checkpoint || (os_key_sent && os_inking_events == 8u &&
+                os_pointer_phase == 2u && os_final_frame_written)) &&
             !observation.diagnostic.first_fault.valid;
         lib_c_printf("PC110:POWER:button=%u restore=%u rsm=%u status=%d pc=%08x resets=%u executed=%llu\n",
             button_sent, post_reset_trace.power_restore_entered,
