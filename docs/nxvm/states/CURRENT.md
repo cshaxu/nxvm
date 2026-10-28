@@ -1,4 +1,32 @@
-# M5 T580 S77 — Active: PC110 inking device and input boundary
+# M5 T580 S78 — Active: PC110 controller restoration and pointing device
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S78. |
+| Admission And Approval | The owner authorized autonomous PC110 S tasks and previously approved the bounded Shared/Core changes needed by the product. |
+| Objective | Identify and implement the missing controller restoration event and demonstrate the genuine PC110 BIOS and guest pointing-device path. |
+| Non-goals | No host BIOS interception, guest-memory injection, manufactured driver success, external media changes, Lib/Emulator changes, or physical-timing claim without a source. |
+| Baseline | Accepted S77 records real C201h failure, the SMM lock, two real firmware callbacks and the 0Ah/9Bh and 11h mailbox sequence. Its 10h reply did not resolve the failure. |
+| Candidate Proposal | Follow the original controller image, firmware and source-labelled references to identify the receiver and event; implement one functional L2 model at its correct owner, then verify the actual guest. |
+| Files And ABI Surface | PC110 App and tests, or X86-NXVM/Core only if the evidence requires their existing boundary; no new public API merely for diagnostics. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Affected x86/x64 unit and real-firmware regressions, actual guest driver and input path, plus required affected artifacts and manifest/gate checks. Long work is bounded and backgrounded. |
+| Asset Needs | Reviewed external BIOS, Setup oracle and task-owned disk overlays; preserve their originals. |
+| Reporting Requirements | Separate modeled controller facts, real guest outcomes, failure cases, both widths and unexecuted desktop/RDP validation. |
+| Stop Conditions | Do not patch guest state, substitute another device, fabricate a BIOS result or claim physical timing from an L2 model. |
+| Exit Criteria | The real firmware clears its own lock and guest pointing-device initialization and input are verified, with failures and cleanup honestly accounted for. |
+| Similar-Issue Sweep | Check controller reply ownership, reset/retention and device paths without introducing duplicate lifecycle or input queues. |
+
+# M5 T580 S77 — Accepted: PC110 inking device and input boundary
+
+Coordinator review accepts pushed Shared P1 `2f853d2db` and NXVM P2
+`b597189bd` for the inking receiver and the independently sourced 10h
+completion. Both-width targeted units and firmware checkpoints are recorded
+in S77 evidence. The optional long guest diagnostic exits 1 on its inherited
+VM86 exception predicate and is not called a passing test. Mouse C201h,
+the duplicate test-only construction, private diagnostic boundary, DSTN DOS,
+desktop presentation and final PC110 release qualification remain open in
+T580; S78 investigates the mouse rather than declaring T580 complete.
 
 | Field | Required record |
 | --- | --- |
