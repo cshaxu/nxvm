@@ -173,6 +173,12 @@ white cursor; the capture SHA-256 is
 No pink page, other architecture, DSTN, real keyboard or guest-media outcome
 is established by this run. All INI/CMOS files were task-owned copies.
 
+PC110's existing product binding selects Turbo initially. The shared runner
+uses a 4096-instruction Turbo quantum with no guest-tick budget, and its
+host-time pacing wait applies only to Standard. Therefore selecting Turbo
+again is not an optimization for these observations. This source inspection
+does not measure which remaining execution or display cost dominates.
+
 ## Post-F12 BIOS location
 
 The external TFT BIOS input still hashes to
