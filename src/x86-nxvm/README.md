@@ -19,8 +19,8 @@ INI grammar, factory, version/banner construction and command extensions.
 Machine does not depend on Product. Fixed model choices belong to the Apps.
 The frozen board-profile binding may receive the CPU's physical SMIACT output;
 the consuming profile owns its active-memory decode, not Board or the CPU.
-Machine's copied profile may consume a physical key through `handle_key` on
-the existing input executor. Unconsumed keys keep the standard keyboard path;
+Machine's copied profile may consume a physical input through `handle_input` on
+the existing input executor. Unconsumed events keep their standard delivery;
 the profile borrows the event only for that call and owns its physical wiring.
 
 CPU/FPU and neutral guest execution belong to X86 Core, not this package.

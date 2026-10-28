@@ -24,9 +24,6 @@ static lib_status x86_nxvm_machine_deliver_key(x86_nxvm_machine *session,
     lib_status status = LIB_STATUS_OK;
 
     if (session == LIB_NULL || !session->active) return LIB_STATUS_INVALID_ARGUMENT;
-    if (session->construction.profile.handle_key != LIB_NULL &&
-        session->construction.profile.handle_key(session->construction.profile.context, event))
-        return LIB_STATUS_OK;
     {
         x86_nxvm_machine_keyboard_sequence sequence;
         lib_u8 native_scan_set;
@@ -65,6 +62,11 @@ lib_status x86_nxvm_machine_deliver_emulator_input(x86_nxvm_machine *session,
     const kvm_input_event *event)
 {
     if (event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || !session->active) return LIB_STATUS_INVALID_ARGUMENT;
+    if ((event->type == KVM_EVENT_KEY || event->type == KVM_EVENT_MOUSE) &&
+        session->construction.profile.handle_input != LIB_NULL &&
+        session->construction.profile.handle_input(session->construction.profile.context, event))
+        return LIB_STATUS_OK;
     if (event->type == KVM_EVENT_KEY) return x86_nxvm_machine_deliver_key(session, event);
     if (event->type == KVM_EVENT_MOUSE) return x86_nxvm_machine_deliver_mouse(session,
         event->data.mouse.delta_x, event->data.mouse.delta_y,

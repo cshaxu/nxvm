@@ -30,11 +30,11 @@ typedef struct x86_nxvm_machine_profile_binding {
     lib_status (*after_firmware)(void *context, x86_core_machine *core);
     void (*notify)(void *context, x86_nxvm_machine_profile_event event);
     void (*release)(void *context);
-    /* Optional physical-key wiring, on the owning executor after publication.
-     * True consumes the borrowed event; false retains normal keyboard delivery.
+    /* Optional physical input wiring, on the owning executor after publication.
+     * True consumes the borrowed event; false retains normal delivery.
      * It must report physical-operation failures through the existing Core
      * fault path, not retain the event or create another input queue. */
-    lib_bool (*handle_key)(void *context, const kvm_input_event *event);
+    lib_bool (*handle_input)(void *context, const kvm_input_event *event);
 } x86_nxvm_machine_profile_binding;
 
 /* Prepared values are copied into the sole Machine owner. Firmware/context

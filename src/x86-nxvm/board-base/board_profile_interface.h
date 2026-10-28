@@ -5,6 +5,7 @@
 #include "x86-core/machine/machine_interface.h"
 #include "x86-nxvm/chips/pit825x/pit825x_interface.h"
 #include "x86-nxvm/board-at/kbc_interface.h"
+#include "x86-nxvm/board-base/pic_bus_interface.h"
 
 /* Existing serialized board reset boundaries, in execution order. */
 typedef enum x86_nxvm_board_reset_phase {
@@ -45,6 +46,9 @@ typedef struct x86_nxvm_board_profile_services {
     x86_pit *auxiliary_pit;
     void (*speaker)(void *context, lib_u8 lines);
     void *speaker_context;
+    /* Borrowed PIC endpoints; IRQ sources remain owned by the board. */
+    x86_nxvm_board_pic_bus *pic_master;
+    x86_nxvm_board_pic_bus *pic_slave;
 } x86_nxvm_board_profile_services;
 
 /* On failure leave out_binding empty and release the unpublished candidate.

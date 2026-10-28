@@ -20,6 +20,7 @@ typedef struct construction_probe {
     lib_size detach_count;
     lib_size release_count;
     lib_size key_count;
+    lib_size mouse_count;
     lib_bool last_key_pressed;
     lib_bool released;
     lib_bool ata;
@@ -99,11 +100,16 @@ static void release_profile(void *context)
     ++probe->release_count;
 }
 
-static lib_bool handle_key(void *context, const kvm_input_event *event)
+static lib_bool handle_input(void *context, const kvm_input_event *event)
 {
     construction_probe *probe = context;
 
-    lib_test_assert(!probe->released && event->type == KVM_EVENT_KEY);
+    lib_test_assert(!probe->released);
+    if (event->type == KVM_EVENT_MOUSE) {
+        ++probe->mouse_count;
+        return LIB_TRUE;
+    }
+    if (event->type != KVM_EVENT_KEY) return LIB_FALSE;
     ++probe->key_count;
     probe->last_key_pressed = event->data.key.pressed;
     return event->data.key.key == BASE_KEY_F12;
@@ -143,7 +149,7 @@ static x86_nxvm_machine_construction prepare(construction_probe *probe)
         .profile = {.context = probe, .configure = configure_plan,
             .after_firmware = configure_after_firmware,
             .notify = notify_profile, .release = release_profile,
-            .handle_key = handle_key}
+            .handle_input = handle_input}
     };
     return value;
 }
@@ -352,7 +358,7 @@ static void check_transaction(lib_status configure_status,
     /* Caller storage may change: the published owner consumed copied values. */
     construction.core_config.memory_bytes = 0u;
     construction.floppy_slot_count = 0u;
-    construction.profile.handle_key = LIB_NULL;
+    construction.profile.handle_input = LIB_NULL;
     lib_test_assert(x86_nxvm_machine_get_information(machine, &information) == LIB_STATUS_OK);
     lib_test_assert(information.memory_bytes == (2u * 1024u * 1024u));
     lib_test_assert(x86_nxvm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
@@ -370,6 +376,10 @@ static void check_transaction(lib_status configure_status,
     key.data.key.pressed = LIB_TRUE;
     driver.deliver_input(driver.context, &key);
     lib_test_assert(probe.key_count == 3u && probe.last_key_pressed);
+    const kvm_input_event mouse = {.type = KVM_EVENT_MOUSE,
+        .data.mouse = {.delta_x = 2, .relative = LIB_TRUE}};
+    driver.deliver_input(driver.context, &mouse);
+    lib_test_assert(probe.mouse_count == 1u && probe.key_count == 3u);
     check_memory_replacement(machine);
     x86_nxvm_machine_destroy(machine);
     lib_test_assert(probe.released && probe.release_count == 1u);
