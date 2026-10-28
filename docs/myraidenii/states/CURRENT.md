@@ -2,6 +2,11 @@
 
 ## Current Work
 
+NXVM T580 S85 refreshes the MyRaidenII 0007 x86/x64 receiving EXEs for the
+Shared Window resize correction. The [NXVM evidence](../../nxvm/etc/evidence/t580-s85-window-scale.md)
+records the dual-width tests and validation boundaries; no MyRaidenII source,
+configuration, media or gameplay qualification is changed.
+
 ### Receiving artifact update from NXVM T580 S54
 
 The admitted NXVM cross-target packet refreshes the Core-linked 0007 pair
