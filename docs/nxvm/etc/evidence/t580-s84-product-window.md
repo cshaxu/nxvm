@@ -134,3 +134,17 @@ PC110 displayed a pink error or setup page. A product-path input observation
 with a reliable pause/query handshake remains necessary. The App source binds
 F12 to its virtual resume button; the current product asset README does not
 explain that binding. No source or shared library was modified in this probe.
+
+The task-local probe was then corrected to wait for the actual
+`Machine paused.` text and monitor prompt before requesting Debug, instead of
+issuing an `info` query during the transition. In a fresh TFT x64 no-media
+run, the same timed host F12 messages were posted and the probe waited another
+120 seconds. The Window image again matched the black/short-cursor image above.
+The pause handshake succeeded and Debug reported `F000:E98A JMP`, rather than
+the prior control run's `3800:1333 HLT`. The probe exited zero; its log hash is
+`db0f8c69c1a38d958b43acc900bab49f680d1c2b64287701aeeb35470728f704`.
+This establishes a different observed CPU location after the host input, but
+not a fully attributed F12 delivery or wake transition: this run did not read
+the guest location immediately before posting the key, and the test provides
+no intermediate guest input or firmware trace. It does not qualify the guest
+display, a real keyboard, or other model/architecture combinations.

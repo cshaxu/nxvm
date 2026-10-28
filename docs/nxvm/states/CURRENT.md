@@ -37,6 +37,10 @@ The address matches S51's firmware suspend point. A later task-local F12
 host-message probe did not establish delivery or a CPU continuation because
 its pause/query handshake failed; this remains unverified, not a product-failure
 claim. The current product README also omits the App's F12 resume binding.
+With the probe handshake corrected, a fresh timed F12 run reported a different
+CPU location, F000:E98A, after the input and paused successfully. It did not
+sample the location immediately before input and did not produce the pink
+page; F12 delivery and guest continuation are not yet fully attributed.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 
