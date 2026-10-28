@@ -20,9 +20,10 @@
 | Similar-Issue Sweep | Compare the result against the separately captured firmware framebuffer and both fixed variants. |
 
 The deployed TFT x64 Window was observed in an RDP session at 9600x6000;
-the screenshot was black and does not prove the reported setup colour. An
-actual PC110 initial-frame probe and a hidden native geometry probe identify
-a matching 15x scale mechanism. See [S84 evidence](../etc/evidence/t580-s84-product-window.md).
+the screenshot was black and does not prove the reported setup colour. A
+task-local instrumented product build now traces the initial 8x1 frame,
+native 120x1 client, stored 120/8 scale and subsequent 640x400 frame resized
+to 9600x6000 in one run. See [S84 evidence](../etc/evidence/t580-s84-product-window.md).
 A candidate Shared Lib correction requires the owner's Shared-code review;
 no Shared implementation has been changed and S84 remains active.
 The original F65535 reference also identifies an independent Screen Off

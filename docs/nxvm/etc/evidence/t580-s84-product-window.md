@@ -243,3 +243,34 @@ capture before the second sample retained the previously observed black/cursor
 image; this is not pink-page or DOS qualification. The external firmware,
 owner INI and media were not changed; monitor pause/resume and Debug were the
 normal product interfaces.
+
+## Same-run Window scaling trace
+
+A task-local diagnostic TFT x64 executable was linked from the existing
+product build and libraries, substituting only a temporary instrumented copy
+of the Window component object. The instrumented object adds resize logging;
+it does not modify the Shared source, deployed executable or owner INI. The
+background product used a task-owned no-media INI. In one run the actual
+Window path recorded:
+
+| Event | Source | Actual client / stored scale | Requested client |
+| --- | --- | --- | --- |
+| First automatic resize | 8x1 | native 120x1; stored 120/8 | 8x1 |
+| Next frame resize | 320x350 | scale 120/8 | 4800x5250 |
+| Later frame resize | 640x400 | scale 120/8 | 9600x6000 |
+
+This directly establishes that the Window component turns the native minimum
+client width into a 15x scale and carries it across subsequent guest frame
+changes. It reproduces the dimensions observed separately for the deployed
+executable. The diagnostic executable is not the unmodified deployed binary;
+the trace does not independently qualify the DSTN variant, other Windows
+versions or the reported pink setup page.
+
+The F65535 implementation resets its register state to zero and produces the
+8x1 snapshot from those registers. The original F65535 reference, revision
+2.0, page 40, says that most standard VGA registers have undefined reset
+state. This does not establish that a real chip must emit that snapshot, nor
+justify imposing arbitrary minimum guest dimensions. Screen Off behavior is a
+separate previously observed chip-side gap and is not demonstrated to cause
+the native-window scale error. A Shared correction remains unapproved and
+no Shared production source has been changed.
