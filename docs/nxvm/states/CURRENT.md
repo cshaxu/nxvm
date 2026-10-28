@@ -28,6 +28,11 @@ no Shared implementation has been changed and S84 remains active.
 The original F65535 reference also identifies an independent Screen Off
 snapshot gap; it is not yet tied to the observed window-size failure and
 requires a separate validated display behavior decision.
+The actual TFT x64 product's Window was subsequently resized by the
+background probe for observation. It showed a black 640x400 client with a
+short white cursor after 240 seconds; the paused debugger reported
+`3800:1333 HLT` with interrupts disabled. The owner of that no-media guest
+state remains unconfirmed; see S84 evidence.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 

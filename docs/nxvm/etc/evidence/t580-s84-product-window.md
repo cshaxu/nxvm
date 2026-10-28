@@ -84,3 +84,25 @@ add a regression for initial 8x1 forced to 120x1 followed by 640x400, plus
 an initially fitted-down frame and a genuine user resize. This candidate
 requires approval for Shared Lib changes and must be tested with the actual
 product and both architectures; no code fix is claimed in this record.
+
+## Actual product observation after host-only resize
+
+A second x64 TFT product run reused the background product probe with one
+task-local diagnostic change: immediately before capture, it resized the host
+Window to a 640x400 client using `SetWindowPos` without activation. The
+executable, embedded firmware, guest state and no-media temporary INI were not
+changed. The probe ran the guest for 240 seconds, observed Running, resized
+and captured the Window, then paused and queried the product's debugger. The
+host reported `remote=1`, client 640x400 and outer 656x439. Both BitBlt and
+PrintWindow produced the same image, SHA-256
+`f9b67ead469b0af6a7d6af1838374a0f173f387eba6ee6b99d33184b3425e472`:
+255,984 black pixels and 16 white pixels, visibly a short cursor and no pink
+page. The probe log SHA-256 is
+`8ddf2047118ebec18dd6c1c3f0416049c38b2f621386635c40816e5e924cef95`.
+
+After the screenshot the product successfully paused; its debugger displayed
+`3800:1333 F4 HLT` with interrupts disabled. This is a real observation of
+one no-media, TFT, x64 product run, not a conclusion that the instruction was
+faulty or that this is the expected no-media firmware outcome. It does not
+qualify the other width or DSTN, a media-backed guest, or Easy Setup. The
+diagnostic's manual host resize is an observation aid, not the product fix.
