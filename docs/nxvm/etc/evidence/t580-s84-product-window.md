@@ -188,3 +188,23 @@ therefore identifies a candidate rather than a complete runtime trace.
 The scratch configuration has no disk, and the lower-level FDC reset tests
 passed, but neither fact proves what result this particular runtime wait
 should produce. No guest, BIOS or hardware behavior was altered.
+
+## Two product-path samples after F12
+
+A further task-owned TFT x64 no-media product run repeated the confirmed
+`3800:1333 HLT` pause, normal monitor resume and posted F12 pair. After 120
+seconds, product Debug sampled `F000:C852 LOOP` with DX=03F4h and CX=9ECEh.
+The probe exited Debug, resumed the product normally for approximately six
+seconds, paused it again and sampled `3000:8000 JMP 3800:5B00`, DX=15EEh.
+All three pause acknowledgements succeeded and the background probe exited
+zero. Its log SHA-256 is
+`5f99dcd60a7b22571d0091979d38dd1f41a63ca848b24a0dccfa365752b10190`.
+
+The two real-product snapshots show guest execution reached a different
+firmware location after the first FDC-poll sample. They do not prove the FDC
+loop completed: an interrupt or other transfer could intervene, and no
+retirement or FDC state trace was captured between snapshots. The Window
+capture before the second sample retained the previously observed black/cursor
+image; this is not pink-page or DOS qualification. The external firmware,
+owner INI and media were not changed; monitor pause/resume and Debug were the
+normal product interfaces.

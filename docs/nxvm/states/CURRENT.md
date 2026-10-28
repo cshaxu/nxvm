@@ -46,9 +46,13 @@ normal monitor, posted F12 and later observed F000:C852. The screen was still
 black with a cursor. This is product-path continuation evidence, not a
 complete causal trace or colour/guest-media qualification.
 The external BIOS identifies the post-F12 location as a candidate 3F4h FDC
-status-poll loop, consistent with the captured DX and opcode. A single sample
-does not distinguish forward progress from a stuck wait; runtime shadow bytes
-and a second sample were not captured.
+status-poll loop, consistent with the captured DX and opcode. That initial
+single sample did not distinguish forward progress from a stuck wait; runtime
+shadow bytes were not captured.
+In a further real-product run, the first post-F12 sample was F000:C852 and a
+second sample after six seconds of normal resume was 3000:8000. This proves
+the guest reached another instruction location, but does not by itself prove
+that the FDC loop completed; see S84 evidence.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 
