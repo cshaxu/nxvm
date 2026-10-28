@@ -3,6 +3,8 @@
 #define MYPC110_EC_DATA_PORT 0x15e8u
 #define MYPC110_EC_COMMAND_STATUS_PORT 0x15ecu
 #define MYPC110_EC_RAM_START 0x40u
+/* L1 compatibility delay; not a measured controller timing. */
+#define MYPC110_EC_CONTROL_DELAY_TICKS 200000u
 
 static void mypc110_ec_mailbox_reply(mypc110_ec_mailbox *mailbox, lib_u8 value)
 {
@@ -15,8 +17,20 @@ static lib_status mypc110_ec_mailbox_read(void *owner, lib_u16 port,
 {
     mypc110_ec_mailbox *mailbox = owner;
 
-    (void)tick;
     if (mailbox == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (mailbox->control_pending) {
+        if (!mailbox->control_timing_started) {
+            mailbox->control_start_tick = tick;
+            mailbox->control_timing_started = LIB_TRUE;
+        } else if (tick < mailbox->control_start_tick) {
+            mailbox->control_start_tick = tick;
+        } else if (tick - mailbox->control_start_tick >= MYPC110_EC_CONTROL_DELAY_TICKS &&
+            !mailbox->reply_pending) {
+            mypc110_ec_mailbox_reply(mailbox,
+                mailbox->ram[0xffu - MYPC110_EC_RAM_START]);
+            mailbox->control_pending = LIB_FALSE;
+        }
+    }
     if (port == MYPC110_EC_COMMAND_STATUS_PORT) {
         *out_value = mailbox->reply_pending ? 1u : 0u;
     } else if (port == MYPC110_EC_DATA_PORT) {
@@ -67,6 +81,8 @@ static lib_status mypc110_ec_mailbox_write(void *owner, lib_u16 port,
             switch (mailbox->command) {
             case 0x0au:
                 mailbox->ram[0xffu - MYPC110_EC_RAM_START] = (lib_u8)value;
+                mailbox->control_pending = (value & 0x40u) == 0u;
+                mailbox->control_timing_started = LIB_FALSE;
                 break;
             case 0x22u:
                 mailbox->ram[0xd0u - MYPC110_EC_RAM_START] = (lib_u8)(

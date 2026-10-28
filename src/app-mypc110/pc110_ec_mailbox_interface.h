@@ -18,6 +18,9 @@ typedef struct mypc110_ec_mailbox {
     lib_u8 parameter_count;
     lib_u8 reply;
     lib_bool reply_pending;
+    lib_bool control_pending;
+    lib_bool control_timing_started;
+    lib_u64 control_start_tick;
     lib_u8 ram[MYPC110_EC_RAM_BYTES];
 } mypc110_ec_mailbox;
 

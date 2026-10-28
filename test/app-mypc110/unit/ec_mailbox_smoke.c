@@ -1,4 +1,21 @@
 #include "app-mypc110/pc110_ec_mailbox_interface.h"
+#include "x86-core/machine/debug_interface.h"
+
+static lib_bool advance_guest(x86_core_machine *machine)
+{
+    const lib_u8 loop[] = {0xebu, 0xfeu};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0u, [X86_CORE_CPU_DEBUG_EIP] = 0x1000u}
+    };
+    x86_core_machine_run_result result = {0};
+
+    return x86_core_machine_memory_write(machine, 0x1000u, loop, sizeof(loop)) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK &&
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){100000u, 0u}, &result) ==
+            LIB_STATUS_OK && result.executed == 100000u;
+}
 
 static lib_bool read_value(x86_core_machine *machine, lib_u16 port, lib_u8 expected)
 {
@@ -98,6 +115,33 @@ int main(void)
                 x86_core_machine_bus_write(machine, 0x15e8u, command) != LIB_STATUS_OK ||
                 !read_ram(machine, (lib_u8)(command - 0xd4u), 0x3fu, command);
         }
+        /* A deferred control event uses the existing latch and survives a
+         * CPU reset. An occupied latch must be delivered first. */
+        failed |= x86_core_machine_bus_write(machine, 0x15ecu, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15e8u, 0x9bu) != LIB_STATUS_OK ||
+            !read_value(machine, 0x15ecu, 0u) ||
+            x86_core_machine_bus_write(machine, 0x15ecu, 0x10u) != LIB_STATUS_OK ||
+            !advance_guest(machine) || !read_value(machine, 0x15ecu, 1u) ||
+            x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            !read_value(machine, 0x15e8u, 0xaau) || !advance_guest(machine) ||
+            !read_reply(machine, 0x9bu) ||
+            !read_value(machine, 0x15ecu, 0u);
+        /* A later control transaction cancels the pending notification. */
+        failed |= x86_core_machine_bus_write(machine, 0x15ecu, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15e8u, 0x9bu) != LIB_STATUS_OK ||
+            !read_value(machine, 0x15ecu, 0u) ||
+            x86_core_machine_bus_write(machine, 0x15ecu, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15e8u, 0x40u) != LIB_STATUS_OK ||
+            !advance_guest(machine) ||
+            !read_value(machine, 0x15ecu, 0u);
+        /* Replacing a transaction publishes only its latest control value. */
+        failed |= x86_core_machine_bus_write(machine, 0x15ecu, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15e8u, 0x9bu) != LIB_STATUS_OK ||
+            !read_value(machine, 0x15ecu, 0u) ||
+            x86_core_machine_bus_write(machine, 0x15ecu, 0x0au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x15e8u, 0x1bu) != LIB_STATUS_OK ||
+            !read_value(machine, 0x15ecu, 0u) || !advance_guest(machine) ||
+            !read_reply(machine, 0x1bu) || !read_value(machine, 0x15ecu, 0u);
         /* Unknown commands and unimplemented SFR reads never claim OBF. */
         failed |= x86_core_machine_bus_write(machine, 0x15ecu, 0xfeu) != LIB_STATUS_OK ||
             !read_value(machine, 0x15ecu, 0u) ||
