@@ -1,8 +1,8 @@
-# M5 T580 S87 � Active: PC110 product guest startup continuation
+# M5 T580 S87 — Active: PC110 product guest startup continuation
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation � M5 T580 S87. |
+| Identifier Mode | Continuation — M5 T580 S87. |
 | Admission And Approval | Owner requested autonomous completion of T580 and continuation of PC110 work. |
 | Objective | Trace the released PC110 product from DOS driver startup to an interactive guest or a precisely evidenced defect. |
 | Non-goals | No firmware patching, forced Guest state, owner media modification, foreground tasks or unapproved Shared changes. |
@@ -32,7 +32,7 @@ each calibration event. The wall bound is 2,010 seconds plus cleanup, with
 Native mouse capture remains outside this probe. No firmware, user media or
 Shared source is changed.
 
-# M5 T580 S86 — Active: PC110 product boot and Setup observation
+# M5 T580 S86 — Accepted: PC110 product boot and Setup observation
 
 | Field | Required record |
 | --- | --- |

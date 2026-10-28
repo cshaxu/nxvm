@@ -1,4 +1,4 @@
-# T580 S87 — Product guest-input boundary
+# T580 S87 â€” Product guest-input boundary
 
 The real released TFT x64 product reached PC DOS driver output under the
 actual RDP Window in S86. The previous machine-only diagnostic also reached
