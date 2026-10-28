@@ -1,4 +1,53 @@
-# M5 T580 S84 — Active: PC110 deployed Window observation
+# M5 T580 S85 — Delivered, awaiting owner validation: initial Window scale correction
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S85. |
+| Admission And Approval | Owner accepted S84 and approved the reviewed Shared Lib correction and full cached build/test and release. |
+| Objective | Prevent native minimum Window width from becoming the initial automatic frame scale. |
+| Non-goals | No new API or persistent state; do not change guest video semantics, owner media or configuration. |
+| Reference Baseline | S84 same-run PC110 Window trace and DeskPro EGA readiness record. |
+| Candidate Proposal | Limit the initial automatic scale to natural frame size while retaining fit-down and subsequent manual scaling. |
+| Files And ABI Surface | Lib Window implementation, existing Lib Window test, both manifests, NXVM/PC110, MyNES and MyRaidenII receiving artifacts and task evidence; no ABI changes. |
+| Applicable Rules | NXVM guide and execution, architecture, coding, documentation and UI rules. |
+| Verification | Dual-width cached full build and full registered tests, targeted size regression and actual PC110 Window observation, release and artifact verification. |
+| Expected Markers | 8x1 forced to 120x1 followed by 640x400 does not create 9600x6000; fit-down and manual scaling remain correct. |
+| Asset Needs | Existing external firmware and task-owned temporary probes; preserve owner inputs. |
+| Reporting Requirements | Actual diff, builds, tests, artifacts, desktop limits and pushed commits; await owner validation. |
+| Stop Conditions | Do not modify owner files or claim unexecuted checks. |
+| Exit Criteria | Reviewed fix, complete requested verification and published artifacts; owner validation required. |
+| Original Owner Request | Fix PC110 Window startup and continue its product qualification. |
+| Similar-Issue Sweep | Check initial fit-down, user resizing, PC110 and DeskPro, without guest-specific host rules. |
+
+S86 is reserved to resume S84 PC110 product and Setup colour observation after
+S85 delivery and owner acceptance; only one S is active at a time.
+
+The first draft passed the dual-width focused test but the real PC110 product
+still reached 9600x6000: a later WM_SIZE reset the scale. The owner approved
+the explicit-operation contract: WM_SIZE updates actual geometry but cannot
+itself select a scale; an actual WM_SIZING interaction commits its result on
+WM_EXITSIZEMOVE. Existing explicit natural-size and maximize operations retain
+their paths. Snapped-frame adaptation uses the current snapped region without
+replacing the scale for ordinary windows. Focused tests pass on both widths.
+The final production revision passed 759/759 registered non-MIDI tests per
+width; the strengthened snap assertion was separately rerun on both widths.
+Lib production and test manifests pass on both widths; both build trees report
+no work on an incremental rebuild.
+The final PC110 TFT x64 deployed binary was observed through an isolated
+background copy: before the probe resized it, its RDP client was 640x400.
+The probe's later debug handshake failed, so this is not a boot or setup-colour
+qualification. The [S85 evidence](../etc/evidence/t580-s85-window-scale.md)
+records product scope and verification limits.
+
+Both earlier full suites passed 759/760; the native MIDI output test failed
+in each architecture and in independent single-test reruns. A direct WinMM
+probe enumerated one MIDI device but midiOutOpen returned result 1. After the
+owner connected RDP, the native MIDI integration test passed separately on
+both x86 and x64. The initial full runs and individual later passes are distinct
+evidence; they are not a single uninterrupted 760-test passing run. Owner
+inputs were preserved.
+
+# M5 T580 S84 — Accepted: PC110 deployed Window observation
 
 | Field | Required record |
 | --- | --- |
