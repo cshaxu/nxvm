@@ -33,6 +33,17 @@ so this matching mechanism is a strong inference, not a complete execution
 trace. The inferred issue is generic to native minimum window sizing, not a
 PC110-only UI policy. No Shared source or public interface has been changed.
 
+The PC110 initial-frame observation is consistent with the current F65535
+source: reset zeroes the register file and snapshot derives columns as
+CRTC[1]+1, scanlines as vertical-display-end+1, and character height as
+(CRTC[9]&31)+1. These yield 1x1 at one scanline without proving that the
+physical device would present a frame in reset. Investigating the chip's
+actual display-enable and timing readiness is a separate hardware question;
+arbitrarily rejecting small legal modes or assigning invented reset values
+would not establish the correct behavior. The existing host resize test
+already checks fit-down, user resizing, aspect and frame transitions, but its
+native mock does not demonstrate the observed forced minimum for 8x1.
+
 A candidate minimal Shared fix is to avoid treating a native-enforced
 minimum as a user-selected enlargement during the *initial automatic* resize:
 record the smaller of actual client width and source width for the initial
