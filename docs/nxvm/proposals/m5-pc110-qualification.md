@@ -423,3 +423,20 @@ socket input status, controller-local registers and reset without inventing a
 PC Card or media mapping.  Card windows, card IRQ delivery, selected storage
 and guest qualification remain separate T580 receivers; see the
 [S58 record](../etc/evidence/t580-s58-pcic-receiver.md).
+
+S78 corrects the PC110 controller's source-labelled L1 recovery notification
+and the shared PS/2 E6h 1:1 command. Both host widths reached the TFT DOS
+launcher and proved guest-visible input through the independent PS/2 path;
+the derived DSTN firmware passed power/resume and boot handoff on both
+widths. The [S78 evidence](../etc/evidence/t580-s78-controller-restoration.md)
+retains the implementation limits, product builds and diagnostics. This
+does not qualify DSTN Setup/DOS or publish PC110 artifacts.
+
+S79 independently exercises the derived DSTN firmware through real Setup,
+DOS and guest input on both host widths, using the existing firmware
+diagnostic and reviewed task-owned overlays. It retains firmware provenance
+and does not substitute TFT results for DSTN evidence.
+Both-width actual guest runs completed Setup, DOS, four inking calibration
+points and isolated PS/2 movement without a Core fault; their launcher frames
+matched. The [S79 evidence](../etc/evidence/t580-s79-dstn-guest.md) records
+the guest-only verification and the outstanding production release boundary.

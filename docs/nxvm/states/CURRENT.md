@@ -1,3 +1,33 @@
+# M5 T580 S79 — Accepted: PC110 DSTN guest qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S79. |
+| Admission And Approval | The owner authorized autonomous PC110 S tasks and requested original and TFT variants on both host widths. |
+| Objective | Verify the derived DSTN firmware's own Setup, DOS boot and guest input on x86 and x64, and repair an evidenced machine-owned defect if found. |
+| Non-goals | No guest-state injection, ROM mutation, fabricated success, unrelated product changes or physical-accuracy claim. |
+| Reference Baseline | S78 accepted TFT guest input and both-width DSTN power/resume handoff; neither proves DSTN Setup or DOS. |
+| Candidate Proposal | Reuse the existing real-firmware guest diagnostic linked to the DSTN firmware; identify any true variant-specific divergence before changing its owner. |
+| Files And ABI Surface | PC110 App/tests and NXVM task evidence; Shared X86-Core/X86-NXVM only for demonstrated defects under existing authorization, no Lib/Emulator changes. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Both-width real DSTN firmware and guest checkpoints, affected tests and artifacts if code changes, manifests and documentation gates. |
+| Expected Markers | Actual DSTN Setup execution, firmware boot handoff, DOS loader, guest input and resulting frame, with statuses and Core faults recorded. |
+| Asset Needs | Existing reviewed derived DSTN ROM, task-owned DOS media overlay and Setup reference; preserve external masters. |
+| Reporting Requirements | Separate derived-ROM provenance, actual guest results and unavailable desktop/RDP checks. |
+| Stop Conditions | Do not force TFT behavior onto DSTN, patch the guest, suppress a real fault or claim a host session was tested when absent. |
+| Exit Criteria | Both architectures reach and independently demonstrate the admitted original-panel guest path, or the exact failing owner is identified and repaired within this S. |
+| Original Owner Request | Implement PC110 with fixed original and TFT binaries and complete build, tests, release and submission. |
+| Similar-Issue Sweep | Review variant firmware selection and test oracle ownership without a second product execution path. |
+
+Both host widths reached the derived DSTN firmware's actual Setup entry and
+matched the reviewed Setup image, completed the DOS loader, all four inking
+calibration points and isolated PS/2 input, and produced the same launcher
+frame without a Core fault. Both diagnostic processes exited zero. The
+[S79 evidence](../etc/evidence/t580-s79-dstn-guest.md) records the derived
+firmware provenance and the limits of this background guest verification.
+PC110 release targets, production EXE qualification, test-boundary cleanup,
+desktop/RDP checks and the T580 closure gate remain open.
+
 # M5 T580 S78 — Accepted: PC110 controller restoration and pointing device
 
 | Field | Required record |
