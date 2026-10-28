@@ -22,6 +22,11 @@ int main(int argc, char **argv)
     static const char ini[] = "[presentation]\ndisplay=window\nconsole_control=1\n[media]\n";
     static const char *const commands[] = {"reset\r", "exit\r"};
     static const char *const markers[] = {"Machine reset and paused.", ""};
+    static const char *const lifecycle_commands[] = {
+        "start\r", "pause\r", "resume\r", "reset\r", "resume\r", "stop\r", "exit\r"};
+    static const char *const lifecycle_markers[] = {
+        "Machine started.", "Machine paused.", "Machine resumed.",
+        "Machine reset and paused.", "Machine resumed.", "Machine stopped.", ""};
     char directory[MAX_PATH] = {0}, executable[MAX_PATH] = {0};
     char ini_path[MAX_PATH] = {0}, cmos_path[MAX_PATH] = {0};
     void *bytes = LIB_NULL;
@@ -53,6 +58,9 @@ int main(int argc, char **argv)
         lib_storage_file_read_owned(cmos_path, 128u, &bytes, &count) != LIB_STATUS_OK ||
         count != 128u || ((lib_u8 *)bytes)[0x0du] != 0u ||
         ((lib_u8 *)bytes)[0x3bu] != 0x5au) goto done;
+    if (!emulator_console_process_run(executable, directory, lifecycle_commands,
+            lifecycle_markers, sizeof(lifecycle_commands) / sizeof(lifecycle_commands[0])))
+        goto done;
     result = 0;
 done:
     lib_release(bytes);

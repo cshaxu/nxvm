@@ -1,3 +1,30 @@
+# M5 T580 S83 — Accepted: PC110 released-product lifecycle
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S83. |
+| Admission And Approval | Owner authorized autonomous PC110 completion and required real product integration. |
+| Objective | Cover lifecycle commands through both actual PC110 product executables, complementing the lower-level real-firmware diagnostic. |
+| Non-goals | No new production API, extra execution path, Shared changes, guest patching or desktop/RDP claim. |
+| Reference Baseline | S80 product process test covers reset and CMOS; S82 verifies firmware via the lower-level diagnostic. |
+| Candidate Proposal | Extend the existing isolated product process test with start, pause, resume, reset, stop and exit using the existing monitor contract. |
+| Files And ABI Surface | PC110 App integration test and task evidence; no production ABI changes. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
+| Verification | Both variants and widths in real product processes, complete repository unit suite and documentation gate. |
+| Expected Markers | Correct ordered lifecycle completion texts from actual products and clean process exit. |
+| Asset Needs | Existing compiled EXEs and task-owned temporary INI/CMOS; preserve owner inputs. |
+| Reporting Requirements | Distinguish product lifecycle, low-level guest, actual desktop and RDP evidence. |
+| Stop Conditions | Do not lower assertions, add a private API or claim a guest frame from a monitor message. |
+| Exit Criteria | Both variant product lifecycle tests and the required complete unit suites pass on both widths. |
+| Original Owner Request | Complete PC110 implementations with meaningful product tests and clean delivery. |
+| Similar-Issue Sweep | Review whether existing diagnostics are being mistaken for product execution. |
+
+Both DSTN and TFT actual-product process lifecycle tests passed on x86 and
+x64. The complete registered unit suite passed 713/713 on each width. This
+test-only change did not rebuild product EXEs or modify Shared. The tests do
+not claim an observed PC110 desktop or RDP guest screen; see
+[S83 evidence](../etc/evidence/t580-s83-product-lifecycle.md).
+
 # M5 T580 S82 — Accepted: repository integration qualification
 
 | Field | Required record |
