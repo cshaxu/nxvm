@@ -729,13 +729,22 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
             if (!painted) kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
         }
         return 0;
-    case LIB_WIN32_WM_SIZE:
+    case LIB_WIN32_WM_SIZE: {
+        kvm_win32_snap previous_snap = context->snap;
         win32_window_capture_client_size(window, context);
         win32_window_enforce_aspect(window, context);
+        /* Restoring a native snap chooses the restored window's scale. */
+        if (!context->correcting_aspect && previous_snap != KVM_WIN32_SNAP_NONE &&
+            context->snap == KVM_WIN32_SNAP_NONE && context->client_width > 0 &&
+            context->client_height > 0 && context->surface_width != 0u) {
+            context->scale_pixels = (lib_u32)context->client_width;
+            context->scale_source = context->surface_width;
+        }
         if (!kvm_win32_mouse_refresh_bounds(&context->mouse))
             win32_window_release_mouse(context);
         (void)win32_window_invalidate(window, context, LIB_NULL);
         return 0;
+    }
     case LIB_WIN32_WM_ENTERSIZEMOVE:
         context->sizing = LIB_FALSE;
         return 0;

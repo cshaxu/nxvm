@@ -219,7 +219,7 @@ set_tests_properties(
 # bounded configuration completion, not a 30-second wall-clock race while the
 # complete suite is concurrently compiling/verifying other fixtures.
 set_tests_properties(lib.test-boundaries-selftest lib.test-types-boundary-selftest
-    PROPERTIES TIMEOUT 300)
+    PROPERTIES TIMEOUT 60)
 
 # This self-test intentionally configures several isolated negative layout
 # fixtures. It is a Lib-owned validation and may exceed the ordinary unit

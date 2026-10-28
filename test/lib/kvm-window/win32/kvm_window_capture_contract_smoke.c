@@ -431,6 +431,14 @@ static void check_sizing_policy(void)
     c.surface_width=640; c.surface_height=400;
     win32_window_resize_client(w,&c,640,400,LIB_TRUE);
     lib_test_assert(client.right==800 && client.bottom==500);
+    for (lib_win32_wparam edge=LIB_WIN32_WMSZ_LEFT; edge<=LIB_WIN32_WMSZ_BOTTOMRIGHT; ++edge) {
+        lib_win32_rect drag = {0,0,816,539};
+        win32_window_proc(w,LIB_WIN32_WM_ENTERSIZEMOVE,0,0);
+        lib_test_assert(win32_window_proc(w,LIB_WIN32_WM_SIZING,edge,(lib_win32_lparam)&drag)==LIB_WIN32_TRUE);
+        size_notification();
+        win32_window_proc(w,LIB_WIN32_WM_EXITSIZEMOVE,0,0);
+        lib_test_assert(!c.sizing && c.scale_pixels==800 && c.scale_source==640);
+    }
     c.surface_width=320; c.surface_height=240;
     win32_window_proc(w,LIB_WIN32_WM_NCLBUTTONDBLCLK,LIB_WIN32_HTCAPTION,0);
     lib_test_assert(sized.right==336 && sized.bottom==279);
@@ -471,8 +479,8 @@ static void check_sizing_policy(void)
        Top restoration keeps width; either side keeps height, without desktop
        limits. Use deliberately different aspects to distinguish the axes. */
     c.surface_width=640; c.surface_height=400;
-    scale_pixels=c.scale_pixels; scale_source=c.scale_source;
     for (lib_u32 side=0;side<2u;++side) {
+        scale_pixels=c.scale_pixels; scale_source=c.scale_source;
         native_zoomed=side==0u;
         native_arranged=side!=0u;
         client=(lib_win32_rect){0,0,side==0u ? 1200 : 240,side==0u ? 200 : 600};
@@ -495,6 +503,9 @@ static void check_sizing_policy(void)
         lib_test_assert(client.bottom==(side==0u ? 960 : 900));
         lib_test_assert(c.snap==KVM_WIN32_SNAP_NONE);
         c.surface_width=640; c.surface_height=400;
+        win32_window_resize_client(w,&c,640,400,LIB_TRUE);
+        lib_test_assert(client.right==(side==0u ? 2560 : 2400));
+        lib_test_assert(client.bottom==(side==0u ? 1600 : 1500));
     }
     /* Minimize must not consume a pending side restore; explicit natural and
        maximize commands do clear it, without becoming a top-snap state. */

@@ -85,7 +85,7 @@ set_tests_properties(
 
 # The verifier configures isolated CMake fixtures. Its verified contract is
 # bounded fixture completion, not a 30-second wall-clock race with the suite.
-set_tests_properties(emulator.verifier-negative PROPERTIES TIMEOUT 300)
+set_tests_properties(emulator.verifier-negative PROPERTIES TIMEOUT 60)
 shared_verify_test_registration(emulator)
 
 # One suite-owned build entry for importing products.  CTest registration and
