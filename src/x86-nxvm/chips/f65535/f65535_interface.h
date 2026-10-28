@@ -44,7 +44,7 @@ lib_status x86_f65535_vram_read(const x86_f65535 *chip, lib_u32 offset,
 lib_status x86_f65535_vram_write(x86_f65535 *chip, lib_u32 offset,
     const void *source, lib_size bytes);
 
-/* Standard-VGA CPU aperture access and copied text/mode-12 capture. Reads
+/* Standard-VGA CPU aperture access and copied text/planar capture. Reads
  * load the four hardware latches unless observe_only is true; inspection
  * returns the same bytes without changing controller state. Panel scanout
  * remains outside this compatibility receiver. */

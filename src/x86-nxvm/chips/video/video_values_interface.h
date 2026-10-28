@@ -94,7 +94,7 @@ typedef enum x86_video_kind {
     /* Pixel-exact alphanumeric scanout; guest mode remains text. */
     X86_VIDEO_KIND_TEXT_PIXELS,
     /* Bounded standard-VGA planar compatibility capture. */
-    X86_VIDEO_KIND_VGA_640X480X16
+    X86_VIDEO_KIND_VGA_PLANAR16
 } x86_video_kind;
 
 typedef struct x86_video_snapshot {

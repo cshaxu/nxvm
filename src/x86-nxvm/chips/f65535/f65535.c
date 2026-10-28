@@ -4,10 +4,6 @@
 #define X86_F65535_VGA_APERTURE_START 0x000a0000u
 #define X86_F65535_VGA_APERTURE_END 0x000c0000u
 #define X86_F65535_VGA_PLANE_BYTES (X86_F65535_VRAM_BYTES / 4u)
-#define X86_F65535_MODE12_COLUMNS 80u
-#define X86_F65535_MODE12_WIDTH 640u
-#define X86_F65535_MODE12_HEIGHT 480u
-#define X86_F65535_MODE12_STRIDE_BYTES 80u
 
 static lib_bool x86_f65535_vram_contains(lib_u32 offset, lib_size bytes)
 {
@@ -106,36 +102,34 @@ static lib_u32 x86_f65535_vertical_display_end(const x86_f65535 *chip)
     return value;
 }
 
-static lib_status x86_f65535_capture_mode12_snapshot(x86_f65535 *chip,
+static lib_status x86_f65535_capture_planar_snapshot(x86_f65535 *chip,
     x86_video_snapshot *out_snapshot, lib_bool changed)
 {
     const lib_u32 columns = (lib_u32)chip->crtc[1u] + 1u;
+    const lib_u32 width = columns * 8u;
     const lib_u32 height = x86_f65535_vertical_display_end(chip) + 1u;
     const lib_u32 stride = (lib_u32)chip->crtc[19u] * 2u;
     const lib_u32 start = (((lib_u32)chip->crtc[12u] << 8u) |
         chip->crtc[13u]) * 2u;
     lib_u32 pixel;
 
-    /* This receiver deliberately recognizes only standard VGA mode 12:
-     * 80 CRTC characters, 40 word offset and 640 by 480 four-plane output.
-     * Other F65535 graphics/panel modes still have no scanout owner. */
-    if (columns != X86_F65535_MODE12_COLUMNS ||
-        height != X86_F65535_MODE12_HEIGHT ||
-        stride != X86_F65535_MODE12_STRIDE_BYTES ||
+    /* This receiver handles four-plane VGA with eight pixels per byte.
+     * Packed and chained modes still require their own scanout semantics. */
+    if (width > X86_VIDEO_PIXEL_WIDTH || height > X86_VIDEO_PIXEL_HEIGHT ||
+        stride < columns || (chip->sequencer[4u] & 0x08u) != 0u ||
+        (chip->graphics[5u] & 0x60u) != 0u ||
         (chip->graphics[6u] & 0x0cu) != 0x04u ||
-        start + stride * X86_F65535_MODE12_HEIGHT >
+        start + (height - 1u) * stride + columns >
             X86_F65535_VGA_PLANE_BYTES) return LIB_STATUS_UNSUPPORTED;
     lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
-    out_snapshot->kind = X86_VIDEO_KIND_VGA_640X480X16;
-    out_snapshot->pixel_width = X86_F65535_MODE12_WIDTH;
-    out_snapshot->pixel_height = X86_F65535_MODE12_HEIGHT;
+    out_snapshot->kind = X86_VIDEO_KIND_VGA_PLANAR16;
+    out_snapshot->pixel_width = (lib_u16)width;
+    out_snapshot->pixel_height = (lib_u16)height;
     for (pixel = 0u; pixel < 16u; ++pixel)
         out_snapshot->palette_rgb[pixel] = x86_f65535_palette_color(chip, (lib_u8)pixel);
-    for (pixel = 0u; pixel < X86_F65535_MODE12_WIDTH *
-        X86_F65535_MODE12_HEIGHT; ++pixel) {
+    for (pixel = 0u; pixel < width * height; ++pixel) {
         const lib_u32 offset = start +
-            (pixel / X86_F65535_MODE12_WIDTH) * stride +
-            (pixel % X86_F65535_MODE12_WIDTH) / 8u;
+            (pixel / width) * stride + (pixel % width) / 8u;
         const lib_u8 bit = (lib_u8)(0x80u >> (pixel & 7u));
         lib_u8 color = 0u;
 
@@ -480,7 +474,7 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
     cursor = ((lib_u32)chip->crtc[14u] << 8u) | chip->crtc[15u];
     changed = !chip->captured || chip->captured_generation != chip->generation;
     if ((chip->graphics[6u] & 1u) != 0u) {
-        status = x86_f65535_capture_mode12_snapshot(chip, out_snapshot, changed);
+        status = x86_f65535_capture_planar_snapshot(chip, out_snapshot, changed);
         if (status != LIB_STATUS_OK) return status;
         chip->captured = LIB_TRUE;
         chip->captured_generation = chip->generation;

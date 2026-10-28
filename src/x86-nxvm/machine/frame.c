@@ -27,7 +27,7 @@ lib_status x86_nxvm_machine_frame_validate_source(const x86_video_snapshot *sour
     case X86_VIDEO_KIND_EGA_640X350X16:
     case X86_VIDEO_KIND_VGA_320X200X256:
     case X86_VIDEO_KIND_TEXT_PIXELS:
-    case X86_VIDEO_KIND_VGA_640X480X16:
+    case X86_VIDEO_KIND_VGA_PLANAR16:
         if (source->pixel_width == 0u || source->pixel_height == 0u)
             return LIB_STATUS_INVALID_ARGUMENT;
         if ((lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels))

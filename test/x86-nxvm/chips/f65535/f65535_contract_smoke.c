@@ -257,7 +257,7 @@ int main(void)
         write_indexed(chip, 0x03c4u, 0x03c5u, 2u, 8u) != LIB_STATUS_OK ||
         x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
         x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
-        snapshot.kind != X86_VIDEO_KIND_VGA_640X480X16 ||
+        snapshot.kind != X86_VIDEO_KIND_VGA_PLANAR16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 480u ||
         snapshot.pixels[0] != 15u || snapshot.pixels[1] != 0u ||
         snapshot.palette_rgb[15u] != 0x00ffffffu ||
@@ -300,6 +300,34 @@ int main(void)
         x86_f65535_vga_write(chip, 0x03c9u, 0x3fu) != LIB_STATUS_OK ||
         x86_f65535_vga_read(chip, 0x03c9u, &value) != LIB_STATUS_OK || value != 0x3fu ||
         x86_f65535_vga_read(chip, 0x03c8u, &value) != LIB_STATUS_OK || value != 1u;
+    lib_test_assert(failed == 0);
+    /* The PC110 guest can use a wider planar pitch and fewer visible lines. */
+    for (lib_u8 plane = 0u; plane < 4u; ++plane) {
+        const lib_u8 row_pixel = plane == 1u ? 0x80u : 0u;
+        failed |= x86_f65535_vram_write(chip,
+            plane * (X86_F65535_VRAM_BYTES / 4u) + 128u, &row_pixel, 1u) != LIB_STATUS_OK;
+    }
+    failed |= write_indexed(chip, 0x03d4u, 0x03d5u, 7u, 0x3eu) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 18u, 0xdau) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 0x40u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x06u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03ceu, 0x03cfu, 5u, 0x02u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        snapshot.kind != X86_VIDEO_KIND_VGA_PLANAR16 ||
+        snapshot.pixel_width != 640u || snapshot.pixel_height != 475u ||
+        snapshot.pixels[640u] != 2u || snapshot.pixels[641u] != 0u ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 39u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 0x40u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x0eu) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+        write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x06u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 90u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 79u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 12u, 0xffu) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 13u, 0xffu) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED;
     lib_test_assert(failed == 0);
     verify_planar(chip);
     x86_f65535_destroy(chip);
