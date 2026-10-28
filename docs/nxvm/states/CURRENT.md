@@ -1,4 +1,4 @@
-# M5 T580 S81 — Active: remove duplicate PC110 test composition
+# M5 T580 S81 — Accepted: remove duplicate PC110 test composition
 
 | Field | Required record |
 | --- | --- |
@@ -18,6 +18,15 @@
 | Exit Criteria | Actual production composition and appropriate chip tests cover the former behaviors; duplicate code and test registration removed; both widths pass. |
 | Original Owner Request | Implement a usable PC110 with clean architecture, relevant tests, released binaries and a clean worktree. |
 | Similar-Issue Sweep | Inspect remaining PC110-only tests for other duplicate composition and private implementation dependencies. |
+
+NXVM P1 `1a5b4cd6a` removes the test-only construction and its two tests,
+transfers PC110 wiring checks to the real product construction, and retains
+controller and latch tests at their owning components. Both widths passed 11
+PC110 unit tests, six artifact/CMOS integration tests and four controller and
+display owner tests. The four rebuilt EXEs passed their firmware identity
+checks. See [S81 evidence](../etc/evidence/t580-s81-composition-inventory.md).
+The real-firmware diagnostic's private Machine boundary and full-repository
+and desktop qualification remain open; this does not close T580.
 
 # M5 T580 S80 — Accepted: PC110 artifact build and deployment
 
