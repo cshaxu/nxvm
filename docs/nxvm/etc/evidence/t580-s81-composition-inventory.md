@@ -36,6 +36,10 @@ and the firmware-identity tests checked both variants on both widths:
 | mypc110_tft_x86.exe | 6a2f28b0bd37b2d6ef3d8a8fb1a92631ab99791e48733104be272197d8b7308d |
 | mypc110_tft_x64.exe | c09fc0137e1aa9f6d1fa42ddf4e4db2a47d4c22991dde01b787e5e329772ba26 |
 
-This is affected-component evidence, not full-repository or desktop/RDP
-qualification. The existing real-guest diagnostic still references Machine
-private internals; that separate boundary remains for subsequent work.
+The full registered unit suite passed on both architectures: 668 NXVM,
+Shared and MyRaidenII tests plus 45 MyNES tests per architecture. MyNES was
+enabled afterwards in the same cached build trees and its tests were built
+without rebuilding its product EXEs. Full integration and desktop/RDP
+qualification have not yet been completed. The existing real-guest diagnostic
+still references Machine private internals; that separate boundary remains for
+subsequent work.

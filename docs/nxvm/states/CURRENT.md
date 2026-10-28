@@ -10,12 +10,12 @@
 | Candidate Proposal | Inventory every retired assertion, use existing X86-NXVM chip/board tests where they already own it, migrate PC110-specific wiring checks through the real driver, then remove duplicate production code and tests. |
 | Files And ABI Surface | PC110 App/test/CMake and NXVM task evidence only; any genuinely missing Shared coverage is identified before changing its owner. |
 | Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
-| Verification | Cached x86/x64 builds and affected units, full relevant chip/board tests, product composition and artifact identity, documentation and boundary gates. |
+| Verification | Cached x86/x64 builds, complete repository unit suite, relevant chip/board tests, product composition and artifact identity, documentation and boundary gates. |
 | Expected Markers | One PC110 construction owner; no retired base-composition references; an assertion-by-assertion disposition and no coverage loss. |
 | Asset Needs | Existing synthetic test fixtures; preserve user firmware, media, configuration and released assets. |
 | Reporting Requirements | Report deleted and retained paths, per-assertion coverage, actual diff and any limitations. |
 | Stop Conditions | Do not make public interfaces or change guest behavior solely to simplify testing; do not delete unique checks without transferring them. |
-| Exit Criteria | Actual production composition and appropriate chip tests cover the former behaviors; duplicate code and test registration removed; both widths pass. |
+| Exit Criteria | Actual production composition and appropriate chip tests cover the former behaviors; duplicate code and test registration removed; complete repository unit suite passes on both widths. |
 | Original Owner Request | Implement a usable PC110 with clean architecture, relevant tests, released binaries and a clean worktree. |
 | Similar-Issue Sweep | Inspect remaining PC110-only tests for other duplicate composition and private implementation dependencies. |
 
@@ -25,6 +25,10 @@ controller and latch tests at their owning components. Both widths passed 11
 PC110 unit tests, six artifact/CMOS integration tests and four controller and
 display owner tests. The four rebuilt EXEs passed their firmware identity
 checks. See [S81 evidence](../etc/evidence/t580-s81-composition-inventory.md).
+P2 prematurely marked S81 accepted before the required full unit suite. The
+reopened S81 completed the missing suite: 668 registered non-MyNES and 45
+MyNES unit tests passed for each of x86 and x64, using the same cached build
+trees. No MyNES product executable was rebuilt for this test.
 The real-firmware diagnostic's private Machine boundary and full-repository
 and desktop qualification remain open; this does not close T580.
 
