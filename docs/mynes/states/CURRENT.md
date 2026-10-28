@@ -2,6 +2,11 @@
 
 ## Current Work
 
+NXVM T580 S85 refreshes the MyNES 0044 x86/x64 receiving EXEs for the Shared
+Window resize correction. The [NXVM evidence](../../nxvm/etc/evidence/t580-s85-window-scale.md)
+records the dual-width tests and validation boundaries; no MyNES source,
+configuration, media or gameplay qualification is changed.
+
 M7 Td S1 is complete: owner-directed MyNES documentation governance transfers all
 previous TODO entries to four ordered, unnumbered Queue proposals. This is
 governance only: no implementation task, binary, Shared change or repair claim
