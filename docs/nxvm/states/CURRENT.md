@@ -1,3 +1,33 @@
+# M5 T580 S80 — Accepted: PC110 artifact build and deployment
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S80. |
+| Admission And Approval | The owner authorized autonomous completion and explicitly requested four fixed PC110 binaries containing external BYOB firmware. |
+| Objective | Replace PC110-only previews with one build/deploy path for four named x86/x64 DSTN/TFT executables, retaining fixed firmware identities and the adjacent INI. |
+| Non-goals | No runtime firmware selection, ROM/media commit, user INI rewrite, duplicate production entry, Lib/Emulator change or premature T580 completion claim. |
+| Reference Baseline | S78 and S79 verified both firmware variants through real Setup, DOS and guest input; PC110 currently has only build-tree previews. |
+| Candidate Proposal | Use the existing product artifact helper and firmware libraries, retain one target per fixed variant, update consumers and owner-local release checks. |
+| Files And ABI Surface | NXVM App/test/CMake/docs/assets and the Shared repository ignore policy; no public API or Shared production component changes. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding, documentation and source/research policy, including the owner's explicit embedded-EXE authorization. |
+| Verification | Cached x86/x64 build, four PE widths, exact names and embedded variant identities, product/INI integration, affected units, artifact and documentation gates. |
+| Expected Markers | Only mypc110_x86.exe, mypc110_x64.exe, mypc110_tft_x86.exe and mypc110_tft_x64.exe, with fixed BIOS/font hashes and unchanged INI. |
+| Asset Needs | Existing validated external PC110 firmware and generated build-only embedding sources; preserve all external media and INI. |
+| Reporting Requirements | Record exact artifacts/hashes, firmware provenance, tests and unverified desktop/RDP behavior; separate Shared and NXVM commits. |
+| Stop Conditions | Do not publish raw firmware, change firmware inputs, overwrite the owner INI, or claim the full T accepted from build success alone. |
+| Exit Criteria | Four correctly named, deployed and tracked binaries and their fixed firmware pairing are verified and committed with the build/test/document changes. |
+| Original Owner Request | Implement both PC110 variants and publish four owner-named EXEs, with tests, commits and push. |
+| Similar-Issue Sweep | Remove obsolete preview target references, inspect release-root ownership and avoid a second build or deployment path. |
+
+Shared P1 `da7c5a97d` limits tracking to the four owner-selected EXE names;
+NXVM P2 `6657cb7dc` supplies their formal build/deployment, artifacts,
+tests and [release evidence](../etc/evidence/t580-s80-pc110-release.md).
+Both-width product/CMOS/reset, positive and swapped-firmware negative tests,
+PE checks, artifact-root and documentation gates passed. The owner INI and
+CMOS files were not modified. This accepts S80, not the full T580: the
+test-only duplicate composition, diagnostic private boundary, full-repository
+qualification and desktop/RDP verification remain open.
+
 # M5 T580 S79 — Accepted: PC110 DSTN guest qualification
 
 | Field | Required record |

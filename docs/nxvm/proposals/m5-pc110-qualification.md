@@ -440,3 +440,9 @@ Both-width actual guest runs completed Setup, DOS, four inking calibration
 points and isolated PS/2 movement without a Core fault; their launcher frames
 matched. The [S79 evidence](../etc/evidence/t580-s79-dstn-guest.md) records
 the guest-only verification and the outstanding production release boundary.
+
+S80 replaces the two preview targets with fixed-variant release targets and
+deploys the four owner-named PC110 executables. Both architectures passed
+product/reset/CMOS, embedded-firmware identity and wrong-firmware rejection
+checks. The [S80 record](../etc/evidence/t580-s80-pc110-release.md) and
+artifact hashes preserve the proof and remaining T580 qualification limits.
