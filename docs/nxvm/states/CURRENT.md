@@ -1,3 +1,24 @@
+# M5 T580 S81 — Active: remove duplicate PC110 test composition
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S81. |
+| Admission And Approval | Owner authorized autonomous completion and explicitly requested a single production path and nonredundant tests. |
+| Objective | Remove the PC110 App's test-only duplicate base construction while preserving meaningful board, input and display coverage at the actual composition or owning chip. |
+| Non-goals | No new production APIs, raw Core getters, second machine path, Lib/Emulator edits or loss of demonstrated timing/latch checks. |
+| Reference Baseline | S78 evidence identifies pc110_machine.c as a second construction used only by base/display tests; machine_construction_smoke uses the actual plan and driver. |
+| Candidate Proposal | Inventory every retired assertion, use existing X86-NXVM chip/board tests where they already own it, migrate PC110-specific wiring checks through the real driver, then remove duplicate production code and tests. |
+| Files And ABI Surface | PC110 App/test/CMake and NXVM task evidence only; any genuinely missing Shared coverage is identified before changing its owner. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
+| Verification | Cached x86/x64 builds and affected units, full relevant chip/board tests, product composition and artifact identity, documentation and boundary gates. |
+| Expected Markers | One PC110 construction owner; no retired base-composition references; an assertion-by-assertion disposition and no coverage loss. |
+| Asset Needs | Existing synthetic test fixtures; preserve user firmware, media, configuration and released assets. |
+| Reporting Requirements | Report deleted and retained paths, per-assertion coverage, actual diff and any limitations. |
+| Stop Conditions | Do not make public interfaces or change guest behavior solely to simplify testing; do not delete unique checks without transferring them. |
+| Exit Criteria | Actual production composition and appropriate chip tests cover the former behaviors; duplicate code and test registration removed; both widths pass. |
+| Original Owner Request | Implement a usable PC110 with clean architecture, relevant tests, released binaries and a clean worktree. |
+| Similar-Issue Sweep | Inspect remaining PC110-only tests for other duplicate composition and private implementation dependencies. |
+
 # M5 T580 S80 — Accepted: PC110 artifact build and deployment
 
 | Field | Required record |

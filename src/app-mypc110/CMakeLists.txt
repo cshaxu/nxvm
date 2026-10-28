@@ -3,7 +3,7 @@
 add_library(mypc110-board STATIC pc110_cmos.c pc110_config.c pc110_display.c pc110_ec_block.c
     pc110_inking.c
     pc110_ec_mailbox.c
-    pc110_firmware.c pc110_font.c pc110_lpt.c pc110_machine.c pc110_pcic.c pc110_plan.c)
+    pc110_firmware.c pc110_font.c pc110_lpt.c pc110_pcic.c pc110_plan.c)
 target_include_directories(mypc110-board PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(mypc110-board PUBLIC types x86-core-machine x86-core-vl82c420
     x86-nxvm-machine

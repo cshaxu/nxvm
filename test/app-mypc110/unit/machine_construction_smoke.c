@@ -3,13 +3,141 @@
 #include "app-mypc110/pc110_clock.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
+#include "app-mypc110/pc110_display_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
 #include "lib/kvm-console/frame_interface.h"
 #include "lib/kvm-window/frame_interface.h"
 #include "x86-nxvm/machine/machine_interface.h"
+#include "x86-nxvm/chips/f65535/f65535_interface.h"
 #include "x86-core/machine/clock_interface.h"
 #include "x86-debug/product/protocol_interface.h"
+
+static lib_bool mypc110_test_port(emulator_machine_driver *driver,
+    lib_bool write, lib_u16 port, lib_u8 *value)
+{
+    const x86_debug_request request = {
+        .operation = write ? X86_DEBUG_WRITE_PORT : X86_DEBUG_READ_PORT,
+        .port = port, .address = *value, .bytes = 1u};
+    x86_debug_response response = {0};
+    lib_size response_bytes = 0u;
+    const lib_status status = driver->execute_debug(driver->context, &request,
+        sizeof(request), &response, sizeof(response), &response_bytes);
+    if (status != LIB_STATUS_OK || response_bytes != sizeof(response)) return LIB_FALSE;
+    if (!write) *value = (lib_u8)response.value;
+    return LIB_TRUE;
+}
+
+static lib_bool mypc110_test_memory(emulator_machine_driver *driver,
+    lib_bool write, lib_u32 address, lib_u8 *value)
+{
+    const x86_debug_request request = {
+        .operation = write ? X86_DEBUG_WRITE_LINEAR : X86_DEBUG_READ_LINEAR,
+        .address = address, .bytes = 1u, .data = {*value}};
+    x86_debug_response response = {0};
+    lib_size response_bytes = 0u;
+    const lib_status status = driver->execute_debug(driver->context, &request,
+        sizeof(request), &response, sizeof(response), &response_bytes);
+    if (status != LIB_STATUS_OK || response_bytes != sizeof(response)) return LIB_FALSE;
+    if (!write) *value = response.data[0u];
+    return LIB_TRUE;
+}
+
+static lib_bool mypc110_test_route_writes(emulator_machine_driver *driver,
+    const lib_u16 (*writes)[2], lib_size count)
+{
+    for (lib_size i = 0u; i < count; ++i) {
+        lib_u8 value = (lib_u8)writes[i][1];
+        if (!mypc110_test_port(driver, LIB_TRUE, writes[i][0], &value)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool mypc110_test_product_routes(emulator_machine_driver *driver,
+    const x86_nxvm_machine_construction *construction)
+{
+    static x86_video_snapshot snapshot;
+    static const lib_u16 text_setup[][2] = {
+        {0x03ceu, 8u}, {0x03cfu, 0xffu}, {0x03ceu, 5u}, {0x03cfu, 0x10u},
+        {0x03c4u, 2u}, {0x03c5u, 3u}, {0x03ceu, 6u}, {0x03cfu, 0x0eu},
+        {0x03c4u, 4u}, {0x03c5u, 2u}, {0x03d4u, 1u}, {0x03d5u, 0x4fu},
+        {0x03d4u, 7u}, {0x03d5u, 0x1fu}, {0x03d4u, 9u}, {0x03d5u, 0x0fu},
+        {0x03d4u, 18u}, {0x03d5u, 0x8fu}};
+    static const lib_u16 graphics_setup[][2] = {
+        {0x03ceu, 6u}, {0x03cfu, 5u}, {0x03c4u, 4u}, {0x03c5u, 4u},
+        {0x03d4u, 1u}, {0x03d5u, 79u}, {0x03d4u, 7u}, {0x03d5u, 2u},
+        {0x03d4u, 18u}, {0x03d5u, 0xdfu}, {0x03d4u, 19u}, {0x03d5u, 40u},
+        {0x03c4u, 2u}, {0x03c5u, 15u}};
+    const lib_u32 absent[] = {0x01400000u, 0x000c0000u, 0x000d0000u};
+    const lib_u16 ports[] = {0x20u, 0x40u, 0x60u, 0x64u, 0x92u, 0x3dau};
+    const lib_u8 pattern[] = {0x55u, 0xaau, 0x55u, 0xaau};
+    lib_u8 value = 0u;
+
+    if (!driver->reset(driver->context)) return LIB_FALSE;
+    for (lib_size i = 0u; i < sizeof(pattern); ++i) {
+        value = pattern[i];
+        if (!mypc110_test_memory(driver, LIB_TRUE, 0x013f0000u + (lib_u32)i, &value))
+            return LIB_FALSE;
+        value = 0u;
+        if (!mypc110_test_memory(driver, LIB_FALSE, 0x013f0000u + (lib_u32)i, &value) ||
+            value != pattern[i]) return LIB_FALSE;
+    }
+    for (lib_size i = 0u; i < sizeof(ports) / sizeof(ports[0]); ++i) {
+        if (!mypc110_test_port(driver, LIB_FALSE, ports[i], &value) ||
+            (ports[i] == 0x92u && value != 0u)) return LIB_FALSE;
+    }
+    for (lib_size i = 0u; i < sizeof(absent) / sizeof(absent[0]); ++i) {
+        value = 0u;
+        if (!mypc110_test_memory(driver, LIB_FALSE, absent[i], &value) || value != 0xffu)
+            return LIB_FALSE;
+        value = 0x44u;
+        if (!mypc110_test_memory(driver, LIB_TRUE, absent[i], &value)) return LIB_FALSE;
+        value = 0u;
+        if (!mypc110_test_memory(driver, LIB_FALSE, absent[i], &value) || value != 0xffu)
+            return LIB_FALSE;
+    }
+    for (lib_u16 port = 0x80u; port <= 0x8fu; ++port) {
+        value = 0u;
+        if (!mypc110_test_port(driver, LIB_FALSE, port, &value) || value != 0u) return LIB_FALSE;
+        value = (lib_u8)(port ^ 0x5au);
+        if (!mypc110_test_port(driver, LIB_TRUE, port, &value)) return LIB_FALSE;
+        value = 0u;
+        if (!mypc110_test_port(driver, LIB_FALSE, port, &value) || value != (lib_u8)(port ^ 0x5au))
+            return LIB_FALSE;
+    }
+    if (!driver->reset(driver->context)) return LIB_FALSE;
+    for (lib_u16 port = 0x80u; port <= 0x8fu; ++port) {
+        value = 0xffu;
+        if (!mypc110_test_port(driver, LIB_FALSE, port, &value) || value != 0u) return LIB_FALSE;
+    }
+    value = 0u;
+    if (!mypc110_test_memory(driver, LIB_FALSE, MYPC110_FONT_PHYSICAL_START, &value) || value != 0x55u)
+        return LIB_FALSE;
+    value = 0x81u;
+    if (!mypc110_test_port(driver, LIB_TRUE, MYPC110_FONT_BANK_PORT, &value)) return LIB_FALSE;
+    value = 0u;
+    if (!mypc110_test_memory(driver, LIB_FALSE, MYPC110_FONT_PHYSICAL_START, &value) || value != 0xaau)
+        return LIB_FALSE;
+
+    value = 0u;
+    if (!mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_INDEX_PORT, &value) ||
+        !mypc110_test_port(driver, LIB_FALSE, X86_F65535_EXTENSION_DATA_PORT, &value) ||
+        value != X86_F65535_PC110_CHIP_VERSION ||
+        !mypc110_test_route_writes(driver, text_setup, sizeof(text_setup) / sizeof(text_setup[0])))
+        return LIB_FALSE;
+    value = 0x5au;
+    if (!mypc110_test_memory(driver, LIB_TRUE, 0x000b8000u, &value) ||
+        construction->display_snapshot_provider(construction->display_snapshot_context, &snapshot) !=
+            LIB_STATUS_OK || snapshot.columns != 80u || snapshot.rows != 25u ||
+        snapshot.characters[0] != 0x5au ||
+        !mypc110_test_route_writes(driver, graphics_setup, sizeof(graphics_setup) / sizeof(graphics_setup[0])))
+        return LIB_FALSE;
+    value = 0x5au;
+    return mypc110_test_memory(driver, LIB_TRUE, 0x000a0000u, &value) &&
+        construction->display_snapshot_provider(construction->display_snapshot_context, &snapshot) ==
+            LIB_STATUS_OK && snapshot.kind == X86_VIDEO_KIND_VGA_PLANAR16 &&
+        snapshot.pixel_width == 640u && snapshot.pixel_height == 480u && snapshot.pixels[1] == 15u;
+}
 
 static lib_status mypc110_write_zero_image(const char *path, lib_size bytes)
 {
@@ -147,6 +275,8 @@ int main(int argc, char **argv)
             cmos_present && loaded[0x0eu] == 0xe1u && loaded[0x3bu] == 0x55u &&
             loaded[0x7bu] == 0xaau && loaded[0x7fu] == 0x7eu ? 0 : 1;
     }
+    font[0] = 0x55u;
+    font[MYPC110_FONT_BANK_BYTES] = 0xaau;
     cmos[0x0eu] = 0xe1u;
     cmos[0x3fu] = 0xf3u;
     cmos[0x40u] = 0x44u;
@@ -310,6 +440,7 @@ int main(int argc, char **argv)
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
             response.value != 0u) failed = 41;
     }
+    if (!failed && !mypc110_test_product_routes(&driver, &construction)) failed = 74;
     x86_nxvm_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed) {
