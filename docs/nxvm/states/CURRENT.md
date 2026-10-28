@@ -19,6 +19,16 @@
 | Original Owner Request | Complete PC110 implementation and investigate unexpected blue Setup/Error pages. |
 | Similar-Issue Sweep | Compare original and TFT variants, guest output and shared display boundaries. |
 
+An initial isolated TFT x64 observation ended on a black Window while the
+firmware was still progressing. [S86 evidence](../etc/evidence/t580-s86-product-observation.md)
+records the longer observation. A scratch-instrumented TFT product reached the
+guest 640x480 ERROR
+and date/time pages in the actual RDP Window. Its background pixel matches the
+earlier pink guest-frame value; normal F12 and Enter input progressed the guest.
+The released derived-DSTN product also reached both pages through ordinary
+F12 and Enter input. The actual connected RDP client showed pink, matching
+the Guest frame. This is not a complete guest boot or physical-panel qualification.
+
 # M5 T580 S85 — Accepted: initial Window scale correction
 
 | Field | Required record |
