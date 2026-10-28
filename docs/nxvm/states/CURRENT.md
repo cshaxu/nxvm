@@ -1,3 +1,32 @@
+# M5 T580 S82 — Active: repository integration qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S82. |
+| Admission And Approval | Owner authorized autonomous T580 completion and full cached unit/integration validation. |
+| Objective | Run registered repository and owner-managed external integrations on x86 and x64, and resolve evidenced PC110 failures. |
+| Non-goals | No Shared Lib/Emulator changes, user-media modifications, hidden test skips or unsupported desktop qualification claims. |
+| Reference Baseline | S81 full unit qualification, S78–S80 real PC110 guest and product artifacts. |
+| Candidate Proposal | Build integration targets in the existing cached graphs and run registered integration cases, recording failures and owners. |
+| Files And ABI Surface | Task evidence and only the owner of an evidenced failure. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
+| Verification | Both-width integration suites, affected regression tests, artifact identity and documentation gates. |
+| Expected Markers | Actual test inventory and pass/fail/skip results; no partial-suite completion claim. |
+| Asset Needs | Existing authorized external media with task-owned writable copies; preserve masters, INI and snapshots. |
+| Reporting Requirements | Distinguish background, desktop and RDP evidence and report unresolved qualification. |
+| Stop Conditions | Do not suppress test failures, mutate owner media or bypass component boundaries. |
+| Exit Criteria | Required integration results and remaining qualification limits are recorded and submitted. |
+| Original Owner Request | Complete the PC110 task with valid releases and tests. |
+| Similar-Issue Sweep | Identify stale private diagnostic coupling and missing integration registration. |
+
+The four PC profile-specific integration matrices and the PC110 guest and
+artifact cases passed on both widths; the five registered desktop integration
+tests passed on each. The x64 default-profile non-desktop suite failed twice on
+native MIDI output, although x86 and a later isolated x64 run passed. Independent
+WinMM probes also returned an external error. This is not counted as a passing
+full x64 suite. See [S82 evidence](../etc/evidence/t580-s82-repository-qualification.md).
+T580 and S82 remain active until the remaining qualification is resolved.
+
 # M5 T580 S81 — Accepted: remove duplicate PC110 test composition
 
 | Field | Required record |
