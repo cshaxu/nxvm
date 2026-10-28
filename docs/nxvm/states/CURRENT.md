@@ -41,6 +41,10 @@ With the probe handshake corrected, a fresh timed F12 run reported a different
 CPU location, F000:E98A, after the input and paused successfully. It did not
 sample the location immediately before input and did not produce the pink
 page; F12 delivery and guest continuation are not yet fully attributed.
+A further product run did sample the prior 3800:1333 HLT, resumed through the
+normal monitor, posted F12 and later observed F000:C852. The screen was still
+black with a cursor. This is product-path continuation evidence, not a
+complete causal trace or colour/guest-media qualification.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 

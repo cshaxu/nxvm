@@ -148,3 +148,27 @@ not a fully attributed F12 delivery or wake transition: this run did not read
 the guest location immediately before posting the key, and the test provides
 no intermediate guest input or firmware trace. It does not qualify the guest
 display, a real keyboard, or other model/architecture combinations.
+
+## Product-path before/after F12 observation
+
+A third task-local TFT x64 run addressed the missing before-state. After the
+240-second no-media run, the background probe requested a normal product
+pause, waited for its monitor acknowledgement and used the product Debug `r`
+command. The guest was at `3800:1333 F4 HLT` with interrupts disabled. The
+probe exited Debug, issued the normal product `resume`, found the resulting
+Window, and posted F12 down/up without foreground activation. Both native
+post calls succeeded. After another 120 seconds it captured the Window,
+paused through the normal path and queried Debug again. The guest was at
+`F000:C852 E2F7 LOOP` with interrupts enabled. The probe exited zero; its
+log hash is
+`a3685ca1a7b85cc371f79d2521a493fcedbf8a3f1714fb94669c0b2bae2054de`.
+
+This establishes that one actual product execution left the observed firmware
+suspend point after a host F12 pair and continued to a different BIOS location.
+It does not independently trace the input or exclude all alternative wake
+causes, and uses posted host messages rather than a physical keyboard. The
+post-resume Window was 373x233 and still showed a black frame with a short
+white cursor; the capture SHA-256 is
+`50c92e7b2f0184220c12f4170cce02f5399a1fc1e6f47e22c944ba1f563c8b90`.
+No pink page, other architecture, DSTN, real keyboard or guest-media outcome
+is established by this run. All INI/CMOS files were task-owned copies.
