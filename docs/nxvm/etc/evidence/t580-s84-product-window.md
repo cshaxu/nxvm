@@ -106,3 +106,31 @@ one no-media, TFT, x64 product run, not a conclusion that the instruction was
 faulty or that this is the expected no-media firmware outcome. It does not
 qualify the other width or DSTN, a media-backed guest, or Easy Setup. The
 diagnostic's manual host resize is an observation aid, not the product fix.
+
+## Background host F12 probe
+
+Earlier [S51](t580-s51-cold-power-handoff.md) identified linear 39333h as the
+firmware's own suspend HLT; the [S71](t580-s71-postsetup-power.md) guest
+diagnostic continued after an F12 make/break at that boundary. The address in
+the product observation above therefore matches a previously identified
+suspend point; address equality alone does not prove identical machine state.
+
+A second task-local background probe started the TFT x64 executable with the
+same isolated no-media INI, waited 240 seconds, resized the host Window and
+posted an F12 down/up pair to that Window without activating it. Both Windows
+`PostMessage` calls reported success. After 120 more seconds, both capture
+methods again produced the same black/short-cursor image, SHA-256
+`f9b67ead469b0af6a7d6af1838374a0f173f387eba6ee6b99d33184b3425e472`.
+The subsequent pause probe logged `Machine paused.`, but its `info` query was
+split into invalid input and its own pause-ack predicate failed; the probe
+therefore exited 1 without obtaining a reliable subsequent CPU state. Its log
+SHA-256 is `0302e1ca30f1696ba5574dc4a60e8b441a089661b80607e1662578430eafe3a8`.
+
+This does not prove that the F12 pair passed through the Window, Session,
+Machine and firmware, nor that an actual user key would fail. The probe sent
+at a fixed elapsed time rather than confirming this particular run had reached
+the suspend HLT, and no media was attached. It also cannot establish that
+PC110 displayed a pink error or setup page. A product-path input observation
+with a reliable pause/query handshake remains necessary. The App source binds
+F12 to its virtual resume button; the current product asset README does not
+explain that binding. No source or shared library was modified in this probe.

@@ -33,6 +33,10 @@ background probe for observation. It showed a black 640x400 client with a
 short white cursor after 240 seconds; the paused debugger reported
 `3800:1333 HLT` with interrupts disabled. The owner of that no-media guest
 state remains unconfirmed; see S84 evidence.
+The address matches S51's firmware suspend point. A later task-local F12
+host-message probe did not establish delivery or a CPU continuation because
+its pause/query handshake failed; this remains unverified, not a product-failure
+claim. The current product README also omits the App's F12 resume binding.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 
