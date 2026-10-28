@@ -25,6 +25,9 @@ actual PC110 initial-frame probe and a hidden native geometry probe identify
 a matching 15x scale mechanism. See [S84 evidence](../etc/evidence/t580-s84-product-window.md).
 A candidate Shared Lib correction requires the owner's Shared-code review;
 no Shared implementation has been changed and S84 remains active.
+The original F65535 reference also identifies an independent Screen Off
+snapshot gap; it is not yet tied to the observed window-size failure and
+requires a separate validated display behavior decision.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 

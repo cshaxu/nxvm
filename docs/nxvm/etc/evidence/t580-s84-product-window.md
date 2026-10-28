@@ -44,6 +44,17 @@ would not establish the correct behavior. The existing host resize test
 already checks fit-down, user resizing, aspect and frame transitions, but its
 native mock does not demonstrate the observed forced minimum for 8x1.
 
+The C&T 65535 Register Reference revision 2.0, printed page 48, identifies
+SR01 bit 5 as Screen Off: set disables video output. The current F65535
+snapshot paths do not inspect that bit. This is an independently identifiable
+display-behavior gap, not proof that SR01 is set in the observed incident:
+the modeled register file is zero at reset, and no deployed-firmware trace of
+this bit has yet been gathered. Any follow-up must establish how blank output
+is represented while preserving geometry and normal output when re-enabled;
+it must not substitute an invented frame-readiness test for the host scale fix.
+The reset description on printed page 47 describes SR00 reset-control bits;
+it does not by itself prove the initial value of every sequencer register.
+
 A candidate minimal Shared fix is to avoid treating a native-enforced
 minimum as a user-selected enlargement during the *initial automatic* resize:
 record the smaller of actual client width and source width for the initial
