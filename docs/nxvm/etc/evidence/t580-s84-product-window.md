@@ -55,6 +55,16 @@ it must not substitute an invented frame-readiness test for the host scale fix.
 The reset description on printed page 47 describes SR00 reset-control bits;
 it does not by itself prove the initial value of every sequencer register.
 
+A temporary x64 probe in the existing actual PC110 construction test wrote
+SR01=20h through the real Driver port path after setting up an 80x25 text
+frame. Before and after the write, the display provider returned success,
+reported `cursor_enabled=1` and retained character 5Ah. The probe completed
+successfully; its verbose log SHA-256 is
+`936e88e60159e35252715651463d0f4c11c0003229b76ef77e173e47169ab3a3`.
+The temporary instrumentation was removed and the original test binary rebuilt.
+This reproduces the provider's cursor behavior, not final on-screen pixels or
+a claim that the actual firmware issues SR01=20h in this incident.
+
 For follow-up design, the existing Machine conversion resolves indexed
 graphics through `palette_rgb`, and copies the text palette and cursor state
 to both Window and Console frames. Thus an F65535-only change that merely
