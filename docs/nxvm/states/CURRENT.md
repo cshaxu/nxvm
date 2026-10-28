@@ -1,4 +1,4 @@
-# M5 T580 S78 — Active: PC110 controller restoration and pointing device
+# M5 T580 S78 — Accepted: PC110 controller restoration and pointing device
 
 | Field | Required record |
 | --- | --- |
@@ -6,16 +6,44 @@
 | Admission And Approval | The owner authorized autonomous PC110 S tasks and previously approved the bounded Shared/Core changes needed by the product. |
 | Objective | Identify and implement the missing controller restoration event and demonstrate the genuine PC110 BIOS and guest pointing-device path. |
 | Non-goals | No host BIOS interception, guest-memory injection, manufactured driver success, external media changes, Lib/Emulator changes, or physical-timing claim without a source. |
-| Baseline | Accepted S77 records real C201h failure, the SMM lock, two real firmware callbacks and the 0Ah/9Bh and 11h mailbox sequence. Its 10h reply did not resolve the failure. |
+| Reference Baseline | Accepted S77 records real C201h failure, the SMM lock, two real firmware callbacks and the 0Ah/9Bh and 11h mailbox sequence. Its 10h reply did not resolve the failure. |
 | Candidate Proposal | Follow the original controller image, firmware and source-labelled references to identify the receiver and event; implement one functional L2 model at its correct owner, then verify the actual guest. |
 | Files And ABI Surface | PC110 App and tests, or X86-NXVM/Core only if the evidence requires their existing boundary; no new public API merely for diagnostics. |
 | Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
 | Verification | Affected x86/x64 unit and real-firmware regressions, actual guest driver and input path, plus required affected artifacts and manifest/gate checks. Long work is bounded and backgrounded. |
+| Expected Markers | Original firmware clears its lock; BIOS mouse requests succeed; actual guest input and final frame are independently observed; no Core fault. |
 | Asset Needs | Reviewed external BIOS, Setup oracle and task-owned disk overlays; preserve their originals. |
 | Reporting Requirements | Separate modeled controller facts, real guest outcomes, failure cases, both widths and unexecuted desktop/RDP validation. |
 | Stop Conditions | Do not patch guest state, substitute another device, fabricate a BIOS result or claim physical timing from an L2 model. |
 | Exit Criteria | The real firmware clears its own lock and guest pointing-device initialization and input are verified, with failures and cleanup honestly accounted for. |
+| Original Owner Request | Implement PC110 and both firmware variants through build, test, release and submission, with faithful input and display. |
 | Similar-Issue Sweep | Check controller reply ownership, reset/retention and device paths without introducing duplicate lifecycle or input queues. |
+
+An L1 temporary mailbox timing experiment let the original x64 firmware
+clear its own SMM lock and reach handoff, but does not establish the event's
+physical timing, data or actual guest mouse behavior. Its code was removed
+after launch. See the [S78 investigation](../etc/evidence/t580-s78-controller-restoration.md).
+A real-guest x64 probe using the temporary hypothesis checked the DOS mouse
+driver's actual BIOS request and return.
+The App candidate uses a separately defined L1 delay model;
+both-width PC110 unit suites, firmware resume and FDC/reset tests pass. The
+PC110 product is not yet released. The initial x64 DOS probe
+used the earlier experimental binary, so its result must not be described
+as direct validation of the revised implementation.
+That experimental probe returned C201h successfully but then recorded C206h
+failures and a Core fault. A subsequent bounded x64 probe of the candidate
+observed the relevant BIOS and 8042 calls.
+The follow-up confirmed that C206h fails because the mouse rejected E6h;
+Shared P1 `d93729439` corrects that command and NXVM P2 `2fc16aff3` refreshes
+the eight existing PC artifacts. Both commits are pushed. The current
+candidate passed both-width PC110 units and the full X86-NXVM test group,
+and both-width real TFT DOS/inking runs reached the same launcher image.
+NXVM P3 `0886b2211` records the independently tested controller model and is
+pushed. Both-width PS/2-only guest input probes succeeded and their matching
+moved-pointer frame is the same as the host-input run. DSTN power/resume and
+boot handoff also passed on both widths. NXVM P4 `e9a14aae5` retains the
+diagnostic and evidence. The reviewer accepts S78 against its scoped exit;
+complete DSTN guest qualification, final PC110 releases and T580 remain open.
 
 # M5 T580 S77 — Accepted: PC110 inking device and input boundary
 
