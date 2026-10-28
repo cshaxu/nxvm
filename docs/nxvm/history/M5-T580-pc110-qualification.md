@@ -1120,3 +1120,17 @@ prompt, original-panel or Window colour behavior, or PC110 product release.
 The retained input hashes, execution boundaries and explicit wrapper
 limitation are in [S75 evidence](../etc/evidence/t580-s75-system-loader.md).
 T580 remains open; the task-owned test input is retained for the next receiver.
+
+## S76 coordinator acceptance — PC DOS startup and display
+
+Actual-change review accepts Shared `e3bb44fc1` and `0697388f5`, and NXVM
+`54a0c7bb1`, `617d4123d`, `f8c70a595`, `1daac31ca` and `e53e5162a`.
+The F65535 status source no longer traps the guest in the observed wait; its
+bounded planar scanout renders the real PC DOS startup graphics on both host
+widths. The affected units, manifests, configured builds and eight existing
+PC product/INI identity receivers pass as recorded in
+[S76 evidence](../etc/evidence/t580-s76-status-port.md). The later x64 run
+shows the inking calibration request, without proving which intervention
+caused progress. DOS completion, inking and mouse operation, original panel,
+Window colour, and PC110 publication remain open. The task-owned test disk
+and oracle are retained for the immediately following device receiver.

@@ -1,4 +1,4 @@
-# M5 T580 S76 — Delivered: PC110 operating-system progression
+# M5 T580 S76 — Accepted: PC110 operating-system progression
 
 | Field | Required record |
 | --- | --- |
