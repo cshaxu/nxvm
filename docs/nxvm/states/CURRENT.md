@@ -45,6 +45,10 @@ A further product run did sample the prior 3800:1333 HLT, resumed through the
 normal monitor, posted F12 and later observed F000:C852. The screen was still
 black with a cursor. This is product-path continuation evidence, not a
 complete causal trace or colour/guest-media qualification.
+The external BIOS identifies the post-F12 location as a candidate 3F4h FDC
+status-poll loop, consistent with the captured DX and opcode. A single sample
+does not distinguish forward progress from a stuck wait; runtime shadow bytes
+and a second sample were not captured.
 
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 

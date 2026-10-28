@@ -172,3 +172,19 @@ white cursor; the capture SHA-256 is
 `50c92e7b2f0184220c12f4170cce02f5399a1fc1e6f47e22c944ba1f563c8b90`.
 No pink page, other architecture, DSTN, real keyboard or guest-media outcome
 is established by this run. All INI/CMOS files were task-owned copies.
+
+## Post-F12 BIOS location
+
+The external TFT BIOS input still hashes to
+`232101c88466f311bcc32fbc215a4d7569f695ce19f9c07ca67ce2aee5232312`.
+Its F-bank bytes around C843h describe a routine that reads the floppy
+controller status port 3F4h, masks the upper status bits and loops back while
+waiting for the expected state. The observed product Debug snapshot had
+DX=03F4h, CX=B5F9h and the `E2F7` loop instruction at F000:C852, consistent
+with that routine. This single sample is not proof that it is making progress
+or permanently stuck. The product can read a firmware shadow, and surrounding
+runtime bytes were not independently sampled; the static BIOS disassembly
+therefore identifies a candidate rather than a complete runtime trace.
+The scratch configuration has no disk, and the lower-level FDC reset tests
+passed, but neither fact proves what result this particular runtime wait
+should produce. No guest, BIOS or hardware behavior was altered.
