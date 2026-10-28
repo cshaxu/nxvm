@@ -547,8 +547,11 @@ int main(int argc, char **argv)
     const lib_bool cmos_origin_checkpoint = cmos_restore_checkpoint ||
         (argc == 3 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--cmos-checksum") == 0);
-    const lib_bool os_key_checkpoint = argc == 6 && argv != LIB_NULL &&
-        lib_text_compare(argv[1], "--setup-pair-os-key") == 0;
+    const lib_bool os_late_key_checkpoint = argc == 6 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--setup-pair-os-late-key") == 0;
+    const lib_bool os_key_checkpoint = os_late_key_checkpoint ||
+        (argc == 6 && argv != LIB_NULL &&
+         lib_text_compare(argv[1], "--setup-pair-os-key") == 0);
     const lib_bool os_storm_checkpoint = os_key_checkpoint ||
         (argc == 6 && argv != LIB_NULL &&
          lib_text_compare(argv[1], "--setup-pair-os-storm") == 0);
@@ -1130,7 +1133,8 @@ int main(int argc, char **argv)
                 &observation.diagnostic.last_delivered_exception;
             if ((os_key_checkpoint && exception->valid &&
                     exception->point.bytes[0u] == 0xcdu && exception->point.bytes[1u] == 0x16u &&
-                    ((exception->eax >> 8u) & 0xffu) == 1u) ||
+                    ((exception->eax >> 8u) & 0xffu) == 1u &&
+                    (!os_late_key_checkpoint || exception->point.bytes[2u] == 0x74u)) ||
                 (!os_key_checkpoint && observation.diagnostic.delivered_exception_count >= 1000u)) {
                 lib_c_printf("PC110:OS:%s count=%u mask=%08x code=%08x point=%04x:%08x bytes=%02x %02x %02x %02x flags=%08x eax=%08x edx=%08x ss=%04x esp=%08x\n",
                     os_key_checkpoint ? "input-wait" : "storm",

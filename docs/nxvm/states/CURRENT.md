@@ -1,4 +1,4 @@
-# M5 T580 S76 — Active: PC110 operating-system progression
+# M5 T580 S76 — Delivered: PC110 operating-system progression
 
 | Field | Required record |
 | --- | --- |
@@ -47,6 +47,13 @@ the affected component and PC110 units pass. All eight existing PC receiver
 artifacts were rebuilt and their product/INI identity checks pass. See the
 S76 evidence for exact observations and the unresolved DOS-input and
 desktop-display boundaries.
+
+The later input probe reached PC DOS driver messages and the inking driver's
+first calibration request; because elapsed execution and one key both changed,
+it does not prove input consumption. The supplied disk invokes INKDRV and the
+local PC110 references describe an independent IRQ-driven digitizer. Inking,
+mouse-driver behavior, final DOS/Personaware operation, both physical panel
+variants, Window colour and product publication remain open under T580.
 
 # M5 T580 S75 — Accepted: PC110 system-loader handoff
 

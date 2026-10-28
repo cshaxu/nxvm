@@ -131,6 +131,26 @@ its log SHA-256 is
 `24e8d5b165718445b19d75dab83225958e3650b26c9f8d963b7ee00a89d9e61c`.
 Native Window and physical display colours have not been verified.
 
+A further x64 probe observed the later `INT 16h/AH=01h` followed by a zero
+branch at 0FF2:0735 and sent one Enter make/break through the Machine driver
+at instruction 438,482,679. At the 50-million-instruction continuation
+boundary, a real graphics frame shows PC DOS startup, mouse-driver failure
+and the inking driver's first calibration request. This later screenshot
+differs from the earlier frame but, because both time and an input changed,
+it does not establish that Enter was consumed or caused the progress.
+The diagnostic's exception-baseline result remains false; it is not a full
+DOS or product pass. Log SHA-256:
+`d58c9a52ee9bb5759b7b9c230049fe5955eacb59dcc65667a2a447cdfef27085`;
+raw frame SHA-256:
+`3a14f0e064ce15ff87a5df205c46ba7938d024f1d71663c94fb47ae45b3a5df4`.
+
+The supplied disk's startup configuration invokes `INKDRV.COM`. The local
+Open-Source-PC110 inking research describes a separate resistive digitizer,
+distinct from the PS/2 pointing device, with an IRQ-driven 3-byte packet
+interface. Current App code has no inking owner. Its implementation and the
+mouse-driver finding require their own machine-device investigation; neither
+was emulated or bypassed in this S.
+
 All four existing PC product profiles were rebuilt for x64 and x86 after
 the Shared frame-kind change. Their eight product/INI identity checks pass;
 the PE machine types, lengths and hashes are in
