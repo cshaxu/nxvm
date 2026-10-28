@@ -89,3 +89,29 @@ the deliberately stopped derived-DSTN observation log SHA-256 is
 `F3B545B67EA50B8D8DB33D80E41637F254EF77A13D923BFA7981F4FBCD48B02E`.
 The NXVM documentation governance script passed directly. The CMake target
 invocation remained silent and was interrupted; it is not reported as passed.
+
+## Released TFT product through guest boot
+
+A second task-owned x64 run used the actual deployed TFT executable, isolated
+master/slave overlay inputs, and ordinary native Window messages. Its first
+F12 was sent after the same Debug-confirmed firmware HLT. The product displayed
+the same pink ERROR page and date/time editor; two ordinary Enter pairs were
+posted after observing the relevant pink pages. After the ensuing POST, a
+second F12 was posted. The Window later displayed `Starting PC DOS...`, then
+Guest driver output. An additional Enter was posted once while the startup
+text remained displayed; successful native posting alone is not proof of Guest
+consumption. The screen remained visually unchanged from frame 38 through the
+end of the observation; normal pause/Debug reported `0048:023E`, without
+establishing the reason for the Guest's current execution.
+
+The observer exited zero and all 60 timed Window captures succeeded; this
+means the observation completed, not that the Guest reached its desktop.
+The task-owned source images retained their original hashes. Representative
+SHA-256 values: ERROR frame `0B814746D453778DC3478972F37B00722A2825389CEEE44268863D972E87DC72`;
+PC DOS initial boot frame `B48B0BB7DC56F1AAB73D9EB45223D3432FA313F1819EBB9C7F1C010483177E1E`;
+final driver frame `8571B4E7F63BF5CB7BCBDC03802F53175E14B53AC0AB1DEBECD5890E58BB0B70`;
+observer log
+`BC7C692DFA4CB8C1E6E018E3C003CAFF2EAEF81571072183FBAC86288419CB2E`.
+These observations establish a real released-product Guest boot handoff and
+DOS driver startup, not a working shell, calibration or Personaware desktop.
+The Guest input wait and live product driver path remain to be investigated.

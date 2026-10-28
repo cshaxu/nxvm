@@ -1,3 +1,27 @@
+# M5 T580 S87 — Active: PC110 product guest startup continuation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S87. |
+| Admission And Approval | Owner requested autonomous completion of T580 and continuation of PC110 work. |
+| Objective | Trace the released PC110 product from DOS driver startup to an interactive guest or a precisely evidenced defect. |
+| Non-goals | No firmware patching, forced Guest state, owner media modification, foreground tasks or unapproved Shared changes. |
+| Reference Baseline | S79 real-firmware Guest diagnostic; S86 actual product Setup, F12 and DOS boot observations. |
+| Candidate Proposal | Compare Guest input and execution at the product driver boundary with the established real-firmware diagnostic using bounded, isolated background observations; correct only demonstrated defects. |
+| Files And ABI Surface | PC110 App, existing tests and task evidence; Shared changes require established approval. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Real product route, isolated guest media, input and frame evidence, affected dual-width checks for any production change. |
+| Expected Markers | Guest progress to interactive input or a reproducible and localized failure boundary. |
+| Asset Needs | Existing approved external firmware and task-owned media copies; preserve owner assets. |
+| Reporting Requirements | Distinguish native input delivery, guest consumption, product screen, isolated diagnostic and unresolved limits. |
+| Stop Conditions | No fabricated guest state, protected media change or Shared API change without its applicable approval. |
+| Exit Criteria | Observed interactive guest or an evidenced narrowly scoped implementation receiver with required checks. |
+| Original Owner Request | Complete PC110 implementation and verify usable released products. |
+| Similar-Issue Sweep | Compare product and diagnostic input paths and original/TFT variants where evidence warrants. |
+
+S86 established real TFT PC DOS startup but not an interactive desktop. Its
+final Guest diagnostic and screenshot are recorded in [S86 evidence](../etc/evidence/t580-s86-product-observation.md).
+
 # M5 T580 S86 â€” Active: PC110 product boot and Setup observation
 
 | Field | Required record |
@@ -26,8 +50,10 @@ guest 640x480 ERROR
 and date/time pages in the actual RDP Window. Its background pixel matches the
 earlier pink guest-frame value; normal F12 and Enter input progressed the guest.
 The released derived-DSTN product also reached both pages through ordinary
-F12 and Enter input. The actual connected RDP client showed pink, matching
-the Guest frame. This is not a complete guest boot or physical-panel qualification.
+F12 and Enter input. The connected RDP client showed pink, matching the Guest
+frame. A released TFT product subsequently displayed PC DOS driver startup;
+its final driver screen and Guest state transfer to S87. Full boot and
+physical-panel qualification are not claimed.
 
 # M5 T580 S85 â€” Accepted: initial Window scale correction
 
