@@ -1,3 +1,31 @@
+# M5 T580 S84 — Active: PC110 deployed Window observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S84. |
+| Admission And Approval | Owner authorized autonomous T580 completion and requested investigation of actual PC110 setup colours. |
+| Objective | Observe a released PC110 executable's actual Window output and compare its guest setup colours with recorded guest framebuffer evidence. |
+| Non-goals | No foreground process, user INI or media changes, firmware modification, Shared production change or RDP claim without RDP evidence. |
+| Reference Baseline | S57 guest-frame colours; S78/S79 firmware diagnostics; S80 deployed binaries and S83 product lifecycle. |
+| Candidate Proposal | Run the existing product Window probe in a hidden background process using a task-owned copy and configuration; capture and inspect the client image. |
+| Files And ABI Surface | NXVM task evidence and temporary probe inputs only unless an actual product defect is demonstrated. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding, documentation, UI and source/research policy. |
+| Verification | Report the actual executable, firmware, client dimensions, process status and captured pixels; distinguish desktop session and RDP. |
+| Expected Markers | Real Window frame and measurable colours, or an explicit bounded failure rather than an inferred result. |
+| Asset Needs | Existing deployed EXE; task-owned temporary INI and CMOS only. Preserve all owner files. |
+| Reporting Requirements | Include reproducible observation, capture limitations, unverified firmware variants and remaining task gaps. |
+| Stop Conditions | Do not force guest state, expose a foreground process, modify user media or infer colours from an unrelated window. |
+| Exit Criteria | Actual deployed Window evidence is reviewed and recorded, or a concrete unresolved receiver is identified for continued work. |
+| Original Owner Request | Implement PC110 and investigate the unexpectedly blue ERROR/Easy Setup pages. |
+| Similar-Issue Sweep | Compare the result against the separately captured firmware framebuffer and both fixed variants. |
+
+The deployed TFT x64 Window was observed in an RDP session at 9600x6000;
+the screenshot was black and does not prove the reported setup colour. An
+actual PC110 initial-frame probe and a hidden native geometry probe identify
+a matching 15x scale mechanism. See [S84 evidence](../etc/evidence/t580-s84-product-window.md).
+A candidate Shared Lib correction requires the owner's Shared-code review;
+no Shared implementation has been changed and S84 remains active.
+
 # M5 T580 S83 — Accepted: PC110 released-product lifecycle
 
 | Field | Required record |
