@@ -19,11 +19,12 @@ The x64 and x86 desktop test groups each passed 5/5. These automated desktop
 tests do not verify PC110's actual screen or an RDP session. Both widths passed
 PC110 real-firmware boot/resume and FDC integration on the first run.
 
-The default-profile x64 full non-desktop rerun again passed 41/42 and again
-failed native MIDI output. Direct WinMM open also again returned error 1. This
-is an intermittent native host capability failure; the cause is not yet
-identified and it remains a failed full-suite gate despite the later individual
-pass. No test was suppressed or changed.
+The default-profile x64 parallel non-desktop rerun again passed 41/42 and
+again failed native MIDI output. Direct WinMM open also again returned error 1.
+An isolated x64 run then passed, and a complete serial x64 non-desktop suite
+passed 42/42, including MIDI; x86 passed 42/42. These results suggest a
+concurrency or host availability issue but do not establish its cause. No test
+was suppressed or changed; both failed parallel runs remain part of the record.
 
 My5160 profile integrations passed 3/3 on each host width; My5170 passed 5/5
 on each; DeskPro passed 6/6 on each. DeskPro's guest boot took 201.60 seconds
@@ -40,6 +41,15 @@ relinked binaries passed the corresponding product/INI and architecture gates:
 | mydeskpro386_0_5_0580_x64.exe | f2af678f056fc1224e503e4fd7f2709c844ebb8a7b451c0ed1c27996181e5574 |
 | mydeskpro386_0_5_0580_x86.exe | a47003e6f72757525e7f0c0b33b358add33f28b78dc5a6c0b9aba6b8299150d5 |
 
-This record does not claim complete qualification while the x64 full-suite
-native MIDI failure remains unresolved. No PC110 desktop or RDP session was
-observed; automated desktop tests cover separate Lib and MyNES cases.
+Restoring the default build relinked two additional x64 binaries. The deployed
+bytes matched their respective build outputs and both had x64 PE format:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| nxvm_0_5_0580_x64.exe | af517c1a798e44589f010dc6340fb29e749c72a48b94c213e0e9932e38e9ff0b |
+| mynes_0_0_0044_x64.exe | 0028c16c73591443b7b7ba59755e50e1fa23352fa95c95725eafd94fc910418c |
+
+No PC110 desktop or RDP session was observed; automated desktop tests cover
+separate Lib and MyNES cases. The real-firmware diagnostic still uses Machine
+private internals, and the reason for the parallel native-MIDI failure remains
+unresolved. The test results alone do not claim complete T580 qualification.

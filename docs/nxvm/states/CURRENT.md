@@ -1,4 +1,4 @@
-# M5 T580 S82 — Active: repository integration qualification
+# M5 T580 S82 — Accepted: repository integration qualification
 
 | Field | Required record |
 | --- | --- |
@@ -22,10 +22,11 @@
 The four PC profile-specific integration matrices and the PC110 guest and
 artifact cases passed on both widths; the five registered desktop integration
 tests passed on each. The x64 default-profile non-desktop suite failed twice on
-native MIDI output, although x86 and a later isolated x64 run passed. Independent
-WinMM probes also returned an external error. This is not counted as a passing
-full x64 suite. See [S82 evidence](../etc/evidence/t580-s82-repository-qualification.md).
-T580 and S82 remain active until the remaining qualification is resolved.
+native MIDI output when parallel, then passed 42/42 in a serial run; x86 passed
+42/42. Independent WinMM probes also returned an external error. That intermittent
+failure's cause remains unknown. See [S82 evidence](../etc/evidence/t580-s82-repository-qualification.md).
+The T580 diagnostic boundary and actual PC110 desktop/RDP experience remain
+open; these results do not alone close T580.
 
 # M5 T580 S81 — Accepted: remove duplicate PC110 test composition
 
