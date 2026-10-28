@@ -7,12 +7,23 @@ set(project_artifact_roots
     "assets/my5160"
     "assets/my5170"
     "assets/mydeskpro386"
+    "assets/mypc110"
     "assets/mynes")
 foreach(project_artifact_root IN LISTS project_artifact_roots)
     if(NOT IS_DIRECTORY "${PROJECT_SOURCE_DIR}/${project_artifact_root}")
         message(FATAL_ERROR "Missing product artifact root: ${project_artifact_root}")
     endif()
 endforeach()
+
+file(GLOB pc110_executables RELATIVE "${PROJECT_SOURCE_DIR}/assets/mypc110"
+    "${PROJECT_SOURCE_DIR}/assets/mypc110/*.exe")
+set(expected_pc110_executables
+    mypc110_x86.exe mypc110_x64.exe mypc110_tft_x86.exe mypc110_tft_x64.exe)
+list(SORT pc110_executables)
+list(SORT expected_pc110_executables)
+if(NOT pc110_executables STREQUAL expected_pc110_executables)
+    message(FATAL_ERROR "Expected exactly the four fixed MyPC110 releases")
+endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86-nxvm/product/version.h" product_version_header)
 if(NOT product_version_header MATCHES "X86_NXVM_PRODUCT_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])\"")

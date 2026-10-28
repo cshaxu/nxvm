@@ -20,8 +20,8 @@ static lib_status write_bytes(const char *path, const void *bytes, lib_size coun
 int main(int argc, char **argv)
 {
     static const char ini[] = "[presentation]\ndisplay=window\nconsole_control=1\n[media]\n";
-    static const char *const commands[] = {"exit\r"};
-    static const char *const markers[] = {""};
+    static const char *const commands[] = {"reset\r", "exit\r"};
+    static const char *const markers[] = {"Machine reset and paused.", ""};
     char directory[MAX_PATH] = {0}, executable[MAX_PATH] = {0};
     char ini_path[MAX_PATH] = {0}, cmos_path[MAX_PATH] = {0};
     void *bytes = LIB_NULL;
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
             (lib_i32)sizeof(cmos_path) ||
         !CopyFileA(argv[1], executable, TRUE) ||
         write_bytes(ini_path, ini, sizeof(ini) - 1u) != LIB_STATUS_OK) goto done;
-    if (!emulator_console_process_run(executable, directory, commands, markers, 1u) ||
+    if (!emulator_console_process_run(executable, directory, commands, markers, 2u) ||
         lib_storage_file_read_owned(cmos_path, 128u, &bytes, &count) != LIB_STATUS_OK ||
         count != 128u) goto done;
     /* RTC register D is not persisted. Its nonzero sentinel proves the
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     if (write_bytes(cmos_path, bytes, count) != LIB_STATUS_OK) goto done;
     lib_release(bytes);
     bytes = LIB_NULL;
-    if (!emulator_console_process_run(executable, directory, commands, markers, 1u) ||
+    if (!emulator_console_process_run(executable, directory, commands, markers, 2u) ||
         lib_storage_file_read_owned(cmos_path, 128u, &bytes, &count) != LIB_STATUS_OK ||
         count != 128u || ((lib_u8 *)bytes)[0x0du] != 0u ||
         ((lib_u8 *)bytes)[0x3bu] != 0x5au) goto done;

@@ -168,11 +168,11 @@ The four fixed Apps consume the sole X86 NXVM Machine/Product implementation;
 they do not supply libraries to one another. Portable Debug/Xasm32 tooling
 remains in x86-debug; NXVM PC mechanisms live in x86-nxvm, and immutable model choices
 and D4 remain in each App.
-`app-mypc110` is an admitted TFT-only prepublication composition: it owns its
-fixed 486SX construction, external firmware binding, Product entry/binding and
-PC110 decode choices, while each unqualified endpoint is admitted by its own
-evidence receiver. Its preview verifies the normal Product/Machine route but
-does not publish a product executable or claim display, storage or guest boot.
+`app-mypc110` owns fixed 486SX construction, the two external firmware
+bindings, Product entry/binding and PC110 decode choices. Its fixed TFT and
+derived-DSTN targets use the normal Product/Machine route and deploy their
+four owner-named executables under `assets/mypc110`; Current records remaining
+guest, display and release qualification.
 
 Each App has its own source, profile assertions, integration registration and
 flat artifact root. PC-family docs/nxvm, tools/nxvm, version and MTSP stay

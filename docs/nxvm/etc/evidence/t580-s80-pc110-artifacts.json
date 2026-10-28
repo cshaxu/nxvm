@@ -1,0 +1,26 @@
+[
+  {
+    "path": "assets/mypc110/mypc110_x86.exe",
+    "bytes": 2952364,
+    "machine": "0x14c",
+    "sha256": "3b0d5890abafbb38b7f1540a250400a26e031903ba75bec4bd27c115fa21c9c3"
+  },
+  {
+    "path": "assets/mypc110/mypc110_x64.exe",
+    "bytes": 2813193,
+    "machine": "0x8664",
+    "sha256": "432084dc4210dda174cdefc44a47b37f62fe8883cf8124be7a2ab642bdb55943"
+  },
+  {
+    "path": "assets/mypc110/mypc110_tft_x86.exe",
+    "bytes": 2952397,
+    "machine": "0x14c",
+    "sha256": "c437c3fca8d100d5e7448202afbf5e09f0c18208ed19e900f0b360403ceda746"
+  },
+  {
+    "path": "assets/mypc110/mypc110_tft_x64.exe",
+    "bytes": 2813225,
+    "machine": "0x8664",
+    "sha256": "fe0705bea6c1a1b9d59b364081a81c9a763ba17a610ef091f3dd63a2c714c1a9"
+  }
+]

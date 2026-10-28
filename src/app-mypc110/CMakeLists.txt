@@ -58,14 +58,22 @@ function(mypc110_add_firmware_variant variant machine_key product_name bios_path
         target_compile_options(mypc110-product-${variant} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 
-    # Preview binaries prove a fixed App entry and embedded BYOB inputs; they
-    # are not deployed artifacts until guest qualification is complete.
-    add_executable(mypc110-${variant}-preview EXCLUDE_FROM_ALL main.c)
-    target_compile_definitions(mypc110-${variant}-preview PRIVATE
+    if(variant STREQUAL "tft")
+        set(artifact_name "mypc110_tft_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
+    else()
+        set(artifact_name "mypc110_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
+    endif()
+    ibmpc_add_product(mypc110-${variant} "${CMAKE_CURRENT_SOURCE_DIR}/main.c"
+        "${artifact_name}" "${PROJECT_ARTIFACT_ARCHITECTURE}"
+        "${CMAKE_SOURCE_DIR}/assets/mypc110" mypc110-product-${variant})
+    set_target_properties(mypc110-${variant} PROPERTIES
+        MYPC110_ARTIFACT_NAME "${artifact_name}"
+        MYPC110_BIOS_PATH "${NXVM_PROFILE_ASSETS_ROOT}/${bios_path}"
+        MYPC110_FONT_PATH "${NXVM_PROFILE_ASSETS_ROOT}/${font_path}")
+    target_compile_definitions(mypc110-${variant} PRIVATE
         MYPC110_PRODUCT_NAME="${product_name}")
-    target_link_libraries(mypc110-${variant}-preview PRIVATE mypc110-product-${variant})
-    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(mypc110-${variant}-preview PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        target_compile_options(mypc110-${variant} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 endfunction()
 

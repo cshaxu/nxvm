@@ -162,7 +162,7 @@ foreach(variant IN ITEMS tft dstn)
                 -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
         endif()
         add_dependencies(mypc110-${variant}-product-composition-smoke
-            mypc110-${variant}-preview)
+            mypc110-${variant})
         if(TARGET build-unit-tests)
             add_dependencies(build-unit-tests mypc110-${variant}-product-composition-smoke)
         endif()
@@ -173,7 +173,7 @@ foreach(variant IN ITEMS tft dstn)
     endif()
 endforeach()
 
-if(WIN32 AND TARGET mypc110-tft-preview AND TARGET mypc110-dstn-preview)
+if(WIN32 AND TARGET mypc110-tft AND TARGET mypc110-dstn)
     add_executable(mypc110-cmos-product-smoke
         integration/cmos_product_smoke.c "${CMAKE_SOURCE_DIR}/test/setup/console_process.c")
     target_include_directories(mypc110-cmos-product-smoke PRIVATE "${CMAKE_SOURCE_DIR}")
@@ -183,10 +183,45 @@ if(WIN32 AND TARGET mypc110-tft-preview AND TARGET mypc110-dstn-preview)
     endif()
     foreach(variant IN ITEMS tft dstn)
         add_test(NAME mypc110.integration/${variant}-cmos-product
-            COMMAND mypc110-cmos-product-smoke $<TARGET_FILE:mypc110-${variant}-preview>
+            COMMAND mypc110-cmos-product-smoke $<TARGET_FILE:mypc110-${variant}>
                 ${variant} "${CMAKE_BINARY_DIR}")
         set_tests_properties(mypc110.integration/${variant}-cmos-product PROPERTIES
             LABELS "integration;mypc110" TIMEOUT 30 RUN_SERIAL TRUE)
+        if(CMAKE_BUILD_TYPE STREQUAL "Release")
+            if(variant STREQUAL "tft")
+                set(other_variant dstn)
+            else()
+                set(other_variant tft)
+            endif()
+            get_target_property(artifact mypc110-${variant} MYPC110_ARTIFACT_NAME)
+            get_target_property(bios mypc110-${variant} MYPC110_BIOS_PATH)
+            get_target_property(other mypc110-${other_variant} MYPC110_BIOS_PATH)
+            get_target_property(font mypc110-${variant} MYPC110_FONT_PATH)
+            add_test(NAME mypc110.integration/${variant}-artifact-firmware
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DPROJECT_ARTIFACT_PATH=$<TARGET_FILE:mypc110-${variant}>"
+                    "-DPROJECT_ARTIFACT_ARCHITECTURE=${PROJECT_ARTIFACT_ARCHITECTURE}"
+                    "-DDEPLOYED_PATH=${CMAKE_SOURCE_DIR}/assets/mypc110/${artifact}"
+                    "-DEXPECTED_BIOS=${bios}"
+                    "-DOTHER_BIOS=${other}"
+                    "-DFONT_FILE=${font}"
+                    "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
+                    -P "${CMAKE_CURRENT_SOURCE_DIR}/integration/artifact_firmware.cmake")
+            set_tests_properties(mypc110.integration/${variant}-artifact-firmware PROPERTIES
+                LABELS "integration;mypc110" TIMEOUT 120)
+            add_test(NAME mypc110.integration/${variant}-artifact-wrong-firmware
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DPROJECT_ARTIFACT_PATH=$<TARGET_FILE:mypc110-${variant}>"
+                    "-DPROJECT_ARTIFACT_ARCHITECTURE=${PROJECT_ARTIFACT_ARCHITECTURE}"
+                    "-DDEPLOYED_PATH=${CMAKE_SOURCE_DIR}/assets/mypc110/${artifact}"
+                    "-DEXPECTED_BIOS=${other}"
+                    "-DOTHER_BIOS=${bios}"
+                    "-DFONT_FILE=${font}"
+                    "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
+                    -P "${CMAKE_CURRENT_SOURCE_DIR}/integration/artifact_firmware_negative.cmake")
+            set_tests_properties(mypc110.integration/${variant}-artifact-wrong-firmware PROPERTIES
+                LABELS "integration;mypc110" TIMEOUT 120)
+        endif()
     endforeach()
 endif()
 
