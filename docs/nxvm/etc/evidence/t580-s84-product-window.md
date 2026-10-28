@@ -266,6 +266,13 @@ executable. The diagnostic executable is not the unmodified deployed binary;
 the trace does not independently qualify the DSTN variant, other Windows
 versions or the reported pink setup page.
 
+Before its manual observation resize, the probe independently measured the
+instrumented process client at 9600x6000; afterwards it measured 640x400 and
+both capture operations succeeded in the RDP session. The probe ultimately
+exited with status 1 because its later diagnostic handshake did not complete;
+the geometry trace is evidence for scaling only, not a passing boot or Debug
+test. The probe's cleanup terminated and waited for its own product process.
+
 The F65535 implementation resets its register state to zero and produces the
 8x1 snapshot from those registers. The original F65535 reference, revision
 2.0, page 40, says that most standard VGA registers have undefined reset
