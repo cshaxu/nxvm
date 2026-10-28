@@ -173,6 +173,35 @@ white cursor; the capture SHA-256 is
 No pink page, other architecture, DSTN, real keyboard or guest-media outcome
 is established by this run. All INI/CMOS files were task-owned copies.
 
+## Deployed product with isolated disk copies
+
+The actual TFT x64 EXE was also run in a task-owned directory with the S73
+geometry-adjusted Personaware test master and the reviewed Personaware image
+as two copied disks, both configured with overlay access. The master copy and
+its source retained SHA-256
+`3cd463cc5d05d17f4709da98f9e18f457bf7cce279a78bdacc12abc2da49598a`;
+the second copy and its external source retained SHA-256
+`5149db391d13cfeab330016fcf0edbe6b0d379cbb66a3aed91dbf7684142d52e`.
+The product's `info` output reported the primary disk connected with 123
+cylinders and 4,030,464 bytes. That output alone did not independently verify
+the second slot or any sector read.
+
+The background probe started the product, waited 240 seconds, resized the
+host Window for observation, posted an F12 down/up pair and waited another
+120 seconds. Both posts and the subsequent product pause handshake succeeded;
+Debug then reported `F000:E98A JMP`. The 640x400 Window capture again showed
+a black field and short white cursor, SHA-256
+`f9b67ead469b0af6a7d6af1838374a0f173f387eba6ee6b99d33184b3425e472`.
+The probe log SHA-256 is
+`2e178fef0083f8195842aa19ba43f1462c44cc9d95355cff14355d22ebcd9d83`.
+
+This proves a real product process accepted the temporary primary disk and
+remained controllable; it does not prove the guest read either disk, reached
+Setup or booted DOS. It also does not prove the timed F12 was delivered at
+the firmware suspend boundary. The earlier S78/S79 low-level guest boot
+evidence remains distinct from this product-path observation. No user INI,
+external source disk or Shared source was modified.
+
 PC110's existing product binding selects Turbo initially. The shared runner
 uses a 4096-instruction Turbo quantum with no guest-tick budget, and its
 host-time pacing wait applies only to Standard. Therefore selecting Turbo

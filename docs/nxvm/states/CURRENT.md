@@ -7,12 +7,12 @@
 | Objective | Observe a released PC110 executable's actual Window output and compare its guest setup colours with recorded guest framebuffer evidence. |
 | Non-goals | No foreground process, user INI or media changes, firmware modification, Shared production change or RDP claim without RDP evidence. |
 | Reference Baseline | S57 guest-frame colours; S78/S79 firmware diagnostics; S80 deployed binaries and S83 product lifecycle. |
-| Candidate Proposal | Run the existing product Window probe in a hidden background process using a task-owned copy and configuration; capture and inspect the client image. |
+| Candidate Proposal | Run the existing product Window probe in a hidden background process using a task-owned copy and configuration; capture and inspect the client image, including an isolated copy of the already reviewed guest media. |
 | Files And ABI Surface | NXVM task evidence and temporary probe inputs only unless an actual product defect is demonstrated. |
 | Applicable Rules | NXVM Task Reading Set, execution, architecture, coding, documentation, UI and source/research policy. |
 | Verification | Report the actual executable, firmware, client dimensions, process status and captured pixels; distinguish desktop session and RDP. |
 | Expected Markers | Real Window frame and measurable colours, or an explicit bounded failure rather than an inferred result. |
-| Asset Needs | Existing deployed EXE; task-owned temporary INI and CMOS only. Preserve all owner files. |
+| Asset Needs | Existing deployed EXE and previously reviewed external media; task-owned temporary INI, CMOS and disk copies with overlay access. Preserve all owner files. |
 | Reporting Requirements | Include reproducible observation, capture limitations, unverified firmware variants and remaining task gaps. |
 | Stop Conditions | Do not force guest state, expose a foreground process, modify user media or infer colours from an unrelated window. |
 | Exit Criteria | Actual deployed Window evidence is reviewed and recorded, or a concrete unresolved receiver is identified for continued work. |
@@ -45,6 +45,10 @@ A further product run did sample the prior 3800:1333 HLT, resumed through the
 normal monitor, posted F12 and later observed F000:C852. The screen was still
 black with a cursor. This is product-path continuation evidence, not a
 complete causal trace or colour/guest-media qualification.
+The real TFT x64 product also accepted an isolated, overlay-backed test master
+and remained controllable, but its timed F12 run still showed a black Window
+and did not establish a guest disk read or DOS/Setup. The source disk hashes
+were unchanged; see S84 evidence.
 The external BIOS identifies the post-F12 location as a candidate 3F4h FDC
 status-poll loop, consistent with the captured DX and opcode. That initial
 single sample did not distinguish forward progress from a stuck wait; runtime
