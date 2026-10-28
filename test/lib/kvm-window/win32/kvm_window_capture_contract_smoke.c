@@ -56,6 +56,7 @@ static lib_win32_bool LIB_WIN32_WINAPI close_worker_handle(lib_win32_handle hand
 static lib_win32_hwnd owner, focused;
 static lib_win32_rect client = {0,0,640,480}, clipped;
 static lib_bool clip_to_desktop, sizing_messages, clip_query_fails;
+static lib_i32 minimum_client_width;
 static lib_win32_point origin = {100,200};
 static lib_win32_raw_input raw_record;
 static lib_win32_raw_input_device raw_binding;
@@ -242,6 +243,7 @@ static lib_win32_bool LIB_WIN32_WINAPI resize(lib_win32_hwnd w, lib_win32_hwnd a
     sized=(lib_win32_rect){0,0,cx,cy};
     if (resize_ok && sizing_messages) {
         client=(lib_win32_rect){0,0,cx-16,cy-39};
+        if (client.right < minimum_client_width) client.right = minimum_client_width;
         size_notification();
     }
     return resize_ok;
@@ -357,6 +359,14 @@ static lib_win32_bool LIB_WIN32_WINAPI capture_title(lib_win32_hwnd w,lib_win32_
 
 static void notify_loss(void) { win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_CAPTURECHANGED,0,0); }
 static void size_notification(void) { win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_SIZE,0,0); }
+static void user_size_notification(void)
+{
+    lib_win32_rect outer = {0,0,client.right+16,client.bottom+39};
+    win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_ENTERSIZEMOVE,0,0);
+    win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_SIZING,LIB_WIN32_WMSZ_BOTTOMRIGHT,(lib_win32_lparam)&outer);
+    size_notification();
+    win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_EXITSIZEMOVE,0,0);
+}
 static void check_sizing_policy(void)
 {
     lib_win32_rect saved_client=client;
@@ -366,6 +376,22 @@ static void check_sizing_policy(void)
     lib_win32_rect outer = {0,0,1616,1239};
     context = &c;
     sizing_messages=LIB_TRUE;
+    /* A native minimum must not become a 15x scale for later frames. */
+    minimum_client_width=120;
+    c.surface_width=8; c.surface_height=1;
+    win32_window_resize_client(w,&c,8,1,LIB_TRUE);
+    lib_test_assert(client.right==120 && c.scale_pixels==8 && c.scale_source==8);
+    /* Showing the window can repeat WM_SIZE without changing its client. */
+    size_notification();
+    lib_test_assert(c.scale_pixels==8 && c.scale_source==8);
+    c.surface_width=640; c.surface_height=400;
+    win32_window_resize_client(w,&c,640,400,LIB_TRUE);
+    lib_test_assert(client.right==640 && client.bottom==400);
+    client=(lib_win32_rect){0,0,800,500};
+    size_notification();
+    lib_test_assert(c.scale_pixels==8 && c.scale_source==8);
+    minimum_client_width=0;
+    c=(kvm_win32_window_context){0};
     c.surface_width=1280; c.surface_height=960;
     win32_window_resize_client(w,&c,1280,960,LIB_TRUE);
     lib_test_assert(sized.right==600 && sized.bottom==477);
@@ -401,7 +427,7 @@ static void check_sizing_policy(void)
     }
     /* A user resize, not a frame transition, chooses the next scale. */
     client=(lib_win32_rect){0,0,1600,1200};
-    size_notification();
+    user_size_notification();
     c.surface_width=640; c.surface_height=400;
     win32_window_resize_client(w,&c,640,400,LIB_TRUE);
     lib_test_assert(client.right==800 && client.bottom==500);
@@ -412,7 +438,7 @@ static void check_sizing_policy(void)
     c.surface_width=640; c.surface_height=400;
     win32_window_resize_client(w,&c,640,400,LIB_FALSE);
     client=(lib_win32_rect){0,0,320,536};
-    size_notification();
+    user_size_notification();
     lib_test_assert(client.right==320 && client.bottom==200 && c.scale_pixels==320);
     outer=(lib_win32_rect){-8,-8,648,431};
     lib_win32_rect preserved=outer;
@@ -422,11 +448,11 @@ static void check_sizing_policy(void)
         outer.left==preserved.left && outer.top==preserved.top &&
         outer.right==preserved.right && outer.bottom==preserved.bottom);
     client=(lib_win32_rect){0,0,640,100};
-    size_notification();
+    user_size_notification();
     lib_test_assert(client.right==640 && client.bottom==400 && c.scale_pixels==640);
     /* Width wins even when the resulting height extends beyond the desktop. */
     client=(lib_win32_rect){0,0,1280,100};
-    size_notification();
+    user_size_notification();
     lib_test_assert(client.right==1280 && client.bottom==800 && c.scale_pixels==1280);
     c.surface_width=320; c.surface_height=240;
     win32_window_resize_client(w,&c,320,240,LIB_TRUE);
@@ -445,6 +471,7 @@ static void check_sizing_policy(void)
        Top restoration keeps width; either side keeps height, without desktop
        limits. Use deliberately different aspects to distinguish the axes. */
     c.surface_width=640; c.surface_height=400;
+    scale_pixels=c.scale_pixels; scale_source=c.scale_source;
     for (lib_u32 side=0;side<2u;++side) {
         native_zoomed=side==0u;
         native_arranged=side!=0u;
@@ -455,9 +482,12 @@ static void check_sizing_policy(void)
         lib_test_assert(c.snap==(side==0u ? KVM_WIN32_SNAP_TOP : KVM_WIN32_SNAP_SIDE));
         /* Frame-driven native reentry does not consume the saved snap axis. */
         c.surface_width=320; c.surface_height=240;
-        c.client_surface_width=0;
+        c.client_surface_width=640;
         win32_window_resize_client(w,&c,320,240,LIB_TRUE);
         lib_test_assert(c.snap==(side==0u ? KVM_WIN32_SNAP_TOP : KVM_WIN32_SNAP_SIDE));
+        lib_test_assert(client.right==(side==0u ? 160 : 120) &&
+            client.bottom==(side==0u ? 120 : 90));
+        lib_test_assert(c.scale_pixels==scale_pixels && c.scale_source==scale_source);
         native_zoomed=native_arranged=LIB_FALSE;
         client=(lib_win32_rect){0,0,1280,900};
         size_notification();

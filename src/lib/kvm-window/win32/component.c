@@ -53,6 +53,7 @@ typedef struct kvm_win32_window_context {
     lib_u32 scale_pixels;
     lib_u32 scale_source;
     lib_bool correcting_aspect;
+    lib_bool sizing;
     kvm_win32_snap snap;
     lib_bool frozen;
     lib_bool cursor_blink_visible;
@@ -289,10 +290,17 @@ static void win32_window_resize_client(lib_win32_hwnd window,
     lib_u64 target_width = width, target_height = height;
     lib_bool initial = context->scale_source == 0u;
     if (automatic && !initial) {
-        target_width = ((lib_u64)width * context->scale_pixels + context->scale_source / 2u) /
-            context->scale_source;
-        target_height = ((lib_u64)height * context->scale_pixels + context->scale_source / 2u) /
-            context->scale_source;
+        lib_u32 pixels = context->scale_pixels;
+        lib_u32 source = context->scale_source;
+        /* A snapped window uses its current region without replacing the
+           scale to restore when the window leaves that state. */
+        if (context->snap != KVM_WIN32_SNAP_NONE && context->client_width > 0 &&
+            context->client_surface_width != 0u) {
+            pixels = (lib_u32)context->client_width;
+            source = context->client_surface_width;
+        }
+        target_width = ((lib_u64)width * pixels + source / 2u) / source;
+        target_height = ((lib_u64)height * pixels + source / 2u) / source;
     }
     if (target_width == 0u) target_width = 1u;
     if (target_height == 0u) target_height = 1u;
@@ -316,6 +324,9 @@ static void win32_window_resize_client(lib_win32_hwnd window,
         win32_window_capture_client_size(window, context);
         if (context->client_width > 0 && context->client_height > 0) {
             context->scale_pixels = (lib_u32)context->client_width;
+            /* A native minimum is not an initial user-selected enlargement. */
+            if (initial && automatic && context->scale_pixels > width)
+                context->scale_pixels = width;
             context->scale_source = width;
         }
     }
@@ -721,14 +732,20 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
     case LIB_WIN32_WM_SIZE:
         win32_window_capture_client_size(window, context);
         win32_window_enforce_aspect(window, context);
-        if (!context->correcting_aspect && context->client_width > 0 &&
+        if (!kvm_win32_mouse_refresh_bounds(&context->mouse))
+            win32_window_release_mouse(context);
+        (void)win32_window_invalidate(window, context, LIB_NULL);
+        return 0;
+    case LIB_WIN32_WM_ENTERSIZEMOVE:
+        context->sizing = LIB_FALSE;
+        return 0;
+    case LIB_WIN32_WM_EXITSIZEMOVE:
+        if (context->sizing && context->client_width > 0 &&
             context->client_height > 0 && context->surface_width != 0u) {
             context->scale_pixels = (lib_u32)context->client_width;
             context->scale_source = context->surface_width;
         }
-        if (!kvm_win32_mouse_refresh_bounds(&context->mouse))
-            win32_window_release_mouse(context);
-        (void)win32_window_invalidate(window, context, LIB_NULL);
+        context->sizing = LIB_FALSE;
         return 0;
     case LIB_WIN32_WM_MOVE:
         if (!kvm_win32_mouse_refresh_bounds(&context->mouse))
@@ -780,6 +797,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
                 (lib_win32_rect *)lparam, context->surface_width, context->surface_height);
             if (status == LIB_STATUS_UNSUPPORTED) break;
             if (status != LIB_STATUS_OK) kvm_component_fail(&context->component->base, status);
+            else context->sizing = LIB_TRUE;
             return LIB_WIN32_TRUE;
         }
     case LIB_WIN32_WM_KEYDOWN:
