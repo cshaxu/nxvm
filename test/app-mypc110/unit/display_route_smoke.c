@@ -71,7 +71,7 @@ int main(void)
             &write, 1u) != LIB_STATUS_OK ||
         x86_f65535_capture_snapshot(composition.display_controller,
             &snapshot) != LIB_STATUS_OK ||
-        snapshot.kind != X86_VIDEO_KIND_VGA_640X480X16 ||
+        snapshot.kind != X86_VIDEO_KIND_VGA_PLANAR16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 480u ||
         snapshot.pixels[1] != 15u;
     lib_test_assert(failed == 0);

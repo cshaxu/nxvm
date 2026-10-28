@@ -104,6 +104,40 @@ is source and register evidence for an incomplete scanout receiver; it is
 not yet a verified display fix. The probe log SHA-256 is
 `bef1522368d8e6a73152b1d12d82292da825bd262a4edf77d31028a4e47900c7`.
 
+The F65535 planar receiver now accepts bounded four-plane VGA geometries
+using the CRTC's visible dimensions and pitch, while rejecting chained,
+packed, oversized and out-of-plane configurations. The existing snapshot
+kind was renamed to describe planar 16-colour content; its enum value is
+unchanged. Existing mode-12 output remains covered, and the observed
+640-by-475, 128-byte-stride case is tested with distinct second-row pixels.
+The F65535, machine frame and PC110 display-route tests pass on both widths;
+both affected manifests pass. Incremental full configured-tree builds pass
+on both widths, as do all 219 tests labelled unit under X86-NXVM on each.
+The 12 MyPC110 units also pass on each width. These counts do not claim all
+repository tests or product integrations.
+
+A real-firmware x64 replay using the same disk and the same early Enter
+input now produces a 640-by-475 guest graphics frame containing the PC DOS
+startup and Power Manager messages. Its previous corresponding sample
+produced no new frame. This establishes a real scanout improvement, but not
+completion of DOS boot or guest input consumption. `POWER:result=0` still
+reflects the diagnostic's pre-loader exception-count invariant and must not
+be presented as a full boot pass. The log SHA-256 is
+`8cbb55fcfced91f8041f5d94ddca98bcb6341592fd622864603acb7fc7388a62`, and
+the raw frame SHA-256 is
+`0d9c178fa01458d66b9b6ae0c76218315977ba487e6b72399d43a1ea31bd84a8`.
+The x86 real-firmware replay produced the same graphics frame byte for byte;
+its log SHA-256 is
+`24e8d5b165718445b19d75dab83225958e3650b26c9f8d963b7ee00a89d9e61c`.
+Native Window and physical display colours have not been verified.
+
+All four existing PC product profiles were rebuilt for x64 and x86 after
+the Shared frame-kind change. Their eight product/INI identity checks pass;
+the PE machine types, lengths and hashes are in
+[`t580-s76-pc-artifacts.json`](t580-s76-pc-artifacts.json). The rebuild did
+not alter user INIs or external media. This is receiver validation, not a
+full PC110 product release or desktop qualification.
+
 The original failing log SHA-256 is
 `dd392e4dfede9cdc0f1c6a1746339c01501f3cff55bb30efdeba3dfc6a418dd4`;
 its raw guest frame SHA-256 is

@@ -34,17 +34,19 @@ but then showed a sustained exception storm without a new display frame;
 its responsible path remains under investigation. DOS startup is not proven.
 
 The storm sample is VM86 `INT 16h` with AH=01h, a keyboard availability
-query. An active bounded probe sends one Enter through the existing Machine
-driver at that query and inspects display registers after execution. No new
-frame was produced previously, but that does not establish the currently
-visible image; unsupported F65535 graphics modes remain a separate candidate.
+query. A bounded probe sent one Enter through the existing Machine driver at
+an earlier query and inspected display registers after execution. No new
+frame was produced before the subsequent scanout change.
 
 The input probe's Enter was sent at an earlier query, so its outcome does not
 prove that the later wait consumed input. Its captured CRTC and graphics
 registers identify a 640-by-475, 128-byte-stride planar configuration that
-the current fixed mode-12 scanout rejects. The next step is a bounded planar
-receiver repair with an independent register-driven test, followed by real
-firmware validation. See the S76 evidence for the exact observation.
+the former fixed mode-12 scanout rejected. The bounded planar receiver now
+produces identical real-firmware PC DOS startup frames on both widths, and
+the affected component and PC110 units pass. All eight existing PC receiver
+artifacts were rebuilt and their product/INI identity checks pass. See the
+S76 evidence for exact observations and the unresolved DOS-input and
+desktop-display boundaries.
 
 # M5 T580 S75 — Accepted: PC110 system-loader handoff
 
