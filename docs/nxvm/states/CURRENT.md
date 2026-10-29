@@ -1,3 +1,24 @@
+# M5 T582 S4 — Active: DMA arbitration performance audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S4 after S3 delivery and coordinator review. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous S sequencing. |
+| Objective | Measure board DMA arbitration in the actual PC110 workload and determine whether a safe idle fast path produces a useful improvement. |
+| Non-goals | No guest timing changes, skipped transfers or cascade updates, new persistent state, public API, Lib/Emulator changes or user-media mutations. |
+| Reference Baseline | Shared 1f8a4d477, NXVM f0907772f, MyRaidenII 825ac6b82; PC 0.5.0582. |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md) and [S3 evidence](../etc/evidence/t582-s3-execution-performance.md). |
+| Files And ABI Surface | Initially read-only X86-NXVM board DMA and Core scheduler; task-owned probes under build/t582. Record measured design and estimate before production edits. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Matched Release fixed-work comparison on x64/x86; cascade, active channels, request transitions and transfer regression. Any Shared change requires cached 14-EXE build and full dual-width unit/integration qualification. |
+| Expected Markers | Equivalent guest ticks and transfer behavior, measured host-time change, and a justified keep-or-reject decision. |
+| Asset Needs | Existing approved firmware and isolated private CMOS/media; preserve owner files. |
+| Reporting Requirements | Report actual hotspot evidence, measurement limits, estimated and actual diff, verification and remaining playability gap. |
+| Stop Conditions | Do not infer idle from the gated pending-request query; do not skip cascade propagation, active primary transfers, callbacks or guest timing. |
+| Exit Criteria | Deliver a measured and qualified equivalent improvement, or a bounded negative result and next evidence-led owner. T582 stays open until playability is proven. |
+| Original Owner Request | Improve PC110 performance and eliminate redundant work until usable. |
+| Similar-Issue Sweep | Review single/dual DMA controller, primary/secondary active/request, disabled/masked cascade, and request-changing callbacks. |
+
 # M5 T582 S3 â€” Active: execution and memory-route costs
 
 | Field | Required record |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing approved ROM and private CMOS/media copies; preserve all owner files. |
 | Reporting Requirements | Counts, measurement overhead, actual diff, discarded candidates, delivered source/artifact identities and native/RDP limits. |
 | Stop Conditions | No unproven fast path across narrow providers, A20, aliases, parity or observers; no private live cross-thread reads or false full-qualification claim. |
-| Exit Criteria | Implementation and actual-diff review complete; matched Release 30-million-instruction runs reduce host time 4.57% x64 and 6.61% x86 at identical guest ticks/PC. Full dual-width unit/integration qualification and 14-artifact publication complete. P delivery follows; T582 playability remains open. |
+| Exit Criteria | Implementation and actual-diff review complete; matched Release 30-million-instruction runs reduce host time 4.57% x64 and 6.61% x86 at identical guest ticks/PC. Full dual-width unit/integration qualification and 14-artifact publication complete. Shared 1f8a4d477, NXVM f0907772f and MyRaidenII 825ac6b82 are pushed; T582 playability remains open. |
 | Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable; keep Shared receiving qualification complete. |
 | Similar-Issue Sweep | Read/write/fetch/cache queries, raw/reset and decoded routes, CPU profiles, timing-result consumers and all relevant boundary regressions. |
 
