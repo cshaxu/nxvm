@@ -146,3 +146,14 @@ A private, deliberately non-production experiment directly dispatched the two fr
 The current instruction loop rewinds EIP for a continuing repeat, whereas the fetch expectation was advanced during prefix/opcode decoding. A private CPU-source candidate treated that rewind as expected when prefetch remained valid. It kept each instruction iteration and the existing event path, but altered real fetch/bus/timing behavior and was never eligible for production without independent hardware-model and self-modification, fault, interrupt and debug proof.
 
 At 10000000 retired instructions, x64 baseline/candidate took 23802/20375 ms and reached 79964294/63009739 guest ticks at PC 0003dbc5/0003db16. x86 took 23910/22718 ms with the same respective tick and PC differences. In this single ordered pair, approximate guest-tick throughput fell from 3.36 to 3.09 million ticks/host-second on x64 and from 3.34 to 2.77 million on x86. Wall-time improvement for a fixed instruction count is not a guest-clock improvement here; differing checkpoints also preclude claiming the same guest workload. Neither result establishes which prefetch behavior is hardware-accurate. The candidate was rejected for this performance task and no production code changed.
+
+## Worker CPU-time and scheduling check
+
+A task-owned fixed-work wrapper read Windows thread user+kernel processor time and QueryThreadCycleTime on the actual Machine worker immediately before its first and after its last Core quantum. It used the existing cached libraries, private CMOS/media and the same 10000000-instruction checkpoint. Both measurements returned success, and both reached 79964294 guest ticks at PC 0003dbc5.
+
+| Host | Wall time ms | Worker processor time ms | Worker CPU/wall | Reported thread cycles |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 20167 | 19859.375 | 98.5% | 39550542493 |
+| x86 | 23762 | 23375.000 | 98.4% | 46593268620 |
+
+On this host and early workload, the worker was scheduled for nearly the whole measured wall interval. This rules out long worker sleeping or ordinary descheduling as the dominant explanation for these specific runs; it does not establish CPU availability on other hosts or later guest workloads. The Windows cycle counter is frequency/implementation dependent and is not a host retired-instruction count. Instrumentation uses only two thread-time reads per run and does not modify the guest. Log SHA-256: 98F15C290324A8C54FA3F7ABDA626CDCC5BC4D9F0081AE6201C7C1CB2C8D76B6.
