@@ -5,6 +5,88 @@
 #include "x86-nxvm/board-base/machine_board_state.h"
 #include "board_board_fixture.h"
 
+static void x86_nxvm_test_profile_reset(void *context,
+    x86_nxvm_board_reset_phase phase)
+{
+    (void)context;
+    (void)phase;
+}
+
+static void x86_nxvm_test_profile_no_action(void *context)
+{
+    (void)context;
+}
+
+static lib_bool x86_nxvm_test_profile_no_refresh(void *context, lib_u8 *address)
+{
+    (void)context;
+    (void)address;
+    return LIB_FALSE;
+}
+
+static lib_bool x86_nxvm_test_profile_no_deadline(void *context, lib_u64 now,
+    lib_u64 *due_tick)
+{
+    (void)context;
+    (void)now;
+    (void)due_tick;
+    return LIB_FALSE;
+}
+
+static lib_i32 x86_nxvm_test_refresh_profile_handoff(void)
+{
+    const x86_nxvm_board_planar_parity_config parity = {
+        .port = 0x0061u,
+        .refresh_status_source = X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1
+    };
+    const x86_nxvm_board_dma_wiring wiring = {
+        .fdc_channel = 2u,
+        .controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
+        .cascade_channel = X86_NXVM_BOARD_DMA_CASCADE_CHANNEL
+    };
+    x86_nxvm_board_config config = {0};
+    x86_core_machine *machine = LIB_NULL;
+    x86_nxvm_board_state *board = LIB_NULL;
+    x86_nxvm_board_dma_request_binding request = {0};
+    x86_core_machine_attachment_deadline_observation deadline = {0};
+    lib_i32 owner = 0;
+    x86_nxvm_board_profile_binding binding = {
+        .context = &owner, .reset = x86_nxvm_test_profile_reset,
+        .refresh_nmi = x86_nxvm_test_profile_no_action,
+        .refresh_request = x86_nxvm_test_profile_no_refresh,
+        .refresh_complete = x86_nxvm_test_profile_no_action,
+        .finalize = x86_nxvm_test_profile_no_action
+    };
+    lib_i32 failed = 0;
+
+    if (x86_nxvm_board_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        x86_nxvm_board_configure_planar_parity(board, &parity) != LIB_STATUS_OK ||
+        x86_nxvm_board_configure_dma(board, &wiring, &request) != LIB_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    x86_pit_set_gate(board->shared_pit, 1u, LIB_TRUE);
+    failed = x86_pit_write_register(board->shared_pit, 3u, 0x74u) != LIB_STATUS_OK ||
+        x86_pit_write_register(board->shared_pit, 1u, 32u) != LIB_STATUS_OK ||
+        x86_pit_write_register(board->shared_pit, 1u, 0u) != LIB_STATUS_OK;
+    x86_pit_advance(board->shared_pit, 33u);
+    failed = failed || !board->refresh_hold_pending ||
+        x86_nxvm_board_bind_profile(board, &binding) != LIB_STATUS_INVALID_ARGUMENT ||
+        !board->refresh_hold_pending;
+    binding.next_deadline = x86_nxvm_test_profile_no_deadline;
+    failed = failed || x86_nxvm_board_bind_profile(board, &binding) != LIB_STATUS_OK ||
+        board->refresh_hold_pending;
+    x86_nxvm_board_deadline_observe(board, 0u, &deadline);
+    failed = failed || deadline.source_ticks == 1u;
+    x86_pit_advance(board->shared_pit, 33u);
+    failed = failed || board->refresh_hold_pending;
+
+done:
+    x86_core_machine_destroy(machine);
+    if (failed) lib_c_printf("PROFILE-REFRESH-HANDOFF:FAIL\n");
+    return failed;
+}
+
 static void x86_nxvm_test_dma_rtc_initialize_pic(x86_core_machine *machine)
 {
     test_pic_port_write(machine, 0x0020u, 0x11u);
@@ -314,6 +396,7 @@ int main(void)
     lib_i32 stage = 1;
 
     failed |= x86_nxvm_test_at_refresh_leaves_dma0_available();
+    failed |= x86_nxvm_test_refresh_profile_handoff();
     failed |= x86_nxvm_test_dma_refresh_follows_pit_channel_1();
     failed |= x86_nxvm_test_dma_wiring_matches_constructed_controllers();
     for (lib_size index = 0u; index < sizeof(rtc_source_rates) / sizeof(rtc_source_rates[0]); ++index) {

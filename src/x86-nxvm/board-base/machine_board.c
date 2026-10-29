@@ -46,6 +46,7 @@ lib_status x86_nxvm_board_bind_profile(x86_nxvm_board_state *board,
         if (status != LIB_STATUS_OK) return status;
     }
     board->profile_binding = *binding;
+    board->refresh_hold_pending = LIB_FALSE;
     return LIB_STATUS_OK;
 }
 
@@ -1021,7 +1022,8 @@ static void x86_nxvm_board_refresh_pit_output(void *owner, lib_u8 asserted)
         /* AT OUT1 clocks a set-only request latch. REFRESH completion clears
          * it; a falling OUT1 edge cannot withdraw the accepted request. */
         if (asserted) {
-            board->refresh_hold_pending = LIB_TRUE;
+            if (board->profile_binding.refresh_request == LIB_NULL)
+                board->refresh_hold_pending = LIB_TRUE;
             x86_core_machine_cpu_bus_refresh_pulse(board->core);
         }
         return;
