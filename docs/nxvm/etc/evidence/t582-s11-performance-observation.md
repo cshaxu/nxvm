@@ -87,3 +87,26 @@ A private candidate computes the prefix count once within the existing repeat-ti
 ## Repeat identity candidate
 
 A second private candidate checks the existing repeat-continuation identity normally, but avoids reassigning identity fields and recopying the already compared opcode bytes when they are identical. It continues updating the 486 data-miss count each iteration, and uses the existing paths whenever identity changes. It adds no persistent state or API. The first fixed-work pairs reached 10000000 instructions, 79964294 guest ticks and PC 0003dbc5. x64 baseline/candidate were 24924/22574 ms; x86 were 26958/28831 ms. These results conflict by host architecture and do not prove Debug, V30, self-modifying code, fault or interruption equivalence. In reverse order, x64 candidate/baseline took 22830/20881 ms and x86 took 25867/25399 ms at the same checkpoint. The x64 direction reversed and the candidate was slower in both x86 pairs. These measurements do not justify production admission; no production code was changed.
+
+## Delivered-version late workload
+
+A separate current-library x64 DSTN public-factory probe with private copied CMOS/overlay media ran 30 ten-second samples and exited zero. Its last captured 640x480 frame SHA-256 `85a35680232ca0ad623db7dd18d23a79396931acb133791581d40c37048aef41` matches the previously accepted Personaware frame. RTC moved from 00 to 24 seconds while approximately 300 host seconds elapsed. Thread IP samples from host seconds 5–25 and 220–240 contained 6341 in-image observations, 18112 outside-image observations and 10752 failed reads; they span multiple threads, are perturbed and do not represent exclusive CPU time. CPU refresh and memory route resolution remained leading individual in-image buckets in both windows.
+
+An independent, instrumented 250-second run counted successful primary opcode/prefix fetches. The 0–25 second window included 22544384 fetches, of which F3=5595754, 66=5338818 and AB=5272818. The 220–240 second window included 10616832 fetches, led by E2 (LOOP)=2452564, F3=747853, D1=626158, 74=547441 and A4=441319. Window changes are selected from host time checked every 65536 fetches. This sampling changes execution cost and is not a direct proof of guest time, exact instruction retirements, continuous steady state, causality or interactive acceptance. RTC moved from 00 to 20 seconds in approximately 253 host seconds. Output log SHA-256 `AE971862E97495DA5D17B420A11A2ED9CB4D5757A88B3DE3EBC8738E00B88DD8`.
+
+## Fixed-size RAM copy candidate
+
+A task-owned candidate replaced the existing RAM copy call in both read and write with one shared private dispatcher, using constant-size `lib_memory_copy` for 1, 2, 4 and 8 bytes and the original call for other lengths. This retained the existing route, parity, snoop and observer paths in the prototype; their full correctness was not separately proven. The same 10000000-instruction, 79964294-tick, PC 0003dbc5 fixed-work checkpoint took 21020/21560 ms baseline/candidate on x64 and 24325/25337 ms on x86. These are single sequential pairs, but neither showed a benefit. The extra dispatch is not admitted; production remained unchanged.
+
+## CPU translation-unit link-time optimization experiment
+
+A task-owned probe compiled the same three CPU translation units (`cpu_instructions.c`, `cpu_timing_model.c`, `cpu_timing.c`) plus the fixed-work harness with GCC Release flags, comparing ordinary linking to `-flto=auto`; all other libraries remained the same non-LTO cached Release inputs. This is not a production configuration or full-program LTO. Each pair retired 10000000 instructions at 79964294 guest ticks and PC 0003dbc5.
+
+| Host | Order | Baseline ms | LTO ms |
+| --- | --- | ---: | ---: |
+| x64 | baseline, LTO | 21026 | 19292 |
+| x64 | LTO, baseline | 19952 | 18626 |
+| x86 | baseline, LTO | 23623 | 22770 |
+| x86 | LTO, baseline | 24399 | 23568 |
+
+These two small sequential pairs suggest a bounded benefit, not real-time qualification or a whole-product result. Probe EXE sizes grew from 3103750 to 3158169 bytes on x64 and from 3261827 to 3272060 bytes on x86. The linker reported 11 serial LTRANS jobs; a production decision must measure ccache compatibility, incremental and clean build costs, toolchain portability, semantics and full receiver tests. Fixed-work checkpoint equality is not proof of full behavioral equivalence. No production build configuration changed.
