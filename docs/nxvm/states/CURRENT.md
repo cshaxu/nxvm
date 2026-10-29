@@ -23,6 +23,9 @@ S87 established interactive Personaware on all four published EXEs with
 TFT-generated isolated CMOS; its limits are recorded in
 [S87 evidence](../etc/evidence/t580-s87-input-path.md). S72 records that
 configuration RAM and RTC calendar currently have different persistence.
+The [S88 investigation](../etc/evidence/t580-s88-clock-persistence.md)
+reproduces the calendar loss on both host widths; elapsed time while the
+program is closed remains a separate, unverified obligation.
 
 # M5 T580 S87 — Accepted: PC110 product guest startup continuation
 

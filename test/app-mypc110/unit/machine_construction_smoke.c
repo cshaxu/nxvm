@@ -428,8 +428,12 @@ int main(int argc, char **argv)
             .port = 0x03e1u, .address = 0x5au, .bytes = 1u};
         const x86_debug_request read = {.operation = X86_DEBUG_READ_PORT,
             .port = 0x03e1u, .bytes = 1u};
+        lib_u8 rtc_index = 0x09u;
+        lib_u8 rtc_year = 0x24u;
 
-        if (driver.execute_debug(driver.context, &select, sizeof(select),
+        if (!mypc110_test_port(&driver, LIB_TRUE, 0x70u, &rtc_index) ||
+            !mypc110_test_port(&driver, LIB_TRUE, 0x71u, &rtc_year) ||
+            driver.execute_debug(driver.context, &select, sizeof(select),
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
             driver.execute_debug(driver.context, &write, sizeof(write),
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
@@ -438,7 +442,10 @@ int main(int argc, char **argv)
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
             driver.execute_debug(driver.context, &read, sizeof(read),
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
-            response.value != 0u) failed = 41;
+            response.value != 0u ||
+            !mypc110_test_port(&driver, LIB_TRUE, 0x70u, &rtc_index) ||
+            !mypc110_test_port(&driver, LIB_FALSE, 0x71u, &rtc_year) ||
+            rtc_year != 0x24u) failed = 41;
     }
     if (!failed && !mypc110_test_product_routes(&driver, &construction)) failed = 74;
     x86_nxvm_machine_destroy(machine);
