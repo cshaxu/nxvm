@@ -120,3 +120,29 @@ actual deployed TFT x64 EXE, verified SHA-256
 `0718B3FC597B607FD4AD48016C84AA4972F60B7C4636E47B0BC2ECE3D38895AD`.
 Whether the guest retains or requests calibration is an observed result to be
 determined; no guest state is synthesized.
+
+## Published TFT x64 cross-process guest
+
+The uninstrumented published TFT x64 EXE, byte-identical to its asset, was
+started in an isolated directory using the CMOS and disk copies generated in
+the preceding normal Guest run. After ordinary F12, it bypassed the earlier
+ERROR/date pages, booted PC DOS and displayed the Personaware launcher without
+repeating inking calibration. Normal Tab/Enter messages posted to its owned
+Window were followed by the World Clock screen. The launcher and World Clock
+screenshots have SHA-256
+`BEFBE1F71614A12969C213EDDC30330D1C26909F3909E2FDB044B7877C5D301D` and
+`1C29BDF7A55BDA61F22CFDB33BD62BBBFB4669B1D54B3905BB27695966B19F61`.
+This establishes observed cross-process behavior and a visible keyboard
+response for this published TFT x64 build, not native mouse, DSTN or x86
+qualification. The observation was deliberately stopped after its successful
+checkpoint rather than completing the probe's full capture budget; it is
+not represented as a passing registered integration test.
+
+The task-owned master disk copy changed during this direct-write run, from
+`3CD463CC5D05D17F4709DA98F9E18F457BF7CCE279A78BDACC12ABC2DA49598A` to
+`F27518A03119C26D0CA2721CBC14935E764E2F7D7F2DE91A2EC91CA12E04793B`; the
+slave remained `5149DB391D13CFEAB330016FCF0EDBE6B0D379CBB66A3AED91DBF7684142D52E`.
+The CMOS hash remained `608DF3ABC3CDD9BB3E35015D2D7AA9D8756567E080643B01E593FF99D1616034`.
+No owner media or configuration was opened for writing. The interrupted
+observer log hash is
+`5345DA7055E1B6BB0AE04DC696A2F1194EED60030A37628BC9F6D4EB6EAC317F`.

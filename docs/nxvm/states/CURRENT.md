@@ -31,16 +31,21 @@ the released EXE independently. Its owned background processes have exited.
 No firmware, user media or Shared source was changed.
 
 The sixth observation ended before F12 because its monitor-prompt handshake
-timed out despite a visible pause notification. The seventh used an observed
-HLT and reached Personaware, then exited normally with a 128-byte guest CMOS
-file; both task-owned input disk hashes remained unchanged. S87 evidence
-records the result without claiming disk calibration persistence. The eighth
-background observation uses a verified byte-identical copy of the published
-TFT x64 EXE and task-owned copies of that CMOS and media; processes 4080 and
-10808 own `build/t580-s87/released`. It uses normal F12 and native Window
-observation without production instrumentation. Its wall bound is 1,110 seconds
-plus cleanup, with 300 seconds as the no-progress investigation budget.
-Original inputs and user configuration remain untouched.
+timed out despite a visible pause notification. The seventh reached
+Personaware and saved a 128-byte guest CMOS through orderly exit. The eighth
+used the byte-identical published TFT x64 EXE with a copy of that CMOS and
+reached Personaware; normal Window Tab/Enter was followed by World Clock.
+The direct-write task-owned master image changed during that run. Original
+inputs and user configuration remained untouched. The observer was stopped
+after the successful checkpoint, not counted as a full-budget test.
+
+The ninth background observation owns processes 19044 and 29852 and scratch
+`build/t580-s87/released-x86`; it tests the byte-identical TFT x86 EXE with
+fresh copies of the same Guest-generated CMOS and media. Its wall bound is
+1,200 seconds plus cleanup, with a 300-second no-progress investigation
+budget. The first attempt used an obsolete observer, was stopped immediately
+and was not counted; the correct observer is now running. Native mouse and
+DSTN published-EXE guest screens remain separate proofs.
 
 # M5 T580 S86 — Accepted: PC110 product boot and Setup observation
 
