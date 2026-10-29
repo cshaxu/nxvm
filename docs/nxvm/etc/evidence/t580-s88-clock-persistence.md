@@ -95,6 +95,12 @@ in a loop with a 20,000 ms sleep between them; their file timestamps also
 differ by approximately 20 seconds. The frame hashes are respectively
 `1C29BDF7A55BDA61F22CFDB33BD62BBBFB4669B1D54B3905BB27695966B19F61` and
 `CC7D0C6CCBCC0265431C622950F14D7BA269A40063CA1474855422FC2FB7D2BA`.
+The actual observer binary in that run hashes to
+`AED4FEE7D7A3766EDA1EA10B000D11B3BF36E9D451953C0B5615192B9B1B6663`.
+The retained `released-ready-probe.c` is consistent with its creation time
+and has the 20,000 ms capture loop; disassembly of the binary also contains
+the 20,000 immediate in its capture loop. The source/binary identity was not
+reproducibly rebuilt, so that correlation is not a byte-for-byte build proof.
 This is a guest-application display observation, not a measurement of the
 RTC registers or proof that RTC alone causes the slow clock: DOS timer
 delivery, guest scheduling and host performance also require examination.
