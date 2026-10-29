@@ -91,6 +91,8 @@ lib_i32 emulator_console_process_run(const char *executable,
     PROCESS_INFORMATION process = {0};
     HANDLE input = INVALID_HANDLE_VALUE;
     HANDLE output = INVALID_HANDLE_VALUE;
+    const DWORD standard_ids[] = {STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE};
+    HANDLE standard_handles[3];
     lib_size index;
     lib_i32 result = 0;
     const char *stage = "validation";
@@ -104,6 +106,13 @@ lib_i32 emulator_console_process_run(const char *executable,
     if (!CreateProcessA(executable, LIB_NULL, LIB_NULL, LIB_NULL, FALSE,
             CREATE_NEW_CONSOLE, LIB_NULL, session_directory, &startup, &process))
         return 0;
+    for (index = 0u; index < 3u; ++index) {
+        DWORD mode;
+        standard_handles[index] = GetStdHandle(standard_ids[index]);
+        if (standard_handles[index] == INVALID_HANDLE_VALUE ||
+            GetConsoleMode(standard_handles[index], &mode))
+            standard_handles[index] = LIB_NULL;
+    }
     (void)FreeConsole();
     stage = "console attachment";
     for (index = 0u; index < EMULATOR_CONSOLE_WAIT_MILLISECONDS / 20u; ++index) {
@@ -151,6 +160,10 @@ done:
     if (result && command_count != 0u &&
         WaitForSingleObject(process.hProcess, EMULATOR_CONSOLE_WAIT_MILLISECONDS) !=
             WAIT_OBJECT_0) result = 0;
+    if (result && command_count != 0u) {
+        DWORD exit_code;
+        result = GetExitCodeProcess(process.hProcess, &exit_code) && exit_code == 0u;
+    }
     if (!result) {
         DWORD exit_code = STILL_ACTIVE;
 
@@ -164,6 +177,10 @@ done:
     if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
     if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
     (void)FreeConsole();
+    /* The borrowed Console invalidated its standard handles; preserve only
+     * the caller's independent file/pipe handles for subsequent CRT cleanup. */
+    for (index = 0u; index < 3u; ++index)
+        if (!SetStdHandle(standard_ids[index], standard_handles[index])) result = 0;
     CloseHandle(process.hThread);
     CloseHandle(process.hProcess);
     return result;

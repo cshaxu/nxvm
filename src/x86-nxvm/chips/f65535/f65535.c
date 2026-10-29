@@ -127,16 +127,21 @@ static lib_status x86_f65535_capture_planar_snapshot(x86_f65535 *chip,
     out_snapshot->pixel_height = (lib_u16)height;
     for (pixel = 0u; pixel < 16u; ++pixel)
         out_snapshot->palette_rgb[pixel] = x86_f65535_palette_color(chip, (lib_u8)pixel);
-    for (pixel = 0u; pixel < width * height; ++pixel) {
-        const lib_u32 offset = start +
-            (pixel / width) * stride + (pixel % width) / 8u;
-        const lib_u8 bit = (lib_u8)(0x80u >> (pixel & 7u));
-        lib_u8 color = 0u;
-
-        for (lib_u8 plane = 0u; plane < 4u; ++plane)
-            if ((x86_f65535_plane(chip, plane)[offset] & bit) != 0u)
-                color |= (lib_u8)(1u << plane);
-        out_snapshot->pixels[pixel] = color;
+    for (lib_u32 row = 0u; row < height; ++row) {
+        const lib_u32 source = start + row * stride;
+        for (lib_u32 column = 0u; column < columns; ++column) {
+            const lib_u32 offset = source + column;
+            const lib_u8 p0 = x86_f65535_plane(chip, 0u)[offset];
+            const lib_u8 p1 = x86_f65535_plane(chip, 1u)[offset];
+            const lib_u8 p2 = x86_f65535_plane(chip, 2u)[offset];
+            const lib_u8 p3 = x86_f65535_plane(chip, 3u)[offset];
+            for (lib_u32 bit = 0u; bit < 8u; ++bit) {
+                const lib_u32 shift = 7u - bit;
+                out_snapshot->pixels[row * width + column * 8u + bit] =
+                    ((p0 >> shift) & 1u) | (((p1 >> shift) & 1u) << 1u) |
+                    (((p2 >> shift) & 1u) << 2u) | (((p3 >> shift) & 1u) << 3u);
+            }
+        }
     }
     out_snapshot->buffer_changed = changed;
     out_snapshot->cursor_changed = LIB_FALSE;

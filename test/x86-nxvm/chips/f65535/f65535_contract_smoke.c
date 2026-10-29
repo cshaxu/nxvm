@@ -436,6 +436,33 @@ int main(void)
         write_indexed(chip, 0x03d4u, 0x03d5u, 13u, 0xffu) != LIB_STATUS_OK ||
         x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_UNSUPPORTED;
     lib_test_assert(failed == 0);
+    /* Distinct plane bits, a nonzero start and padded rows exercise scanout. */
+    for (lib_u8 plane = 0u; plane < 4u; ++plane) {
+        for (lib_u32 offset = 0u; offset < 24u; ++offset) {
+            const lib_u8 pattern = (lib_u8)(0x96u + plane * 37u + offset * 19u);
+            lib_test_assert(x86_f65535_vram_write(chip,
+                plane * (X86_F65535_VRAM_BYTES / 4u) + offset,
+                &pattern, 1u) == LIB_STATUS_OK);
+        }
+    }
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 2u) == LIB_STATUS_OK);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 7u, 0u) == LIB_STATUS_OK);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 18u, 2u) == LIB_STATUS_OK);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 3u) == LIB_STATUS_OK);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 12u, 0u) == LIB_STATUS_OK);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 13u, 2u) == LIB_STATUS_OK);
+    lib_test_assert(x86_f65535_capture_snapshot(chip, 0u, &snapshot) == LIB_STATUS_OK);
+    lib_test_assert(snapshot.pixel_width == 24u && snapshot.pixel_height == 3u);
+    for (lib_u32 pixel = 0u; pixel < 72u; ++pixel) {
+        const lib_u32 offset = 4u + (pixel / 24u) * 6u + (pixel % 24u) / 8u;
+        lib_u8 expected = 0u;
+        for (lib_u8 plane = 0u; plane < 4u; ++plane) {
+            const lib_u8 pattern = (lib_u8)(0x96u + plane * 37u + offset * 19u);
+            if ((pattern & (0x80u >> (pixel & 7u))) != 0u)
+                expected |= (lib_u8)(1u << plane);
+        }
+        lib_test_assert(snapshot.pixels[pixel] == expected);
+    }
     verify_planar(chip);
     x86_f65535_destroy(chip);
     return failed;
