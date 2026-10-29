@@ -2,6 +2,13 @@
 
 ## Current Work
 
+### Receiving update from NXVM M5 T582 S8
+
+The existing 0007 x86/x64 products receive the Shared keyboard deadline
+optimization. Both selected-set startup and deployed Console checks passed;
+gameplay and audio are not qualified. [S8 evidence](../../nxvm/etc/evidence/t582-s8-keyboard-deadline.md)
+records artifacts and the full dual-width receiving gate.
+
 ### Receiving update from NXVM M5 T582 S4
 
 The existing 0007 x86/x64 products receive the X86-NXVM DMA idle optimization.
