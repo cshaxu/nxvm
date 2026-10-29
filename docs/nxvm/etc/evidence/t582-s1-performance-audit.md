@@ -71,3 +71,59 @@ Completed evidence SHA256:
 - `measure.log`: `41B1B79B5B14BBD9AF7AD608B21007396378EE3DAA1949A27800DC391E40DC15`
 - `sample.py`: `89BCE4EFF41605B02C7265D4D7584F57DD0199CB825CF70A67E62D09A4B64597`
 - `sample.log`: `EC654FF570CC15CA8214EC538B1E334C33CFF8DE595F28E07E185AF8161CF3F9`
+
+## Completed late-guest sample and rejected RAM candidate
+
+The configured x64 guest run completed normally, reaching the full Personaware
+menu. Its final PPM hashes to the same accepted T581 frame:
+`85A35680232CA0AD623DB7DD18D23A79396931ACB133791581D40C37048AEF41`.
+The initial attempt was deliberately stopped after discovering that the sampler
+buffered guest stdout in a pipe until exit. The corrected attempt writes guest
+output directly to a task-owned file; the interrupted attempt is not a pass or
+a product defect. All task-owned processes have now exited.
+
+The corrected sample collected 6,670 in-image observations, 17,793 outside-image
+observations and 10,737 failed context reads (retained thread handles can outlive
+short-lived threads). Consequently these are indicative function samples, not
+CPU-time percentages or a complete all-thread profile. Early memory routing
+had 340 samples; late routing 169. Late F65535 snapshot capture had 300, the
+largest late bucket, followed by CPU execution refresh at 200. Sampling was
+limited to seconds 5--25 and 300--320 to limit observer interference.
+
+A private 22-line RAM-range proof candidate was linked ahead of the unchanged
+production archive. It conservatively bypasses repeated byte queries only
+without aliases/address masking or any intersecting provider. Production files
+and release EXEs remain unchanged. One sequential baseline/candidate pair per
+width used the same configured inputs and twenty-second execution window:
+
+| Host | Baseline ticks | Candidate ticks | Baseline/candidate host seconds |
+| --- | ---: | ---: | --- |
+| x64 | 74,160,650 | 74,311,753 | 20.464 / 20.434 |
+| x86 | 56,469,758 | 58,742,165 | 20.157 / 20.167 |
+
+The x64 difference is about 0.2%; the x86 difference about 4.0%. A single
+host-time pair, including different guest phase progression, does not prove
+an improvement. The candidate is not admitted to production. x64 baseline
+made 1,692,237 cache-fill queries but enabled only 71; x86 made 40 and enabled
+one. The widths reached different phases, so neither cache count is a universal
+profile. A fixed-work comparison is needed before reviving this candidate.
+
+The next concrete candidate is F65535 capture: the existing planar routine
+expands every pixel (division/modulo and four plane reads per pixel), even for
+unchanged generations. Machine discards the resulting unchanged frame only
+after the work. Board's existing early observation belongs to the standard
+video adapter, not the PC110 custom provider. Preserve the full snapshot API
+contract; do not silently return an empty successful snapshot or add a second
+render/cache owner. First evaluate row/byte expansion at the existing chip
+owner (eight pixels per four plane bytes), preserving palette, stride, start,
+validation and change flags. Any earlier generation admission design must
+remain a single observation path and include text cursor phase behavior.
+
+Additional evidence SHA256:
+
+- `guest.c`: `890AF089F64F3517DC1B6A75443CA0439EDF9CD7EC6D799FF2F410DB4EFBA570`
+- `sample_guest.py`: `3EEEFDA9C7605DD60894159683F9B867D343FE846BA20833DDB3E704A353D385`
+- `guest-sample.log`: `4C52D6BBD0E3FBA7B4632F1561A8F64D66CBB8253DF27C6E0BE7839451FA583A`
+- `guest-sample-interrupted.log`: `349A0154638CB365E2DD3A631D0D06EAFB181F37A0738360985424A87F7ED7D9`
+- `memory_candidate.c`: `AE62DC7612A8A37D314B8C70EE0EEFB3D670C61FE44CB7FD1F5FFCCA6CC5D329`
+- `compare.log`: `BB849CA6E8E65374DA77C2D43F25B9FDB75849F223DEC949C9CE83E1C1D3A9E5`
