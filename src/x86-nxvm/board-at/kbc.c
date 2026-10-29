@@ -42,8 +42,9 @@ static x86_kbc8042_keyboard_inputs kbc_keyboard_inputs(void *context)
         .bat_ready = signals.bat_ready,
         .repeat_bytes = signals.repeat_bytes
     };
-    inputs.repeat_pending = x86_keyboard_ticks_until_repeat(
-        attachment->connect.keyboard, &inputs.repeat_ticks) == LIB_STATUS_OK;
+    if (inputs.repeat_bytes != 0u)
+        inputs.repeat_pending = x86_keyboard_ticks_until_repeat(
+            attachment->connect.keyboard, &inputs.repeat_ticks) == LIB_STATUS_OK;
     return inputs;
 }
 
