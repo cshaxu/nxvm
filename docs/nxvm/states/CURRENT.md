@@ -1,4 +1,25 @@
-# M5 T582 S9 — Active: execution observation and scheduling audit
+# M5 T582 S10 — Active: PIT deadline aggregation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S10 after S9 audit. |
+| Admission And Approval | Owner authorized performance repair and autonomous numeric S sequencing. |
+| Objective | Eliminate redundant clock conversions when selecting the earliest deadline across one PIT's three channels. |
+| Non-goals | No guest timing or PIT behavior change, extra state or API, Lib/Emulator change, or owner input mutation. |
+| Reference Baseline | Shared 67807dbed and [S9 evidence](../etc/evidence/t582-s9-execution-observation.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S9 measured candidate and synthetic boundary comparison. |
+| Files And ABI Surface | X86-NXVM board-base/board_deadline.c, existing PIT/board regression as needed, corresponding manifests; approximately +8/-4 production lines. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Existing PIT/deadline tests; zero, maximum, overflow, phase and multiple-channel equivalence; cached full dual-width unit/integration and fourteen EXEs for Shared changes. |
+| Expected Markers | Same minimum deadline and immediate semantics, measured bounded performance improvement. |
+| Asset Needs | Existing firmware and isolated copied CMOS/media. |
+| Reporting Requirements | Actual diff, test results, artifact hashes and interactive limitations. |
+| Stop Conditions | Never lose UINT64_MAX or immediate events; do not mask conversion errors or change per-PIT clock domain. |
+| Exit Criteria | Equivalent measured implementation and complete receiving delivery; T582 remains open until usability verified. |
+| Original Owner Request | Improve PC110 performance and eliminate redundancy until usable. |
+| Similar-Issue Sweep | Both primary and auxiliary PIT domains, invalid channels, conversion overflow and previous nearer deadline. |
+
+# M5 T582 S9 — Closed: execution observation and scheduling audit
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing firmware and isolated copied CMOS/media. |
 | Reporting Requirements | Measurement overhead, actual diff, architectural semantics, qualification and realtime limits. |
 | Stop Conditions | Preserve completed instruction observation across interrupt entry and all debug, trace, retirement and timing consumers. |
-| Exit Criteria | Qualified improvement or bounded audit with next evidenced owner; T582 remains open until actual usability proven. |
+| Exit Criteria | Bounded observation and PIT deadline candidates recorded in S9 evidence; the PIT candidate proceeds to S10 after boundary checks. T582 remains open. |
 | Original Owner Request | Improve PC110 performance until usable, maintaining correctness and simplicity. |
 | Similar-Issue Sweep | Examine instruction observation, interrupt entry, retirement/preview, scheduler deadlines and no-consumer paths. |
 
