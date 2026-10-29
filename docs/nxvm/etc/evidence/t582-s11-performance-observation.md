@@ -122,3 +122,7 @@ For source steps no larger than UINT32_MAX, a private candidate computes `elapse
 ## CPU optimization-level comparison
 
 A task-owned fixed-work probe directly compiled all five X86 Core CPU translation units and its harness with either the current GCC Release `-O3` or `-O2`, retaining the same remaining cached Release libraries and private CMOS/media. At 10000000 instructions, 79964294 guest ticks and PC 0003dbc5, x64 O3/O2 took 20198/23992 ms and x86 took 24953/25019 ms. Each is one sequential pair; O2 showed no benefit in this workload and was substantially slower on x64. No build flag, production component or released EXE changed.
+
+## Single-byte instruction fetch candidate
+
+A private CPU-source candidate used direct one-byte copies within the existing code-fetch function when the requested size was one, leaving the prefetch, code-length, fault and multi-byte paths otherwise intact. It retired the same 10000000 instructions at 79964294 guest ticks and PC 0003dbc5. x64 baseline/candidate took 19524/19942 ms; x86 took 23933/24536 ms. Each is one ordered pair, insufficient to establish a stable regression, but neither supports adding the special branches. No production code changed, and instruction-fetch fault, self-modification and debug semantics were not qualified by this probe.
