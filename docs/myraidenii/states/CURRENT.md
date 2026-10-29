@@ -2,6 +2,32 @@
 
 ## Current Work
 
+## M1 Td S1 — Closed: backlog and Shared delivery
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Governance; M1 Td S1; single-session coordinator and executor. |
+| Admission And Approval | Owner directed priority order, 14-EXE Shared delivery, and staged T7 closure on 2026-10-29. |
+| Objective | Transfer all unresolved TODO entries to ordered candidates, plan their batches, close T7 by owner direction without claiming qualification, and update Shared artifact requirements. |
+| Non-goals | No source, test, binary, configuration or media change; no implementation admission. |
+| Reference Baseline | T7 S118 closed; T7 gameplay and performance unqualified. |
+| Candidate Proposal | Owner-directed governance and backlog reconciliation. |
+| Files And ABI Surface | MyRaidenII state, roadmap, proposals and Shared execution rule; no ABI. |
+| Applicable Rules | Execution and Documentation; preserve ownership, evidence and ordered unnumbered candidates. |
+| Verification | Documentation governance for all three products, whitespace check and actual diff review. |
+| Expected Markers | All 13 unresolved entries have candidate receivers; 14 explicit Shared artifacts; T7 residual qualification retained. |
+| Asset Needs | None. |
+| Reporting Requirements | Report staged closure, actual changes, validation and any undelivered commits. |
+| Stop Conditions | Unresolved ownership or inconsistent qualification transfer. |
+| Exit Criteria | Scope and governance checks complete; target-scoped delivery and review. |
+| Original Owner Request | Historical review first, functional gaps second, performance last; all 14 EXEs for Shared updates; approve T7 closure. |
+| Similar-Issue Sweep | Review old T7 links, queue order, unresolved debt and existing artifact requirements. |
+
+| T7 | Owner-directed staged closure; full gameplay and release qualification transferred to the successor candidates. |
+
+T7 is owner-directed staged-closed, not qualified: all outstanding gameplay, audio, desktop, release and performance requirements transfer to the [queue](QUEUE.md). M1 remains open.
+
+
 NXVM T580 S85 refreshes the MyRaidenII 0007 x86/x64 receiving EXEs for the
 Shared Window resize correction. The [NXVM evidence](../../nxvm/etc/evidence/t580-s85-window-scale.md)
 records the dual-width tests and validation boundaries; no MyRaidenII source,
@@ -208,7 +234,7 @@ RDP or audible-output qualification.
 | Objective | Reproduce the observed title-page stall through the real Product/Machine/Core path; establish the first deterministic blocked guest checkpoint and its owning mechanism before proposing any repair. |
 | Non-goals | No ROM/media modification, protection bypass, scripted input, guessed register route, copied emulator implementation, Shared component change, gameplay-completion claim, or artifact publication before an evidence-backed repair. |
 | Reference Baseline | Accepted S111 import at `746598aa4` baseline and its current delivered public eight-tree receivers; existing T7 selected-set/COP/Video/Sound evidence and unresolved startup obligations. |
-| Candidate Proposal | [M1 T7 qualification](../proposals/m1-qualification.md), specifically its real owner-ROM startup, coin/start, controls and stage-entry requirement. |
+| Candidate Proposal | [M1 T7 qualification](../history/M1-T7-qualification-proposal.md), specifically its real owner-ROM startup, coin/start, controls and stage-entry requirement. |
 | Files And ABI Surface | Initially read-only: `src/myraidenii/{product,machine,core}`, matching unit/setup/integration tests, current external owner-ROM configuration and existing T7 evidence. Any later repair receives a revised packet naming its single owner and affected consumers. |
 | Applicable Rules | MyRaidenII guide; Architecture, Coding, UX, Source Policy, Execution and Documentation rules; one guest-time owner, protected-media handling, L2/L3 evidence labels, no second execution path and inward dependencies. |
 | Verification | Establish a bounded reproducible startup/coin/start/control trace on x64 and x86 without retaining ROM payload; correlate the first stable stop with CPU, board bus/COP, video, sound, input or Product lifecycle evidence; replay existing owner tests and add no source until ownership is established. |
@@ -251,7 +277,7 @@ not establish real gameplay; its delivered limits remain in force below.
 | Objective | Import the four shared source and four matching test trees verbatim and qualify their receiving products. |
 | Non-goals | Do not import SoftPC uncommitted work, change sibling repository, protected assets, or claim T7 gameplay completion. |
 | Reference Baseline | NXVM 746598aa4; SoftPC 6f2ac634d3b4a51a6a1597b919eb5386e96c3ebc. |
-| Candidate Proposal | ../proposals/m1-qualification.md; owner-directed shared corpus update. |
+| Candidate Proposal | ../history/M1-T7-qualification-proposal.md; owner-directed shared corpus update. |
 | Files And ABI Surface | Shared lib, emulator, x86-debug, x86-ibmpc source/test trees; receiving NXVM, MyNES and MyRaidenII artifacts and only necessary receiving adaptations. |
 | Applicable Rules | Exact provenance and inward dependencies, Types ownership, no duplicate route, target-scoped commits, protected media and actual-diff review. |
 | Verification | Complete byte comparison and manifests, boundary gates, cached dual-width builds, all unit suites and relevant integrations, affected product artifacts with PE/hash checks and post-delivery audit. |

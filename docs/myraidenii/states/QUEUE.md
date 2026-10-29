@@ -1,14 +1,13 @@
 # Queue
 
-M0 is owner-accepted and closed. [M1 T1](../history/M1-T1-board-and-source-freeze.md)
-closed the source/board/set and CPU integration-contract freeze.
-[M1 T2](../history/M1-T2-v30.md) closes the V30 CPU and neutral Machine
-qualification; its [archived proposal](../history/M1-T2-v30-proposal.md)
-preserves the five delivered acceptance batches. [M1 T3](../history/M1-T3-board-cop.md)
-and [M1 T4](../history/M1-T4-video.md) close the Board/COP and Core-video
-deliveries. [M1 T5](../history/M1-T5-sound.md) closes the finite Sound
-delivery. [M1 T6](../history/M1-T6-product.md) closes the single Product
-composition, monitor and process-entry route. [M1 T7](../proposals/m1-qualification.md)
-is active for complete gameplay and release qualification. Its first bounded
-packet is the read-only selected-set startup diagnostic; later packets receive
-only explicitly evidenced, accepted implementation boundaries.
+Owner direction 2026-10-29: historical issues and cleanup first, functional gaps next, and execution efficiency/performance last. Candidates and proposed S batches are unnumbered until admission. [Detailed proposal and original debt](../proposals/m1-backlog-reconciliation.md) preserve scope, evidence and boundaries. T7 is closed by owner direction with incomplete qualification transferred intact to candidate 9; no playable release is claimed. The final candidate completes performance work before the transferred gameplay and release qualification.
+
+1. [Console helper historical review](../proposals/m1-backlog-reconciliation.md#historical-issues-and-cleanup)
+2. [Shared test aggregation and boundary selftest](../proposals/m1-backlog-reconciliation.md#historical-issues-and-cleanup)
+3. [Shared memory query classification](../proposals/m1-backlog-reconciliation.md#historical-issues-and-cleanup)
+4. [Shared CPU test duplication](../proposals/m1-backlog-reconciliation.md#historical-issues-and-cleanup)
+5. [Intel CPU historical contract reviews](../proposals/m1-backlog-reconciliation.md#historical-issues-and-cleanup)
+6. [COPX-D2 and residual COP](../proposals/m1-backlog-reconciliation.md#functional-gaps)
+7. [YM2151 fidelity](../proposals/m1-backlog-reconciliation.md#functional-gaps)
+8. [Sprite blend fidelity](../proposals/m1-backlog-reconciliation.md#functional-gaps)
+9. [Execution performance and final gameplay qualification](../proposals/m1-backlog-reconciliation.md#execution-efficiency-and-performance)

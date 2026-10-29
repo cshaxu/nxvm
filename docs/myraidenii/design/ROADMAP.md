@@ -32,7 +32,7 @@ Board/COP T3, native video T4, local sound T5 and one Product/Machine host
 route T6 are closed. Their historical records preserve each delivered finite
 receiver and evidence grade; they do not prove the game result.
 
-T7 is the active gameplay and release qualification task. It owns bounded
+T7 is closed by owner direction with incomplete gameplay and release qualification transferred to the ordered successor candidates. No playable release is claimed. It owns bounded
 external-ROM startup/attract/control/stage/end/restart evidence, host lifecycle
 and cleanup, and final owner acceptance. Current explicit receivers include
 the unresolved COPX-D2 contract and sprite blend fidelity. They may receive a

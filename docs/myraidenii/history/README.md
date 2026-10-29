@@ -4,6 +4,7 @@
 - [M1 T2: NEC V30 execution and timing](M1-T2-v30.md)
 - [M1 T3: Board bus, interrupts and Seibu COP](M1-T3-board-cop.md)
 - [M1 T4: Video](M1-T4-video.md)
+- [M1 T7: Gameplay and release qualification, staged closure](M1-T7-qualification.md)
 
 M0 Td governance is retained in commits and Current. The
 [former NXVM candidate](../../nxvm/history/myarcade-raiden2-candidate.md)
