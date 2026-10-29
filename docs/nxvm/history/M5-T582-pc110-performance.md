@@ -25,3 +25,17 @@ MyRaidenII `0d48682cf` are pushed. Coordinator closes S2 under the owner's
 automatic sequencing authorization after the full review. S2's single paired
 run improves sampled guest ticks by 7.79% on x64 and 2.67% on x86; realtime
 performance and playability remain unqualified, so T582 stays active.
+
+## S3 implementation and review
+
+The memory owner proves unambiguous plain RAM spans before omitting repeated
+byte queries; the executor reuses one local timing result. Production +31/-10,
+existing test +23/-0, no API/state addition. Matched Release fixed-work pairs
+execute 30 million instructions at identical ticks/PC, reducing host time
+4.57% x64 and 6.61% x86. Earlier unequal-trace probe measurements are explicitly
+rejected, not counted as performance evidence. All 14 EXEs were built and
+verified, both widths passed 712 units and 48 registered integrations plus
+XT/AT/DeskPro selections, and external MyRaidenII receiver checks passed.
+The [S3 evidence](../etc/evidence/t582-s3-execution-performance.md) retains
+commands, hashes, actual-diff review and limits. Native RDP/Window and whole
+product realtime performance remain unqualified; T582 is not complete.

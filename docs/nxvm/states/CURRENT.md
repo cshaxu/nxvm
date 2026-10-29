@@ -8,14 +8,14 @@
 | Non-goals | No guest-time reduction, skipped device effects, firmware-address shortcut, second executor, speculative public API, Lib/Emulator change or owner-input mutation. |
 | Reference Baseline | Shared d8a94dc61, receiver delivery 7c7a98a13/0d48682cf, S2 closure 840094bdc; PC 0.5.0582. |
 | Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md); [S1 audit](../etc/evidence/t582-s1-performance-audit.md); [S2 measured delivery](../etc/evidence/t582-s2-planar-performance.md). |
-| Files And ABI Surface | Initial read-only audit of X86 Core CPU/Machine memory and X86-NXVM receiver paths; task-owned probes in build/t582. Before production edits record the measured mechanism, exact files and diff estimate. No new ABI is presumed. |
+| Files And ABI Surface | Measured design admitted: X86 Core machine/memory.c and machine.c, existing memory-device-registration test and two manifests; [design and fixed-work evidence](../etc/evidence/t582-s3-execution-performance.md). Estimated production +30/-8, test about +35. No new ABI, persistent state, Lib/Emulator change or guest timing change. |
 | Applicable Rules | NXVM guide, CONTRIBUTING, Execution, Documentation, Architecture and Coding; NXVM architecture/layout, UX/source policy; current proposal. |
 | Verification | Fixed-work or matched-checkpoint baseline/candidate measurements, route-boundary semantics and existing regression reuse. Any Shared implementation must receive cached full x86/x64 unit/integration tests and all fourteen EXEs before closure. |
 | Expected Markers | Named measured cost; unchanged guest results, address routing and timing; meaningful improvement rather than a source-only smell claim. |
 | Asset Needs | Existing approved ROM and private CMOS/media copies; preserve all owner files. |
 | Reporting Requirements | Counts, measurement overhead, actual diff, discarded candidates, delivered source/artifact identities and native/RDP limits. |
 | Stop Conditions | No unproven fast path across narrow providers, A20, aliases, parity or observers; no private live cross-thread reads or false full-qualification claim. |
-| Exit Criteria | A reviewed equivalent improvement with required delivery, or a bounded negative result identifying the next evidenced owner; neither alone closes T582 playability. |
+| Exit Criteria | Implementation and actual-diff review complete; matched Release 30-million-instruction runs reduce host time 4.57% x64 and 6.61% x86 at identical guest ticks/PC. Full dual-width unit/integration qualification and 14-artifact publication complete. P delivery follows; T582 playability remains open. |
 | Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable; keep Shared receiving qualification complete. |
 | Similar-Issue Sweep | Read/write/fetch/cache queries, raw/reset and decoded routes, CPU profiles, timing-result consumers and all relevant boundary regressions. |
 
