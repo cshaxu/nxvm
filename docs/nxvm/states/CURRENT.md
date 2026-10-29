@@ -1,3 +1,24 @@
+# M5 T582 S3 — Active: execution and memory-route costs
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S3 after S2 closure 840094bdc. |
+| Admission And Approval | Owner authorized continued performance work and automatic numeric S sequencing; S2 proves a substantial whole-product gap remains. |
+| Objective | Measure CPU and physical-memory routing costs, remove evidenced redundant work at its owner, and demonstrate equivalent results with improved throughput. |
+| Non-goals | No guest-time reduction, skipped device effects, firmware-address shortcut, second executor, speculative public API, Lib/Emulator change or owner-input mutation. |
+| Reference Baseline | Shared d8a94dc61, receiver delivery 7c7a98a13/0d48682cf, S2 closure 840094bdc; PC 0.5.0582. |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md); [S1 audit](../etc/evidence/t582-s1-performance-audit.md); [S2 measured delivery](../etc/evidence/t582-s2-planar-performance.md). |
+| Files And ABI Surface | Initial read-only audit of X86 Core CPU/Machine memory and X86-NXVM receiver paths; task-owned probes in build/t582. Before production edits record the measured mechanism, exact files and diff estimate. No new ABI is presumed. |
+| Applicable Rules | NXVM guide, CONTRIBUTING, Execution, Documentation, Architecture and Coding; NXVM architecture/layout, UX/source policy; current proposal. |
+| Verification | Fixed-work or matched-checkpoint baseline/candidate measurements, route-boundary semantics and existing regression reuse. Any Shared implementation must receive cached full x86/x64 unit/integration tests and all fourteen EXEs before closure. |
+| Expected Markers | Named measured cost; unchanged guest results, address routing and timing; meaningful improvement rather than a source-only smell claim. |
+| Asset Needs | Existing approved ROM and private CMOS/media copies; preserve all owner files. |
+| Reporting Requirements | Counts, measurement overhead, actual diff, discarded candidates, delivered source/artifact identities and native/RDP limits. |
+| Stop Conditions | No unproven fast path across narrow providers, A20, aliases, parity or observers; no private live cross-thread reads or false full-qualification claim. |
+| Exit Criteria | A reviewed equivalent improvement with required delivery, or a bounded negative result identifying the next evidenced owner; neither alone closes T582 playability. |
+| Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable; keep Shared receiving qualification complete. |
+| Similar-Issue Sweep | Read/write/fetch/cache queries, raw/reset and decoded routes, CPU profiles, timing-result consumers and all relevant boundary regressions. |
+
 # M5 T582 S2 — Closed: equivalent F65535 planar expansion
 
 | Field | Required record |
