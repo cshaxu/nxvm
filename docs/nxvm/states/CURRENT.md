@@ -1,4 +1,4 @@
-# M5 T580 S89 — Active: PC110 guest clock-rate investigation
+# M5 T580 S89 — Accepted: PC110 guest clock-rate investigation
 
 | Field | Required record |
 | --- | --- |
@@ -20,9 +20,10 @@
 | Similar-Issue Sweep | Compare stopped and running guest behavior and both PC110 variants without imposing PC110 policy on other profiles. |
 
 The [S89 evidence](../etc/evidence/t580-s89-clock-rate.md) measures both
-Machine runners and two rejected isolated optimization candidates. It does
-not yet establish the actual World Clock bottleneck or qualify a production
-performance change.
+Machine runners, reuses the late-guest trace and rejects two isolated
+optimization candidates. No production performance change or actual World
+Clock root cause is established. Late-guest timing and a measured safe
+performance correction remain a T580 receiver; the T is not complete.
 
 # M5 T580 S88 — Accepted: PC110 clock and configuration persistence
 

@@ -26,6 +26,15 @@ Actual guest Setup/date-setting, slow World Clock, physical-panel behavior and
 full product qualification remain open. The full evidence and verification
 limits are recorded in [S88](../etc/evidence/t580-s88-clock-persistence.md).
 
+## S89: guest clock-rate audit
+
+Audit `d791d7a8a` measured the actual PC110 Machine runner on both host
+widths, investigated firmware and retained late-guest traces, and rejected
+two private optimization candidates without changing production code. It
+does not prove the precise World Clock cause or qualify a performance fix.
+The remaining late-guest timing and measured safe-performance receiver stays
+within T580; see [S89](../etc/evidence/t580-s89-clock-rate.md).
+
 ## S43--S44: actual timer calibration receiver
 
 S43's sampled execution identifies a deliberate BIOS error halt and a rejected
