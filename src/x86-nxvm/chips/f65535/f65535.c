@@ -180,6 +180,7 @@ void x86_f65535_reset(x86_f65535 *chip)
     if (chip == LIB_NULL) return;
     lib_memory_set(chip, 0, sizeof(*chip));
     chip->pel_mask = 0xffu;
+    chip->extensions[0x60u] = 0x83u;
     x86_f65535_note_change(chip);
 }
 
@@ -450,13 +451,14 @@ lib_status x86_f65535_memory_write(x86_f65535 *chip, lib_u32 physical,
     return LIB_STATUS_OK;
 }
 
-lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
+lib_status x86_f65535_capture_snapshot(x86_f65535 *chip, lib_u64 vsync_count,
     x86_video_snapshot *out_snapshot)
 {
     lib_u32 displayed_scanlines;
     lib_u32 cell_height;
     lib_u32 columns;
     lib_u32 rows;
+    lib_u32 row_stride;
     lib_u32 start;
     lib_u32 cursor;
     lib_u32 font_a;
@@ -466,10 +468,15 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
     lib_u32 index;
 
     if (chip == LIB_NULL || out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    /* CR17 bit 7 releases CRTC reset; without sync there is no presentable frame. */
+    if ((chip->crtc[0x17u] & 0x80u) == 0u) return LIB_STATUS_UNSUPPORTED;
     displayed_scanlines = x86_f65535_vertical_display_end(chip) + 1u;
     cell_height = (chip->crtc[9u] & 0x1fu) + 1u;
     columns = (lib_u32)chip->crtc[1u] + 1u;
     rows = displayed_scanlines / cell_height;
+    row_stride = columns;
+    if ((chip->crtc[20u] & 0x40u) == 0u && (chip->crtc[23u] & 0x40u) == 0u)
+        row_stride = (lib_u32)chip->crtc[19u] * 2u + (chip->extensions[0x0du] & 1u);
     start = ((lib_u32)chip->crtc[12u] << 8u) | chip->crtc[13u];
     cursor = ((lib_u32)chip->crtc[14u] << 8u) | chip->crtc[15u];
     changed = !chip->captured || chip->captured_generation != chip->generation;
@@ -484,7 +491,7 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
         columns > X86_VIDEO_MAX_COLUMNS || cell_height == 0u ||
         cell_height > X86_VIDEO_TEXT_GLYPH_ROWS || displayed_scanlines == 0u ||
         displayed_scanlines % cell_height != 0u || rows == 0u ||
-        rows > X86_VIDEO_MAX_ROWS || start + columns * rows >
+        rows > X86_VIDEO_MAX_ROWS || start + (rows - 1u) * row_stride + columns >
             X86_F65535_VGA_PLANE_BYTES) return LIB_STATUS_UNSUPPORTED;
     lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = X86_VIDEO_KIND_TEXT;
@@ -501,15 +508,21 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
     out_snapshot->text_foreground_mask = font_a != font_b ? 7u : 15u;
     out_snapshot->cursor_top = chip->crtc[10u] & 0x1fu;
     out_snapshot->cursor_bottom = chip->crtc[11u] & 0x1fu;
-    out_snapshot->cursor_enabled = (chip->crtc[10u] & 0x20u) == 0u &&
-        cursor >= start && cursor < start + columns * rows;
-    out_snapshot->cursor_visible = out_snapshot->cursor_enabled;
-    if (out_snapshot->cursor_enabled) {
-        const lib_u32 relative = cursor - start;
-
-        out_snapshot->cursor_x = (lib_u8)(relative % columns);
-        out_snapshot->cursor_y = (lib_u8)(relative / columns);
+    if ((chip->crtc[10u] & 0x20u) == 0u) {
+        for (index = 0u; index < rows; ++index) {
+            const lib_u32 row_start = start + index * row_stride;
+            if (cursor >= row_start && cursor - row_start < columns) {
+                out_snapshot->cursor_enabled = LIB_TRUE;
+                out_snapshot->cursor_x = (lib_u8)(cursor - row_start);
+                out_snapshot->cursor_y = (lib_u8)index;
+                break;
+            }
+        }
     }
+    /* XR60 bits 5:0 specify the number of VSyncs per half-period minus one. */
+    out_snapshot->cursor_visible = out_snapshot->cursor_enabled &&
+        ((chip->extensions[0x0eu] & 0x04u) != 0u ||
+         ((vsync_count / ((chip->extensions[0x60u] & 0x3fu) + 1u)) & 1u) == 0u);
     for (index = 0u; index < 16u; ++index)
         out_snapshot->palette_rgb[index] = x86_f65535_palette_color(chip, (lib_u8)index);
     for (index = 0u; index < X86_VIDEO_TEXT_GLYPH_COUNT; ++index) {
@@ -524,12 +537,18 @@ lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
                 x86_f65535_plane(chip, 2u)[font_a * X86_VIDEO_TEXT_GLYPH_BYTES + offset];
         }
     }
-    for (index = 0u; index < columns * rows; ++index) {
-        out_snapshot->characters[index] = x86_f65535_plane(chip, 0u)[start + index];
-        out_snapshot->attributes[index] = x86_f65535_plane(chip, 1u)[start + index];
+    for (index = 0u; index < rows; ++index) {
+        for (lib_u32 column = 0u; column < columns; ++column) {
+            const lib_u32 source = start + index * row_stride + column;
+            const lib_u32 target = index * X86_VIDEO_MAX_COLUMNS + column;
+            out_snapshot->characters[target] = x86_f65535_plane(chip, 0u)[source];
+            out_snapshot->attributes[target] = x86_f65535_plane(chip, 1u)[source];
+        }
     }
     out_snapshot->buffer_changed = changed;
-    out_snapshot->cursor_changed = changed;
+    out_snapshot->cursor_changed = changed ||
+        chip->captured_cursor_visible != out_snapshot->cursor_visible;
+    chip->captured_cursor_visible = out_snapshot->cursor_visible;
     chip->captured = LIB_TRUE;
     chip->captured_generation = chip->generation;
     return LIB_STATUS_OK;

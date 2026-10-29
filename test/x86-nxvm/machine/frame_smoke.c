@@ -98,12 +98,17 @@ lib_i32 main(void)
     }
 
     source.columns = 40u;
-    source.rows = 1u;
+    source.rows = 2u;
     source.characters[40u] = 'X';
     source.attributes[40u] = 0xffu;
+    source.characters[X86_VIDEO_MAX_COLUMNS] = 'B';
+    source.attributes[X86_VIDEO_MAX_COLUMNS] = 0x1eu;
     if (x86_nxvm_machine_frame_from_display(&source, 8u, &destination, &console) != LIB_STATUS_OK ||
         destination.data.text->base.cells[40u].glyph_index != 0u ||
-        destination.data.text->base.cells[40u].foreground != 0u) return 1;
+        destination.data.text->base.cells[40u].foreground != 0u ||
+        destination.data.text->base.cells[X86_VIDEO_MAX_COLUMNS].glyph_index != 'B' ||
+        destination.data.text->base.cells[X86_VIDEO_MAX_COLUMNS].foreground != 14u ||
+        destination.data.text->base.cells[X86_VIDEO_MAX_COLUMNS].background != 1u) return 1;
 
     source.kind = X86_VIDEO_KIND_CGA_320X200X4;
     source.pixel_width = 320u;

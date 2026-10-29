@@ -28,6 +28,7 @@ struct x86_f65535 {
     lib_u64 generation;
     lib_u64 captured_generation;
     lib_bool captured;
+    lib_bool captured_cursor_visible;
     lib_u8 latches[4];
 };
 

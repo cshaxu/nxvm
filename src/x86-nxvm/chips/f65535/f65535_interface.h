@@ -54,7 +54,8 @@ lib_status x86_f65535_memory_read(x86_f65535 *chip, lib_u32 physical,
     void *destination, lib_size bytes, lib_bool observe_only);
 lib_status x86_f65535_memory_write(x86_f65535 *chip, lib_u32 physical,
     const void *source, lib_size bytes);
-lib_status x86_f65535_capture_snapshot(x86_f65535 *chip,
+/* vsync_count is the board-supplied guest vertical-sync count. */
+lib_status x86_f65535_capture_snapshot(x86_f65535 *chip, lib_u64 vsync_count,
     x86_video_snapshot *out_snapshot);
 
 #endif

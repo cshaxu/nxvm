@@ -143,6 +143,16 @@ int main(void)
         value != write || x86_f65535_vram_read(chip, X86_F65535_VRAM_BYTES,
             &value, 1u) != LIB_STATUS_INVALID_ARGUMENT;
     x86_f65535_reset(chip);
+    snapshot.columns = 42u;
+    lib_test_assert(x86_f65535_capture_snapshot(chip, 0u, &snapshot) ==
+        LIB_STATUS_UNSUPPORTED && snapshot.columns == 42u);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 0x17u, 0x80u) == LIB_STATUS_OK &&
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) == LIB_STATUS_OK &&
+        snapshot.columns == 1u && snapshot.rows == 1u);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 0x17u, 0u) == LIB_STATUS_OK &&
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) == LIB_STATUS_UNSUPPORTED &&
+        snapshot.columns == 1u && snapshot.rows == 1u);
+    x86_f65535_reset(chip);
     for (lib_u8 map = 0u; map < 4u; ++map) {
         lib_test_assert(write_indexed(chip, 0x03ceu, 0x03cfu, 6u,
             (lib_u8)(map << 2u)) == LIB_STATUS_OK);
@@ -214,19 +224,74 @@ int main(void)
         write_indexed(chip, 0x03d4u, 0x03d5u, 9u, 0x0fu) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 10u, 0u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 11u, 15u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 0x17u, 0xa3u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 18u, 0x8fu) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 40u) != LIB_STATUS_OK ||
         x86_f65535_memory_write(chip, 0x000b8000u, "A", 1u) != LIB_STATUS_OK ||
         x86_f65535_memory_write(chip, 0x000b8001u, &write, 1u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.columns != 80u ||
         snapshot.rows != 25u || snapshot.text_cell_height != 16u ||
         snapshot.characters[0] != 'A' || snapshot.attributes[0] != write ||
         snapshot.text_glyphs[0x0820u] != glyph ||
         snapshot.buffer_changed != LIB_TRUE ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.buffer_changed != LIB_FALSE ||
         write_indexed(chip, 0x03ceu, 0x03cfu, 6u, 0x0fu) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED;
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_UNSUPPORTED;
+    lib_test_assert(failed == 0);
+    /* Narrow text modes retain the snapshot's fixed row stride. */
+    value = 'B';
+    failed |= x86_f65535_vram_write(chip, 40u, &value, 1u) != LIB_STATUS_OK ||
+        x86_f65535_vram_write(chip, X86_F65535_VRAM_BYTES / 4u + 40u,
+            &write, 1u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03ceu, 0x03cfu, 6u, 0x0eu) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 39u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 20u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.columns != 40u || snapshot.rows != 25u ||
+        snapshot.characters[0] != 'A' || snapshot.characters[40] != 0u ||
+        snapshot.characters[X86_VIDEO_MAX_COLUMNS] != 'B' ||
+        snapshot.attributes[X86_VIDEO_MAX_COLUMNS] != write ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 79u) != LIB_STATUS_OK;
+    lib_test_assert(failed == 0);
+    /* Other text address modes retain their existing capture behavior. */
+    failed |= write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 39u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 25u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 0x17u, 0xe3u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.characters[X86_VIDEO_MAX_COLUMNS] != 'B' ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 0x17u, 0xa3u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 20u, 0x40u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.characters[X86_VIDEO_MAX_COLUMNS] != 'B' ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 20u, 0u) != LIB_STATUS_OK;
+    lib_test_assert(failed == 0);
+    /* Word-addressed text uses CR13/XR0D, not the visible column count. */
+    value = 'C';
+    failed |= x86_f65535_vram_write(chip, 3u, &value, 1u) != LIB_STATUS_OK ||
+        x86_f65535_vram_write(chip, 54u, "B", 1u) != LIB_STATUS_OK ||
+        x86_f65535_vram_write(chip, X86_F65535_VRAM_BYTES / 4u + 54u,
+            &write, 1u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 39u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 13u, 3u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 15u, 56u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 25u) != LIB_STATUS_OK ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_INDEX_PORT, 0x0du) != LIB_STATUS_OK ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_DATA_PORT, 1u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.characters[0] != 'C' ||
+        snapshot.characters[X86_VIDEO_MAX_COLUMNS] != 'B' ||
+        snapshot.attributes[X86_VIDEO_MAX_COLUMNS] != write ||
+        !snapshot.cursor_enabled || snapshot.cursor_x != 2u || snapshot.cursor_y != 1u ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 15u, 45u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_enabled ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 79u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 13u, 0u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 15u, 0u) != LIB_STATUS_OK ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 40u) != LIB_STATUS_OK ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_DATA_PORT, 0u) != LIB_STATUS_OK;
     lib_test_assert(failed == 0);
     /* Character slots stay 32 bytes even when only 16 rows are displayed. */
     value = 0x42u;
@@ -234,11 +299,53 @@ int main(void)
             2u * X86_VIDEO_TEXT_GLYPH_BYTES + 0x820u, &value, 1u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03ceu, 0x03cfu, 6u, 0x0eu) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03c4u, 0x03c5u, 3u, 4u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         !snapshot.text_font_selection || snapshot.text_foreground_mask != 7u ||
         snapshot.text_glyphs[0x820u] != glyph ||
         snapshot.secondary_text_glyphs[0x820u] != value ||
         snapshot.palette_rgb[15u] != 0xffffffu;
+    lib_test_assert(failed == 0);
+    /* XR60 defines a half-period of (rate + 1) vertical syncs. */
+    failed |= x86_f65535_extension_write(chip, X86_F65535_EXTENSION_INDEX_PORT,
+            0x60u) != LIB_STATUS_OK ||
+        x86_f65535_extension_read(chip, X86_F65535_EXTENSION_DATA_PORT,
+            &value) != LIB_STATUS_OK || value != 0x83u ||
+        x86_f65535_capture_snapshot(chip, 3u, &snapshot) != LIB_STATUS_OK ||
+        !snapshot.cursor_enabled || !snapshot.cursor_visible ||
+        x86_f65535_capture_snapshot(chip, 4u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_visible || !snapshot.cursor_changed ||
+        x86_f65535_capture_snapshot(chip, 4u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_visible || snapshot.cursor_changed ||
+        x86_f65535_capture_snapshot(chip, 5u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_visible || snapshot.cursor_changed ||
+        x86_f65535_capture_snapshot(chip, 8u, &snapshot) != LIB_STATUS_OK ||
+        !snapshot.cursor_visible || !snapshot.cursor_changed ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_DATA_PORT,
+            0x81u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 1u, &snapshot) != LIB_STATUS_OK ||
+        !snapshot.cursor_visible ||
+        x86_f65535_capture_snapshot(chip, 2u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_visible || !snapshot.cursor_changed ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_INDEX_PORT,
+            0x0eu) != LIB_STATUS_OK ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_DATA_PORT,
+            0x04u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 2u, &snapshot) != LIB_STATUS_OK ||
+        !snapshot.cursor_enabled || !snapshot.cursor_visible ||
+        x86_f65535_capture_snapshot(chip, 4u, &snapshot) != LIB_STATUS_OK ||
+        !snapshot.cursor_visible ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_DATA_PORT,
+            0u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 2u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_visible || !snapshot.cursor_changed ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 10u, 0x20u) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 4u, &snapshot) != LIB_STATUS_OK ||
+        snapshot.cursor_enabled || snapshot.cursor_visible ||
+        write_indexed(chip, 0x03d4u, 0x03d5u, 10u, 0u) != LIB_STATUS_OK ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_INDEX_PORT,
+            0x60u) != LIB_STATUS_OK ||
+        x86_f65535_extension_write(chip, X86_F65535_EXTENSION_DATA_PORT,
+            0x83u) != LIB_STATUS_OK;
     lib_test_assert(failed == 0);
     /* Mode 12h is planar A0000h storage: write a top-left colour through the
      * standard sequencer map mask, then verify copied 640 by 480 scanout. */
@@ -256,32 +363,32 @@ int main(void)
         x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03c4u, 0x03c5u, 2u, 8u) != LIB_STATUS_OK ||
         x86_f65535_memory_write(chip, 0x000a0000u, &glyph, 1u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_VGA_PLANAR16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 480u ||
         snapshot.pixels[0] != 15u || snapshot.pixels[1] != 0u ||
         snapshot.palette_rgb[15u] != 0x00ffffffu ||
         snapshot.buffer_changed != LIB_TRUE ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.buffer_changed != LIB_FALSE;
     lib_test_assert(failed == 0);
     failed |= write_attribute(chip, 15u, 0x2au) != LIB_STATUS_OK ||
         write_attribute(chip, 20u, 12u) != LIB_STATUS_OK ||
         write_color(chip, 0xeau, 63u, 0u, 63u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[15u] != 0xff00ffu || !snapshot.buffer_changed ||
         write_attribute(chip, 16u, 0x80u) != LIB_STATUS_OK ||
         write_attribute(chip, 20u, 13u) != LIB_STATUS_OK ||
         write_color(chip, 0xdau, 0u, 63u, 0u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[15u] != 0x00ff00u ||
         x86_f65535_vga_write(chip, 0x03c6u, 15u) != LIB_STATUS_OK ||
         write_color(chip, 10u, 0u, 0u, 63u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[15u] != 0x0000ffu ||
         write_attribute(chip, 18u, 7u) != LIB_STATUS_OK ||
         write_color(chip, 7u, 63u, 63u, 0u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[15u] != 0xffff00u;
     lib_test_assert(failed == 0);
     /* DAC has one shared address/sequence, including read-index preincrement. */
@@ -292,7 +399,7 @@ int main(void)
         x86_f65535_vga_write(chip, 0x03c6u, 0xffu) != LIB_STATUS_OK ||
         write_color(chip, 0xffu, 0x7fu, 0x40u, 0x3fu) != LIB_STATUS_OK ||
         x86_f65535_vga_read(chip, 0x03c8u, &value) != LIB_STATUS_OK || value != 0u ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[15u] != 0xff00ffu ||
         x86_f65535_vga_write(chip, 0x03c7u, 0xffu) != LIB_STATUS_OK ||
         x86_f65535_vga_read(chip, 0x03c8u, &value) != LIB_STATUS_OK || value != 0u ||
@@ -312,22 +419,22 @@ int main(void)
         write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 0x40u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x06u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03ceu, 0x03cfu, 5u, 0x02u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_OK ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_VGA_PLANAR16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 475u ||
         snapshot.pixels[640u] != 2u || snapshot.pixels[641u] != 0u ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 39u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_UNSUPPORTED ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 19u, 0x40u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x0eu) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_UNSUPPORTED ||
         write_indexed(chip, 0x03c4u, 0x03c5u, 4u, 0x06u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 90u) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_UNSUPPORTED ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 1u, 79u) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 12u, 0xffu) != LIB_STATUS_OK ||
         write_indexed(chip, 0x03d4u, 0x03d5u, 13u, 0xffu) != LIB_STATUS_OK ||
-        x86_f65535_capture_snapshot(chip, &snapshot) != LIB_STATUS_UNSUPPORTED;
+        x86_f65535_capture_snapshot(chip, 0u, &snapshot) != LIB_STATUS_UNSUPPORTED;
     lib_test_assert(failed == 0);
     verify_planar(chip);
     x86_f65535_destroy(chip);
