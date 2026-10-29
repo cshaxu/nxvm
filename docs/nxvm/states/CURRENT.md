@@ -1,3 +1,29 @@
+# M5 T580 S89 — Active: PC110 guest clock-rate investigation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S89. |
+| Admission And Approval | Owner requested autonomous completion of PC110; S88 retained the observed slow guest clock for investigation. |
+| Objective | Identify whether the observed slow World Clock originates in RTC, PIT/guest timing, CPU throughput or presentation, using bounded evidence. |
+| Non-goals | No unapproved Shared changes, host clock substitution, user-media writes or foreground execution. |
+| Reference Baseline | S87 released-product screenshots; S88 RTC persistence and clock ownership evidence. |
+| Candidate Proposal | Use existing firmware, product and machine observation paths with task-owned data; measure guest time against monotonic elapsed host time and identify the first supported cause before proposing changes. |
+| Files And ABI Surface | PC110 App, existing diagnostics/tests and NXVM evidence; Shared implementation or interface changes require established authorization. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Bounded actual-machine timing observation and targeted dual-width regressions for any admitted fix; retain baseline and limits. |
+| Expected Markers | Measured guest-versus-host progression, named owner, and justified correction or documented boundary. |
+| Asset Needs | Existing embedded firmware and task-owned configuration/media copies; preserve original inputs. |
+| Reporting Requirements | Distinguish RTC register values, DOS/PIT time, guest displayed time, host time and CPU throughput. |
+| Stop Conditions | No fabricated guest state, unapproved Shared changes or unexplained claims of exact hardware timing. |
+| Exit Criteria | Observed clock behavior explained and a necessary correction verified, or an evidenced narrow receiver retained without claiming full timing qualification. |
+| Original Owner Request | Complete a usable PC110 product without excessive or redundant test runs. |
+| Similar-Issue Sweep | Compare stopped and running guest behavior and both PC110 variants without imposing PC110 policy on other profiles. |
+
+The [S89 evidence](../etc/evidence/t580-s89-clock-rate.md) measures both
+Machine runners and two rejected isolated optimization candidates. It does
+not yet establish the actual World Clock bottleneck or qualify a production
+performance change.
+
 # M5 T580 S88 — Accepted: PC110 clock and configuration persistence
 
 | Field | Required record |
