@@ -127,3 +127,35 @@ Additional evidence SHA256:
 - `guest-sample-interrupted.log`: `349A0154638CB365E2DD3A631D0D06EAFB181F37A0738360985424A87F7ED7D9`
 - `memory_candidate.c`: `AE62DC7612A8A37D314B8C70EE0EEFB3D670C61FE44CB7FD1F5FFCCA6CC5D329`
 - `compare.log`: `BB849CA6E8E65374DA77C2D43F25B9FDB75849F223DEC949C9CE83E1C1D3A9E5`
+
+## S1 design disposition: measured planar expansion
+
+A private F65535 candidate expands one four-plane byte group into eight pixels
+using row/column loops. It removes per-pixel division/modulo and repeated plane
+loads without adding state, tables, public APIs or changing capture semantics.
+Fixed-work benchmark: 1,000 captures per geometry, deterministic complete VRAM,
+nonzero start address and padded stride. Complete snapshot FNV-1a digests match
+baseline/candidate on both widths (including palette, flags and initialized tail).
+
+| Geometry | x64 baseline/candidate ms | x86 baseline/candidate ms |
+| --- | --- | --- |
+| 8 x 1 | 4 / 3 | 3 / 4 |
+| 320 x 200 | 279 / 21 | 310 / 122 |
+| 640 x 480 | 1422 / 69 | 1478 / 643 |
+
+Tiny-frame timing is below useful resolution. The larger fixed-work gains are
+substantial enough to admit the local repair; no whole-product speedup is
+claimed. Existing capture validations, palette, start/stride, glyph/cursor and
+full snapshot behavior remain intact. Source change is limited to the planar
+loop in `src/x86-nxvm/chips/f65535/f65535.c`; extend the existing chip contract
+smoke to compare nonuniform plane bytes with a straightforward reference at
+padded stride/nonzero start. Estimated +16/-10 production lines, about 30 test
+lines and two manifest entries. No new fixture framework or benchmark gate.
+
+Coordinator review accepts S1's bounded audit/design outcome under the owner's
+automatic S sequencing authorization. S1 does not resolve the overall T582
+playability goal. S2 implements and qualifies this measured repair, preserving
+remaining memory/CPU/device and unchanged-frame observation investigations;
+S3/further numeric batches must not claim full performance qualification from
+a microbenchmark alone. All 14 receiver artifacts and full dual-width tests
+remain mandatory after the Shared source change.

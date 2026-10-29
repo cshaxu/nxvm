@@ -1,4 +1,4 @@
-# M5 T582 S1 — Active: PC110 performance baseline and bottleneck audit
+# M5 T582 S1 — Closed: measured planar repair admitted next
 
 | Field | Required record |
 | --- | --- |
