@@ -42,3 +42,8 @@ The directly compiled comparison retained the Release `X86_CORE_MACHINE_RUNTIME_
 | x86 | candidate, baseline | 25799 | 27336 |
 
 The candidate was slower on x86 in both measured pairs; the x64 improvement varied considerably. Equal final checkpoints do not prove memory-route correctness. The candidate is rejected rather than added as another path; no production or Shared code changed. Continue investigating the larger execution cost.
+## Completed-observation reset candidate
+
+CPU execution invalidates and clears the completed observation at the start of every refresh. Before a valid observation is published, the copy operation clears and fills it again. A private candidate replaces the first full clear with a reset of `next_lexeme_components`, the only field accessed before the subsequent valid copy; it retains the valid flag and normal construction. Source search found no other production reads of the invalid observation. This is a provisional single-line candidate, not proof of interrupt, debug, fault, halt or early-return equivalence.
+
+At the identical 10,000,000-instruction checkpoint, x64 baseline/candidate took 23303/22644 ms, while x86 took 25751/27821 ms. Each is one ordered pair; this does not show a stable benefit, and the x86 regression disfavors landing it. No production code was changed. Further improvements must be supported by stronger measurements and the complete observation contract.
