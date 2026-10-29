@@ -1,3 +1,24 @@
+# M5 T582 S2 — Active: equivalent F65535 planar expansion
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S2 after S1 coordinator audit closure. |
+| Admission And Approval | Owner admitted performance repair and automatic S sequencing; S1 actual source review and dual-width fixed-work evidence select this bounded implementation. |
+| Objective | Reduce redundant F65535 planar pixel work without changing any guest or snapshot result; measure product impact and qualify receivers. |
+| Non-goals | No timing downgrade, new cache/state/API, incomplete snapshot, firmware shortcut, Lib/Emulator change or user file edit; no whole-product performance claim from a microbenchmark. |
+| Reference Baseline | 990266ae0 S1 closure; production baseline 59ad6e78b, products 0.5.0581. |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md), [S1 evidence and exact design](../etc/evidence/t582-s1-performance-audit.md). |
+| Files And ABI Surface | Shared: F65535 planar loop, existing chip test, source/test manifests; necessary PC version/preset synchronization. NXVM/MyNES/MyRaidenII: required receiver EXEs and own delivery records. No public ABI change. |
+| Applicable Rules | NXVM guide, CONTRIBUTING, Execution, Documentation, Architecture, Coding; NXVM architecture/layout, UX/source policy; S1 actual-change design. |
+| Verification | Existing chip regression plus complete-snapshot comparison on padded stride/nonzero start; cached x64/x86 Release builds and publication of all seven Apps (14 EXEs); full-repository unit/integration tests on both widths; manifest, dependency, artifact and documentation gates. Record desktop/device limitations honestly. |
+| Expected Markers | Identical output with fewer per-pixel calculations; measured fixed-work improvement, actual guest path intact, all required deployed hashes and PE widths. |
+| Asset Needs | Existing approved external ROM/media; isolated measurement copies only. No new inputs or modified owner INI/CMOS/media. |
+| Reporting Requirements | Per-owner actual diff, timings and their scope, tests, 14 artifacts, failures/unverified gates and remaining T582 performance gaps. |
+| Stop Conditions | No changed pixel/flag/palette/stride semantics, artificial guest speedup, false test pass or omitted receiver. Resolve in-scope defects; report genuine unavailable external prerequisites. |
+| Exit Criteria | Equivalent measured local repair, applicable tests and 14-artifact delivery complete and reviewed; T582 remains open for whole-product playability and further proven hotspots. |
+| Original Owner Request | Optimize PC110 performance and redundant work; any Shared update requires cached 14-EXE publication and cached full tests. |
+| Similar-Issue Sweep | Text/cursor path unchanged; all planar dimensions, plane bits, palette/start/stride and first/repeated capture; check other receiver coupling and existing test overlap. |
+
 # M5 T582 S1 — Closed: measured planar repair admitted next
 
 | Field | Required record |
