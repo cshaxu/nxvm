@@ -2,6 +2,13 @@
 
 ## Current Work
 
+### Receiving update from NXVM M5 T582 S10
+
+The existing 0007 x86/x64 products receive the Shared PIT deadline optimization.
+Both selected-set startup and deployed Console checks passed; gameplay and audio
+are not qualified. [S10 evidence](../../nxvm/etc/evidence/t582-s10-pit-deadline.md)
+records artifact identities and dual-width receiving qualification.
+
 ### Receiving update from NXVM M5 T582 S8
 
 The existing 0007 x86/x64 products receive the Shared keyboard deadline
