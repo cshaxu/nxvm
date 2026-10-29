@@ -2,7 +2,7 @@
 
 The entries below are ordered unnumbered candidates.
 
-MyPC110 display selection is active as T581 in [Current](CURRENT.md), not a queued candidate.
+MyPC110 display selection is owner-closed as [T581](../history/M5-T581-pc110-vdisplay.md).
 
 The owner explicitly inserted [T564's committed frame import](../proposals/m5-softpc-rgb-frame-import.md)
 on 2026-10-17. T564 is historical, not another pending candidate; the

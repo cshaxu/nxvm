@@ -56,3 +56,6 @@ repository governance.
   diff, submit and push under the admitted T/S identifier.
 
 The active packet and acceptance state are maintained in states/CURRENT.md.
+
+Owner accepted and closed T581 on 2026-10-29; see the
+[closure history](../history/M5-T581-pc110-vdisplay.md).

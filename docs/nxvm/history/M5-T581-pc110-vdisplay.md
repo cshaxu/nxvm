@@ -22,3 +22,10 @@ owner; S1 and T581 remain open pending acceptance.
 Shared P1 `8031ee3e3` supplies the generic construction/reset seams and their
 regressions (+153/-30 including presets and manifests). NXVM P2 delivers
 the App, release artifacts and evidence as a separate target-scoped commit.
+
+## Owner closure
+
+On 2026-10-29 the owner accepted delivery `8031ee3e3` / `59ad6e78b` and
+closed S1 and T581. The clean committed baseline retains all recorded test
+results and limits; performance is the separately admitted next task, not
+an unfulfilled display-selection criterion.

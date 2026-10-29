@@ -1,4 +1,4 @@
-# M5 T581 S1 — Delivered: awaiting owner acceptance
+# M5 T581 — Closed after owner acceptance
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Existing external BIOS and font inputs; isolated media and CMOS copies; preserve owner files. |
 | Reporting Requirements | Report actual owner boundaries, failure/rollback behavior, diff, tests, artifact identity, and desktop/RDP limitations. |
 | Stop Conditions | No live firmware mutation, partial selection, fake fallback, unintended media writes, or unrelated product changes. |
-| Exit Criteria | Two deployed products and stopped-state switching satisfy the proposal and owner acceptance; retain unverified integration limits. |
+| Exit Criteria | Owner accepted S1 and closed T581 on 2026-10-29. Shared 8031ee3e3 and NXVM 59ad6e78b are pushed; all delivery criteria accepted with the recorded native desktop/RDP and empty-CMOS boundaries. |
 | Original Owner Request | Default DSTN, vdisplay=dstn/tft while stopped, and only x86/x64 executables. |
 | Similar-Issue Sweep | Compare both variants, lifecycle transitions, firmware/CMOS ownership, and all existing product extension callers. |
 # M5 T580 — Closed by owner direction
