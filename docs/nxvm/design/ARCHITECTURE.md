@@ -282,9 +282,9 @@ Each selected product deploys once to its App's
 My5160, My5170, MyDeskPro386 and NXVM use `assets/my5160`,
 `assets/my5170`, `assets/mydeskpro386` and `assets/nxvm` directly;
 there is no profile child directory.
-MyPC110 uses `assets/mypc110` for the fixed DSTN and TFT x86/x64
-executables and their shared `mypc110.ini`. Firmware selection is fixed at
-build time; the INI controls runtime configuration only.
+MyPC110 uses `assets/mypc110` for its x86/x64 executable pair and
+`mypc110.ini`. Both executables embed the two approved firmware variants;
+the stopped-state `vdisplay` command chooses the variant for the next start.
 These are the current executable locations; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
 and used by deployed-product integration. EXE deployment never rewrites or
@@ -324,7 +324,7 @@ The accepted prerequisites are [T539 chips](../history/M5-T539-independent-share
 app-my5160, app-my5170, app-mydeskpro386 and app-nxvm. Current owns acceptance.
 Their source/test/assets owners are parallel; the PC-family documentation,
 tools, version and task sequence remain unified. The separately admitted
-`app-mypc110` reuses the same Product/Machine route for fixed TFT and
+`app-mypc110` reuses the same Product/Machine route for selectable TFT and
 derived-DSTN firmware pairings. Current owns the remaining qualification and
 acceptance status; a build or background guest frame alone does not prove
 desktop or physical-panel behavior.

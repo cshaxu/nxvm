@@ -1,3 +1,23 @@
+# M5 T581 S1 — Delivered: awaiting owner acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T581 S1. |
+| Admission And Approval | Owner admitted the first queued task on 2026-10-29 and authorized autonomous execution. |
+| Objective | Determine and implement a safe stopped-state PC110 display/firmware selection and one executable per architecture. |
+| Non-goals | No runtime switching while running or paused, no user configuration or media destruction, no unnecessary changes to unrelated Apps or shared Lib/Emulator. |
+| Reference Baseline | T580 S90 accepted at d2ac7cf0b; existing four PC110 artifacts and fixed variant bindings. |
+| Candidate Proposal | [PC110 selectable display](../proposals/m5-pc110-display-variant-selection.md); [S1 design evidence](../etc/evidence/t581-s1-vdisplay-design.md) records media, worker and firmware ownership; implement the smallest correct route. |
+| Files And ABI Surface | NXVM and Shared targets: PC110 App and tests; X86-NXVM profile pre-reset, CMOS restore and Product context/extension hooks with tests/manifests. Lib/Emulator are unchanged. Rebuild all five PC products at their common 0.5.0581 version; MyNES/MyRaidenII are not receivers. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation, UX and source/research policy. |
+| Verification | Cached dual-width builds and ten deployed PC EXEs; 712/712 units per width; nine targeted integrations and three real-firmware integrations per width; three other PC entry receivers per width; actual DSTN-to-TFT guest boots reach Personaware on both widths. Native Window/RDP remains unverified; see S1 evidence. |
+| Expected Markers | DSTN default; vdisplay selects matching firmware and display only when stopped; two binaries with both BYOB firmware inputs. |
+| Asset Needs | Existing external BIOS and font inputs; isolated media and CMOS copies; preserve owner files. |
+| Reporting Requirements | Report actual owner boundaries, failure/rollback behavior, diff, tests, artifact identity, and desktop/RDP limitations. |
+| Stop Conditions | No live firmware mutation, partial selection, fake fallback, unintended media writes, or unrelated product changes. |
+| Exit Criteria | Two deployed products and stopped-state switching satisfy the proposal and owner acceptance; retain unverified integration limits. |
+| Original Owner Request | Default DSTN, vdisplay=dstn/tft while stopped, and only x86/x64 executables. |
+| Similar-Issue Sweep | Compare both variants, lifecycle transitions, firmware/CMOS ownership, and all existing product extension callers. |
 # M5 T580 — Closed by owner direction
 
 | Task | Retained progress |

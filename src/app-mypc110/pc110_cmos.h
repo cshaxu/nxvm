@@ -5,5 +5,6 @@
 
 lib_status mypc110_cmos_load(const char *path, lib_u8 *image, lib_bool *present);
 lib_status mypc110_cmos_save(const char *path, x86_nxvm_machine *machine);
+lib_status mypc110_cmos_save_image(const char *path, const lib_u8 *image);
 
 #endif

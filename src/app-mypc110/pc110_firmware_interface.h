@@ -34,6 +34,10 @@ typedef struct mypc110_firmware {
 
 lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
     mypc110_firmware *out_firmware);
+/* Caller owns the quiescent executor boundary. On failure the current view
+ * remains valid; the reset bank must match Core's immutable reset mapping. */
+lib_status mypc110_firmware_select(mypc110_firmware *firmware,
+    const lib_u8 *bios, lib_size bytes);
 void mypc110_firmware_destroy(mypc110_firmware *firmware);
 const x86_core_machine_firmware_provider *mypc110_firmware_provider(void);
 lib_status mypc110_firmware_install_routes(x86_core_machine *machine,

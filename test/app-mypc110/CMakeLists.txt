@@ -8,6 +8,33 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../src/app-mypc110" mypc110)
 endif()
 
+if(TARGET mypc110-selectable-firmware)
+    add_executable(mypc110-firmware-variants-smoke integration/firmware_variants_smoke.c)
+    target_include_directories(mypc110-firmware-variants-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(mypc110-firmware-variants-smoke PRIVATE mypc110-selectable-firmware mypc110-board)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-firmware-variants-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    if(TARGET build-integration-tests)
+        add_dependencies(build-integration-tests mypc110-firmware-variants-smoke)
+    endif()
+    add_test(NAME mypc110.integration/firmware-variants COMMAND mypc110-firmware-variants-smoke)
+    set_tests_properties(mypc110.integration/firmware-variants PROPERTIES LABELS "integration;mypc110" TIMEOUT 30)
+endif()
+
+add_executable(mypc110-vdisplay-smoke unit/vdisplay_smoke.c
+    "${CMAKE_SOURCE_DIR}/src/app-mypc110/product_vdisplay.c")
+target_include_directories(mypc110-vdisplay-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(mypc110-vdisplay-smoke PRIVATE types)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mypc110-vdisplay-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests mypc110-vdisplay-smoke)
+endif()
+add_test(NAME mypc110.unit/vdisplay COMMAND mypc110-vdisplay-smoke)
+set_tests_properties(mypc110.unit/vdisplay PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
+
 # Reuse the same firmware diagnostic for the separately embedded DSTN BIOS.
 # It is not a qualification test until that firmware's checkpoints are proven.
 if(TARGET mypc110-real-firmware-dstn)
@@ -120,38 +147,22 @@ endif()
 add_test(NAME mypc110.unit/ec-block COMMAND mypc110-ec-block-smoke)
 set_tests_properties(mypc110.unit/ec-block PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
 
-foreach(variant IN ITEMS tft dstn)
-    if(TARGET mypc110-product-${variant})
-        add_executable(mypc110-${variant}-product-composition-smoke
-            unit/product_composition_smoke.c)
-        target_link_libraries(mypc110-${variant}-product-composition-smoke PRIVATE
-            mypc110-product-${variant})
-        if(variant STREQUAL "tft")
-            target_compile_definitions(mypc110-${variant}-product-composition-smoke PRIVATE
-                MYPC110_EXPECTED_MACHINE_NAME="ibm-pc110-tft"
-                MYPC110_EXPECTED_PANEL_VALUE=0x00u)
-        else()
-            target_compile_definitions(mypc110-${variant}-product-composition-smoke PRIVATE
-                MYPC110_EXPECTED_MACHINE_NAME="ibm-pc110-dstn-derived"
-                MYPC110_EXPECTED_PANEL_VALUE=0x15u)
-        endif()
-        if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-            target_compile_options(mypc110-${variant}-product-composition-smoke PRIVATE
-                -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
-        endif()
-        add_dependencies(mypc110-${variant}-product-composition-smoke
-            mypc110-${variant})
-        if(TARGET build-unit-tests)
-            add_dependencies(build-unit-tests mypc110-${variant}-product-composition-smoke)
-        endif()
-        add_test(NAME mypc110.unit/${variant}-product-composition
-            COMMAND mypc110-${variant}-product-composition-smoke)
-        set_tests_properties(mypc110.unit/${variant}-product-composition PROPERTIES
-            LABELS "unit;mypc110" TIMEOUT 30)
+if(TARGET mypc110-product)
+    add_executable(mypc110-product-composition-smoke integration/product_composition_smoke.c)
+    target_link_libraries(mypc110-product-composition-smoke PRIVATE mypc110-product)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(mypc110-product-composition-smoke PRIVATE
+            -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
     endif()
-endforeach()
+    if(TARGET build-integration-tests)
+        add_dependencies(build-integration-tests mypc110-product-composition-smoke)
+    endif()
+    add_test(NAME mypc110.integration/product-composition COMMAND mypc110-product-composition-smoke)
+    set_tests_properties(mypc110.integration/product-composition PROPERTIES
+        LABELS "integration;mypc110" TIMEOUT 30)
+endif()
 
-if(WIN32 AND TARGET mypc110-tft AND TARGET mypc110-dstn)
+if(WIN32 AND TARGET mypc110)
     add_executable(mypc110-cmos-product-smoke
         integration/cmos_product_smoke.c "${CMAKE_SOURCE_DIR}/test/setup/console_process.c")
     target_include_directories(mypc110-cmos-product-smoke PRIVATE "${CMAKE_SOURCE_DIR}")
@@ -161,23 +172,18 @@ if(WIN32 AND TARGET mypc110-tft AND TARGET mypc110-dstn)
     endif()
     foreach(variant IN ITEMS tft dstn)
         add_test(NAME mypc110.integration/${variant}-cmos-product
-            COMMAND mypc110-cmos-product-smoke $<TARGET_FILE:mypc110-${variant}>
+            COMMAND mypc110-cmos-product-smoke $<TARGET_FILE:mypc110>
                 ${variant} "${CMAKE_BINARY_DIR}")
         set_tests_properties(mypc110.integration/${variant}-cmos-product PROPERTIES
             LABELS "integration;mypc110" TIMEOUT 30 RUN_SERIAL TRUE)
-        if(CMAKE_BUILD_TYPE STREQUAL "Release")
-            if(variant STREQUAL "tft")
-                set(other_variant dstn)
-            else()
-                set(other_variant tft)
-            endif()
-            get_target_property(artifact mypc110-${variant} MYPC110_ARTIFACT_NAME)
-            get_target_property(bios mypc110-${variant} MYPC110_BIOS_PATH)
-            get_target_property(other mypc110-${other_variant} MYPC110_BIOS_PATH)
-            get_target_property(font mypc110-${variant} MYPC110_FONT_PATH)
-            add_test(NAME mypc110.integration/${variant}-artifact-firmware
+        if(CMAKE_BUILD_TYPE STREQUAL "Release" AND variant STREQUAL "dstn")
+            get_target_property(artifact mypc110 MYPC110_ARTIFACT_NAME)
+            get_target_property(bios mypc110 MYPC110_DSTN_BIOS_PATH)
+            get_target_property(other mypc110 MYPC110_TFT_BIOS_PATH)
+            get_target_property(font mypc110 MYPC110_FONT_PATH)
+            add_test(NAME mypc110.integration/artifact-firmware
                 COMMAND "${CMAKE_COMMAND}"
-                    "-DPROJECT_ARTIFACT_PATH=$<TARGET_FILE:mypc110-${variant}>"
+                    "-DPROJECT_ARTIFACT_PATH=$<TARGET_FILE:mypc110>"
                     "-DPROJECT_ARTIFACT_ARCHITECTURE=${PROJECT_ARTIFACT_ARCHITECTURE}"
                     "-DDEPLOYED_PATH=${CMAKE_SOURCE_DIR}/assets/mypc110/${artifact}"
                     "-DEXPECTED_BIOS=${bios}"
@@ -185,11 +191,11 @@ if(WIN32 AND TARGET mypc110-tft AND TARGET mypc110-dstn)
                     "-DFONT_FILE=${font}"
                     "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
                     -P "${CMAKE_CURRENT_SOURCE_DIR}/integration/artifact_firmware.cmake")
-            set_tests_properties(mypc110.integration/${variant}-artifact-firmware PROPERTIES
+            set_tests_properties(mypc110.integration/artifact-firmware PROPERTIES
                 LABELS "integration;mypc110" TIMEOUT 120)
-            add_test(NAME mypc110.integration/${variant}-artifact-wrong-firmware
+            add_test(NAME mypc110.integration/artifact-wrong-firmware
                 COMMAND "${CMAKE_COMMAND}"
-                    "-DPROJECT_ARTIFACT_PATH=$<TARGET_FILE:mypc110-${variant}>"
+                    "-DPROJECT_ARTIFACT_PATH=$<TARGET_FILE:mypc110>"
                     "-DPROJECT_ARTIFACT_ARCHITECTURE=${PROJECT_ARTIFACT_ARCHITECTURE}"
                     "-DDEPLOYED_PATH=${CMAKE_SOURCE_DIR}/assets/mypc110/${artifact}"
                     "-DEXPECTED_BIOS=${other}"
@@ -197,7 +203,7 @@ if(WIN32 AND TARGET mypc110-tft AND TARGET mypc110-dstn)
                     "-DFONT_FILE=${font}"
                     "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
                     -P "${CMAKE_CURRENT_SOURCE_DIR}/integration/artifact_firmware_negative.cmake")
-            set_tests_properties(mypc110.integration/${variant}-artifact-wrong-firmware PROPERTIES
+            set_tests_properties(mypc110.integration/artifact-wrong-firmware PROPERTIES
                 LABELS "integration;mypc110" TIMEOUT 120)
         endif()
     endforeach()

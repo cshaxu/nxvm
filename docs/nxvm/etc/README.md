@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T581 S1: [PC110 stopped-state display selection](evidence/t581-s1-vdisplay-design.md)
+records ownership, shared contracts, per-variant CMOS, media retention and
+dual-architecture release qualification.
+
 Td S181: [Build/cache governance](evidence/td-s181-build-governance.md)
 records the repository-wide audit, safe cleanup and actual build/cache proof.
 

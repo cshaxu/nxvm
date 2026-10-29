@@ -8,9 +8,9 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 The product/shared-corpus layout is current. My5160, My5170 and default NXVM
 are flat Apps; only default's `firmware` owns project-authored guest firmware
 source and its build tools. MyDeskPro386 is also flat, with cohesive D4,
-construction, firmware and product files. MyPC110 owns its separately admitted
-TFT construction and prepublication Product preview; it remains outside the
-published machine set until its qualification receivers admit a release.
+construction, firmware and product files. MyPC110 owns its 486SX construction and stopped-only DSTN/TFT firmware
+selection. Its two host-architecture products share one Machine lifetime;
+Current records the retained qualification limits.
 
 ```text
 src/
@@ -34,7 +34,7 @@ src/
                          machine plan/configuration/construction and firmware map
     firmware/           project-owned BIOS source and offline ROM construction
   app-mypc110/          DSTN and TFT PC110 qualification App: board construction,
-                         firmware bindings and prepublication Product previews
+                         firmware bindings and stopped-state display selection
 ```
 
 Keep machine-specific declarations beside the fixed App's construction source.
@@ -169,9 +169,9 @@ they do not supply libraries to one another. Portable Debug/Xasm32 tooling
 remains in x86-debug; NXVM PC mechanisms live in x86-nxvm, and immutable model choices
 and D4 remain in each App.
 `app-mypc110` owns fixed 486SX construction, the two external firmware
-bindings, Product entry/binding and PC110 decode choices. Its fixed TFT and
-derived-DSTN targets use the normal Product/Machine route and deploy their
-four owner-named executables under `assets/mypc110`; Current records remaining
+bindings, Product entry/binding and PC110 decode choices. Its selectable TFT and
+derived-DSTN variants use the normal Product/Machine route and deploy one
+executable per host architecture under `assets/mypc110`; Current records remaining
 guest, display and release qualification.
 
 Each App has its own source, profile assertions, integration registration and

@@ -28,8 +28,60 @@ typedef struct mypc110_machine_plan {
     x86_f65535 *display_controller;
     x86_core_machine *core;
     x86_rb5c396 *pcic_controller;
+    mypc110_vdisplay *vdisplay;
     lib_i32 pen_x, pen_y;
 } mypc110_machine_plan;
+
+static lib_status mypc110_machine_before_reset(void *opaque, x86_nxvm_board_state *board)
+{
+    mypc110_machine_plan *plan = opaque;
+    mypc110_vdisplay *display;
+    mypc110_display_variant selected;
+    const x86_nxvm_machine_assets *assets;
+    lib_u8 old_cmos[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
+    lib_status status;
+
+    if (plan == LIB_NULL || board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    display = plan->vdisplay;
+    if (display == LIB_NULL) return LIB_STATUS_OK;
+    selected = (mypc110_display_variant)lib_atomic_i32_load_explicit(
+        &display->requested, LIB_MEMORY_ORDER_SEQ_CST);
+    if (selected == display->active) return LIB_STATUS_OK;
+    if (selected != MYPC110_DISPLAY_DSTN && selected != MYPC110_DISPLAY_TFT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    assets = display->firmware[selected];
+    if (assets == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = x86_nxvm_board_capture_rtc(board, old_cmos, X86_NXVM_MACHINE_RTC_SEED_BYTES);
+    if (status == LIB_STATUS_OK)
+        status = x86_nxvm_board_capture_cmos(board, old_cmos + X86_NXVM_MACHINE_RTC_SEED_BYTES,
+            sizeof(old_cmos) - X86_NXVM_MACHINE_RTC_SEED_BYTES);
+    if (status != LIB_STATUS_OK) return status;
+    status = mypc110_firmware_select(&plan->firmware, assets->bios[0].data, assets->bios[0].bytes);
+    if (status != LIB_STATUS_OK) return status;
+    status = x86_nxvm_board_restore_cmos(board,
+        display->cmos[selected] + X86_NXVM_MACHINE_RTC_SEED_BYTES,
+        sizeof(old_cmos) - X86_NXVM_MACHINE_RTC_SEED_BYTES);
+    if (status == LIB_STATUS_OK && display->present[selected] && display->cmos[selected][0x0du] == 0x80u)
+        status = x86_nxvm_board_restore_rtc(board, display->cmos[selected],
+            X86_NXVM_MACHINE_RTC_SEED_BYTES);
+    if (status != LIB_STATUS_OK) return status;
+    lib_memory_copy(display->cmos[display->active], old_cmos, sizeof(old_cmos));
+    display->present[display->active] = LIB_TRUE;
+    display->dirty[display->active] = LIB_TRUE;
+    display->active = selected;
+    return LIB_STATUS_OK;
+}
+
+lib_status mypc110_machine_attach_vdisplay(void *context,
+    x86_nxvm_machine_construction *construction)
+{
+    mypc110_machine_plan *plan;
+    if (context == LIB_NULL || construction == LIB_NULL || construction->profile.context == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    plan = construction->profile.context;
+    plan->vdisplay = context;
+    return LIB_STATUS_OK;
+}
 
 static const x86_nxvm_board_config mypc110_machine_configuration = {
     .memory_bytes = 20u * 1024u * 1024u,
@@ -307,6 +359,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     profile = (x86_nxvm_machine_profile_binding) {
         .context = plan, .configure = mypc110_machine_configure,
         .after_firmware = mypc110_machine_after_firmware,
+        .before_reset = mypc110_machine_before_reset,
         .release = mypc110_machine_release,
         .handle_input = mypc110_machine_handle_input};
     status = mypc110_firmware_create(assets->bios[0u].data, assets->bios[0u].bytes,

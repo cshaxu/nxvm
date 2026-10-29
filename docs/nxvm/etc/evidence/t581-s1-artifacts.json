@@ -1,0 +1,66 @@
+{
+  "version": "0.5.0581",
+  "base_commit": "e769bc579431f06695eab7d687e0cf0d5080a3f5",
+  "artifacts": [
+    {
+      "path": "assets/my5160/my5160_0_5_0581_x64.exe",
+      "architecture": "x64",
+      "bytes": 1549198,
+      "sha256": "10DBAEFDDDCCF6B6956D3D90B97681BF98827864EDDCF0A7D33C62C11A078190"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0581_x86.exe",
+      "architecture": "x86",
+      "bytes": 1686239,
+      "sha256": "8D76B3C9BDDD06C300081ECBC8908BA9C23EB5297816399A26D6A6E0CEDA7E24"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0581_x64.exe",
+      "architecture": "x64",
+      "bytes": 1561772,
+      "sha256": "C0FA44A770B3DDA4331AB959FB785E5820567F7C7943E733BC20DF52D172E277"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0581_x86.exe",
+      "architecture": "x86",
+      "bytes": 1700120,
+      "sha256": "3FA639F0EBAA7F75D48E6BAE5F5E6DBC79913E4F01AE20F05866A83BEEB991B3"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0581_x64.exe",
+      "architecture": "x64",
+      "bytes": 1548946,
+      "sha256": "DC47C1425C7C264F7BAB3EFFDA3D2583B10F045B695D3768B332891388D10FE4"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0581_x86.exe",
+      "architecture": "x86",
+      "bytes": 1686837,
+      "sha256": "30228ECC3028E594674EC1B0BD8B72927079FF0E47F98970D3E8281BA0684A71"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0581_x64.exe",
+      "architecture": "x64",
+      "bytes": 1560406,
+      "sha256": "FCC9EE8278AC1EBC44EE0AAD57BC678E5815FE442C3898D158CBF9FEB3E05760"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0581_x86.exe",
+      "architecture": "x86",
+      "bytes": 1698906,
+      "sha256": "37BFEEABC84A22B2653CD1E0C7F3884799F9A2C4C7D7F1384DB59D6741BFD2CD"
+    },
+    {
+      "path": "assets/mypc110/mypc110_x64.exe",
+      "architecture": "x64",
+      "bytes": 3082679,
+      "sha256": "4FD9DDFF6839761181AD19AAF4026531223CABAA54DD6E7C2FBEBA2FFC2685A3"
+    },
+    {
+      "path": "assets/mypc110/mypc110_x86.exe",
+      "architecture": "x86",
+      "bytes": 3222615,
+      "sha256": "87CE2D6E342260B22E4A2051F424DB8126E6ECB14D769312EB2D81E9570B2F27"
+    }
+  ]
+}

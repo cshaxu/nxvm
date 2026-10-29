@@ -2,7 +2,7 @@
 
 ## Owner request and priority
 
-First queued M5 T candidate after the currently active T580. Keep MyPC110 as
+Admitted as M5 T581 after the owner closed T580. Keep MyPC110 as
 one product: publish only `mypc110_x86.exe` and `mypc110_x64.exe`, each with
 both selected firmware variants embedded. Default to DSTN. The monitor command
 `vdisplay=dstn` or `vdisplay=tft` selects the corresponding PC110 display and
@@ -55,5 +55,4 @@ repository governance.
   affected builds, tests and required receiver regressions; review the actual
   diff, submit and push under the admitted T/S identifier.
 
-This is a queued proposal, not an active implementation packet. T580 S88
-remains active until separately accepted or otherwise directed by the owner.
+The active packet and acceptance state are maintained in states/CURRENT.md.

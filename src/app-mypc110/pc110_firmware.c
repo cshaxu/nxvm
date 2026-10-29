@@ -203,21 +203,17 @@ static const x86_core_machine_firmware_provider mypc110_provider = {
     mypc110_firmware_configure, mypc110_firmware_reset, LIB_NULL
 };
 
-lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
-    mypc110_firmware *out_firmware)
+static lib_status mypc110_firmware_copy_bios(const lib_u8 *bios, lib_size bytes,
+    lib_u8 **out_bios)
 {
-    if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES || out_firmware == LIB_NULL)
+    lib_u8 *copy;
+
+    if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES || out_bios == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_firmware = (mypc110_firmware) {0};
-    out_firmware->bios = lib_allocate(MYPC110_FIRMWARE_BYTES);
-    if (out_firmware->bios == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    out_firmware->shadow = lib_allocate_zero(1u, MYPC110_FIRMWARE_BYTES + MYPC110_SMRAM_BYTES);
-    if (out_firmware->shadow == LIB_NULL) {
-        lib_release(out_firmware->bios);
-        out_firmware->bios = LIB_NULL;
-        return LIB_STATUS_NO_MEMORY;
-    }
-    lib_memory_copy(out_firmware->bios, bios, bytes);
+    *out_bios = LIB_NULL;
+    copy = lib_allocate(bytes);
+    if (copy == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    lib_memory_copy(copy, bios, bytes);
     /* L1 boot compatibility for the selected PC110 BIOS: skip the observed
      * POST suspend branch while its power-on status is not modeled.  The
      * input ROM remains immutable; the chipset suspend path is unchanged. */
@@ -225,9 +221,55 @@ lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
         bios[MYPC110_POST_SUSPEND_BRANCH - 1u] == 0x08u &&
         bios[MYPC110_POST_SUSPEND_BRANCH] == 0x74u &&
         bios[MYPC110_POST_SUSPEND_BRANCH + 1u] == 0x24u) {
-        out_firmware->bios[MYPC110_POST_SUSPEND_BRANCH] = 0x90u;
-        out_firmware->bios[MYPC110_POST_SUSPEND_BRANCH + 1u] = 0x90u;
+        copy[MYPC110_POST_SUSPEND_BRANCH] = 0x90u;
+        copy[MYPC110_POST_SUSPEND_BRANCH + 1u] = 0x90u;
     }
+    *out_bios = copy;
+    return LIB_STATUS_OK;
+}
+
+lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
+    mypc110_firmware *out_firmware)
+{
+    lib_status status;
+
+    if (out_firmware == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_firmware = (mypc110_firmware) {0};
+    status = mypc110_firmware_copy_bios(bios, bytes, &out_firmware->bios);
+    if (status != LIB_STATUS_OK) return status;
+    out_firmware->shadow = lib_allocate_zero(1u, MYPC110_FIRMWARE_BYTES + MYPC110_SMRAM_BYTES);
+    if (out_firmware->shadow == LIB_NULL) {
+        lib_release(out_firmware->bios);
+        out_firmware->bios = LIB_NULL;
+        return LIB_STATUS_NO_MEMORY;
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status mypc110_firmware_select(mypc110_firmware *firmware,
+    const lib_u8 *bios, lib_size bytes)
+{
+    lib_u8 *candidate = LIB_NULL;
+    lib_u8 *previous;
+    lib_status status;
+
+    if (firmware == LIB_NULL || bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (firmware->bios == LIB_NULL || firmware->machine == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    status = mypc110_firmware_copy_bios(bios, bytes, &candidate);
+    if (status != LIB_STATUS_OK) return status;
+    if (lib_memory_compare(firmware->bios + 3u * MYPC110_FIRMWARE_BANK_BYTES,
+            candidate + 3u * MYPC110_FIRMWARE_BANK_BYTES,
+            MYPC110_FIRMWARE_BANK_BYTES) != 0) {
+        lib_release(candidate);
+        return LIB_STATUS_UNSUPPORTED;
+    }
+    previous = firmware->bios;
+    firmware->bios = candidate;
+    x86_core_machine_signal_memory_decode_change(firmware->machine,
+        MYPC110_VIDEO_PHYSICAL_START, MYPC110_FIRMWARE_BYTES);
+    lib_release(previous);
     return LIB_STATUS_OK;
 }
 
