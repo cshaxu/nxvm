@@ -62,7 +62,7 @@ A second, more intrusive x64 probe directly instrumented the existing ExecIns ca
 
 Instruction and data breakpoint matchers currently scan four slots even when all DR7 local/global enable bits are clear. A private candidate checks those existing enable bits and returns no enabled breakpoint after initializing the output. The sole callers use the matched mask only when at least one breakpoint was enabled and matched; TF, RF, software Debug and enabled/mixed slots still require their existing paths. This caller reasoning is not a replacement for the Debug regression suite.
 
-At 10000000 instructions, 79964294 guest ticks and PC 0003dbc5, x64 baseline/candidate took 18687/23183 ms and x86 took 24698/23830 ms. Each is one sequential pair. Opposite directions and large host variation do not show a reliable benefit; no Shared production change has been made. Retain the existing matcher and investigate instruction execution/timing before considering this candidate further.
+At 10000000 instructions, 79964294 guest ticks and PC 0003dbc5, x64 baseline/candidate took 18687/23183 ms and x86 took 24698/23830 ms. In a reverse-order pair, x64 candidate/baseline took 20281/20136 ms and x86 took 25765/25381 ms at the same checkpoint. Both reverse-order candidates were slightly slower; the two ordered pairs do not show a reliable benefit. No Shared production change has been made. Retain the existing matcher.
 
 ## Early instruction distribution
 
