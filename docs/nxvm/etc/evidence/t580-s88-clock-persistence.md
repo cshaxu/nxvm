@@ -33,3 +33,36 @@ not a cross-boot wall clock. The RTC advances once per elapsed guest second
 in a loop, so blindly replaying a long powered-off interval would also have
 unbounded startup cost and could raise update/alarm flags. A correct design
 must specify powered-off elapsed time separately and avoid that replay path.
+
+## Interface boundary for review
+
+The existing 128-byte file and `capture_cmos` are configuration contracts;
+changing their interpretation for every PC profile would silently affect
+other machines. A candidate is an explicitly optional RTC calendar seed in
+the existing Machine construction data and a quiescent RTC calendar capture
+from that same Machine. Board and RTC remain the only owners of live state;
+the App supplies saved values at construction and persists a copy only after
+the worker stops. Register C cannot be read for persistence because its read
+acknowledges interrupts. Restore must honor the RTC's binary/BCD and 12/24
+hour modes, rather than interpreting raw calendar bytes independently of
+register B.
+
+An elapsed-time model additionally needs a cross-process wall-clock source.
+The existing Base monotonic counter cannot supply it. A possible neutral Lib
+Base API is UTC seconds on Win32 and Linux; a PC110-owned file can store the
+last guest RTC and the corresponding host timestamp. Old 128-byte files must
+remain accepted as configuration-only inputs, and newly written data must be
+explicitly versioned and validated. A backward host clock must not subtract
+time from the guest; a host clock read failure must remain a reported error.
+Offline calendar advancement must be bounded independently of the number of
+seconds, must respect the RTC divider and SET state, and must not synthesize
+normal running interrupt events by calling the existing per-second advance
+loop.
+
+This is a design candidate, not authorization or a completed repair. It
+would change Lib Base and X86-NXVM public interfaces and their tests, in
+addition to the PC110 App and its tests. It also addresses only the process
+restart interval: RTC advancement while stopped or paused and the interaction
+with the unpaced Turbo guest clock require separate evidence before claiming
+full battery-clock behavior. No source or test from the external emulator is
+copied; its host-clock behavior is a research lead only.
