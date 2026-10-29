@@ -41,7 +41,8 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S6: display observation.** Prove correct provider-owned observation and avoid unchanged PC110 capture without losing cursor updates.
 - **S7: current execution profile.** Re-sample the post-S4 guest and select the next evidence-backed hotspot.
 - **S8: keyboard idle deadline.** Eliminate the measured redundant inactive-repeat query while preserving the existing input contract.
-- **S9: receiving qualification and delivery.** Reconcile startup and steady
+- **S9: execution observation and scheduling audit.** Measure per-instruction observation and scheduling costs with full correctness boundaries.
+- **S10: receiving qualification and delivery.** Reconcile startup and steady
   guest/clock observations on both widths and variants, run affected receiver
   regressions, rebuild/deploy affected products, review actual diff and publish.
   Close only after owner acceptance. Renumber this final S if another measured

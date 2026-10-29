@@ -1,4 +1,25 @@
-# M5 T582 S8 — Active: keyboard idle deadline repair
+# M5 T582 S9 — Active: execution observation and scheduling audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S9 after S8 delivery and review. |
+| Admission And Approval | Owner authorized continued performance work and autonomous numeric S sequencing. |
+| Objective | Measure per-instruction CPU observation and scheduler costs and identify a larger equivalent optimization for PC110. |
+| Non-goals | No skipped instructions, fault rollback, timing or debug semantics; no new mirrored state, guest-clock substitution, public API or owner media changes. |
+| Reference Baseline | Shared 67807dbed, NXVM 5dd25ead4, MyRaidenII f507c8b97; S7 sampled execution profile. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md) and [S7 evidence](../etc/evidence/t582-s7-execution-profile.md). |
+| Files And ABI Surface | Initially read-only X86 Core CPU and Machine; task-owned probes in build/t582. Record design and estimate before any implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Matched Release work, exact guest ticks/PC and observation/debug/interrupt regression. Shared changes require 14 EXEs and full dual-width unit/integration tests. |
+| Expected Markers | Evidence-backed major cost and useful equivalent repair or documented negative result. |
+| Asset Needs | Existing firmware and isolated copied CMOS/media. |
+| Reporting Requirements | Measurement overhead, actual diff, architectural semantics, qualification and realtime limits. |
+| Stop Conditions | Preserve completed instruction observation across interrupt entry and all debug, trace, retirement and timing consumers. |
+| Exit Criteria | Qualified improvement or bounded audit with next evidenced owner; T582 remains open until actual usability proven. |
+| Original Owner Request | Improve PC110 performance until usable, maintaining correctness and simplicity. |
+| Similar-Issue Sweep | Examine instruction observation, interrupt entry, retirement/preview, scheduler deadlines and no-consumer paths. |
+
+# M5 T582 S8 — Closed: keyboard idle deadline repair
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing approved firmware, private CMOS/media copies and overlays. |
 | Reporting Requirements | Actual source/test diff, qualification, artifact hashes, measurement uncertainty and playability limits. |
 | Stop Conditions | No reduction of repeat correctness or ignored keyboard startup transitions. |
-| Exit Criteria | Reviewed equivalent repair and complete required delivery; T582 remains open until actual usability is proven. |
+| Exit Criteria | Coordinator reviewed Shared 67807dbed, NXVM 5dd25ead4 and MyRaidenII f507c8b97; required delivery passed. T582 remains open until usability is proven. |
 | Original Owner Request | Improve PC110 performance and eliminate redundant calculations until usable. |
 | Similar-Issue Sweep | Repeat signal/deadline behavior across enabled, disabled, empty, active and pending BAT/FIFO paths. |
 
