@@ -663,7 +663,9 @@ int main(int argc, char **argv)
         lib_text_compare(argv[1], "--c000-port61-follow") == 0;
     lib_bool fdc_checkpoint = argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--fdc-reset") == 0;
-    lib_bool boot_checkpoint = setup_checkpoint || ata_checkpoint || (argc == 2 && argv != LIB_NULL &&
+    const lib_bool cold_boot_checkpoint = argc == 2 && argv != LIB_NULL &&
+        lib_text_compare(argv[1], "--cold-boot") == 0;
+    lib_bool boot_checkpoint = cold_boot_checkpoint || setup_checkpoint || ata_checkpoint || (argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--resume-boot") == 0);
     lib_bool power_checkpoint = boot_checkpoint || (argc == 2 && argv != LIB_NULL &&
         lib_text_compare(argv[1], "--resume-button") == 0);
@@ -716,6 +718,7 @@ int main(int argc, char **argv)
     if (fdc_checkpoint) instruction_limit = 32000000u;
     if (power_checkpoint) instruction_limit = 60000000u;
     if (boot_checkpoint) instruction_limit = 100000000u;
+    if (cold_boot_checkpoint) instruction_limit = 200000000u;
     if (setup_checkpoint) instruction_limit = 120000000u;
     post_reset_trace.fdc_checkpoint = fdc_checkpoint;
     post_reset_trace.control_trace = setup_checkpoint;
@@ -817,6 +820,12 @@ int main(int argc, char **argv)
     if (status == LIB_STATUS_OK)
         status = mypc110_machine_construction_create(&config, &selected_firmware, &construction);
     if (status == LIB_STATUS_OK) power_firmware = construction.firmware_context;
+    if (status == LIB_STATUS_OK && power_checkpoint && !cold_boot_checkpoint) {
+        /* This existing receiver tests the original firmware's suspend and
+         * physical resume sequence, separately from cold-boot compatibility. */
+        power_firmware->bios[0x33ffau] = selected_firmware.bios[0u].data[0x33ffau];
+        power_firmware->bios[0x33ffbu] = selected_firmware.bios[0u].data[0x33ffbu];
+    }
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_create(&config, &construction, &machine);
     if (status == LIB_STATUS_OK && cmos_origin_checkpoint)
@@ -827,6 +836,9 @@ int main(int argc, char **argv)
                 .context = &post_reset_trace});
     if (status == LIB_STATUS_OK && power_checkpoint)
         status = x86_nxvm_machine_describe_emulator_driver(machine, &power_driver);
+    if (status == LIB_STATUS_OK && cold_boot_checkpoint)
+        status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+            X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0xf52bdu);
     if (status == LIB_STATUS_OK && (!power_checkpoint || setup_media_checkpoint) && !cmos_origin_checkpoint) {
         status = x86_core_machine_set_retirement_observation_provider(
             machine->x86_core_machine,
@@ -866,6 +878,16 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_QUANTUM,
                 .ticks = 0u}, &result);
         executed += result.executed;
+        if (cold_boot_checkpoint && result.reason == X86_CORE_MACHINE_STOP_PAUSED) {
+            x86_core_cpu_debug_instruction_observation retired = {0};
+            status = x86_core_machine_debug_capture_instruction_observation(
+                machine->x86_core_machine, &retired);
+            boot_handoff = status == LIB_STATUS_OK && retired.watch_hit &&
+                retired.instruction_linear == 0xf52bdu &&
+                retired.instruction_byte_count >= 2u &&
+                retired.instruction_bytes[0u] == 0xcdu && retired.instruction_bytes[1u] == 0x19u;
+            break;
+        }
         if (cmos_origin_checkpoint && post_reset_trace.cmos_trace_completed) {
             lib_c_printf("PC110:CMOS:origin-observed executed=%llu\n",
                 (unsigned long long)executed);
@@ -1289,6 +1311,11 @@ int main(int argc, char **argv)
                 MYPC110_POST_DIAGNOSTIC_C000_PORT61_READ_CAPACITY) break;
         if (result.reason == X86_CORE_MACHINE_STOP_RESET_REQUESTED) {
             ++processor_reset_count;
+            if (cold_boot_checkpoint) {
+                status = x86_core_machine_debug_set_watchpoint(machine->x86_core_machine,
+                    X86_CORE_CPU_DEBUG_WATCH_EXECUTE, 0xf52bdu);
+                if (status != LIB_STATUS_OK) break;
+            }
             if (setup_resume_checkpoint && setup_reset_completed) {
                 status = x86_core_machine_capture_observation(machine->x86_core_machine,
                     &reset_observation);
@@ -1355,6 +1382,9 @@ int main(int argc, char **argv)
             x86_core_cpu_debug_cpu_snapshot cpu = {0};
 
             ++wait_count;
+            if (cold_boot_checkpoint &&
+                x86_vl82c420_suspend_refresh_enabled(power_firmware->configuration_chip))
+                break;
             if (power_checkpoint && (!button_sent ||
                 (setup_resume_checkpoint && setup_reset_completed && !setup_wake_sent)) &&
                 x86_vl82c420_suspend_refresh_enabled(power_firmware->configuration_chip)) {
@@ -1722,6 +1752,8 @@ int main(int argc, char **argv)
         lib_c_printf("PC110:SETUP:cmos-save=%d\n", status);
     }
     x86_nxvm_machine_destroy(machine);
+    if (cold_boot_checkpoint)
+        return status == LIB_STATUS_OK && boot_handoff ? 0 : 1;
     if (cmos_origin_checkpoint)
         return status == LIB_STATUS_OK && post_reset_trace.cmos_trace_completed ? 0 : 1;
     if (power_checkpoint) {

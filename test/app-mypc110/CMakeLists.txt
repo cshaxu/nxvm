@@ -212,15 +212,15 @@ if(TARGET mypc110-real-firmware-tft)
         target_compile_options(mypc110-real-firmware-post-integration PRIVATE
             -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
     endif()
-    # One unchanged-BIOS receiver covers the earlier timer/SMI prefixes and
+    # The firmware receiver covers the earlier timer/SMI prefixes and
     # the integrated controller's reset, IRQ and four SENSE results.
     add_test(NAME mypc110.integration/real-firmware-fdc-reset
         COMMAND mypc110-real-firmware-post-integration --fdc-reset)
     set_tests_properties(mypc110.integration/real-firmware-fdc-reset PROPERTIES
         LABELS "integration;mypc110" TIMEOUT 180)
-    # Retained power plus ordinary POST/INT19, through one real BIOS replay.
+    # Original BIOS branch: retained power plus ordinary POST/INT19.
     # Keep this CPU-bound whole route isolated from other CTest workloads.
-    add_test(NAME mypc110.integration/real-firmware-boot-handoff
+    add_test(NAME mypc110.integration/real-firmware-resume-boot-handoff
         COMMAND mypc110-real-firmware-post-integration --resume-boot)
     # The optimized x86 guest handoff measured 356 seconds; retain bounded
     # host headroom without changing the guest or the x64 budget.
@@ -229,6 +229,10 @@ if(TARGET mypc110-real-firmware-tft)
     else()
         set(mypc110_boot_timeout 360)
     endif()
-    set_tests_properties(mypc110.integration/real-firmware-boot-handoff PROPERTIES
+    set_tests_properties(mypc110.integration/real-firmware-resume-boot-handoff PROPERTIES
+        LABELS "integration;mypc110" TIMEOUT ${mypc110_boot_timeout} RUN_SERIAL TRUE)
+    add_test(NAME mypc110.integration/real-firmware-cold-boot-handoff
+        COMMAND mypc110-real-firmware-post-integration --cold-boot)
+    set_tests_properties(mypc110.integration/real-firmware-cold-boot-handoff PROPERTIES
         LABELS "integration;mypc110" TIMEOUT ${mypc110_boot_timeout} RUN_SERIAL TRUE)
 endif()

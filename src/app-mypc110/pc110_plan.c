@@ -26,6 +26,7 @@ typedef struct mypc110_machine_plan {
     mypc110_inking inking;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
+    x86_core_machine *core;
     x86_rb5c396 *pcic_controller;
     lib_i32 pen_x, pen_y;
 } mypc110_machine_plan;
@@ -138,7 +139,15 @@ static const x86_nxvm_board_hdc_config mypc110_machine_hdc = {
 static lib_status mypc110_machine_capture_display(void *context,
     x86_video_snapshot *out_snapshot)
 {
-    return x86_f65535_capture_snapshot((x86_f65535 *)context, out_snapshot);
+    mypc110_machine_plan *plan = context;
+    lib_u64 ticks;
+    lib_status status;
+
+    if (plan == LIB_NULL || plan->core == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    status = x86_core_machine_get_elapsed_ticks(plan->core, &ticks);
+    if (status != LIB_STATUS_OK) return status;
+    return x86_f65535_capture_snapshot(plan->display_controller,
+        ticks / (MYPC110_CPU_CLOCK_HZ / MYPC110_VSYNC_HZ), out_snapshot);
 }
 
 /* The board owns reset ordering.  PCIC state is controller-local, while the
@@ -149,6 +158,7 @@ static void mypc110_machine_profile_reset(void *opaque,
     mypc110_machine_plan *plan = opaque;
 
     if (plan != LIB_NULL && phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
+        x86_f65535_reset(plan->display_controller);
         x86_rb5c396_reset(plan->pcic_controller);
         mypc110_inking_reset(&plan->inking);
     }
@@ -207,6 +217,7 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
     lib_status status;
 
     if (plan == LIB_NULL || core == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    plan->core = core;
     status = mypc110_firmware_install_routes(core, &plan->firmware);
     if (status == LIB_STATUS_OK)
         status = mypc110_config_install_routes(core, &plan->firmware,
@@ -326,7 +337,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .sectors = 32u,
         .memory_reconfigurable = LIB_FALSE,
         .display_snapshot_provider = mypc110_machine_capture_display,
-        .display_snapshot_context = plan->display_controller,
+        .display_snapshot_context = plan,
         .firmware_provider = mypc110_firmware_provider(),
         .firmware_context = &plan->firmware,
         .profile = profile};

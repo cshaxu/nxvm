@@ -4,6 +4,8 @@
 #define MYPC110_CPU_CLOCK_HZ 33000000u
 #define MYPC110_PIT_INPUT_HZ 1193182u
 #define MYPC110_RTC_INPUT_HZ 32768u
+/* L2 nominal vertical-sync cadence on the existing Core clock. */
+#define MYPC110_VSYNC_HZ 60u
 /* L2 nominal 100 us command-service quantum, on the one Core/KBC axis. */
 #define MYPC110_KBC_COMMAND_RESPONSE_TICKS (MYPC110_CPU_CLOCK_HZ / 10000u)
 /* L2 nominal refresh period, rounded onto the one Core time axis. */

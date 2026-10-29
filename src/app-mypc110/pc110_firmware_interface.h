@@ -20,7 +20,7 @@ typedef struct mypc110_inking mypc110_inking;
  * Flash is immutable. One cold-zero shadow holds C--F; chipset access fields
  * select reads/writes independently. Guest firmware performs all shadow copies. */
 typedef struct mypc110_firmware {
-    const lib_u8 *bios;
+    lib_u8 *bios;
     lib_u8 *shadow;
     x86_vl82c420 *configuration_chip;
     mypc110_inking *inking;

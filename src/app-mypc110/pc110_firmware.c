@@ -6,6 +6,7 @@
 #define MYPC110_FLASH_PHYSICAL_START 0x000e0000u
 #define MYPC110_RESET_PHYSICAL_START 0xffff0000u
 #define MYPC110_SHADOW_BLOCK_BYTES (16u * 1024u)
+#define MYPC110_POST_SUSPEND_BRANCH 0x33ffau
 
 /* L2 PC110 decode: external Flash banks 2/3 occupy E/F, not C/D.
  * Segment fields select internal shadow independently for reads and writes.
@@ -208,15 +209,32 @@ lib_status mypc110_firmware_create(const lib_u8 *bios, lib_size bytes,
     if (bios == LIB_NULL || bytes != MYPC110_FIRMWARE_BYTES || out_firmware == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_firmware = (mypc110_firmware) {0};
+    out_firmware->bios = lib_allocate(MYPC110_FIRMWARE_BYTES);
+    if (out_firmware->bios == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     out_firmware->shadow = lib_allocate_zero(1u, MYPC110_FIRMWARE_BYTES + MYPC110_SMRAM_BYTES);
-    if (out_firmware->shadow == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    out_firmware->bios = bios;
+    if (out_firmware->shadow == LIB_NULL) {
+        lib_release(out_firmware->bios);
+        out_firmware->bios = LIB_NULL;
+        return LIB_STATUS_NO_MEMORY;
+    }
+    lib_memory_copy(out_firmware->bios, bios, bytes);
+    /* L1 boot compatibility for the selected PC110 BIOS: skip the observed
+     * POST suspend branch while its power-on status is not modeled.  The
+     * input ROM remains immutable; the chipset suspend path is unchanged. */
+    if (bios[MYPC110_POST_SUSPEND_BRANCH - 2u] == 0xa8u &&
+        bios[MYPC110_POST_SUSPEND_BRANCH - 1u] == 0x08u &&
+        bios[MYPC110_POST_SUSPEND_BRANCH] == 0x74u &&
+        bios[MYPC110_POST_SUSPEND_BRANCH + 1u] == 0x24u) {
+        out_firmware->bios[MYPC110_POST_SUSPEND_BRANCH] = 0x90u;
+        out_firmware->bios[MYPC110_POST_SUSPEND_BRANCH + 1u] = 0x90u;
+    }
     return LIB_STATUS_OK;
 }
 
 void mypc110_firmware_destroy(mypc110_firmware *firmware)
 {
     if (firmware == LIB_NULL) return;
+    lib_release(firmware->bios);
     lib_release(firmware->shadow);
     *firmware = (mypc110_firmware) {0};
 }

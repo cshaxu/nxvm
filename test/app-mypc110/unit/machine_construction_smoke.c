@@ -4,6 +4,7 @@
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
+#include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
 #include "lib/kvm-console/frame_interface.h"
@@ -58,6 +59,42 @@ static lib_bool mypc110_test_route_writes(emulator_machine_driver *driver,
     return LIB_TRUE;
 }
 
+static lib_bool mypc110_test_display_reset(emulator_machine_driver *driver)
+{
+    static const lib_u16 setup[][2] = {
+        {0x03ceu, 6u}, {0x03cfu, 0x0eu}, {0x03d4u, 1u}, {0x03d5u, 0x4fu},
+        {0x03d4u, 7u}, {0x03d5u, 0x1fu}, {0x03d4u, 9u}, {0x03d5u, 0x0fu},
+        {0x03d4u, 18u}, {0x03d5u, 0x8fu}, {0x03d4u, 0x17u}, {0x03d5u, 0xa3u}};
+    kvm_window_frame_storage frame = {0};
+    kvm_console_text_frame console = {0};
+    lib_bool produced = LIB_FALSE;
+    lib_bool ok = LIB_FALSE;
+    lib_u8 value = 0x60u;
+
+    if (!mypc110_test_route_writes(driver, setup, sizeof(setup) / sizeof(setup[0])) ||
+        !mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_INDEX_PORT, &value)) goto done;
+    value = 0x81u;
+    if (!mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_DATA_PORT, &value)) goto done;
+    base_sync_sleep_milliseconds(20u); /* Existing display publication cadence. */
+    if (driver->copy_frame(driver->context, &frame, &console, &produced) != LIB_STATUS_OK ||
+        !produced || frame.frame.text == LIB_NULL ||
+        frame.frame.text->base.text_columns != 80u || frame.frame.text->base.text_rows != 25u ||
+        !driver->reset(driver->context)) goto done;
+    produced = LIB_TRUE;
+    if (driver->copy_frame(driver->context, &frame, &console, &produced) != LIB_STATUS_OK ||
+        produced || frame.frame.text == LIB_NULL ||
+        frame.frame.text->base.text_columns != 80u || frame.frame.text->base.text_rows != 25u)
+        goto done;
+    value = 0x60u;
+    if (!mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_INDEX_PORT, &value) ||
+        !mypc110_test_port(driver, LIB_FALSE, X86_F65535_EXTENSION_DATA_PORT, &value)) goto done;
+    ok = value == 0x83u;
+done:
+    kvm_window_frame_release(&frame);
+    kvm_console_frame_release(&console);
+    return ok;
+}
+
 static lib_bool mypc110_test_product_routes(emulator_machine_driver *driver,
     const x86_nxvm_machine_construction *construction)
 {
@@ -67,7 +104,7 @@ static lib_bool mypc110_test_product_routes(emulator_machine_driver *driver,
         {0x03c4u, 2u}, {0x03c5u, 3u}, {0x03ceu, 6u}, {0x03cfu, 0x0eu},
         {0x03c4u, 4u}, {0x03c5u, 2u}, {0x03d4u, 1u}, {0x03d5u, 0x4fu},
         {0x03d4u, 7u}, {0x03d5u, 0x1fu}, {0x03d4u, 9u}, {0x03d5u, 0x0fu},
-        {0x03d4u, 18u}, {0x03d5u, 0x8fu}};
+        {0x03d4u, 18u}, {0x03d5u, 0x8fu}, {0x03d4u, 0x17u}, {0x03d5u, 0xa3u}};
     static const lib_u16 graphics_setup[][2] = {
         {0x03ceu, 6u}, {0x03cfu, 5u}, {0x03c4u, 4u}, {0x03c5u, 4u},
         {0x03d4u, 1u}, {0x03d5u, 79u}, {0x03d4u, 7u}, {0x03d5u, 2u},
@@ -141,7 +178,8 @@ static lib_bool mypc110_test_product_routes(emulator_machine_driver *driver,
     return mypc110_test_memory(driver, LIB_TRUE, 0x000a0000u, &value) &&
         construction->display_snapshot_provider(construction->display_snapshot_context, &snapshot) ==
             LIB_STATUS_OK && snapshot.kind == X86_VIDEO_KIND_VGA_PLANAR16 &&
-        snapshot.pixel_width == 640u && snapshot.pixel_height == 480u && snapshot.pixels[1] == 15u;
+        snapshot.pixel_width == 640u && snapshot.pixel_height == 480u && snapshot.pixels[1] == 15u &&
+        mypc110_test_display_reset(driver);
 }
 
 static lib_status mypc110_write_zero_image(const char *path, lib_size bytes)
@@ -353,7 +391,7 @@ int main(int argc, char **argv)
         failed = 4;
     else if (!failed && (x86_nxvm_machine_describe_emulator_driver(machine, &driver) !=
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
-                &produced) != LIB_STATUS_OK || !produced))
+                &produced) != LIB_STATUS_OK || produced))
         failed = 5;
     if (!failed) {
         const x86_debug_request cmos_reads[] = {

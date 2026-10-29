@@ -17,6 +17,7 @@ lib_i32 main(void)
     };
     const lib_u32 banks[] = {0x000c0000u, 0x000e0000u, 0x000f0000u};
     mypc110_firmware firmware = {0};
+    mypc110_firmware unmatched = {0};
     x86_core_machine *machine = LIB_NULL;
     x86_vl82c420 *chip = LIB_NULL;
     lib_u32 value = 0u;
@@ -26,6 +27,15 @@ lib_i32 main(void)
         for (lib_size block = 0u; block < 4u; ++block)
             bios[bank * MYPC110_FIRMWARE_BANK_BYTES + block * 0x4000u] =
                 (lib_u8)(0x80u + bank * 4u + block);
+    bios[0x33ff8u] = 0xa8u;
+    bios[0x33ff9u] = 0x08u;
+    bios[0x33ffau] = 0x74u;
+    bios[0x33ffbu] = 0x25u;
+    failed |= mypc110_firmware_create(bios, sizeof(bios), &unmatched) != LIB_STATUS_OK;
+    if (unmatched.bios != LIB_NULL)
+        failed |= unmatched.bios[0x33ffau] != 0x74u || unmatched.bios[0x33ffbu] != 0x25u;
+    mypc110_firmware_destroy(&unmatched);
+    bios[0x33ffbu] = 0x24u;
     failed |= mypc110_firmware_create(LIB_NULL, sizeof(bios), &firmware) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         mypc110_firmware_create(bios, sizeof(bios) - 1u, &firmware) !=
@@ -48,6 +58,11 @@ lib_i32 main(void)
             LIB_STATUS_OK || value != 0x8cu ||
         x86_core_machine_memory_read(machine, 0xffff0000u, &value, 1u) !=
             LIB_STATUS_OK || value != 0x8cu ||
+        x86_core_machine_memory_read(machine, 0x000f3ffau, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x90u ||
+        x86_core_machine_memory_read(machine, 0x000f3ffbu, &value, 1u) !=
+            LIB_STATUS_OK || value != 0x90u ||
+        bios[0x33ffau] != 0x74u || bios[0x33ffbu] != 0x24u ||
         x86_core_machine_bus_write(machine, 0x00fbu, 0u) != LIB_STATUS_OK ||
         !firmware_register(machine, 0x0cu, 0x09u);
 
