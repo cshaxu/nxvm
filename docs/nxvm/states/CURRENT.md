@@ -1,3 +1,23 @@
+# M5 T582 S11 — Active: PC110 performance receiving qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S11 after S10 delivery. |
+| Admission And Approval | Owner authorized continuous performance work and autonomous numeric S sequencing. |
+| Objective | Measure the delivered PC110 runtime against retained baseline evidence and qualify the current receiving state. |
+| Non-goals | No Shared or product implementation change, host-time shortcut, owner media mutation or unverified usability claim. |
+| Reference Baseline | T582 S1/S6 observations and S10 delivery d021cd925. |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md), S11. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Compare representative startup and clock evidence, x64/x86 and display variants where supported; reuse the just-completed cached full qualification and product identities. |
+| Expected Markers | Explicit measured guest progress, RTC/clock evidence, display mode coverage and limitations. |
+| Asset Needs | Existing firmware and private media/CMOS copies, never owner inputs. |
+| Reporting Requirements | Sources, timings, measurement uncertainty, precise verification and untested interactive boundaries. |
+| Stop Conditions | Do not imply real-time performance, correct gameplay or matching UX without direct evidence. |
+| Exit Criteria | Receiving qualification evidence and truthful assessment; T remains open pending owner acceptance and all original objectives. |
+| Original Owner Request | Improve PC110 performance until usable, preserving timing and correctness. |
+| Similar-Issue Sweep | Compare both host widths, DSTN/TFT, guest clock and actual product-path observations. |
 # M5 T582 S10 — Closed: PIT deadline aggregation
 
 | Field | Required record |
