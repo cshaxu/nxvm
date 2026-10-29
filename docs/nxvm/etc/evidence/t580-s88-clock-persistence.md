@@ -85,3 +85,18 @@ waited 2,100 ms without executing the Machine, and read it again: `00,00`.
 The probe completed successfully and used task-owned files. This confirms the
 quiescent Machine observation, not an end-to-end Product pause/resume run;
 Turbo drift has not been measured.
+
+## Existing released-product observation
+
+Reinspection of the S87 uninstrumented TFT x64 product captures found a
+visible time discrepancy: World Clock showed `2000-01-01 00:00:23` in frame
+24 and `2000-01-01 00:00:25` in frame 25. The observer requests those captures
+in a loop with a 20,000 ms sleep between them; their file timestamps also
+differ by approximately 20 seconds. The frame hashes are respectively
+`1C29BDF7A55BDA61F22CFDB33BD62BBBFB4669B1D54B3905BB27695966B19F61` and
+`CC7D0C6CCBCC0265431C622950F14D7BA269A40063CA1474855422FC2FB7D2BA`.
+This is a guest-application display observation, not a measurement of the
+RTC registers or proof that RTC alone causes the slow clock: DOS timer
+delivery, guest scheduling and host performance also require examination.
+The date shows what this isolated guest displayed, not whether its owner had
+previously set a different calendar.
