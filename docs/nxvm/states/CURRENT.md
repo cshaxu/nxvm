@@ -30,6 +30,14 @@ used scratch instrumentation and did not test native mouse capture or qualify
 the released EXE independently. Its owned background processes have exited.
 No firmware, user media or Shared source was changed.
 
+The sixth background observation owns processes 26252 and 30808 and scratch
+`build/t580-s87/persist`. It uses direct writes only on verified task-owned
+disk copies, executes the same normal firmware/calibration sequence, and
+requests orderly product exit to retain Guest-generated configuration for an
+independent released-EXE run. Its wall bound is 1,980 seconds plus cleanup,
+with 10-second progress and a 300-second no-progress investigation budget.
+Original inputs and user configuration are not modified.
+
 # M5 T580 S86 — Accepted: PC110 product boot and Setup observation
 
 | Field | Required record |
