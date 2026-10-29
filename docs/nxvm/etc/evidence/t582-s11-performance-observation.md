@@ -126,3 +126,7 @@ A task-owned fixed-work probe directly compiled all five X86 Core CPU translatio
 ## Single-byte instruction fetch candidate
 
 A private CPU-source candidate used direct one-byte copies within the existing code-fetch function when the requested size was one, leaving the prefetch, code-length, fault and multi-byte paths otherwise intact. It retired the same 10000000 instructions at 79964294 guest ticks and PC 0003dbc5. x64 baseline/candidate took 19524/19942 ms; x86 took 23933/24536 ms. Each is one ordered pair, insufficient to establish a stable regression, but neither supports adding the special branches. No production code changed, and instruction-fetch fault, self-modification and debug semantics were not qualified by this probe.
+
+## Clang CPU object comparison
+
+A task-owned x64 probe compiled the same five CPU translation units with Clang 22.1.8 at `-O3`, targeting `x86_64-w64-windows-gnu` and the installed MinGW headers, then linked those objects using the existing GCC driver, harness and non-CPU Release libraries. A directly compiled GCC CPU baseline used the same source and fixed workload. At 10000000 instructions, 79964294 guest ticks and PC 0003dbc5, baseline/Clang took 20477/20617 ms. This single ordered pair does not demonstrate a runtime gain or qualify the ABI, optimizer behavior, x86, product builds or full tests. No compiler configuration, production code or released artifact changed.
