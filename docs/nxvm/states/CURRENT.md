@@ -1,4 +1,25 @@
-# M5 T582 S7 — Active: current PC110 execution profile
+# M5 T582 S8 — Active: keyboard idle deadline repair
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S8 after S7 measured audit. |
+| Admission And Approval | Owner authorized continuous performance repair and automatic numeric S sequencing. |
+| Objective | Eliminate redundant keyboard repeat deadline queries when the existing signal proves no repeat is active. |
+| Non-goals | No altered input, repeat, BAT or guest timing semantics; no new state, public API, Lib/Emulator change or user-media mutation. |
+| Reference Baseline | Shared 27ad35459, NXVM 6b01ffd3e; [S7 evidence](../etc/evidence/t582-s7-execution-profile.md). |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md) and measured S7 KBC prototype. |
+| Files And ABI Surface | X86-NXVM board-at/kbc.c, existing keyboard/KBC tests if necessary, corresponding manifests; estimated +2/-1 production lines; no ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Existing keyboard/KBC tests for inactive/active repeat, scanning, BAT and FIFO; cached full unit/integration x64/x86 and fourteen receiver artifacts for Shared changes. |
+| Expected Markers | Same guest timing and input behavior with measured bounded startup work reduction. |
+| Asset Needs | Existing approved firmware, private CMOS/media copies and overlays. |
+| Reporting Requirements | Actual source/test diff, qualification, artifact hashes, measurement uncertainty and playability limits. |
+| Stop Conditions | No reduction of repeat correctness or ignored keyboard startup transitions. |
+| Exit Criteria | Reviewed equivalent repair and complete required delivery; T582 remains open until actual usability is proven. |
+| Original Owner Request | Improve PC110 performance and eliminate redundant calculations until usable. |
+| Similar-Issue Sweep | Repeat signal/deadline behavior across enabled, disabled, empty, active and pending BAT/FIFO paths. |
+
+# M5 T582 S7 — Closed: current PC110 execution profile
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing approved firmware, task-owned copied CMOS and overlay media; preserve owner inputs. |
 | Reporting Requirements | Source identity, sampling windows, incomplete sample limitations, stop budget and concrete next design. |
 | Stop Conditions | Do not infer CPU-time percentages from mixed-thread samples or mutate guest behavior. |
-| Exit Criteria | Evidence sufficient to target a larger bottleneck; PC110 playability remains unqualified until separately demonstrated. |
+| Exit Criteria | Post-S4 sample and bounded PIC/KBC probes are recorded in S7 evidence; PIC result is inconclusive and KBC candidate advances to S8. PC110 playability remains unqualified. |
 | Original Owner Request | Optimize PC110 performance and eliminate redundancy until usable. |
 | Similar-Issue Sweep | Compare CPU, scheduler, memory, DMA, video and host pacing against post-S4 baseline. |
 
