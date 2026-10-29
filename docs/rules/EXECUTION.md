@@ -525,18 +525,15 @@ delete superseded EXEs in that product's artifact commit; retain old binaries
 only in Git history, not elsewhere under `assets/`. Current identifies the
 retained revision. Preserve adjacent configuration, snapshots and non-EXE assets.
 
-Every Shared source/build import or change reviews all receiving Apps, not only
-the packet's host product. Before S closure, rebuild and verify every affected
-App's admitted runnable profiles on x64 and x86, deploy and commit/push changed
-EXEs in product-scoped P commits, and record their source revision and hashes.
+Every Shared component source/build import or change requires a full Release rebuild, verification and publication of all seven products on both x64 and x86: NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyRaidenII and MyNES (14 EXEs). Before S closure deploy the verified artifacts, commit/push changed EXEs in product-scoped P commits, and record source revision, identity, architecture and hashes for all 14. This applies even when a receiver is otherwise unaffected.
 Unit-test builds do not substitute for product-target builds. An unchanged hash
 needs no binary commit. Receiving Apps retain their current artifact version
 unless a version change is explicitly admitted; unrelated user INI/configuration
 must remain unchanged. Missing or stale required artifacts block closure.
 
-The four PC Apps publish product-prefixed lowercase EXEs
+The five PC Apps publish product-prefixed lowercase EXEs
 `<app>_0_5_NNNN_<arch>.exe` and an owner-maintained `<app>.ini` under
-`assets/<app>/`, with App keys `my5160`, `my5170`, `mydeskpro386`, `nxvm`
+`assets/<app>/`, with App keys `my5160`, `my5170`, `mydeskpro386`, `mypc110`, `nxvm`
 and architectures `x64`, `x86`. Build only implemented profiles admitted as
 runnable. Any absent implementation must be reported, not replaced by a stub
 artifact. Product targets share one build recipe and revision
