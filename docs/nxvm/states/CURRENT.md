@@ -1,4 +1,25 @@
-# M5 T582 S6 — Active: PC110 display observation design and proof
+# M5 T582 S7 — Active: current PC110 execution profile
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S7 after S6 evidence delivery and coordinator review. |
+| Admission And Approval | Owner authorized continuous PC110 performance repair and autonomous numeric S sequencing. |
+| Objective | Identify the largest current early and late execution costs after landed DMA and memory optimizations. |
+| Non-goals | No production code, guest timing, media or product artifact changes in this audit. |
+| Reference Baseline | Shared 27ad35459; current PC 0.5.0582; S6 evidence 347742699. |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md); [S6 evidence](../etc/evidence/t582-s6-display-observation.md). |
+| Files And ABI Surface | Task-owned profiling and NXVM evidence only; examine actual X86 Core, X86-NXVM and App paths. No API change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Bounded current-build guest samples with private CMOS/media; distinguish actual worker samples, instrumentation limitations and task ownership. |
+| Expected Markers | Ranked actual hot functions, reproducible workload, a measured next candidate or explicit negative result. |
+| Asset Needs | Existing approved firmware, task-owned copied CMOS and overlay media; preserve owner inputs. |
+| Reporting Requirements | Source identity, sampling windows, incomplete sample limitations, stop budget and concrete next design. |
+| Stop Conditions | Do not infer CPU-time percentages from mixed-thread samples or mutate guest behavior. |
+| Exit Criteria | Evidence sufficient to target a larger bottleneck; PC110 playability remains unqualified until separately demonstrated. |
+| Original Owner Request | Optimize PC110 performance and eliminate redundancy until usable. |
+| Similar-Issue Sweep | Compare CPU, scheduler, memory, DMA, video and host pacing against post-S4 baseline. |
+
+# M5 T582 S6 — Closed: PC110 display observation design and proof
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing firmware, isolated copied CMOS/media and overlays; do not modify owner inputs. |
 | Reporting Requirements | Exact interface and diff, measurements, tests, artifact hashes and native/RDP limits. |
 | Stop Conditions | Do not use standard VADP generation to suppress F65535 changes; never acknowledge failed capture or skip guest cursor phase. |
-| Exit Criteria | Evidence-backed equivalent repair and complete receiving delivery, or bounded negative result with next owner; T582 playability stays open until proven. |
+| Exit Criteria | Coordinator reviewed pushed 347742699: the exploratory bypass has only 2.7% one-pair x64 product progress, no proven early-work gain, and lacks force semantics; no Shared change was landed. T582 playability stays open. |
 | Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable. |
 | Similar-Issue Sweep | Standard VADP and custom F65535, lifecycle/reset, invalid/forced capture and all cursor states. |
 
