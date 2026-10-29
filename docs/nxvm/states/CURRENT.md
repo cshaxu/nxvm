@@ -22,15 +22,15 @@
 S86 established real TFT PC DOS startup but not an interactive desktop. Its
 final Guest diagnostic and screenshot are recorded in [S86 evidence](../etc/evidence/t580-s86-product-observation.md).
 
-The first two product-path observations and their limits are recorded in
-[S87 evidence](../etc/evidence/t580-s87-input-path.md). The third bounded
-background observation owns processes 3664 and 29004 and scratch
-`build/t580-s87/qualified`: it distinguishes the Setup pages, waits for the
-observed second HLT, and checks the inking enable register before queueing
-each calibration event. The wall bound is 2,010 seconds plus cleanup, with
-10-second runner progress and a 300-second no-progress investigation budget.
-Native mouse capture remains outside this probe. No firmware, user media or
-Shared source is changed.
+The first three product-path observations and their limits are recorded in
+[S87 evidence](../etc/evidence/t580-s87-input-path.md). The fourth bounded
+background observation owns processes 5296 and 18332 and scratch
+`build/t580-s87/calibrated`; it corrects the relative-pointer test origin,
+distinguishes Setup pages, waits for the second HLT and checks the inking
+enable register before queuing calibration events. The wall bound is 2,010
+seconds plus cleanup, with 10-second runner progress and a 300-second
+no-progress investigation budget. Native mouse capture remains outside this
+probe. No firmware, user media or Shared source is changed.
 
 # M5 T580 S86 — Accepted: PC110 product boot and Setup observation
 

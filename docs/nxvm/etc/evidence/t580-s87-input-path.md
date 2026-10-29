@@ -31,3 +31,20 @@ The next bounded observation must distinguish the two Setup screens, wake only
 a confirmed second HLT, and check the existing inking control register before
 each input, then observe the resulting Guest frame. No production or Shared
 code is modified to obtain the evidence.
+
+The third observation distinguished the actual ERROR/date pages and sent F12
+after the guest's second observed HLT. All eight calibration samples were
+enqueued only after port 15E2h reported its enabled value; all enqueue calls
+returned success. The output nevertheless remained on the calibration
+screen. Review found this test used the wrong relative origin: the actual
+PC110 adapter initializes the pen to (128,64), whereas the test's first
+relative movement was (+5,+5), not the intended absolute (5,5). Therefore
+the first point was (133,69), in the wrong quadrant. This is a test defect,
+not evidence of a production calibration failure. The observer exited zero;
+the event, runner and observer log SHA-256 values are respectively
+`0576805B0B0F33F1EAB66A4B61047C964641D8C1D43ABF765F0B82D769BFBF5B`,
+`B19E77B78FBF1ABE8B61FE8171A398A4C2DD23F860C85B880224135B50130C6B`, and
+`B4BEC2A5B4A65F74E38C47FDC7FA77A72B71094B94333A6D496947C8D43FDD35`.
+The task-owned disk images were unchanged. A new bounded run uses the correct
+relative deltas from (128,64), checks enable before injection, and leaves
+native Window mouse capture outside its claim.
