@@ -94,3 +94,16 @@ The isolated input images retained their original hashes. This is TFT x64
 instrumented evidence; the released TFT/DSTN EXEs, both host widths, native
 mouse input, physical LCD and full T580 qualification still require their
 respective proofs.
+
+## Isolated persistence preparation
+
+The first persistence-preparation observer stopped with exit 1 before F12:
+the product had printed `Machine paused.` but the observer did not recognize
+the expected monitor prompt within ten seconds. This is an observation
+handshake failure, not proof of a Guest or product boot failure. Its log
+SHA-256 is `AC7DD191A00E9EAA944EE7F2FE9C4EF3C574485FA91D3F14422A340F9B5089D1`;
+both task-owned input disk hashes remained unchanged. A fresh scratch run
+uses the existing run result to observe the first HLT and sends F12 through
+the normal Window, without requiring that initial pause/debug handshake.
+It retains an orderly-exit attempt and reports whether that attempt succeeds.
+Only task-owned disk copies are opened for direct writes.
