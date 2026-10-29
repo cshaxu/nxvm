@@ -1,4 +1,30 @@
-# M5 T580 S87 — Active: PC110 product guest startup continuation
+# M5 T580 S88 — Active: PC110 clock and configuration persistence audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S88. |
+| Admission And Approval | Owner requested autonomous completion of T580 and PC110 implementation. |
+| Objective | Reconcile PC110 guest RTC and configuration behavior across normal product stop and process restart. |
+| Non-goals | No owner media edits, foreground execution, invented hardware behavior or unapproved Shared changes. |
+| Reference Baseline | S72 RTC persistence boundary; S83 product lifecycle; S87 four release guest observations. |
+| Candidate Proposal | Trace actual App persistence and RTC ownership; reproduce any concrete gap with isolated state, then design and fix only the established owner. |
+| Files And ABI Surface | PC110 App, its tests and evidence; any Shared change requires established authorization. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Actual saved and restored guest-visible RTC/configuration across process restart, with targeted dual-width tests for any fix. |
+| Expected Markers | Evidence-backed persistence contract, reproduced behavior and an appropriate correction or explicit source boundary. |
+| Asset Needs | Existing firmware and task-owned configuration/media copies; preserve original inputs. |
+| Reporting Requirements | Distinguish configuration RAM, RTC calendar, elapsed host-off behavior and unverified hardware details. |
+| Stop Conditions | No guest-state fabrication, user-file edits or unsupported source-grade claims. |
+| Exit Criteria | RTC/configuration behavior correctly implemented and verified for the admitted contract, or an evidenced narrow receiver for continuation. |
+| Original Owner Request | Complete PC110 implementation and verify usable products. |
+| Similar-Issue Sweep | Compare TFT/DSTN and existing shared RTC behavior without imposing PC110 policy on other machines. |
+
+S87 established interactive Personaware on all four published EXEs with
+TFT-generated isolated CMOS; its limits are recorded in
+[S87 evidence](../etc/evidence/t580-s87-input-path.md). S72 records that
+configuration RAM and RTC calendar currently have different persistence.
+
+# M5 T580 S87 — Accepted: PC110 product guest startup continuation
 
 | Field | Required record |
 | --- | --- |
@@ -46,12 +72,13 @@ result is a cross-variant saved-configuration experiment, not a pristine DSTN
 cold-setup proof. Both were deliberately stopped after the checkpoint and
 are not full-budget registered integration results.
 
-The eleventh background observation owns processes 31188 and 27724 and
-`build/t580-s87/released-dstn-x86`. It uses the byte-identical published
-DSTN x86 EXE and independent task-owned copies of the same TFT-generated
-configuration and media. Its wall bound is 1,200 seconds plus cleanup,
-with a 300-second no-progress investigation budget. Native Window mouse
-capture remains a separate proof. Original inputs are not written.
+The eleventh observation reached Personaware and opened World Clock through
+Window keyboard input on the published derived-DSTN x86 EXE. It used a copy
+of the TFT Guest-generated CMOS, so it is not a pristine DSTN cold-setup
+proof. It was deliberately stopped after the checkpoint, not counted as a
+full-budget integration pass. Existing capture-mock, PC110 construction and
+inking units passed 3/3 per architecture. Native mouse capture remains a
+separate proof. The owned background processes have exited.
 
 # M5 T580 S86 — Accepted: PC110 product boot and Setup observation
 

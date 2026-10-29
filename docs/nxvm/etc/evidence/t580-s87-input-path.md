@@ -173,3 +173,25 @@ complete-budget registered integration result. Their isolated direct-write
 master disk copies changed to
 `F27518A03119C26D0CA2721CBC14935E764E2F7D7F2DE91A2EC91CA12E04793B`;
 slave copies remained unchanged. Owner assets and user media were not written.
+
+The remaining byte-identical published derived-DSTN x86 EXE used fresh
+task-owned copies of the TFT Guest-generated CMOS and media. It reached
+Personaware; ordinary Window Tab/Enter was followed by World Clock. The
+launcher and World Clock screenshots have SHA-256
+`53E87F766E4C0404AA23EE0C1948940B202FC4DB4772299CB04F6124C997E76E` and
+`9CE8D639ED854BACBD7BB1757DFE82FF00D71A301AC4B1456BABCFEE4F1408C8`.
+The observer was deliberately stopped after the checkpoint, not counted as
+a full-budget registered integration pass. The task-owned direct-write master
+image changed to `F27518A03119C26D0CA2721CBC14935E764E2F7D7F2DE91A2EC91CA12E04793B`;
+the slave retained `5149DB391D13CFEAB330016FCF0EDBE6B0D379CBB66A3AED91DBF7684142D52E`.
+The interrupted observer log has SHA-256
+`E6953B4F9E38130C8E024C972DEAE72E7B4330683BFEAB7ACE1518AC0AC90D6A`.
+The copied CMOS originated in TFT, so this is not a pristine DSTN cold-boot
+or independent physical-panel qualification. No owner medium was written.
+
+The existing Win32 capture contract mock and PC110 machine-construction and
+inking unit cases passed 3/3 on each architecture. Their output SHA-256 values
+are `C36E2231E9B9813C8A189A7D5E563F8C5B50041A420882937DE867DC104E26C2`
+(x64) and `EA9488A041B1A1328AECA9730D8BD7F341AAB2A0CDA06473215C95C8A9FD5DCE`
+(x86). These separately cover the Lib capture fixture and PC110 driver/device
+contract; they do not establish real native mouse capture end to end.
