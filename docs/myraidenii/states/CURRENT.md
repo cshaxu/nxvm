@@ -2,6 +2,16 @@
 
 ## Current Work
 
+### Receiving update from NXVM M5 T582 S2
+
+The Shared receiving gate rebuilds the existing 0007 x86/x64 pair without
+changing MyRaidenII source, configuration or its staged-closure status.
+Both selected-set startup probes and final product Console control probes
+pass; the root Console fixture teardown correction is recorded in the
+[NXVM evidence](../../nxvm/etc/evidence/t582-s2-planar-performance.md), together
+with deployed hashes and full-repository qualification. This is not gameplay,
+audio or manual RDP acceptance.
+
 ## M1 Td S1 — Closed: backlog and Shared delivery
 
 | Field | Required record |
