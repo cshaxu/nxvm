@@ -3,12 +3,12 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation — M5 T580 S88. |
-| Admission And Approval | Owner requested autonomous completion of T580 and PC110 implementation. |
-| Objective | Reconcile PC110 guest RTC and configuration behavior across normal product stop and process restart. |
-| Non-goals | No owner media edits, foreground execution, invented hardware behavior or unapproved Shared changes. |
+| Admission And Approval | Owner requested autonomous completion of T580 and approved RTC calendar persistence in X86-NXVM and MyPC110 without changing Lib or compensating host-off time. |
+| Objective | Preserve PC110 guest RTC calendar and configuration across normal product stop and process restart. |
+| Non-goals | No Lib change, host-off elapsed-time compensation, owner media edits, foreground execution, invented hardware behavior or unapproved Shared changes. |
 | Reference Baseline | S72 RTC persistence boundary; S83 product lifecycle; S87 four release guest observations. |
 | Candidate Proposal | Trace actual App persistence and RTC ownership; reproduce any concrete gap with isolated state, then design and fix only the established owner. |
-| Files And ABI Surface | PC110 App, its tests and evidence; any Shared change requires established authorization. |
+| Files And ABI Surface | PC110 App and tests; X86-NXVM RTC, Board, Machine and tests with the approved RTC persistence boundary; no Lib or Emulator changes. |
 | Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
 | Verification | Actual saved and restored guest-visible RTC/configuration across process restart, with targeted dual-width tests for any fix. |
 | Expected Markers | Evidence-backed persistence contract, reproduced behavior and an appropriate correction or explicit source boundary. |

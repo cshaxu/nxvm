@@ -36,6 +36,38 @@ must specify powered-off elapsed time separately and avoid that replay path.
 
 ## Interface boundary for review
 
+The owner clarified that elapsed time while the program is closed is not a
+requirement: the saved guest calendar may resume unchanged. The wall-clock
+API and offline calendar arithmetic described below are therefore excluded.
+Lib must remain unchanged. The calendar still requires an appropriate
+quiescent save and construction-time restore boundary; the existing
+configuration-only CMOS contract must not be silently changed for all PCs.
+
+The owner subsequently approved the scoped RTC persistence implementation.
+The existing 128-byte PC110 file now carries an optional RTC image in bytes
+00h–0Dh; the existing valid-RTC bit in 0Dh distinguishes it from previously
+written configuration-only files, whose first 14 bytes were zero. Machine
+construction explicitly opts in only when that marker is present. The
+configuration-only capture API remains unchanged. RTC register C is neither
+read nor restored; register B's encoding is restored before calendar fields.
+No Lib or Emulator source is changed, and host-off time is not advanced.
+
+Focused RTC Board and PC110 construction units pass on both widths. The
+existing PC110 construction fixture's separate writer/reader process modes
+also pass for a complete BCD calendar on both widths. Product-level TFT and
+DSTN CMOS integration tests pass on both widths and exercise the actual App
+binding using isolated files; they do not execute a full guest date-setting
+interaction. Both widths pass all 713 repository unit tests, and the TFT and
+DSTN artifact/firmware identity integrations pass on each width. The default
+PC configuration identity integration also passes on both widths. All eight
+existing PC and four PC110 EXEs were rebuilt via the stable per-width Ninja
+trees and checked against their PE width; their deployed files are under the
+existing five asset directories. These checks do not constitute a full guest
+Setup/date-setting interaction or a complete repository integration run.
+After the full unit run, the existing PC110 construction test gained a direct
+RTC restore assertion and passed again on both widths; the whole unit suite
+was not repeated for that test-only change.
+
 The existing 128-byte file and `capture_cmos` are configuration contracts;
 changing their interpretation for every PC profile would silently affect
 other machines. A candidate is an explicitly optional RTC calendar seed in

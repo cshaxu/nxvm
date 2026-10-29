@@ -38,6 +38,9 @@ lib_status mypc110_cmos_save(const char *path, x86_nxvm_machine *machine)
     if (path == LIB_NULL || machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_nxvm_machine_capture_cmos(machine, image, sizeof(image));
     if (status == LIB_STATUS_OK)
+        status = x86_nxvm_machine_capture_rtc(machine, image,
+            X86_NXVM_MACHINE_RTC_SEED_BYTES);
+    if (status == LIB_STATUS_OK)
         status = lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer);
     if (status == LIB_STATUS_OK)
         status = lib_storage_file_writer_write(writer, image, sizeof(image));

@@ -13,6 +13,11 @@
 #include "x86-core/machine/clock_interface.h"
 #include "x86-debug/product/protocol_interface.h"
 
+static const lib_u8 mypc110_rtc_calendar[][2] = {
+    {0u, 0x45u}, {2u, 0x59u}, {4u, 0x23u}, {6u, 3u},
+    {7u, 0x28u}, {8u, 0x10u}, {9u, 0x24u}
+};
+
 static lib_bool mypc110_test_port(emulator_machine_driver *driver,
     lib_bool write, lib_u16 port, lib_u8 *value)
 {
@@ -207,6 +212,7 @@ int main(int argc, char **argv)
     static lib_u8 cmos[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
     static lib_u8 captured[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
     static lib_u8 loaded[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
+    lib_u8 rtc_snapshot[X86_NXVM_MACHINE_RTC_SEED_BYTES] = {0};
     const lib_bool save_for_restart = argc == 3 &&
         lib_text_compare(argv[1], "--save-cmos") == 0;
     const lib_bool check_restart = argc == 3 &&
@@ -271,9 +277,33 @@ int main(int argc, char **argv)
         return sum == (lib_u16)(((lib_u16)loaded[0x2eu] << 8u) | loaded[0x2fu]) ? 0 : 1;
     }
     if (check_restart) {
-        return mypc110_cmos_load(cmos_path, loaded, &cmos_present) == LIB_STATUS_OK &&
-            cmos_present && loaded[0x0eu] == 0xe1u && loaded[0x3bu] == 0x55u &&
-            loaded[0x7bu] == 0xaau && loaded[0x7fu] == 0x7eu ? 0 : 1;
+        x86_nxvm_machine_assets recovered = assets;
+        if (mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_OK ||
+            !cmos_present || loaded[0x0eu] != 0xe1u || loaded[0x3bu] != 0x55u ||
+            loaded[0x7bu] != 0xaau || loaded[0x7fu] != 0x7eu || loaded[0x0du] != 0x80u)
+            return 1;
+        recovered.cmos_seed.data = loaded;
+        if (mypc110_machine_construction_create(&config, &recovered, &construction) != LIB_STATUS_OK)
+            return 1;
+        lib_memory_copy(construction.rtc_seed, loaded, sizeof(construction.rtc_seed));
+        construction.rtc_seed_present = LIB_TRUE;
+        if (x86_nxvm_machine_create(&config, &construction, &machine) != LIB_STATUS_OK ||
+            x86_nxvm_machine_describe_emulator_driver(machine, &driver) != LIB_STATUS_OK) {
+            x86_nxvm_machine_destroy(machine);
+            return 1;
+        }
+        for (lib_size i = 0u; i < sizeof(mypc110_rtc_calendar) /
+                sizeof(mypc110_rtc_calendar[0]); ++i) {
+            lib_u8 index = mypc110_rtc_calendar[i][0], value = 0u;
+            if (!mypc110_test_port(&driver, LIB_TRUE, 0x70u, &index) ||
+                !mypc110_test_port(&driver, LIB_FALSE, 0x71u, &value) ||
+                value != mypc110_rtc_calendar[i][1]) {
+                x86_nxvm_machine_destroy(machine);
+                return 1;
+            }
+        }
+        x86_nxvm_machine_destroy(machine);
+        return 0;
     }
     font[0] = 0x55u;
     font[MYPC110_FONT_BANK_BYTES] = 0xaau;
@@ -382,16 +412,29 @@ int main(int argc, char **argv)
                     sizeof(response), &response_bytes) != LIB_STATUS_OK) failed = 73;
         }
     }
+    if (!failed) {
+        for (lib_size i = 0u; i < sizeof(mypc110_rtc_calendar) /
+                sizeof(mypc110_rtc_calendar[0]); ++i) {
+            lib_u8 index = mypc110_rtc_calendar[i][0];
+            lib_u8 value = mypc110_rtc_calendar[i][1];
+            if (!mypc110_test_port(&driver, LIB_TRUE, 0x70u, &index) ||
+                !mypc110_test_port(&driver, LIB_TRUE, 0x71u, &value)) failed = 75;
+        }
+    }
     if (!failed && (x86_nxvm_machine_capture_cmos(machine, captured, sizeof(captured) - 1u) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         x86_nxvm_machine_capture_cmos(machine, captured, sizeof(captured)) != LIB_STATUS_OK ||
         captured[0x0du] != 0u || captured[0x0eu] != 0xe1u ||
         captured[0x3bu] != 0x55u || captured[0x7bu] != 0xaau ||
         captured[0x7fu] != 0x7eu)) failed = 60;
+    if (!failed && x86_nxvm_machine_capture_rtc(machine, rtc_snapshot,
+            sizeof(rtc_snapshot)) != LIB_STATUS_OK) failed = 76;
     if (!failed && (mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_OK ||
         cmos_present || mypc110_cmos_save(cmos_path, machine) != LIB_STATUS_OK ||
         mypc110_cmos_load(cmos_path, loaded, &cmos_present) != LIB_STATUS_OK ||
-        !cmos_present || lib_memory_compare(captured, loaded, sizeof(captured)) != 0))
+        !cmos_present || loaded[0x0du] != 0x80u || loaded[9u] != 0x24u ||
+        lib_memory_compare(captured + 0x0eu, loaded + 0x0eu,
+            sizeof(captured) - 0x0eu) != 0))
         failed = 62;
     if (!failed && !save_for_restart) {
         lib_storage_file_writer *writer = LIB_NULL;
@@ -456,11 +499,18 @@ int main(int argc, char **argv)
 
         recovered.cmos_seed.data = captured;
         if (mypc110_machine_construction_create(&config, &recovered, &construction) !=
-                LIB_STATUS_OK ||
-            x86_nxvm_machine_create(&config, &construction, &machine) != LIB_STATUS_OK ||
+                LIB_STATUS_OK) failed = 61;
+        if (!failed) {
+            lib_memory_copy(construction.rtc_seed, rtc_snapshot, sizeof(rtc_snapshot));
+            construction.rtc_seed_present = LIB_TRUE;
+        }
+        if (!failed && (x86_nxvm_machine_create(&config, &construction, &machine) != LIB_STATUS_OK ||
             x86_nxvm_machine_capture_cmos(machine, recaptured, sizeof(recaptured)) !=
                 LIB_STATUS_OK ||
-            lib_memory_compare(captured, recaptured, sizeof(captured)) != 0) failed = 61;
+            lib_memory_compare(captured, recaptured, sizeof(captured)) != 0)) failed = 61;
+        if (!failed && (x86_nxvm_machine_capture_rtc(machine, rtc_snapshot,
+                sizeof(rtc_snapshot)) != LIB_STATUS_OK || rtc_snapshot[9u] != 0x24u))
+            failed = 77;
         x86_nxvm_machine_destroy(machine);
     }
     if (!save_for_restart && lib_c_remove(cmos_path) != 0 && !failed) failed = 63;

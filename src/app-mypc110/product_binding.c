@@ -25,7 +25,12 @@ static lib_status mypc110_prepare(const x86_nxvm_machine_config *config,
     if (status != LIB_STATUS_OK) return status;
     selected = *assets;
     if (present) selected.cmos_seed = (x86_nxvm_machine_asset_bytes){image, sizeof(image)};
-    return mypc110_machine_construction_create(config, &selected, out);
+    status = mypc110_machine_construction_create(config, &selected, out);
+    if (status == LIB_STATUS_OK && present && image[0x0du] == 0x80u) {
+        lib_memory_copy(out->rtc_seed, image, sizeof(out->rtc_seed));
+        out->rtc_seed_present = LIB_TRUE;
+    }
+    return status;
 }
 
 static lib_status mypc110_save_configuration(x86_nxvm_machine *machine)

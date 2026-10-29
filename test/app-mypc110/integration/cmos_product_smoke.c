@@ -47,16 +47,29 @@ int main(int argc, char **argv)
     if (!emulator_console_process_run(executable, directory, commands, markers, 2u) ||
         lib_storage_file_read_owned(cmos_path, 128u, &bytes, &count) != LIB_STATUS_OK ||
         count != 128u) goto done;
-    /* RTC register D is not persisted. Its nonzero sentinel proves the
-     * second process actually rewrote the image, not merely read it. */
-    ((lib_u8 *)bytes)[0x0du] = 0x7fu;
+    /* Legacy files have only configuration RAM; their clock bytes are zero. */
+    lib_memory_set(bytes, 0, 0x0eu);
     ((lib_u8 *)bytes)[0x3bu] = 0x5au;
     if (write_bytes(cmos_path, bytes, count) != LIB_STATUS_OK) goto done;
     lib_release(bytes);
     bytes = LIB_NULL;
     if (!emulator_console_process_run(executable, directory, commands, markers, 2u) ||
         lib_storage_file_read_owned(cmos_path, 128u, &bytes, &count) != LIB_STATUS_OK ||
-        count != 128u || ((lib_u8 *)bytes)[0x0du] != 0u ||
+        count != 128u || ((lib_u8 *)bytes)[0x09u] != 0u ||
+        ((lib_u8 *)bytes)[0x0du] != 0x80u || ((lib_u8 *)bytes)[0x3bu] != 0x5au)
+        goto done;
+    /* Restore a valid RTC image through the real product configuration path. */
+    ((lib_u8 *)bytes)[0x09u] = 0x24u;
+    ((lib_u8 *)bytes)[0x0bu] = 0x02u;
+    ((lib_u8 *)bytes)[0x0du] = 0x80u;
+    ((lib_u8 *)bytes)[0x3bu] = 0x5au;
+    if (write_bytes(cmos_path, bytes, count) != LIB_STATUS_OK) goto done;
+    lib_release(bytes);
+    bytes = LIB_NULL;
+    if (!emulator_console_process_run(executable, directory, commands, markers, 2u) ||
+        lib_storage_file_read_owned(cmos_path, 128u, &bytes, &count) != LIB_STATUS_OK ||
+        count != 128u || ((lib_u8 *)bytes)[0x0du] != 0x80u ||
+        ((lib_u8 *)bytes)[0x09u] != 0x24u ||
         ((lib_u8 *)bytes)[0x3bu] != 0x5au) goto done;
     if (!emulator_console_process_run(executable, directory, lifecycle_commands,
             lifecycle_markers, sizeof(lifecycle_commands) / sizeof(lifecycle_commands[0])))
