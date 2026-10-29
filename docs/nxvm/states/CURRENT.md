@@ -1,44 +1,8 @@
-# M5 T580 S90 — Active: PC110 representative guest throughput
+# M5 T580 — Open
 
-| Field | Required record |
+| Task | Retained progress |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T580 S90. |
-| Admission And Approval | Owner requested autonomous PC110 completion; S89 transferred the measured slow-guest performance receiver. On 2026-10-29 the owner also authorized an explicitly identified L1 compatibility model or independent firmware interception for the unattended-start path, without requiring physical hardware evidence. |
-| Objective | Restore PC110 unattended startup and cursor blink, then validate and publish the affected products. |
-| Non-goals | No host-time substitution, claims of hardware-exact behavior for an L1 model, user-media writes or unapproved Shared changes. |
-| Reference Baseline | S87 late guest, S88 RTC persistence and S89 runner/profiling evidence. |
-| Candidate Proposal | Reuse the observed firmware suspend branch and isolated guest probes to evaluate the owner-authorized, App-local L1 compatibility path; retain the existing guest suspend mechanism and identify all model limitations. |
-| Files And ABI Surface | PC110 App firmware compatibility and tests; Shared X86-NXVM F65535 snapshot contract and tests for the authorized blink, manual-defined CRTC reset, and word-addressed text row pitch; existing diagnostics and task evidence. Lib/Emulator remain unchanged. |
-| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
-| Verification | Verify the ROM input is unchanged, compatibility mapping and affected chip behavior on both widths, real firmware startup using isolated media, existing lifecycle regressions and affected artifact identities; distinguish desktop and RDP coverage. |
-| Expected Markers | Correlated late-guest measurements, identified bottleneck and validated safe optimization or an explicitly retained boundary. |
-| Asset Needs | Existing embedded firmware and task-owned configuration/media copies; preserve original inputs. |
-| Reporting Requirements | Report real workload, host and guest time, actual diff, effect size, timing fidelity and unverified paths. |
-| Stop Conditions | No fabricated device state, unapproved Shared change, foreground execution or unbounded test. |
-| Exit Criteria | The owner-authorized startup compatibility path and cursor repair are verified and delivered with explicit model limitations and remaining user acceptance; report any unverified receiver honestly. |
-| Original Owner Request | Complete a usable PC110 product, avoiding unnecessary repeated test cycles. |
-| Similar-Issue Sweep | Verify both PC110 firmware variants and retain the ordinary runtime suspend/resume path; do not apply PC110 compatibility to other machines. |
-
-The owner-approved Board refresh ownership correction is implemented in Shared
-`c886b4818`. Dual-width targeted units, real BIOS timer, PC110 registered
-integrations and affected PC App units have passed; 12 affected EXEs were
-rebuilt. Details and artifact hashes are in the [S90 evidence](../etc/evidence/t580-s90-guest-throughput.md).
-Owner acceptance failed: PC110 remains at a static startup cursor for an
-unacceptable duration. The owner approved F65535 guest-clock cursor blinking
-from the manual-defined XR60 formula, with a nominal L2 PC110 VSync rate.
-F65535 now reports no presentable frame while its manual-defined CRTC reset
-holds sync low, so the existing chip reset can be wired into full board reset
-without replacing the last visible frame. Lib and Emulator remain unchanged.
-An owner-approved App-local L1 firmware compatibility patch now bypasses the
-observed cold-start suspend branch. The input ROM remains unchanged. Both host
-widths pass cold-start BIOS handoff and the separately retained original-ROM
-suspend/resume receiver. Real TFT and DSTN guests with configured CMOS reached
-Personaware without input. Empty DSTN CMOS reaches firmware error 00173/00163
-and requires first configuration; long startup time and native desktop
-acceptance remain open. The
-[acceptance evidence](../etc/evidence/t580-s90-acceptance-failure.md)
-records the model and verification boundaries. S90 awaits owner acceptance;
-T580 remains open.
+| T580 S90 | Owner accepted on 2026-10-29. Shared `0904691e5` and NXVM `ce0353490` deliver the F65535 cursor and PC110 L1 startup compatibility repairs. Both architectures passed 713 unit cases and targeted firmware/product integrations; configured TFT and derived DSTN reached Personaware without input. [Evidence](../etc/evidence/t580-s90-acceptance-failure.md) preserves model and test limits. Empty DSTN CMOS requires initial configuration; startup throughput and native desktop/RDP qualification remain open. T580 remains open. |
 
 # M5 T580 S89 — Accepted: PC110 guest clock-rate investigation
 
