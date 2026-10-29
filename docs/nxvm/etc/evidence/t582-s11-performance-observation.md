@@ -28,3 +28,17 @@ All four fixed-work paired probes used the same cached Release libraries and pri
 | x86 | candidate, baseline | 25251 | 24047 |
 
 The x64 pairs favour the candidate, but x86 changes direction between pairs. This small, early-workload experiment does not demonstrate stable improvement on both architectures or resolve the order-of-magnitude usability deficit. Do not land the additional branch on these data; seek larger costs and measure complete workloads. Equal terminal PC and ticks do not prove complete timing or side-effect equivalence.
+## Earlier plain-RAM route candidate
+
+A task-owned candidate moves the existing plain-span geometry proof before the initial memory resolver for multi-byte reads and writes. Only ranges with no address-line mask, mappings, wrapping or intersecting providers bypass the resolver. Remaining routes use the original resolver; the test candidate is not production and has not proved provider, parity, fault, observer or concurrent transition behavior.
+
+The directly compiled comparison retained the Release `X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=0` definition. Every 10,000,000-instruction run reached 79,964,294 guest ticks and PC 0003dbc5:
+
+| Host | Order | Baseline ms | Candidate ms |
+| --- | --- | ---: | ---: |
+| x64 | baseline, candidate | 22196 | 20231 |
+| x64 | candidate, baseline | 23388 | 23069 |
+| x86 | baseline, candidate | 23478 | 26134 |
+| x86 | candidate, baseline | 25799 | 27336 |
+
+The candidate was slower on x86 in both measured pairs; the x64 improvement varied considerably. Equal final checkpoints do not prove memory-route correctness. The candidate is rejected rather than added as another path; no production or Shared code changed. Continue investigating the larger execution cost.
