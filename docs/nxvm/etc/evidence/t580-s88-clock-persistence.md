@@ -66,3 +66,16 @@ restart interval: RTC advancement while stopped or paused and the interaction
 with the unpaced Turbo guest clock require separate evidence before claiming
 full battery-clock behavior. No source or test from the external emulator is
 copied; its host-clock behavior is a research lead only.
+
+## Running and paused clock ownership
+
+Static source tracing shows that PC110's RTC domain uses 32768/33000000 of
+Core ticks, and `board_advance.c` is the sole caller of `x86_rtc_advance`.
+PC110 selects Turbo by default; the Machine runner does not pace Turbo Core
+execution to host time. Consequently the emulated RTC follows guest execution
+time rather than a guaranteed host second in Turbo. During a pause that stops
+Core time, the RTC likewise has no independent advancing owner. Standard mode
+does pace guest time, but that fact alone does not prove accuracy under host
+overload or during suspension. These are static conclusions about the existing
+time path, not measured wall-clock drift or a completed fix. A restart-only
+timestamp adjustment must not be represented as fixing these runtime cases.
