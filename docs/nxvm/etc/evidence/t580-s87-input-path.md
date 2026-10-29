@@ -146,3 +146,30 @@ The CMOS hash remained `608DF3ABC3CDD9BB3E35015D2D7AA9D8756567E080643B01E593FF99
 No owner media or configuration was opened for writing. The interrupted
 observer log hash is
 `5345DA7055E1B6BB0AE04DC696A2F1194EED60030A37628BC9F6D4EB6EAC317F`.
+
+## Published TFT x86 and derived-DSTN x64 guest observations
+
+The byte-identical published TFT x86 EXE used fresh task-owned copies of the
+TFT Guest-generated CMOS and media. It reached Personaware; ordinary Window
+Tab/Enter was followed by World Clock. The corresponding screenshots have
+SHA-256 `BEFBE1F71614A12969C213EDDC30330D1C26909F3909E2FDB044B7877C5D301D`
+and `1FB12EA32D5D86A152820A1AD1127E9CFA6F0E864237D89F2D6E74F05C71AC0C`.
+Its interrupted observer log hash is
+`B3C6E116D25D0034687715DC4046F17F04229EA6A1ADBEA81548A09D3091F66F`.
+The first attempted observation used an outdated probe and was stopped before
+its checkpoint; it is not treated as a product result.
+
+The byte-identical published derived-DSTN x64 EXE independently reached
+Personaware, then World Clock after ordinary Window Tab/Enter. Its screenshots
+have SHA-256 `BEFBE1F71614A12969C213EDDC30330D1C26909F3909E2FDB044B7877C5D301D`
+and `15B4BB905FBA96B517A6AD6750DCA31C0CA339EB1E035EC36E6750E964B22AAF`;
+the interrupted observer log is
+`E67D6CD51E402790741A0652A268FD49039F965EE51A4742DAC46A8AB26FE50F`.
+This DSTN experiment copied the TFT Guest-generated CMOS to the DSTN-specific
+filename and therefore does not prove a pristine DSTN cold setup. The derived
+firmware is not an independently recovered factory-original BIOS. Both runs
+were deliberately stopped after the successful checkpoint; neither is a
+complete-budget registered integration result. Their isolated direct-write
+master disk copies changed to
+`F27518A03119C26D0CA2721CBC14935E764E2F7D7F2DE91A2EC91CA12E04793B`;
+slave copies remained unchanged. Owner assets and user media were not written.
