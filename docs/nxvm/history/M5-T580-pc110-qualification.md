@@ -13,6 +13,19 @@ member and place each in a bounded successor, a source/asset-gated transfer or
 an evidenced rejection.  It cannot turn the existing partial firmware trace
 into a product acceptance or add a guessed fallback.
 
+## S88: RTC calendar persistence
+
+Shared `c3800f333` and NXVM `daf5963d7` preserve the PC110 guest RTC calendar
+across process restart while retaining legacy configuration-only CMOS files.
+Product-path proof `7b59ddc5d` writes and reads the RTC through real Product
+Debug in separate processes for TFT and derived DSTN on x64 and x86. Each
+width passed 713 unit tests; the targeted CMOS and firmware-identity
+integrations passed. Twelve affected PC and PC110 EXEs were rebuilt and their
+PE widths verified. The owner excluded host-off elapsed-time compensation.
+Actual guest Setup/date-setting, slow World Clock, physical-panel behavior and
+full product qualification remain open. The full evidence and verification
+limits are recorded in [S88](../etc/evidence/t580-s88-clock-persistence.md).
+
 ## S43--S44: actual timer calibration receiver
 
 S43's sampled execution identifies a deliberate BIOS error halt and a rejected

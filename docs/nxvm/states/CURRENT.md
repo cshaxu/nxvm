@@ -1,4 +1,4 @@
-# M5 T580 S88 — Active: PC110 clock and configuration persistence audit
+# M5 T580 S88 — Accepted: PC110 clock and configuration persistence
 
 | Field | Required record |
 | --- | --- |
@@ -24,8 +24,10 @@ TFT-generated isolated CMOS; its limits are recorded in
 [S87 evidence](../etc/evidence/t580-s87-input-path.md). S72 records that
 configuration RAM and RTC calendar currently have different persistence.
 The [S88 investigation](../etc/evidence/t580-s88-clock-persistence.md)
-reproduces the calendar loss on both host widths; elapsed time while the
-program is closed remains a separate, unverified obligation.
+records the calendar persistence fix, dual-width tests and real Product Debug
+port round trip. The owner explicitly excluded elapsed host-off time. Real
+guest Setup/date-setting and the observed slow World Clock remain separate
+qualification work; S88 does not claim them complete.
 
 # M5 T580 S87 — Accepted: PC110 product guest startup continuation
 
