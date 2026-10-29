@@ -1,4 +1,25 @@
-# M5 T582 S5 — Active: CPU timing computation audit
+# M5 T582 S6 — Active: PC110 display observation design and proof
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S6 after S5 measured audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and automatic numeric S sequencing. |
+| Objective | Prove and implement a single-owner display observation that avoids unnecessary PC110 frame capture while preserving visible behavior. |
+| Non-goals | No Lib/Emulator change, incomplete snapshots, skipped cursor phases, guest-time substitution, second display path or owner-media mutation. |
+| Reference Baseline | Shared 27ad35459 and NXVM 6b01ffd3e; S5 read-only display probe. |
+| Candidate Proposal | [S5 measured evidence and provisional design](../etc/evidence/t582-s5-cpu-timing-performance.md); [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md). |
+| Files And ABI Surface | Design candidate extends existing X86-NXVM provider binding and F65535 observation plus PC110 binding, estimated +75/-15 production and +70 test lines. No Lib/Emulator. Prototype and verify before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Force, first frame, unchanged frame, cursor blink, reset, wrap and error paths; matched guest performance; cached dual-width full unit/integration and fourteen EXEs for Shared changes. |
+| Expected Markers | Preserve complete snapshot and guest display semantics; fewer captures and meaningful observed guest performance. |
+| Asset Needs | Existing firmware, isolated copied CMOS/media and overlays; do not modify owner inputs. |
+| Reporting Requirements | Exact interface and diff, measurements, tests, artifact hashes and native/RDP limits. |
+| Stop Conditions | Do not use standard VADP generation to suppress F65535 changes; never acknowledge failed capture or skip guest cursor phase. |
+| Exit Criteria | Evidence-backed equivalent repair and complete receiving delivery, or bounded negative result with next owner; T582 playability stays open until proven. |
+| Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable. |
+| Similar-Issue Sweep | Standard VADP and custom F65535, lifecycle/reset, invalid/forced capture and all cursor states. |
+
+# M5 T582 S5 — Closed: CPU timing computation audit
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing firmware and task-owned copied CMOS/media with overlays; preserve owner inputs. |
 | Reporting Requirements | Counts, measurement overhead, actual diff, coverage and remaining interactive/RDP limits. |
 | Stop Conditions | Do not conflate prefix semantics across profiles, runtime/preview or emulation modes; no timing accuracy downgrade. |
-| Exit Criteria | Deliver measured equivalent improvement with required qualification or documented negative result; T582 remains open pending actual playability. |
+| Exit Criteria | CPU prefix candidate produced conflicting x64/x86 results and was not landed; audit identified repeated unchanged F65535 captures. Evidence recorded; T582 remains open pending actual playability. |
 | Original Owner Request | Improve PC110 performance by eliminating evidenced redundant work until usable. |
 | Similar-Issue Sweep | Examine shared prefix count callers, nested timing calculations and other CPU profiles without duplicating test suites. |
 
