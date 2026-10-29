@@ -1,6 +1,10 @@
 # Queue
 
-The entries below are ordered unnumbered candidates.
+The entries below are ordered candidates; historical dispositions retain their old positions.
+
+The owner promoted PC110 performance (former entry 14) and admitted it as T582
+on 2026-10-29. [Current](CURRENT.md) owns its S1 packet. Other pending
+candidates retain their relative order.
 
 MyPC110 display selection is owner-closed as [T581](../history/M5-T581-pc110-vdisplay.md).
 
@@ -85,7 +89,7 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 13. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
-14. [MyPC110: startup performance and guest clocks](../proposals/m5-pc110-startup-clock-performance.md)
+14. [MyPC110: startup performance and guest clocks](../proposals/m5-pc110-startup-clock-performance.md) was promoted by the owner and admitted as T582; it is not a pending candidate.
 15. [MyPC110: first-time configuration and restart](../proposals/m5-pc110-first-setup.md)
 16. [MyPC110: desktop and interactive product qualification](../proposals/m5-pc110-product-interaction.md)
 17. [MyPC110: remaining device and model qualification](../proposals/m5-pc110-device-model-qualification.md)

@@ -1,3 +1,24 @@
+# M5 T582 S1 — Active: PC110 performance baseline and bottleneck audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T582 S1; next numeric NXVM task after accepted T581. |
+| Admission And Approval | Owner closed T581 and explicitly selected performance as the next task on 2026-10-29; former queue position 14 is promoted. |
+| Objective | Establish representative current PC110 startup and steady-execution performance, locate evidenced costs, and design the smallest correct repair. |
+| Non-goals | No production optimization before evidence, guest-time substitution, timing downgrade, firmware shortcut, unrelated App change or owner media/configuration edit. |
+| Reference Baseline | Implementation 59ad6e78b, closure f07c61150, released PC version 0.5.0581; retain T580 S89 and T581 observations with their limits. |
+| Candidate Proposal | [Performance proposal](../proposals/m5-pc110-startup-clock-performance.md); S1 baseline/audit, S2 measured repair, final S qualification. |
+| Files And ABI Surface | S1 changes NXVM governance/evidence and only necessary task-owned probes; read App, X86-NXVM, X86 Core and neutral runtime paths. No production/public ABI or Shared source/test change is admitted by S1. |
+| Applicable Rules | NXVM guide; CONTRIBUTING; shared Execution, Documentation, Architecture and Coding; NXVM architecture, source layout, UX, roadmap and source/research policy; prior S89 and S90 evidence. |
+| Verification | Reuse stable cached builds; bounded sequential dual-width measurements with fixed private inputs and existing safe observation APIs; distinguish host time, Core ticks, RTC, PIT/DOS and frame/guest checkpoints. Documentation gate and actual audit review. |
+| Expected Markers | Reproducible workload and timings, owner-attributed bottleneck evidence, unchanged input hashes, justified repair plan and diff estimate without guessed gains. |
+| Asset Needs | Existing external admitted BIOS/media; private configured CMOS and overlay/copied disks. No new downloads, ROM changes or owner input writes. |
+| Reporting Requirements | Report measured versus inferred results, sampling overhead, phase boundaries, proposed owner/files/diff and unverified desktop/RDP behavior. |
+| Stop Conditions | Do not turn failed/unfinished sampling into success, use unsafe live private reads, mutate user inputs, or implement unreviewed Shared contracts. Unproved hotspot means more bounded investigation, not a fabricated fix. |
+| Exit Criteria | Baseline and actual hot-path audit support a concrete repair design or accurately identify the remaining measurement gap; S1 does not claim the performance problem fixed. |
+| Original Owner Request | Close T581 and admit the next priority T to address performance. |
+| Similar-Issue Sweep | Compare DSTN/TFT, x86/x64, early firmware/late guest, Machine versus UI, pacing versus execution/device work, and prior rejected optimization candidates. |
+
 # M5 T581 — Closed after owner acceptance
 
 | Field | Required record |

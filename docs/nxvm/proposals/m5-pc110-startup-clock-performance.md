@@ -3,3 +3,54 @@
 Transfer from T580 by owner direction on 2026-10-29. Diagnose the long startup and slow World Clock using actual product, guest clock, RTC and timer observations. Determine the correct owner and implement a measured, minimal repair without replacing guest time with an unexamined host-time shortcut. Preserve the owner's exclusion of elapsed host-off compensation. Distinguish L1/L2 models from manual-defined facts.
 
 Acceptance requires a before/after representative startup measurement, guest clock and RTC evidence, both host architectures, appropriate regression and product artifacts. Do not claim hardware accuracy or root cause from a single observation. See [S89](../etc/evidence/t580-s89-clock-rate.md), [S88](../etc/evidence/t580-s88-clock-persistence.md) and [S90](../etc/evidence/t580-s90-acceptance-failure.md).
+
+## Admission and sequence
+
+The owner selected performance as the next task on 2026-10-29, superseding
+its former queue position 14. Admit M5 T582 after accepted T581. Baseline:
+`59ad6e78b` implementation and `f07c61150` closure, PC products 0.5.0581.
+The primary workload is the unified MyPC110 product with configured private
+CMOS and disk copies; DSTN is the default, TFT is the comparison variant.
+Empty-CMOS first setup is a different workload and remains separately queued.
+
+- **S1: representative baseline and bottleneck audit.** Reuse existing probes
+  and diagnostics. Correlate monotonic host time, retired instructions, Core
+  ticks, RTC and PIT/DOS observations through existing safe observation paths.
+  Separate POST, DOS/Personaware startup and steady guest operation; distinguish
+  Machine-only from actual product/UI overhead. Compare both host widths.
+  Inspect the hot execution/device/display paths and measure promising areas
+  before proposing changes. Exit with an evidenced owner, reproducible baseline,
+  bounded repair design and estimated diff, or an explicit unresolved finding;
+  test success alone is not performance evidence. No production change in S1.
+- **S2: measured owner-local repair.** Admit the concrete S1 design, preserve
+  guest timing and device ordering, compare the same baseline/candidate workload,
+  retain only demonstrated improvements and add the minimum relevant regression.
+  Split independent mechanisms into further numeric S tasks if evidence requires.
+- **S3: receiving qualification and delivery.** Reconcile startup and steady
+  guest/clock observations on both widths and variants, run affected receiver
+  regressions, rebuild/deploy affected products, review actual diff and publish.
+  Close only after owner acceptance. Renumber this final S if S2 is split.
+
+## Constraints and evidence
+
+No host-time substitution, nominal clock reduction, skipped side-effecting
+instructions/ports, firmware-address performance special cases, second executor
+or hidden acceleration path. Preserve the existing admitted L1 firmware model;
+its presence does not authorize further shortcuts. No host-off compensation.
+No permanent cache or state is justified without an actual measured bottleneck.
+Read-only profiling may inspect Shared; production Shared scope is determined
+by evidence and existing authorization, not assumed from this admission.
+
+Use the existing x86/x64 Ninja and project ccache trees. Run long measurements
+hidden/in the background, sequentially for comparable throughput; reuse the
+accepted T581 frames and baseline hashes rather than repeating full boots merely
+for screenshots. Task scratch is `build/t582`, owned by this task until evidence
+is archived. Each run must have a stated time/work budget; start with short
+bounded samples, use a boot-length budget only for actual boot qualification.
+Do not change owner configuration/media or discard unrelated work. S1 governance
+and audit alone do not refresh product version strings or EXEs.
+
+T580 S89's KBC and division candidates did not demonstrate gains: do not repeat
+them without new evidence. T581's final frames establish boot success, not an
+exact first-Personaware timestamp; extract phase timing only where observations
+support it. Sampling overhead and native Window/RDP limitations must be reported.
