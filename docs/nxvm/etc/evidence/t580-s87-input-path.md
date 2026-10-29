@@ -66,3 +66,31 @@ owned Window to 464x348 to accommodate the changed RDP client size; it does
 not qualify natural sizing. It exited after a further 10 million instructions
 as the guest entered a 640x480 graphics frame, before the launcher was observed.
 A subsequent longer observation is needed for the product screen.
+
+## Product-path launcher and keyboard observation
+
+The fifth isolated x64 product observation used the same production objects
+with scratch-only instruction and enqueue instrumentation. After the normal
+firmware and PC DOS path, four correctly positioned relative press/release
+pairs were accepted through the Emulator Machine input queue with the inking
+register enabled. The resulting actual RDP Window showed the Personaware
+launcher (screenshot SHA-256
+`E834392C80A445ACB985E0DE4800591EE1BF2BF8C688268AC15D634214B5E04F`).
+Normal Tab and Enter make/break messages were then posted to this owned native
+Window; a subsequent screenshot showed the World Clock application open
+(`65F23D3DD2858F4B36F59BAA27180A1DDA9C830B4DBCBBB1548CAE6F5476DC1D`).
+This establishes an observable response following those keyboard inputs in
+the instrumented product path; it does not independently trace each key's
+consumption or test native mouse capture. The Guest continued more than
+80 million instructions after calibration without a reported Core error.
+The background observer completed with exit 0; this is an observation, not
+a registered integration test.
+
+Observer, queue and runner logs have SHA-256 respectively
+`8D929908ACD29D444F90189A2AA109E0AA55E056229058A7490BD66C7E64B9C0`,
+`78238F0A838A3B57E5662FDEB245ED3DE2588A1087C18E4DB03318ED96339850` and
+`C80ABEE113C6D5FD1FDE539804F948D42C894B3A61F8CCA2EB2160B34C80800D`.
+The isolated input images retained their original hashes. This is TFT x64
+instrumented evidence; the released TFT/DSTN EXEs, both host widths, native
+mouse input, physical LCD and full T580 qualification still require their
+respective proofs.
