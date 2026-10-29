@@ -1,4 +1,4 @@
-# M5 T582 S2 — Active: equivalent F65535 planar expansion
+# M5 T582 S2 — Closed: equivalent F65535 planar expansion
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Existing approved external ROM/media; isolated measurement copies only. No new inputs or modified owner INI/CMOS/media. |
 | Reporting Requirements | Per-owner actual diff, timings and their scope, tests, 14 artifacts, failures/unverified gates and remaining T582 performance gaps. |
 | Stop Conditions | No changed pixel/flag/palette/stride semantics, artificial guest speedup, false test pass or omitted receiver. Resolve in-scope defects; report genuine unavailable external prerequisites. |
-| Exit Criteria | Equivalent measured local repair, applicable tests and 14-artifact delivery complete and reviewed; T582 remains open for whole-product playability and further proven hotspots. |
+| Exit Criteria | Coordinator closed S2 after actual-diff review, complete dual-width qualification and 14-artifact delivery: Shared d8a94dc61, NXVM 7c7a98a13, MyRaidenII 0d48682cf, all pushed. Local improvement is proven; T582 remains open for whole-product playability and further proven hotspots. |
 | Original Owner Request | Optimize PC110 performance and redundant work; any Shared update requires cached 14-EXE publication and cached full tests. |
 | Similar-Issue Sweep | Text/cursor path unchanged; all planar dimensions, plane bits, palette/start/stride and first/repeated capture; check other receiver coupling and existing test overlap. |
 
