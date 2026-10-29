@@ -26,10 +26,22 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   guest timing and device ordering, compare the same baseline/candidate workload,
   retain only demonstrated improvements and add the minimum relevant regression.
   Split independent mechanisms into further numeric S tasks if evidence requires.
-- **S3: receiving qualification and delivery.** Reconcile startup and steady
+- **S3: remaining execution costs.** S2's x64 integrated pair still advances
+  only about 25 guest seconds in 300 host seconds. Audit CPU refresh, repeated
+  timing-result reads, and physical-memory route/line qualification using
+  task-owned counters and fixed-work comparisons. The earlier RAM candidate
+  rejected every configuration with any alias; establish which actual accesses
+  caused that rejection before revisiting it. Preserve narrow device windows,
+  raw/reset routes, A20, aliases, parity, observers and guest timing. Do not
+  remove checks merely because they repeat syntactically. Implement only an
+  evidenced equivalent improvement; otherwise retain the negative evidence
+  and select the next measured owner. No new public interface is presumed.
+- **S4: receiving qualification and delivery.** Reconcile startup and steady
   guest/clock observations on both widths and variants, run affected receiver
   regressions, rebuild/deploy affected products, review actual diff and publish.
-  Close only after owner acceptance. Renumber this final S if S2 is split.
+  Close only after owner acceptance. Renumber this final S if another measured
+  implementation batch is required. Every Shared batch independently meets the
+  fourteen-artifact and full-test receiving gate below.
 
 ## Constraints and evidence
 
