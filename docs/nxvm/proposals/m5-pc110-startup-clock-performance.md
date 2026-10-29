@@ -54,3 +54,18 @@ T580 S89's KBC and division candidates did not demonstrate gains: do not repeat
 them without new evidence. T581's final frames establish boot success, not an
 exact first-Personaware timestamp; extract phase timing only where observations
 support it. Sampling overhead and native Window/RDP limitations must be reported.
+
+## Shared receiving gate
+
+Owner reaffirmed the current Execution rule on 2026-10-29: any admitted Shared
+update requires cached Release builds and publication of all seven Apps on
+x64 and x86 (14 EXEs): NXVM, My5160, My5170, MyDeskPro386, MyPC110,
+MyRaidenII and MyNES. Run cached full-repository unit and integration tests
+on both architectures, not only the modified package's tests. Reuse the stable
+Ninja graphs and ccache; do not discard valid intermediates. Record actual
+passes, failures and unavailable desktop/device gates separately; incomplete
+verification cannot be reported as a complete pass. Verify deployed identities,
+PE widths and hashes, and commit changed artifacts in their product-scoped P
+commits. Receiving product versions and user configuration remain unchanged
+unless separately admitted. S1's documentation/read-only audit does not itself
+trigger a production rebuild. Execution remains the publication authority.
