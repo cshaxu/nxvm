@@ -768,6 +768,7 @@ static lib_status x86_core_machine_execute_budget(
                 result->executed < budget.instructions) &&
                (budget.ticks == 0u || result->ticks < budget.ticks)) {
             const lib_bool cpu_fault_pending = machine->fault_detail != 0u;
+            x86_core_cpu_timing_result timing_result;
 
             if (machine->lifecycle == X86_CORE_MACHINE_FAULTED) {
                 result->reason = X86_CORE_MACHINE_STOP_FAULT;
@@ -1024,13 +1025,13 @@ static lib_status x86_core_machine_execute_budget(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
+                timing_result = x86_core_cpu_capture_timing(machine->executor_cpu_execution);
                 if ((machine->fault_detail != 0u ||
-                    x86_core_cpu_capture_timing(machine->executor_cpu_execution).event_ticks != 0u ||
+                    timing_result.event_ticks != 0u ||
                     x86_core_cpu_execution_consume_instruction_fault_delivery(
                         machine->executor_cpu_execution)) &&
-                    x86_core_cpu_capture_timing(machine->executor_cpu_execution).ticks == 0u) {
-                    const lib_u64 event_ticks = x86_core_cpu_capture_timing(
-                        machine->executor_cpu_execution).event_ticks;
+                    timing_result.ticks == 0u) {
+                    const lib_u64 event_ticks = timing_result.event_ticks;
 
                     /* Committed entry did not retire the interrupted/faulting
                      * instruction. Its CPU subtotal and separate board wait use
@@ -1089,8 +1090,6 @@ static lib_status x86_core_machine_execute_budget(
                 }
             }
             {
-                const x86_core_cpu_timing_result timing_result =
-                    x86_core_cpu_capture_timing(machine->executor_cpu_execution);
                 lib_u64 instruction_ticks;
 
                 if (timing_result.ticks == 0u ||

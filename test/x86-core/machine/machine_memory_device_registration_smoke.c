@@ -654,6 +654,29 @@ lib_i32 main(void)
             sizeof(observed)) != LIB_STATUS_OK || observed != overlay ||
         x86_core_machine_memory_write(machine, 0x000f0000u, &write,
             sizeof(write)) != LIB_STATUS_OK || overlay != write;
+    /* Wide RAM remains direct; a one-byte provider inside the same width
+     * must still receive its own byte instead of disappearing into RAM. */
+    for (lib_u32 index = 0u; !failed && index < 2u; ++index) {
+        const lib_u32 address = index == 0u ? 0x200u : 0xeffffu;
+        const lib_u8 pair[] = {0x11u, 0x22u};
+        lib_u8 actual[2] = {0};
+
+        failed |= x86_core_machine_memory_write(machine, address, pair,
+                sizeof(pair)) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, address, actual,
+                sizeof(actual)) != LIB_STATUS_OK ||
+            lib_memory_compare(pair, actual, sizeof(pair)) != 0;
+        if (index != 0u) failed |= overlay != pair[1];
+    }
+    for (lib_u32 index = 0u; !failed && index < 4u; ++index) {
+        const lib_u32 addresses[] = {0x200u, 0xefff0u, 0xf0000u, 0x200000u};
+        lib_u32 decoded = 0u;
+        lib_bool fill = LIB_FALSE;
+
+        failed |= x86_core_machine_memory_query_cpu_cache(&machine->executor_memory,
+            addresses[index], LIB_FALSE, LIB_TRUE, &decoded, &fill) != LIB_STATUS_OK ||
+            decoded != addresses[index] || fill != (index < 2u);
+    }
     overlay = 0u;
     provider.physical_start = 0x000f1000u;
     if (!failed) failed |= x86_core_machine_memory_read(machine, 0x000f0000u, &observed,

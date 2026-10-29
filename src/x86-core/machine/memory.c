@@ -190,6 +190,22 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
     return LIB_STATUS_OK;
 }
 
+/* A conservative geometric proof: no aliases or address-line changes, and
+ * no provider intersects any byte. Otherwise use the existing byte queries. */
+static lib_bool x86_core_machine_memory_is_plain_span(const t_ram *ram, lib_u32 physical, lib_uptr bytes)
+{
+    if (ram->data.address_clear_mask != 0u || ram->connect.mapping_count != 0u ||
+        bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical) return LIB_FALSE;
+    for (lib_uptr index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const x86_core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[index];
+        if ((lib_u64)physical < (lib_u64)provider->physical_start + provider->bytes &&
+            (lib_u64)provider->physical_start < (lib_u64)physical + bytes)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 /* Reset-cache fetches use the CPU's architected high reset address before the
  * board has an opportunity to apply address-line decoding.  A present provider is the
  * sole ROM owner; no provider disposition leaves the caller free to use its
@@ -585,7 +601,7 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_TRUE, &provider,
         &provider_physical, &offset, cpu_access);
     if (status != LIB_STATUS_OK) return status;
-    if (provider == LIB_NULL && byte > 1u) {
+    if (provider == LIB_NULL && byte > 1u && !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
         lib_uptr index;
         for (index = 0u; index < byte; ++index) {
             const x86_core_machine_memory_device_provider *single_provider;
@@ -727,7 +743,7 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, LIB_TRUE, &provider,
         &provider_physical, &offset, cpu_access);
     if (status != LIB_STATUS_OK) return status;
-    if (provider == LIB_NULL && byte > 1u) {
+    if (provider == LIB_NULL && byte > 1u && !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
         lib_uptr index;
         for (index = 0u; index < byte; ++index) {
             const x86_core_machine_memory_device_provider *single_provider;
@@ -809,8 +825,8 @@ lib_status x86_core_machine_memory_query_physical(const t_ram *ram,
     return LIB_STATUS_OK;
 }
 
-/* Core cache-enable policy: direct RAM only. Resolve every byte because a
- * provider narrower than the line must not disappear into RAM fallback. */
+/* Core cache-enable policy: direct RAM only. Prove the whole span is plain
+ * or resolve each byte so a narrow provider cannot disappear into RAM. */
 lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
     lib_u32 physical, lib_bool reset_fetch, lib_bool check_fill,
     lib_u32 *out_address, lib_bool *out_fill_enabled)
@@ -829,6 +845,12 @@ lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
         if ((lib_u64)first < (lib_u64)mapping->physical_start + mapping->bytes &&
             (lib_u64)mapping->physical_start < (lib_u64)first + 16u)
             return LIB_STATUS_OK;
+    }
+    if (x86_core_machine_memory_is_plain_span(ram, first, 16u)) {
+        lib_size offset;
+        *out_fill_enabled = x86_core_machine_memory_offset(ram, first, 16u, &offset) ==
+            LIB_STATUS_OK && offset == first;
+        return LIB_STATUS_OK;
     }
     for (lib_u32 byte = 0u; byte < 16u; ++byte) {
         const x86_core_machine_memory_device_provider *provider;
