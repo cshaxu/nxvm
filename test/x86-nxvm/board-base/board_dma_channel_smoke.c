@@ -1004,6 +1004,8 @@ lib_i32 main(void)
     x86_nxvm_board_dma_request_assert(bus, &binding);
     if (x86_nxvm_board_dma_has_pending_request(bus)) failed = 1;
     x86_nxvm_board_dma_advance_transaction(bus, machine, 8u);
+    /* A long idle advance must retain a masked request for later unmasking. */
+    x86_nxvm_board_dma_advance_transaction(bus, machine, 1024u);
     if (fixture.next != 0u ||
         x86_nxvm_board_dma_get_signals(bus, 0u).active_channel != 4u ||
         x86_nxvm_board_dma_get_signals(bus, 1u).active_channel != 4u ||

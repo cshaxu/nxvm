@@ -493,6 +493,12 @@ void x86_nxvm_board_dma_advance_transaction(x86_nxvm_board_dma_bus *bus,
     for (tick = 0u; tick < elapsed_ticks; ++tick) {
         x86_nxvm_board_dma_advance_one(&bus->latch, &bus->primary, &bus->secondary, machine);
         x86_nxvm_board_dma_update_cascade(&bus->primary);
+        if (tick + 1u < elapsed_ticks) {
+            const x86_dma_signals first = x86_dma_get_signals(bus->primary.device);
+            const x86_dma_signals second = x86_nxvm_board_dma_get_signals(bus, 1u);
+            if (!first.requests && first.active_channel >= 4u &&
+                !second.requests && second.active_channel >= 4u) return;
+        }
     }
 }
 
