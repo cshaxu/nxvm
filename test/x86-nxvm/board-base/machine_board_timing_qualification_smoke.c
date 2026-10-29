@@ -225,6 +225,22 @@ static lib_i32 scheduler_board_timing_qualification(void)
     board->timing_declarations_copied = LIB_TRUE;
     x86_nxvm_board_deadline_observe(board, 0u, &observation);
     if (observation.source_ticks != source_ticks || observation.immediate_due) goto done;
+    /* Both channels share one clock; the earlier output must win. */
+    x86_pit_set_gate(board->shared_pit, 1u, LIB_TRUE);
+    if (x86_core_machine_bus_write(machine, 0x43u, 0x74u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x41u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x41u, 0u) != LIB_STATUS_OK) goto done;
+    x86_pit_advance(board->shared_pit, 1u);
+    {
+        lib_u64 later_ticks;
+        if (x86_pit_ticks_until_output(board->shared_pit, 0u, &later_ticks) != LIB_STATUS_OK ||
+            x86_pit_ticks_until_output(board->shared_pit, 1u, &pit_ticks) != LIB_STATUS_OK ||
+            pit_ticks >= later_ticks ||
+            x86_core_machine_clock_domain_source_ticks_until(&board->pit_clock,
+                pit_ticks, &source_ticks) != LIB_STATUS_OK) goto done;
+    }
+    x86_nxvm_board_deadline_observe(board, 0u, &observation);
+    if (observation.source_ticks != source_ticks || observation.immediate_due) goto done;
     failed = 0;
 done:
     x86_core_machine_destroy(machine);

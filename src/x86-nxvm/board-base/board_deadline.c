@@ -34,14 +34,22 @@ static lib_u8 board_consider_pit(const x86_pit *pit,
 {
     lib_u8 counter;
     lib_u8 immediate_due = LIB_FALSE;
+    lib_bool found = LIB_FALSE;
+    lib_u64 nearest = 0u;
 
     for (counter = 0u; counter < 3u; ++counter) {
         lib_u64 device_ticks;
 
-        if (x86_pit_ticks_until_output(pit, counter, &device_ticks) ==
-            LIB_STATUS_OK && board_consider_clock(clock, device_ticks,
-                io_source_ticks)) immediate_due = LIB_TRUE;
+        if (x86_pit_ticks_until_output(pit, counter, &device_ticks) != LIB_STATUS_OK)
+            continue;
+        if (device_ticks == 0u) immediate_due = LIB_TRUE;
+        else if (!found || device_ticks < nearest) {
+            nearest = device_ticks;
+            found = LIB_TRUE;
+        }
     }
+    if (found && board_consider_clock(clock, nearest, io_source_ticks))
+        immediate_due = LIB_TRUE;
     return immediate_due;
 }
 
