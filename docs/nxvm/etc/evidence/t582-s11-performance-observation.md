@@ -118,3 +118,7 @@ A further x64 private comparison included all five CPU translation units, matchi
 ## Bounded single-division clock candidate
 
 For source steps no larger than UINT32_MAX, a private candidate computes `elapsed * numerator + phase` once and divides once, preserving the identity-domain path and retaining the original overflow-safe general formula for larger steps. With 32-bit numerator and phase, the short-step product and sum fit in 64 bits. A 500000-case deterministic mathematical comparison covered output ticks, phase and delivered counter, including zero, 32-bit boundaries, UINT64_MAX and random valid ratios; this is not a substitute for actual clock tests. At the identical 10000000-instruction, 79964294-tick, PC 0003dbc5 checkpoint, x64 baseline/candidate were 22765/24740 ms and x86 24954/25430 ms. These are single ordered pairs, but neither supports the extra branch. The candidate was not admitted; no production code or public contract changed.
+
+## CPU optimization-level comparison
+
+A task-owned fixed-work probe directly compiled all five X86 Core CPU translation units and its harness with either the current GCC Release `-O3` or `-O2`, retaining the same remaining cached Release libraries and private CMOS/media. At 10000000 instructions, 79964294 guest ticks and PC 0003dbc5, x64 O3/O2 took 20198/23992 ms and x86 took 24953/25019 ms. Each is one sequential pair; O2 showed no benefit in this workload and was substantially slower on x64. No build flag, production component or released EXE changed.
