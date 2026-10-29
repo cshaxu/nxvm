@@ -27,6 +27,14 @@ int main(int argc, char **argv)
     static const char *const lifecycle_markers[] = {
         "Machine started.", "Machine paused.", "Machine resumed.",
         "Machine reset and paused.", "Machine resumed.", "Machine stopped.", ""};
+    static const char *const set_rtc_commands[] = {
+        "reset\r", "debug\r", "o 70 09\r", "o 71 26\r", "q\r", "exit\r"};
+    static const char *const set_rtc_markers[] = {
+        "Machine reset and paused.", "-", "-", "-", "> ", ""};
+    static const char *const read_rtc_commands[] = {
+        "reset\r", "debug\r", "o 70 09\r", "i 71\r", "q\r", "exit\r"};
+    static const char *const read_rtc_markers[] = {
+        "Machine reset and paused.", "-", "-", "00000026", "> ", ""};
     char directory[MAX_PATH] = {0}, executable[MAX_PATH] = {0};
     char ini_path[MAX_PATH] = {0}, cmos_path[MAX_PATH] = {0};
     void *bytes = LIB_NULL;
@@ -73,6 +81,11 @@ int main(int argc, char **argv)
         ((lib_u8 *)bytes)[0x3bu] != 0x5au) goto done;
     if (!emulator_console_process_run(executable, directory, lifecycle_commands,
             lifecycle_markers, sizeof(lifecycle_commands) / sizeof(lifecycle_commands[0])))
+        goto done;
+    if (!emulator_console_process_run(executable, directory, set_rtc_commands,
+            set_rtc_markers, sizeof(set_rtc_commands) / sizeof(set_rtc_commands[0])) ||
+        !emulator_console_process_run(executable, directory, read_rtc_commands,
+            read_rtc_markers, sizeof(read_rtc_commands) / sizeof(read_rtc_commands[0])))
         goto done;
     result = 0;
 done:

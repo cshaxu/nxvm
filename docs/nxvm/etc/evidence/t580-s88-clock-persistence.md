@@ -68,6 +68,15 @@ After the full unit run, the existing PC110 construction test gained a direct
 RTC restore assertion and passed again on both widths; the whole unit suite
 was not repeated for that test-only change.
 
+The existing product CMOS integration subsequently gained a real monitor and
+Debug port round trip: one actual product process resets, enters Debug, writes
+RTC year `26h`, quits and exits; a second process resets, enters Debug and
+reads `00000026` from the RTC port. TFT and DSTN pass on x64 and x86. Both
+processes use task-owned configuration; this verifies the released Product,
+Session, Debug, Machine and persistence connection without seeding the saved
+year by editing the file. It does not execute guest Setup or claim that a
+guest application set or consumed the date.
+
 The existing 128-byte file and `capture_cmos` are configuration contracts;
 changing their interpretation for every PC profile would silently affect
 other machines. A candidate is an explicitly optional RTC calendar seed in
