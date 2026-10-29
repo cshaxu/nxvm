@@ -2,6 +2,10 @@
 
 The entries below are ordered unnumbered candidates.
 
+**First queued T:** [MyPC110: selectable DSTN/TFT and two EXEs](../proposals/m5-pc110-display-variant-selection.md).
+This is the owner's latest priority insertion; it does not interrupt the
+active T580 packet. The other pending candidates below keep their order.
+
 The owner explicitly inserted [T564's committed frame import](../proposals/m5-softpc-rgb-frame-import.md)
 on 2026-10-17. It is active in Current, not another pending candidate; the
 PC110 candidates below retain their order.
