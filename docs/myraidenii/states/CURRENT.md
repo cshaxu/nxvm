@@ -2,6 +2,17 @@
 
 ## Current Work
 
+### Receiving update from NXVM M5 T582 S3
+
+The current 0007 x86/x64 pair receives the Shared X86 Core memory-route and
+timing-result reuse optimization. Both selected-set startup probes retire
+2,000,000 instructions at 33,287,472 ticks with frame digest
+`db1f73fa40511ae0`; both deployed product Console control probes pass.
+MyRaidenII source/configuration and its staged-closure status are unchanged.
+[NXVM S3 evidence](../../nxvm/etc/evidence/t582-s3-execution-performance.md)
+records the artifact hashes and full dual-width receiving qualification.
+These results do not establish gameplay, audio or manual RDP acceptance.
+
 ### Receiving update from NXVM M5 T582 S2
 
 The Shared receiving gate rebuilds the existing 0007 x86/x64 pair without
