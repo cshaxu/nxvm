@@ -24,7 +24,7 @@ static lib_status x86_nxvm_product_destroy_composed(void *opaque)
     const x86_nxvm_product_machine_binding *binding = machine->context;
     lib_status status = LIB_STATUS_OK;
     if (machine->configuration_save_ready && binding->save_configuration != LIB_NULL)
-        status = binding->save_configuration(machine->composition.machine);
+        status = binding->save_configuration(binding->context, machine->composition.machine);
     if (status != LIB_STATUS_OK) return status;
     return machine->composition.destroy(machine->composition.machine);
 }
@@ -32,8 +32,17 @@ static lib_status x86_nxvm_product_destroy_composed(void *opaque)
 static lib_status x86_nxvm_product_configure_extensions(emulator_product_machine *machine,
     x86_ibmpc_product_command_extensions *extensions)
 {
-    return x86_nxvm_product_configure_standard_extensions(machine->machine,
-        extensions);
+    x86_nxvm_product_machine *product;
+    const x86_nxvm_product_machine_binding *binding;
+
+    if (machine == LIB_NULL || machine->machine == LIB_NULL || extensions == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    product = machine->machine;
+    binding = product->context;
+    if (binding == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    if (binding->configure_extensions != LIB_NULL)
+        return binding->configure_extensions(binding->context, product, extensions);
+    return x86_nxvm_product_configure_standard_extensions(product, extensions);
 }
 
 lib_status x86_nxvm_product_ini_executable_path(const char *name, lib_u8 *path,

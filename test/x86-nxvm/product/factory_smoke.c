@@ -6,6 +6,7 @@ static lib_u32 phase;
 static lib_u32 releases;
 static lib_u32 creations;
 static lib_u32 descriptions;
+static lib_u32 attachments;
 static x86_nxvm_machine_config observed;
 static x86_nxvm_machine_speed speed;
 static lib_status speed_status;
@@ -24,6 +25,14 @@ static lib_status prepare(const x86_nxvm_machine_config *config,
         .profile = {.context = &candidate, .release = release_profile}
     };
     return LIB_STATUS_OK;
+}
+
+static lib_status attach_context(void *context, x86_nxvm_machine_construction *construction)
+{
+    if (context != &attachments || construction->profile.context != &candidate)
+        return LIB_STATUS_INTERNAL_ERROR;
+    ++attachments;
+    return phase == 4u ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 
 lib_status x86_nxvm_machine_create(const x86_nxvm_machine_config *config,
@@ -83,7 +92,8 @@ lib_i32 main(void)
 {
     const x86_nxvm_product_machine_binding binding = {.name = "fixture", .cpu = X86_CORE_CPU_PROFILE_80386,
         .initial_speed = X86_NXVM_MACHINE_SPEED_TURBO,
-        .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_1200K, .bios_count = 2u, .prepare = prepare};
+        .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_1200K, .bios_count = 2u, .prepare = prepare,
+        .context = &attachments, .attach_context = attach_context};
     x86_nxvm_product_request request = {.display = "console", .floppy = {"disk"},
         .floppy_count = 1u, .floppy_mode = {LIB_STORAGE_MEDIUM_READONLY},
         .fixed_disk = {"hard"}, .fixed_disk_count = 1u,
@@ -96,7 +106,7 @@ lib_i32 main(void)
     x86_ibmpc_product_command_extensions extensions;
     emulator_session_command_result result;
     const lib_status expected[] = {LIB_STATUS_OK, LIB_STATUS_UNSUPPORTED,
-        LIB_STATUS_NO_MEMORY, LIB_STATUS_INVALID_STATE};
+        LIB_STATUS_NO_MEMORY, LIB_STATUS_INVALID_STATE, LIB_STATUS_IO_ERROR};
 
     lib_memory_set(&config, 0xff, sizeof(config));
     if (x86_nxvm_product_configure_machine(&binding, LIB_NULL, &config) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -104,8 +114,8 @@ lib_i32 main(void)
         x86_nxvm_product_configure_machine(LIB_NULL, &request, &config) != LIB_STATUS_INVALID_ARGUMENT ||
         x86_nxvm_product_configure_machine(&binding, &request, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT)
         return 1;
-    for (phase = 0u; phase < 4u; ++phase) {
-        releases = creations = descriptions = 0u;
+    for (phase = 0u; phase < 5u; ++phase) {
+        releases = creations = descriptions = attachments = 0u;
         machine = (x86_nxvm_product_machine){.composition.machine = &candidate};
         if (x86_nxvm_product_compose_machine(&binding, &request, &machine) != expected[phase])
             return 2;
@@ -113,8 +123,9 @@ lib_i32 main(void)
         if ((phase != 0u && (machine.composition.machine != LIB_NULL ||
             machine.composition.driver.context != LIB_NULL)) ||
             releases != (phase == 1u ? 0u : 1u) ||
-            creations != (phase == 1u ? 0u : 1u) ||
-            descriptions != (phase == 1u || phase == 2u ? 0u : 1u)) return 3;
+            attachments != (phase == 1u ? 0u : 1u) ||
+            creations != (phase == 1u || phase == 4u ? 0u : 1u) ||
+            descriptions != (phase == 1u || phase == 2u || phase == 4u ? 0u : 1u)) return 3;
     }
     if (observed.cpu_profile != binding.cpu || observed.bios_count != 2u ||
         observed.memory_bytes != request.memory_bytes ||

@@ -11,14 +11,27 @@ static lib_bool reject_bind;
 static lib_bool reject_configuration;
 static lib_bool reject_save;
 static lib_bool valid;
-static lib_status save_configuration(x86_nxvm_machine *machine)
+static lib_u32 custom_extensions;
+static const x86_nxvm_product_machine_binding *expected_binding;
+static lib_status configure_custom_extensions(void *context, x86_nxvm_product_machine *machine,
+    x86_ibmpc_product_command_extensions *extensions)
 {
+    (void)context;
+    ++custom_extensions;
+    return x86_nxvm_product_configure_standard_extensions(machine, extensions);
+}
+static lib_status save_configuration(void *context, x86_nxvm_machine *machine)
+{
+    (void)context;
     valid = valid && (void *)machine == &candidate && unbinds == saves + 1u;
     ++saves;
     return reject_save ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 static const x86_nxvm_product_machine_binding binding = {
     .name = "fixture", .save_configuration = save_configuration};
+static const x86_nxvm_product_machine_binding custom_binding = {
+    .name = "fixture", .save_configuration = save_configuration,
+    .configure_extensions = configure_custom_extensions};
 
 static lib_status bind_machine(void *machine, emulator_machine *emulator)
 {
@@ -57,7 +70,7 @@ lib_status x86_nxvm_product_compose_machine(const x86_nxvm_product_machine_bindi
     const x86_nxvm_product_request *request, x86_nxvm_product_machine *machine)
 {
     (void)request;
-    valid = valid && selected == &binding;
+    valid = valid && selected == expected_binding;
     *machine = (x86_nxvm_product_machine){
         .composition = {.machine = &candidate,
             .driver.context = &candidate,
@@ -69,7 +82,7 @@ lib_status x86_nxvm_product_compose_machine(const x86_nxvm_product_machine_bindi
 lib_status x86_nxvm_product_configure_standard_extensions(x86_nxvm_product_machine *machine,
     x86_ibmpc_product_command_extensions *extensions)
 {
-    valid = valid && machine->context == &binding &&
+    valid = valid && machine->context == expected_binding &&
         machine->composition.machine == &candidate;
     *extensions = (x86_ibmpc_product_command_extensions){.context = machine};
     return LIB_STATUS_OK;
@@ -102,6 +115,7 @@ lib_i32 main(void)
     char long_name[300];
 
     valid = LIB_TRUE;
+    expected_binding = &binding;
     if (x86_nxvm_product_run("fixture", "nxvm.ini", &binding) != 0 ||
         !valid || runs != 1u || binds != 1u || unbinds != 1u || destroys != 1u)
         return 1;
@@ -123,5 +137,10 @@ lib_i32 main(void)
     if (x86_nxvm_product_run("fixture", "nxvm.ini", &binding) != 1 ||
         !valid || runs != 3u || saves != 2u || destroys != 3u)
         return 5;
+    reject_save = LIB_FALSE;
+    expected_binding = &custom_binding;
+    if (x86_nxvm_product_run("fixture", "nxvm.ini", &custom_binding) != 0 ||
+        !valid || custom_extensions != 1u || runs != 4u || destroys != 4u)
+        return 6;
     return 0;
 }

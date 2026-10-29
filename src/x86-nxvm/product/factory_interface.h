@@ -12,6 +12,7 @@
  * selected Profile and publishes copied construction plus its context on
  * success; failure releases any partial Profile and leaves no candidate. */
 typedef struct x86_nxvm_product_machine_binding {
+    void *context;
     const char *name;
     x86_core_cpu_profile cpu;
     x86_fpu_profile fpu;
@@ -23,8 +24,14 @@ typedef struct x86_nxvm_product_machine_binding {
     const x86_nxvm_machine_assets *firmware;
     lib_status (*prepare)(const x86_nxvm_machine_config *config,
         const x86_nxvm_machine_assets *assets, x86_nxvm_machine_construction *out_construction);
+    /* Optional construction-stage borrow; context outlives Machine. On failure
+     * the factory releases the prepared profile exactly once. */
+    lib_status (*attach_context)(void *context, x86_nxvm_machine_construction *construction);
     /* Called after worker shutdown and unbinding, before Machine destruction. */
-    lib_status (*save_configuration)(x86_nxvm_machine *machine);
+    lib_status (*save_configuration)(void *context, x86_nxvm_machine *machine);
+    /* Optional App-owned extensions; absent uses the standard PC commands. */
+    lib_status (*configure_extensions)(void *context, x86_nxvm_product_machine *machine,
+        x86_ibmpc_product_command_extensions *out_extensions);
 } x86_nxvm_product_machine_binding;
 
 lib_status x86_nxvm_product_configure_machine(const x86_nxvm_product_machine_binding *binding,

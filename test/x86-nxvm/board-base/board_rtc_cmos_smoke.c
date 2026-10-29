@@ -206,6 +206,22 @@ static lib_i32 rtc_cmos_test_cmos_adapter(lib_bool extended)
         cmos[0x3bu - (X86_RTC_REG_D + 1u)] != (extended ? 0x55u : 0xaau) ||
         (extended && cmos[0x7fu - (X86_RTC_REG_D + 1u)] != 0xa5u))) failed = 1;
     if (!failed) {
+        const lib_size offset = 0x3bu - (X86_RTC_REG_D + 1u);
+        const lib_u8 original = cmos[offset];
+        cmos[offset] = 0x33u;
+        if (x86_nxvm_board_restore_cmos(board, cmos, cmos_count - 1u) !=
+                LIB_STATUS_INVALID_ARGUMENT ||
+            x86_core_machine_bus_write(machine, 0x70u, 0x3bu) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x71u, &value) != LIB_STATUS_OK ||
+            value != original ||
+            x86_nxvm_board_restore_cmos(board, cmos, cmos_count) != LIB_STATUS_OK ||
+            x86_core_machine_bus_read(machine, 0x71u, &value) != LIB_STATUS_OK ||
+            value != 0x33u) failed = 1;
+        cmos[offset] = original;
+        if (x86_nxvm_board_restore_cmos(board, cmos, cmos_count) != LIB_STATUS_OK)
+            failed = 1;
+    }
+    if (!failed) {
         rtc[X86_RTC_REG_B] = X86_RTC_REG_B_DM; /* Binary, 12-hour mode. */
         rtc[X86_RTC_HOUR] = 0x83u;
         rtc[X86_RTC_DAY_WEEK] = 2u;

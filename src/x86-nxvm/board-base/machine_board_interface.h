@@ -358,6 +358,10 @@ lib_status x86_nxvm_board_configure_rtc_cmos(x86_nxvm_board_state *board,
  * The caller supplies exactly 50 or 114 bytes for the configured RTC. */
 lib_status x86_nxvm_board_capture_cmos(x86_nxvm_board_state *board,
     lib_u8 *bytes, lib_size byte_count);
+/* Restore the same configuration range at the caller-owned quiescent boundary.
+ * An invalid size is rejected before any register is changed. */
+lib_status x86_nxvm_board_restore_cmos(x86_nxvm_board_state *board,
+    const lib_u8 *bytes, lib_size byte_count);
 /* Caller owns the quiescent boundary. Register C is never read or restored. */
 lib_status x86_nxvm_board_capture_rtc(x86_nxvm_board_state *board, lib_u8 *bytes,
     lib_size byte_count);

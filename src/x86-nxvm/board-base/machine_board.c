@@ -1188,6 +1188,23 @@ lib_status x86_nxvm_board_capture_cmos(x86_nxvm_board_state *board,
     return LIB_STATUS_OK;
 }
 
+lib_status x86_nxvm_board_restore_cmos(x86_nxvm_board_state *board,
+    const lib_u8 *bytes, lib_size byte_count)
+{
+    lib_size count;
+
+    if (board == LIB_NULL || bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (!board->rtc_cmos_configured || board->shared_rtc == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    count = (board->rtc_cmos_config.extended_registers ? X86_RTC_REGISTER_COUNT :
+        X86_RTC_DEFAULT_REGISTER_COUNT) - (X86_RTC_REG_D + 1u);
+    if (byte_count != count) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_size index = 0u; index < count; ++index)
+        x86_rtc_write_register(board->shared_rtc,
+            (lib_u8)(X86_RTC_REG_D + 1u + index), bytes[index]);
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_nxvm_board_capture_rtc(x86_nxvm_board_state *board,
     lib_u8 *bytes, lib_size byte_count)
 {

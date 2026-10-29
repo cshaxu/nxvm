@@ -12,6 +12,8 @@ typedef struct construction_probe {
     lib_status configure_status;
     lib_status after_firmware_status;
     lib_status reset_status;
+    lib_status before_reset_status;
+    lib_size before_reset_count;
     lib_size configure_count;
     lib_size after_firmware_count;
     lib_size firmware_count;
@@ -76,6 +78,14 @@ static lib_status reset_firmware(void *context,
     lib_test_assert(firmware != LIB_NULL && !probe->released);
     ++probe->reset_count;
     return probe->reset_status;
+}
+
+static lib_status before_reset(void *context, x86_nxvm_board_state *board)
+{
+    construction_probe *probe = context;
+    lib_test_assert(board != LIB_NULL && !probe->released);
+    ++probe->before_reset_count;
+    return probe->before_reset_status;
 }
 
 static void notify_profile(void *context, x86_nxvm_machine_profile_event event)
@@ -147,7 +157,7 @@ static x86_nxvm_machine_construction prepare(construction_probe *probe)
         .firmware_provider = &firmware,
         .firmware_context = probe,
         .profile = {.context = probe, .configure = configure_plan,
-            .after_firmware = configure_after_firmware,
+            .after_firmware = configure_after_firmware, .before_reset = before_reset,
             .notify = notify_profile, .release = release_profile,
             .handle_input = handle_input}
     };
@@ -277,6 +287,18 @@ static void check_fixed_disk_slot_contract(void)
     lib_test_assert((value & 0x08u) != 0u);
     lib_test_assert(x86_core_machine_bus_read(machine->x86_core_machine, 0x1f0u, &value) == LIB_STATUS_OK &&
         value == 0x1234u);
+    /* Cold reset retains both the disk owner and dirty overlay contents. */
+    emulator_machine_driver driver;
+    t_hdd *disk = machine->fixed_disk[1u];
+    const x86_nxvm_board_media_provider *provider = x86_nxvm_machine_hdd_media_provider();
+    sector[0u] = 0xabu;
+    lib_test_assert(provider->write_bytes(disk, 0u, sector, sizeof(sector)) ==
+        X86_NXVM_BOARD_MEDIA_RESULT_OK);
+    lib_test_assert(x86_nxvm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK &&
+        driver.reset(driver.context) && machine->fixed_disk[1u] == disk);
+    sector[0u] = 0u;
+    lib_test_assert(provider->read_bytes(disk, 0u, sector, sizeof(sector)) ==
+        X86_NXVM_BOARD_MEDIA_RESULT_OK && sector[0u] == 0xabu);
     x86_nxvm_machine_destroy(machine);
     lib_test_assert(probe.released && probe.release_count == 1u);
 
@@ -362,7 +384,14 @@ static void check_transaction(lib_status configure_status,
     lib_test_assert(x86_nxvm_machine_get_information(machine, &information) == LIB_STATUS_OK);
     lib_test_assert(information.memory_bytes == (2u * 1024u * 1024u));
     lib_test_assert(x86_nxvm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
+    lib_test_assert(probe.before_reset_count == 0u);
+    probe.before_reset_status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(!driver.reset(driver.context));
+    lib_test_assert(probe.before_reset_count == 1u && probe.reset_count == 1u &&
+        probe.reset_notice_count == 1u && !probe.released);
+    probe.before_reset_status = LIB_STATUS_OK;
     lib_test_assert(driver.context == machine && driver.reset(driver.context));
+    lib_test_assert(probe.before_reset_count == 2u);
     lib_test_assert(probe.configure_count == 1u && probe.firmware_count == 1u);
     lib_test_assert(probe.reset_count == 2u && probe.reset_notice_count == 2u);
     kvm_input_event key = {.type = KVM_EVENT_KEY,

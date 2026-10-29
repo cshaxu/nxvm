@@ -29,6 +29,8 @@ typedef struct x86_nxvm_machine_profile_binding {
     void *context;
     lib_status (*configure)(void *context, x86_nxvm_board_plan *plan);
     lib_status (*after_firmware)(void *context, x86_core_machine *core);
+    /* Runs on the owning worker before a cold reset. */
+    lib_status (*before_reset)(void *context, x86_nxvm_board_state *board);
     void (*notify)(void *context, x86_nxvm_machine_profile_event event);
     void (*release)(void *context);
     /* Optional physical input wiring, on the owning executor after publication.

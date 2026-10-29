@@ -74,6 +74,10 @@ static lib_bool x86_nxvm_machine_driver_reset(void *context)
     lib_status status;
 
     if (machine == LIB_NULL) return LIB_FALSE;
+    if (machine->construction.profile.before_reset != LIB_NULL &&
+        machine->construction.profile.before_reset(machine->construction.profile.context,
+            machine->board) != LIB_STATUS_OK)
+        return LIB_FALSE;
     status = x86_nxvm_machine_control_reset(&machine->control);
     return x86_nxvm_machine_finish_reset(machine, status) == LIB_STATUS_OK;
 }

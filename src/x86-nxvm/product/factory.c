@@ -94,6 +94,11 @@ lib_status x86_nxvm_product_compose_machine(const x86_nxvm_product_machine_bindi
     status = x86_nxvm_product_configure_machine(binding, request, &config);
     if (status == LIB_STATUS_OK)
         status = binding->prepare(&config, binding->firmware, &construction);
+    if (status == LIB_STATUS_OK && binding->attach_context != LIB_NULL) {
+        status = binding->attach_context(binding->context, &construction);
+        if (status != LIB_STATUS_OK && construction.profile.release != LIB_NULL)
+            construction.profile.release(construction.profile.context);
+    }
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_machine_create(&config, &construction, &machine);
     if (status == LIB_STATUS_OK)
