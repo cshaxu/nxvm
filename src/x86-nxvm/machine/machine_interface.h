@@ -57,6 +57,9 @@ lib_status x86_nxvm_machine_bind_emulator_machine(x86_nxvm_machine *session,
  * 00h--0Dh are zero; the live RTC retains ownership of those registers. */
 lib_status x86_nxvm_machine_capture_cmos(x86_nxvm_machine *session,
     lib_u8 *bytes, lib_size byte_count);
+/* Capture RTC register values at the same unbound, quiescent boundary. */
+lib_status x86_nxvm_machine_capture_rtc(x86_nxvm_machine *session,
+    lib_u8 *bytes, lib_size byte_count);
 lib_status x86_nxvm_machine_reconfigure_memory(x86_nxvm_machine *session,
     lib_size memory_bytes);
 lib_status x86_nxvm_machine_get_speed(const x86_nxvm_machine *session,

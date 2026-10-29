@@ -131,6 +131,7 @@ static lib_i32 rtc_cmos_test_cmos_adapter(lib_bool extended)
     x86_nxvm_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_u8 cmos[X86_RTC_REGISTER_COUNT - (X86_RTC_REG_D + 1u)] = {0};
+    lib_u8 rtc[X86_RTC_REG_D + 1u] = {0};
     const lib_size cmos_count = (extended ? X86_RTC_REGISTER_COUNT :
         X86_RTC_DEFAULT_REGISTER_COUNT) - (X86_RTC_REG_D + 1u);
     lib_i32 masked = 0;
@@ -204,6 +205,23 @@ static lib_i32 rtc_cmos_test_cmos_adapter(lib_bool extended)
         x86_nxvm_board_capture_cmos(board, cmos, cmos_count) != LIB_STATUS_OK ||
         cmos[0x3bu - (X86_RTC_REG_D + 1u)] != (extended ? 0x55u : 0xaau) ||
         (extended && cmos[0x7fu - (X86_RTC_REG_D + 1u)] != 0xa5u))) failed = 1;
+    if (!failed) {
+        rtc[X86_RTC_REG_B] = X86_RTC_REG_B_DM; /* Binary, 12-hour mode. */
+        rtc[X86_RTC_HOUR] = 0x83u;
+        rtc[X86_RTC_DAY_WEEK] = 2u;
+        rtc[X86_RTC_DAY_MONTH] = 28u;
+        rtc[X86_RTC_MONTH] = 10u;
+        rtc[X86_RTC_YEAR] = 24u;
+        rtc[X86_RTC_REG_A] = 0x26u;
+        if (x86_nxvm_board_restore_rtc(board, rtc, sizeof(rtc) - 1u) !=
+                LIB_STATUS_INVALID_ARGUMENT ||
+            x86_nxvm_board_restore_rtc(board, rtc, sizeof(rtc)) != LIB_STATUS_OK ||
+            x86_nxvm_board_capture_rtc(board, rtc, sizeof(rtc)) != LIB_STATUS_OK ||
+            rtc[X86_RTC_HOUR] != 0x83u || rtc[X86_RTC_YEAR] != 24u ||
+            rtc[X86_RTC_REG_B] != X86_RTC_REG_B_DM ||
+            rtc[X86_RTC_REG_C] != 0u || rtc[X86_RTC_REG_D] != X86_RTC_REG_D_VRT)
+            failed = 1;
+    }
     x86_core_machine_destroy(machine);
     return failed;
 }

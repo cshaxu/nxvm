@@ -1186,6 +1186,34 @@ lib_status x86_nxvm_board_capture_cmos(x86_nxvm_board_state *board,
     return LIB_STATUS_OK;
 }
 
+lib_status x86_nxvm_board_capture_rtc(x86_nxvm_board_state *board,
+    lib_u8 *bytes, lib_size byte_count)
+{
+    if (board == LIB_NULL || bytes == LIB_NULL || byte_count != X86_RTC_REG_D + 1u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (!board->rtc_cmos_configured || board->shared_rtc == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    for (lib_size index = 0u; index <= X86_RTC_REG_B; ++index)
+        bytes[index] = x86_rtc_read_register(board->shared_rtc, (lib_u8)index);
+    bytes[X86_RTC_REG_C] = 0u;
+    bytes[X86_RTC_REG_D] = x86_rtc_read_register(board->shared_rtc, X86_RTC_REG_D);
+    return LIB_STATUS_OK;
+}
+
+lib_status x86_nxvm_board_restore_rtc(x86_nxvm_board_state *board,
+    const lib_u8 *bytes, lib_size byte_count)
+{
+    if (board == LIB_NULL || bytes == LIB_NULL || byte_count != X86_RTC_REG_D + 1u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (!board->rtc_cmos_configured || board->shared_rtc == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    /* Set the guest's encoding before writing the encoded calendar. */
+    x86_rtc_write_register(board->shared_rtc, X86_RTC_REG_B, bytes[X86_RTC_REG_B]);
+    for (lib_size index = 0u; index <= X86_RTC_REG_A; ++index)
+        x86_rtc_write_register(board->shared_rtc, (lib_u8)index, bytes[index]);
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_nxvm_board_configure_planar_parity(x86_nxvm_board_state *board,
     const x86_nxvm_board_planar_parity_config *config)
 {

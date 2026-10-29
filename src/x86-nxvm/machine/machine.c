@@ -317,6 +317,10 @@ lib_status x86_nxvm_machine_storage_initialize(x86_nxvm_machine *machine)
     }
     status = x86_nxvm_board_create_from_plan(machine->x86_nxvm_board_plan,
         &machine->x86_core_machine, &machine->board);
+    if (status == LIB_STATUS_OK && machine->construction.rtc_seed_present) {
+        status = x86_nxvm_board_restore_rtc(machine->board,
+            machine->construction.rtc_seed, sizeof(machine->construction.rtc_seed));
+    }
     if (status == LIB_STATUS_OK && machine->construction.floppy_slot_count != 0u) {
         status = x86_nxvm_board_get_fdc_dma_request_binding(machine->board,
             &machine->fdc_dma_request);
@@ -451,6 +455,16 @@ lib_status x86_nxvm_machine_capture_cmos(x86_nxvm_machine *session,
         expected - 0x0eu);
     if (status == LIB_STATUS_OK) lib_memory_copy(bytes, image, expected);
     return status;
+}
+
+lib_status x86_nxvm_machine_capture_rtc(x86_nxvm_machine *session,
+    lib_u8 *bytes, lib_size byte_count)
+{
+    if (session == LIB_NULL || bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (session->executor != LIB_NULL || session->board == LIB_NULL ||
+        !session->construction.topology.rtc_cmos_present)
+        return LIB_STATUS_INVALID_STATE;
+    return x86_nxvm_board_capture_rtc(session->board, bytes, byte_count);
 }
 
 lib_status x86_nxvm_machine_get_reset_vector(const x86_nxvm_machine *session,

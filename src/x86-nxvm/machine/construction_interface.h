@@ -12,6 +12,7 @@
 #define X86_NXVM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
 #define X86_NXVM_MACHINE_CMOS_SEED_BYTES 64u
 #define X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES 128u
+#define X86_NXVM_MACHINE_RTC_SEED_BYTES 14u
 
 typedef enum x86_nxvm_machine_profile_event {
     X86_NXVM_MACHINE_PROFILE_RESET_COMPLETED,
@@ -62,6 +63,9 @@ typedef struct x86_nxvm_machine_construction {
     lib_u8 cmos_seed[X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES];
     lib_size cmos_seed_bytes;
     lib_bool cmos_seed_present;
+    /* Optional RTC register image; distinct from configuration-only CMOS. */
+    lib_u8 rtc_seed[X86_NXVM_MACHINE_RTC_SEED_BYTES];
+    lib_bool rtc_seed_present;
     x86_video_text_glyph_config text_glyphs;
     /* A non-VADP board supplies its one display snapshot source here.  The
      * Machine binds and freezes it in the existing board display slot. */
