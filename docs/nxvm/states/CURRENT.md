@@ -1,14 +1,14 @@
-# M5 T582 S4 � Active: DMA arbitration performance audit
+# M5 T582 S4 — Active: DMA arbitration performance audit
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation � M5 T582 S4 after S3 delivery and coordinator review. |
+| Identifier Mode | Continuation — M5 T582 S4 after S3 delivery and coordinator review. |
 | Admission And Approval | Owner authorized continued PC110 performance work and autonomous S sequencing. |
 | Objective | Measure board DMA arbitration in the actual PC110 workload and determine whether a safe idle fast path produces a useful improvement. |
 | Non-goals | No guest timing changes, skipped transfers or cascade updates, new persistent state, public API, Lib/Emulator changes or user-media mutations. |
 | Reference Baseline | Shared 1f8a4d477, NXVM f0907772f, MyRaidenII 825ac6b82; PC 0.5.0582. |
 | Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md) and [S3 evidence](../etc/evidence/t582-s3-execution-performance.md). |
-| Files And ABI Surface | Initially read-only X86-NXVM board DMA and Core scheduler; task-owned probes under build/t582. Record measured design and estimate before production edits. |
+| Files And ABI Surface | Measured candidate: X86-NXVM board-base/dma_bus.c and existing DMA channel regression, plus respective manifests; approximately +8 production lines. No new ABI or state. [Evidence](../etc/evidence/t582-s4-dma-performance.md). |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
 | Verification | Matched Release fixed-work comparison on x64/x86; cascade, active channels, request transitions and transfer regression. Any Shared change requires cached 14-EXE build and full dual-width unit/integration qualification. |
 | Expected Markers | Equivalent guest ticks and transfer behavior, measured host-time change, and a justified keep-or-reject decision. |
@@ -19,7 +19,7 @@
 | Original Owner Request | Improve PC110 performance and eliminate redundant work until usable. |
 | Similar-Issue Sweep | Review single/dual DMA controller, primary/secondary active/request, disabled/masked cascade, and request-changing callbacks. |
 
-# M5 T582 S3 — Active: execution and memory-route costs
+# M5 T582 S3 — Closed: execution and memory-route costs
 
 | Field | Required record |
 | --- | --- |
