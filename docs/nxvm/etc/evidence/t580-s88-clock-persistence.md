@@ -79,3 +79,9 @@ does pace guest time, but that fact alone does not prove accuracy under host
 overload or during suspension. These are static conclusions about the existing
 time path, not measured wall-clock drift or a completed fix. A restart-only
 timestamp adjustment must not be represented as fixing these runtime cases.
+
+A separate x64 task-private construction probe read the RTC seconds register,
+waited 2,100 ms without executing the Machine, and read it again: `00,00`.
+The probe completed successfully and used task-owned files. This confirms the
+quiescent Machine observation, not an end-to-end Product pause/resume run;
+Turbo drift has not been measured.
