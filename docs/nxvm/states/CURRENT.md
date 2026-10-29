@@ -1,4 +1,4 @@
-# M5 T582 S10 — Active: PIT deadline aggregation
+# M5 T582 S10 — Closed: PIT deadline aggregation
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Existing firmware and isolated copied CMOS/media. |
 | Reporting Requirements | Actual diff, test results, artifact hashes and interactive limitations. |
 | Stop Conditions | Never lose UINT64_MAX or immediate events; do not mask conversion errors or change per-PIT clock domain. |
-| Exit Criteria | Equivalent measured implementation and complete receiving delivery; T582 remains open until usability verified. |
+| Exit Criteria | Actual Shared diff reviewed; x64/x86 cached qualification, fourteen receiving artifacts and selected-set MyRaidenII checks passed. Shared 96eab1131, NXVM f89764af4 and MyRaidenII ebb203dce were pushed. T582 remains open until PC110 usability is verified. |
 | Original Owner Request | Improve PC110 performance and eliminate redundancy until usable. |
 | Similar-Issue Sweep | Both primary and auxiliary PIT domains, invalid channels, conversion overflow and previous nearer deadline. |
 
