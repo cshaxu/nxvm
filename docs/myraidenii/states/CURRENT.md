@@ -2,6 +2,13 @@
 
 ## Current Work
 
+### Receiving update from NXVM M5 T582 S4
+
+The existing 0007 x86/x64 products receive the X86-NXVM DMA idle optimization.
+Both selected-set startup and deployed Console checks pass; no gameplay or audio
+qualification is claimed. [S4 evidence](../../nxvm/etc/evidence/t582-s4-dma-performance.md)
+records artifact identities and the complete dual-width receiving gate.
+
 ### Receiving update from NXVM M5 T582 S3
 
 The current 0007 x86/x64 pair receives the Shared X86 Core memory-route and
