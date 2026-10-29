@@ -37,7 +37,8 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   evidenced equivalent improvement; otherwise retain the negative evidence
   and select the next measured owner. No new public interface is presumed.
 - **S4: board DMA arbitration audit.** Measure the idle and active paths in the actual PC110 workload; preserve cascade and callbacks, and only retain a demonstrated equivalent improvement.
-- **S5: receiving qualification and delivery.** Reconcile startup and steady
+- **S5: CPU timing computation audit.** Measure repeated prefix and timing work; preserve all profiles and timing semantics.
+- **S6: receiving qualification and delivery.** Reconcile startup and steady
   guest/clock observations on both widths and variants, run affected receiver
   regressions, rebuild/deploy affected products, review actual diff and publish.
   Close only after owner acceptance. Renumber this final S if another measured

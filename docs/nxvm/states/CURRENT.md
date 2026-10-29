@@ -1,4 +1,25 @@
-# M5 T582 S4 — Active: DMA arbitration performance audit
+# M5 T582 S5 — Active: CPU timing computation audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S5 after S4 delivery and coordinator review. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Measure repeated CPU instruction timing and prefix decoding work on representative PC110 execution and identify a safe, useful optimization. |
+| Non-goals | No guest timing formula changes, skipped instructions, persistent mirrored decode state, new public API, Lib/Emulator changes or owner-input mutation. |
+| Reference Baseline | Shared 27ad35459, NXVM 6b01ffd3e, MyRaidenII 7636e914b. |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md); [S3 CPU candidate](../etc/evidence/t582-s3-execution-performance.md). |
+| Files And ABI Surface | Initially read-only X86 Core CPU timing and decoder; task-owned probes in build/t582. Record concrete design and diff estimate before edits. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Measure matched Release fixed-work on both widths, preserve timing results and Intel/V30 semantics; Shared edits require cached full dual-width unit/integration and fourteen artifacts. |
+| Expected Markers | Reproducible hotspot evidence and either a proven useful equivalent repair or a negative result and next owner. |
+| Asset Needs | Existing firmware and task-owned copied CMOS/media with overlays; preserve owner inputs. |
+| Reporting Requirements | Counts, measurement overhead, actual diff, coverage and remaining interactive/RDP limits. |
+| Stop Conditions | Do not conflate prefix semantics across profiles, runtime/preview or emulation modes; no timing accuracy downgrade. |
+| Exit Criteria | Deliver measured equivalent improvement with required qualification or documented negative result; T582 remains open pending actual playability. |
+| Original Owner Request | Improve PC110 performance by eliminating evidenced redundant work until usable. |
+| Similar-Issue Sweep | Examine shared prefix count callers, nested timing calculations and other CPU profiles without duplicating test suites. |
+
+# M5 T582 S4 — Closed: DMA arbitration performance audit
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Existing approved firmware and isolated private CMOS/media; preserve owner files. |
 | Reporting Requirements | Report actual hotspot evidence, measurement limits, estimated and actual diff, verification and remaining playability gap. |
 | Stop Conditions | Do not infer idle from the gated pending-request query; do not skip cascade propagation, active primary transfers, callbacks or guest timing. |
-| Exit Criteria | Deliver a measured and qualified equivalent improvement, or a bounded negative result and next evidence-led owner. T582 stays open until playability is proven. |
+| Exit Criteria | Coordinator reviewed pushed Shared 27ad35459, NXVM 6b01ffd3e and MyRaidenII 7636e914b; full qualification passed. T582 remains open until playability is proven. |
 | Original Owner Request | Improve PC110 performance and eliminate redundant work until usable. |
 | Similar-Issue Sweep | Review single/dual DMA controller, primary/secondary active/request, disabled/masked cascade, and request-changing callbacks. |
 
