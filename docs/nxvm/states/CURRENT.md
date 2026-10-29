@@ -1,3 +1,31 @@
+# M5 T580 S90 — Active: PC110 representative guest throughput
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S90. |
+| Admission And Approval | Owner requested autonomous PC110 completion; S89 transferred the measured slow-guest performance receiver. Owner approved the two-location Shared refresh-latch ownership correction. |
+| Objective | Isolate late-guest time and CPU throughput costs and establish whether a safe, effective optimization is possible. |
+| Non-goals | No host-time substitution, BIOS-specific skip, lower timing correctness, user-media writes or unapproved Shared changes. |
+| Reference Baseline | S87 late guest, S88 RTC persistence and S89 runner/profiling evidence. |
+| Candidate Proposal | Reuse existing late-guest evidence and existing probes; correlate host time, guest clock, RTC and PIT/DOS time before selecting a measured optimization. |
+| Files And ABI Surface | PC110 App, existing diagnostics/tests and task evidence; Shared changes require established authorization. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Before/after representative workload and precise device/interrupt regression on both widths for any proposed fix; no unrelated repeated full runs. |
+| Expected Markers | Correlated late-guest measurements, identified bottleneck and validated safe optimization or an explicitly retained boundary. |
+| Asset Needs | Existing embedded firmware and task-owned configuration/media copies; preserve original inputs. |
+| Reporting Requirements | Report real workload, host and guest time, actual diff, effect size, timing fidelity and unverified paths. |
+| Stop Conditions | No fabricated device state, unapproved Shared change, foreground execution or unbounded test. |
+| Exit Criteria | Measured late-guest cause and verified safe fix, or documented precise remaining receiver without claiming product qualification. |
+| Original Owner Request | Complete a usable PC110 product, avoiding unnecessary repeated test cycles. |
+| Similar-Issue Sweep | Compare both PC110 variants and previously rejected clock/KBC candidates without profile-specific bypasses. |
+
+The owner-approved Board refresh ownership correction is implemented in Shared
+`c886b4818`. Dual-width targeted units, real BIOS timer, PC110 registered
+integrations and affected PC App units have passed; 12 affected EXEs were
+rebuilt. Details and artifact hashes are in the [S90 evidence](../etc/evidence/t580-s90-guest-throughput.md).
+Real desktop/RDP World Clock verification remains for owner validation;
+S90 and T580 are not closed.
+
 # M5 T580 S89 — Accepted: PC110 guest clock-rate investigation
 
 | Field | Required record |
