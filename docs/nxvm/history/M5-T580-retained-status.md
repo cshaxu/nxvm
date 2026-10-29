@@ -19,7 +19,7 @@ Current work is owned only by ../states/CURRENT.md.
 | Objective | Consume the ledger's selected storage/guest batch through the unchanged TFT BIOS, actual configured ATA medium, BIOS disk/bootstrap services and a named DOS checkpoint; reconcile all observed controller, CMOS, boot selection, sector and terminal failure paths before selecting a repair. |
 | Non-goals | No ROM edits, BIOS interception, host boot-sector injection, forced CMOS success/signature, synthetic INT13/19, new executor/clock, copied third-party code, unrelated App or Shared changes, PC110 publication or claim that one guest proves every storage/PCMCIA mode. |
 | Reference Baseline | Clean pushed 5e85b10de; S54 proves real retained wake/RSM, ordinary POST and INT19 on both widths, with original T580 product gates intact. |
-| Candidate Proposal | ../proposals/m5-pc110-qualification.md and ../etc/evidence/t580-s1-pc110-qualification-ledger.md; reconcile the existing App ATA topology and selected external guest with the original BIOS service route. |
+| Candidate Proposal | M5-T580-pc110-qualification-proposal.md and ../etc/evidence/t580-s1-pc110-qualification-ledger.md; reconcile the existing App ATA topology and selected external guest with the original BIOS service route. |
 | Files And ABI Surface | Existing App BIOS harness and NXVM packet/evidence; initial estimates and each revision remain in S55 evidence. Diagnostic footprint expected +240--300/-15--35. The real keyboard transcript now admits a PC110-only construction repair: pc110_plan.c, pc110_machine.c and pc110_clock.h select the existing timed KBC response, expected +8--12/-2--4 production lines. Extend existing base-composition/machine-construction tests, expected +20--60/-0--8. No Shared implementation, public ABI or new input/timing path. |
 | Applicable Rules | NXVM Task Reading Set, CONTRIBUTING, shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING and source-policy; architecture-governance then coding-governance skills. One execution/media owner, protected immutable masters and explicit source grades. |
 | Verification | Validate selected external media against its owner manifest; use existing Lib Storage snapshot mode without changing the master. Reuse the single BIOS harness, actual Core execute watchpoints, public copied frame/debug observations and existing driver input. Begin one bounded x64 diagnostic after observer review; compare x86 when a meaningful functional predicate is established. Complete affected owner tests/static checks and required repository units before acceptance; rebuild receiving artifacts only if production changes. |
@@ -99,7 +99,7 @@ is inferred from these results.
 
 ## Remaining T580 Qualification
 
-The [proposal](../proposals/m5-pc110-qualification.md) and complete
+The [proposal](M5-T580-pc110-qualification-proposal.md) and complete
 [convergence ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
 retain real Setup/loading/UI, selected storage/guest, display/panel/live input,
 original/derived DSTN identity, lifecycle/desktop and final four-artifact
@@ -128,7 +128,7 @@ packets and attempts as history, not concurrent active work.
 | Objective | Consume the ledger's complete post-restoration POST/Setup/boot batch: reconcile static branches and installed receivers, then observe the unchanged BIOS beyond real retained wake/RSM through a named Setup or boot handoff, or identify the complete evidenced receiver/failure class preventing it. Preserve all original guest/product gates. |
 | Non-goals | No ROM edits, BIOS-PC interception, synthetic IVT/boot service, fixed device status/retry replies, automatic wake, new executor/clock/renderer, physical-dump prerequisite, unrelated App source change or PC110 publication. |
 | Reference Baseline | Clean pushed 63f1f6e5a, accepted S53's actual F12/retained-image/RSM proof on both widths and the unchanged original T580 universe. |
-| Candidate Proposal | ../proposals/m5-pc110-qualification.md and ../etc/evidence/t580-s1-pc110-qualification-ledger.md; S53 receiver evidence remains the starting proof, not product completion. |
+| Candidate Proposal | M5-T580-pc110-qualification-proposal.md and ../etc/evidence/t580-s1-pc110-qualification-ledger.md; S53 receiver evidence remains the starting proof, not product completion. |
 | Files And ABI Surface | Revised after the evidenced #NM class reconciliation: Shared X86 Core cpu_instructions.c ESC owner and cpu_timing_model.c L2 allocation, existing full-state/alignment/nominal CPU and executor/FPU Machine tests, package README/manifests; NXVM existing real-firmware harness/registration and task docs; receiving eight PC and two Core-linked MyRaidenII artifacts (retain their own versions). No public API/type, Lib/Emulator, FPU arithmetic implementation or MyNES change. Estimate production +50--90/-2--8, Shared tests +120--220/-10--35; preserve original table-style handlers. |
 | Applicable Rules | NXVM Task Reading Set, CONTRIBUTING, shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING and source-policy; architecture-governance followed by coding-governance skills. One execution/state owner, Types vocabulary, unchanged protected inputs and explicit source grades. |
 | Verification | Reconcile the finite post-RSM POST, Setup/Flash and IPL branches against actual firmware and installed App routes before selecting a repair. Reuse the existing Core execute-watchpoint/step and same diagnostic, not per-retirement snapshots. Run one bounded real observation per necessary width after observer review; complete all repository units per width before S acceptance, scheduling the expensive Types selftest alone rather than beside builds/BIOS. Run affected static/docs checks; rebuild only genuinely receiving artifacts if production changes are later admitted. |
@@ -249,7 +249,7 @@ ccache are retained. Working-tree and remote state are checked after closure.
 
 ## Remaining T580 Qualification
 
-The [proposal](../proposals/m5-pc110-qualification.md) and its complete
+The [proposal](M5-T580-pc110-qualification-proposal.md) and its complete
 [convergence ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
 retain original Setup/boot, selected storage/guest, front panel/live input,
 lifecycle, source-grade and publication gates. They are not replaced by a
@@ -276,7 +276,7 @@ tasks. [Queue](../states/QUEUE.md) retains unrelated ordered candidates.
 | Objective | Reconcile and implement the complete power receiver batch: cold FB/B8 status, guest FF command and mode-22 qualification, named physical wake input, retained CPU/board reset and unchanged firmware restoration. Consume the existing T580 convergence ledger's power receiver without shrinking its boot/product obligations. |
 | Non-goals | No firmware edits, BIOS-PC interception, forced FB status, generic HLT change, automatic wake merely on suspend, second executor/clock, imported reference implementation, user INI/media change or unqualified PC110 publication. |
 | Reference Baseline | Clean pushed d206cddfa; S51/S52 actual cold/suspend and RTC findings; pinned external PC110-EMU, PC110-QEMU and Open-Source-PC110; original Intel SL references identified by S52 hashes. |
-| Candidate Proposal | ../proposals/m5-pc110-qualification.md; power batch in ../etc/evidence/t580-s1-pc110-qualification-ledger.md; preceding ../etc/evidence/t580-s52-power-contract.md. |
+| Candidate Proposal | M5-T580-pc110-qualification-proposal.md; power batch in ../etc/evidence/t580-s1-pc110-qualification-ledger.md; preceding ../etc/evidence/t580-s52-power-contract.md. |
 | Files And ABI Surface | NXVM: existing app-mypc110 configuration/firmware/plan/EC mailbox and matching tests plus task evidence. Shared: existing x86-core VL82C420 Chip and x86-nxvm Machine input/profile receiver. The latter appends one optional whole-key handler to the copied profile binding; Machine remains the sole input dispatcher and executor. PC110 consumes F12 as its preview resume-button binding; all other keys and profiles retain their existing route. Lib and Emulator are excluded. Initial hardware estimate was production +80--140/-10--35 and tests +80--180/-10--30; actual power delta and the earlier EC batch are separately recorded. Refined driver-wiring estimate is production +25--45/-0--5 and existing tests +35--60/-0--5. The changed family Machine receives eight existing PC artifacts at final qualification; MyNES/MyRaidenII do not link it. |
 | Applicable Rules | NXVM guide, CONTRIBUTING, shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING/UI and source-policy; architecture-governance then coding-governance skills. Preserve single ownership, opaque public boundaries, Types vocabulary, source grades and normal Product execution. |
 | Verification | First inventory all bank-qualified power reads/writes and reset consumers; distinguish reset, RSM and hardware wake. Reuse the existing real-firmware harness for bounded observations, not a second path. Before a receiver is accepted prove cold/no-event/qualified wake/acknowledgement/retention/restoration together on x64/x86; then affected regressions, both complete unit corpora, dependency/Types/manifest/docs gates and receiving artifact builds. Unexecuted desktop/RDP/full guest gates remain explicit. |
@@ -989,7 +989,7 @@ mechanical timing, a guest boot, POST completion, or original-DSTN support.
 | Objective | Audit the real-firmware diagnostic's post-C000 observation boundary and determine whether it selects a further real port receiver without a synthetic port or firmware shortcut. |
 | Non-goals | No LCD scanout, mailbox/power/PCMCIA model, host panel renderer, firmware-address special case, original-DSTN path, guest boot or release claim. |
 | Reference Baseline | S13 commit `a6d17b967`; the selected TFT BIOS returns from `C000:0003` to `F000:3F6C`, but the existing trace discarded every port outside its preselected whitelist. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), using its source-qualified receiver ledger. |
+| Candidate Proposal | [PC110 qualification](M5-T580-pc110-qualification-proposal.md), using its source-qualified receiver ledger. |
 | Files And ABI Surface | Existing App-local real-firmware diagnostic during investigation, Current and one evidence record; no production or public-interface change. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; diagnostic code may observe existing routes only. |
 | Verification | Widen the existing diagnostic only for the investigation, run its bounded x64/x86 observation, then remove an inconclusive probe rather than retaining a failing CTest. |
@@ -1021,7 +1021,7 @@ start from documented C000 option-ROM/F65535 return semantics.
 | Objective | Make the selected PC110 C000 video shadow one executable memory owner: instruction fetch must observe the same writable shadow already observed by data reads and writes. |
 | Non-goals | No new memory map, BIOS special case, synthetic ROM content, F65535 panel model, Shared contract, original-DSTN path, guest boot or release claim. |
 | Reference Baseline | S14 commit `971020a4a`; the App already makes the C000 shadow writable through the existing EC/ED route, but its instruction callback copies from immutable raw Flash. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), using the selected TFT firmware map and its source-qualified writable-video-shadow contract. |
+| Candidate Proposal | [PC110 qualification](M5-T580-pc110-qualification-proposal.md), using the selected TFT firmware map and its source-qualified writable-video-shadow contract. |
 | Files And ABI Surface | `src/app-mypc110/pc110_firmware.c`, direct App firmware/config-route tests and Current; no public interface or component dependency change. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; one C000 memory owner for data and instruction access. |
 | Verification | Test locked and unlocked C000 writes through the existing EC/ED control route, then execute from the C000 shadow through the ordinary Core instruction path on x64 and x86. |
@@ -1075,7 +1075,7 @@ the retained evidence records the values and the no-repair disposition.
 | Objective | Verify the proposed `F000:DD05` post-reset checkpoint and, only if reached on both widths, identify its first subsequent real I/O receiver without retaining a budget-only success probe. |
 | Non-goals | No guessed SCAMP cold image, synthetic firmware path, panel/power/PCMCIA model, host renderer, second executor, guest boot claim or artifact publication. |
 | Reference Baseline | S16 commit `95dca6598`: real TFT firmware completes the C000-to-port-61 return and establishes a finite delay boundary on both widths. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), consuming one source- or semantic-checkpoint-bounded receiver only. |
+| Candidate Proposal | [PC110 qualification](M5-T580-pc110-qualification-proposal.md), consuming one source- or semantic-checkpoint-bounded receiver only. |
 | Files And ABI Surface | Initially the existing App-local real-firmware diagnostic, Current and one evidence record; production/App changes are admitted only after a reproduced owner-local defect or receiver. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; diagnostic code observes existing routes only and Core remains the sole execution/tick owner. |
 | Verification | Start a bounded all-port capture only after the real `F000:DD05` checkpoint; run both host widths and retain a test only if its success condition is a matching semantic event rather than retirement count. |
@@ -1220,7 +1220,7 @@ proof for the reached path.
 | Objective | Identify the first real port operation after the established C000-to-port-61 return, so the next PC110 receiver has one observed owner rather than a guessed device. |
 | Non-goals | No production device behavior, LCD/power/PCMCIA model, firmware injection, second executor, raw instruction-count success condition, guest boot or artifact claim. |
 | Reference Baseline | S11 commit `97295cb2c`: both widths return from C000 to `F000:EA84`, while the F65535 panel table is still unexecuted. |
-| Candidate Proposal | [PC110 qualification](../proposals/m5-pc110-qualification.md), consuming the next source-gated panel/power/storage/lifecycle receiver disposition. |
+| Candidate Proposal | [PC110 qualification](M5-T580-pc110-qualification-proposal.md), consuming the next source-gated panel/power/storage/lifecycle receiver disposition. |
 | Files And ABI Surface | `test/app-mypc110/diagnostic/real_firmware_post_diagnostic.c`, Current and one evidence record; no production or public-interface change. |
 | Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Documentation and source/research policy; Core remains the sole execution/tick owner. |
 | Verification | Rebuild the existing diagnostic and run the new semantic checkpoint on x64/x86, then run the complete MyPC110 x64/x86 diagnostic set if it reaches a source-defined event. |
@@ -1767,8 +1767,8 @@ mapping contract.
 | Admission And Approval | The owner's standing instruction, “老规矩实现PC110”, continues the next queued MyPC110 qualification receiver. T572's accepted transfer requires this first finite trace before any feature or product claim. |
 | Objective | Identify, reproduce and classify the first remaining CPU-visible service, interrupt or device boundary reached by the admitted real TFT PC110 firmware after T572's bounded checkpoint. |
 | Non-goals | No synthetic POST/Setup/DOS service, BIOS interception, PC/AT facade, guessed controller protocol, PC110 executable release, raw asset commit, external runtime loader or broad product-qualification claim. |
-| Reference Baseline | Closed T572 implementation/evidence; queued [MyPC110 qualification proposal](../proposals/m5-pc110-qualification.md); App-local PC110 composition; X86 Core/X86-NXVM existing execution and trace contracts; approved external TFT BIOS/font inputs. |
-| Candidate Proposal | [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md). |
+| Reference Baseline | Closed T572 implementation/evidence; queued [MyPC110 qualification proposal](M5-T580-pc110-qualification-proposal.md); App-local PC110 composition; X86 Core/X86-NXVM existing execution and trace contracts; approved external TFT BIOS/font inputs. |
+| Candidate Proposal | [MyPC110: product and guest qualification](M5-T580-pc110-qualification-proposal.md). |
 | Files And ABI Surface | Initially App-local diagnostic/evidence and matching tests only. Existing X86 Core/X86-NXVM owner code is eligible only when the trace proves a generic defect or a complete, source-backed device contract; Lib, Emulator and unrelated Apps remain excluded. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy authorities; one executor/frame/firmware owner; external protected inputs remain BYOB; a bounded trace is diagnostic evidence, not guest qualification. |
 | Verification | Reproduce the real firmware path on both widths through normal Machine execution; retain a finite trace with instruction/address, exception/interrupt or port/memory operation evidence; distinguish an existing generic defect from an absent source-backed PC110 endpoint; run affected diagnostic/unit and structural gates. |
@@ -1839,7 +1839,7 @@ VL82C420 routes so the normal single executor owns reset, lifecycle and copied
 frames. The real TFT image passed the bounded eight-million-instruction and
 one-shutdown/reset checkpoint on both widths. It did not complete POST, Setup
 or DOS boot; no PC110 executable is published. The next [MyPC110 product and
-guest qualification](../proposals/m5-pc110-qualification.md) receiver owns a
+guest qualification](M5-T580-pc110-qualification-proposal.md) receiver owns a
 finite trace of the first remaining CPU-visible service, interrupt or device
 boundary. The provenance, generic CPU/Board fixes, exact checkpoint and
 transfer are recorded in [the S1 evidence](../etc/evidence/t572-s1-real-firmware-post.md).
@@ -3394,7 +3394,7 @@ records accepted layout work, S11 closure and the explicit MyNES residual.
 | Objective | Consume S55's complete system-control/A20/reset receiver: real 92h decode, independent KBC/fast A20 inputs, rising reset request and cold-versus-processor-only retention. Connect PC110 and verify original Setup's save/restart request through the existing Core reset owner. |
 | Non-goals | No BIOS-PC hook, forced PC/CMOS success, firmware/media edit, new reset executor, clock, pulse timer, queue or recovery framework. Do not claim selected storage/guest, PCIC, panel/DSTN or product publication from a successful reset. |
 | Reference Baseline | Clean pushed b2d7942b7; accepted S55 implementation 6964e8280. Both host widths reproduce the unchanged BIOS 92h request followed by IF-clear HLT; KBC ACK/BAT/ID and all 712 units per width are verified. |
-| Candidate Proposal | ../proposals/m5-pc110-qualification.md, ../etc/evidence/t580-s1-pc110-qualification-ledger.md and S55's final failure-class disposition; system-control is the next earliest Board/App receiver, not a new T-level completion gate. |
+| Candidate Proposal | M5-T580-pc110-qualification-proposal.md, ../etc/evidence/t580-s1-pc110-qualification-ledger.md and S55's final failure-class disposition; system-control is the next earliest Board/App receiver, not a new T-level completion gate. |
 | Files And ABI Surface | X86-NXVM Board config appends lib_bool system_control_port_present, with one existing port route/handler and two private physical latches. Existing PC/AT decode remains; explicit presence selects the same route on a neutral board. PC110's two constructors opt in. Expected source +50--90/-10--25, existing test extensions +70--120/-5--20; update source/test manifests and receiving artifacts. No Lib/Emulator, CPU/FPU or unrelated App implementation change. |
 | Applicable Rules | NXVM guide Task Reading Set, CONTRIBUTING, shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM architecture/coding, source-policy and X86-NXVM owner guidance; architecture-governance then coding-governance. One Board-owned effective A20 path, existing Core reset, declared L2 behavior and immutable external inputs. |
 | Verification | Extend existing Board instance/neutral-controller and PC110 composition/construction tests. Cover independent gate readback/OR, reserved bits, reset edge/rearm, CPU-only RAM/device retention, cold reset, absent decode and invalid presence. Run focused dual-width units before full cached builds/units and affected integration. Rebuild/deploy eight admitted PC EXEs, rebuild four unpublished previews, verify PE/version/identity and unchanged owner INI. Original BIOS Setup/restart replay uses the existing harness; no decoded payload injection. |
@@ -3448,7 +3448,7 @@ Ninja graphs and ccache remain.
 
 ## Remaining T580 Qualification
 
-The [proposal](../proposals/m5-pc110-qualification.md) and complete
+The [proposal](M5-T580-pc110-qualification-proposal.md) and complete
 [convergence ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
 retain all original guest, controller, display/panel, live input, DSTN,
 lifecycle/desktop and four-artifact gates. S55's complete route disposition
@@ -3482,7 +3482,7 @@ packets as history, not concurrent active work.
 | Objective | Complete the retained standard-VGA planar/colour receiver: CPU read latches/compare and four writes, map masking/addressing, programmed Attribute/DAC/PEL scanout and side-effect-free inspection. Verify original BIOS ERROR/Easy-Setup colours through the existing Machine frame, without screen-specific swaps. |
 | Non-goals | No host colour inversion, ROM/media edit, decoded payload injection, second renderer, guest clock, worker, pipeline or panel timing claim. Other graphics/panel modes, PCIC, storage/guest and complete product qualification retain their original ledger gates. |
 | Reference Baseline | Clean pushed 16aad0e66, accepted S56. Original BIOS Setup/reset works both widths; F65535 currently stores programmable palettes but captures fixed RGBI, and CPU memory copies bytes without VGA latch/rotate/ROP/write modes. |
-| Candidate Proposal | ../proposals/m5-pc110-qualification.md and ../etc/evidence/t580-s1-pc110-qualification-ledger.md; S55 full display receiver and owner's explicit colour feedback. |
+| Candidate Proposal | M5-T580-pc110-qualification-proposal.md and ../etc/evidence/t580-s1-pc110-qualification-ledger.md; S55 full display receiver and owner's explicit colour feedback. |
 | Files And ABI Surface | Existing X86-NXVM chips/f65535 implementation/private state/interface, existing chip test and manifests; App PC110 display memory adapter and existing display integration/unit tests as required. Add observe_only to the existing chip memory-read signature and migrate all callers; no new public function/enum/layout. Expected production +180--260/-35--60, existing tests +140--220/-10--25. |
 | Applicable Rules | NXVM guide Task Reading Set, CONTRIBUTING, shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design architecture/coding, source-policy, X86-NXVM owner guidance and architecture-governance/coding-governance. Chip owns physical register/latch/VRAM state; App only forwards Core access semantics; copied snapshot is sole scanout. |
 | Verification | Read original C&T F65535 reference and pinned reference behavior, extend existing chip fixture for complete read/write/mask/address/colour/inspection variants, use focused dual-width tests before cached full units and receiving regressions. Actual BIOS ERROR and Setup frame must consume programmed colours, not fixed table. Rebuild eight affected admitted PC EXEs and four unpublished previews, verify identities/inputs, run affected original-firmware integration. |
@@ -3554,7 +3554,7 @@ hash review; stable Ninja graphs and ccache remain.
 
 ## Remaining T580 Qualification
 
-The [proposal](../proposals/m5-pc110-qualification.md) and complete
+The [proposal](M5-T580-pc110-qualification-proposal.md) and complete
 [convergence ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
 retain normal Setup/configuration persistence, per-slot SunDisk/CF storage
 and selected guest, PCIC/card handling, F65535 planar/Attribute/DAC/PEL

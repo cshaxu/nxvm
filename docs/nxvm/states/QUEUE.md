@@ -3,11 +3,10 @@
 The entries below are ordered unnumbered candidates.
 
 **First queued T:** [MyPC110: selectable DSTN/TFT and two EXEs](../proposals/m5-pc110-display-variant-selection.md).
-This is the owner's latest priority insertion; it does not interrupt the
-active T580 packet. The other pending candidates below keep their order.
+This is the owner's latest priority insertion after T580 closure. The other pending candidates below keep their order.
 
 The owner explicitly inserted [T564's committed frame import](../proposals/m5-softpc-rgb-frame-import.md)
-on 2026-10-17. It is active in Current, not another pending candidate; the
+on 2026-10-17. T564 is historical, not another pending candidate; the
 PC110 candidates below retain their order.
 
 The owner's Shared import/repair request is closed as
@@ -82,11 +81,16 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 6. [PC110: real firmware POST, setup and guest boot](../history/M5-T572-pc110-firmware-boot-proposal.md) is closed as M5 T572. It establishes the normal real-firmware execution checkpoint but makes no POST, Setup, DOS-boot or published-product claim.
 7. [PC110: C-segment ROM and shadow contract](../proposals/m5-pc110-c-segment-shadow.md) is closed as T574 by its source/proof stop condition.  It retained only the verified F-segment shadow and rejected an unproven C-segment alias.
 8. [PC110: protected bootstrap and real mapping admission](../proposals/m5-pc110-protected-bootstrap.md) is closed as T575: the real TFT path now crosses its proven, strict-by-default protected data-cache boundary without fabricated descriptors. Its next C-segment mapping boundary remains separately unproved.
-9. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md) is active as M5 T580. Its S1 freezes the complete product/guest proof ledger after closed T579's port-61/LPT source gate; it does not yet qualify POST, display, Setup or guest boot. No synthetic IVT/BIOS fallback is admitted.
+9. [MyPC110: product and guest qualification](../history/M5-T580-pc110-qualification-proposal.md) is closed as M5 T580 by owner direction. Its five remaining areas are transferred to candidates 14--18 below; closure is not a claim of complete qualification.
 10. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 13. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+14. [MyPC110: startup performance and guest clocks](../proposals/m5-pc110-startup-clock-performance.md)
+15. [MyPC110: first-time configuration and restart](../proposals/m5-pc110-first-setup.md)
+16. [MyPC110: desktop and interactive product qualification](../proposals/m5-pc110-product-interaction.md)
+17. [MyPC110: remaining device and model qualification](../proposals/m5-pc110-device-model-qualification.md)
+18. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

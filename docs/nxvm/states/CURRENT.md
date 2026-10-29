@@ -1,8 +1,8 @@
-# M5 T580 — Open
+# M5 T580 — Closed by owner direction
 
 | Task | Retained progress |
 | --- | --- |
-| T580 S90 | Owner accepted on 2026-10-29. Shared `0904691e5` and NXVM `ce0353490` deliver the F65535 cursor and PC110 L1 startup compatibility repairs. Both architectures passed 713 unit cases and targeted firmware/product integrations; configured TFT and derived DSTN reached Personaware without input. [Evidence](../etc/evidence/t580-s90-acceptance-failure.md) preserves model and test limits. Empty DSTN CMOS requires initial configuration; startup throughput and native desktop/RDP qualification remain open. T580 remains open. |
+| T580 | Owner closed T580 on 2026-10-29, transferring its five remaining qualification areas to the end of the NXVM queue. S90 was accepted. Shared `0904691e5` and NXVM `ce0353490` deliver the F65535 cursor and PC110 L1 startup compatibility repairs. Both architectures passed 713 unit cases and targeted firmware/product integrations; configured TFT and derived DSTN reached Personaware without input. [Evidence](../etc/evidence/t580-s90-acceptance-failure.md) preserves model and test limits. Empty DSTN CMOS requires initial configuration; startup throughput and native desktop/RDP qualification are transferred without a full-qualification claim. Earlier S records below are historical. |
 
 # M5 T580 S89 — Accepted: PC110 guest clock-rate investigation
 
@@ -649,7 +649,7 @@ Only the App diagnostic and task documentation changed; no production source
 or released product binary changed. DOS, DSTN, Window colour and PC110
 publication remain open under T580.
 
-# M5 T580 — Open after S73
+# M5 T580 — Closed by owner direction after S73
 
 S73 is accepted: Shared `43f87360a` implements ATA Recalibrate and NXVM
 `2056af519` records real-firmware dual-width BIOS-to-MBR handoff, receiving
@@ -753,7 +753,7 @@ PC110 release; no PC110 executable is published.  See the
 
 ## Remaining T580 Qualification
 
-The [proposal](../proposals/m5-pc110-qualification.md) and
+The [proposal](../history/M5-T580-pc110-qualification-proposal.md) and
 [convergence ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
 retain normal Setup/configuration persistence and post-reset progression,
 per-slot SunDisk/CF storage and selected guest, PCIC/card handling, display

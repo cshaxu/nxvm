@@ -23,7 +23,7 @@ no raw firmware was committed and no PC110 release artifact was produced.
 
 ## Residual work
 
-The [PC110 qualification receiver](../proposals/m5-pc110-qualification.md)
+The [PC110 qualification receiver](M5-T580-pc110-qualification-proposal.md)
 retains product, display, Setup and guest-boot qualification.  Any future
 device work must first identify a finite owner and source/proof target; this
 task does not authorize a broad chipset model inferred from the observed
