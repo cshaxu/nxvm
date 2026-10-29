@@ -31,14 +31,16 @@ the released EXE independently. Its owned background processes have exited.
 No firmware, user media or Shared source was changed.
 
 The sixth observation ended before F12 because its monitor-prompt handshake
-timed out despite a visible pause notification; this is recorded in S87
-evidence, not treated as a product failure. The seventh background observation
-owns processes 26832 and 26524 and scratch `build/t580-s87/persist2`. It
-observes the first HLT from the existing run result, then uses ordinary F12
-and Guest input on direct-write task-owned disk copies. It attempts orderly
-exit for independent released-EXE verification. Its wall bound is 2,050
-seconds plus cleanup, with 10-second progress and a 300-second no-progress
-investigation budget. Original inputs and user configuration are not modified.
+timed out despite a visible pause notification. The seventh used an observed
+HLT and reached Personaware, then exited normally with a 128-byte guest CMOS
+file; both task-owned input disk hashes remained unchanged. S87 evidence
+records the result without claiming disk calibration persistence. The eighth
+background observation uses a verified byte-identical copy of the published
+TFT x64 EXE and task-owned copies of that CMOS and media; processes 4080 and
+10808 own `build/t580-s87/released`. It uses normal F12 and native Window
+observation without production instrumentation. Its wall bound is 1,110 seconds
+plus cleanup, with 300 seconds as the no-progress investigation budget.
+Original inputs and user configuration remain untouched.
 
 # M5 T580 S86 — Accepted: PC110 product boot and Setup observation
 

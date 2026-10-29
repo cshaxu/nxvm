@@ -107,3 +107,16 @@ uses the existing run result to observe the first HLT and sends F12 through
 the normal Window, without requiring that initial pause/debug handshake.
 It retains an orderly-exit attempt and reports whether that attempt succeeds.
 Only task-owned disk copies are opened for direct writes.
+
+The corrected persistence-preparation run reached the Personaware launcher
+using only task-owned direct-write disk copies. It paused and exited normally
+with process code 0; the guest configuration file was 128 bytes, SHA-256
+`608DF3ABC3CDD9BB3E35015D2D7AA9D8756567E080643B01E593FF99D1616034`.
+Both input disk image hashes remained unchanged, so this is not evidence that
+calibration was persisted to the disks. The observer log SHA-256 is
+`E9E41FC63E782E5B9D079921F56CA5E40BA10D626D489BD6C18CE3E62BA63955`.
+The subsequent fresh-process observation uses copies of these files and the
+actual deployed TFT x64 EXE, verified SHA-256
+`0718B3FC597B607FD4AD48016C84AA4972F60B7C4636E47B0BC2ECE3D38895AD`.
+Whether the guest retains or requests calibration is an observed result to be
+determined; no guest state is synthesized.
