@@ -48,3 +48,21 @@ the event, runner and observer log SHA-256 values are respectively
 The task-owned disk images were unchanged. A new bounded run uses the correct
 relative deltas from (128,64), checks enable before injection, and leaves
 native Window mouse capture outside its claim.
+
+The fourth scratch-instrumented product observation corrected the initial
+relative coordinate using the PC110 adapter's (128,64) origin. The actual
+Window showed the successive inking prompts and then the guest's Japanese
+message that calibration data had been saved. All eight Emulator input-queue
+operations returned success after the inking register reported enabled.
+The captured final calibration message has SHA-256
+`753A6118931BA080ED2C74E1B6FB2A818008B2B493D20F48EEA21C4273397C54`;
+the observer and queue logs have SHA-256
+`214B4FD4AC0BB77BEEBBD3CE882D69C9E1137EFAAB50C674BD0456B1EEE4811B` and
+`21FEFE1DAAD0A81C7EF34251158AE4AD3A194B886458F4D3C17EB8477D3BB067`.
+Both task-owned input image hashes were unchanged. This proves Guest
+calibration progress through the Emulator input queue, not native Window
+mouse capture or an interactive launcher. The probe deliberately resized its
+owned Window to 464x348 to accommodate the changed RDP client size; it does
+not qualify natural sizing. It exited after a further 10 million instructions
+as the guest entered a 640x480 graphics frame, before the launcher was observed.
+A subsequent longer observation is needed for the product screen.
