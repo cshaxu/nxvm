@@ -79,8 +79,11 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   write/invalidation semantics; retain only a correct and measurable result.
 - **S19: PC110 steady-state performance audit.** Reassess the post-S18
   Personaware/World Clock path and identify remaining measured costs.
-- **S20 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S15 and any later measured batches.
+- **S20: SMM execution and memory-service cost audit.** Attribute World Clock SMM
+  and normal execution costs, examine existing bus and device contracts, and
+  measure a semantics-preserving candidate or document a negative result.
+- **S21 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S20 and any later measured batches.
 
 ## Constraints and evidence
 

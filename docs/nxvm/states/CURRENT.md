@@ -1,4 +1,27 @@
-# M5 T582 S19 — Active: PC110 steady-state performance audit
+# M5 T582 S20 — Active: SMM execution and memory-service cost audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S20 after S19 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Attribute SMM and normal execution costs in World Clock and investigate a measured, semantics-preserving optimization or document negative evidence. |
+| Non-goals | No skipped firmware service, bypassed bus behavior, host-time substitution, second executor or user media mutation. |
+| Reference Baseline | S18 Shared `8dd8d06d0`, NXVM `65c15ab69`; [S19 evidence](../etc/evidence/t582-s19-steady-profile.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S20. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status; production scope requires measured correctness evidence and existing authorization. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Hidden, bounded product-path measurements with private media; preserve physical access ordering, side effects, fault and timing semantics. |
+| Expected Markers | Explain measured hot owners and demonstrate an improvement or negative result. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | State sampling limitations, model confidence, actual diffs and interactive gaps. |
+| Stop Conditions | No ignored SMI, skipped firmware work, unsupported cache eligibility or treating sampled instruction pointers as inclusive time. |
+| Exit Criteria | Traceable measured audit or fully qualified change; T582 stays open until actual usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Review SMM and ordinary execution, shared bus and other receiver behavior. |
+
+S19 recorded World Clock workload, SMM entry and instruction attribution, and a rejected SMRAM cache candidate; [evidence](../etc/evidence/t582-s19-steady-profile.md). All 712 repository-only unit tests passed on each architecture. No production, public API or EXE changed; realtime usability remains unproven.
+
+# M5 T582 S19 — Closed: PC110 steady-state performance audit
 
 | Field | Required record |
 | --- | --- |
