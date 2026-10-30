@@ -74,7 +74,10 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S17: PC110 memory cacheability audit.** Measure the existing firmware and
   shadow route under the 486 cache policy, including decode, invalidation,
   device side effects and timing; no production change without evidence.
-- **S18 or later: receiving qualification.** S11's original whole-product and
+- **S18: PC110 shadow cache design and measurement.** Investigate a generic
+  provider capability with dynamic chip-controlled cacheability and coherent
+  write/invalidation semantics; retain only a correct and measurable result.
+- **S19 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S15 and any later measured batches.
 
 ## Constraints and evidence
