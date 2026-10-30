@@ -1,0 +1,9 @@
+# T582 S26 — Personaware Game baseline
+
+The existing PC110 Personaware menu contains a Game entry even though the prior extension-based disk inventory did not identify a separately named game executable. A hidden x64 probe used the ordinary product factory, Machine input queue, current release libraries, and private copies of the configured firmware inputs, CMOS and disk images. At samples 26–29, ten seconds apart, it submitted four Down make/break pairs; at sample 30 it submitted Enter. The sampled menu changed from World Clock to Calculator after the first Down, and the Game screen was visibly present by sample 34. This demonstrates a real game workload is available without acquiring additional media; it does not demonstrate successful gameplay or native Window/RDP input.
+
+The nearest logged quantum before Enter reported host millisecond 86,977,963 and 909,024,041 guest ticks. The nearest logged quantum before sample 34 reported host millisecond 87,018,056 and 983,517,525 guest ticks: approximately 40 host seconds and 2.26 seconds on the declared 33 MHz guest axis. The frame at sample 32 showed a partially drawn Game screen; samples 34–39 had identical image hashes and showed the complete screen. Screen capture and log instrumentation add overhead. This is a single run at ten-second sampling resolution, not precise input-to-frame latency or a claim that an unchanged screen is frozen.
+
+The guest process exited successfully after 403.1 host seconds. No owner media, public source, executable or configuration changed. Native presentation, interaction inside the game and gameplay speed remain unverified.
+
+Scratch evidence SHA-256 (guest log, menu after Down, complete Game frame): `4246F84BEDA167CD6DFE9B568FDF431A92A38D8A0397908A37D408132E50F78D`, `54941C36AD92B6E439C1E64E2BE165EBFC16276C38E4AAD45585849F6DDF2A84`, `E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
