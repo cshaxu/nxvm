@@ -644,12 +644,11 @@ static void x86_core_cpu_timing_select_v30(
     result->key_id = result->form_id;
 }
 
-lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
-    x86_core_cpu_timing_result *out_result)
+lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context)
 {
     x86_core_cpu_timing_result result;
 
-    if (context == LIB_NULL || out_result == LIB_NULL) return 0;
+    if (context == LIB_NULL) return 0;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
         const lib_u32 fetch = context->instructions->data.timing_fetch_bus_ticks;
         x86_core_cpu_timing_select_v30(context, &result);
@@ -661,7 +660,7 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
             result.formula_inputs |= X86_CORE_CPU_TIMING_INPUT_FETCH;
         }
         result.source_timing_unallocated = LIB_FALSE;
-        *out_result = result;
+        context->timing_result = result;
         return 1;
     }
     context->timing_result.source_timing_unallocated = LIB_FALSE;
@@ -746,7 +745,6 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
     result.form_id = context->timing_result.form_id;
     result.repeat_phase = context->timing_result.repeat_phase;
     context->timing_result = result;
-    *out_result = result;
     return 1;
 }
 

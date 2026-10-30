@@ -21929,7 +21929,7 @@ static void _execution_refresh(
          * instruction's timing while both its operands and result are intact. */
         if (!context->instruction_fault_delivered &&
             !context->instruction_wait_stall && !context->stop_requested) {
-            if (!x86_core_cpu_timing_select(context, &context->timing_result))
+            if (!x86_core_cpu_timing_select(context))
                 context->timing_result = (x86_core_cpu_timing_result) {0};
             else {
                 const lib_u8 next_components = context->completed_observation.next_lexeme_components;

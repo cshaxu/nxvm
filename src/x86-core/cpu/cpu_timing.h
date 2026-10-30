@@ -10,8 +10,7 @@ extern "C" {
 #endif
 
 /* CPU execution selects once before asynchronous interrupt entry. */
-lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context,
-    x86_core_cpu_timing_result *out_result);
+lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context);
 
 /* Legacy rule evaluators remain private to Core. They calculate a candidate
  * only; origin assignment and result publication belong exclusively to the
