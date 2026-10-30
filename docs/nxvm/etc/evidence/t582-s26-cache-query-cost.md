@@ -29,3 +29,24 @@ ablation was not admitted or used as a speed result, and no production source,
 test or artifact changed. Any future optimization must preserve this contract
 or separately justify and review a hardware-model change; the existing test
 coverage gap should not be mistaken for permission to remove it.
+
+## Game-stage report cost
+
+An independent x64 private-media product-path run instrumented the existing
+cache-report function and followed the same Personaware Game input and
+sample-30 to sample-34 drawing window as the prior Game probes. The sample-34
+frame matched SHA-256
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`;
+the guest exited successfully after 353 seconds.
+
+During the approximate drawing window it counted 9,570,449 reports. A
+pseudorandom one-in-256 sample produced 37,491 intervals totalling 2,769,877
+host TSC units, about 74 per sampled call including instrumentation. Counts
+and timing cover the existing report only, not the enclosing memory access;
+stage changes are asynchronous to guest execution, the TSC is not serialized,
+and instrumentation and scheduling affect the result. The result identifies
+high frequency but does not support this small routine as the source of the
+roughly tenfold guest slowdown. It does not authorize dropping the observable
+TR state or establish x86/native desktop performance. No source or released
+binary changed. Guest log SHA-256:
+`9A5FC66259B2AA20A39687897CFA6557ADC2A2A1548DD5397AB8A894DE9004B2`.
