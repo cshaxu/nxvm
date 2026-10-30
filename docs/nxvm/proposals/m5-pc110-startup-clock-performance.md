@@ -56,8 +56,11 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   preserve cache visibility, faults, debugger and all profiles. Do not reuse the
   diagnostic pointer used by the temporary probe. Run the Shared receiving gate
   and report actual guest throughput; continue the T if usability remains unmet.
-- **S13 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S12 and any later measured batches.
+- **S13: sustained execution bottleneck audit.** Investigate the remaining
+  order-of-magnitude PC110 slowdown using actual startup and later workload;
+  only admit measured, correct improvements.
+- **S14 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S13 and any later measured batches.
 
 ## Constraints and evidence
 

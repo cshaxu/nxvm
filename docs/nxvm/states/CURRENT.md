@@ -1,4 +1,25 @@
-# M5 T582 S12 — Active: bounded lexical-preview optimization
+# M5 T582 S13 — Active: sustained execution bottleneck audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S13 after S12 delivery. |
+| Admission And Approval | Owner authorized continued performance repair and autonomous numeric S sequencing. |
+| Objective | Identify a larger correctness-preserving performance opportunity for the actual PC110 startup and Personaware workload. |
+| Non-goals | No Shared or App implementation changes, host-time substitution, guest work skipping, second executor, owner media mutation or unverified usability claim. |
+| Reference Baseline | Shared 2003fef34, NXVM 2f2795611, MyRaidenII f7543ec23; [S12 evidence](../etc/evidence/t582-s12-preview-borrow.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S13. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Compare early startup and later Personaware workload using existing fixed-work and sampled guest-clock observations; isolate proposed changes and compare both architectures before admitting a repair. |
+| Expected Markers | Actual guest ticks, retired instructions, selected hotspots, bounds on measurement and explicit candidate correctness constraints. |
+| Asset Needs | Existing firmware and isolated copied CMOS/media only. |
+| Reporting Requirements | Evidence, measured overhead, estimated scope, retained timing/debug semantics and untested interactive boundaries. |
+| Stop Conditions | Do not claim that nominal tick rate or a limited fixed-work improvement proves usable PC110 performance. |
+| Exit Criteria | A measured, correctness-preserving next design or concrete negative evidence and continued investigation; T remains open pending actual usability. |
+| Original Owner Request | Improve PC110 performance until usable while preserving timing and correctness. |
+| Similar-Issue Sweep | Compare both host widths, startup versus later workload, and guest-time costs versus host waiting. |
+
+# M5 T582 S12 — Closed: bounded lexical-preview optimization
 
 | Field | Required record |
 | --- | --- |
@@ -20,10 +41,11 @@
 | Similar-Issue Sweep | Lexical preview versus debug patch preview, nested/reentrant callbacks, TLB hits and misses, cache hits/misses, SMM, exceptions, self-modifying code and all supported CPU profiles. |
 
 S12 implementation and receiving evidence are recorded in
-[S12](../etc/evidence/t582-s12-preview-borrow.md). Shared implementation is
-`2003fef34`; product artifact commits and coordinator review are pending.
-The measured improvement is bounded and the original usable-performance goal
-remains open.
+[S12](../etc/evidence/t582-s12-preview-borrow.md). Actual Shared source and
+test changes, product artifact identities and qualification were reviewed;
+Shared `2003fef34`, NXVM `2f2795611` and MyRaidenII `f7543ec23` are the
+product-scoped deliveries. The measured improvement is bounded and the
+original usable-performance goal remains open.
 
 # M5 T582 S11 — Deferred: PC110 performance receiving qualification
 
