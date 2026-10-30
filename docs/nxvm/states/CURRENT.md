@@ -1,4 +1,27 @@
-# M5 T582 S24 — Active: World Clock ASMI service audit
+# M5 T582 S25 — Active: PC110 execution-model comparison
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S25 after S24 audit. |
+| Admission And Approval | Owner authorized reference to external emulators, L1/L2 modeling and autonomous numeric S sequencing. |
+| Objective | Compare the current PC110 execution and idle paths against external PC110-EMU and PC110-QEMU references to identify a justified performance direction. |
+| Non-goals | No imported third-party code, protected firmware commits, fabricated responses, user media mutation or unverified runtime claim. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S24 evidence](../etc/evidence/t582-s24-asmi-audit.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S25. |
+| Files And ABI Surface | Read-only external source and task-owned evidence/probes; changes require precise scope and receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Contrast actual execution, firmware services, guest clocks and I/O with existing measured NXVM behavior; label static versus dynamic evidence and L1/L2 confidence. |
+| Expected Markers | Concrete evidence of transferable architecture or behavior and semantic costs, or documented negative evidence. |
+| Asset Needs | Existing read-only reference checkouts and private copied CMOS/media as needed. |
+| Reporting Requirements | Provenance, estimated implementation/verification work, observable differences and remaining limitations. |
+| Stop Conditions | No attribution of a result to an external emulator without inspecting its actual implementation or running it. |
+| Exit Criteria | Traceable comparison or fully qualified improvement; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Compare idle, interrupt, timing and device paths and the existing S19–S24 evidence. |
+
+S24 found that repeated World Clock ASMI requests are APM CPU Idle calls; one complete trace follows a firmware immediate-return branch after reading SCAMP state that matches the published live dump. The evidence does not support suppressing the requests or changing the state by guess; [evidence](../etc/evidence/t582-s24-asmi-audit.md). No production, public API or EXE changed; the S19 dual-width unit gate remains the last complete repository-only run. Usability remains unresolved.
+
+# M5 T582 S24 — Closed: World Clock ASMI service audit
 
 | Field | Required record |
 | --- | --- |

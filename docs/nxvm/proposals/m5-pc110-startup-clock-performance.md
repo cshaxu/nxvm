@@ -94,8 +94,11 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S24: World Clock ASMI service audit.** Capture actual firmware service
   requests and return behavior during steady operation; distinguish legitimate
   guest activity from a missing device response before considering changes.
-- **S25 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S24 and any later measured batches.
+- **S25: PC110 execution-model comparison.** Compare existing external PC110
+  emulator execution and idle behavior with the measured NXVM path, and identify
+  a minimal correctness-preserving performance direction or concrete limits.
+- **S26 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S25 and any later measured batches.
 
 ## Constraints and evidence
 
