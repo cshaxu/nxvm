@@ -60,6 +60,8 @@ These are bounded improvements; none establishes real-time performance.
   [S26 upper bound](t582-s26-formula-input-upper.md).
 - Register-reference read destination check:
   [S26 comparison](t582-s26-reference-read.md).
+- ModR/M register reread and width-sensitive reuse:
+  [S26 comparison](t582-s26-register-reread.md).
 - PC110 port read upper-bound probe: a task-only candidate removed the second
   wired-OR provider traversal entirely, which is invalid for general machines.
   PC110 uses ATA rather than the registered Compaq wired-OR route. At the
