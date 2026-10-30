@@ -1,4 +1,27 @@
-# M5 T582 S23 — Active: instruction dispatch cost audit
+# M5 T582 S24 — Active: World Clock ASMI service audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S24 after S23 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work, L1/L2 models and autonomous numeric S sequencing. |
+| Objective | Determine whether repeated World Clock ASMI requests represent legitimate firmware service or waiting for an unimplemented device response. |
+| Non-goals | No ignored SMI, invented successful result, skipped guest work, duplicate executor or owner media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S19 evidence](../etc/evidence/t582-s19-steady-profile.md), T580 S48/S90 service evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S24. |
+| Files And ABI Surface | Task-owned probes first; change owner determined by evidence and authorized scope. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Capture actual service identifiers, frequency, return values and relevant guest activity using private media and existing single execution path. |
+| Expected Markers | Distinguish normal request traffic from a reproducible missing service, or record negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Source confidence, measured workload, correctness and desktop limitations. |
+| Stop Conditions | Do not conflate counts with a fault or substitute guessed firmware return values. |
+| Exit Criteria | Traceable negative result or fully qualified correction; T582 stays open pending actual usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Compare startup and World Clock ASMI calls and existing T580 service records. |
+
+S23 measured instruction preparation/dispatch and rejected a variable-copy candidate without consistent cross-width improvement; [evidence](../etc/evidence/t582-s23-dispatch-audit.md). No production, public API or EXE changed; the S19 dual-width unit gate remains the last complete repository-only run. The real World Clock performance gap remains unresolved.
+
+# M5 T582 S23 — Closed: instruction dispatch cost audit
 
 | Field | Required record |
 | --- | --- |

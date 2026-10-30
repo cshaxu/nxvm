@@ -91,8 +91,11 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   semantically equivalent improvement with sustained product-path evidence.
 - **S23: instruction dispatch cost audit.** Use bounded fixed-work probes to
   identify preparation and dispatch costs before selecting any optimization.
-- **S24 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S23 and any later measured batches.
+- **S24: World Clock ASMI service audit.** Capture actual firmware service
+  requests and return behavior during steady operation; distinguish legitimate
+  guest activity from a missing device response before considering changes.
+- **S25 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S24 and any later measured batches.
 
 ## Constraints and evidence
 
