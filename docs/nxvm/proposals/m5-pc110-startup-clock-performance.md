@@ -50,6 +50,15 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   implementation batch is required. Every Shared batch independently meets the
   fourteen-artifact and full-test receiving gate below.
 
+- **S12: lexical-preview cache/TLB borrow.** The S11 fixed-work and late
+  comparisons identified a bounded candidate. Replace only the 486 preview's
+  private cache/TLB copy with a synchronous immutable borrow from the CPU owner;
+  preserve cache visibility, faults, debugger and all profiles. Do not reuse the
+  diagnostic pointer used by the temporary probe. Run the Shared receiving gate
+  and report actual guest throughput; continue the T if usability remains unmet.
+- **S13 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S12 and any later measured batches.
+
 ## Constraints and evidence
 
 No host-time substitution, nominal clock reduction, skipped side-effecting

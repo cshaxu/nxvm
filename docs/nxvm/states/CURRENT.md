@@ -1,4 +1,31 @@
-# M5 T582 S11 — Active: PC110 performance receiving qualification
+# M5 T582 S12 — Active: bounded lexical-preview optimization
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S12 after the S11 observation and qualification transfer. |
+| Admission And Approval | Owner authorized continued performance repair, Shared X86 Core updates and autonomous numeric S sequencing; all seven App receivers are in scope for qualification. |
+| Objective | Remove the measured redundant 486 cache/TLB copy from target-lexeme preview while retaining the original CPU-owned read state and guest semantics. |
+| Non-goals | No host-time substitution, second executor, skipped guest work, global state, diagnostics-pointer reuse, mirrored cache, public API change, owner media mutation, or claim that this alone achieves usability. |
+| Reference Baseline | a2ee593e2 and [S11 measurements](../etc/evidence/t582-s11-performance-observation.md). |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md), S12; S11 final receiving qualification is transferred to S13 or the next suitable S. |
+| Files And ABI Surface | Shared src/x86-core/cpu private implementation and corresponding test/x86-core fixtures and manifests; NXVM evidence; receiving binaries for NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyRaidenII and MyNES x86/x64. No public ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy; single CPU owner, nonreentrant callbacks and temporary read-only borrow. |
+| Verification | Existing x86/x64 cache, TLB, debug and preview tests plus minimal borrow/lifetime regression; cached full dual-architecture builds, unit and integration qualification and fourteen receiving artifacts for Shared changes; matched PC110 fixed-work and representative guest progress. |
+| Expected Markers | Equal architectural, preview, cache/TLB and failure observations; no mutation through borrowed cache; measured performance reported with uncertainty. |
+| Asset Needs | Existing external firmware and isolated copied CMOS/media; no owner input modification. |
+| Reporting Requirements | Actual per-scope diff, retained owner, cache/preview invariants, measured x86/x64 results, fourteen binary identities, full-test results and any unverified desktop/device boundaries. |
+| Stop Conditions | Do not use diagnostic context as storage; do not borrow from mutable foreign threads, expose private state, retain a borrow beyond the synchronous preview, or change debug patch preflight. If equivalence cannot be established, abandon the production change. |
+| Exit Criteria | Actual-change review and all required qualification complete; no claim that T582 is complete until usable PC110 performance is directly established and accepted. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing, correctness and a single execution owner. |
+| Similar-Issue Sweep | Lexical preview versus debug patch preview, nested/reentrant callbacks, TLB hits and misses, cache hits/misses, SMM, exceptions, self-modifying code and all supported CPU profiles. |
+
+S12 implementation and receiving evidence are recorded in
+[S12](../etc/evidence/t582-s12-preview-borrow.md). Shared implementation is
+`2003fef34`; product artifact commits and coordinator review are pending.
+The measured improvement is bounded and the original usable-performance goal
+remains open.
+
+# M5 T582 S11 — Deferred: PC110 performance receiving qualification
 
 | Field | Required record |
 | --- | --- |
