@@ -82,8 +82,12 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S20: SMM execution and memory-service cost audit.** Attribute World Clock SMM
   and normal execution costs, examine existing bus and device contracts, and
   measure a semantics-preserving candidate or document a negative result.
-- **S21 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S20 and any later measured batches.
+- **S21: instruction timing input reuse audit.** Test whether repeated decoding
+  inside the existing timing owner can be shared without changing observable
+  timing, prefix or fault behavior; use short fixed-work probes before any
+  long product run and reject unmeasured or insufficient candidates.
+- **S22 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S21 and any later measured batches.
 
 ## Constraints and evidence
 

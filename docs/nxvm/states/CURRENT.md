@@ -1,4 +1,27 @@
-# M5 T582 S20 — Active: SMM execution and memory-service cost audit
+# M5 T582 S21 — Active: instruction timing input reuse audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S21 after S20 audit. |
+| Admission And Approval | Owner authorized continued performance work and autonomous numeric S sequencing. |
+| Objective | Assess repeated decoded-input work within the existing instruction timing owner and measure whether a correctness-preserving simplification improves throughput. |
+| Non-goals | No removed timing facts, skipped guest work, duplicate executor, host-time substitution, unsupported global cache or owner media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S20 evidence](../etc/evidence/t582-s20-execution-cost.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S21. |
+| Files And ABI Surface | Task-owned probes first; production scope limited to a justified timing-owner change and existing tests, subject to Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Short fixed-work dual-width comparisons first; only a promising and semantically valid candidate merits a long product-path comparison. Preserve all profile, prefix, failure, event and timing observations. |
+| Expected Markers | Actual guest checkpoint, output/timing equivalence and candidate gain or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Runtime variance, source confidence, actual diffs, receiver gates and interactive limitations. |
+| Stop Conditions | No second decoder, new cross-instruction stale state, false precision, or claim of performance from microbenchmarks alone. |
+| Exit Criteria | Traceable negative result or fully tested and delivered improvement; T582 stays open until usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Check existing timing helpers and previous failed candidates before adding abstractions. |
+
+S20 sampled World Clock SMM, ordinary CPU refresh and timing selection; [evidence](../etc/evidence/t582-s20-execution-cost.md). It found no justified SMM shortcut, and no production, public API or EXE changed. The preceding S19 repository-only unit gate passed 712/712 on each architecture. Realtime usability remains unproven.
+
+# M5 T582 S20 — Closed: SMM execution and memory-service cost audit
 
 | Field | Required record |
 | --- | --- |
