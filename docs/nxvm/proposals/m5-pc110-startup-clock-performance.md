@@ -71,7 +71,10 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S16: CPU execution observation cost audit.** Measure per-instruction execution,
   observation and timing handling on the actual worker; pursue only a measured,
   semantics-preserving candidate.
-- **S17 or later: receiving qualification.** S11's original whole-product and
+- **S17: PC110 memory cacheability audit.** Measure the existing firmware and
+  shadow route under the 486 cache policy, including decode, invalidation,
+  device side effects and timing; no production change without evidence.
+- **S18 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S15 and any later measured batches.
 
 ## Constraints and evidence

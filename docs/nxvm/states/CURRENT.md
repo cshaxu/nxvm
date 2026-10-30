@@ -1,4 +1,25 @@
-# M5 T582 S16 — Active: CPU execution observation cost audit
+# M5 T582 S17 — Active: PC110 memory cacheability audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S17 after S16 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance analysis and autonomous numeric S sequencing. |
+| Objective | Determine whether PC110 firmware and shadow-memory execution spends substantial time on non-cacheable provider access, and whether an accurate, single-owner model can safely improve it. |
+| Non-goals | No production or public API changes in this audit, no invented hardware cacheability, no guest-work skipping, second executor, owner media modification or unverified usability claim. |
+| Reference Baseline | S14 Shared `e92409c90`; S13 cache-control and sampling evidence and S16 execution audit. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S17. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no production or public ABI changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; preserve guest timing, invalidation, memory side effects and source confidence. |
+| Verification | Inspect actual PC110 provider, 486 cache and decode/invalidation owners; measure actual accesses and cache eligibility using hidden bounded private-media probes before considering a candidate. |
+| Expected Markers | Access distribution, relevant control and decode changes, correctness requirements and bounded performance impact or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Separate observed facts from inferred hardware behavior; identify any contract or timing change and confidence level. |
+| Stop Conditions | Do not assume dynamic device memory is plain RAM, bypass callbacks or turn a timing-model change into an unnoticed speed shortcut. |
+| Exit Criteria | Traceable evidence and a correctness-preserving measured candidate or concrete negative evidence; repository-only unit suite and governance check; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Check firmware Flash, shadow RAM, address decode, cache invalidation and the other Core receivers before proposing shared changes. |
+
+# M5 T582 S16 — Closed: CPU execution observation cost audit
 
 | Field | Required record |
 | --- | --- |
@@ -18,6 +39,9 @@
 | Exit Criteria | Traceable audit and a measured correctness-preserving candidate or concrete negative evidence; complete repository-only unit suite and governance check; T582 remains open pending usability qualification. |
 | Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
 | Similar-Issue Sweep | Examine zeroing/copy, instruction observation, exception and asynchronous entry, Debug and timing ownership rather than generalizing one local result. |
+
+
+S16 audited instruction-observation, rollback and timing paths, and rejected scratch candidates that did not establish cross-width or sustained benefit; see [evidence](../etc/evidence/t582-s16-execution-audit.md). The full repository-only unit suite passed 712/712 x64 and 712/712 x86. No production, API or EXE changed; PC110 usability remains unproven.
 
 # M5 T582 S15 — Closed: CPU instruction-line hotspot audit
 
