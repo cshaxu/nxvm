@@ -30,6 +30,7 @@ These are bounded improvements; none establishes real-time performance.
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
 - 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).
 - Absent-FPU scheduler call removal: [S26 FPU probe](t582-s26-fpu-scheduler-probe.md).
+- Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 
 ## Direction and evidence limits
 
