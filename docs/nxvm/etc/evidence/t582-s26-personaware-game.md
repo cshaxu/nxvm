@@ -1,5 +1,25 @@
 # T582 S26 — Personaware Game baseline
 
+## Event-driven navigation experiment
+
+A later x64 probe used the committed implementation and private media, polled
+the published frame once per host second, and avoided per-pixel screenshot
+writes. The same two menu pixel features used by the menu-timing probe first
+matched at sample 208. It then queued four Down make/break pairs at samples
+209–212 and Enter at sample 213. No two-pixel Game-frame match was observed
+before the 500-sample limit; the probe cleaned up and returned failure after
+506.04 host seconds.
+
+This does not establish a product input failure: the probe did not capture a
+frame after navigation or observe device delivery, and the game detector was
+not independently validated against the actual final frame. Rapidly sending
+keys also did not wait for each visible menu transition. The earlier slower
+navigation and adjacent-pair experiment remains the positive direct-Machine
+evidence. Any repeat must observe each selected menu state and the actual
+frame, rather than blindly enqueueing keys or extending the timeout. This
+experiment changed no production code, owner media or published binary. Log
+SHA-256: `80739D6EC51FA78D3A5F0F2B87ABF65E2AAC9F1EED2BD30592CAE9B1E29009C9`.
+
 ## Single-click response observation
 
 ### Adjacent pair action after compact preview
