@@ -42,3 +42,19 @@ contract, public interface, test or executable changed for this probe.
 SHA-256 (guest log, final PPM):
 `8320D55A2640619BEAE0602B580B42CC377AA9C7A3B6CBE9D26C90DDF642807E`,
 `54E10943DB0E7DCEF309B9973AB2BB667128781D9C04E7E502BA7B43A5E2D9A6`.
+
+## Scratch upper-bound comparison
+
+A task-only candidate skipped the post-write cache lookup when SMM was active
+and reported a miss instead. This is deliberately not a generally correct
+implementation: even the instrumented run observed SMM pre-write hits, and a
+callback may change the view. It is an upper-bound performance experiment,
+not a proposed product special case. At a fixed 10,000,000-instruction private
+startup checkpoint, baseline/candidate/candidate/baseline elapsed times were
+18,071/19,228/19,332/19,187 ms on x64 and 25,277/23,019/22,800/24,121 ms on
+x86. Every run reported 79,964,294 guest ticks and PC `0003dbc5`. Checkpoint
+equality does not establish complete-state equality. These sequential samples
+suggest a possible x86 effect but no reliable x64 improvement; they do not
+measure World Clock or prove gameplay acceleration. This result does not
+justify an incorrect SMM special case or a new cache state mechanism. No
+production code or artifact changed.
