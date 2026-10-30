@@ -1,3 +1,48 @@
+# M5 T582 S16 — Active: CPU execution observation cost audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S16 after S15 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Measure the CPU execution and instruction-observation work on the actual PC110 worker and identify a correctness-preserving optimization with a meaningful sustained product benefit, or record negative evidence. |
+| Non-goals | No production change in this audit, guest-work skipping, extra executor, host-clock substitution, mutation of owner inputs, or usability claim without proof. |
+| Reference Baseline | S14 Shared `e92409c90`, S15 evidence [CPU line audit](../etc/evidence/t582-s15-cpu-line-audit.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S16. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no production or public ABI changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; preserve instruction, timing, Debug, event and observation contracts. |
+| Verification | Hidden bounded fixed-work and PC110 product-path comparisons with private copied media; identify exact workload and state invariants before proposing any optimization. |
+| Expected Markers | Evidence of dominant costs, candidate outcome and limits on both CPU widths where applicable. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Sample bias, semantic boundaries, measured gain or negative result and next action; do not claim realtime usability. |
+| Stop Conditions | Do not change production code, create a second execution path, skip guest work, or treat profiling samples as inclusive cost. |
+| Exit Criteria | Traceable audit and a measured correctness-preserving candidate or concrete negative evidence; complete repository-only unit suite and governance check; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Examine zeroing/copy, instruction observation, exception and asynchronous entry, Debug and timing ownership rather than generalizing one local result. |
+
+# M5 T582 S15 — Closed: CPU instruction-line hotspot audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S15 after S14 delivery. |
+| Admission And Approval | Owner authorized continued PC110 performance work, Shared Core analysis and autonomous numeric S sequencing. |
+| Objective | Identify the dominant inlined CPU execution work in actual PC110 startup and later workload, and produce a correctness-preserving next optimization design or negative evidence. |
+| Non-goals | No Shared or App implementation changes, second executor, guest-work skipping, host-clock substitution, owner media mutation or unverified usability claim. |
+| Reference Baseline | S14 Shared `e92409c90`, published through `bc6c13166`; [S14 evidence](../etc/evidence/t582-s14-memory-routing.md) and [S13 CPU evidence](../etc/evidence/t582-s13-cpu-profile.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S15. |
+| Files And ABI Surface | Task-owned build probes and NXVM evidence/status only; no production or public ABI changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; one owner and unchanged timing/observation semantics. |
+| Verification | Hidden background PC110 production-path sampling with debug line information, private copied inputs, actual worker identification, early/late windows and bounded runtime; compare potential design against existing timing, exception, device and Debug contracts. |
+| Expected Markers | Source-line samples, module and thread attribution, guest progress, overhead and a specific evidence-based next action. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Attribution limits, sampling overhead, concrete code boundaries, rejected designs and remaining noninteractive limitations. |
+| Stop Conditions | No machine semantics change, skipped guest work or claim that a sampled line is inclusive CPU cost; do not infer realtime usability. |
+| Exit Criteria | Traceable hotspot evidence and a measured correctness-preserving candidate or concrete negative evidence; T582 remains open until usability is proven. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Compare early startup and late Personaware phases; distinguish worker from waiting threads and debug/preview paths. |
+
+
+S15 completed its sampling and rejected three scratch-only candidates for lack of sustained product benefit; [evidence](../etc/evidence/t582-s15-cpu-line-audit.md) records their limits. The complete repository-only unit suite passed 712/712 on each architecture; NXVM documentation governance passed. No production code, public ABI or EXE changed. T582 remains open; PC110 usability remains unproven.
+
 # M5 T582 S14 — Closed: local memory-route candidate
 
 | Field | Required record |

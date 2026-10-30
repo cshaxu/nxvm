@@ -65,8 +65,14 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   limit, declines, failures, CPU-only routes and dynamic address decoding. The
   [S13 measurement](../etc/evidence/t582-s13-scheduler-observation.md) is a
   bounded opportunity, not a usability claim. Qualify all Shared receivers.
-- **S15 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S14 and any later measured batches.
+- **S15: CPU instruction-line hotspot audit.** Attribute the large inlined CPU
+  execution bucket to source lines on the actual worker during early and late
+  PC110 execution, then evaluate a concrete semantics-preserving candidate.
+- **S16: CPU execution observation cost audit.** Measure per-instruction execution,
+  observation and timing handling on the actual worker; pursue only a measured,
+  semantics-preserving candidate.
+- **S17 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S15 and any later measured batches.
 
 ## Constraints and evidence
 
