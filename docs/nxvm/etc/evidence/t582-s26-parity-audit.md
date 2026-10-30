@@ -49,3 +49,28 @@ recorded in [the artifact inventory](t582-s26-parity-artifacts.json). MyNES
 does not link X86 Core, and its two executables were unchanged. X86 Core source
 and test manifests and the NXVM documentation gate passed. These checks do not
 establish interactive PC110 RDP gameplay or real-time performance.
+
+### Product-path checkpoint correction
+
+A subsequent x64 private-media run using the current production libraries
+reached the old two-pixel Game marker 28 seconds after Enter and exited zero.
+Visual inspection found the game board drawn but its score/label text not yet
+drawn: this marker is an insufficient full-frame predicate. The earlier
+baseline run's saved screenshot includes that text and is therefore not a
+directly comparable checkpoint. The apparent 28-versus-33-second result is
+invalid as a full-frame speed comparison. A stronger check must observe the
+completed lower text as well; no claim of a speedup or completed gameplay
+follows from this run. Its partial-frame SHA-256 is
+`C394AAF88084509B658F19546C9646D012F84F387BB2D4F39F3DB4D13F96E5EC`.
+
+The corrected private-media x64 probe additionally required a white pixel in
+the lower text and verified the saved frame visually. It captured the complete
+board and score at sample 270, approximately 27 one-second samples after
+Enter; the earlier full-frame baseline had been captured at sample 294, 33
+samples after Enter. Both had the same displayed score and guest RTC second,
+but top-bar pixels differ. The runs were sequential and not synchronized to
+identical guest/host state, so this is not proof that the parity change caused
+an improvement. The probe directly injected Machine input; it did not verify
+native Window/RDP interaction or a new gameplay action. Current full-frame
+SHA-256:
+`B35E334904762093A6D231BD1C068409F52F53D95B2B968BBDDB9463AE61CE7C`.
