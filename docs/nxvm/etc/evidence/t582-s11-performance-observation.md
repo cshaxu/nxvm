@@ -17,6 +17,21 @@ The requested usable-performance target remains unmet. Continue profiling and va
 
 ## Clock-domain no-carry candidate
 
+### Subsequent narrow-division candidate
+
+An S26 scratch candidate instead handled `elapsed_ticks < denominator` using
+the existing phase calculation, with 32-bit division when the resulting
+numerator fit and the original-width operation otherwise. It was a separate
+experiment from the no-carry test below, with no production changes. At the
+same 10,000,000-instruction checkpoint and identical recorded guest tick and
+PC, baseline/candidate elapsed milliseconds were 20,499/18,770 on x64 and
+24,237/23,595 on x86; reversing order produced candidate/baseline 20,141/18,788
+and 24,388/23,496 respectively. Both widths reversed direction. Sequential
+timings do not prove a general regression or guest-state equivalence, but they
+do not justify adding the extra execution branches. No complete clock-boundary
+test, product-path performance qualification, desktop test or Shared receiving
+gate was run for this rejected prototype.
+
 A task-owned candidate returns zero before the general division when a sub-denominator source step plus existing phase cannot yet reach one device tick. It does not change phase ownership or introduce a second clock. A 500,000-case deterministic mathematical comparison covered random ratios and boundary values, but is not an execution proof of the C implementation. Production code was not changed.
 
 All four fixed-work paired probes used the same cached Release libraries and private inputs, and ended at 10,000,000 instructions, 79,964,294 guest ticks and PC 0003dbc5:
