@@ -14,7 +14,10 @@ This is not a matched-instruction or end-to-end speed comparison. The reference
 uses high-level service hooks and compatibility shortcuts, counts some work
 differently, reported a 4,014,080-byte attached image after its own media
 interpretation, did not load the external font, and was not supplied the NXVM
-CMOS or second disk. It reached a different guest state. Its 3.389 seconds
+CMOS or second disk. Although the input BIOS image is the same, NXVM's existing
+PC110 firmware construction applies its L1 POST-suspend compatibility patch to
+this image; the reference loads the unmodified input. It reached a different
+guest state. Its 3.389 seconds
 therefore cannot be divided into NXVM's fixed-work result to claim an
 equivalent speedup, nor does it establish that its user interface or clock is
 correct. The result nevertheless demonstrates that the local reference can
