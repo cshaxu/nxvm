@@ -25,6 +25,11 @@ The [evidence](../etc/evidence/t582-s26-compact-preview.md) records both-width
 qualification and measured limits. This is not PC110 usability acceptance;
 S26 and T582 remain active while the larger throughput objective is unresolved.
 
+An exploratory [same-host PC110-EMU run](../etc/evidence/t582-s26-pc110-emu-measurement.md)
+has now executed the owner-supplied BIOS and a private master-disk copy. Its
+instruction count, media configuration, guest state and service shortcuts
+differ from NXVM, so the recorded duration is not an equivalent speedup ratio.
+
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 
 # M5 T582 S25 — Closed: PC110 execution-model comparison
