@@ -2,6 +2,24 @@
 
 ## Event-driven navigation experiment
 
+### Follow-up with visible selection checks
+
+A subsequent x64 run waited for the blue label in each expected menu row
+before queuing the next Down make/break pair, and saved each observed frame.
+Selections 0 through 4 were seen at one-second samples 237, 248, 252, 256 and
+261. Enter was sent only after selection 4 appeared. Game-specific pixel
+features matched at sample 294, 33 samples after Enter; the run exited zero
+after 298.56 host seconds. Visual inspection confirms that the saved frame
+contains the Game board but its surrounding interface is still being drawn.
+This is evidence of progress to Game, not a measurement of complete drawing
+or of input delivery time. The samples suggest why the previous blind one-
+second navigation was inadequate, but do not identify which of its inputs
+were consumed. Both probes use direct Machine input, not native Window/RDP.
+No production code or owner media changed. Log SHA-256:
+`8938014321E8A25370CE2869B991617516FF69A9A7DABB05A3BC7B3DC0D5B6AC`;
+saved frame SHA-256:
+`58F9ACE8C250698FE995A2A0D37C551CE07DB4C0C4E6D8970C44430232C67956`.
+
 A later x64 probe used the committed implementation and private media, polled
 the published frame once per host second, and avoided per-pixel screenshot
 writes. The same two menu pixel features used by the menu-timing probe first
