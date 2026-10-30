@@ -1,4 +1,25 @@
-# M5 T582 S13 — Active: sustained execution bottleneck audit
+# M5 T582 S14 — Active: local memory-route candidate
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S14 after the S13 measured audit. |
+| Admission And Approval | Owner authorized ongoing PC110 performance repair, Shared X86 Core work and autonomous numeric S sequencing; all seven App receivers are in scope. |
+| Objective | Reduce repeated physical-provider traversal by collecting matching registered provider indices once per route evaluation and retaining the existing query priority and order. |
+| Non-goals | No persistent cache, second routing path, guest-time substitution, extra execution owner, owner media mutation, or unproven usability claim. |
+| Reference Baseline | Shared 2003fef34 and [S13 measured evidence](../etc/evidence/t582-s13-scheduler-observation.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S14. |
+| Files And ABI Surface | Shared src/x86-core/machine/memory.c, existing test/x86-core machine registration/route tests and manifests; NXVM evidence and status; fourteen App artifacts. No public API or persistent state change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM layout and source policy; queries remain observational, single owner and existing provider limit. |
+| Verification | Dual-width targeted route tests including provider capacity, overlapping priorities, decline/failure order, raw/reset and CPU-only routes and aliases; cached full dual-width builds, unit and integration tests and fourteen published EXEs; preserve owner configuration/media. |
+| Expected Markers | Same accepted route, callback order, failure status and guest ticks; fixed-work x64/x86 and actual PC110 product-path measurements; all fourteen artifact identities and full-test disposition. |
+| Asset Needs | Existing external firmware with private copied CMOS/media, never owner inputs. |
+| Reporting Requirements | Actual per-scope diff and review, test and artifact evidence, measured limits and desktop/device gaps. |
+| Stop Conditions | Do not expose or retain indices outside one synchronous resolution; preserve raw and alias precedence, query ordering, observational contract, all 64 slots and failures. Reject if correctness or measured value cannot be shown. |
+| Exit Criteria | Candidate and actual diff reviewed, full Shared receiving gate complete and pushed; report bounded improvement without declaring T582 or PC110 usability complete. |
+| Original Owner Request | Improve PC110 performance to usability while preserving timing, correctness and one execution owner. |
+| Similar-Issue Sweep | Test zero/64 providers, overlapping same- and mixed-tier windows, declined/failed queries, raw and CPU-only routes, dynamic alias/A20 changes and both access directions. |
+
+# M5 T582 S13 — Closed: sustained execution bottleneck audit
 
 | Field | Required record |
 | --- | --- |
@@ -19,7 +40,7 @@
 | Original Owner Request | Improve PC110 performance until usable while preserving timing and correctness. |
 | Similar-Issue Sweep | Compare both host widths, startup versus later workload, and guest-time costs versus host waiting. |
 
-S13 measurements are recorded in the [scheduler observation](../etc/evidence/t582-s13-scheduler-observation.md) and [CPU profile experiment](../etc/evidence/t582-s13-cpu-profile.md). These identify bounded opportunities; usable PC110 performance remains unproven.
+S13 measured the bounded local provider-list candidate in [scheduler evidence](../etc/evidence/t582-s13-scheduler-observation.md), including dual-width fixed-work and x64 product-path observations. [CPU evidence](../etc/evidence/t582-s13-cpu-profile.md) records other investigated candidates. S13 closes as an audit; it did not modify Shared or publish executables. S14 receives the measured route candidate. PC110 usability remains unproven.
 
 # M5 T582 S12 — Closed: bounded lexical-preview optimization
 

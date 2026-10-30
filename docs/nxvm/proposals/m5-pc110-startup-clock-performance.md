@@ -59,8 +59,14 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S13: sustained execution bottleneck audit.** Investigate the remaining
   order-of-magnitude PC110 slowdown using actual startup and later workload;
   only admit measured, correct improvements.
-- **S14 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S13 and any later measured batches.
+- **S14: local memory-route provider selection.** Preserve raw and selected-alias
+  precedence, collect matching provider indices once locally, and evaluate each
+  query in its existing tier and registration order. Preserve the 64-provider
+  limit, declines, failures, CPU-only routes and dynamic address decoding. The
+  [S13 measurement](../etc/evidence/t582-s13-scheduler-observation.md) is a
+  bounded opportunity, not a usability claim. Qualify all Shared receivers.
+- **S15 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S14 and any later measured batches.
 
 ## Constraints and evidence
 
