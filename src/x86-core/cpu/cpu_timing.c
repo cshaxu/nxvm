@@ -27,32 +27,11 @@ static lib_u32 x86_core_cpu_timing_capture_formula_inputs(
     x86_core_cpu_execution_context *context)
 {
     const t_cpuins_data *data;
-    lib_u32 prefix;
     lib_u32 opcode_index;
     lib_u32 inputs = 0u;
 
     if (context == LIB_NULL) return 0u;
     data = &context->instructions->data;
-    prefix = 0u;
-    while (prefix < data->oplen) {
-        switch (data->opcodes[prefix]) {
-        case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
-            inputs |= X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
-            ++prefix;
-            break;
-        case 0xf0u:
-            inputs |= X86_CORE_CPU_TIMING_INPUT_LOCK;
-            ++prefix;
-            break;
-        case 0xf2u: case 0xf3u:
-        case 0x64u: case 0x65u: case 0x66u: case 0x67u:
-            ++prefix;
-            break;
-        default:
-            prefix = data->oplen;
-            break;
-        }
-    }
     opcode_index = 0u;
     while (opcode_index < data->oplen) {
         lib_u8 byte = data->opcodes[opcode_index];
@@ -60,6 +39,10 @@ static lib_u32 x86_core_cpu_timing_capture_formula_inputs(
         if (byte != 0x26u && byte != 0x2eu && byte != 0x36u && byte != 0x3eu &&
             byte != 0x64u && byte != 0x65u && byte != 0x66u && byte != 0x67u &&
             byte != 0xf0u && byte != 0xf2u && byte != 0xf3u) break;
+        if (byte == 0x26u || byte == 0x2eu || byte == 0x36u || byte == 0x3eu)
+            inputs |= X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+        else if (byte == 0xf0u)
+            inputs |= X86_CORE_CPU_TIMING_INPUT_LOCK;
         ++opcode_index;
     }
     if (data->flagMem) {
