@@ -79,6 +79,11 @@ changing the chip's access validation or the adapter's invalid-input status;
 [the evidence](../etc/evidence/t582-s26-video-adapter.md) records both-width
 tests and a real Game-frame probe. This does not establish playable speed.
 
+Small-copy callsite attribution identified high-frequency firmware reads and
+four-byte RAM writes. A bounded write specialization showed mixed two-width
+results and was not adopted; [the evidence](../etc/evidence/t582-s26-small-copy-attribution.md)
+records its workload and limitations.
+
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 
 # M5 T582 S25 — Closed: PC110 execution-model comparison
