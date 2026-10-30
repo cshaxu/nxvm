@@ -4,13 +4,13 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
 | Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
-| Objective | Qualify and, if correct, implement the measured compact lexical-preview copy; retain the larger PC110 usability goal and continue investigating after this bounded improvement. |
+| Objective | Qualify the compact lexical-preview copy and consolidate the duplicate timing-input prefix scans without changing observations or timing; retain the larger PC110 usability goal. |
 | Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
 | Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
-| Files And ABI Surface | Shared X86 Core CPU preview implementation and its manifest; existing CPU preview/bus tests and NXVM evidence; all seven App receiver artifacts under the Shared gate. No public interface or other Shared production package change. |
+| Files And ABI Surface | Shared X86 Core CPU preview and timing-input implementations and their manifest; existing CPU timing, preview and bus tests and NXVM evidence; all seven App receiver artifacts under the Shared gate. No public interface or other Shared production package change. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
-| Verification | Audit preview's read and failure paths and omitted fields; run dual-width existing preview/bus tests, manifest and dependency checks, cached 14-App builds and full unit/integration receiving gate; retain fixed-work and actual Game evidence without claiming equal complete machine state. |
+| Verification | Audit preview's read and failure paths and omitted fields; verify the unified prefix scan preserves flags and opcode positions for all profiles and malformed input. Run dual-width existing timing/preview/bus tests, manifest and dependency checks, cached 14-App builds and full unit/integration receiving gate; retain fixed-work and actual Game evidence without claiming equal complete machine state. |
 | Expected Markers | The existing lexical preview remains the sole path, reads no omitted access log or dispatch table, and all receiver gates are honestly reported. |
 | Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
 | Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
@@ -36,6 +36,15 @@ An independent synthetic-loop comparison now shows a large per-instruction
 difference even without the real firmware shortcuts; the isolated CPU fixture
 and neutral Machine have different buses and observation contracts. This is
 an engineering lead, not a complete-state or gameplay qualification.
+
+The owner approved selecting a small, clearly deduplicating algorithm even
+without a large measured speedup. The timing-input collector's two scans are
+therefore admitted for equivalence review and consolidation; the mixed
+measurements are not presented as a proven performance gain. The snapshot-copy
+probe remains exploratory and is not admitted as a production change.
+The prefix-scan implementation is Shared `38b16a3b3`; its dual-width unit,
+integration and receiving results are recorded in the same comparison
+evidence. It is a bounded code reduction, not PC110 usability acceptance.
 
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 

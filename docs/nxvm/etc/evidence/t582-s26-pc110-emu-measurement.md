@@ -147,6 +147,81 @@ difference to one function or demonstrate a PC110 gameplay speedup. No source,
 interface, owner media or published artifact changed. Log SHA-256:
 `E257E16191CAD859077BE8B8621D49CA62F77CB6CF30E9BA812B3330B95C12B4`.
 
+### Formula input prefix scan experiment
+
+This repeats the already documented formula-input scan candidate in
+[S11](t582-s11-performance-observation.md); it was inadvertently run again
+before checking that record. The repeated measurement does not establish a
+new candidate or justify additional repetition.
+
+The existing formula-input collector scans the same prefix-byte set twice:
+once to collect lock/segment flags and once to locate the opcode. A scratch
+candidate combines these scans while retaining the original flag rules. It
+adds no state or timing shortcut. Sequential baseline/candidate/candidate/
+baseline synthetic-loop runs gave Machine times of 9,388/8,907/9,027/9,617 ms
+on x64 and 14,204/14,616/14,606/12,650 ms on x86. Each reported ten million
+instructions, PC `000f0001` and 40,000,014 guest ticks. The x64 samples are
+encouraging but x86 is mixed, the workload is narrow and host variability is
+visible. These results do not establish equal full state or a real PC110
+speedup, and do not justify a production change. The scratch source and
+probe live under the task-owned build directory; no source, interface, owner
+media or published binary changed. Further work must prioritize a repeatable
+gain in the actual guest while preserving the complete timing observation.
+
+The same candidate was then tested on the existing private-media PC110 startup
+fixed-work probe, in baseline/candidate/candidate/baseline order. At ten
+million instructions, each run reported 79,964,294 guest ticks and PC
+`0003dbc5`. The x64 times were 20,108/18,459/18,464/18,359 ms; x86 times were
+23,748/27,091/28,711/26,939 ms. Changes in the second baseline show meaningful
+host variability; the data do not prove a stable improvement and the x86
+samples do not support adoption. Equal checkpoints do not prove equal complete
+state. After these measurements the owner approved selecting a net code
+reduction even without a large measured gain, provided other properties do not
+clearly regress. The production collector therefore now uses one traversal
+for the same prefix classification and flag collection. Its asymptotic time
+remains O(n); it removes one duplicate scan and 17 net source lines, with no
+new interface or state. The earlier timings are not a demonstrated speedup.
+
+A model-level comparison covered all byte sequences of length zero, one and
+two and 100,000 seeded longer prefix sequences (165,793 total). This compares
+the traversal rules, not actual CPU execution. The actual dual-width cached
+unit suites passed 712/712 each, including the CPU timing and prefix tests.
+Default integration passed 48/48 on each width (x64 was split into 45 plus
+three PC110 firmware cases). Selected My5160, My5170 and DeskPro integration
+passed 3/3, 5/5 and 6/6 respectively on each width. The first x86 My5160
+attempt failed two cases because its test executables had not been relinked
+for the selected profile; relinking and rerunning passed 3/3. The x64 test
+linker also transiently could not open several output executables; the same
+build tree completed on explicit lower-concurrency retries. These failures
+are recorded, not counted as passing attempts.
+
+The external selected-set MyRaidenII startup and deployed Console probes
+passed on both widths. The cached seven-product builds produced or reused 14
+release executables; their PE widths and hashes are recorded in
+[the artifact inventory](t582-s26-prefix-artifacts.json). MyNES does not
+link this X86 Core change and its binaries were unchanged. Desktop-labelled
+integration tests passed in this environment, but no interactive PC110 RDP
+gameplay or real-time usability was established. T582 remains open.
+
+### Instruction-boundary copy attribution
+
+A task-only x64 link wrapper counted calls to the actual linked `memcpy`
+symbol during the private-media startup fixed-work probe. It recorded
+10,981,129 calls at return offset `3b13b`, totalling 4,172,829,020 bytes
+(380 bytes each); disassembly maps this call to `ExecBoundary`. Its existing
+source assigns the complete CPU into `instruction_state.data.oldcpu`.
+The checkpoint remained 10,000,000 instructions, 79,964,294 guest ticks and
+PC `0003dbc5`; the instrumented run took 22,451 ms. The wrapper adds atomic
+counting overhead, sees only linked memcpy calls and is not an exclusive time
+measurement. Preview copies occur separately; they cannot be added to the
+boundary count as independent retired instructions.
+
+The snapshot is used for more than timing: existing undefined-opcode and
+WAIT restart paths restore the full CPU, and Debug can request its entry
+state. Dropping or reducing the copy would change those contracts. A future
+candidate must preserve the complete snapshot and measure both widths and
+actual guest throughput. No production code, interface or artifact changed.
+
 ### Synthetic-loop timing and publication ablation
 
 On the same x64 synthetic loop, a scratch link wrapper replaced the timing
