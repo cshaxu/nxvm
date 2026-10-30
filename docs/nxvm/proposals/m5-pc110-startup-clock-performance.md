@@ -113,6 +113,9 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   the existing real-instruction condition matrix and all model results.
   PC110's video adapter may defer its duplicate aperture validation to the
   existing F65535 access operation while retaining its original error contract.
+  Lexical preview may collect size-prefix facts during its existing prefix scan
+  rather than traversing the same bytes twice; retain the same decoder and all
+  profile-specific prefix admission and invalid-input behavior.
 - **S27 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S26 and any later measured batches.
 

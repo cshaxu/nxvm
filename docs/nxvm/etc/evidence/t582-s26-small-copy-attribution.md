@@ -26,3 +26,17 @@ production source size. With no reliable cross-width gain it was not adopted.
 No Shared source, public interface, test, product executable or owner media
 changed in this experiment. S26 remains open for a substantial PC110
 throughput improvement.
+
+## Two-byte firmware read candidate
+
+A separate task-only candidate made a two-byte firmware copy a constant-size
+`lib_memory_copy`, leaving all other lengths and the same provider/decode path
+unchanged. The fixed checkpoint's previously observed 5.78 million two-byte
+firmware copies motivated this experiment; it adds a size branch and does not
+reduce source lines or asymptotic work. Ordered x64 baseline/candidate/
+candidate/baseline results were 18,980/19,166/19,771/18,591 ms. All reached
+10,000,000 instructions, 79,822,202 ticks and PC `00039119`. Because both x64
+pairs failed to show a benefit, the remaining temporary x86 run was stopped
+after its first baseline; this is not a completed x86 comparison. Matching
+checkpoints do not prove complete guest-state equivalence. The candidate was
+not adopted, and no production source, executable or owner media changed.

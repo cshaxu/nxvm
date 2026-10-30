@@ -4,13 +4,13 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
 | Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
-| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input scans, simplify parity and conditional-branch timing calculations, eliminate duplicate timing-result publication and remove redundant PC110 video-adapter aperture checks without changing guest behavior or timing; retain the larger PC110 usability goal. |
+| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input and lexical-prefix scans, simplify parity and conditional-branch timing calculations, eliminate duplicate timing-result publication and remove redundant PC110 video-adapter aperture checks without changing guest behavior or timing; retain the larger PC110 usability goal. |
 | Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
 | Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
 | Files And ABI Surface | Shared X86 Core CPU preview, timing-input, timing selection and flag implementations, their private declarations and manifest; existing CPU timing, preview, arithmetic, bus and Machine retirement-observation tests and their manifest; MyPC110 video adapter and existing route tests, plus NXVM evidence. All seven App receiver artifacts remain under the Shared gate. No public interface or other Shared production package change. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
-| Verification | Audit preview's read and failure paths and omitted fields, including 486 retirement observation across asynchronous entry; verify the unified prefix scan preserves flags and opcode positions for all profiles and malformed input; verify all 256 parity inputs and all 16 branch conditions across flag combinations through actual CPU instructions. Verify the video adapter retains null, zero-length, invalid-range and observed-read semantics using the existing chip and Machine paths. Run dual-width affected tests, manifest and dependency checks; cached 14-App builds and full unit/integration receiving gate apply to Shared changes. Retain fixed-work and actual Game evidence without claiming equal complete machine state. |
+| Verification | Audit preview's read and failure paths and omitted fields, including 486 retirement observation across asynchronous entry; verify the unified timing and lexical prefix scans preserve flags and opcode positions for all profiles and malformed input, including prefixed lexeme decoding and real timing previews; verify all 256 parity inputs and all 16 branch conditions across flag combinations through actual CPU instructions. Verify the video adapter retains null, zero-length, invalid-range and observed-read semantics using the existing chip and Machine paths. Run dual-width affected tests, manifest and dependency checks; cached 14-App builds and full unit/integration receiving gate apply to Shared changes. Retain fixed-work and actual Game evidence without claiming equal complete machine state. |
 | Expected Markers | The existing lexical preview remains the sole path, reads no omitted access log or dispatch table, and all receiver gates are honestly reported. |
 | Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
 | Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
@@ -82,7 +82,8 @@ tests and a real Game-frame probe. This does not establish playable speed.
 Small-copy callsite attribution identified high-frequency firmware reads and
 four-byte RAM writes. A bounded write specialization showed mixed two-width
 results and was not adopted; [the evidence](../etc/evidence/t582-s26-small-copy-attribution.md)
-records its workload and limitations.
+records its workload and limitations. A further two-byte firmware-copy
+specialization showed no x64 benefit and was also not adopted.
 
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 

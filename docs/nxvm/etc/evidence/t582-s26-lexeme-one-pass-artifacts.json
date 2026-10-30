@@ -1,0 +1,86 @@
+[
+  {
+    "path": "assets/nxvm/nxvm_0_5_0582_x86.exe",
+    "arch": "x86",
+    "bytes": 1700147,
+    "sha256": "93A9A486D635D08188C56542EAD3980484A95DB64B5CA347689A2FE4706B2397"
+  },
+  {
+    "path": "assets/nxvm/nxvm_0_5_0582_x64.exe",
+    "arch": "x64",
+    "bytes": 1560996,
+    "sha256": "18CF5BBF2C014222DCA662DB342369AEF46F5334D1EC8768433910C789F83087"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0582_x86.exe",
+    "arch": "x86",
+    "bytes": 1687480,
+    "sha256": "AC0293436F8257EEB022C3F53F056ABCA399DF8701A6AE51DCE0B298109D696F"
+  },
+  {
+    "path": "assets/my5160/my5160_0_5_0582_x64.exe",
+    "arch": "x64",
+    "bytes": 1549276,
+    "sha256": "B26AB6F5D6F092C94FEAD8DF8F594F4FB3D021D44A1DB9552BA0F973FA29C73C"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0582_x86.exe",
+    "arch": "x86",
+    "bytes": 1701361,
+    "sha256": "5A1ADA9DD3E1EDE652ED9C3935EB389E2350EBB3028B60AC13E8E42D753E9612"
+  },
+  {
+    "path": "assets/my5170/my5170_0_5_0582_x64.exe",
+    "arch": "x64",
+    "bytes": 1561850,
+    "sha256": "B499083CC7492F2B516486DA16B8B0C58269D7A4C55D8535DF9F123C96E1D9B0"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0582_x86.exe",
+    "arch": "x86",
+    "bytes": 1687566,
+    "sha256": "BE137A67A8B656F5F17FEE401F79A9913ED9D104BB9846B167855D1F6CEF4264"
+  },
+  {
+    "path": "assets/mydeskpro386/mydeskpro386_0_5_0582_x64.exe",
+    "arch": "x64",
+    "bytes": 1549024,
+    "sha256": "AAC1BA85D14620A7BAAAD707EF17025C68D96D09483E958BACBDE6279C0CC8FF"
+  },
+  {
+    "path": "assets/mypc110/mypc110_x86.exe",
+    "arch": "x86",
+    "bytes": 3225523,
+    "sha256": "06AE12FC98328338618879507BB64AA6EB9EBC898669E15C8331CEA2B2EEFDE7"
+  },
+  {
+    "path": "assets/mypc110/mypc110_x64.exe",
+    "arch": "x64",
+    "bytes": 3088518,
+    "sha256": "FCE6D61DAE34A78458614C5596A995DC0E6936FDA24BDA6B2E8E62F1D6931047"
+  },
+  {
+    "path": "assets/myraidenii/myraidenii_0_0_0007_x86.exe",
+    "arch": "x86",
+    "bytes": 864782,
+    "sha256": "ECF71972B77CFF972D4818DAC1008933E81A126BCA46FBC68C66DE6F761524AF"
+  },
+  {
+    "path": "assets/myraidenii/myraidenii_0_0_0007_x64.exe",
+    "arch": "x64",
+    "bytes": 779278,
+    "sha256": "97BDE27BED2F061A82D6566AC22EB5B33C4A70CB4204644EED6C93942EE87DEB"
+  },
+  {
+    "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+    "arch": "x86",
+    "bytes": 271886,
+    "sha256": "718617AF2FBF6D49C36AE3BB10043DC3B2383E35440E7A371E503B8BD4B4EA16"
+  },
+  {
+    "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+    "arch": "x64",
+    "bytes": 271374,
+    "sha256": "B499CD2583ECDDD1AE01EED882E21D49D20187558E2138858E5A27117CF74FC8"
+  }
+]
