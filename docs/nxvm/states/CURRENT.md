@@ -19,6 +19,8 @@
 | Original Owner Request | Improve PC110 performance until usable while preserving timing and correctness. |
 | Similar-Issue Sweep | Compare both host widths, startup versus later workload, and guest-time costs versus host waiting. |
 
+S13 measurements are recorded in the [scheduler observation](../etc/evidence/t582-s13-scheduler-observation.md) and [CPU profile experiment](../etc/evidence/t582-s13-cpu-profile.md). These identify bounded opportunities; usable PC110 performance remains unproven.
+
 # M5 T582 S12 — Closed: bounded lexical-preview optimization
 
 | Field | Required record |
