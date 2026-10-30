@@ -7,3 +7,25 @@ A scratch-only x64 linker wrapper measured the current query on a private PC110 
 The low fill-acceptance count is specific to early startup: [S17](t582-s17-pc110-cacheability.md) observed chipset cache controls changing later, and [S18](t582-s18-cache-design.md) measured a bounded product-path improvement after provider caching. The count neither proves that disabled fills are incorrect nor describes the Game phase. The measured per-call samples do not demonstrate an order-of-magnitude opportunity, and no speculative state cache or route-proof shortcut is proposed on this evidence. No production code, interface, media or executable changed.
 
 Scratch log SHA-256: `A3758BFEF65AA6C8119AAA67A9415BF46426F49198F982B80ACE4C35F9F4757F`.
+
+## Ordinary-access test-register publication audit
+
+The 486 cache reports normal data reads, fills and writes into the existing
+TR4/read-buffer circuitry as well as updating replacement state. The T560 S5
+source review records the Intel developer manual's warning that ordinary
+memory operations can alter these test-register buffers; it does not establish
+a deterministic value for every real 486 access.
+
+A deliberately non-production ablation removed the three ordinary-access
+`_kma_cache_report` calls while retaining the TR5 cache-test commands. The
+existing `cpu_cache_smoke.c` suite still passed, so that suite alone cannot
+establish the current ordinary-access publication behavior. A separate scratch
+probe using the existing CPU fixture performed a guest load, selected TR3's
+read buffer through TR5, then read TR3 and TR4 through actual MOV instructions.
+The baseline reported TR3 `00001234` and TR4 `00002588`; the ablation reported
+zero for both. This proves the proposed deletion changes the current
+guest-visible model, not that either value is a mandatory silicon value. The
+ablation was not admitted or used as a speed result, and no production source,
+test or artifact changed. Any future optimization must preserve this contract
+or separately justify and review a hardware-model change; the existing test
+coverage gap should not be mistaken for permission to remove it.

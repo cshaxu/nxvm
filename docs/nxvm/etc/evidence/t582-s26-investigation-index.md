@@ -31,6 +31,8 @@ These are bounded improvements; none establishes real-time performance.
 - Direct primary-opcode dispatch: [S26 dispatch probe](t582-s26-direct-dispatch.md).
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
 - 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).
+- Ordinary cache access and guest-visible test-register publication:
+  [S26 cache query](t582-s26-cache-query-cost.md#ordinary-access-test-register-publication-audit).
 - Absent-FPU scheduler call removal: [S26 FPU probe](t582-s26-fpu-scheduler-probe.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - Same-host PC110-EMU reference run: [S26 comparison](t582-s26-pc110-emu-measurement.md).
