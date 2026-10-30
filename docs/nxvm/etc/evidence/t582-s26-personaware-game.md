@@ -1,5 +1,25 @@
 # T582 S26 — Personaware Game baseline
 
+## Single-click response observation
+
+A private-media x64 run entered the same Game using the existing Machine
+queue. Once the complete board was visible, it queued a left-button press and
+release at the initial cursor position, then sampled frames approximately
+once per host second for 15 seconds. Both submissions succeeded and the run
+exited zero after 369.41 seconds. The complete-board image was unchanged at
+every sample, including the image before submission. The log SHA-256 is
+`DEFE562E33224E4089585273DC78DDA59FE2BFDDF0BF8608A4586E44F16D335B`;
+each of those frames matched
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+
+The queue accepts events before device delivery; the driver discards the
+delivery status, and this probe did not instrument PS/2 packet acceptance,
+guest consumption, the selected tile or the game's selection rules. It cannot
+therefore distinguish no visual response by design from rejected or ignored
+input, nor measure click latency. It used direct Machine events rather than
+native Window/RDP input, and does not establish playable interaction. No
+production source, published binary or owner media changed.
+
 ## Read-modify-write precheck frequency
 
 A scratch-only x64 CPU build counted calls to the existing `_m_read_rmw`
