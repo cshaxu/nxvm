@@ -84,6 +84,12 @@ typedef lib_status (*x86_core_machine_memory_device_query)(void *owner,
     lib_u32 physical, lib_uptr bytes,
     x86_core_machine_memory_access access);
 
+/* An opt-in probe must be observational and accept only whole lines whose
+ * operational read succeeds with the same bytes as byte reads, whose fetch
+ * and data views agree, and whose reads have no side effects. */
+typedef lib_bool (*x86_core_machine_memory_device_cache_probe)(void *owner,
+    lib_u32 physical, lib_size bytes);
+
 typedef struct x86_core_machine_memory_device_callbacks {
     x86_core_machine_memory_device_read read;
     x86_core_machine_memory_device_write write;
@@ -132,6 +138,9 @@ lib_status x86_core_machine_remove_memory_device_routes(x86_core_machine *machin
  * read callback.  The setter is construction-only. */
 lib_status x86_core_machine_set_memory_instruction_read(x86_core_machine *machine,
     const void *owner, x86_core_machine_memory_device_instruction_read read);
+/* Construction-only: providers without a probe remain non-cacheable. */
+lib_status x86_core_machine_set_memory_cache_probe(x86_core_machine *machine,
+    const void *owner, x86_core_machine_memory_device_cache_probe probe);
 /* Copy bytes through the observational route without changing guest state. */
 lib_status x86_core_machine_memory_inspect(const x86_core_machine *machine,
     lib_u32 physical, void *out_data, lib_size size);

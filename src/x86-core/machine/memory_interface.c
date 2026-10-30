@@ -153,6 +153,25 @@ lib_status x86_core_machine_set_memory_instruction_read(x86_core_machine *machin
     return found ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
 }
 
+lib_status x86_core_machine_set_memory_cache_probe(x86_core_machine *machine,
+    const void *owner, x86_core_machine_memory_device_cache_probe probe)
+{
+    lib_bool found = LIB_FALSE;
+
+    if (!x86_core_machine_configuration_is_open(machine) || owner == LIB_NULL ||
+        probe == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_size index = 0u;
+        index < machine->executor_memory.connect.device_provider_count; ++index) {
+        x86_core_machine_memory_device_provider *provider =
+            &machine->executor_memory.connect.device_providers[index];
+
+        if (provider->owner != owner) continue;
+        provider->cache_probe = probe;
+        found = LIB_TRUE;
+    }
+    return found ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
+}
+
 lib_status x86_core_machine_remove_memory_device_routes(x86_core_machine *machine,
     const void *owner)
 {

@@ -677,6 +677,97 @@ static lib_i32 cpu_overlay_contract(void)
     return failed;
 }
 
+static lib_status registration_cache_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)observe_only;
+    if (owner == LIB_NULL || destination == 0u || physical < 0x8000u ||
+        physical >= 0x8010u || bytes == 0u || bytes > 0x8010u - physical) return LIB_STATUS_UNSUPPORTED;
+    lib_memory_set((void *)destination, *(const lib_u8 *)owner, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status registration_cache_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, x86_core_machine_memory_access access)
+{
+    (void)access;
+    if (owner == LIB_NULL || physical < 0x8000u || physical >= 0x8010u ||
+        bytes == 0u || bytes > 0x8010u - physical ||
+        (*(const lib_u8 *)owner == 3u && bytes != 1u)) return LIB_STATUS_UNSUPPORTED;
+    if (*(const lib_u8 *)owner == 4u && bytes != 1u) return LIB_STATUS_IO_ERROR;
+    return LIB_STATUS_OK;
+}
+
+static lib_bool registration_cache_probe(void *owner, lib_u32 physical, lib_size bytes)
+{
+    return owner != LIB_NULL && (*(const lib_u8 *)owner == 1u ||
+        *(const lib_u8 *)owner == 3u || *(const lib_u8 *)owner == 4u) &&
+        physical == 0x8000u && bytes == 16u;
+}
+
+static lib_i32 registration_provider_cache_contract(void)
+{
+    x86_core_machine machine = {.lifecycle = X86_CORE_MACHINE_INITIALIZED};
+    const x86_core_machine_memory_device_route whole = {
+        0x8000u, 16u, {registration_cache_read, overlay_write, registration_cache_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_STANDARD, LIB_NULL};
+    const x86_core_machine_memory_device_route narrow = {
+        0x8008u, 1u, {overlay_read, overlay_write, overlay_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL};
+    lib_u8 owner = 1u, other = 1u;
+    lib_bool enabled = LIB_TRUE;
+    lib_u32 address = 0u;
+    lib_i32 failed = 0;
+    t_ram *memory = &machine.executor_memory;
+
+    if (x86_core_machine_memory_initialize_for(memory, 0x10000u, LIB_NULL) != LIB_STATUS_OK) return 1;
+    failed |= x86_core_machine_install_memory_device_routes(&machine, &whole, 1u,
+        LIB_NULL, LIB_NULL, &owner) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    failed |= x86_core_machine_set_memory_cache_probe(&machine, LIB_NULL,
+        registration_cache_probe) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_core_machine_set_memory_cache_probe(&machine, &owner, LIB_NULL) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        x86_core_machine_set_memory_cache_probe(&machine, &other,
+            registration_cache_probe) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_core_machine_set_memory_cache_probe(&machine, &owner,
+            registration_cache_probe) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || !enabled || address != 0x8000u;
+    /* Byte routes can agree while the actual full-line route declines. */
+    owner = 3u;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    owner = 4u;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    owner = 2u;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    owner = 1u;
+    failed |= x86_core_machine_install_memory_device_routes(&machine, &narrow, 1u,
+        LIB_NULL, LIB_NULL, &other) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    failed |= x86_core_machine_remove_memory_device_routes(&machine, &other) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || !enabled;
+    failed |= x86_core_machine_set_memory_instruction_read(&machine, &owner, overlay_read) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+        LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    /* Reused provider slots must not inherit either optional callback. */
+    failed |= x86_core_machine_remove_memory_device_routes(&machine, &owner) != LIB_STATUS_OK ||
+        x86_core_machine_install_memory_device_routes(&machine, &whole, 1u,
+            LIB_NULL, LIB_NULL, &other) != LIB_STATUS_OK ||
+        memory->connect.device_providers[0].read_instruction != LIB_NULL ||
+        memory->connect.device_providers[0].cache_probe != LIB_NULL ||
+        x86_core_machine_memory_query_cpu_cache(memory, 0x8000u, LIB_FALSE,
+            LIB_TRUE, &address, &enabled) != LIB_STATUS_OK || enabled;
+    x86_core_machine_memory_finalize(memory);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const x86_core_machine_executor_config config = {
@@ -695,7 +786,8 @@ lib_i32 main(void)
     lib_u8 overlay = 0u;
     lib_u8 observed = 0u;
     lib_u8 write = 0xa5u;
-    lib_i32 failed = parity_delivery_contract() || registration_allocation_failure() ||
+    lib_i32 failed = registration_provider_cache_contract() ||
+        parity_delivery_contract() || registration_allocation_failure() ||
         registration_growth_and_priority() || registration_mixed_tiers() ||
         registration_matching_capacity() ||
         registration_standard_transaction() ||

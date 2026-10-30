@@ -106,7 +106,13 @@ lib_i32 main(void)
         LIB_STATUS_OK ||
         x86_vl82c420_select(chip, X86_VL82C420_BANK_SCAMP, 0u) != LIB_STATUS_OK ||
         x86_vl82c420_read_selected(chip, X86_VL82C420_BANK_SCAMP, &value) !=
-        LIB_STATUS_OK || value != 0x5au;
+        LIB_STATUS_OK || value != 0x5au ||
+        x86_vl82c420_selected_index(chip, X86_VL82C420_BANK_SCAMP, &value) !=
+        LIB_STATUS_OK || value != 0u ||
+        x86_vl82c420_selected_index(chip, X86_VL82C420_BANK_SCAMP, LIB_NULL) !=
+        LIB_STATUS_INVALID_ARGUMENT ||
+        x86_vl82c420_selected_index(chip, X86_VL82C420_BANK_BLOCK2, &value) !=
+        LIB_STATUS_INVALID_STATE;
 
     failed |= x86_vl82c420_read_register(chip, X86_VL82C420_BANK_SCAMP,
             0u, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||

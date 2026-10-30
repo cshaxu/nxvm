@@ -33,6 +33,9 @@ void x86_vl82c420_relock(x86_vl82c420 *chip);
 
 lib_status x86_vl82c420_select(x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 index);
+/* Observe the selected index without modifying the bank protocol. */
+lib_status x86_vl82c420_selected_index(const x86_vl82c420 *chip,
+    x86_vl82c420_bank bank, lib_u8 *out_index);
 lib_status x86_vl82c420_read_selected(const x86_vl82c420 *chip,
     x86_vl82c420_bank bank, lib_u8 *out_value);
 /* Observational board decode: preserve all selected indices and unlock state.

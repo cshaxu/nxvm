@@ -43,6 +43,7 @@ typedef struct {
     lib_uptr bytes;
     x86_core_machine_memory_device_read read;
     x86_core_machine_memory_device_instruction_read read_instruction;
+    x86_core_machine_memory_device_cache_probe cache_probe;
     x86_core_machine_memory_device_write write;
     x86_core_machine_memory_device_query query;
     x86_core_machine_memory_device_failure_observer failure;

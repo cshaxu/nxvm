@@ -456,6 +456,8 @@ static void x86_core_machine_memory_append_device_provider(t_ram *ram,
     provider->physical_start = physical_start;
     provider->bytes = bytes;
     provider->read = read;
+    provider->read_instruction = LIB_NULL;
+    provider->cache_probe = LIB_NULL;
     provider->write = write;
     provider->query = query;
     provider->failure = failure;
@@ -832,6 +834,8 @@ lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
 {
     lib_u32 first;
     lib_size first_offset = 0u;
+    const x86_core_machine_memory_device_provider *first_provider = LIB_NULL;
+    lib_u32 first_provider_address = 0u;
 
     if (ram == LIB_NULL || out_address == LIB_NULL || out_fill_enabled == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -862,11 +866,35 @@ lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
         /* A failed speculative line query disables fills. The requested data
          * access still reports its own route failure through the normal bus. */
         if (status != LIB_STATUS_OK) return LIB_STATUS_OK;
-        if (provider != LIB_NULL) return LIB_STATUS_OK;
-        if (byte == 0u) first_offset = offset;
-        if (offset != first_offset + byte || offset !=
-                x86_core_machine_memory_decode_address(ram, first + byte))
+        if (byte == 0u) {
+            first_provider = provider;
+            first_provider_address = provider_physical;
+            if (provider == LIB_NULL) first_offset = offset;
+            if (provider != LIB_NULL && (provider->cache_probe == LIB_NULL ||
+                provider->read_instruction != LIB_NULL ||
+                !provider->cache_probe(provider->owner, provider_physical, 16u)))
+                return LIB_STATUS_OK;
+        }
+        if (provider != first_provider) return LIB_STATUS_OK;
+        if (provider != LIB_NULL) {
+            if (provider_physical != first_provider_address + byte) return LIB_STATUS_OK;
+        } else if (offset != first_offset + byte || offset !=
+                x86_core_machine_memory_decode_address(ram, first + byte)) {
             return LIB_STATUS_OK;
+        }
+    }
+    if (first_provider != LIB_NULL) {
+        const x86_core_machine_memory_device_provider *line_provider;
+        lib_u32 line_physical;
+        lib_size line_offset;
+        const lib_status status = x86_core_machine_memory_route_resolve(ram,
+            first, 16u, X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_FALSE,
+            &line_provider, &line_physical, &line_offset, LIB_TRUE);
+
+        /* The actual fill is a whole-line access; it must not select a
+         * different provider from the bytewise route proof. */
+        if (status != LIB_STATUS_OK || line_provider != first_provider ||
+            line_physical != first_provider_address) return LIB_STATUS_OK;
     }
     *out_fill_enabled = LIB_TRUE;
     return LIB_STATUS_OK;
