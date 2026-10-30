@@ -32,8 +32,7 @@ static lib_status mypc110_display_memory_query(void *owner, lib_u32 physical,
 static lib_status mypc110_display_memory_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    if (destination == 0u || mypc110_display_memory_query(owner, physical,
-            bytes, X86_CORE_MACHINE_MEMORY_ACCESS_READ) != LIB_STATUS_OK) {
+    if (owner == LIB_NULL || destination == 0u || bytes == 0u) {
         return LIB_STATUS_UNSUPPORTED;
     }
     return x86_f65535_memory_read(owner, physical, (void *)destination, bytes,
@@ -43,8 +42,7 @@ static lib_status mypc110_display_memory_read(void *owner, lib_u32 physical,
 static lib_status mypc110_display_memory_write(void *owner, lib_u32 physical,
     lib_uptr source, lib_uptr bytes)
 {
-    if (source == 0u || mypc110_display_memory_query(owner, physical,
-            bytes, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE) != LIB_STATUS_OK) {
+    if (owner == LIB_NULL || source == 0u || bytes == 0u) {
         return LIB_STATUS_UNSUPPORTED;
     }
     return x86_f65535_memory_write(owner, physical, (const void *)source, bytes);

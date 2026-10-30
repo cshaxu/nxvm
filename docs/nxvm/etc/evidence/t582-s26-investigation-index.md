@@ -25,6 +25,7 @@ These are bounded improvements; none establishes real-time performance.
 - Measured compact preview candidate and receiving status: [S26 compact preview](t582-s26-compact-preview.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
 - Branch timing condition simplification: [S26 comparison](t582-s26-branch-condition.md).
+- PC110 display adapter aperture validation: [S26 check](t582-s26-video-adapter.md).
 - Duplicate one-byte opcode-record copy: [S26 copy audit](t582-s26-opcode-copy.md).
 - Memory read-modify-write precheck frequency: [Personaware Game](t582-s26-personaware-game.md#read-modify-write-precheck-frequency).
 - Game drawing guest-PC samples and instruction-byte attribution:

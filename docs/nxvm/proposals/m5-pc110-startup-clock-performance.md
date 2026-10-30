@@ -111,6 +111,8 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   CPU result, eliminating its redundant output argument and duplicate write.
   Branch timing may inspect only the flags required by each condition; retain
   the existing real-instruction condition matrix and all model results.
+  PC110's video adapter may defer its duplicate aperture validation to the
+  existing F65535 access operation while retaining its original error contract.
 - **S27 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S26 and any later measured batches.
 
