@@ -60,7 +60,7 @@ MyNES binaries were unchanged. Full qualification, external-probe and artifact
 inventory SHA-256 respectively:
 `896B82CA61C1432E20F56CE8370C7BA16FD04D57A3D47FBA7312DB72531F9C48`,
 `D829B6B9159B4FC435B77EA9664536C7FBF0141BD92E96C5ABA8C6E63833C585`,
-`7E637927C191F5654A519EE13EBE71A52859CD258DA9CCDCBFBC2FEB79A429F5`.
+`D44FA415D552B6D15E2048586357DBAAF0CF0A56391D1DCD66105A45A7034CD8`.
 Native Window/RDP, a physical MIDI endpoint and successful gameplay were not
 established by these checks. The T remains open: this bounded optimization
 does not demonstrate that PC110 is usable at its intended speed.
