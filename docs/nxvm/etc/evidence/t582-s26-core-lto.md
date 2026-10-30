@@ -26,11 +26,33 @@ reliable end-to-end speed comparison. The source images were separately
 inspected; the guest state and host scheduling were not matched. No native
 Window/RDP input or complete interactive gameplay was qualified.
 
-The LTO configuration is not adopted on this evidence. A meaningful follow-up
-must first strengthen the task-only frame-completion criterion, then compare
-equivalent guest work and verify the whole receiving and cache/build contract
-before changing project configuration. Even the promising fixed-work samples
-do not demonstrate the order-of-magnitude gain needed for PC110 usability.
+## Stronger frame-completion comparison
+
+The task-only probe was subsequently tightened: the Game marker pixels must
+be present, the top-right title area must contain only its expected background
+colors, and two consecutive sampled complete frames must have identical pixel
+hashes. This rejects the stale baseline frame shown above. One LTO run followed
+by one ordinary Release run used separate copies of the same input media.
+Both exited successfully and produced the identical final PPM SHA-256
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+LTO reached the stable frame 29 one-second samples after Enter and finished
+in 228.84 host seconds; the baseline took 33 samples and 286.51 seconds.
+Visual inspection of the preceding comparison showed the intended Game
+screen, while the hash and strengthened criterion establish the same final
+frame in this pair. The probes inject Machine input, not native Window input.
+
+This single ordered pair is encouraging but not a controlled complete-state
+comparison: guest states and host load may vary, one-second sampling is coarse,
+and the first run precedes the second. It does not qualify x86 Game or prove
+interactive playability. Before adopting LTO, measure its effect on the many
+Core-linked test and product links, incremental build and ccache behavior;
+the observed serial LTO partitions may materially harm build efficiency.
+The full functional and receiver contract must also pass. The configuration
+remains unmodified and the PC110 usability goal remains open.
+
+SHA-256 (stronger LTO log, stronger baseline log):
+`B7AB4848A4DA80D6092DE8EA8A62A4A27DED7D998230789F10BE8F33B620DB54`,
+`B98FB6D9C6BDA36AC8442EBA1CD9D23BE68EFDE5DE9F35A55BCEB229B2BB854F`.
 
 SHA-256 (LTO log/frame, baseline log/frame):
 `2A17E1B4595F494F16EACA8FF21C4A54D46CC4B80552BCA175B2CB8A6E5F60F4`,
