@@ -2,6 +2,38 @@
 
 ## Event-driven navigation experiment
 
+### Capturing the fast-navigation outcome
+
+Another x64 run repeated the original one-host-second Down/Enter sequence,
+then saved the published frame 40 samples after Enter instead of waiting for
+a Game pixel signature. The frame visibly shows the Editor's file-open dialog,
+not Game. The guest was not frozen; the probe returned failure deliberately
+after capturing this diagnostic result. Menu detection occurred at sample 230,
+the four Down inputs at 231–234 and Enter at 235; process duration was 279.70
+host seconds. This is a separate run from the earlier 500-sample attempt.
+
+This proves that this fast direct-Machine sequence selected an unintended
+application in this run. It does not determine which keyboard events reached
+the controller or were consumed by the guest. No owner media or production
+source changed. Log SHA-256:
+`D0BCF9AD2C227BABC299449C08A8A6FAE6AE5B6530C08C99D5775ACFD8D1A230`;
+captured frame SHA-256:
+`308D1CDBD140B415D39CBB4DD4E59C6DA9ADB986308E2D49E431721C269E6871`.
+
+An independent repetition wrapped the existing Machine delivery, 8042
+keyboard-byte admission, and guest data-port read functions. All four Down
+make/break pairs and the Enter pair were delivered with OK status; the
+controller accepted each native set-2 sequence and the guest read all four
+translated set-1 Down make/break pairs plus the Enter make/break pair in
+order. Its saved final frame again shows the Editor file dialog. The test
+cannot prove when the application consumed BIOS keyboard entries or whether
+it deliberately coalesced input while drawing; it does establish that simply
+adding another host-input queue would not explain this run. Instrumentation
+adds overhead, input was injected directly into Machine, and neither native
+Window/RDP nor a complete game was qualified. The probe returned failure by
+design after saving the diagnostic frame. Log SHA-256:
+`D4E20631EC3D7C8F04C163B7FC4DB8DCE00E509C54F117BF7FD352A6139C1339`.
+
 ### Follow-up with visible selection checks
 
 A subsequent x64 run waited for the blue label in each expected menu row
