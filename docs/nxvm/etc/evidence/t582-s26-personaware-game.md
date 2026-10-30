@@ -2,6 +2,29 @@
 
 ## Single-click response observation
 
+### Adjacent pair action after compact preview
+
+An x64 private-media run using the committed compact-preview implementation
+entered the same Personaware Game through the ordinary Machine queue. After
+the complete board appeared, it moved the cursor to a pair of adjacent
+matching tiles and submitted a left-button press and release. Inspection of
+the next sampled frame shows both tiles removed, the matching tile count
+falling from 32 to 30, and the displayed score changing from -171 to -169.
+The changed frame was captured at the next approximately one-second sampling
+step after the press was queued; frame capture and polling overhead mean this
+is not a precise input-latency measurement. A subsequent move and click were
+also sent, without asserting another scoring action.
+
+The run exited zero after 372.43 seconds. The complete board was first captured
+at sample 33, with ten-second startup samples; this is not a precise startup
+duration. The log SHA-256 is
+`818C143FFC962E341E41DFBE3CFB06FF4488CC726248167E71C97D3432D36D26`;
+the frame showing the removed pair hashes to
+`EC25C3ACE5C4BAD07C77422B2F6E23039D6D1307B4A01E806696569BDFE9A113`.
+This establishes one successful gameplay action in the instrumented direct
+Machine-input path, not whole-game qualification, x86, native Window/RDP or
+acceptable startup/clock speed. Owner media and product source were unchanged.
+
 ### Device delivery follow-up
 
 A separate x64 private-media run instrumented the existing Machine delivery,
