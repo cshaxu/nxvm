@@ -9472,6 +9472,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     while (index < available_bytes && index < 15u &&
         x86_core_cpu_instruction_is_prefix(bytes[index], profile)) {
         if (bytes[index] == 0xf0u) lock_prefix = LIB_TRUE;
+        else if (bytes[index] == 0x66u) operand_size_prefix = LIB_TRUE;
+        else if (bytes[index] == 0x67u) address_size_prefix = LIB_TRUE;
         if (profile == X86_CORE_CPU_PROFILE_V30) {
             if (bytes[index] == 0x64u || bytes[index] == 0x65u) carry_repeat = LIB_TRUE;
             else if (bytes[index] == 0xf2u || bytes[index] == 0xf3u) carry_repeat = LIB_FALSE;
@@ -9490,18 +9492,8 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     ++components;
     operand_bytes = code_32 ? 4u : 2u;
     address_bytes = code_32 ? 4u : 2u;
-    if (cpu_profile_has_32bit_architecture(profile)) {
-        lib_u8 prefix_index;
-
-        for (prefix_index = 0u; prefix_index < index - 1u; ++prefix_index) {
-            if (bytes[prefix_index] == 0x66u) operand_size_prefix = LIB_TRUE;
-            if (bytes[prefix_index] == 0x67u) address_size_prefix = LIB_TRUE;
-        }
-        if (operand_size_prefix)
-            operand_bytes = code_32 ? 2u : 4u;
-        if (address_size_prefix)
-            address_bytes = code_32 ? 2u : 4u;
-    }
+    if (operand_size_prefix) operand_bytes = code_32 ? 2u : 4u;
+    if (address_size_prefix) address_bytes = code_32 ? 2u : 4u;
     if (opcode == 0x0fu && !x86_core_cpu_profile_has_8086_semantics(profile)) {
         nec = profile == X86_CORE_CPU_PROFILE_V30;
         if (!nec && profile != X86_CORE_CPU_PROFILE_80286 &&
