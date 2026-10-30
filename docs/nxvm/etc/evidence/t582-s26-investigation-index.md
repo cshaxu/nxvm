@@ -32,6 +32,14 @@ These are bounded improvements; none establishes real-time performance.
 - Absent-FPU scheduler call removal: [S26 FPU probe](t582-s26-fpu-scheduler-probe.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - Same-host PC110-EMU reference run: [S26 comparison](t582-s26-pc110-emu-measurement.md).
+- PC110 port read upper-bound probe: a task-only candidate removed the second
+  wired-OR provider traversal entirely, which is invalid for general machines.
+  PC110 uses ATA rather than the registered Compaq wired-OR route. At the
+  identical 10,000,000-instruction / 79,964,294-tick / `0003dbc5` checkpoint,
+  x64 baseline/candidate took 21,262/22,946 ms; reverse candidate/baseline took
+  22,315/21,064 ms. These sequential runs do not prove general equivalence or
+  isolate host variation, but do not justify adding a provider count or index.
+  No production route or receiver changed.
 
 ## Direction and evidence limits
 
