@@ -22,6 +22,7 @@ These are bounded improvements; none establishes real-time performance.
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
 - Direct primary-opcode dispatch: [S26 dispatch probe](t582-s26-direct-dispatch.md).
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
+- 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).
 
 ## Direction and evidence limits
 
