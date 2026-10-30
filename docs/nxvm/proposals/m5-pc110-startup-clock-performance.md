@@ -107,6 +107,8 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   mixed measurements do not establish a runtime speedup. A net-smaller parity
   calculation is also admitted for exhaustive CPU-path and receiver testing;
   neither fixed-width method changes asymptotic complexity or timing facts.
+  The private timing selector also publishes only to its sole caller's existing
+  CPU result, eliminating its redundant output argument and duplicate write.
 - **S27 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S26 and any later measured batches.
 
