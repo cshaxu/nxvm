@@ -99,7 +99,9 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   a minimal correctness-preserving performance direction or concrete limits.
 - **S26: single-executor throughput design audit.** Identify a viable path to
   substantial speedup while preserving the current timing and observation
-  contracts; make any accuracy or RTC tradeoff explicit and unapproved.
+  contracts; make any accuracy or RTC tradeoff explicit and unapproved. A
+  measured compact preview-copy candidate is a bounded implementation batch,
+  not evidence that substantial speedup or usability has been achieved.
 - **S27 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S26 and any later measured batches.
 

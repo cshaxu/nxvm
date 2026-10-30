@@ -4,20 +4,26 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
 | Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
-| Objective | Identify an implementation approach with potential to materially improve PC110 throughput while preserving existing guest execution, time and observation contracts. |
+| Objective | Qualify and, if correct, implement the measured compact lexical-preview copy; retain the larger PC110 usability goal and continue investigating after this bounded improvement. |
 | Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
 | Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
-| Files And ABI Surface | Audit and task-owned probes first; implementation scope depends on justified design and Shared receiving policy. |
+| Files And ABI Surface | Shared X86 Core CPU preview implementation and its manifest; existing CPU preview/bus tests and NXVM evidence; all seven App receiver artifacts under the Shared gate. No public interface or other Shared production package change. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
-| Verification | Consult the [investigation index](../etc/evidence/t582-s26-investigation-index.md) and previous actual World Clock, SMM, timing, memory and scheduler evidence before selecting a candidate. Distinguish measured improvements from estimates and avoid repeating existing candidates or unpromising full-system tests. |
-| Expected Markers | A concrete faithful optimization design with evidence or clearly stated limits and tradeoffs. |
+| Verification | Audit preview's read and failure paths and omitted fields; run dual-width existing preview/bus tests, manifest and dependency checks, cached 14-App builds and full unit/integration receiving gate; retain fixed-work and actual Game evidence without claiming equal complete machine state. |
+| Expected Markers | The existing lexical preview remains the sole path, reads no omitted access log or dispatch table, and all receiver gates are honestly reported. |
 | Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
 | Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
 | Stop Conditions | Do not change existing timing accuracy or clock contract without the owner's explicit consent. |
-| Exit Criteria | Traceable design or fully qualified improvement; T582 remains open pending actual usability qualification. |
+| Exit Criteria | Fully qualified bounded improvement or rejection with evidence; T582 remains open until actual usability and full product qualification are achieved. |
 | Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
 | Similar-Issue Sweep | Compare CPU, board timing, RTC, interrupt and all Shared receiver obligations. |
+
+S26 bounded preview-copy implementation is Shared `a794bfcdd`, with PC
+receiver artifacts `7e3bd57c8` and MyRaidenII artifacts `b76c5c71e`.
+The [evidence](../etc/evidence/t582-s26-compact-preview.md) records both-width
+qualification and measured limits. This is not PC110 usability acceptance;
+S26 and T582 remain active while the larger throughput objective is unresolved.
 
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 
