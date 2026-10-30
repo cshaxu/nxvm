@@ -1,4 +1,4 @@
-# M5 T582 S14 — Delivered: local memory-route candidate
+# M5 T582 S14 — Closed: local memory-route candidate
 
 | Field | Required record |
 | --- | --- |
@@ -19,7 +19,7 @@
 | Original Owner Request | Improve PC110 performance to usability while preserving timing, correctness and one execution owner. |
 | Similar-Issue Sweep | Test zero/64 providers, overlapping same- and mixed-tier windows, declined/failed queries, raw and CPU-only routes, dynamic alias/A20 changes and both access directions. |
 
-S14 Shared implementation is `e92409c90`; [qualification and artifact evidence](../etc/evidence/t582-s14-memory-routing.md) records dual-width tests and receiving artifacts. This is a bounded performance improvement; T582 remains open because PC110 usability is not established. Product-scoped artifacts and this delivery record are being published.
+S14 Shared implementation is `e92409c90`; [qualification and artifact evidence](../etc/evidence/t582-s14-memory-routing.md) records dual-width tests and receiving artifacts. This is a bounded performance improvement; T582 remains open because PC110 usability is not established. Product-scoped receiver commits and qualification record were published through `cfacbaed5`. S14 is closed; the remaining task is PC110 usability.
 
 # M5 T582 S13 — Closed: sustained execution bottleneck audit
 
