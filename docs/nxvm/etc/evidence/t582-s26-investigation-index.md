@@ -21,6 +21,7 @@ These are bounded improvements; none establishes real-time performance.
 - Instruction preview and copies: [S11](t582-s11-performance-observation.md), [S22](t582-s22-cache-copy-audit.md), [S26 preview copy](t582-s26-preview-audit.md) and [preview count](t582-s26-preview-cost.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
 - Duplicate one-byte opcode-record copy: [S26 copy audit](t582-s26-opcode-copy.md).
+- Memory read-modify-write precheck frequency: [Personaware Game](t582-s26-personaware-game.md#read-modify-write-precheck-frequency).
 - Direct primary-opcode dispatch: [S26 dispatch probe](t582-s26-direct-dispatch.md).
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
 - 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).

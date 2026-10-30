@@ -1,5 +1,30 @@
 # T582 S26 — Personaware Game baseline
 
+## Read-modify-write precheck frequency
+
+A scratch-only x64 CPU build counted calls to the existing `_m_read_rmw`
+path, separating register from memory operands. At the fixed startup
+checkpoint of 10,000,000 retired instructions it counted 183,246 calls,
+including 12,678 memory operands; the checkpoint remained 79,964,294 guest
+ticks and PC `0003dbc5`. The counter changes the compiled code and does not
+measure the precheck's exclusive cost.
+
+An independent private-media Game run used the same stage markers and input
+route as the opcode probe below. Between the sample-30 and sample-34 markers
+it counted 3,410,291 register and 120,104 memory operands on this path. The
+sample-34 frame has the same complete Game hash as the prior probe. Marker
+changes are asynchronous to guest input and frame delivery; the counts are
+not an exact draw interval or a complete count of every memory write. The run
+exited zero after 352.89 seconds. Its log SHA-256 is
+`01A2FFA04DD28330A64DC5A6A4A4482D12666E52159277B4F6070507143E9ECF`.
+
+Memory read-modify-write prechecks are too infrequent in these observed
+workloads to explain the large throughput gap by themselves. They also check
+write permission before the initial data read, preserving fault and device
+side-effect order. This evidence does not justify deleting the precheck or
+introducing translation caching; it does not measure x86 or native desktop
+performance. No production code, owner media or release binary changed.
+
 The existing PC110 Personaware menu contains a Game entry even though the prior extension-based disk inventory did not identify a separately named game executable. A hidden x64 probe used the ordinary product factory, Machine input queue, current release libraries, and private copies of the configured firmware inputs, CMOS and disk images. At samples 26–29, ten seconds apart, it submitted four Down make/break pairs; at sample 30 it submitted Enter. The sampled menu changed from World Clock to Calculator after the first Down, and the Game screen was visibly present by sample 34. This demonstrates a real game workload is available without acquiring additional media; it does not demonstrate successful gameplay or native Window/RDP input.
 
 The nearest logged quantum before Enter reported host millisecond 86,977,963 and 909,024,041 guest ticks. The nearest logged quantum before sample 34 reported host millisecond 87,018,056 and 983,517,525 guest ticks: approximately 40 host seconds and 2.26 seconds on the declared 33 MHz guest axis. The frame at sample 32 showed a partially drawn Game screen; samples 34–39 had identical image hashes and showed the complete screen. Screen capture and log instrumentation add overhead. This is a single run at ten-second sampling resolution, not precise input-to-frame latency or a claim that an unchanged screen is frozen.
