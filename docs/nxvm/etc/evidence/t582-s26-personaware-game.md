@@ -34,6 +34,20 @@ Window/RDP nor a complete game was qualified. The probe returned failure by
 design after saving the diagnostic frame. Log SHA-256:
 `D4E20631EC3D7C8F04C163B7FC4DB8DCE00E509C54F117BF7FD352A6139C1339`.
 
+A subsequent independent x64 run observed CPU writes to the standard BIOS
+keyboard-buffer area during the same rapid sequence. Four Down entries and
+one Enter entry appeared in successive buffer slots, and the BIOS queue tail
+advanced after each. The head advanced once after the first Down, and then
+through the remaining four entries after Enter. The final captured frame
+again shows the Editor file dialog. One later Enter entry was also observed;
+the probe does not identify its source and does not treat it as an injected
+second key. This confirms queue advancement in the observed run, not how the
+application interpreted or coalesced the entries. It does not validate
+native Window/RDP or justify an additional host queue. The probe returned its
+diagnostic failure after capture, without changing production or owner media.
+Log SHA-256:
+`81331C64FDE00509E5EF3BC4B7744081DC207D1EBA746AE2B032ED37DC885C2D`.
+
 ### Follow-up with visible selection checks
 
 A subsequent x64 run waited for the blue label in each expected menu row
