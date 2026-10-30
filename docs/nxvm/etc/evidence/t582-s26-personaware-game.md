@@ -193,6 +193,33 @@ Relative-input guest log SHA-256: `7A18F9D3884A3E0B317B252C779BC0E5E5F561E4BDA5B
 
 ## Game drawing workload
 
+A subsequent independent x64 product-path run sampled actual guest linear
+instruction addresses during the same approximate sample-30 through sample-34
+draw interval, using a pseudorandom one-in-256 opcode-fetch sample. It observed
+102,057 samples with no hash-table overflow. The largest sampled cluster was
+`00031051` through `00031089` (individual addresses about 1,100–1,217 samples),
+followed by `00030fcd` through `00031007` (roughly 980–1,050 per leading
+address). The complete sample-34 frame SHA-256 was again
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+These are opcode-fetch samples, not inclusive host cost, and repeated prefixes
+can share a reported instruction start. The clusters identify guest code worth
+examining; they do not yet distinguish application drawing from hardware
+polling or prove a device fault. The instrumented guest used private media and
+exited successfully after 353 seconds; no production code, public interface,
+owner media or release artifact changed.
+
+A second private-media run recorded instruction-prefetch bytes at six sampled
+linear addresses as those locations actually executed. It completed after
+227 seconds and observed all six. Disassembly of the `31051h–31089h` hot
+loop shows memory-byte reads, shifts, bit tests, conditional branches, register
+rotation and a counted backward loop. In that observed portion there is no
+I/O-port instruction or repeated status-register read. This supports real
+guest pixel/bit manipulation rather than a simple device-ready polling loop;
+the complete caller and other hotspots are not thereby characterized. The
+bytes and disassembly remain task-owned scratch and are not redistributed.
+This evidence does not permit skipping or replacing the guest loop, changing
+device responses, or claiming an interactive performance fix.
+
 A separate private-media x64 run used the same input sequence and counted successfully fetched primary opcode/prefix bytes in a scratch-compiled copy of the current CPU source. The producer switched counters at the sample-30 Enter and at sample 34, and the guest worker observed the stage through an atomic value. A visual check confirmed sample 34 displayed the complete Game screen. Instrumentation on every opcode fetch changes execution cost and stage switches occur before input/frames are consumed, so the windows are approximate; these are byte-fetch counts, not retired-instruction counts or exclusive CPU time.
 
 The approximate sample-30–34 drawing interval contained 28,927,504 counted opcode/prefix bytes. Its largest categories were `74` (1,975,044), `75` (1,827,504), `D0` (1,769,027), `80` (1,756,133) and `8A` (1,679,695). In contrast, the earlier startup-to-menu window included `F3` 8,112,014 and `AB` 5,688,521 among 202,499,438 bytes, consistent with the separately measured startup REP-store workload. These counts suggest that optimizing startup's repeated clearing alone would not address the game's drawing workload; they do not identify inclusive costs or prove that any specific opcode is safe or worthwhile to change.
