@@ -82,6 +82,39 @@ regression against the owner's build-efficiency requirement, so universal LTO
 is not adopted. A possible alternative must demonstrate reuse without a second
 production executor or duplicate long-lived build trees before qualification.
 
+## One-time native partial link
+
+A scratch alternative performed LTO once while producing native relocatable
+objects, then put those objects into ordinary archives. Independently
+optimizing CPU and Machine took 25.21 and 6.68 seconds, respectively; the
+existing CPU cache test subsequently linked in 0.46 seconds and passed. Its
+x64 fixed-work baseline/candidate/candidate/baseline times were
+18,642/18,551/21,845/19,396 ms, with no reliable gain.
+
+A second scratch alternative optimized CPU and Machine together before
+producing one native object. The partial link took 29.92 seconds on x64 and
+32.11 seconds on x86. The existing x64 CPU cache test linked in 0.45 seconds
+and passed. At the same fixed startup checkpoint, ordered x64 times were
+19,971/18,072/17,639/19,779 ms and x86 times were
+23,007/21,579/22,030/23,364 ms. All runs reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`; matching the checkpoint is not full-state
+or cross-profile correctness proof. These samples suggest a potential benefit
+from cross-CPU/Machine optimization, not an order-of-magnitude solution.
+
+An x64 product-path run using the combined native object reached the same
+stable Game frame hash as the stronger comparison above, 29 samples after
+Enter, and exited after 242.30 seconds. It was a separate run and does not
+establish a controlled speedup or native Window/RDP gameplay. Log SHA-256:
+`D5E4D5FDA2BA5AB6AD493E80EA4F3B72347AA6A6DA4E7CFAB328A68114C62FEB`.
+
+The combined x64 object has only runtime and FPU unresolved dependencies, but
+the CPU-only test executable grew from 689,707 to 860,284 bytes and the probe
+from 3,107,998 to 3,190,081 bytes. It also packages CPU and Machine into one
+object, so the existing component linking and independent-test boundaries must
+be assessed before any production design. GCC-specific partial-link commands,
+incremental behavior and all affected CPU profiles remain unqualified. No
+production configuration, source, interface, test or released artifact changed.
+
 SHA-256 (LTO log/frame, baseline log/frame):
 `2A17E1B4595F494F16EACA8FF21C4A54D46CC4B80552BCA175B2CB8A6E5F60F4`,
 `57597CA7238CA618B017A404F8156AEEEE0446330A1FBB1315635B661A5FD340`,
