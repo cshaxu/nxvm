@@ -1,5 +1,18 @@
 # T582 S26 — PIC selection candidate
 
+## Idle unmask-counter writes
+
+A separate scratch-only candidate skipped writing zero to an already-zero
+unmask counter in the existing `pic_advance_one` loop; nonzero counters used
+the original calculation. The private-media 10,000,000-instruction startup
+checkpoint remained 79,964,294 ticks and PC `0003dbc5`. Baseline/candidate
+elapsed milliseconds were 20,531/20,412 on x64 and 23,671/24,066 on x86.
+These are single ordered pairs and cannot establish a general regression or
+complete PIC equivalence, but show no meaningful gain warranting further
+branches or product qualification. The candidate was not adopted; no source,
+public API, media or executable changed. Game and native desktop performance
+were not measured by this probe.
+
 `x86_pic_select` scans eight priority positions when selecting an interrupt. A scratch-only candidate returned the existing `INVALID_STATE` when the complete pending-request mask had no unmasked bits; every nonempty case remained on the existing selection path. No production PIC code, API or state changed. That predicate is not the same as the earlier S13 empty-deadline experiment. The fixed checkpoint alone cannot establish masked, cascade, level-triggered, reinitialization or priority semantics.
 
 At 10,000,000 instructions, 79,964,294 ticks and PC 0003dbc5, forward baseline/candidate times were 22,108/22,098 ms x64 and 26,627/22,192 ms x86. Reverse candidate/baseline were 19,457/18,937 ms x64 and 24,176/22,513 ms x86. The x86 apparent improvement reversed and x64 did not improve in either ordering. Host variation is evident; the one local candidate does not justify a production branch or further qualification. No sustained product run or additional full suite was performed. SHA-256 (forward and reverse): `557A7FE1A9A82C43C46481EAA45C043BD9A9A7CEC86480848FED3A6FC846E5BF`, `821B53F154CEB12ECA73B2F0793E38B58BCAC92EBA8CEDB85D95FC2E548B16FE`.
