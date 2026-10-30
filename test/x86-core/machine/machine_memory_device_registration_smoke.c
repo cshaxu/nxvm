@@ -266,6 +266,71 @@ static lib_i32 instruction_read_contract(void)
     return failed;
 }
 
+static lib_i32 registration_mixed_tiers(void)
+{
+    t_ram memory = {0};
+    priority_provider raw = {0x11u, LIB_FALSE};
+    priority_provider replacement = {0x22u, LIB_FALSE};
+    priority_provider ordinary = {0x33u, LIB_FALSE};
+    priority_provider fallback = {0x44u, LIB_FALSE};
+    lib_u8 value = 0u;
+    lib_i32 failed = 0;
+
+    if (x86_core_machine_memory_initialize_for(&memory, 0x10000u, LIB_NULL) !=
+            LIB_STATUS_OK) return 1;
+    failed |= x86_core_machine_memory_allocate_for(&memory, 0x10000u) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_register_fallback_device_provider(&memory, 0x8000u,
+        1u, priority_read, overlay_write, priority_query, &fallback, LIB_NULL) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_register_overlay_device_provider(&memory, 0x8000u,
+        1u, priority_read, overlay_write, priority_query, &ordinary, LIB_NULL) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_register_replacement_device_provider(&memory, 0x8000u,
+        1u, priority_read, overlay_write, priority_query, &replacement, LIB_NULL) != LIB_STATUS_OK;
+    failed |= x86_core_machine_memory_register_raw_overlay_device_provider(&memory, 0x8000u,
+        1u, priority_read, overlay_write, priority_query, &raw, LIB_NULL) != LIB_STATUS_OK;
+    x86_core_machine_memory_freeze_mappings(&memory);
+    failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != raw.value;
+    raw.decline = LIB_TRUE;
+    failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != replacement.value;
+    replacement.decline = LIB_TRUE;
+    failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != ordinary.value;
+    ordinary.decline = LIB_TRUE;
+    failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != fallback.value;
+    x86_core_machine_memory_finalize(&memory);
+    return failed;
+}
+
+static lib_i32 registration_matching_capacity(void)
+{
+    t_ram memory = {0};
+    priority_provider providers[X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT] = {0};
+    lib_u8 value = 0u;
+    lib_i32 failed = 0;
+
+    if (x86_core_machine_memory_initialize_for(&memory, 0x10000u, LIB_NULL) !=
+            LIB_STATUS_OK) return 1;
+    failed |= x86_core_machine_memory_allocate_for(&memory, 0x10000u) != LIB_STATUS_OK;
+    for (lib_uptr index = 0u; index < X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT; ++index) {
+        providers[index].value = (lib_u8)index;
+        providers[index].decline = index + 1u != X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT;
+        failed |= x86_core_machine_memory_register_overlay_device_provider(&memory, 0x8000u,
+            1u, priority_read, overlay_write, priority_query, &providers[index], LIB_NULL) !=
+                LIB_STATUS_OK;
+    }
+    x86_core_machine_memory_freeze_mappings(&memory);
+    failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK ||
+        value != X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u;
+    providers[0].decline = LIB_FALSE;
+    failed |= x86_core_machine_memory_read_physical(&memory, 0x8000u,
+        (lib_uptr)&value, 1u, LIB_TRUE) != LIB_STATUS_OK || value != 0u;
+    x86_core_machine_memory_finalize(&memory);
+    return failed;
+}
+
 /* Registry representation is checked here, at Machine's owner. Outer device
  * tests exercise their own configuration and callbacks through public APIs. */
 static lib_i32 registration_atomicity(lib_u32 mode)
@@ -631,7 +696,9 @@ lib_i32 main(void)
     lib_u8 observed = 0u;
     lib_u8 write = 0xa5u;
     lib_i32 failed = parity_delivery_contract() || registration_allocation_failure() ||
-        registration_growth_and_priority() || registration_standard_transaction() ||
+        registration_growth_and_priority() || registration_mixed_tiers() ||
+        registration_matching_capacity() ||
+        registration_standard_transaction() ||
         registration_failure_observer_contract() || instruction_read_contract() ||
         cpu_overlay_contract();
 

@@ -116,14 +116,21 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
         *out_provider_physical = wrapped;
         return LIB_STATUS_OK;
     }
+    /* Match the frozen windows once, then retain tier and registration order. */
+    lib_u8 matches[X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT];
+    lib_uptr match_count = 0u;
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
+        if ((provider->cpu_only && !cpu_access) || wrapped < provider->physical_start ||
+            (lib_u64)wrapped - provider->physical_start + bytes > provider->bytes) continue;
+        matches[match_count++] = (lib_u8)index;
+    }
+    for (index = 0u; index < match_count; ++index) {
+        const x86_core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[matches[index]];
 
-        if (!provider->replacement || (provider->cpu_only && !cpu_access) ||
-            wrapped < provider->physical_start ||
-            (lib_u64)wrapped - provider->physical_start + bytes >
-                provider->bytes) continue;
+        if (!provider->replacement) continue;
         status = provider->query(provider->owner, wrapped, bytes, access);
         if (status == LIB_STATUS_OK) {
             *out_provider = provider;
@@ -137,15 +144,11 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             return status;
         }
     }
-    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+    for (index = 0u; index < match_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
-            &ram->connect.device_providers[index];
+            &ram->connect.device_providers[matches[index]];
 
-        if (provider->replacement || provider->fallback ||
-            (provider->cpu_only && !cpu_access) ||
-            wrapped < provider->physical_start ||
-            (lib_u64)wrapped - provider->physical_start + bytes >
-                provider->bytes) continue;
+        if (provider->replacement || provider->fallback) continue;
         status = provider->query(provider->owner, wrapped, bytes, access);
         if (status == LIB_STATUS_OK) {
             *out_provider = provider;
@@ -161,15 +164,11 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
     }
     /* An unpopulated board window is an explicit fallback: an installed
      * device or ROM alias has first claim. */
-    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+    for (index = 0u; index < match_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
-            &ram->connect.device_providers[index];
+            &ram->connect.device_providers[matches[index]];
 
-        if (provider->replacement || !provider->fallback ||
-            (provider->cpu_only && !cpu_access) ||
-            wrapped < provider->physical_start ||
-            (lib_u64)wrapped - provider->physical_start + bytes >
-                provider->bytes) continue;
+        if (provider->replacement || !provider->fallback) continue;
         status = provider->query(provider->owner, wrapped, bytes, access);
         if (status == LIB_STATUS_OK) {
             *out_provider = provider;
