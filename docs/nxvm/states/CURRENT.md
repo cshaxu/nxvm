@@ -32,6 +32,10 @@ differ from NXVM, so the recorded duration is not an equivalent speedup ratio.
 An isolated per-read refresh-status experiment did not reach the baseline
 checkpoint and remained at the firmware's CLI/HLT return address while guest
 time advanced; it is not admitted as a fix.
+An independent synthetic-loop comparison now shows a large per-instruction
+difference even without the real firmware shortcuts; the isolated CPU fixture
+and neutral Machine have different buses and observation contracts. This is
+an engineering lead, not a complete-state or gameplay qualification.
 
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 

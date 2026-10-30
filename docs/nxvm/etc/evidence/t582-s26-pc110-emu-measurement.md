@@ -119,3 +119,30 @@ does not justify adding a sequence of firmware-specific shortcuts. The input
 ROM, owner media, production code and published EXEs were not modified.
 Log SHA-256:
 `8F309EE9773C282B2C3E3E78DC1A35F8BA30CEB507231C22F13156F3FEB6EE61`.
+
+## Same synthetic instruction loop
+
+A separate task-owned x64 harness generated its own 256 KiB synthetic BIOS:
+the reset vector jumps to an unchanging `NOP; JMP` loop. It used no vendor ROM,
+disk, PC110 firmware, BIOS service, or input. Both NXVM's neutral 486SX Machine
+and the unmodified PC110-EMU Core ran 10,000,000 instructions in the same
+process. NXVM reported 8,399 ms and PC `000F0001`; PC110-EMU reported 727 ms,
+the same PC and 10,000,000 instructions. The reference's BIOS service and
+identified loop-escape counters remained zero. An earlier independent run
+reported 8,248/1,017 ms with the same endpoints.
+
+The same harness also ran 10,000,000 refresh calls on the existing isolated
+NXVM 486 CPU test fixture with the same loop, yielding 4,176 ms, EIP 1 and no
+reported stop or fault. Unlike the neutral Machine, this fixture uses a simple
+memory bus, starts directly at the loop and does not publish Machine time. It
+is useful for separating areas to investigate, but subtracting the times is
+not a precise scheduler cost. CPU reset controls, cache and memory backing,
+and timing/observation contracts are not identical between the three cases;
+matching PC and instruction count is not full-state equivalence. The reference
+does not implement the same 486 source-timing and device scheduling contract.
+
+This demonstrates a large per-instruction overhead difference on this narrow
+loop even without the real firmware shortcuts; it does not attribute the whole
+difference to one function or demonstrate a PC110 gameplay speedup. No source,
+interface, owner media or published artifact changed. Log SHA-256:
+`E257E16191CAD859077BE8B8621D49CA62F77CB6CF30E9BA812B3330B95C12B4`.
