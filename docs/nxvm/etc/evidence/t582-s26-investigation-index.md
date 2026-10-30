@@ -35,6 +35,7 @@ These are bounded improvements; none establishes real-time performance.
   [S26 cache query](t582-s26-cache-query-cost.md#ordinary-access-test-register-publication-audit).
 - Absent-FPU scheduler call removal: [S26 FPU probe](t582-s26-fpu-scheduler-probe.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
+- 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
 - Same-host PC110-EMU reference run: [S26 comparison](t582-s26-pc110-emu-measurement.md).
 - Same synthetic loop on both engines and isolated CPU: [S26 comparison](t582-s26-pc110-emu-measurement.md#same-synthetic-instruction-loop).
 - Instruction-entry snapshot copy attribution and GCC string-operation

@@ -59,6 +59,11 @@ been eliminated; [the evidence](../etc/evidence/t582-s26-timing-publication.md)
 records both-width receiving. This net-smaller internal change preserves the
 existing result and does not by itself establish a performance improvement.
 
+The proposed reuse of the 486 timing terms' prefix count was tested and
+withdrawn: [the comparison](../etc/evidence/t582-s26-486-term-prefix.md) found
+two slower x86 samples and substantial direct-test caller churn alongside the
+faster x64 samples. This is not proof of a stable regression or an improvement.
+
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 
 # M5 T582 S25 — Closed: PC110 execution-model comparison
