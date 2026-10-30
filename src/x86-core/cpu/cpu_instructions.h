@@ -345,6 +345,8 @@ struct x86_core_cpu_execution_context {
     /* A temporary CPU-owned lexical fetch may validate bytes without any
      * architectural, transaction, trace, or diagnostic publication. */
     lib_u8 preview_mode;
+    /* Lexical preview borrows its execution owner only for cache/TLB reads. */
+    const x86_core_cpu_execution_context *preview_memory_source;
     /* NEC hardware permits MD restoration only between BRKEM and RETEM. */
     lib_bool nec_md_write_enabled;
     cpu_tlb_entry tlb[X86_CPU_TLB_SETS][X86_CPU_TLB_WAYS];

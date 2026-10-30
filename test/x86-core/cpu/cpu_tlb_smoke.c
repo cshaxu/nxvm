@@ -514,7 +514,7 @@ static lib_bool tlb_walk_preview_and_debug(void)
     x86_core_cpu_execution_invalidate_prefetch(&fixture.execution);
     before = fixture.execution;
     if (!x86_core_cpu_execution_preview_lexeme(&fixture.execution, &lexeme) ||
-        lexeme.byte_count != 1u ||
+        lexeme.byte_count != 1u || fixture.execution.preview_memory_source != LIB_NULL ||
         lib_memory_compare(&before, &fixture.execution, sizeof(before)) != 0)
         return LIB_FALSE;
     lib_memory_copy(&result, fixture.memory + 0x2100u, sizeof(result));
@@ -536,6 +536,7 @@ static lib_bool tlb_walk_preview_and_debug(void)
     before = fixture.execution;
     const t_cpu cpu_before = fixture.cpu;
     if (x86_core_cpu_debug_patch_registers(&fixture.execution, &patch) != LIB_STATUS_INVALID_STATE ||
+        fixture.execution.preview_memory_source != LIB_NULL ||
         lib_memory_compare(&cpu_before, &fixture.cpu, sizeof(cpu_before)) != 0 ||
         lib_memory_compare(before.tlb, fixture.execution.tlb, sizeof(before.tlb)) != 0 ||
         lib_memory_compare(before.tlb_lru, fixture.execution.tlb_lru,

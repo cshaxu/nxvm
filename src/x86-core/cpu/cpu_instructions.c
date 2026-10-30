@@ -314,13 +314,22 @@ static void _kma_cache_touch(x86_core_cpu_execution_context *context,
 static void _kma_cache_report(x86_core_cpu_execution_context *context,
     lib_u8 set, lib_u8 way);
 
+/* Preview is synchronous on the CPU owner; the source is never mutated by it. */
+static const x86_core_cpu_execution_context *_kma_read_source(
+    const x86_core_cpu_execution_context *context)
+{
+    return context->preview_memory_source != LIB_NULL ?
+        context->preview_memory_source : context;
+}
+
 static lib_u8 _kma_cache_way(x86_core_cpu_execution_context *context,
     lib_u32 address)
 {
     const lib_u8 set = (address >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+    const x86_core_cpu_execution_context *source = _kma_read_source(context);
     for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way)
-        if (context->cache[set][way].valid &&
-            context->cache[set][way].tag == (address & 0xfffff800u)) return way;
+        if (source->cache[set][way].valid &&
+            source->cache[set][way].tag == (address & 0xfffff800u)) return way;
     return X86_CPU_CACHE_WAYS;
 }
 
@@ -462,7 +471,7 @@ static void _kma_read_physical(x86_core_cpu_execution_context *context,
             CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical + done));
         if (way != X86_CPU_CACHE_WAYS) {
             lib_memory_copy((void *)(rdata + done),
-                (const lib_u8 *)context->cache[set][way].data + offset, part);
+                (const lib_u8 *)_kma_read_source(context)->cache[set][way].data + offset, part);
             if (!context->preview_mode) {
                 _kma_cache_touch(context, set, way);
                 if (provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA ||
@@ -725,8 +734,9 @@ static lib_u8 _kma_tlb_way(x86_core_cpu_execution_context *context,
 {
     const lib_u8 set = (linear >> 12u) & (X86_CPU_TLB_SETS - 1u);
 
+    const x86_core_cpu_execution_context *source = _kma_read_source(context);
     for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way) {
-        const cpu_tlb_entry *entry = &context->tlb[set][way];
+        const cpu_tlb_entry *entry = &source->tlb[set][way];
         if (entry->valid && entry->linear == (linear & VCPU_CR3_BASE))
             return way;
     }
@@ -926,7 +936,7 @@ static void _kma_prepare_physical_linear(x86_core_cpu_execution_context *context
 
         if (way != X86_CPU_TLB_WAYS)
         {
-            const cpu_tlb_entry *entry = &context->tlb[set][way];
+            const cpu_tlb_entry *entry = &_kma_read_source(context)->tlb[set][way];
             const lib_bool user = vpl == 3u;
             const lib_bool protected_write = user ||
                 (cpu_state.data.cr0 & VCPU_CR0_WP) != 0u;
@@ -20237,11 +20247,7 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
     }
     preview_cpu = *context->cpu;
     preview_instructions = *context->instructions;
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
-        preview = *context;
-    } else {
-        /* Old-family previews never access 486 cache/TLB storage. Preserve the
-         * scalar execution state without copying a dormant 12-KiB cache. */
+    {
         const lib_size first = lib_offsetof(x86_core_cpu_execution_context, tlb);
         const lib_size last = lib_offsetof(x86_core_cpu_execution_context,
             memory_access_provenance);
@@ -20254,6 +20260,8 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
     preview.diagnostic_provider = LIB_NULL;
     preview.diagnostic_context = LIB_NULL;
     preview.preview_mode = LIB_TRUE;
+    preview.preview_memory_source = context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX ?
+        context : LIB_NULL;
     ExecInit(&preview);
     if (preview_instructions.data.except) return LIB_FALSE;
     for (;;) {
