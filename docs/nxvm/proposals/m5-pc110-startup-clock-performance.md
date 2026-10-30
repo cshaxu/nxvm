@@ -89,8 +89,10 @@ Empty-CMOS first setup is a different workload and remains separately queued.
 - **S22: CPU cache-hit copy audit.** Measure fixed-width copy overhead in the
   existing cache-hit route using short comparisons, and admit only a simple
   semantically equivalent improvement with sustained product-path evidence.
-- **S23 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S22 and any later measured batches.
+- **S23: instruction dispatch cost audit.** Use bounded fixed-work probes to
+  identify preparation and dispatch costs before selecting any optimization.
+- **S24 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S23 and any later measured batches.
 
 ## Constraints and evidence
 

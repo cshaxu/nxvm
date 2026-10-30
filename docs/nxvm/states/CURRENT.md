@@ -1,4 +1,27 @@
-# M5 T582 S22 — Active: CPU cache-hit copy audit
+# M5 T582 S23 — Active: instruction dispatch cost audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S23 after S22 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Attribute the CPU instruction execution cost identified in S20 and investigate a measured semantics-preserving optimization or a negative result. |
+| Non-goals | No omitted fault/interrupt/device behavior, host-clock substitution, second executor, unproven JIT or user media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S20 evidence](../etc/evidence/t582-s20-execution-cost.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S23. |
+| Files And ABI Surface | Task-owned probes first; production changes only upon correctness and performance evidence and full Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Short fixed-work probes first; product-path tests only when justified. Preserve all CPU profiles, timing, error and observation semantics. |
+| Expected Markers | Actual guest checkpoint, cost attribution and a measured candidate or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Variance, actual diffs, qualification and remaining limitations. |
+| Stop Conditions | Do not invent a duplicate decoder, replay path or persistent state. |
+| Exit Criteria | Traceable measured audit or fully qualified improvement; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Inspect instruction preparation, dispatch, decoded operands and existing profiling evidence before proposing implementation. |
+
+S22 rejected a fixed-size cache-copy candidate and a partial LTO experiment due to absent or inconsistent benefit; [evidence](../etc/evidence/t582-s22-cache-copy-audit.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only unit run. The World Clock performance gap remains unresolved.
+
+# M5 T582 S22 — Closed: CPU cache-hit copy audit
 
 | Field | Required record |
 | --- | --- |
