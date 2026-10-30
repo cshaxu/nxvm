@@ -24,6 +24,7 @@ These are bounded improvements; none establishes real-time performance.
 - Instruction preview and copies: [S11](t582-s11-performance-observation.md), [S22](t582-s22-cache-copy-audit.md), [S26 preview copy](t582-s26-preview-audit.md) and [preview count](t582-s26-preview-cost.md).
 - Measured compact preview candidate and receiving status: [S26 compact preview](t582-s26-compact-preview.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
+- Branch timing condition simplification: [S26 comparison](t582-s26-branch-condition.md).
 - Duplicate one-byte opcode-record copy: [S26 copy audit](t582-s26-opcode-copy.md).
 - Memory read-modify-write precheck frequency: [Personaware Game](t582-s26-personaware-game.md#read-modify-write-precheck-frequency).
 - Game drawing guest-PC samples and instruction-byte attribution:

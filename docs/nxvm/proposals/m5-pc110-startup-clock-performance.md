@@ -109,6 +109,8 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   neither fixed-width method changes asymptotic complexity or timing facts.
   The private timing selector also publishes only to its sole caller's existing
   CPU result, eliminating its redundant output argument and duplicate write.
+  Branch timing may inspect only the flags required by each condition; retain
+  the existing real-instruction condition matrix and all model results.
 - **S27 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S26 and any later measured batches.
 

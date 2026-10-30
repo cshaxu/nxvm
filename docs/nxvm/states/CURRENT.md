@@ -4,13 +4,13 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
 | Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
-| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input scans, simplify parity calculation and eliminate duplicate timing-result publication without changing CPU flags or timing; retain the larger PC110 usability goal. |
+| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input scans, simplify parity and conditional-branch timing calculations and eliminate duplicate timing-result publication without changing CPU flags or timing; retain the larger PC110 usability goal. |
 | Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
 | Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
 | Files And ABI Surface | Shared X86 Core CPU preview, timing-input, timing selection and flag implementations, their private declarations and manifest; existing CPU timing, preview, arithmetic and bus tests and NXVM evidence; all seven App receiver artifacts under the Shared gate. No public interface or other Shared production package change. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
-| Verification | Audit preview's read and failure paths and omitted fields; verify the unified prefix scan preserves flags and opcode positions for all profiles and malformed input; verify all 256 parity inputs through actual CPU instructions. Run dual-width existing arithmetic/timing/preview/bus tests, manifest and dependency checks, cached 14-App builds and full unit/integration receiving gate; retain fixed-work and actual Game evidence without claiming equal complete machine state. |
+| Verification | Audit preview's read and failure paths and omitted fields; verify the unified prefix scan preserves flags and opcode positions for all profiles and malformed input; verify all 256 parity inputs and all 16 branch conditions across flag combinations through actual CPU instructions. Run dual-width existing arithmetic/timing/preview/bus tests, manifest and dependency checks, cached 14-App builds and full unit/integration receiving gate; retain fixed-work and actual Game evidence without claiming equal complete machine state. |
 | Expected Markers | The existing lexical preview remains the sole path, reads no omitted access log or dispatch table, and all receiver gates are honestly reported. |
 | Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
 | Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
@@ -63,6 +63,11 @@ The proposed reuse of the 486 timing terms' prefix count was tested and
 withdrawn: [the comparison](../etc/evidence/t582-s26-486-term-prefix.md) found
 two slower x86 samples and substantial direct-test caller churn alongside the
 faster x64 samples. This is not proof of a stable regression or an improvement.
+
+The condition calculation now reads only the flags required by the selected
+branch, with no new state or execution path. [The evidence](../etc/evidence/t582-s26-branch-condition.md)
+records exhaustive flag comparisons, dual-width receiving and the limits of
+the synthetic performance comparison; it does not establish playable speed.
 
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 
