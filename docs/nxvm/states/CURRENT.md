@@ -1,4 +1,25 @@
-# M5 T582 S18 — Active: PC110 shadow cache design and measurement
+# M5 T582 S19 — Active: PC110 steady-state performance audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S19 after S18 delivery. |
+| Admission And Approval | Owner authorized continued PC110 performance work, appropriate L1/L2 models and autonomous numeric S sequencing. |
+| Objective | Identify and quantify the remaining dominant cost during actual Personaware/World Clock steady operation after the S18 cache improvement, and identify a safe next measurable optimization. |
+| Non-goals | No production or public API change in this audit, guest-work skipping, second executor, host-time substitution, user media mutation or unsupported realtime claim. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`, S18 [evidence](../etc/evidence/t582-s18-cache-design.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S19. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no production or ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; preserve CPU, device, timing and interaction contracts. |
+| Verification | Use existing hidden product-path probes and private copied inputs; distinguish startup from steady state and identify the actual worker and hot owners before changing code. |
+| Expected Markers | Bounded guest clock, instruction and frame observations, actual worker attribution, and a measured candidate or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Sampling overhead, current PC110 user-visible limits, source confidence and any noninteractive gaps. |
+| Stop Conditions | No assumption that an IP sample is an inclusive cost or that a boot frame establishes realtime operation. |
+| Exit Criteria | Traceable steady-state evidence and measured correctness-preserving opportunity or negative result; repository-only unit suite and governance check; T582 remains open until user-facing usability is established. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Compare early, late and idle workloads and identify whether the same bottleneck applies to other CPU profiles. |
+
+# M5 T582 S18 — Closed: PC110 shadow cache design and measurement
 
 | Field | Required record |
 | --- | --- |
@@ -8,9 +29,9 @@
 | Non-goals | No PC110 address special case in shared Core, host-time substitution, skipped guest work, second executor, owner media mutation or unverified usability claim. |
 | Reference Baseline | S17 [cacheability evidence](../etc/evidence/t582-s17-pc110-cacheability.md), S14 Shared `e92409c90`. |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S18. |
-| Files And ABI Surface | Design and task-owned probes initially; exact X86 Core and App interface scope to be established before production edits. Lib and Emulator are outside the initial scope. |
+| Files And ABI Surface | X86 Core memory provider cache-probe and VL82C420 selected-index interfaces, MyPC110 firmware/config wiring, and their existing tests/manifests; Lib and Emulator unchanged. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; documented L1/L2 distinction and unchanged owner boundaries. |
-| Verification | Compare actual PC110 early and late behavior; exercise cache enable/disable, dynamic remapping, asymmetric reads/writes, fetch/data, reset, DMA/snoop and failure paths before qualification. |
+| Verification | Compare actual PC110 early and late behavior; exercise cache enable/disable, dynamic remapping, asymmetric reads/writes, fetch/data, reset, DMA/snoop and failure paths; cached dual-width full-repository unit/integration and fourteen receiver artifacts before delivery. |
 | Expected Markers | Source-backed per-block gating, a single generic route owner, correct invalidation and write behavior, and measured PC110 gain or negative evidence. |
 | Asset Needs | Existing external firmware and private copied CMOS/media only. |
 | Reporting Requirements | Explicit model confidence, expected and actual diffs, full Shared receiving gate if code changes, and desktop limitations. |
@@ -18,6 +39,9 @@
 | Exit Criteria | A tested, measured and fully delivered repair, or a documented negative result with repository-only unit and governance gates; T582 remains open until usability qualification. |
 | Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
 | Similar-Issue Sweep | Check other X86 Core provider routes, aliases and receiver applications; never assume all mapped devices are safe to cache. |
+
+
+S18 delivered Shared `8dd8d06d0`, NXVM `65c15ab69` and MyRaidenII receiver `4e563df94`; [evidence and measured limits](../etc/evidence/t582-s18-cache-design.md) and [14-artifact inventory](../etc/evidence/t582-s18-artifacts.json) document the dual-width receiving gate. The L1 PC110 provider model improves one measured startup pair but does not make the virtual clock realtime; T582 remains open.
 
 # M5 T582 S17 — Closed: PC110 memory cacheability audit
 
