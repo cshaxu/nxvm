@@ -33,6 +33,8 @@ These are bounded improvements; none establishes real-time performance.
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - Same-host PC110-EMU reference run: [S26 comparison](t582-s26-pc110-emu-measurement.md).
 - Same synthetic loop on both engines and isolated CPU: [S26 comparison](t582-s26-pc110-emu-measurement.md#same-synthetic-instruction-loop).
+- Instruction-entry snapshot copy attribution and GCC string-operation
+  experiment: [S26 comparison](t582-s26-pc110-emu-measurement.md#instruction-boundary-copy-attribution).
 - PC110 port read upper-bound probe: a task-only candidate removed the second
   wired-OR provider traversal entirely, which is invalid for general machines.
   PC110 uses ATA rather than the registered Compaq wired-OR route. At the

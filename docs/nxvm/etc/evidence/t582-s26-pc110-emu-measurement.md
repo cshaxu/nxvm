@@ -222,6 +222,25 @@ state. Dropping or reducing the copy would change those contracts. A future
 candidate must preserve the complete snapshot and measure both widths and
 actual guest throughput. No production code, interface or artifact changed.
 
+A scratch candidate replaced that one full assignment with fixed 16-byte
+copies plus a tail; it retained the full copy but added code without reducing
+asymptotic work. At the same fixed checkpoint, sequential baseline/candidate/
+candidate/baseline runs were 22,252/20,415/21,217/20,070 ms x64 and
+22,786/23,975/23,646/28,574 ms x86. The mixed results and visible baseline
+variation do not demonstrate a stable gain, and the extra code is unjustified.
+It was not adopted; equal checkpoints are not full-state proof.
+
+A separate scratch-only GCC build compiled the existing CPU instruction unit
+with `-minline-all-stringops`; it did not change the source snapshot, build
+configuration or timing model. At the same 10,000,000-instruction checkpoint,
+baseline/candidate/candidate/baseline elapsed times were
+22,977/23,455/21,785/19,485 ms on x64 and
+27,122/25,126/25,333/25,680 ms on x86; all reported 79,964,294 guest ticks
+and PC `0003dbc5`. The test alters compiler treatment of other string operations
+as well as the snapshot, so it does not isolate the snapshot's cost. The x64
+direction and visible run-order variation do not justify a product compiler
+flag; it is not adopted. Checkpoint equality is not full-state equivalence.
+
 ### Synthetic-loop timing and publication ablation
 
 On the same x64 synthetic loop, a scratch link wrapper replaced the timing
