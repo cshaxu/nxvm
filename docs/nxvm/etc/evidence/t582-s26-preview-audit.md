@@ -1,0 +1,7 @@
+# T582 S26 — instruction-preview copy candidate
+
+The existing lexical preview copies a complete `t_cpuins`, including its 512 memory-access entries; `ExecBoundary` subsequently resets the active memory-entry count before a new preview fetch. Existing callers and fault paths still require careful analysis, so a scratch candidate copied the parts before and after that array but left the array itself uninitialized, adding no state or public API. It did not modify production. The equality of a fixed checkpoint cannot prove that all preview, debugger, V30, fault, callbacks or alias paths avoid reading those slots.
+
+At the 10,000,000-instruction, 79,964,294-tick, PC 0003dbc5 PC110 startup checkpoint, forward baseline/candidate times were 20,440/19,504 ms x64 and 23,721/24,637 ms x86. Reverse candidate/baseline were 20,984/19,657 ms x64 and 23,516/25,208 ms x86. Both architectures changed direction across sequential pairs, so the candidate shows no stable cross-width gain. Avoiding the array copy would also add layout-sensitive segmented copying and requires proof that every path avoids reading the omitted data. It was rejected without production change, new tests or a long product run. A targeted preview investigation could be reconsidered with stronger workload evidence, but these results do not establish a general performance or semantic conclusion.
+
+Scratch summary SHA-256 (forward, reverse): `52F1188A2DEBB9016E7B65F4E891D44F57632EBB3E8CF47C4C10E928EB0CB516`, `FC1DE9019D4D0F0A64592BC7E106A6CAF7F02DE44C8231DC1A697CF2C6FBF679`.
