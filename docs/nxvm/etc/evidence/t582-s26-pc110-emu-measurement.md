@@ -32,3 +32,27 @@ does not justify weakening the existing time model. Log SHA-256:
 `2F49986761A087D765E07E87CC22D2AD9A0D06A5FFE30C8FF9FC6BEF8587F39E`;
 reference Core source SHA-256:
 `D484454BEB37A9D3EEF5CF716FCEF80E8131772C82532DF3A411704C57BF898A`.
+
+## Isolating the port-61 shortcut
+
+A task-only x64 build changed just the existing port-61 refresh-status read
+from guest-time toggling to a per-read toggle. It intentionally changes
+device timing and is not a production candidate. With private disk and CMOS
+copies and the Release trace setting, the original model reached the fixed
+10,000,000-instruction checkpoint (79,964,294 ticks, PC `0003DBC5`) in
+21.49 seconds. The per-read version did not reach that checkpoint before
+the bounded 150-second run was terminated and reaped.
+
+A second 45-second observation of that candidate logged 7,596,998 executed
+instructions and linear PC `000F699A`; for the remaining logged interval the
+instruction count and PC remained unchanged while guest ticks advanced.
+The selected BIOS input at the preceding addresses contains `CLI; HLT; RET`;
+PC110-EMU separately has a specific compatibility path that resumes the HLT
+at `F000:6999`. The experiment supports an interaction between the shortcut
+and that firmware wait, but did not capture the live CPU halted flag or prove
+the complete causal chain. It does show that importing only the per-read
+status behavior does not reproduce a successful reference boot in this setup.
+No timing policy, ROM, public code or released binary was changed. The
+45-second observer was intentionally terminated and reaped after collecting
+the bounded data, so it is not a completed boot. Log SHA-256:
+`BFDFC5AC4DEF1A63796A09171E0046380FF95104D554617529D422A254699F7C`.

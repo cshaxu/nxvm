@@ -29,6 +29,9 @@ An exploratory [same-host PC110-EMU run](../etc/evidence/t582-s26-pc110-emu-meas
 has now executed the owner-supplied BIOS and a private master-disk copy. Its
 instruction count, media configuration, guest state and service shortcuts
 differ from NXVM, so the recorded duration is not an equivalent speedup ratio.
+An isolated per-read refresh-status experiment did not reach the baseline
+checkpoint and remained at the firmware's CLI/HLT return address while guest
+time advanced; it is not admitted as a fix.
 
 S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
 
