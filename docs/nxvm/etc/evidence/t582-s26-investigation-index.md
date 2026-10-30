@@ -35,6 +35,7 @@ The measured World Clock workload advanced approximately six guest seconds in 60
 The configured external-media inventory and the distinction between clock and interactive acceptance are recorded in the [workload audit](t582-s26-workload-audit.md).
 
 The [Game click observation](t582-s26-personaware-game.md#single-click-response-observation)
-does not yet establish device acceptance, visible response or playable input.
+now establishes controller acceptance and reads for the measured events, but
+not successful gameplay or native Window/RDP input.
 
 Even a hypothetical removal of all measured timing-selection/observation cost would therefore leave most of the measured execution work intact; it cannot by itself explain an order-of-magnitude improvement. The next useful design should investigate the complete retirement-to-device-advance path and its observation boundaries, with representative guest workloads and correctness evidence, rather than assuming isolated instruction micro-optimizations can meet the goal. Guest instructions, device side effects, clocks and asynchronous observation must remain correct under the current packet. No alternative execution path or scheduling optimization is authorized merely by this index.

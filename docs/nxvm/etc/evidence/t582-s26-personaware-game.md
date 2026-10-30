@@ -2,6 +2,29 @@
 
 ## Single-click response observation
 
+### Device delivery follow-up
+
+A separate x64 private-media run instrumented the existing Machine delivery,
+8042 AUX packet receipt and data-read functions at link time. For the same
+initial-position click, Machine delivery returned OK for both edges, and the
+controller accepted `09 00 00` and `08 00 00`; its subsequent data reads
+returned those six bytes in order. The captured board remained unchanged.
+This demonstrates delivery and controller reads in this run, not the guest
+software's interpretation or a successful game action. It exited zero in
+364.22 seconds; log SHA-256:
+`12481F8A5B3A401B27673B2867C6929642CCA6589683CAB012320D61215BCB1F`.
+
+Another run sent two relative moves and two press/release pairs at one-second
+sample intervals. All six events returned OK, all six AUX packets were
+accepted, and the controller reads reproduced the submitted bytes. Frame
+inspection showed cursor movement, but no removed tiles or score change.
+The intended pair and the game's connection rules were not established, so
+this is not a successful-gameplay test or a proven guest input defect. The
+run exited zero in 374.73 seconds; log SHA-256:
+`F407C88BBCC04ED44DA8D255F4511994A4195C74037120A0E0F62F25B0FD231D`.
+Both probes use direct Machine input, private media and instrumented code;
+they do not validate native Window/RDP or measure actual response latency.
+
 A private-media x64 run entered the same Game using the existing Machine
 queue. Once the complete board was visible, it queued a left-button press and
 release at the initial cursor position, then sampled frames approximately
