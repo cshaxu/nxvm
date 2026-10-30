@@ -159,6 +159,32 @@ static lib_status mypc110_firmware_write(void *owner, lib_u32 physical,
     return LIB_STATUS_OK;
 }
 
+/* L1: CBL fields follow the observed per-16-KiB shadow layout. The board
+ * admits only internal shadow, with chipset cache enable and read permission. */
+static lib_bool mypc110_firmware_cache_probe(void *owner, lib_u32 physical,
+    lib_size bytes)
+{
+    const mypc110_firmware *firmware = owner;
+    lib_size offset;
+    lib_bool internal, flash;
+    lib_u8 misc, cacheable;
+    lib_u32 shift;
+
+    if (firmware == LIB_NULL || firmware->configuration_chip == LIB_NULL ||
+        physical < MYPC110_VIDEO_PHYSICAL_START || physical >= 0x00100000u ||
+        bytes != 16u || (physical & 15u) != 0u ||
+        mypc110_firmware_decode(firmware, physical,
+            X86_CORE_MACHINE_MEMORY_ACCESS_READ, &offset, &internal, &flash) != LIB_STATUS_OK || !internal)
+        return LIB_FALSE;
+    if (x86_vl82c420_read_register(firmware->configuration_chip,
+            X86_VL82C420_BANK_ECED, 0x07u, &misc) != LIB_STATUS_OK || (misc & 0x08u) == 0u ||
+        x86_vl82c420_read_register(firmware->configuration_chip,
+            X86_VL82C420_BANK_ECED, (lib_u8)(0x15u + ((physical - MYPC110_VIDEO_PHYSICAL_START) >> 16u)),
+            &cacheable) != LIB_STATUS_OK) return LIB_FALSE;
+    shift = 2u * ((physical >> 14u) & 3u);
+    return (cacheable & (2u << shift)) != 0u;
+}
+
 static const x86_core_machine_memory_device_callbacks mypc110_firmware_callbacks = {
     mypc110_firmware_read, mypc110_firmware_write, mypc110_firmware_query
 };
@@ -305,6 +331,12 @@ lib_status mypc110_firmware_install_routes(x86_core_machine *machine,
         return LIB_STATUS_INVALID_ARGUMENT;
     lib_status status = x86_core_machine_install_memory_device_routes(machine, routes,
         sizeof(routes) / sizeof(routes[0]), LIB_NULL, LIB_NULL, firmware);
+    if (status == LIB_STATUS_OK) {
+        status = x86_core_machine_set_memory_cache_probe(machine, firmware,
+            mypc110_firmware_cache_probe);
+        if (status != LIB_STATUS_OK)
+            (void)x86_core_machine_remove_memory_device_routes(machine, firmware);
+    }
     if (status == LIB_STATUS_OK) firmware->machine = machine;
     return status;
 }

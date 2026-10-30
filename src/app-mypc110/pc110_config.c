@@ -277,6 +277,13 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
     else return LIB_STATUS_UNSUPPORTED;
     {
         lib_u8 inking_before = 0u;
+        lib_u8 cache_index = 0u, cache_before = 0u;
+        if (bank == X86_VL82C420_BANK_ECED) {
+            lib_status status = x86_vl82c420_selected_index(chip, bank, &cache_index);
+            if (status != LIB_STATUS_OK) return status;
+            status = x86_vl82c420_read_selected(chip, bank, &cache_before);
+            if (status != LIB_STATUS_OK) return status;
+        }
         if (bank == X86_VL82C420_BANK_SCAMP && firmware->inking != LIB_NULL) {
             lib_status status = x86_vl82c420_read_register(chip, bank, 0x16u,
                 &inking_before);
@@ -284,6 +291,28 @@ static lib_status mypc110_config_write(void *owner, lib_u16 port,
         }
         lib_status status = x86_vl82c420_write_selected(chip, bank,
             (lib_u8)value);
+
+        if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_ECED &&
+            cache_before != (lib_u8)value) {
+            lib_u32 start = 0u;
+            lib_size bytes = 0u;
+            if (cache_index == 0x07u && ((cache_before ^ value) & 0x08u) != 0u) {
+                start = MYPC110_VIDEO_PHYSICAL_START;
+                bytes = MYPC110_FIRMWARE_BYTES;
+            } else if (cache_index == 0x0cu &&
+                ((cache_before ^ value) & 0x30u) != 0u) {
+                start = 0xe0000u;
+                bytes = 0x20000u;
+            } else if ((cache_index >= 0x0fu && cache_index <= 0x12u) ||
+                (cache_index >= 0x15u && cache_index <= 0x18u &&
+                    ((cache_before ^ value) & 0xaau) != 0u)) {
+                start = MYPC110_VIDEO_PHYSICAL_START +
+                    ((cache_index - (cache_index <= 0x12u ? 0x0fu : 0x15u)) << 16u);
+                bytes = 0x10000u;
+            }
+            if (bytes != 0u)
+                x86_core_machine_signal_memory_decode_change(firmware->machine, start, bytes);
+        }
 
         if (status == LIB_STATUS_OK && bank == X86_VL82C420_BANK_SCAMP &&
             firmware->inking != LIB_NULL) {
