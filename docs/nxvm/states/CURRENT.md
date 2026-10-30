@@ -10,7 +10,7 @@
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
 | Files And ABI Surface | Audit and task-owned probes first; implementation scope depends on justified design and Shared receiving policy. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
-| Verification | Use previous actual World Clock, SMM, timing, memory and scheduler evidence. Distinguish measured improvements from estimates and avoid repeated unpromising full-system tests. |
+| Verification | Consult the [investigation index](../etc/evidence/t582-s26-investigation-index.md) and previous actual World Clock, SMM, timing, memory and scheduler evidence before selecting a candidate. Distinguish measured improvements from estimates and avoid repeating existing candidates or unpromising full-system tests. |
 | Expected Markers | A concrete faithful optimization design with evidence or clearly stated limits and tradeoffs. |
 | Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
 | Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
