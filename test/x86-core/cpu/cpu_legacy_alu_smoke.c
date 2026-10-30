@@ -506,6 +506,36 @@ static lib_i32 legacy_alu_test_loop_forms(void)
     return 1;
 }
 
+static lib_i32 legacy_alu_test_parity_bytes(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186, X86_CORE_CPU_PROFILE_80286,
+        X86_CORE_CPU_PROFILE_80386, X86_CORE_CPU_PROFILE_80486SX,
+        X86_CORE_CPU_PROFILE_V30
+    };
+    static const lib_u8 code[] = {0x84u, 0xc0u}; /* TEST AL, AL */
+    legacy_alu_machine state;
+    t_cpu after;
+
+    for (lib_size i = 0u; i < sizeof(profiles) / sizeof(profiles[0]); ++i) {
+        cpu_instruction_prepare(&state, profiles[i]);
+        for (lib_u32 value = 0u; value < 256u; ++value) {
+            const lib_u32 expected = legacy_alu_parity(value) ? VCPU_EFLAGS_PF : 0u;
+            state.cpu.data.eip = 0u;
+            state.cpu.data.eax = value;
+            state.cpu.data.eflags = (state.cpu.data.eflags & X86_CPU_NEC_PSW_MD) |
+                VCPU_EFLAGS_IF | (expected ? 0u : VCPU_EFLAGS_PF);
+            x86_core_cpu_execution_invalidate_prefetch(&state.execution);
+            if (!legacy_alu_run(&state, code, sizeof(code), 0, &after) ||
+                after.data.eip != sizeof(code) || after.data.eax != value ||
+                (after.data.eflags & VCPU_EFLAGS_PF) != expected ||
+                (after.data.eflags & VCPU_EFLAGS_IF) == 0u) return 0;
+        }
+    }
+    return 1;
+}
+
 static lib_i32 legacy_alu_test_test_forms(void)
 {
     static const x86_core_cpu_profile profiles[] = {
@@ -1677,7 +1707,8 @@ int main(void)
     if (!legacy_alu_test_binary_forms() ||
         !legacy_alu_test_accumulator_immediate_forms() || !legacy_alu_test_group1_forms() ||
         !legacy_alu_test_condition_forms() || !legacy_alu_test_loop_forms() ||
-        !legacy_alu_test_test_forms() || !legacy_alu_test_adjust_and_xlat_forms() ||
+        !legacy_alu_test_parity_bytes() || !legacy_alu_test_test_forms() ||
+        !legacy_alu_test_adjust_and_xlat_forms() ||
         !legacy_alu_test_decimal_arithmetic() ||
         !legacy_alu_test_ascii_arithmetic() || !legacy_alu_test_aam_aad_results() ||
         !legacy_alu_test_salc() ||

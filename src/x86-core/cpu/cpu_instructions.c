@@ -7489,14 +7489,11 @@ static void _kaf_calc_AF(x86_core_cpu_execution_context *context)
 static void _kaf_calc_PF(x86_core_cpu_execution_context *context)
 {
     lib_u8 res8 = X86_CPU_MASK_U8(instruction_state.data.result);
-    lib_u8 even = 1;
     CPU_TRACE_CALL_BEGIN("_kaf_calc_PF");
-    while (res8)
-    {
-        even = 1 - even;
-        res8 &= res8 - 1;
-    }
-    X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_PF, even);
+    res8 ^= res8 >> 4u;
+    res8 ^= res8 >> 2u;
+    res8 ^= res8 >> 1u;
+    X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_PF, (res8 & 1u) == 0u);
     CPU_TRACE_CALL_END;
 }
 static void _kaf_calc_ZF(x86_core_cpu_execution_context *context)
