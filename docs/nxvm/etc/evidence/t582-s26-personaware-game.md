@@ -15,3 +15,11 @@ Scratch evidence SHA-256 (guest log, menu after Down, complete Game frame): `424
 Second guest log SHA-256: `BAAEDD9D0BFDF7E69C7147607ED75B8D990ABDF9F2457ECC70688EA00F7B5B55`.
 
 Relative-input guest log SHA-256: `7A18F9D3884A3E0B317B252C779BC0E5E5F561E4BDA5BE88245A240D93CBB64E`; frame after motion SHA-256: `63EB3A5FBD4085B9B15AE3441B10F19E219A2443F48099F287870EEF285AB157`.
+
+## Game drawing workload
+
+A separate private-media x64 run used the same input sequence and counted successfully fetched primary opcode/prefix bytes in a scratch-compiled copy of the current CPU source. The producer switched counters at the sample-30 Enter and at sample 34, and the guest worker observed the stage through an atomic value. A visual check confirmed sample 34 displayed the complete Game screen. Instrumentation on every opcode fetch changes execution cost and stage switches occur before input/frames are consumed, so the windows are approximate; these are byte-fetch counts, not retired-instruction counts or exclusive CPU time.
+
+The approximate sample-30–34 drawing interval contained 28,927,504 counted opcode/prefix bytes. Its largest categories were `74` (1,975,044), `75` (1,827,504), `D0` (1,769,027), `80` (1,756,133) and `8A` (1,679,695). In contrast, the earlier startup-to-menu window included `F3` 8,112,014 and `AB` 5,688,521 among 202,499,438 bytes, consistent with the separately measured startup REP-store workload. These counts suggest that optimizing startup's repeated clearing alone would not address the game's drawing workload; they do not identify inclusive costs or prove that any specific opcode is safe or worthwhile to change.
+
+The nearest logged quanta at Enter and sample 34 were host milliseconds 88,613,834 and 88,653,773, and guest ticks 894,861,059 and 985,036,129. This instrumented run took 373.07 host seconds overall and exited zero. Its four-sample draw interval and frame capture include instrumentation and are not a release-performance measurement. No production source, media or executable changed. Guest log SHA-256: `580386652AC35D8D078D90285FC8ADA974552B4FBB4DBAA6AF4F07395BA81925`; complete Game frame SHA-256: `E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
