@@ -54,6 +54,34 @@ SHA-256 (stronger LTO log, stronger baseline log):
 `B7AB4848A4DA80D6092DE8EA8A62A4A27DED7D998230789F10BE8F33B620DB54`,
 `B98FB6D9C6BDA36AC8442EBA1CD9D23BE68EFDE5DE9F35A55BCEB229B2BB854F`.
 
+## Link and compilation-cache cost
+
+A separate x64 scratch build compiled the five CPU and sixteen Machine C
+files with `-flto=8`, using the repository ccache. The first batch took 5.12
+seconds and a repeated batch 0.98 seconds; the first batch was not proven cold.
+A further identical CPU-instruction compile took 0.274 seconds and the explicit
+repository-cache statistics increased by one direct hit. This establishes
+object reuse, not caching of the link-time optimization itself.
+
+The existing CPU cache test linked in 0.37 seconds against ordinary archives
+and 23.83 seconds against the LTO CPU archive; both binaries passed. The
+existing Machine timing-preview test linked in 0.38 and 27.34 seconds against
+ordinary and LTO archives respectively; both binaries passed. GCC reported
+10 and 12 serial LTO partitions. Retrying the CPU test with one partition and
+with no partitioning took 22.27 and 21.79 seconds respectively and both passed.
+These are single-link samples from a scratch reconstruction, not a complete
+build benchmark or a full correctness qualification.
+
+The current x64 Ninja graph has 503 executable link rules that name the Core
+CPU archive, including 370 whose outputs are under `test/`. This does not mean
+every rule runs in one build, and link times cannot simply be multiplied, but
+it demonstrates that enabling these LTO archives universally would make a
+Core change require many expensive, uncached relinks. A no-change Ninja build
+can still reuse existing linked binaries. The observed link cost is a material
+regression against the owner's build-efficiency requirement, so universal LTO
+is not adopted. A possible alternative must demonstrate reuse without a second
+production executor or duplicate long-lived build trees before qualification.
+
 SHA-256 (LTO log/frame, baseline log/frame):
 `2A17E1B4595F494F16EACA8FF21C4A54D46CC4B80552BCA175B2CB8A6E5F60F4`,
 `57597CA7238CA618B017A404F8156AEEEE0446330A1FBB1315635B661A5FD340`,
