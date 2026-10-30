@@ -6,8 +6,12 @@ The nearest logged quantum before Enter reported host millisecond 86,977,963 and
 
 The guest process exited successfully after 403.1 host seconds. A second private-media run repeated the navigation and, at sample 35, submitted a left-button press/release with absolute input coordinates (12, 35). The samples captured at 35, 36 and 37 had the same complete-screen hash; the run exited zero after 383.22 host seconds. The queued input is not proof of guest acceptance: the PC110 adapter forwards absolute input to its pen path only when that controller is enabled, while the common mouse route is separate; calibration, intended tile and delivery/acknowledgement were not observed. This is an inconclusive interaction probe, not evidence that the game is frozen or that a performance change is needed in the input path.
 
-No owner media, public source, executable or configuration changed. Native presentation, confirmed interaction inside the game and gameplay speed remain unverified.
+No owner media, public source, executable or configuration changed. Native presentation and gameplay speed remain unverified.
+
+A third private-media x64 run sent a relative mouse movement `(60, 30)` at sample 35, left-button down at sample 36 and release at sample 37, each ten seconds apart. Relative movement is the type emitted by the Win32 Window path and consumed by the PC mouse mapper; these events were still injected directly into the Machine queue, not through a native desktop. The next sampled frame showed the game's pointer moved from the upper left into the board. Frames at samples 36–39 were identical after that movement, including after the press/release; no board change was observed. The attempted tile and the game's click rules were not established, so that result does not prove failure to click or gameplay success. The log's nearest quantum to movement was host millisecond 88,101,441 and to the next frame was 88,111,940; ten-second sampling only bounds observed response, not actual latency. The process exited zero after 403.21 seconds.
 
 Scratch evidence SHA-256 (guest log, menu after Down, complete Game frame): `4246F84BEDA167CD6DFE9B568FDF431A92A38D8A0397908A37D408132E50F78D`, `54941C36AD92B6E439C1E64E2BE165EBFC16276C38E4AAD45585849F6DDF2A84`, `E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
 
 Second guest log SHA-256: `BAAEDD9D0BFDF7E69C7147607ED75B8D990ABDF9F2457ECC70688EA00F7B5B55`.
+
+Relative-input guest log SHA-256: `7A18F9D3884A3E0B317B252C779BC0E5E5F561E4BDA5BE88245A240D93CBB64E`; frame after motion SHA-256: `63EB3A5FBD4085B9B15AE3441B10F19E219A2443F48099F287870EEF285AB157`.
