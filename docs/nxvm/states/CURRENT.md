@@ -1,4 +1,27 @@
-# M5 T582 S21 — Active: instruction timing input reuse audit
+# M5 T582 S22 — Active: CPU cache-hit copy audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S22 after S21 audit. |
+| Admission And Approval | Owner authorized continued performance work and autonomous numeric S sequencing. |
+| Objective | Assess actual CPU cache-hit copy costs and test a minimal semantics-preserving candidate, or record negative evidence. |
+| Non-goals | No new cache, altered guest timing, skipped accesses, undefined alignment or aliasing behavior, or user media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S15 sampling](../etc/evidence/t582-s15-cpu-line-audit.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S22. |
+| Files And ABI Surface | Task-owned probes first; production scope only with measured correctness and full Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Short fixed-work comparisons first, dual width where warranted; retain full access width, cache and timing semantics. |
+| Expected Markers | Actual guest checkpoint and candidate gain or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Runtime variance, actual diffs and receiver qualification. |
+| Stop Conditions | Do not introduce a duplicate memory path, unaligned typed access, new state or claim performance from one short pair. |
+| Exit Criteria | Traceable negative result or fully tested and delivered improvement; T582 stays open until usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Inspect relevant cache reads/writes and existing sample evidence, avoiding unmeasured generalization. |
+
+S21 compared the same prefix classifier made inline in a scratch timing model; the result did not consistently improve both widths and was rejected. See [evidence](../etc/evidence/t582-s21-timing-input-audit.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only unit run.
+
+# M5 T582 S21 — Closed: instruction timing input reuse audit
 
 | Field | Required record |
 | --- | --- |

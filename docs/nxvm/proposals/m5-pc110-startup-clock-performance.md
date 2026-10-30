@@ -86,8 +86,11 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   inside the existing timing owner can be shared without changing observable
   timing, prefix or fault behavior; use short fixed-work probes before any
   long product run and reject unmeasured or insufficient candidates.
-- **S22 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S21 and any later measured batches.
+- **S22: CPU cache-hit copy audit.** Measure fixed-width copy overhead in the
+  existing cache-hit route using short comparisons, and admit only a simple
+  semantically equivalent improvement with sustained product-path evidence.
+- **S23 or later: receiving qualification.** S11's original whole-product and
+  clock qualification remains pending after S22 and any later measured batches.
 
 ## Constraints and evidence
 
