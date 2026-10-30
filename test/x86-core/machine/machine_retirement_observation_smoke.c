@@ -55,10 +55,10 @@ static lib_i32 retirement_prepare(x86_core_machine **out_machine,
             LIB_STATUS_OK;
 }
 
-static lib_i32 retirement_async_context_case(lib_bool branch)
+static lib_i32 retirement_async_context_case(x86_core_cpu_profile profile, lib_bool branch)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386
+        .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = profile
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -694,8 +694,10 @@ lib_i32 main(void)
     const lib_u8 scasw[] = { 0xafu };
     const lib_u8 segment_movsw[] = { 0x26u, 0xa5u };
     const lib_u8 rep_movsw[] = { 0xf3u, 0xa5u };
-    lib_i32 failed = retirement_async_context_case(LIB_FALSE) |
-        retirement_async_context_case(LIB_TRUE);
+    lib_i32 failed = retirement_async_context_case(X86_CORE_CPU_PROFILE_80386, LIB_FALSE) |
+        retirement_async_context_case(X86_CORE_CPU_PROFILE_80386, LIB_TRUE) |
+        retirement_async_context_case(X86_CORE_CPU_PROFILE_80486SX, LIB_FALSE) |
+        retirement_async_context_case(X86_CORE_CPU_PROFILE_80486SX, LIB_TRUE);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
