@@ -98,3 +98,24 @@ show that normal firmware operation configures the channel incorrectly, prove
 a PIT defect, or justify forcing bit 5. No production source or owner media
 changed. Log SHA-256:
 `0C5289E60D02666FD935CBF17A2D9BF72DCBC5C583E361DE9434A86C1944CBB7`.
+
+## Three-shortcut upper-bound experiment
+
+A further task-only variant added a signature-checked BIOS branch override at
+`F000:6943` to the previous per-read refresh and HLT experiments. The branch
+override is not identical to PC110-EMU's delayed, flag-adjusting escape; all
+three shortcuts change guest behavior and this is not an eligible production
+design. At 10,000,000 instructions it reported 77,461,118 guest ticks and PC
+`000C4274` after 21.331 seconds. This is a different guest state from the
+ordinary model and cannot serve as an equivalent speed comparison.
+
+In a separate private-media product-path run it did not reach the menu feature
+before its task-owned process was deliberately stopped and reaped after
+337.5 host seconds. Its last sampled quantum reported 157,266,108 instructions,
+1,012,853,806 guest ticks and PC `000C4274`; the recent samples alternated
+within firmware/video ROM code. This does not prove the guest can never boot,
+but it provides no evidence of the desired startup or gameplay benefit. It
+does not justify adding a sequence of firmware-specific shortcuts. The input
+ROM, owner media, production code and published EXEs were not modified.
+Log SHA-256:
+`8F309EE9773C282B2C3E3E78DC1A35F8BA30CEB507231C22F13156F3FEB6EE61`.
