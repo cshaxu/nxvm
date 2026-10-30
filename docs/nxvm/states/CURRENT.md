@@ -41,7 +41,7 @@
 | Similar-Issue Sweep | Check firmware Flash, shadow RAM, address decode, cache invalidation and the other Core receivers before proposing shared changes. |
 
 
-S17 identified substantial PC110 shadow-provider traffic, actual early/late ECED cache-control transitions and a concrete read/write mapping mismatch that rules out a cacheability-only change; see [evidence](../etc/evidence/t582-s17-pc110-cacheability.md). The repository-only unit suite passed 712/712 on both x64 and x86; NXVM documentation governance passed. No production, public API or EXE changed. PC110 usability remains unproven.
+S17 identified substantial PC110 shadow-provider traffic, actual early/late ECED cache-control transitions and a read/write mapping asymmetry whose CPU cache implications require source-backed modeling; see [evidence](../etc/evidence/t582-s17-pc110-cacheability.md). The repository-only unit suite passed 712/712 on both x64 and x86; NXVM documentation governance passed. No production, public API or EXE changed. PC110 usability remains unproven.
 
 # M5 T582 S16 — Closed: CPU execution observation cost audit
 
