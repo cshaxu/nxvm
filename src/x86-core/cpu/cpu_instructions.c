@@ -20246,7 +20246,15 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
         return LIB_FALSE;
     }
     preview_cpu = *context->cpu;
-    preview_instructions = *context->instructions;
+    {
+        /* Lexical preview neither executes handlers nor records data accesses. */
+        const lib_size first = lib_offsetof(t_cpuins, data.mem);
+        const lib_size last = lib_offsetof(t_cpuins, data.msize);
+        lib_memory_copy(&preview_instructions, context->instructions, first);
+        lib_memory_copy((lib_u8 *)&preview_instructions + last,
+            (const lib_u8 *)context->instructions + last,
+            lib_offsetof(t_cpuins, connect) - last);
+    }
     {
         const lib_size first = lib_offsetof(x86_core_cpu_execution_context, tlb);
         const lib_size last = lib_offsetof(x86_core_cpu_execution_context,
