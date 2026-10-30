@@ -1,5 +1,30 @@
 # T582 S13 — scheduler cost and board deadlines
 
+## S26 board-advance attribution
+
+An x64 task-only linker-wrapper probe sampled one in 1,024 calls during the
+same 10,000,000-instruction, 79,964,294-tick, PC `0003dbc5` startup
+checkpoint. The instrumented run took 19,516 ms. Counts and sampled host TSC
+totals were:
+
+| Existing operation | Calls | Samples | TSC total |
+| --- | ---: | ---: | ---: |
+| Clock-domain advance | 61,454,707 | 60,014 | 3,082,880 |
+| PIT advance | 10,289,341 | 10,048 | 941,140 |
+| RTC advance | 10,289,341 | 10,048 | 572,920 |
+| PIC refresh | 10,289,341 | 10,048 | 1,493,940 |
+| PIC advance | 10,289,341 | 10,048 | 720,100 |
+| KBC advance | 10,289,341 | 10,048 | 1,266,740 |
+
+These are inclusive sampled intervals at intercepted link boundaries, not
+exclusive timings or whole-machine percentages. Some operations nest, the
+clock count includes multiple domains, and deterministic sampling, timer
+overhead, compiler layout and host scheduling can distort rankings. The
+results are early startup only and were gathered before the later compact
+preview implementation. They identify no single board call whose removal
+could justify skipping device events or claiming an order-of-magnitude gain.
+No production or guest behavior was changed by this observation.
+
 At the same fixed PC110 startup checkpoint (10,000,000 retired instructions, 79,964,294 guest ticks, PC 0003dbc5), task-owned wrappers sampled one in 2,048 calls using the Windows performance counter. Each run used private media and current cached libraries. Instrumentation adds work and changes executable layout; sampling is deterministic, not random, and may alias periodic device behavior. Values are inclusive, so the nested functions must not be added to their parent.
 
 | Width | Elapsed | Publication calls / samples / ticks | Board deadline calls / samples / ticks | Board before / after sampled ticks |
