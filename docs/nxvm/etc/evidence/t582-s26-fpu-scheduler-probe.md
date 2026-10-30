@@ -1,5 +1,13 @@
 # T582 S26 — absent-FPU scheduler probe
 
+**Method qualification:** The temporary scheduler was compiled without the
+Release build's `X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=0` definition. That
+translation unit includes the private Machine layout, which is conditional on
+the definition. Therefore the measurements below are not a valid comparison
+with the Release libraries, even though the recorded checkpoint matched.
+They must not be used to infer Release performance or semantic equivalence.
+No production change was based on them.
+
 PC110 selects the no-FPU profile, but the existing scheduler still calls the
 FPU deadline and advancement functions. A task-only build removed both calls
 unconditionally to estimate their contribution for that specific machine.
