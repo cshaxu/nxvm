@@ -2925,35 +2925,26 @@ static lib_i32 x86_core_cpu_control_stack_selector_is_task_gate(x86_core_cpu_exe
 static lib_i32 x86_core_cpu_control_stack_condition_taken(lib_u32 eflags,
     lib_u8 condition, lib_i32 *out_taken)
 {
-    lib_i32 carry;
-    lib_i32 overflow;
-    lib_i32 parity;
-    lib_i32 sign;
-    lib_i32 zero;
-
     if (out_taken == LIB_NULL) return 0;
-    carry = (eflags & VCPU_EFLAGS_CF) != 0u;
-    parity = (eflags & VCPU_EFLAGS_PF) != 0u;
-    zero = (eflags & VCPU_EFLAGS_ZF) != 0u;
-    sign = (eflags & VCPU_EFLAGS_SF) != 0u;
-    overflow = (eflags & VCPU_EFLAGS_OF) != 0u;
     switch (condition & 0x0fu) {
-    case 0u: *out_taken = overflow; break;
-    case 1u: *out_taken = !overflow; break;
-    case 2u: *out_taken = carry; break;
-    case 3u: *out_taken = !carry; break;
-    case 4u: *out_taken = zero; break;
-    case 5u: *out_taken = !zero; break;
-    case 6u: *out_taken = carry || zero; break;
-    case 7u: *out_taken = !carry && !zero; break;
-    case 8u: *out_taken = sign; break;
-    case 9u: *out_taken = !sign; break;
-    case 10u: *out_taken = parity; break;
-    case 11u: *out_taken = !parity; break;
-    case 12u: *out_taken = sign != overflow; break;
-    case 13u: *out_taken = sign == overflow; break;
-    case 14u: *out_taken = zero || sign != overflow; break;
-    default: *out_taken = !zero && sign == overflow; break;
+    case 0u: *out_taken = (eflags & VCPU_EFLAGS_OF) != 0u; break;
+    case 1u: *out_taken = (eflags & VCPU_EFLAGS_OF) == 0u; break;
+    case 2u: *out_taken = (eflags & VCPU_EFLAGS_CF) != 0u; break;
+    case 3u: *out_taken = (eflags & VCPU_EFLAGS_CF) == 0u; break;
+    case 4u: *out_taken = (eflags & VCPU_EFLAGS_ZF) != 0u; break;
+    case 5u: *out_taken = (eflags & VCPU_EFLAGS_ZF) == 0u; break;
+    case 6u: *out_taken = (eflags & (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF)) != 0u; break;
+    case 7u: *out_taken = (eflags & (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF)) == 0u; break;
+    case 8u: *out_taken = (eflags & VCPU_EFLAGS_SF) != 0u; break;
+    case 9u: *out_taken = (eflags & VCPU_EFLAGS_SF) == 0u; break;
+    case 10u: *out_taken = (eflags & VCPU_EFLAGS_PF) != 0u; break;
+    case 11u: *out_taken = (eflags & VCPU_EFLAGS_PF) == 0u; break;
+    case 12u: *out_taken = ((eflags & VCPU_EFLAGS_SF) != 0u) != ((eflags & VCPU_EFLAGS_OF) != 0u); break;
+    case 13u: *out_taken = ((eflags & VCPU_EFLAGS_SF) != 0u) == ((eflags & VCPU_EFLAGS_OF) != 0u); break;
+    case 14u: *out_taken = (eflags & VCPU_EFLAGS_ZF) != 0u ||
+        ((eflags & VCPU_EFLAGS_SF) != 0u) != ((eflags & VCPU_EFLAGS_OF) != 0u); break;
+    default: *out_taken = (eflags & VCPU_EFLAGS_ZF) == 0u &&
+        ((eflags & VCPU_EFLAGS_SF) != 0u) == ((eflags & VCPU_EFLAGS_OF) != 0u); break;
     }
     return 1;
 }
