@@ -17,3 +17,20 @@ frame comparison. The probe still copies frames, logs machine quanta, and
 bypasses native Window and RDP. Its host/guest time ratio is approximate and
 does not establish desktop responsiveness or gameplay qualification. No
 production code, owner media, or published executable changed.
+
+## Boot refresh polling
+
+The same log has three successive sampled-PC runs in the firmware's port-61h
+refresh-bit polling loop. Their first-to-last sampled intervals are 3.34,
+3.60 and 1.66 host seconds. Samples are approximately one second apart and
+do not prove that every intervening instruction remained in the loop, so
+these are not exclusive-cost measurements. Static inspection confirms that
+the loop observes the changing refresh status, and the PC110 configuration
+already uses a documented L2 nominal refresh period. The product binding
+also already notes these boot delays and selects its existing turbo policy.
+This evidence neither shows an incorrect refresh period nor justifies skipping
+guest instructions, altering the refresh signal or claiming this loop accounts
+for the entire startup delay. It narrows the candidate analysis to preserving
+port reads, CPU state, guest time, interrupt and device boundaries while
+reducing the execution cost of observed loops; no such implementation has
+yet been demonstrated.
