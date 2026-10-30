@@ -80,3 +80,21 @@ These results show that carrying over the first two shortcuts alone does not
 deliver a working accelerated boot. No production source, public interface,
 owner media or released executable changed. Observed log SHA-256:
 `0476DE80F6ED48E5273AB5FD4200CA9175FACBBCC6E6326683322A384035BE61`.
+
+### PIT state in the shortcut-only path
+
+A separate task-only 55-second run sampled the existing PIT state from the
+single guest worker, retaining both artificial shortcuts. At one, two, three
+and four million port-61 reads, PIT channel 2 had control word `B0`, gate 0,
+output 0, no ready/active/load-pending count, and zero remaining count and
+phase. In that observed state, the existing output has no scheduled transition;
+the BIOS bit-5 wait cannot become ready merely by advancing guest time. Earlier
+samples show channel 2 had produced output while configured and gated, so this
+is not evidence that its output is permanently disconnected.
+
+The run was intentionally terminated and reaped at its 55-second bound. This
+diagnoses the failure of the artificial shortcut combination only; it does not
+show that normal firmware operation configures the channel incorrectly, prove
+a PIT defect, or justify forcing bit 5. No production source or owner media
+changed. Log SHA-256:
+`0C5289E60D02666FD935CBF17A2D9BF72DCBC5C583E361DE9434A86C1944CBB7`.
