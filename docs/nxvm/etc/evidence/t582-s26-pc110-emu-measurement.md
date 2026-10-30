@@ -146,3 +146,30 @@ loop even without the real firmware shortcuts; it does not attribute the whole
 difference to one function or demonstrate a PC110 gameplay speedup. No source,
 interface, owner media or published artifact changed. Log SHA-256:
 `E257E16191CAD859077BE8B8621D49CA62F77CB6CF30E9BA812B3330B95C12B4`.
+
+### Synthetic-loop timing and publication ablation
+
+On the same x64 synthetic loop, a scratch link wrapper replaced the timing
+selector with a constant one-tick result; another separately suppressed
+Machine time publication. Both intentionally change timing and are not
+production candidates. At 10,000,000 calls/instructions and the same reported
+loop PC, the baseline CPU-only/Machine times were 4,304/8,603 ms. Omitting
+the selector measured 2,020/4,993 ms; omitting publication measured
+4,594/7,863 ms. Suppressed publication reported zero Machine ticks, and the
+constant selector changed the tick total from 40,000,014 to 10,000,000.
+These are single ordered measurements of a narrow workload, not independently
+isolated costs, full-state equivalence or legal acceleration. They suggest
+that repeated timing work deserves priority, but do not authorize a constant
+timing model or reduced device accuracy.
+
+The prior S5 scratch implementation, which shares one prefix count between
+four 486 timing helpers but removes the standalone helper entry points, was
+also linked to this synthetic loop. In two sequential x64 orderings its
+Machine baseline/candidate timings were 10,338/8,191 ms and 10,336/8,375 ms;
+CPU-only times were 3,845/3,806 ms and 3,829/3,935 ms. On x86 the respective
+Machine times were 14,412/13,740 ms and 14,501/14,710 ms; CPU-only times were
+6,133/7,049 ms and 7,646/7,332 ms. Endpoints and guest ticks matched, not the
+complete CPU state. These measurements do not establish a reproducible benefit
+across widths or a real PC110 improvement; the prior x86 Game observation is
+also unsupportive. They do not justify adopting the test-incompatible scratch
+variant. No production code, public interface or binary changed.
