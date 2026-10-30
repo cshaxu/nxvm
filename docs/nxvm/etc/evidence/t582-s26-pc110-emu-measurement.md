@@ -56,3 +56,27 @@ No timing policy, ROM, public code or released binary was changed. The
 45-second observer was intentionally terminated and reaped after collecting
 the bounded data, so it is not a completed boot. Log SHA-256:
 `BFDFC5AC4DEF1A63796A09171E0046380FF95104D554617529D422A254699F7C`.
+
+## Combining the refresh and HLT shortcuts
+
+A further task-only candidate combined the per-read refresh toggle with a
+signature-checked temporary firmware copy that replaces the `F000:6999`
+HLT with a no-op. Both deliberately change guest behavior and are not
+production candidates. With private media and CMOS, it reached 10,000,000
+instructions in 18.984 seconds at 73,857,919 guest ticks and PC `000F6943`;
+the ordinary model's checkpoint is a different PC and tick count, so those
+durations do not compare equivalent work.
+
+In a separate product-path run, the candidate did not reach the Personaware
+menu. At the final sampled quantum it had executed 121,090,236 instructions
+and remained in the BIOS's port-61 bit-5 polling region (`F000:693D` through
+`F000:6943`). The task-owned process was deliberately stopped after 186.66
+host seconds; this is a failed/incomplete observation, not a completed boot.
+The local PC110-EMU reference also contains an address-specific escape for
+this very loop that forces the ready condition after a fixed number of visits.
+The current experiment does not prove a defect in NXVM's PIT model: this path
+was entered after two artificial changes, and no PIT state was captured.
+These results show that carrying over the first two shortcuts alone does not
+deliver a working accelerated boot. No production source, public interface,
+owner media or released executable changed. Observed log SHA-256:
+`0476DE80F6ED48E5273AB5FD4200CA9175FACBBCC6E6326683322A384035BE61`.
