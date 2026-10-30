@@ -1,4 +1,27 @@
-# M5 T582 S25 — Active: PC110 execution-model comparison
+# M5 T582 S26 — Active: single-executor throughput design audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
+| Objective | Identify an implementation approach with potential to materially improve PC110 throughput while preserving existing guest execution, time and observation contracts. |
+| Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
+| Files And ABI Surface | Audit and task-owned probes first; implementation scope depends on justified design and Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Use previous actual World Clock, SMM, timing, memory and scheduler evidence. Distinguish measured improvements from estimates and avoid repeated unpromising full-system tests. |
+| Expected Markers | A concrete faithful optimization design with evidence or clearly stated limits and tradeoffs. |
+| Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
+| Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
+| Stop Conditions | Do not change existing timing accuracy or clock contract without the owner's explicit consent. |
+| Exit Criteria | Traceable design or fully qualified improvement; T582 remains open pending actual usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Compare CPU, board timing, RTC, interrupt and all Shared receiver obligations. |
+
+S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
+
+# M5 T582 S25 — Closed: PC110 execution-model comparison
 
 | Field | Required record |
 | --- | --- |
