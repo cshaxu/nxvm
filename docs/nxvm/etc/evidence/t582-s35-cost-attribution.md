@@ -88,3 +88,27 @@ machine code, so the candidate was not applied or submitted for the full
 receiver. Production source and published EXEs are unchanged by this probe.
 The combined log SHA-256 is
 `7140129A697F2D18C9FAAB9E98F1B95299F28912CC85F7361225A278F04DE551`.
+
+## Same-workload CPU and time-publication samples
+
+A task-only link wrapper measured the existing CPU refresh and Machine elapsed
+time publication in the same fixed-work PC110 startup, one call in 256, without
+changing either operation or guest inputs. The x64 run completed in 18,387 ms
+at 10,000,000 retired instructions, 79,964,294 guest ticks and PC `0003dbc5`;
+x86 completed the same checkpoint in 22,890 ms. Calls / samples / accumulated
+host TSC units were:
+
+| Width | CPU refresh | Time publication |
+| --- | --- | --- |
+| x64 | 10,003,583 / 39,076 / 91,651,994 | 10,009,700 / 39,100 / 42,969,673 |
+| x86 | 10,006,398 / 39,087 / 111,106,180 | 10,012,524 / 39,111 / 54,433,005 |
+
+Mean sampled CPU intervals are approximately 2.13 times publication on x64
+and 2.04 times on x86. These are inclusive intervals at wrapped link
+boundaries; they may nest and cannot be added or directly converted to a
+whole-machine percentage. Deterministic sampling may alias guest loops,
+non-serialized TSC and scheduling can distort results, and the startup
+checkpoint is not Game or full-state equivalence. This reinforces examining
+both CPU work and publication rather than attributing the entire gap to just
+one. No runtime production code or asset changed. Combined log SHA-256:
+`D4820C086D2A1A2DC53DD30736469D6E8C744A35B3FFDD4B3EC1530C3EDBF59F`.
