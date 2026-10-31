@@ -321,3 +321,26 @@ not justify replacing the full snapshot with a complex copy-on-write model or
 omitting the fault/debug state. No production code or artifact changed.
 Log SHA-256:
 `4FA120212300556859269DA5A8FAC9D62E924EA2A8182B1D0C862123F1E478AD`.
+
+## Runner rendezvous quantum
+
+The product runner caps Turbo at 4,096 instructions per Core call, with no
+tick cap. Common control, input and frame handoff occur at the runner boundary;
+Core still advances guest devices at individual retirement boundaries. A
+scratch candidate raised the Turbo instruction cap to 16,384, without changing
+the Core loop or guest timing formulas. This may delay control, input and frame
+handoff; its responsiveness and device correctness were not qualified.
+
+At the private PC110 fixed-startup checkpoint, baseline/candidate/candidate/
+baseline elapsed milliseconds were 20,137 / 20,247 / 21,405 / 17,458 on x64
+and 21,938 / 23,632 / 23,701 / 26,237 on x86. Each reported 10,000,000
+instructions, 79,964,294 ticks and PC `0003dbc5`. Both x64 comparisons favor
+the baseline; the x86 direction changes. Host variation is visible and the
+checkpoint does not prove full-state or Game equivalence. These measurements
+do not justify delaying host rendezvous or adopting the candidate.
+
+An initial probe changed the Standard tick cap instead, but PC110's product
+binding initializes Turbo, so it did not test the candidate branch and is not
+PC110 performance evidence. The corrected Turbo probe changed only task scratch;
+production and released artifacts remained unchanged. Corrected log SHA-256:
+`86DAF7B486E70D19D8DE0760DB30D03C5DF8CA8F576EDE81E1A81CD1CA438DF9`.
