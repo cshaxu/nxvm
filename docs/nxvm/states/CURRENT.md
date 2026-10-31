@@ -1,4 +1,24 @@
-# M5 T582 S27 — Active: comparable workload and performance envelope
+# M5 T582 S28 — Active: end-to-end execution-chain design
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S28 after S27. |
+| Admission And Approval | Owner authorized continued performance work and automatic S sequencing; timing accuracy downgrades require approval. |
+| Objective | Trace and design justified simplifications across CPU execution, retirement, memory and board advancement using the S27 baseline. |
+| Non-goals | No second executor, skipped guest work, host-clock substitution, accuracy downgrade or owner-media modification. |
+| Reference Baseline | S27 evidence and T582 investigation index. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S28. |
+| Files And ABI Surface | Task documentation and task-owned scratch for the design audit; no production changes in this design stage. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Trace actual call sites and compare existing measurements; use bounded probes only for a specific unresolved hypothesis. |
+| Expected Markers | Reviewable candidate owners, exact ordering and invalidation boundaries, estimates and verification plans. |
+| Asset Needs | Existing private task-owned media only if a justified probe requires it. |
+| Reporting Requirements | Separate evidence from hypothesis and report rejected or uncertain candidates. |
+| Stop Conditions | Do not modify runtime behavior during the design stage or lower timing accuracy. |
+| Exit Criteria | Concrete justified designs or documented unsafe candidates sufficient to execute S29 and S30. |
+| Original Owner Request | Improve PC110 performance to usability with a single correct execution chain. |
+| Similar-Issue Sweep | Review CPU, memory, board advancement and prior candidate results without repeating settled experiments. |
+# M5 T582 S27 — Closed: comparable workload and performance envelope
 
 | Field | Required record |
 | --- | --- |

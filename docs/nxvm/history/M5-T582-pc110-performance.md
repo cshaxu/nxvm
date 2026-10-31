@@ -57,3 +57,5 @@ its bounded implemented and evaluated work. This does not claim a reliable
 speedup, interactive playability or T582 completion. The remaining end-to-end
 throughput analysis, implementations and final receiving transfer to S27–S32
 in the active [proposal](../proposals/m5-pc110-startup-clock-performance.md).
+
+S27 recorded the dual-width synthetic and existing product workload envelope in [the evidence](../etc/evidence/t582-s27-performance-envelope.md), commit `95d609df0`. Documentation governance and diff checks passed. Current x86 Game, desktop/RDP and actual usability remain open for later receiving; T582 remains open.
