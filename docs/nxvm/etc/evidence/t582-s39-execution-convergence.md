@@ -102,3 +102,22 @@ equivalence. These results do not support identifying one profitable unit or
 adopting PGO; no production source, build setting or artifact was changed.
 Isolation-log SHA-256:
 `8C1B5CE8A23777CCDCE0DA5195226225FB2E4BD5B88EA841B0E626E9B7959571`.
+
+## Fixed nominal timing table prototype
+
+A scratch-only 486 nominal-timing prototype moved opcode groups whose
+existing nominal cost is always one tick into one 256-byte lookup table,
+removing their original range and switch cases rather than duplicating timing
+ownership. Dynamic opcode cases, prefix handling, memory penalties and bus
+timing remained on the existing path. The temporary source was not qualified
+against all CPU profiles, faults or timing observations.
+
+At the private fixed startup checkpoint, ordered baseline / candidate /
+candidate / baseline times were 18,628 / 18,342 / 18,588 / 19,803 ms x64 and
+24,141 / 25,221 / 22,245 / 24,123 ms x86. Each reported 10,000,000
+instructions, 79,964,294 ticks and PC `0003dbc5`; this is not complete-state
+equivalence. x64 favored the candidate in both pairs, while x86 changed
+direction. The candidate adds a data lookup and table; the samples do not
+prove a stable cross-width benefit or Game improvement. It was not applied to
+production, and no full receiving gate was claimed. Log SHA-256:
+`8A40DF8E43D46FE210EF13C19AF07DD2CEC00010980A115D26D1170E58E7AA94`.
