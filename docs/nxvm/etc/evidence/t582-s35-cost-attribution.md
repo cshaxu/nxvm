@@ -66,3 +66,25 @@ on both architectures without simultaneous test load. Previous negative
 experiments in the [S26 index](t582-s26-investigation-index.md) must not be
 repeated without a new hypothesis. Desktop/RDP responsiveness, complete game
 state equivalence and an order-of-magnitude improvement remain unverified.
+
+## Prefix-count inlining experiment
+
+The S33 prefix-byte classifier is already inline; the surrounding prefix-count
+function still has callers across three CPU translation units. A scratch-only
+candidate moved that single function body to the existing private header as
+`static inline`, without changing its algorithm, profile conditions or call
+sites. Both variants directly compiled the same three units and used private
+CMOS/media copies, with baseline/candidate/candidate/baseline order. At the
+10,000,000-instruction / 79,964,294-tick / `0003dbc5` checkpoint, x64 times
+were 19,224 / 17,936 / 20,275 / 16,979 ms; x86 times were 23,749 / 22,312 /
+23,233 / 24,230 ms. The executable increased from 3,092,997 to 3,147,707
+bytes on x64 and from 3,256,457 to 3,317,822 bytes on x86.
+
+The x86 ordering favors the candidate, but x64 changes direction and the code
+size grows. These sequential fixed-startup samples are subject to host noise;
+matching PC and ticks does not establish complete state or Game behavior.
+There is insufficient evidence of a cross-width benefit to justify the extra
+machine code, so the candidate was not applied or submitted for the full
+receiver. Production source and published EXEs are unchanged by this probe.
+The combined log SHA-256 is
+`7140129A697F2D18C9FAAB9E98F1B95299F28912CC85F7361225A278F04DE551`.
