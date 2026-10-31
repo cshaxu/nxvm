@@ -22,6 +22,21 @@
 [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md) records the
 initial branch-result duplication audit. PC110 usability remains unresolved.
 
+### Admitted carry-rotate consolidation
+
+Within Shared `src/x86-core/cpu/cpu_instructions.c`, replace the six RCL/RCR
+width-specific loops with one private carry-ring implementation. Preserve
+effective-count rules for every profile, operand and undefined-flag records,
+CF/OF semantics, timing and the existing decoder path. The single-count case
+uses 32-bit arithmetic; other nonzero counts use a bounded 9/17/33-bit ring.
+No public API, state, clock or new execution owner is admitted. Existing CPU
+rotate, 486 timing and V30 tests remain the regression owners. Before the full
+Shared receiver, compare actual CPU baseline and candidate over all counts,
+independent CF/OF states, widths and supported profiles, and benchmark both
+host widths including the single-count path. Rebuild and qualify all affected
+Shared consumers and fourteen product artifacts. This source/algorithm
+consolidation is not by itself a claim of interactive PC110 performance.
+
 # M5 T582 S38 — Closed: clock and device advancement
 
 | Field | Required record |

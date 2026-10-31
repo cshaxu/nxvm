@@ -155,3 +155,61 @@ these results. No production code or release artifact changed.
 Log SHA-256 (unrestricted, pinned):
 `72AA2069CC6ECED5D42D20B19F0F2BC5F0EFF2E18C4075014DABD474DD715092`,
 `942CFC427D3D774CCB2827217CEF682F62673E2635FBB94EA3B0E20C9781ACA9`.
+
+## RCL/RCR carry-ring consolidation
+
+The old RCL/RCR implementation had six width/direction-specific loops. The
+candidate retains the existing per-profile effective count and the same flag,
+undefined-flag and instruction-record semantics, using one private carry-ring
+helper. Count one uses 32-bit arithmetic; other nonzero counts rotate a
+9/17/33-bit ring in fixed work. Count zero leaves flags untouched. The actual
+production change is 56 lines added and 169 removed in the CPU source, with no
+new interface, state, clock or execution owner. The count is bounded to eight
+bits, so this is a fixed-work reduction rather than an unbounded complexity
+claim. It does not itself establish PC110 playability.
+
+Task-only actual-CPU comparisons covered 262,144 cases per executable:
+8086, 8088, 80186, 80286, 80386, 80486SX and V30; applicable 8/16/32-bit
+register forms; both directions; all 0–255 counts; eight operand samples;
+and four independent CF/OF initial states. Baseline and candidate on both
+host widths produced digest `e8284f2137602a53` for status, registers, flags,
+decoder observations and timing fields. This is sampled input coverage, not
+proof of all state or memory-operand behavior. Existing `cpu_rotate` adds
+memory operands and carry-ring boundary coverage; `cpu_v30_native`,
+`cpu_486_nominal_timing`, `cpu_486_repeat_timing` and `cpu_debug_state` also
+passed with it, 5/5 on each host width. Differential log SHA-256:
+`34DE02CD76F754E6C354812E05360BEABCD973E1022D4A2492731463F756BBE2`.
+
+An earlier candidate used 64-bit ring arithmetic even for count one and was
+measurably slower on an x86-only synthetic one-count workload; it was not
+adopted. The revised candidate's same workload measured baseline / candidate /
+candidate / baseline 7,191 / 7,047 / 6,944 / 6,962 ms x86. This synthetic
+CPU-only test does not establish Game performance. Its log SHA-256:
+`0E0C8A1615CCFA2456F800744AF9761C4C931F2814416F150E8A6AE007F52D93`.
+
+The revised candidate's PC110 fixed-startup comparisons in that order took
+18,081 / 18,397 / 18,216 / 17,276 ms x64 and 21,983 / 21,743 / 22,515 /
+21,967 ms x86. Every run reported 10,000,000 instructions, 79,964,294 ticks
+and PC `0003dbc5`. A separate x64 pinned-core comparison took 17,333 / 18,082 /
+18,006 / 18,890 ms. These samples are noisy and do not prove an end-to-end
+speedup or full guest-state equivalence. The change is selected for the
+owner-approved source and algorithm simplification, not as the usability fix.
+Log SHA-256 (unrestricted, pinned):
+`C5F3A75B1623FA327A523C476E55B5E14420E95B0975419D42D99B8C96560796`,
+`5FDBF2D2F5E1DABA4E42E9D7358F15C6FC26CA2DD53B9ACE69205B5CE301B80D`.
+The cached Shared receiver completed on both host widths: each ran 712/712
+unit tests and 48/48 default integration tests, followed by 3/3, 5/5 and 6/6
+integration tests for the 5160, 5170 and DeskPro profiles respectively.
+The x86-core manifest and documentation governance checks passed. All fourteen
+product artifacts had their PE widths verified; the default NXVM, PC110,
+MyNES and MyRaidenII deployments matched their respective build outputs.
+The MyRaidenII selected-set startup and product-console checks passed on both
+widths; these checks do not establish MyRaidenII gameplay.
+
+The x64 PC110 private-media Game probe reached its complete-frame marker in
+266.69 seconds, with image SHA-256
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`,
+matching the earlier frame. The marker was sample 263, 30 samples after
+Enter. This single run is close to the earlier 267.78-second baseline and
+does not show a material improvement; it is neither full-state equivalence
+nor desktop/RDP responsiveness. PC110 usability remains unresolved.
