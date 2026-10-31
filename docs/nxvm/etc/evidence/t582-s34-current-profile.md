@@ -171,6 +171,37 @@ throughput comparison, not a complete interactive or real-time measurement;
 it illustrates why a small isolated arithmetic saving cannot alone account
 for the remaining usability gap.
 
+## Device-advance and keyboard observation boundaries
+
+The late worker sample includes `x86_fdc_advance_at` (66 of 3,432 samples),
+`x86_fdc_next_due_tick` (46), and `kbc_keyboard_inputs` (80). These are
+exclusive instruction-pointer labels from the same perturbed x64 sampling
+run, not inclusive costs and not independent device-time estimates. Even
+removing a whole named leaf would not explain the approximately eightfold
+fixed-work gap; source audit is needed before interpreting their frequency as
+redundancy.
+
+The FDC advance stores the current absolute guest tick before processing head
+unload, readiness, command, seek, reset, DMA and non-DMA events. Its deadline
+query separately considers pending events, including events due at the stored
+tick. Consequently an idle-looking advance cannot simply be dropped: later
+commands and externally changed readiness can observe that tick or change the
+next action. A safe reduction would have to retain the time update and the
+existing event/readiness boundaries, rather than assuming absence of media
+activity from the previous observation.
+
+The KBC deadline query samples its endpoint, while the subsequent advance may
+drain serial input, consume BAT, publish replies, call endpoint advancement
+and deliver output. The link explicitly samples endpoint state and does not
+retain it. Reusing the earlier snapshot across these stages would change the
+observation boundary and can miss changes caused by those callbacks. The PIC
+refresh is likewise not a pure repeated assignment: in level mode setting
+unchanged input levels can re-latch an asserted interrupt after an
+acknowledgment. These findings do not preclude smaller local simplifications,
+but rule out treating unchanged-looking device input as permission to skip
+an entire device callback. No new runtime test, source change or performance
+claim is made by this inspection.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
