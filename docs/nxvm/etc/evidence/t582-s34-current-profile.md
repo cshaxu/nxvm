@@ -225,6 +225,37 @@ not justify merging it. It was not qualified against complete CPU state or
 interactive gameplay. Comparison log SHA-256:
 `601A91660D41542B54734FF93D4D1E49A590AB9788E27593B318000A6455E37B`.
 
+## Post-board game-stage worker sample
+
+At Shared `02b91c96a` and NXVM receiver `d8a8e95b3`, a new task-only x64
+product-path harness used the configured CMOS and private media copies. It
+sent the existing menu inputs, waited for the board/score-area marker, and
+kept the machine running for 30 seconds. The sampler began on observing the
+flushed marker and sampled thread instruction pointers for the following 20
+seconds. The marker appeared at 268.38 host seconds; the process exited zero.
+The saved frame shows the game board and score area but the top window is not
+fully drawn. No input was sent during the sampled interval, so this represents
+post-board idle/redraw work, not interaction latency or a complete game.
+
+The worker yielded 3,595 samples. Its largest named exclusive instruction
+pointer buckets were CPU refresh 238, CPU physical read 140, Machine run 128,
+Machine elapsed-time publication 94, instruction boundary 88, timing selection
+87, keyboard input collection 82, CRT 74, 486 source timing 70, memory route
+resolution 70, 486 memory penalty 68, FDC advance 66, clock-domain advance 66
+and PIC selection 65. Inlining and helpers can hide work under another symbol;
+these labels are not inclusive function costs or a proof of total component
+percentages. Thread suspension, deterministic timing and symbol attribution
+perturb execution. This one x64 sample neither demonstrates x86 behavior nor
+establishes native Window/RDP responsiveness. It supports prioritizing the
+combined CPU execution, memory and per-instruction advancement chain over a
+single isolated device leaf; no one named bucket explains the large gap.
+
+SHA-256 (sampler log, guest log, captured PPM, task-only harness source):
+`5BBB3BFF222DDE3EFB8DB305B0A12A4FE9B08DA884DDE0AAFEBC2133F5D72A81`,
+`6CF18CD327591B2B8B65DCB22496978FABB6FE5307EB6278A8B5A5E83A2A8F4B`,
+`E7543730687E8AB543B42EC141737ABE0D711E9B798CE13AC1D8DD49DF1B9F09`,
+`D0771DD9848B41C99A09FF798585A3BEEC98DCA731E378BE806003428E776EB2`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
