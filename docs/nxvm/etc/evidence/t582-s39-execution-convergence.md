@@ -213,3 +213,20 @@ matching the earlier frame. The marker was sample 263, 30 samples after
 Enter. This single run is close to the earlier 267.78-second baseline and
 does not show a material improvement; it is neither full-state equivalence
 nor desktop/RDP responsiveness. PC110 usability remains unresolved.
+
+## Zero access-penalty candidate
+
+The 486 access-penalty routine validates translation and cache counters and
+then calculates their terms on every invocation. A scratch candidate returned
+zero early when all counters contributing to those checks and terms were zero,
+except for the task-gate special case. All other inputs kept the original
+path. This exploratory source change did not receive correctness qualification.
+
+For baseline/candidate/candidate/baseline, the private-media fixed startup
+checkpoint took 18,606 / 19,607 / 18,003 / 17,832 ms on x64 and 22,739 /
+23,335 / 21,396 / 21,801 ms on x86. All runs reached 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`. Both x64 comparisons favor the baseline;
+the x86 comparisons disagree. These noisy samples are not full state or Game
+verification. Given the additional condition and no demonstrated gain, the
+candidate is rejected without changing production. Log SHA-256:
+`2485A41290EEC1E286D6E139DC2F36C55117B68ADC2F7799F2BD6E066927FF0B`.
