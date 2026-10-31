@@ -216,6 +216,11 @@ nor desktop/RDP responsiveness. PC110 usability remains unresolved.
 
 ## Zero access-penalty candidate
 
+This probe substantially repeats the earlier S28 zero-access candidate in
+`t582-s28-execution-chain.md`. The investigation index was consulted but its
+link to that candidate was missed. The repetition was unnecessary; the result
+is retained as a repeat, not presented as an independent new direction.
+
 The 486 access-penalty routine validates translation and cache counters and
 then calculates their terms on every invocation. A scratch candidate returned
 zero early when all counters contributing to those checks and terms were zero,
