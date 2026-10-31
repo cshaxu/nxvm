@@ -8314,181 +8314,68 @@ static void _a_ror(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u
 {
     _a_rotate(context, cdest, csrc, bit, LIB_TRUE);
 }
+static void _a_rotate_carry(x86_core_cpu_execution_context *context,
+    lib_u64 cdest, lib_u8 csrc, lib_u8 bit, lib_bool right)
+{
+    lib_u8 count, rotation;
+    lib_u32 value, mask;
+    lib_u64 ring, ring_mask;
+    lib_bool carry, overflow;
+
+    if (bit != 8u && bit != 16u && bit != 32u) {
+        _SetExcept_CE(bit);
+        return;
+    }
+    count = bit == 32u ? (lib_u8)(csrc & 0x1fu) :
+        _a_shift_rotate_count(context, csrc);
+    mask = bit == 32u ? LIB_UINT32_MAX : ((lib_u32)1u << bit) - 1u;
+    value = (lib_u32)cdest & mask;
+    carry = _GetEFLAGS_CF != 0u;
+    instruction_state.data.bit = bit;
+    instruction_state.data.opr1 = value;
+    instruction_state.data.opr2 = count;
+    if (count == 0u) {
+        instruction_state.data.result = value;
+        return;
+    }
+    if (count == 1u) {
+        if (right) {
+            overflow = (((value >> (bit - 1u)) & 1u) != 0u) != carry;
+            const lib_bool next_carry = (value & 1u) != 0u;
+            value = (value >> 1u) | ((lib_u32)carry << (bit - 1u));
+            carry = next_carry;
+        } else {
+            const lib_bool next_carry = ((value >> (bit - 1u)) & 1u) != 0u;
+            value = ((value << 1u) | (lib_u32)carry) & mask;
+            carry = next_carry;
+            overflow = (((value >> (bit - 1u)) & 1u) != 0u) != carry;
+        }
+        X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, carry);
+        X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF, overflow);
+        instruction_state.data.result = value;
+        return;
+    }
+    instruction_state.data.udf |= VCPU_EFLAGS_OF;
+    ring_mask = ((lib_u64)1u << (bit + 1u)) - 1u;
+    ring = value | ((lib_u64)carry << bit);
+    rotation = (lib_u8)(count % (bit + 1u));
+    if (rotation != 0u) {
+        ring = right ? ((ring >> rotation) | (ring << (bit + 1u - rotation))) & ring_mask :
+            ((ring << rotation) | (ring >> (bit + 1u - rotation))) & ring_mask;
+        X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+            ((ring >> bit) & 1u) != 0u);
+    }
+    instruction_state.data.result = ring & mask;
+}
+
 static void _a_rcl(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    lib_u8 count;
-    lib_u32 flagcf;
-    CPU_TRACE_CALL_BEGIN("_a_rcl");
-    switch (bit)
-    {
-    case 8:
-        CPU_TRACE_BLOCK_BEGIN("bit(8)");
-        count = _a_shift_rotate_count(context, csrc);
-        instruction_state.data.opr2 = count;
-        if (!x86_core_cpu_profile_has_8086_semantics(context->cpu_profile))
-            count %= 9;
-        instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = X86_CPU_MASK_U8(cdest);
-        instruction_state.data.result = instruction_state.data.opr1;
-        if (instruction_state.data.opr2 == 0)
-            break;
-        while (count)
-        {
-            flagcf = !!X86_CPU_GET_MSB_8(instruction_state.data.result);
-            instruction_state.data.result = X86_CPU_MASK_U8(instruction_state.data.result << 1) | _GetEFLAGS_CF;
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
-            count--;
-        }
-        if (instruction_state.data.opr2 == 1)
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                          ((!!X86_CPU_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
-        else
-            instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        CPU_TRACE_BLOCK_END;
-        break;
-    case 16:
-        CPU_TRACE_BLOCK_BEGIN("bit(16)");
-        count = _a_shift_rotate_count(context, csrc);
-        instruction_state.data.opr2 = count;
-        if (!x86_core_cpu_profile_has_8086_semantics(context->cpu_profile))
-            count %= 17;
-        instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = X86_CPU_MASK_U16(cdest);
-        instruction_state.data.result = instruction_state.data.opr1;
-        if (instruction_state.data.opr2 == 0)
-            break;
-        while (count)
-        {
-            flagcf = !!X86_CPU_GET_MSB_16(instruction_state.data.result);
-            instruction_state.data.result = X86_CPU_MASK_U16(instruction_state.data.result << 1) | _GetEFLAGS_CF;
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
-            count--;
-        }
-        if (instruction_state.data.opr2 == 1)
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                          ((!!X86_CPU_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
-        else
-            instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        CPU_TRACE_BLOCK_END;
-        break;
-    case 32:
-        CPU_TRACE_BLOCK_BEGIN("bit(32)");
-        count = (csrc & 0x1f);
-        instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = X86_CPU_MASK_U32(cdest);
-        instruction_state.data.opr2 = count;
-        instruction_state.data.result = instruction_state.data.opr1;
-        if (instruction_state.data.opr2 == 0)
-            break;
-        while (count)
-        {
-            flagcf = !!X86_CPU_GET_MSB_32(instruction_state.data.result);
-            instruction_state.data.result = X86_CPU_MASK_U32(instruction_state.data.result << 1) | _GetEFLAGS_CF;
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
-            count--;
-        }
-        if (instruction_state.data.opr2 == 1)
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                          ((!!X86_CPU_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
-        else
-            instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        CPU_TRACE_BLOCK_END;
-        break;
-    default:
-        CPU_TRACE_BLOCK_BEGIN("bit");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
-        CPU_TRACE_BLOCK_END;
-        break;
-    }
-    CPU_TRACE_CALL_END;
+    _a_rotate_carry(context, cdest, csrc, bit, LIB_FALSE);
 }
+
 static void _a_rcr(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    lib_u8 count;
-    lib_u32 flagcf;
-    CPU_TRACE_CALL_BEGIN("_a_rcr");
-    switch (bit)
-    {
-    case 8:
-        CPU_TRACE_BLOCK_BEGIN("bit(8)");
-        count = _a_shift_rotate_count(context, csrc);
-        instruction_state.data.opr2 = count;
-        if (!x86_core_cpu_profile_has_8086_semantics(context->cpu_profile))
-            count %= 9;
-        instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = X86_CPU_MASK_U8(cdest);
-        instruction_state.data.result = instruction_state.data.opr1;
-        if (instruction_state.data.opr2 == 0)
-            break;
-        if (instruction_state.data.opr2 == 1)
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                          ((!!X86_CPU_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
-        else
-            instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        while (count)
-        {
-            flagcf = X86_CPU_GET_LSB_U8(instruction_state.data.result);
-            instruction_state.data.result = X86_CPU_MASK_U8(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? X86_CPU_MSB_8 : 0);
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
-            count--;
-        }
-        CPU_TRACE_BLOCK_END;
-        break;
-    case 16:
-        CPU_TRACE_BLOCK_BEGIN("bit(16)");
-        count = _a_shift_rotate_count(context, csrc);
-        instruction_state.data.opr2 = count;
-        if (!x86_core_cpu_profile_has_8086_semantics(context->cpu_profile))
-            count %= 17;
-        instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = X86_CPU_MASK_U16(cdest);
-        instruction_state.data.result = instruction_state.data.opr1;
-        if (instruction_state.data.opr2 == 0)
-            break;
-        if (instruction_state.data.opr2 == 1)
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                          ((!!X86_CPU_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
-        else
-            instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        while (count)
-        {
-            flagcf = X86_CPU_GET_LSB_U16(instruction_state.data.result);
-            instruction_state.data.result = X86_CPU_MASK_U16(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? X86_CPU_MSB_16 : 0);
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
-            count--;
-        }
-        CPU_TRACE_BLOCK_END;
-        break;
-    case 32:
-        CPU_TRACE_BLOCK_BEGIN("bit(32)");
-        count = (csrc & 0x1f);
-        instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = X86_CPU_MASK_U32(cdest);
-        instruction_state.data.opr2 = count;
-        instruction_state.data.result = instruction_state.data.opr1;
-        if (instruction_state.data.opr2 == 0)
-            break;
-        if (instruction_state.data.opr2 == 1)
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                          ((!!X86_CPU_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
-        else
-            instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        while (count)
-        {
-            flagcf = X86_CPU_GET_LSB_U32(instruction_state.data.result);
-            instruction_state.data.result = X86_CPU_MASK_U32(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? X86_CPU_MSB_32 : 0);
-            X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
-            count--;
-        }
-        CPU_TRACE_BLOCK_END;
-        break;
-    default:
-        CPU_TRACE_BLOCK_BEGIN("bit");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
-        CPU_TRACE_BLOCK_END;
-        break;
-    }
-    CPU_TRACE_CALL_END;
+    _a_rotate_carry(context, cdest, csrc, bit, LIB_TRUE);
 }
 typedef enum { X86_CPU_SHIFT_LEFT, X86_CPU_SHIFT_RIGHT, X86_CPU_SHIFT_ARITHMETIC } x86_cpu_shift_kind;
 
