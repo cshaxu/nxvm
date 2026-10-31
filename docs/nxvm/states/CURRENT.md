@@ -1,4 +1,29 @@
-# M5 T582 S36 — Active: CPU execution hot paths
+# M5 T582 S37 — Active: memory and bus hot paths
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S37 after S36. |
+| Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
+| Objective | Identify and qualify an evidence-backed reduction in repeated memory routing, bus access or cache work in the actual PC110 workload. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `9ffb2bcfd`, [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md) and [S36 CPU evidence](../etc/evidence/t582-s36-cpu-hot-path.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S37. |
+| Files And ABI Surface | Initially evidence and task-owned scratch; admit the exact production owner and interfaces before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve mapping, cache invalidation, provider order and side effects, bus timing, faults and debug; use comparable dual-width probes and the full Shared receiver when needed. |
+| Expected Markers | A qualified improvement or evidence-backed rejection with a next actionable candidate. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | Separate fixed-work timing, complete-frame Game behavior and native/RDP usability; report actual code and size changes. |
+| Stop Conditions | Do not assume ordinary provider accesses are observational or skip guest-visible memory and bus effects. |
+| Exit Criteria | Qualified candidate or documented negative result; T582 remains open until real usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Consult the S26 investigation index and S31/S34 routing and cache evidence before repeating experiments. |
+
+[S37 evidence](../etc/evidence/t582-s37-memory-bus.md) records the first
+cache-fill mapping investigation and its PC110 startup frequency; the
+performance objective remains unresolved.
+
+# M5 T582 S36 — Closed: CPU execution hot paths
 
 | Field | Required record |
 | --- | --- |
