@@ -59,3 +59,5 @@ throughput analysis, implementations and final receiving transfer to S27–S32
 in the active [proposal](../proposals/m5-pc110-startup-clock-performance.md).
 
 S27 recorded the dual-width synthetic and existing product workload envelope in [the evidence](../etc/evidence/t582-s27-performance-envelope.md), commit `95d609df0`. Documentation governance and diff checks passed. Current x86 Game, desktop/RDP and actual usability remain open for later receiving; T582 remains open.
+
+S28 traced the CPU-to-device path and evaluated bounded candidates; [the execution-chain evidence](../etc/evidence/t582-s28-execution-chain.md) records rejected experiments and the S29 shift design. No runtime optimization was delivered in S28; PC110 usability remains open.

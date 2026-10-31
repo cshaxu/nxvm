@@ -1,4 +1,24 @@
-# M5 T582 S28 — Active: end-to-end execution-chain design
+# M5 T582 S29 — Active: bounded CPU shift simplification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S29 after S28. |
+| Admission And Approval | Owner authorized automatic numeric S progression and source/algorithm reductions without material regression; no timing downgrade. |
+| Objective | Replace duplicated iterative SHL/SHR/SAR execution with one bounded implementation preserving every existing profile's results and observations. |
+| Non-goals | No guest instruction skipping, separate executor, timing change, additional public interface, owner-media mutation or premature usability claim. |
+| Reference Baseline | S28 execution-chain evidence and accepted S26 rotate differential. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S29; [design](../etc/evidence/t582-s28-execution-chain.md#shift-execution-candidate-for-s29). |
+| Files And ABI Surface | Shared X86 Core CPU instructions, existing relevant CPU tests and affected manifests; required receiver artifacts and NXVM evidence. No public ABI extension. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Compare old and new actual CPU executions across profiles, widths, all counts, flags, timing and observations; existing targeted tests, cached dual-width builds and full Shared receiver unit/integration gates, fourteen EXE checks, matched PC110 work. |
+| Expected Markers | Single production shift path, fewer source lines and bounded computation with unchanged guest-visible behavior and documented measured limits. |
+| Asset Needs | Task-owned copies of existing external firmware and media; never mutate owner assets. |
+| Reporting Requirements | Actual diff and all results; do not equate a local simplification with usable PC110 performance. |
+| Stop Conditions | No timing downgrade, invalid C shifts, changed undefined-flag behavior or reduced test assertions. |
+| Exit Criteria | Qualified bounded implementation or evidence-backed rejection, plus required receiver and documentation obligations. T582 stays open until actual product acceptance. |
+| Original Owner Request | Improve PC110 performance and code/algorithm quality without materially worsening other properties. |
+| Similar-Issue Sweep | Compare all three directions, profiles, register/memory operations, boundary counts and error paths against original implementation. |
+# M5 T582 S28 — Closed: end-to-end execution-chain design
 
 | Field | Required record |
 | --- | --- |
