@@ -1,4 +1,25 @@
-# M5 T582 S34 — Active: remaining PC110 usability costs
+# M5 T582 S35 — Active: CPU and Machine cost attribution
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S35 after S34. |
+| Admission And Approval | Owner authorized automatic numeric S progression and comparable cost investigation without reducing guest fidelity. |
+| Objective | Attribute the remaining PC110 workload cost among CPU execution, memory and port routing, clock advancement and device scheduling using comparable evidence. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `9ffb2bcfd`, S20 and S26 execution-chain measurements and S34 profile and dispatch evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S35. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned scratch only; admit any production change separately with its exact boundaries. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Reuse earlier results; sample comparable workloads and report measurement overhead, uncertainty and observability limits. Preserve guest timing and state. |
+| Expected Markers | Ranked costs and concrete evidence-backed candidates, without subtracting measurements from unlike probes as if they had identical work. |
+| Asset Needs | Existing private task-owned firmware and media copies only; preserve owner assets. |
+| Reporting Requirements | Distinguish inclusive from exclusive costs, representative workload from synthetic loops and measured values from hypotheses. |
+| Stop Conditions | No timing downgrade, guessed hardware behavior or bypass of fault, event and device ordering. |
+| Exit Criteria | Actionable ranking with limitations and a next candidate; the T remains open until interactive usability is verified. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Consult the S26 investigation index and subsequent evidence before repeating any experiment. |
+
+# M5 T582 S34 — Closed: remaining PC110 usability costs
 
 | Field | Required record |
 | --- | --- |
