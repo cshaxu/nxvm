@@ -1,4 +1,28 @@
-# M5 T582 S37 — Active: memory and bus hot paths
+# M5 T582 S38 — Active: clock and device advancement
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S38 after S37. |
+| Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
+| Objective | Identify and qualify a substantive reduction in repeated clock or device scheduling work on the actual PC110 workload. |
+| Non-goals | No skipped guest work, reduced timing fidelity, second clock or executor, or owner-media mutation. |
+| Reference Baseline | Shared `f50bc9392`, [S37 evidence](../etc/evidence/t582-s37-memory-bus.md) and [scheduler observations](../etc/evidence/t582-s13-scheduler-observation.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S38. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned scratch; admit exact Shared production owner and consumers before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve guest time, clock phase, device side effects, asynchronous event and failure ordering; compare equivalent work on both widths and run full Shared receiver if needed. |
+| Expected Markers | Evidence-backed improvement or a bounded rejection with a concrete subsequent direction. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | Distinguish fixed-work measurements, guest clock and game behavior from desktop/RDP usability; report actual changes and limits. |
+| Stop Conditions | No unchecked deadline reuse or suppression of guest-visible events or mutations. |
+| Exit Criteria | Qualified candidate or documented negative result with a next actionable candidate; T582 stays open until real usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Review S13 and S26 scheduler, deadline and clock experiments before repeating a candidate. |
+
+[S38 evidence](../etc/evidence/t582-s38-clock-advancement.md) records the
+initial Core timeline measurements. The performance objective remains open.
+
+# M5 T582 S37 — Closed: memory and bus hot paths
 
 | Field | Required record |
 | --- | --- |
