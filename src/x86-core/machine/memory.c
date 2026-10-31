@@ -16,7 +16,7 @@ static lib_u32 x86_core_machine_memory_decode_address(const t_ram *ram,
 }
 
 static lib_status x86_core_machine_memory_offset(const t_ram *ram,
-    lib_u32 physical, lib_size size, lib_size *out_offset)
+    lib_u32 physical, lib_u32 decoded, lib_size size, lib_size *out_offset)
 {
     lib_size offset;
     lib_uptr index;
@@ -24,7 +24,7 @@ static lib_status x86_core_machine_memory_offset(const t_ram *ram,
     if (ram == LIB_NULL || out_offset == LIB_NULL || ram->connect.backing == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    offset = (lib_size)x86_core_machine_memory_decode_address(ram, physical);
+    offset = (lib_size)decoded;
     for (index = 0u; index < ram->connect.mapping_count; ++index) {
         const x86_core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
         if (physical >= mapping->physical_start &&
@@ -182,7 +182,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             return status;
         }
     }
-    status = x86_core_machine_memory_offset(ram, physical, bytes, out_offset);
+    status = x86_core_machine_memory_offset(ram, physical, wrapped, bytes, out_offset);
     if (status != LIB_STATUS_OK) return status;
     *out_provider = LIB_NULL;
     *out_provider_physical = wrapped;
@@ -638,7 +638,8 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
                 byte, X86_CORE_MACHINE_MEMORY_ACCESS_READ, status);
             return status;
         }
-        status = x86_core_machine_memory_offset(ram, physical, byte, &offset);
+        status = x86_core_machine_memory_offset(ram, physical,
+            x86_core_machine_memory_decode_address(ram, physical), byte, &offset);
         if (status != LIB_STATUS_OK) return status;
     }
     lib_memory_copy((void *)destination,
@@ -775,7 +776,8 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
                 byte, X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, status);
             return status;
         }
-        status = x86_core_machine_memory_offset(ram, physical, byte, &offset);
+        status = x86_core_machine_memory_offset(ram, physical,
+            x86_core_machine_memory_decode_address(ram, physical), byte, &offset);
         if (status != LIB_STATUS_OK) return status;
     }
     for (index = 0u; index < ram->connect.mapping_count; ++index) {
@@ -851,7 +853,7 @@ lib_status x86_core_machine_memory_query_cpu_cache(const t_ram *ram,
     }
     if (x86_core_machine_memory_is_plain_span(ram, first, 16u)) {
         lib_size offset;
-        *out_fill_enabled = x86_core_machine_memory_offset(ram, first, 16u, &offset) ==
+        *out_fill_enabled = x86_core_machine_memory_offset(ram, first, first, 16u, &offset) ==
             LIB_STATUS_OK && offset == first;
         return LIB_STATUS_OK;
     }
