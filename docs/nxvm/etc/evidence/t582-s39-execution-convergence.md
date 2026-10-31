@@ -263,3 +263,19 @@ Sampler log SHA-256:
 `A26A0C61E37D45D17478BBD7B62B87FD2EC593CA04BA3B8A13C1BC585684C8F0`.
 Guest log SHA-256:
 `969396C3CC2D78C2912A63A4DB4831EF85A5B924B29B8EAF91B099CF1F30874A`.
+
+### Keyboard callback ownership follow-up
+
+The Board callback obtains the keyboard endpoint's scan set, scanning and BAT
+state and, when repeat bytes exist, its remaining repeat time. Controller
+deadline calculation needs that snapshot for immediate BAT and repeat events;
+controller advancement takes BAT and can publish a repeat after advancing
+other state. These are separate observations around possible mutation, so the
+host instruction-pointer count alone does not justify reusing a snapshot across
+them. When keyboard serial bytes are pending, deadline calculation can query
+the callback more than once through its serial and response predicates; source
+inspection has not established how frequently that special state occurs in
+Game, nor whether removing those few repeated calls improves the workload.
+The existing S8 change already avoids the repeat-time query when no repeat
+bytes exist. Do not add cached keyboard state or skip BAT/repeat checks on the
+basis of this sampling. No production code or additional test was changed.
