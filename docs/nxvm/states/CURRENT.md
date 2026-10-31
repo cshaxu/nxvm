@@ -36,6 +36,22 @@ The PIC consolidation and dual-width receiver have completed; see
 [PIC evidence](../etc/evidence/t582-s34-pic-scan.md). S34 remains active to
 identify a substantial route toward the still-unmet usability objective.
 
+### Admitted memory route tier consolidation
+
+The three duplicate query/failure loops over the already-matched device list
+in `src/x86-core/machine/memory.c` may use one tier-ordered loop. Preserve
+raw and selected-alias precedence, replacement/ordinary/fallback order,
+registration order, observational queries, failure notification and RAM
+fallback; no interface, persistent state or alternate route is added. Review
+and run existing overlap, alias, terminal-failure, memory and cache tests on
+both widths, then run the cached full Shared receiver and check all fourteen
+product artifacts. Fixed-work and direct-call comparisons are supporting
+evidence only; they do not establish interactive PC110 usability.
+
+The memory tier consolidation and dual-width receiver have completed; see
+[memory evidence](../etc/evidence/t582-s34-memory-tiers.md). S34 remains
+active because the PC110 usability objective is not yet established.
+
 # M5 T582 S33 — Closed: prefix classifier consolidation
 
 Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate
