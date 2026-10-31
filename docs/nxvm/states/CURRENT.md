@@ -19,6 +19,9 @@
 | Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
 | Similar-Issue Sweep | Review S26 investigation index and S35–S38 evidence before repeating experiments. |
 
+[S39 evidence](../etc/evidence/t582-s39-execution-convergence.md) records the
+initial branch-result duplication audit. PC110 usability remains unresolved.
+
 # M5 T582 S38 — Closed: clock and device advancement
 
 | Field | Required record |
