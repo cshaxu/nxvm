@@ -72,6 +72,23 @@ The prefetch consolidation and dual-width receiver have completed; see
 [prefetch evidence](../etc/evidence/t582-s34-prefetch-checks.md). S34 remains
 active because the PC110 usability objective is not yet established.
 
+### Admitted PIT deadline simplification
+
+The board PIT deadline helper may remove its impossible zero-tick branch and
+use zero as the unset minimum: `x86_pit_ticks_until_output` only returns OK
+with a nonzero result. Preserve all three calls, their order, clock conversion,
+error handling and the board's existing immediate-deadline result for other
+devices. No interface, persistent state or event ordering changes. Verify this
+invariant against the implementation and existing PIT/board deadline tests on
+both architectures, measure the fixed-work candidate, and run the cached full
+Shared receiver and fourteen artifact checks if retained. Do not claim that
+this bounded change establishes PC110 playability.
+
+The PIT simplification has been qualified and committed as Shared
+`7094decf8`; [evidence](../etc/evidence/t582-s34-pit-deadline.md) records the
+initial MyNES native-window failure and successful isolated rerun. S34 remains
+active because the performance and interactive-usability objective is open.
+
 # M5 T582 S33 — Closed: prefix classifier consolidation
 
 Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate

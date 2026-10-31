@@ -296,3 +296,136 @@ The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
 changed in this audit.
+
+## Interpretation for the next performance investigation
+
+The game-stage estimate above places physical reads inside CPU refresh. As a
+thought experiment, if the sampled 11% were representative and all of that
+work could be eliminated without affecting anything else, the maximum implied
+speedup would be about 1.12 times. Even eliminating the entire estimated 57%
+refresh interval would imply only about 2.33 times. Neither elimination is a
+valid implementation: guest execution and reads must still occur. These
+illustrative calculations inherit the sample's substantial uncertainty and
+are not measured speedups or hard bounds. The configured 33 MHz is a guest
+clock reference, not by itself a proven interactive acceptance threshold.
+
+The separate World Clock profile breaks refresh into execution, timing and
+interrupt stages, but it is a different workload and cannot be multiplied by
+the Game-stage percentages to claim a precise Game cost. The independent
+NOP/JMP comparison shows a large execution-chain difference even without
+firmware shortcuts, while its different CPU, memory and timing contracts
+prevent attributing that difference to Machine scheduling alone. Together,
+these observations point to a larger end-to-end execution-chain investigation,
+including CPU and Machine work, rather than treating one small physical-read
+or timing helper as a demonstrated solution. No further candidate or product
+speedup is established by this analysis.
+
+## Refresh-request observation candidate
+
+The current Machine arbitration first calls the attachment's
+`refresh_request`, then calls `x86_core_machine_refresh_hold_advance`, which
+calls the same provider again when no refresh cycle is active. These calls
+are adjacent apart from reading the local remaining-cycle state. PC110's
+current profile provider always returns false, so its actual board binding
+performs two equivalent negative observations in that case. A third observation
+is conditional on prefetch-reservation admission and occurs after DMA and CPU
+bus advancement; it cannot generally reuse the earlier value because those
+operations may change board state.
+
+The Core attachment declaration does not currently state that the provider
+is observational or stable across calls, and the helper has two additional
+call sites outside arbitration. Therefore reusing the first result would
+change the observable callback sequence for a generic attachment and is not
+yet established safe. The two calls' frequency and exclusive cost on PC110
+have not been measured; this is a candidate for focused measurement and
+contract review, not evidence of an interactive speedup. No implementation,
+API, executable or test was changed for this observation.
+
+The attachment contract permits callbacks to use bounded Core operations and
+does not require repeated requests to return the same value. For example, an
+attachment that reports false on the first call and true on the second can
+start a refresh through the existing helper; substituting the first result
+would not start it. This is a contract-level counterexample, not a claim that
+the PC110 provider behaves that way. Consequently a generic reuse patch needs
+an independently justified contract change or a different design; the current
+PC110 implementation alone does not authorize one. No such patch is made.
+
+### Game-marker timing probe
+
+A task-only x64 scheduler copy sampled one in 256 calls using the existing
+pseudorandom TSC instrumenter. It timed the complete arbitration function,
+the nested refresh-hold helper and Machine run separately. The private-media
+probe reported its Game marker and measured the following 30 seconds before
+normal exit (274.69 seconds total). It did not exercise native Window or RDP.
+
+Arbitration: 19,185,845 calls, 74,849 samples, 20,003,406 TSC units;
+refresh-hold helper: 19,185,845 calls, 74,780 samples, 3,277,080 TSC units;
+Machine run: 46,474 calls, 168 samples, 230,282,829 TSC units. Scaling by
+calls per sample gives approximately 8.0% for arbitration within Machine run
+and 1.3% for the helper within Machine run. The latter is nested in the former,
+not additive. The helper includes more than the second provider call, so it is
+not a measurement of that callback alone. Only 168 Machine samples, unsynchronized
+TSC, instrumentation, scheduling and compilation layout limit these estimates.
+The Game marker and captured frame do not establish interactive playability.
+The result does not justify changing the generic refresh callback contract or
+claiming this candidate resolves the throughput gap.
+
+SHA-256 (guest log, instrumented scheduler, Game frame):
+`B614424D68437CA7B0DFC42DE44B464DD040DEC166E78B8253247C278ECCC3D0`,
+`FD14EFFD1914102390C276C0DBB56C1A8E4DDF7D0C939D253CE4D190B78CECBC`,
+`6FA8701C11BC23AEA11AF9E43BAED4EFCF92A47976680199CC43491114F69925`.
+
+### Game-marker scheduler phase sampling
+
+Another private-media x64 run used the same Game-marker and 30-second window,
+with independently sampled nested timers around the existing scheduler phases.
+It exited normally after 267.48 seconds. Scaling sampled TSC intervals by
+calls per sample against the sampled Machine-run interval gives approximately
+12.2% for Core time/deadline capture, 8.5% for the board before-internal
+callback, 1.4% for internal FPU/WAIT advancement and 4.4% for the board
+after-internal callback. Machine run had 47,795 calls, 175 samples and
+226,103,151 TSC units. Phase calls were about 19.34 million each, with
+75,338–75,625 samples. These are approximate inclusive intervals, not an
+exact accounting: additional timer checks and compiler layout change runtime,
+TSC is not serialized, and the denominator has only 175 samples. The marker
+and frame do not establish native Window/RDP responsiveness.
+
+The deadline capture asks the board, timeline, FPU and CPU WAIT owners for
+their current deadlines; the board in turn includes video, PIT, RTC, DMA,
+media and input. The before phase advances PIT and interrupt readiness before
+media, while the after phase advances RTC, keyboard, PIC and video. Both have
+observable ordering and cannot simply be suppressed. Previous S13 results and
+S28's deadline-removal upper bound remain applicable; this measurement is a
+new Game-stage prioritization, not a safe deadline cache design or an achieved
+speedup. Investigate repeated calculations inside the 12.2% deadline path
+while preserving all mutation and observation boundaries.
+
+SHA-256 (guest log, instrumented scheduler, Game frame):
+`80963E164A813E203964E7000DAEFF02EB94BCFAA0AE2407BF87FEDE61075D20`,
+`3F5CD57F8A9507F43496F9AE751DCBA35CDC1A136ADE16098D4564E91E957C80`,
+`40DF145BD2B6EF004D835A6E2CD309D88DE40606657584ED347FF892B1993E9B`.
+
+### Game-marker board deadline breakdown
+
+A separate task-only x64 board-deadline copy used the same private-media Game
+probe and 30-second measurement window; it exited normally after 273.73
+seconds. Board deadline observation had 17,359,675 calls / 67,814 samples /
+30,720,370 TSC units; its PIT consideration had 17,359,675 / 67,559 /
+8,650,660, and its clock-conversion consideration had 17,359,675 / 67,921 /
+3,400,700. The Machine-run denominator had 41,061 calls / 153 samples /
+243,512,824 units. Scaling by calls per sample gives approximately 12.0%,
+3.4% and 1.3% of Machine-run time respectively. PIT and clock considerations
+are nested within board deadline; the clock path can itself be nested in PIT,
+so none of these figures should be summed. Instrumentation, non-serialized
+TSC and the small denominator sample make the percentages approximate.
+
+This workload suggests the deadline cost is distributed: the PIT and clock
+subpaths alone do not explain the whole board observation interval. Prior
+S13 conversion experiments showed no reliable cross-width benefit, and the
+existing deadline-cache mutation analysis remains applicable. No production
+optimization follows solely from this probe, and Game-marker capture is not
+native Window/RDP or interactive-acceptance evidence.
+
+SHA-256 (guest log, instrumented board source):
+`4D015E8A4B6236086AF846833A86B1D517B952B7699719B105D7DEDB6CE400D0`,
+`AB51D92709B46EC93DAEE97A8A412266065B98C3CEA6C8C25E176DE78FFCFFD8`.
