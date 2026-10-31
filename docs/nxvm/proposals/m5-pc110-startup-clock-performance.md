@@ -119,8 +119,56 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   ROL and ROR may replace per-bit loops with a width-masked rotation shared by
   the existing helpers, retaining count, carry, overflow, undefined-flag and
   profile behavior. Qualify real execution on both widths and all profiles.
-- **S27 or later: receiving qualification.** S11's original whole-product and
-  clock qualification remains pending after S26 and any later measured batches.
+- **S27: comparable workloads and performance envelope.** Establish reusable,
+  bounded x86/x64 measurements for the same synthetic instruction workload,
+  PC110 startup, World Clock and Personaware Game. Record input/media identity,
+  completed-frame criteria, instruction and guest/host time, host variation,
+  and where complete guest-state equivalence is not established. Reuse the
+  existing evidence rather than repeating rejected experiments without a new
+  hypothesis. Exit with a baseline and a prioritized cost/measurement table;
+  no production change is required.
+- **S28: end-to-end execution-chain design.** Trace instruction fetch, decode,
+  execution, retirement/timing, memory and board time advancement as one
+  causal path. Identify duplicate work and its owner, required observations,
+  interrupts, side effects, faults and exact invalidation/order boundaries.
+  Compare the current single executor with external references without assuming
+  their different timing or firmware shortcuts are equivalent. Exit with a
+  concrete, reviewable design, affected files/interfaces, estimated diff and
+  verification plan for each justified implementation, or a documented reason
+  a candidate is unsafe. Do not add a second executor or lower timing accuracy.
+- **S29: instruction execution and retirement optimization.** Implement the
+  S28-supported CPU fetch/decode/execution or retirement simplifications in
+  bounded batches, retaining all profiles, restart/fault and observation
+  behavior. Reuse existing tests; add only necessary regression coverage.
+  Exit with actual diff, both-width semantic tests and matched-work measurements;
+  if no candidate satisfies the boundary, record the evidence and transfer the
+  unresolved throughput goal forward rather than claim it fixed.
+- **S30: guest-time and device advancement optimization.** Implement only a
+  proven reduction in redundant scheduler/board work, preserving the single
+  guest clock, device deadlines, I/O and memory observation, interrupts and
+  before/internal/after ordering. Do not infer safe batching from unchanged
+  deadline values alone. Exit with boundary/fault regression evidence and
+  both-width representative measurements, or a documented negative result.
+- **S31: memory and remaining workload bottlenecks.** Re-evaluate the highest
+  remaining measured costs, including memory/provider and display paths only
+  where the workload warrants them. Preserve mapping, cache invalidation,
+  faults and device side effects; avoid re-running previously rejected local
+  candidates without new evidence. Exit with qualified changes or a prioritized
+  evidence-backed follow-up. Add further numeric S tasks if performance is
+  still insufficient; completing this S does not imply the T is complete.
+- **S32: whole-product receiving and owner acceptance.** After the actual
+  performance objective is met, reconcile before/after startup, guest clock,
+  RTC and Game behavior on x86/x64 and applicable DSTN/TFT variants; validate
+  responsive operation and report desktop/RDP evidence separately. Run the
+  full Shared receiving gate below, review actual changes, publish and obtain
+  owner acceptance. If usability or any required gate remains unproven, keep
+  T582 open and insert the necessary numeric S work before this final gate.
+
+S26 remains the currently active packet; this sequence plans subsequent work
+and does not itself close S26 or admit another active S. The owner's criterion
+also permits a clear net reduction in production code or algorithmic work when
+other properties do not materially worsen, even without a large measured gain.
+Such a cleanup is not evidence that the PC110 usability goal has been met.
 
 ## Constraints and evidence
 
