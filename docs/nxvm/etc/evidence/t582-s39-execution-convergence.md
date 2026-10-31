@@ -279,3 +279,24 @@ Game, nor whether removing those few repeated calls improves the workload.
 The existing S8 change already avoids the repeat-time query when no repeat
 bytes exist. Do not add cached keyboard state or skip BAT/repeat checks on the
 basis of this sampling. No production code or additional test was changed.
+
+## PIC request-check ordering
+
+The current priority loop loads each line's unmask delay before testing whether
+that line is pending. A scratch-only candidate computed the existing pending
+mask once and checked its bit before loading that line's delay, retaining the
+same priority loop and later selection tests. It adds no state or callback.
+This differs from the S26 empty-mask early-return experiment. The source-level
+reasoning assumes PIC state cannot mutate during this synchronous selection;
+the candidate was not qualified against every cascade and priority case.
+
+At the private-media fixed startup checkpoint, baseline/candidate/candidate/
+baseline took 19,286 / 19,947 / 18,173 / 17,894 ms on x64 and 24,816 /
+22,356 / 22,352 / 22,650 ms on x86. All reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`. x64 favors the baseline in both ordered
+comparisons, while x86 favors the candidate; the magnitude is subject to host
+noise and the checkpoint does not establish full-state equivalence or Game
+performance. Since this neither reduces algorithmic complexity nor demonstrates
+a reliable cross-width gain, it was rejected without production changes.
+Log SHA-256:
+`D22E84771F3AB7974898898222FC2CC0AB9CFAAD25FEB272575048ADF2F3CC38`.
