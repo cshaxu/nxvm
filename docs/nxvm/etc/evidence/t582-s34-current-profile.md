@@ -202,6 +202,29 @@ but rule out treating unchanged-looking device input as permission to skip
 an entire device callback. No new runtime test, source change or performance
 claim is made by this inspection.
 
+## 486 decode dependency classification
+
+The 486 decode penalty checks whether consecutive instructions are
+PUSH/POP before applying its exception for stack-pointer dependencies. If the
+previous write mask and the current address-base mask do not overlap, the
+exception cannot affect the final penalty; if they overlap on a non-stack
+register, that overlap remains chargeable regardless of PUSH/POP. The opcode
+classifier is a pure local function. A scratch candidate moved these tests
+behind the mask intersection and skipped them for non-stack overlap; no
+instruction timing rule or runtime interface was changed.
+
+An exhaustive 262,144-case Boolean comparison covered all two eight-bit masks
+and the two opcode-classification results. This validates that expression,
+not the compiled decoder or full CPU behavior. The configured-CMOS fixed-work
+baseline/candidate/candidate/baseline times were 20823/19660/23547/18825 ms
+on x64 and 23576/23789/23649/23957 ms on x86; all reached the same
+10,000,000-instruction, 79,964,294-clock and `0003dbc5` checkpoint. The x64
+result changed direction and x86 differences are small. The candidate adds
+one net source line and a more complicated condition, so the measurements do
+not justify merging it. It was not qualified against complete CPU state or
+interactive gameplay. Comparison log SHA-256:
+`601A91660D41542B54734FF93D4D1E49A590AB9788E27593B318000A6455E37B`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
