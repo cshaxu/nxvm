@@ -1,4 +1,25 @@
-# M5 T582 S38 — Active: clock and device advancement
+# M5 T582 S39 — Active: execution and timing architecture convergence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S39 after S38. |
+| Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
+| Objective | Identify and prototype a coherent reduction in CPU execution and timing overhead sufficient to materially improve the actual PC110 workload. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host-clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `f50bc9392`, [Game workload](../etc/evidence/t582-s26-personaware-game.md), [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md), [S36 CPU evidence](../etc/evidence/t582-s36-cpu-hot-path.md), and [S38 scheduler evidence](../etc/evidence/t582-s38-clock-advancement.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S39. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned scratch; admit exact Shared owners, consumers and interfaces before production edits. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve full CPU state, faults, debug, timing, asynchronous events and all CPU profiles; compare representative workload on both widths and perform full Shared receiving for production changes. |
+| Expected Markers | A measured coherent design and implementation or a bounded evidence-backed rejection with a next actionable direction. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | Distinguish fixed-work cost, full-frame Game behavior and native/RDP usability; report actual changes, regression evidence and limits. |
+| Stop Conditions | No unproven skipping of guest work, deadlines or observation and no separate execution path. |
+| Exit Criteria | Qualified meaningful candidate or documented negative result with a concrete next candidate; T582 stays open until actual usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Review S26 investigation index and S35–S38 evidence before repeating experiments. |
+
+# M5 T582 S38 — Closed: clock and device advancement
 
 | Field | Required record |
 | --- | --- |

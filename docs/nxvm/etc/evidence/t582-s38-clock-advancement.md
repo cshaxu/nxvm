@@ -118,3 +118,22 @@ justify the additional branches. These observations are noisy and do not prove
 complete guest-state equivalence or Game performance. The candidate was not
 applied to production. Log SHA-256:
 `7CF14036366D248371341D530E1FABD6B75425235E9FE0C1D654F4467EFE1993`.
+
+## CPU bus advancement idle case
+
+A task-only link wrapper counted the existing CPU bus advancement callback at
+the fixed PC110 startup checkpoint. It classified calls with zero write-buffer
+count, zero service credit and zero invalidation cycles, and sampled one in
+256 call intervals. x64 recorded 10,294,318 calls, 2,237,289 idle cases,
+40,212 samples and 2,462,780 accumulated TSC units; x86 recorded 10,290,046,
+2,235,549, 40,195 and 2,853,210 respectively. Both completed 10,000,000
+instructions at 79,964,294 ticks and PC `0003dbc5`.
+
+Only about 22% of these calls met the simple idle condition. The sampled
+intervals include timer overhead and deterministic sampling may alias the
+guest; they are not exclusive whole-process measurements or Game evidence.
+An additional branch for this bounded case would not remove the per-instruction
+arbitration or establish a substantial product gain, so it is not adopted on
+these observations. No guest timing, production source or artifact changed.
+Log SHA-256:
+`EF6894B2BFFF575CEA3309EEFD5C7091586F1935F13452ED28286D7162DC0C34`.
