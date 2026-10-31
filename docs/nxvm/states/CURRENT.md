@@ -1,3 +1,24 @@
+# M5 T582 S27 — Active: comparable workload and performance envelope
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S27 after accepted S26. |
+| Admission And Approval | Owner authorized continued PC110 performance work, automatic numeric S sequencing and the S27 workload-baseline plan; timing accuracy downgrades require explicit approval. |
+| Objective | Establish a traceable, comparable x86/x64 performance baseline and prioritize the end-to-end execution-chain work without repeating already settled experiments. |
+| Non-goals | No production change, host-clock substitution, guest-work skipping, second executor, timing downgrade, owner-media mutation or playability claim from an indirect probe. |
+| Reference Baseline | Accepted S26 through `602292076`, closure `010a4b067`, and the T582 investigation index and existing fixed-work and product-path evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S27 and following. |
+| Files And ABI Surface | NXVM task documentation and task-owned scratch probes only; no Shared or App production API, executable, configuration or owner media changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Audit source/measurement provenance and workload identity; report guest instructions, ticks, host elapsed, display/input method, width and framebuffer completion where available. Run only new bounded probes required to fill an actionable gap; verify documentation and actual diff. |
+| Expected Markers | A prioritized cost/measurement table explicitly distinguishes matched work, approximate workloads, x86/x64 evidence, host variation and unmeasured or unsupported comparisons. |
+| Asset Needs | Existing task-owned private copies of PC110 firmware, CMOS and configured disk media; no external media content is committed. |
+| Reporting Requirements | Provide baseline values, measurement limitations, candidate priorities and a clear statement that the PC110 usability goal remains open. |
+| Stop Conditions | Do not modify guest timing, runtime code or published products during this audit; do not treat matching PC/ticks as complete-state proof. |
+| Exit Criteria | Reviewable baseline and prioritized evidence table sufficient to enter S28, with unavailable measurements and limitations explicitly recorded. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior; compare the entire instruction-to-device chain with the reference emulator. |
+| Similar-Issue Sweep | Cross-check earlier startup, Game, World Clock, synthetic-loop, CPU timing and board-advance observations for duplicated probes and incompatible workloads. |
+
 # M5 T582 S26 — Closed: single-executor throughput design audit
 
 | Field | Required record |
