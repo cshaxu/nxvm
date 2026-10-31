@@ -344,3 +344,23 @@ binding initializes Turbo, so it did not test the candidate branch and is not
 PC110 performance evidence. The corrected Turbo probe changed only task scratch;
 production and released artifacts remained unchanged. Corrected log SHA-256:
 `86DAF7B486E70D19D8DE0760DB30D03C5DF8CA8F576EDE81E1A81CD1CA438DF9`.
+
+## Preview's overwritten CPU snapshot
+
+The existing lexical preview copies the beginning of its instruction record,
+including `oldcpu`, before `ExecInit` calls `ExecBoundary` and overwrites that
+snapshot from the preview CPU. A scratch candidate split that existing copy
+around `oldcpu`, retaining the remainder and the existing preview/decoder path.
+This removes bytes subsequently overwritten but adds a copy call. It has not
+been poisoned or qualified for all profiles, faults, preview callbacks or
+debug observation; it is not a proven equivalent implementation.
+
+At the private PC110 startup checkpoint, baseline/candidate/candidate/baseline
+took 18,696 / 18,285 / 17,947 / 18,312 ms x64 and 23,442 / 23,754 / 24,838 /
+23,097 ms x86. All reported 10,000,000 instructions, 79,964,294 ticks and
+PC `0003dbc5`. x64 favors the candidate while both x86 pairs favor baseline.
+These are noisy startup samples, not full guest-state or Game equivalence.
+The reduced byte count does not compensate for a demonstrated risk of slower
+x86 execution and added copy complexity, so no production change is admitted.
+Log SHA-256:
+`C3AC098BEC4F4C5106863A533BD98B93C63E3C78990CB5660668E9BFF4106E1A`.
