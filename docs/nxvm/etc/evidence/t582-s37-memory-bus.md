@@ -75,3 +75,89 @@ artifact changed. The first scratch command failed to write the script because
 the host PowerShell lacked a requested parameter; it was corrected before the
 completed run. Log SHA-256:
 `E9BD39568FFF8E1D10675F917BD4799D52BDD0A7EF29EA5E2D6E93BFB97DFAE9`.
+
+## Game-drawing instruction execution samples
+
+An x64 scratch build sampled one in 256 calls to the existing `ExecIns`,
+starting immediately before the Machine input that selects Game and stopping
+when the full Game frame became stable. The sample records the final decoded
+primary opcode after the call and its inclusive host TSC interval; exceptions
+or record reuse can affect classification. It does not time the separate
+timing selector, Machine scheduler, or a complete instruction retirement.
+
+The process exited normally in 271.03 seconds; Enter was sent at sample 233
+and the complete frame appeared 33 one-second samples later. The stable frame
+SHA-256 was `E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+Across 88,032 sampled calls and 74,803,282 accumulated TSC units, the leading
+sampled primary opcodes were:
+
+| Opcode | Samples | Accumulated TSC units | Sampled execution share |
+| --- | ---: | ---: | ---: |
+| `8A` (MOV byte) | 7,072 | 7,501,180 | 10.0% |
+| `D0` (byte rotate/shift group) | 7,687 | 5,171,924 | 6.9% |
+| `80` (byte arithmetic group) | 6,595 | 4,841,119 | 6.5% |
+| `74` (JZ) | 7,350 | 3,933,880 | 5.3% |
+| `84` (TEST byte) | 4,893 | 3,824,670 | 5.1% |
+| `75` (JNZ) | 7,008 | 3,790,140 | 5.1% |
+
+These percentages are within the sampled `ExecIns` intervals only, not the
+whole Machine. Sampling is deterministic and can alias periodic guest loops;
+TSC is non-serialized, elapsed intervals include instrumentation and scheduling,
+and the stage boundary crosses host and worker threads. The frame is not proof
+of identical complete guest state, native Window/RDP responsiveness or playable
+input. No product source, owner media or EXE changed. The instruction samples
+direct investigation to `8A`'s existing operand decode and read path, while
+preserving all other opcodes and fault semantics. Guest log SHA-256:
+`8831B1CF4FA9E141BA82A3E61979EF5C72EBDB5688D655C89A0662E74575425F`.
+
+### MOV destination-read cost
+
+`MOV_R8_RM8` decodes a ModR/M byte, reads the source operand and writes the
+destination; the shared decoder also reads the destination register's old
+value into its temporary before the MOV overwrites that register. A second
+private x64 Game run timed that existing read inside the same one-in-256
+`ExecIns` samples. It completed in 265.25 seconds; Enter was sent at sample
+229, a complete frame appeared 31 samples later, and the saved frame matched
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+
+There were 7,111 sampled `8A` instructions, totaling 9,627,496 host TSC units
+for their full `ExecIns` intervals; their destination-old-value reads totaled
+624,200 units over the same 7,111 samples. This is about 6.5% of those MOV
+intervals or 0.8% of the 79,608,896 total sampled `ExecIns` units in this
+window. The nested read includes an additional non-serialized timer pair and
+classification overhead; it must not be added to its parent. Sampling and
+stage caveats above apply, and this is neither x86 nor full guest-state proof.
+
+Removing the read correctly would require an explicit operand-use contract in
+the shared ModR/M decoder and updating its many existing callers, while
+preserving NEC, fault, timing and diagnostic behavior. For `8A` alone the
+measured upper bound is too small to justify that broad change as the PC110
+usability fix; other instructions have not been measured by this probe. The
+existing decoder is retained. No production code or artifact changed. Guest
+log SHA-256:
+`AAD343F916CEFB6A241646078BAAC4173385A86D9C5F9739347EA95820355CB3`.
+
+### MOV decode, source read and destination write
+
+A further single private x64 Game run sampled the same `8A` instruction
+execution and timed its existing `_d_modrm`, `_m_read_rm` and `_kma_write_ref`
+calls within each sample. It exited normally in 262.90 seconds, sent Enter at
+sample 229 and produced the complete frame 29 samples later; the saved frame
+matched `E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+All four counters recorded 7,016 samples: the outer `ExecIns` intervals totaled
+9,078,060 TSC units, ModR/M decode 1,387,960, source read 2,658,760 and
+destination write 388,540. These are approximately 15%, 29% and 4% of the
+outer intervals. Each nested timer and report also increases the outer cost;
+the remaining outer time includes other instruction execution and instrumentation.
+The nested values do not include the independent timing selector or scheduler.
+
+The source read is the largest of these three measured subintervals, but it
+is not evidence that raw RAM copying is the cost: it also includes segment,
+paging, cache, bus and fault processing. The `8A` samples were about ten
+percent of sampled instruction-execution units in the preceding run, so even
+removing an entire subinterval would not establish the required overall gain.
+Deterministic sampling, non-serialized TSC, host scheduling and asynchronously
+selected stages remain limitations; Game-frame identity is not complete state
+or native/RDP gameplay qualification. No production source or asset changed.
+Guest log SHA-256:
+`00B7E4901C39B6B0B0C98052D64DD8B539C9F233A5D525B11E8FC7624EEC2543`.
