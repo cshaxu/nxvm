@@ -543,3 +543,21 @@ Game equivalence, nor a portable compiler-policy gain. The size reduction is
 insufficient reason to risk the observed x64 slowdown; the flag is not adopted.
 Log SHA-256:
 `518798EFA2A678AED5B326BED936631E2C4FE426AAFF6557CD8CBE509FB7A8A0`.
+
+## PIC rotating-priority bit search
+
+A scratch-only candidate replaced the existing scan of a nonzero rotated PIC
+register with three fixed binary bit-group checks. Rotation and the original
+callers remained. Eight lines are a fixed hardware width: the change reduces
+the worst number of bit checks but increases the common first-bit-hit case,
+and is not an asymptotic whole-machine improvement. It has not been qualified
+for all PIC priorities and reset/cascade states.
+
+At the private startup checkpoint, baseline/candidate/candidate/baseline
+took 22,552 / 21,871 / 22,054 / 21,649 ms x64 and 27,589 / 27,202 / 26,046 /
+27,078 ms x86. All reported 10,000,000 instructions, 79,964,294 ticks and PC
+`0003dbc5`. The x64 direction changes and x86 differences are small against
+host variation; this is not complete-state or Game equivalence. The extra
+checks in the best case and lack of clear cross-width gain do not justify the
+alternative, so no production change was made. Log SHA-256:
+`A2CB739056ACB4604FFDDF60FCDA1925F5717E137121FE4FE477138A45361CB0`.
