@@ -417,3 +417,21 @@ not full CPU, fault or debug equivalence, nor a Game result. The extra ABI
 change is not justified by these observations. No production code changed.
 Log SHA-256:
 `3F85282FEC7E377A622F2D49AB24EE6BC2985B2FCD5DF6896F1F27A97B731B6C`.
+
+## CPU compilation inlining policy
+
+A scratch comparison compiled only the existing CPU instruction translation
+unit with GCC `-O3 -fno-inline-functions`, versus the normal `-O3`, and linked
+the same cached remaining libraries. It changed no source or project build
+settings. Baseline/candidate/candidate/baseline at the private PC110 fixed
+startup checkpoint took 19,295 / 19,613 / 19,257 / 18,630 ms x64 and 22,451 /
+22,103 / 22,905 / 23,113 ms x86. All reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`.
+
+The scratch executables shrank from 3,088,881 to 3,027,172 bytes on x64 and
+3,249,782 to 3,188,999 bytes on x86. Both x64 comparisons favor baseline; x86
+differences are small. These noisy startup samples do not prove full-state or
+Game equivalence, nor a portable compiler-policy gain. The size reduction is
+insufficient reason to risk the observed x64 slowdown; the flag is not adopted.
+Log SHA-256:
+`518798EFA2A678AED5B326BED936631E2C4FE426AAFF6557CD8CBE509FB7A8A0`.
