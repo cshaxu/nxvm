@@ -397,3 +397,23 @@ A correct future design must retain all stop, reset, hold, event and partial
 budget boundaries, with explicit fault/debug and asynchronous regression.
 Invalid-ablation log SHA-256:
 `2F3F1D782F189134EAF772F56BC758B226232AA2A04888ABEEFE79280D2243FB`.
+
+### Returning timing with CPU refresh
+
+A separate scratch candidate changed the existing CPU refresh return value to
+the already computed timing result and used it at its sole production Machine
+caller, avoiding the immediate post-refresh capture. The later pending-retirement
+capture and all event boundaries remained. This changes the existing CPU
+function's return ABI and its null-result contract; the numerous test callers
+and all consumers were not rebuilt or qualified, so it is not an admitted API
+change. No persistent state or additional execution path was introduced.
+
+Baseline/candidate/candidate/baseline at the private PC110 startup checkpoint
+took 18,111 / 19,304 / 19,047 / 18,512 ms on x64 and 23,685 / 25,062 /
+23,449 / 24,819 ms on x86. All reported 10,000,000 instructions, 79,964,294
+ticks and PC `0003dbc5`. Both x64 comparisons favor baseline, while x86 changes
+direction. The single ordered sequences are noisy; matching the checkpoint is
+not full CPU, fault or debug equivalence, nor a Game result. The extra ABI
+change is not justified by these observations. No production code changed.
+Log SHA-256:
+`3F85282FEC7E377A622F2D49AB24EE6BC2985B2FCD5DF6896F1F27A97B731B6C`.
