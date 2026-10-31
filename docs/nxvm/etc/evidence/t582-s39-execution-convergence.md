@@ -398,6 +398,27 @@ budget boundaries, with explicit fault/debug and asynchronous regression.
 Invalid-ablation log SHA-256:
 `2F3F1D782F189134EAF772F56BC758B226232AA2A04888ABEEFE79280D2243FB`.
 
+### First observed divergence in the invalid ablation
+
+A separate x64 pair logged every Core quantum for the original and invalid
+immediate-retirement variants, using private copies of the same CMOS and disk
+inputs. Their first 1,877 recorded boundaries matched. The next boundary was
+a hard CPU reset request: baseline had retired 7,691,597 instructions at
+62,079,603 guest ticks, while the ablation had retired 7,691,598 at 62,079,614;
+both returned the reset vector `fffffff0`. A second pair instrumented the two
+existing reset branches and confirmed `X86_CORE_CPU_RESET_HARD` was consumed
+through the reset-request branch in each run, rather than the shutdown-reset
+branch. It does not establish which device raised the request.
+
+The ablation has already been rejected. This trace explains why preserving the
+pre-retirement reset check is necessary; it does not prove that reset handling
+alone accounts for every later state difference, or qualify a fast path. Output
+logging perturbs timing and these are product-run quantum boundaries, not a
+complete per-instruction comparison. No production code or user media changed.
+Instrumented baseline/candidate log SHA-256:
+`3BA725043870E05188D7F9FA5F38F2772B9AE60A8DBA0269D752134C8AC3CA06`,
+`AAAE5C9656E21126C4E7E849CB6C565CBBD6EFF3E2D3ADD690FF33DF20840332`.
+
 ### Returning timing with CPU refresh
 
 A separate scratch candidate changed the existing CPU refresh return value to
