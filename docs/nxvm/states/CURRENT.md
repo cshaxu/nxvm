@@ -1,4 +1,25 @@
-# M5 T582 S35 — Active: CPU and Machine cost attribution
+# M5 T582 S36 — Active: CPU execution hot paths
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S36 after S35. |
+| Admission And Approval | Owner authorized automatic numeric S progression and CPU optimizations that preserve timing and behavior. |
+| Objective | Identify and qualify an evidence-backed reduction in CPU instruction execution or timing work for real PC110 workloads. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `9ffb2bcfd` and [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S36. |
+| Files And ABI Surface | Initial audit and probes only; admit exact production owner and interfaces before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve all CPU profiles, faults, timing, observation and instruction semantics; use comparable dual-width probes and the full Shared receiver when needed. |
+| Expected Markers | A qualified improvement or a bounded evidence-backed rejection, without claiming gameplay from a synthetic checkpoint. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | State actual speed and code-size changes, host variance, test coverage and native/RDP limitations. |
+| Stop Conditions | Do not discard existing timing or observation semantics or add a second executor. |
+| Exit Criteria | Qualified CPU candidate or documented rejection with actionable follow-up; keep T582 open until owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Consult the S26 investigation index and S35 negative results before repeating experiments. |
+
+# M5 T582 S35 — Closed: CPU and Machine cost attribution
 
 | Field | Required record |
 | --- | --- |

@@ -172,3 +172,25 @@ Given the extra branch and no demonstrated gain, the candidate was discarded.
 This startup probe does not characterize Game or desktop use. No production
 code, owner media or published artifact changed. Combined log SHA-256:
 `7810303FCCFD3A656E8E9D6A398F6A0D076BCD2BB274361B9396F12A952F142C`.
+
+## Previous-opcode scan experiment
+
+At every 486 instruction boundary the CPU scans the prior opcode bytes to
+populate `timing_previous_opcode`. Its only current reader uses that value
+to remove the stack-pointer bit from a prior write mask for consecutive
+PUSH/POP instructions. A scratch candidate performed the scan only when the
+prior write mask included that bit, setting the private field to zero
+otherwise. The mask operation then cannot change the result when the bit was
+absent. No public API, extra state or timing formula was added; this reasoning
+does not prove all future uses of that private field or complete CPU state.
+
+In fixed startup, ordered baseline/candidate/candidate/baseline milliseconds
+were 17,985 / 17,852 / 17,260 / 18,428 x64 and 21,784 / 22,737 / 23,152 /
+23,715 x86, at ten million instructions, 79,964,294 guest ticks and PC
+`0003dbc5`. The x64 candidate was slightly faster, while x86 changed direction.
+These samples are noisy and do not establish Game performance. The candidate
+adds a condition and makes the field's previous-opcode meaning conditional;
+given the weak and mixed benefit, it was not applied to production. No full
+CPU-state, exception, debugger or receiving qualification was attempted.
+Combined log SHA-256:
+`037C83BB5B0D58B5B7CD8E31B0536BF5A456972AB4BFC9B6B5387F67F86CCD6A`.
