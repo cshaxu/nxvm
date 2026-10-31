@@ -264,6 +264,69 @@ static lib_i32 rotate_test_profile(void)
     return !failed;
 }
 
+static lib_bool rotate_test_count_boundaries(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186, X86_CORE_CPU_PROFILE_80286,
+        X86_CORE_CPU_PROFILE_80386, X86_CORE_CPU_PROFILE_80486SX
+    };
+    static const lib_u8 counts[] = {0u, 1u, 7u, 8u, 15u, 16u, 31u, 32u, 33u, 255u};
+    const lib_u32 initial = 0x8123a581u;
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_IF;
+
+    for (lib_size p = 0u; p < sizeof(profiles) / sizeof(profiles[0]); ++p)
+    for (lib_u8 w = 0u; w < (profiles[p] >= X86_CORE_CPU_PROFILE_80386 ? 3u : 2u); ++w)
+    for (lib_u8 direction = 0u; direction < 2u; ++direction)
+    for (lib_size c = 0u; c < sizeof(counts); ++c)
+    for (lib_u8 memory = 0u; memory < 2u; ++memory) {
+        const lib_u8 width = w == 0u ? 8u : w == 1u ? 16u : 32u;
+        const lib_u8 count = x86_core_cpu_profile_has_8086_semantics(profiles[p]) ?
+            counts[c] : (lib_u8)(counts[c] & 31u);
+        const lib_u8 steps = (lib_u8)(count % width);
+        const lib_u32 mask = rotate_mask(width);
+        lib_u64 value = initial & mask;
+        lib_u8 code[6], bytes = 0u;
+        lib_u32 observed = 0u, expected_cf;
+        rotate_fixture state;
+        t_cpu after;
+
+        if (steps != 0u)
+            value = direction ? (value >> steps) | (value << (width - steps)) :
+                (value << steps) | (value >> (width - steps));
+        value &= mask;
+        expected_cf = count == 0u ? 1u : direction ?
+            (lib_u32)((value >> (width - 1u)) & 1u) : (lib_u32)(value & 1u);
+        if (width == 32u) code[bytes++] = 0x66u;
+        code[bytes++] = width == 8u ? 0xd2u : 0xd3u;
+        code[bytes++] = (lib_u8)((direction << 3u) | (memory ? 0x06u : 0xc0u));
+        if (memory) { code[bytes++] = 0u; code[bytes++] = 0x40u; }
+        cpu_instruction_prepare(&state, profiles[p]);
+        state.cpu.data.eax = initial;
+        state.cpu.data.ecx = counts[c];
+        state.cpu.data.eflags = flags;
+        if (memory && cpu_instruction_write(&state, 0x4000u, &initial,
+                width / 8u, X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
+            return LIB_FALSE;
+        if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
+            state.fault.valid) return LIB_FALSE;
+        if (memory) {
+            if (cpu_instruction_read(&state, 0x4000u, &observed, width / 8u,
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+                    LIB_STATUS_OK) return LIB_FALSE;
+        } else observed = after.data.eax;
+        if ((observed & mask) != (lib_u32)value ||
+            (after.data.eflags & VCPU_EFLAGS_CF) != (expected_cf ? VCPU_EFLAGS_CF : 0u) ||
+            !(after.data.eflags & VCPU_EFLAGS_IF) || state.instructions.data.opr2 != count ||
+            (count == 0u && after.data.eflags != flags) ||
+            (count == 1u && (after.data.eflags & VCPU_EFLAGS_OF) !=
+                (rotate_overflow(direction, width, (lib_u32)value, expected_cf) ? VCPU_EFLAGS_OF : 0u)) ||
+            (((state.instructions.data.udf & VCPU_EFLAGS_OF) != 0u) != (count > 1u)))
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_u32 shift_parity(lib_u32 value)
 {
     lib_u8 bits = 0u;
@@ -908,6 +971,7 @@ lib_i32 main(void)
     if (!rotate_test_8086_immediate_rejection()) { lib_c_fprintf(lib_c_stderr, "8086\n"); return 1; }
     if (!rotate_test_80186_immediate_extensions()) { lib_c_fprintf(lib_c_stderr, "80186\n"); return 1; }
     if (!rotate_test_profile()) { lib_c_fprintf(lib_c_stderr, "profile\n"); return 1; }
+    if (!rotate_test_count_boundaries()) { lib_c_fprintf(lib_c_stderr, "rotate boundaries\n"); return 1; }
     lib_c_printf("ROTATE:OK\n");
     lib_c_printf("SHIFT:OK\n");
     lib_c_printf("GROUP2-CL-PROFILES:OK\n");
