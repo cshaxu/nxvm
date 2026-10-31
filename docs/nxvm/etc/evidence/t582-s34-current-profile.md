@@ -107,6 +107,41 @@ The fixed checkpoint does not prove complete state equivalence or gameplay
 performance. Log SHA-256:
 `E1E5F6249C671A3387C0AE331918612AE221A74D1BE054E678A414F53EF677BB`.
 
+## 486 access-penalty zero case
+
+A configured-CMOS, task-only counter checked whether every input relevant to
+the 486 translation/alignment/descriptor access-penalty calculation was zero.
+It observed 9,293,112 zero cases in 10,003,020 calls on x64 and 9,295,787 in
+10,006,312 calls on x86, approximately 93% at the startup checkpoint. The
+counter is diagnostic and does not characterize late gameplay or nonzero/error
+cases.
+
+A scratch candidate returned the same zero ticks and unmodeled result when all
+those inputs were zero, retaining the original validation and computation for
+every other case. Its fixed-work baseline/candidate/candidate/baseline times
+were 23589/21068/20400/19628 ms on x64 and 27041/24141/24834/26541 ms on x86;
+each reached 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`.
+The x86 pairs favor the candidate, while x64 changes direction. This does not
+establish a stable dual-width or gameplay gain or complete-state equivalence.
+The prototype repeats a long list of fields ahead of the existing validation,
+adding a separate fast-case condition and making maintenance of the error
+contract more fragile. It was not subjected to semantic qualification or
+merged. Counts and comparison log SHA-256 respectively:
+`584C1E60D69FDC49FCB91CED218F07EBB8BD6831BF5359E2A204A8211C24D609` /
+`05A2EC0525BCFEF628D1CF4A6D1DCAA84509263F62BDB64E33BCE76F3B748A2A`.
+
+A second scratch candidate retained the existing validation first and then
+returned early when its validated inputs implied zero access penalty. It
+avoided duplicating the full validation, but introduced another set of
+conditions and repeated part of the result classification. The configured
+baseline/candidate/candidate/baseline times were 22780/22633/22292/19532 ms
+on x64 and 25663/24639/26000/26494 ms on x86, with the same fixed checkpoint.
+The x64 comparisons again changed direction and the small x86 differences do
+not establish an interactive gain. This version was not semantically
+qualified or merged; matching the checkpoint is not proof of equivalence.
+Log SHA-256:
+`8F5567BB54A9BAB9CA39800A35BE41D07F291C8C037F75D6026EEC4E7FF5F115`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
