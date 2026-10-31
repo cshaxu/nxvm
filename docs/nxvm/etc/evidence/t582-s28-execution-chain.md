@@ -23,3 +23,18 @@ The old S5 candidate is not directly applicable to current code: its diff also r
 The prior fixed-work and Game comparisons did not demonstrate a reproducible speedup across widths. Under the owner's clarified rule, reduced repeated computation can still qualify if the final implementation remains simple and other properties do not materially worsen; it must not be represented as proven user-visible acceleration. The removed scans are bounded by instruction length and do not change the overall asymptotic complexity of instruction execution. This candidate alone cannot be treated as the PC110 usability fix.
 
 Source check of the 486 repeat bookkeeping: `x86_core_cpu_source_timing_record_repeat()` changes the repeat tracking and `timing_repeat_previous_misses`, but does not write `opcodes`, `oplen`, CPU profile or the saved MD bit used by the prefix counter. That supports reusing the count across this particular call; it does not prove all output equivalence. The four helpers still need their current individual null, exception and stop checks. Repeat bookkeeping itself also counts prefixes; incorporating it would require a separate multi-profile caller audit and is not automatically included in this candidate.
+
+## 486 zero-access timing candidate
+
+A task-only x64 instrumented copy sampled one in 64 calls to the existing 486 access-penalty calculation during a real PC110 private-media startup. Of 156,268 samples, 145,069 (92.83%) had all counted translation, miss, alignment, descriptor and task-gate fields zero. The wrapper observed 10,001,144 calls including the stopping interval. The fixed guest endpoint was 10,000,000 retired instructions, 79,964,294 guest ticks and PC `0003dbc5`. Sampling adds overhead and does not establish Game-stage frequency.
+
+A separate scratch candidate checked those fields before the existing validation and arithmetic, returned zero ticks and an unmodeled result only when all were zero, and otherwise retained the existing calculation. This adds a branch and fifteen field checks; it does not reduce asymptotic complexity or production lines. It was not compiled into the project. Direct-compiled baseline and candidate used identical flags and cached libraries, distinct copies of the same private media, and both orders:
+
+| Architecture | Baseline | Candidate | Candidate | Baseline |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 23,452 ms | 23,661 ms | 22,270 ms | 22,775 ms |
+| x86 | 28,202 ms | 26,619 ms | 26,842 ms | 27,165 ms |
+
+All eight runs reached 10,000,000 instructions, 79,822,202 guest ticks and PC `00039119`. This checkpoint does not prove full guest-state, fault or timing equivalence. The x64 direction changes, while the x86 difference varies substantially; the samples are insufficient to establish a reliable cross-architecture product gain. The added checks and branch do not satisfy the owner's complexity criterion without such evidence. The candidate is rejected for now; no production source, interface, test, media or release executable changed. No Game, desktop or RDP performance was measured.
+
+SHA-256 of the eight guest logs in table order, x64 then x86: `cfe434f5a9fa68dad44f0ed6d563800a4bcf2fadc2185975ea4f207054d8099b`, `b86ca63e2c34bfae5d98be24eaefdd07daab09f5d2db486dd84a95b85e389c63`, `cb59faff5b35e279ea62de880e0da7e3057748a9bbE98f90cd5ef65c345cc812`, `7791f0c820ca076d5a73bd5c2b5714dc41269cb55df23a596a24bbadf79f6565`, `ab71b63dd2aeb385cb7a82a558eb027d7d7df024ad9233df6df6999ff5d33d91`, `c36c01138d8a4d75f7d17f6ffab0466fd7435d0e11c4f214cf856bfc86471e92`, `2c56ec94e1abbf64d2ba7a2910141ff80a1af853747c93b171f0be2746b3e270`, `1793696b4eca2614c4e3b2b60d38b1f033be00e113ecfcb2c60c622327f6dff7`.
