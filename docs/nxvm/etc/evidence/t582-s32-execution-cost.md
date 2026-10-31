@@ -1,5 +1,10 @@
 # T582 S32 — PC110 execution-cost investigation
 
+**S34 setup correction:** The S31/S32 fixed-work probes used empty CMOS next
+to their executables, not the copied configured seed in their working
+directories. See [the correction](t582-s34-cmos-probe-correction.md). The S20
+and other independently described earlier product-path runs are not reclassified.
+
 This investigation continues the product usability objective after S31; it is
 not a claim that PC110 is playable. The baseline is Shared `b2c17ba68` and
 NXVM `178dc86a9`.

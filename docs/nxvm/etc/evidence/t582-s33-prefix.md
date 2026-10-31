@@ -1,5 +1,9 @@
 # T582 S33 — single prefix classifier
 
+**S34 setup correction:** The referenced S32 fixed-work comparison used empty
+CMOS. The corrected product-path game probes below used the configured seed.
+See [the correction](t582-s34-cmos-probe-correction.md).
+
 Shared `c1b6f95b4` moves the existing CPU-private prefix classifier unchanged
 from `cpu_instructions.c` to the existing private header as `static inline`.
 Execution and timing keep one source definition, with no new state, public API,

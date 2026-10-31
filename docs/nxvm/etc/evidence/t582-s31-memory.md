@@ -1,5 +1,9 @@
 # T582 S31 — memory routing
 
+**S34 setup correction:** The fixed-work measurements below used an empty CMOS
+next to the executable, not the copied configured seed in the working
+directory. See [the correction](t582-s34-cmos-probe-correction.md).
+
 Shared commit `b2c17ba68` reuses the decoded physical address within one RAM
 route resolution. Provider queries are observational; after an operational
 provider callback declines an access, the RAM fallback still decodes again.
