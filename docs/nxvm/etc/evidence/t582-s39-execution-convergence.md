@@ -121,3 +121,14 @@ direction. The candidate adds a data lookup and table; the samples do not
 prove a stable cross-width benefit or Game improvement. It was not applied to
 production, and no full receiving gate was claimed. Log SHA-256:
 `8A40DF8E43D46FE210EF13C19AF07DD2CEC00010980A115D26D1170E58E7AA94`.
+
+The same already-built x86 executables were then launched suspended, pinned to
+one host logical processor, and resumed, in baseline / candidate / candidate /
+baseline order with fresh private media copies. Fixed-work times were 22,653 /
+22,209 / 21,724 / 21,562 ms, all at the same instruction, tick and PC
+checkpoint. The direction still reverses between the two pairs. Pinning avoids
+CPU migration but not frequency, thermal or background-load variation; it
+does not prove equivalent guest state or Game performance. The added table and
+lookup are therefore still not justified. No production code or artifact was
+changed. Log SHA-256:
+`287CD73EAC10C9087878EC5B0B16DFD9ED3DE42BA100A0D6382F83A40722E2E7`.
