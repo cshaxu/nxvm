@@ -45,3 +45,24 @@ profile equivalence. These noisy samples do not justify adopting the reorder
 or imply a product speedup. No production source or artifact changed.
 Log SHA-256:
 `7161638B4A31F04A1212199778BA41E32D8B93B843608457517EF4C41D5A7C55`.
+
+## Disabled instruction-breakpoint scan
+
+The instruction breakpoint matcher, like the already optimized data matcher,
+scans four slots even when all DR7 enable bits are clear. Its caller uses the
+matched-status mask only when at least one enabled comparator caused a trap.
+A scratch candidate returned after initializing that mask when all enables
+were clear, while preserving the entire original scan if any was enabled.
+The existing comparator test covers all enabled and matched masks for both
+instruction and data cases on 386 and 486, but the scratch candidate was not
+run through that test or the full receiving gate.
+
+At the fixed startup checkpoint, baseline/candidate/candidate/baseline times
+were 19,209 / 19,611 / 18,973 / 18,213 ms x64 and 22,525 / 23,351 /
+23,487 / 25,012 ms x86. All runs reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`. The candidate was slower in both x64
+pairs and x86 changed direction. Host variation is significant, but the
+observed potential regression does not satisfy the owner's criterion, so the
+candidate was not applied. This is not full-state equivalence or Game testing.
+Log SHA-256:
+`4A985876116EAD883F8748865E4886D2AF375BF68CD34361157BE3F3AD93B7FB`.
