@@ -482,6 +482,11 @@ log SHA-256:
 
 ## Contiguous instruction-timing reset
 
+This substantially repeats the S34 candidate documented in
+`t582-s34-current-profile.md`. The earlier comparison was missed by the
+targeted search; this rerun was unnecessary and is retained as a repeat, not a
+new optimization direction.
+
 `ExecBoundary` clears a contiguous group of timing counters individually. A
 scratch candidate replaced those assignments with a bounded block clear ending
 before `memory_lock_active`; previous-instruction facts and lock state remained
