@@ -19987,7 +19987,8 @@ static lib_u32 _debug_match_data_breakpoint(
     lib_u16 access_index;
 
     *matched = 0u;
-    if (!cpu_profile_has_32bit_architecture(context->cpu_profile)) return 0u;
+    if (!cpu_profile_has_32bit_architecture(context->cpu_profile) ||
+        (cpu_state.data.dr7 & 0xffu) == 0u) return 0u;
     for (access_index = 0u; access_index < instruction_state.data.msize;
         ++access_index) {
         const t_cpuins_data_memory *access =
