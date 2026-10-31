@@ -754,7 +754,8 @@ void x86_core_cpu_state_initialize(
         context->prefetch_reservation_linear = 0u;
         context->prefetch_reservation_count = 0u;
     }
-    x86_core_cpu_execution_initialize(context);
+    context->instructions->dispatch_initialized = LIB_TRUE;
+    context->instructions->dispatch_v30 = context->cpu_profile == X86_CORE_CPU_PROFILE_V30;
 }
 static void x86_core_cpu_state_apply_reset(
     x86_core_cpu_execution_context *context, lib_bool preserve_smbase)

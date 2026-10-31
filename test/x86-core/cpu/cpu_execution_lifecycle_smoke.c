@@ -1,4 +1,5 @@
 #include "support/cpu_bus_fixture.h"
+#include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
 typedef struct cpu_lifecycle_reset_case {
@@ -8,6 +9,50 @@ typedef struct cpu_lifecycle_reset_case {
     lib_u16 selector;
     lib_u16 offset;
 } cpu_lifecycle_reset_case;
+
+static lib_i32 cpu_dispatch_binding_case(void)
+{
+    static cpu_instruction_fixture fixture;
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    static const lib_u32 expected_ip[2][2] = {{2u, 1u}, {0u, 4u}};
+
+    for (lib_u32 initial = 0u; initial < 2u; ++initial) {
+        for (lib_u32 rebound = 0u; rebound < 2u; ++rebound) {
+            for (lib_u8 prefix = 0x66u; prefix <= 0x67u; ++prefix) {
+                const x86_core_cpu_profile first = initial ? X86_CORE_CPU_PROFILE_V30 :
+                    X86_CORE_CPU_PROFILE_80386;
+                const x86_core_cpu_profile second = rebound ? X86_CORE_CPU_PROFILE_V30 :
+                    X86_CORE_CPU_PROFILE_80386;
+                const lib_u8 code[] = {prefix, 0x90u, 0u};
+                t_cpu after;
+
+                cpu_instruction_prepare(&fixture, first);
+                x86_core_cpu_execution_context_bind_profiles(&fixture.execution,
+                    second, X86_FPU_PROFILE_NONE, LIB_FALSE,
+                    X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
+                if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
+                    after.data.eip != expected_ip[initial][rebound]) return 1;
+            }
+        }
+    }
+    {
+        const lib_u8 code[] = {0x90u};
+        t_cpu after;
+
+        lib_memory_set(&fixture, 0u, sizeof(fixture));
+        x86_core_cpu_execution_context_initialize(&fixture.execution, &fixture.cpu,
+            &fixture.instructions, &cpu_instruction_bus, &fixture);
+        x86_core_cpu_execution_context_bind_profiles(&fixture.execution,
+            X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE,
+            X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
+        x86_core_cpu_state_reset(&fixture.execution);
+        x86_core_cpu_execution_load_segment(&fixture.execution, &fixture.cpu.data.cs, 0u);
+        fixture.cpu.data.eip = 0u;
+        if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
+            after.data.eip != 0u) return 1;
+    }
+    return 0;
+}
 
 static lib_i32 cpu_timing_case(x86_core_cpu_profile profile)
 {
@@ -315,7 +360,8 @@ lib_i32 main(void)
     t_cpu cpu = {0};
     t_cpuins instructions = {0};
     x86_core_cpu_execution_context context = {0};
-    lib_i32 result = cpu_context_isolation_case() | cpu_soft_reset_case();
+    lib_i32 result = cpu_context_isolation_case() | cpu_soft_reset_case() |
+        cpu_dispatch_binding_case();
 
     x86_core_cpu_execution_context_initialize(
         &context, &cpu, &instructions, LIB_NULL, LIB_NULL);

@@ -210,18 +210,10 @@ typedef struct {
 
 typedef struct t_cpuins t_cpuins;
 
-typedef void (*x86_core_cpu_instruction_handler)(
-    x86_core_cpu_execution_context *context);
-
-typedef struct {
-    /* instruction dispatch */
-    x86_core_cpu_instruction_handler insTable[0x100];
-    x86_core_cpu_instruction_handler insTable_0f[0x100];
-} t_cpuins_connect;
-
 struct t_cpuins {
     t_cpuins_data data;
-    t_cpuins_connect connect;
+    lib_bool dispatch_initialized;
+    lib_bool dispatch_v30;
 };
 
 #define X86_CPU_TLB_SETS 8u
@@ -386,8 +378,6 @@ lib_u8 x86_core_cpu_execution_read_linear(
 lib_u8 x86_core_cpu_execution_write_linear(
     x86_core_cpu_execution_context *context, lib_u32 linear,
     lib_uptr rdata, lib_u8 byte);
-void x86_core_cpu_execution_initialize(
-    x86_core_cpu_execution_context *context);
 void x86_core_cpu_execution_reset(
     x86_core_cpu_execution_context *context);
 void x86_core_cpu_execution_invalidate_tlb(
