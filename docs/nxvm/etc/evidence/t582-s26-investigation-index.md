@@ -68,6 +68,9 @@ These are bounded improvements; none establishes real-time performance.
   [S26 comparison](t582-s26-preview-observation-bound.md).
 - Lexical decoder prefix collection: [S26 comparison](t582-s26-lexeme-one-pass.md).
 - Same-host PC110-EMU reference run: [S26 comparison](t582-s26-pc110-emu-measurement.md).
+- Firmware `FF353h` SMI requests and a traced APM CPU-idle service:
+  [S24 audit](t582-s24-asmi-audit.md). The S39 Game source counter revisits
+  that address without classifying Game request registers; consult S24 first.
 - Same synthetic loop on both engines and isolated CPU: [S26 comparison](t582-s26-pc110-emu-measurement.md#same-synthetic-instruction-loop).
 - Instruction-entry snapshot copy attribution and GCC string-operation
   experiment: [S26 comparison](t582-s26-pc110-emu-measurement.md#instruction-boundary-copy-attribution).

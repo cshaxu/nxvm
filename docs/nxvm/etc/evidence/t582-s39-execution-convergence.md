@@ -1,5 +1,93 @@
 # T582 S39 — execution and timing convergence
 
+## Steady-game SMI signal origins
+
+A task-only x64 link wrapper observed rising-edge calls to the existing CPU
+SMI setter during the 30 seconds after the Game marker, with private media.
+The run exited normally in 299.57 seconds; the Game marker appeared at
+sample 265, 29 samples after Enter. The wrapper counted 16,517 rising-edge
+calls, all successful and all observing linear PC `000ff353`; its 32-entry
+histogram did not overflow. The PC is the CPU's current CS base plus EIP at
+the setter, not a disassembly or proof of the instruction that caused it.
+It measures setter calls, not completed SMM entries, and it does not capture
+chipset source registers or prove how the guest reached that firmware PC.
+The instrumented stage is selected asynchronously and is not evidence for
+the drawing interval, x86, native input, or real hardware frequency.
+
+The previously recorded [S24 ASMI audit](t582-s24-asmi-audit.md) already
+identified `FF353h` with APM CPU-idle requests in a World Clock run and traced
+one request to its SMM return. This new run repeats that source observation
+for a different Game steady-state workload; it did not capture request
+registers, so it cannot independently classify all Game requests as idle.
+The earlier record should have been consulted before launching this probe.
+Neither observation justifies suppressing SMI or altering the guest-visible
+protocol. No production code changed. Guest log SHA-256:
+`9FDCFE9691EC1AFB6A78663DBB51CD05B86CCEB2D750DBD00E5C9039DED3AD4F`.
+
+## SMM classification of non-filled reads
+
+A further x64 task-only private-media run counted non-preview unfilled cache
+misses by CPU SMM state and decoded physical region during 30 seconds after
+the Game marker. The run exited successfully in 304.76 s; the marker appeared
+at sample 270, 26 samples after Enter. All observed unfilled misses in
+`30000h–3FFFFh` occurred with CPU SMM active: 3,811,142 data and 2,492,515
+fetch lookups. A further 15,561 data misses in `A0000h–AFFFFh` occurred outside
+SMM. Counts are lookup iterations, not CPU-time shares; instrumentation and
+asynchronous host markers perturb the workload. This does not classify the
+draw interval, x86, the chipset memory-control value, complete state or native
+Window/RDP behavior.
+
+The existing S19 experiment already enabled the provider cache hook for the
+SMRAM region under a proposed chipset condition and retained decode-change
+invalidation. Its single World Clock comparison did not demonstrate a gain
+and changed cache/timing behavior; exact chipset cache eligibility was not
+established. This new Game observation identifies workload frequency but does
+not resolve that contract or justify repeating the candidate unchanged.
+No production code changed. Log SHA-256:
+`7F64C9B3690EEC4CA38B2CE407DDC8042EE7FF13B4C15F95E4908A084DB98166`.
+
+## Physical ranges of steady-game non-filled reads
+
+A separate task-only x64 private-media probe grouped non-preview cache misses
+whose fill was disabled by decoded 64 KiB physical region during 30 seconds
+after the Game marker. The run exited successfully in 315.47 s; the marker was
+sample 281, 22 samples after Enter. Data misses counted 3,524,891 in
+`30000h–3FFFFh` and 15,348 in `A0000h–AFFFFh`; instruction-fetch misses
+counted 2,305,363 in `30000h–3FFFFh`, with no other populated region in this
+observation. These are lookup iterations, not time or retired instructions,
+and per-call instrumentation perturbs the workload. This is steady-game, not
+draw-time, x86, native Window or RDP evidence.
+
+PC110 registers `30000h–3FFFFh` as a dynamically selected CPU-only SMRAM
+overlay; the firmware cache probe currently rejects addresses below `C0000h`.
+The same physical region can instead route to ordinary RAM when the overlay
+is not selected. The count does not distinguish those states and does not
+prove that the rejection is wrong. The next required check is the selected
+route and SMM/memory-control state for these misses, then the original cache
+coherency and overlay-switch contract. Do not force fills or change guest
+chipset settings based on this frequency alone. No production code changed.
+Log SHA-256:
+`049407C87C0DD528C8D1ABE2E243CB3BEBC07FDB0AE398A60EEBF150C29BC708`.
+
+## Steady-game 486 cache miss classification
+
+A task-only x64 counter classified 486 read-cache outcomes during 30 seconds
+after the Game marker, using private media. The run completed in 306.12 s;
+the marker was sample 271, 28 samples after Enter. For non-preview data reads,
+5,757,250 lookups hit and 3,972,551 missed; 138,710 of the misses had a fill
+enabled. For non-preview instruction fetches, 6,198,926 hit and 2,785,817
+missed; 287,644 misses had a fill enabled. Across both, 6,332,014 of 6,758,368
+misses had fill disabled. In the observed buckets CR0.CD and page PCD were
+clear; this does not explain the fill rejection or show that it is incorrect.
+Preview hit/miss counts were 176,687 / 103 for data and 2,466,841 / 684,227
+for fetch. Counts are lookup iterations, not retired instructions; per-call
+instrumentation perturbs execution. This is not an x86, draw-time, native
+Window or RDP result, and cannot justify relaxing cache coherency or device
+mapping rules. The next specific question is which physical ranges and
+existing Machine fill-eligibility checks account for non-preview misses.
+No production source changed. Log SHA-256:
+`DABB25874BCAD0AC0C82446EA1386ECB5F8D6FB8E13505F32ABB5520729D165F`.
+
 ## Double-precision shift candidate
 
 The existing 16- and 32-bit SHLD/SHRD implementations construct the result
