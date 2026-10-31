@@ -64,6 +64,28 @@ the increased conditional complexity and potential extra work on alias paths;
 this candidate was also rejected without production changes. Log SHA-256:
 `8766087A1B2EA853CC106E87A484B20831DE61970FB138F45F82BD2344D76A5F`.
 
+## PIC input-level zero check
+
+Board PIC refresh derives each controller's input bitmask from eight existing
+source counts. A configured-CMOS, task-only fixed-work counter observed
+20,579,338 derivations on x64, of which 11,674,883 had all eight counts zero;
+x86 observed 20,591,174 and 11,680,801. This is approximately 57% on this
+startup checkpoint, not a late-game frequency or exclusive cost estimate.
+
+A scratch candidate used a byte-safe copy into an eight-byte scalar solely to
+test for all zeros before the existing loop; zero detection does not depend on
+byte order. It introduced no mirrored mask or other persistent state. At the
+same 10-million-instruction / 79,964,294-tick / `0003dbc5` checkpoint,
+baseline/candidate/candidate/baseline timings were 19219/18878/19734/21341 ms
+on x64 and 24393/25074/26774/26637 ms on x86. The x64 samples favored the
+candidate with substantial baseline variation, while both x86 samples favored
+the baseline. The additional branch and copy have no proven dual-width or
+product benefit, so no production change or semantic qualification was made.
+Counts and comparisons remain startup-only observations, not complete-state or
+interactive evidence. Log SHA-256, count and comparison respectively:
+`8B2BD9F1CA4CE53A5A9D5C5B7228A6EE200E643C0754DB8FBE316ECE1065B552` /
+`A0DD4D27FDA5B83783FCECC3BF149A8F6C376E8E467A2803BDED5EF368B9CEEB`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
