@@ -1,4 +1,24 @@
-# M5 T582 S29 — Active: bounded CPU shift simplification
+# M5 T582 S30 — Active: guest-time and device advancement
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S30 after S29. |
+| Admission And Approval | Owner authorized automatic numeric S progression and optimizations without timing-accuracy downgrade. |
+| Objective | Find and qualify a justified reduction in redundant guest-time or device-advancement work. |
+| Non-goals | No guest event skipping, host-clock substitution, second executor, owner-media mutation or product-specific timing special case. |
+| Reference Baseline | S27 performance envelope, S28 chain evidence and S29 receiver gate. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S30. |
+| Files And ABI Surface | X86 Core Machine and X86 NXVM board scheduling only as justified by evidence, their existing tests and manifests, receiver artifacts and NXVM evidence. No unreviewed API expansion. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve deadline, asynchronous input, exception, device, reset, debug and before/internal/after ordering; targeted dual-width tests and required cached full Shared receiver gate after production changes. |
+| Expected Markers | Measured or demonstrable reduction with same clock and device behavior, or documented negative candidate result. |
+| Asset Needs | Task-owned private copies of external media if required. |
+| Reporting Requirements | Actual diff, results, limitations and no unsupported PC110 usability claim. |
+| Stop Conditions | No accuracy downgrade or assumption that a stable deadline implies no intervening mutation. |
+| Exit Criteria | Qualified optimization or evidence-backed rejection; T582 remains open until usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance while preserving guest execution. |
+| Similar-Issue Sweep | Reuse previous deadline, clock, DMA, interrupt and board observations before designing new work. |
+# M5 T582 S29 — Closed: bounded CPU shift simplification
 
 | Field | Required record |
 | --- | --- |
