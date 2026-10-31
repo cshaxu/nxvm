@@ -20,6 +20,7 @@ These are bounded improvements; none establishes real-time performance.
 - CPU LTO, optimization level and PGO: [S11](t582-s11-performance-observation.md), [S13](t582-s13-cpu-profile.md), [S22](t582-s22-cache-copy-audit.md). The S26 [partial LTO](t582-s26-cpu-lto-audit.md), [optimization-level](t582-s26-optimization-level.md) and [PGO](t582-s26-pgo-audit.md) experiments overlap earlier work; differences in compilation scope do not establish an independent product benefit.
 - Wider CPU and Machine LTO and Game frame-condition audit:
   [S26 comparison](t582-s26-core-lto.md).
+- Deadline-observation removal upper bound: [S28 experiment](t582-s28-execution-chain.md#deadline-observation-upper-bound).
 - Deadline caching, clock conversion, DMA and PIC shortcuts: [S13](t582-s13-scheduler-observation.md), [post-cache mutation boundaries](t582-s26-post-cache-deadline.md), [S26 single-tick](t582-s26-single-tick-audit.md), [unconfigured PIT clock](t582-s26-unused-pit-audit.md), and [PIC selection](t582-s26-pic-select-audit.md). The latter checks interrupt selection, distinct from S13's empty-deadline candidate.
 - Individual board-advance sampled costs: [S13 observations](t582-s13-scheduler-observation.md#s26-board-advance-attribution).
 - Clock advance narrow-division candidate: [S11 observations](t582-s11-performance-observation.md#subsequent-narrow-division-candidate).
