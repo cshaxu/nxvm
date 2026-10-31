@@ -418,6 +418,25 @@ change is not justified by these observations. No production code changed.
 Log SHA-256:
 `3F85282FEC7E377A622F2D49AB24EE6BC2985B2FCD5DF6896F1F27A97B731B6C`.
 
+### Borrowing timing from CPU refresh
+
+A further scratch candidate returned a pointer to the CPU's existing timing
+result from the current refresh call and used it in the Machine caller,
+avoiding the immediate struct capture without adding mirrored state. This
+would change the public return ABI and add a borrowed-pointer lifetime contract;
+callbacks, asynchronous mutation and all CPU consumers were not qualified.
+The pending-retirement capture and its existing boundaries remained unchanged.
+
+Baseline/candidate/candidate/baseline on the private startup checkpoint took
+18,919 / 18,108 / 17,670 / 16,232 ms x64 and 21,438 / 22,601 / 22,230 /
+21,915 ms x86. All reported 10,000,000 instructions, 79,964,294 ticks and PC
+`0003dbc5`. The x64 direction reverses, and both x86 comparisons favor the
+baseline. Host variation is substantial; matching the checkpoint does not
+prove full-state or Game equivalence. These results do not justify the ABI and
+borrow-contract change, so it was rejected without changing production.
+Log SHA-256:
+`866C8354CD6A6845689C4E010CF8FF377482F145C9817C90679EBE82AA773D25`.
+
 ## CPU compilation inlining policy
 
 A scratch comparison compiled only the existing CPU instruction translation
