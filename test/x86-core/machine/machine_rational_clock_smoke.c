@@ -94,7 +94,13 @@ static lib_i32 rational_clock_deadline_contract(void)
     const struct { x86_core_machine_clock_ratio ratio; lib_u64 delivered, source; } cases[] = {
         {{3u, 2u, 1u}, 1u, 1u}, {{3u, 2u, 1u}, 2u, 1u},
         {{3u, 2u, 1u}, 3u, 2u}, {{1u, 3u, 2u}, 1u, 1u},
-        {{1u, 3u, 2u}, 2u, 4u}, {{0u, 0u, 0u}, 5u, 5u}
+        {{1u, 3u, 2u}, 2u, 4u}, {{0u, 0u, 0u}, 5u, 5u},
+        {{LIB_UINT32_MAX, LIB_UINT32_MAX, 0u}, LIB_UINT32_MAX, LIB_UINT32_MAX},
+        {{LIB_UINT32_MAX, LIB_UINT32_MAX, 0u}, (lib_u64)LIB_UINT32_MAX + 1u,
+            (lib_u64)LIB_UINT32_MAX + 1u},
+        {{LIB_UINT32_MAX, LIB_UINT32_MAX, 0u}, (lib_u64)LIB_UINT32_MAX + 2u,
+            (lib_u64)LIB_UINT32_MAX + 2u},
+        {{1u, 1u, 0u}, LIB_UINT64_MAX, LIB_UINT64_MAX}
     };
     x86_core_machine_clock_domain domain = {0};
     lib_u64 source = 99u;
@@ -111,8 +117,16 @@ static lib_i32 rational_clock_deadline_contract(void)
     }
     if (x86_core_machine_clock_domain_initialize(&domain, &cases[0].ratio) != LIB_STATUS_OK) return 1;
     source = 99u;
-    return x86_core_machine_clock_domain_source_ticks_until(&domain, LIB_UINT64_MAX, &source) !=
-        LIB_STATUS_INVALID_ARGUMENT || source != 99u;
+    if (x86_core_machine_clock_domain_source_ticks_until(&domain, LIB_UINT64_MAX, &source) !=
+        LIB_STATUS_INVALID_ARGUMENT || source != 99u) return 1;
+    {
+        const x86_core_machine_clock_ratio maximum = {LIB_UINT32_MAX, LIB_UINT32_MAX, 0u};
+        if (x86_core_machine_clock_domain_initialize(&domain, &maximum) != LIB_STATUS_OK ||
+            x86_core_machine_clock_domain_source_ticks_until(&domain,
+                (lib_u64)LIB_UINT32_MAX + 3u, &source) != LIB_STATUS_INVALID_ARGUMENT ||
+            source != 99u) return 1;
+    }
+    return 0;
 }
 
 static lib_i32 rational_clock_selected_horizon(void)
