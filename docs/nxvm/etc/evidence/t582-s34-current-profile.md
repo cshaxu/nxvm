@@ -256,6 +256,42 @@ SHA-256 (sampler log, guest log, captured PPM, task-only harness source):
 `E7543730687E8AB543B42EC141737ABE0D711E9B798CE13AC1D8DD49DF1B9F09`,
 `D0771DD9848B41C99A09FF798585A3BEEC98DCA731E378BE806003428E776EB2`.
 
+## Game-stage physical-read inclusive sampling
+
+An independent x64 private-media run used the same configured CMOS, entered
+the game through the existing Machine input path and collected a 30-second
+post-board interval without injected input. A separately compiled scratch CPU
+source sampled one in 256 calls, selected by independent pseudorandom streams,
+to CPU refresh and physical read; a link wrapper similarly sampled Machine
+run. The physical-read probe uses a scoped cleanup hook so normal and early
+returns close the same measurement. After shutdown, the worker-owned counters
+reported refresh 17,102,243 calls / 66,846 samples / 143,690,117 TSC units,
+physical read 18,013,261 / 70,200 / 28,285,580, and Machine run 41,842 / 155 /
+238,672,153. Scaling each interval by its calls/sample count gives roughly
+57% for CPU refresh within Machine run and 11% for physical read within
+Machine run. Physical reads are ordinarily nested inside refresh; these
+figures are not additive. Only 155 Machine-run samples, non-serialized TSC,
+host preemption, instrumentation and compiler-layout changes materially limit
+precision. They are not a rigorous upper bound or an x86 result.
+
+The first and last logged quanta after the game marker advanced 93,952,525
+guest clocks in 29.51 host seconds, approximately 3.18 MHz on the configured
+33 MHz axis. The captured image shows the Game title, board and score, but a
+single image plus a stationary 30-second interval does not establish input
+response, real-time native Window/RDP behavior or complete usability. The
+result supports addressing the whole CPU/Machine chain rather than assuming
+that removing one physical-read subroutine alone can produce the roughly
+tenfold improvement needed here. Production source and owner media were not
+modified.
+
+SHA-256 (summary, guest log, captured PPM, sampling source, instrumented CPU
+source):
+`8B4347A48B6E67456B1BB987C9184A49517558ADAA60EA3CF18787DD714BB782`,
+`7FD268871692EB329E1AD85047AE3FD73826395B92FC0CE8C53C77DE0D5CF3AF`,
+`48EF7BA99E57CE861A09C2B65B8E6A2E0BBC71AA75374E38074FDC2A130E4538`,
+`9196A921ECD548A6E3DD9B971356F81E0A3B8BF37C51BA6113936220B53B4D43`,
+`B7A9C7FDA3F3374BEB7E64D01F685A5D44BEC71A1E42678BB6B45C23FB5B97ED`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
