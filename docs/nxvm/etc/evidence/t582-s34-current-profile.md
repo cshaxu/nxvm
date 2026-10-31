@@ -506,3 +506,90 @@ production code or artifact changed for this measurement.
 SHA-256 (guest log, instrumented CPU source):
 `8340E3D88ED2F1E4E8FBB61403FA97A5524D7AA827F965A3D03CD8BF01A7B19B`,
 `88E7CF14F84F3FF6E256D73A0A13DE533D364FDD6C207DC0BB128405DB760ACF`.
+
+### Game-marker initialization boundary breakdown
+
+A further task-only x64 run measured `ExecBoundary` and its enclosing
+`ExecInit` during the same Game-marker window, using private media. It exited
+normally after 290.86 seconds. Boundary had 17,182,716 calls / 67,172 samples /
+12,600,206 TSC units; initialization had 17,166,101 / 66,781 / 32,519,081;
+Machine run had 36,224 / 133 / 225,352,246. Scaled estimates put boundary at
+about 5.3% of Machine run and initialization at 13.6%; boundary is nested in
+initialization and the estimates cannot be added. The differing call totals
+also include asynchronous boundary calls. Sampling overhead, compiler layout,
+non-serialized TSC, host scheduling and only 133 Machine samples materially
+limit accuracy. This is not a native Window/RDP or x86 qualification.
+
+The result directs attention to both the boundary and the remaining fetch and
+prefetch work. It does not measure the 380-byte snapshot independently, prove
+that removing it is correct, or authorize the previously rejected REP shortcut.
+No production code or artifact changed.
+
+SHA-256 (guest log, instrumented CPU source):
+`E53635D9F7FAA26BAA0FE1E08F8D946ABECFE34FD7EF9D01D90E73843CFCB045`,
+`DADFD70E43062E30312E30E11B41982F6257057F94A00DB67C84AFDC97377030`.
+
+### Game-marker prefetch logical-read cost
+
+A task-only x64 Game-marker run sampled logical reads tagged as instruction
+prefetch and the enclosing `ExecInit`, alongside Machine run. It used private
+media and exited normally after 298.30 seconds. Prefetch reads had 6,109,071
+calls / 23,920 samples / 19,269,054 TSC units; initialization had 19,280,707 /
+75,144 / 31,987,965; Machine run had 41,527 / 154 / 245,133,919. Scaling by
+calls per sample yields approximately 7.4% and 12.4% of Machine-run time,
+respectively. Prefetch is inside initialization; the estimates cannot be
+added. The instrumented logical-read function may recurse on legacy segment
+wrap, so nested calls may inflate its inclusive total. Added provenance checks,
+non-serialized TSC, compilation layout, scheduling and only 154 Machine
+samples further limit the precision. This is not x86 or native Window/RDP
+usability evidence.
+
+The logical prefetch path includes segmentation and paging, cache/bus access,
+fault and timing effects, rather than a single replaceable memory copy. Its
+measured cost reinforces investigating shared access calculations, but does not
+justify bypassing those effects or the previously rejected REP shortcut. No
+production code or artifact changed for this probe.
+
+SHA-256 (guest log, instrumented CPU source):
+`C8F46582EFD6C6DB384A962AB32C4AE811F637965341662792C9778348D7379A`,
+`2F4087F64F1D2E0406D973D3959D18981D24AEB21D7362CB7F60ACA0CB57A4A5`.
+
+### Game-marker arithmetic-flag cost
+
+An x64 private-media Game-marker run sampled `_kaf_set_flags`, enclosing
+`ExecIns` and Machine run independently and exited normally after 292.69 s.
+Calls / samples / TSC totals were 4,097,409 / 16,109 / 1,629,920;
+19,001,461 / 74,028 / 90,029,079; and 46,293 / 167 / 225,367,762,
+respectively. Scaling by calls per sample gives about 0.7% of Machine run
+for this flag setter and 37.0% for execution; the former is nested in the
+latter. This does not include flags updated by paths that do not call the
+setter. Timer overhead, altered layout, unsynchronized TSC and the small
+Machine sample limit precision. The result does not justify a large flags
+rewrite as the PC110 performance solution; it does not prove x86 or desktop
+behavior. Production code and artifacts did not change.
+
+SHA-256 (guest log, instrumented CPU source):
+`730D9E78A289E1457924F5B15FE57B5A707C1B2C225D05CAA07EECEB716C1E0F`,
+`179DF376E79B7676A2EA5FC3CD567F07CCCF7C261701C35FD9639CCF1FC486EE`.
+
+### Game-marker 486 read-cache outcomes
+
+A private-media x64 Game-marker run counted each 486 physical-read cache
+lookup by preview and fetch provenance. It exited normally after 305.29 s.
+Non-preview fetch lookups recorded 6,302,829 hits and 2,738,220 misses
+(about 69.7% hits); other non-preview reads 5,758,072 hits and 3,904,275
+misses (about 59.6% hits). Preview fetch lookups recorded 2,502,781 hits and
+672,510 misses; other preview reads 173,465 hits and 115 misses. These are
+lookup iterations, not bytes, retired instructions or measured elapsed-time
+shares. All lookups are counted and the added callback perturbs execution;
+the marker window is asynchronous and this is neither x86 nor native
+Window/RDP qualification. The counts do not classify why misses occurred.
+
+Both hit and miss paths are materially exercised, so an optimization should
+not assume either outcome or unconditionally change provider cacheability.
+This observation does not validate skipping cache, bus or timing effects.
+No production code or artifact changed.
+
+SHA-256 (guest log, instrumented CPU source):
+`7BF3FA80CC878D117D0A803DEBEBB2773247C910A5780A0565C622978C222D4E`,
+`D2F261009D46ED4196D42CCFC6D7FCA27D04CAA9A40E9A644176F67AFB77E4AF`.

@@ -89,6 +89,27 @@ The PIT simplification has been qualified and committed as Shared
 initial MyNES native-window failure and successful isolated rerun. S34 remains
 active because the performance and interactive-usability objective is open.
 
+### Admitted single-owner CPU dispatch consolidation
+
+Replace the CPU's two initialized per-instance handler arrays with one direct
+dispatch per instruction space; retain exactly one handler mapping and the
+existing initialized/uninitialized and V30-prefix selection behavior across
+profile rebinding. The two compact booleans replace the existing table-owned
+initialization state; they do not add a second machine state owner or executor.
+Preserve all opcode handlers, faults, prefetch, debug and timing. Extend an
+existing CPU test for the initialization and rebinding boundaries; verify the
+existing decode, V30, lifecycle and prefetch tests, the bounded differential,
+then the cached dual-width Shared receiver and fourteen artifacts. The
+[candidate evidence](../etc/evidence/t582-s34-single-dispatch.md) records
+the measured instance-space/source reduction and the lack of a measured Game
+speedup. Do not claim this closes PC110 interactive performance.
+
+Shared `9ffb2bcfd` contains the qualified CPU dispatch consolidation;
+the evidence records the initial static-check failure, its corrected rerun,
+dual-width receiver and remaining usability limitations. MyRaidenII receiver
+artifacts were refreshed separately. S34 remains open for the real PC110
+performance goal.
+
 # M5 T582 S33 — Closed: prefix classifier consolidation
 
 Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate

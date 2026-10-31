@@ -171,7 +171,25 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   after S33; implement a justified further improvement or record why no safe
   candidate is presently supported. Insert additional numeric subtasks when
   independent work remains; do not add changes merely to fill a subtask.
-- **S35: whole-product receiving and owner acceptance.** After the actual
+- **S35: attribute CPU versus Machine overhead.** Use comparable fixed work
+  and the current PC110 workload to separate instruction execution, memory
+  and port routing, clock advancement and device scheduling. Record probe
+  differences and measurement overhead; do not treat the difference between
+  unlike probes as the exclusive cost of Machine. Exit with ranked costs,
+  measurement limits and specific candidates, not an assumed culprit.
+- **S36: CPU execution hot paths.** Qualify the best justified reduction in
+  instruction execution work from S35, preserving all profiles, faults and
+  timing. Exit with before/after measurements and focused regressions, or an
+  evidence-backed rejection if no clean improvement is justified.
+- **S37: memory and bus hot paths.** Address evidence-backed repeated routing
+  or access work while preserving mapping, invalidation, device side effects
+  and fault ordering. Exit with comparable measurements and boundary tests, or
+  document why the candidate cannot safely improve the real workload.
+- **S38: clock and device advancement.** Address measured redundant scheduling
+  or advancement work without skipping deadlines, guest time or observable
+  events. Exit with comparable workload measurements and ordering regressions,
+  or a documented rejection. Do not create a second executor or clock.
+- **S39: whole-product receiving and owner acceptance.** After the actual
   performance objective is met, reconcile before/after startup, guest clock,
   RTC and Game behavior on x86/x64 and applicable DSTN/TFT variants; validate
   responsive operation and report desktop/RDP evidence separately. Run the

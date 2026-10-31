@@ -47,11 +47,11 @@ if (@($decoderInventory.semantic_only_prefixes).Count -ne 1 -or
         $decoderInventory.semantic_only_prefixes[0] -ne 'F0') {
     throw "8086 decoder LOCK-prefix inventory differs from the reconciliation contract"
 }
-$hasOpcode = $decoderSource -match 'insTable\[0xd7\]\s*=\s*\(x86_core_cpu_instruction_handler\)XLAT;'
+$hasOpcode = $decoderSource -match 'case 0xd7:\s*XLAT\(context\);\s*break;'
 $hasForm = $timingSource -match 'X86_CORE_CPU_SOURCE_TIMING_8086_XLAT'
 $hasTicks = $timingSource -match '\*out_ticks = 11u'
 $hasLedger = $ledger -match '\| `XLAT source-table` \| 11 \| exact'
-$hasPopCs = $decoderSource -match 'insTable\[0x0f\]\s*=\s*\(x86_core_cpu_instruction_handler\)INS_0F;' -and
+$hasPopCs = $decoderSource -match 'case 0x0f:\s*INS_0F\(context\);\s*break;' -and
     $decoderSource -match '(context->cpu_profile == X86_CORE_CPU_PROFILE_8086|x86_core_cpu_profile_has_8086_semantics\(context->cpu_profile\))\)\s*\r?\n\s*POP_CS\(context\);' -and
     $timingSource -match 'case 0x0fu:' -and
     $timingSource -match 'context->cpu_profile != X86_CORE_CPU_PROFILE_8086\) break;' -and
