@@ -142,6 +142,35 @@ qualified or merged; matching the checkpoint is not proof of equivalence.
 Log SHA-256:
 `8F5567BB54A9BAB9CA39800A35BE41D07F291C8C037F75D6026EEC4E7FF5F115`.
 
+### Algebraic access-term candidate
+
+For the three page-walk counts `a`, `b`, `c`, the existing validation bounds
+the missed table reads by `2 * (a + b + c)` and updates by `b + 2 * c`.
+Expanding the existing saved-transfer term gives
+`9*a + 15*b + 20*c + 2*(table_misses + updates)` without changing the
+validation. Both subtractions making up the saved-transfer count are
+nonnegative, so it is nonzero exactly when either bounded value differs from
+its bound. A task-only arithmetic comparison checked 73,434 small and maximum
+`lib_u32` boundary combinations. This is not a test of the production C
+implementation, the remaining terms, or guest execution.
+
+A scratch implementation tested that substitution using the configured CMOS
+and the same ten-million-instruction checkpoint. Sequential
+baseline/candidate/candidate/baseline milliseconds were
+20298/22071/23297/24634 on x64 and 32108/28134/23521/22885 on x86. Both
+widths changed direction, with pronounced host drift. This reduces neither
+asymptotic complexity nor a demonstrated production bottleneck, and obscures
+the original source-row coefficients unless further explanation is added. It
+was not semantically qualified or merged. Log SHA-256:
+`D8BE15882EFAD82C51B1F3C30E77729D04E2745120511D89DD4064EDAE2B0D7B`.
+
+The same 79,964,294 guest-clock checkpoint corresponds to approximately
+2.42 seconds at the configured 33 MHz PC110 clock, versus 20--32 seconds of
+host time in these individual startup probes. This is a workload-specific
+throughput comparison, not a complete interactive or real-time measurement;
+it illustrates why a small isolated arithmetic saving cannot alone account
+for the remaining usability gap.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
