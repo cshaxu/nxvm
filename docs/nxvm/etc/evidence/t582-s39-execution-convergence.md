@@ -66,3 +66,39 @@ observed potential regression does not satisfy the owner's criterion, so the
 candidate was not applied. This is not full-state equivalence or Game testing.
 Log SHA-256:
 `4A985876116EAD883F8748865E4886D2AF375BF68CD34361157BE3F3AD93B7FB`.
+
+## Test-trained PGO recheck and compilation-unit isolation
+
+The earlier test-trained PGO experiment suggested a startup gain but also
+produced an x86 `stringop-overread` warning. Repeating its 12 existing
+training tests on current source produced five profile files and reproduced
+the warning as an error under `-Werror=stringop-overread`: the shared IDT read
+contains an eight-byte protected-mode path while `_ser_int_real` supplies a
+four-byte vector. Ordinary entry callers select real mode before this call;
+this static observation does not prove every possible reentrant state safe or
+establish a runtime overread. Warning-log SHA-256:
+`4E7A2543014CC7DF7DE0E0450C7ED369E98EB6EBC303E413BD17A0DADB0F5C3D`.
+
+A scratch vector widened to eight bytes and initialized to zero compiled
+without that warning after retraining the same twelve tests against the same
+scratch source. An initial attempt to reuse the original source profile for
+the different scratch path failed missing-profile checks and is not counted
+as a successful build. The widened vector is not a production fix: normal,
+virtual-8086, fault and timing paths and all CPU profiles have not been
+qualified. Successful compilation alone does not authorize PGO.
+Training-log SHA-256:
+`588FFEEE90FE4AF3A7DC165112FA21DEB57FB21C1EDC3F4F1CA8CDD88ED69B35`.
+
+Separately, current unmodified source was compiled both normally and with the
+fresh test-trained x86 profiles, and linked into the same fixed-work harness.
+In one sequential order, ordinary / PGO timing selector only / PGO timing
+model only / PGO instruction unit only / all five PGO units took 23,059 /
+25,954 / 23,669 / 24,220 / 23,480 ms. All reached 10,000,000 instructions,
+79,822,202 ticks and PC `00039119`. The unmodified PGO build retained the
+compiler warning; no warning was suppressed in a production build. A single
+order and different host conditions are not comparable proof of the earlier
+speedup or a late-Game result, and matching the checkpoint is not full state
+equivalence. These results do not support identifying one profitable unit or
+adopting PGO; no production source, build setting or artifact was changed.
+Isolation-log SHA-256:
+`8C1B5CE8A23777CCDCE0DA5195226225FB2E4BD5B88EA841B0E626E9B7959571`.
