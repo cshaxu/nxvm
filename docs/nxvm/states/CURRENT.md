@@ -19,6 +19,23 @@
 | Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
 | Similar-Issue Sweep | Reconcile existing CPU timing, preview, memory, board and device experiments before introducing another probe. |
 
+### Admitted PIC priority-scan consolidation
+
+S34 additionally admits consolidation of the duplicate master/slave PIC
+selection loops in `src/x86-nxvm/chips/pic8259/pic.c`. The existing master
+loop remains the single scan; slave requests bypass only the existing
+master-specific cascade rules. No interface, state, interrupt ordering,
+guest time or other component is changed. The scratch source reduces 28
+lines net. Review the actual diff and qualify the existing PIC priority,
+rotation, masking, cascade and board tests on both widths before the cached
+full Shared receiver gate and fourteen product artifacts. Record host-noise
+limits separately from semantic evidence; do not claim a product speedup or
+PC110 usability without direct evidence.
+
+The PIC consolidation and dual-width receiver have completed; see
+[PIC evidence](../etc/evidence/t582-s34-pic-scan.md). S34 remains active to
+identify a substantial route toward the still-unmet usability objective.
+
 # M5 T582 S33 — Closed: prefix classifier consolidation
 
 Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate
