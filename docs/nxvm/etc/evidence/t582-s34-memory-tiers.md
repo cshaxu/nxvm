@@ -57,3 +57,32 @@ direct comparison fixture source):
 `D829B6B9159B4FC435B77EA9664536C7FBF0141BD92E96C5ABA8C6E63833C585`,
 `11C8A35404E10F018F6B9DDF60E144D4CC522FB07D3686A382F894631AF6FB3B`,
 `851DB1E5843519077A227EC158A3A20EE08B8FCA233C969ED4F0927FB051AC1D`.
+
+## Personaware startup observation
+
+After receiving the Shared change, a task-only x64 harness linked the prior
+and current `memory.c` sequentially against the same current libraries. Each
+executable and the same configured CMOS seed were placed in its private run
+directory with private disk copies. The harness sent the same menu-selection
+inputs through Machine and stopped on its existing game-board and score-area
+pixel markers. The original reached that marker in 279.41 host seconds
+(sample 274); the candidate in 275.14 seconds (sample 270). Interpolation
+between recorded quanta gives approximately 167.28 versus 160.93 host seconds
+for guest ticks 100 million through 600 million, with approximately
+98,200,391 versus 98,207,705 retired instructions. Input and frame sampling
+are asynchronous, quantum endpoints are not identical, these are sequential
+single runs, and host scheduling may vary. Neither comparison proves a
+repeatable speedup or identical complete guest state.
+
+Both recorded images show the game board and score area; their top window areas
+are at different partial redraw stages. This is a stronger visual checkpoint
+than the original two-pixel marker, but is not proof of a fully rendered page,
+input response, native Window/RDP operation, or playable speed. The roughly
+four-and-a-half-minute arrival time confirms that the overall usability target
+remains open. No owner media or production source was changed by this probe.
+SHA-256 (summary, original log, candidate log, original PPM, candidate PPM):
+`9EDD81889FF58FD80B6B4D00297046ED79807C98287F02C4B9DD64F489C77336`,
+`07B439666787D43CF2435A4B0A95BAFF33317001CD8374671A5C109C00DD2422`,
+`475176512DF368A8FB96555338D759548736C95A4BB30B2BF58D15E5CD8862CE`,
+`2F2371A21DA9434993DE671F7E4866AA6E55169B83C79625B69D93A82EE4B33A`,
+`74ED829C7538E240ABD709C2B95E4D755315D7CF9EC05635A4182BD02898FD63`.
