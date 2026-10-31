@@ -29,12 +29,10 @@ static lib_u8 board_consider_absolute(lib_u64 now, lib_u64 due_tick,
     return board_consider_relative(due_tick - now, io_source_ticks);
 }
 
-static lib_u8 board_consider_pit(const x86_pit *pit,
+static void board_consider_pit(const x86_pit *pit,
     const x86_core_machine_clock_domain *clock, lib_u64 *io_source_ticks)
 {
     lib_u8 counter;
-    lib_u8 immediate_due = LIB_FALSE;
-    lib_bool found = LIB_FALSE;
     lib_u64 nearest = 0u;
 
     for (counter = 0u; counter < 3u; ++counter) {
@@ -42,15 +40,11 @@ static lib_u8 board_consider_pit(const x86_pit *pit,
 
         if (x86_pit_ticks_until_output(pit, counter, &device_ticks) != LIB_STATUS_OK)
             continue;
-        if (device_ticks == 0u) immediate_due = LIB_TRUE;
-        else if (!found || device_ticks < nearest) {
+        if (nearest == 0u || device_ticks < nearest) {
             nearest = device_ticks;
-            found = LIB_TRUE;
         }
     }
-    if (found && board_consider_clock(clock, nearest, io_source_ticks))
-        immediate_due = LIB_TRUE;
-    return immediate_due;
+    if (nearest != 0u) (void)board_consider_clock(clock, nearest, io_source_ticks);
 }
 
 void x86_nxvm_board_deadline_observe(void *owner, lib_u64 now,
@@ -91,13 +85,11 @@ void x86_nxvm_board_deadline_observe(void *owner, lib_u64 now,
             out_observation->immediate_due = LIB_TRUE;
     }
     if (board->timing_declarations_copied) {
-        if (board_consider_pit(board->shared_pit, &board->pit_clock,
-                &out_observation->source_ticks))
-            out_observation->immediate_due = LIB_TRUE;
-        if (board->auxiliary_pit_configured &&
+        board_consider_pit(board->shared_pit, &board->pit_clock,
+            &out_observation->source_ticks);
+        if (board->auxiliary_pit_configured)
             board_consider_pit(board->auxiliary_pit,
-                &board->auxiliary_pit_clock, &out_observation->source_ticks))
-            out_observation->immediate_due = LIB_TRUE;
+                &board->auxiliary_pit_clock, &out_observation->source_ticks);
     }
     if (board->timing_declarations_copied && board->rtc_cmos_configured &&
         x86_rtc_ticks_until_irq(board->shared_rtc, &device_ticks) ==
