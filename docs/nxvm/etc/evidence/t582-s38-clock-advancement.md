@@ -54,3 +54,23 @@ zero sampled changes. No production path was changed.
 
 Log SHA-256:
 `1255B9DD4DC005CC75F85AF3EA64088F16C1CB339659AFFDE86195834015077D`.
+
+### Periodic-refresh removal upper bound
+
+A scratch-only candidate removed the board's periodic `pic_refresh` call but
+left source-edge, register and acknowledgement refreshes intact. This is not
+an eligible fix: it changes cascade and level-trigger observation boundaries.
+Its purpose was to estimate whether even eliminating the entire periodic call
+might justify the proof and complexity of a correct event-based design.
+
+With baseline/candidate/candidate/baseline order, fixed startup times in
+milliseconds were 19,441 / 17,773 / 21,156 / 18,861 on x64 and 22,128 /
+21,642 / 23,236 / 24,295 on x86. Every run reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`; this does not prove equivalent PIC or
+guest state. The x64 direction reverses, and x86 favors the altered version
+by a small, noisy amount. The samples do not establish a substantial reliable
+benefit, characterize Game, or justify a more complex invalidation mechanism.
+No production code or released artifact was modified by the ablation.
+
+Log SHA-256:
+`CE90A9FB17DA091B19EFE29C8F526E519EAC02C53B2A3626D683A2480BB3C3C3`.
