@@ -132,3 +132,26 @@ does not prove equivalent guest state or Game performance. The added table and
 lookup are therefore still not justified. No production code or artifact was
 changed. Log SHA-256:
 `287CD73EAC10C9087878EC5B0B16DFD9ED3DE42BA100A0D6382F83A40722E2E7`.
+
+## Non-486 timing-dispatch outlining prototype
+
+A task-only candidate moved the existing non-486 Intel timing dispatch into
+one private non-inlined helper, leaving V30 selection and the 486 evaluator on
+the original single selector. This explores code layout, not a new timing
+formula or executor. The temporary GCC-specific `noinline` marker is not a
+production proposal, and the prototype was not qualified for all profiles.
+
+At the fixed PC110 startup checkpoint, baseline / candidate / candidate /
+baseline took 19,649 / 22,650 / 18,637 / 19,786 ms x64 and 23,209 / 21,065 /
+20,894 / 21,444 ms x86. Every run reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`. x86 favored the candidate, while x64
+changed direction. A further x64 comparison pinned to one host logical CPU
+took 18,093 / 16,804 / 16,521 / 16,113 ms; the direction still changes and
+pinning does not control host frequency or load. Neither set establishes
+complete guest-state equivalence, Game performance or a stable cross-width
+gain. The added helper and compiler-specific annotation are not justified by
+these results. No production code or release artifact changed.
+
+Log SHA-256 (unrestricted, pinned):
+`72AA2069CC6ECED5D42D20B19F0F2BC5F0EFF2E18C4075014DABD474DD715092`,
+`942CFC427D3D774CCB2827217CEF682F62673E2635FBB94EA3B0E20C9781ACA9`.
