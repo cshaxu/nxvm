@@ -17586,8 +17586,6 @@ static void _a_imul2(x86_core_cpu_execution_context *context, lib_u64 cdest, lib
 static void _a_shld(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 count, lib_u8 bit)
 {
     lib_u8 flagcf;
-    lib_u8 flagbit;
-    lib_i32 i;
     CPU_TRACE_CALL_BEGIN("_a_shld");
     count &= 0x1f;
     if (!count)
@@ -17620,16 +17618,8 @@ static void _a_shld(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_
             flagcf = !!X86_CPU_GET_MSB_16(instruction_state.data.result);
             X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           X86_CPU_BIT_IS_SET(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << (bit - count))));
-            for (i = (lib_i32)(bit - 1); i >= (lib_i32)count; --i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr1, X86_CPU_MASK_U64(UINT64_C(1) << (i - count)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
-            for (i = (lib_i32)(count - 1); i >= 0; --i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr2, X86_CPU_MASK_U64(UINT64_C(1) << (i - count + bit)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
+            instruction_state.data.result = X86_CPU_MASK_U16(
+                (instruction_state.data.opr1 << count) | (instruction_state.data.opr2 >> (bit - count)));
             if (count == 1)
                 X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                               ((!!X86_CPU_GET_MSB_16(instruction_state.data.result)) ^ flagcf));
@@ -17646,16 +17636,8 @@ static void _a_shld(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_
             flagcf = !!X86_CPU_GET_MSB_32(instruction_state.data.result);
             X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           X86_CPU_BIT_IS_SET(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << (bit - count))));
-            for (i = (lib_i32)(bit - 1); i >= (lib_i32)count; --i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr1, X86_CPU_MASK_U64(UINT64_C(1) << (i - count)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
-            for (i = (lib_i32)(count - 1); i >= 0; --i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr2, X86_CPU_MASK_U64(UINT64_C(1) << (i - count + bit)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
+            instruction_state.data.result = X86_CPU_MASK_U32(
+                (instruction_state.data.opr1 << count) | (instruction_state.data.opr2 >> (bit - count)));
             if (count == 1)
                 X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                               ((!!X86_CPU_GET_MSB_32(instruction_state.data.result)) ^ flagcf));
@@ -17680,8 +17662,6 @@ static void _a_shld(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_
 static void _a_shrd(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 count, lib_u8 bit)
 {
     lib_u8 flagcf;
-    lib_u8 flagbit;
-    lib_i32 i;
     CPU_TRACE_CALL_BEGIN("_a_shrd");
     count &= 0x1f;
     if (!count)
@@ -17714,16 +17694,8 @@ static void _a_shrd(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_
             flagcf = !!X86_CPU_GET_MSB_16(instruction_state.data.result);
             X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           X86_CPU_BIT_IS_SET(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << (count - 1))));
-            for (i = 0; i <= (lib_i32)(bit - count - 1); ++i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr1, X86_CPU_MASK_U64(UINT64_C(1) << (i + count)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
-            for (i = (lib_i32)(bit - count); i <= (lib_i32)(bit - 1); ++i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr2, X86_CPU_MASK_U64(UINT64_C(1) << (i + count - bit)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
+            instruction_state.data.result = X86_CPU_MASK_U16(
+                (instruction_state.data.opr1 >> count) | (instruction_state.data.opr2 << (bit - count)));
             if (count == 1)
                 X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                               ((!!X86_CPU_GET_MSB_16(instruction_state.data.result)) ^ flagcf));
@@ -17740,16 +17712,8 @@ static void _a_shrd(x86_core_cpu_execution_context *context, lib_u64 cdest, lib_
             flagcf = !!X86_CPU_GET_MSB_32(instruction_state.data.result);
             X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           X86_CPU_BIT_IS_SET(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << (count - 1))));
-            for (i = 0; i <= (lib_i32)(bit - count - 1); ++i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr1, X86_CPU_MASK_U64(UINT64_C(1) << (i + count)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
-            for (i = (lib_i32)(bit - count); i <= (lib_i32)(bit - 1); ++i)
-            {
-                flagbit = X86_CPU_BIT_IS_SET(instruction_state.data.opr2, X86_CPU_MASK_U64(UINT64_C(1) << (i + count - bit)));
-                X86_CPU_BIT_MAKE(instruction_state.data.result, X86_CPU_MASK_U64(UINT64_C(1) << i), flagbit);
-            }
+            instruction_state.data.result = X86_CPU_MASK_U32(
+                (instruction_state.data.opr1 >> count) | (instruction_state.data.opr2 << (bit - count)));
             if (count == 1)
                 X86_CPU_BIT_MAKE(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                               ((!!X86_CPU_GET_MSB_32(instruction_state.data.result)) ^ flagcf));
