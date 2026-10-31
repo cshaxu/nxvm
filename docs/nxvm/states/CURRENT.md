@@ -19,6 +19,10 @@
 | Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
 | Similar-Issue Sweep | Consult the S26 investigation index and S35 negative results before repeating experiments. |
 
+[S36 evidence](../etc/evidence/t582-s36-cpu-hot-path.md) records the initial
+timing-evaluator compiler experiment and its mixed results; the usability
+objective remains unresolved.
+
 # M5 T582 S35 — Closed: CPU and Machine cost attribution
 
 | Field | Required record |
