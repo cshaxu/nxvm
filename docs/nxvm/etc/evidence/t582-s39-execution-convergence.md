@@ -437,6 +437,25 @@ borrow-contract change, so it was rejected without changing production.
 Log SHA-256:
 `866C8354CD6A6845689C4E010CF8FF377482F145C9817C90679EBE82AA773D25`.
 
+### Local pending-event reuse probe
+
+A scratch-only Machine candidate retained the event-tick value captured after
+CPU refresh in a local variable and used it for the next pending-retirement
+iteration; a pending retirement entering a new Core call used the original
+capture. It retained the loop and its stop/refresh/hold checks. This prototype
+does not invalidate the local value when an intervening attachment or time
+callback changes CPU timing, so equivalence has not been established and it
+is not an admissible implementation.
+
+Baseline/candidate/candidate/baseline at the private PC110 startup checkpoint
+took 17,047 / 17,506 / 17,801 / 18,088 ms x64 and 21,465 / 23,121 / 22,217 /
+22,884 ms x86. All reported 10,000,000 instructions, 79,964,294 ticks and PC
+`0003dbc5`. Both widths change direction across ordered pairs; these noisy
+samples do not establish state or Game equivalence. They do not justify adding
+local cached state and its invalidation proof. No production change was made.
+Log SHA-256:
+`88F19DF96519710DD5CE1BC7186262E1938EFCF0ED444F1CEF61A7B61683CF29`.
+
 ## CPU compilation inlining policy
 
 A scratch comparison compiled only the existing CPU instruction translation
