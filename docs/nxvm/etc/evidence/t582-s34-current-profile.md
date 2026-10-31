@@ -50,6 +50,20 @@ regression estimate, or a claim about other machine configurations. Log
 SHA-256:
 `722DB9EF3C58456AD134F8C01233BD9211FA15ABDA38B46AA7C07B6A6DA237A2`.
 
+A follow-up scratch candidate computed the decoded-window range match once
+per provider and reused it for a raw query when raw and decoded addresses were
+equal. Other raw addresses still received their own range check, and query
+ordering remained unchanged. It changed 23 lines in and 26 out compared with
+the current source, but made the loop's conditions more complex and still did
+matching before a possible selected alias. Configured-seed sequential
+baseline/candidate/candidate/baseline samples were 22621/22294/23101/22154 ms
+on x64 and 25509/26364/27407/27616 ms on x86; each reached the same fixed
+instruction/tick/PC checkpoint. Both widths changed direction between pairs,
+so no stable gain is established. The small net line reduction does not justify
+the increased conditional complexity and potential extra work on alias paths;
+this candidate was also rejected without production changes. Log SHA-256:
+`8766087A1B2EA853CC106E87A484B20831DE61970FB138F45F82BD2344D76A5F`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
