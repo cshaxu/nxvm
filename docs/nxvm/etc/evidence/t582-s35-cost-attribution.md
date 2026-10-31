@@ -151,3 +151,24 @@ this added build cost and complexity, the limited single-pair evidence and the
 still roughly 259-second startup, this is not adopted as the usability fix.
 No production build setting, source, user media or released executable was
 changed.
+
+## Idle FDC seek scan experiment
+
+The FDC advance performs a readiness pass over four seek slots followed by a
+due-seek pass even when none was pending. A scratch candidate tracked whether
+the first pass saw any pending seek and skipped the second only when it saw
+none. If a seek was pending, the original readiness, callbacks and due pass
+remained; the ordinary absolute-time update was not skipped. This candidate
+was not subjected to complete reentrancy or FDC correctness qualification.
+
+In the private-media fixed-startup checkpoint, ordered baseline/candidate/
+candidate/baseline times were 18,683 / 19,336 / 18,477 / 18,019 ms x64 and
+23,594 / 23,940 / 22,110 / 22,600 ms x86. All reached ten million
+instructions, 79,964,294 ticks and PC `0003dbc5`. The x64 result favors the
+baseline and x86 changes direction; these samples show no reliable product
+benefit and matching checkpoints do not prove semantic equivalence. Native
+disassembly confirmed that the candidate changed the linked FDC function.
+Given the extra branch and no demonstrated gain, the candidate was discarded.
+This startup probe does not characterize Game or desktop use. No production
+code, owner media or published artifact changed. Combined log SHA-256:
+`7810303FCCFD3A656E8E9D6A398F6A0D076BCD2BB274361B9396F12A952F142C`.
