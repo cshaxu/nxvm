@@ -112,3 +112,42 @@ checkpoint is not Game or full-state equivalence. This reinforces examining
 both CPU work and publication rather than attributing the entire gap to just
 one. No runtime production code or asset changed. Combined log SHA-256:
 `D4820C086D2A1A2DC53DD30736469D6E8C744A35B3FFDD4B3EC1530C3EDBF59F`.
+
+## Timing-only LTO experiment
+
+A scratch compiler experiment applies GCC fat LTO to only `cpu_timing.c` and
+`cpu_timing_model.c`, without changing the runtime executor, guest timing or
+production build. The same two files were separately compiled without LTO for
+the baseline. At the fixed ten-million-instruction PC110 startup checkpoint,
+baseline/candidate/candidate/baseline milliseconds were 20,866 / 18,895 /
+19,740 / 20,400 on x64 and 22,085 / 21,711 / 23,174 / 22,833 on x86. All
+reported 79,964,294 guest ticks and PC `0003dbc5`; this does not establish
+complete state equivalence. x64 favors the candidate in both orders, while
+x86 changes direction. Diagnostic link time was 1.20 versus 6.40 seconds x64
+and 1.08 versus 7.28 seconds x86; the candidate executables were slightly
+smaller. Harness compilation also used the selected LTO flag, so the result
+does not isolate only the two timing files. The full-frame Game pair follows
+below. These are exploratory measurements, not an adopted build
+policy or evidence of interactive usability. Fixed-work log SHA-256:
+`7D95E3A4B40D81E10F82EC1F1827A22E64EC403C1092D1AADC6DFF97C366736C`.
+
+The x64 full-frame Game candidate and then baseline exited normally in 259.02
+and 269.93 seconds. Each produced the same stable frame SHA-256
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`;
+the first complete frame appeared 32 and 31 one-second samples after Enter.
+This single ordered pair suggests a possible roughly four-percent startup
+improvement, not a proven repeatable or interactive-play improvement; the
+matching frame is not a complete guest-state comparison. x86 Game and native
+desktop/RDP input were not tested. Guest logs SHA-256, candidate then baseline:
+`AAEF56C6ECE29D0FEED213362621E4FF42EB9A2D31DDC29C435FE653502E1F62`,
+`6E03163F5D8921BDA92A65D69ABC22ED88585DC6C41BD2D1B9E77ECAB9756BA7`.
+
+The existing CPU archive contains both timing and other CPU objects; enabling
+LTO on these two objects would affect all consumers that pull them, including
+the many independent CPU tests, unless the build also introduces a separate
+native archive or consumer-specific opt-out. The scratch product link was
+five to six seconds slower and the x86 fixed-work samples disagreed. Given
+this added build cost and complexity, the limited single-pair evidence and the
+still roughly 259-second startup, this is not adopted as the usability fix.
+No production build setting, source, user media or released executable was
+changed.
