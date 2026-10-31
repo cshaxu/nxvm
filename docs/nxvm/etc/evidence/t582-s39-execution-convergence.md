@@ -480,6 +480,26 @@ branch is not admitted. No production source or artifact changed. Comparison
 log SHA-256:
 `CFBB0EC8C7B3C5DF037F6227654BCFDFC0CD005215B4487C52615CAC9E9F2D0C`.
 
+## Contiguous instruction-timing reset
+
+`ExecBoundary` clears a contiguous group of timing counters individually. A
+scratch candidate replaced those assignments with a bounded block clear ending
+before `memory_lock_active`; previous-instruction facts and lock state remained
+outside the range. This reduces source repetition but also clears padding, adds
+a layout-dependent range and was not qualified for every CPU, fault, debug or
+preview path.
+
+At the private startup checkpoint, baseline/candidate/candidate/baseline took
+19,395 / 17,494 / 18,492 / 20,539 ms on x64 and 23,243 / 22,902 / 23,459 /
+20,972 ms on x86. All reported 10,000,000 instructions, 79,964,294 ticks and
+PC `0003dbc5`. A separate x86 run pinned to one host core gave 21,908 / 22,469 /
+25,190 / 21,837 ms in the same order. Both pinned pairs favor baseline. These
+measurements are noisy startup observations, not complete state or Game tests.
+The smaller source is not worth the observed x86 regression and added layout
+coupling, so no production code was changed. Log SHA-256, unpinned then pinned:
+`3F285651E4AE8737A9945C74A426B524A4A3B8ECF7C326FBB57A38E5C3956AB6`,
+`E8A50019DF3526DD26FE8E1F0083F7E35C2A1F8CE49487DF5D4CD37E521DB380`.
+
 ## CPU compilation inlining policy
 
 A scratch comparison compiled only the existing CPU instruction translation

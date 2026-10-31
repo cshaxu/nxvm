@@ -55,6 +55,8 @@ These are bounded improvements; none establishes real-time performance.
   [S39 comparison](t582-s39-execution-convergence.md#returning-timing-with-cpu-refresh).
 - Retained-prefetch lexical preview count and fast-path comparison:
   [S39 comparison](t582-s39-execution-convergence.md#lexical-preview-using-an-already-retained-prefetch).
+- Contiguous instruction-timing counter reset:
+  [S39 comparison](t582-s39-execution-convergence.md#contiguous-instruction-timing-reset).
 - GCC CPU no-inline-functions policy:
   [S39 comparison](t582-s39-execution-convergence.md#cpu-compilation-inlining-policy).
 - Incremental lexical preview scan: [S28 experiment](t582-s28-execution-chain.md#incremental-lexical-preview-scan).
