@@ -52,6 +52,26 @@ The memory tier consolidation and dual-width receiver have completed; see
 [memory evidence](../etc/evidence/t582-s34-memory-tiers.md). S34 remains
 active because the PC110 usability objective is not yet established.
 
+### Admitted instruction-prefetch check consolidation
+
+`src/x86-core/cpu/cpu_instructions.c` may combine the repeated invalidations
+in `ExecInit` and use the already-established retained/refilled range when
+deciding whether to copy prefetch bytes. Preserve the zero-length case,
+physical reads, event ordering, memory-lock completion, exceptional paths,
+preview and every existing profile; introduce no state, callback, API or
+alternate execution path. The normal lock completion clears the active bit
+before its callback, and CPU execution reentry is prohibited; verify the
+existing signal, prefetch, decode admission, page/fault, self-modifying and
+LOCK regressions on both widths before the full cached Shared receiver and
+fourteen product artifacts. A matching PC/tick checkpoint is not proof of
+complete state or interactive usability.
+Extend the existing CPU prefetch test for stale same-range bytes on an expected
+PC mismatch and valid-but-empty prefetch, using actual 8088 and 486 execution.
+
+The prefetch consolidation and dual-width receiver have completed; see
+[prefetch evidence](../etc/evidence/t582-s34-prefetch-checks.md). S34 remains
+active because the PC110 usability objective is not yet established.
+
 # M5 T582 S33 — Closed: prefix classifier consolidation
 
 Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate
