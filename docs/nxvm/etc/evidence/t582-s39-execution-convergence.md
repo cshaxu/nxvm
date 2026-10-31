@@ -364,3 +364,36 @@ The reduced byte count does not compensate for a demonstrated risk of slower
 x86 execution and added copy complexity, so no production change is admitted.
 Log SHA-256:
 `C3AC098BEC4F4C5106863A533BD98B93C63E3C78990CB5660668E9BFF4106E1A`.
+
+## Retirement timing capture and second loop
+
+On the private 10,000,000-instruction PC110 startup checkpoint, a task-only
+wrapper counted 20,002,370 CPU timing captures on x64 and 20,008,794 on x86.
+Sampling one call in 256 recorded 7,084,180 TSC units across 78,135 samples
+and 3,272,980 across 78,160 respectively. Both runs reached 79,964,294 guest
+ticks and PC `0003dbc5`. These nonserialized, instrumented intervals are not
+exclusive whole-machine costs and include wrapper and return-value overhead.
+
+A separate x64 call-site counter recorded 10,008,549 calls after CPU refresh
+and 10,008,541 in the pending-retirement path. The latter reads event ticks
+after the loop's stop, refresh and bus-hold checks. A partial tick budget can
+carry pending retirement across Core calls, so a previously captured local
+value is not automatically available or safe there. Count and sample logs
+SHA-256 respectively:
+`B5D4E833D65FB0516E8DB4599EF5E3C6E4E682FE3B9CC0417217C0C1571E51C5`,
+`AC6D9E7C0BBB61F5A3C0C7A9CE57C697ACC17D549EFBC5F7D2CCA916EDCD0640`.
+
+To bound the possible gain, an intentionally invalid scratch candidate took
+the immediate retirement route for an unbounded tick budget when no external
+or event ticks were present. This skips the second loop's checks and is not a
+production proposal. Baseline/candidate/candidate/baseline were 17,023 /
+16,416 / 16,804 / 16,821 ms x64 and 20,897 / 22,580 / 22,480 / 21,749 ms
+x86. At the same instruction count, baseline reported 79,964,294 ticks and
+PC `0003dbc5`, whereas the altered route reported 79,964,327 ticks and PC
+`0003e3b2`. The divergent endpoint proves these runs are not equivalent and
+does not identify the exact mutation causing divergence. They do not show a
+stable gain worth bypassing the boundary; no production code was changed.
+A correct future design must retain all stop, reset, hold, event and partial
+budget boundaries, with explicit fault/debug and asynchronous regression.
+Invalid-ablation log SHA-256:
+`2F3F1D782F189134EAF772F56BC758B226232AA2A04888ABEEFE79280D2243FB`.

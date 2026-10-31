@@ -49,6 +49,8 @@ These are bounded improvements; none establishes real-time performance.
   [S39 observation](t582-s39-execution-convergence.md#current-game-host-instruction-samples).
 - PC110 Turbo runner quantum comparison and Standard-mode probe correction:
   [S39 comparison](t582-s39-execution-convergence.md#runner-rendezvous-quantum).
+- Timing-capture call sites and invalid pending-retirement ablation:
+  [S39 measurement](t582-s39-execution-convergence.md#retirement-timing-capture-and-second-loop).
 - Incremental lexical preview scan: [S28 experiment](t582-s28-execution-chain.md#incremental-lexical-preview-scan).
 - Observation-preview ablation and 486 asynchronous regression:
   [S26 comparison](t582-s26-preview-observation-bound.md).
