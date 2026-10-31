@@ -429,3 +429,80 @@ native Window/RDP or interactive-acceptance evidence.
 SHA-256 (guest log, instrumented board source):
 `4D015E8A4B6236086AF846833A86B1D517B952B7699719B105D7DEDB6CE400D0`,
 `AB51D92709B46EC93DAEE97A8A412266065B98C3CEA6C8C25E176DE78FFCFFD8`.
+
+### Game-marker CPU execution phases
+
+A task-only x64 CPU-instruction source instrumented the existing execution,
+timing-selection plus observation, and interrupt-dispatch phases during the
+same private-media Game-marker window. The guest exited normally after 280.85
+seconds. Execution had 17,633,270 calls / 68,827 samples / 89,194,189 TSC
+units; timing plus observation 17,610,986 / 68,539 / 45,186,494; interrupt
+dispatch 17,633,269 / 68,945 / 10,470,560. Machine run had 42,821 calls /
+160 samples / 246,018,134 units. Scaling each by calls per sample gives
+approximately 34.7%, 17.6% and 4.1% of Machine-run intervals respectively.
+These phases occur inside CPU refresh; they must not be added to the earlier
+inclusive refresh percentage. The short, nonsynchronized TSC samples, altered
+compiler layout, added checks and small denominator sample limit precision.
+The marker and frame do not establish interactive Window/RDP performance.
+
+This specific Game workload supports prioritizing execution before the timing
+selector or interrupt dispatch, while confirming that no one of these phases
+alone explains the entire Machine-to-reference difference. Earlier execution,
+prefix, preview, SMM and timing candidates remain subject to their existing
+correctness and measured-performance limitations; this sample does not make
+any previously rejected shortcut safe. No production code, interface or
+artifact changed for this probe.
+
+SHA-256 (guest log, instrumented CPU source):
+`57A3E15E1457A8769CCDF48BC5458FCE87BBACD74D5B552AE2C38A1A0A81CD40`,
+`ED9A8F7EBCBCBEAADE7A696F24DD791C0ADFBEEBC76CF3A6F44CEE298E06CB85`.
+
+### Game-marker instruction admission cost
+
+An independent private-media x64 Game-marker probe sampled the existing
+profile/form admission function inside instruction execution. It exited
+normally after 288.94 seconds. Admission had 19,903,248 calls / 77,651
+samples / 6,996,320 TSC units; enclosing instruction execution had
+17,620,835 / 68,575 / 92,454,154; Machine run had 42,057 / 157 /
+262,345,939. Scaling by calls per sample gives roughly 2.6% of Machine run
+for admission and 33.8% for instruction execution; the former is nested in
+the latter. It is about 7.5% of that execution interval. The 157 denominator
+samples, unsynchronized TSC, profiling checks, host scheduling and compiler
+layout limit accuracy. This is not an x86 result or native Window/RDP gameplay
+qualification.
+
+Even eliminating the entire measured admission interval would not plausibly
+resolve the PC110 throughput gap. The result does not justify introducing a
+second instruction table or a new per-context cache. Continue looking inside
+the execution and fetch paths, preserving the single existing source of
+instruction eligibility. No production code or artifact changed.
+
+SHA-256 (guest log, instrumented CPU source):
+`B368AAA13BA91DAA235D200E0F1A86FBF2DAC621CB58B35E6A6EB40CFF669A46`,
+`02D81156AF000BF4F56FE5B656D8D947186FBE49129F93686AB55F959CE6D272`.
+
+### Game-marker instruction preparation and code reads
+
+A private-media x64 Game-marker run sampled the existing `ExecInit`,
+`_s_read_cs`, `ExecFinal`, `ExecIns` and Machine-run scopes independently.
+It exited normally after 301.11 seconds. Calls / samples / TSC totals were:
+`ExecInit` 20,841,696 / 81,238 / 32,019,370; `_s_read_cs` 39,917,303 /
+155,889 / 10,499,669; `ExecFinal` 18,362,594 / 71,800 / 4,204,985;
+`ExecIns` 18,362,538 / 71,595 / 92,491,701; Machine run 44,297 / 163 /
+247,401,034. Scaling by calls per sample gives approximately 12.2%, 4.0%,
+1.6% and 35.3% of Machine-run intervals respectively. These scopes overlap:
+initialization and code reads can occur inside execution, and initialization
+can also occur for preview. They cannot be added. Timer overhead, instrumented
+compiler layout, host scheduling and the 163-sample denominator materially
+limit these estimates; the marker and frame are not desktop usability proof.
+
+The initialization result identifies a substantial execution-chain candidate
+for a new correctness-preserving investigation. It does not establish that
+the old CPU snapshot, prefetch refill or any individual suboperation owns the
+whole interval. The existing S23 initialization and REP-prefetch findings
+still apply: do not silently reuse a stale fetch or change guest clocks. No
+production code or artifact changed for this measurement.
+
+SHA-256 (guest log, instrumented CPU source):
+`8340E3D88ED2F1E4E8FBB61403FA97A5524D7AA827F965A3D03CD8BF01A7B19B`,
+`88E7CF14F84F3FF6E256D73A0A13DE533D364FDD6C207DC0BB128405DB760ACF`.
