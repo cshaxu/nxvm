@@ -133,7 +133,37 @@ candidate was rejected and did not change production, tests or APIs.
 Task-owned log SHA-256:
 `F456A6CF35CDE930F45DC2A21320BA994C2ADC2ADC4560E47B9A831F56AE0556`.
 
-Continue by identifying a larger shared cost whose normal-path computation can
-be reduced without suppressing retirement observations, speculative reads,
-guest timing or device events. Do not repeat this candidate without a new,
-evidence-backed hypothesis.
+## Candidate: one inlinable prefix classifier
+
+The timing model repeatedly calls the existing pure
+`x86_core_cpu_instruction_is_prefix()` defined in a different CPU translation
+unit. The classifier is CPU-private, has no caller outside the CPU source, and
+already owns classification for execution and lexical paths. A scratch
+candidate moved the same implementation to the existing CPU-private header as
+`static inline`, removing its former out-of-line definition. This creates no
+second classifier, table, state or public interface. All profile checks, V30
+prefix behavior and invalid-input handling remain subject to real execution
+regression, not just source comparison.
+
+Sequential baseline/candidate/candidate/baseline fixed-work runs reached
+10,000,000 instructions, 79,822,202 ticks and PC `00039119`:
+
+| Architecture | Baseline | Candidate | Candidate | Baseline |
+| --- | ---: | ---: | ---: | ---: |
+| x64, ms | 23006 | 22052 | 22249 | 22763 |
+| x86, ms | 26397 | 24695 | 24596 | 25581 |
+
+Both orderings favor the candidate in this startup workload. Scratch EXEs grew
+from 3,103,857 to 3,119,146 bytes on x64 and from 3,258,876 to 3,275,188 on
+x86. This is approximately 15–16 KiB, not a production artifact measurement.
+Equal fixed checkpoints are not full-state equivalence; late gameplay, other
+profiles, native UI and receiver qualification remain unproven. No production
+source was modified in S32. Log SHA-256:
+`AC6DCF47AC1FC090015CAE0F843DA16ED4A400CF8BA86784348DEA83D66D2726`.
+
+S33 may implement the same move and retain it only after actual CPU prefix,
+V30, interrupt/fault, timing and preview tests, source/code-size review,
+representative workload comparison and the applicable full receiver gate.
+Do not change timing accuracy or remove an externally consumed symbol without
+first verifying its callers and ownership. This bounded candidate does not
+close the PC110 usability objective.

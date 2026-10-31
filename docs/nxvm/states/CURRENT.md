@@ -1,4 +1,29 @@
-# M5 T582 S32 — Active: dominant PC110 execution cost
+# M5 T582 S33 — Active: prefix classifier consolidation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S33 after S32. |
+| Admission And Approval | Owner authorized automatic numeric S progression and code/algorithm simplification without material regression or timing downgrade. |
+| Objective | Move the existing single CPU-private prefix classifier into its private header for inlining across the execution and timing translation units. |
+| Non-goals | No new decoder, public API, persistent state, timing change, guest-work skipping or owner-media mutation. |
+| Reference Baseline | Shared `b2c17ba68`; S32 dual-width fixed-work candidate and source-caller audit. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S33; [S32 evidence](../etc/evidence/t582-s32-execution-cost.md). |
+| Files And ABI Surface | X86 Core private CPU instruction source/header and manifest; existing relevant tests if necessary, fourteen receiver artifacts and NXVM evidence. No public interface change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve all prefix classification and profiles; dual-width CPU, V30, fault, timing and preview tests, actual diff and generated-code size review, representative PC110 comparison, full cached dual-width receiver and artifact gates. |
+| Expected Markers | One classifier and no unsupported performance or usability claim. |
+| Asset Needs | Existing private task-owned firmware and media copies for performance probes; preserve owner assets. |
+| Reporting Requirements | Actual diff, artifact size, measured limits, tests, and unresolved PC110 usability. |
+| Stop Conditions | Do not change guest timing, observable behavior, CPU profile rules, public APIs or owner media. |
+| Exit Criteria | Qualified bounded improvement or documented rejection, with full receiver and documentation obligations where production changes. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Check all classifier references, supported CPU profiles, preview, fault and V30 paths. |
+
+# M5 T582 S32 — Closed: dominant PC110 execution cost
+
+[S32 evidence](../etc/evidence/t582-s32-execution-cost.md) records the
+deadline cost and rejected candidates, and the bounded dual-width prefix
+classifier candidate. It does not establish playable PC110 performance.
 
 | Field | Required record |
 | --- | --- |
