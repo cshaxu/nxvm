@@ -1,4 +1,30 @@
-# M5 T582 S31 — Active: remaining workload bottlenecks
+# M5 T582 S32 — Active: dominant PC110 execution cost
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S32 after S31. |
+| Admission And Approval | Owner authorized automatic numeric S progression and requested a prioritized explanation of Machine overhead. |
+| Objective | Identify and prioritize the major remaining cost in the actual PC110 execution chain, including the Machine versus isolated CPU difference. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | S27 performance envelope, S20 execution attribution, S28 execution-chain design and S31 memory evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S32. |
+| Files And ABI Surface | NXVM evidence and task-owned profiling scratch; no production changes or public interface changes in this audit. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Trace actual execution and observation paths, distinguish nested from exclusive costs, and use bounded representative measurements only to resolve actionable gaps. |
+| Expected Markers | Evidence-ranked cost breakdown and a concrete viable candidate with owner, estimated change and validation boundaries. |
+| Asset Needs | Private task-owned copies of external firmware and media only if needed; preserve owner assets. |
+| Reporting Requirements | Separate measured facts and hypotheses, identify measurement limitations and do not claim PC110 usability. |
+| Stop Conditions | Do not modify production behavior or infer equivalence solely from matching instruction counts or PC. |
+| Exit Criteria | Reviewable prioritized design for S33 or documented evidence that another measured hypothesis is required. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Reconcile previous profiling and rejected candidates before introducing another probe. |
+
+# M5 T582 S31 — Closed: remaining workload bottlenecks
+
+Shared `b2c17ba68` and MyRaidenII `8c9509b95` qualify the bounded memory
+deduplication and receiver artifacts. [Evidence](../etc/evidence/t582-s31-memory.md)
+records both-width tests, artifacts and the lack of a proven product speedup.
+The T remains open for the PC110 usability objective.
 
 | Field | Required record |
 | --- | --- |

@@ -156,7 +156,22 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   candidates without new evidence. Exit with qualified changes or a prioritized
   evidence-backed follow-up. Add further numeric S tasks if performance is
   still insufficient; completing this S does not imply the T is complete.
-- **S32: whole-product receiving and owner acceptance.** After the actual
+- **S32: identify the dominant remaining cost.** Reconcile existing evidence
+  with the current x86/x64 PC110 workload and measure only gaps needed to
+  distinguish CPU, memory, device advancement, display and host waiting.
+  Exit with reproducible measurements, explicit limits and a prioritized,
+  technically actionable candidate; do not repeat rejected probes without a
+  new hypothesis or treat a local microbenchmark as interactive qualification.
+- **S33: implement the principal bottleneck improvement.** Design and qualify
+  the best supported candidate from S32 while preserving instruction and guest
+  timing, device events, side effects and input. Exit with actual diff,
+  appropriate dual-width regression and comparable workload evidence, or a
+  documented rejection and the next evidence-led candidate.
+- **S34: reconcile remaining significant costs.** Reassess product performance
+  after S33; implement a justified further improvement or record why no safe
+  candidate is presently supported. Insert additional numeric subtasks when
+  independent work remains; do not add changes merely to fill a subtask.
+- **S35: whole-product receiving and owner acceptance.** After the actual
   performance objective is met, reconcile before/after startup, guest clock,
   RTC and Game behavior on x86/x64 and applicable DSTN/TFT variants; validate
   responsive operation and report desktop/RDP evidence separately. Run the
