@@ -39,6 +39,7 @@ These are bounded improvements; none establishes real-time performance.
 - Ordinary cache access and guest-visible test-register publication:
   [S26 cache query](t582-s26-cache-query-cost.md#ordinary-access-test-register-publication-audit).
 - Absent-FPU scheduler call removal: [S26 FPU probe](t582-s26-fpu-scheduler-probe.md).
+- Retirement trace disabled-path guard: [S26 trace audit](t582-s26-trace-audit.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
 - World Clock sampling of individual 486 timing terms:
