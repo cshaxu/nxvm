@@ -235,3 +235,31 @@ the x86 comparisons disagree. These noisy samples are not full state or Game
 verification. Given the additional condition and no demonstrated gain, the
 candidate is rejected without changing production. Log SHA-256:
 `2485A41290EEC1E286D6E139DC2F36C55117B68ADC2F7799F2BD6E066927FF0B`.
+
+## Current Game host-instruction samples
+
+An x64 task-only native sampler observed the current committed guest probe
+using private media. The guest selected Game at sample 215 and reached the
+stable Game frame at sample 245; the sampler's late window began approximately
+225 host seconds after process start and ended on guest exit. The resulting
+frame SHA-256 was `E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`.
+Input was injected through Machine, not the desktop. Sampling suspended worker
+threads and therefore perturbed the runtime; sample time and guest sample
+markers use different clocks and their alignment is approximate.
+
+The worker had 4,105 late samples mapped to the nearest executable symbol or
+module. Largest counts were CPU refresh 286, Machine run 171, PIC selection
+125, keyboard-input callback 117, elapsed-time publication 112, clock-domain
+advance 109, physical memory read 109, timing selection 104, CRT module 104,
+and board deadline observation 99. These are sampled instruction pointers,
+not exclusive function timings or exact whole-program percentages; optimized
+code and inlining may change attribution. They show distributed work in the
+observed drawing interval rather than identify a single proven culprit.
+Keyboard-input callback activity merits source inspection, but the earlier S8
+repeat-deadline change is already present: do not repeat it or suppress input,
+device callbacks or deadlines without a separate validity proof. The sample
+does not establish PC110 responsiveness or complete guest-state equivalence.
+Sampler log SHA-256:
+`A26A0C61E37D45D17478BBD7B62B87FD2EC593CA04BA3B8A13C1BC585684C8F0`.
+Guest log SHA-256:
+`969396C3CC2D78C2912A63A4DB4831EF85A5B924B29B8EAF91B099CF1F30874A`.

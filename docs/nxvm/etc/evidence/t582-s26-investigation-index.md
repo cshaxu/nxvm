@@ -45,6 +45,8 @@ These are bounded improvements; none establishes real-time performance.
 - 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
 - World Clock sampling of individual 486 timing terms:
   [S26 measurement](t582-s26-486-term-sampling.md).
+- Current Game drawing host-symbol samples and repeated zero-access experiment:
+  [S39 observation](t582-s39-execution-convergence.md#current-game-host-instruction-samples).
 - Incremental lexical preview scan: [S28 experiment](t582-s28-execution-chain.md#incremental-lexical-preview-scan).
 - Observation-preview ablation and 486 asynchronous regression:
   [S26 comparison](t582-s26-preview-observation-bound.md).
