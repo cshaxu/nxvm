@@ -19,6 +19,10 @@
 | Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
 | Similar-Issue Sweep | Consult the S26 investigation index and subsequent evidence before repeating any experiment. |
 
+The [initial attribution](../etc/evidence/t582-s35-cost-attribution.md)
+reconciles existing measurements and their limits. It does not yet identify a
+qualified substantial optimization or establish interactive performance.
+
 # M5 T582 S34 — Closed: remaining PC110 usability costs
 
 | Field | Required record |
