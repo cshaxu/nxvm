@@ -59,27 +59,6 @@ lib_status x86_pic_capture_registers(const x86_pic *pic,
     return LIB_STATUS_OK;
 }
 
-static lib_bool pic_select_controller(const x86_pic *pic,
-    lib_u8 *out_id)
-{
-    lib_u8 offset;
-    lib_u8 id;
-
-    if (pic == LIB_NULL || out_id == LIB_NULL || pic->data.status != OCW1)
-        return LIB_FALSE;
-    for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
-        id = (lib_u8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
-        if (pic->data.unmask_remaining_ticks[id] == 0u &&
-            PIC_BIT_IS_SET(pic_pending_requests(pic) & ~pic->data.imr,
-                VPIC_IRR_IRQ(id)) &&
-            pic_request_can_interrupt(pic, id)) {
-            *out_id = id;
-            return LIB_TRUE;
-        }
-    }
-    return LIB_FALSE;
-}
-
 /*
  * RespondINTR: Internal function
  * Acknowledges the selected request by moving it to ISR.
@@ -483,23 +462,18 @@ lib_status x86_pic_select(const x86_pic *pic, x86_pic_request *out_request)
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (pic->data.status != OCW1) return LIB_STATUS_INVALID_STATE;
-    if (!pic->cascade_master) {
-        if (!pic_select_controller(pic, &id)) return LIB_STATUS_INVALID_STATE;
-        out_request->line = id;
-        out_request->vector = (lib_u8)(id | pic->data.icw2);
-        out_request->cascade = LIB_FALSE;
-        return LIB_STATUS_OK;
-    }
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         id = (lib_u8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
         if (pic->data.unmask_remaining_ticks[id] != 0u ||
             !PIC_BIT_IS_SET(pic_pending_requests(pic) & ~pic->data.imr,
                 VPIC_IRR_IRQ(id))) continue;
-        cascade = PIC_BIT_IS_SET(pic->data.cascade_irr, VPIC_IRR_IRQ(id));
+        cascade = pic->cascade_master &&
+            PIC_BIT_IS_SET(pic->data.cascade_irr, VPIC_IRR_IRQ(id));
         if (!pic_request_can_interrupt(pic, id) &&
             !(cascade && PIC_BIT_IS_SET(pic->data.icw4, VPIC_ICW4_SFNM) &&
                 GetRegTopId(pic, pic->data.isr) == id)) continue;
-        if (!cascade && !PIC_BIT_IS_SET(pic->data.icw1, VPIC_ICW1_SNGL) &&
+        if (pic->cascade_master && !cascade &&
+            !PIC_BIT_IS_SET(pic->data.icw1, VPIC_ICW1_SNGL) &&
             PIC_BIT_IS_SET(pic->data.icw3, VPIC_ICW3_S(id))) continue;
         out_request->line = id;
         out_request->vector = (lib_u8)(id | pic->data.icw2);
