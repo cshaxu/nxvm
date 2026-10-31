@@ -19726,11 +19726,10 @@ static void MOVSX_R32_RM16(x86_core_cpu_execution_context *context)
 static void ExecInit(x86_core_cpu_execution_context *context)
 {
     ExecBoundary(context);
-    if (context->prefetch_expected_valid && instruction_state.data.linear !=
-        context->prefetch_expected_linear) x86_core_cpu_execution_invalidate_prefetch(context);
-    if (!context->prefetch_valid || instruction_state.data.linear <
-        context->prefetch_linear || instruction_state.data.linear -
-        context->prefetch_linear >= context->prefetch_count) {
+    if ((context->prefetch_expected_valid && instruction_state.data.linear !=
+            context->prefetch_expected_linear) || !context->prefetch_valid ||
+        instruction_state.data.linear < context->prefetch_linear ||
+        instruction_state.data.linear - context->prefetch_linear >= context->prefetch_count) {
         lib_u8 prefetch_bytes = context->prefetch_capacity;
         lib_u32 page_bytes = _GetPageSize - _GetLinear_Offset(instruction_state.data.linear);
 
@@ -19756,9 +19755,8 @@ static void ExecInit(x86_core_cpu_execution_context *context)
             context->prefetch_valid = LIB_TRUE;
         }
     }
-    if (context->prefetch_valid && instruction_state.data.linear >=
-        context->prefetch_linear && instruction_state.data.linear -
-        context->prefetch_linear < context->prefetch_count) {
+    /* A retained range already contains the PC; a refill starts at it. */
+    if (context->prefetch_valid && context->prefetch_count != 0u) {
         lib_u8 available = context->prefetch_count -
             (lib_u8)(instruction_state.data.linear - context->prefetch_linear);
         lib_memory_copy(instruction_state.data.opcodes, context->prefetch_bytes +

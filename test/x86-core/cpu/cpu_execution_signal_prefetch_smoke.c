@@ -148,6 +148,31 @@ static lib_i32 run_8088_prefetch_control_and_self_modify(void)
     return failed;
 }
 
+/* A stale byte inside the old range must not survive a control-flow mismatch
+ * or a valid-but-empty queue. Exercise the guest instruction, not just flags. */
+static lib_i32 run_prefetch_refill(x86_core_cpu_profile profile)
+{
+    lib_i32 failed = 0;
+    for (lib_u8 empty = 0u; empty < 2u; ++empty) {
+        cpu_bus_fixture fixture;
+        x86_core_cpu_execution_context *execution;
+
+        cpu_bus_prepare(&fixture, profile);
+        execution = &fixture.execution;
+        fixture.memory[0x100u] = 0x90u; /* NOP; stale queued byte is HLT. */
+        execution->prefetch_valid = LIB_TRUE;
+        execution->prefetch_linear = 0x100u;
+        execution->prefetch_count = empty ? 0u : 1u;
+        execution->prefetch_bytes[0] = 0xf4u;
+        execution->prefetch_expected_valid = !empty;
+        execution->prefetch_expected_linear = 0x101u;
+        x86_core_cpu_execution_refresh(execution);
+        failed |= fixture.faults != 0u || fixture.instructions.data.except != 0u ||
+            fixture.cpu.data.eip != 0x101u || fixture.cpu.data.flagHalt;
+    }
+    return failed;
+}
+
 static lib_bool cpu_signal_priority_matrix(void)
 {
     static const x86_core_cpu_profile profiles[] = {
@@ -481,6 +506,8 @@ lib_i32 main(void)
     }
     result |= run_8088_prefetch_capacity();
     result |= run_8088_prefetch_control_and_self_modify();
+    result |= run_prefetch_refill(X86_CORE_CPU_PROFILE_8088);
+    result |= run_prefetch_refill(X86_CORE_CPU_PROFILE_80486SX);
     if (result != 0) return 1;
 
     lib_c_printf("%s\n", "CPU-EXECUTION-SIGNAL-PREFETCH:OK");
