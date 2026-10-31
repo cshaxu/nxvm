@@ -300,3 +300,24 @@ performance. Since this neither reduces algorithmic complexity nor demonstrates
 a reliable cross-width gain, it was rejected without production changes.
 Log SHA-256:
 `D22E84771F3AB7974898898222FC2CC0AB9CFAAD25FEB272575048ADF2F3CC38`.
+
+## Full-size CPU snapshot copy sampling
+
+The prior S26 probe counted 380-byte `memcpy` calls at the instruction
+boundary but did not time the copy. A new task-only link wrapper timed one in
+256 calls of that size, leaving the real `memcpy` in place. On the private
+10,000,000-instruction startup checkpoint, x64 counted 11,967,532 matching
+calls and 46,749 samples totaling 2,622,720 TSC units; x86 counted 11,970,123
+calls and 46,759 samples totaling 3,964,240 units. Both reached 79,964,294
+guest ticks and PC `0003dbc5`, in 18,885 and 22,438 host milliseconds with
+instrumentation. The sample means are approximately 56 and 85 TSC units.
+
+This groups all linked copies of that size, not just the previously identified
+instruction-boundary call; inlined copies are absent. The nonserialized clock,
+sampling, call wrapper, host scheduling and instrumented build affect the
+result, which is neither an exact CPU-time percentage nor a valid removal
+ablation. The startup-only result does not establish Game performance. It does
+not justify replacing the full snapshot with a complex copy-on-write model or
+omitting the fault/debug state. No production code or artifact changed.
+Log SHA-256:
+`4FA120212300556859269DA5A8FAC9D62E924EA2A8182B1D0C862123F1E478AD`.

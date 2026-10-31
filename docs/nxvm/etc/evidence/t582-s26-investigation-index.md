@@ -55,6 +55,8 @@ These are bounded improvements; none establishes real-time performance.
 - Same synthetic loop on both engines and isolated CPU: [S26 comparison](t582-s26-pc110-emu-measurement.md#same-synthetic-instruction-loop).
 - Instruction-entry snapshot copy attribution and GCC string-operation
   experiment: [S26 comparison](t582-s26-pc110-emu-measurement.md#instruction-boundary-copy-attribution).
+- Sampled full-size snapshot-copy cost on both widths:
+  [S39 measurement](t582-s39-execution-convergence.md#full-size-cpu-snapshot-copy-sampling).
 - Small-copy callsite attribution and four-byte RAM-write candidate:
   [S26 comparison](t582-s26-small-copy-attribution.md).
 - SMM save/restore transfer count and repeated cache-way lookup boundary:
