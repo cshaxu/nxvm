@@ -40,3 +40,24 @@ justify changing the component build; Game performance, full CPU behavior and
 desktop/RDP were not tested. No production source or asset changed. Combined
 log SHA-256:
 `BC611435F784F9E7872C971ADD59D55E3EFE3D254ABD8D276F713DCC0C80B63F`.
+
+## 486 cache-read source selection
+
+The 486 cache-hit read selects the current or preview CPU source both during
+way lookup and again when copying the hit. A scratch candidate passed the
+already-selected source to the existing way lookup and reused it on that hit;
+the other way-lookup callers explicitly selected their source. It added no
+cache state, did not change bus callbacks or skip cache lookup, and was not
+applied to production.
+
+Fixed startup baseline/candidate/candidate/baseline milliseconds were
+18,012 / 17,614 / 17,872 / 17,652 x64 and 23,269 / 22,487 / 24,635 / 23,652
+x86, with ten million instructions, 79,964,294 ticks and PC `0003dbc5` in
+every run. Both widths change direction; one x64 candidate EXE was 512 bytes
+smaller and x86 sizes were equal. Disassembly of the x64 cache-read function
+changed, but the timing results do not prove an end-to-end speedup or complete
+preview, fault or guest-state equivalence. The candidate shifts source-selection
+responsibility to every caller and adds a local, so without clear benefit it
+was not retained or subjected to the full receiver. No production source or
+asset changed. Combined log SHA-256:
+`97BCB63D57A8703139467320910DFB3633D7431469629627B0106F11B1E5C22F`.
