@@ -1,4 +1,30 @@
-# M5 T582 S33 — Active: prefix classifier consolidation
+# M5 T582 S34 — Active: remaining PC110 usability costs
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S34 after S33. |
+| Admission And Approval | Owner authorized automatic numeric S progression and preserving timing and behavior while improving PC110 usability. |
+| Objective | Identify the next substantial, evidence-backed CPU, memory or device cost after S33 and design a safe improvement. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | S27–S33 profiling and [S33 receiver evidence](../etc/evidence/t582-s33-prefix.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S34. |
+| Files And ABI Surface | Initial audit limited to NXVM evidence and task-owned scratch. Before production edits, document the specific owner, interfaces, candidate and verification in this packet. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Reuse prior samples before running focused probes; preserve guest timing, event ordering, faults, observations and all CPU profiles. Required full dual-width receiver applies to Shared edits. |
+| Expected Markers | A prioritized viable design and measured workload limits, or evidence explaining why a proposed improvement is not safe or worthwhile. |
+| Asset Needs | Existing private task-owned firmware and media copies only; preserve owner assets. |
+| Reporting Requirements | Explain actual observed costs, candidate size and tradeoffs, tests and remaining interactive usability gaps without claiming an unsupported speedup. |
+| Stop Conditions | Do not lower timing accuracy, skip guest work or treat matching PC/ticks or incomplete frames as proof of equivalence. |
+| Exit Criteria | Qualified improvement or evidence-backed next candidate; keep T582 open until actual usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Reconcile existing CPU timing, preview, memory, board and device experiments before introducing another probe. |
+
+# M5 T582 S33 — Closed: prefix classifier consolidation
+
+Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate
+and receiver artifacts. [Evidence](../etc/evidence/t582-s33-prefix.md)
+records both-width qualification and performance limitations. The PC110
+usability goal remains open.
 
 | Field | Required record |
 | --- | --- |
