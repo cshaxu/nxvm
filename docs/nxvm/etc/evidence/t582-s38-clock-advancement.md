@@ -74,3 +74,23 @@ No production code or released artifact was modified by the ablation.
 
 Log SHA-256:
 `CE90A9FB17DA091B19EFE29C8F526E519EAC02C53B2A3626D683A2480BB3C3C3`.
+
+## Corrected absent-FPU scheduler upper bound
+
+The earlier S26 absent-FPU experiment compiled the private Machine layout
+without the Release trace definition and is invalid for performance comparison.
+This replacement compiled both scheduler variants with
+`X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=0` and the same cached Release
+libraries. PC110 selects `X86_FPU_PROFILE_NONE`. The scratch candidate removes
+both scheduler calls to the FPU unconditionally; it is invalid for machines
+with an active FPU and is not a proposed production implementation.
+
+At the fixed startup checkpoint, baseline/candidate times were 19,148 / 18,312
+ms x64 and 23,541 / 23,564 ms x86. Each reported 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`. One ordered pair per width is sensitive to
+host and compilation-layout noise and does not establish complete state or
+Game equivalence. It provides no evidence of a large cross-width speedup from
+removing those calls; do not add a mirrored FPU-presence state or another
+execution path on these results. No production code or release artifact was
+changed. Log SHA-256:
+`A3C161ECC0A86F7FC9050F6C00A1937B7E515B6E3B46BFDF2125084BF90B580B`.
