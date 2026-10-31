@@ -280,6 +280,26 @@ The existing S8 change already avoids the repeat-time query when no repeat
 bytes exist. Do not add cached keyboard state or skip BAT/repeat checks on the
 basis of this sampling. No production code or additional test was changed.
 
+### Current stable-frame workload split
+
+The completed S39 x64 private-media Game run recorded the first menu selection
+at sample 211, with the nearest preceding quantum at 128,899,070 instructions
+and 668,714,019 ticks. The Game selection and Enter were queued at sample 233,
+with the nearest quantum at 145,011,720 instructions and 707,228,588 ticks.
+The stable Game frame appeared at sample 263, with the nearest quantum at
+167,411,113 instructions and 762,934,862 ticks. Thus the recorded drawing
+interval spans approximately 22.4 million instructions and 55.7 million guest
+ticks over 30 one-second samples. These are asynchronously logged quantum and
+frame markers, not exact input or drawing boundaries.
+
+The long pre-menu period and the later drawing period are both material to the
+observed 266.69-second run. A startup-only memory-clear optimization cannot
+by itself establish an acceptable Game experience; similarly, the previously
+observed one successful direct-Machine click does not establish native Window
+or RDP responsiveness. No new timed run, product change or usability claim is
+implied by this analysis. The earlier Game frame and limits are recorded in
+the carry-rotation entry above.
+
 ## PIC request-check ordering
 
 The current priority loop loads each line's unmask delay before testing whether
