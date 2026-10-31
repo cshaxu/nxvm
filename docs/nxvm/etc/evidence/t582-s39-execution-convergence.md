@@ -27,3 +27,21 @@ needed for the stated PC110 goal. Do not add persistent mirrored branch state
 or a second timing path on this evidence. No production source, public API,
 owner media or artifact changed. Log SHA-256:
 `F41A492DA5BBFF513FE73A5336D584201F333C57923E29D4780BDA72C9A2991C`.
+
+## 486 timing-profile selection order
+
+The shared timing selector tests three Intel profiles before selecting 486.
+A scratch-only candidate moved the existing 486 branch ahead of those three,
+leaving the V30 route, actual timing evaluator and all formulas unchanged.
+No product-specific predicate, second selector or persistent state was added.
+The candidate was not qualified for all profile and failure paths.
+
+For baseline/candidate/candidate/baseline at the private fixed startup
+checkpoint, x64 took 18,259 / 20,526 / 18,381 / 20,330 ms and x86 took
+23,449 / 24,826 / 21,679 / 22,000 ms. Every run reported 10,000,000
+instructions, 79,964,294 ticks and PC `0003dbc5`. Both widths change direction
+between ordered comparisons, and checkpoint equality is not full-state or
+profile equivalence. These noisy samples do not justify adopting the reorder
+or imply a product speedup. No production source or artifact changed.
+Log SHA-256:
+`7161638B4A31F04A1212199778BA41E32D8B93B843608457517EF4C41D5A7C55`.
