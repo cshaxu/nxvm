@@ -392,7 +392,28 @@ void x86_core_cpu_execution_reset(
     x86_core_cpu_execution_context *context);
 void x86_core_cpu_execution_invalidate_tlb(
     x86_core_cpu_execution_context *context);
-lib_bool x86_core_cpu_instruction_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile);
+static inline lib_bool x86_core_cpu_instruction_is_prefix(lib_u8 opcode, x86_core_cpu_profile profile)
+{
+    switch (opcode)
+    {
+    case 0xf0:
+    case 0xf2:
+    case 0xf3:
+    case 0x2e:
+    case 0x36:
+    case 0x3e:
+    case 0x26:
+        return LIB_TRUE;
+    case 0x64:
+    case 0x65:
+        return profile == X86_CORE_CPU_PROFILE_V30 || cpu_profile_has_32bit_architecture(profile);
+    case 0x66:
+    case 0x67:
+        return cpu_profile_has_32bit_architecture(profile);
+    default:
+        return LIB_FALSE;
+    }
+}
 lib_u32 x86_core_cpu_instruction_prefix_count(
     const x86_core_cpu_execution_context *context, const t_cpuins_data *data);
 lib_bool x86_core_cpu_instruction_has_lock_prefix(const t_cpuins_data *data,
