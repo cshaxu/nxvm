@@ -4,13 +4,13 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
 | Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
-| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input and lexical-prefix scans, simplify parity and conditional-branch timing calculations, eliminate duplicate timing-result publication and remove redundant PC110 video-adapter aperture checks without changing guest behavior or timing; retain the larger PC110 usability goal. |
+| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input and lexical-prefix scans, simplify parity and conditional-branch timing calculations, eliminate duplicate timing-result publication, simplify ordinary rotate execution and remove redundant PC110 video-adapter aperture checks without changing guest behavior or timing; retain the larger PC110 usability goal. |
 | Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
 | Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
 | Files And ABI Surface | Shared X86 Core CPU preview, timing-input, timing selection and flag implementations, their private declarations and manifest; existing CPU timing, preview, arithmetic, bus and Machine retirement-observation tests and their manifest; MyPC110 video adapter and existing route tests, plus NXVM evidence. All seven App receiver artifacts remain under the Shared gate. No public interface or other Shared production package change. |
 | Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
-| Verification | Audit preview's read and failure paths and omitted fields, including 486 retirement observation across asynchronous entry; verify the unified timing and lexical prefix scans preserve flags and opcode positions for all profiles and malformed input, including prefixed lexeme decoding and real timing previews; verify all 256 parity inputs and all 16 branch conditions across flag combinations through actual CPU instructions. Verify the video adapter retains null, zero-length, invalid-range and observed-read semantics using the existing chip and Machine paths. Run dual-width affected tests, manifest and dependency checks; cached 14-App builds and full unit/integration receiving gate apply to Shared changes. Retain fixed-work and actual Game evidence without claiming equal complete machine state. |
+| Verification | Audit preview's read and failure paths and omitted fields, including 486 retirement observation across asynchronous entry; verify the unified timing and lexical prefix scans preserve flags and opcode positions for all profiles and malformed input, including prefixed lexeme decoding and real timing previews; verify all 256 parity inputs and all 16 branch conditions across flag combinations through actual CPU instructions. Verify ROL/ROR count, carry, overflow, undefined flags and widths across CPU profiles with real CPU differential and existing tests. Verify the video adapter retains null, zero-length, invalid-range and observed-read semantics using the existing chip and Machine paths. Run dual-width affected tests, manifest and dependency checks; cached 14-App builds and full unit/integration receiving gate apply to Shared changes. Retain fixed-work and actual Game evidence without claiming equal complete machine state. |
 | Expected Markers | The existing lexical preview remains the sole path, reads no omitted access log or dispatch table, and all receiver gates are honestly reported. |
 | Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
 | Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
@@ -78,6 +78,12 @@ The PC110 display adapter's redundant aperture checks were removed without
 changing the chip's access validation or the adapter's invalid-input status;
 [the evidence](../etc/evidence/t582-s26-video-adapter.md) records both-width
 tests and a real Game-frame probe. This does not establish playable speed.
+
+The ordinary ROL/ROR helpers now use constant-work width-limited rotation
+instead of per-bit loops, retaining existing profile counts and flags. The
+[qualification](../etc/evidence/t582-s26-rotate-constant.md) records both-width
+CPU differential, unit and integration results, the corrected manifest failure,
+receiver artifacts and a Game-frame probe. It does not establish playable speed.
 
 Small-copy callsite attribution identified high-frequency firmware reads and
 four-byte RAM writes. A bounded write specialization showed mixed two-width

@@ -116,6 +116,9 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   Lexical preview may collect size-prefix facts during its existing prefix scan
   rather than traversing the same bytes twice; retain the same decoder and all
   profile-specific prefix admission and invalid-input behavior.
+  ROL and ROR may replace per-bit loops with a width-masked rotation shared by
+  the existing helpers, retaining count, carry, overflow, undefined-flag and
+  profile behavior. Qualify real execution on both widths and all profiles.
 - **S27 or later: receiving qualification.** S11's original whole-product and
   clock qualification remains pending after S26 and any later measured batches.
 
