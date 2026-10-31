@@ -1,4 +1,24 @@
-# M5 T582 S30 — Active: guest-time and device advancement
+# M5 T582 S31 — Active: remaining workload bottlenecks
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S31 after S30. |
+| Admission And Approval | Owner authorized automatic S progression and optimizations with no material regression or timing downgrade. |
+| Objective | Re-evaluate actual PC110 workload bottlenecks and implement justified reductions in memory or other remaining paths. |
+| Non-goals | No guest work skipping, second executor, host clock substitution, timing downgrade or owner-media mutation. |
+| Reference Baseline | S27–S30 performance and receiver evidence and T582 investigation index. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S31. |
+| Files And ABI Surface | Relevant Shared components, PC110 adaptation and existing tests only where justified by measurement and dependency boundaries; manifests, receiver artifacts and NXVM evidence. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve mappings, invalidation, faults, side effects and time/event ordering; targeted tests and required cached dual-width full Shared receiver gate after Shared production changes. |
+| Expected Markers | Evidence-backed improvement or explicit negative result; report actual workload and limits. |
+| Asset Needs | Private task-owned copies of existing external firmware and media if required. |
+| Reporting Requirements | Actual diff, component ownership, measured results, unchanged behavior and remaining usability work. |
+| Stop Conditions | Do not claim equivalence from matching PC/tick checkpoints alone, or skip device or input semantics. |
+| Exit Criteria | Qualified changes or prioritized evidence-backed follow-up; add numeric S work before final receiving if actual usability remains unmet. |
+| Original Owner Request | Improve PC110 performance until usable, retaining correct guest behavior. |
+| Similar-Issue Sweep | Compare prior CPU, memory, scheduler and display candidates before repeating a probe. |
+# M5 T582 S30 — Closed: guest-time and device advancement
 
 | Field | Required record |
 | --- | --- |

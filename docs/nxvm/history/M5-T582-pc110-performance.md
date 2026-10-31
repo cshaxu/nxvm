@@ -63,3 +63,5 @@ S27 recorded the dual-width synthetic and existing product workload envelope in 
 S28 traced the CPU-to-device path and evaluated bounded candidates; [the execution-chain evidence](../etc/evidence/t582-s28-execution-chain.md) records rejected experiments and the S29 shift design. No runtime optimization was delivered in S28; PC110 usability remains open.
 
 S29 qualified constant-work SHL/SHR/SAR and fourteen receiver artifacts; [evidence](../etc/evidence/t582-s29-shift.md). The fixed-work comparison did not establish a speedup. T582 remains open for PC110 usability.
+
+S30 qualified the deadline conversion overflow-guard simplification and fourteen receiver artifacts; [evidence](../etc/evidence/t582-s30-clock.md). No end-to-end speedup or PC110 usability is claimed. T582 remains open.

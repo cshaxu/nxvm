@@ -1,4 +1,4 @@
-# T582 S28 — execution-chain audit (in progress)
+# T582 S28 â€” execution-chain audit (in progress)
 
 ## Causal chain
 
@@ -50,6 +50,8 @@ The apparent one-tick shortcut has already been tested and rejected in [the S26 
 Guest log SHA-256, x64 baseline/candidate then x86 baseline/candidate: `56bf080b908600154df9b6a8a9ede59223431efece37a2a511aebddcc78e58b2`, `56903e8dde98d59099aafea5207e8b0be16b5cdf3bcfc6aa66e3adcefd674255`, `7f89c7605d57eebb5c716afa7664053b63788b9528908b43cf34961f0c8d3a48`, `8b12dc1d500b0792bd7a89aa32cb0561170b920d54daa9fb8386228af02e66f9`.
 
 ## Clock deadline overflow guard
+
+S30 subsequently accepted this bounded division reduction under the owner's clarified criterion; see [the receiving evidence](t582-s30-clock.md). The measurements below remain limited and do not establish product speedup.
 
 `x86_core_machine_clock_domain_source_ticks_until` checks whether the 64-bit requested device tick count times a 32-bit denominator would overflow, using `LIB_UINT64_MAX / denominator`. For a request no larger than `LIB_UINT32_MAX`, multiplication by any 32-bit denominator cannot overflow 64 bits. A task-only candidate retained the existing check for larger inputs and bypassed that division for smaller ones; the subsequent phase and conversion calculation remained unchanged. This adds a branch, does not change asymptotic complexity, and was not installed in production.
 
@@ -119,4 +121,4 @@ The existing `_a_shl`, `_a_shr` and `_a_sar` each repeat 8-, 16- and 32-bit bran
 
 A single private shift helper can retain the same caller/decoder and timing owners. It validates 8/16/32-bit width, uses the existing per-profile count, records the same bit/operands/result, and computes the result and final carry directly. Counts zero leave flags untouched. For left/right logical shifts the current CF undefined marker at counts at least width, including the existing V30 exception, must remain exactly as before; carry is the final shifted-out bit, or zero beyond width. Arithmetic right shift sign-extends without signed-C shift assumptions; carry after a count at least width is the original sign bit. OF, AF, SZP, undefined markers, exception behavior for invalid width, and the existing `_kaf_set_flags` calls must match the original per direction. No decoded timing, instruction count, bus access, interface or state is changed.
 
-Expected production change: approximately +65/-250 lines in `cpu_instructions.c`, subject to actual diff. Reuse the existing CPU differential harness pattern from S26 and existing rotate/shift tests, including count 0–255, flags, 8/16/32-bit operands and Intel/V30 profiles; explicitly test boundary counts and register/memory destinations. Compare timing and observation fields, not just results. A model comparison alone is not CPU proof. Build and run targeted x64/x86 tests first, then use the cached Shared receiving gate and fourteen receiver artifacts if implemented. Measure matched PC110 work; do not describe unchanged or noisy speed as a proven user-visible improvement. This does not close PC110 usability.
+Expected production change: approximately +65/-250 lines in `cpu_instructions.c`, subject to actual diff. Reuse the existing CPU differential harness pattern from S26 and existing rotate/shift tests, including count 0â€“255, flags, 8/16/32-bit operands and Intel/V30 profiles; explicitly test boundary counts and register/memory destinations. Compare timing and observation fields, not just results. A model comparison alone is not CPU proof. Build and run targeted x64/x86 tests first, then use the cached Shared receiving gate and fourteen receiver artifacts if implemented. Measure matched PC110 work; do not describe unchanged or noisy speed as a proven user-visible improvement. This does not close PC110 usability.
