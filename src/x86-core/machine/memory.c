@@ -126,60 +126,27 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             (lib_u64)wrapped - provider->physical_start + bytes > provider->bytes) continue;
         matches[match_count++] = (lib_u8)index;
     }
-    for (index = 0u; index < match_count; ++index) {
-        const x86_core_machine_memory_device_provider *provider =
-            &ram->connect.device_providers[matches[index]];
+    /* Replacement, ordinary, then fallback; preserve registration order. */
+    for (lib_u8 tier = 0u; tier < 3u; ++tier) {
+        for (index = 0u; index < match_count; ++index) {
+            const x86_core_machine_memory_device_provider *provider =
+                &ram->connect.device_providers[matches[index]];
+            const lib_u8 provider_tier = provider->replacement ? 0u :
+                provider->fallback ? 2u : 1u;
 
-        if (!provider->replacement) continue;
-        status = provider->query(provider->owner, wrapped, bytes, access);
-        if (status == LIB_STATUS_OK) {
-            *out_provider = provider;
-            *out_provider_physical = wrapped;
-            return LIB_STATUS_OK;
-        }
-        if (status != LIB_STATUS_UNSUPPORTED) {
-            if (notify_failure)
-                x86_core_machine_memory_note_provider_failure(provider, wrapped,
-                    bytes, access, status);
-            return status;
-        }
-    }
-    for (index = 0u; index < match_count; ++index) {
-        const x86_core_machine_memory_device_provider *provider =
-            &ram->connect.device_providers[matches[index]];
-
-        if (provider->replacement || provider->fallback) continue;
-        status = provider->query(provider->owner, wrapped, bytes, access);
-        if (status == LIB_STATUS_OK) {
-            *out_provider = provider;
-            *out_provider_physical = wrapped;
-            return LIB_STATUS_OK;
-        }
-        if (status != LIB_STATUS_UNSUPPORTED) {
-            if (notify_failure)
-                x86_core_machine_memory_note_provider_failure(provider, wrapped,
-                    bytes, access, status);
-            return status;
-        }
-    }
-    /* An unpopulated board window is an explicit fallback: an installed
-     * device or ROM alias has first claim. */
-    for (index = 0u; index < match_count; ++index) {
-        const x86_core_machine_memory_device_provider *provider =
-            &ram->connect.device_providers[matches[index]];
-
-        if (provider->replacement || !provider->fallback) continue;
-        status = provider->query(provider->owner, wrapped, bytes, access);
-        if (status == LIB_STATUS_OK) {
-            *out_provider = provider;
-            *out_provider_physical = wrapped;
-            return LIB_STATUS_OK;
-        }
-        if (status != LIB_STATUS_UNSUPPORTED) {
-            if (notify_failure)
-                x86_core_machine_memory_note_provider_failure(provider, wrapped,
-                    bytes, access, status);
-            return status;
+            if (provider_tier != tier) continue;
+            status = provider->query(provider->owner, wrapped, bytes, access);
+            if (status == LIB_STATUS_OK) {
+                *out_provider = provider;
+                *out_provider_physical = wrapped;
+                return LIB_STATUS_OK;
+            }
+            if (status != LIB_STATUS_UNSUPPORTED) {
+                if (notify_failure)
+                    x86_core_machine_memory_note_provider_failure(provider, wrapped,
+                        bytes, access, status);
+                return status;
+            }
         }
     }
     status = x86_core_machine_memory_offset(ram, physical, wrapped, bytes, out_offset);
