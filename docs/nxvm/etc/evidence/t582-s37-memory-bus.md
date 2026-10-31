@@ -26,3 +26,52 @@ Log SHA-256:
 The first scratch compile failed because the diagnostic declaration preceded
 the Types include; it produced no measurement. The fixture was corrected and
 the completed run above used the normal execution path.
+
+## Multi-byte ordinary-RAM span frequency and sampled cost
+
+The ordinary RAM path resolves its provider first and, for multi-byte access,
+separately checks whether the whole span is free of address masking, aliases
+and intersecting providers. A scratch counter on the fixed x64 PC110 startup
+checkpoint observed 133,126 multi-byte ordinary-RAM reads, 133,124 with a
+plain span; and 5,289,464 writes, 5,273,080 with a plain span. These counts
+include the stopping interval and duplicate the proof for measurement, so
+elapsed time is not a baseline measurement. The large write count reflects
+the startup workload and is not a Game-stage count. Log SHA-256:
+`8C82C8D43BAE9F9FF16797EAF2574180193F0A15EE7A3B585A7179C6DABFEEB4`.
+
+A second scratch build sampled the existing span proof one time in 256 without
+duplicating its result. It recorded 5,422,534 calls, 21,181 samples and
+1,576,280 accumulated host TSC units, roughly 74 units per sampled call. It
+reached the same ten-million-instruction / 79,964,294-tick / `0003dbc5`
+checkpoint in 18,647 ms. Deterministic sampling, non-serialized TSC and the
+extra instrumentation limit interpretation; no host TSC-frequency conversion
+or precise whole-program percentage is claimed. The proof is frequent but
+small, and folding its partial-overlap checks into route selection would also
+add work to routes that do not reach ordinary RAM. Do not replace routing or
+add a provider-bound cache merely from call count. Game, x86 and complete
+provider-state behavior remain unmeasured. No production code or asset changed.
+Log SHA-256:
+`655375B4F6A48F1CEC519D02B521242CC3519F395D745BC21DE0E636BBC9A276`.
+
+## CPU write snoop frequency
+
+An x64 task-only wrapper sampled the existing Machine CPU-write snoop callback
+at the same fixed PC110 startup checkpoint. It counted 6,634,436 calls; all
+matched the existing CPU-owned transaction/range check that returns without
+invalidating the CPU's own write. One in 256 produced 25,915 intervals with
+1,563,830 accumulated host TSC units, roughly 60 units per sampled call. The
+run reached ten million instructions, 79,964,294 ticks and PC `0003dbc5` in
+19,996 ms. Counts include instrumentation and the stopping interval; TSC is
+not serialized and no exact whole-program percentage or Game/x86 conclusion
+is supported.
+
+This does not make `cpu_access` a safe substitute for transaction ownership:
+debug and firmware writes also pass it, while aliases and provider side effects
+may require snoops at a different physical address. Eliminating a callback
+would require explicitly preserving the exact transaction range and all those
+owners. The measurement does not justify propagating a new suppression flag
+or weakening invalidation as a PC110 usability fix. No production code or
+artifact changed. The first scratch command failed to write the script because
+the host PowerShell lacked a requested parameter; it was corrected before the
+completed run. Log SHA-256:
+`E9BD39568FFF8E1D10675F917BD4799D52BDD0A7EF29EA5E2D6E93BFB97DFAE9`.
