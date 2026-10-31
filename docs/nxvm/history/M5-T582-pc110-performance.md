@@ -39,3 +39,21 @@ XT/AT/DeskPro selections, and external MyRaidenII receiver checks passed.
 The [S3 evidence](../etc/evidence/t582-s3-execution-performance.md) retains
 commands, hashes, actual-diff review and limits. Native RDP/Window and whole
 product realtime performance remain unqualified; T582 is not complete.
+
+## S26 bounded batch and transfer
+
+Coordinator reviewed the delivered Shared CPU/test change `7a9b89d05`, PC
+receiver `8c3045014` and MyRaidenII receiver `602292076`, along with the
+preceding S26 evidence indexed in [the investigation](../etc/evidence/t582-s26-investigation-index.md).
+The latest CPU change simplifies ROL/ROR without changing its count, flags or
+timing contract; production source +36/-161, test source +64/-0, excluding
+manifests and documentation. Both-width CPU differential, unit and integration
+results, the corrected x86 manifest failure, 14 artifact identities and the
+bounded Game observation are recorded in [the qualification](../etc/evidence/t582-s26-rotate-constant.md).
+Automated desktop tests are not native interactive RDP acceptance.
+
+Under the owner's automatic S sequencing authorization, S26 is accepted for
+its bounded implemented and evaluated work. This does not claim a reliable
+speedup, interactive playability or T582 completion. The remaining end-to-end
+throughput analysis, implementations and final receiving transfer to S27–S32
+in the active [proposal](../proposals/m5-pc110-startup-clock-performance.md).

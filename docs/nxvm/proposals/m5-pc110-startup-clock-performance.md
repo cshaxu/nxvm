@@ -164,8 +164,8 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   owner acceptance. If usability or any required gate remains unproven, keep
   T582 open and insert the necessary numeric S work before this final gate.
 
-S26 remains the currently active packet; this sequence plans subsequent work
-and does not itself close S26 or admit another active S. The owner's criterion
+S26 is accepted as a bounded batch; the following work retains the unresolved
+whole-product objective. The owner's criterion
 also permits a clear net reduction in production code or algorithmic work when
 other properties do not materially worsen, even without a large measured gain.
 Such a cleanup is not evidence that the PC110 usability goal has been met.

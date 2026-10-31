@@ -1,4 +1,4 @@
-# M5 T582 S26 — Active: single-executor throughput design audit
+# M5 T582 S26 — Closed: single-executor throughput design audit
 
 | Field | Required record |
 | --- | --- |
@@ -23,7 +23,8 @@ S26 bounded preview-copy implementation is Shared `a794bfcdd`, with PC
 receiver artifacts `7e3bd57c8` and MyRaidenII artifacts `b76c5c71e`.
 The [evidence](../etc/evidence/t582-s26-compact-preview.md) records both-width
 qualification and measured limits. This is not PC110 usability acceptance;
-S26 and T582 remain active while the larger throughput objective is unresolved.
+S26 is accepted as a bounded batch; T582 remains open because the larger
+throughput and usability objective is unresolved.
 
 An exploratory [same-host PC110-EMU run](../etc/evidence/t582-s26-pc110-emu-measurement.md)
 has now executed the owner-supplied BIOS and a private master-disk copy. Its
