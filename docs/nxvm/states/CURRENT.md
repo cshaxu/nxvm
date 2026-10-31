@@ -23,6 +23,23 @@
 cache-fill mapping investigation and its PC110 startup frequency; the
 performance objective remains unresolved.
 
+### Admitted disabled data-breakpoint scan guard
+
+The existing private CPU data-breakpoint matcher may return after initializing
+its matched output when all four DR7 local/global enable pairs are clear.
+Its sole caller publishes the matched mask only if an enabled comparator
+matched, so disabled-only matches cannot change DR6 or a trap. Preserve the
+whole existing scan when any comparator is enabled, including mixed enabled
+and disabled matches, TF/RF, debug observations and fault ordering. This uses
+no new state, API, executor or clock; the disabled case avoids work proportional
+to recorded memory accesses. Existing comparator tests already enumerate all
+four-slot enabled/matched masks and both local/global forms. Both widths passed
+the focused checks and 712 unit tests; default integration had one MyNES native
+window failure per width, each passing on isolated rerun. Profile integrations
+and fourteen product artifact checks completed. Fixed-work timings are noisy,
+and the game sample did not show a meaningful improvement; the performance
+objective remains open. See the S37 evidence for the validation limits.
+
 # M5 T582 S36 — Closed: CPU execution hot paths
 
 | Field | Required record |

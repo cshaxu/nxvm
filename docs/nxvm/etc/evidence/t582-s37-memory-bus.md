@@ -161,3 +161,44 @@ selected stages remain limitations; Game-frame identity is not complete state
 or native/RDP gameplay qualification. No production source or asset changed.
 Guest log SHA-256:
 `00B7E4901C39B6B0B0C98052D64DD8B539C9F233A5D525B11E8FC7624EEC2543`.
+
+## Disabled data-breakpoint scan
+
+Every completed 386/486 instruction checks recorded memory accesses against
+the four data breakpoint slots. When all DR7 local/global enable bits are
+clear, no enabled comparator can cause a trap; the caller only publishes the
+matched mask if an enabled comparator matched. The matcher now returns zero
+after initializing that mask in this case, avoiding a scan proportional to the
+recorded access count. If any slot is enabled, the original complete scan
+remains, including disabled slots that match alongside an enabled slot. No
+state, public interface, second executor or guest timing rule is added.
+
+A scratch baseline/candidate/candidate/baseline comparison at ten million
+instructions, 79,964,294 ticks and PC `0003dbc5` took 17,927 / 17,851 /
+20,344 / 19,375 ms x64 and 22,433 / 22,709 / 21,195 / 22,509 ms x86. Both
+widths change direction and no product speedup or Game-state equivalence is
+established. The bounded simplification is retained under the owner's
+criterion because the disabled case no longer scans each access, with no
+clear consistent timing regression in these noisy samples. Log SHA-256:
+`A11DCDAE258DE191A3143DF5CB63AAF7A0A7B9F62BF1C256B60D7C47AAB9B21C`.
+
+The existing `cpu_debug_state` comparator test covers all sixteen enabled
+masks, sixteen matched masks, local/global settings, instruction and data
+forms on 386 and 486. The existing Debug, CPU lifecycle and cache tests passed
+3/3 on each host width after the production change. Cached unit suites passed
+712/712 for each width. Default integration passed 47/48 initially on each
+width: `mynes.integration.native-window-smoke` reported an invalid or black
+pixel at line 345 in both runs; each passed when rerun separately. The initial
+failures remain a desktop-test stability limitation, not a clean full-suite
+pass. The 5160, 5170 and DeskPro profile integration suites passed 3/3, 5/5
+and 6/6 respectively at each width. MyRaidenII startup and product-console
+receiver checks passed at both widths; they are not gameplay qualification.
+Fourteen deployed executables were checked for PE width; the default NXVM,
+PC110, MyNES and MyRaidenII builds matched their deployed files at both widths.
+The artifact inventory is `t582-s37-data-debug-artifacts.json`.
+
+The PC110 game workload took 267.78 seconds to reach its sampled game frame,
+against the earlier 268.05 and 268.06 second samples. Its frame SHA-256 was
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`,
+matching the earlier sample. These individual runs do not establish a stable
+speedup, full state equivalence, or native/RDP playability.
