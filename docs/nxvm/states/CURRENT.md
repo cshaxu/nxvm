@@ -37,6 +37,21 @@ host widths including the single-count path. Rebuild and qualify all affected
 Shared consumers and fourteen product artifacts. This source/algorithm
 consolidation is not by itself a claim of interactive PC110 performance.
 
+### Admitted double-precision shift result simplification
+
+In Shared `src/x86-core/cpu/cpu_instructions.c`, replace the existing SHLD
+and SHRD per-bit result loops with bounded unsigned shifts and masking. Keep
+the current opcode paths, count handling, undefined markers, operand records,
+flags, exceptions and timing unchanged; no public API, machine state or
+additional execution path is admitted. Before retaining the change, compare
+the actual original and candidate CPU for both widths and directions, count
+boundaries, flags, register and memory operands and existing timing outputs;
+run existing CPU/Debug/Memory fault and timing tests on both architectures.
+Update the affected manifest, perform the cached Shared receiver and rebuild
+the fourteen affected product EXEs. Measure the actual PC110 workload and
+report any uncertain speed benefit without treating this bounded simplification
+as proof of playability. All Shared consumers remain within the receiver scope.
+
 # M5 T582 S38 — Closed: clock and device advancement
 
 | Field | Required record |

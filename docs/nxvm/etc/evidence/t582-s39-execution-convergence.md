@@ -1,5 +1,163 @@
 # T582 S39 — execution and timing convergence
 
+## Double-precision shift candidate
+
+The existing 16- and 32-bit SHLD/SHRD implementations construct the result
+one bit at a time. A task-only candidate replaces only those result loops with
+bounded unsigned shifts and masking; the existing flag and undefined-result
+paths remain. A deterministic model compared 235,000 operand/count pairs in
+both directions, including the 16-bit count-equals-width boundary. Separately,
+actual CPU CL-form register instructions ran 262,144 cases per build on each
+host width, covering 386/486, 16/32 bits, both directions, all 256 count byte
+values, eight values per operand and two initial flag patterns. Baseline and
+candidate produced identical aggregate hash `3514befe56732c83` for registers,
+flags, undefined markers, recorded operands/result and captured timing.
+
+This is not proof of memory-destination, immediate-form, fault, debug,
+complete machine-state or Game equivalence, nor evidence that these opcodes
+are a PC110 hotspot. It reduces per-operation bit-loop work but does not by
+itself establish playability. Production code and published assets remain
+unchanged; a candidate receiver requires an explicit active-packet scope,
+the existing instruction tests and complete Shared receiving before adoption.
+
+A subsequent task-only differential compared 131,072 memory-destination cases
+per build on each host width, including both CL and immediate counts, all 256
+count bytes, both widths, both directions, 386/486, four values for each
+operand and two initial flag patterns. Both original and candidate produced
+aggregate hash `139ddbf1df0db103` for memory value and write count, register
+and flag state, undefined markers, recorded operands/result and timing. This
+adds actual memory-path evidence, but does not prove protected-mode fault,
+watchpoint or complete-machine equivalence. No production source changed.
+
+The bounded loop replacement was subsequently admitted and applied: production
+diff +8/-44 lines. Existing double-shift, 486 timing, debug, cache, 80386
+secondary timing and board integration targeted tests passed 6/6 per width;
+the existing double-shift test covers memory/register and CL/immediate forms.
+Cached full units passed 712/712 and default integrations 48/48 on each width.
+Profile-specific integrations passed 3/3 (5160), 5/5 (5170), and 6/6
+(DeskPro) per width. An initial 5160 profile run failed two tests because the
+test executables had not been relinked after profile selection; after rebuilding
+the profile test targets both passed. MyRaidenII external selected-set startup
+and product-console checks passed on both widths, without a gameplay claim.
+Fourteen published files passed PE-width checks; MyNES, MyPC110 and MyRaidenII
+deployments match their built outputs on both widths. X86 Core manifest and
+NXVM documentation gates passed. The user's unrelated queue edit is retained.
+
+The private-media x64 Game run reached the stable complete frame at sample 281,
+36 samples after Enter, and exited in 284.83 seconds. Its frame SHA-256 is
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`,
+matching the prior frame. The prior carry-rotate run took 266.69 seconds and
+30 samples after Enter. These single sequential runs do not control host or
+complete guest state and do not establish the magnitude or direction of a
+performance change. Input was injected through Machine, not native Window or
+RDP; neither run establishes playable PC110 performance.
+
+## Synthetic CPU versus neutral Machine fixture audit
+
+An additional scratch-only experiment constructed the same neutral Machine
+with the same reset alias and memory for each run, but compared its ordinary
+Machine run with ten million direct calls to its own CPU refresh. In
+Machine/direct/direct/Machine order, x64 times were 7,915 / 7,747 / 7,016 /
+8,409 ms, and x86 times were 12,305 / 8,765 / 8,557 / 12,447 ms. Each
+reported linear PC 000f0001; the ordinary Machine run reported 40,000,014
+ticks. Direct refresh did not advance Machine time or execute the normal
+retirement/scheduler path and did not verify the entire final CPU state, so
+this is an intentionally incomplete diagnostic, not an equivalent execution
+or a candidate implementation. It uses the neutral Machine bus rather than
+the simple CPU-test bus. Results suggest the outer Machine loop is not the
+only large difference on x64, and is a larger cost on x86; sequential samples,
+layout and differing execution semantics prevent exact subtraction. The
+observed direct CPU run includes the Machine's bus callbacks and setup, unlike
+the original CPU-only fixture. No production code or public API changed.
+
+The S27 loop's Machine is created with `x86_core_machine_neutral_create`,
+not the PC110 board. It supplies 2 MiB of RAM and a reset alias, but does not
+assemble PC110 devices. Thus its CPU/Machine difference cannot be attributed
+to PC110 PIC, KBC or board-device scheduling. The CPU-only fixture instead
+loads CS at zero, uses a direct 512 KiB byte-array bus with no cache-query or
+external-cycle callbacks, and binds a one-tick timing fixture. The neutral
+Machine starts through reset and a far jump and uses its own memory routing,
+CPU bus and Machine timing/retirement machinery. Both execute the same loop
+after entry, but they do not have identical memory, reset or timing contracts.
+These facts narrow the comparison; they still do not quantify exclusive
+Machine overhead or prove that any of those operations is redundant. The S27
+results are one earlier sample per width, not current PC110 gameplay evidence.
+
+To isolate the mere presence of cache-query dispatch, a task-only x64 CPU
+fixture ran the same NOP/JMP loop for ten million refreshes in off/on/on/off
+order. The added callback returns the input address and disables filling, as
+does the default initialized result; no Machine or device is constructed.
+Times were 3,554 / 3,632 / 3,875 / 3,976 ms and each run ended at EIP 1
+without a reported fault. The opposing ordered comparisons and host variation
+do not establish a measurable difference. This trivial callback is not the
+real Machine address decoder, so the result cannot quantify the full Machine
+cache or bus cost, prove complete CPU-state equivalence, or characterize
+PC110 Game. The same x86 order took 6,135 / 6,421 / 6,106 / 5,883 ms,
+again with EIP 1 and no reported fault. Both x86 pairs favor the no-callback
+fixture, but two ordered samples do not establish the cost of the real
+Machine callback or complete-state equivalence. No production code was changed.
+
+A further scratch-only x64 diagnostic used the neutral Machine's own CPU
+and bus, alternately disabling its cache-query callback or external-cycle
+provider. Both omissions change the declared guest contract and are not
+candidate fixes. With baseline/query-off/cycle-off/baseline/cycle-off/
+query-off/baseline order, times in milliseconds were 5,999 / 7,379 / 7,251 /
+7,691 / 7,711 / 7,551 / 8,066; all reported PC 000f0001, but did not advance
+Machine time or verify complete state. The large baseline drift and changed
+semantics prevent meaningful attribution of either callback; this is not a
+Game, x86 or correctness result. No callback was disabled in production.
+
+To check whether wall-time drift is solely descheduling, a follow-up x64
+scratch run measured the same executing thread's Windows user plus kernel
+CPU time as well as wall time. In baseline/query-off/query-off/baseline
+order, wall milliseconds were 6,816 / 6,783 / 6,322 / 6,157 and thread CPU
+milliseconds were 6,578 / 6,609 / 6,157 / 5,937. Every run reported the same
+PC, but query-off remains intentionally semantically incomplete. CPU time
+also changed substantially, so this particular drift is not explained solely
+by wall time spent off CPU. Thread-time granularity, host frequency, power
+management and other host contention were not independently measured; the
+result cannot identify their cause or a reliable callback speedup. Host
+processor inventory was unavailable through the sandbox CIM query.
+
+## Steady-game prefetch cache and bus scopes
+
+A separate x64 private-media probe sampled prefetch-provenance cache-way
+lookup, bus read and enclosing physical read after the complete Game marker,
+for 30 seconds without further input. It exited successfully after 321.33 s;
+the marker appeared at sample 286, 31 samples after Enter. Calls / samples /
+TSC units were respectively 10,901,154 / 42,572 / 4,178,480;
+2,899,718 / 11,431 / 5,828,120; and 6,149,237 / 23,870 / 14,166,552.
+Machine run recorded 35,318 / 149 / 241,282,845. Scaled estimates are 1.87%,
+2.59% and 6.38% of Machine run. They are inclusive, overlap where nested,
+and do not partition all physical-read work; provenance also covers nested
+operations. Instrumentation, compiler layout, unsynchronised TSC and only
+149 Machine samples limit the figures. This does not prove a removable
+operation, a complete bottleneck, x86 behaviour, or desktop usability.
+No production code changed. Log SHA-256:
+`E89957AD909E1B0BACD0DEFC843011FB5AAA93666915DA5691DC4A4D59FDA5EB`.
+
+## Steady-game prefetch read stages
+
+An x64 task-only probe sampled instruction-prefetch reads after the complete
+Game marker, during 30 seconds without further input. It used private media and
+finished successfully in 312.15 seconds; the marker appeared at sample 277,
+28 samples after Enter. Logical, linear and physical read scopes recorded
+respectively 5,618,787 / 22,023 / 18,945,509, 5,618,787 / 22,102 /
+17,642,252, and 6,341,117 / 24,611 / 14,534,660 calls / samples / TSC
+units. Machine run recorded 37,221 / 155 / 238,169,716. Scaling by calls per
+sample gives approximately 8.45%, 7.84%, and 6.55% of Machine time. These
+scopes are nested, not additive; physical reads may occur more than once per
+logical read. Instrumentation, unsynchronised TSC, compiler layout and only
+155 Machine samples limit accuracy. This is steady-game, not game-drawing,
+x86, native Window or RDP acceptance evidence.
+
+Most sampled prefetch time lies within physical access and its callees, not
+the outer logical-to-linear checks alone. This directs investigation to the
+existing physical cache and bus path; it does not prove that any check can be
+removed or that this cost accounts for the overall throughput gap. No
+production code changed. Probe log SHA-256:
+`1E053782C402F59272B57C10E63CBA6BE92C6B95BA53B4C13E377355FB91DA05`.
+
 ## Repeated short-branch outcome
 
 The 486 nominal timing evaluator evaluates the old flags for a short
