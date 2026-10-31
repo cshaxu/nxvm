@@ -456,6 +456,30 @@ local cached state and its invalidation proof. No production change was made.
 Log SHA-256:
 `88F19DF96519710DD5CE1BC7186262E1938EFCF0ED444F1CEF61A7B61683CF29`.
 
+## Lexical preview using an already retained prefetch
+
+An instrumented x64 startup probe found 971,468 lexical previews at the
+10,000,000-instruction / 79,964,294-tick / `0003dbc5` checkpoint. Of these,
+373,320 had a retained prefetch range at the target and 360,766 could be
+decoded from that range by the existing lexical scanner. Counting and extra
+scanning perturb execution; the probe covers startup, not Game. It does not
+prove that bypassing preview preserves side effects or fault semantics.
+Count log SHA-256:
+`827E760E05BC4A4E243F14F91CEE56F44148CC99C22110061FCACC5901AC2CF0`.
+
+A scratch candidate tried that same scanner directly on the retained range,
+falling back to the existing preview for incomplete or NEC emulation forms.
+It did not change the instruction executor, but introduced an additional
+preview branch whose behavior across all profiles, page faults, code mutation
+and asynchronous entry was not qualified. Baseline/candidate/candidate/
+baseline times at the same fixed endpoint were 17,428 / 17,633 / 17,406 /
+17,921 ms on x64 and 21,284 / 23,115 / 22,749 / 25,856 ms on x86. Both
+widths reverse direction across the two ordered pairs. These noisy samples do
+not demonstrate a gain or full-state or Game equivalence, so the additional
+branch is not admitted. No production source or artifact changed. Comparison
+log SHA-256:
+`CFBB0EC8C7B3C5DF037F6227654BCFDFC0CD005215B4487C52615CAC9E9F2D0C`.
+
 ## CPU compilation inlining policy
 
 A scratch comparison compiled only the existing CPU instruction translation
