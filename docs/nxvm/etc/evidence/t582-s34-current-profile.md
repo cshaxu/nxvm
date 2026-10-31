@@ -86,6 +86,27 @@ interactive evidence. Log SHA-256, count and comparison respectively:
 `8B2BD9F1CA4CE53A5A9D5C5B7228A6EE200E643C0754DB8FBE316ECE1065B552` /
 `A0DD4D27FDA5B83783FCECC3BF149A8F6C376E8E467A2803BDED5EF368B9CEEB`.
 
+## Instruction timing-fact reset
+
+`ExecBoundary` individually resets a contiguous group of per-instruction
+timing facts. A scratch candidate replaced those assignments with one bounded
+zero operation from `timing_fetch_bus_ticks` up to, but not including,
+`memory_lock_active`; the preceding previous-instruction fields also remained
+outside the interval. The scratch diff was 5 lines in and 26 out. It was not
+qualified across exception, preview, V30 or debug paths, and would make reset
+semantics depend on future structure field placement.
+
+Configured-CMOS baseline/candidate/candidate/baseline fixed-work times were
+19377/20807/19279/18549 ms on x64 and 21062/24505/21268/22447 ms on x86;
+all reached 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`.
+Both x64 comparisons favored the original; x86 changed direction and displayed
+substantial host variation. Although the candidate reduces source lines,
+the timings do not demonstrate an improvement and its implicit layout
+coupling weakens maintainability. It was rejected without modifying production.
+The fixed checkpoint does not prove complete state equivalence or gameplay
+performance. Log SHA-256:
+`E1E5F6249C671A3387C0AE331918612AE221A74D1BE054E678A414F53EF677BB`.
+
 The [CMOS probe correction](t582-s34-cmos-probe-correction.md) separately
 records why S31/S32 fixed-work results used the empty-CMOS path and supplies a
 new configured-seed comparison of S33. No production code or public contract
