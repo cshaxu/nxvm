@@ -94,3 +94,27 @@ removing those calls; do not add a mirrored FPU-presence state or another
 execution path on these results. No production code or release artifact was
 changed. Log SHA-256:
 `A3C161ECC0A86F7FC9050F6C00A1937B7E515B6E3B46BFDF2125084BF90B580B`.
+
+## Zero-device-tick call candidate
+
+Board advancement converts source ticks before invoking PIT and RTC. Both
+existing device functions immediately return for zero elapsed ticks. A
+task-only x64 link counter found 7,516,756 zero-tick PIT calls out of
+10,294,762, and 10,215,303 zero-tick RTC calls out of 10,294,762, at the
+fixed ten-million-instruction startup checkpoint. The counter instruments
+every observed call and counts include the stopping interval; it measures
+frequency, not exclusive cost or Game behavior. Log SHA-256:
+`A8C674B07682802BEC9F1F8C2C3129553F7088DDC69B0209DB9E8C211FD9F1E4`.
+
+A scratch candidate guarded the existing PIT and RTC calls when their already
+calculated device ticks were zero; clock conversion, callback order for
+nonzero ticks, trace and advancement of configured devices remained in place.
+It was not qualified across all device configurations. Fixed startup
+baseline/candidate/candidate/baseline milliseconds were 19,061 / 19,033 /
+20,624 / 20,186 x64 and 23,878 / 25,376 / 25,109 / 23,218 x86. Each run
+reported 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`. The x86
+candidate was slower in both comparisons, so frequent empty calls alone do not
+justify the additional branches. These observations are noisy and do not prove
+complete guest-state equivalence or Game performance. The candidate was not
+applied to production. Log SHA-256:
+`7CF14036366D248371341D530E1FABD6B75425235E9FE0C1D654F4467EFE1993`.
