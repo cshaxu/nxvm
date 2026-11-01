@@ -1974,3 +1974,20 @@ and passed on individual retry. The x64 menu probe improved from 222.50 to
 216.38 seconds in one pair, still impractically slow. T582 and S39 remain
 open for material PC110 startup and ordinary-use improvement; no native
 PC110 Window/RDP acceptance is claimed.
+
+### Admitted PIC idle-counter candidate
+
+In X86 NXVM PIC, retain the existing counter advancement and skip it only
+when all eight remaining delays are already zero. This changes no interrupt
+selection, callback, interface or state; nonzero counters retain the existing
+path. Update the X86 NXVM source and test manifests. Reuse existing PIC, board and
+interrupt tests, including delayed unmask and reinitialization; cover each of
+the eight IRQ positions after an idle advance in the existing PIC fixture. Compare both widths and the
+actual PC110 menu startup, then perform the full cached Shared receiving and
+fourteen-artifact gate before publication. Revert if behavior or performance
+obviously worsens. This bounded optimization alone cannot close T582.
+
+The PIC idle-counter candidate passed its focused and cached receiver tests
+with the native MIDI first-run failures and individual retries documented in
+S39 evidence. Its one x64 full-menu pair was 213.47/203.26 seconds. This is
+a bounded improvement, not practical PC110 startup; S39 and T582 stay open.

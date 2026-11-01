@@ -39,6 +39,7 @@ These are bounded improvements; none establishes real-time performance.
 - Disabled instruction-breakpoint scan: [S39 comparison](t582-s39-execution-convergence.md#disabled-instruction-breakpoint-scan).
 - Keyboard signal predicate: [compiled check](t582-s39-execution-convergence.md#keyboard-signal-snapshot-compiled-check).
 - Flush-pending guard split: [S39 experiment](t582-s39-execution-convergence.md#flush-pending-guard-split-experiment).
+- Port transaction value setter inlining: [S39 probe](t582-s39-execution-convergence.md#port-transaction-value-setter-inlining-probe).
 - 486 decode-prefix single-scan: [S39 experiment](t582-s39-execution-convergence.md#486-decode-prefix-single-scan-experiment).
 - Branch timing condition simplification: [S26 comparison](t582-s26-branch-condition.md).
 - Deferred timing-branch next-byte lookup: [S26 comparison](t582-s26-branch-next-byte.md).

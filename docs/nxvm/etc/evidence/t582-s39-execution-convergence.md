@@ -2438,3 +2438,82 @@ acceptance or x86 full-menu timing was performed. Full logs SHA-256:
 `C3F6F30CDC9415C5E97632A5FA64DE34991555120B46737BABD2B5402A683009`,
 `55BAC90C03821319D239AD7DAEB2E00094ECF6890EEADDE3E8E5B90F3D0B5802`,
 `967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
+
+### Port transaction value setter inlining probe
+
+After the accepted begin/commit change, an independent scratch-only x64
+candidate placed the existing `transaction_set_value` guard and assignment
+in the existing private header and compiled CPU bus against it. Disassembly
+confirmed the port-read call to the setter disappeared; other scratch-linked
+objects retained the original function, so this is not a production design.
+One private-media fixed-work baseline/candidate pair reported 20,272/21,046 ms
+and the same 10,000,000 instructions, 79,964,294 guest ticks and PC
+`0003dbc5`. Both probe EXEs had the same byte length. One ordered pair cannot
+prove a regression or semantic equivalence, but shows no benefit worth a
+production change, x86 qualification or full-boot run. No product source or
+released binary changed. Job log SHA-256:
+`4330B3287C396571C81D262A2C80EF696675B87E6A1C618D328ED6BCF73DDA59`.
+
+### Repeated raw-provider query frequency
+
+The raw overlay path queries a matching provider before address decoding.
+If that observational query declines, the later ordinary-tier selection can
+query the same raw provider at the same address when address decoding does not
+change it. Skipping that second query would require relying on the exact
+observational and mutation contract; it is not automatically justified merely
+by identical arguments.
+
+A scratch-only x64 counter in the actual later query location recorded 81,920
+such same-address raw-provider queries during the private-media startup run
+ending at 10,000,000 instructions, 79,964,294 guest ticks and PC `0003dbc5`.
+It included the shutdown interval and its counter changes code layout and
+runtime. The count is fewer than one per 100 retired instructions, not a
+host-time measurement or a bound on later phases. It does not justify adding
+a new lookup rule as a likely solution to a multi-minute boot. No query was
+skipped, and no production source or product artifact changed. Job log
+SHA-256 `5EBF4F816CFC0FFB886C85E397BAEAF3283EBAA5154AC73A930354EEFE032D40`.
+
+### PIC zero-delay idle advancement
+
+The PIC has exactly eight hardware interrupt inputs. When all eight pending
+unmask-delay counters are zero, its existing advancement loop only stores
+zeroes. The admitted X86 NXVM candidate checks their combined value and skips
+that loop only in this case; it adds no state or interface and retains the
+original path when any counter is nonzero. Existing PIC contract coverage
+checked a delayed IRQ but not every index after an idle advance, so its
+existing fixture now tests all eight positions, including partial and complete
+delay. Source and test manifests are updated. PIC and board interrupt focused
+tests passed 8/8 on each architecture after this fixture change.
+
+One private-media fixed-work baseline/candidate pair per width reached
+10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`. Inner times were
+22,553/21,843 ms x64 and 26,924/25,711 ms x86. A separate x64 full-menu
+comparison with the same adjacent 128-byte CMOS seed and private media
+reached the existing two-pixel menu detector in 213.47/203.26 seconds. These
+are single ordered comparisons subject to host drift and do not prove stable
+gains, complete guest-state equivalence or native desktop usability. Both
+startup times remain far too long. Job log hashes, x64 fixed / x86 fixed /
+menu: `688461FE8A315BB3C8F7722672854FE2EE95D7BA642B6CDFF0B7D30F53743B81`,
+`A5AFD0B0565AD331E99C7F848CCCBCFB2A716C1212AB98B4499A3271870F0009`,
+`B04C3B695D651DA2DA1E9F213C8171213DD9592D1BB1E967BE1C93B89A1ED221`.
+The cached Shared receiving and fourteen-artifact results follow below.
+
+The complete cached receiver run passed 712/712 unit tests on each width.
+Each initial 48-test integration run had 47 passes and the same native MIDI
+output-creation failure; both MIDI tests passed when rerun individually. The
+cause of the initial failures was not established, and they are not described
+as uninterrupted full-run passes. The three extra PC profile integrations
+passed 3/3, 5/5 and 6/6 on both widths. MyRaidenII selected-set startup and
+deployed Console receivers passed on both widths; this does not qualify its
+gameplay. X86 NXVM source/test manifests, dependency checks, documentation
+governance and `git diff --check` passed.
+
+All fourteen released PE widths were checked and hashed in
+[t582-s39-pic-idle-artifacts.json](t582-s39-pic-idle-artifacts.json). The
+MyPC110 assets matched the current builds, and MyNES assets were byte-identical
+to their current builds. The complete-menu result is x64-only and the native
+PC110 Window/RDP experience was not tested. Qualification, isolated MIDI and
+MyRaidenII logs SHA-256 respectively:
+`53D1E963A18A7C413236A142D84412B51EB6307E1E395BEB3C79E2E3216BF9A0`,
+`9502CAAF1501A07A3B4F64B7F36A55ADCA50162E6123FF95337B51111CB756FB`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
