@@ -4415,10 +4415,10 @@ lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_contex
     if (x86_core_cpu_source_timing_string_form(data->opcodes[prefixes], &form)) {
         x86_core_cpu_source_timing_record_repeat(context, data);
     } else context->source_repeat_active = LIB_FALSE;
-    original = x86_core_cpu_80486_nominal_instruction_cost(context, &ticks);
-    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &ticks)) ||
-        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model) ||
-        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model) ||
+    original = x86_core_cpu_80486_nominal_instruction_cost(context, &ticks, prefixes);
+    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &ticks, prefixes)) ||
+        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model, prefixes) ||
+        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model, prefixes) ||
         !x86_core_cpu_timing_add_ticks(&ticks, memory) ||
         !x86_core_cpu_timing_add_ticks(&ticks, decode) ||
         !x86_core_cpu_80486_bus_instruction_cost(context, ticks, &ticks, &bus_model)) return 0;
@@ -4602,10 +4602,10 @@ static lib_bool x86_core_cpu_80486_push_pop_opcode(lib_u16 opcode)
 /* Prefix costs are per decoded macroinstruction. The selected REP owner must
  * not charge these again for a continuation of that same instruction. */
 lib_bool x86_core_cpu_80486_decode_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks,
+    lib_bool *out_modeled, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode, repeats = 0u;
     lib_u64 ticks = 0u;
     lib_bool modeled = LIB_FALSE;
@@ -4618,7 +4618,6 @@ lib_bool x86_core_cpu_80486_decode_penalty(
         return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     opcode = data->opcodes[prefixes];
     for (lib_u32 index = 0u; index < prefixes; ++index) {
@@ -5109,10 +5108,10 @@ static lib_bool x86_core_cpu_80486_access_penalty(const t_cpuins_data *data,
 
 /* Intel 1992 PRM Appendix E.2--E-15: source rows and qualified access models. */
 lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks,
+    lib_bool *out_modeled, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u64 ticks, operand;
     lib_bool operand_modeled, access_modeled, descriptors;
 
@@ -5123,7 +5122,6 @@ lib_bool x86_core_cpu_80486_memory_penalty(
         return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     /* E-12 deliberately leaves LTR's miss column blank. */
     descriptors = !(data->opcodes[prefixes] == 0x0fu && prefixes + 2u < data->oplen &&
@@ -5169,10 +5167,9 @@ lib_u64 x86_core_cpu_80486_interrupt_entry_cost(
  * not hardware-exact
  * cache-hit rows. Keep access/prefix costs and result qualification separate. */
 lib_bool x86_core_cpu_80486_l2_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode, extension, bytes;
     lib_u64 multiplier, magnitude, scale, ticks;
 
@@ -5181,7 +5178,6 @@ lib_bool x86_core_cpu_80486_l2_instruction_cost(
         context->instruction_fault_delivered || context->stop_requested) return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     opcode = data->opcodes[prefixes];
     extension = prefixes + 1u < data->oplen ? (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
@@ -5241,10 +5237,9 @@ lib_bool x86_core_cpu_80486_l2_instruction_cost(
  * separately specified prefix, access and event terms. Use the decoder's
  * completed operands; timing must not read guest memory a second time. */
 lib_bool x86_core_cpu_80486_nominal_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode, extension;
     lib_bool memory, protected_mode;
     lib_u64 ticks;
@@ -5256,7 +5251,6 @@ lib_bool x86_core_cpu_80486_nominal_instruction_cost(
         return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     opcode = data->opcodes[prefixes];
     extension = prefixes + 1u < data->oplen ?

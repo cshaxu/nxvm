@@ -1513,8 +1513,10 @@ static lib_bool cpu_interrupt_memory_timing(void)
             fixture.pending = external != 0u;
             if (cpu_instruction_run(instruction, code, bytes, &after) != LIB_STATUS_OK ||
                 instruction->fault.valid || instruction->delivered_exception.valid ||
-                (!external && (!x86_core_cpu_80486_memory_penalty(&instruction->execution, &ticks, &modeled) ||
-                    !x86_core_cpu_80486_nominal_instruction_cost(&instruction->execution, &nominal))))
+                (!external && (!x86_core_cpu_80486_memory_penalty(&instruction->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&instruction->execution)) ||
+                    !x86_core_cpu_80486_nominal_instruction_cost(&instruction->execution, &nominal,
+                        cpu_instruction_fixture_prefixes(&instruction->execution)))))
                 return LIB_FALSE;
             if (external) {
                 ticks = instruction->execution.timing_result.event_ticks;
@@ -1805,7 +1807,8 @@ static lib_bool cpu_interrupt_paging_timing(void)
                 instruction->delivered_exception.valid || after.data.eip != 0x300u ||
                 fixture.table_reads != reads || fixture.table_writes != writes ||
                 (route ? context->timing_result.event_ticks != nominal + setup + translation + memory + stall :
-                    !x86_core_cpu_80486_memory_penalty(context, &ticks, &modeled) ||
+                    !x86_core_cpu_80486_memory_penalty(context, &ticks, &modeled,
+                        cpu_instruction_fixture_prefixes(context)) ||
                     ticks != translation + memory)) {
                 lib_c_printf("Paged entry mode=%u route=%u updates=%u warm=%u read=%u/%u write=%u/%u ticks=%llu event=%llu expected=%llu fault=%x\n",
                     (lib_u32)mode, (lib_u32)route, (lib_u32)updates, (lib_u32)warm,

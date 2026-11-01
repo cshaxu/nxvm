@@ -742,7 +742,8 @@ static lib_bool cache_locked_operands(void)
             probe.lock_cancellations != 0u || probe.lock_active || probe.lock_protocol_error ||
             fixture->instructions.data.memory_lock_active ||
             fixture->instructions.data.flagLock != prefix || probe.fill_probes != 0u ||
-            !x86_core_cpu_80486_decode_penalty(&fixture->execution, &decode_ticks, LIB_NULL) ||
+            !x86_core_cpu_80486_decode_penalty(&fixture->execution, &decode_ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             decode_ticks != (lib_u64)prefix + (size == 2u))
             return LIB_FALSE;
         lib_memory_copy(&observed, fixture->memory + 0x2000u, sizeof(observed));
@@ -1325,7 +1326,8 @@ static lib_bool cache_flush_operations(void)
         if (!x86_core_cpu_instruction_lexeme_scan(code, bytes,
                 X86_CORE_CPU_PROFILE_80486SX, (mode & 1u) != 0u, &lexeme) ||
             !cache_run(fixture, code, bytes) || fixture->cpu.data.eflags != flags ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             nominal_ticks != (writeback ? 5u : 4u) ||
             probe.operation_count != (writeback ? 2u : 1u) ||
             probe.operations[0] != (writeback ? X86_CORE_CPU_CACHE_WRITEBACK :
@@ -1503,7 +1505,8 @@ static lib_bool cache_fetch_timing(void)
         if (!cache_run(fixture, (const lib_u8[]){0x66u, 0xa1u, 0u, 0x20u}, 4u) ||
             fixture->instructions.data.timing_fetch_bus_ticks != 5u ||
             fixture->instructions.data.timing_data_misses != 1u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &operand, LIB_NULL) || operand != 2u)
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &operand, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) || operand != 2u)
             return LIB_FALSE;
         x86_core_cpu_state_reset(&fixture->execution);
         if (fixture->instructions.data.timing_fetch_bus_ticks != 0u) return LIB_FALSE;
@@ -1619,7 +1622,8 @@ static lib_bool cache_branch_fetch_timing(void)
             fixture->instructions.data.timing_fetch_bus_ticks != 5u * failed_line ||
             probe.completed_fetches != reads + failed_line ||
             fixture->execution.timing_result.ticks != 0u ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 999u || !modeled)
             return LIB_FALSE;
     }
@@ -1733,7 +1737,8 @@ static lib_bool cache_access_timing(void)
                 fixture->instructions.data.timing_missed_reads != (lib_u32)(misses != 0u) ||
                 fixture->instructions.data.timing_unaligned_accesses != (lib_u32)unaligned ||
                 fixture->instructions.data.timing_locked_reads != 0u ||
-                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 modeled != (form == 3u || misses > 1u) ||
                 ticks != (misses ? 2u + 5u * (misses - 1u) : 0u) + 3u * unaligned) {
                 lib_c_printf("Access timing %u/%u/%u/%u/%u: miss=%u align=%u ticks=%llu\n",
@@ -1766,7 +1771,8 @@ static lib_bool cache_access_timing(void)
             lib_u64 ticks = 999u;
 
             if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
-                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 0u)
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != 0u)
                 return LIB_FALSE;
         }
     }
@@ -1781,7 +1787,8 @@ static lib_bool cache_access_timing(void)
         if (!cache_run(fixture, (const lib_u8[]){0x87u, 0x06u, 0u, 0x20u}, 4u) ||
             fixture->instructions.data.timing_locked_reads != 1u ||
             fixture->instructions.data.timing_data_misses != 0u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 0u)
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != 0u)
             return LIB_FALSE;
     }
     {
@@ -1789,13 +1796,16 @@ static lib_bool cache_access_timing(void)
         lib_u64 ticks = 999u;
 
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-        if (x86_core_cpu_80486_memory_penalty(LIB_NULL, &ticks, LIB_NULL) ||
-            x86_core_cpu_80486_memory_penalty(&fixture.execution, LIB_NULL, LIB_NULL) ||
-            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 999u)
+        if (x86_core_cpu_80486_memory_penalty(LIB_NULL, &ticks, LIB_NULL, cpu_instruction_fixture_prefixes(LIB_NULL)) ||
+            x86_core_cpu_80486_memory_penalty(&fixture.execution, LIB_NULL, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
             return LIB_FALSE;
         fixture.execution.cpu_profile = X86_CORE_CPU_PROFILE_80386;
         if (!cache_run(&fixture, (const lib_u8[]){0x90u}, 1u) ||
-            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 999u)
+            x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
             return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -1954,7 +1964,8 @@ static lib_bool cache_integer_timing(void)
         if (!cache_run(fixture, code, bytes) ||
             fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_locked_reads != (lib_u32)locked ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != expected ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != expected ||
             probe.lock_protocol_error || probe.lock_active ||
             (cases[row].secondary == 0xb0u &&
              ((fixture->cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u) != equal)) {
@@ -1971,7 +1982,8 @@ static lib_bool cache_integer_timing(void)
             const t_cpu before_cpu = fixture->cpu;
             const lib_u32 reads = probe.data_reads, writes = fixture->writes;
 
-            if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != expected ||
+            if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != expected ||
                 lib_memory_compare(&before, &fixture->execution, sizeof(before)) ||
                 lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
                 lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
@@ -1996,7 +2008,8 @@ static lib_bool cache_integer_timing(void)
         code[bytes++] = 0u;
         code[bytes++] = 0x20u;
         if (cache_run(fixture, code, bytes) || !fixture->fault.valid ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 999u ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != 999u ||
             fixture->instructions.data.timing_data_misses != (lib_u32)(!lock && write) ||
             fixture->instructions.data.timing_locked_reads != (lib_u32)(lock && write))
             return LIB_FALSE;
@@ -2062,7 +2075,8 @@ static lib_bool cache_integer_alignment_timing(void)
             fixture->instructions.data.timing_unaligned_accesses != cases[row].accesses ||
             fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_locked_reads != locked_reads ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             modeled != (misses > 1u || locked_reads > 1u) || ticks != expected) {
             lib_c_printf("Integer alignment row=%u dword=%u split=%u warm=%u lock=%u: align=%u miss=%u locked=%u ticks=%llu/%llu\n",
                 (lib_u32)row, (lib_u32)dword, (lib_u32)split, (lib_u32)warm, (lib_u32)lock,
@@ -2118,16 +2132,19 @@ static lib_bool cache_split_timing(void)
         if (fail) {
             if (!fixture->fault.valid || fixture->instructions.data.timing_unaligned_accesses != 0u ||
                 fixture->instructions.data.timing_missed_reads != 0u ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled) return LIB_FALSE;
             continue;
         }
         const lib_u64 expected = locked ? 8u :
             3u + (misses == 0u ? 0u : misses == 1u ? 2u : 7u);
-        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+            cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected || modeled != (locked || misses == 2u)) return LIB_FALSE;
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -2239,7 +2256,8 @@ static lib_bool cache_stack_string_timing(void)
         if (fail) {
             if ((status == LIB_STATUS_OK && !fixture->fault.valid &&
                     !fixture->delivered_exception.valid) ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 999u)
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != 999u)
                 return LIB_FALSE;
             continue;
         }
@@ -2249,7 +2267,8 @@ static lib_bool cache_stack_string_timing(void)
             fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_locked_reads != 0u ||
             fixture->instructions.data.timing_unaligned_accesses != unaligned ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != (warm ? 0u : cases[row].miss) + 3u * unaligned) {
             lib_c_printf("Stack/string timing row=%u code32=%u operand32=%u warm=%u: miss=%u ticks=%llu eip=%x fault=%x\n",
                 (lib_u32)row, (lib_u32)code32, (lib_u32)operand32, (lib_u32)warm,
@@ -2261,7 +2280,8 @@ static lib_bool cache_stack_string_timing(void)
         const t_cpuins before_instructions = fixture->instructions;
         const x86_core_cpu_execution_context before_execution = fixture->execution;
         const lib_u32 reads = probe.data_reads, writes = fixture->writes;
-        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) ||
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+            cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
             lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
             lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
@@ -2314,7 +2334,8 @@ static lib_bool cache_compare_timing(void)
             fixture->instructions.data.timing_missed_reads != reads ||
             fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_unaligned_accesses != unaligned ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 3u * reads + 5u * (misses - reads) + 3u * unaligned ||
             modeled != (reads == 1u || misses > reads)) {
             lib_c_printf("Compare timing size=%u position=%u same=%u warm=%u disabled=%u: reads=%u misses=%u ticks=%llu\n",
@@ -2325,7 +2346,8 @@ static lib_bool cache_compare_timing(void)
         }
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
             fixture->instructions.data.timing_missed_reads != 0u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     {
@@ -2344,7 +2366,8 @@ static lib_bool cache_compare_timing(void)
         if (cache_run(fixture, (const lib_u8[]){0xa6u}, 1u) || !fixture->fault.valid ||
             fixture->instructions.data.timing_missed_reads != 1u ||
             fixture->instructions.data.timing_data_misses != 1u ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 999u || !modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -2411,7 +2434,8 @@ static lib_bool cache_stack_group_timing(void)
         if (cache_run(fixture, code, bytes) == fail) return LIB_FALSE;
         if (fail) {
             if (!fixture->fault.valid || fixture->instructions.data.timing_missed_reads != 1u ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled) return LIB_FALSE;
             continue;
         }
@@ -2422,7 +2446,8 @@ static lib_bool cache_stack_group_timing(void)
         const lib_bool expected_model = misses != 0u && (offset || misses != nominal_lines);
         if (fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_unaligned_accesses != unaligned ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected + 3u * unaligned || modeled != expected_model) {
             lib_c_printf("Stack group enter=%u level=%u dword=%u offset=%u phase=%u: misses=%u/%u align=%u/%u ticks=%llu expected=%llu model=%u/%u\n",
                 (lib_u32)enter, (lib_u32)levels[index], (lib_u32)dword, (lib_u32)offset, (lib_u32)phase,
@@ -2432,7 +2457,8 @@ static lib_bool cache_stack_group_timing(void)
             return LIB_FALSE;
         }
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -2526,7 +2552,8 @@ static lib_bool cache_descriptor_timing(void)
         if (fail) {
             if (!fixture->fault.valid || fixture->instructions.data.timing_missed_descriptors != 0u ||
                 fixture->instructions.data.timing_descriptor_misses != (lib_u32)(phase == 5u) ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled) return LIB_FALSE;
             x86_core_cpu_state_reset(&fixture->execution);
             if (fixture->instructions.data.timing_descriptor_misses != 0u ||
@@ -2541,7 +2568,8 @@ static lib_bool cache_descriptor_timing(void)
             fixture->instructions.data.timing_missed_descriptors != reads ||
             fixture->instructions.data.timing_data_misses != descriptor_misses + operand_misses ||
             fixture->instructions.data.timing_unaccessed_descriptors != unaccessed ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected || modeled != (split && reads != 0u)) {
             lib_c_printf("Descriptor timing row=%u dword=%u split=%u phase=%u: desc=%u/%u data=%u/%u ticks=%llu/%llu model=%u\n",
                 (lib_u32)row, (lib_u32)dword, (lib_u32)split, (lib_u32)phase,
@@ -2554,7 +2582,8 @@ static lib_bool cache_descriptor_timing(void)
         const t_cpuins before_instructions = fixture->instructions;
         const x86_core_cpu_execution_context before_execution = fixture->execution;
         const lib_u32 data_reads = probe.data_reads, writes = fixture->writes;
-        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+            cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
             lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
             lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
@@ -2562,7 +2591,8 @@ static lib_bool cache_descriptor_timing(void)
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
             fixture->instructions.data.timing_descriptor_misses != 0u ||
             fixture->instructions.data.timing_missed_descriptors != 0u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -2628,7 +2658,8 @@ static lib_bool cache_pair_timing(void)
         if (cache_run(fixture, code, bytes) == fail) return LIB_FALSE;
         if (fail) {
             if (!fixture->fault.valid ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled) return LIB_FALSE;
             continue;
         }
@@ -2636,7 +2667,8 @@ static lib_bool cache_pair_timing(void)
             3u * (lib_u64)unaligned;
         if (fixture->instructions.data.timing_data_misses != misses ||
             fixture->instructions.data.timing_unaligned_accesses != unaligned ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected || modeled != (misses > 1u)) {
             lib_c_printf("Pair timing row=%u code32=%u dword=%u position=%u phase=%u: misses=%u/%u align=%u/%u ticks=%llu/%llu\n",
                 (lib_u32)row, (lib_u32)code32, (lib_u32)dword, (lib_u32)position, (lib_u32)phase,
@@ -2743,7 +2775,8 @@ static lib_bool cache_far_timing(void)
         const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
         if (fail) {
             if (!fixture->fault.valid ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled) return LIB_FALSE;
             continue;
         }
@@ -2754,7 +2787,8 @@ static lib_bool cache_far_timing(void)
         if (status != LIB_STATUS_OK || fixture->fault.valid || fixture->delivered_exception.valid ||
             after.data.eip != target ||
             fixture->instructions.data.timing_data_misses != misses + descriptor_misses ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected || modeled != (virtual_return && misses != 0u)) {
             lib_c_printf("Far timing mode=%u form=%u dword=%u phase=%u: miss=%u/%u desc=%u ticks=%llu/%llu model=%u fault=%x\n",
                 (lib_u32)mode, (lib_u32)form, (lib_u32)dword, (lib_u32)phase,
@@ -2850,7 +2884,8 @@ static lib_bool cache_call_gate_timing(void)
         const lib_status status = cpu_instruction_run(fixture, code, bytes, &after);
         if (failure) {
             if (!fixture->fault.valid ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled || probe.lock_active || probe.lock_protocol_error)
                 return LIB_FALSE;
             continue;
@@ -2862,7 +2897,8 @@ static lib_bool cache_call_gate_timing(void)
             fixture->instructions.data.timing_pair_misses != pointer ||
             fixture->instructions.data.timing_tss_field_misses != tss ||
             fixture->instructions.data.timing_descriptor_misses != descriptors ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected || modeled != (offset && parameters != 0u)) {
             lib_c_printf("Call gate dword=%u inner=%u indirect=%u count=%u warm=%u: miss=%u/%u pair=%u tss=%u desc=%u ticks=%llu/%llu fault=%x eip=%x\n",
                 (lib_u32)dword, (lib_u32)inner, (lib_u32)indirect, (lib_u32)count, (lib_u32)warm,
@@ -2881,7 +2917,8 @@ static lib_bool cache_call_gate_timing(void)
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
             fixture->instructions.data.timing_pair_misses != 0u ||
             fixture->instructions.data.timing_tss_field_misses != 0u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -3090,7 +3127,8 @@ static lib_bool cache_task_timing(void)
                     fixture->execution.timing_result.ticks != (asynchronous ? 5u : 0u))) ||
                 (!asynchronous && fixture->instructions.data.timing_data_misses != pointer + backlink +
                     accepted_descriptors + accepted_state + (idt && failure != 6u ? gate : 0u)) ||
-                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != 999u || !modeled || probe.lock_active || probe.lock_protocol_error) {
                 lib_c_printf("Task failure page=%u mode=%u form=%u warm=%u failure=%u misses=%u expected=%u fault=%x ticks=%llu event=%llu/%llu\n",
                     (lib_u32)paging,
@@ -3138,7 +3176,8 @@ static lib_bool cache_task_timing(void)
                 fixture->instructions.data.timing_pair_misses != pointer ||
                 fixture->instructions.data.timing_tss_field_misses != backlink ||
                 fixture->instructions.data.timing_idt_misses != (idt ? gate : 0u) ||
-                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled))) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)))) ||
             (!asynchronous && ticks != expected) || (!asynchronous && modeled !=
                 (pointer + descriptors + state + backlink + (idt ? gate : 0u) != 0u))) {
             lib_c_printf("Task memory mode=%u form=%u warm=%u: miss=%u/%u desc=%u pair=%u field=%u ticks=%llu/%llu model=%u fault=%x eip=%x\n",
@@ -3156,7 +3195,8 @@ static lib_bool cache_task_timing(void)
         const t_cpuins before_instructions = fixture->instructions;
         const x86_core_cpu_execution_context before_execution = fixture->execution;
         const lib_u32 data_reads = probe.data_reads, writes = fixture->writes;
-        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+            cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != expected ||
             lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
             lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
@@ -3255,7 +3295,8 @@ static lib_bool cache_repeat_timing(void)
                 fixture->instructions.data.timing_data_misses != misses ||
                 fixture->instructions.data.timing_missed_reads != reads ||
                 fixture->instructions.data.timing_repeat_previous_misses != previous ||
-                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != expected || modeled != expected_model) {
                 lib_c_printf("Repeat cache form=%u size=%u prefix=%u df=%u offset=%u phase=%u count=%u step=%u: miss=%u/%u previous=%u/%u ticks=%llu/%llu model=%u/%u\n",
                     (lib_u32)form, (lib_u32)size, (lib_u32)prefix, (lib_u32)backward,
@@ -3272,7 +3313,8 @@ static lib_bool cache_repeat_timing(void)
         lib_bool modeled = LIB_TRUE;
         if (!cache_run(fixture, (const lib_u8[]){0x90u}, 1u) ||
             fixture->instructions.data.timing_repeat_previous_misses != 0u ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -3327,7 +3369,8 @@ static lib_bool cache_translation_timing(void)
             data->timing_table_misses != (cached ? 0u : 2u) ||
             data->timing_tlb_updates != actual_updates ||
             data->timing_data_misses != (lib_u32)!store ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             modeled != (cached || raced) ||
             ticks != walk_ticks[updates] + (store ? 0u : 2u) - (cached ? 4u : raced ? 2u : 0u)) {
             lib_c_printf("Translation timing %u/%u/%u: walks=%u,%u,%u tables=%u updates=%u data=%u ticks=%llu\n",
@@ -3339,7 +3382,8 @@ static lib_bool cache_translation_timing(void)
         }
         ticks = 999u;
         if (!cache_run(fixture, store ? write : read, store ? sizeof(write) : sizeof(read)) ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL) || ticks != 0u)
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, LIB_NULL,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != 0u)
             return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -3379,7 +3423,8 @@ static lib_bool cache_translation_failure_timing(void)
             fixture->instructions.data.timing_tlb_walks[1] != 0u ||
             fixture->instructions.data.timing_tlb_walks[2] != (lib_u32)(failure == 3u) ||
             probe.lock_active || probe.lock_protocol_error ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 999u || !modeled)
             return LIB_FALSE;
     }
@@ -3433,7 +3478,8 @@ static lib_bool cache_translation_residency_timing(void)
         const t_cpuins_data *data = &fixture->instructions.data;
         if (data->timing_table_misses != (lib_u32)(2u - hits) ||
             data->timing_tlb_walks[updates] != 1u || data->timing_tlb_updates != updates ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != cold_ticks[updates] - 2u * hits + (store ? 0u : 2u) ||
             modeled != (hits != 0u) || probe.lock_active || probe.lock_protocol_error) {
             lib_c_printf("Translation residency store=%u updates=%u residency=%u: misses=%u ticks=%llu modeled=%u\n",
@@ -3445,7 +3491,8 @@ static lib_bool cache_translation_residency_timing(void)
         const t_cpuins before_instructions = fixture->instructions;
         const x86_core_cpu_execution_context before_execution = fixture->execution;
         const lib_u32 reads = probe.data_reads, writes = fixture->writes;
-        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+        if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+            cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             lib_memory_compare(&before_cpu, &fixture->cpu, sizeof(before_cpu)) ||
             lib_memory_compare(&before_instructions, &fixture->instructions, sizeof(before_instructions)) ||
             lib_memory_compare(&before_execution, &fixture->execution, sizeof(before_execution)) ||
@@ -3453,7 +3500,8 @@ static lib_bool cache_translation_residency_timing(void)
             return LIB_FALSE;
         modeled = LIB_TRUE;
         if (!cache_run(fixture, store ? write : read, store ? sizeof(write) : sizeof(read)) ||
-            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             ticks != 0u || modeled) return LIB_FALSE;
     }
     return LIB_TRUE;

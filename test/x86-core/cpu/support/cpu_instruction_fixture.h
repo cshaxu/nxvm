@@ -15,6 +15,13 @@ typedef struct cpu_instruction_fixture {
     lib_u8 memory[524288];
 } cpu_instruction_fixture;
 
+static inline lib_u32 cpu_instruction_fixture_prefixes(
+    const x86_core_cpu_execution_context *context)
+{
+    return context != LIB_NULL && context->instructions != LIB_NULL ?
+        x86_core_cpu_instruction_prefix_count(context, &context->instructions->data) : 0u;
+}
+
 static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     x86_core_cpu_memory_access_provenance provenance,
