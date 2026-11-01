@@ -1,5 +1,12 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### DMA signal reuse candidate rejected
+
+A scratch candidate reused the primary DMA signal snapshot only when the
+same advancement took no mutating path. Both host-width fixed-work samples
+failed to show a benefit and the candidate added complexity; it was not
+adopted. Full controller equivalence was not established. S39 remains active.
+
 ### Current startup cost recheck
 
 A task-only x64 startup sample after the shared classifier change still shows

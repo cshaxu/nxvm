@@ -32,6 +32,7 @@ These are bounded improvements; none establishes real-time performance.
 - Repeated refresh request observations in arbitration and the attachment
   contract boundary: [S34 analysis and cost sample](t582-s34-current-profile.md#refresh-request-observation-candidate),
   [S39 startup upper bound](t582-s39-execution-convergence.md#refresh-request-observations-at-the-arbitration-boundary).
+- DMA signal reuse within an unchanged advancement: [S39 comparison](t582-s39-execution-convergence.md#dma-signal-reuse-scratch-candidate).
 - Individual board-advance sampled costs: [S13 observations](t582-s13-scheduler-observation.md#s26-board-advance-attribution).
 - Clock advance narrow-division candidate: [S11 observations](t582-s11-performance-observation.md#subsequent-narrow-division-candidate).
 - Zero-or-one clock-conversion candidate: [S39 comparison](t582-s39-execution-convergence.md#zero-or-one-clock-conversion-candidate).

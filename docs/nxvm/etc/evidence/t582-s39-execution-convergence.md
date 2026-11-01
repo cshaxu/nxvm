@@ -4373,6 +4373,24 @@ The guest and sampling are task-owned; the host output reports termination,
 not a successful guest exit. Sampler log SHA-256:
 `B80EB740B64BD7453C369E2C5270E2D7374D215E4FDB566B03945EEBF3E72378`.
 
+### DMA signal reuse scratch candidate
+
+A task-only board DMA candidate reused the first controller's just-read
+signals for cascade update only when the advancement path performed no
+transfer or grant. Paths that could mutate controllers or invoke a transfer
+re-read signals as before. This was an exploration, not a qualified change:
+complete callback, cascade, controller topology and error equivalence was not
+established, and the candidate added branching and signal passing.
+
+At the private-media 10,000,000-instruction checkpoint, sequential
+baseline/candidate times were 19,445/19,556 ms on x64 and 22,855/23,189 ms
+on x86. Each reported 79,964,294 guest ticks and PC `0003dbc5`. The single
+pairs are sensitive to host variation and do not prove full-state equivalence
+or whole-system performance; neither supports retaining the extra complexity.
+No production source, interface, test or product artifact was changed.
+Comparison log SHA-256:
+`4FC40D5D7B21F0EAFE3990FC8E97E995A14B9DB98AEF2F08B643D5D6BEA7B25B`.
+
 
 ### Current prefix-dispatch reuse recheck
 
