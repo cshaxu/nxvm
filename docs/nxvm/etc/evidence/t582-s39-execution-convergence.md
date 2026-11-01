@@ -2143,9 +2143,10 @@ checkpoint; it adds no public API or second routing path. It uses approximately
 2 KiB of bucket heads per x64 Machine and a temporary checkpoint of the same
 size during registration. The measured speed gain does not meet the T582
 usability objective, so this task remains active after receiving validation.
-The reviewed Shared source/test change is commit `d5415b5b9`. The NXVM
-documentation-governance gate also passed. The paired artifact inventory
-records that source revision and the exact Shared manifest hashes.
+The reviewed Shared source/test change is commit `d5415b5b9`; MyRaidenII
+receivers are `1093a09ce` and the PC receivers and evidence are `81ea72cbc`.
+The NXVM documentation-governance gate also passed. The paired artifact
+inventory records the Shared source revision and exact manifest hashes.
 
 The preserved earlier menu-reaching x64 probe and the current x64 screen
 probe both contain byte-identical DSTN BIOS (262,144 bytes; SHA-256

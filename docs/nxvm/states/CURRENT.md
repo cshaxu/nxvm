@@ -48,9 +48,10 @@ and x86 712-test unit suites passed; the default-configuration integration
 suites passed 48/48 on each width, including native desktop and MIDI tests.
 All three additional PC profiles passed their receiver tests on each width,
 the MyRaidenII external receivers passed, and all 14 PE widths were checked.
-The port change is committed as Shared `d5415b5b9`; product artifacts and
-evidence are being reviewed and committed separately. The S and T remain open
-because the measured PC110 startup is still not practically usable.
+The port change is committed as Shared `d5415b5b9`, the MyRaidenII receivers
+as `1093a09ce`, and the PC receivers and evidence as `81ea72cbc`; all have
+been pushed. The S and T remain open because the measured PC110 startup is
+still not practically usable.
 
 ### Admitted owner-local port grouping candidate
 
