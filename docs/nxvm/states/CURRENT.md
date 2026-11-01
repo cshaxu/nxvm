@@ -1,5 +1,21 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted FDC seek-state representation
+
+In `src/x86-nxvm/chips/fdc8272/fdc.c` and private `fdc.h`, replace the four
+per-drive pending-seek bytes with the single four-bit seek mask already
+represented by the controller's status register. Preserve drive admission,
+ready changes, per-drive deadlines, simultaneous seek/result order, reset and
+capture behavior. Do not add state, a public interface or a parallel path.
+Adapt the existing FDC causes fixture and add only missing drive-bit coverage;
+update the two X86 NXVM manifests. Validate x86/x64 FDC and board tests first,
+then perform the full Shared receiver gate and fourteen product artifacts.
+The storage and idle-scan reduction does not close the PC110 usability goal.
+The change and qualification results are recorded in
+`docs/nxvm/etc/evidence/t582-s39-execution-convergence.md`; x64 native MIDI
+device opening failed both the full run and isolated retry. Continue S39 with
+real PC110 startup and interaction bottleneck measurement.
+
 ### Admitted memory-route arithmetic consolidation
 
 Within `src/x86-core/machine/memory.c`, calculate the raw and decoded access

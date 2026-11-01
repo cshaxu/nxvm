@@ -56,6 +56,7 @@ These are bounded improvements; none establishes real-time performance.
 - Bus-write component sampling and combined span proof: [S39 probe](t582-s39-execution-convergence.md#startup-bus-write-components-and-combined-span-proof).
 - Coarse empty-provider-page index upper bound: [S39 comparison](t582-s39-execution-convergence.md#coarse-empty-provider-page-upper-bound).
 - Memory-route end arithmetic consolidation: [S39 qualification](t582-s39-execution-convergence.md#memory-route-end-arithmetic-consolidation).
+- Write-buffer empty/drain observation candidates: [S39 comparison](t582-s39-execution-convergence.md#write-buffer-preparation-and-duplicate-observation).
 - Memory read-modify-write precheck frequency: [Personaware Game](t582-s26-personaware-game.md#read-modify-write-precheck-frequency).
 - Game drawing guest-PC samples and instruction-byte attribution:
   [Personaware Game](t582-s26-personaware-game.md#game-drawing-workload).

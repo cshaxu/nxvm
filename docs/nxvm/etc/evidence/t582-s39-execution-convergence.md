@@ -2970,3 +2970,61 @@ Logs SHA-256, targeted / full / x86 continuation / external receiver:
 `7938AF2A9913EDC6E15238E9754674FC40AE73A4EB57CE23BEDAF7420F99506B`,
 `F444BF5A97E359F3C89190089543F807FF80CB6F206EEB93C415710B35A3E079`,
 `147575917C39B79B44488CF5B05F74D4E5C7009E2E0918A35122B90F2F2C6238`.
+## Write-buffer preparation and duplicate observation
+
+An x64 task-only startup sample observed 6,634,054 eligible write preparations.
+Of 25,914 samples, 22,424 had an empty buffer; 21,430 had cache-disable set,
+all with an empty buffer; and 2,966 had a full buffer. The first ten million
+instructions reached 79,964,294 ticks and `0003dbc5`. Deterministic sampling
+can alias and this does not characterize a later workload. In the empty,
+cache-disabled case the existing code calls the drain function, which checks
+the same observation predicate before seeing the empty buffer.
+
+One scratch candidate returned immediately for an empty buffer. Ordered
+baseline/candidate/candidate/baseline times were 21,281 / 22,768 / 21,283 /
+21,418 ms x64 and 25,483 / 25,587 / 26,567 / 26,621 ms x86. A second scratch
+candidate factored the existing drain loop into a private helper, allowing the
+already-validated write preparation to avoid repeating the predicate; the
+public drain still performed its validation. Its fixed-work results were
+21,996 / 20,166 / 20,794 / 21,304 ms x64 and 27,228 / 26,072 / 25,322 /
+25,541 ms x86. All runs reported the same instruction/tick/PC checkpoint.
+These sequential measurements are subject to host variation and do not prove
+full state equivalence.
+
+The helper candidate's configured-CMOS x64 full-menu comparison took 220.79 /
+222.77 seconds for baseline/candidate. This single pair does not prove a
+regression, but it does not demonstrate a meaningful product improvement; the
+helper adds code and a second entry into the drain loop. Neither candidate was
+adopted. No production source, owner media or released artifact was changed,
+and no x86 full boot or desktop/RDP result is claimed.
+
+## FDC pending-seek representation
+
+The 8272 controller previously kept four byte-sized pending flags and scanned
+them to form the low status bits, including when no seek was pending. The
+candidate stores those same four bits in one private mask and skips idle
+seek/deadline scans. It changes no public API or guest timing contract. On both
+host architectures the private data structure decreased from 256 to 248 bytes.
+
+Scratch fixed-work baseline/candidate/candidate/baseline measurements were
+18,587 / 18,108 / 18,839 / 19,057 ms on x64 and 22,733 / 22,119 / 22,773 /
+24,130 ms on x86, at the same instruction/tick/PC checkpoint. One x64
+configured-CMOS full-menu pair measured 219.63 seconds baseline and 209.59
+seconds candidate. These sequential samples are noisy and do not establish a
+general speedup or full-state equivalence. More than three minutes to reach the
+menu remains a usability problem; this improvement does not close T582.
+
+The production change was +12/-15 lines across the two private FDC files;
+the existing causes test was +14/-6, including all four drive bits and reset.
+The targeted FDC tests passed 7/7 on each architecture. Cached unit tests passed
+712/712 on each architecture. The x64 integration run passed 47/48: native
+MIDI output could not open the host device, and an isolated retry also failed.
+The x86 integration run included successful real-firmware cold and resume
+handoff tests; two default-profile tests failed after two qualification scripts
+accidentally used the same build tree concurrently. With exclusive use restored,
+both passed on retry. The other x86 integration results and x86 My5160, My5170
+and DeskPro profile runs passed; profile counts were 3, 5 and 6 respectively.
+The x64 profile runs passed with the same respective counts. MyRaidenII receiver
+probes passed for both architectures. All 14 published binaries were checked
+for their PE architecture; see `t582-s39-fdc-mask-artifacts.json`. Native PC110
+desktop and RDP responsiveness were not verified in this batch.
