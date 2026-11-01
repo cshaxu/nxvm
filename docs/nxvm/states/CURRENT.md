@@ -1,5 +1,12 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Current startup cost recheck
+
+A task-only x64 startup sample after the shared classifier change still shows
+distributed CPU, timing, board and memory costs. DMA signal snapshots span
+potential controller mutations, so their reuse is not yet proven. See S39
+evidence; the sample is not a complete boot or interactive validation.
+
 ### Timing formula prefix scan candidate rejected
 
 A task-only prefix-count reuse candidate retained the older-model prefix

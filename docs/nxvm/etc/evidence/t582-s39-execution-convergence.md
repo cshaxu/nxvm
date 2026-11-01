@@ -4349,6 +4349,30 @@ does not resolve PC110 startup or interaction performance.
 Comparison log SHA-256:
 `FBFB1AACC6AE55B73B048D0262E0E599658921263DEE6A721E79A8D0E2626366`.
 
+### Post-classifier startup sample and DMA observation
+
+After the common prefix-classifier change, a hidden task-only x64 probe sampled
+the existing private-media startup worker from 5 to 60 seconds. Its CMOS hash
+was `608DF3ABC3CDD9BB3E35015D2D7AA9D8756567E080643B01E593FF99D1616034`.
+The sampler stopped its own guest at 65 seconds; this was not a complete boot.
+There were 4,282 early and 4,949 late worker samples, with no reported native
+sampling errors. Among late leaf samples were CPU refresh 273, Machine run 218,
+KBC input observation 159, memory-route resolution 143, CPU 486 memory timing
+134, clock-domain advancement 123, board deadline observation 119, DMA
+transaction advancement 104, DMA signal capture 98 and DMA pending request
+observation 93. These are individual leaf addresses, not inclusive costs; they
+cannot be added as isolated costs or used to establish an end-to-end speedup.
+
+The DMA path repeatedly captures controller signals, but its advancement can
+grant or release a channel, execute a bus transfer and change cascade request
+state before the later cascade observation. A prior idle-skip experiment had
+not proved cascade coherence. Reusing a pre-advance snapshot without proving
+the mutation cases would be incorrect; this sample alone does not justify a
+new cache or production change. No x86 or interactive Window run was made.
+The guest and sampling are task-owned; the host output reports termination,
+not a successful guest exit. Sampler log SHA-256:
+`B80EB740B64BD7453C369E2C5270E2D7374D215E4FDB566B03945EEBF3E72378`.
+
 
 ### Current prefix-dispatch reuse recheck
 
