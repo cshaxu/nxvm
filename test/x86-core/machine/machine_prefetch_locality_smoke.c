@@ -90,7 +90,7 @@ static lib_i32 run_halt(const x86_core_machine_external_cycle_timing *timing,
     return !failed;
 }
 
-static lib_i32 run_halt_with_port_wait(lib_u64 *out_ticks)
+static lib_i32 run_halt_with_port_wait(lib_size slot, lib_u64 *out_ticks)
 {
     static const lib_u8 code[] = {
         0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u, 0xf4u
@@ -101,7 +101,7 @@ static lib_i32 run_halt_with_port_wait(lib_u64 *out_ticks)
     lib_i32 failed = 0;
 
     config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
-    config.transaction_contract.external_access_wait_windows[0] =
+    config.transaction_contract.external_access_wait_windows[slot] =
         (x86_core_machine_external_access_wait_window) {
             X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x00e0u, 0x00e0u, 1u};
     failed |= x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
@@ -683,6 +683,7 @@ lib_i32 main(void)
     lib_u64 baseline_ticks = 0u;
     lib_u64 timing_ticks = 0u;
     lib_u64 port_wait_ticks = 0u;
+    lib_u64 last_port_wait_ticks = 0u;
     lib_u64 write_baseline_ticks = 0u;
     lib_u64 write_timing_ticks = 0u;
     lib_u64 read_baseline_ticks = 0u;
@@ -691,7 +692,9 @@ lib_i32 main(void)
 
     failed |= !run_halt(&disabled, &baseline_ticks);
     failed |= !run_halt(&timing, &timing_ticks);
-    failed |= !run_halt_with_port_wait(&port_wait_ticks);
+    failed |= !run_halt_with_port_wait(0u, &port_wait_ticks);
+    failed |= !run_halt_with_port_wait(
+        X86_CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY - 1u, &last_port_wait_ticks);
     failed |= !run_write(&disabled, &write_baseline_ticks);
     failed |= !run_write(&timing, &write_timing_ticks);
     failed |= !run_read(&disabled, &read_baseline_ticks);
@@ -700,6 +703,7 @@ lib_i32 main(void)
     /* Two reset-segment windows; no speculative wrapped tail past CS.limit. */
     failed |= timing_ticks != baseline_ticks + 4u;
     failed |= port_wait_ticks != baseline_ticks + 1u;
+    failed |= last_port_wait_ticks != baseline_ticks + 1u;
     failed |= write_timing_ticks != write_baseline_ticks + 4u;
     failed |= read_timing_ticks != read_baseline_ticks + 4u;
     failed |= !external_cycle_observer_contract();

@@ -502,9 +502,17 @@ lib_status x86_core_machine_neutral_create_with_test_allocation(
         &instruction_timing);
     x86_core_cpu_execution_context_bind_fpu(
         machine->executor_cpu_execution, machine->fpu);
-    x86_core_cpu_execution_context_bind_external_cycle_provider(
-        machine->executor_cpu_execution, x86_core_machine_cpu_external_cycle_trace,
-        machine);
+    {
+        lib_bool needed = X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED ||
+            machine->transaction_contract.external_cycle_timing.page_bytes != 0u;
+        for (lib_size i = 0u; !needed &&
+                i < X86_CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY; ++i)
+            needed = machine->transaction_contract.external_access_wait_windows[i].wait_ticks != 0u;
+        x86_core_cpu_execution_context_bind_external_cycle_provider(
+            machine->executor_cpu_execution,
+            needed ? x86_core_machine_cpu_external_cycle_trace : LIB_NULL,
+            needed ? machine : LIB_NULL);
+    }
     x86_core_cpu_execution_context_bind_diagnostic_provider(
         machine->executor_cpu_execution,
         machine->retirement_time_contract == X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ?
