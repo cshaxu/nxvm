@@ -1,5 +1,27 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted lexical preview task-checkpoint copy removal
+
+Move the existing private task-switch checkpoint beside the already omitted
+preview cache/TLB region and exclude it from the preview context copy. Lexical
+preview does not execute instruction handlers or task switches; its copied
+task-switch flag is reset at the existing boundary. There is no new state,
+public API, second decoder or profile branch. Scratch layouts reduce the
+initial context-copy prefix by 344 bytes on x64 and 340 bytes on x86; the
+context itself is eight bytes smaller on x64 and unchanged on x86. These are
+fixed-size reductions, not an asymptotic change. Two-width long fixed-work,
+poisoned existing preview tests and one x64 full-menu pair do not prove all
+fault/callback behavior or practical speedup. Run existing preview, CPU,
+fault, debug and multi-profile regressions, full Shared receivers and fourteen
+artifact qualification; preserve the full system-usability objective.
+
+After rebuilding both test trees, both widths passed the full 712-unit and
+48-default-integration suites and all three PC profile receiver groups.
+MyRaidenII selected-set probes and fourteen PE-width checks passed. The final
+x86 private-media menu and partial-frame marker was 256/11 seconds; visual
+inspection showed the World Clock was still drawing. Native Window/RDP
+performance remains unverified, and the S objective is still open.
+
 ### Admitted private CPU segment-layout compaction
 
 Reorder the private segment-cache fields and store the existing bounded segment

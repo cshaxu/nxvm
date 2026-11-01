@@ -4491,6 +4491,68 @@ Focused, full, external and final x86 system log SHA-256 respectively:
 The [artifact inventory](t582-s39-segment-layout-artifacts.json) records PE
 widths and identities against the committed Shared source.
 
+### Lexical preview task-checkpoint copy
+
+The CPU context's existing task-switch checkpoint was copied into every
+lexical preview even though preview executes no instruction handler or task
+switch; `ExecBoundary` resets the copied task-switch flag before fetch. Moving
+the checkpoint adjacent to the already excluded cache/TLB region allows the
+existing context-copy boundary to omit it without a new path or state. On the
+tested x64 build the initial context-copy prefix decreases from 780 to 436
+bytes; on x86 it decreases from 724 to 384. The full private context decreases
+by eight bytes on x64 and is unchanged on x86. This is a fixed-size and copy
+reduction, not an asymptotic improvement or a different timing model.
+
+Scratch baseline/candidate comparisons over 60 million retired instructions
+reported 98,513/90,584 ms on x64 and 119,320/119,212 ms on x86; all reached
+365,365,343 ticks and PC `00038887`. Last 30-million intervals were
+44,151/41,408 and 55,440/56,091 ms respectively. Single ordered pairs and host
+variation do not prove a stable gain or complete-state equivalence. Existing
+Machine lexical-preview tests, built with the omitted checkpoint explicitly
+filled with `A5`, passed on both widths; those tests cover the existing profile
+matrix but are not proof of every possible callback or error path.
+
+A private-media x64 candidate run reached the menu at sample 214 and a later
+input frame-change marker at sample 9, exiting in 227.07 seconds. The immediately
+preceding segment-layout baseline had reached menu sample 211 and input sample
+9 in 224.79 seconds. These coarse, sequential samples do not show an
+end-to-end speedup, complete state equivalence or native Window/RDP usability.
+The PC110 performance goal remains open.
+
+The initially started full test run was stopped before acceptance when it was
+found to have built product targets but not relinked all test executables.
+Its partial results are not counted. The replacement run first rebuilds both
+complete test trees, then executes the full qualification.
+
+Fixed-work x64, x86, poisoned preview, and candidate system log SHA-256:
+`4500C707127065187E4A52593229A479B87F2FF51DF8D3CAC442487D51E2C7F9`,
+`3D1AEB2DB520FB835F91A2E1876236C2F9FF017285F0B399C0EDBE76CC78FA96`,
+`539967D28AD165710FB3BE6ACE3530FA51DE73AC21BD02C0EDD56233971E4A05`,
+`D69589983B91892350F671ED1B0828C79784EF4036C832C7BFFC11B0EDDC4B2D`.
+
+The production change is Shared commit `b57abda98`. After rebuilding the
+test executables, each width passed 712/712 unit and 48/48 default integration
+tests, including native MIDI; the three selected PC profile groups passed
+3/3, 5/5 and 6/6 on each width. MyRaidenII selected-set startup and Console
+probes passed on both widths, without establishing gameplay. X86 Core source
+and test manifests and whitespace checks passed. The inventory below records
+fourteen PE widths and hashes; MyPC110 and MyNES deployments matched the cached
+outputs on both widths, and MyNES binaries were unchanged.
+
+The final production x86 private-media Machine probe reached menu sample 256
+and its frame-change threshold at input sample 11; it exited in 270.45 seconds.
+Visual inspection shows a partially drawn World Clock, so that threshold does
+not prove a completed application redraw. The prior sample was 259/13, but
+one run each and host variability cannot establish a speedup. No native
+Window/RDP performance run was performed. The usability goal remains open.
+
+Qualified full, external and final x86 system log SHA-256 respectively:
+`96712568735903C441A2944DFCF271B3888D5F20A637F9DAD22318CCDFF8492B`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`13095CD5090661CEBFCEDE54D7A0356232E1DC6544E674665C4780C1D636A2AE`.
+The [artifact inventory](t582-s39-preview-task-checkpoint-artifacts.json)
+records the fourteen PE widths and hashes against the committed Shared source.
+
 
 ### Current prefix-dispatch reuse recheck
 
