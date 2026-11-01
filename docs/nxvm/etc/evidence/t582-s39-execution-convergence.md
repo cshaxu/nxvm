@@ -3429,3 +3429,26 @@ remain rejected; no production or public interface was changed.
 Stage and term logs have SHA-256 respectively
 `3FCC5BC4CE05B52CB57E28CC92BCDEB083D272AAE013316BCEF73FD45232CDA6` and
 `54CAF31B81D80B72BF9081D21C20D6B87AB1315B625B1BA7DE1174C88469922D`.
+
+## Direct timing-result upper bound
+
+The current timing selector has one production caller. On non-V30 profiles it
+collects source metadata in the CPU context, builds a local result, then copies
+the result back. A task-only candidate wrote the local result fields directly
+into that existing context and removed the final copy; V30 kept its original
+path. This adds no persistent object, but it is not a qualified replacement.
+In particular, the 8086-family LOCK helper originally reads the zero-initialized
+local result's allocation flag before the context flag is copied into it; the
+candidate instead exposes the context flag earlier. Failure, preview callback,
+debug and all-profile equivalence were not established.
+
+At the private configured-CMOS startup checkpoint, ordered baseline /
+candidate / candidate / baseline times were 19,124 / 19,534 / 18,076 /
+18,963 ms x64 and 22,100 / 22,347 / 24,208 / 24,783 ms x86. Every run
+reported 10,000,000 retired instructions, 79,964,294 ticks and PC `0003dbc5`.
+Both widths reverse direction between pairs; host drift and the common endpoint
+do not establish a reliable speedup or complete-state equivalence. The
+possible behavior difference and lack of stable benefit do not justify this
+design. No production source or released artifact changed, and no full boot
+or RDP result was measured. Log SHA-256:
+`6008E7244A137E3AA06DAB641E3FE915301B47CAB1D4C19277717B85FCC0FE45`.
