@@ -461,15 +461,18 @@ lib_status x86_pic_select(const x86_pic *pic, x86_pic_request *out_request)
 {
     lib_u8 offset;
     lib_u8 id;
+    lib_u8 pending;
     lib_bool cascade;
     if (pic == LIB_NULL || out_request == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (pic->data.status != OCW1) return LIB_STATUS_INVALID_STATE;
+    pending = pic_pending_requests(pic) & ~pic->data.imr;
+    if (pending == 0u) return LIB_STATUS_INVALID_STATE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         id = (lib_u8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
         if (pic->data.unmask_remaining_ticks[id] != 0u ||
-            !PIC_BIT_IS_SET(pic_pending_requests(pic) & ~pic->data.imr,
+            !PIC_BIT_IS_SET(pending,
                 VPIC_IRR_IRQ(id))) continue;
         cascade = pic->cascade_master &&
             PIC_BIT_IS_SET(pic->data.cascade_irr, VPIC_IRR_IRQ(id));
