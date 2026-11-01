@@ -1,5 +1,27 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted cross-profile timing prefix handoff
+
+Compute Intel instruction-prefix position once in the existing timing selector
+and pass it through its current candidate, string, repeat, LOCK and 486 timing
+terms. Preserve each model's actual timing, failed-candidate ordering, fault,
+debug and observation behavior; V30 keeps its NEC native/emulation prefix
+representation. Keep formula-input classification where its existing prefix
+semantics differ. No App-specific branch, persistent state, second executor
+or public interface. Update the private CPU headers and existing tests without
+reducing assertions, and update source/test manifests. Qualify all CPU models,
+both host widths, all Shared receivers and fourteen artifacts. The isolated
+seven-profile loop and private PC110 system comparisons are evidence only,
+not sufficient acceptance or proof of usable system performance.
+
+Both host widths passed the full 712-unit and 48-default-integration groups,
+the three PC receiver groups, and MyRaidenII selected-set probes; all fourteen
+artifact PE widths were checked. The final x64 PC110 private-media probe
+reached its menu at sample 194 and a frame change at input sample 8. This
+single background measurement is not native Window/RDP validation and does
+not establish usable performance. S39 remains active for further bottleneck
+isolation and cross-model optimization.
+
 ### Rejected 486 timing prefix handoff; cross-profile audit
 
 The 486-only local prefix handoff passed focused and receiver tests but

@@ -4069,8 +4069,70 @@ Initial candidate and reverse candidate/baseline system-log SHA-256:
 `A4D8750E1D4C5AE7CC773FF41540E5F0FCA0A7082C15A2A8A88476AFA83E10A2`,
 `F8A18E578C38B0E2BB4E5663CB8396F710BBD46F04D4DD7154A04F7DF53225ED`,
 `7DD3837368A3FEBFA7649C6408DA3433E6AA4418A885FB515FD22C6CA76A335D`.
+
+### Cross-profile timing prefix handoff
+
+Following the owner's request, the Intel selector now computes a bounded
+prefix position once and passes it through its existing candidate evaluators,
+string/repeat and LOCK terms and the 486 component terms. V30 retains its
+NEC-specific native/emulation prefix representation. Formula-input
+classification remains separate because its older-profile byte rules differ;
+it is not safe to replace that logic mechanically. There is no App-specific
+branch, persistent state, public interface or second executor. The existing
+test assertions were compared after removing only the added count arguments
+and whitespace; they were unchanged.
+
+A scratch NOP/JMP loop ran 2,000,000 instructions on 8086, 8088, 80186,
+80286, 80386, 80486SX and V30, on both host widths. Baseline and candidate
+reported matching per-profile ticks, final EIP and no fault/stop. That loop
+does not cover all opcodes, REP, faults, interrupts or protected mode and is
+not a substitute for the full component tests. The existing 40 focused tests
+and the separate prefix-attributes test passed per width. The initial strict
+build rejected an unused private parameter; removing the parameter rather
+than suppressing the warning resolved the build.
+
+In adjacent private-media Machine probes, x64 baseline/candidate reached the
+menu at one-second samples 214/207 and a two-pane World Clock marker at input
+sample 10/10, with total times 228.68/221.50 seconds. On x86 the respective
+menu samples were 272/272, input samples 13/12 and total times 289.23/288.40
+seconds. Captured frames show the panes but still contain differing areas of
+background drawing, so they do not prove complete visual or machine-state
+equivalence. Single ordered pairs, coarse sampling and host variation do not
+prove a stable speedup. Neither native Window nor RDP was measured; the system
+remains far too slow. Full receiver qualification and release artifact checks are recorded below.
+
+The x64 then x86 system log SHA-256s, baseline/candidate respectively:
+`AE1BB33BE79A534BA81F96FED7A5382C275B7713E74F36E7AA329B214A1C94D9`,
+`656DBD053121C68971FF2D7B4807B5E12675ED3CCA2153AC74E050611D685E97`,
+`214F88D519E91CA76ECADC5FC4C54FAD44ABFAE6D66FCF63EE548DE83E239519`,
+`35D93469337D203B2231E4B3D0855CC326FDF50CA693734B54CAB711D598AE3F`.
+The seven-profile loop log SHA-256s in the same order:
+`6470CE5CB5CFA32425A7A74125490AC8A7C2518A9961920C2ADBD630186BBF8B`,
+`18E97B8F58F79C34F92A2E671437F98A03FF828F71FBA8AB04F27BD1F0CFDF3A`,
+`27C2FF51E1E1EA81171F70FE27533B67D7B4F68FAE8078B497F184F77C5D3244`,
+`2C6F6C8FD7AC115336B21372AE2EDF5555131506F6DF950649B728741668D103`.
 Log SHA-256, x64 baseline/candidate then x86 baseline/candidate:
 `F7A73DE287ABC6CAF062D284CEED8B20FB568D24C27C78480791B9B640F6F575`,
 `744BF59F87A9C7BAA9A78DDF07145D20B779E280423F0CFD5DCB68B74697C329`,
 `15ADF227D3B88190E601867F23BE10DD2F7AC1CE4438E12847F7564FA56D4385`,
 `75D000C3F6D8AC948B82ED26D74D04CCD040F2F142BFE6CDC769383DF804765E`.
+
+
+The cached x64 and x86 runs each passed 712 unit tests and 48 default
+integration tests, including native MIDI; the 5160, 5170 and DeskPro receiver
+groups also passed 3, 5 and 6 tests respectively on each width. The
+MyRaidenII selected-set startup and product Console probes passed on both
+widths; this does not establish game playability. Both X86 Core manifests,
+documentation governance and diff whitespace checks passed. Fourteen release
+PE widths were verified. The MyNES executables were unchanged by the rebuild.
+
+The final x64 cached-build private-media PC110 probe observed its menu at
+sample 194 and the target frame change at input sample 8, with 205.97 seconds
+total. The observed change is not proof that all drawing has completed. This
+is one run, not a controlled benchmark, and the real Window/RDP experience
+was not measured. System startup and interaction remain unacceptably slow.
+
+Full receiver, MyRaidenII, and final PC110 probe log SHA-256 respectively:
+`6B47D8C25D7B0B274FE21A89B7E0277F8A393ADAF6491EB09CB3B1734AB4EB42`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`EF331A46F1533225F37A7F939B77E6C5FB0399FA437656447203C87EBD8363F7`.
