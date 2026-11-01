@@ -1,5 +1,13 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Startup-middle port-read attribution
+
+Task-only x64 sampling attributed a substantial portion of sampled ordinary
+instruction execution to `IN` during the middle startup phase. Port stages and
+the existing wired-OR/removal ownership were reviewed; the data do not justify
+skipping device callbacks or assuming route state is unchanged across a
+callback. See S39 evidence. The complete usability goal remains open.
+
 ### Admitted lexical preview task-checkpoint copy removal
 
 Move the existing private task-switch checkpoint beside the already omitted

@@ -98,6 +98,8 @@ These are bounded improvements; none establishes real-time performance.
   `00038000` endpoint counts: [S39 measurement](t582-s39-execution-convergence.md#machine-return-endpoint-sampling-bias).
 - Prefix-stripped opcode samples through 100 million startup instructions:
   [S39 middle-phase sample](t582-s39-execution-convergence.md#startup-middle-phase-instruction-samples).
+- Sampled middle-phase opcode execution and port-read stages:
+  [S39 attribution](t582-s39-execution-convergence.md#startup-middle-opcode-and-port-read-attribution).
 - Forced-inline conditional-jump helper upper bound:
   [S39 comparison](t582-s39-execution-convergence.md#conditional-branch-compiler-upper-bound-probe).
 - Scheduler-only pacing-field suppression prototype:

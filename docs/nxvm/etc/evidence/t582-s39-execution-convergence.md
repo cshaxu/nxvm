@@ -4553,6 +4553,41 @@ Qualified full, external and final x86 system log SHA-256 respectively:
 The [artifact inventory](t582-s39-preview-task-checkpoint-artifacts.json)
 records the fourteen PE widths and hashes against the committed Shared source.
 
+### Startup-middle opcode and port-read attribution
+
+Two task-only x64 private-media runs sampled the existing execution path from
+approximately 30 to 60 million retired instructions. Both reached 60 million
+instructions, 365,365,343 guest ticks and PC `00038887`; neither was a full
+boot or desktop measurement. The first timed one in 256 `ExecIns` calls and
+classified each by its recorded prefix-stripped opcode and SMM entry state.
+Among 90,779 ordinary-execution samples, `IN` immediate and `IN` DX had 21,285
+samples and 18,770,070 of 49,508,873 sampled TSC units. This is about 38% of
+the sampled ordinary `ExecIns` intervals, not of the whole Machine or boot.
+The SMM samples and asynchronous entry work have separate denominators.
+
+In the second run, one in 256 port reads was sampled inside the CPU and
+Machine transfer path. Of the ordinary CPU samples, 13,599 reads addressed
+port `61h` and 5,757 addressed other ports. For the `61h` samples, the Machine
+transaction setup, port provider execution and return/value publication
+intervals averaged approximately 73, 108 and 65 TSC units respectively; these
+intervals are from a separate run and are not additive to the first run's
+opcode times. Timer instructions, instrumentation, CPU migration, host
+preemption and deterministic sample aliasing affect both observations. The
+figures identify a common port pipeline to investigate, not a proven 61h
+device fault or justification for a PC110-specific shortcut.
+
+The port owner currently searches for the exclusive provider and later walks
+the bucket for wired-OR contributions. Owner removal can leave an existing
+wired-OR route after its exclusive provider is removed, and a callback can
+alter registration at permitted stopped/paused boundaries. Thus neither an
+assumed permanent exclusive/wired ordering nor a pre-callback result may
+replace the later walk without preserving those cases. No production code,
+interface, test, owner media or released artifact changed. Opcode, CPU-port,
+and Machine-port probe log SHA-256 respectively:
+`A06D69F08A9569FCB751C55868DD6222664CF5A020AE1438119B2A5C8D05DFDB`,
+`6A0F0291415FCAFCB3EBB1C82DC3D1979C2C552FEB7246B64DA3D091E0BEE6F5`,
+`925332B224985EA3E28CD75E6FE2FC4C30AE1C47D35F109E93186CFD67D78410`.
+
 
 ### Current prefix-dispatch reuse recheck
 
