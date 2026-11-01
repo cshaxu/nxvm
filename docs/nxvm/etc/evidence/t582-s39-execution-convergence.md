@@ -3530,3 +3530,34 @@ end-to-end measurement are required before production admission.
 Single-line and two-line diagnostic log SHA-256 respectively:
 `2DA67FA06FE901716C8D03C9B02D814E7EBFDEFA36E2810128D7EE0F46EF6E5E`,
 `F4B29B0F5FF05BB92A85FD8A9AA8D7705024539C977314677C9E99DD08DA8C8A`.
+
+### Two-line cached-preview scratch candidate
+
+A task-only CPU copy tried decoding the complete existing prefetch range from
+resident cache lines when the CPU was a real-mode, non-paged 486SX and the
+existing retained prefetch was unusable. The original preview remained the
+fallback. The candidate did not change guest instruction timing formulas or
+introduce a second executor, but adds a separate lexical-preview branch and
+extra Machine cache-address queries. Its equivalence for callback effects,
+failure ordering, address changes and all CPU/debug paths was not established;
+it is not production code.
+
+At the private configured-CMOS ten-million-instruction checkpoint, ordered
+baseline / candidate / candidate / baseline times were 19,000 / 19,538 /
+19,130 / 19,592 ms x64 and 24,012 / 25,639 / 24,806 / 24,721 ms x86.
+Both widths reverse direction across adjacent pairs, and the x86 first pair
+shows a possible regression. All reported 79,964,294 ticks and `0003dbc5`.
+This early phase had no cache hits in the prior sampled `74h` population.
+
+The relevant 30-to-60-million-instruction phase was then compared once on
+x64 using the same private CMOS/media. Baseline / candidate took 42,077 /
+43,304 ms in that interval, and 90,867 / 94,253 ms across the full first
+60 million instructions; both reported 365,365,343 ticks and `00038887`.
+The split is at a Machine-return boundary, and a single sequential pair is
+susceptible to host drift. These numbers neither prove a regression nor full
+CPU-state equivalence, but show no useful improvement to justify adding the
+complex branch and its extensive semantic proof. No production code, tests,
+media or released EXE changed, and full-menu/RDP timings were not measured.
+Log SHA-256, early and later probes respectively:
+`1B2A80CCDD59A0683D6CBC4D94BDD6BEDE9EE38FEFF1744EE88F9A0BBE1D79C6`,
+`989A48CB7D9032DE5A53693C4C067A6F10D544400B6A19C11DB1692845588FD3`.
