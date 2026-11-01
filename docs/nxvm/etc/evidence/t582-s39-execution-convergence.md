@@ -3622,3 +3622,34 @@ per-Machine memory; this evidence does not justify that complexity. No
 production code, interface, media or EXE changed; x86 and full-menu/RDP
 were not tested for this invalid prototype. Log SHA-256:
 `0C4774DD99E3F3B74DAA107B2842D6E2BBF4EA0DB46342F73E72DBB951F4AE84`.
+
+## Preview copy attribution and scalar-copy experiment
+
+A task-only x64 `memcpy` wrapper counted calls originating on the Machine
+worker during the first 60 million retired instructions, split by the last
+completed quantum at 30 million. It does not observe inlined copies; counting
+and caller attribution add overhead, and sizes/counts are not inclusive host
+time. In the later stage it counted 36,308,124 calls of 380 bytes at the
+instruction-boundary snapshot site, and 6,275,991 calls each of 380, 736 and
+820 bytes at three lexical-preview copy sites. The associated guest reached
+365,365,343 ticks and PC `00038887` in 99,675 instrumented milliseconds.
+The instruction snapshot still owns fault/restart semantics; counts alone do
+not justify removing it.
+
+A separate task-only candidate split the preview's 820-byte scalar-context
+copy around the completed observation and task checkpoint, which are not
+obviously consumed by lexical fetch. It retained the original CPU, cache/TLB
+borrow, decoder and preview execution paths, but increased the number of copy
+calls. This is not qualified: indirect fault, callback, debug and all-profile
+reads of omitted fields still need proof. With the same private CMOS/media,
+one x64 baseline/candidate pair reached 60 million instructions at the same
+ticks and PC. The total was 93,440 / 92,670 ms and the 30-to-60-million
+interval was 42,165 / 44,511 ms. The split is at a Machine boundary; host
+drift and fixed order prevent a precise regression claim or state-equivalence
+conclusion. The extra copy segments and semantic proof are not justified by
+this result. No production, test, media or released artifact changed; x86,
+full boot and desktop/RDP were not measured for the candidate.
+
+Copy-attribution and candidate logs have SHA-256 respectively
+`AE5BAF5FE10177DDC52A05460185E02E49A84FBB6D627C59D96C3CEA53636BDC`,
+`2EC590D1B1711180BFC85443F0B7641479C43479B250823B6A774D0FC304D777`.
