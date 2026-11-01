@@ -71,6 +71,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
     lib_uptr index;
     lib_u32 wrapped;
     lib_status status;
+    lib_u64 physical_end, wrapped_end;
 
     if (ram == LIB_NULL || out_provider == LIB_NULL ||
         out_provider_physical == LIB_NULL || out_offset == LIB_NULL ||
@@ -79,13 +80,14 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
         (cpu_access != LIB_FALSE && cpu_access != LIB_TRUE)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    physical_end = (lib_u64)physical + bytes;
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
         if (!provider->raw_decode || (provider->cpu_only && !cpu_access) ||
             physical < provider->physical_start ||
-            (lib_u64)physical - provider->physical_start + bytes >
+            physical_end - provider->physical_start >
                 provider->bytes) continue;
         status = provider->query(provider->owner, physical, bytes, access);
         if (status == LIB_STATUS_OK) {
@@ -101,6 +103,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
         }
     }
     wrapped = x86_core_machine_memory_decode_address(ram, physical);
+    wrapped_end = (lib_u64)wrapped + bytes;
     /* A frozen board RAM alias is a selected physical decode, not an ordinary
      * backing fallback.  It therefore wins over any lower ordinary device
      * route while preserving the raw reset route above. */
@@ -108,7 +111,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
         const x86_core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
 
         if (!mapping->selected || physical < mapping->physical_start ||
-            (lib_u64)physical - mapping->physical_start + bytes >
+            physical_end - mapping->physical_start >
                 mapping->bytes) continue;
         *out_offset = (lib_size)mapping->backing_start +
             (lib_size)((lib_u64)physical - mapping->physical_start);
@@ -123,7 +126,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
         const x86_core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
         if ((provider->cpu_only && !cpu_access) || wrapped < provider->physical_start ||
-            (lib_u64)wrapped - provider->physical_start + bytes > provider->bytes) continue;
+            wrapped_end - provider->physical_start > provider->bytes) continue;
         matches[match_count++] = (lib_u8)index;
     }
     /* Replacement, ordinary, then fallback; preserve registration order. */
