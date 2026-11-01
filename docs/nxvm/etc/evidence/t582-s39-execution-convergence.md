@@ -2772,3 +2772,201 @@ and host drift limits all four pairs. The candidate adds a branch, affects a
 fixed four-slot scan, and does not establish a cross-width gain or a useful
 end-to-end speedup. It was rejected without additional qualification. No
 desktop, RDP or full-boot comparison was performed.
+## Startup operand-cache timing populations
+
+A task-only x64 build sampled the existing operand-cache penalty entry once in
+256 calls during the private-media startup checkpoint. Among 39,070 samples
+from 10,002,116 calls, 36,145 had zero non-descriptor misses and zero locked
+reads, while 21,860 had a REP prefix; no sampled task switches, eligible call
+gates or software-interrupt opcodes appeared. These categories overlap: in
+particular, zero misses does not authorize returning before REP processing,
+because its previous-miss handoff and modeled flag may still matter. The run
+reached 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`.
+
+This is a deterministic early-start x64 population sample, not a timing or
+full-boot result; aliasing and instrumentation can affect it. It identifies
+the zero-miss and REP intersection as worth inspecting, while ruling out
+assuming that an unconditional zero-miss shortcut preserves the existing
+contract. No production source, release artifact or owner media changed.
+
+A second independently instrumented run sampled 39,087 entries; 20,890 had a
+REP prefix and zero data misses, locked reads, permission-field misses,
+missed permission fields and previous-iteration misses. This is an overlapping
+population, not proof that every such record is valid or that all REP opcodes
+have the same semantics. It reached the same fixed instruction/tick/PC
+checkpoint with private media and CMOS.
+
+A scratch-only early return for that zero-field case was then tested. Its
+correctness still depends on the preceding access validation and on the form
+having come from the existing string decoder; neither complete error-path nor
+all-profile equivalence was proven. Ordered baseline/candidate/candidate/
+baseline fixed-work times were 19,723 / 18,841 / 18,723 / 18,105 ms x64 and
+22,368 / 23,084 / 24,135 / 27,361 ms x86. Both widths reverse direction and
+show substantial host drift; the measurements do not establish a benefit.
+The extra special branch is rejected without a full boot or receiver run.
+No guest operation was intentionally omitted and no production file changed.
+
+
+## Combined raw and decoded provider scan on current routing
+
+The current memory resolver walks the provider list once for raw decode and
+again to collect decoded-address candidates. A scratch candidate combined
+these traversals while retaining raw-query priority, selected-alias priority,
+and the subsequent replacement/ordinary/fallback order. It relies on the
+declared observational query contract and has not been qualified against all
+provider and reentrancy cases. It adds no persistent index.
+
+Using configured private CMOS and private media, ordered baseline/candidate/
+candidate/baseline fixed-work results were 19,720 / 17,728 / 16,763 / 17,502
+ms x64 and 21,967 / 22,474 / 22,273 / 22,127 ms x86, all at 10,000,000
+instructions, 79,964,294 guest ticks and PC `0003dbc5`. A separate x64
+baseline-then-candidate full-menu pair reached Personaware in 196.78 and
+223.06 seconds. These are sequential runs with host drift, not proof of a
+precise regression, but they do not establish an end-to-end gain; x86 short
+measurements also favored baseline. This revisits the earlier S15 idea on
+the current provider and port-routing implementation. The candidate is
+rejected without production changes or full receiver qualification.
+
+## Early-start instruction and STOS attribution
+
+A task-only x64 CPU build sampled one in 256 `ExecIns` calls, attributing the
+recorded primary opcode after the call. At the fixed private-media startup
+checkpoint, it recorded 39,080 samples and 59,113,494 accumulated
+nonserialized TSC units; `AB` (STOS word/dword) accounted for 20,597 samples
+and 39,970,702 units, or approximately 67.6% of these sampled execution
+intervals. This is the first ten million instructions, not the whole boot;
+the later firmware polling phase has a different opcode mix. Instruction
+execution excludes the separately measured timing selection and Machine
+scheduler. Deterministic sampling, interrupts, source instrumentation and
+compiler layout limit attribution.
+
+A separate scratch build sampled the existing STOS memory-write and index
+advance calls, one in 256 STOS entries. It recorded 5,348,088 STOS calls,
+20,890 samples, 10,991,170 TSC units in `_s_write_es`, and 1,175,020 in
+`_kas_move_index`. These are inclusive intervals with instrumentation, not
+whole-program percentages. The result makes the existing write route a more
+productive next investigation than simplifying index arithmetic. Both probes
+reached 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`; neither
+proves complete state equivalence or desktop usability. No production source,
+public interface or released executable was changed.
+
+Two further task-only x64 samples narrowed that write. Of 5,853,109 logical
+write calls, one-in-256 sampling recorded 22,863 intervals: segment-to-linear
+conversion accumulated 1,069,000 TSC units, alignment checks 1,107,790, and
+the existing linear write 9,353,698. A separate linear-write probe recorded
+5,853,393 calls and 22,864 samples: single-page physical translation accounted
+for 1,584,520 TSC units and the subsequent physical write for 10,916,719;
+no sampled access crossed a page. A third probe sampled 25,915 of 6,634,352
+486 physical-write calls: the cache-route query accounted for 2,055,460 TSC
+units, initial cache-way lookup 1,656,900, and bus write 10,582,080. All
+sampled calls reached that bus write. Each run reached the same fixed
+10-million-instruction / 79,964,294-tick / `0003dbc5` checkpoint.
+
+These are separate instrumented runs with nested, nonserialized intervals;
+their counts and times cannot be summed or treated as total-program cost.
+They direct the next investigation toward the existing CPU-to-Machine bus
+write route. In particular, the cache-way lookup after the bus callback cannot
+simply reuse the pre-write result: the callback may invalidate the memory
+view, as documented in `t582-s26-smm-cache-lookup.md`. The unchanged instruction
+checkpoint does not prove full guest equivalence or interactive performance.
+
+## Startup bus-write components and combined span proof
+
+Two task-only x64 samples followed the existing write chain at the private
+startup checkpoint. CPU bus-write sampling counted 6,634,612 calls and 25,916
+samples: sampled TSC totals for write-buffer preparation, external-cycle
+begin, Machine write, external-cycle commit and write completion were
+1,557,380 / 1,595,150 / 6,913,576 / 1,355,600 / 2,335,900. A separate
+Machine-write run counted 6,634,295 calls and 25,915 samples: transaction
+begin, board cache-control callback, physical write and transaction finish
+totaled 2,246,640 / 1,010,600 / 5,450,982 / 1,601,708 TSC units. Intervals
+are nested across the runs, nonserialized and affected by instrumentation;
+they cannot be added or interpreted as whole-program percentages. Both runs
+reached 10,000,000 instructions, 79,964,294 guest ticks and PC `0003dbc5`.
+
+The ordinary multibyte RAM path separately scans providers to prove that no
+provider partially intersects the access after its route was resolved. A
+scratch candidate collected that same conservative proof during the existing
+raw-provider scan, retaining the no-mapping, no-address-mask and no-wrap
+requirements and existing bytewise fallback. Other resolver calls passed no
+proof output. The candidate has not been qualified for all overlapping,
+failure or callback cases and introduced a private output argument.
+
+Baseline/candidate/candidate/baseline fixed-work results were 16,781 / 17,114 /
+16,465 / 16,769 ms x64 and 20,610 / 21,945 / 21,537 / 20,619 ms x86. All
+reached the same recorded checkpoint. The x64 direction changed, while both
+x86 pairs favored baseline; these sequential samples are sensitive to host
+variation, but do not support adopting the more complex route. No full-menu,
+desktop or receiver qualification was run and no production file changed.
+
+A later task-only x64 sample followed the existing physical-write routine:
+6,633,878 calls, 25,913 samples, of which 20,659 reached the ordinary RAM
+copy. Sampled TSC totals were 2,695,180 for route resolution and 1,959,400
+for the subsequent split/span decision across sampled calls; RAM-copy,
+CPU-snoop and remaining parity/observer work totaled 1,016,560 / 1,027,340 /
+789,840 on the sampled RAM path. The run reached the same 10,000,000
+instruction / 79,964,294 tick / `0003dbc5` checkpoint. Substeps have
+different populations, timer overhead and nonserialized TSC, so the totals
+cannot be treated as an exact time budget. They confirm that the earlier
+combined span-proof candidate targeted real repeated work; its measured x86
+regression nevertheless does not justify adopting it. No production or
+artifact change followed.
+
+## Coarse empty-provider-page upper bound
+
+An instrumented private-media startup run recorded the eight registered
+provider windows present when its first plain-span proof occurred. The windows
+include `30000h..3ffffh`, `a0000h..fffffh`, `1400000h..140ffffh` and the high
+reset alias; sampled spans also covered RAM from 1 to 20 MiB. This is one
+initial snapshot, not a guarantee that providers cannot subsequently change.
+
+A task-only 8 KiB bitmap prototype used empty 64 KiB pages to bypass both the
+provider traversal and plain-span scan only with no address mask or mappings.
+Its process-global storage and invalidation by owner pointer and provider
+count are unsafe for general multiple-Machine use or same-count replacement;
+it is solely a cost upper bound, not a product design. Baseline / candidate /
+candidate / baseline fixed-work times were 18,348 / 17,257 / 17,172 / 16,590
+ms x64 and 21,317 / 21,711 / 23,082 / 24,170 ms x86. All reported 10,000,000
+instructions, 79,964,294 ticks and PC `0003dbc5`. Both widths reverse
+direction between pairs, with visible host drift. The samples do not establish
+an improvement sufficient to justify per-Machine index storage, invalidation
+and semantic qualification. No production code, media or executable changed;
+no full boot or desktop validation was performed for this unsafe prototype.
+## Memory-route end arithmetic consolidation
+
+The existing route resolver calculated `(address - provider_start) + bytes`
+for every matching raw/decoded provider and mapping. It now computes each
+address plus bytes once, then subtracts the provider/mapping start. Both
+expressions use unsigned 64-bit arithmetic, so associativity modulo 2^64
+preserves the existing result even on overflow. Query order, route precedence,
+fallback, failure handling, public interfaces and state are unchanged. The
+production change is +6/-3 lines in `memory.c`; the source manifest is updated.
+
+The directly compiled private-media fixed-work baseline/candidate/candidate/
+baseline timings were 23,662 / 21,767 / 21,066 / 21,250 ms x64 and 25,682 /
+25,237 / 26,849 / 27,530 ms x86. Each reached 10,000,000 instructions,
+79,964,294 ticks and PC `0003dbc5`. The configured-CMOS x64 full-menu pair
+reached Personaware in 229.55 / 223.42 seconds. These sequential comparisons
+are subject to host drift and one-second menu sampling, not a precise gain;
+the product still needs several minutes and is not considered usable yet.
+
+Five directly affected memory/ROM routing tests passed on each host width.
+The cached x64 full unit run passed 712/712. The x86 full unit run had
+711 passes and one `emulator.verifier-negative` timeout; that test passed
+independently in 15.03 seconds. The x64 default integration run passed 47/48;
+native MIDI output failed while opening the device, then passed its independent
+retry. The x86 default integration run passed 48/48 including MIDI. This
+records the failures and reruns rather than describing either original run
+as entirely green. Additional My5160/My5170/DeskPro receiver integration
+passed 3/3, 5/5 and 6/6 respectively on each host width. MyRaidenII's
+selected-set startup and product-console receivers passed on each width;
+these do not establish arcade gameplay. Fourteen published executables were
+checked for PE width; both MyPC110 assets match their current build outputs,
+and both MyNES artifacts were unchanged. See the route-end artifact inventory.
+No new native PC110 Window or RDP responsiveness qualification was performed.
+
+Logs SHA-256, targeted / full / x86 continuation / external receiver:
+`07DF03A8312B50CF2EDD372D968FE3983560A851B3A145E730245D38DE4946B7`,
+`7938AF2A9913EDC6E15238E9754674FC40AE73A4EB57CE23BEDAF7420F99506B`,
+`F444BF5A97E359F3C89190089543F807FF80CB6F206EEB93C415710B35A3E079`,
+`147575917C39B79B44488CF5B05F74D4E5C7009E2E0918A35122B90F2F2C6238`.

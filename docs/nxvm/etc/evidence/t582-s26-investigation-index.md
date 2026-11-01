@@ -52,11 +52,16 @@ These are bounded improvements; none establishes real-time performance.
   It previously duplicated query validation and did not improve either width;
   do not repeat it without a materially different workload or implementation.
 - Duplicate one-byte opcode-record copy: [S26 copy audit](t582-s26-opcode-copy.md).
+- Early startup instruction and STOS write cost: [S39 sampling](t582-s39-execution-convergence.md#early-start-instruction-and-stos-attribution).
+- Bus-write component sampling and combined span proof: [S39 probe](t582-s39-execution-convergence.md#startup-bus-write-components-and-combined-span-proof).
+- Coarse empty-provider-page index upper bound: [S39 comparison](t582-s39-execution-convergence.md#coarse-empty-provider-page-upper-bound).
+- Memory-route end arithmetic consolidation: [S39 qualification](t582-s39-execution-convergence.md#memory-route-end-arithmetic-consolidation).
 - Memory read-modify-write precheck frequency: [Personaware Game](t582-s26-personaware-game.md#read-modify-write-precheck-frequency).
 - Game drawing guest-PC samples and instruction-byte attribution:
   [Personaware Game](t582-s26-personaware-game.md#game-drawing-workload).
 - Direct primary-opcode dispatch: [S26 dispatch probe](t582-s26-direct-dispatch.md).
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
+- Combined raw/decoded scan on current routing: [S39 current comparison](t582-s39-execution-convergence.md#combined-raw-and-decoded-provider-scan-on-current-routing).
 - Memory-route address-index upper bound: [S39 measurement](t582-s39-execution-convergence.md#memory-route-address-index-upper-bound).
 - 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).
 - Ordinary cache access and guest-visible test-register publication:
@@ -68,6 +73,7 @@ These are bounded improvements; none establishes real-time performance.
 - 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
 - Deferring complex-opcode timing fields: [S39 dual-width comparison](t582-s39-execution-convergence.md#deferred-complex-instruction-timing-fields).
 - Deferring operand-cache timing fields: [S39 dual-width comparison](t582-s39-execution-convergence.md#deferred-operand-cache-timing-fields).
+- Zero-field REP operand timing: [S39 sample and dual-width probe](t582-s39-execution-convergence.md#startup-operand-cache-timing-populations).
 - Split nominal timing implementation: [S39 scratch comparison](t582-s39-execution-convergence.md#split-nominal-timing-scratch-candidate).
 - 486 access-penalty algebra: [S39 dual-width exploration](t582-s39-execution-convergence.md#486-access-penalty-algebra-candidate).
 - 486 PUSH/POP dependency guard: [S34 comparison](t582-s34-current-profile.md#486-decode-dependency-classification); previous-opcode scan guard: [S35 comparison](t582-s35-cost-attribution.md#previous-opcode-scan-experiment). Neither established a cross-width benefit.

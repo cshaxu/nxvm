@@ -1,5 +1,17 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted memory-route arithmetic consolidation
+
+Within `src/x86-core/machine/memory.c`, calculate the raw and decoded access
+end values once in the existing provider resolver instead of adding the access
+size for each provider and mapping. Preserve unsigned 64-bit wrap behavior,
+all raw, mapping and provider precedence, query/failure ordering, CPU-only
+routes and bytewise fallback. No API, persistent state or second path is
+introduced. Update the X86 Core source manifest, run its relevant routing
+tests on x86/x64, then perform the full Shared receiving gate and fourteen
+receiver artifacts before committing or reporting delivery. The scratch
+comparison is bounded evidence, not a PC110 usability fix; T582 stays open.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S39 after S38. |
