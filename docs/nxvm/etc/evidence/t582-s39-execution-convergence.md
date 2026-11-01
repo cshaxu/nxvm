@@ -3984,6 +3984,27 @@ The completed-window log and frame SHA-256 respectively:
 The CPU source change is `b1b4f59b2`, and its MyRaidenII artifacts are
 `5252aaf89`. The [artifact inventory](t582-s39-repeat-prefix-artifacts.json)
 records the fourteen PE widths and hashes.
+
+### Machine boundary request guard upper bound
+
+A task-only candidate sampled the CPU's existing pause, stop and reset flags
+once at the Machine boundary and called the existing consuming operations only
+for set flags. It did not change the external atomic stop check or its ordering.
+This is not a qualified production design: the temporary getter directly
+inspects CPU-private state, and asynchronous mutation, reset/hold and callback
+boundaries would need proof before any public contract change.
+
+At the same private 10-million-instruction startup checkpoint, ordered
+baseline/candidate times were 17,778/17,656 ms x64 and 22,262/22,142 ms x86;
+each reported 79,964,294 ticks and PC `0003dbc5`. These single pairs are well
+within ordinary run variation and are not whole-state or response evidence.
+They do not justify a new CPU/Machine interface or the required concurrency
+qualification. No production or EXE changed. The four log SHA-256s, x64 then
+x86, baseline then candidate:
+`8A6813872E2A80208A2099D95A6329AC9F8F3F3F6E9E5BC8A586F5F412BF9111`,
+`7BE5899AC2DB6D8ADE3EFF4382383F7954FFBC3B9B7D7CA6C674D0F7A6EFC5A5`,
+`BF8216EC7C57B3A8DF77AD94733F902A9B5E617B0CC933724BE8A61F64083C25`,
+`08BCF3598DD2F5315F6B71E84D17A1B6A577F24B26EEF2F1FE7F7B3B0EFAA370`.
 Log SHA-256, x64 baseline/candidate then x86 baseline/candidate:
 `F7A73DE287ABC6CAF062D284CEED8B20FB568D24C27C78480791B9B640F6F575`,
 `744BF59F87A9C7BAA9A78DDF07145D20B779E280423F0CFD5DCB68B74697C329`,
