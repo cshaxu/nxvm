@@ -3870,3 +3870,19 @@ were unchanged and matched their build outputs. The
 [artifact inventory](t582-s39-preview-checkpoint-artifacts.json) records all
 fourteen PE architectures and hashes, together with the Core manifest hashes.
 The two MyRaidenII receiver artifacts are commit `f5b86bbc0`.
+
+### Preview context snapshot grouping probe
+
+A task-only candidate placed the private completed observation and task
+checkpoint beside the already excluded preview cache/TLB fields, reducing
+the x64 initial context-copy prefix from 820 to 380 bytes without adding a
+copy segment. The x64 private-media baseline and candidate reached the same
+60-million-instruction checkpoint, 365,365,343 ticks and PC `00038887`, in
+90,267 and 91,681 ms respectively; the last 30-million interval took 41,609
+and 42,202 ms. These single ordered samples do not prove a regression or full
+state equivalence, but show no gain that justifies changing private layout.
+The scratch candidate was not adopted; x86, complete boot and interactive
+responsiveness were not tested. No production, test, media or EXE changed.
+Baseline and candidate log SHA-256 respectively:
+`E4576D4A8F1387981E5004AA6A133A7BF3D7FAC0225C4D6283EF41ECB78B22B6`,
+`AF6673FB583342F9F29FBA4B554FB09E2A13213BA30DA06AA489886E3F805579`.
