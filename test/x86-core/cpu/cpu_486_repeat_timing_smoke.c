@@ -15,12 +15,9 @@ static lib_bool repeat_expect(cpu_instruction_fixture *fixture,
         before.source_repeat_active != active ||
         (before.timing_result.retirement_origin == X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY &&
          !before.timing_result.source_timing_unallocated) ||
-        !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != nominal ||
-        !x86_core_cpu_80486_decode_penalty(&fixture->execution, &penalty, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture->execution)) || penalty != decode ||
-        !x86_core_cpu_80486_memory_penalty(&fixture->execution, &memory, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture->execution)) ||
+        !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &ticks) || ticks != nominal ||
+        !x86_core_cpu_80486_decode_penalty(&fixture->execution, &penalty, LIB_NULL) || penalty != decode ||
+        !x86_core_cpu_80486_memory_penalty(&fixture->execution, &memory, LIB_NULL) ||
         lib_memory_compare(&before, &fixture->execution, sizeof(before)) ||
         lib_memory_compare(&instructions, &fixture->instructions, sizeof(instructions)) ||
         lib_memory_compare(&cpu, &fixture->cpu, sizeof(cpu))) {
@@ -159,8 +156,7 @@ static lib_bool repeat_ports(void)
             const lib_u8 width = (opcode & 1u) == 0u ? 1u : (sizes & 1u) ? 4u : 2u;
             const lib_u64 permissions = count && mode >= 2u ? 1u + width : 0u;
             const lib_u64 deferred = opcode >= 0x6eu && step != 0u ? 2u : 0u;
-            if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
-                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
+            if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
                 ticks != 2u * permissions + deferred ||
                 modeled != (permissions != 0u || (count && opcode >= 0x6eu)))
                 return LIB_FALSE;
@@ -192,8 +188,7 @@ static lib_bool repeat_port_failure(void)
         if (!fixture->fault.valid || fixture->execution.source_repeat_active ||
             port.transfer_count != 1u || port.complete_count != 1u ||
             fixture->instructions.data.timing_data_misses != (lib_u32)(opcode >= 0x6eu) ||
-            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
-                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
+            x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
             ticks != 999u || !modeled) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -264,8 +259,7 @@ static lib_bool repeat_port_cache(void)
                 fixture->instructions.data.timing_tss_field_misses != fragments ||
                 fixture->instructions.data.timing_missed_tss_fields != fields ||
                 fixture->instructions.data.timing_repeat_previous_misses != previous ||
-                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
-                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
                 ticks != expected || modeled != (fragments != 0u || previous != 0u || misses > 1u)) {
                 lib_c_printf("Repeat port opcode=%x dword=%u split=%u warm=%u step=%u: fields=%u/%llu fragments=%u/%llu ticks=%llu/%llu\n",
                     (lib_u32)opcode, (lib_u32)dword, (lib_u32)split, (lib_u32)warm, (lib_u32)step,
@@ -336,7 +330,7 @@ static lib_bool repeat_boundaries(void)
             return LIB_FALSE;
         }
         lib_u64 ticks = 999u;
-        if (!x86_core_cpu_80486_memory_penalty(context, &ticks, LIB_NULL, cpu_instruction_fixture_prefixes(context)) ||
+        if (!x86_core_cpu_80486_memory_penalty(context, &ticks, LIB_NULL) ||
             ticks != (first ? 1u : 4u)) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -397,8 +391,7 @@ static lib_bool repeat_interrupt_and_fault(void)
     lib_bool modeled = LIB_TRUE;
     if (!fixture.fault.valid || fixture.execution.source_repeat_active ||
         fixture.execution.timing_result.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_NONE ||
-        x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+        x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled) ||
         ticks != 999u || !modeled) {
         lib_c_fprintf(lib_c_stderr, "Repeat provider failure valid=%u active=%u phase=%u\n",
             (lib_u32)fixture.fault.valid, (lib_u32)fixture.execution.source_repeat_active,
@@ -428,8 +421,7 @@ static lib_bool repeat_termination_and_reset(void)
                 !repeat_expect(&fixture, X86_CORE_CPU_RETIREMENT_REPEAT_FIRST, LIB_FALSE,
                     opcode < 0xaeu ? 14u : 12u, 0u)) return LIB_FALSE;
             lib_u64 ticks = 999u;
-            if (!x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            if (!x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, LIB_NULL) ||
                 ticks != (opcode < 0xaeu ? 6u : 2u)) return LIB_FALSE;
             x86_core_cpu_execution_refresh(&fixture.execution);
             if (!repeat_expect(&fixture, X86_CORE_CPU_RETIREMENT_REPEAT_NONE,

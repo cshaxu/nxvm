@@ -48,17 +48,16 @@ lib_bool x86_core_cpu_timing_branch_taken(
 lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_context *context,
     lib_u64 *out_ticks);
 
-/* The four selected-SX terms take the bounded prefix count computed by the
- * instruction owner from the same record. Nominal cost excludes prefix,
- * access and event penalties. A missing source form returns false without
- * changing the destination or qualification. */
+/* Selected-SX cache-hit instruction cost only. Prefix/access/event penalties
+ * belong to the selected timing owner, not this nominal calculation. A missing
+ * source form returns false without changing the destination or qualification. */
 lib_bool x86_core_cpu_80486_nominal_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
 
 /* Explicit L2 arithmetic, alias and no-FPU WAIT models; disjoint from the original
  * nominal rows. Pure query, no access costs or hardware-exact qualification. */
 lib_bool x86_core_cpu_80486_l2_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
 
 /* E-14 entry plus its scoped accesses, using the mode before committed entry.
  * Zero rejects invalid observations. Task access decomposition is L2.
@@ -80,16 +79,14 @@ lib_bool x86_core_cpu_80486_smm_cost(
  * source terms. Optional modeled identifies L2 operand/translation estimates.
  * Unallocated/failed accesses leave both outputs unchanged. */
 lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks,
-    lib_bool *out_modeled, lib_u32 prefixes);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled);
 
 /* Per decoded instruction, not per REP continuation. E-11 prefixes and the
  * E.2 index/displacement assumptions; nominal LEA already includes its index.
  * AGI uses the actual adjacent GPR-write record, including same-value writes.
  * Optional modeled identifies redundant/ignored REP prefix estimates. */
 lib_bool x86_core_cpu_80486_decode_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks,
-    lib_bool *out_modeled, lib_u32 prefixes);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled);
 
 /* Private L2 bus observations; only actual CPU execution records transfers.
  * Core is the clock owner; the pure cost query never advances the FIFO. */

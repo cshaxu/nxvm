@@ -873,8 +873,7 @@ static lib_bool task32_test_completion_flags(void)
         if (profile == X86_CORE_CPU_PROFILE_80486SX && !int1_vm86) {
             lib_u64 ticks = 0u;
 
-            if (!x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            if (!x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                 ticks != task_clocks[index]) {
                 lib_c_printf("TSS32 timing: route=%zu expected=%u actual=%llu\n",
                     index, task_clocks[index], ticks);
@@ -979,8 +978,7 @@ static lib_bool task32_test_vm86_entry(void)
         if (profile == X86_CORE_CPU_PROFILE_80486SX) {
             lib_u64 ticks = 0u;
 
-            if (!x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            if (!x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                 ticks != task_clocks[route]) {
                 lib_c_printf("VM86 task timing: route=%zu expected=%u actual=%llu\n",
                     route, task_clocks[route], ticks);

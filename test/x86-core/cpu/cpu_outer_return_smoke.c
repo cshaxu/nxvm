@@ -465,8 +465,7 @@ static lib_bool cpu_outer_call_gate_stack(void)
         lib_memory_copy(frame, state.memory + CPU_OUTER_KERNEL_STACK_BASE +
             (0x9000u - frame_bytes), frame_bytes);
         lib_u64 nominal_ticks = 0u;
-        if (!x86_core_cpu_80486_nominal_instruction_cost(&state.execution, &nominal_ticks,
-            cpu_instruction_fixture_prefixes(&state.execution)) ||
+        if (!x86_core_cpu_80486_nominal_instruction_cost(&state.execution, &nominal_ticks) ||
             nominal_ticks != (parameters ? 85u : 69u) ||
             state.instructions.data.timing_transfer_type != VCPU_DESC_SYS_TYPE_CALLGATE_32 ||
             state.instructions.data.timing_transfer_parameters != parameters * 2u)

@@ -17,15 +17,11 @@ static lib_bool selected_cost(const cpu_instruction_fixture *fixture)
     const x86_core_cpu_timing_result result = x86_core_cpu_capture_timing(context);
     lib_u64 nominal, memory, decode, total;
     lib_bool memory_model, decode_model, bus_model;
-    const lib_bool original = x86_core_cpu_80486_nominal_instruction_cost(context, &nominal,
-        cpu_instruction_fixture_prefixes(context));
+    const lib_bool original = x86_core_cpu_80486_nominal_instruction_cost(context, &nominal);
 
-    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &nominal,
-        cpu_instruction_fixture_prefixes(context))) ||
-        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model,
-            cpu_instruction_fixture_prefixes(context)) ||
-        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model,
-            cpu_instruction_fixture_prefixes(context)) ||
+    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &nominal)) ||
+        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model) ||
+        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model) ||
         nominal > LIB_UINT64_MAX - memory || nominal + memory > LIB_UINT64_MAX - decode ||
         !x86_core_cpu_80486_bus_instruction_cost(context, nominal + memory + decode,
             &total, &bus_model)) return LIB_FALSE;
@@ -265,8 +261,7 @@ static lib_bool nominal_execution(void)
             return LIB_FALSE;
         }
         before = x86_core_cpu_capture_timing(&fixture.execution);
-        if (!x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+        if (!x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != test->ticks) {
             lib_c_fprintf(lib_c_stderr, "Nominal cost: %s expected=%llu actual=%llu\n",
                 test->name, test->ticks, ticks);
@@ -277,8 +272,7 @@ static lib_bool nominal_execution(void)
             fixture.instructions.data.timing_locked_reads == 0u) {
             lib_bool modeled = LIB_TRUE;
 
-            if (!x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            if (!x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled) ||
                 ticks != 3u * (lib_u64)fixture.instructions.data.timing_unaligned_accesses || modeled) {
                 lib_c_fprintf(lib_c_stderr, "Zero data surcharge: %s\n", test->name);
                 return LIB_FALSE;
@@ -351,8 +345,7 @@ static lib_bool nominal_alu_forms(void)
         }
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != expected) {
             lib_c_fprintf(lib_c_stderr,
                 "ALU nominal operation=%u size=%u code32=%u address32=%u memory=%u form=%u ticks=%llu\n",
@@ -412,8 +405,7 @@ static lib_bool nominal_condition_forms(void)
         }
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != expected || (form < 2u && after.data.eip != bytes + taken)) {
             lib_c_fprintf(lib_c_stderr,
                 "Condition nominal flags=%u condition=%u form=%u code32=%u ticks=%llu\n",
@@ -460,8 +452,7 @@ static lib_bool nominal_protection_queries(void)
         if (memory) { code[bytes++] = 0u; code[bytes++] = 0x20u; }
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != expected[form] || (form != 0u &&
                 ((after.data.eflags & VCPU_EFLAGS_ZF) != 0u) != (valid != 0u))) {
             lib_c_fprintf(lib_c_stderr,
@@ -477,8 +468,7 @@ static lib_bool nominal_protection_queries(void)
             lib_bool modeled = LIB_TRUE;
 
             if (fixture.instructions.data.timing_missed_descriptors != (lib_u32)(form != 0u && valid) ||
-                !x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled,
-                    cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                !x86_core_cpu_80486_memory_penalty(&fixture.execution, &ticks, &modeled) ||
                 ticks != expected_penalty || modeled) return LIB_FALSE;
         }
     }
@@ -511,8 +501,7 @@ static lib_bool nominal_exchange_memory(void)
         code[bytes++] = 0x20u;
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != (equal ? 7u : 10u) ||
             ((after.data.eflags & VCPU_EFLAGS_ZF) != 0u) != (equal != 0u) ||
             fixture.memory[0x2000u] != (equal ? 9u : 7u)) return LIB_FALSE;
@@ -565,8 +554,7 @@ static lib_bool nominal_system_forms(void)
         bytes += test->bytes;
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != test->ticks) {
             lib_c_fprintf(lib_c_stderr, "System nominal %s code32=%u ticks=%llu\n",
                 test->name, (lib_u32)code32, ticks);
@@ -596,8 +584,7 @@ static lib_bool timing_prefix_penalties(void)
         code[bytes++] = 0x90u;
         if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != expected) {
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != expected) {
             lib_c_fprintf(lib_c_stderr, "Prefix penalty code32=%u mask=%x ticks=%llu\n",
                 code32, mask, ticks);
             return LIB_FALSE;
@@ -623,16 +610,14 @@ static lib_bool timing_prefix_penalties(void)
         code[count] = kind >= 2u ? 0xa4u : 0x90u;
         if (cpu_instruction_run(&fixture, code, count + 1u, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
             ticks != count - (lib_u64)repeated || modeled != expected_model)
             return LIB_FALSE;
         if (repeated) {
             x86_core_cpu_execution_refresh(&fixture.execution);
             if (!fixture.execution.source_repeat_active || fixture.cpu.data.ecx != 1u ||
                 fixture.execution.timing_result.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION ||
-                !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled,
-                    cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
                 ticks != 0u || modeled != expected_model) return LIB_FALSE;
         }
     }
@@ -667,16 +652,14 @@ static lib_bool timing_decode_penalties(void)
         fixture.cpu.data.ebx = fixture.cpu.data.esi = 0x1000u;
         if (cpu_instruction_run(&fixture, test->code, test->bytes, &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != test->ticks) {
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != test->ticks) {
             lib_c_fprintf(lib_c_stderr, "Decode penalty %s: ticks=%llu\n", test->name, ticks);
             return LIB_FALSE;
         }
         const t_cpuins before_instructions = fixture.instructions;
         const x86_core_cpu_execution_context before_execution = fixture.execution;
         const t_cpu before_cpu = fixture.cpu;
-        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) ||
             lib_memory_compare(&before_instructions, &fixture.instructions, sizeof(before_instructions)) ||
             lib_memory_compare(&before_execution, &fixture.execution, sizeof(before_execution)) ||
             lib_memory_compare(&before_cpu, &fixture.cpu, sizeof(before_cpu)))
@@ -692,8 +675,7 @@ static lib_bool timing_decode_penalties(void)
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
         if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
             ticks != 1u || !modeled)
             return LIB_FALSE;
     }
@@ -710,23 +692,17 @@ static lib_bool nominal_rejects_unowned(void)
 
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80386);
     if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
-        x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
-        x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+        x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+        x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, &modeled) ||
         ticks != LIB_UINT64_MAX || !modeled) return LIB_FALSE;
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-    return !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-        cpu_instruction_fixture_prefixes(&fixture.execution)) &&
-        !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) &&
+    return !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) &&
+        !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) &&
         ticks == LIB_UINT64_MAX &&
-        !x86_core_cpu_80486_nominal_instruction_cost(LIB_NULL, &ticks, cpu_instruction_fixture_prefixes(LIB_NULL)) &&
-        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) &&
-        !x86_core_cpu_80486_decode_penalty(LIB_NULL, &ticks, LIB_NULL, cpu_instruction_fixture_prefixes(LIB_NULL)) &&
-        !x86_core_cpu_80486_decode_penalty(&fixture.execution, LIB_NULL, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution));
+        !x86_core_cpu_80486_nominal_instruction_cost(LIB_NULL, &ticks) &&
+        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, LIB_NULL) &&
+        !x86_core_cpu_80486_decode_penalty(LIB_NULL, &ticks, LIB_NULL) &&
+        !x86_core_cpu_80486_decode_penalty(&fixture.execution, LIB_NULL, LIB_NULL);
 }
 
 static lib_bool nominal_modes(void)
@@ -776,8 +752,7 @@ static lib_bool nominal_modes(void)
                 bytes += test->bytes;
                 if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
                     fixture.fault.valid || fixture.delivered_exception.valid ||
-                    !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                        cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                    !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                     ticks != expected) {
                     lib_c_fprintf(lib_c_stderr,
                         "Nominal mode: %s mode=%u prefixes=%u expected=%llu actual=%llu\n",
@@ -804,8 +779,7 @@ static lib_bool nominal_cpuid(void)
         fixture.cpu.data.eax = leaves[index];
         if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
             fixture.fault.valid || fixture.delivered_exception.valid ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
             ticks != (leaves[index] == 1u ? 14u : 9u)) return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -854,8 +828,7 @@ static lib_bool nominal_bit_scan(void)
                     }
                     if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
                         fixture.fault.valid || fixture.delivered_exception.valid ||
-                        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                         ticks != expected) {
                         lib_c_fprintf(lib_c_stderr,
                             "Nominal scan: dword=%u memory=%u reverse=%u bit=%u expected=%llu actual=%llu\n",
@@ -920,8 +893,7 @@ static lib_bool nominal_unsigned_multiply(void)
                         }
                         if (cpu_instruction_run(&fixture, code, length, &after) != LIB_STATUS_OK ||
                             fixture.fault.valid || fixture.delivered_exception.valid ||
-                            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                            !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                             ticks != cases[index].ticks) {
                             lib_c_fprintf(lib_c_stderr,
                                 "Nominal MUL: bytes=%u code32=%u memory=%u address_prefix=%u m=%x ticks=%llu\n",
@@ -1001,8 +973,7 @@ static lib_bool nominal_ports(void)
                         fixture.instruction.fault.valid || fixture.instruction.delivered_exception.valid ||
                         fixture.transfer_count != (count ? 1u : 0u) ||
                         fixture.complete_count != fixture.transfer_count ||
-                        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.instruction.execution, &ticks,
-                            cpu_instruction_fixture_prefixes(&fixture.instruction.execution)) ||
+                        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.instruction.execution, &ticks) ||
                         ticks != expected) {
                         lib_c_fprintf(lib_c_stderr,
                             "Nominal port: mode=%u dword=%u opcode=%x form=%u expected=%llu actual=%llu exception=%x transfers=%u\n",
@@ -1017,8 +988,7 @@ static lib_bool nominal_ports(void)
                         lib_bool modeled = LIB_TRUE;
 
                         if (fixture.instruction.instructions.data.timing_data_misses != misses ||
-                            !x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled,
-                                cpu_instruction_fixture_prefixes(&fixture.instruction.execution)) ||
+                            !x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled) ||
                             ticks != 2u * (lib_u64)misses || modeled != (mode >= 2u))
                             return LIB_FALSE;
                     }
@@ -1099,8 +1069,7 @@ static lib_bool port_memory_timing(void)
         if (failure) {
             if (!fixture.instruction.fault.valid || fixture.transfer_count != 0u || fixture.complete_count != 0u ||
                 fixture.instruction.instructions.data.timing_data_misses != misses ||
-                x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled,
-                    cpu_instruction_fixture_prefixes(&fixture.instruction.execution)) ||
+                x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled) ||
                 ticks != 999u || !modeled) return LIB_FALSE;
             continue;
         }
@@ -1109,8 +1078,7 @@ static lib_bool port_memory_timing(void)
             fixture.transfer_count != 1u || fixture.complete_count != 1u ||
             fixture.instruction.instructions.data.timing_data_misses != misses ||
             fixture.instruction.instructions.data.timing_missed_reads != reads ||
-            !x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled,
-                cpu_instruction_fixture_prefixes(&fixture.instruction.execution)) ||
+            !x86_core_cpu_80486_memory_penalty(&fixture.instruction.execution, &ticks, &modeled) ||
             ticks != expected || modeled != (misses != 0u && (permission || data_misses > 1u))) {
             lib_c_printf("Port memory mode=%u opcode=%x dword=%u warm=%u: misses=%u/%u reads=%u/%u ticks=%llu/%llu\n",
                 (lib_u32)mode, (lib_u32)opcode, (lib_u32)dword, (lib_u32)warm,
@@ -1152,8 +1120,7 @@ static lib_bool nominal_repeat_first(void)
                 code[length++] = cases[index].opcode;
                 if (cpu_instruction_run(&fixture, code, length, &after) != LIB_STATUS_OK ||
                     fixture.fault.valid || fixture.delivered_exception.valid ||
-                    !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                        cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                    !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                     ticks != expected) return LIB_FALSE;
             }
         }
@@ -1207,8 +1174,7 @@ static lib_bool timing_decode_facts(void)
                             fixture.instructions.data.timing_ea_indexed != indexed ||
                             fixture.instructions.data.timing_ea_displacement != displacement ||
                             fixture.instructions.data.timing_immediate ||
-                            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL,
-                                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL) ||
                             penalty != (lib_u64)address_prefix + indexed) {
                             lib_c_fprintf(lib_c_stderr,
                                 "Timing decode: code32=%u address_prefix=%u mod=%u rm=%u sib=%x\n",
@@ -1230,8 +1196,7 @@ static lib_bool timing_decode_facts(void)
         !fixture.instructions.data.timing_ea_displacement ||
         !fixture.instructions.data.timing_immediate) return LIB_FALSE;
     lib_u64 penalty = LIB_UINT64_MAX;
-    if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL,
-        cpu_instruction_fixture_prefixes(&fixture.execution)) || penalty != 1u)
+    if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL) || penalty != 1u)
         return LIB_FALSE;
     x86_core_cpu_execution_refresh(&fixture.execution);
     return !fixture.fault.valid && !fixture.delivered_exception.valid &&
@@ -1240,8 +1205,7 @@ static lib_bool timing_decode_facts(void)
         !fixture.instructions.data.timing_ea_indexed &&
         !fixture.instructions.data.timing_ea_displacement &&
         !fixture.instructions.data.timing_immediate &&
-        x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) && penalty == 0u;
+        x86_core_cpu_80486_decode_penalty(&fixture.execution, &penalty, LIB_NULL) && penalty == 0u;
 }
 
 static lib_bool port_wait_feedback(void)
@@ -1327,8 +1291,7 @@ static lib_bool nominal_protected_transfers(void)
                     }
                     if (cpu_instruction_run(&fixture, code, length, &after) != LIB_STATUS_OK ||
                         fixture.fault.valid || fixture.delivered_exception.valid ||
-                        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks,
-                            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+                        !x86_core_cpu_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
                         ticks != expected[form] ||
                         fixture.instructions.data.timing_unaccessed_descriptors != (accessed ? 0u : 1u) ||
                         fixture.instructions.data.timing_transfer_type != 0u ||
@@ -1406,8 +1369,7 @@ static lib_bool timing_dependency_writer(const dependency_case *test)
         if (fixture.fault.valid || fixture.delivered_exception.valid ||
             fixture.cpu.data.eip != bytes ||
             fixture.instructions.data.timing_previous_gpr_writes != test->writes ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) ||
             ticks != 1u + ((test->writes & (1u << base)) != 0u)) {
             lib_c_fprintf(lib_c_stderr, "GPR dependency %s: base=%u previous=%x ticks=%llu fault=%x\n",
                 test->name, base, fixture.instructions.data.timing_previous_gpr_writes,
@@ -1539,8 +1501,7 @@ static lib_bool timing_dependency_adjacency(void)
         x86_core_cpu_execution_refresh(&fixture.execution);
         if (fixture.fault.valid || fixture.delivered_exception.valid ||
             fixture.cpu.data.eip != cases[index].bytes ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != cases[index].ticks) {
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != cases[index].ticks) {
             lib_c_fprintf(lib_c_stderr, "Dependency adjacency %u: previous=%x ticks=%llu\n",
                 (lib_u32)index, fixture.instructions.data.timing_previous_gpr_writes, ticks);
             return LIB_FALSE;
@@ -1574,8 +1535,7 @@ static lib_bool timing_dependency_boundaries(void)
         x86_core_cpu_execution_refresh(&fixture.execution);
         if (fixture.fault.valid || fixture.execution.instruction_fault_delivered ||
             fixture.cpu.data.eip != 0x100u + sizeof(handler) ||
-            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 1u)
+            !x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 1u)
             return LIB_FALSE;
     }
     {
@@ -1598,8 +1558,7 @@ static lib_bool timing_dependency_boundaries(void)
             x86_core_cpu_debug_patch_registers(&fixture.execution, &patch) != LIB_STATUS_OK)
             return LIB_FALSE;
         x86_core_cpu_execution_refresh(&fixture.execution);
-        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 1u)
+        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) || ticks != 1u)
             return LIB_FALSE;
         x86_core_cpu_state_reset(&fixture.execution);
         if (fixture.instructions.data.timing_gpr_writes != 0u ||
@@ -1621,8 +1580,7 @@ static lib_bool timing_dependency_boundaries(void)
             return LIB_FALSE;
         x86_core_cpu_finish_entry(entry, commit);
         x86_core_cpu_execution_refresh(&fixture.execution);
-        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
+        if (!x86_core_cpu_80486_decode_penalty(&fixture.execution, &ticks, LIB_NULL) ||
             ticks != (commit ? 1u : 2u)) return LIB_FALSE;
     }
     {
@@ -1652,10 +1610,8 @@ static lib_bool instruction_model_expect(cpu_instruction_fixture *fixture, lib_u
     lib_u64 ticks = 999u, nominal = 999u;
 
     if (fixture->fault.valid || fixture->delivered_exception.valid ||
-        !x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture->execution)) || ticks != expected ||
-        x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal,
-            cpu_instruction_fixture_prefixes(&fixture->execution)) || nominal != 999u ||
+        !x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &ticks) || ticks != expected ||
+        x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal) || nominal != 999u ||
         lib_memory_compare(&before, &fixture->execution, sizeof(before)) ||
         lib_memory_compare(&instructions, &fixture->instructions, sizeof(instructions)) ||
         lib_memory_compare(&cpu, &fixture->cpu, sizeof(cpu))) {
@@ -1848,8 +1804,7 @@ static lib_bool special_instruction_models(void)
             if (cpu_instruction_run(&fixture, bad_read, sizeof(bad_read), &after) == LIB_STATUS_OK ||
                 !fixture.fault.valid) return LIB_FALSE;
         }
-        if (x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
+        if (x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
             return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -1884,11 +1839,9 @@ static lib_bool nominal_encoding_allocation(void)
             fixture->fault.valid || fixture->delivered_exception.valid ||
             fixture->instructions.data.except != 0u) continue;
         const lib_bool original =
-            x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal,
-                cpu_instruction_fixture_prefixes(&fixture->execution));
+            x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal);
         const lib_bool modeled =
-            x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &model,
-                cpu_instruction_fixture_prefixes(&fixture->execution));
+            x86_core_cpu_80486_l2_instruction_cost(&fixture->execution, &model);
 
         if (original == modeled || !selected_cost(fixture)) {
             lib_c_fprintf(lib_c_stderr,
@@ -1909,23 +1862,19 @@ static lib_bool arithmetic_model_rejects_unowned(void)
     t_cpu after;
 
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
-    if (x86_core_cpu_80486_l2_instruction_cost(LIB_NULL, &ticks, cpu_instruction_fixture_prefixes(LIB_NULL)) ||
-        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, LIB_NULL,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) ||
-        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
+    if (x86_core_cpu_80486_l2_instruction_cost(LIB_NULL, &ticks) ||
+        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, LIB_NULL) ||
+        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
         return LIB_FALSE;
     for (lib_size row = 0u; row < sizeof(cases) / sizeof(cases[0]); ++row) {
         cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80486SX);
         if (cpu_instruction_run(&fixture, cases[row], row ? 2u : 1u, &after) != LIB_STATUS_OK ||
-            x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
+            x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
             return LIB_FALSE;
     }
     cpu_instruction_prepare(&fixture, X86_CORE_CPU_PROFILE_80386);
     if (cpu_instruction_run(&fixture, (const lib_u8[]){0xf7u, 0xebu}, 2u, &after) != LIB_STATUS_OK ||
-        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks,
-            cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
+        x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
         return LIB_FALSE;
     for (lib_u8 rotate = 0u; rotate < 2u; ++rotate) {
         const lib_u8 code[] = {0x67u, rotate ? 0xd3u : 0xf7u,
@@ -1936,8 +1885,7 @@ static lib_bool arithmetic_model_rejects_unowned(void)
         fixture.cpu.data.ecx = 1u;
         if (cpu_instruction_run(&fixture, code, sizeof(code), &after) == LIB_STATUS_OK ||
             !fixture.fault.valid || fixture.fault.exception_mask != VCPUINS_EXCEPT_CE ||
-            x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks,
-                cpu_instruction_fixture_prefixes(&fixture.execution)) || ticks != 999u)
+            x86_core_cpu_80486_l2_instruction_cost(&fixture.execution, &ticks) || ticks != 999u)
             return LIB_FALSE;
     }
     return LIB_TRUE;
