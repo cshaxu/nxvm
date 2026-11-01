@@ -3301,3 +3301,32 @@ adjacent baselines. It does not justify expanding inlining across the other
 call sites or another complete receiver build; no production change was made.
 No menu or RDP timing was measured for this candidate. Log SHA-256:
 `CABB0D9EFF45853D740039E7879A8207DCBD5B7B7FACE925336EBB2771C639ED`.
+
+## Current startup host samples after observer removal
+
+A hidden x64 private-media harness linked the current cached Release graph
+after `d6eca2814`; its executable SHA-256 was
+`36F5CBF53492E07C6E32EC194115855399B10541F0AA52A283185F7F518743B1`.
+The configured adjacent CMOS SHA-256 was
+`608DF3ABC3CDD9BB3E35015D2D7AA9D8756567E080643B01E593FF99D1616034`.
+The existing native sampler observed the guest worker at 5–60 seconds and
+intentionally stopped and reaped its own guest at 65 seconds. It is not a
+complete startup or a desktop/RDP measurement. Suspending the worker during
+sampling perturbs execution; nearest-symbol attribution records leaf addresses,
+including inlined work, rather than inclusive timings.
+
+Among 5,146 late-interval worker samples, CPU refresh had 404 (7.9%),
+Machine run 206 (4.0%), CPU instruction boundary 179 (3.5%), elapsed-time
+publication 167 (3.2%), 486 memory penalty 166 (3.2%), memory routing 158
+(3.1%), and board deadline observation 138 (2.7%). Other work is distributed
+across many symbols. The disabled external-cycle observer had no recorded
+samples; the invalidation helper had 11. A prior pre-removal sample recorded
+31 observer and 3 invalidation samples, but different runs, code layout and
+host behavior prevent interpreting the difference as a measured speedup.
+No single sampled leaf explains the approximately 198-second menu wait.
+Continue investigating cross-boundary duplication without removing the
+clock, instruction, fault or device event contracts.
+
+Sampler and guest logs have SHA-256
+`2A8E45B1A02C2D71E95AB5F17D96AF3205620463EF6D10FE71D36584FBAC291E` and
+`2C151DB8B5E2C5EC50094B055B21FE2291D563D9F9DE52504ED223695BD06BAB`.
