@@ -13,11 +13,16 @@ extern "C" {
 #define X86_CORE_MACHINE_DEVICE_PORT "Unknown I/O Port"
 
 #define VPORT_MAX_PORT_COUNT 0x10000
+#define X86_CORE_MACHINE_PORT_BUCKET_COUNT 256u
 
 typedef struct t_port t_port;
 
 typedef struct x86_core_machine_port_provider_entry
     x86_core_machine_port_provider_entry;
+
+typedef struct x86_core_machine_port_checkpoint {
+    x86_core_machine_port_provider_entry *buckets[X86_CORE_MACHINE_PORT_BUCKET_COUNT];
+} x86_core_machine_port_checkpoint;
 
 typedef struct x86_core_machine_port_test_allocation {
     lib_size fail_at;
@@ -25,7 +30,7 @@ typedef struct x86_core_machine_port_test_allocation {
 } x86_core_machine_port_test_allocation;
 
 typedef struct {
-    x86_core_machine_port_provider_entry *providers;
+    x86_core_machine_port_provider_entry *buckets[X86_CORE_MACHINE_PORT_BUCKET_COUNT];
     x86_core_machine_port_test_allocation *test_allocation;
     lib_status registration_status;
 } t_port_connect;
@@ -69,10 +74,11 @@ void x86_core_machine_port_reset(t_port *port);
 void x86_core_machine_port_finalize(t_port *port);
 /* Exclusive construction/teardown; preserves routes belonging to other owners. */
 void x86_core_machine_port_unregister_owner(t_port *port, const void *owner);
-x86_core_machine_port_provider_entry *x86_core_machine_port_registration_begin(t_port *port);
+void x86_core_machine_port_registration_begin(t_port *port,
+    x86_core_machine_port_checkpoint *checkpoint);
 lib_status x86_core_machine_port_registration_status(const t_port *port);
 void x86_core_machine_port_rollback_registration(t_port *port,
-    x86_core_machine_port_provider_entry *checkpoint);
+    const x86_core_machine_port_checkpoint *checkpoint);
 void x86_core_machine_port_set_test_allocation(t_port *port,
     x86_core_machine_port_test_allocation *test_allocation);
 

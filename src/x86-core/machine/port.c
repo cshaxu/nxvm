@@ -24,7 +24,8 @@ static x86_core_machine_port_provider_entry *x86_core_machine_port_find_provider
     x86_core_machine_port_provider_entry *entry;
 
     if (port == LIB_NULL) return LIB_NULL;
-    for (entry = port->connect.providers; entry != LIB_NULL; entry = entry->next) {
+    for (entry = port->connect.buckets[port_id % X86_CORE_MACHINE_PORT_BUCKET_COUNT];
+         entry != LIB_NULL; entry = entry->next) {
         if (entry->port_id == port_id && entry->write == write && !entry->wired_or) return entry;
     }
     return LIB_NULL;
@@ -70,8 +71,8 @@ static lib_status x86_core_machine_port_add_provider(t_port *port,
     entry->read_provider = read_provider;
     entry->write_provider = write_provider;
     entry->owner = owner;
-    entry->next = port->connect.providers;
-    port->connect.providers = entry;
+    entry->next = port->connect.buckets[port_id % X86_CORE_MACHINE_PORT_BUCKET_COUNT];
+    port->connect.buckets[port_id % X86_CORE_MACHINE_PORT_BUCKET_COUNT] = entry;
     return LIB_STATUS_OK;
 }
 
@@ -106,7 +107,8 @@ static lib_status x86_core_machine_port_execute_read_current(t_port *port,
             }
         }
     }
-    for (provider = port->connect.providers; provider != LIB_NULL; provider = provider->next) {
+    for (provider = port->connect.buckets[port_id % X86_CORE_MACHINE_PORT_BUCKET_COUNT];
+         provider != LIB_NULL; provider = provider->next) {
         lib_u32 contribution = 0u;
         lib_status status;
 
@@ -246,38 +248,46 @@ void x86_core_machine_port_reset(t_port *port)
 
 void x86_core_machine_port_finalize(t_port *port)
 {
-    x86_core_machine_port_provider_entry *entry;
+    lib_u32 bucket;
 
     if (port == LIB_NULL) return;
-    entry = port->connect.providers;
-    while (entry != LIB_NULL) {
-        x86_core_machine_port_provider_entry *next = entry->next;
-        lib_release(entry);
-        entry = next;
+    for (bucket = 0u; bucket < X86_CORE_MACHINE_PORT_BUCKET_COUNT; ++bucket) {
+        x86_core_machine_port_provider_entry *entry = port->connect.buckets[bucket];
+
+        while (entry != LIB_NULL) {
+            x86_core_machine_port_provider_entry *next = entry->next;
+            lib_release(entry);
+            entry = next;
+        }
+        port->connect.buckets[bucket] = LIB_NULL;
     }
-    port->connect.providers = LIB_NULL;
 }
 
-x86_core_machine_port_provider_entry *x86_core_machine_port_registration_begin(t_port *port)
+void x86_core_machine_port_registration_begin(t_port *port,
+    x86_core_machine_port_checkpoint *checkpoint)
 {
-    if (port == LIB_NULL) return LIB_NULL;
+    if (port == LIB_NULL || checkpoint == LIB_NULL) return;
     port->connect.registration_status = LIB_STATUS_OK;
-    return port->connect.providers;
+    lib_memory_copy(checkpoint->buckets, port->connect.buckets,
+        sizeof(checkpoint->buckets));
 }
 
 void x86_core_machine_port_unregister_owner(t_port *port, const void *owner)
 {
-    x86_core_machine_port_provider_entry **link;
+    lib_u32 bucket;
 
     if (port == LIB_NULL || owner == LIB_NULL) return;
-    link = &port->connect.providers;
-    while (*link != LIB_NULL) {
-        x86_core_machine_port_provider_entry *entry = *link;
+    for (bucket = 0u; bucket < X86_CORE_MACHINE_PORT_BUCKET_COUNT; ++bucket) {
+        x86_core_machine_port_provider_entry **link = &port->connect.buckets[bucket];
 
-        if (entry->owner == owner) {
-            *link = entry->next;
-            lib_release(entry);
-        } else link = &entry->next;
+        while (*link != LIB_NULL) {
+            x86_core_machine_port_provider_entry *entry = *link;
+
+            if (entry->owner == owner) {
+                *link = entry->next;
+                lib_release(entry);
+            } else link = &entry->next;
+        }
     }
 }
 
@@ -288,15 +298,19 @@ lib_status x86_core_machine_port_registration_status(const t_port *port)
 }
 
 void x86_core_machine_port_rollback_registration(t_port *port,
-    x86_core_machine_port_provider_entry *checkpoint)
+    const x86_core_machine_port_checkpoint *checkpoint)
 {
-    if (port == LIB_NULL) return;
-    while (port->connect.providers != checkpoint) {
-        x86_core_machine_port_provider_entry *entry = port->connect.providers;
+    lib_u32 bucket;
 
-        if (entry == LIB_NULL) break;
-        port->connect.providers = entry->next;
-        lib_release(entry);
+    if (port == LIB_NULL || checkpoint == LIB_NULL) return;
+    for (bucket = 0u; bucket < X86_CORE_MACHINE_PORT_BUCKET_COUNT; ++bucket) {
+        while (port->connect.buckets[bucket] != checkpoint->buckets[bucket]) {
+            x86_core_machine_port_provider_entry *entry = port->connect.buckets[bucket];
+
+            if (entry == LIB_NULL) break;
+            port->connect.buckets[bucket] = entry->next;
+            lib_release(entry);
+        }
     }
     port->connect.registration_status = LIB_STATUS_OK;
 }

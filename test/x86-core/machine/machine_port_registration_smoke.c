@@ -12,6 +12,23 @@ typedef struct machine_port_probe {
     lib_u32 writes;
 } machine_port_probe;
 
+typedef struct machine_port_removal {
+    x86_core_machine *machine;
+    void *owner;
+} machine_port_removal;
+
+static lib_status machine_port_read_remove(void *owner, lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
+{
+    machine_port_removal *state = owner;
+    lib_status status = x86_core_machine_remove_port_routes(state->machine, state->owner);
+
+    (void)port;
+    (void)tick;
+    if (status == LIB_STATUS_OK) *out_value = 4u;
+    return status;
+}
+
 static lib_status machine_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
@@ -198,8 +215,12 @@ static lib_i32 machine_port_allocation_prefixes(void)
     lib_i32 failed = 0;
 
     for (lib_size index = 0u; index < sizeof(routes) / sizeof(routes[0]); ++index) {
+        /* Mix collisions with distinct buckets in the same rollback. */
+        const lib_size group = index / 2u;
+        const lib_size offset = (index % 2u) != 0u ? group + 1u : 0u;
+
         routes[index] = (x86_core_machine_port_route){
-            .address = (lib_u16)(0x100u + index),
+            .address = (lib_u16)(0x100u + group * 256u + offset),
             .write = machine_port_write, .owner = &candidate
         };
     }
@@ -235,10 +256,58 @@ static lib_i32 machine_port_allocation_prefixes(void)
     return failed;
 }
 
+static lib_i32 machine_port_callback_removal(void)
+{
+    x86_core_machine machine = {.lifecycle = X86_CORE_MACHINE_INITIALIZED};
+    machine_port_probe contributor = {.value = 2u};
+    machine_port_removal removal = {&machine, &contributor};
+    const x86_core_machine_port_route routes[] = {
+        {.address = 0x61u, .read = machine_port_read_remove, .owner = &removal},
+        {.address = 0x61u, .read = machine_port_read, .owner = &contributor,
+            .wired_or_read = LIB_TRUE}
+    };
+    lib_u32 value = 0u;
+    lib_i32 failed;
+
+    x86_core_machine_port_initialize(&machine.executor_port);
+    failed = x86_core_machine_install_port_routes(&machine, routes, 2u) != LIB_STATUS_OK;
+    machine.lifecycle = X86_CORE_MACHINE_PAUSED;
+    failed |= x86_core_machine_bus_read(&machine, 0x61u, &value) != LIB_STATUS_OK ||
+        value != 4u || contributor.reads != 0u;
+    x86_core_machine_port_finalize(&machine.executor_port);
+    return failed;
+}
+
+static lib_i32 machine_port_independent(void)
+{
+    t_port first = {0}, second = {0};
+    machine_port_probe first_state = {.value = 0x12u};
+    machine_port_probe second_state = {.value = 0x34u};
+    const x86_core_machine_port_route first_route = {
+        .address = 0x61u, .read = machine_port_read, .owner = &first_state
+    };
+    const x86_core_machine_port_route second_route = {
+        .address = 0x61u, .read = machine_port_read, .owner = &second_state
+    };
+    lib_i32 failed;
+
+    x86_core_machine_port_initialize(&first);
+    x86_core_machine_port_initialize(&second);
+    failed = x86_core_machine_port_add_route(&first, &first_route) != LIB_STATUS_OK ||
+        x86_core_machine_port_add_route(&second, &second_route) != LIB_STATUS_OK ||
+        x86_core_machine_port_read(&first, 0x61u) != 0x12u ||
+        x86_core_machine_port_read(&second, 0x61u) != 0x34u;
+    x86_core_machine_port_finalize(&first);
+    failed |= x86_core_machine_port_read(&second, 0x61u) != 0x34u;
+    x86_core_machine_port_finalize(&second);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     if (machine_port_range_transaction() || machine_port_batch_transaction() ||
-        machine_port_read_time() || machine_port_allocation_prefixes()) return 1;
+        machine_port_read_time() || machine_port_allocation_prefixes() ||
+        machine_port_callback_removal() || machine_port_independent()) return 1;
     lib_c_printf("PORT-REGISTRATION:OK\n");
     lib_c_printf("PORT-READ-TIMESTAMP:OK\n");
     lib_c_printf("PORT-WRITE-WIDTH:OK\n");

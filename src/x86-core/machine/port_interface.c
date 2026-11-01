@@ -4,7 +4,7 @@
 lib_status x86_core_machine_install_port_routes(x86_core_machine *machine,
     const x86_core_machine_port_route *routes, lib_size count)
 {
-    x86_core_machine_port_provider_entry *checkpoint;
+    x86_core_machine_port_checkpoint checkpoint;
     lib_size index;
     lib_status status;
 
@@ -21,14 +21,14 @@ lib_status x86_core_machine_install_port_routes(x86_core_machine *machine,
     }
     status = x86_core_machine_port_registration_status(&machine->executor_port);
     if (status != LIB_STATUS_OK) return status;
-    checkpoint = x86_core_machine_port_registration_begin(&machine->executor_port);
+    x86_core_machine_port_registration_begin(&machine->executor_port, &checkpoint);
     for (index = 0u; index < count; ++index) {
         status = x86_core_machine_port_add_route(&machine->executor_port,
             &routes[index]);
 
         if (status != LIB_STATUS_OK) {
             x86_core_machine_port_rollback_registration(&machine->executor_port,
-                checkpoint);
+                &checkpoint);
             return status;
         }
     }
@@ -52,7 +52,7 @@ lib_status x86_core_machine_install_port_provider(
     void *owner)
 {
     lib_u32 port;
-    x86_core_machine_port_provider_entry *checkpoint;
+    x86_core_machine_port_checkpoint checkpoint;
 
     if (!x86_core_machine_configuration_is_open(machine)) {
         return LIB_STATUS_INVALID_STATE;
@@ -63,7 +63,7 @@ lib_status x86_core_machine_install_port_provider(
         return LIB_STATUS_INVALID_ARGUMENT;
     }
 
-    checkpoint = x86_core_machine_port_registration_begin(&machine->executor_port);
+    x86_core_machine_port_registration_begin(&machine->executor_port, &checkpoint);
 
     for (port = first; port <= last; ++port) {
         if ((provider->read != LIB_NULL && x86_core_machine_port_has_read(
@@ -82,7 +82,7 @@ lib_status x86_core_machine_install_port_provider(
 
         if (status != LIB_STATUS_OK) {
             x86_core_machine_port_rollback_registration(&machine->executor_port,
-                checkpoint);
+                &checkpoint);
             return status;
         }
     }
