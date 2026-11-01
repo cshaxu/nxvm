@@ -3597,3 +3597,28 @@ benefit on the actual boot rather than merely remove a frequent callback.
 Stage-query and region-count logs have respective SHA-256 values
 `8C3BED0822EA2FCEE0FBA945809894E483E69E95D71F5BC7F35B6802ACFD5A1F` and
 `8C35220E74B576AEF3B404C6F73A7F0D1FB0C85BFFECEEF6346DB372B6F16288`.
+
+### Candidate-provider region index upper bound
+
+A task-only resolver prototype kept the existing provider-query callbacks and
+route ordering, but cached candidate provider indices for the last physical
+and decoded 64-KiB regions. Its index is process-global and identifies a
+provider set only by Machine pointer and count; it fails for multiple
+Machines, same-count route replacement, callback mutation and concurrent use.
+It is deliberately unsafe and is not an admissible product design. Crossing
+region boundaries followed the original scan. The experiment asks whether
+even this inexpensive shortcut merits designing a correct per-Machine index.
+
+On x64 with the same configured private CMOS and disk inputs, one ordered
+baseline/candidate pair reached 60 million retired instructions at
+365,365,343 guest ticks and PC `00038887`. The first 60 million took
+90,197 / 86,845 ms; the interval after the most recent Machine boundary at
+30 million took 41,153 / 40,490 ms. These single sequential samples are
+subject to host drift, and matching endpoints do not prove route, state or
+fault equivalence. They do not establish a substantial benefit in the actual
+polling phase, much less the roughly tenfold improvement needed. A correct
+index would need explicit registration/removal and reentrancy handling plus
+per-Machine memory; this evidence does not justify that complexity. No
+production code, interface, media or EXE changed; x86 and full-menu/RDP
+were not tested for this invalid prototype. Log SHA-256:
+`0C4774DD99E3F3B74DAA107B2842D6E2BBF4EA0DB46342F73E72DBB951F4AE84`.
