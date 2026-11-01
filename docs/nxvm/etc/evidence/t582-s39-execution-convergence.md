@@ -3028,3 +3028,17 @@ The x64 profile runs passed with the same respective counts. MyRaidenII receiver
 probes passed for both architectures. All 14 published binaries were checked
 for their PE architecture; see `t582-s39-fdc-mask-artifacts.json`. Native PC110
 desktop and RDP responsiveness were not verified in this batch.
+
+## Current deployed first-run configuration check
+
+On 2026-11-01, a read-only inspection found the deployed DSTN CMOS adjacent to
+the executable still has zero bytes; it is not tracked by Git. The App's CMOS
+loader treats an empty file as absent, and the DSTN firmware definition has no
+embedded CMOS seed. Consequently the configured-CMOS menu timings above do not
+describe this current first-run input. The earlier empty-CMOS screen capture
+documented an interactive firmware ERROR page, not an automatic DOS boot.
+That earlier capture was not rerun here and cannot establish the current
+desktop state. Neither the user CMOS nor media was modified. Even with the
+separate configured-CMOS input the measured menu time remains approximately
+210 seconds, so the first-run setup distinction does not resolve the
+performance problem.
