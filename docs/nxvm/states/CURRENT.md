@@ -1953,3 +1953,24 @@ widths; complete 755-test host runs retain only the unrelated
 artifacts are rebuilt and PE-width checked; four MyPC110 previews stay
 unpublished. The active packet will be replaced only when the next bounded
 T580 receiver is admitted.
+
+### Admitted internal transaction inlining candidate
+
+In X86 Core Machine, move the existing private transaction begin and commit
+implementations into their existing internal header as inline definitions;
+retain one transaction record implementation in transaction.c and call it
+only when tracing is bound. Keep all owner/hold checks, mutation and callback
+ordering, counters and cancellation semantics. No public interface, parallel
+transaction path or persistent state is added. Update the X86 Core source
+manifest, review existing transaction/CPU-bus tests and add a focused case
+only if a real callback or failure boundary is missing. Measure both widths
+and the actual PC110 startup; if the full change regresses or fails the
+existing contract, revert it. Shared production changes require all receivers
+and fourteen EXEs with the documented cached full unit/integration gates.
+
+The private transaction inlining candidate passed the cached receiving
+checks recorded in S39 evidence; both first-run native MIDI output tests failed
+and passed on individual retry. The x64 menu probe improved from 222.50 to
+216.38 seconds in one pair, still impractically slow. T582 and S39 remain
+open for material PC110 startup and ordinary-use improvement; no native
+PC110 Window/RDP acceptance is claimed.

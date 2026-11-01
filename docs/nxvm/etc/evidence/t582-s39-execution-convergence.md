@@ -2310,3 +2310,131 @@ small sampled function is unlikely to be a sufficient plan: evaluate the
 whole instruction-to-bus-to-device chain and any guest-work changes on their
 actual semantics and end-to-end startup evidence. No timing or behavioral
 contract is relaxed by this estimate.
+
+### Flush-pending guard split experiment
+
+CPU boundary and interrupt entry both use the existing flush-pending check.
+A scratch-only candidate split its unchanged initial idle guard into a private
+inline function and left the actual flush work in a private helper. The goal
+was to avoid the full out-of-line call when no flush is pending; it did not
+change the conditions, add state, or omit a guest operation. This is not a
+qualified production patch: asynchronous assertions and full CPU behavior
+were not tested.
+
+With private media and CMOS, one x64 fixed-work baseline/candidate pair
+reached 10,000,000 instructions, 79,964,294 guest ticks and PC `0003dbc5`.
+The inner measurement reported 19,168/20,542 ms, respectively. The candidate
+executable was 28 bytes larger. Host drift and one ordered pair prevent a
+reliable regression or full-state equivalence conclusion; they do not show
+the expected improvement, so the candidate was discarded before x86 or
+full-boot testing. No production, interface, owner media or EXE changed.
+Job log SHA-256: `FD09F285BAD9DE9E79F15FAE151DE5FEC63F3DDE3655155B6419CB7EDBFFDB56`.
+
+### 486 decode-prefix single-scan experiment
+
+The decode-penalty term first counts instruction prefixes and then iterates
+the same prefix bytes to calculate their costs. A scratch-only candidate
+combined those operations in one pass using the existing prefix classifier.
+It did not change timing formulas or add production state. Review found that
+the first candidate omitted the original prefix counter's explicit opcode
+buffer bound, so it is not semantically qualified for malformed instruction
+records and cannot be used as production code.
+
+In one x64 fixed-work baseline/candidate pair using private media and CMOS,
+the inner measurements were 18,804/20,695 ms; both reported 10,000,000
+instructions, 79,964,294 guest ticks and PC `0003dbc5`. Host drift and a
+single ordered pair prevent a reliable regression or complete-state claim.
+The result does not establish a benefit, so the candidate was discarded
+without x86 or full-boot testing. No production, public interface, owner media
+or deployed executable changed. Job log SHA-256:
+`D4937C0F8301CD43E0F011108609087E33F12C02DAAB30113266720F829F9248`.
+
+The scratch candidate was then amended to retain the original opcode-array
+bound and run once on x86 with the same private inputs. Baseline/candidate
+inner measurements were 22,294/24,548 ms at the same 10,000,000-instruction,
+79,964,294-tick and `0003dbc5` checkpoint. One ordered pair is not a full
+semantic proof or a stable regression measurement; together with the earlier
+x64 result it still provides no reason to adopt the change. The corrected
+candidate also lacks full prefix, debug, interrupt and fault qualification.
+No production source or released EXE changed. Job log SHA-256:
+`09669DFA68BD404E1F5E01F9B548F66269C26307DC4E8F76DC3B345810DFDF2E`.
+
+### Firmware callback cost after provider-cache and port changes
+
+The address-bucket sample above can also distinguish PC110 firmware callback
+leaf symbols. In 4,254 early worker samples, `mypc110_firmware_query` and
+`mypc110_firmware_read` accounted for 46 and 39; in 5,066 late samples they
+accounted for 27 and 28. The existing provider-cache probe accounted for one
+early and seven late samples. Decode may be inlined into these symbols, while
+called routines and DLL copy time are attributed elsewhere; these counts are
+not inclusive time or a precise estimate of all firmware-route cost.
+
+The query and read both perform decode because query owns route selection and
+may decline, while read owns the actual transfer; a shared cached resolution
+would require correct invalidation across chipset configuration, SMRAM,
+access mode and aliases. The current sample does not support adding that
+state and invalidation complexity as a likely solution to the startup gap.
+The existing S18 provider-cache change remains in place. No extra workload,
+production change or complete-boot claim follows from this analysis.
+
+### Internal bus transaction inlining candidate
+
+A scratch-only candidate inlined the existing transaction begin and commit
+checks at CPU bus call sites, retaining owner and hold checks, trace callback
+arguments and counters. It deliberately retained the old functions for
+other scratch-linked objects and is not the proposed production structure.
+One private-media fixed-work baseline/candidate pair per width reached the same
+10,000,000 instructions, 79,964,294 guest ticks and PC `0003dbc5`. Inner
+measurements were 20,958/19,974 ms on x64 (4.7% lower) and 26,267/24,720 ms
+on x86 (5.9% lower). Both candidate probe executables were 2,048 bytes larger.
+These single ordered pairs and matching endpoints do not prove complete state
+equivalence or an end-to-end improvement. Logs SHA-256:
+`53872CCF5EF770C013E67DFC9E6C2A8193949C7EE2691B26827057286BB44633`,
+`AD72C73D90369BA4DF8370B0F0A86EB0E188E5E355366EC0F420DCFD74B0C6DD`.
+
+The admitted production candidate moves begin and commit into the existing
+private transaction header, with the original trace-record operation as its
+single out-of-line owner; it removes the old out-of-line begin/commit bodies.
+There is no new public interface, second transaction implementation or state.
+The affected x86-core source manifest is updated. Existing transaction,
+executor, memory-inspection and prefetch tests passed 6/6 on each width;
+these focused tests do not qualify all receivers or prove startup usability.
+The same-input full-menu x64 comparison and receiving results follow below.
+
+The subsequently built production candidate was compared to the prior
+port-bucket build on the x64 product-path menu probe. The executable and
+128-byte CMOS seed were placed beside each other in each private run; both
+CMOS hashes were `608df3abc3cdd9bb3e35015d2d7aa9d8756567e080643b01e593ff99d1616034`.
+Baseline/candidate reached the same two-pixel menu detector after 222.50/216.38
+seconds, with preceding common checkpoint 135,225,679 instructions and
+684,593,002 ticks. The detector is not full interactive acceptance; these are
+one sequential pair, affected by host noise and one-second sampling, and do
+not prove a stable 2.8% product gain or complete-state equivalence. Both remain
+far from usable. Native Window/RDP and x86 whole boot were not observed.
+Log SHA-256 `A2774AFE0E116108C61755179A82ECB40EC32111EA438DE5CC4352BD68EC717C`.
+The cached receiver and artifact results follow below.
+
+The cached receiving run rebuilt the affected products. Both architectures
+passed 712/712 unit tests. The initial default integration run passed 47/48
+on each width; `lib.integration/native_midi_output` failed the same output
+creation assertion. A later no-playback MIDI mapper open succeeded, and the
+two failed tests were rerun once and passed individually. The transient cause
+was not established, so the first failures are retained here rather than
+presenting the initial full runs as uninterrupted passes. My5160, My5170 and
+DeskPro 386 profile integrations passed 3/3, 5/5 and 6/6 respectively on each
+width. MyRaidenII selected-set startup and deployed Console receivers passed
+both widths; this is not gameplay qualification. The public source and test
+manifest checks, Core dependency check, documentation gate and diff whitespace
+check passed. The standalone test manifest is verified with the Core verifier
+and an explicit corpus root; an earlier attempted nonexistent test-local
+verifier path was an invocation error, not a product test result.
+
+All fourteen published PE widths were validated and hashed in
+[t582-s39-transaction-artifacts.json](t582-s39-transaction-artifacts.json).
+MyPC110 published files matched their builds; MyNES builds were byte-identical
+to its existing two published files. No PC110 native Window/RDP usability
+acceptance or x86 full-menu timing was performed. Full logs SHA-256:
+`040C1652745D6E70960403FAB3592A0F47802B23658B0175EFAA5551F8143EDE`,
+`C3F6F30CDC9415C5E97632A5FA64DE34991555120B46737BABD2B5402A683009`,
+`55BAC90C03821319D239AD7DAEB2E00094ECF6890EEADDE3E8E5B90F3D0B5802`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
