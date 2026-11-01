@@ -3886,3 +3886,25 @@ responsiveness were not tested. No production, test, media or EXE changed.
 Baseline and candidate log SHA-256 respectively:
 `E4576D4A8F1387981E5004AA6A133A7BF3D7FAC0225C4D6283EF41ECB78B22B6`,
 `AF6673FB583342F9F29FBA4B554FB09E2A13213BA30DA06AA489886E3F805579`.
+
+### System startup and command-response baseline
+
+A hidden x64 product-factory/Machine probe used the current cached Release
+libraries and private copies of the same configured CMOS and disk images.
+It first detected the Personaware menu at the 202nd one-second sample. After
+capturing that frame, it enqueued an Enter make/break pair and compared each
+subsequent published frame to the saved menu. The first eight one-second
+samples differed by 1,515 pixels; the ninth differed by 44,496 pixels. Visual
+inspection confirms the captured ninth-sample frame shows the World Clock
+window. This is a coarse sampling result for the complete visible window, not
+an exact input-to-first-response latency: sampling and frame copying add work,
+and the earlier pixel changes were not independently attributed. The test
+process shut down successfully after 215.33 seconds.
+
+This single run confirms that interactive system use, not only boot, remains
+slow on this Machine-input path. It does not measure the native Window, RDP,
+x86, other applications or repeatability. No production source, user media or
+EXE was changed. The log, menu frame and response frame SHA-256 respectively:
+`225FC0AC78C4AFA77086F380C83C03B1CDE825A87063E2CCA23320A4CE5FFA4B`,
+`85A35680232CA0AD623DB7DD18D23A79396931ACB133791581D40C37048AEF41`,
+`A06BECF44F5986D642FD972A06FCE2A150DF121154BCAB3E59EE43C564E80CE8`.
