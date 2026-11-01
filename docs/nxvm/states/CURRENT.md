@@ -1,5 +1,13 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Timing formula prefix scan candidate rejected
+
+A task-only prefix-count reuse candidate retained the older-model prefix
+fallback but did not improve either host-width fixed-work sample. It added a
+condition and did not establish callback or full-state equivalence, so it was
+not adopted. See the S39 convergence evidence. The full system-usability
+objective remains open.
+
 ### Admitted common prefix-classifier consolidation
 
 Replace the CPU-private prefix classifier's individually repeated opcode

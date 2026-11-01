@@ -4329,6 +4329,26 @@ MyPC110 and MyNES deployment bytes matched the respective cached build outputs
 on both widths; PC profile receiver checks covered selected deployments.
 MyNES binaries did not change.
 
+### Timing formula prefix scan recheck
+
+A task-only candidate reused the prefix count already computed by the Intel
+timing selector to skip its later formula-input prefix scan when the count was
+zero. It retained the original scan for the `64`–`67` byte range, where the
+formula collector and older Intel profiles intentionally classify prefixes
+differently. NEC timing follows a separate existing path. No production code
+or public contract changed, and callback mutation equivalence was not proven.
+
+At the private-media 10,000,000-instruction startup checkpoint, sequential
+baseline/candidate elapsed times were 19,524/20,553 ms on x64 and
+20,287/23,627 ms on x86. Each reached 79,964,294 guest ticks and PC
+`0003dbc5`. These single pairs are sensitive to host load and do not establish
+complete state equivalence or whole-system performance. Neither supports
+adding the candidate's condition and fallback, so it was not retained. This
+does not resolve PC110 startup or interaction performance.
+
+Comparison log SHA-256:
+`FBFB1AACC6AE55B73B048D0262E0E599658921263DEE6A721E79A8D0E2626366`.
+
 
 ### Current prefix-dispatch reuse recheck
 
