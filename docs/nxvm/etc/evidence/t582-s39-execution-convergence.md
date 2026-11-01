@@ -3561,3 +3561,39 @@ media or released EXE changed, and full-menu/RDP timings were not measured.
 Log SHA-256, early and later probes respectively:
 `1B2A80CCDD59A0683D6CBC4D94BDD6BEDE9EE38FEFF1744EE88F9A0BBE1D79C6`,
 `989A48CB7D9032DE5A53693C4C067A6F10D544400B6A19C11DB1692845588FD3`.
+
+## Cache-fill query distribution during startup
+
+An x64 link wrapper counted the real Machine cache-address queries across a
+60-million-instruction private-media startup; it sampled one in 256 calls with
+nonserialized TSC reads. Both runs reached 365,365,343 ticks and PC `00038887`.
+The split at 30 million follows completed Machine quanta. Instrumentation,
+fixed-period sampling, host scheduling and the early/middle boot scope limit
+cost interpretation; neither run is a complete DOS/menu or RDP measurement.
+
+In the first/later stages, the first run counted 45,866,294 / 36,325,760
+ordinary address lookups and 15,408,679 / 9,879,845 fill probes. Fill was
+allowed only 71 / 553 times. Among sampled fill probes, the first stage used
+10,810,450 TSC units across 64,411 samples; the later used 4,195,847 across
+38,131. These include wrapper and timer overhead and are not exclusive
+whole-process times.
+
+An independent region-counting run found 8,941,036 of the early fill probes
+and 9,292,100 of the later probes in physical `30000h–3FFFFh`, with zero
+fills admitted there. Early firmware `F0000h–FFFFFh` accounted for 6,462,944
+probes with zero fills; later it accounted for 577,787 probes with 474 fills.
+The sums are separate instrumented runs, not a complete state-equivalence
+proof. The physical addresses alone do not prove the selected route at every
+query. Current PC110 firmware policy explicitly rejects caching below its
+video/firmware region, which includes the `30000h` SMRAM overlay; that region
+can also resolve to ordinary RAM depending on chipset state. S17–S19 already
+identify dynamic mapping, cache invalidation and chipset-evidence constraints;
+an earlier unconditional SMRAM-cache experiment did not show a benefit.
+Therefore these counts do not justify skipping provider resolution, caching a
+negative result across mapping changes, or changing the guest cache model.
+The next candidate must preserve those boundaries and demonstrate a net
+benefit on the actual boot rather than merely remove a frequent callback.
+
+Stage-query and region-count logs have respective SHA-256 values
+`8C3BED0822EA2FCEE0FBA945809894E483E69E95D71F5BC7F35B6802ACFD5A1F` and
+`8C35220E74B576AEF3B404C6F73A7F0D1FB0C85BFFECEEF6346DB372B6F16288`.
