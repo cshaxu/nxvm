@@ -3395,3 +3395,37 @@ than optimizing the synthetic fixture's alias case.
 Log SHA-256, x64 then x86:
 `7D80B66065D387C344D8EDEE1E0A19B202A908191BE6D41C79D68AA6CC08B974`,
 `D1102E88AF4E74B84C07EF93E3EB45D0AF61E9E039CBED885E490556C6526551`.
+
+## Current dual-width CPU stage and 486 term samples
+
+Task-only copies of the current CPU instruction and timing-model sources
+sampled one in 256 entries on the private configured-CMOS startup path.
+Each run stopped at 30,000,000 retired instructions, 195,624,840 guest ticks
+and PC `000f6440`. Stage 0 covers the first ten million refresh or timing
+source entries, and stage 1 covers the remainder; these are not exact retired
+instruction boundaries. The guest was not run to DOS or the menu. TSC reads
+are nonserialized, fixed-interval sampling may alias loops, and instrumentation
+can affect code layout. The separate stage and term runs are not additive or
+exact host-time accounting.
+
+For stage 0 / stage 1, x64 sampled instruction execution totals were
+65,354,640 / 78,131,692 TSC units and timing-selection totals were
+23,736,334 / 51,005,690, over 39,063 / 78,136 refresh samples. On x86 the
+corresponding execution totals were 80,174,528 / 95,970,945 and timing totals
+36,357,163 / 71,100,478, over 39,063 / 78,144 samples. The later phase has a
+higher timing-to-execution ratio in both instrumented runs; this does not
+measure the whole boot or prove the cost of the enclosing Machine path.
+
+In the separate 486 source-term run, among late-stage x64 samples the nominal,
+memory, decode and bus intervals totaled 7,722,760 / 7,087,734 / 10,486,492 /
+4,071,200 TSC units; x86 totals were 7,915,287 / 9,450,520 / 6,206,050 /
+5,183,285. Each main term had about 78,000 samples. Nested timer overhead is
+included, and the fallback L2 term was invoked only 54 times in each late
+stage. These observations suggest examining the shared 486 timing data flow,
+not simply optimizing the RAM-clear instruction or assuming the same term
+dominates both architectures. Previously rejected prefix and PUSH/POP probes
+remain rejected; no production or public interface was changed.
+
+Stage and term logs have SHA-256 respectively
+`3FCC5BC4CE05B52CB57E28CC92BCDEB083D272AAE013316BCEF73FD45232CDA6` and
+`54CAF31B81D80B72BF9081D21C20D6B87AB1315B625B1BA7DE1174C88469922D`.
