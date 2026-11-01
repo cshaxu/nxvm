@@ -3091,3 +3091,46 @@ Population log SHA-256:
 `FBD3FAFC617C6229596BDA50B7670BE243EC7771C393217935C21EB334B3F9A7`;
 comparison log SHA-256:
 `F3A242438563BA3C8E38D7A914DAD4EB1D7E58D8624DB5BADA17F93E0157CB89`.
+
+## Invalid completed-observation initialization
+
+At each CPU refresh, the previous completed observation is invalidated.
+Source inspection found that `next_lexeme_components` is the only member of
+that invalid record read before the existing reconstruction; the public copy
+path fully initializes its output when no completed observation is valid.
+The previous whole-record clear was therefore replaced by clearing this one
+member, with the validity flag and full successful reconstruction unchanged.
+The reset path still clears the complete record. This is a reduction in stores,
+not a new execution path or change to the published observation contract.
+
+A current-source scratch comparison used the same private CMOS and media
+copies and baseline/candidate/candidate/baseline order. At 10,000,000 retired
+instructions, 79,964,294 guest ticks and `0003dbc5`, x64 times were 18,199 /
+18,175 / 18,956 / 19,121 ms; x86 times were 23,580 / 22,795 / 23,435 /
+23,524 ms. Matching checkpoints do not prove complete state equivalence and
+these differences are small relative to host variation. In particular they
+do not establish a useful whole-boot improvement or PC110 usability.
+The x64 generated refresh code was inspected and the candidate removes the
+prior whole-observation stores. Diagnostic log SHA-256:
+`09A46E6013B509B32457017CCCBE9CCC7A4AE4EE88FBE753B3D937C43E515FB2`.
+
+Production diff: CPU source +3/-1 and the existing completion fixture +5/-0,
+plus the two manifest hash replacements. The fixture poisons the only field
+used before reconstruction and checks it and the copied output after interrupt
+or failure. Focused completion, 486 timing, execution-bus, fault-event and
+Machine-preview tests passed 5/5 on both widths. Cached full unit tests passed
+712/712 on both. In the initial default integration runs, native MIDI output
+failed to open the host device on both widths; x86 MyNES native-window also
+failed its screen-pixel assertion once and passed an isolated retry. All other
+default integration results passed or were registered skips. The three PC
+profile integrations then passed 3/3, 5/5 and 6/6 on each width; MyRaidenII
+startup and product-Console receivers passed on both. All 14 artifact PE
+widths were checked and both PC110 deployments matched their build outputs;
+see `t582-s39-observation-artifacts.json`. No native PC110 desktop/RDP or
+post-change complete-menu timing was measured. T582 remains open.
+
+Logs SHA-256, focused / full / x86 continuation / MyRaidenII:
+`6BEB508CBD2672DFAB989D86F3BA8ED45D2FE5F9BC5C4957E0F10BBEA2E7005A`,
+`DC353636111277A0A5BF10A112335930D593466CCBECFDEBB13B7A631104A5C7`,
+`CE7DA85D3FA8513766BFDB5C064107BE267CDE06D36D3761C31AD1589F213D1C`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.

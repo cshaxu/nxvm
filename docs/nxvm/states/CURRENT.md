@@ -1,5 +1,19 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted invalid observation initialization
+
+In `src/x86-core/cpu/cpu_instructions.c`, invalidate the prior completed
+observation at refresh entry and clear only the next-lexeme field read before
+reconstruction. A valid observation must still be completely initialized by
+the existing copy path. Preserve fault, wait, interrupt, halt, debug and all
+profile behavior; no API, second path or additional state. Extend the existing
+CPU completion fixture only as needed, update X86 Core manifests, validate
+both host widths and complete the Shared receiver gate and product artifacts.
+This bounded reduction does not close the PC110 usability objective.
+Both 712-test unit runs and the profile receivers completed. Native MIDI
+opening failed on both widths, and the x86 MyNES native-window test passed
+only on isolated retry; see the S39 evidence for exact qualification limits.
+
 ### Admitted FDC seek-state representation
 
 In `src/x86-nxvm/chips/fdc8272/fdc.c` and private `fdc.h`, replace the four
