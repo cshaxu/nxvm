@@ -36,6 +36,8 @@ These are bounded improvements; none establishes real-time performance.
 - Instruction preview and copies: [S11](t582-s11-performance-observation.md), [S22](t582-s22-cache-copy-audit.md), [S26 preview copy](t582-s26-preview-audit.md) and [preview count](t582-s26-preview-cost.md).
 - Measured compact preview candidate and receiving status: [S26 compact preview](t582-s26-compact-preview.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
+- Disabled instruction-breakpoint scan: [S39 comparison](t582-s39-execution-convergence.md#disabled-instruction-breakpoint-scan).
+- Keyboard signal predicate: [compiled check](t582-s39-execution-convergence.md#keyboard-signal-snapshot-compiled-check).
 - Branch timing condition simplification: [S26 comparison](t582-s26-branch-condition.md).
 - Deferred timing-branch next-byte lookup: [S26 comparison](t582-s26-branch-next-byte.md).
 - PC110 display adapter aperture validation: [S26 check](t582-s26-video-adapter.md).

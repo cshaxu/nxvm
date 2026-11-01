@@ -2173,6 +2173,20 @@ did not reach the marker used empty CMOS and the current empty-CMOS frame
 probe confirms the firmware is awaiting setup; it was not a matching-input
 regression comparison. No desktop or RDP validation is implied.
 
+## Keyboard signal snapshot compiled check
+
+The x64 startup sample attributed 126 of 5,155 late samples to the board's
+`kbc_keyboard_inputs` symbol. In `x86_keyboard_get_signals`, the source calls
+the pure scanning predicate twice, once for the scanning flag and once for the
+repeat-byte count. Inspection of the current GCC Release keyboard object shows
+one shared scanning/pending decision and conditional repeat-count load; the
+compiler already removes this apparent repetition. Changing the source to
+reuse that boolean would therefore not remove this particular machine-level
+work. The snapshot and callback also carry BAT and repeat deadline facts, so
+the callback cannot simply be dropped. No code, API or runtime test changed;
+this x64 object inspection does not establish x86 code generation or total
+keyboard cost.
+
 ## Startup middle-phase instruction samples
 
 An x64 private-media probe sampled the existing CPU instruction record once
@@ -2223,3 +2237,76 @@ complete-boot qualification. No production source or assets changed. Guest
 log SHA-256, baseline then candidate:
 `E0CACEA787421633C6DA8FF6A7B919DFB82B36433D5700CBDBF164DE0AE497FC`,
 `E00A4F37873DB4EF4A205750733256D0A8581C05CFE675A6566FEA2ED25E55C3`.
+
+## Post-port startup host sample
+
+A hidden x64 sample of the committed port-bucket build used a private executable,
+media overlays and configured CMOS beside the executable (CMOS SHA-256
+`608df3abc3cdd9bb3e35015d2d7aa9d8756567e080643b01e593ff99d1616034`).
+Sampling covered approximately 5–60 seconds of startup; the task-owned guest
+was terminated and reaped after 65 seconds. It was not a complete boot or
+interactive acceptance.
+
+The worker had 4,345 early and 5,182 late sample opportunities. In the late
+interval the sampled instruction pointers included CPU refresh 308 (5.9%),
+memory route resolution 186 (3.6%), board deadline observation 152 (2.9%) and
+port read routing 26 (0.5%). The earlier pre-bucket sample had 376 port read
+routing observations in 5,155 late samples (7.3%). These are sampled leaf
+locations, not inclusive function costs; differing samples and instrumentation
+make the comparison directional, not a precise end-to-end speedup. The new
+sample indicates that the remaining startup cost is distributed; it does not
+establish that any single remaining function explains the slow boot.
+
+### CPU refresh address attribution
+
+A second hidden x64 sampling run used the same private input arrangement and
+recorded guest-executable instruction-pointer offsets in 16-byte buckets. The
+worker had 4,254 early and 5,066 late sampling opportunities; the task-owned
+process was stopped and reaped after 65 seconds. Native sampling reported no
+errors. The most frequent individual late CPU-refresh bucket was 18 samples
+(0.36%); the `+0x7d0` bucket had 28 early and 17 late samples and disassembly
+places it among compiler-generated stack loads following the inlined execution
+path. The `+0x1280` bucket had 18 late samples near instruction metadata
+handling. No single sampled bucket accounts for the overall boot slowdown.
+Bucketed leaf instruction pointers are not inclusive costs and do not exclude
+an expensive chain distributed over multiple functions. This is startup-only
+sampling, not a complete boot, x86 result, or native UI qualification. No
+production change follows from it by itself.
+
+### Keyboard input snapshots at separate scheduler boundaries
+
+The post-bucket x64 sample identifies `kbc_keyboard_inputs` as a recurring leaf.
+Static call-chain review found two owners of separate observations:
+`x86_kbc8042_ticks_until_event` obtains inputs during board deadline capture,
+while `x86_kbc8042_advance` obtains them after Core's timeline, bus arbitration,
+and internal advancement. `advance` can drain serial output, take the keyboard
+BAT and publish a delayed response before querying repeat inputs; its repeat
+callback can further mutate serial state. Input can also be delivered between
+separate scheduler calls. A snapshot from deadline capture is therefore not a
+proven equivalent replacement for the later query. Caching it would require a
+complete invalidation contract, not a local removal of a duplicate read.
+
+The existing S8 change already avoids querying the typematic deadline when
+repeat bytes are absent. No production change is justified by this static
+review; no claim is made that all callback mutation combinations were tested.
+
+### Startup sample categories and performance implication
+
+For the preceding post-port 16-byte-bucket sample, grouping the 5,066 late
+worker-thread instruction pointers by their nearest symbol name gives 2,205
+CPU-labelled samples (43.5%), 984 Core-Machine-labelled (19.4%), 1,445
+board/device-labelled (28.5%), 159 DLL (3.1%) and 273 other (5.4%). These
+are disjoint leaf-location groups made from symbol names, not inclusive costs
+or a component dependency accounting; inlined code, nearest-symbol naming,
+DLL calls without stacks, sampling bias and the sampled startup interval limit
+interpretation. The process was intentionally stopped before complete boot.
+
+For scale only, reducing a 216-second boot to 60 seconds would require about
+72% less elapsed time. Even the impossible elimination of every CPU-labelled
+leaf sample, if those proportions held throughout boot and host time scaled
+linearly, would yield about 122 seconds, not 60. Neither assumption establishes
+a reachable bound or a product measurement. It does show why optimizing one
+small sampled function is unlikely to be a sufficient plan: evaluate the
+whole instruction-to-bus-to-device chain and any guest-work changes on their
+actual semantics and end-to-end startup evidence. No timing or behavioral
+contract is relaxed by this estimate.

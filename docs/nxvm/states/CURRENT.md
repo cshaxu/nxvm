@@ -39,8 +39,9 @@ loaded an empty CMOS adjacent to its executable; the other two loaded a
 The earlier claim of identical CMOS inputs was incorrect, so these runs cannot
 establish a CPU or port-routing regression. Investigate the actual first-run
 CMOS path and use same-executable-directory inputs for future comparisons.
-Startup remains impractically slow. The port-grouping candidate remains
-unaccepted and must not be presented as a finished fix. A corrected x64
+Startup remains impractically slow. The port-grouping candidate was
+subsequently accepted and committed; it is not a complete usability fix. A
+corrected x64
 configured-CMOS comparison reached the menu in 234.64 seconds with the old
 route and 216.23 seconds with the candidate; this single pair is not an
 end-to-end usability solution. Both cached default-configuration builds and the x64
