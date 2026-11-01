@@ -1,5 +1,24 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted common prefix-classifier consolidation
+
+Replace the CPU-private prefix classifier's individually repeated opcode
+cases with equivalent bounded bit groups, keeping one classifier and the
+existing V30 versus 32-bit profile semantics. All 256 opcode bytes and the
+full supported profile range plus out-of-range values matched in dual-width
+scratch exhaustive checks. No table, cache, App condition, API, new state,
+fetch, timing or execution route is introduced. Run existing dual-width
+prefix, NEC, exception, timing and receiver tests; check all fourteen release
+artifacts and actual private-media PC110 boot/response. The fixed-work
+comparisons do not establish end-to-end performance or complete guest state.
+
+Both widths passed 41 focused CPU tests, the expanded classifier test, 712
+full unit and 48 default integration tests, and all three PC profile receiver
+groups. MyRaidenII selected-set probes passed. Private-media menu/input
+frame-change samples were 179/8 x64 and 240/11 x86; these single samples do
+not establish native Window/RDP usability. S39 remains active.
+
+
 ### Current prefix-dispatch candidate rejected
 
 Current-source opcode prefix classification reuse improved the x64 fixed

@@ -4360,3 +4360,71 @@ Forward, reverse and pinned log SHA-256 respectively:
 `29F38124E56DBD6AB71214DF6EEC918E2DB2E62DAD2BCC04FEE819571B30ECD5`,
 `0205BE0B66D2FF04EB00CF6F2319638627209E7004E7ACB7677AB5B958F43391`,
 `349870741CAF83F1760DF112A936B8C8A4F89BBE13D8549231CD11AF94A2747A`.
+
+
+### Common prefix classifier bit groups
+
+The existing CPU-private prefix classifier had a switch with individual
+segment and REP opcode cases. Its one owner now groups the four segment
+overrides by their two differing bits and the two REP bytes by their one
+differing bit; the `64`–`67` group retains 80386/80486 and V30 distinctions.
+No generated table, per-machine state, profile shortcut, second classifier,
+fetch route or timing formula is added. Source is +7/-19 lines. The existing
+prefix-attributes test gains an independent literal-list check of all 256
+opcodes for the eight declared profile values (+32/-1 lines).
+
+A temporary baseline-versus-candidate direct classifier check matched all
+5,888 byte/profile combinations (profiles -2 through 20 inclusive) on each
+host width. The existing 41-test CPU/V30/exception/timing focused suite passed
+on each width; the expanded prefix test was then rebuilt and passed on each.
+These results do not by themselves establish whole-Machine equivalence.
+
+At the 10,000,000-instruction private-media checkpoint, x64 baseline/
+candidate were 18,282/16,743 ms and reverse candidate/baseline were
+20,391/20,632 ms; x86 were 25,306/24,950 and 24,758/25,324 ms. Every
+run recorded 79,964,294 guest ticks and PC `0003dbc5`. These sequential
+fixed-work samples are subject to host variation, not proof of stable
+end-to-end speedup or equivalent complete state. Full receiving and PC110
+system validation are recorded below.
+
+Classifier equivalence, forward/reverse probes, prior focused suite and
+expanded classifier test logs SHA-256 respectively:
+`6F2E24CA59DC288E7EC6578EEB1DEC2C086849EB9412B202B52817080C242124`,
+`9E639D8D02EF81005177A6CFF131EA6AF0992BA8FE62B3D4DDEAD254CC736C56`,
+`D47C6F6ADC0F6747DAE957F8A69A290859F02302BAE6F2D145880AAC9B756A22`,
+`103BF7DE046AE178F1B44B56B82469DDE7E3BD58AB234A258031641391F1CC65`,
+`E5B994D19722F537BB6C70B4E0F7AFAF519F15199D08ED2C71287F589BFA2F02`.
+
+
+The cached receiver passed 712/712 unit and 48/48 default integration tests
+on each host width, including native MIDI. The 5160, 5170 and DeskPro receiver
+groups passed 3/3, 5/5 and 6/6 on each width; MyRaidenII selected-set startup
+and Console probes passed on both. The full unit suite used four concurrent
+tests instead of eight after earlier concurrent timeouts; timeouts were
+not changed. X86 Core source/test manifests and whitespace checks passed.
+These checks do not establish native Window/RDP interaction or arcade play.
+
+The final x64 private-media PC110 Machine probe reached menu sample 179 and
+the input frame-change threshold at sample 8, total 191.20 seconds. This
+single host run and pixel marker do not prove complete redraw or a stable
+speedup compared to earlier samples; system usability remains unresolved.
+
+Full receiver, external receiver and x64 system log SHA-256 respectively:
+`7925253B90FFEF97CF4B1B50C5037C5B0EE3A90F65239FCE493CBCAD5C252C51`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`FD209B234671080F3A5513016F40C1FC65C4398C826C7B02447C6D767434FB2E`.
+
+
+The final x86 private-media Machine probe reached menu sample 240 and the
+input frame-change threshold at sample 11, total 255.48 seconds. The preceding
+PIC-only run recorded 254/13. These are single sequential runs with host and
+frame-sampling variation; they do not prove a stable gain or complete redraw.
+Native Window/RDP interaction remains unverified. The x86 guest log SHA-256
+is `17ABC580C81406AFC37D321AAB906C3BFD6C87A1A02B787D26ED477562C6675B`.
+
+
+The [artifact inventory](t582-s39-prefix-mask-artifacts.json) records all
+14 PE widths and SHA-256 identities against the committed Shared source.
+MyPC110 and MyNES deployment bytes matched their cached build outputs on
+both widths; the PC profile receivers exercised their selected deployments.
+MyNES binaries did not change.
