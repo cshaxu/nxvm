@@ -1,5 +1,27 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted repeated-instruction prefix reuse
+
+In the existing CPU repeat-timing record, compute the decoded prefix count at
+most once and pass that local value to continuation matching and the same
+record's opcode/byte-count updates. Retain V30's NEC-specific identity,
+prefix bounds, repeat phases, failure and observation semantics; do not add
+state, callbacks, an executor or a public API. Review the actual compiler
+output and both host widths, exercise the existing repeat, timing, interrupt,
+fault and preview fixtures, update the X86 Core manifest, then run the full
+Shared receiver gate and fourteen artifacts. Compare actual private-media
+PC110 system startup and interaction; a local reduction does not close the
+usability objective.
+Both 40-test focused suites and 712-test full unit suites passed. All three
+PC profile receiver groups passed on each width; the native MIDI output open
+assertion was the sole failure in each 48-test default integration run.
+MyRaidenII selected-set probes passed and fourteen PE widths were checked.
+An initial post-change PC110 sample captured an incompletely drawn window.
+A stricter repeat captured the same complete World Clock frame as baseline at
+the ninth one-second input sample, after menu sample 202. This single pair
+does not establish a speedup; system usability remains unresolved. See S39
+evidence.
+
 ### Admitted lexical-preview snapshot copy reduction
 
 Keep the private decoder's CPU checkpoint adjacent to its existing access

@@ -3908,3 +3908,84 @@ EXE was changed. The log, menu frame and response frame SHA-256 respectively:
 `225FC0AC78C4AFA77086F380C83C03B1CDE825A87063E2CCA23320A4CE5FFA4B`,
 `85A35680232CA0AD623DB7DD18D23A79396931ACB133791581D40C37048AEF41`,
 `A06BECF44F5986D642FD972A06FCE2A150DF121154BCAB3E59EE43C564E80CE8`.
+
+### System response host samples
+
+The same private-media x64 Machine probe was repeated with a task-only native
+instruction-pointer sampler activated after `INPUT-QUEUED`, then allowed to
+exit normally after the large visible frame change. The menu appeared at
+sample 200; the 5,000-pixel change threshold was reached at input sample 9.
+That threshold alone does not establish that the window was fully drawn. The
+worker had 1,441 sampled instruction pointers across 176 symbol labels.
+The largest labelled buckets were CPU execution refresh 117 (8.1%), Machine
+run 65 (4.5%), elapsed-time publication 59 (4.1%), CPU physical read 54
+(3.7%), and instruction boundary 52 (3.6%); the ten largest totalled 35.1%.
+
+These are nearest-symbol leaf samples, not inclusive time or a proof of the
+full CPU/board cost. Inlining, debugger sampling, fixed intervals, attribution
+and thread suspension affect the data and may perturb response. The sample
+covers one x64 World Clock opening, not the native Window, RDP, other commands
+or a full boot profile. It supports investigating the entire execution and
+device path rather than treating input delivery or rendering as the sole
+cause; it does not establish that any proposed optimization is safe or enough.
+No production, owner media or EXE changed. Sampler and guest log SHA-256:
+`AE1CE1463372F396249141F7B5CB762050B16FA4DE237B69EF8469BFC2AA348B`,
+`5D66009E7AEA45EB42910AE8FC051E86DCFE3DDE817332967CFE8277C6209884`.
+
+### Repeat-prefix computation
+
+The repeat timing path separately determined the decoded prefix count for
+continuation matching and again for recording the active instruction. A
+single local count can serve both without persistent state or a second decoder;
+V30 still uses its distinct NEC prefix identity. A first, narrower scratch
+change only consolidated two record updates, but Release disassembly showed
+GCC had already merged those calls in the 486 path, so it was not adopted.
+
+The cross-stage scratch candidate reached the same 10,000,000-instruction,
+79,964,294-tick, `0003dbc5` PC checkpoint in each variant. In ordered
+baseline/candidate runs, x64 took 18,519/17,930 ms and x86 21,611/21,876 ms.
+Each is one pair, not a reliable performance comparison or full-state proof.
+Release disassembly shows fewer static prefix-count call sites in the repeat
+record function; the change eliminates repeated classification on the active
+486 continuation path. Product startup and response qualification is pending.
+The existing 40 focused CPU, repeat, V30, fault and preview tests passed on
+each host width.
+The existing repeat fixture covers zero-count, first and continuation phases,
+operand/address prefixes, interrupts and faults. The local count is computed
+only when either the previous repeat is active or the current instruction
+will continue; the only intervening matching operation observes the existing
+instruction bytes and does not mutate them. V30 never uses the Intel count.
+Both 712-test unit suites passed, as did the three PC profile receiver groups
+(3/3, 5/5 and 6/6 per width). Default integrations passed 47/48 per width;
+the native MIDI output creation assertion was the sole failure in each run.
+Both MyRaidenII selected-set startup and Console probes passed per width;
+this is not an arcade-playability claim. Fourteen PE widths were checked;
+the deployed MyPC110 and MyNES files matched the cached build outputs.
+
+The first post-change x64 system probe detected the menu at sample 200 and
+the generic frame-change threshold at input sample 9, completing in 213.12
+seconds. Visual inspection shows that this response frame is still partially
+drawn, unlike the earlier baseline frame. The threshold cannot therefore be
+used to compare complete response latency. A further x64 run required a pixel
+in the right-hand World Clock pane as well as the change threshold. The menu
+appeared at sample 202 and the completed frame at input sample 9; total time
+was 215.33 seconds. The completed frame hash exactly matched the baseline
+frame, and visual inspection confirmed both panes. One-second sampling, a
+single baseline and one candidate cannot establish a speedup or whole-state
+equivalence. Neither run measures native Window or RDP responsiveness.
+Focused, full, external and partial-response log SHA-256 respectively:
+`04E6F64878133E6D7222C39836DAF338968C78E7A416E61ABF715A15B0DD382C`,
+`134ABD76DED0BF7FFEDD644EFDC0D404BB6F8E77E30D00D44771BE9939FE1BD5`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`86444356B677A2B9E511AD0CE36783EE535C5281FBE74B623E27441B826C565A`.
+The completed-window log and frame SHA-256 respectively:
+`7E82EA87F675E0C733224EA68C08B3AEB144FAC310B8A9577755ED07910F05A1`,
+`A06BECF44F5986D642FD972A06FCE2A150DF121154BCAB3E59EE43C564E80CE8`.
+The CPU source change is `b1b4f59b2`, and its MyRaidenII artifacts are
+`5252aaf89`. The [artifact inventory](t582-s39-repeat-prefix-artifacts.json)
+records the fourteen PE widths and hashes.
+Log SHA-256, x64 baseline/candidate then x86 baseline/candidate:
+`F7A73DE287ABC6CAF062D284CEED8B20FB568D24C27C78480791B9B640F6F575`,
+`744BF59F87A9C7BAA9A78DDF07145D20B779E280423F0CFD5DCB68B74697C329`,
+`15ADF227D3B88190E601867F23BE10DD2F7AC1CE4438E12847F7564FA56D4385`,
+`75D000C3F6D8AC948B82ED26D74D04CCD040F2F142BFE6CDC769383DF804765E`.
