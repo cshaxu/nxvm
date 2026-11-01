@@ -369,25 +369,6 @@ static void pic_advance_one(x86_pic *pic, lib_u64 elapsed_ticks)
     }
 }
 
-static lib_status pic_ticks_until_one(const x86_pic *pic,
-    lib_u64 *io_ticks)
-{
-    lib_u8 id;
-    lib_u8 pending;
-
-    if (pic == LIB_NULL || io_ticks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    pending = pic_pending_requests(pic) & ~pic->data.imr;
-    for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
-        if (PIC_BIT_IS_SET(pending, VPIC_IRR_IRQ(id)) &&
-            pic->data.unmask_remaining_ticks[id] != 0u &&
-            pic->data.unmask_remaining_ticks[id] < *io_ticks) {
-            *io_ticks = pic->data.unmask_remaining_ticks[id];
-        }
-    }
-    return LIB_STATUS_OK;
-}
-
-
 lib_status x86_pic_create(lib_bool cascade_master, x86_pic **out_pic)
 {
     x86_pic *pic;
@@ -517,10 +498,19 @@ void x86_pic_advance(x86_pic *pic, lib_u64 elapsed_ticks)
 lib_status x86_pic_ticks_until_event(const x86_pic *pic, lib_u64 *out_ticks)
 {
     lib_u64 ticks = LIB_UINT64_MAX;
+    lib_u8 id;
+    lib_u8 pending;
     if (pic == LIB_NULL || out_ticks == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    (void)pic_ticks_until_one(pic, &ticks);
+    pending = pic_pending_requests(pic) & ~pic->data.imr;
+    if (pending == 0u) return LIB_STATUS_INVALID_STATE;
+    for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+        if (PIC_BIT_IS_SET(pending, VPIC_IRR_IRQ(id)) &&
+            pic->data.unmask_remaining_ticks[id] != 0u &&
+            pic->data.unmask_remaining_ticks[id] < ticks)
+            ticks = pic->data.unmask_remaining_ticks[id];
+    }
     if (ticks == LIB_UINT64_MAX) return LIB_STATUS_INVALID_STATE;
     *out_ticks = ticks;
     return LIB_STATUS_OK;
