@@ -605,7 +605,8 @@ static x86_core_cpu_source_transfer_plan
         const x86_core_cpu_execution_context *context,
         const t_cpuins_data *data, x86_core_cpu_source_timing_form form);
 static lib_bool x86_core_cpu_source_timing_repeat_continuing(
-    const x86_core_cpu_execution_context *context, const t_cpuins_data *data)
+    const x86_core_cpu_execution_context *context, const t_cpuins_data *data,
+    lib_u32 prefixes)
 {
     if (!context->source_repeat_active) return LIB_FALSE;
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
@@ -614,7 +615,7 @@ static lib_bool x86_core_cpu_source_timing_repeat_continuing(
             context->source_repeat_nec_lock_prefix != data->nec_lock_prefix)
             return LIB_FALSE;
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
-        const lib_u32 bytes = x86_core_cpu_instruction_prefix_count(context, data) + 1u;
+        const lib_u32 bytes = prefixes + 1u;
 
         if (bytes > sizeof(context->source_repeat_bytes) ||
             bytes != context->source_repeat_byte_count ||
@@ -624,7 +625,7 @@ static lib_bool x86_core_cpu_source_timing_repeat_continuing(
     return context->source_repeat_cs == data->oldcpu.data.cs.selector &&
         context->source_repeat_eip == data->oldcpu.data.eip &&
         context->source_repeat_opcode == (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
-            data->nec_opcode : data->opcodes[x86_core_cpu_instruction_prefix_count(context, data)]) &&
+            data->nec_opcode : data->opcodes[prefixes]) &&
         context->source_repeat_prefix == (lib_u8)data->prefix_rep &&
         context->source_repeat_operand_size ==
             (data->oldcpu.data.cs.seg.exec.defsize != (data->prefix_oprsize != LIB_FALSE)) &&
@@ -1019,7 +1020,13 @@ void x86_core_cpu_source_timing_record_repeat(
         return;
     }
     const lib_u32 count = address_size ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
-    const lib_bool continuing = x86_core_cpu_source_timing_repeat_continuing(context, data);
+    const lib_bool will_repeat = count != 0u &&
+        context->cpu->data.eip == data->oldcpu.data.eip;
+    const lib_u32 prefixes = context->cpu_profile != X86_CORE_CPU_PROFILE_V30 &&
+        (context->source_repeat_active || will_repeat) ?
+        x86_core_cpu_instruction_prefix_count(context, data) : 0u;
+    const lib_bool continuing = x86_core_cpu_source_timing_repeat_continuing(
+        context, data, prefixes);
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
         context->instructions->data.timing_repeat_previous_misses = continuing ?
             context->source_repeat_data_misses : 0u;
@@ -1027,13 +1034,12 @@ void x86_core_cpu_source_timing_record_repeat(
         X86_CORE_CPU_RETIREMENT_REPEAT_ZERO_COUNT : continuing ?
         X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION :
         X86_CORE_CPU_RETIREMENT_REPEAT_FIRST;
-    context->source_repeat_active = count != 0u &&
-        context->cpu->data.eip == data->oldcpu.data.eip;
+    context->source_repeat_active = will_repeat;
     if (context->source_repeat_active) {
         context->source_repeat_cs = data->oldcpu.data.cs.selector;
         context->source_repeat_eip = data->oldcpu.data.eip;
         context->source_repeat_opcode = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
-            data->nec_opcode : data->opcodes[x86_core_cpu_instruction_prefix_count(context, data)];
+            data->nec_opcode : data->opcodes[prefixes];
         context->source_repeat_prefix = (lib_u8)data->prefix_rep;
         context->source_repeat_operand_size = operand_size;
         context->source_repeat_address_size = address_size;
@@ -1042,7 +1048,7 @@ void x86_core_cpu_source_timing_record_repeat(
             context->source_repeat_nec_segment = data->roverds;
             context->source_repeat_nec_lock_prefix = data->nec_lock_prefix;
         } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
-            context->source_repeat_byte_count = (lib_u8)(x86_core_cpu_instruction_prefix_count(context, data) + 1u);
+            context->source_repeat_byte_count = (lib_u8)(prefixes + 1u);
             lib_memory_copy(context->source_repeat_bytes, data->opcodes,
                 context->source_repeat_byte_count);
         }
