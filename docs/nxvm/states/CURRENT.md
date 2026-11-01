@@ -1,5 +1,17 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted inverse-pair condition evaluation
+
+In `src/x86-core/cpu/cpu_timing_model.c`, express the sixteen existing
+condition-code results as eight conditions and their inverse. Retain the
+original helper, flag meanings, null-output behavior and all CPU profiles;
+do not add state, a second executor or a timing approximation. Reuse existing
+condition and timing tests, update the source manifest and run the Shared
+dual-width receiver gate and fourteen product artifacts. This local code
+reduction does not close the PC110 performance objective.
+Dual-width unit and profile receiver tests passed; native MIDI output failed
+to open the host device on both widths. Detailed results are in S39 evidence.
+
 ### Admitted invalid observation initialization
 
 In `src/x86-core/cpu/cpu_instructions.c`, invalidate the prior completed

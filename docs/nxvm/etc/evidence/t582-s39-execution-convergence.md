@@ -2484,6 +2484,42 @@ evidence; no production source, interface, test or published artifact changed.
 The PC110 performance objective remains open. Diagnostic log SHA-256:
 `42C50D759EC27B5EE3AECA9D4227CD3A8C282F89B5C4C25323AE64C796B6ED6D`.
 
+## Inverse-pair condition evaluation
+
+The timing helper's sixteen x86 condition codes form eight adjacent inverse
+pairs. The same private helper now computes one of eight positive predicates
+and applies the low condition bit as its inversion. Its flag sources, null
+output behavior and callers remain unchanged; there is no added state or
+alternate executor. The production source diff is +13/-18 lines, net -5.
+An independent logical check compared all 32 flag combinations and 256
+condition byte values; this is not a compiled-CPU or device test.
+
+Private-media startup baseline/candidate/candidate/baseline fixed-work times
+were 19,687 / 19,235 / 18,506 / 18,682 ms x64 and 23,151 / 23,311 / 25,072 /
+25,304 ms x86. Every run reported 10,000,000 instructions, 79,964,294 ticks
+and `0003dbc5`. Differences are small and affected by host variation; this
+does not establish full-state equivalence or user-visible startup improvement.
+The local source simplification does not close the PC110 usability objective.
+Comparison log SHA-256:
+`40AF6FB2CE2624D18F0550022C0100B2E0FD7AAB6B410639227B79E802DD6122`.
+
+Existing branch, V30 conditional repeat, 486 nominal timing, Machine timing
+preview and board control-stack timing tests passed 5/5 on both architectures;
+no new test fixture was added. Cached full unit suites passed 712/712 per
+architecture. Each default integration run passed 47/48: native MIDI output
+could not open the host device. The other tests passed or were registered
+skips. Additional My5160, My5170 and DeskPro integration sets passed 3/3,
+5/5 and 6/6 on each width. MyRaidenII selected-set startup and Console
+receivers passed on both widths. Fourteen product PE architectures were
+checked; both PC110 deployed files matched their build outputs. See
+`t582-s39-branch-pairs-artifacts.json`. No desktop/RDP performance or complete
+post-change boot time was measured; PC110 usability remains unproven.
+
+Logs SHA-256, focused / full / MyRaidenII:
+`789655F7E3D379D5AD3E66C1B1E7BF4B909EB3F0788D69B6A4F270B03CDFEE53`,
+`C2AA06C2BAF0C74CA7899AD417D17AC85DB43B49EAB641F33A33D3B4F69F5355`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
+
 ### Port transaction value setter inlining probe
 
 After the accepted begin/commit change, an independent scratch-only x64
