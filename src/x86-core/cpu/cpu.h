@@ -109,13 +109,15 @@ typedef enum {
     SREG_IDTR
 } t_cpu_data_sreg_type;
 
+_Static_assert(SREG_IDTR <= LIB_UINT8_MAX, "segment kind must fit its storage");
+
 typedef struct {
-    lib_u8 flagValid;
-    lib_u16 selector;
-    /* invisible portion/descriptor part */
-    t_cpu_data_sreg_type sregtype;
+    /* Descriptor cache and visible selector. */
     lib_u32 base;
     lib_u32 limit;
+    lib_u16 selector;
+    lib_u8 flagValid;
+    lib_u8 sregtype; /* t_cpu_data_sreg_type value */
     lib_u8  dpl; /* if segment is cs, this is cpl */
     union {
         struct {
