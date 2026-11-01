@@ -12,6 +12,11 @@ startup workload; this bounded optimization does not itself close T582.
 Both 712-test unit suites and all PC profile receiver groups passed. Native
 MIDI opening failed on both widths; see the S39 evidence for exact limits.
 The measured menu wait remains approximately 198 seconds and is not accepted.
+Current same-loop remeasurement still shows a large CPU/Machine/reference
+gap. The attempted inline of external-cycle invalidation did not show a
+consistent dual-width gain and was rejected; see S39 evidence. Continue
+investigating the complete CPU/timing/bus chain against real startup rather
+than treating this microbenchmark as the product acceptance result.
 
 ### Admitted inverse-pair condition evaluation
 

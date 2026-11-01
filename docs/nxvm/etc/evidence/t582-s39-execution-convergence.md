@@ -3254,3 +3254,50 @@ SHA-256 values `4F2D34BD402BD1CEFC6AECCE8804F85155C32B45352869DC632E0FCC815D69C4
 `BC860B1AC3B645DF4949BB154B4851EA0D689D31B18627D6EA783CD52B430782`, and
 `9DC6DD6481DC3A9E18CF663DB33D1F3D4760D422D5E33233BD4A17AD2B6DABF5`.
 No native PC110 Window/RDP startup or interaction timing was performed.
+
+## Current synthetic CPU/Machine comparison
+
+After the inactive-observer change, the existing same-instruction synthetic
+fixture was relinked to the current cached x64 and x86 release graphs and run
+sequentially. For ten million NOP/JMP instructions, the standalone CPU,
+neutral Machine and PC110-EMU reference respectively took 3,683 / 10,529 /
+1,130 ms on x64 and 5,995 / 13,561 / 1,027 ms on x86. The Machine ended at
+`000f0001` and 40,000,014 ticks on both widths; the other two fixtures do not
+share its bus and timing contracts. The reference reported no BIOS-loop
+escapes in this synthetic workload. Each is a single ordered sample on a
+loaded host, not a controlled paired regression comparison or a PC110 boot.
+The measurements confirm that the broad gap remains, but do not justify
+subtracting the CPU time from Machine time as an exclusive Machine cost.
+
+The previously observed 1.5-million FDC-status poll storm is not a proven
+main boot cause: inspection of the old diagnostic script and retained output
+confirms that the incomplete SMC CONFIGURE candidate had the same configured
+CMOS adjacent to its executable, yet did not reach the menu after 405 seconds.
+That candidate did not implement complete device semantics, so neither this
+result nor the boot baseline excludes a correct controller improvement. The
+next implementation candidate still needs a coherent contract and evidence
+across CPU execution, timing and the device path, rather than repeated local
+optimizations presented as a usable PC110.
+
+The synthetic logs' SHA-256 values, x64 then x86, are
+`6C57F5CA4F4A7FAE047F69CBD0E1D4275C72757AA56502AC0F615E56A213A44F` and
+`6A398D7B0D6E4F93A266C1B0536B8F3C86116A0CA465F3F9D5F2B02AA997B5E1`.
+
+### External-cycle invalidation call upper bound
+
+The Machine still calls its private external-cycle invalidation on each CPU
+refresh. A task-only candidate replaced that particular call with the exact
+three false stores in its existing implementation. The Machine is non-null at
+that call site. This was an upper-bound probe for moving the single helper to
+a private inline definition, not an approved duplicate production path.
+
+With private media and configured CMOS, baseline/candidate/candidate/baseline
+at ten million instructions took 19,850 / 18,584 / 19,399 / 18,861 ms on x64
+and 23,758 / 24,140 / 23,925 / 23,168 ms on x86. Every run reported
+79,964,294 ticks and `0003dbc5`. One sequential ABBA series remains noisy
+and matching these counters does not prove complete state equivalence, but
+the x64 order crosses and both x86 candidate samples are slower than their
+adjacent baselines. It does not justify expanding inlining across the other
+call sites or another complete receiver build; no production change was made.
+No menu or RDP timing was measured for this candidate. Log SHA-256:
+`CABB0D9EFF45853D740039E7879A8207DCBD5B7B7FACE925336EBB2771C639ED`.
