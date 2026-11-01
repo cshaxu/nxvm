@@ -2464,6 +2464,26 @@ representative workload.
 Diagnostic log SHA-256:
 `09F73199EAE972FCBE91D2C75DEB4092F2A9E86B0AB4B8FD5C9990BCBD4E898C`.
 
+### Direct branch-result handoff
+
+A second task-only candidate removed the fragile clock-value inference: the
+nominal 486 evaluator returned the actual short-branch decision through an
+optional private output, and the source-cost path populated the already
+existing formula-input flags for the generic observer. It added no persistent
+field but did change a private helper signature; callers and exceptional paths
+were not fully migrated or qualified.
+
+At the same private-media 10,000,000-instruction checkpoint, ordered
+baseline/candidate/candidate/baseline times were 19,473 / 20,154 / 19,752 /
+18,388 ms x64 and 23,194 / 23,849 / 23,903 / 22,481 ms x86. All reported
+79,964,294 ticks and `0003dbc5`. The candidate was slower in both adjacent
+pairs on both widths, though sequential host variation prevents an exact
+regression claim. These are not complete-state or late-boot comparisons. The
+additional private contract and test-call migration are not justified on this
+evidence; no production source, interface, test or published artifact changed.
+The PC110 performance objective remains open. Diagnostic log SHA-256:
+`42C50D759EC27B5EE3AECA9D4227CD3A8C282F89B5C4C25323AE64C796B6ED6D`.
+
 ### Port transaction value setter inlining probe
 
 After the accepted begin/commit change, an independent scratch-only x64
