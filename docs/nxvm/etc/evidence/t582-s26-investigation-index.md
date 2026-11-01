@@ -18,6 +18,7 @@ These are bounded improvements; none establishes real-time performance.
 - CPU dispatch and repeated prefix classification: [S11](t582-s11-performance-observation.md), [S13](t582-s13-scheduler-observation.md), [S15](t582-s15-cpu-line-audit.md), [S16](t582-s16-execution-audit.md), [S21](t582-s21-timing-input-audit.md), [S23](t582-s23-dispatch-audit.md). S26's [execution-prefix experiment](t582-s26-execution-prefix-audit.md) repeated S13's per-byte candidate; it should not have been run again without first checking that record.
 - Initialization and prefetch refill attribution: [S23 observations](t582-s23-dispatch-audit.md#s26-boundary-and-prefetch-attribution).
 - CPU LTO, optimization level and PGO: [S11](t582-s11-performance-observation.md), [S13](t582-s13-cpu-profile.md), [S22](t582-s22-cache-copy-audit.md). The S26 [partial LTO](t582-s26-cpu-lto-audit.md), [optimization-level](t582-s26-optimization-level.md) and [PGO](t582-s26-pgo-audit.md) experiments overlap earlier work; differences in compilation scope do not establish an independent product benefit.
+- CPU host tuning: [S39 single-pair exploration](t582-s39-execution-convergence.md#cpu-host-tuning-exploration).
 - Wider CPU and Machine LTO and Game frame-condition audit:
   [S26 comparison](t582-s26-core-lto.md).
 - Fat LTO with native test links and archive-extraction alternative:
@@ -26,20 +27,28 @@ These are bounded improvements; none establishes real-time performance.
   [S34 comparison](t582-s34-current-profile.md#instruction-timing-fact-reset).
 - Deadline-observation removal upper bound: [S28 experiment](t582-s28-execution-chain.md#deadline-observation-upper-bound).
 - Deadline caching, clock conversion, DMA and PIC shortcuts: [S13](t582-s13-scheduler-observation.md), [post-cache mutation boundaries](t582-s26-post-cache-deadline.md), [S26 single-tick](t582-s26-single-tick-audit.md), [unconfigured PIT clock](t582-s26-unused-pit-audit.md), and [PIC selection](t582-s26-pic-select-audit.md). The latter checks interrupt selection, distinct from S13's empty-deadline candidate.
+- Repeated refresh request observations in arbitration and the attachment
+  contract boundary: [S34 analysis and cost sample](t582-s34-current-profile.md#refresh-request-observation-candidate),
+  [S39 startup upper bound](t582-s39-execution-convergence.md#refresh-request-observations-at-the-arbitration-boundary).
 - Individual board-advance sampled costs: [S13 observations](t582-s13-scheduler-observation.md#s26-board-advance-attribution).
 - Clock advance narrow-division candidate: [S11 observations](t582-s11-performance-observation.md#subsequent-narrow-division-candidate).
+- Zero-or-one clock-conversion candidate: [S39 comparison](t582-s39-execution-convergence.md#zero-or-one-clock-conversion-candidate).
 - Instruction preview and copies: [S11](t582-s11-performance-observation.md), [S22](t582-s22-cache-copy-audit.md), [S26 preview copy](t582-s26-preview-audit.md) and [preview count](t582-s26-preview-cost.md).
 - Measured compact preview candidate and receiving status: [S26 compact preview](t582-s26-compact-preview.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
 - Branch timing condition simplification: [S26 comparison](t582-s26-branch-condition.md).
 - Deferred timing-branch next-byte lookup: [S26 comparison](t582-s26-branch-next-byte.md).
 - PC110 display adapter aperture validation: [S26 check](t582-s26-video-adapter.md).
+- PC110 firmware E/F route-query fast path: [S13 query probe](t582-s13-scheduler-observation.md#pc110-firmware-route-query-probe).
+  It previously duplicated query validation and did not improve either width;
+  do not repeat it without a materially different workload or implementation.
 - Duplicate one-byte opcode-record copy: [S26 copy audit](t582-s26-opcode-copy.md).
 - Memory read-modify-write precheck frequency: [Personaware Game](t582-s26-personaware-game.md#read-modify-write-precheck-frequency).
 - Game drawing guest-PC samples and instruction-byte attribution:
   [Personaware Game](t582-s26-personaware-game.md#game-drawing-workload).
 - Direct primary-opcode dispatch: [S26 dispatch probe](t582-s26-direct-dispatch.md).
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
+- Memory-route address-index upper bound: [S39 measurement](t582-s39-execution-convergence.md#memory-route-address-index-upper-bound).
 - 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).
 - Ordinary cache access and guest-visible test-register publication:
   [S26 cache query](t582-s26-cache-query-cost.md#ordinary-access-test-register-publication-audit).
@@ -47,12 +56,29 @@ These are bounded improvements; none establishes real-time performance.
 - Retirement trace disabled-path guard: [S26 trace audit](t582-s26-trace-audit.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
+- 486 access-penalty algebra: [S39 dual-width exploration](t582-s39-execution-convergence.md#486-access-penalty-algebra-candidate).
+- 486 PUSH/POP dependency guard: [S34 comparison](t582-s34-current-profile.md#486-decode-dependency-classification); previous-opcode scan guard: [S35 comparison](t582-s35-cost-attribution.md#previous-opcode-scan-experiment). Neither established a cross-width benefit.
+- 486 timing-profile branch reorder: [S39 comparison](t582-s39-execution-convergence.md#486-timing-profile-selection-order); neither width showed consistent ordering benefits.
 - World Clock sampling of individual 486 timing terms:
   [S26 measurement](t582-s26-486-term-sampling.md).
 - Current Game drawing host-symbol samples and repeated zero-access experiment:
   [S39 observation](t582-s39-execution-convergence.md#current-game-host-instruction-samples).
 - PC110 Turbo runner quantum comparison and Standard-mode probe correction:
   [S39 comparison](t582-s39-execution-convergence.md#runner-rendezvous-quantum).
+- PC110 absent-floppy CMOS versus the original private seed, including a
+  complete-menu comparison: [S39 evidence](t582-s39-execution-convergence.md#current-production-cmos-comparison).
+- BIOS HLT-wait upper bound and full-menu result:
+  [S39 exploration](t582-s39-execution-convergence.md#firmware-hlt-wait-upper-bound-exploration).
+- Early-boot Machine-return sampling bias, including actual versus sampled
+  `00038000` endpoint counts: [S39 measurement](t582-s39-execution-convergence.md#machine-return-endpoint-sampling-bias).
+- Prefix-stripped opcode samples through 100 million startup instructions:
+  [S39 middle-phase sample](t582-s39-execution-convergence.md#startup-middle-phase-instruction-samples).
+- Forced-inline conditional-jump helper upper bound:
+  [S39 comparison](t582-s39-execution-convergence.md#conditional-branch-compiler-upper-bound-probe).
+- Scheduler-only pacing-field suppression prototype:
+  [S39 comparison](t582-s39-execution-convergence.md#scheduler-only-time-observation-fields).
+- Per-address port bucket lookup upper bound and admitted owner-local candidate:
+  [S39 comparison](t582-s39-execution-convergence.md#port-bucket-lookup-upper-bound).
 - Timing-capture call sites and invalid pending-retirement ablation:
   [S39 measurement](t582-s39-execution-convergence.md#retirement-timing-capture-and-second-loop).
 - Existing CPU refresh returning timing to Machine:

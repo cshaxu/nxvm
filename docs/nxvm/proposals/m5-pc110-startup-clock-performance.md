@@ -190,16 +190,17 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   events. Exit with comparable workload measurements and ordering regressions,
   or a documented rejection. Do not create a second executor or clock.
 - **S39: execution and timing architecture convergence.** Use the existing
-  Game, CPU and scheduler cost evidence to identify and prototype a coherent
+  startup, CPU and scheduler cost evidence to identify and prototype a coherent
   reduction across the existing instruction execution and timing path, rather
   than accumulating isolated device micro-optimizations. Preserve CPU state,
   fault/debug boundaries, guest timing, event ordering and the single
   execution owner. Compare representative workload and both host widths; do
   not claim viability based only on a fixed synthetic loop.
 - **S40: whole-product receiving and owner acceptance.** After the actual
-  performance objective is met, reconcile before/after startup, guest clock,
-  RTC and Game behavior on x86/x64 and applicable DSTN/TFT variants; validate
-  responsive operation and report desktop/RDP evidence separately. Run the
+  performance objective is met, reconcile before/after DOS/Personaware startup,
+  guest clock, RTC and ordinary operation on x86/x64 and applicable DSTN/TFT
+  variants; validate responsive operation and report desktop/RDP evidence
+  separately. Game is optional and does not define emulator usability. Run the
   full Shared receiving gate below, review actual changes, publish and obtain
   owner acceptance. If usability or any required gate remains unproven, keep
   T582 open and insert the necessary numeric S work before this final gate.

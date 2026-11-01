@@ -5,6 +5,12 @@ The public-component entries were transferred to the open
 [T564 S6--S13 plan](../proposals/m5-softpc-rgb-frame-import.md) by owner
 direction; transfer is not a repair or a claim of implementation.
 
+- [ ] **MyPC110 startup RAM configuration (`TODO(Medium)`).** A 4 MiB request
+  produces a 20 MiB Machine because the PC110 composition uses a fixed plan.
+  Audit supported PC110 RAM sizes and their chipset, CMOS and open-bus mapping,
+  then admit a focused correction to the startup configuration contract.
+  Do not treat a lower RAM setting as the T582 performance solution. See
+  [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md).
 - [ ] **Model40 x86 external-throughput qualification (`TODO(Medium)`).** The
   fixed 180-second Turbo DOS-installation terminal is not presently a
   differentiating CPU-semantic result: the isolated accepted S20 executable

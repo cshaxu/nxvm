@@ -4,7 +4,7 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T582 S39 after S38. |
 | Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
-| Objective | Identify and prototype a coherent reduction in CPU execution and timing overhead sufficient to materially improve the actual PC110 workload. |
+| Objective | Identify and prototype a coherent reduction in CPU execution and timing overhead sufficient to materially improve PC110 startup and ordinary operation. |
 | Non-goals | No guest-work skipping, timing downgrade, second executor, host-clock substitution or owner-media mutation. |
 | Reference Baseline | Shared `f50bc9392`, [Game workload](../etc/evidence/t582-s26-personaware-game.md), [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md), [S36 CPU evidence](../etc/evidence/t582-s36-cpu-hot-path.md), and [S38 scheduler evidence](../etc/evidence/t582-s38-clock-advancement.md). |
 | Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S39. |
@@ -13,14 +13,68 @@
 | Verification | Preserve full CPU state, faults, debug, timing, asynchronous events and all CPU profiles; compare representative workload on both widths and perform full Shared receiving for production changes. |
 | Expected Markers | A measured coherent design and implementation or a bounded evidence-backed rejection with a next actionable direction. |
 | Asset Needs | Existing private task-owned firmware and media copies only. |
-| Reporting Requirements | Distinguish fixed-work cost, full-frame Game behavior and native/RDP usability; report actual changes, regression evidence and limits. |
+| Reporting Requirements | Report actual DOS/Personaware startup latency and ordinary operation separately from fixed-work diagnostics; distinguish native Window/RDP evidence and limits. Game is an optional workload, not the definition of usability. |
 | Stop Conditions | No unproven skipping of guest work, deadlines or observation and no separate execution path. |
 | Exit Criteria | Qualified meaningful candidate or documented negative result with a concrete next candidate; T582 stays open until actual usability and owner acceptance. |
-| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Original Owner Request | Improve PC110 startup and ordinary-operation performance to practical emulator usability while preserving guest behavior; a game is not the acceptance target. |
 | Similar-Issue Sweep | Review S26 investigation index and S35–S38 evidence before repeating experiments. |
 
 [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md) records the
 initial branch-result duplication audit. PC110 usability remains unresolved.
+The first 30 million startup instructions now have direct SMM-mode counts;
+Machine-return endpoint frequency is biased and must not be used as a proxy
+for execution time. A separate sampled CPU-refresh cost check places entry
+and exit together at about 3.4% of sampled refresh intervals in that early
+workload, not the dominant cost. Continue with the actual retirement-to-device
+path and retain the real DOS/Personaware startup endpoint as the performance
+target.
+
+Earlier current-source full-menu probes with original and candidate port
+routing did not reach the marker within 300 and 405 seconds respectively,
+while the preserved earlier binary reached it in 213 seconds. A subsequent
+current-build frame-capture probe reached the marker in 219 seconds and showed
+DOS startup at 180 seconds. A path audit established that the failed probe
+loaded an empty CMOS adjacent to its executable; the other two loaded a
+128-byte seed adjacent to theirs. The published DSTN CMOS is also empty.
+The earlier claim of identical CMOS inputs was incorrect, so these runs cannot
+establish a CPU or port-routing regression. Investigate the actual first-run
+CMOS path and use same-executable-directory inputs for future comparisons.
+Startup remains impractically slow. The port-grouping candidate remains
+unaccepted and must not be presented as a finished fix. A corrected x64
+configured-CMOS comparison reached the menu in 234.64 seconds with the old
+route and 216.23 seconds with the candidate; this single pair is not an
+end-to-end usability solution. Both cached default-configuration builds and the x64
+and x86 712-test unit suites passed; the default-configuration integration
+suites passed 48/48 on each width, including native desktop and MIDI tests.
+All three additional PC profiles passed their receiver tests on each width,
+the MyRaidenII external receivers passed, and all 14 PE widths were checked.
+The port change is committed as Shared `d5415b5b9`; product artifacts and
+evidence are being reviewed and committed separately. The S and T remain open
+because the measured PC110 startup is still not practically usable.
+
+### Admitted owner-local port grouping candidate
+
+In Shared `x86-core/machine`, replace the single linear port-provider list
+with per-Machine port buckets as the sole route storage. Preserve the current
+per-port provider order, exclusive and wired-OR behavior, byte lanes,
+registration rollback, owner removal, failure propagation and callback-time
+mutation observations. Do not add a process-global index, second execution
+path or public API. Update the existing port-registration tests and the two
+X86 Core manifests. First compare the actual implementation and restore it if
+it regresses or fails those invariants; then qualify all Shared consumers and
+fourteen product artifacts. The measured scratch upper bound uses unsafe
+process-global state and is not a production implementation or proof of
+end-to-end improvement. Record real DOS/Personaware timing and limitations;
+this candidate alone does not close T582.
+
+### Port registry partition rejected
+
+The admitted two-list port registry passed its focused dual-width tests but
+its real implementation was slower in both x86 ordered comparisons. It and
+its test/manifest edits were withdrawn; [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md)
+records the measurements. The affected port targets were rebuilt and their
+focused tests passed on both architectures after restoration. Continue the
+performance investigation. No release artifact may contain the rejected code.
 
 ### Admitted carry-rotate consolidation
 
