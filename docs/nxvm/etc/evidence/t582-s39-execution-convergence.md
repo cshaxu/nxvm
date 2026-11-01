@@ -2439,6 +2439,31 @@ acceptance or x86 full-menu timing was performed. Full logs SHA-256:
 `55BAC90C03821319D239AD7DAEB2E00094ECF6890EEADDE3E8E5B90F3D0B5802`,
 `967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
 
+## Reusing 486 short-branch outcome through timing metadata
+
+The nominal 486 timing calculation and generic observation both evaluate the
+same short conditional branch using the instruction-entry flags. A task-only
+candidate published the branch metadata during nominal calculation and reused
+the existing metadata in the generic observation; it added no persistent
+field. It inferred the outcome from the nominal 1/3-clock result. That inference
+would silently couple branch metadata to a timing constant, so it is not a
+clean or independently qualified contract even if it were faster.
+
+At the private-media 10,000,000-instruction startup checkpoint, ordered
+baseline/candidate/candidate/baseline times were 18,331 / 19,011 / 18,660 /
+19,305 ms x64 and 23,821 / 21,974 / 23,539 / 23,101 ms x86. All reported
+79,964,294 ticks and `0003dbc5`. Both widths reverse direction across the
+pairs; sequential host variation and the early checkpoint limit interpretation.
+No complete-state, later-boot or interactive equivalence is established. The
+candidate was rejected for both its fragile inference and lack of consistent
+benefit; production code and published artifacts were not changed. A future
+design would need to pass the actual branch fact without coupling it to the
+numeric timing result, and justify its interface and complexity against a
+representative workload.
+
+Diagnostic log SHA-256:
+`09F73199EAE972FCBE91D2C75DEB4092F2A9E86B0AB4B8FD5C9990BCBD4E898C`.
+
 ### Port transaction value setter inlining probe
 
 After the accepted begin/commit change, an independent scratch-only x64
