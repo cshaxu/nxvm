@@ -4328,3 +4328,35 @@ records all 14 PE widths and hashes against the committed Shared source.
 MyPC110 and MyNES deployment bytes matched the respective cached build outputs
 on both widths; PC profile receiver checks covered selected deployments.
 MyNES binaries did not change.
+
+
+### Current prefix-dispatch reuse recheck
+
+After the PIC and cross-profile timing changes, a task-only version of the
+current instruction executor calculated `instruction_is_prefix` once for each
+dispatched opcode and reused it for V30 prefix charging and the loop decision.
+It retained the existing execution, fetch, fault and timing paths and added
+only an instruction-local Boolean. The serialized CPU bus contract allows
+signal propagation but not reentrant execution; complete all-profile, fault
+and callback equivalence was not demonstrated. No production code changed.
+
+At the 10,000,000-instruction private-media checkpoint, x64 baseline/candidate
+were 20,253/19,258 ms and reverse candidate/baseline were 17,630/19,454 ms.
+x86 was 21,543/22,033 and 24,503/22,053 ms respectively. All runs reached
+79,964,294 guest ticks and PC `0003dbc5`. A separate x86 baseline/candidate/
+candidate/baseline series launched each copy pinned to the same logical
+processor, with fresh private inputs, and measured 20,920/21,656/26,731/
+25,701 ms. Pinning does not control clock frequency or background load and
+these are early fixed-work checkpoints, not complete guest-state or system
+response comparisons. The candidate was slower than its adjacent baseline
+in both pinned pairs. It is not adopted because the cross-width evidence
+does not meet the owner's no-obvious-regression criterion.
+
+GCC emitted an x86 execution-refresh body of 0x3f60 bytes for the candidate
+versus 0x40f0 baseline, and a 0x108-byte stack frame versus 0x100. This
+shows different code generation, not the cause of the observed difference.
+No x86 or x64 full-boot comparison was warranted after this check.
+Forward, reverse and pinned log SHA-256 respectively:
+`29F38124E56DBD6AB71214DF6EEC918E2DB2E62DAD2BCC04FEE819571B30ECD5`,
+`0205BE0B66D2FF04EB00CF6F2319638627209E7004E7ACB7677AB5B958F43391`,
+`349870741CAF83F1760DF112A936B8C8A4F89BBE13D8549231CD11AF94A2747A`.

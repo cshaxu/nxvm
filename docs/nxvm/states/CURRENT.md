@@ -1,5 +1,13 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Current prefix-dispatch candidate rejected
+
+Current-source opcode prefix classification reuse improved the x64 fixed
+checkpoint but was slower in both pinned x86 comparisons. It is not retained;
+the full system-usability objective remains open. See the S39 convergence
+evidence for scope and measurement limits.
+
+
 ### Admitted PIC deadline owner consolidation
 
 Inline the sole `pic_ticks_until_one` helper into `x86_pic_ticks_until_event`;
