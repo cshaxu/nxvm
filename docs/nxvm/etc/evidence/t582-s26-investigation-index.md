@@ -63,6 +63,7 @@ These are bounded improvements; none establishes real-time performance.
 - Direct primary-opcode dispatch: [S26 dispatch probe](t582-s26-direct-dispatch.md).
 - Memory-route one-pass and SMRAM cache candidates: [S15](t582-s15-cpu-line-audit.md) and [S19](t582-s19-steady-profile.md).
 - Combined raw/decoded scan on current routing: [S39 current comparison](t582-s39-execution-convergence.md#combined-raw-and-decoded-provider-scan-on-current-routing).
+- Replacement-query placement and two-provider population: [S39 measurement](t582-s39-execution-convergence.md#replacement-provider-scan-population).
 - Memory-route address-index upper bound: [S39 measurement](t582-s39-execution-convergence.md#memory-route-address-index-upper-bound).
 - 486 cache lookup and line-proof frequency: [S26 cache query](t582-s26-cache-query-cost.md).
 - Ordinary cache access and guest-visible test-register publication:

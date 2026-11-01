@@ -3063,3 +3063,31 @@ intervals; it neither independently proves the entire menu frame nor reports
 the DOS arrival time or native desktop/RDP behavior. User CMOS and media were
 not touched. x86 guest-log SHA-256:
 `61D1BF95E50D6096DB0C98684C79EE3874D7BB96731B00068E67A0AFD8600EC7`.
+
+## Replacement-provider scan population
+
+A task-only x64 counter in the current memory resolver counted the early
+10-million-instruction private-CMOS startup checkpoint. Of the decoded-route
+collections it observed 5,407,726 with no geometric match, 1,925,516 with
+one, and 12,330,151 with two. Every two-match sample had an ordinary route
+registered before a replacement route. The replacement tier's query returned
+success 13,944,733 times and a non-success zero times in this run. Counts
+include setup and the stopping interval; instrumentation changes code layout
+and timing, and these are not whole-boot, exclusive-cost or x86 counts.
+
+A scratch candidate queried replacement routes as they were found in the
+existing geometric scan, retaining ordinary and fallback selection afterward.
+It relies on the declared observational-query contract and was not qualified
+for all callback/reentrancy cases. One ordered baseline/candidate pair at the
+same 10,000,000 instructions, 79,964,294 ticks and `0003dbc5` checkpoint took
+18,586/20,275 ms on x64 and 24,106/23,945 ms on x86. The x64 sample was
+slower; the x86 difference is small compared with run-to-run variation. These
+are not full-state or end-to-end comparisons. The candidate duplicates query
+and failure handling and does not demonstrate a useful benefit, so it was not
+adopted or subjected to product qualification. No production code, user media
+or published executable changed.
+
+Population log SHA-256:
+`FBD3FAFC617C6229596BDA50B7670BE243EC7771C393217935C21EB334B3F9A7`;
+comparison log SHA-256:
+`F3A242438563BA3C8E38D7A914DAD4EB1D7E58D8624DB5BADA17F93E0157CB89`.
