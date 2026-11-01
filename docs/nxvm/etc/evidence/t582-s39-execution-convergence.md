@@ -3042,3 +3042,24 @@ desktop state. Neither the user CMOS nor media was modified. Even with the
 separate configured-CMOS input the measured menu time remains approximately
 210 seconds, so the first-run setup distinction does not resolve the
 performance problem.
+
+## Current x86 Personaware menu observation
+
+A task-only x86 build of the existing menu probe used the current release
+libraries and FDC source, private copies of both media and the same adjacent
+configured CMOS seed used for the x64 FDC comparison (SHA-256
+`608df3abc3cdd9bb3e35015d2d7aa9d8756567e080643b01e593ff99d1616034`).
+It exited successfully after 274.15 host seconds with `MENU-READY` at
+sample 270. Its last recorded quantum before the marker had retired
+135,225,679 instructions at 684,593,002 guest ticks. The previous x64
+candidate reached the same two-pixel marker in 209.59 seconds, with the last
+recorded quantum at 135,529,605 instructions and 685,553,826 ticks. The
+samples are separate runs, not an interleaved host-width benchmark; the
+sampled quantum does not establish identical complete state. Both results
+show multi-minute startup, not acceptable responsiveness.
+
+The menu detector checks two graphics pixels and samples at one-second
+intervals; it neither independently proves the entire menu frame nor reports
+the DOS arrival time or native desktop/RDP behavior. User CMOS and media were
+not touched. x86 guest-log SHA-256:
+`61D1BF95E50D6096DB0C98684C79EE3874D7BB96731B00068E67A0AFD8600EC7`.

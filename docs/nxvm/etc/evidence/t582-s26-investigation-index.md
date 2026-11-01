@@ -147,6 +147,10 @@ These are bounded improvements; none establishes real-time performance.
 
 ## Direction and evidence limits
 
+The current dual-width menu observations are recorded with the
+[FDC result and x86 follow-up](t582-s39-execution-convergence.md#current-x86-personaware-menu-observation).
+They remain multi-minute startup measurements, not desktop acceptance.
+
 The measured World Clock workload advanced approximately six guest seconds in 60 host seconds ([S19](t582-s19-steady-profile.md)). A separate instrumented sample attributed roughly 65% of Machine-run intervals to CPU refresh and the rest to Machine-side work, scheduling and instrumentation; roughly 29% of sampled refresh intervals was timing selection and observation ([S20](t582-s20-execution-cost.md)). These are approximate inclusive measurements from a specific workload, not exact production percentages.
 
 The configured external-media inventory and the distinction between clock and interactive acceptance are recorded in the [workload audit](t582-s26-workload-audit.md).
