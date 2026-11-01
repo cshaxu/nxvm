@@ -23,9 +23,14 @@ static lib_i32 cpu_completion_wake(x86_core_cpu_profile profile, lib_bool nmi, l
     } else fixture.interrupt=LIB_TRUE;
     fixture.fail_transfer=failure == 1u;
     fixture.fail_acknowledge=failure == 2u;
+    fixture.execution.completed_observation.next_lexeme_components=0x7fu;
     x86_core_cpu_execution_refresh(&fixture.execution);
     const lib_bool delivered=x86_core_cpu_execution_consume_instruction_fault_delivery(&fixture.execution);
+    x86_core_cpu_instruction_observation observation;
+    x86_core_cpu_execution_copy_observation(&fixture.execution,&observation);
     if (fixture.execution.completed_observation_valid ||
+        fixture.execution.completed_observation.next_lexeme_components != 0u ||
+        observation.next_lexeme_components != 0u || observation.eax != fixture.cpu.data.eax ||
         x86_core_cpu_execution_consume_instruction_fault_delivery(&fixture.execution) ||
         x86_core_cpu_capture_timing(&fixture.execution).ticks) return 1;
     if (failure) {

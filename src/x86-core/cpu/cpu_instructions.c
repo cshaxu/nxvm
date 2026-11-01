@@ -21164,7 +21164,9 @@ static void _execution_refresh(
 {
     lib_bool executed = LIB_FALSE;
 
-    context->completed_observation = (x86_core_cpu_instruction_observation){0};
+    /* The invalid observation is rebuilt before publication; timing may
+     * write this field before that rebuild. */
+    context->completed_observation.next_lexeme_components = 0u;
     context->completed_observation_valid = LIB_FALSE;
     context->timing_result = (x86_core_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
