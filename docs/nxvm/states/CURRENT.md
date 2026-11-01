@@ -1,5 +1,11 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Empty FDC advancement candidate rejected
+
+An idle-command FDC guard showed mixed fixed-work results and was slower in
+both x86 run orderings; it added conditions and was not adopted. Full guest
+and callback equivalence was not established. S39 remains active.
+
 ### DMA signal reuse candidate rejected
 
 A scratch candidate reused the primary DMA signal snapshot only when the

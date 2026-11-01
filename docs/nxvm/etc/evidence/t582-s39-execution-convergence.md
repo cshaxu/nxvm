@@ -4391,6 +4391,25 @@ No production source, interface, test or product artifact was changed.
 Comparison log SHA-256:
 `4FC40D5D7B21F0EAFE3990FC8E97E995A14B9DB98AEF2F08B643D5D6BEA7B25B`.
 
+### Empty FDC command-phase advance candidate
+
+A task-only FDC candidate still updated elapsed guest time, then returned in
+the command phase only when no head unload, seek, reset, DMA byte, non-DMA
+byte or service deadline was pending. Other phases and pending events followed
+the existing route. This was an exploratory guard, not a fully qualified
+proof of callback or guest-device equivalence.
+
+At the private-media 10,000,000-instruction checkpoint, baseline/candidate
+elapsed times were 21,931/20,296 ms on x64 and 24,738/26,716 ms on x86. The
+x86 reverse-order candidate/baseline pair was 25,947/24,368 ms. Every run
+reported 79,964,294 guest ticks and PC `0003dbc5`. These short ordered samples
+are sensitive to host variation and do not prove complete state equivalence or
+full-system performance; nevertheless, the extra conditions and two adverse
+x86 comparisons do not justify adoption. No production source, test, public
+interface or artifact changed. Forward and reverse logs SHA-256:
+`8D3FF6846C4977FF009F42EC00FBE1E479381689AFF8552B4A41C9884B26A704`,
+`C03DB5EC095151D6DC4A0676EB7ACE6A08F7B5B52489D651B382123F8E35E685`.
+
 
 ### Current prefix-dispatch reuse recheck
 

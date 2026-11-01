@@ -39,6 +39,7 @@ These are bounded improvements; none establishes real-time performance.
 - PIT-only zero-tick call guard: [S39 probe](t582-s39-execution-convergence.md#pit-only-zero-tick-call-guard).
 - PIC source-mask expression: [S39 probe](t582-s39-execution-convergence.md#pic-source-mask-expression-probe).
 - Idle floppy head-unload scan: [S39 dual-width probe](t582-s39-execution-convergence.md#idle-floppy-head-unload-guard).
+- Empty FDC command-phase advancement: [S39 comparison](t582-s39-execution-convergence.md#empty-fdc-command-phase-advance-candidate).
 - Instruction preview and copies: [S11](t582-s11-performance-observation.md), [S22](t582-s22-cache-copy-audit.md), [S26 preview copy](t582-s26-preview-audit.md) and [preview count](t582-s26-preview-cost.md).
 - Measured compact preview candidate and receiving status: [S26 compact preview](t582-s26-compact-preview.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
