@@ -3365,3 +3365,33 @@ First-series logs, x64/x86, SHA-256:
 Second-series logs, x64/x86, SHA-256:
 `E55D01AD357E66C1F3B89DCDEAC2C29FB590616643CCF73E0B038C7AF9CBACD8`,
 `057190B36B320DCD2E0FECAA0750758A3341916A5C4CC5AB151045B5C2054E02`.
+
+### Separating transaction admission from memory routing
+
+Using the same neutral Machine direct-refresh synthetic loop, a task-only read
+callback retained the original memory inspection, reset fetch, instruction
+fetch, ordinary read, fallback and optional cache-control calls, but deliberately
+omitted transaction begin/commit/cancel. It is an invalid production path:
+transactions also protect lock, failure, observation and reentrancy semantics.
+The NOP/JMP fixture has no board attachment and is not a PC110 boot.
+
+In baseline / bypass / bypass / baseline order, x64 reported
+6,249 / 7,019 / 7,018 / 7,715 ms and x86 reported
+8,531 / 8,888 / 9,385 / 9,416 ms. Each run reported ten million refreshes,
+40,000,014 CPU ticks and PC `000f0001`. Each ordered sequence shows host drift,
+and the endpoints do not establish complete state equivalence. Neither width
+demonstrates a stable benefit from bypassing transaction admission alone, so
+the previous flat-buffer upper bound cannot be attributed to that one owner.
+No production code was changed.
+
+The synthetic reset alias does make its mapping list nonempty, whereas a
+previously instrumented real-PC110 startup cache-fill sample observed no
+mapping list or address mask in 2,566,175 probes (S37). Therefore its
+conservative alias-span behavior must not be generalized to real PC110.
+The remaining productive investigation is the real startup memory path,
+including provider queries, access sizes and failure/alias semantics, rather
+than optimizing the synthetic fixture's alias case.
+
+Log SHA-256, x64 then x86:
+`7D80B66065D387C344D8EDEE1E0A19B202A908191BE6D41C79D68AA6CC08B974`,
+`D1102E88AF4E74B84C07EF93E3EB45D0AF61E9E039CBED885E490556C6526551`.
