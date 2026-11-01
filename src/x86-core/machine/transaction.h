@@ -41,12 +41,43 @@ void x86_core_machine_transaction_initialize(x86_core_machine_transaction_state 
 void x86_core_machine_transaction_reset(x86_core_machine_transaction_state *state);
 void x86_core_machine_transaction_bind_trace(x86_core_machine_transaction_state *state,
     x86_core_machine_transaction_trace_callback callback, void *context);
-lib_status x86_core_machine_transaction_begin(x86_core_machine_transaction_state *state,
+/* Internal trace owner shared by the transaction operations. */
+void x86_core_machine_transaction_record(x86_core_machine_transaction_state *state,
+    x86_core_machine_transaction_phase phase);
+
+static inline lib_status x86_core_machine_transaction_begin(x86_core_machine_transaction_state *state,
     x86_core_machine_transaction_owner owner, x86_core_machine_transaction_kind kind,
-    lib_u32 address, lib_u32 value, lib_u32 detail);
+    lib_u32 address, lib_u32 value, lib_u32 detail)
+{
+    if (state == LIB_NULL || owner == X86_CORE_MACHINE_TRANSACTION_OWNER_NONE ||
+        kind < X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ ||
+        kind > X86_CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE ||
+        state->owner != X86_CORE_MACHINE_TRANSACTION_OWNER_NONE ||
+        (state->hold_owner != X86_CORE_MACHINE_TRANSACTION_OWNER_NONE &&
+         (state->hold_owner != owner || !state->hold_acknowledged))) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    state->owner = owner;
+    state->kind = kind;
+    state->address = address;
+    state->value = value;
+    state->detail = detail;
+    if (state->trace != LIB_NULL)
+        x86_core_machine_transaction_record(state, X86_CORE_MACHINE_TRANSACTION_PHASE_BEGIN);
+    return LIB_STATUS_OK;
+}
 void x86_core_machine_transaction_set_value(x86_core_machine_transaction_state *state,
     lib_u32 value);
-void x86_core_machine_transaction_commit(x86_core_machine_transaction_state *state);
+static inline void x86_core_machine_transaction_commit(x86_core_machine_transaction_state *state)
+{
+    if (state == LIB_NULL || state->owner == X86_CORE_MACHINE_TRANSACTION_OWNER_NONE) {
+        return;
+    }
+    if (state->trace != LIB_NULL)
+        x86_core_machine_transaction_record(state, X86_CORE_MACHINE_TRANSACTION_PHASE_COMMIT);
+    ++state->committed_count;
+    state->owner = X86_CORE_MACHINE_TRANSACTION_OWNER_NONE;
+}
 void x86_core_machine_transaction_cancel(x86_core_machine_transaction_state *state);
 lib_status x86_core_machine_transaction_hold_request(
     x86_core_machine_transaction_state *state, x86_core_machine_transaction_owner owner,
