@@ -3452,3 +3452,47 @@ possible behavior difference and lack of stable benefit do not justify this
 design. No production source or released artifact changed, and no full boot
 or RDP result was measured. Log SHA-256:
 `6008E7244A137E3AA06DAB641E3FE915301B47CAB1D4C19277717B85FCC0FE45`.
+
+## Startup branch timing and lexical-preview attribution
+
+A task-only x64 build sampled instruction execution and timing selection by
+decoded primary opcode at one in 256 CPU refresh entries over a 60-million
+retired-instruction private-media startup. It ended at 365,365,343 guest ticks
+and PC `00038887` in 91,987 ms. The first and second stages are split at
+30 million refresh entries, not exact retirements. Fixed-interval sampling,
+nonserialized TSC, possible interrupt/decoder-record reuse and code-layout
+changes limit attribution; the run did not reach the menu or test RDP.
+
+In the later stage, opcode `74h` accounted for 18,651 samples and 15,986,580
+sampled timing TSC units, compared with 66,228,510 for timing selection across
+the entire sampled stage. Execution of those samples totaled 7,580,196 units.
+These are inclusive sampled intervals, not a precise percentage of whole boot.
+Other common sampled instructions included `E4h`, `24h`, `3Ah` and `E2h`.
+
+A separate link-wrapper run on the same configured CMOS and private media
+split its stages by the last completed Machine quantum's retired count, at
+30 million instructions. It counted 3,477,525 target lexical previews
+attributed to `74h` in the later stage; all returned an available lexeme. Of these, 13,533 sampled preview
+calls accumulated 10,214,868 nonserialized TSC units. The timing and preview
+figures are from different runs and cannot be subtracted or added, but support
+investigating the existing target-preview path rather than only the simple
+branch-condition expression. The previews also feed the existing completed
+CPU observation; removing them solely because this workload has no subscriber
+would change that contract.
+
+A further separate run sampled whether the retained prefetch range was
+eligible under the previously tested guard. None of 13,533 later-stage `74h`
+preview samples had an eligible retained range; across all later preview
+opcodes, 2,988 of 24,517 samples had one and 2,750 were decodable from it.
+This explains why the earlier retained-prefetch candidate's first-ten-million
+coverage cannot be assumed for these common taken branches. It does not prove
+that a different cache-based preview can preserve paging, permissions, memory
+mutation, faults and all CPU profiles. The first attempt at this diagnostic
+failed to compile because it referenced a translation-unit-private scanner;
+the corrected version used the existing public scanner only when its options
+matched. No production source, interface or release artifact changed.
+
+Opcode-stage, preview-count and prefetch-sample logs have SHA-256 respectively
+`6879F3A4F9AD6020DD536BB31A9896059B6F1E2B41E00B14D297E6E5C0ED4E1C`,
+`8D426F5CBCDA6A4C03E16A565BEBBDD8CB1567547B25DC8D372F6F061EC4DF95`, and
+`2F6C2F8053250A93867551A4A04BC991779E31497497C6F847F14CDE5928E177`.
