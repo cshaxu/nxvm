@@ -43,7 +43,7 @@ typedef struct {
     lib_u8 pcn[X86_FDC_DRIVE_COUNT];
     lib_u16 seek_target[X86_FDC_DRIVE_COUNT];
     lib_u64 seek_due_tick[X86_FDC_DRIVE_COUNT];
-    lib_u8 seek_pending[X86_FDC_DRIVE_COUNT];
+    lib_u8 seek_pending_mask;
     lib_bool seek_recalibrate[X86_FDC_DRIVE_COUNT];
     lib_u8 seek_head[X86_FDC_DRIVE_COUNT];
     lib_u8 seek_steps[X86_FDC_DRIVE_COUNT];
@@ -90,7 +90,6 @@ struct x86_fdc {
 };
 
 /* main status register bits */
-#define VFDC_MSR_DB(id) (1 << (id)) /* fdd #id is in seek mode */
 #define VFDC_MSR_CB  0x10 /* a read or write command is in process */
 #define VFDC_MSR_NDM 0x20 /* non-dma mode in process */
 #define VFDC_MSR_DIO 0x40 /* data read-by(1) or write-to(0) processor */

@@ -66,7 +66,6 @@ static lib_u8 x86_fdc_sector_size(lib_u8 code)
 static lib_u8 x86_fdc_msr(const x86_fdc *fdc)
 {
     lib_u8 value;
-    lib_u8 drive;
 
     switch (fdc->data.phase) {
     case x86_fdc_PHASE_PENDING_COMMAND:
@@ -95,9 +94,7 @@ static lib_u8 x86_fdc_msr(const x86_fdc *fdc)
     default:
         value = VFDC_MSR_RQM; break;
     }
-    for (drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.seek_pending[drive]) value |= VFDC_MSR_DB(drive);
-    }
+    value |= fdc->data.seek_pending_mask;
     return value;
 }
 
@@ -499,7 +496,7 @@ static void x86_fdc_begin_seek(x86_fdc *fdc, lib_u16 target)
     fdc->data.seek_due_tick[drive] = x86_fdc_deadline(fdc->data.elapsed_ticks,
         (complete || !x86_fdc_drive_status_ready(fdc, drive) ?
             0u : x86_fdc_step_ticks(fdc)));
-    fdc->data.seek_pending[drive] = LIB_TRUE;
+    fdc->data.seek_pending_mask |= (lib_u8)(1u << drive);
     x86_fdc_command_phase(fdc);
 }
 
@@ -947,7 +944,7 @@ static void x86_fdc_execute(x86_fdc *fdc)
             fdc->data.seek_result_count != 0u) ||
         ((opcode == x86_fdc_CMD_SEEK ||
             opcode == x86_fdc_CMD_RECALIBRATE) &&
-            fdc->data.seek_pending[fdc->data.cmd[1] & 3u])) {
+            (fdc->data.seek_pending_mask & (1u << (fdc->data.cmd[1] & 3u))))) {
         fdc->data.ret[0] = 0x80u;
         x86_fdc_result_phase(fdc, 1u);
         return;
@@ -1248,7 +1245,7 @@ static void x86_fdc_finish_seek(x86_fdc *fdc,
     lib_u8 drive, lib_u8 status)
 {
     const lib_u8 index = fdc->data.seek_result_count++;
-    fdc->data.seek_pending[drive] = LIB_FALSE;
+    fdc->data.seek_pending_mask &= (lib_u8)~(1u << drive);
     fdc->data.seek_result_st0[index] = status | VFDC_ST0_SEEK_END |
         fdc->data.seek_head[drive] | drive;
     fdc->data.seek_result_cylinder[index] = fdc->data.pcn[drive];
@@ -1263,8 +1260,9 @@ static void x86_fdc_step_drive(x86_fdc *fdc,
 
 static void x86_fdc_advance_seeks(x86_fdc *fdc)
 {
+    if (fdc->data.seek_pending_mask == 0u) return;
     for (lib_u8 drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.seek_pending[drive] &&
+        if ((fdc->data.seek_pending_mask & (1u << drive)) &&
             !x86_fdc_drive_status_ready(fdc, drive)) {
             x86_fdc_finish_seek(fdc, drive,
                 x86_fdc_ST0_ABNORMAL | x86_fdc_ST0_NOT_READY);
@@ -1275,7 +1273,7 @@ static void x86_fdc_advance_seeks(x86_fdc *fdc)
         lib_u64 due = LIB_UINT64_MAX;
         lib_bool complete;
         for (lib_u8 drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
-            if (fdc->data.seek_pending[drive] && fdc->data.seek_due_tick[drive] <=
+            if ((fdc->data.seek_pending_mask & (1u << drive)) && fdc->data.seek_due_tick[drive] <=
                 fdc->data.elapsed_ticks && (next == X86_FDC_DRIVE_COUNT ||
                 fdc->data.seek_due_tick[drive] < due)) {
                 next = drive;
@@ -1351,19 +1349,19 @@ lib_status x86_fdc_next_due_tick(const x86_fdc *fdc,
     }
     pending = fdc->data.reset_pending || fdc->data.dma_byte_gate_pending ||
         fdc->data.ndma_byte_gate_pending || fdc->data.service_pending ||
-        fdc->data.head_unload_mask != 0u ||
+        fdc->data.head_unload_mask != 0u || fdc->data.seek_pending_mask != 0u ||
         fdc->data.phase == x86_fdc_PHASE_HEAD_LOAD;
     if (fdc->data.phase == x86_fdc_PHASE_HEAD_LOAD)
         due_tick = fdc->data.head_load_due_tick;
     if (fdc->data.reset_pending && fdc->data.reset_due_tick < due_tick) {
         due_tick = fdc->data.reset_due_tick;
     }
-    for (drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
+    for (drive = 0u; (fdc->data.head_unload_mask | fdc->data.seek_pending_mask) != 0u &&
+            drive < X86_FDC_DRIVE_COUNT; ++drive) {
         if ((fdc->data.head_unload_mask & (1u << drive)) != 0u &&
             fdc->data.head_unload_due_tick[drive] < due_tick)
             due_tick = fdc->data.head_unload_due_tick[drive];
-        pending |= fdc->data.seek_pending[drive];
-        if (fdc->data.seek_pending[drive] && fdc->data.seek_due_tick[drive] < due_tick) {
+        if ((fdc->data.seek_pending_mask & (1u << drive)) && fdc->data.seek_due_tick[drive] < due_tick) {
             due_tick = fdc->data.seek_due_tick[drive];
         }
     }

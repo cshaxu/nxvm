@@ -170,7 +170,7 @@ static lib_i32 seek_ownership(fixture *state)
     failed |= fdc->data.seek_result_count != X86_FDC_DRIVE_COUNT;
     fixture_command(state, (const lib_u8[]){0x0fu, 0u, 2u}, 3u);
     if (fdc->data.phase != x86_fdc_PHASE_RESULT ||
-        fdc->data.seek_pending[0u] ||
+        (fdc->data.seek_pending_mask & (1u << 0u)) ||
         !fixture_result(state, result, 1u) || result[0] != 0x80u) {
         lib_c_fprintf(lib_c_stderr, "FDC accepted fifth undrained seek completion\n");
         failed = 1;
@@ -199,7 +199,7 @@ static lib_i32 seek_ownership(fixture *state)
     x86_fdc_reset(fdc);
     failed |= fdc->data.seek_result_count != 0u || state->irq;
     for (lib_u8 drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive)
-        failed |= fdc->data.seek_pending[drive];
+        failed |= (fdc->data.seek_pending_mask & (1u << drive));
     return failed;
 }
 
@@ -244,11 +244,11 @@ static lib_i32 seek_cadence(void)
     fixture_command(state, (const lib_u8[]){0x03u, 0xdfu, 0x03u}, 3u);
     state->now = 99u;
     fixture_command(state, (const lib_u8[]){0x0fu, 0u, 3u}, 3u);
-    failed |= !fdc->data.seek_pending[0u] || fdc->data.pcn[0u] != 0u ||
+    failed |= !(fdc->data.seek_pending_mask & (1u << 0u)) || fdc->data.pcn[0u] != 0u ||
         state->irq || fdc->data.seek_due_tick[0u] != 24100u;
     state->now = 72099u;
     x86_fdc_advance_at(fdc, state->now);
-    failed |= !fdc->data.seek_pending[0u] || state->irq || fdc->data.pcn[0u] != 2u;
+    failed |= !(fdc->data.seek_pending_mask & (1u << 0u)) || state->irq || fdc->data.pcn[0u] != 2u;
     state->now = 72100u;
     x86_fdc_advance_at(fdc, state->now);
     failed |= fdc->data.pcn[0u] != 3u || !state->irq;
@@ -261,11 +261,11 @@ static lib_i32 seek_cadence(void)
 
     fixture_command(state, (const lib_u8[]){0x0fu, 0u, 7u}, 3u);
     fixture_command(state, (const lib_u8[]){0x0fu, 1u, 1u}, 3u);
-    failed |= !fdc->data.seek_pending[0u] || !fdc->data.seek_pending[1u] ||
+    failed |= !(fdc->data.seek_pending_mask & (1u << 0u)) || !(fdc->data.seek_pending_mask & (1u << 1u)) ||
         (x86_fdc_read_status(fdc) & 3u) != 3u;
     state->now = 96102u;
     x86_fdc_advance_at(fdc, state->now);
-    failed |= fdc->data.seek_pending[1u] || !fdc->data.seek_pending[0u] || !state->irq;
+    failed |= (fdc->data.seek_pending_mask & (1u << 1u)) || !(fdc->data.seek_pending_mask & (1u << 0u)) || !state->irq;
     fixture_command(state, (const lib_u8[]){0x08u}, 1u);
     failed |= !fixture_result(state, result, 2u) ||
         (result[0] & 3u) != 1u || result[1] != 1u;
@@ -274,6 +274,14 @@ static lib_i32 seek_cadence(void)
     fixture_command(state, (const lib_u8[]){0x08u}, 1u);
     failed |= !fixture_result(state, result, 2u) ||
         (result[0] & 3u) != 0u || result[1] != 7u;
+    /* Each drive owns its own MSR bit, including drives 2 and 3. */
+    fixture_arm(state);
+    for (lib_u8 drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
+        fixture_command(state, (const lib_u8[]){0x0fu, drive, 20u}, 3u);
+        failed |= (x86_fdc_read_status(fdc) & 0x0fu) != (lib_u8)((1u << (drive + 1u)) - 1u);
+    }
+    fixture_arm(state);
+    failed |= (x86_fdc_read_status(fdc) & 0x0fu) != 0u;
     if (failed) lib_c_fprintf(lib_c_stderr, "FDC step cadence/parallel seek failed\n");
     x86_fdc_destroy(fdc);
     return failed;
