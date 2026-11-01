@@ -2517,3 +2517,75 @@ MyRaidenII logs SHA-256 respectively:
 `53D1E963A18A7C413236A142D84412B51EB6307E1E395BEB3C79E2E3216BF9A0`,
 `9502CAAF1501A07A3B4F64B7F36A55ADCA50162E6123FF95337B51111CB756FB`,
 `967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
+
+### Empty timeline advance upper-bound probe
+
+A scratch-only scheduler candidate directly advanced the timeline's `now`
+when its heap was empty and the target was not earlier than the current time;
+nonempty or invalid-time cases retained the original timeline operation. This
+bypasses the timeline owner and is not a production design. It was used only
+to estimate the value of eliminating the empty-queue call.
+
+One x64 private-media baseline/candidate fixed-work pair measured
+18,629/18,524 ms, with 10,000,000 instructions, 79,964,294 ticks and PC
+`0003dbc5` in both cases. The 0.6% difference is smaller than observed host
+variation and matching endpoints do not prove event or full-state equivalence.
+The experiment does not justify adding a fast path or changing component
+boundaries; no x86 or full-boot test followed and no production source changed.
+Job log SHA-256: `9B5997BD08DAC4E969FF84AA0ED992EAF69B0D6F32AAF8AF75447CFC7C603B9B`.
+
+### 486SX absent-FPU scheduler candidate
+
+An older absent-FPU ablation had incompatible compile definitions and is not
+usable performance evidence. This new scratch comparison compiled the
+scheduler with the same `X86_CORE_MACHINE_RUNTIME_TRACE_ENABLED=0` setting as
+the linked Release libraries. It avoids the FPU deadline and advance calls
+only for the already-admitted 486SX machine profile: neutral configuration
+rejects any FPU other than NONE for that profile, and the FPU owner cannot
+set busy when NONE. All other profiles follow the original FPU path. There is
+no new API or mirrored presence state. The existing profile-gate fixture now
+checks that 486SX plus 80387 is rejected.
+
+At the same 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`,
+one baseline/candidate pair reported 19,544/17,792 ms x64 and 22,988/22,406
+ms x86. These are one ordered pair per width, not stable gains or full-state
+equivalence. After applying the candidate, existing FPU, timeline, executor
+and profile tests passed 6/6 on both widths. Full-menu results and the final
+disposition follow below. Fixed-work log hashes x64/x86:
+`13B1FBFF050CAED5322CB0B504CEE24615AF575F5CE0DDF7EBB335A59893E033`,
+`BECE9D779FCEF3DECFCD4A148FED4F1F43426BC14985B65F7CC1E1982FCEA327`.
+
+The full-menu x64 private-media baseline/candidate comparison reached the
+existing menu detector in 190.38/205.48 seconds with identical adjacent CMOS
+hash `608df3abc3cdd9bb3e35015d2d7aa9d8756567e080643b01e593ff99d1616034`.
+This is one sequential pair and host drift prevents attributing the difference
+with confidence; it does not establish a real boot improvement. The candidate
+also hard-codes a scheduler dependency on the CPU/FPU pairing invariant at two
+sites. Given the slower observed menu run and the additional coupling, the
+candidate and its temporary pairing test were reverted. The original
+production sources and manifests were restored, the existing six FPU/profile/
+executor/timeline tests passed again on both widths, and the two MyPC110
+published EXEs were restored to their committed bytes. No whole-repository
+test or interactive acceptance was claimed for the rejected candidate. Menu
+log SHA-256: `0A40EFED68778DF39A0A49F0B56F24032033B93196C60A8757EBE9F7E1E82F7C`.
+
+### Post-optimization Personaware input response
+
+A hidden x64 product-factory probe linked the current PIC/transaction build
+and used private copies of the disks and the configured 128-byte CMOS beside
+its executable. The existing two-pixel menu detector matched at sample 242.
+The saved menu frame was visually inspected and showed the selected World Clock
+entry. The probe submitted one Enter make/break pair through the existing
+Machine input queue, waited 15 host seconds, then saved the published frame.
+Visual inspection of that frame shows the World Clock window with Tokyo and
+New York clock fields, demonstrating a response through this direct Machine
+input path. The process cleaned up successfully after 261.53 seconds; final
+RTC seconds read 21, after 20 in the displayed menu frame. The delay includes
+the explicit 15-second observation interval and is not an input latency
+measurement. This was a single x64 probe, not native Window/RDP input, an x86
+run, a complete application suite or proof of real-time usability. It changes
+neither owner media nor production code. Menu, response frame and guest-log
+SHA-256 respectively:
+`85A35680232CA0AD623DB7DD18D23A79396931ACB133791581D40C37048AEF41`,
+`2758C0B659C28139981D9B3ABFCFDAB070E088EB3B604BEC68D3C7DF16875B6C`,
+`B7AAAC0D54CE5BDCD3C36AA0AB3157F00D5B45A16886BE7CC459BEEA7B7F7AE9`.

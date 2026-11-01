@@ -40,6 +40,7 @@ These are bounded improvements; none establishes real-time performance.
 - Keyboard signal predicate: [compiled check](t582-s39-execution-convergence.md#keyboard-signal-snapshot-compiled-check).
 - Flush-pending guard split: [S39 experiment](t582-s39-execution-convergence.md#flush-pending-guard-split-experiment).
 - Port transaction value setter inlining: [S39 probe](t582-s39-execution-convergence.md#port-transaction-value-setter-inlining-probe).
+- Empty timeline advancement: [S39 probe](t582-s39-execution-convergence.md#empty-timeline-advance-upper-bound-probe).
 - 486 decode-prefix single-scan: [S39 experiment](t582-s39-execution-convergence.md#486-decode-prefix-single-scan-experiment).
 - Branch timing condition simplification: [S26 comparison](t582-s26-branch-condition.md).
 - Deferred timing-branch next-byte lookup: [S26 comparison](t582-s26-branch-next-byte.md).
@@ -58,6 +59,7 @@ These are bounded improvements; none establishes real-time performance.
 - Ordinary cache access and guest-visible test-register publication:
   [S26 cache query](t582-s26-cache-query-cost.md#ordinary-access-test-register-publication-audit).
 - Absent-FPU scheduler call removal: [S26 FPU probe](t582-s26-fpu-scheduler-probe.md).
+- Correct-layout 486SX absent-FPU guard: [S39 comparison](t582-s39-execution-convergence.md#486sx-absent-fpu-scheduler-candidate).
 - Retirement trace disabled-path guard: [S26 trace audit](t582-s26-trace-audit.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
