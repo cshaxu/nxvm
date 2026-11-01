@@ -1,5 +1,28 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted shared PIC idle-selection reduction
+
+When a ready 8259 has no unmasked pending request, return the existing
+INVALID_STATE result before scanning priority slots. Reuse that same pending
+mask in the existing nonempty scan; preserve invalid arguments, initialization,
+masked/delayed requests, priority, cascade, level, acknowledgment and output
+ownership. No state, API, model branch or guest-time shortcut is added. The
+PC110 response-path counter measured this existing case in both startup and
+interaction; its instrumented duration is not a speed benchmark. Differential
+state and focused PIC tests precede the dual-width full Shared receiver,
+fourteen-artifact and private-media system checks. User requires equivalent
+optimizations for all PC profiles and no model-specific special cases.
+
+Both widths passed 14 focused interrupt tests and two million sampled-state
+PIC differential cases. In the cached receiver, x64 unit was 711/712 with
+one parallel timeout passing on isolated retry; x86 was 712/712. Default
+integration was 47/48 on x64 (native MIDI unavailable) and 48/48 on x86;
+all PC profile receivers and MyRaidenII probes passed. Final private-media
+menu/input frame-change samples were 178/8 x64 and 254/13 x86; these isolated
+samples do not prove stable improvement or native Window/RDP responsiveness.
+S39 remains active for actual system usability.
+
+
 ### Admitted cross-profile timing prefix handoff
 
 Compute Intel instruction-prefix position once in the existing timing selector

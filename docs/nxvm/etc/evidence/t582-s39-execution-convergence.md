@@ -2590,7 +2590,7 @@ gameplay. X86 NXVM source/test manifests, dependency checks, documentation
 governance and `git diff --check` passed.
 
 All fourteen released PE widths were checked and hashed in
-[t582-s39-pic-idle-artifacts.json](t582-s39-pic-idle-artifacts.json). The
+[t582-s39-pic-select-empty-artifacts.json](t582-s39-pic-select-empty-artifacts.json). The
 MyPC110 assets matched the current builds, and MyNES assets were byte-identical
 to their current builds. The complete-menu result is x64-only and the native
 PC110 Window/RDP experience was not tested. Qualification, isolated MIDI and
@@ -4165,3 +4165,91 @@ before changing it. No production code or artifact changed in this sample.
 Sampler and guest-log SHA-256 respectively:
 `F6E929289309138336DBC590DBADF8ED37F051322663764B7E13D911EDBC0D5F`,
 `1824025AB1FE5493B91740CBD6948C21009B1C9FA436FC09210E575E9D5DDB4F`.
+
+
+### Shared PIC idle-selection reduction
+
+The existing `x86_pic_select` scans all eight priority positions even if its
+pure unmasked pending mask is zero. The ready-controller case now evaluates
+the mask once and returns its existing INVALID_STATE without touching the
+request output when empty; nonempty selection uses the same mask and the
+existing delay, priority and cascade logic. Argument and initialization
+checks remain first. This is a common PIC change, not a PC110 or App branch;
+it introduces no new interface, persistent state or guest-time shortcut.
+
+A task-only current-source comparison tested two million pseudorandom PIC
+states on each host width, comparing status and every output field with the
+original selector. Existing PIC and board interrupt tests also passed 14/14
+on each width. This differential does not enumerate all reachable temporal
+sequences; the existing lifecycle, level and delay tests cover actual paths.
+
+An instrumented private-media x64 Machine run recorded 226,775,492 ready-PIC
+selections before the input marker, of which 226,738,450 had no unmasked
+request. After the marker it recorded 11,261,815 selections, of which
+11,259,819 were empty. The counters add work, and the stage boundary follows
+the queued input, not the guest's acceptance; the result establishes frequency
+for this one run, not exclusive host cost. The frame-change criterion does
+not prove complete redraw or native Window/RDP responsiveness.
+
+A same-process 4-million-selection microfixture mostly containing idle PICs
+reported original/candidate/candidate/original 91/27/25/96 ms x64 and
+103/26/29/106 ms x86, with equal checksums. This isolates the selector and is
+not an end-to-end speedup. At the ten-million-instruction PC110 checkpoint,
+original/candidate and reverse candidate/original respectively measured
+17,907/17,898 and 17,790/19,131 ms x64; x86 measured 22,882/24,015 and
+21,735/23,262 ms. Each reached the same recorded 79,964,294 guest ticks and
+PC `0003dbc5`; sequential host noise and endpoint-only comparison prevent
+a stable whole-machine conclusion. Receiver qualification and the x64 system measurement are recorded below;
+system usability remains unresolved.
+
+Logs SHA-256 in order: fixed forward, fixed reverse, differential, micro,
+real-load counter, focused tests:
+`5CA3BB5B7E7F6D2AF0EFCEF3C6A9982DCF968D6D03A7AABAE03DAA4588A7336A`,
+`5F9200E2C6158918458B8D3AD293A67680CF169379DE96DDC3D8543527197A11`,
+`526139713F8FC13552E903907AEA58F5521BE09AFBA879391B1D992450328982`,
+`269680132658928DA8F529C0FC33771F6AC620A56EBDDD3A392B37F5766368FA`,
+`8743D9242C0140AC6CC5D75DA47205DAE10CDF616853F30510904D68917AF04B`,
+`8201A860906765B2781C8543A53AC1D23929288D57102BC04490C136F151934D`.
+
+
+The cached x64 unit run passed 711/712; `emulator.verifier-negative`
+timed out at 66.66 seconds during parallel execution and passed separately
+in 22.97 seconds. The x86 unit run passed 712/712. No timeout budget was
+changed. On default integration, x64 passed 47/48 and native MIDI output
+creation failed; x86 passed 48/48 including MIDI. The owner has already
+accepted continuing past unavailable native MIDI. Each width passed the
+5160, 5170 and DeskPro receiver groups (3/3, 5/5 and 6/6), and the MyRaidenII
+selected-set startup and Console probes. These results do not validate native
+desktop interaction or game playability. The X86 NXVM source manifest,
+documentation governance and diff whitespace checks passed.
+
+A final non-instrumented x64 private-media Machine run reached the menu at
+sample 178 and the input frame-change threshold at sample 8 (190.12 seconds
+total). The preceding handoff measurement was sample 194 and input sample 8;
+these are single sequential samples susceptible to host drift, and the pixel
+threshold does not prove complete redraw. They do not establish a stable
+acceleration, and do not resolve system usability.
+
+Initial x64 unit log, isolated retry, resumed receiver, external receiver,
+and final x64 system log SHA-256 respectively:
+`69B7B8FB8768F51423D839D91346CD70CC8DDC52DC563EB2EB2DADB790B93640`,
+`B3226C295F1743286916BE66A4FE6F1DC6DE1AE3275A7EAEE56383ED367DF83D`,
+`D99B170E94B6DE483899E921303021A6E9B3D60886C08E87A0A45EA76370DC79`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`97AF06232C407F5CD0185B612E2A6181AA3FC0A08BB2D3A86AD73EF6EAC2F235`.
+
+
+The corresponding final x86 private-media Machine run reached menu sample
+254 and the input frame-change threshold at sample 13, with 271.77 seconds
+total. The previous handoff candidate recorded menu 272 and input 12; these
+are single sequential runs with host and sampling variation and do not prove
+complete visual equivalence or a stable performance gain. The x86 log
+SHA-256 is `76A4806200F11806117DEC1FC52443A9F884B00F65F2A65BBD35F0167D5633DE`.
+
+
+The [artifact inventory](t582-s39-pic-select-empty-artifacts.json) records all 14 PE
+widths and SHA-256 identities against the committed Shared PIC source.
+MyPC110 and MyNES deployed binaries matched their respective cached build
+outputs on both widths; the PC profile receiver tests checked their selected
+deployments and MyRaidenII selected-set probes passed. MyNES binaries were
+unchanged and do not require a binary commit.
