@@ -1,5 +1,18 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted inactive external-cycle observer removal
+
+Bind the existing CPU external-cycle observer only when the immutable machine
+contract enables a wait window or page timing, or runtime tracing is compiled
+in. Preserve the existing observer for all such configurations, and retain the
+CPU's independent bus timing. Exercise disabled and enabled wait windows and
+observable tracing, update the X86 Core manifests, and complete the Shared
+dual-width receiver gate and product artifacts. Compare the same private PC110
+startup workload; this bounded optimization does not itself close T582.
+Both 712-test unit suites and all PC profile receiver groups passed. Native
+MIDI opening failed on both widths; see the S39 evidence for exact limits.
+The measured menu wait remains approximately 198 seconds and is not accepted.
+
 ### Admitted inverse-pair condition evaluation
 
 In `src/x86-core/cpu/cpu_timing_model.c`, express the sixteen existing

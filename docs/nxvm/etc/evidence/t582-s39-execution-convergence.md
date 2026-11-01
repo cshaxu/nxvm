@@ -3215,3 +3215,42 @@ Logs SHA-256, focused / full / x86 continuation / MyRaidenII:
 `DC353636111277A0A5BF10A112335930D593466CCBECFDEBB13B7A631104A5C7`,
 `CE7DA85D3FA8513766BFDB5C064107BE267CDE06D36D3761C31AD1589F213D1C`,
 `967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
+
+## Inactive external-cycle observer
+
+For a frozen machine contract without page timing or any nonzero wait window,
+the external-cycle callback cannot add guest wait ticks. Release builds also
+compile out its runtime tracing. Binding it in that configuration nevertheless
+called it on each external cycle. The candidate avoids the callback only for
+that combination; configured timing and trace-enabled builds retain it. V30 bus
+accounting remains in the CPU and does not depend on this callback.
+
+On the same host with the same private CMOS and disk copies, the baseline
+reached the sampled menu marker at 215 seconds and the candidate at 198
+seconds. This is one sequential x64 comparison, sampled at one-second
+intervals; it is not a desktop or RDP measurement, and a menu marker is not
+proof of all guest state. The 17-second reduction does not make the observed
+startup delay acceptable. Independent fixed-work ABBA runs reached the same
+instruction count, guest ticks and PC; x64 was approximately 8% faster, while
+the x86 results ranged from approximately 4% faster to indistinguishable from
+noise. Full-state equivalence and practical interaction remain separate gates.
+
+The production change is +11/-3 lines in Machine; the existing prefetch
+fixture is +7/-3, plus two manifest hash replacements. The fixture now
+checks the first and last wait-window slots; existing page-timing and
+observable-transaction tests cover the other enabled contracts. The cached
+dual-width unit suites each passed 712/712. Default integration passed 47/48
+on both widths: only native MIDI output failed to open the host device. The
+PC110 real-firmware cold/resume tests passed; the 5160, 5170 and DeskPro
+receiver groups passed 3/3, 5/5 and 6/6 on each width. MyRaidenII's startup
+probe and product Console receiver passed on both widths; these are receiver
+checks, not game acceptance. All fourteen PE widths were checked; each PC110
+artifact matched its build. MyNES artifacts remained byte-identical. See
+[artifact hashes](t582-s39-idle-observer-artifacts.json).
+
+Qualification, receiver, menu comparison and fixed-work logs have respective
+SHA-256 values `4F2D34BD402BD1CEFC6AECCE8804F85155C32B45352869DC632E0FCC815D69C4`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`BC860B1AC3B645DF4949BB154B4851EA0D689D31B18627D6EA783CD52B430782`, and
+`9DC6DD6481DC3A9E18CF663DB33D1F3D4760D422D5E33233BD4A17AD2B6DABF5`.
+No native PC110 Window/RDP startup or interaction timing was performed.
