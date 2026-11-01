@@ -118,7 +118,6 @@ typedef struct {
     t_cpu_data_sreg *roverds, *roverss, *rmovsreg;
 
     /* execution control */
-    t_cpu  oldcpu;
     lib_u8 flagInsLoop;
 
     /* memory management */
@@ -197,6 +196,9 @@ typedef struct {
 
     /* CPU retirement observation */
     lib_u8 flagIgnore;
+    /* ExecBoundary overwrites the checkpoint. Keep it adjacent to mem so
+     * lexical preview can omit both from its initial private copy. */
+    t_cpu oldcpu;
     /* ENTER accepts an 80186 lexical level up to 255 and performs at most 510
      * recorded stack accesses. This is executor bookkeeping for CPU debug
      * breakpoints, not the copied debugger-observation limit. */

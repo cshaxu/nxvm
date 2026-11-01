@@ -19723,7 +19723,7 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
     preview_cpu = *context->cpu;
     {
         /* Lexical preview neither executes handlers nor records data accesses. */
-        const lib_size first = lib_offsetof(t_cpuins, data.mem);
+        const lib_size first = lib_offsetof(t_cpuins, data.oldcpu);
         const lib_size last = lib_offsetof(t_cpuins, data.msize);
         lib_memory_copy(&preview_instructions, context->instructions, first);
         lib_memory_copy((lib_u8 *)&preview_instructions + last,
