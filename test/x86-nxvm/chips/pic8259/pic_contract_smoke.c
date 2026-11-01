@@ -194,7 +194,38 @@ static lib_bool edge_input_lifetime(void)
     return failed;
 }
 
+/* Every IRQ can start a delay after an idle advance. */
+static lib_bool idle_then_delayed_unmask(void)
+{
+    lib_bool failed = LIB_FALSE;
+
+    for (lib_u8 id = 0u; id < 8u; ++id) {
+        x86_pic *pic = LIB_NULL;
+        x86_pic_request request;
+        lib_u32 timing[8] = {0u};
+        const lib_u8 bit = (lib_u8)(1u << id);
+
+        if (x86_pic_create(LIB_TRUE, &pic) != LIB_STATUS_OK) return LIB_TRUE;
+        program(pic, 0x20u, 0u, 1u);
+        x86_pic_advance(pic, 100u);
+        timing[id] = 3u;
+        x86_pic_set_irq_timing(pic, timing);
+        x86_pic_write_register(pic, 1u, bit);
+        x86_pic_set_inputs(pic, 0u, bit, 0u);
+        x86_pic_write_register(pic, 1u, 0u);
+        failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+        x86_pic_advance(pic, 2u);
+        failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+        x86_pic_advance(pic, 1u);
+        failed |= x86_pic_select(pic, &request) != LIB_STATUS_OK ||
+            request.vector != (lib_u8)(0x20u + id);
+        x86_pic_destroy(pic);
+    }
+    return failed;
+}
+
 int main(void)
 {
-    return single_chip() | cascade() | initialization_and_level() | edge_input_lifetime();
+    return single_chip() | cascade() | initialization_and_level() |
+        edge_input_lifetime() | idle_then_delayed_unmask();
 }

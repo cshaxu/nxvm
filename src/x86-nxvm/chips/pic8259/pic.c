@@ -356,6 +356,10 @@ static void pic_advance_one(x86_pic *pic, lib_u64 elapsed_ticks)
     lib_u8 id;
 
     if (pic == LIB_NULL || elapsed_ticks == 0u) return;
+    if ((pic->data.unmask_remaining_ticks[0] | pic->data.unmask_remaining_ticks[1] |
+         pic->data.unmask_remaining_ticks[2] | pic->data.unmask_remaining_ticks[3] |
+         pic->data.unmask_remaining_ticks[4] | pic->data.unmask_remaining_ticks[5] |
+         pic->data.unmask_remaining_ticks[6] | pic->data.unmask_remaining_ticks[7]) == 0u) return;
     for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
         if (elapsed_ticks >= pic->data.unmask_remaining_ticks[id]) {
             pic->data.unmask_remaining_ticks[id] = 0u;
