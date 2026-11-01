@@ -3330,3 +3330,38 @@ clock, instruction, fault or device event contracts.
 Sampler and guest logs have SHA-256
 `2A8E45B1A02C2D71E95AB5F17D96AF3205620463EF6D10FE71D36584FBAC291E` and
 `2C151DB8B5E2C5EC50094B055B21FE2291D563D9F9DE52504ED223695BD06BAB`.
+
+## Same-Machine CPU and bus upper bounds
+
+The earlier standalone-CPU comparison also changed the bus and Machine
+initialization. A task-owned variant instead constructs the same neutral
+486SX Machine for each run, with the same synthetic reset jump and NOP/JMP
+loop, then calls its existing CPU refresh directly. This preserves that
+Machine's CPU and bus configuration, but intentionally omits Machine device
+time advancement, scheduler and retirement boundaries. It is not an eligible
+execution path, nor an equivalent guest-state comparison.
+
+For ten million calls, the first ordered x64 run reported 9,632 ms for
+Machine run and 7,995 ms direct; x86 reported 11,814 and 9,322 ms. Each
+reported PC `000f0001` and 40,000,014 CPU or elapsed ticks. A second ordered
+series reported x64 9,059 / 7,679 ms and x86 12,460 / 8,817 ms. The direct
+loops explicitly capture timing each refresh, while the normal runner does
+its own captures; matching PC/ticks does not prove complete guest state.
+
+The second diagnostic also replaced only the direct CPU's memory read/write
+callbacks with a private flat buffer containing the same synthetic code and
+reset alias. It measured 5,272 ms x64 and 6,468 ms x86, with the same reported
+PC and ticks. This bypasses Machine transaction admission, memory routing,
+providers, callback effects and other real behavior, so it is an invalid
+product path and only a rough upper bound on that group of costs. Samples
+are single fixed-order runs affected by host drift, and the synthetic loop is
+not PC110 boot. They nevertheless direct the next investigation to the
+existing CPU-to-Machine memory path as well as timing and device publication;
+they do not prove which memory substep is responsible or justify bypassing it.
+
+First-series logs, x64/x86, SHA-256:
+`331AE9CA67610DE330A0C1D38C8195FCFBA8FA0EF4F97A378BB4D5415100B99B`,
+`FE118BAA4F7CE5F5EC8328FBB13AD769254888C5642671E496D08B04B3D368F9`.
+Second-series logs, x64/x86, SHA-256:
+`E55D01AD357E66C1F3B89DCDEAC2C29FB590616643CCF73E0B038C7AF9CBACD8`,
+`057190B36B320DCD2E0FECAA0750758A3341916A5C4CC5AB151045B5C2054E02`.
