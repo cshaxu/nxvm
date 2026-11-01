@@ -3496,3 +3496,37 @@ Opcode-stage, preview-count and prefetch-sample logs have SHA-256 respectively
 `6879F3A4F9AD6020DD536BB31A9896059B6F1E2B41E00B14D297E6E5C0ED4E1C`,
 `8D426F5CBCDA6A4C03E16A565BEBBDD8CB1567547B25DC8D372F6F061EC4DF95`, and
 `2F6C2F8053250A93867551A4A04BC991779E31497497C6F847F14CDE5928E177`.
+
+### Target CPU-cache coverage in the boot branch workload
+
+Two task-only x64 runs sampled one in 256 lexical-preview calls attributed
+to `74h`, restricted to the 486SX, real mode with paging disabled, the default
+80386 ModR/M policy and a target within the current CS limit. They queried
+the existing Machine cache-address owner and compared a read-only decode from
+resident CPU cache data with the ordinary preview. Both used configured CMOS,
+private media and the 60-million-retirement endpoint; the 30-million-stage
+split follows the most recent completed Machine quantum. The diagnostic adds
+extra cache-address queries and decoding, so timings are not a performance
+comparison. Neither run reaches the menu or tests x86/RDP.
+
+In the later stage, 11,522 of 13,533 eligible `74h` samples had their first
+target byte in a resident CPU cache line. Decoding from that first line matched
+the ordinary result in 11,521 cases and could not finish in one. However,
+the existing preview's complete bounded prefetch fit in that first line in
+none of those samples. Looking up a second consecutive decoded cache line
+covered all 11,522 hit samples; their complete-range decoded results matched
+the ordinary preview. The early stage had no cache hits in 13,359 samples.
+
+This is a promising population observation, not an equivalent implementation:
+the diagnostic performs additional observational address queries, leaves the
+real preview intact, and only compares lexeme length and component count.
+Before any candidate can replace that path it must preserve complete prefetch
+range semantics, CS checks, page and A20 boundaries, cache lookup/failure
+ordering, callback effects, debug/fault behavior and mutation invalidation.
+It must also retain the original route for all other cases without creating
+an alternate CPU executor. A bounded scratch prototype and dual-width
+end-to-end measurement are required before production admission.
+
+Single-line and two-line diagnostic log SHA-256 respectively:
+`2DA67FA06FE901716C8D03C9B02D814E7EBFDEFA36E2810128D7EE0F46EF6E5E`,
+`F4B29B0F5FF05BB92A85FD8A9AA8D7705024539C977314677C9E99DD08DA8C8A`.
