@@ -386,8 +386,10 @@ static lib_bool smm_elapsed_timing(smm_fixture *fixture)
         saved = *context;
         if (context->smm_active || fixture->reads != 128u || fixture->instruction.fault.valid ||
             context->timing_result.event_ticks != 0u ||
-            !x86_core_cpu_80486_l2_instruction_cost(context, &ticks) || ticks != 280u ||
-            !x86_core_cpu_80486_memory_penalty(context, &memory, &modeled) || memory != 0u || !modeled ||
+            !x86_core_cpu_80486_l2_instruction_cost(context, &ticks,
+                cpu_instruction_fixture_prefixes(context)) || ticks != 280u ||
+            !x86_core_cpu_80486_memory_penalty(context, &memory, &modeled,
+                cpu_instruction_fixture_prefixes(context)) || memory != 0u || !modeled ||
             fixture->instruction.instructions.data.timing_external_wait_ticks != 128u * waits[index] ||
             lib_memory_compare(&saved, context, sizeof(saved))) return LIB_FALSE;
     }

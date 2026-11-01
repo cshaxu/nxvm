@@ -138,10 +138,12 @@ static lib_bool tlb_instruction_forms(void)
             lexeme.byte_count != bytes || !tlb_run(fixture, code, bytes) ||
             fixture->cpu.data.eflags != flags || fixture->writes != writes ||
             probe.data_reads != 0u ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             nominal_ticks != 12u || !fixture->instructions.data.timing_invlpg_hit ||
             !tlb_run(fixture, code, bytes) ||
-            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks) ||
+            !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks,
+                cpu_instruction_fixture_prefixes(&fixture->execution)) ||
             nominal_ticks != 11u || fixture->instructions.data.timing_invlpg_hit ||
             probe.data_reads != 0u || fixture->writes != writes ||
             !tlb_lookup(fixture, (linear & VCPU_CR3_BASE) | 0xfe0u, &result) ||

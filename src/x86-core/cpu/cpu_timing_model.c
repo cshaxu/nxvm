@@ -602,8 +602,7 @@ static lib_i32 x86_core_cpu_source_timing_string_repeat_is_defined(
     x86_core_cpu_source_timing_form form, t_cpuins_data_prefix_rep prefix);
 static x86_core_cpu_source_transfer_plan
     x86_core_cpu_source_timing_string_transfer_plan(
-        const x86_core_cpu_execution_context *context,
-        const t_cpuins_data *data, x86_core_cpu_source_timing_form form);
+        const t_cpuins_data *data, x86_core_cpu_source_timing_form form, lib_u32 prefixes);
 static lib_bool x86_core_cpu_source_timing_repeat_continuing(
     const x86_core_cpu_execution_context *context, const t_cpuins_data *data,
     lib_u32 prefixes)
@@ -636,7 +635,7 @@ static lib_bool x86_core_cpu_source_timing_repeat_continuing(
 static lib_u64 x86_core_cpu_source_timing_repeat_string(
     x86_core_cpu_execution_context *context, const t_cpuins_data *data,
     const x86_core_cpu_source_repeat_timing_entry *entry,
-    const x86_core_cpu_source_transfer_plan *transfer_plan);
+    const x86_core_cpu_source_transfer_plan *transfer_plan, lib_u32 prefixes);
 
 static lib_i32 x86_core_cpu_80386_timing_uses_permission_map(
     const t_cpuins_data *data)
@@ -712,7 +711,7 @@ static lib_i32 x86_core_cpu_80386_source_string_port_entry(
 }
 
 lib_i32 x86_core_cpu_string_io_source_instruction_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
     const x86_core_cpu_source_repeat_timing_contract *contract;
@@ -720,12 +719,10 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
     x86_core_cpu_source_repeat_timing_entry port_entry;
     x86_core_cpu_source_transfer_plan transfer_plan = {0};
     x86_core_cpu_source_timing_form form;
-    lib_u32 prefixes;
     lib_u8 opcode = 0u;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return 0;
     opcode = data->opcodes[prefixes];
     if (x86_core_cpu_source_timing_string_form(opcode, &form)) {
@@ -739,7 +736,7 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
             x86_core_cpu_80386_source_string_port_entry(data, form,
                 &port_entry)) {
             *out_ticks = x86_core_cpu_source_timing_repeat_string(context, data,
-                &port_entry, LIB_NULL);
+                &port_entry, LIB_NULL, prefixes);
             return 1;
         }
         contract = x86_core_cpu_source_repeat_timing_contract_for_profile(
@@ -751,15 +748,15 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
             return 0;
         }
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_8088) {
-            transfer_plan = x86_core_cpu_source_timing_string_transfer_plan(context, data,
-                form);
+            transfer_plan = x86_core_cpu_source_timing_string_transfer_plan(data,
+                form, prefixes);
             if (!transfer_plan.complete) {
                 context->source_repeat_active = LIB_FALSE;
                 return 0;
             }
         }
         *out_ticks = x86_core_cpu_source_timing_repeat_string(context, data,
-            entry, &transfer_plan);
+            entry, &transfer_plan, prefixes);
         return 1;
     }
     if (data->prefix_rep != PREFIX_REP_NONE) {
@@ -908,14 +905,11 @@ static lib_i32 x86_core_cpu_source_timing_string_repeat_is_defined(
 
 static x86_core_cpu_source_transfer_plan
     x86_core_cpu_source_timing_string_transfer_plan(
-        const x86_core_cpu_execution_context *context,
-        const t_cpuins_data *data, x86_core_cpu_source_timing_form form)
+        const t_cpuins_data *data, x86_core_cpu_source_timing_form form, lib_u32 prefixes)
 {
     x86_core_cpu_source_transfer_plan plan = { form, 0u, LIB_FALSE };
-    lib_u32 prefixes;
 
     if (data == LIB_NULL) return plan;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return plan;
     if ((data->opcodes[prefixes] & 1u) == 0u) {
         plan.complete = LIB_TRUE;
@@ -1006,7 +1000,7 @@ static lib_u64 x86_core_cpu_source_timing_string_modifiers(
 }
 
 void x86_core_cpu_source_timing_record_repeat(
-    x86_core_cpu_execution_context *context, const t_cpuins_data *data)
+    x86_core_cpu_execution_context *context, const t_cpuins_data *data, lib_u32 prefixes)
 {
     const lib_bool operand_size = data->oldcpu.data.cs.seg.exec.defsize !=
         (data->prefix_oprsize != LIB_FALSE);
@@ -1022,9 +1016,6 @@ void x86_core_cpu_source_timing_record_repeat(
     const lib_u32 count = address_size ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
     const lib_bool will_repeat = count != 0u &&
         context->cpu->data.eip == data->oldcpu.data.eip;
-    const lib_u32 prefixes = context->cpu_profile != X86_CORE_CPU_PROFILE_V30 &&
-        (context->source_repeat_active || will_repeat) ?
-        x86_core_cpu_instruction_prefix_count(context, data) : 0u;
     const lib_bool continuing = x86_core_cpu_source_timing_repeat_continuing(
         context, data, prefixes);
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX)
@@ -1062,12 +1053,12 @@ void x86_core_cpu_source_timing_record_repeat(
 static lib_u64 x86_core_cpu_source_timing_repeat_string(
     x86_core_cpu_execution_context *context, const t_cpuins_data *data,
     const x86_core_cpu_source_repeat_timing_entry *entry,
-    const x86_core_cpu_source_transfer_plan *transfer_plan)
+    const x86_core_cpu_source_transfer_plan *transfer_plan, lib_u32 prefixes)
 {
     lib_u64 ticks;
 
     if (context == LIB_NULL || data == LIB_NULL || entry == LIB_NULL) return 0u;
-    x86_core_cpu_source_timing_record_repeat(context, data);
+    x86_core_cpu_source_timing_record_repeat(context, data, prefixes);
     switch (context->timing_result.repeat_phase) {
     case X86_CORE_CPU_RETIREMENT_REPEAT_PRIMITIVE: ticks = entry->primitive_ticks; break;
     case X86_CORE_CPU_RETIREMENT_REPEAT_ZERO_COUNT: ticks = entry->repeat_setup_ticks; break;
@@ -1523,11 +1514,10 @@ static lib_u64 x86_core_cpu_8086_group3_model_cost(
  * 80186 reference model already includes effective-address time; Table 1-16
  * still supplies its independent odd-word and segment-prefix terms. */
 lib_i32 x86_core_cpu_l2_dynamic_arithmetic_model_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
     x86_core_cpu_primary_timing_shape shape;
-    lib_u32 prefixes;
     lib_u8 opcode;
     lib_u64 ticks;
     lib_i32 segment_override;
@@ -1540,7 +1530,6 @@ lib_i32 x86_core_cpu_l2_dynamic_arithmetic_model_cost(
         return 0;
     }
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen ||
         !x86_core_cpu_source_timing_primary_shape(data, prefixes, &shape)) {
         return 0;
@@ -1606,10 +1595,9 @@ static lib_i32 x86_core_cpu_control_stack_short_branch_taken(
 
 static lib_i32 x86_core_cpu_legacy_source_instruction_cost(x86_core_cpu_execution_context *context,
     lib_u64 *out_ticks,
-    const x86_core_cpu_legacy_source_timing_contract *contract)
+    const x86_core_cpu_legacy_source_timing_contract *contract, lib_u32 prefixes)
 {
     const t_cpuins_data *data = &context->instructions->data;
-    lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     lib_u8 opcode;
     lib_i32 segment_override;
     lib_i32 lock_prefix;
@@ -1885,17 +1873,17 @@ static lib_i32 x86_core_cpu_legacy_source_instruction_cost(x86_core_cpu_executio
 }
 
 lib_i32 x86_core_cpu_8086_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     return x86_core_cpu_legacy_source_instruction_cost(context, out_ticks,
-        &x86_core_cpu_8086_source_timing_contract);
+        &x86_core_cpu_8086_source_timing_contract, prefixes);
 }
 
 lib_i32 x86_core_cpu_80186_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     return x86_core_cpu_legacy_source_instruction_cost(context, out_ticks,
-        &x86_core_cpu_80186_source_timing_contract);
+        &x86_core_cpu_80186_source_timing_contract, prefixes);
 }
 
 static lib_u64 x86_core_cpu_80286_source_timing_lookup(
@@ -1943,16 +1931,15 @@ static lib_u8 x86_core_cpu_80286_group2_count(
 }
 
 static lib_i32 x86_core_cpu_80286_system_source_instruction_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes);
 static lib_i32 x86_core_cpu_control_stack_is_protected(
     const t_cpuins_data *data);
 
 lib_i32 x86_core_cpu_primary_source_instruction_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
     x86_core_cpu_primary_timing_shape shape;
-    lib_u32 prefixes;
     lib_u8 opcode;
     lib_u64 ticks;
     lib_u8 transfers;
@@ -1963,7 +1950,6 @@ lib_i32 x86_core_cpu_primary_source_instruction_cost(
 
     if (context == LIB_NULL || out_ticks == LIB_NULL) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     segment_override = x86_core_cpu_8086_timing_has_segment_override(data,
         prefixes);
     lock_prefix = x86_core_cpu_instruction_has_lock_prefix(data, prefixes);
@@ -2041,7 +2027,7 @@ lib_i32 x86_core_cpu_primary_source_instruction_cost(
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
         opcode == 0x0fu && !lock_prefix) {
         return x86_core_cpu_80286_system_source_instruction_cost(context,
-            out_ticks);
+            out_ticks, prefixes);
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 && prefixes == 0u &&
         opcode >= 0x70u && opcode <= 0x7fu) {
@@ -3025,10 +3011,9 @@ static lib_u64 x86_core_cpu_80386_task_transfer_ticks(
 }
 
 lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode;
     lib_u8 extension;
     lib_u64 ticks;
@@ -3042,7 +3027,6 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
 
     if (context == LIB_NULL || out_ticks == LIB_NULL) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen ||
         !x86_core_cpu_control_stack_prefixes_are_source_backed(context, data,
             prefixes)) {
@@ -3642,10 +3626,9 @@ static lib_u64 x86_core_cpu_source_timing_ceiling_log2(
  * multiplier only.  `crm` and `cimm` are decoder-owned values captured during
  * the real execution; this timing path never rereads a register or memory. */
 lib_i32 x86_core_cpu_80386_dynamic_multiply_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode;
     lib_u8 extension;
     lib_u8 operand_bytes;
@@ -3659,7 +3642,6 @@ lib_i32 x86_core_cpu_80386_dynamic_multiply_cost(x86_core_cpu_execution_context 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes + 1u >= data->oplen ||
         !x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes)) {
         return 0;
@@ -3737,10 +3719,9 @@ static lib_u64 x86_core_cpu_80386_timing_zero_scan_count(
 }
 
 lib_i32 x86_core_cpu_80386_secondary_source_instruction_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode;
     lib_u8 secondary;
     lib_u8 extension;
@@ -3750,7 +3731,6 @@ lib_i32 x86_core_cpu_80386_secondary_source_instruction_cost(
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes + 1u >= data->oplen ||
         !x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes)) {
         return 0;
@@ -3837,10 +3817,9 @@ lib_i32 x86_core_cpu_80386_secondary_source_instruction_cost(
  * source row at the sole publisher: handlers, decoder, and delivery owners do
  * not acquire a second clock policy. */
 lib_i32 x86_core_cpu_80386_privileged_source_instruction_cost(
-    x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode;
     lib_u8 secondary;
     lib_u8 modrm;
@@ -3853,7 +3832,6 @@ lib_i32 x86_core_cpu_80386_privileged_source_instruction_cost(
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen || data->flagLock ||
         !x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes)) {
         return 0;
@@ -4013,10 +3991,9 @@ lib_i32 x86_core_cpu_80386_privileged_source_instruction_cost(
 }
 
 static lib_i32 x86_core_cpu_80286_system_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data = &context->instructions->data;
-    lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     lib_u64 memory_ea = data->flagMem ?
         x86_core_cpu_80286_timing_effective_address(data, prefixes + 1u) : 0u;
     lib_u8 opcode;
@@ -4149,14 +4126,14 @@ static lib_i32 x86_core_cpu_80286_system_source_instruction_cost(x86_core_cpu_ex
 }
 
 lib_i32 x86_core_cpu_80286_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL) return 0;
     data = &context->instructions->data;
     context->source_repeat_active = LIB_FALSE;
-    if (x86_core_cpu_instruction_prefix_count(context, data) >= data->oplen) {
+    if (prefixes >= data->oplen) {
         *out_ticks = 0u;
         return 1;
     }
@@ -4165,10 +4142,9 @@ lib_i32 x86_core_cpu_80286_source_instruction_cost(x86_core_cpu_execution_contex
 }
 
 lib_i32 x86_core_cpu_80386_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data = &context->instructions->data;
-    lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     lib_u8 opcode;
     lib_u8 group2_extension;
     lib_i32 group2_memory;
@@ -4351,12 +4327,11 @@ lib_u64 x86_core_cpu_timing_maximum_ticks(
 }
 
 lib_i32 x86_core_cpu_compatibility_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data = &context->instructions->data;
     const x86_core_cpu_instruction_timing *timing =
         &context->instruction_timing;
-    lib_u32 prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     lib_u8 opcode;
     lib_u64 ticks = timing->base_ticks;
 
@@ -4398,11 +4373,10 @@ lib_i32 x86_core_cpu_compatibility_instruction_cost(x86_core_cpu_execution_conte
 }
 
 lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks)
+    lib_u64 *out_ticks, lib_u32 prefixes)
 {
     x86_core_cpu_source_timing_form form;
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u64 ticks, memory, decode;
     lib_bool original, memory_model, decode_model, bus_model;
 
@@ -4410,15 +4384,14 @@ lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_contex
         context->cpu == LIB_NULL ||
         context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) return 0;
     data = &context->instructions->data;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return 0;
     if (x86_core_cpu_source_timing_string_form(data->opcodes[prefixes], &form)) {
-        x86_core_cpu_source_timing_record_repeat(context, data);
+        x86_core_cpu_source_timing_record_repeat(context, data, prefixes);
     } else context->source_repeat_active = LIB_FALSE;
-    original = x86_core_cpu_80486_nominal_instruction_cost(context, &ticks);
-    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &ticks)) ||
-        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model) ||
-        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model) ||
+    original = x86_core_cpu_80486_nominal_instruction_cost(context, &ticks, prefixes);
+    if ((!original && !x86_core_cpu_80486_l2_instruction_cost(context, &ticks, prefixes)) ||
+        !x86_core_cpu_80486_memory_penalty(context, &memory, &memory_model, prefixes) ||
+        !x86_core_cpu_80486_decode_penalty(context, &decode, &decode_model, prefixes) ||
         !x86_core_cpu_timing_add_ticks(&ticks, memory) ||
         !x86_core_cpu_timing_add_ticks(&ticks, decode) ||
         !x86_core_cpu_80486_bus_instruction_cost(context, ticks, &ticks, &bus_model)) return 0;
@@ -4602,10 +4575,9 @@ static lib_bool x86_core_cpu_80486_push_pop_opcode(lib_u16 opcode)
 /* Prefix costs are per decoded macroinstruction. The selected REP owner must
  * not charge these again for a continuation of that same instruction. */
 lib_bool x86_core_cpu_80486_decode_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode, repeats = 0u;
     lib_u64 ticks = 0u;
     lib_bool modeled = LIB_FALSE;
@@ -4618,7 +4590,6 @@ lib_bool x86_core_cpu_80486_decode_penalty(
         return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     opcode = data->opcodes[prefixes];
     for (lib_u32 index = 0u; index < prefixes; ++index) {
@@ -5109,10 +5080,9 @@ static lib_bool x86_core_cpu_80486_access_penalty(const t_cpuins_data *data,
 
 /* Intel 1992 PRM Appendix E.2--E-15: source rows and qualified access models. */
 lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u64 ticks, operand;
     lib_bool operand_modeled, access_modeled, descriptors;
 
@@ -5123,7 +5093,6 @@ lib_bool x86_core_cpu_80486_memory_penalty(
         return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     /* E-12 deliberately leaves LTR's miss column blank. */
     descriptors = !(data->opcodes[prefixes] == 0x0fu && prefixes + 2u < data->oplen &&
@@ -5169,10 +5138,9 @@ lib_u64 x86_core_cpu_80486_interrupt_entry_cost(
  * not hardware-exact
  * cache-hit rows. Keep access/prefix costs and result qualification separate. */
 lib_bool x86_core_cpu_80486_l2_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode, extension, bytes;
     lib_u64 multiplier, magnitude, scale, ticks;
 
@@ -5181,7 +5149,6 @@ lib_bool x86_core_cpu_80486_l2_instruction_cost(
         context->instruction_fault_delivered || context->stop_requested) return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     opcode = data->opcodes[prefixes];
     extension = prefixes + 1u < data->oplen ? (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
@@ -5241,10 +5208,9 @@ lib_bool x86_core_cpu_80486_l2_instruction_cost(
  * separately specified prefix, access and event terms. Use the decoder's
  * completed operands; timing must not read guest memory a second time. */
 lib_bool x86_core_cpu_80486_nominal_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks)
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes)
 {
     const t_cpuins_data *data;
-    lib_u32 prefixes;
     lib_u8 opcode, extension;
     lib_bool memory, protected_mode;
     lib_u64 ticks;
@@ -5256,7 +5222,6 @@ lib_bool x86_core_cpu_80486_nominal_instruction_cost(
         return LIB_FALSE;
     data = &context->instructions->data;
     if (data->except != 0u) return LIB_FALSE;
-    prefixes = x86_core_cpu_instruction_prefix_count(context, data);
     if (prefixes >= data->oplen) return LIB_FALSE;
     opcode = data->opcodes[prefixes];
     extension = prefixes + 1u < data->oplen ?

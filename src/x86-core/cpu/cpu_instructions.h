@@ -412,9 +412,11 @@ lib_bool x86_core_cpu_instruction_has_lock_prefix(const t_cpuins_data *data,
     lib_u32 prefixes);
 void x86_core_cpu_bus_complete_memory_lock(x86_core_cpu_execution_context *context,
     lib_bool commit);
-/* One repeat identity/phase owner for CPU-local nominal evaluators. */
+/* One repeat identity/phase owner for CPU-local nominal evaluators. Intel
+ * callers pass the decoded prefix count; V30 keeps its NEC prefix identity. */
 void x86_core_cpu_source_timing_record_repeat(
-    x86_core_cpu_execution_context *context, const t_cpuins_data *data);
+    x86_core_cpu_execution_context *context, const t_cpuins_data *data,
+    lib_u32 prefixes);
 
 
 #ifdef __cplusplus

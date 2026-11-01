@@ -79,7 +79,8 @@ static lib_i32 task_switch_run(task_switch_fixture *fixture,
             lib_u64 ticks = 0u;
 
             if (task_index >= task_count ||
-                !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &ticks) ||
+                !x86_core_cpu_80486_nominal_instruction_cost(&fixture->execution, &ticks,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                 ticks != task_clocks[task_index]) {
                 lib_c_printf("Task timing: transition=%u expected=%u actual=%llu\n",
                     (lib_u32)task_index, task_index < task_count ? task_clocks[task_index] : 0u,
@@ -89,7 +90,8 @@ static lib_i32 task_switch_run(task_switch_fixture *fixture,
             if (!fixture->execution.instruction_fault_delivered && fixture->instructions.data.except == 0u) {
                 lib_bool modeled = LIB_FALSE;
 
-                if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled) ||
+                if (!x86_core_cpu_80486_memory_penalty(&fixture->execution, &ticks, &modeled,
+                    cpu_instruction_fixture_prefixes(&fixture->execution)) ||
                     ticks == 0u || !modeled) return 0;
             }
             ++task_index;

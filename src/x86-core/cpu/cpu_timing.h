@@ -12,33 +12,33 @@ extern "C" {
 /* CPU execution selects once before asynchronous interrupt entry. */
 lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context);
 
-/* Legacy rule evaluators remain private to Core. They calculate a candidate
- * only; origin assignment and result publication belong exclusively to the
- * CPU timing selector. */
+/* Rule evaluators remain private to Core. They use the selector's bounded
+ * prefix count from the same instruction record and calculate a candidate
+ * only; origin assignment and result publication belong to the selector. */
 lib_i32 x86_core_cpu_string_io_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_80386_dynamic_multiply_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_l2_dynamic_arithmetic_model_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_80386_secondary_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_80386_privileged_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_primary_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_control_stack_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_8086_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_80186_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_80286_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_80386_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 lib_i32 x86_core_cpu_compatibility_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 /* The existing instruction condition owner supplies copied branch facts;
  * false means this is not a Jcc/LOOP/JMP or indirect CALL encoding. */
 lib_bool x86_core_cpu_timing_branch_taken(
@@ -46,18 +46,18 @@ lib_bool x86_core_cpu_timing_branch_taken(
 /* Sole selected-SX aggregate: disjoint nominal/L2, memory, decode and bus
  * terms, after the existing REP owner records this actual primitive. */
 lib_i32 x86_core_cpu_80486_source_instruction_cost(x86_core_cpu_execution_context *context,
-    lib_u64 *out_ticks);
+    lib_u64 *out_ticks, lib_u32 prefixes);
 
 /* Selected-SX cache-hit instruction cost only. Prefix/access/event penalties
  * belong to the selected timing owner, not this nominal calculation. A missing
  * source form returns false without changing the destination or qualification. */
 lib_bool x86_core_cpu_80486_nominal_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes);
 
 /* Explicit L2 arithmetic, alias and no-FPU WAIT models; disjoint from the original
  * nominal rows. Pure query, no access costs or hardware-exact qualification. */
 lib_bool x86_core_cpu_80486_l2_instruction_cost(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_u32 prefixes);
 
 /* E-14 entry plus its scoped accesses, using the mode before committed entry.
  * Zero rejects invalid observations. Task access decomposition is L2.
@@ -79,14 +79,14 @@ lib_bool x86_core_cpu_80486_smm_cost(
  * source terms. Optional modeled identifies L2 operand/translation estimates.
  * Unallocated/failed accesses leave both outputs unchanged. */
 lib_bool x86_core_cpu_80486_memory_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled, lib_u32 prefixes);
 
 /* Per decoded instruction, not per REP continuation. E-11 prefixes and the
  * E.2 index/displacement assumptions; nominal LEA already includes its index.
  * AGI uses the actual adjacent GPR-write record, including same-value writes.
  * Optional modeled identifies redundant/ignored REP prefix estimates. */
 lib_bool x86_core_cpu_80486_decode_penalty(
-    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled);
+    const x86_core_cpu_execution_context *context, lib_u64 *out_ticks, lib_bool *out_modeled, lib_u32 prefixes);
 
 /* Private L2 bus observations; only actual CPU execution records transfers.
  * Core is the clock owner; the pure cost query never advances the FIFO. */
