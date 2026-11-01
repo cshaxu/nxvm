@@ -4136,3 +4136,32 @@ Full receiver, MyRaidenII, and final PC110 probe log SHA-256 respectively:
 `6B47D8C25D7B0B274FE21A89B7E0277F8A393ADAF6491EB09CB3B1734AB4EB42`,
 `967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
 `EF331A46F1533225F37A7F939B77E6C5FB0399FA437656447203C87EBD8363F7`.
+
+
+### Current response-path re-sample
+
+After the cross-profile prefix handoff at `7b8e39cae`, the private-media
+x64 Machine probe reached the Personaware menu at sample 202. It enqueued
+Enter and reached the existing frame-change threshold at input sample 9.
+This is not proof of complete redraw or a native Window/RDP measurement.
+The task-only sampler suspended threads at fixed intervals only after input;
+it exited normally and reported 1,383 samples on the worker thread. Largest
+leaf-symbol buckets were CPU execution refresh 96 (6.9%), elapsed-time
+publication 53 (3.8%), Machine run 46 (3.3%), clock-domain advance 46
+(3.3%), PIC selection 40 (2.9%), instruction boundary 38 (2.7%), physical
+read and keyboard collection 35 each (2.5%). Inlined work is attributed
+to its enclosing symbol; the numbers are not inclusive costs and fixed
+intervals and thread suspension perturb execution. This is one x64 response
+and not a controlled performance comparison.
+
+The result independently confirms that response work is distributed across
+CPU, scheduler, device and bus owners; it does not justify bypassing any of
+them. The existing S11 and S26 experiments already tested narrower clock and
+PIC shortcuts with inconsistent effects. The next investigation must
+measure duplicate work across the CPU/board scheduling boundary under real
+response, and establish mutation, event-order and input visibility invariants
+before changing it. No production code or artifact changed in this sample.
+
+Sampler and guest-log SHA-256 respectively:
+`F6E929289309138336DBC590DBADF8ED37F051322663764B7E13D911EDBC0D5F`,
+`1824025AB1FE5493B91740CBD6948C21009B1C9FA436FC09210E575E9D5DDB4F`.
