@@ -4253,3 +4253,78 @@ MyPC110 and MyNES deployed binaries matched their respective cached build
 outputs on both widths; the PC profile receiver tests checked their selected
 deployments and MyRaidenII selected-set probes passed. MyNES binaries were
 unchanged and do not require a binary commit.
+
+
+### PIC empty deadline and single owner
+
+The previous change made empty interrupt selection constant-work. The adjacent
+PIC deadline query had the same empty pending-mask scan and a private helper
+with exactly one caller, which had already validated both arguments and
+ignored the helper status. The public query now owns that loop directly; an
+empty unmasked-pending mask returns the existing INVALID_STATE before scanning,
+without writing the caller's output. Nonempty masks retain the same earliest
+nonzero delay calculation. Production diff is +10/-20 lines. No persistent
+state, interface, model-specific route or changed guest time was added.
+
+Task-only differential programs checked two million pseudorandom state
+combinations per host width for both zero/one and varied 32-bit delays;
+status and sentinel output matched. This does not prove temporal ordering.
+The existing PIC and board interrupt tests passed 14/14 per width.
+Fixed-work baseline/candidate and reverse candidate/baseline measurements
+were 19,858/17,967 and 19,394/20,646 ms x64; x86 was 22,637/22,680 and
+26,370/26,113 ms. All ended at 10,000,000 instructions, 79,964,294 ticks and
+PC `0003dbc5`. These sequential measurements are subject to host drift and
+do not prove whole-guest equivalence or a stable end-to-end gain. The change
+is admitted for removing a redundant owner and the empty eight-slot scan,
+not as completion of the system usability objective.
+
+Differential output, two differential source files, forward/reverse probe,
+and focused tests SHA-256 respectively:
+`1FBC85441326AAC4A9E43517226771424FB9E3A412092368A622E17EA243A1E0`,
+`1D5B4BD7A987AEBC6CBCF3BF9C91DCC3CB9AF59A52F776089A7540ED863706DA`,
+`277C5341E1D88EDF49C808E8B77BE9BCB543670FE80CB9EC99CDE9E7374B712A`,
+`285062061DC8EE28C191C9827B3641B343F239E082ABF19BDB528910A6AB46B0`,
+`B2EADB6327C88DA341D7D9D63FDAB5ECEFC1D037F30BFAED979D9FD07164C6D1`,
+`61C199F9855883749F0A2F3CF49001DA810B30CAB0DB64A6E89183152E3F286F`.
+
+Full Shared receiver and final system qualification are recorded below.
+
+
+The cached x64 receiver passed 712/712 unit and 48/48 default integration
+tests. x86 initially passed 710/712: `lib.types-layout-selftest` timed out
+at 179.86 seconds and `emulator.verifier-negative` at 60.76 seconds. Both
+passed in a subsequent serial run in 138.75 and 49.60 seconds, respectively;
+no timeout was changed. Fixture timestamps advanced during the retry, but
+the reason for the slow host execution was not established. The remaining
+x86 default integration passed 48/48. The 5160, 5170 and DeskPro profile
+receivers passed 3/3, 5/5 and 6/6 on each width. MyRaidenII selected-set
+startup and Console probes passed on both widths.
+
+An x64 private-media final-build run reached menu sample 216 and input
+frame-change sample 8 in 228.26 seconds; the preceding accepted build had
+recorded 178/8. Because that single pair showed a possible regression, a
+reverse-order repeat used the preserved candidate and baseline binaries with
+the same private inputs: candidate reached 183/11 in 197.96 seconds;
+baseline reached 209/9 in 222.57 seconds. The sequential pair directions
+reverse. Host variation, one-second sampling and a partial-draw frame marker
+prevent a stable speed or full-state conclusion. No native Window or RDP
+measurement is implied; PC110 remains too slow for the task objective.
+
+Original full gate, isolated retry, x86 resumed receiver, external receiver,
+final candidate, reverse candidate, reverse baseline and reverse summary
+logs SHA-256 respectively:
+`DC632FAD506C12E9AF0601AE1E14E41B0A1C4DF4CE656CDDD96CA43F3F351452`,
+`3D13514292F3AD2F635A7A2C5AE9D6399368A87AB40E44A9DF39B834EE03F37A`,
+`73C9E580D85B432E107219AA146AA715EECDCB6E2BBEC2F02FBC589A32E01B80`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`4047C00A2CE1021EAAEB7B929DE3F9A6F2127EE9A7C5AA3101849944EB3CFD1B`,
+`8C87A6FCF5A570E5F51E39A46C19AE97BE4D0B80B2DA08EBD58D2BF6A2F5067A`,
+`53548E6DCF706270721384C037C40DD3306CBD284380F54D5F5FE09BC0F22C87`,
+`0207A05E8A161A59F92C10145E9677CB726FCAA59F46E0CE83152EA46C3125FB`.
+
+
+The [artifact inventory](t582-s39-pic-deadline-consolidated-artifacts.json)
+records all 14 PE widths and hashes against the committed Shared source.
+MyPC110 and MyNES deployment bytes matched the respective cached build outputs
+on both widths; PC profile receiver checks covered selected deployments.
+MyNES binaries did not change.

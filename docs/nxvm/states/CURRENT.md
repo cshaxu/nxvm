@@ -1,5 +1,25 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted PIC deadline owner consolidation
+
+Inline the sole `pic_ticks_until_one` helper into `x86_pic_ticks_until_event`;
+when no unmasked pending interrupt exists, retain the same INVALID_STATE
+result and untouched output without scanning the eight delay counters. Keep
+argument validation, earliest eligible delayed tick, cascade, mask and timing
+semantics, without new API, state, machine special case or alternate path.
+The dual-width differential includes varied delay values; run the existing
+PIC/board regressions and cached full Shared receiver and artifact gates,
+then compare actual PC110 boot/response. The objective remains usable system
+performance, not just an isolated PIC microbenchmark.
+
+The focused tests and 2,000,000-state differential variants passed on both
+widths. x64 full units/integration passed; x86 had two parallel unit timeouts
+that passed separately, then all remaining integration/profile receivers
+passed. Private x64 boot measurements reversed direction between two run
+orders, and neither they nor frame-change samples establish a stable gain or
+usable desktop experience. S39 remains active.
+
+
 ### Admitted shared PIC idle-selection reduction
 
 When a ready 8259 has no unmasked pending request, return the existing
