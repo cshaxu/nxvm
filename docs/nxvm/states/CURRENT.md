@@ -1,5 +1,25 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted private CPU segment-layout compaction
+
+Reorder the private segment-cache fields and store the existing bounded segment
+kind in `lib_u8`; retain the existing enum constants, all segment fields and
+complete CPU snapshots. Add a compile-time bound on the stored enum values.
+There is no public ABI, machine-specific path, new state or timing change.
+Scratch layouts reduce each segment from 24 to 20 bytes and the CPU snapshot
+from 380 to 340 on both host widths; this is a fixed-size reduction, not an
+asymptotic change. Fixed-work and one adjacent x64 full-menu pair do not prove
+an end-to-end speedup. Qualify CPU profiles, faults, snapshots, all Shared
+receivers and fourteen artifacts; reject if actual behavior or performance
+materially regresses. PC110 usability remains the S objective.
+
+Both widths passed the focused suite, 712 unit and 48 default integration
+tests, plus all three PC profile receiver groups. MyRaidenII selected-set
+probes passed and fourteen PE widths were verified. The final x86 PC110
+private-media menu/input marker was 259/13 seconds; one sample and earlier
+host variability do not prove an overall speedup or completed RDP experience.
+The user-facing performance objective remains open.
+
 ### Pending retirement subtotal candidate rejected
 
 Retaining a local event subtotal avoided one repeated CPU timing capture

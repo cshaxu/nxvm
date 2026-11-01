@@ -4433,6 +4433,64 @@ Forward and reverse log SHA-256:
 `AB776EFF17CE079FBC99BA6D8729D0A785426154B3656FB23CEE2A625C49ECD8`,
 `4502716DD19A04239F0122BEB3B900164E161D79C0A9CEE30A929F6BE86157C6`.
 
+### Private CPU segment-cache layout
+
+The CPU owns ten private segment-cache records in each full CPU snapshot.
+Reordering their existing fields and storing the bounded segment kind in a
+byte reduces a record from 24 to 20 bytes and the CPU snapshot from 380 to
+340 bytes on both tested host widths. The enum constants and all descriptor,
+selector, control and general-register fields remain; a compile-time bound
+guards the encoded kind. Debug snapshots are copied by field. The record is
+private to X86 Core CPU, not a public ABI or a serialized guest structure.
+This reduces fixed state and bytes copied at instruction boundaries; it does
+not change asymptotic complexity or skip timing, interrupts, faults or guest
+instructions. All profiles use the same layout.
+
+At the configured private-media 10,000,000-instruction checkpoint, sequential
+baseline/candidate samples were 18,671/18,886 ms on x64 and 22,194/22,969 ms
+on x86; reverse candidate/baseline samples were 18,642/19,201 ms and
+22,691/23,412 ms. Each reported 79,964,294 ticks and PC `0003dbc5`. The
+mixed results and host variation do not establish a speedup or full-state
+equivalence. In a separate candidate-then-baseline x64 run with private media
+and configured CMOS, Personaware menu markers occurred at samples 207 and 211,
+and the subsequent frame-change markers at samples 10 and 9. The runs exited
+in 221.63 and 224.79 seconds. Menu frame hashes matched, but the two response
+frame hashes differed; the marker is not proof of an identical completed
+frame or machine state. These samples do not demonstrate usable performance
+or native Window/RDP behavior.
+
+Fixed-work forward, reverse, candidate system and baseline system log SHA-256:
+`D05516E84BD1B131CBA341327F9087CD0A99E5D67C1644CB5BD6E2C2D030187F`,
+`99E596AD4CF5DA529E927910FDBA6FBBEE87411D6A906F7F82CBDCDC5BA3DE4C`,
+`CC737DB851152528A94E0FA2423CB85FF0707F6B62C05002431BFEAD70566E20`,
+`983488C8B97E114D8B74BACAE5649FA4AD59AE5DF9D3209E80CB87736C063AA4`.
+
+The production layout is Shared commit `be0f1e499`. Each width passed 41
+focused CPU/preview tests, 712/712 full unit tests and 48/48 default
+integration tests, including native MIDI. My5160, My5170 and DeskPro selected
+profile integrations passed 3/3, 5/5 and 6/6 on each width. MyRaidenII's
+selected-set startup and Console probes passed on each width; they do not
+establish arcade gameplay. Source and test X86 Core manifests and whitespace
+checks passed. The release inventory below records all fourteen PE widths and
+hashes. MyPC110 and MyNES deployed bytes matched their final cached build
+outputs on both widths; MyNES artifacts were unchanged.
+
+The final production x86 private-media Machine probe reached the menu at
+sample 259 and the input frame-change marker at sample 13, exiting in 276.00
+seconds. Its captured response includes both clock panes; it does not prove
+that every background element finished drawing. The earlier x86 samples were
+240/11 and 254/13; host variation and one run per version prevent a causal
+comparison. No native Window/RDP performance test was performed. The PC110
+usability objective remains open.
+
+Focused, full, external and final x86 system log SHA-256 respectively:
+`9CF9CDD76AA700FA22AF70EDDB1E09A59A745AE0C0B81D4D62CCBD047B42DF27`,
+`4E8B03EB6CA6F500B0FA4D1F1484B1AD450E3F2E64A8C052DA23D73F31CFE43A`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`A9ABEB982CCE95055301F64ACB65E39BEFA18ED2816F76233B1CEA6DAE5C1A79`.
+The [artifact inventory](t582-s39-segment-layout-artifacts.json) records PE
+widths and identities against the committed Shared source.
+
 
 ### Current prefix-dispatch reuse recheck
 
