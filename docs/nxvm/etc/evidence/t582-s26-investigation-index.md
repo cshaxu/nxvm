@@ -106,6 +106,8 @@ These are bounded improvements; none establishes real-time performance.
   [S39 comparison](t582-s39-execution-convergence.md#port-bucket-lookup-upper-bound).
 - Timing-capture call sites and invalid pending-retirement ablation:
   [S39 measurement](t582-s39-execution-convergence.md#retirement-timing-capture-and-second-loop).
+- Pending retirement event subtotal reuse without skipping control checks:
+  [S39 comparison](t582-s39-execution-convergence.md#pending-retirement-event-subtotal-reuse).
 - Formula-input prefix scan reuse on current timing code: [S39 comparison](t582-s39-execution-convergence.md#timing-formula-prefix-scan-recheck).
 - Existing CPU refresh returning timing to Machine:
   [S39 comparison](t582-s39-execution-convergence.md#returning-timing-with-cpu-refresh).

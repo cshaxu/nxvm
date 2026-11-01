@@ -4410,6 +4410,29 @@ interface or artifact changed. Forward and reverse logs SHA-256:
 `8D3FF6846C4977FF009F42EC00FBE1E479381689AFF8552B4A41C9884B26A704`,
 `C03DB5EC095151D6DC4A0676EB7ACE6A08F7B5B52489D651B382123F8E35E685`.
 
+### Pending retirement event subtotal reuse
+
+A task-only Machine candidate retained the event subtotal from the CPU
+timing result already read after refresh and reused it in the subsequent
+pending-retirement iteration. A new Machine run with an existing pending
+retirement captured the current subtotal as before. The existing second loop,
+including stop, reset, bus hold, waiting and budget checks, was retained; this
+is distinct from the rejected immediate-retirement ablation. The candidate
+has not proven timing immutability across all attachment callbacks, debug,
+fault and partial-budget paths and is not a production implementation.
+
+At the private-media 10,000,000-instruction checkpoint, sequential
+baseline/candidate elapsed times were 19,568/19,097 ms on x64 and
+23,844/24,628 ms on x86. The x86 reverse-order candidate/baseline pair was
+23,768/24,233 ms. All reported 79,964,294 guest ticks and PC `0003dbc5`.
+The x86 direction changed with order, host variability is material, and the
+checkpoint does not prove full-state equivalence or complete boot speed.
+These samples do not justify the additional local state or qualification
+burden. No production source, test, public contract or artifact changed.
+Forward and reverse log SHA-256:
+`AB776EFF17CE079FBC99BA6D8729D0A785426154B3656FB23CEE2A625C49ECD8`,
+`4502716DD19A04239F0122BEB3B900164E161D79C0A9CEE30A929F6BE86157C6`.
+
 
 ### Current prefix-dispatch reuse recheck
 

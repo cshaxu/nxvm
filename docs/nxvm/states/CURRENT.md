@@ -1,5 +1,12 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Pending retirement subtotal candidate rejected
+
+Retaining a local event subtotal avoided one repeated CPU timing capture
+without skipping the retirement control checks. Fixed-work results did not
+establish a stable cross-width gain, and callback and partial-budget equivalence
+remains unproven. The candidate was not adopted; S39 remains active.
+
 ### Empty FDC advancement candidate rejected
 
 An idle-command FDC guard showed mixed fixed-work results and was slower in
