@@ -2589,3 +2589,186 @@ SHA-256 respectively:
 `85A35680232CA0AD623DB7DD18D23A79396931ACB133791581D40C37048AEF41`,
 `2758C0B659C28139981D9B3ABFCFDAB070E088EB3B604BEC68D3C7DF16875B6C`,
 `B7AAAC0D54CE5BDCD3C36AA0AB3157F00D5B45A16886BE7CC459BEEA7B7F7AE9`.
+
+### PIT-only zero-tick call guard
+
+S38 had tested PIT and RTC zero-tick guards together; this distinct scratch
+candidate guarded only the existing primary PIT call, leaving RTC and all
+clock conversion and trace ordering unchanged. At the same private-media
+10,000,000-instruction, 79,964,294-tick and `0003dbc5` checkpoint, one
+baseline/candidate pair reported 23,786/23,089 ms x64 and 25,851/26,109 ms
+x86. These ordered pairs are subject to host noise and do not prove complete
+state equivalence. They do not establish a cross-width benefit; a board-side
+guard would also repeat the PIT owner's existing zero-tick behavior. The
+candidate is not retained, and no production source, API or artifact changed.
+Logs SHA-256 x64/x86:
+`000F1A0C94F51D760EB7CBA7811DC4ABE8E4393BDAABA26523BD992FDCB4EF3F`,
+`321D0D4DFCDFAC905AA1C3802D02D4E5FE3F52A2C698E74F10A50F372D1E6476`.
+
+### Host power-policy check
+
+A read-only host query reported the Windows Balanced power scheme and a
+configured maximum processor state of 100% for both AC and battery. The
+processor registry reported Ryzen AI 9 HX 370 and a nominal `~MHz` value of
+1996; that registry value is not a live execution-frequency measurement.
+Windows CIM processor counters were inaccessible in the execution sandbox.
+These observations do not establish active power source, actual frequency,
+thermal behavior, core placement or the cause of the measured startup
+variation; no host power policy or system setting was changed. Prior S39
+processor-affinity probes remain the evidence for placement variation.
+
+### PIC source-mask expression probe
+
+The board converts eight per-IRQ asserted-source counts into one level mask
+on each refresh. A scratch candidate expressed the existing conditional OR
+as a Boolean shift and OR, retaining all eight counts, ownership, callbacks
+and refresh ordering; it added no state or public API. Disassembly confirms
+the compiler emitted a different mask calculation, not a removed refresh.
+
+At the fixed private-media checkpoint (10,000,000 instructions, 79,964,294
+ticks and PC `0003dbc5`), one baseline/candidate pair reported 17,585/17,859
+ms x64 and 26,252/27,059 ms x86. Single ordered pairs are noisy and do not
+prove a regression or full state equivalence, but neither shows a reason to
+change the production expression. No full-menu comparison or receiver gate
+was run and no production file changed. Log hashes, x64 then x86:
+`EC1EE9B1EB675F1AB91DA3FB69AFDDD3315F815D42D698BD4E8227E40109B011`,
+`CDBEF02503E1F55445285FFDD6E5D06C1F8E0CB3F2C4206DD44F9D9E1FD5E53A`.
+
+## Post-bucket startup leaf distribution
+
+Re-aggregating the existing 5,066 late x64 worker instruction-pointer samples
+by nearest symbol gives 206 symbols: the largest one accounts for 328 samples
+(6.5%), the five largest 19.1%, the ten largest 31.3%, and the twenty largest
+49.5%. The largest named buckets include CPU refresh (328), Machine run (201),
+memory-route resolution (144), instruction boundary (138), elapsed-time
+publication (136), keyboard-input collection (129), board-deadline observation
+(127), DMA advancement (116), timing selection (110), and 486 source timing
+(110). The complete ordering also contains system-library samples.
+
+These are exclusive sampled instruction addresses, not inclusive function
+costs: inlined code is charged to its enclosing symbol, sampling can alias,
+and the data is one x64 startup run rather than a controlled comparison.
+They show why another isolated one-function micro-optimization is unlikely by
+itself to make the three-to-four-minute startup usable. The next investigation
+should follow duplicated work across the whole retirement/timing/device chain,
+measure the inclusive candidate on both host widths, and verify the actual
+DOS/Personaware endpoint. No new production change or speed claim follows from
+this aggregation.
+
+## Already-minimal board deadline conversion count
+
+The board's deadline aggregation can in principle avoid converting a positive
+device deadline when its current earliest positive source deadline is already
+one: a successful conversion cannot produce a smaller positive value. A zero
+device deadline must still report immediate, and conversion failures must retain
+their existing outcome. This observation does not authorize skipping deadline
+callbacks or changing scheduler ordering.
+
+A task-only x64 build counted calls to the existing clock-conversion aggregation
+in the private-media startup fixed-work harness. Of 10,298,529 calls, only four
+had a positive device deadline and an already selected one-tick source deadline;
+zero calls had a zero device deadline. The run reached 10,000,000 instructions,
+79,964,294 guest ticks, PC `0003dbc5`, in 22,105 ms reported by the harness.
+Instrumentation affects timing and this covers only the early x64 workload;
+nevertheless, four eligible calls cannot materially improve this checkpoint.
+No production optimization, public interface or release artifact was changed,
+and no full-product performance or test claim is made.
+
+## Startup 486 timing-term sampling
+
+A task-only x64 build sampled the existing 486 source evaluator once per 256
+calls during the private-CMOS and private-media startup checkpoint. It logged
+10,002,313 calls and 39,071 samples. Accumulated unserialized TSC deltas were:
+nominal 3,573,651; L2 fallback 5,500; memory 3,500,411; decode 2,600,866;
+and bus 2,016,780. The four common terms therefore account for approximately
+30.6%, 29.9%, 22.3% and 17.2% of their own sampled term intervals. These
+numbers exclude the surrounding evaluator and Machine, and cannot be treated
+as total CPU percentages. The fallback is called conditionally, so its small
+total should not be interpreted as its cost per call.
+
+The probe reached 10,000,000 instructions, 79,964,294 guest ticks and PC
+`0003dbc5`; the harness reported 19,520 ms. Deterministic sampling can alias
+the instruction stream; added timers and rewritten scratch control flow alter
+compiler layout, and TSC reads are not serialized. It is an early startup x64
+observation, not a full-boot speedup or correctness qualification. Together
+with the earlier World Clock term sample, it supports investigating the
+nominal and memory term implementations first, rather than assuming decode or
+bus conversion dominates. The previous prefix-sharing and zero-access
+candidates remain rejected for the reasons already recorded. No production
+source, interface, release artifact or owner media was changed.
+
+## Deferred complex-instruction timing fields
+
+Disassembly of the current x64 Release nominal 486 timing evaluator shows
+that it reads the ModR/M extension and computes protected-mode eligibility
+before classifying simple arithmetic, register and conditional-branch opcodes.
+A task-only candidate moved those two calculations into the existing complex
+opcode switch, with the same formulas and no persistent state or new executor.
+
+With private copied media and the configured adjacent CMOS, ordered
+baseline/candidate/candidate/baseline fixed-work measurements in milliseconds
+were 17,886 / 20,740 / 20,740 / 21,019 on x64 and 25,417 / 26,505 / 26,799 /
+26,379 on x86. Every run reported 10,000,000 instructions, 79,964,294 ticks
+and PC `0003dbc5`. These are sequential samples, subject to host drift and
+compiler-layout effects; the checkpoint is not full-state equivalence.
+The candidate did not demonstrate a consistent benefit and adds a nested
+scope, so it is rejected. No production source, interface, test, owner media
+or executable was changed. Full-boot and desktop/RDP tests were not run for
+this rejected scratch candidate.
+
+## Deferred operand-cache timing fields
+
+A scratch candidate moved operand width and missed-read arithmetic after the
+existing zero-miss return, and evaluated the existing call-gate eligibility
+only for the applicable opcodes. The special REP, task-switch, gate and
+interrupt paths retained their order and formulas. No public interface, new
+state or production code was changed.
+
+At the configured private-media startup checkpoint, ordered baseline /
+candidate / candidate / baseline measurements were 21,361 / 21,960 / 21,476 /
+20,973 ms on x64 and 25,652 / 22,044 / 22,312 / 22,691 ms on x86. All runs
+reported 10,000,000 instructions, 79,964,294 ticks and PC `0003dbc5`. Host
+drift and compiler layout affect these sequential samples; the endpoint is
+not complete state equivalence. The x64 pairs both favor baseline, while x86
+favors the candidate, so the observations do not establish a cross-width
+benefit without an apparent x64 cost. The candidate is not adopted, and no
+product boot, desktop/RDP or full regression qualification is claimed.
+
+## Split nominal timing scratch candidate
+
+A scratch candidate factored complex nominal-486 cases into one private
+function, leaving the existing simple cases and each timing formula with a
+single owner. The x64 Release compiler inlined the extracted function back
+into its caller and still emitted the full register-save prologue, so this is
+not evidence that function-frame work was eliminated. It did change the
+generated code layout. The candidate is not yet admitted or qualified.
+
+At the private-media startup checkpoint, baseline / candidate / candidate /
+baseline times were 18,747 / 18,100 / 15,881 / 18,287 ms on x64 and 23,388 /
+22,692 / 21,864 / 23,722 ms on x86. All reported 10,000,000 instructions,
+79,964,294 guest ticks and PC `0003dbc5`. These sequential measurements can
+include host drift and do not prove complete-state equivalence. A matching
+configured-CMOS full Personaware menu comparison completed: baseline and
+candidate reached the menu in 205.77 and 216.09 seconds respectively, using
+the same adjacent CMOS hash and private copies of the same media. This is one
+sequential pair and does not establish a precise regression, but it does not
+show an end-to-end improvement. Both still take more than three minutes.
+The candidate adds a private function and does not reduce the observed prologue
+or code complexity, so it is rejected without modifying production source.
+No x86 full-boot or native desktop/RDP result is claimed.
+
+## Idle floppy head-unload guard
+
+The existing floppy advance checks all four head-unload slots even when its
+head-unload mask is zero. A temporary candidate returned immediately from that
+one helper in the zero-mask case; it retained the FDC time update and all
+other advancement and event paths. No production source was changed.
+
+At the private-media fixed-startup checkpoint, ordered baseline / candidate /
+candidate / baseline results were 19,861 / 19,606 / 19,831 / 22,442 ms x64
+and 27,406 / 26,755 / 23,772 / 22,549 ms x86. Every run reported 10,000,000
+instructions, 79,964,294 ticks and PC `0003dbc5`. The x86 direction reverses,
+and host drift limits all four pairs. The candidate adds a branch, affects a
+fixed four-slot scan, and does not establish a cross-width gain or a useful
+end-to-end speedup. It was rejected without additional qualification. No
+desktop, RDP or full-boot comparison was performed.

@@ -33,6 +33,9 @@ These are bounded improvements; none establishes real-time performance.
 - Individual board-advance sampled costs: [S13 observations](t582-s13-scheduler-observation.md#s26-board-advance-attribution).
 - Clock advance narrow-division candidate: [S11 observations](t582-s11-performance-observation.md#subsequent-narrow-division-candidate).
 - Zero-or-one clock-conversion candidate: [S39 comparison](t582-s39-execution-convergence.md#zero-or-one-clock-conversion-candidate).
+- PIT-only zero-tick call guard: [S39 probe](t582-s39-execution-convergence.md#pit-only-zero-tick-call-guard).
+- PIC source-mask expression: [S39 probe](t582-s39-execution-convergence.md#pic-source-mask-expression-probe).
+- Idle floppy head-unload scan: [S39 dual-width probe](t582-s39-execution-convergence.md#idle-floppy-head-unload-guard).
 - Instruction preview and copies: [S11](t582-s11-performance-observation.md), [S22](t582-s22-cache-copy-audit.md), [S26 preview copy](t582-s26-preview-audit.md) and [preview count](t582-s26-preview-cost.md).
 - Measured compact preview candidate and receiving status: [S26 compact preview](t582-s26-compact-preview.md).
 - CPU parity folding: [S26 parity audit](t582-s26-parity-audit.md).
@@ -63,6 +66,9 @@ These are bounded improvements; none establishes real-time performance.
 - Retirement trace disabled-path guard: [S26 trace audit](t582-s26-trace-audit.md).
 - Single-owner timing-result write: [S26 timing probe](t582-s26-timing-owner-probe.md).
 - 486 timing-term prefix reuse with preserved direct tests: [S26 comparison](t582-s26-486-term-prefix.md).
+- Deferring complex-opcode timing fields: [S39 dual-width comparison](t582-s39-execution-convergence.md#deferred-complex-instruction-timing-fields).
+- Deferring operand-cache timing fields: [S39 dual-width comparison](t582-s39-execution-convergence.md#deferred-operand-cache-timing-fields).
+- Split nominal timing implementation: [S39 scratch comparison](t582-s39-execution-convergence.md#split-nominal-timing-scratch-candidate).
 - 486 access-penalty algebra: [S39 dual-width exploration](t582-s39-execution-convergence.md#486-access-penalty-algebra-candidate).
 - 486 PUSH/POP dependency guard: [S34 comparison](t582-s34-current-profile.md#486-decode-dependency-classification); previous-opcode scan guard: [S35 comparison](t582-s35-cost-attribution.md#previous-opcode-scan-experiment). Neither established a cross-width benefit.
 - 486 timing-profile branch reorder: [S39 comparison](t582-s39-execution-convergence.md#486-timing-profile-selection-order); neither width showed consistent ordering benefits.
