@@ -1,5 +1,21 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Rejected 486 timing prefix handoff; cross-profile audit
+
+The 486-only local prefix handoff passed focused and receiver tests but
+showed slower complete PC110 startup in two sequential orderings. It was
+reverted along with its test adaptations; all receiver EXEs were restored to
+the previously validated baseline. See S39 evidence for limits and failures.
+
+The owner requires auditing equivalent repeated work across every CPU profile
+and avoiding PC110/App-specific shortcuts. Investigate an instruction-local
+Intel timing handoff only if it preserves each profile's existing prefix,
+fault, debug and timing contracts. V30's NEC and emulation prefix semantics
+must remain distinct. Do not add persistent state or a second executor.
+Any candidate requires named profile coverage, dual-width Shared receiver
+and fourteen-artifact gates, plus actual PC110 startup and response evidence.
+Do not treat isolated short-loop improvement as usable system performance.
+
 ### Admitted repeated-instruction prefix reuse
 
 In the existing CPU repeat-timing record, compute the decoded prefix count at

@@ -4005,6 +4005,70 @@ x86, baseline then candidate:
 `7BE5899AC2DB6D8ADE3EFF4382383F7954FFBC3B9B7D7CA6C674D0F7A6EFC5A5`,
 `BF8216EC7C57B3A8DF77AD94733F902A9B5E617B0CC933724BE8A61F64083C25`,
 `08BCF3598DD2F5315F6B71E84D17A1B6A577F24B26EEF2F1FE7F7B3B0EFAA370`.
+
+### Shared 486 timing prefix handoff
+
+The selected 486 timing owner already computes the bounded opcode-prefix
+count before calling its nominal, L2, memory and decode terms. Those terms
+independently computed the same count again. A task-only candidate passed the
+original local value directly; the instruction record and formulas were not
+changed. The sole production aggregate has no intervening opcode-byte write;
+repeat bookkeeping changes timing facts but not the decoded prefix bytes.
+
+At the private 10-million-instruction startup checkpoint, baseline/candidate
+times were 18,282/17,766 ms x64 and 22,683/22,030 ms x86. In reverse order,
+candidate/baseline times were 17,408/18,276 ms x64 and 22,687/22,901 ms x86.
+Every run reported 79,964,294 ticks and PC `0003dbc5`. These two ordered pairs
+suggest reduced early-startup work but do not prove full-state equivalence,
+complete startup speed, interactive response or native Window/RDP behavior.
+The production candidate and its existing-test adaptations require full
+qualification; no acceptance is implied by this probe. They were subsequently
+reverted after the complete-system comparison below.
+
+Forward log SHA-256, x64 baseline/candidate then x86 baseline/candidate:
+`DBF830DC14BCD2B80943E43ED3023A28299DE7F866DBF35AF29861EE7B54FEB1`,
+`254942BA403FBFA91AD44D11BB8519F1247A9DA93E99BDBA77B26480157A91DA`,
+`233590F9F1D24B18BCC9B487C7FF2411614A313FD9131465FA8684AAC886349F`,
+`64E590E050534C845353FDC527C88310DDB8597CE6F4C9BE694B0C3DC5607CFE`.
+Reverse log SHA-256, x64 candidate/baseline then x86 candidate/baseline:
+`145FFF857F3B412E6391BC84C9631EC3E0808B55954D1D8D37B0C01771F3337F`,
+`7AB1302561AE4EE8C521D32C7AE6D2B3BFBCC5D99DF9E1563B553780D09C387D`,
+`3FEFA0E6202ABC82B403DC37EBCF53DE2B2E1FA48F7497A0992C539C2994F3DA`,
+`28953D0F2052B47631214475F6CDD9383E5FBCBBE0445B6A6BD68D9D03374723`.
+
+The existing 40 focused CPU/preview tests and all 712 unit tests passed per
+width. The x64 default integration run passed 47/48 with native MIDI output
+creation failing. The x86 initial run passed 46/48: the same MIDI test failed
+and MyNES native-window's nonblack-pixel assertion failed; that window test
+passed on an isolated retry, with its initial failure cause undetermined.
+All three PC profile receiver groups passed 3/3, 5/5 and 6/6 on each width;
+MyRaidenII selected-set startup and Console probes passed on each width.
+Fourteen PE widths were checked; MyPC110 and MyNES assets matched their builds.
+
+The first x64 complete-window probe detected the menu at sample 230 and the
+World Clock frame at input sample 10, compared with the earlier baseline's
+samples 202 and 9. A subsequent adjacent, reverse-order candidate/baseline
+pair reported menu samples 240/222, complete-response samples 11/10, and
+total times 255.66/236.33 seconds. Guest quanta near the menu differed and
+host scheduling varies; these pairs do not prove causation or complete-state
+equivalence. Nonetheless, both orderings show an end-to-end slowdown risk,
+not a demonstrated improvement. The candidate and its test-interface edits
+were reverted; all PC and MyRaidenII assets were restored byte-for-byte to
+the previously qualified `ab8095d87` baseline. The user requested all-profile
+similar-path review, without PC110 or App special cases. V30's distinct NEC
+prefix meaning must remain intact. No native Window/RDP timing was performed.
+
+Focused, full, x86 profile continuation, isolated MyNES-window retry and
+MyRaidenII probe log SHA-256 respectively:
+`032DF06C709BF6B2DA01A2627930BCF1D95C0B2EA5879D954B7FD0847EA33F53`,
+`4C4E907ABA4D4C1E88A67F276B4B7C20521BBB527D21D26CFCD2DDF9A7981200`,
+`830001F6B8B1DD6A19055D49DDD0D369C973E0D597585D047D3A2DD2522FDBE7`,
+`72EB43460AE00E8F457B4979B8DBCDE92DC6103A482699858243BF087A27D419`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
+Initial candidate and reverse candidate/baseline system-log SHA-256:
+`A4D8750E1D4C5AE7CC773FF41540E5F0FCA0A7082C15A2A8A88476AFA83E10A2`,
+`F8A18E578C38B0E2BB4E5663CB8396F710BBD46F04D4DD7154A04F7DF53225ED`,
+`7DD3837368A3FEBFA7649C6408DA3433E6AA4418A885FB515FD22C6CA76A335D`.
 Log SHA-256, x64 baseline/candidate then x86 baseline/candidate:
 `F7A73DE287ABC6CAF062D284CEED8B20FB568D24C27C78480791B9B640F6F575`,
 `744BF59F87A9C7BAA9A78DDF07145D20B779E280423F0CFD5DCB68B74697C329`,
