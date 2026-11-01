@@ -838,6 +838,37 @@ static lib_i32 prefix_attributes_test_mixed_repeat_last_wins(x86_core_cpu_profil
     return 1;
 }
 
+static lib_bool prefix_attributes_test_classifier(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_DEFAULT, X86_CORE_CPU_PROFILE_8086,
+        X86_CORE_CPU_PROFILE_8088, X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386,
+        X86_CORE_CPU_PROFILE_80486SX, X86_CORE_CPU_PROFILE_V30
+    };
+    static const lib_u8 common[] = {0x26u, 0x2eu, 0x36u, 0x3eu, 0xf0u, 0xf2u, 0xf3u};
+
+    for (lib_size p = 0u; p < sizeof(profiles) / sizeof(profiles[0]); ++p) {
+        for (lib_u32 opcode = 0u; opcode <= 0xffu; ++opcode) {
+            lib_bool expected = LIB_FALSE;
+            const lib_bool wide = profiles[p] == X86_CORE_CPU_PROFILE_80386 ||
+                profiles[p] == X86_CORE_CPU_PROFILE_80486SX;
+
+            for (lib_size i = 0u; i < sizeof(common) / sizeof(common[0]); ++i)
+                if (opcode == common[i]) expected = LIB_TRUE;
+            if (opcode == 0x64u || opcode == 0x65u)
+                expected = wide || profiles[p] == X86_CORE_CPU_PROFILE_V30;
+            if (opcode == 0x66u || opcode == 0x67u) expected = wide;
+            if (x86_core_cpu_instruction_is_prefix((lib_u8)opcode, profiles[p]) != expected) {
+                lib_c_fprintf(lib_c_stderr, "prefix classifier CPU=%u opcode=%02x failed\n",
+                    (lib_u32)profiles[p], opcode);
+                return LIB_FALSE;
+            }
+        }
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     static const x86_core_cpu_profile profiles[] = {
@@ -860,7 +891,7 @@ lib_i32 main(void)
         {"mixed repeat-prefix",prefix_attributes_test_mixed_repeat_last_wins}
     };
 
-    if (!prefix_attributes_test_legacy_attributes()) return 1;
+    if (!prefix_attributes_test_classifier() || !prefix_attributes_test_legacy_attributes()) return 1;
     for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
