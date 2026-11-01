@@ -19731,7 +19731,10 @@ lib_u8 x86_core_cpu_execution_preview_lexeme(
             sizeof(t_cpuins) - last);
     }
     {
-        const lib_size first = lib_offsetof(x86_core_cpu_execution_context, tlb);
+        /* Preview never executes a task switch, so it does not need the
+         * task checkpoint or the cache and TLB it borrows from its owner. */
+        const lib_size first = lib_offsetof(x86_core_cpu_execution_context,
+            instruction_task_checkpoint);
         const lib_size last = lib_offsetof(x86_core_cpu_execution_context,
             memory_access_provenance);
         lib_memory_copy(&preview, context, first);

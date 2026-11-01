@@ -325,7 +325,6 @@ struct x86_core_cpu_execution_context {
     cpu_wait_state wait_state;
     lib_u64 wait_poll_remaining_ticks;
     lib_bool instruction_task_switched;
-    t_cpu instruction_task_checkpoint;
     cpu_interrupt_shadow interrupt_shadow;
     lib_bool debug_segment_shadow_before;
     lib_bool nmi_in_service;
@@ -343,6 +342,7 @@ struct x86_core_cpu_execution_context {
     const x86_core_cpu_execution_context *preview_memory_source;
     /* NEC hardware permits MD restoration only between BRKEM and RETEM. */
     lib_bool nec_md_write_enabled;
+    t_cpu instruction_task_checkpoint;
     cpu_tlb_entry tlb[X86_CPU_TLB_SETS][X86_CPU_TLB_WAYS];
     lib_u8 tlb_lru[X86_CPU_TLB_SETS];
     cpu_cache_line cache[X86_CPU_CACHE_SETS][X86_CPU_CACHE_WAYS];
