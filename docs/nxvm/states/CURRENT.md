@@ -1,5 +1,24 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted lexical-preview snapshot copy reduction
+
+Keep the private decoder's CPU checkpoint adjacent to its existing access
+array and omit both from the preview's existing segmented copy. `ExecBoundary`
+must overwrite the entire checkpoint from the preview CPU before any preview
+consumer reads it; preserve the normal fetch, diagnostics, faults, timing and
+all profile paths. Do not change public interfaces or add state. Review all
+private-layout consumers, update the X86 Core source manifest, run relevant
+dual-width CPU tests followed by the full Shared receiver gate and fourteen
+product artifacts, and compare actual PC110 boot. This bounded reduction does
+not close the usability objective.
+The relevant 40 tests and all 712 unit tests passed on each width; default
+integration passed 47/48 on each width, with native MIDI output creation the
+sole failure. PC profile receivers and MyRaidenII selected-set probes passed.
+The x64 private-media menu probe took 200.83 seconds versus 210.25 seconds in
+one earlier same-harness baseline; this does not establish acceptable or
+statistically stable interactive performance. Details and limits are in S39
+evidence; T582 remains open.
+
 ### Admitted inactive external-cycle observer removal
 
 Bind the existing CPU external-cycle observer only when the immutable machine

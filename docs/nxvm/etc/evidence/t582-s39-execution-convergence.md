@@ -3653,3 +3653,220 @@ full boot and desktop/RDP were not measured for the candidate.
 Copy-attribution and candidate logs have SHA-256 respectively
 `AE5BAF5FE10177DDC52A05460185E02E49A84FBB6D627C59D96C3CEA53636BDC`,
 `2EC590D1B1711180BFC85443F0B7641479C43479B250823B6A774D0FC304D777`.
+
+## Current startup milestones for emulator usability
+
+After the owner clarified that usable system startup and interaction, rather
+than game performance, are the objective, a hidden x64 product-path probe used
+the current cached Release libraries, private copies of the configured
+20 MiB media and CMOS, and ten-second published-frame samples. It first showed
+`20096 KB OK` at sample 20, retained that text through sample 130, and first
+showed `Starting PC DOS...` at sample 140. Samples 140–160 showed that text;
+samples 170–200 were graphics. The existing two-pixel Personaware detector
+fired at sample 206 and the probe exited successfully after 210.25 seconds.
+The detector does not establish complete menu correctness or interactive
+responsiveness. These coarse samples include capture and logging overhead and
+do not establish an exact phase boundary or imply the CPU was idle. There was
+no native Window or RDP measurement, and owner media was not modified.
+
+The early firmware query optimization was already investigated in S13 and did
+not establish a gain; caching a decoded result also requires preserving mutable
+chipset mappings and route precedence. Whole-Core LTO was investigated in S34
+and did not establish a sufficiently simple build solution or acceptable boot
+time. Neither is newly adopted. Further work must improve the real firmware to
+DOS path and subsequent interaction, with actual end-to-end comparison; this
+observation is not a performance fix or acceptance.
+
+Probe executable SHA-256:
+`07D68A9DEC9837A1BE54DC00D71DD6918B3E68F16C6B171F01C8FFB8B2F42B90`;
+output SHA-256:
+`607ED1651AF0B90C5AC4FC5FA561724C645AC98DFBBEA85C551EB1067FB56834`.
+
+### Instruction-byte clearing upper bound
+
+A scratch x64 candidate omitted the instruction-byte buffer clear in
+`ExecBoundary` entirely. It is deliberately unsafe: bytes beyond the decoded
+length can remain stale in externally visible debug observations, and other
+indexed consumers have not been qualified. It cannot be used as a fix.
+The baseline and candidate used current Release libraries and separate private
+copies of the same input. In one ordered pair, the existing fixed-work probe
+reported 19,143 and 19,305 ms respectively for 10,000,000 instructions; both
+ended at 79,964,294 ticks and PC `0003dbc5`. The latter five-million interval
+was 10,379 and 10,377 ms. These are noisy early-startup samples, not complete
+state comparisons or evidence about the full boot, but they do not support
+adding a more complicated clearing/observation protocol to remove this cost.
+No production code, public contract or owner media changed. Baseline and
+candidate output SHA-256 respectively:
+`F66006E32A6FBE5D843543A07B3EFC37BA8B2FB27269B6BED2732C88D01B9CA6`,
+`D2EE1F485C9AB6010A30FB7B866E1D7B5FEB64E3CEECE8FC6AFC5E9FA464D8D1`.
+
+### Private event-access record layout
+
+`_e_begin_access` saves and clears existing 486 timing counters before event
+arbitration, and `_e_end_access` restores them. A scratch-only candidate
+reordered the fields of its private temporary `cpu_entry_access` to follow
+their source-record locality; field meanings, counter access and event
+ordering were unchanged. Its compact layout remained 96 bytes on x64. GCC's
+disassembly of `_e_begin_access` shrank from 114 instructions / 496 bytes to
+94 / 432 on x64; x86 remained 180 / 816. This is compiler-specific evidence,
+not proof of semantic equivalence across all events or profiles.
+
+At the private configured-CMOS 10-million-instruction checkpoint, both widths
+reached 79,964,294 ticks and PC `0003dbc5` in every run. In candidate/baseline
+then baseline/candidate order, x64 reported 18,420 / 19,067 then 18,298 /
+19,479 ms; x86 reported 22,875 / 22,253 then 24,133 / 23,188 ms. The
+direction reverses on both widths, so these noisy fixed-work pairs do not
+establish a stable speedup or full guest-state equality. The candidate changes
+layout without reducing source or algorithmic complexity and is not adopted;
+there was no production, API, media or binary change. The x64 candidate then
+baseline output hashes were `9C176F853487BA228DA88D1ABC975C1ABFC686D4E4E8C5CA31466583A6CFFD56`
+and `FA59C14E66230D907653D42AF87880DEE2050A3C54B79B8B11E810C628043369`;
+the reverse-order outputs were `EABB763E5806F4584098F5C5D0D782E67CFF491E21DE1C927C07C5395B47B2A2`
+and `3100E0781AEA3288EFF26BEFFCF2FE0D2878F0E9B469DEBE6B40CC138BB7E72C`.
+
+### SMM admission stack-frame split
+
+The x64 Release object enters `_smm_enter` at both existing arbitration
+boundaries and saves eight registers plus reserves a 680-byte stack frame
+before checking the profile and pending SMI. A scratch candidate moved the
+unchanged admission predicate into a small caller and kept the actual image
+and entry work in one private callee. It introduced no persistent state or
+alternate execution path. GCC inlined the admission into its callers and
+retained the large entry body out of line. Complete event, failure and other
+profile equivalence has not been qualified.
+
+In one ordered baseline/candidate pair using the existing private-media
+10-million-instruction probe, x64 reported 17,969 / 18,298 ms and x86
+22,658 / 22,604 ms. Every run reported 79,964,294 ticks and PC `0003dbc5`.
+These are early-startup samples, subject to host drift and not complete
+state or end-to-end comparisons. They do not demonstrate a worthwhile gain
+from the extra source helper, so it was not adopted. No production source,
+public interface, owner media or published executable changed. Output
+SHA-256 in x64 baseline/candidate, x86 baseline/candidate order:
+`ACDA2447D5D24B510BB80E0AC558ECF9DAAE40AA01DDAE408D6C45CADBC7CB3E`,
+`A0FE86D861E1A02ED82A04DC857EB14E04219CE230CECC35BEE750B8B74356B5`,
+`05396BF51C61DCD6917D5E1280CAC4B663D6628647809943A7CC9454D096633D`,
+`325694966C6A1D8AD02D0CB3933FAF7CEEE9DEA1A43CA7D43E31C9204876E344`.
+
+### Execution-provider clock without a time consumer
+
+Core currently advances its private execution-provider clock even if the
+frozen execution provider has no `advance_time` callback. The PC110's bound
+provider has a reset callback and a null `advance_time`; it receives no such
+clock value. The only production references to this clock are initialization,
+reset and this scheduler call. Configuration freezes provider topology before
+normal reset/run; the provider's callback lifetime and immutability remain a
+contract assumption rather than a new enforcement mechanism.
+
+A scratch candidate moved the existing clock advancement into the existing
+non-null callback branch. It reduced the source by one line and left the CPU,
+board and device clock routes unchanged, but stopped maintaining that private
+clock while there was no consumer. That is an internal-state change, so it
+would still require a complete provider-lifetime and reset review; it is not
+established equivalent for a caller that mutates its borrowed callback table.
+
+At the private configured-CMOS 10-million-instruction checkpoint, ordered
+baseline/candidate/candidate/baseline times were 19,172 / 19,850 / 18,698 /
+18,406 ms on x64 and 25,195 / 23,787 / 22,942 / 24,048 ms on x86. Each
+reported 79,964,294 ticks and PC `0003dbc5`; this is not full-state or boot
+equivalence. Host drift is visible, and both x64 pairs favor the baseline
+while both x86 pairs favor the candidate. Given the apparent cross-width
+tradeoff and the lifetime question, do not adopt the candidate based on this
+test. No production code or EXE changed. The corresponding output SHA-256s
+in table order, x64 then x86, are:
+`A5EF76095315F63280B7C1CABD0C8C7EE5411000DA3FA14882D87CB7C4DE4C9C`,
+`1A871B90CECCB769DDBA8E809AA68B0D7C251100AF4A4B51FC301C8C2ABAE928`,
+`EA2DAF0BA680CBC1149311DAD7007748E329F075D2C4CD98FE8F885A5CD3B6F9`,
+`20E515417D5F0393F912D3F8910253583F025AFABF1E74120D69C9A4EC7B33D6`,
+`CEC7771CE0FDEFF22F9BF66CF0055BA8775368244BFB8DE10AC09474F66E750D`,
+`A4E91BFEFC7D34376A88E8CA5C5867E851CF576C9A4E7E10A310B38EAAF4A0D0`,
+`3092382E41706B65EBC0036C0841709037F66BA86858F0203CA04F15F1D1B936`,
+`182BB99C3E23DB3C702E4A84D3948EDDF7355E4F83DED88614C143710B4315D8`.
+
+### Host duration of the first unsupported FDC command
+
+A current x64 private-media run added a host monotonic timestamp to the
+existing FDC trace and stopped at 60 million retired instructions. The actual
+8272 model remained unchanged. At guest tick 284,206,909, firmware wrote the
+SMC `12h` command; at tick 284,206,953 the model exposed its invalid-command
+result. The next traced read of that result occurred at tick 350,929,703.
+The host timestamps on the write and read were 264,760,853 and 264,777,454 ms:
+16.601 seconds elapsed, corresponding to approximately 2.02 seconds on the
+33 MHz guest axis. The 60-million endpoint recorded 1,376,335 total FDC status
+reads and completed in 90,441 ms at 365,365,343 ticks / PC `00038887`.
+
+This confirms that the unsupported-command interval is material to the slow
+boot, but the elapsed interval is not an exclusive measurement of CPU time
+spent polling: firmware and other device work may also run within it. This
+is one instrumented configured-CMOS run, not a complete boot, x86 or RDP
+measurement. The earlier incomplete SMC handshake caused substantially longer
+startup; correct `12h`/`13h` handling must therefore be evaluated with the
+subsequent reset, status and no-drive behavior as a whole, not advertised as
+a proven speedup or installed as a no-op. No owner media or production file
+was changed. Trace SHA-256:
+`649E7A7CEABA09FF9C7F8CBAFB29A1D75436EE141818CD558B54788D45843FC1`.
+
+### Preview checkpoint copy reduction
+
+Lexical preview copied the decoder's previous `oldcpu` checkpoint before
+`ExecInit` immediately called `ExecBoundary`, which overwrote that checkpoint
+from the preview CPU before using it. The only operation before that overwrite
+which could inspect prior instruction facts examines the copied opcode bytes,
+length and timing-write fields, not `oldcpu`; V30 lock completion is suppressed
+in preview mode. The private `oldcpu` field is now adjacent to the already
+omitted access array, allowing the existing two-segment preview copy to omit
+both. It does not add a branch, cache, persistent state, public interface or
+different execution path. The private x64 record remains 13,056 bytes; its
+initial preview copy decreases from 736 to 356 bytes. On x86 the private
+record remains 13,024 bytes and the copy decreases from 704 to 324 bytes.
+Full profile, fault, debug and receiver qualification remains required.
+
+Scratch builds compiled all five CPU translation units against either the
+original or the reordered private header. One ordered x64 baseline/candidate
+pair over 60 million retired instructions reported 89,970 / 87,691 ms total
+and 41,710 / 39,887 ms for the final 30-million stage. The corresponding x86
+pair reported 117,399 / 118,014 ms total and 55,674 / 55,190 ms for that
+stage. Every run recorded 365,365,343 ticks and PC `00038887`. One sequential
+pair per width, host drift and a common checkpoint do not prove complete
+state equivalence or an end-to-end speedup; this is a fixed 380-byte copy
+reduction per preview, not an asymptotic complexity claim. No DOS, desktop
+or RDP usability claim follows. Logs, x64 then x86, baseline/candidate:
+`97121AD6965E4245C0024E425B27FD87C8AC5445C60EEB38CD09ADF32EEA7242`,
+`0A6F3FB9883CF9B8C575F9728076FE669BFE938F74AA86C1518BFCE25CD7E225`,
+`21414FFB11FA0023BA2D6CECC5E3E7F30884153659FE0CA3E68273EBC263F504`,
+`B7B0FBFEB2C462D4554D2B073AD538B142BFACD953DBCC4118000D29A1AC2C5D`.
+
+The cached Release builds and the existing 40 focused CPU/preview tests passed
+on both widths. The first x64 build had four output-open linker failures during
+parallel linking; resuming the same tree at four jobs completed before testing.
+The full unit suites passed 712/712 on both widths. Default integrations passed
+47/48 on each: the only failure was the native MIDI output creation assertion.
+A separate WinMM diagnostic found one output device but `midiOutOpen` on the
+mapper returned native error 1; this does not establish why it failed or prove
+playback. The owner has allowed this host-dependent failure to be recorded
+separately. My5160, My5170 and DeskPro profile receivers passed 3/3, 5/5 and
+6/6 per width. Both MyRaidenII selected-set startup and product-Console probes
+passed on each width; they do not establish gameplay. All fourteen release
+files were checked for PE width; deployed PC110 and MyNES files matched their
+cached outputs. The other PC deployments were exercised by profile integration.
+
+The same private-media x64 frame-sampling harness first observed
+`Starting PC DOS...` at sample 130 and its two-pixel menu marker at sample 197;
+it exited in 200.83 seconds. The earlier baseline first observed DOS at sample
+140 and the marker at sample 206, exiting in 210.25 seconds. One ordered pair,
+ten-second DOS sampling, host drift and the incomplete marker do not establish
+a reproducible or sufficient startup improvement. Neither run measured native
+Window/RDP interaction. The observed delay remains unacceptable, so T582 stays
+open. Focused, full, external and boot log SHA-256 respectively:
+`19EFADB6DD84116C2047FF377D1F026695CC6F6783DC87087CA48D279E4E746D`,
+`DB34FEFB612FABBD1E21582354A7428EA892EE29A440654903DE0B79ED0C715B`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`5E9B861B876582CE3C7139184CB246459E18013B04183CCF887DD7E64CAE8F21`.
+
+Reviewed Shared source commit `dfba2e6cb` changes two private CPU files by
++4/-2 lines, plus two manifest hash replacements; no test source or public
+interface changed. Twelve PC/MyRaidenII receiver EXEs changed; both MyNES EXEs
+were unchanged and matched their build outputs. The
+[artifact inventory](t582-s39-preview-checkpoint-artifacts.json) records all
+fourteen PE architectures and hashes, together with the Core manifest hashes.
+The two MyRaidenII receiver artifacts are commit `f5b86bbc0`.
