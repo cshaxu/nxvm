@@ -1,4 +1,4 @@
-# M5 T583 S3 — Active: derived-DSTN x86 setup and restart
+# M5 T583 S3 — Closed: derived-DSTN x86 setup and restart
 
 The x86 isolated factory/Machine run reached ERROR, date confirmation and
 DOS, saved guest-produced CMOS through the existing App callback, and a new
@@ -21,7 +21,7 @@ not qualify native App entry/session teardown, Window input or TFT.
 | Asset Needs | Existing external firmware and private copies of both disks; preserve owner INI, CMOS, disks and ROMs. |
 | Reporting Requirements | Per-checkpoint frame/log hashes, process exit, input, RTC/CMOS evidence, media identity and native/product limits. |
 | Stop Conditions | No fabricated guest state, blind input, external media writes or treating probe evidence as native Window/App-session proof. |
-| Exit Criteria | Establish the x86 DSTN first-setup/save/restart boundary or its first reproducible failure; preserve TFT and full product routes as open. |
+| Exit Criteria | Reviewed d144c3502: independently initialized x86 DSTN reached DOS, saved guest-produced CMOS through the App callback, then reached DOS in a new process without Setup input. TFT and full product routes remain open. |
 | Original Owner Request | Complete the first four queued PC110 tasks. |
 | Similar-Issue Sweep | Compare x64 and x86 initial CMOS, Setup responses, saved state, date/time and DOS checkpoint. |
 
