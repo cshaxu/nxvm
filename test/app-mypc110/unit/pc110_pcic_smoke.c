@@ -29,6 +29,61 @@ static lib_status lower_query(void *owner, lib_u32 physical, lib_uptr bytes,
     return LIB_STATUS_OK;
 }
 
+static lib_bool suspend_machine(x86_vl82c420 *chip)
+{
+    x86_vl82c420_observe_unlock_read(chip, X86_VL82C420_UNLOCK_READ_FC23);
+    x86_vl82c420_observe_unlock_read(chip, X86_VL82C420_UNLOCK_READ_F023);
+    x86_vl82c420_observe_unlock_read(chip, X86_VL82C420_UNLOCK_READ_C023);
+    x86_vl82c420_observe_unlock_read(chip, X86_VL82C420_UNLOCK_READ_0023);
+    return x86_vl82c420_select(chip, X86_VL82C420_BANK_BLOCK2, 0xffu) == LIB_STATUS_OK &&
+        x86_vl82c420_write_selected(chip, X86_VL82C420_BANK_BLOCK2, 0x82u) == LIB_STATUS_OK &&
+        x86_vl82c420_suspend_refresh_enabled(chip);
+}
+
+static int wake_smoke(x86_core_machine *machine, mypc110_pcic *pcic)
+{
+    x86_vl82c420 *chip = LIB_NULL;
+    mypc110_firmware firmware = {0};
+    x86_rb5c396_slot_inputs input = {0};
+    lib_u32 value = 0u;
+    int failed = x86_vl82c420_create(&chip) != LIB_STATUS_OK;
+    if (failed) return 1;
+    firmware.machine = machine;
+    firmware.configuration_chip = chip;
+    pcic->firmware = &firmware;
+    mypc110_pcic_reset(pcic);
+    failed |= mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        !write_register(machine, 4u, 0u) ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        !write_register(machine, 5u, 8u) || !write_register(machine, 0x16u, 0x10u) ||
+        !suspend_machine(chip);
+    input.card_present = LIB_TRUE;
+    failed |= mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        x86_vl82c420_suspend_refresh_enabled(chip);
+    /* A held card indication must not hide a later independent F12 edge. */
+    failed |= !suspend_machine(chip) ||
+        mypc110_pcic_set_resume_button(pcic, LIB_TRUE) != LIB_STATUS_OK ||
+        x86_vl82c420_suspend_refresh_enabled(chip) ||
+        mypc110_pcic_set_resume_button(pcic, LIB_FALSE) != LIB_STATUS_OK ||
+        !suspend_machine(chip) || !write_register(machine, 4u, 0u) ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        !x86_vl82c420_suspend_refresh_enabled(chip);
+    input.card_present = LIB_FALSE;
+    failed |= mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        x86_vl82c420_suspend_refresh_enabled(chip) || !write_register(machine, 4u, 0u) ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        mypc110_pcic_set_resume_button(pcic, LIB_TRUE) != LIB_STATUS_OK ||
+        !suspend_machine(chip);
+    input.card_present = LIB_TRUE;
+    failed |= mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        x86_vl82c420_suspend_refresh_enabled(chip) ||
+        mypc110_pcic_set_resume_button(pcic, LIB_FALSE) != LIB_STATUS_OK;
+    pcic->firmware = LIB_NULL;
+    pcic->resume_button = LIB_FALSE;
+    x86_vl82c420_destroy(chip);
+    return failed;
+}
+
 static int status_pic_smoke(x86_core_machine *machine, mypc110_pcic *pcic,
     x86_nxvm_board_pic_bus *master, x86_nxvm_board_pic_bus *slave)
 {
@@ -266,6 +321,7 @@ int main(void)
     if (x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[0]) ||
         x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[1])) result = 11;
     if (result == 0 && status_pic_smoke(machine, &pcic, master, slave)) result = 13;
+    if (result == 0 && wake_smoke(machine, &pcic)) result = 14;
     x86_nxvm_board_pic_finalize(master, slave);
     x86_rb5c396_destroy(controller);
     x86_core_machine_destroy(machine);

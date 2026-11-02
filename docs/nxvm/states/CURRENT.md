@@ -1,3 +1,24 @@
+# M5 T585 S11 — Closed: PC110 power and wake reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S11 after S10. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved L1/L2 models when stronger sources are unavailable. |
+| Objective | Audit the existing PC110 guest power, suspend and wake paths against available references and implement one evidence-supported missing behavior if needed. |
+| Non-goals | No claim of a physical EC, host battery simulation or complete APM without actual implementation and validation. |
+| Reference Baseline | Current PC110 firmware, chipset and EC adapters; T580 S71, T585 S1 inventory and available authorized references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Determine from current code and evidence; use the smallest single-owner path. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Existing relevant fixture and both-width cached builds and unit suites; exercise real guest behavior where meaningful. |
+| Expected Markers | Separate already-working suspend/resume from the specific verified deficit and remaining model limits. |
+| Asset Needs | Preserve user CMOS, firmware and media; use disposable test-owned inputs. |
+| Reporting Requirements | Evidence grade, actual files and tests, retained limitations. |
+| Stop Conditions | No fabricated physical accuracy, duplicate machine owner or silent loss of existing wake behavior. |
+| Exit Criteria | Shared `d9b93a28d` and PC110 L1 wake receiver validated on both widths; complete unit, registered integration, additional machine-profile, MyRaidenII probes and 14 artifact identities are recorded in [S11 evidence](../etc/evidence/t585-s11-pcic-wake.md). Guest APM, other PCIC outputs and physical wiring remain subsequent work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Guest suspend, F12 wake, PC Card wake, APM and EC status ownership. |
+
 # M5 T585 S10 — Closed: PC110 memory-card media lifecycle
 
 | Field | Required record |

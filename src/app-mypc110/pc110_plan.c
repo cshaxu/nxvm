@@ -288,6 +288,7 @@ static lib_status mypc110_machine_profile_create(
     status = mypc110_pcic_initialize(&plan->pcic, plan->pcic_controller,
         services->pic_master, services->pic_slave);
     if (status != LIB_STATUS_OK) return status;
+    plan->pcic.firmware = &plan->firmware;
     plan->firmware.inking = &plan->inking;
     out_binding->context = plan;
     out_binding->reset = mypc110_machine_profile_reset;
@@ -377,7 +378,7 @@ static lib_bool mypc110_machine_handle_input(void *opaque, const kvm_input_event
     }
     if (event->type != KVM_EVENT_KEY || event->data.key.key != BASE_KEY_F12)
         return LIB_FALSE;
-    const lib_status status = mypc110_firmware_set_resume_button(&plan->firmware,
+    const lib_status status = mypc110_pcic_set_resume_button(&plan->pcic,
         event->data.key.pressed);
     if (status != LIB_STATUS_OK)
         (void)x86_core_machine_report_fault(plan->firmware.machine,

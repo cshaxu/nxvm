@@ -122,6 +122,7 @@ static lib_status mypc110_pcic_refresh(mypc110_pcic *pcic)
 {
     lib_u8 selected;
     lib_status status;
+    lib_bool resume;
     for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
         status = x86_rb5c396_status_irq(pcic->controller, slot, &selected);
         if (status == LIB_STATUS_OK) status = mypc110_pcic_drive_irq(pcic,
@@ -132,7 +133,30 @@ static lib_status mypc110_pcic_refresh(mypc110_pcic *pcic)
             &pcic->io_irq[slot], &pcic->selected_io_irq[slot], selected);
         if (status != LIB_STATUS_OK) return status;
     }
+    /* L1 board model: deliver a new card-wake edge independently of F12. */
+    resume = x86_rb5c396_resume_output(pcic->controller);
+    if (pcic->firmware != LIB_NULL && resume && !pcic->resume_signal) {
+        if (pcic->resume_button) {
+            status = mypc110_firmware_set_resume_button(pcic->firmware, LIB_FALSE);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        status = mypc110_firmware_set_resume_button(pcic->firmware, LIB_TRUE);
+        if (status != LIB_STATUS_OK) return status;
+        if (!pcic->resume_button) {
+            status = mypc110_firmware_set_resume_button(pcic->firmware, LIB_FALSE);
+            if (status != LIB_STATUS_OK) return status;
+        }
+    }
+    pcic->resume_signal = resume;
     return LIB_STATUS_OK;
+}
+
+lib_status mypc110_pcic_set_resume_button(mypc110_pcic *pcic, lib_bool asserted)
+{
+    if (pcic == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    pcic->resume_button = asserted;
+    return pcic->firmware == LIB_NULL ? LIB_STATUS_OK :
+        mypc110_firmware_set_resume_button(pcic->firmware, asserted);
 }
 
 lib_status mypc110_pcic_initialize(mypc110_pcic *pcic, x86_rb5c396 *controller,
@@ -182,6 +206,7 @@ lib_status mypc110_pcic_set_memory_card(mypc110_pcic *pcic, lib_u8 slot,
 
 void mypc110_pcic_reset(mypc110_pcic *pcic)
 {
+    lib_status status;
     if (pcic == LIB_NULL) return;
     for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
         x86_nxvm_board_pic_irq_source_deassert(pcic->irq[slot]);
@@ -190,7 +215,9 @@ void mypc110_pcic_reset(mypc110_pcic *pcic)
         pcic->selected_io_irq[slot] = 0u;
     }
     x86_rb5c396_reset(pcic->controller);
-    if (mypc110_pcic_memory_refresh(pcic) != LIB_STATUS_OK && pcic->machine != LIB_NULL)
+    status = mypc110_pcic_refresh(pcic);
+    if (status == LIB_STATUS_OK) status = mypc110_pcic_memory_refresh(pcic);
+    if (status != LIB_STATUS_OK && pcic->machine != LIB_NULL)
         (void)x86_core_machine_report_fault(pcic->machine, 0x50434943u);
 }
 
